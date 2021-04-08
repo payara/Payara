@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2020] [Payara Foundation]
+// Portions Copyright [2016-2021] [Payara Foundation]
 
 package org.glassfish.internal.api;
 
@@ -48,6 +48,9 @@ import java.util.Map;
 import java.util.logging.Handler;
 import org.jvnet.hk2.annotations.Contract;
 
+/**
+ * Payara Server HK2 managed log manager providing access to the Java Util Logging system.
+ */
 @Contract
 public interface LogManager {
 
@@ -73,6 +76,15 @@ public interface LogManager {
      */
     void addHandler(Handler handler);
 
+
+    /**
+     * @return original (before possible {@link System#setErr(PrintStream)} call) STDERR output stream
+     */
     PrintStream getErrStream();
+
+
+    /**
+     * @return original (before possible {@link System#setOut(PrintStream)} call) STDOUT output stream
+     */
     PrintStream getOutStream();
 }

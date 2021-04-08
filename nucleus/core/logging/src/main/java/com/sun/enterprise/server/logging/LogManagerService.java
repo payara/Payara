@@ -61,7 +61,7 @@ import fish.payara.logging.jul.cfg.LoggingConfigurationHelper;
 import fish.payara.logging.jul.cfg.LoggingSystemEnvironment;
 import fish.payara.logging.jul.cfg.PayaraLogHandlerConfiguration;
 import fish.payara.logging.jul.cfg.PayaraLogManagerConfiguration;
-import fish.payara.logging.jul.cfg.PayaraLogManagerConfigurationParser;
+import fish.payara.logging.jul.cfg.SortedProperties;
 import fish.payara.logging.jul.handler.PayaraLogHandler;
 import fish.payara.logging.jul.tracing.PayaraLoggingTracer;
 
@@ -78,7 +78,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.function.Consumer;
@@ -239,7 +238,7 @@ public final class LogManagerService implements PostConstruct, PreDestroy, org.g
 
     private PayaraLogManagerConfiguration getRuntimeConfiguration() throws IOException {
         final Map<String, String> instanceLogCfgMap = getResolvedLoggingProperties();
-        final Properties instanceLogCfg = new Properties();
+        final SortedProperties instanceLogCfg = new SortedProperties();
         instanceLogCfg.putAll(instanceLogCfgMap);
         return new PayaraLogManagerConfiguration(instanceLogCfg);
     }
@@ -254,8 +253,7 @@ public final class LogManagerService implements PostConstruct, PreDestroy, org.g
 
     private PayaraLogManagerConfiguration loadAndResolve(final File loggingPropertiesFile) throws IOException {
         LOG.finest(() -> "loadAndResolve(loggingPropertiesFile=" + loggingPropertiesFile + ")");
-        final PayaraLogManagerConfigurationParser parser = new PayaraLogManagerConfigurationParser();
-        final Properties loadedProperties = parser.load(loggingPropertiesFile);
+        final SortedProperties loadedProperties = SortedProperties.loadFrom(loggingPropertiesFile);
         final PropertyPlaceholderHelper helper = new PropertyPlaceholderHelper(System.getenv(), ENV_REGEX);
         return new PayaraLogManagerConfiguration(helper.replacePropertiesPlaceholder(loadedProperties));
     }

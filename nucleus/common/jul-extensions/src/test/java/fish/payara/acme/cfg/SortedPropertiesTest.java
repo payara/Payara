@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) 2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -38,47 +38,47 @@
  *  holder.
  */
 
-package com.sun.common.util.logging;
+package fish.payara.acme.cfg;
 
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Enumeration;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.stream.Collectors;
+import fish.payara.logging.jul.cfg.SortedProperties;
 
-class SortedProperties extends Properties {
+import java.io.ByteArrayInputStream;
+import java.io.File;
 
-    private static final long serialVersionUID = -2007016845217920652L;
+import org.junit.jupiter.api.Test;
 
-
-    public SortedProperties(Properties props) {
-        super();
-        putAll(props);
-    }
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasSize;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 
-    @Override
-    public Enumeration<Object> keys() {
-        return Collections.enumeration(Collections.list(super.keys()).stream()
-            .sorted(Comparator.comparing(Object::toString)).collect(Collectors.toList()));
-    }
+/**
+ * @author David Matejcek
+ */
+public class SortedPropertiesTest {
 
+    @Test
+    void conversions() throws Exception {
+        final SortedProperties properties = SortedProperties.loadFrom(SortedPropertiesTest.class.getResourceAsStream("/logging.properties"));
+        assertAll("properties: " + properties,
+            () -> assertNotNull(properties),
+            () -> assertThat(properties.getPropertyNames(), hasSize(3))
+        );
 
-    @Override
-    public synchronized Set<Map.Entry<Object, Object>> entrySet() {
-        @SuppressWarnings({"unchecked", "rawtypes"})
-        final Comparator<Map.Entry<Object, Object>> comparator = (x, z) -> {
-            if (x.getKey() instanceof Comparable && z.getKey() instanceof Comparable) {
-                final Comparable key1 = (Comparable) x.getKey();
-                final Comparable key2 = (Comparable) z.getKey();
-                return key1.compareTo(key2);
-            }
-            return Integer.compare(x.getKey().hashCode(), z.getKey().hashCode());
-        };
-        return Collections.synchronizedSet(//
-            super.entrySet().stream().sorted(comparator).collect(Collectors.toCollection(LinkedHashSet::new)));
+        final File file = File.createTempFile("logging", "properties");
+        file.deleteOnExit();
+        properties.store(file, "This is a test: " + getClass());
+
+        final SortedProperties properties2 = SortedProperties.loadFrom(file);
+        assertAll("properties2: " + properties2,
+            () -> assertNotNull(properties2),
+            () -> assertThat(properties2.getPropertyNames(), hasSize(3))
+        );
+
+        final ByteArrayInputStream inputStream = properties2.toInputStream(null);
+        final SortedProperties properties3 = SortedProperties.loadFrom(inputStream);
+        assertEquals(properties.size(), properties3.size(), "size of properties1 and properties3");
     }
 }

@@ -38,20 +38,20 @@
  * holder.
  */
 
-// Portions Copyright [2014-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2014-2021] [Payara Foundation and/or its affiliates]
 
 package com.sun.common.util.logging;
 
 import com.sun.enterprise.util.PropertyPlaceholderHelper;
 
+import fish.payara.logging.jul.cfg.SortedProperties;
+
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Collection;
@@ -176,22 +176,12 @@ public class LoggingConfigImpl implements LoggingConfig {
             throw new IOException(
                 "Directory '" + parentFile + "' does not exist, cannot create logging.properties file!");
         }
-        try (OutputStream os = new BufferedOutputStream(new FileOutputStream(file))) {
-            try {
-                new SortedProperties(props).store(os, "GlassFish logging.properties list");
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        try {
+            new SortedProperties(props).store(file, "GlassFish logging.properties list");
+        } catch (Exception e) {
+            LOG.log(Level.SEVERE, "Could not store " + file, e);
         }
         fileMonitoring.fileModified(file);
-    }
-
-    private void setWebLoggers(String value) {
-        // set the rest of the web loggers to the same level
-        // these are only accessible via the web-container name so all values should be the same
-        props.setProperty("org.apache.catalina.level", value);
-        props.setProperty("org.apache.coyote.level", value);
-        props.setProperty("org.apache.jasper.level", value);
     }
 
     @Override
@@ -207,10 +197,6 @@ public class LoggingConfigImpl implements LoggingConfig {
             key = propertyName;
         }
         String property = (String) props.setProperty(key, propertyValue);
-        // FIXME: remove. No magical surprises, force user to use script or documentation.
-        if (propertyName.contains(LOGGER_WEB_CONTAINER)) {
-            setWebLoggers(propertyValue);
-        }
 
         rewritePropertiesFileAndNotifyMonitoring();
         return property;
@@ -236,9 +222,6 @@ public class LoggingConfigImpl implements LoggingConfig {
                 key = e.getKey();
             }
             String property = (String) props.setProperty(key, e.getValue());
-            if (e.getKey().contains(LOGGER_WEB_CONTAINER)) {
-                setWebLoggers(new PropertyPlaceholderHelper(System.getenv(), PropertyPlaceholderHelper.ENV_REGEX).replacePlaceholder(e.getValue()));
-            }
             //build Map of entries to return
             m.put(key, new PropertyPlaceholderHelper(System.getenv(), PropertyPlaceholderHelper.ENV_REGEX).replacePlaceholder(property));
         }

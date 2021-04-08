@@ -43,14 +43,13 @@ package fish.payara.logging.jul;
 import fish.payara.logging.jul.cfg.LoggingConfigurationHelper;
 import fish.payara.logging.jul.cfg.LoggingSystemEnvironment;
 import fish.payara.logging.jul.cfg.PayaraLogManagerConfiguration;
-import fish.payara.logging.jul.cfg.PayaraLogManagerConfigurationParser;
+import fish.payara.logging.jul.cfg.SortedProperties;
 import fish.payara.logging.jul.handler.ExternallyManagedLogHandler;
 import fish.payara.logging.jul.handler.PayaraLogHandler;
 import fish.payara.logging.jul.handler.SimpleLogHandler;
 import fish.payara.logging.jul.tracing.PayaraLoggingTracer;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -137,7 +136,7 @@ public class PayaraLogManager extends LogManager {
             // oh no, another LogManager implementation is already used.
             return false;
         }
-        logManager.doFirstInitialization(configuration == null ? provideProperties() : configuration);
+        logManager.doFirstInitialization(ensureSortedProperties(configuration));
         return true;
     }
 
@@ -324,7 +323,7 @@ public class PayaraLogManager extends LogManager {
     @Deprecated
     public synchronized void readConfiguration(final InputStream input) throws SecurityException, IOException {
         PayaraLoggingTracer.trace(PayaraLogManager.class, () -> "readConfiguration(ins=" + input + ")");
-        this.configuration = new PayaraLogManagerConfigurationParser().parse(input);
+        this.configuration = PayaraLogManagerConfiguration.parse(input);
         PayaraLoggingTracer.trace(PayaraLogManager.class, "readConfiguration(input) done.");
     }
 
@@ -519,7 +518,7 @@ public class PayaraLogManager extends LogManager {
     }
 
 
-    private void doFirstInitialization(final Properties properties) {
+    private void doFirstInitialization(final SortedProperties properties) {
         PayaraLoggingTracer.trace(PayaraLogManager.class, () -> "Initializing logManager: " + this);
         try {
             protectBeforeReset.set(false);
@@ -639,13 +638,24 @@ public class PayaraLogManager extends LogManager {
     }
 
 
-    private static Properties provideProperties() {
+    private static SortedProperties ensureSortedProperties(final Properties properties) {
+        if (properties == null) {
+            return provideProperties();
+        }
+        if (properties instanceof SortedProperties) {
+            return (SortedProperties) properties;
+        }
+        return new SortedProperties(properties);
+    }
+
+
+    private static SortedProperties provideProperties() {
         try {
-            final Properties propertiesFromJvmOption = toProperties(System.getProperty(JVM_OPT_LOGGING_CFG_FILE));
+            final SortedProperties propertiesFromJvmOption = toProperties(System.getProperty(JVM_OPT_LOGGING_CFG_FILE));
             if (propertiesFromJvmOption != null) {
                 return propertiesFromJvmOption;
             }
-            final Properties propertiesFromClasspath = loadFromClasspath();
+            final SortedProperties propertiesFromClasspath = loadFromClasspath();
             if (propertiesFromClasspath != null) {
                 return propertiesFromClasspath;
             }
@@ -662,8 +672,8 @@ public class PayaraLogManager extends LogManager {
     }
 
 
-    private static Properties createDefaultProperties() {
-        final Properties cfg = new Properties();
+    private static SortedProperties createDefaultProperties() {
+        final SortedProperties cfg = new SortedProperties();
         final String level = System.getProperty(JVM_OPT_LOGGING_CFG_DEFAULT_LEVEL, Level.INFO.getName());
         cfg.setProperty(KEY_SYS_ROOT_LOGGER_LEVEL, level);
         cfg.setProperty(KEY_USR_ROOT_LOGGER_LEVEL, level);
@@ -673,40 +683,26 @@ public class PayaraLogManager extends LogManager {
     }
 
 
-    private static Properties toProperties(final String absolutePath) throws IOException {
+    private static SortedProperties toProperties(final String absolutePath) throws IOException {
         if (absolutePath == null) {
             return null;
         }
         final File file = new File(absolutePath);
-        return toProperties(file);
-    }
-
-
-    private static Properties toProperties(final File file) throws IOException {
         if (!file.canRead()) {
             return null;
         }
-        try (InputStream input = new FileInputStream(file)) {
-            return toProperties(input);
-        }
+        return SortedProperties.loadFrom(file);
     }
 
 
-    private static Properties toProperties(final InputStream input) throws IOException {
-        final Properties properties = new Properties();
-        properties.load(input);
-        return properties;
-    }
-
-
-    private static Properties loadFromClasspath() throws IOException {
+    private static SortedProperties loadFromClasspath() throws IOException {
         final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         PayaraLoggingTracer.trace(PayaraLogManager.class, () -> "loadFromClasspath(); classloader: " + classLoader);
         try (InputStream input = classLoader.getResourceAsStream("logging.properties")) {
             if (input == null) {
                 return null;
             }
-            return toProperties(input);
+            return SortedProperties.loadFrom(input);
         }
     }
 

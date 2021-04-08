@@ -42,12 +42,13 @@ package fish.payara.logging.jul.cfg;
 
 import fish.payara.logging.jul.tracing.PayaraLoggingTracer;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -60,14 +61,14 @@ public class PayaraLogManagerConfiguration implements Serializable, Cloneable {
     /** If this key is set to true, PJULE will print really detailed tracing info to the standard output */
     public static final String KEY_TRACING_ENABLED = "fish.payara.logging.jul.tracingEnabled";
     private static final long serialVersionUID = 1L;
-    private final Properties properties;
+    private final SortedProperties properties;
 
 
     /**
      * @param properties configuration to clone
      */
-    public PayaraLogManagerConfiguration(final Properties properties) {
-        this.properties = (Properties) properties.clone();
+    public PayaraLogManagerConfiguration(final SortedProperties properties) {
+        this.properties = properties.clone();
     }
 
 
@@ -75,7 +76,7 @@ public class PayaraLogManagerConfiguration implements Serializable, Cloneable {
      * @return all property names used in the current configuration.
      */
     public SortedSet<String> getPropertyNames() {
-        return properties.keySet().stream().map(String::valueOf).collect(Collectors.toCollection(TreeSet::new));
+        return properties.getPropertyNames();
     }
 
     /**
@@ -99,8 +100,8 @@ public class PayaraLogManagerConfiguration implements Serializable, Cloneable {
     /**
      * @return cloned {@link Properties}
      */
-    public Properties toProperties() {
-        return (Properties) this.properties.clone();
+    public SortedProperties toProperties() {
+        return this.properties.clone();
     }
 
 
@@ -126,10 +127,37 @@ public class PayaraLogManagerConfiguration implements Serializable, Cloneable {
     }
 
 
+    /**
+     * Returns this configuration formatted as a {@link Properties}
+     */
     @Override
     public String toString() {
         return this.properties.toString();
     }
+
+
+    /**
+     * Parses the configuration from a {@link File}.
+     *
+     * @param file
+     * @return {@link PayaraLogManagerConfiguration}
+     * @throws IOException
+     */
+    public static PayaraLogManagerConfiguration parse(final File file) throws IOException {
+        return new PayaraLogManagerConfiguration(SortedProperties.loadFrom(file));
+    }
+
+    /**
+     * Parses the configuration from an {@link InputStream}.
+     *
+     * @param inputStream
+     * @return {@link PayaraLogManagerConfiguration}
+     * @throws IOException
+     */
+    public static PayaraLogManagerConfiguration parse(final InputStream inputStream) throws IOException {
+        return new PayaraLogManagerConfiguration(SortedProperties.loadFrom(inputStream));
+    }
+
 
     /**
      * Configuration entry, pair of a key and a value, both can be null (but it is not very useful).

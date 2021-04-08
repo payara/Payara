@@ -42,9 +42,10 @@ package fish.payara.acme.cfg;
 
 import fish.payara.logging.jul.PayaraLogManager;
 import fish.payara.logging.jul.cfg.PayaraLogManagerConfiguration;
+import fish.payara.logging.jul.cfg.SortedProperties;
 import fish.payara.logging.jul.cfg.PayaraLogManagerConfiguration.ConfigurationEntry;
 
-import java.util.Properties;
+import java.io.File;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.BeforeAll;
@@ -61,7 +62,7 @@ import static org.junit.jupiter.api.Assertions.assertNotSame;
 /**
  * @author David Matejcek
  */
-class PayaraLogManagerConfigurationTest {
+public class PayaraLogManagerConfigurationTest {
 
     private static PayaraLogManager logManager;
     private static PayaraLogManagerConfiguration originalCfg;
@@ -78,8 +79,8 @@ class PayaraLogManagerConfigurationTest {
 
 
     @Test
-    void testStream() {
-        final Properties properties = originalCfg.toProperties();
+    void toStream() {
+        final SortedProperties properties = originalCfg.toProperties();
         assertAll(
             () -> assertEquals(3, originalCfg.toStream().count()),
             () -> assertEquals(3, properties.size())
@@ -104,4 +105,24 @@ class PayaraLogManagerConfigurationTest {
         }
     }
 
+
+    @Test
+    void parseStream() throws Exception {
+        final PayaraLogManagerConfiguration configuration = PayaraLogManagerConfiguration
+            .parse(PayaraLogManagerConfigurationTest.class.getResourceAsStream("/logging.properties"));
+        assertAll(
+            () -> assertNotSame(originalCfg.getPropertyNames(), configuration.getPropertyNames()),
+            () -> assertThat(configuration.getPropertyNames(), contains(originalCfg.getPropertyNames().toArray())),
+            () -> assertThat(configuration.getPropertyNames(), hasSize(originalCfg.getPropertyNames().size()))
+        );
+    }
+
+
+
+    @Test
+    void parseEmptyFile() throws Exception {
+        final File file = File.createTempFile("logging", "properties");
+        final PayaraLogManagerConfiguration configuration = PayaraLogManagerConfiguration.parse(file);
+        assertThat(configuration.getPropertyNames(), hasSize(0));
+    }
 }

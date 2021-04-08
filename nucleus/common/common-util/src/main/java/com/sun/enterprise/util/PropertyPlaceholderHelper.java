@@ -42,6 +42,8 @@
  */
 package com.sun.enterprise.util;
 
+import fish.payara.logging.jul.cfg.SortedProperties;
+
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -79,8 +81,8 @@ public class PropertyPlaceholderHelper {
         return properties.get(key);
     }
 
-    public Properties replacePropertiesPlaceholder(Properties properties) {
-        final Properties p = new Properties();
+    public SortedProperties replacePropertiesPlaceholder(Properties properties) {
+        final SortedProperties p = new SortedProperties();
         Set<String> keys = properties.stringPropertyNames();
 
         for (String key : keys) {

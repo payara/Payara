@@ -50,6 +50,7 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 
 import fish.payara.logging.jul.PayaraLogManagerInitializer;
 import fish.payara.logging.jul.cfg.PayaraLogManagerConfiguration;
+import fish.payara.logging.jul.cfg.SortedProperties;
 import fish.payara.logging.jul.tracing.PayaraLoggingTracer;
 
 import java.io.File;
@@ -89,11 +90,11 @@ import static java.util.logging.Level.FINEST;
  */
 public class AdminMain {
 
-    private static final Properties LOGGING_CFG;
+    private static final SortedProperties LOGGING_CFG;
     static {
         PayaraLoggingTracer.trace(AdminMain.class, "Preconfiguring logging for asadmin.");
         // The logging is explicitly configured in doMain method
-        LOGGING_CFG = new Properties();
+        LOGGING_CFG = new SortedProperties();
         LOGGING_CFG.setProperty("handlers", "fish.payara.logging.jul.handler.BlockingExternallyManagedLogHandler");
         if (!PayaraLogManagerInitializer.tryToSetAsDefault(LOGGING_CFG)) {
             throw new IllegalStateException("PayaraLogManager is not set as the default LogManager!");

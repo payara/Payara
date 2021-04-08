@@ -42,10 +42,10 @@ package fish.payara.acme.handler;
 
 import fish.payara.logging.jul.PayaraLogManager;
 import fish.payara.logging.jul.cfg.PayaraLogManagerConfiguration;
+import fish.payara.logging.jul.cfg.SortedProperties;
 import fish.payara.logging.jul.handler.SyslogHandler;
 import fish.payara.logging.jul.record.EnhancedLogRecord;
 
-import java.util.Properties;
 import java.util.logging.Level;
 
 import org.junit.jupiter.api.AfterEach;
@@ -82,7 +82,7 @@ public class SysLogHandlerTest {
      */
     @Test
     void standardUsage() throws Exception {
-        final Properties properties = new Properties();
+        final SortedProperties properties = new SortedProperties();
         properties.setProperty(SyslogHandler.class.getName() + ".useSystemLogging", "true");
         final PayaraLogManagerConfiguration cfg = new PayaraLogManagerConfiguration(properties);
         PayaraLogManager.getLogManager().reconfigure(cfg);

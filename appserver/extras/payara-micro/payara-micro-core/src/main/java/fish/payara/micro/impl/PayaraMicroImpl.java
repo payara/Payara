@@ -49,7 +49,7 @@ import fish.payara.boot.runtime.BootCommands;
 import fish.payara.deployment.util.GAVConvertor;
 import fish.payara.logging.jul.formatter.ODLLogFormatter;
 import fish.payara.logging.jul.PayaraLogManager;
-import fish.payara.logging.jul.cfg.PayaraLogManagerConfigurationParser;
+import fish.payara.logging.jul.cfg.PayaraLogManagerConfiguration;
 import fish.payara.micro.BootstrapException;
 import fish.payara.micro.PayaraMicroLoggingInitializer;
 import fish.payara.micro.PayaraMicroRuntime;
@@ -1829,7 +1829,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     private void resetAndReloadLoggingConfiguration() throws IOException {
         if (PayaraLogManager.isPayaraLogManager()) {
             PayaraLogManager.getLogManager()
-                .reconfigure(new PayaraLogManagerConfigurationParser().parse(runtimeDir.getLoggingProperties()));
+                .reconfigure(PayaraLogManagerConfiguration.parse(runtimeDir.getLoggingProperties()));
         } else {
             try (InputStream is = new FileInputStream(runtimeDir.getLoggingProperties())) {
                 LogManager.getLogManager().readConfiguration(is);
