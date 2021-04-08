@@ -188,7 +188,7 @@
         <jaxws-api.version>3.0.0</jaxws-api.version>
         <jakarta.jws-api.version>3.0.0</jakarta.jws-api.version>
         <webservices.version>3.0.0</webservices.version>
-        <woodstox.version>5.0.0</woodstox.version>
+        <woodstox.version>6.2.4</woodstox.version>
         <stax2-api.version>4.2.1</stax2-api.version>
         <jakarta.resource-api.version>2.0.0</jakarta.resource-api.version>
         <jakarta.enterprise.deploy-api.version>1.7.2</jakarta.enterprise.deploy-api.version>
