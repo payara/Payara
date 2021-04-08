@@ -117,7 +117,10 @@
                                     fish.payara.security.annotations,
                                     fish.payara.security.api,
                                     fish.payara.security.oauth2.api,
-                                    fish.payara.security.openid.api
+                                    fish.payara.security.openid.api,
+                                    com.sun.appserv,
+                                    com.sun.appserv.security,
+                                    com.sun.appserv.connectors.spi
                                 </Export-Package>
                             </instructions>
                         </configuration>

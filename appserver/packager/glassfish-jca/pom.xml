@@ -163,11 +163,6 @@
             <version>${project.version}</version>
         </dependency>
     	<dependency>
-            <groupId>fish.payara.server.internal.common</groupId>
-            <artifactId>glassfish-ee-api</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-    	<dependency>
             <groupId>fish.payara.server.internal.jdbc</groupId>
             <artifactId>jdbc-config</artifactId>
             <version>${project.version}</version>

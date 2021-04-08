@@ -191,9 +191,8 @@
             <version>${project.version}</version>
         </dependency>
         <dependency> <!-- for AuditModule -->
-            <groupId>fish.payara.server.internal.common</groupId>
-            <artifactId>glassfish-ee-api</artifactId>
-            <version>${project.version}</version>
+            <groupId>fish.payara.api</groupId>
+            <artifactId>payara-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.glassfish.hk2</groupId>

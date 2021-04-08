@@ -101,9 +101,8 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.web</groupId>
-            <artifactId>web-naming</artifactId>
-            <version>${project.version}</version>
+            <groupId>fish.payara.api</groupId>
+            <artifactId>payara-api</artifactId>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.common</groupId>

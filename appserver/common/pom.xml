@@ -57,7 +57,6 @@
     	<module>amx-javaee</module>
 	<module>mejb</module>
 	<module>mejb-frag</module>    	
-        <module>glassfish-ee-api</module>
         <module>annotation-framework</module>
         <module>container-common</module>
         <module>glassfish-naming</module>
