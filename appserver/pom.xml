@@ -489,11 +489,11 @@
                         </spec>
                         <spec>
                             <artifact>
-                                <groupId>org.glassfish</groupId>
-                                <artifactId>jakarta.el</artifactId>
-                                <version>${jakarta.el.version}</version>
+                                <groupId>jakarta.el</groupId>
+                                <artifactId>jakarta.el-api</artifactId>
+                                <version>${jakarta.el-api.version}</version>
                             </artifact>
-                            <jarType>impl</jarType>
+                            <jarType>api</jarType>
                             <specVersion>3.0</specVersion>
                             <implVersion>${jakarta.el.version}</implVersion>
                             <apiPackage>jakarta.el</apiPackage>

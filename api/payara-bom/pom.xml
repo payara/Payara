@@ -284,16 +284,6 @@
                 <version>${jakarta.validation.version}</version>
             </dependency>
             <dependency>
-                <groupId>jakarta.el</groupId>
-                <artifactId>jakarta.el-api</artifactId>
-                <version>${jakarta.el-api.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>jakarta.mail</groupId>
-                <artifactId>jakarta.mail-api</artifactId>
-                <version>${mail.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>jakarta.annotation</groupId>
                 <artifactId>jakarta.annotation-api</artifactId>
                 <version>${jakarta.annotation-api.version}</version>
@@ -523,9 +513,19 @@
                 <version>${hibernate.validator-cdi.version}</version>
             </dependency>
             <dependency>
+                <groupId>jakarta.el</groupId>
+                <artifactId>jakarta.el-api</artifactId>
+                <version>${jakarta.el-api.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.glassfish</groupId>
                 <artifactId>jakarta.el</artifactId>
                 <version>${jakarta.el.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.mail</groupId>
+                <artifactId>jakarta.mail-api</artifactId>
+                <version>${mail.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.sun.mail</groupId>
