@@ -107,7 +107,8 @@ class ContextImpl {
 
         EmptyContext(InvocationManager invocationManager) {
             this.invocationManager = invocationManager;
-            previousInvocations = invocationManager.popAllInvocations();
+            previousInvocations = invocationManager.isInvocationStackEmpty() ?
+                    null : invocationManager.popAllInvocations();
         }
 
         @Override
