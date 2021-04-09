@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 package org.glassfish.api.invocation;
 
 import static java.lang.ThreadLocal.withInitial;
@@ -234,6 +234,9 @@ public class InvocationManagerImpl implements InvocationManager {
     @Override
     @SuppressWarnings("unchecked")
     public <T extends ComponentInvocation> T getCurrentInvocation() {
+        if (isInvocationStackEmpty()) {
+            return null;
+        }
         return (T) framesByThread.get().peekLast();
     }
 
