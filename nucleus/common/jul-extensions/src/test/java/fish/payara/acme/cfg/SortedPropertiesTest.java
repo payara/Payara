@@ -44,11 +44,14 @@ import fish.payara.logging.jul.cfg.SortedProperties;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.util.SortedSet;
 
 import org.junit.jupiter.api.Test;
 
+import static fish.payara.logging.jul.cfg.SortedProperties.loadFrom;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.lessThan;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -61,7 +64,7 @@ public class SortedPropertiesTest {
 
     @Test
     void conversions() throws Exception {
-        final SortedProperties properties = SortedProperties.loadFrom(SortedPropertiesTest.class.getResourceAsStream("/logging.properties"));
+        final SortedProperties properties = loadFrom(getClass().getResourceAsStream("/logging.properties"));
         assertAll("properties: " + properties,
             () -> assertNotNull(properties),
             () -> assertThat(properties.getPropertyNames(), hasSize(3))
@@ -71,14 +74,17 @@ public class SortedPropertiesTest {
         file.deleteOnExit();
         properties.store(file, "This is a test: " + getClass());
 
-        final SortedProperties properties2 = SortedProperties.loadFrom(file);
+        final SortedProperties properties2 = loadFrom(file);
         assertAll("properties2: " + properties2,
             () -> assertNotNull(properties2),
             () -> assertThat(properties2.getPropertyNames(), hasSize(3))
         );
 
         final ByteArrayInputStream inputStream = properties2.toInputStream(null);
-        final SortedProperties properties3 = SortedProperties.loadFrom(inputStream);
+        final SortedProperties properties3 = loadFrom(inputStream);
         assertEquals(properties.size(), properties3.size(), "size of properties1 and properties3");
+
+        final SortedSet<String> names = properties3.getPropertyNames();
+        assertThat(names.first(), lessThan(names.last()));
     }
 }

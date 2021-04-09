@@ -38,52 +38,55 @@
  * holder.
  */
 
+// Portions Copyright [2021] [Payara Foundation and/or its affiliates]
 package org.glassfish.internal.config;
 
-import org.jvnet.hk2.annotations.Service;
+import java.beans.PropertyChangeEvent;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import javax.inject.Inject;
+
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.runlevel.RunLevel;
+import org.glassfish.internal.api.PostStartupRunLevel;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.TransactionListener;
 import org.jvnet.hk2.config.Transactions;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
-import java.beans.PropertyChangeEvent;
-
-import org.glassfish.internal.api.*;
-
-import javax.inject.Inject;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Collections;
 
 /**
-Listens for unprocessed config changes
+ * Listens for unprocessed config changes.
+ * <p>
+ * This service is used to provide information if there are some changes in the server instance
+ * configuration, which would nbe reflected after the restart of the server instance.
  */
 @Service
-@RunLevel(value=PostStartupRunLevel.VAL, mode=RunLevel.RUNLEVEL_MODE_NON_VALIDATING)
+@RunLevel(value = PostStartupRunLevel.VAL, mode = RunLevel.RUNLEVEL_MODE_NON_VALIDATING)
 public final class UnprocessedConfigListener implements PostConstruct, TransactionListener {
     @Inject
     private Transactions mTransactions;
 
-    private final List<UnprocessedChangeEvents> mUnprocessedChangeEvents = new ArrayList();
+    private final List<UnprocessedChangeEvents> mUnprocessedChangeEvents = new ArrayList<>();
 
-    public UnprocessedConfigListener() {
-        //debug( "UnprocessedConfigListener.UnprocessedConfigListener" );
-    }
-
+    @Override
     public void postConstruct() {
         mTransactions.addTransactionsListener(this);
     }
 
+    @Override
     public void transactionCommited(final List<PropertyChangeEvent> changes) {
         // ignore, we only are interested in those that were not processed
     }
 
+    @Override
     public synchronized void unprocessedTransactedEvents(List<UnprocessedChangeEvents> changes) {
         mUnprocessedChangeEvents.addAll(changes);
     }
-    
+
     public boolean serverRequiresRestart() {
-        return getUnprocessedChangeEvents().size() != 0; 
+        return !getUnprocessedChangeEvents().isEmpty();
     }
 
     public synchronized List<UnprocessedChangeEvents> getUnprocessedChangeEvents() {

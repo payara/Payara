@@ -79,8 +79,6 @@ import static java.util.logging.Level.SEVERE;
  *
  * @author David Matejcek
  */
-// FIXME: uses the file until the end, but another run is already starting.
-//        _ThreadName=FelixStartLevel vs _ThreadName=main - verify if it is still a problem!
 public class PayaraLogHandler extends StreamHandler implements ExternallyManagedLogHandler {
 
     private static final String LOGGER_NAME_STDOUT = "javax.enterprise.logging.stdout";
@@ -358,7 +356,9 @@ public class PayaraLogHandler extends StreamHandler implements ExternallyManaged
         }
     }
 
-
+    /**
+     * If the file is not empty, rolls. Then updates the next roll schedule.
+     */
     private void scheduledRoll() {
         this.logFileManager.rollIfFileNotEmpty();
         updateRollSchedule();

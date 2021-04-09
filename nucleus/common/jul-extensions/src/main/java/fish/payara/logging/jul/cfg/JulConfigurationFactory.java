@@ -50,16 +50,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.logging.Formatter;
 import java.util.logging.Level;
 
-import static fish.payara.logging.jul.cfg.PayaraLogHandlerConfiguration.DEFAULT_BUFFER_CAPACITY;
-import static fish.payara.logging.jul.cfg.PayaraLogHandlerConfiguration.DEFAULT_BUFFER_TIMEOUT;
-import static fish.payara.logging.jul.cfg.PayaraLogHandlerConfiguration.DEFAULT_ROTATION_LIMIT_BYTES;
+import static fish.payara.logging.jul.cfg.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.*;
 
 /**
  * @author David Matejcek
  */
 public class JulConfigurationFactory {
-
-    public static final int MINIMUM_ROTATION_LIMIT_VALUE = 500_000;
 
     public PayaraLogHandlerConfiguration createPayaraLogHandlerConfiguration(
         final Class<? extends PayaraLogHandler> handlerClass, final String defaultLogFileName) {
@@ -75,12 +71,12 @@ public class JulConfigurationFactory {
         configuration.setBufferCapacity(helper.getInteger("bufferCapacity", DEFAULT_BUFFER_CAPACITY));
         configuration.setBufferTimeout(helper.getInteger("bufferTimeout", DEFAULT_BUFFER_TIMEOUT));
 
-        final Integer rotationLimit = helper.getInteger("rotationLimitInBytes", DEFAULT_ROTATION_LIMIT_BYTES);
+        final Integer rotationLimit = helper.getInteger(ROTATION_LIMIT_SIZE.getPropertyName(), DEFAULT_ROTATION_LIMIT_BYTES);
         configuration.setLimitForFileRotation(
-            rotationLimit >= MINIMUM_ROTATION_LIMIT_VALUE ? rotationLimit : DEFAULT_ROTATION_LIMIT_BYTES);
+            rotationLimit >= MINIMUM_ROTATION_LIMIT_BYTES ? rotationLimit : DEFAULT_ROTATION_LIMIT_BYTES);
         configuration.setCompressionOnRotation(helper.getBoolean("compressOnRotation", Boolean.FALSE));
-        configuration.setRotationOnDateChange(helper.getBoolean("rotationOnDateChange", Boolean.FALSE));
-        configuration.setRotationTimeLimitValue(helper.getNonNegativeInteger("rotationTimelimitInMinutes", 0));
+        configuration.setRotationOnDateChange(helper.getBoolean(ROTATION_ON_DATE_CHANGE.getPropertyName(), Boolean.FALSE));
+        configuration.setRotationTimeLimitValue(helper.getNonNegativeInteger(ROTATION_LIMIT_TIME.getPropertyName(), 0));
         configuration.setMaxHistoryFiles(helper.getNonNegativeInteger("maxHistoryFiles", 10));
 
         final Formatter formatter = helper.getFormatter("formatter", UniformLogFormatter.class.getName());

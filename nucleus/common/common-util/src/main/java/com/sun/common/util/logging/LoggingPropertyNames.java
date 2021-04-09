@@ -38,32 +38,39 @@
  * holder.
  */
 
-// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 
 package com.sun.common.util.logging;
 
+import fish.payara.logging.jul.handler.PayaraLogHandler;
+import fish.payara.logging.jul.handler.SyslogHandler;
+
+import static fish.payara.logging.jul.cfg.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.LOG_FILTER;
+import static fish.payara.logging.jul.cfg.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.ROTATION_LIMIT_SIZE;
+import static fish.payara.logging.jul.cfg.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.ROTATION_LIMIT_TIME;
+
 public class LoggingPropertyNames {
 
-    public static final String GFFileHandler = "com.sun.enterprise.server.logging.GFFileHandler.";
-    
-    public static final String PYFileHandler = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.";
+    private static final String GFFileHandler = PayaraLogHandler.class.getName() + ".";
 
-    public static final String SyslogHandler = "com.sun.enterprise.server.logging.SyslogHandler.";
+    private static final String PYFileHandler = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.";
 
-    public static final String logRotationLimitInBytes = GFFileHandler + "rotationLimitInBytes";
-    
+    public static final String SyslogHandler = SyslogHandler.class.getName() + ".";
+
+    public static final String logRotationLimitInBytes = ROTATION_LIMIT_SIZE.getPropertyFullName(PayaraLogHandler.class);
+
     public static final String payaraNotificationLogRotationLimitInBytes  = PYFileHandler + "rotationLimitInBytes";
 
-    public static final String logRotationTimelimitInMinutes = GFFileHandler + "rotationTimelimitInMinutes";
-    
+    public static final String logRotationTimelimitInMinutes = ROTATION_LIMIT_TIME.getPropertyFullName(PayaraLogHandler.class);
+
     public static final String payaraNotificationLogRotationTimelimitInMinutes  = PYFileHandler + "rotationTimelimitInMinutes";
 
     public static final String file = GFFileHandler + "file";
-    
+
     public static final String payaraNotificationFile  = PYFileHandler + "file";
 
     public static final String logFormatter = GFFileHandler + "formatter";
-    
+
     public static final String payaraNotificationLogFormatter = PYFileHandler + "formatter";
 
     public static final String logHandler = "handlers";
@@ -72,10 +79,10 @@ public class LoggingPropertyNames {
 
     public static final String retainErrorStatisticsForHours = GFFileHandler + "retainErrorsStasticsForHours";
 
-    public static final String logFilter = GFFileHandler + "logFilterClass";
-    
+    public static final String logFilter = LOG_FILTER.getPropertyFullName(PayaraLogHandler.class);
+
     public static final String logToFile = GFFileHandler + "logtoFile";
-    
+
     public static final String payaraNotificationLogToFile  = PYFileHandler + "logtoFile";
 
     public static final String logToConsole = GFFileHandler + "logtoConsole";

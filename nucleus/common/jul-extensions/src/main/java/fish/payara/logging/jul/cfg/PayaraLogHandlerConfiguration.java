@@ -51,10 +51,6 @@ import java.util.logging.Level;
  */
 public class PayaraLogHandlerConfiguration implements Cloneable {
 
-    public static final int DEFAULT_ROTATION_LIMIT_BYTES = 2_000_000;
-    public static final int DEFAULT_BUFFER_CAPACITY = 10_000;
-    public static final int DEFAULT_BUFFER_TIMEOUT = 0;
-
     private Level level = Level.INFO;
     private Charset encoding = StandardCharsets.UTF_8;
 
@@ -64,12 +60,12 @@ public class PayaraLogHandlerConfiguration implements Cloneable {
     private int flushFrequency;
     private int maxHistoryFiles;
 
-    private int bufferCapacity = DEFAULT_BUFFER_CAPACITY;
-    private int bufferTimeout = DEFAULT_BUFFER_TIMEOUT;
+    private int bufferCapacity = PayaraLogHandlerProperty.DEFAULT_BUFFER_CAPACITY;
+    private int bufferTimeout = PayaraLogHandlerProperty.DEFAULT_BUFFER_TIMEOUT;
 
     private boolean rotationOnDateChange;
     private int rotationTimeLimitValue;
-    private long limitForFileRotation = DEFAULT_ROTATION_LIMIT_BYTES;
+    private long limitForFileRotation = PayaraLogHandlerProperty.DEFAULT_ROTATION_LIMIT_BYTES;
     private boolean compressionOnRotation;
 
     private boolean logStandardStreams;
@@ -239,6 +235,36 @@ public class PayaraLogHandlerConfiguration implements Cloneable {
             return (PayaraLogHandlerConfiguration) super.clone();
         } catch (CloneNotSupportedException e) {
             throw new IllegalStateException("Clone failed.", e);
+        }
+    }
+
+
+    public enum PayaraLogHandlerProperty {
+        /** File containing more bytes will be rotated */
+        ROTATION_LIMIT_SIZE("rotationLimitInBytes"),
+        /** File will be rotated after mignight */
+        ROTATION_ON_DATE_CHANGE("rotationOnDateChange"),
+        /** File will be rotated after given count of minutes */
+        ROTATION_LIMIT_TIME("rotationTimelimitInMinutes"),
+        LOG_FILTER("logFilterClass"),
+        ;
+        public static final int MINIMUM_ROTATION_LIMIT_BYTES = 500_000;
+        public static final int DEFAULT_ROTATION_LIMIT_BYTES = 2_000_000;
+        public static final int DEFAULT_BUFFER_CAPACITY = 10_000;
+        public static final int DEFAULT_BUFFER_TIMEOUT = 0;
+
+        private final String propertyName;
+
+        PayaraLogHandlerProperty(String propertyName) {
+            this.propertyName = propertyName;
+        }
+
+        public String getPropertyName() {
+            return propertyName;
+        }
+
+        public String getPropertyFullName(final Class<?> handlerClass) {
+            return handlerClass.getName() + "." + getPropertyName();
         }
     }
 }
