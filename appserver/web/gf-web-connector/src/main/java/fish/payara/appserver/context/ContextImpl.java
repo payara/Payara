@@ -109,10 +109,14 @@ class ContextImpl {
             this.invocationManager = invocationManager;
             previousInvocations = invocationManager.isInvocationStackEmpty() ?
                     null : invocationManager.popAllInvocations();
+            if (previousInvocations == null) {
+                // work around the API NPE
+                close();
+            }
         }
 
         @Override
-        public void close() {
+        public final void close() {
             invocationManager.putAllInvocations(previousInvocations);
         }
     }
