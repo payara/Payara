@@ -62,6 +62,7 @@ import java.util.concurrent.TimeUnit;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
+import java.util.regex.Matcher;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -239,7 +240,7 @@ public class DirConfigSourceTest {
         
         for (int i = 0; i < propFile.chars().filter(ch -> ch == '.').count(); i++) {
             // when
-            String newPath = propFile.replaceFirst("\\.", File.separator);
+            String newPath = propFile.replaceFirst("\\.", Matcher.quoteReplacement(File.separator));
             
             // then
             assertTrue(DirConfigSource.isLongestMatchForPath(testDirectory, subpath(propFile), subpath(newPath)));
