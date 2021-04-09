@@ -203,11 +203,11 @@
         <jakarta-platform.version>9.1.0-RC1</jakarta-platform.version>
         <microprofile-release.version>4.0</microprofile-release.version>
         <microprofile-opentracing.version>2.0</microprofile-opentracing.version>
-        <microprofile-config.version>2.0</microprofile-config.version>
+        <microprofile-config.version>2.0.payara-p1</microprofile-config.version>
         <microprofile-fault-tolerance.version>3.0</microprofile-fault-tolerance.version>
         <microprofile-jwt-auth.version>1.2</microprofile-jwt-auth.version>
         <microprofile-healthcheck.version>3.0</microprofile-healthcheck.version>
-        <microprofile-metrics.version>3.0</microprofile-metrics.version>
+        <microprofile-metrics.version>3.0.payara-p1</microprofile-metrics.version>
         <microprofile-rest-client.version>2.0</microprofile-rest-client.version>
         <microprofile-openapi.version>2.0</microprofile-openapi.version>
         <payara-arquillian-container.version>2.3.3</payara-arquillian-container.version>
