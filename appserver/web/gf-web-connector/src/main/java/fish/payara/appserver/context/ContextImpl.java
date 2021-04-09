@@ -111,7 +111,7 @@ class ContextImpl {
         }
 
         @Override
-        public final void close() {
+        public void close() {
             invocationManager.putAllInvocations(previousInvocations);
         }
     }
