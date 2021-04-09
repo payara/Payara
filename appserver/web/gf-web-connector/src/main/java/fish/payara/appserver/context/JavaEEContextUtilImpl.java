@@ -46,7 +46,6 @@ import com.sun.enterprise.deployment.JndiNameEnvironment;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.util.Utility;
 import java.io.Serializable;
-import java.lang.reflect.Proxy;
 import java.util.Collection;
 import org.glassfish.internal.api.JavaEEContextUtil;
 import java.util.HashMap;
@@ -233,7 +232,7 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil, Serializable {
         @Override
         public Context pushContext() {
             if (isEmpty()) {
-                return pushEmptyContext();
+                return new ContextImpl.EmptyContext(invocationManager);
             }
             if (!isValidAndNotEmpty()) {
                 // same as invocation, or app not running
@@ -243,19 +242,6 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil, Serializable {
             invocationManager.preInvoke(newInvocation);
             return new ContextImpl.Context(newInvocation, invocationManager, compEnvMgr,
                     Utility.setContextClassLoader(getInvocationClassLoader()));
-        }
-
-        private Context pushEmptyContext() {
-            try {
-                JndiNameEnvironment env = (JndiNameEnvironment) Proxy.newProxyInstance(Utility.getClassLoader(),
-                        new Class<?>[]{JndiNameEnvironment.class}, (proxy, method, args) -> null);
-                ComponentInvocation newInvocation = createInvocation(env, "___EMPTY___");
-                invocationManager.preInvoke(newInvocation);
-                return new ContextImpl.Context(newInvocation, invocationManager, compEnvMgr, Utility.getClassLoader());
-            } catch (IllegalArgumentException e) {
-                // Outside of HK2 / Felix context
-                return new ContextImpl.ClassLoaderContext(null, false);
-            }
         }
 
         @Override
