@@ -39,6 +39,17 @@ made subject to such option by the copyright holder. -->
     <name>Payara Samples - Payara - Realm Identity Stores</name>
     <packaging>war</packaging>
 
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <runOrder>alphabetical</runOrder>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
     <dependencies>
         <dependency>
             <groupId>io.smallrye</groupId>

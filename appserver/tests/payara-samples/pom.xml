@@ -302,7 +302,7 @@
                 <groupId>org.jboss.arquillian</groupId>
                 <artifactId>arquillian-bom</artifactId>
                 <!-- >= 1.7.0 supports parallel testing -->
-                <version>1.7.0.Alpha6</version>
+                <version>1.7.0.Alpha9</version>
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
@@ -533,6 +533,12 @@
             <artifactId>slf4j-jdk14</artifactId>
             <version>1.7.30</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.arquillian</groupId>
+            <artifactId>payara-client-ee8</artifactId>
+            <scope>test</scope>
+            <optional>true</optional>
         </dependency>
         <!-- needed for maven-war-plugin to work properly -->
         <dependency>
