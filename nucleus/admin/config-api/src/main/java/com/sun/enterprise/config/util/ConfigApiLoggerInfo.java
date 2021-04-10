@@ -69,7 +69,7 @@ public class ConfigApiLoggerInfo {
         return adminLogger;
     }
 
-    public static String getString(String message, Object[] parameters) {
+    public static String formatMessage(String message, Object... parameters) {
         return MessageFormat.format(message, parameters);
     }
 
@@ -211,7 +211,6 @@ public class ConfigApiLoggerInfo {
 
     @LogMessageInfo(
             message = "removing default instance index for {0}",
-
             publish = true,
             level = "FINE")
     public final static String removingDefaultInstanceIndexFor = LOGMSG_PREFIX + "-00020";
@@ -772,7 +771,7 @@ public class ConfigApiLoggerInfo {
 
 
     @LogMessageInfo(
-            message = "Successful Upgrade domain.xml with ",
+            message = "Successful Upgrade domain.xml with {0}",
             publish = true,
             level = "FINE")
     public final static String successfulUpgrade = LOGMSG_PREFIX + "-00087";
@@ -785,15 +784,6 @@ public class ConfigApiLoggerInfo {
             publish = true,
             level = "SEVERE")
     public final static String failedUpgrade = LOGMSG_PREFIX + "-00088";
-
-
-    @LogMessageInfo(
-            message = " does not exist or is empty, will use backup",
-            cause = "unknown",
-            action = "unknown",
-            publish = true,
-            level = "SEVERE")
-    public final static String noConfigFile = LOGMSG_PREFIX + "-00089";
 
 
     @LogMessageInfo(
@@ -810,54 +800,6 @@ public class ConfigApiLoggerInfo {
             level = "FINE")
     public final static String totalTimeToParseDomain = LOGMSG_PREFIX + "-00092";
 
-    @LogMessageInfo(
-            message = "Exception while creating the command model for the generic command {0} : {1}",
-            cause = "unknown",
-            action = "unknown",
-            publish = true,
-            level = "SEVERE")
-    public final static String commandModelException = LOGMSG_PREFIX + "-00093";
-
-    @LogMessageInfo(
-            message = "The CrudResolver {0} could not find the configuration object of type {1} where instances of {2} should be added",
-            cause = "unknown",
-            action = "unknown",
-            publish = true,
-            level = "SEVERE")
-    public final static String targetObjectNotFound = LOGMSG_PREFIX + "-00094";
-
-    @LogMessageInfo(
-            message = "A {0} instance with a {1} name already exist in the configuration",
-            cause = "unknown",
-            action = "unknown",
-            publish = true,
-            level = "SEVERE")
-    public final static String alreadyExistingInstance = LOGMSG_PREFIX + "-00095";
-
-    @LogMessageInfo(
-            message = "Exception while invoking {0} method : {1}",
-            cause = "unknown",
-            action = "unknown",
-            publish = true,
-            level = "SEVERE")
-    public final static String methodInvocationException = LOGMSG_PREFIX + "-00096";
-
-    @LogMessageInfo(
-            message = "The CreationDecorator {0} could not be found in the habitat, is it annotated with @Service?",
-            cause = "unknown",
-            action = "unknown",
-            publish = true,
-            level = "SEVERE")
-    public final static String decoratorNotFound = LOGMSG_PREFIX + "-00097";
-
-
-    @LogMessageInfo(
-            message = "Exception while adding the new configuration : {0}",
-            cause = "unknown",
-            action = "unknown",
-            publish = true,
-            level = "SEVERE")
-    public final static String transactionException = LOGMSG_PREFIX + "-00098";
 
     @LogMessageInfo(
             message = "Exception while persisting domain.xml, changes will not be available on server restart.",
@@ -940,12 +882,6 @@ public class ConfigApiLoggerInfo {
             publish = true,
             level = "INFO")
     public final static String cannotRemoveConfigBean = LOGMSG_PREFIX + "-00110";
-
-    @LogMessageInfo(
-            message = "Cannot get extension type {0} for {1}.",
-            publish = true,
-            level = "INFO")
-    public final static String cannotGetExtnType = LOGMSG_PREFIX + "-00111";
 
     @LogMessageInfo(message = "Failed to execute the command create-module-config",
             publish = true, level = "INFO")
@@ -1031,7 +967,7 @@ public class ConfigApiLoggerInfo {
             action="Provide a supported generic type.")
     public final static String INTROSPECTION_FAILED = "NCLS-CFGAPI-00131";
 
-    @LogMessageInfo(message = "Transaction exception while injecting {1}.",
+    @LogMessageInfo(message = "Transaction exception while injecting {0}.",
             publish = true, level = "SEVERE",
             cause="Generic CRUD command invocation failure",
             action="Take appropriate action based on the error message details in the log.")

@@ -615,7 +615,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                     createProperty(p);
                 }
             } catch (TransactionFailure ex) {
-                LOGGER.log(Level.SEVERE, failureCreatingAuthRealmProperty, new Object[]{attr, val, ex});
+                LOGGER.log(Level.SEVERE, formatMessage(failureCreatingAuthRealmProperty, new Object[]{attr, val}), ex);
             } catch (XMLStreamException ex) {
                 LOGGER.log(Level.SEVERE, failureParsingAuthRealmProperty, ex);
             }
@@ -682,14 +682,15 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                         }
                 }
             } catch (TransactionFailure ex) {
-                LOGGER.log(Level.SEVERE, failureCreatingJaccProviderAttr, new Object[]{attr, val, ex});
+                LOGGER.log(Level.SEVERE, formatMessage(failureCreatingJaccProviderAttr, new Object[]{attr, val}), ex);
             } catch (XMLStreamException ex) {
                 LOGGER.log(Level.SEVERE, problemParsingJaacProviderAttr, ex);
             }
         }
     }
 
-    /* Cursor should be already be at audit-module START_ELEMENT in the template.
+    /**
+     * Cursor should be already be at audit-module START_ELEMENT in the template.
      * Create AuditModle config object.
      * from template:
      * <audit-module classname="com.sun.enterprise.security.ee.Audit" name="default">

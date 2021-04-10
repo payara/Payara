@@ -63,6 +63,8 @@ import org.glassfish.common.util.admin.GenericCommandModel;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.*;
 
+import static com.sun.enterprise.config.util.ConfigApiLoggerInfo.CANNOT_IDENTIFY_LIST_COL_GETTER;
+
 /**
  * Generic list command implementation.
  *
@@ -282,7 +284,7 @@ public class GenericListCommand  extends GenericCrudCommand implements AdminComm
                     try {
                         mci.duckGetter = targetModel.getDuckMethod(m);
                     } catch (ClassNotFoundException | NoSuchMethodException ex) {
-                        ConfigApiLoggerInfo.getLogger().log(Level.SEVERE, ConfigApiLoggerInfo.CANNOT_IDENTIFY_LIST_COL_GETTER, ex);
+                        ConfigApiLoggerInfo.getLogger().log(Level.SEVERE, CANNOT_IDENTIFY_LIST_COL_GETTER, ex);
                     }
                     cols.add(mci);
                 }
@@ -381,7 +383,7 @@ public class GenericListCommand  extends GenericCrudCommand implements AdminComm
                 try {
                     return (String)duckGetter.invoke(null, bean);
                 } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-                    LogHelper.log(ConfigApiLoggerInfo.getLogger(), Level.SEVERE, 
+                    LogHelper.log(ConfigApiLoggerInfo.getLogger(), Level.SEVERE,
                             ConfigApiLoggerInfo.ERR_INVOKE_GETTER, ex, duckGetter.getName());
                 }
             }

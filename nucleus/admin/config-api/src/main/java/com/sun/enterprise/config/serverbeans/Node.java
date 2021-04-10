@@ -78,19 +78,21 @@ import javax.validation.constraints.Pattern;
 @SuppressWarnings("unused")
 @NotDuplicateTargetName(message = "{node.duplicate.name}", payload = Node.class)
 public interface Node extends ConfigBeanProxy, Named, ReferenceContainer, RefContainer, Payload {
+
     /**
      * Sets the node name
+     *
      * @param value node name
      * @throws PropertyVetoException if a listener vetoes the change
      */
     @Param(name = "name", primary = true)
     @Override
-    public void setName(String value) throws PropertyVetoException;
+    void setName(String value) throws PropertyVetoException;
 
     @NotTargetKeyword(message = "{node.reserved.name}", payload = Node.class)
     @Pattern(regexp = NAME_SERVER_REGEX, message = "{node.invalid.name}", payload = Node.class)
     @Override
-    public String getName();
+    String getName();
 
     /**
      * points to the parent directory of the node(s) directory.
@@ -192,7 +194,7 @@ public interface Node extends ConfigBeanProxy, Named, ReferenceContainer, RefCon
      * Sets the value of the freeze
      *
      * @param value "true" to freeze node and not allow instances to be created
-     * 
+     *
      * @throws PropertyVetoException if a listener vetoes the change
      */
     void setFreeze(String value) throws PropertyVetoException;
@@ -279,23 +281,26 @@ public interface Node extends ConfigBeanProxy, Named, ReferenceContainer, RefCon
     class Duck {
         public static String getInstallDirUnixStyle(Node node) {
             String installDir = node.getInstallDir();
-            if (installDir == null)
+            if (installDir == null) {
                 return null;
+            }
             return installDir.replaceAll("\\\\", "/");
         }
 
         public static String getNodeDirUnixStyle(Node node) {
             String nodeDir = node.getNodeDir();
-            if (nodeDir == null)
+            if (nodeDir == null) {
                 return null;
+            }
             return nodeDir.replaceAll("\\\\", "/");
         }
 
         public static String getNodeDirAbsolute(Node node) {
             // If nodedir is relative make it absolute relative to installRoot
             String nodeDir = node.getNodeDir();
-            if (nodeDir == null || nodeDir.length() == 0)
+            if (nodeDir == null || nodeDir.length() == 0) {
                 return null;
+            }
             File nodeDirFile = new File(nodeDir);
             if (nodeDirFile.isAbsolute()) {
                 return nodeDir;
@@ -310,8 +315,9 @@ public interface Node extends ConfigBeanProxy, Named, ReferenceContainer, RefCon
 
         public static String getNodeDirAbsoluteUnixStyle(Node node) {
             String nodeDirAbsolute = getNodeDirAbsolute(node);
-            if (nodeDirAbsolute == null)
+            if (nodeDirAbsolute == null) {
                 return null;
+            }
             return nodeDirAbsolute.replaceAll("\\\\", "/");
         }
 
@@ -420,7 +426,7 @@ public interface Node extends ConfigBeanProxy, Named, ReferenceContainer, RefCon
 
             LocalStringManagerImpl localStrings =
                     new LocalStringManagerImpl(Node.class);
-            
+
             /* 16034: see if instance creation is turned off on node */
             if (! nodes.nodeCreationAllowed()) {
                 throw new TransactionFailure(localStrings.getLocalString(
@@ -431,20 +437,25 @@ public interface Node extends ConfigBeanProxy, Named, ReferenceContainer, RefCon
             // we want to make sure they are null in the Node. The
             // admin console often passes the empty string instead of null.
             // See bug 14873
-            if (!StringUtils.ok(nodedir))
+            if (!StringUtils.ok(nodedir)) {
                 instance.setNodeDir(null);
-            if (!StringUtils.ok(installdir))
+            }
+            if (!StringUtils.ok(installdir)) {
                 instance.setInstallDir(null);
-            if (!StringUtils.ok(nodehost))
+            }
+            if (!StringUtils.ok(nodehost)) {
                 instance.setNodeHost(null);
-            if (!StringUtils.ok(windowsdomain))
+            }
+            if (!StringUtils.ok(windowsdomain)) {
                 instance.setWindowsDomain(null);
+            }
 
             //only create-node-ssh and update-node-ssh should be changing the type to SSH
             instance.setType(type);
 
-            if (type.equals("CONFIG") || type.equals("TEMP"))
+            if (type.equals("CONFIG") || type.equals("TEMP")) {
                 return;
+            }
 
             if (type.equals("DOCKER")) {
                 if (StringUtils.ok(dockerPasswordFile)) {
@@ -469,29 +480,36 @@ public interface Node extends ConfigBeanProxy, Named, ReferenceContainer, RefCon
             SshConnector sshC = instance.createChild(SshConnector.class);
 
             SshAuth sshA = sshC.createChild(SshAuth.class);
-            if (StringUtils.ok(sshuser))
+            if (StringUtils.ok(sshuser)) {
                 sshA.setUserName(sshuser);
-            if (StringUtils.ok(sshkeyfile))
+            }
+            if (StringUtils.ok(sshkeyfile)) {
                 sshA.setKeyfile(sshkeyfile);
-            if (StringUtils.ok(sshpassword))
+            }
+            if (StringUtils.ok(sshpassword)) {
                 sshA.setPassword(sshpassword);
-            if (StringUtils.ok(sshkeypassphrase))
+            }
+            if (StringUtils.ok(sshkeypassphrase)) {
                 sshA.setKeyPassphrase(sshkeypassphrase);
+            }
             sshC.setSshAuth(sshA);
 
-            if (StringUtils.ok(sshPort))
+            if (StringUtils.ok(sshPort)) {
                 sshC.setSshPort(sshPort);
+            }
 
-            if (StringUtils.ok(sshHost))
+            if (StringUtils.ok(sshHost)) {
                 sshC.setSshHost(sshHost);
+            }
 
             if ("DCOM".equals(type)) {
-                if (StringUtils.ok(windowsdomain))
+                if (StringUtils.ok(windowsdomain)) {
                     instance.setWindowsDomain(windowsdomain);
-                else if(StringUtils.ok(nodehost))
+                } else if(StringUtils.ok(nodehost)) {
                     instance.setWindowsDomain(nodehost);
-                else if(StringUtils.ok(sshHost))
+                } else if(StringUtils.ok(sshHost)) {
                     instance.setWindowsDomain(sshHost);
+                }
             }
             instance.setSshConnector(sshC);
         }
@@ -533,8 +551,9 @@ public interface Node extends ConfigBeanProxy, Named, ReferenceContainer, RefCon
             if (serversOnNode != null && serversOnNode.size() > 0) {
                 StringBuilder sb = new StringBuilder();
                 for (Server server : serversOnNode) {
-                    if (n > 0)
+                    if (n > 0) {
                         sb.append(", ");
+                    }
                     sb.append(server.getName());
                     n++;
                 }

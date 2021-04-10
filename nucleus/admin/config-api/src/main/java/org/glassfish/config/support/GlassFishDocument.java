@@ -62,7 +62,7 @@ import com.sun.appserv.server.util.Version;
  * plug our Dom implementation
  *
  * @author Jerome Dochez
- * 
+ *
  */
 public class GlassFishDocument extends DomDocument<GlassFishConfigBean> {
 
@@ -75,14 +75,14 @@ public class GlassFishDocument extends DomDocument<GlassFishConfigBean> {
         ServiceLocatorUtilities.addOneConstant(habitat, this, null, DomDocument.class);
 
         final DomDocument doc = this;
-        
+
         habitat.<Transactions>getService(Transactions.class).addTransactionsListener(new TransactionListener() {
             @Override
             public void transactionCommited(List<PropertyChangeEvent> changes) {
                 if (!isGlassFishDocumentChanged(changes)) {
                     return;
                 }
-                
+
                 for (ConfigurationPersistence pers : habitat.<ConfigurationPersistence>getAllServices(ConfigurationPersistence.class)) {
                     try {
                         if (doc.getRoot().getProxyType().equals(Domain.class)) {
@@ -91,9 +91,9 @@ public class GlassFishDocument extends DomDocument<GlassFishConfigBean> {
                         }
                         pers.save(doc);
                     } catch (IOException e) {
-                        LOGGER.log(Level.SEVERE, ConfigApiLoggerInfo.glassFishDocumentIOException,e);
+                        LOGGER.log(Level.SEVERE, ConfigApiLoggerInfo.glassFishDocumentIOException, e);
                     } catch (XMLStreamException e) {
-                        LOGGER.log(Level.SEVERE, ConfigApiLoggerInfo.glassFishDocumentXmlException,e);
+                        LOGGER.log(Level.SEVERE, ConfigApiLoggerInfo.glassFishDocumentXmlException, e);
                     }
                 }
             }

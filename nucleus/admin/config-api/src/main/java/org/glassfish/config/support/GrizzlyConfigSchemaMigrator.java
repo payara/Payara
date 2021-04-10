@@ -84,11 +84,11 @@ import javax.inject.Inject;
 public class GrizzlyConfigSchemaMigrator implements ConfigurationUpgrade, PostConstruct {
     private static final String SSL_CONFIGURATION_WANTAUTH = "org.glassfish.grizzly.ssl.auth";
     private static final String SSL_CONFIGURATION_SSLIMPL = "org.glassfish.grizzly.ssl.sslImplementation";
-    
+
     @Inject
     private Configs configs;
     private Config currentConfig = null;
-    
+
     @Inject
     private ServiceLocator habitat;
     private static final String HTTP_THREAD_POOL = "http-thread-pool";
@@ -96,7 +96,7 @@ public class GrizzlyConfigSchemaMigrator implements ConfigurationUpgrade, PostCo
     private static final String ASADMIN_VIRTUAL_SERVER = "__asadmin";
 
     private static final Logger LOGGER = ConfigApiLoggerInfo.getLogger();
-    
+
     @Override
     public void postConstruct() {
         for (Config config : configs.getConfig()) {
@@ -112,7 +112,7 @@ public class GrizzlyConfigSchemaMigrator implements ConfigurationUpgrade, PostCo
                     promoteVirtualServerProperties(currentConfig.getHttpService());
                 } else {
                     // this only happens during some unit tests
-                    LOGGER.log(Level.WARNING, ConfigApiLoggerInfo.nullHttpService, new String[] { currentConfig.getName() });
+                    LOGGER.log(Level.WARNING, ConfigApiLoggerInfo.nullHttpService, currentConfig.getName());
                 }
                 promoteSystemProperties();
                 addAsadminProtocol(currentConfig.getNetworkConfig());
@@ -296,7 +296,7 @@ public class GrizzlyConfigSchemaMigrator implements ConfigurationUpgrade, PostCo
         ConfigSupport.apply(new SingleConfigCode<HttpService>() {
             @Override
             public Object run(HttpService param) {
-                final List<Property> propertyList = new ArrayList<Property>(param.getProperty());
+                final List<Property> propertyList = new ArrayList<>(param.getProperty());
                 final Iterator<Property> it = propertyList.iterator();
                 while (it.hasNext()) {
                     final Property property = it.next();
@@ -333,7 +333,7 @@ public class GrizzlyConfigSchemaMigrator implements ConfigurationUpgrade, PostCo
         ConfigSupport.apply(new SingleConfigCode<JavaConfig>() {
             @Override
             public Object run(JavaConfig param) throws PropertyVetoException, TransactionFailure {
-                final List<String> props = new ArrayList<String>(param.getJvmRawOptions());
+                final List<String> props = new ArrayList<>(param.getJvmRawOptions());
                 final Iterator<String> iterator = props.iterator();
                 while (iterator.hasNext()) {
                     String prop = new MiniXmlParser.JvmOption(iterator.next()).option;
@@ -365,7 +365,7 @@ public class GrizzlyConfigSchemaMigrator implements ConfigurationUpgrade, PostCo
                         param.setNetworkListeners(param.getHttpListeners());
                     }
                     param.setHttpListeners(null);
-                    final List<Property> propertyList = new ArrayList<Property>(param.getProperty());
+                    final List<Property> propertyList = new ArrayList<>(param.getProperty());
                     final Iterator<Property> it = propertyList.iterator();
                     while (it.hasNext()) {
                         final Property property = it.next();

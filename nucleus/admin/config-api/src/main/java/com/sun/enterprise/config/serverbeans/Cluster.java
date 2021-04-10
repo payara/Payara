@@ -99,6 +99,7 @@ import static com.sun.enterprise.config.util.ConfigApiLoggerInfo.clusterGSMBroad
 import static com.sun.enterprise.config.util.ConfigApiLoggerInfo.clusterGSMDeliveryURI;
 import static com.sun.enterprise.config.util.ConfigApiLoggerInfo.clusterMustNotContainInstance;
 import static com.sun.enterprise.config.util.ConfigApiLoggerInfo.deleteConfigFailed;
+import static com.sun.enterprise.config.util.ConfigApiLoggerInfo.formatMessage;
 import static com.sun.enterprise.config.util.ConfigApiLoggerInfo.noDefaultConfigFound;
 import static org.glassfish.config.support.Constants.NAME_SERVER_REGEX;
 
@@ -930,7 +931,7 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
                     configList.remove(config);
                 }
             } catch (TransactionFailure ex) {
-                logger.log(Level.SEVERE, deleteConfigFailed, new Object[] {instanceConfig, ex});
+                logger.log(Level.SEVERE, formatMessage(deleteConfigFailed, instanceConfig), ex);
                 String msg = ex.getMessage() != null ? ex.getMessage()
                     : localStrings.getLocalString("deleteConfigFailed", "Unable to remove config {0}", instanceConfig);
                 report.setMessage(msg);

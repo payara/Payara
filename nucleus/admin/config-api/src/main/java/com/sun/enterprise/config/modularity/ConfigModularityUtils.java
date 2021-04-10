@@ -158,7 +158,7 @@ public final class ConfigModularityUtils {
                 try {
                     defaults = (List<ConfigBeanDefaultValue>) m.invoke(null, runtimeType);
                 } catch (Exception e) {
-                    LogHelper.log(LOG, Level.INFO, cannotGetDefaultConfig, e,configBeanClass.getName());
+                    LogHelper.log(LOG, Level.INFO, cannotGetDefaultConfig, e, configBeanClass.getName());
                 }
             }
         } else {

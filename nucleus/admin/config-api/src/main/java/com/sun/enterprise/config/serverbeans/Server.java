@@ -42,56 +42,78 @@
 
 package com.sun.enterprise.config.serverbeans;
 
-import com.sun.enterprise.config.util.ConfigApiLoggerInfo;
-import com.sun.enterprise.config.util.InstanceRegisterInstanceCommandParameters;
-import static com.sun.enterprise.config.util.RegisterInstanceCommandParameters.ParameterNames.*;
 import com.sun.enterprise.config.serverbeans.customvalidators.ConfigRefConstraint;
 import com.sun.enterprise.config.serverbeans.customvalidators.ConfigRefValidator;
-import com.sun.enterprise.config.serverbeans.customvalidators.NotTargetKeyword;
 import com.sun.enterprise.config.serverbeans.customvalidators.NotDuplicateTargetName;
-import com.sun.enterprise.config.util.ServerHelper;
+import com.sun.enterprise.config.serverbeans.customvalidators.NotTargetKeyword;
+import com.sun.enterprise.config.serverbeans.customvalidators.ReferenceConstraint;
+import com.sun.enterprise.config.util.ConfigApiLoggerInfo;
+import com.sun.enterprise.config.util.InstanceRegisterInstanceCommandParameters;
 import com.sun.enterprise.config.util.PortBaseHelper;
 import com.sun.enterprise.config.util.PortManager;
+import com.sun.enterprise.config.util.ServerHelper;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.util.net.NetUtils;
-import java.io.*;
-import org.glassfish.api.Param;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.config.support.*;
-import com.sun.enterprise.config.serverbeans.customvalidators.ReferenceConstraint;
+
 import fish.payara.enterprise.config.serverbeans.DGServerRef;
 import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 import fish.payara.enterprise.config.serverbeans.DeploymentGroups;
 
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.PerLookup;
-import org.jvnet.hk2.config.*;
-import org.jvnet.hk2.config.types.Property;
-import org.jvnet.hk2.config.types.PropertyBag;
-import org.glassfish.api.ActionReport;
-import org.glassfish.api.admin.config.Named;
-import org.glassfish.api.admin.config.PropertiesDesc;
-import org.glassfish.api.admin.config.ReferenceContainer;
-import org.glassfish.quality.ToDo;
-import static org.glassfish.config.support.Constants.*;
-
 import java.beans.PropertyVetoException;
-import java.util.List;
+import java.io.File;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.inject.Inject;
 import javax.validation.Payload;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
-import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandRunner;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.admin.config.Named;
+import org.glassfish.api.admin.config.PropertiesDesc;
+import org.glassfish.api.admin.config.ReferenceContainer;
 import org.glassfish.api.logging.LogHelper;
+import org.glassfish.config.support.CreationDecorator;
+import org.glassfish.config.support.DeletionDecorator;
+import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.quality.ToDo;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.Attribute;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.Configured;
+import org.jvnet.hk2.config.Dom;
+import org.jvnet.hk2.config.DuckTyped;
+import org.jvnet.hk2.config.Element;
+import org.jvnet.hk2.config.SingleConfigCode;
+import org.jvnet.hk2.config.Transaction;
+import org.jvnet.hk2.config.TransactionFailure;
+import org.jvnet.hk2.config.types.Property;
+import org.jvnet.hk2.config.types.PropertyBag;
+
+import static com.sun.enterprise.config.util.ConfigApiLoggerInfo.deleteConfigFailed;
+import static com.sun.enterprise.config.util.ConfigApiLoggerInfo.deleteServerRefFailed;
+import static com.sun.enterprise.config.util.ConfigApiLoggerInfo.formatMessage;
+import static com.sun.enterprise.config.util.RegisterInstanceCommandParameters.ParameterNames.OPERAND_NAME;
+import static com.sun.enterprise.config.util.RegisterInstanceCommandParameters.ParameterNames.PARAM_CHECKPORTS;
+import static com.sun.enterprise.config.util.RegisterInstanceCommandParameters.ParameterNames.PARAM_CLUSTER;
+import static com.sun.enterprise.config.util.RegisterInstanceCommandParameters.ParameterNames.PARAM_CONFIG;
+import static com.sun.enterprise.config.util.RegisterInstanceCommandParameters.ParameterNames.PARAM_DG;
+import static com.sun.enterprise.config.util.RegisterInstanceCommandParameters.ParameterNames.PARAM_LBENABLED;
+import static com.sun.enterprise.config.util.RegisterInstanceCommandParameters.ParameterNames.PARAM_NODE;
+import static com.sun.enterprise.config.util.RegisterInstanceCommandParameters.ParameterNames.PARAM_PORTBASE;
+import static org.glassfish.config.support.Constants.NAME_SERVER_REGEX;
 
 /**
  *
@@ -113,12 +135,13 @@ public interface Server extends ConfigBeanProxy, PropertyBag, Named, SystemPrope
 
     @Param(name = OPERAND_NAME, primary = true)
     @Override
-    public void setName(String value) throws PropertyVetoException;
+    void setName(String value) throws PropertyVetoException;
 
-    @NotTargetKeyword(message="{server.reserved.name}", payload=Server.class)
-    @Pattern(regexp=NAME_SERVER_REGEX, message="{server.invalid.name}", payload=Server.class)
+
+    @NotTargetKeyword(message = "{server.reserved.name}", payload = Server.class)
+    @Pattern(regexp = NAME_SERVER_REGEX, message = "{server.invalid.name}", payload = Server.class)
     @Override
-    public String getName();
+    String getName();
 
     /**
      * Gets the value of the configRef property.
@@ -188,7 +211,7 @@ public interface Server extends ConfigBeanProxy, PropertyBag, Named, SystemPrope
      */
     @Attribute
     String getNodeRef();
-    
+
     /**
      * Gets the value of the lbWeight property.
      *
@@ -238,7 +261,7 @@ public interface Server extends ConfigBeanProxy, PropertyBag, Named, SystemPrope
      * <p/>
      * Objects of the following type(s) are allowed in the list
      * {@link SystemProperty }
-     * @return 
+     * @return
      */
     @ToDo(priority = ToDo.Priority.IMPORTANT, details = "Provide PropertyDesc for legal system properties")
     @Element
@@ -284,7 +307,7 @@ public interface Server extends ConfigBeanProxy, PropertyBag, Named, SystemPrope
      */
     @DuckTyped
     Cluster getCluster();
-    
+
     @DuckTyped
     List<DeploymentGroup> getDeploymentGroup();
 
@@ -351,7 +374,7 @@ public interface Server extends ConfigBeanProxy, PropertyBag, Named, SystemPrope
             }
             return null;
         }
-        
+
         public static List<DeploymentGroup> getDeploymentGroup(Server server) {
             List<DeploymentGroup> result = new LinkedList<>();
             Dom serverDom = Dom.unwrap(server);
@@ -427,8 +450,9 @@ public interface Server extends ConfigBeanProxy, PropertyBag, Named, SystemPrope
 
         public static Config getConfig(Server server) {
             try {
-                if (server == null)
+                if (server == null) {
                     return null;
+                }
 
                 Dom serverDom = Dom.unwrap(server);
                 Configs configs = serverDom.getHabitat().getService(Configs.class);
@@ -551,7 +575,7 @@ public interface Server extends ConfigBeanProxy, PropertyBag, Named, SystemPrope
                 pbh.verifyPortBase();
                 pbh.setPorts();
             }
-            
+
             if (deploymentGroup != null && !deploymentGroup.trim().isEmpty()) {
                 DeploymentGroup dg = domain.getDeploymentGroupNamed(deploymentGroup);
                 if (dg == null) {
@@ -561,7 +585,7 @@ public interface Server extends ConfigBeanProxy, PropertyBag, Named, SystemPrope
                 DGServerRef ref = writableDg.createChild(DGServerRef.class);
                 ref.setRef(instance.getName());
                 writableDg.getDGServerRef().add(ref);
-                
+
                 // add application and resource refs from the deployment group
                 List<ApplicationRef> refs = dg.getApplicationRef();
                 for (ApplicationRef ref1 : refs) {
@@ -571,7 +595,7 @@ public interface Server extends ConfigBeanProxy, PropertyBag, Named, SystemPrope
                     aref.setVirtualServers(ref1.getVirtualServers());
                     instance.getApplicationRef().add(aref);
                 }
-                
+
                 // add resource refs on the deployment group
                 List<ResourceRef> rrefs = dg.getResourceRef();
                 for (ResourceRef rref : rrefs) {
@@ -642,12 +666,12 @@ public interface Server extends ConfigBeanProxy, PropertyBag, Named, SystemPrope
                 final String instanceName = instance.getName();
                 File configConfigDir = new File(env.getConfigDirPath(), ourCluster.getConfigRef());
                 File docroot = new File(configConfigDir, "docroot");
-                if (!docroot.exists() && !docroot.mkdirs()) { 
+                if (!docroot.exists() && !docroot.mkdirs()) {
                     throw new TransactionFailure(localStrings.getLocalString(
                             "noMkdir", "Cannot create configuration specific directory {0}", "docroot"));
                 }
                 File lib = new File(configConfigDir, "lib/ext");
-                if (!lib.exists() && !lib.mkdirs()) { 
+                if (!lib.exists() && !lib.mkdirs()) {
                     throw new TransactionFailure(localStrings.getLocalString(
                             "noMkdir", "Cannot create configuration specific directory {0}", "lib/ext"));
                 }
@@ -694,12 +718,12 @@ public interface Server extends ConfigBeanProxy, PropertyBag, Named, SystemPrope
                 ourConfig = specifiedConfig;
                 File configConfigDir = new File(env.getConfigDirPath(), specifiedConfig.getName());
                 File docroot = new File(configConfigDir, "docroot");
-                if (!docroot.exists() && !docroot.mkdirs()) { 
+                if (!docroot.exists() && !docroot.mkdirs()) {
                     throw new TransactionFailure(localStrings.getLocalString(
                             "noMkdir", "Cannot create configuration specific directory {0}", "docroot"));
                 }
                 File lib = new File(configConfigDir, "lib/ext");
-                if (!lib.exists() && !lib.mkdirs()) { 
+                if (!lib.exists() && !lib.mkdirs()) {
                     throw new TransactionFailure(localStrings.getLocalString(
                             "noMkdir", "Cannot create configuration specific directory {0}", "lib/ext"));
                 }
@@ -722,12 +746,12 @@ public interface Server extends ConfigBeanProxy, PropertyBag, Named, SystemPrope
                instance.setConfigRef(configName);
                final CopyConfig command = (CopyConfig) runner
                         .getCommand("copy-config", context.getActionReport(), context.getLogger());
-               
+
                 Configs configs = domain.getConfigs();
                 Configs writableConfigs = tx.enroll(configs);
 
                 ourConfig = command.copyConfig(writableConfigs,defaultConfig,configName,logger);
-                
+
 
             }
 
@@ -759,10 +783,10 @@ public interface Server extends ConfigBeanProxy, PropertyBag, Named, SystemPrope
 
             this.addClusterRefs(ourCluster, instance);
             if (checkPorts) {
-                
+
                 PortManager pm = new PortManager(ourCluster,
                         ourConfig, domain, instance);
-                String message = pm.process();      
+                String message = pm.process();
 
                 if (message != null && !terse) {
                     ActionReport report = context.getActionReport();
@@ -862,15 +886,16 @@ public interface Server extends ConfigBeanProxy, PropertyBag, Named, SystemPrope
             final ActionReport report = context.getActionReport();
             Transaction t = Transaction.getTransaction(parent);
             Cluster cluster = domain.getClusterForInstance(child.getName());
-            boolean isStandAlone = (cluster == null);
+            boolean isStandAlone = cluster == null;
+            String clusterName = cluster == null ? null : cluster.getName();
 
             /* setup supplemental */
             if (!isStandAlone && env.isDas()) {
-                context.getActionReport().setResultType(String.class, cluster.getName());
+                context.getActionReport().setResultType(String.class, clusterName);
             }
 
             if (isStandAlone) { // remove config <instance>-config
-                
+
                 // remove any deployment group references
                 List<DeploymentGroup> dgs = child.getDeploymentGroup();
                 for (DeploymentGroup dg : dgs) {
@@ -885,7 +910,7 @@ public interface Server extends ConfigBeanProxy, PropertyBag, Named, SystemPrope
                         }
                     }
                 }
-                
+
                 String instanceConfig = child.getConfigRef();
                 final Config config = configs.getConfigByName(instanceConfig);
 
@@ -898,9 +923,10 @@ public interface Server extends ConfigBeanProxy, PropertyBag, Named, SystemPrope
                 // bnevins September 30, 2010
                 // don't delete the config if it wasn't auto-generated.
                 final String autoGeneratedName = child.getName() + "-config";
-                if (!autoGeneratedName.equals(instanceConfig))
+                if (!autoGeneratedName.equals(instanceConfig)) {
                     return;
-                
+                }
+
                 try {
                     if (config != null) {
                         File configConfigDir = new File(env.getConfigDirPath(), config.getName());
@@ -918,8 +944,7 @@ public interface Server extends ConfigBeanProxy, PropertyBag, Named, SystemPrope
                     }
                 }
                 catch (TransactionFailure ex) {
-                	LogHelper.log(logger, Level.SEVERE, 
-                			ConfigApiLoggerInfo.deleteConfigFailed, ex, instanceConfig);
+                    LogHelper.log(logger, Level.SEVERE, formatMessage(deleteConfigFailed, instanceConfig), ex);
                     String msg = ex.getMessage() != null ? ex.getMessage()
                             : localStrings.getLocalString("deleteConfigFailed",
                             "Unable to remove config {0}", instanceConfig);
@@ -949,10 +974,11 @@ public interface Server extends ConfigBeanProxy, PropertyBag, Named, SystemPrope
                         }
                     }
                     catch (TransactionFailure ex) {
-                        LogHelper.log(logger, Level.SEVERE,ConfigApiLoggerInfo.deleteServerRefFailed, ex, instanceName, cluster.getName());
+                        String logMessage = formatMessage(deleteServerRefFailed, instanceName, clusterName);
+                        LogHelper.log(logger, Level.SEVERE, logMessage, ex);
                         String msg = ex.getMessage() != null ? ex.getMessage()
                                 : localStrings.getLocalString("deleteServerRefFailed",
-                                "Unable to remove server-ref {0} from cluster {1}", instanceName, cluster.getName());
+                                "Unable to remove server-ref {0} from cluster {1}", instanceName, clusterName);
                         report.setMessage(msg);
                         report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                         report.setFailureCause(ex);
