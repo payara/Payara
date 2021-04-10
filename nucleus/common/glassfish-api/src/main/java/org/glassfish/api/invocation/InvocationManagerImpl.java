@@ -239,6 +239,9 @@ public class InvocationManagerImpl implements InvocationManager {
     @Override
     @SuppressWarnings("unchecked")
     public <T extends ComponentInvocation> T getCurrentInvocation() {
+        if (isInvocationStackEmpty()) {
+            return null;
+        }
         return (T) framesByThread.get().peekLast();
     }
 

@@ -45,6 +45,7 @@ import com.hazelcast.nio.serialization.DataSerializable;
 import com.hazelcast.spi.tenantcontrol.DestroyEventContext;
 import com.hazelcast.spi.tenantcontrol.TenantControl;
 import com.hazelcast.spi.tenantcontrol.Tenantable;
+import static fish.payara.nucleus.hazelcast.PayaraHazelcastTenantFactory.blockingDisabled;
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -131,7 +132,7 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
 
     @Override
     public boolean isAvailable(Tenantable tenantable) {
-        if (contextInstance.isLoaded()) {
+        if (blockingDisabled || contextInstance.isLoaded()) {
             return true;
         }
         if (!tenantable.requiresTenantContext() || tenantNotRequired(tenantable)) {
