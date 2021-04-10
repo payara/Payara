@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -50,6 +50,8 @@ import fish.payara.nucleus.hazelcast.HazelcastCore;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.glassfish.internal.api.Globals;
+import org.glassfish.internal.api.JavaEEContextUtil;
+import org.glassfish.internal.api.JavaEEContextUtil.Context;
 
 /**
  * Base class for implementing Clustered Singleton Lookups
@@ -58,6 +60,7 @@ import org.glassfish.internal.api.Globals;
  */
 public abstract class ClusteredSingletonLookupImplBase implements ClusteredSingletonLookup {
     private final HazelcastCore hzCore = Globals.getDefaultHabitat().getService(HazelcastCore.class);
+    private final JavaEEContextUtil ctxUtil = Globals.getDefaultHabitat().getService(JavaEEContextUtil.class);
     private final String componentId;
     private final SingletonType singletonType;
     private final String keyPrefix;
@@ -94,7 +97,9 @@ public abstract class ClusteredSingletonLookupImplBase implements ClusteredSingl
 
     @Override
     public IMap<String, Object> getClusteredSingletonMap() {
-        return getHazelcastInstance().getMap(getMapKey());
+        try (Context ctx = ctxUtil.empty().pushContext()) {
+            return getHazelcastInstance().getMap(getMapKey());
+        }
     }
 
     @Override
