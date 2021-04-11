@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -155,6 +155,14 @@ public class MemberAddressPicker implements MemberAddressProvider {
         }
     }
 
+    static InetAddress findMyAddressOrLocalHost() {
+        InetAddress myAddress = findMyAddress();
+        if (myAddress == null) {
+            return tryLocalHostOrLoopback(0).getAddress();
+        }
+        return myAddress;
+    }
+
     private static InetSocketAddress ensureAddress(InetSocketAddress targetAddress, InetSocketAddress sourceAddress,
             LazyHolder<InetAddress> backupAddress, int port) {
         if (targetAddress == null) {
@@ -180,7 +188,7 @@ public class MemberAddressPicker implements MemberAddressProvider {
         }
     }
 
-    static InetAddress findMyAddress() {
+    private static InetAddress findMyAddress() {
         //add to list filtering out docker0
         HashSet<NetworkInterface> possibleInterfaces = new HashSet<>();
         try {
