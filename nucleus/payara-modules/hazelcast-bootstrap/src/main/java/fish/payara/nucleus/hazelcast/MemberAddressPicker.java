@@ -158,7 +158,7 @@ public class MemberAddressPicker implements MemberAddressProvider {
     static InetAddress findMyAddressOrLocalHost() {
         InetAddress myAddress = findMyAddress();
         if (myAddress == null) {
-            return tryLocalHostOrLoopback(0).getAddress();
+            return tryLocalHostOrLoopback(0, true).getAddress();
         }
         return myAddress;
     }
@@ -171,19 +171,21 @@ public class MemberAddressPicker implements MemberAddressProvider {
             } else if (backupAddress.get() != null) {
                 targetAddress = new InetSocketAddress(backupAddress.get(), port);
             } else {
-                targetAddress = tryLocalHostOrLoopback(port);
+                targetAddress = tryLocalHostOrLoopback(port, false);
             }
         }
         return targetAddress;
     }
 
-    private static InetSocketAddress tryLocalHostOrLoopback(int port) {
+    private static InetSocketAddress tryLocalHostOrLoopback(int port, boolean warn) {
         try {
             // ok do the easy thing
-            logger.log(Level.FINE, "Could not find an appropriate address, falling back to local host");
+            logger.log(warn ? Level.WARNING : Level.FINE,
+                    "Could not find an appropriate address, falling back to local host");
             return new InetSocketAddress(InetAddress.getLocalHost(), port);
         } catch (UnknownHostException ex) {
-            logger.log(Level.FINE, "Could not find local host, falling back to loop back address");
+            logger.log(warn ? Level.WARNING : Level.FINE,
+                    "Could not find local host, falling back to loop back address");
             return new InetSocketAddress(InetAddress.getLoopbackAddress(), port);
         }
     }
