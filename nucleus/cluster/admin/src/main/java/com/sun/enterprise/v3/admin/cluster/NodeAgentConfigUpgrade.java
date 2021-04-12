@@ -63,7 +63,7 @@ import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.jvnet.hk2.config.*;
 
 

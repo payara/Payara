@@ -44,7 +44,7 @@ package org.glassfish.cdi.transaction;
 import org.easymock.EasyMockSupport;
 import org.junit.Test;
 
-import javax.enterprise.inject.spi.*;
+import jakarta.enterprise.inject.spi.*;
 
 import static org.easymock.EasyMock.anyObject;
 import static org.easymock.EasyMock.expect;

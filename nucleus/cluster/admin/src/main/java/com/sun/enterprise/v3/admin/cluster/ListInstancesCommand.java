@@ -50,7 +50,7 @@ import static com.sun.enterprise.v3.admin.cluster.Constants.*;
 import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 import java.util.*;
 import java.util.logging.*;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.api.I18n;

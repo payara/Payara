@@ -41,8 +41,8 @@ package org.glassfish.admin.rest.logviewer;
 
 import java.util.LinkedList;
 import java.util.List;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
 
 /**
  * Stores the details of the each log object in a format which allows automatic

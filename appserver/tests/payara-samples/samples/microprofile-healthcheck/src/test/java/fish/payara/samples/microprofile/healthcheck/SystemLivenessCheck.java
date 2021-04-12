@@ -41,7 +41,7 @@ package fish.payara.samples.microprofile.healthcheck;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
-import javax.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.ApplicationScoped;
 import org.eclipse.microprofile.health.*;
 
 @Liveness

@@ -51,7 +51,7 @@ import org.glassfish.hk2.api.ServiceLocator;
 
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 /**
  * The help command will display the help text for all the commands and their

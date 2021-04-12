@@ -45,7 +45,7 @@ import com.sun.enterprise.connectors.authentication.RuntimeSecurityMap;
 import com.sun.enterprise.deployment.ResourcePrincipal;
 import org.glassfish.resourcebase.resources.api.PoolInfo;
 
-import javax.resource.spi.ManagedConnectionFactory;
+import jakarta.resource.spi.ManagedConnectionFactory;
 import javax.security.auth.Subject;
 
 

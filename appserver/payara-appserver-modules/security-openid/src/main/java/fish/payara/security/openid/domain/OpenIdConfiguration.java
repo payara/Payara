@@ -41,7 +41,7 @@ package fish.payara.security.openid.domain;
 
 import java.util.Arrays;
 import java.util.Map;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * OpenId Connect client configuration

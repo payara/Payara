@@ -53,10 +53,10 @@ import com.sun.enterprise.resource.listener.PoolLifeCycle;
 import org.glassfish.resourcebase.resources.api.PoolInfo;
 import org.jvnet.hk2.annotations.Contract;
 
-import javax.resource.ResourceException;
-import javax.resource.spi.ManagedConnection;
-import javax.resource.spi.RetryableUnavailableException;
-import javax.transaction.Transaction;
+import jakarta.resource.ResourceException;
+import jakarta.resource.spi.ManagedConnection;
+import jakarta.resource.spi.RetryableUnavailableException;
+import jakarta.transaction.Transaction;
 import java.util.Hashtable;
 
 /**
@@ -75,8 +75,8 @@ public interface PoolManager extends TransactedPoolManager {
     static public final int KERBV5 = 1;
 
     // Credential Interest levels
-    static public final String PASSWORD_CREDENTIAL = "javax.resource.spi.security.PasswordCredential";
-    static public final String GENERIC_CREDENTIAL = "javax.resource.spi.security.GenericCredential";
+    static public final String PASSWORD_CREDENTIAL = "jakarta.resource.spi.security.PasswordCredential";
+    static public final String GENERIC_CREDENTIAL = "jakarta.resource.spi.security.GenericCredential";
 
     /**
      * Flush Connection pool by reinitializing the connections 

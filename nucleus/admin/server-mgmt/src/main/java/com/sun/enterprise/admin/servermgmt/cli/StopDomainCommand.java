@@ -51,7 +51,7 @@ import java.io.File;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.hk2.api.PerLookup;

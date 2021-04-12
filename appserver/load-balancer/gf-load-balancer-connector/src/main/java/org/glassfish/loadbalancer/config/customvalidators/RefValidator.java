@@ -45,9 +45,9 @@ import org.glassfish.loadbalancer.config.LbConfig;
 import com.sun.enterprise.config.serverbeans.ServerRef;
 import java.util.List;
 
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
-import javax.validation.Payload;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
+import jakarta.validation.Payload;
 
 /**
  * A simple constraint that validates lb-config children.

@@ -58,9 +58,9 @@ import com.sun.enterprise.deployment.EjbDescriptor;
 
 import com.sun.enterprise.util.Utility;
 
-import javax.ejb.NoSuchObjectLocalException;
-import javax.ejb.TransactionRolledbackLocalException;
-import javax.ejb.TransactionRequiredLocalException;
+import jakarta.ejb.NoSuchObjectLocalException;
+import jakarta.ejb.TransactionRolledbackLocalException;
+import jakarta.ejb.TransactionRequiredLocalException;
 
 import org.omg.PortableServer.POA;
 import org.omg.PortableServer.Servant;
@@ -79,12 +79,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.inject.Provider;
+import jakarta.inject.Provider;
 import javax.rmi.CORBA.Tie;
 
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.ServiceLocator;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.omg.CORBA.CompletionStatus;
 import org.omg.CORBA.INVALID_TRANSACTION;
 import org.omg.CORBA.LocalObject;
@@ -343,24 +343,24 @@ public final class POAProtocolMgr extends org.omg.CORBA.LocalObject
             mappedException = new OBJECT_NOT_EXIST(MAPEXCEPTION_CODE,
                 CompletionStatus.COMPLETED_MAYBE);
         } else if ( exception instanceof java.rmi.AccessException
-            || exception instanceof javax.ejb.AccessLocalException )
+            || exception instanceof jakarta.ejb.AccessLocalException )
         {
             mappedException = new NO_PERMISSION(MAPEXCEPTION_CODE,
                 CompletionStatus.COMPLETED_MAYBE);
         } else if ( exception instanceof java.rmi.MarshalException ) {
             mappedException = new MARSHAL(MAPEXCEPTION_CODE,
                 CompletionStatus.COMPLETED_MAYBE);
-        } else if ( exception instanceof javax.transaction.TransactionRolledbackException
+        } else if ( exception instanceof jakarta.transaction.TransactionRolledbackException
             || exception instanceof TransactionRolledbackLocalException )
         {
             mappedException = new TRANSACTION_ROLLEDBACK(MAPEXCEPTION_CODE,
                 CompletionStatus.COMPLETED_MAYBE);
-        } else if ( exception instanceof javax.transaction.TransactionRequiredException
+        } else if ( exception instanceof jakarta.transaction.TransactionRequiredException
             || exception instanceof TransactionRequiredLocalException )
         {
             mappedException = new TRANSACTION_REQUIRED(MAPEXCEPTION_CODE,
                 CompletionStatus.COMPLETED_MAYBE);
-        } else if ( exception instanceof javax.transaction.InvalidTransactionException ) {
+        } else if ( exception instanceof jakarta.transaction.InvalidTransactionException ) {
             mappedException = new INVALID_TRANSACTION(MAPEXCEPTION_CODE,
                 CompletionStatus.COMPLETED_MAYBE);
         } else {

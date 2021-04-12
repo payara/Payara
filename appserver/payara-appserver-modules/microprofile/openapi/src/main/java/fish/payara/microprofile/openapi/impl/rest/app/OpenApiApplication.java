@@ -45,8 +45,8 @@ import fish.payara.microprofile.openapi.impl.rest.app.provider.QueryFormatFilter
 import fish.payara.microprofile.openapi.impl.rest.app.provider.writer.JsonWriter;
 import fish.payara.microprofile.openapi.impl.rest.app.provider.writer.YamlWriter;
 import fish.payara.microprofile.openapi.impl.rest.app.service.OpenApiResource;
-import javax.ws.rs.ApplicationPath;
-import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
+import jakarta.ws.rs.ApplicationPath;
+import static jakarta.ws.rs.core.MediaType.TEXT_PLAIN;
 import org.glassfish.jersey.server.ResourceConfig;
 
 @ApplicationPath(OPEN_API_APPLICATION_PATH)

@@ -42,7 +42,7 @@
  * OAuth Security Mechanism
  * <p>
  * This module is for integrating the Jakarta EE 8 security system with OAuth2 and
- * provides a {@link javax.security.enterprise.authentication.mechanism.http.HttpAuthenticationMechanism}
+ * provides a {@link jakarta.security.enterprise.authentication.mechanism.http.HttpAuthenticationMechanism}
  * to be used when a {@link fish.payara.security.oauth2.annotation.OAuth2AuthenticationDefinition} is
  * included in a project.
  * 

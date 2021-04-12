@@ -41,8 +41,8 @@ package fish.payara.nucleus.microprofile.config.admin;
 
 import java.util.logging.Logger;
 
-import javax.inject.Inject;
-import javax.validation.constraints.Min;
+import jakarta.inject.Inject;
+import jakarta.validation.constraints.Min;
 
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;

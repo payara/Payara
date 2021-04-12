@@ -52,7 +52,7 @@ import com.sun.enterprise.admin.cli.*;
 import com.sun.enterprise.util.ObjectAnalyzer;
 import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
 import com.sun.enterprise.util.HostAndPort;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.glassfish.hk2.api.ServiceLocator;
 
 /**

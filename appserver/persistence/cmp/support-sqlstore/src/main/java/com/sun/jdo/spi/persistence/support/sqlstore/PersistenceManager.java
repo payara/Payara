@@ -116,7 +116,7 @@ public interface PersistenceManager
         /**
          * Called by Transaction commit() or rollback()
          * cleans up transactional cache
-         * @param		status		javax.transaction.Status
+         * @param		status		jakarta.transaction.Status
          */
         public void afterCompletion(int status);
 

@@ -61,7 +61,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 /**
  * This class is responsible for handling J2EE Connector archive files.

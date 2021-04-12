@@ -40,8 +40,8 @@
 
 package fish.payara.samples.ejbhttp.api;
 
-import javax.json.bind.annotation.JsonbTypeDeserializer;
-import javax.json.bind.annotation.JsonbTypeSerializer;
+import jakarta.json.bind.annotation.JsonbTypeDeserializer;
+import jakarta.json.bind.annotation.JsonbTypeSerializer;
 
 import java.io.Serializable;
 import java.util.function.Supplier;

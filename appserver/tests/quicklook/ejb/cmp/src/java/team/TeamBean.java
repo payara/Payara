@@ -42,7 +42,7 @@
 package team;
 
 import java.util.*;
-import javax.ejb.*;
+import jakarta.ejb.*;
 import javax.naming.*;
 import util.Debug;
 import util.PlayerDetails;

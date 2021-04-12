@@ -40,7 +40,7 @@
 
 package fish.payara.samples.rolesallowed.unprotected.methods;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 @Local
 public interface HelloServiceLocal {

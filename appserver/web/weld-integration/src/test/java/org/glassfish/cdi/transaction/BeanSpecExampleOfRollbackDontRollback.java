@@ -40,7 +40,7 @@
 
 package org.glassfish.cdi.transaction;
 
-import javax.transaction.Transactional;
+import jakarta.transaction.Transactional;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
 

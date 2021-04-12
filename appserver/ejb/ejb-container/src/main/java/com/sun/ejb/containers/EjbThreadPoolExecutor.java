@@ -42,7 +42,7 @@ package com.sun.ejb.containers;
 
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
-import javax.transaction.Status;
+import jakarta.transaction.Status;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;

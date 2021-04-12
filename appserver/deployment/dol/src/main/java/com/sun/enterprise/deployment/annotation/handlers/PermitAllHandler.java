@@ -46,14 +46,14 @@ import com.sun.enterprise.deployment.MethodPermission;
 import org.glassfish.apf.AnnotationHandlerFor;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.annotation.security.DenyAll;
-import javax.annotation.security.PermitAll;
-import javax.annotation.security.RolesAllowed;
+import jakarta.annotation.security.DenyAll;
+import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
 import java.lang.annotation.Annotation;
 
 /**
  * This handler is responsible for handling the
- * javax.annotation.security.PermitAll.
+ * jakarta.annotation.security.PermitAll.
  *
  * @author Shing Wai Chan
  */

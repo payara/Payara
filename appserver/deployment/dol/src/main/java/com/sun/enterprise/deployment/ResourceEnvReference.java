@@ -54,7 +54,7 @@ public interface ResourceEnvReference extends ContextParameter {
     public String getName();
     public void setName(String refName);
 
-    /* Gets the type(javax.jms.Queue, javax.jms.Topic) of the destination */
+    /* Gets the type(jakarta.jms.Queue, jakarta.jms.Topic) of the destination */
     public String getType();
     public void setType(String refType);
 

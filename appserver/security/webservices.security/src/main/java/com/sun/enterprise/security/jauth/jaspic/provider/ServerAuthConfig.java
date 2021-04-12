@@ -47,15 +47,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.security.auth.callback.CallbackHandler;
-import javax.xml.soap.SOAPMessage;
-
 import com.sun.enterprise.deployment.runtime.common.MessageSecurityBindingDescriptor;
 import com.sun.enterprise.deployment.runtime.common.MessageSecurityDescriptor;
 import com.sun.enterprise.security.jauth.AuthConfig;
 import com.sun.enterprise.security.jauth.AuthException;
 import com.sun.enterprise.security.jauth.AuthPolicy;
 import com.sun.enterprise.security.jauth.ServerAuthContext;
-import com.sun.xml.rpc.spi.runtime.StreamingHandler;
 
 /**
  * This class is the client container's interface to the AuthConfig subsystem to get AuthContext objects on which to
@@ -118,16 +115,8 @@ public class ServerAuthConfig extends BaseAuthConfig {
         return authConfig.getServerAuthContext(layer, provider, requestPolicy, responsePolicy, cbh);
     }
 
-    public ServerAuthContext getAuthContext(StreamingHandler handler, SOAPMessage message) {
-        return (ServerAuthContext) getContext(handler, message);
-    }
-
-    public ServerAuthContext getAuthContext(javax.xml.ws.handler.soap.SOAPMessageContext context) {
+    public ServerAuthContext getAuthContext(jakarta.xml.ws.handler.soap.SOAPMessageContext context) {
         return (ServerAuthContext) getContext(context);
-    }
-
-    public ServerAuthContext getAuthContextForOpCode(StreamingHandler handler, int opcode) throws ClassNotFoundException, NoSuchMethodException {
-        return (ServerAuthContext) getContextForOpCode(handler, opcode);
     }
 
 }

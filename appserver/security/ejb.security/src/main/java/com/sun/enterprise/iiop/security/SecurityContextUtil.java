@@ -57,8 +57,8 @@ import java.security.cert.Certificate;
 import java.util.Set;
 import java.util.logging.Level;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import javax.security.auth.Subject;
 
 import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;

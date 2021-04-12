@@ -51,7 +51,7 @@ import org.glassfish.api.Param;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.deployment.common.DeploymentProperties;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 

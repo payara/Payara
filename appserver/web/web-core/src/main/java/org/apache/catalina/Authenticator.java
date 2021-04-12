@@ -58,7 +58,7 @@
 // Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package org.apache.catalina;
 
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletException;
 
 /**
  * An <b>Authenticator</b> is a component (usually a Valve or Container) that provides some sort of authentication

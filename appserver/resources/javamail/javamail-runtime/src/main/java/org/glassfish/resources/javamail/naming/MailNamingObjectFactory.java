@@ -73,10 +73,10 @@ public class MailNamingObjectFactory implements ObjectFactory {
         }
         MailConfiguration config = (MailConfiguration) ref.get(0).getContent();
 
-        // Note: javax.mail.Session is not serializable,
+        // Note: jakarta.mail.Session is not serializable,
         // but we need to get a new instance on every lookup.
         Properties props = config.getMailProperties();
-        javax.mail.Session s = javax.mail.Session.getInstance(props, new MailSessionAuthenticator(props));
+        jakarta.mail.Session s = jakarta.mail.Session.getInstance(props, new MailSessionAuthenticator(props));
         if("smtps".equals(props.getProperty("mail.transport.protocol"))) {
             s.setProtocolForAddress("rfc822", "smtps");
         }

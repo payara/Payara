@@ -46,7 +46,7 @@ import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import javax.xml.ws.Service;
 
 import org.jboss.arquillian.test.api.ArquillianResource;

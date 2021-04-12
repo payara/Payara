@@ -41,7 +41,7 @@
 package team;
 
 import java.util.*;
-import javax.ejb.*;
+import jakarta.ejb.*;
 
 public interface LocalPlayer extends EJBLocalObject {
 

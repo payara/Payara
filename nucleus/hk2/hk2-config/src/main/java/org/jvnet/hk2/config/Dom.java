@@ -52,8 +52,8 @@ import org.glassfish.hk2.utilities.cache.WeakCARCache;
 import org.jvnet.hk2.config.provider.internal.Creator;
 import org.jvnet.hk2.config.provider.internal.CreatorImpl;
 
-import javax.inject.Singleton;
-import javax.validation.constraints.NotNull;
+import jakarta.inject.Singleton;
+import jakarta.validation.constraints.NotNull;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;

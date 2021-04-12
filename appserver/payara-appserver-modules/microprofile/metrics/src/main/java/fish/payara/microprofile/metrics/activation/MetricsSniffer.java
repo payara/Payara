@@ -45,7 +45,7 @@ import java.lang.annotation.Annotation;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.eclipse.microprofile.metrics.Metric;
 import org.eclipse.microprofile.metrics.MetricRegistry;
@@ -81,7 +81,7 @@ public class MetricsSniffer extends MicroProfileSniffer {
             org.eclipse.microprofile.metrics.annotation.RegistryType.class,
 
             // All JAX-RS applications are valid applications for Metrics
-            javax.ws.rs.Path.class
+            jakarta.ws.rs.Path.class
         };
     }
 

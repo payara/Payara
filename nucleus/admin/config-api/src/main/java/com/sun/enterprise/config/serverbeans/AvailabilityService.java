@@ -55,8 +55,8 @@ import org.glassfish.api.admin.config.PropertiesDesc;
 
 import org.glassfish.quality.ToDo;
 
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import org.jvnet.hk2.config.DuckTyped;
 
 @Configured

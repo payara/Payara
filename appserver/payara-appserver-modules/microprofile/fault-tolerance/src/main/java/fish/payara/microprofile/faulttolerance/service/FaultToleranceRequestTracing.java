@@ -39,7 +39,7 @@
  */
 package fish.payara.microprofile.faulttolerance.service;
 
-import javax.interceptor.InvocationContext;
+import jakarta.interceptor.InvocationContext;
 
 import fish.payara.notification.requesttracing.RequestTraceSpan;
 

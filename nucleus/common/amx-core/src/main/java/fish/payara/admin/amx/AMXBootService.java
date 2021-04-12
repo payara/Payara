@@ -45,8 +45,8 @@ package fish.payara.admin.amx;
 
 import fish.payara.admin.amx.config.AMXConfiguration;
 import java.beans.PropertyChangeEvent;
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
+import jakarta.annotation.PostConstruct;
+import jakarta.inject.Inject;
 import org.glassfish.admin.mbeanserver.BootAMX;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.hk2.api.ServiceLocator;

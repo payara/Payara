@@ -41,7 +41,7 @@ package fish.payara.admin.cluster;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.util.StringUtils;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;

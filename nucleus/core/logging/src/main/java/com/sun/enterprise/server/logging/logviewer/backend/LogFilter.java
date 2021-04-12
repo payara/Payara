@@ -56,7 +56,7 @@ import org.glassfish.config.support.TranslatedConfigView;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import javax.management.Attribute;
 import javax.management.AttributeList;
 import java.io.File;

@@ -41,9 +41,8 @@ package fish.payara.ha.hazelcast.store;
 
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 import java.io.Serializable;
-import javax.inject.Inject;
-
 import fish.payara.nucleus.store.ClusteredStore;
+import jakarta.inject.Inject;
 import org.glassfish.ha.store.api.BackingStore;
 import org.glassfish.ha.store.api.BackingStoreConfiguration;
 import org.glassfish.ha.store.api.BackingStoreException;

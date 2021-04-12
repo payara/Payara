@@ -48,8 +48,8 @@ import org.glassfish.apf.*;
 import org.glassfish.apf.impl.AnnotationUtils;
 import org.glassfish.apf.impl.HandlerProcessingResultImpl;
 import org.jvnet.hk2.annotations.Optional;
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -258,7 +258,7 @@ public abstract class AbstractHandler implements AnnotationHandler {
      * @return an array of all web types annotation
      */
     protected Class<? extends Annotation>[] getWebAnnotationTypes() {
-        return new Class[]{javax.servlet.annotation.WebServlet.class};
+        return new Class[]{jakarta.servlet.annotation.WebServlet.class};
     }
 
     /**
@@ -266,6 +266,6 @@ public abstract class AbstractHandler implements AnnotationHandler {
      * @return an array of all connector type annotations
      */
     protected Class<? extends Annotation>[] getConnectorAnnotationTypes() {
-        return new Class[]{javax.resource.spi.Connector.class};
+        return new Class[]{jakarta.resource.spi.Connector.class};
     }
 }

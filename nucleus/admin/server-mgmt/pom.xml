@@ -79,50 +79,59 @@
             </resource>
         </resources>
         <plugins>
+            <!-- XXX: no maven plugin for jakarta xml binding impl exists, so we have to stick with Ant and attach source 
+                root to the build ourselves... -->
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>jaxb2-maven-plugin</artifactId>
-                <version>1.5</version>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.0.0</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>com.sun.xml.bind</groupId>
+                        <artifactId>jaxb-xjc</artifactId>
+                        <version>${jaxb-impl.version}</version>
+                    </dependency>
+                </dependencies>
                 <executions>
                     <execution>
-                        <id>templateinfo</id>
+                        <id>xjc</id>
+                        <phase>generate-sources</phase>
                         <goals>
-                            <goal>xjc</goal>
+                            <goal>run</goal>
                         </goals>
                         <configuration>
-                            <schemaDirectory>src/main/resources/xsd/schema</schemaDirectory>
-                            <schemaFiles>template-info.xsd</schemaFiles>
-                            <packageName>com.sun.enterprise.admin.servermgmt.xml.templateinfo</packageName>
-                            <clearOutputDir>false</clearOutputDir>
-                            <staleFile>${project.build.directory}/generated-sources/.jaxb-staleFlag-config</staleFile>
+                            <target>
+                                <taskdef name="xjc" classname="com.sun.tools.xjc.XJCTask" />
+                                <property name="dest"
+                                    location="${project.build.directory}/generated-sources/xjc" />
+                                <mkdir dir="${dest}" />
+                                <xjc destdir="${dest}"
+                                    schema="${project.basedir}/src/main/resources/xsd/schema/template-info.xsd"
+                                    package="com.sun.enterprise.admin.servermgmt.xml.templateinfo" />
+                                <xjc destdir="${dest}"
+                                    schema="${project.basedir}/src/main/resources/xsd/schema/domain-info.xsd"
+                                    package="com.sun.enterprise.admin.servermgmt.xml.domaininfo" />
+                                <xjc destdir="${dest}"
+                                    schema="${project.basedir}/src/main/resources/xsd/schema/stringsubs.xsd"
+                                    package="com.sun.enterprise.admin.servermgmt.xml.stringsubs" />
+                            </target>
                         </configuration>
                     </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <executions>
                     <execution>
-                        <id>domaininfo</id>
+                        <id>add-sources</id>
+                        <phase>generate-sources</phase>
                         <goals>
-                            <goal>xjc</goal>
+                            <goal>add-source</goal>
                         </goals>
                         <configuration>
-                            <schemaDirectory>src/main/resources/xsd/schema</schemaDirectory>
-                            <schemaFiles>domain-info.xsd</schemaFiles>
-                            <extension>true</extension>
-                            <packageName>com.sun.enterprise.admin.servermgmt.xml.domaininfo</packageName>
-                            <clearOutputDir>false</clearOutputDir>
-                            <staleFile>${project.build.directory}/generated-sources/.jaxb-staleFlag-app</staleFile>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>stringsubs</id>
-                        <goals>
-                            <goal>xjc</goal>
-                        </goals>
-                        <configuration>
-                            <extension>true</extension>
-                            <schemaDirectory>src/main/resources/xsd/schema</schemaDirectory>
-                            <schemaFiles>stringsubs.xsd</schemaFiles>
-                            <extension>true</extension>
-                            <packageName>com.sun.enterprise.admin.servermgmt.xml.stringsubs</packageName>
-                            <clearOutputDir>false</clearOutputDir>
+                            <sources>
+                                <source>${project.build.directory}/generated-sources/xjc</source>
+                            </sources>
                         </configuration>
                     </execution>
                 </executions>

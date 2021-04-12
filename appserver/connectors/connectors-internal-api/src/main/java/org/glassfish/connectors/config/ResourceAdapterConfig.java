@@ -57,7 +57,7 @@ import static org.glassfish.config.support.Constants.NAME_REGEX;
 
 import org.glassfish.quality.ToDo;
 
-import javax.validation.constraints.Pattern;
+import jakarta.validation.constraints.Pattern;
 /**
  *
  */

@@ -155,10 +155,8 @@
 
     <properties>
         <commons-fileupload.version>1.3.3</commons-fileupload.version>
-        <woodstock-dojo-ajax-nodemo.version>0.4.4</woodstock-dojo-ajax-nodemo.version>
-        <woodstock-jsf.version>4.0.2.10.payara-p17</woodstock-jsf.version>
-        <woodstock-jsf-suntheme.version>4.0.2.10.payara-p21</woodstock-jsf-suntheme.version>
-        <woodstock-json.version>1.0</woodstock-json.version>
+        <woodstock-dojo-ajax-nodemo.version>1.12.4</woodstock-dojo-ajax-nodemo.version>
+        <woodstock-json.version>2.0</woodstock-json.version>
         <woodstock-prototype.version>1.7.3</woodstock-prototype.version>
     </properties>
 
@@ -205,15 +203,15 @@
                 <scope>provided</scope>
             </dependency>
             <dependency>
-                <groupId>com.sun.woodstock</groupId>
-                <artifactId>webui-jsf</artifactId>
+                <groupId>org.glassfish.woodstock</groupId>
+                <artifactId>woodstock-webui-jsf</artifactId>
                 <version>${woodstock-jsf.version}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
-                <groupId>com.sun.woodstock</groupId>
-                <artifactId>webui-jsf-suntheme</artifactId>
-                <version>${woodstock-jsf-suntheme.version}</version>
+                <groupId>org.glassfish.woodstock</groupId>
+                <artifactId>woodstock-webui-jsf-suntheme</artifactId>
+                <version>${woodstock-jsf.version}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>

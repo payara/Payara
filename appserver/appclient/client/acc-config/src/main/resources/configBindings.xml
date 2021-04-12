@@ -65,8 +65,8 @@
         print="java.lang.Boolean.toString"/>
 
     <conversion name="int" type="int"
-        parse="javax.xml.bind.DatatypeConverter.parseInt"
-        print="javax.xml.bind.DatatypeConverter.printInt"/>
+        parse="jakarta.xml.bind.DatatypeConverter.parseInt"
+        print="jakarta.xml.bind.DatatypeConverter.printInt"/>
 
     <conversion name="providerType" type="java.lang.String"
         parse="org.glassfish.appclient.client.acc.config.util.XML.parseProviderType" />
@@ -151,7 +151,7 @@
             xmlType="BOOLEAN"
             javaType="boolean"
             parseMethod="org.glassfish.appclient.client.acc.XML.parseBoolean"
-            printMethod="javax.xml.bind.DatatypeConverter.printBoolean"
+            printMethod="jakarta.xml.bind.DatatypeConverter.printBoolean"
             />
 
   </bindings>

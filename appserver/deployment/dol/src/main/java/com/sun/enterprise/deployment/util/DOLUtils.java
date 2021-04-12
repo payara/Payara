@@ -130,7 +130,7 @@ public class DOLUtils {
     // Reserve this range [AS-DEPLOYMENT-00001, AS-DEPLOYMENT-02000]
     // for message ids used in this deployment dol module
     @LoggerInfo(subsystem = "DEPLOYMENT", description="Deployment logger for dol module", publish=true)
-    private static final String DEPLOYMENT_LOGGER = "javax.enterprise.system.tools.deployment.dol";
+    private static final String DEPLOYMENT_LOGGER = "jakarta.enterprise.system.tools.deployment.dol";
 
     public static final Logger deplLogger =
         Logger.getLogger(DEPLOYMENT_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
@@ -161,8 +161,8 @@ public class DOLUtils {
 
     private static final String ID_SEPARATOR = "_";
     private static final String[] SYSTEM_PACKAGES = {"com.sun.", "org.glassfish.", "org.apache.jasper.", "fish.payara.", "com.ibm.jbatch.",
-                            "org.hibernate.validator.", "org.jboss.weld.", "com.ctc.wstx.", "java.", "javax."};
-    private static final String[] SYSTEM_RESOURCES = {"META-INF/services/javax.", "META-INF/services/org.glassfish.", "META-INF/services/java."};
+                            "org.hibernate.validator.", "org.jboss.weld.", "com.ctc.wstx.", "java.", "javax.", "jakarta."};
+    private static final String[] SYSTEM_RESOURCES = {"META-INF/services/javax.", "META-INF/services/jakarta.", "META-INF/services/org.glassfish.", "META-INF/services/java."};
     
     /** no need to creates new DOLUtils */
     private DOLUtils() {

@@ -44,11 +44,11 @@ import org.glassfish.api.naming.NamespacePrefixes;
 import org.glassfish.api.naming.NamedNamingObjectProxy;
 
 import org.jvnet.hk2.annotations.Service;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
-import javax.ejb.spi.HandleDelegate;
+import jakarta.ejb.spi.HandleDelegate;
 
-import javax.inject.Provider;
+import jakarta.inject.Provider;
 import javax.naming.NamingException;
 
 /**

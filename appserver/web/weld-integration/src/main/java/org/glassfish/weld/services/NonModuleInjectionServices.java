@@ -51,7 +51,7 @@ import org.glassfish.internal.api.Globals;
 import org.jboss.weld.injection.spi.InjectionContext;
 import org.jboss.weld.injection.spi.InjectionServices;
 
-import javax.enterprise.inject.spi.*;
+import jakarta.enterprise.inject.spi.*;
 
 /**
  * The InjectionServices for a non-module bda (library or rar).  A non-module bda has no associated bundle so we
@@ -95,7 +95,7 @@ public class NonModuleInjectionServices implements InjectionServices {
     }
 
     @Override
-    public <T> void registerInjectionTarget(javax.enterprise.inject.spi.InjectionTarget<T> injectionTarget, AnnotatedType<T> annotatedType) {
+    public <T> void registerInjectionTarget(jakarta.enterprise.inject.spi.InjectionTarget<T> injectionTarget, AnnotatedType<T> annotatedType) {
     }
 
     @Override

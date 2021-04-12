@@ -75,7 +75,7 @@ public class LogFacade {
              "org.apache.catalina.core.LogMessages";
 
     @LoggerInfo(subsystem = "WEB", description = "WEB Core Logger", publish = true)
-    private static final String WEB_CORE_LOGGER = "javax.enterprise.web.core";
+    private static final String WEB_CORE_LOGGER = "jakarta.enterprise.web.core";
 
     private static final Logger LOGGER =
              Logger.getLogger(WEB_CORE_LOGGER, SHARED_LOG_MESSAGE_RESOURCE);
@@ -599,7 +599,7 @@ public class LogFacade {
     public static final String NULL_RESPONSE_OBJECT = prefix + "00082";
 
     @LogMessageInfo(
-        message = "Not allowed to call this javax.servlet.ServletContext method from a ServletContextListener that was neither declared in the application's deployment descriptor nor annotated with WebListener",
+        message = "Not allowed to call this jakarta.servlet.ServletContext method from a ServletContextListener that was neither declared in the application's deployment descriptor nor annotated with WebListener",
         level = "INFO"
     )
     public static final String UNSUPPORTED_OPERATION_EXCEPTION = prefix + "00083";

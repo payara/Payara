@@ -488,7 +488,7 @@ public class EjbSessionDescriptor extends EjbDescriptor
 
                 AnnotationTypesProvider provider = Globals.getDefaultHabitat().getService(AnnotationTypesProvider.class, "EJB");
                 if (provider!=null) {
-                    Class sessionSynchClass = provider.getType("javax.ejb.SessionSynchronization");
+                    Class sessionSynchClass = provider.getType("jakarta.ejb.SessionSynchronization");
                     if( sessionSynchClass.isAssignableFrom(ejbClass) ) {
                         txAttributes = new Vector();
                         txAttributes.add(new ContainerTransaction

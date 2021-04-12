@@ -71,7 +71,7 @@ import org.glassfish.external.amx.MBeanListener;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import javax.management.*;
 import javax.management.remote.JMXServiceURL;
 import java.util.Collection;

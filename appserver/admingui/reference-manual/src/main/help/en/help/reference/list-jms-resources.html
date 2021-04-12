@@ -118,9 +118,9 @@ options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> 
 </dd>
 <dt class="hdlist1"><code>--restype</code></dt>
 <dd>
-<p>The JMS resource type can be <code>javax.jms.Topic</code>, <code>javax.jms.Queue</code>,
-<code>javax.jms.ConnectionFactory</code>, <code>javax.jms.TopicConnectionFactory</code>, or
-<code>javax.jms.QueueConnectionFactory</code>.</p>
+<p>The JMS resource type can be <code>jakarta.jms.Topic</code>, <code>jakarta.jms.Queue</code>,
+<code>jakarta.jms.ConnectionFactory</code>, <code>jakarta.jms.TopicConnectionFactory</code>, or
+<code>jakarta.jms.QueueConnectionFactory</code>.</p>
 </dd>
 </dl>
 </div>
@@ -187,12 +187,12 @@ Command list-jms-resources executed successfully.</code></pre>
 <p>Example 2   Listing JMS resources of a specified type</p>
 </div>
 <div class="paragraph">
-<p>The following subcommand lists all <code>javax.jms.ConnectionFactory</code>
+<p>The following subcommand lists all <code>jakarta.jms.ConnectionFactory</code>
 resources.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; list-jms-resources --restype javax.jms.ConnectionFactory
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; list-jms-resources --restype jakarta.jms.ConnectionFactory
 jms/ConnectionFactory
 jms/DurableConnectionFactory
 Command list-jms-resources executed successfully.</code></pre>

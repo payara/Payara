@@ -59,7 +59,7 @@ import java.util.concurrent.Executor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.resource.ResourceException;
+import jakarta.resource.ResourceException;
 
 
 /**
@@ -93,7 +93,7 @@ public class ConnectionHolder40 extends ConnectionHolder {
      * @param jdbc30Connection If the connection is a JDBC version 3.0 connection
      */
     public ConnectionHolder40(Connection con, ManagedConnectionImpl mc,
-                              javax.resource.spi.ConnectionRequestInfo cxRequestInfo,
+                              jakarta.resource.spi.ConnectionRequestInfo cxRequestInfo,
                               boolean jdbc30Connection) {
         super(con, mc, cxRequestInfo);
         this.jdbc30Connection = jdbc30Connection;

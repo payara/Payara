@@ -54,8 +54,8 @@ import java.util.Iterator;
 
 import java.rmi.RemoteException;
 import javax.rmi.CORBA.Tie;
-import javax.ejb.EJBException;
-import javax.ejb.EJBHome;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.EJBHome;
 
 import com.sun.ejb.EjbInvocation;
 import com.sun.ejb.InvocationInfo;
@@ -177,7 +177,7 @@ public class EJBHomeInvocationHandler
                 throw new RemoteException("Unknown Home interface method :" 
                                           + method);
 
-            } else if( (methodClass == javax.ejb.EJBHome.class) ||
+            } else if( (methodClass == jakarta.ejb.EJBHome.class) ||
                        invInfo.ejbIntfOverride ) {
                 
                 return invokeEJBHomeMethod(method.getName(), args);
@@ -379,10 +379,10 @@ public class EJBHomeInvocationHandler
     
             } else if( methodName.equals("remove") ) {
     
-                if( args[0] instanceof javax.ejb.Handle ) {
+                if( args[0] instanceof jakarta.ejb.Handle ) {
                     methodIndex = container.EJBHome_remove_Handle;
                     container.onEjbMethodStart(methodIndex);
-                    super.remove((javax.ejb.Handle)args[0]);
+                    super.remove((jakarta.ejb.Handle)args[0]);
                 } else {
                     methodIndex = container.EJBHome_remove_Pkey;
                     container.onEjbMethodStart(methodIndex);

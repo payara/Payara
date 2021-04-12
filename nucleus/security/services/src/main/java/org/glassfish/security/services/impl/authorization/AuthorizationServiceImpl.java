@@ -67,8 +67,8 @@ import org.glassfish.security.services.config.SecurityConfiguration;
 import org.glassfish.security.services.impl.ServiceFactory;
 import org.glassfish.security.services.impl.ServiceLogging;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.ServiceLocator;

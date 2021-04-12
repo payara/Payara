@@ -41,12 +41,12 @@ package org.glassfish.admin.rest.resources;
 
 import java.util.List;
 import java.util.logging.Logger;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import javax.security.auth.Subject;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.SecurityContext;
-import javax.ws.rs.core.UriInfo;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.SecurityContext;
+import jakarta.ws.rs.core.UriInfo;
 import org.glassfish.admin.rest.RestLogging;
 import org.glassfish.admin.rest.adapter.LocatorBridge;
 import org.glassfish.hk2.api.ServiceLocator;

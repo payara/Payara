@@ -42,7 +42,7 @@ package com.sun.appserv;
 
 import java.security.cert.X509Certificate;
 import java.security.cert.CertificateException;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * Abstract class allowing a backend appserver instance to retrieve information

@@ -48,7 +48,7 @@ import fish.payara.security.oidc.server.ApplicationConfig;
 import fish.payara.security.oidc.server.OidcProvider;
 import java.io.IOException;
 import java.net.URL;
-import javax.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.Response.Status;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;

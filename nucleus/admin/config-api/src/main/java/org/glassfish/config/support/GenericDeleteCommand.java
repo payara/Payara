@@ -53,7 +53,7 @@ import org.glassfish.common.util.admin.GenericCommandModel;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.*;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import java.beans.PropertyVetoException;
 import java.lang.reflect.Proxy;

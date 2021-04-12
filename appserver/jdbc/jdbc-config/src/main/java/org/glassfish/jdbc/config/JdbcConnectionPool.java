@@ -47,8 +47,8 @@ import com.sun.enterprise.config.serverbeans.ResourcePool;
 import java.beans.PropertyVetoException;
 import java.util.List;
 
-import javax.validation.constraints.Min;
-import javax.validation.constraints.Pattern;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Pattern;
 
 import org.glassfish.admin.cli.resources.UniqueResourceNameConstraint;
 import org.glassfish.api.admin.RestRedirect;

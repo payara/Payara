@@ -53,8 +53,8 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import javax.inject.Inject;
-import javax.ws.rs.HttpMethod;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.HttpMethod;
 
 import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.web.WebApplication;

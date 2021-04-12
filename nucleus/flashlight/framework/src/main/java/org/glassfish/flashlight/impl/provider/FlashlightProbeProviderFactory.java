@@ -69,7 +69,7 @@ import java.util.logging.Logger;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.ServiceLocator;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 /**
  * @author Mahesh Kannan

@@ -71,7 +71,7 @@ import org.apache.catalina.core.StandardHost;
 import org.apache.catalina.util.LifecycleSupport;
 
 import javax.management.ObjectName;
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletException;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.CharArrayWriter;

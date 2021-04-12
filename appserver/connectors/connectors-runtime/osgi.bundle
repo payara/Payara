@@ -55,6 +55,6 @@
 # This module uses classes from this pkg using reflection, so
 # we need to add it to the import list explicitly, as bnd can't
 # discover such dependencies.
-Import-Package: javax.resource.spi.endpoint, *
+Import-Package: jakarta.resource.spi.endpoint, *
 # dependent flashlight package resolved at runtime
 DynamicImport-Package: org.glassfish.flashlight.provider

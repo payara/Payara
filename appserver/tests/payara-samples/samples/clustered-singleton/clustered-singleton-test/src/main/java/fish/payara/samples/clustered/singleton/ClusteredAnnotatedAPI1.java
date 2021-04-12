@@ -43,8 +43,8 @@ import fish.payara.samples.clustered.singleton.api.AnnotatedSingletonAPI;
 import fish.payara.cluster.Clustered;
 import java.util.UUID;
 import java.util.logging.Logger;
-import javax.ejb.Singleton;
-import javax.enterprise.inject.Vetoed;
+import jakarta.ejb.Singleton;
+import jakarta.enterprise.inject.Vetoed;
 
 /**
  * @author lprimak

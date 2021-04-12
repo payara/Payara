@@ -41,7 +41,7 @@
 
 package com.sun.enterprise.admin.monitor.stats;
 
-import javax.management.j2ee.statistics.CountStatistic;
+import org.glassfish.j2ee.statistics.CountStatistic;
 
 /**
  * A Stats interface to represent the statistical data about 

@@ -70,8 +70,8 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-import javax.inject.Inject;
-import javax.servlet.SingleThreadModel;
+import jakarta.inject.Inject;
+import jakarta.servlet.SingleThreadModel;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -647,24 +647,9 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer, We
 
             }
 
-            String servletImplClass = nextEndpoint.getServletImplClass();
-            try {
-                Class servletImplClazz = cl.loadClass(servletImplClass);
-                String containerServlet;
-                if (wsutil.isJAXWSbasedService(nextEndpoint.getWebService())) {
-                    containerServlet = "org.glassfish.webservices.JAXWSServlet";
-                    addWSServletContextListener(webBunDesc);
-                } else {
-                    containerServlet = SingleThreadModel.class.isAssignableFrom(servletImplClazz)
-                            ? "org.glassfish.webservices.SingleThreadJAXRPCServlet"
-                            : "org.glassfish.webservices.JAXRPCServlet";
-                }
-                webComp.setWebComponentImplementation(containerServlet);
-
-            } catch (ClassNotFoundException cex) {
-                throw new DeploymentException(
-                        format(resourceBundle.getString(LogUtils.DEPLOYMENT_BACKEND_CANNOT_FIND_SERVLET), nextEndpoint.getEndpointName()));
-            }
+            String containerServlet = "org.glassfish.webservices.JAXWSServlet";
+            addWSServletContextListener(webBunDesc);
+            webComp.setWebComponentImplementation(containerServlet);
 
             /**
              * Now trying to figure the address from <code>com.sun.enterprise.webservice.WsUtil.java</code>

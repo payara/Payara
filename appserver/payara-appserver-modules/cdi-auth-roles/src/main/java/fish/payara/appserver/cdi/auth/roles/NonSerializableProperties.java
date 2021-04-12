@@ -42,9 +42,9 @@ package fish.payara.appserver.cdi.auth.roles;
 
 import java.io.Serializable;
 
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.CDI;
-import javax.security.enterprise.SecurityContext;
+import jakarta.enterprise.inject.spi.BeanManager;
+import jakarta.enterprise.inject.spi.CDI;
+import jakarta.security.enterprise.SecurityContext;
 
 /**
  * A Serializable class that stores non-serializable properties by lazy loading them.

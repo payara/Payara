@@ -64,8 +64,8 @@
 
 package org.apache.catalina;
 
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
 
 /**
  *

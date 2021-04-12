@@ -66,7 +66,7 @@ import org.glassfish.web.valve.GlassFishValve;
 
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.util.List;
 import java.util.ResourceBundle;

@@ -2250,7 +2250,7 @@ public class SQLStateManager implements Cloneable, StateManager, TestStateManage
                     !(source instanceof String) &&
                     !(source instanceof Character) &&
                     !(source instanceof Boolean) &&
-                    // RESOLVE: #javax.ejb package# !(source instanceof javax.ejb.EJBObject) &&
+                    // RESOLVE: #jakarta.ejb package# !(source instanceof jakarta.ejb.EJBObject) &&
                     !(source instanceof com.sun.jdo.api.persistence.support.PersistenceCapable) &&
                     !(source instanceof byte[])) {
                 try {

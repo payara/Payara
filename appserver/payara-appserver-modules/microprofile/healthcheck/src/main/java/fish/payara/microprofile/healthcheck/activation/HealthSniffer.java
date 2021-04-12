@@ -59,7 +59,7 @@ public class HealthSniffer extends MicroProfileSniffer {
             org.eclipse.microprofile.health.Liveness.class,
 
             // All JAX-RS applications are valid applications for Metrics
-            javax.ws.rs.Path.class
+            jakarta.ws.rs.Path.class
         };
     }
 

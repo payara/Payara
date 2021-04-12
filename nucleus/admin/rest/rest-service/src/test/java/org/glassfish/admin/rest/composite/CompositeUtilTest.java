@@ -49,11 +49,11 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Locale;
 import java.util.Set;
-import javax.json.Json;
-import javax.json.JsonException;
-import javax.json.JsonObject;
-import javax.json.stream.JsonParser;
-import javax.validation.ConstraintViolation;
+import jakarta.json.Json;
+import jakarta.json.JsonException;
+import jakarta.json.JsonObject;
+import jakarta.json.stream.JsonParser;
+import jakarta.validation.ConstraintViolation;
 
 import org.glassfish.admin.rest.composite.metadata.AttributeReference;
 import org.glassfish.admin.rest.model.BaseModel;

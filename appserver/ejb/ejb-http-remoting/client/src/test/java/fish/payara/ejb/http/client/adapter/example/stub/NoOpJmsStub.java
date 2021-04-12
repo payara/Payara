@@ -40,7 +40,7 @@
 
 package fish.payara.ejb.http.client.adapter.example.stub;
 
-import javax.jms.*;
+import jakarta.jms.*;
 import java.io.Serializable;
 import java.util.Enumeration;
 

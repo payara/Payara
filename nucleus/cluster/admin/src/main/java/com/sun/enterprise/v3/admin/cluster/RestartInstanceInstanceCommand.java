@@ -44,7 +44,7 @@ package com.sun.enterprise.v3.admin.cluster;
 import com.sun.enterprise.module.ModulesRegistry;
 import org.glassfish.api.*;
 import org.glassfish.api.admin.*;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import com.sun.enterprise.v3.admin.RestartServer;
 
 

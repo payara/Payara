@@ -42,7 +42,7 @@
 
 package org.glassfish.admin.rest.testing;
 
-import javax.json.JsonValue;
+import jakarta.json.JsonValue;
 
 public abstract class Value {
   abstract JsonValue getJsonValue() throws Exception;

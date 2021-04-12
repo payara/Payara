@@ -48,7 +48,7 @@ import org.glassfish.internal.api.ServerContext;
 import org.glassfish.jsp.api.ResourceInjector;
 import org.glassfish.web.LogFacade;
 
-import javax.servlet.jsp.tagext.JspTag;
+import jakarta.servlet.jsp.tagext.JspTag;
 import java.lang.String;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;

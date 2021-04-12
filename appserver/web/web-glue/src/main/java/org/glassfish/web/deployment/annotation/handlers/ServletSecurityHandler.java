@@ -53,13 +53,13 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.web.deployment.descriptor.*;
 
-import javax.servlet.annotation.HttpConstraint;
-import javax.servlet.annotation.HttpMethodConstraint;
-import javax.servlet.annotation.ServletSecurity;
-import javax.servlet.annotation.ServletSecurity.EmptyRoleSemantic;
-import javax.servlet.annotation.ServletSecurity.TransportGuarantee;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
+import jakarta.servlet.annotation.HttpConstraint;
+import jakarta.servlet.annotation.HttpMethodConstraint;
+import jakarta.servlet.annotation.ServletSecurity;
+import jakarta.servlet.annotation.ServletSecurity.EmptyRoleSemantic;
+import jakarta.servlet.annotation.ServletSecurity.TransportGuarantee;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
 import java.lang.annotation.Annotation;
 import java.util.HashSet;
 import java.util.Enumeration;
@@ -68,7 +68,7 @@ import java.util.logging.Level;
 
 /**
  * This handler is responsible in handling
- * javax.servlet.annotation.ServletSecurity.
+ * jakarta.servlet.annotation.ServletSecurity.
  *
  * @author Shing Wai Chan
  */

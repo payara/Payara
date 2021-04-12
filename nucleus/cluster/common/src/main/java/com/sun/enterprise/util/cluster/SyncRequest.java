@@ -43,7 +43,7 @@ package com.sun.enterprise.util.cluster;
 import java.io.*;
 import java.util.*;
 
-import javax.xml.bind.annotation.*;
+import jakarta.xml.bind.annotation.*;
 
 /**
  * Request message to synchronize files.

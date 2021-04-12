@@ -45,7 +45,7 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.config.support.Singleton;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.lang.reflect.Method;
 import java.util.Locale;
 import java.util.StringTokenizer;

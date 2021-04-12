@@ -61,7 +61,7 @@ import org.jvnet.hk2.config.ConfigPopulatorException;
 import org.jvnet.hk2.config.DomDocument;
 import org.jvnet.hk2.config.Populator;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLResolver;
 import javax.xml.stream.XMLStreamException;

@@ -42,7 +42,7 @@ package fish.payara.security.openid.google;
 import fish.payara.security.annotations.GoogleAuthenticationDefinition;
 import fish.payara.security.openid.OpenIdAuthenticationMechanism;
 import static fish.payara.security.openid.google.GoogleOpenIdExtension.toOpenIdAuthDefinition;
-import javax.enterprise.inject.Typed;
+import jakarta.enterprise.inject.Typed;
 
 /**
  * The Google AuthenticationMechanism used to authenticate users using the

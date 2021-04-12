@@ -44,7 +44,7 @@ import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 
 import java.beans.PropertyVetoException;
-import javax.validation.Payload;
+import jakarta.validation.Payload;
 
 /**
  * An configured element which shows the time taken to deploy the application in

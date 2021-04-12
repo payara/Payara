@@ -49,8 +49,8 @@ import org.glassfish.internal.api.ClassLoaderHierarchy;
 import org.glassfish.web.LogFacade;
 import org.glassfish.web.config.serverbeans.*;
 import org.glassfish.web.config.serverbeans.WebContainer;
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;

@@ -40,7 +40,7 @@
 
 package org.glassfish.nucleus.admin.rest;
 
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 import static org.testng.AssertJUnit.*;
 import org.testng.annotations.Test;
 

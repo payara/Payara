@@ -54,7 +54,7 @@ import java.util.List;
 import org.glassfish.api.admin.config.PropertiesDesc;
 import org.glassfish.quality.ToDo;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * SE/EE Node Controller. The node agent is an agent that manages server instances on a host machine.

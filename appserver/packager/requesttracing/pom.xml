@@ -104,11 +104,11 @@
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
-        <dependency>
+<!--        <dependency>
             <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
             <artifactId>jaxrs-client-tracing</artifactId>
             <version>${project.version}</version>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
             <artifactId>opentracing-cdi</artifactId>

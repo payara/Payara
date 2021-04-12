@@ -58,7 +58,7 @@ import static fish.payara.security.openid.api.OpenIdConstant.PROFILE;
 import static fish.payara.security.openid.api.OpenIdConstant.UPDATED_AT;
 import static fish.payara.security.openid.api.OpenIdConstant.WEBSITE;
 import static fish.payara.security.openid.api.OpenIdConstant.ZONEINFO;
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 /**
  * User Claims received from the userinfo endpoint

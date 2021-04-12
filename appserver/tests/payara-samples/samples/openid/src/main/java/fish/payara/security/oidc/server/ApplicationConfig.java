@@ -41,7 +41,7 @@ package fish.payara.security.oidc.server;
 
 import java.util.Set;
 
-import javax.ws.rs.core.Application;
+import jakarta.ws.rs.core.Application;
 
 import static java.util.Collections.singleton;
 
@@ -49,7 +49,7 @@ import static java.util.Collections.singleton;
  *
  * @author Gaurav Gupta
  */
-@javax.ws.rs.ApplicationPath("webresources")
+@jakarta.ws.rs.ApplicationPath("webresources")
 public class ApplicationConfig extends Application {
 
     @Override

@@ -46,7 +46,7 @@
 package com.sun.enterprise.security.auth.digest.impl;
 
 import java.security.spec.AlgorithmParameterSpec;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * represents HttpServlet request parameter

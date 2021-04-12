@@ -58,8 +58,8 @@ import org.glassfish.hk2.api.PerLookup;
 
 import java.util.Map;
 import java.util.Properties;
-import javax.inject.Inject;
-import javax.inject.Provider;
+import jakarta.inject.Inject;
+import jakarta.inject.Provider;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RestParam;

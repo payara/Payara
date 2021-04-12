@@ -43,7 +43,7 @@ import fish.payara.cluster.Clustered;
 import fish.payara.samples.NotMicroCompatible;
 import fish.payara.samples.PayaraArquillianTestRunner;
 import java.util.logging.Logger;
-import javax.ejb.Singleton;
+import jakarta.ejb.Singleton;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.ShouldThrowException;
 import org.jboss.shrinkwrap.api.ShrinkWrap;

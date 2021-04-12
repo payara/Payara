@@ -399,21 +399,15 @@
          <artifactId>yasson</artifactId>
      </dependency>     
 
-     <!-- JAXR -JSR-93 Support-->
+     <!--
+     This is needed because it provides the sniffer/detector/moduletype
+     -->
      <dependency>
-         <groupId>jakarta.xml.registry</groupId>
-         <artifactId>jakarta.xml.registry-api</artifactId>
+         <groupId>fish.payara.server.internal.appclient.server</groupId>
+         <artifactId>appclient-connector</artifactId>
+         <version>${project.version}</version>
+         <scope>runtime</scope>
      </dependency>
-
-        <!--
-        This is needed because it provides the sniffer/detector/moduletype
-        -->
-        <dependency>
-            <groupId>fish.payara.server.internal.appclient.server</groupId>
-            <artifactId>appclient-connector</artifactId>
-            <version>${project.version}</version>
-            <scope>runtime</scope>
-        </dependency>
 
       <!--
         The next two mail-related dependencies allow mail session look-up

@@ -127,7 +127,7 @@ public class LifecycleCallbackDescriptor extends Descriptor {
                 if( next.getName().equals(lifecycleCallbackMethod) ) {
                     if ( !requiresInvocationContextArgument
                            || (next.getParameterTypes().length == 1 
-                               && "javax.interceptor.InvocationContext".equals(next.getParameterTypes()[0].getName()))) {
+                               && "jakarta.interceptor.InvocationContext".equals(next.getParameterTypes()[0].getName()))) {
                         method = next;
                         break;
                     }

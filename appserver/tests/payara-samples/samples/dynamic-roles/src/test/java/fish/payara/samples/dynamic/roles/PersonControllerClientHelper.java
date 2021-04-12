@@ -44,7 +44,7 @@ import static fish.payara.samples.dynamic.roles.common.AuthoritiesConstants.DEFA
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import javax.ws.rs.client.ClientRequestFilter;
+import jakarta.ws.rs.client.ClientRequestFilter;
 import org.eclipse.microprofile.rest.client.RestClientBuilder;
 
 /**

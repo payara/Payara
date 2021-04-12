@@ -46,9 +46,8 @@ import fish.payara.nucleus.requesttracing.store.IterableThreadLocal;
 
 import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Singleton;
-
 import java.util.Map.Entry;
+import jakarta.inject.Singleton;
 import java.util.UUID;
 
 /**

@@ -40,8 +40,8 @@
 
 package org.glassfish.grizzly.config.dom;
 
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 
 /**
  * ConstraintValidator for validating the Range within min to max or ${...} or null.

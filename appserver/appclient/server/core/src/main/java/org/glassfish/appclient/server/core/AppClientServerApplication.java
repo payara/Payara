@@ -49,7 +49,7 @@ import com.sun.logging.LogDomains;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.logging.Logger;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.glassfish.api.deployment.ApplicationContainer;
 import org.glassfish.api.deployment.ApplicationContext;
 import org.glassfish.api.deployment.DeploymentContext;

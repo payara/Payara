@@ -47,7 +47,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.TimerTask;
 
-import javax.ejb.Timer;
+import jakarta.ejb.Timer;
 
 import com.sun.logging.LogDomains;
 

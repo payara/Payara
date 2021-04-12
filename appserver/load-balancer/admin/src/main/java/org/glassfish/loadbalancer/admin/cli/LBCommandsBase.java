@@ -56,7 +56,7 @@ import com.sun.enterprise.config.serverbeans.Cluster;
 import org.glassfish.api.admin.*;
 import org.glassfish.api.ActionReport.ExitCode;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 /**
  * Base class for all the LB commands

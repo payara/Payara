@@ -94,7 +94,7 @@
                         </Export-Package>
                         <Import-Package>
                             javax.management,
-                            javax.enterprise.util
+                            jakarta.enterprise.util
                         </Import-Package>
                         <Private-Package>*</Private-Package>
                         <Include-Resource>META-INF/hk2-locator/=target/classes/META-INF/hk2-locator/</Include-Resource>

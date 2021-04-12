@@ -44,7 +44,7 @@ package org.glassfish.nucleus.admin.rest;
 
 import java.util.HashMap;
 import java.util.Map;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 import org.testng.annotations.Test;
 
 import static org.testng.AssertJUnit.*;

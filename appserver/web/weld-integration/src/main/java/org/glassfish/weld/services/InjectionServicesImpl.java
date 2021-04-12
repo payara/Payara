@@ -55,16 +55,16 @@ import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
 import com.sun.enterprise.container.common.spi.util.InjectionException;
 import com.sun.enterprise.container.common.spi.util.InjectionManager;
 
-import javax.annotation.Resource;
-import javax.ejb.EJB;
-import javax.enterprise.inject.Produces;
-import javax.enterprise.inject.spi.*;
-import javax.enterprise.inject.spi.InjectionTarget;
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.PersistenceContext;
-import javax.persistence.PersistenceUnit;
-import javax.xml.ws.WebServiceRef;
+import jakarta.annotation.Resource;
+import jakarta.ejb.EJB;
+import jakarta.enterprise.inject.Produces;
+import jakarta.enterprise.inject.spi.*;
+import jakarta.enterprise.inject.spi.InjectionTarget;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.PersistenceUnit;
+import jakarta.xml.ws.WebServiceRef;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -90,13 +90,13 @@ public class InjectionServicesImpl implements InjectionServices {
 
     /**
      * Checks if the specified class is annotated with @Interceptor
-     * @see javax.interceptor.Interceptor
+     * @see jakarta.interceptor.Interceptor
      * @param beanClass
      * @return 
      */
     private boolean isInterceptor( Class beanClass ) {
       HashSet<String> annos = new HashSet<>();
-      annos.add( javax.interceptor.Interceptor.class.getName() );
+      annos.add( jakarta.interceptor.Interceptor.class.getName() );
       boolean res = false;
       while ( !res && beanClass != Object.class ) {
         res = WeldUtils.hasValidAnnotation( beanClass, annos, null );
@@ -306,14 +306,14 @@ public class InjectionServicesImpl implements InjectionServices {
     private void validateWebServiceRef( AnnotatedField annotatedField ) {
         WebServiceRef webServiceRef = annotatedField.getAnnotation(WebServiceRef.class);
         if ( webServiceRef != null ) {
-            if ( javax.xml.ws.Service.class.isAssignableFrom(annotatedField.getJavaMember().getType())) {
+            if ( jakarta.xml.ws.Service.class.isAssignableFrom(annotatedField.getJavaMember().getType())) {
                 return;
             }
 
             if ( annotatedField.getJavaMember().getType().isInterface() ) {
                 Class serviceClass = webServiceRef.value();
                 if ( serviceClass != null ) {
-                    if ( ! javax.xml.ws.Service.class.isAssignableFrom(serviceClass)) {
+                    if ( ! jakarta.xml.ws.Service.class.isAssignableFrom(serviceClass)) {
                         throw new DefinitionException( "The type of the injection point " +
                                                        annotatedField.getJavaMember().getName() +
                                                        " is an interface: " +
@@ -321,7 +321,7 @@ public class InjectionServicesImpl implements InjectionServices {
                                                        ".  The @WebSreviceRef value of " +
                                                        serviceClass +
                                                        " is not assignable from " +
-                                                       javax.xml.ws.Service.class.getName());
+                                                       jakarta.xml.ws.Service.class.getName());
                     }
                 }
             } else {

@@ -60,7 +60,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.sun.enterprise.module.ModulesRegistry;
-
 import org.glassfish.admingui.connector.TOC;
 import org.glassfish.admingui.connector.TOCItem;
 import org.glassfish.admingui.connector.Index;
@@ -68,7 +67,7 @@ import org.glassfish.admingui.connector.IndexItem;
 import org.glassfish.admingui.connector.IntegrationPoint;
 import org.glassfish.admingui.connector.ConsoleConfig;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 
 /**

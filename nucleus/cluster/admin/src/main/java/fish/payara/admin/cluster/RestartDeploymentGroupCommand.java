@@ -46,7 +46,7 @@ import com.sun.enterprise.v3.admin.cluster.Strings;
 import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 import java.util.List;
 import java.util.logging.Logger;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;

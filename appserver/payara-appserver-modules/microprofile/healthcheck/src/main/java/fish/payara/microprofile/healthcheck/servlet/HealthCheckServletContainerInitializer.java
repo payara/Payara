@@ -41,19 +41,18 @@ package fish.payara.microprofile.healthcheck.servlet;
 
 import static fish.payara.microprofile.Constants.CREATE_INSECURE_ENDPOINT_TEST;
 import static java.util.Arrays.asList;
-import static javax.servlet.annotation.ServletSecurity.TransportGuarantee.CONFIDENTIAL;
+import static jakarta.servlet.annotation.ServletSecurity.TransportGuarantee.CONFIDENTIAL;
 import static org.glassfish.common.util.StringHelper.isEmpty;
 
 import java.util.Map;
 import java.util.Set;
 
-import javax.servlet.HttpConstraintElement;
-import javax.servlet.ServletContainerInitializer;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRegistration;
-import javax.servlet.ServletSecurityElement;
-
+import jakarta.servlet.HttpConstraintElement;
+import jakarta.servlet.ServletContainerInitializer;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRegistration;
+import jakarta.servlet.ServletSecurityElement;
 import org.glassfish.internal.api.Globals;
 
 import fish.payara.microprofile.healthcheck.config.MicroprofileHealthCheckConfiguration;

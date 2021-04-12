@@ -46,7 +46,7 @@ import com.sun.enterprise.deployment.WebComponentDescriptor;
 import com.sun.enterprise.deployment.web.*;
 import org.glassfish.security.common.Role;
 
-import javax.security.jacc.*;
+import jakarta.security.jacc.*;
 import java.security.Permission;
 import java.security.Permissions;
 import java.util.*;

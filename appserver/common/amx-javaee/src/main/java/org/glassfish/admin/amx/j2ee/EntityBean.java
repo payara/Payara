@@ -37,17 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package org.glassfish.admin.amx.j2ee;
- 
 
-import javax.management.j2ee.statistics.EntityBeanStats;
-import org.glassfish.admin.amx.annotation.ManagedAttribute;
 import org.glassfish.admin.amx.core.AMXMBeanMetadata;
 
-/**
- */
-@AMXMBeanMetadata(type=J2EETypes.ENTITY_BEAN, leaf=true)
-public interface EntityBean extends EJB
-{	
+@AMXMBeanMetadata(type = J2EETypes.ENTITY_BEAN, leaf = true)
+public interface EntityBean extends EJB {
 }

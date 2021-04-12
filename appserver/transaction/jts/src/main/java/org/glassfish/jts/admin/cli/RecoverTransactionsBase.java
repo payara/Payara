@@ -41,7 +41,7 @@
 
 package org.glassfish.jts.admin.cli;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.glassfish.api.Param;
 import com.sun.enterprise.config.serverbeans.Server;

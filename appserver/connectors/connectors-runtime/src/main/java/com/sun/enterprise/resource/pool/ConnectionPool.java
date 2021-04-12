@@ -63,9 +63,9 @@ import java.lang.annotation.Annotation;
 import org.glassfish.resourcebase.resources.api.PoolInfo;
 
 import javax.naming.NamingException;
-import javax.resource.ResourceException;
-import javax.resource.spi.RetryableUnavailableException;
-import javax.transaction.Transaction;
+import jakarta.resource.ResourceException;
+import jakarta.resource.spi.RetryableUnavailableException;
+import jakarta.transaction.Transaction;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;

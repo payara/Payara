@@ -45,7 +45,7 @@ import static java.util.Arrays.stream;
 
 import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
-import javax.security.auth.message.callback.GroupPrincipalCallback;
+import jakarta.security.auth.message.callback.GroupPrincipalCallback;
 
 import org.glassfish.security.common.Group;
 

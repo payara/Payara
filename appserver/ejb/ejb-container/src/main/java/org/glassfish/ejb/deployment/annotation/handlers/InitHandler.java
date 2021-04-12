@@ -43,7 +43,7 @@ package org.glassfish.ejb.deployment.annotation.handlers;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.logging.Level;
-import javax.ejb.Init;
+import jakarta.ejb.Init;
 
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.deployment.annotation.context.EjbContext;
@@ -57,7 +57,7 @@ import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
 import org.jvnet.hk2.annotations.Service;
 
 /**
- * This handler is responsible for handling the javax.ejb.Init attribute
+ * This handler is responsible for handling the jakarta.ejb.Init attribute
  *
  */
 @Service

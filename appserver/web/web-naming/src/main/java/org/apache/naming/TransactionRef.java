@@ -102,7 +102,7 @@ public class TransactionRef
      * @param factoryLocation the factory location 
      */
     public TransactionRef(String factory, String factoryLocation) {
-        super("javax.transaction.UserTransaction", factory, factoryLocation);
+        super("jakarta.transaction.UserTransaction", factory, factoryLocation);
     }
 
 

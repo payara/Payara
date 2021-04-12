@@ -44,7 +44,7 @@ package fish.payara.nucleus.healthcheck.configuration;
 
 import static fish.payara.nucleus.healthcheck.HealthCheckConstants.DEFAULT_MICROPROFILE_HEALTHCHECK_NAME;
 import java.beans.PropertyVetoException;
-import javax.validation.constraints.Min;
+import jakarta.validation.constraints.Min;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Configured;
 

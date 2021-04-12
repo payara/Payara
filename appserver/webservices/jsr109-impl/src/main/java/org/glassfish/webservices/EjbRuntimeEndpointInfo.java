@@ -57,10 +57,10 @@ import org.glassfish.ejb.api.EjbEndpointFacade;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
 
-import javax.xml.ws.WebServiceContext;
-import javax.xml.ws.WebServiceFeature;
-import javax.xml.ws.soap.AddressingFeature;
-import javax.xml.ws.soap.MTOMFeature;
+import jakarta.xml.ws.WebServiceContext;
+import jakarta.xml.ws.WebServiceFeature;
+import jakarta.xml.ws.soap.AddressingFeature;
+import jakarta.xml.ws.soap.MTOMFeature;
 import java.io.File;
 import java.net.URI;
 import java.net.URL;

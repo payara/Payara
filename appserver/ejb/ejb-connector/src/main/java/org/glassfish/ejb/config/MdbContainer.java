@@ -55,7 +55,7 @@ import org.glassfish.api.admin.config.ConfigExtension;
 import org.glassfish.api.admin.config.PropertiesDesc;
 import org.glassfish.api.admin.config.PropertyDesc;
 
-import javax.validation.constraints.Min;
+import jakarta.validation.constraints.Min;
 
 /* @XmlType(name = "", propOrder = {
     "property"

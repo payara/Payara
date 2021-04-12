@@ -40,9 +40,9 @@
 // Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.monitor.stats;
-import javax.management.j2ee.statistics.Stats;
-import javax.management.j2ee.statistics.CountStatistic;
-import javax.management.j2ee.statistics.TimeStatistic;
+import org.glassfish.j2ee.statistics.Stats;
+import org.glassfish.j2ee.statistics.CountStatistic;
+import org.glassfish.j2ee.statistics.TimeStatistic;
 
 /** A Stats interface to represent the statistical data exposed by an EJB Business Method.
  * These are based on the statistics exposed in S1AS7.0. 

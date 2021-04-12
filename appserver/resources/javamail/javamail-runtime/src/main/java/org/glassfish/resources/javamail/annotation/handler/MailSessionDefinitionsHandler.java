@@ -51,8 +51,8 @@ import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.mail.MailSessionDefinition;
-import javax.mail.MailSessionDefinitions;
+import jakarta.mail.MailSessionDefinition;
+import jakarta.mail.MailSessionDefinitions;
 import java.lang.annotation.Annotation;
 import java.util.HashSet;
 import java.util.Set;

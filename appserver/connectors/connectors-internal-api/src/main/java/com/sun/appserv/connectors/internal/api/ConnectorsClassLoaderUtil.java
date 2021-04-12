@@ -48,7 +48,7 @@ import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.EventTypes;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 
 import java.io.*;
 import java.net.MalformedURLException;
@@ -66,7 +66,7 @@ import com.sun.enterprise.loader.ASURLClassLoader;
 import com.sun.logging.LogDomains;
 import java.util.Locale;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 
 /**

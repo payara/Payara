@@ -65,7 +65,7 @@ public class Jdbc30ObjectsFactory extends JdbcObjectsFactory {
      */
     public ConnectionHolder getConnection(Connection conObject,
                                           ManagedConnectionImpl mcObject,
-                                          javax.resource.spi.ConnectionRequestInfo criObject,
+                                          jakarta.resource.spi.ConnectionRequestInfo criObject,
                                           boolean statementWrapping,
                                           SQLTraceDelegator sqlTraceDelegator) {
         ConnectionHolder connection = null;
@@ -93,7 +93,7 @@ public class Jdbc30ObjectsFactory extends JdbcObjectsFactory {
      * @return DataSource
      */
     public javax.sql.DataSource getDataSourceInstance(ManagedConnectionFactoryImpl mcfObject,
-                                                      javax.resource.spi.ConnectionManager cmObject) {
+                                                      jakarta.resource.spi.ConnectionManager cmObject) {
         return new DataSource30(mcfObject, cmObject);
     }
 }

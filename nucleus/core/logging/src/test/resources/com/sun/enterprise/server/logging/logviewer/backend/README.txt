@@ -65,7 +65,7 @@ public class LogFileEntryTest {
         ObjectOutputStream objectOutput = new ObjectOutputStream(buffer);
         // Create and initialize a LogEntry
         LogFile logFile = new LogFile("/tmp/server.log");
-        LogFile.LogEntry entry = logFile.new LogEntry("[#|2012-11-08T13:42:26.763-0500|INFO|44.0|javax.enterprise.logging|_ThreadID=1;_ThreadName=main;_TimeMillis=1352400146763;_LevelValue=800;_MessageID=NCLS-LOGGING-00009;|Running GlassFish Version: Oracle GlassFish Server  4.0  (build sanshriv-private)|#]", 1L);
+        LogFile.LogEntry entry = logFile.new LogEntry("[#|2012-11-08T13:42:26.763-0500|INFO|44.0|jakarta.enterprise.logging|_ThreadID=1;_ThreadName=main;_TimeMillis=1352400146763;_LevelValue=800;_MessageID=NCLS-LOGGING-00009;|Running GlassFish Version: Oracle GlassFish Server  4.0  (build sanshriv-private)|#]", 1L);
         entry.setRecordNumber(1L);
         objectOutput.writeObject(entry);
         objectOutput.flush();

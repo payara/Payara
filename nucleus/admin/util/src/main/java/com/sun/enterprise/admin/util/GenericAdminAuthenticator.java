@@ -64,8 +64,8 @@ import org.jvnet.hk2.annotations.ContractsProvided;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import javax.security.auth.login.LoginException;
 import javax.security.auth.Subject;
 import javax.management.remote.JMXAuthenticator;
@@ -101,7 +101,7 @@ import org.glassfish.internal.api.ServerContext;
 public class GenericAdminAuthenticator implements AdminAccessController, JMXAuthenticator, PostConstruct {
     
     @LoggerInfo(subsystem="ADMSEC", description="Admin security")
-    private static final String ADMSEC_LOGGER_NAME = "javax.enterprise.system.tools.admin.security";
+    private static final String ADMSEC_LOGGER_NAME = "jakarta.enterprise.system.tools.admin.security";
 
     static final Logger ADMSEC_LOGGER = Logger.getLogger(ADMSEC_LOGGER_NAME, 
             AdminLoggerInfo.SHARED_LOGMESSAGE_RESOURCE);

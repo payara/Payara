@@ -55,12 +55,12 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 import org.jvnet.hk2.annotations.Service;
 
-import static javax.persistence.SynchronizationType.SYNCHRONIZED;
-import static javax.persistence.SynchronizationType.UNSYNCHRONIZED;
-import javax.persistence.criteria.*;
-import javax.persistence.*;
-import javax.persistence.metamodel.Metamodel;
-import javax.transaction.TransactionManager;
+import static jakarta.persistence.SynchronizationType.SYNCHRONIZED;
+import static jakarta.persistence.SynchronizationType.UNSYNCHRONIZED;
+import jakarta.persistence.criteria.*;
+import jakarta.persistence.*;
+import jakarta.persistence.metamodel.Metamodel;
+import jakarta.transaction.TransactionManager;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;

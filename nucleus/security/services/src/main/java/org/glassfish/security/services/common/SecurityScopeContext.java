@@ -42,8 +42,8 @@ package org.glassfish.security.services.common;
 import java.lang.annotation.Annotation;
 import java.util.HashMap;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 
 import org.glassfish.hk2.api.ActiveDescriptor;
 import org.glassfish.hk2.api.Context;

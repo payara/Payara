@@ -48,7 +48,7 @@ import com.sun.enterprise.deployment.util.EjbBundleVisitor;
 import com.sun.enterprise.deployment.util.ConnectorVisitor;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.v3.data.ApplicationRegistry;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import javax.management.MBeanServer;
 
 /**

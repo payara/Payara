@@ -102,7 +102,7 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.soteria</groupId>
-            <artifactId>javax.security.enterprise</artifactId>
+            <artifactId>jakarta.security.enterprise</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -144,7 +144,7 @@
             <resource>
                 <directory>src/main/resources</directory>
                 <includes>
-                    <include>**/javax.enterprise.inject.spi.Extension</include>
+                    <include>**/jakarta.enterprise.inject.spi.Extension</include>
                 </includes>
             </resource>
         </resources>

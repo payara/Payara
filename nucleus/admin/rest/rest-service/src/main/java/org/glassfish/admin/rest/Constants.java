@@ -40,7 +40,7 @@
 
 package org.glassfish.admin.rest;
 
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.MediaType;
 
 /**
  * REST Interface Constants

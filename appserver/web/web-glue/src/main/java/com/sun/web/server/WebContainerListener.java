@@ -52,7 +52,7 @@ import org.glassfish.api.naming.NamedNamingObjectProxy;
 import org.glassfish.web.LogFacade;
 
 import javax.naming.NamingException;
-import javax.validation.ValidatorFactory;
+import jakarta.validation.ValidatorFactory;
 import java.lang.String;
 import java.text.MessageFormat;
 import java.util.HashSet;

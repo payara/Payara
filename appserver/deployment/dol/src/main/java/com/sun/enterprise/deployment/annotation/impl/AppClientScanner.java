@@ -69,7 +69,7 @@ import java.util.logging.Level;
 @Service(name="car")
 @PerLookup
 public class AppClientScanner extends ModuleScanner<ApplicationClientDescriptor> {
-    private static final Class[] managedBeanAnnotations = new Class[] {javax.annotation.ManagedBean.class}; 
+    private static final Class[] managedBeanAnnotations = new Class[] {jakarta.annotation.ManagedBean.class}; 
 
     @Override
     public void process(ReadableArchive archive, ApplicationClientDescriptor bundleDesc, ClassLoader classLoader, Parser parser) throws IOException {

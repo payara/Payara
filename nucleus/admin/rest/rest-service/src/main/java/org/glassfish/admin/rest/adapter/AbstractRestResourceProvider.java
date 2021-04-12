@@ -58,8 +58,8 @@ import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.server.filter.CsrfProtectionFilter;
 
-import javax.ws.rs.core.Feature;
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Feature;
+import jakarta.ws.rs.core.MediaType;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;

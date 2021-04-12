@@ -107,32 +107,32 @@ import javax.management.ObjectName;
 import javax.naming.Binding;
 import javax.naming.NamingException;
 import javax.naming.directory.DirContext;
-import javax.servlet.Filter;
-import javax.servlet.FilterConfig;
-import javax.servlet.FilterRegistration;
-import javax.servlet.RequestDispatcher;
-import javax.servlet.Servlet;
-import javax.servlet.ServletContainerInitializer;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextAttributeListener;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRegistration;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletRequestAttributeListener;
-import javax.servlet.ServletRequestEvent;
-import javax.servlet.ServletRequestListener;
-import javax.servlet.SessionCookieConfig;
-import javax.servlet.SessionTrackingMode;
-import javax.servlet.SingleThreadModel;
-import javax.servlet.descriptor.JspConfigDescriptor;
-import javax.servlet.http.HttpServletMapping;
-import javax.servlet.http.HttpSession;
-import javax.servlet.http.HttpSessionAttributeListener;
-import javax.servlet.http.HttpSessionIdListener;
-import javax.servlet.http.HttpSessionListener;
-import javax.servlet.http.HttpUpgradeHandler;
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.FilterRegistration;
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.Servlet;
+import jakarta.servlet.ServletContainerInitializer;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletContextAttributeListener;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextListener;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRegistration;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletRequestAttributeListener;
+import jakarta.servlet.ServletRequestEvent;
+import jakarta.servlet.ServletRequestListener;
+import jakarta.servlet.SessionCookieConfig;
+import jakarta.servlet.SessionTrackingMode;
+import jakarta.servlet.SingleThreadModel;
+import jakarta.servlet.descriptor.JspConfigDescriptor;
+import jakarta.servlet.http.HttpServletMapping;
+import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSessionAttributeListener;
+import jakarta.servlet.http.HttpSessionIdListener;
+import jakarta.servlet.http.HttpSessionListener;
+import jakarta.servlet.http.HttpUpgradeHandler;
 
 import org.apache.catalina.Auditor;
 import org.apache.catalina.Authenticator;
@@ -815,7 +815,7 @@ public class StandardContext
 
     /**
      * The list of ordered libs, which is used as the value of the
-     * ServletContext attribute with name javax.servlet.context.orderedLibs
+     * ServletContext attribute with name jakarta.servlet.context.orderedLibs
      */
     private List<String> orderedLibs;
 
@@ -2297,7 +2297,7 @@ public class StandardContext
             }
         }
 
-        if ("javax.faces.webapp.FacesServlet".equals(
+        if ("jakarta.faces.webapp.FacesServlet".equals(
                 wrapper.getServletClassName())) {
             isJsfApplication = true;
         }
@@ -7718,7 +7718,7 @@ public class StandardContext
 
     /**
      * Sets the list of ordered libs, which will be used as the value of the
-     * ServletContext attribute with name javax.servlet.context.orderedLibs
+     * ServletContext attribute with name jakarta.servlet.context.orderedLibs
      */
     public void setOrderedLibs(List<String> orderedLibs) {
         this.orderedLibs = orderedLibs;

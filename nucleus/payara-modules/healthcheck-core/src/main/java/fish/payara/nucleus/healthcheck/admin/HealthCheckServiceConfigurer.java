@@ -57,12 +57,12 @@ import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.*;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.beans.PropertyVetoException;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.validation.constraints.Min;
+import jakarta.validation.constraints.Min;
 
 /**
  * Admin command to enable/disable specific health check service given with its

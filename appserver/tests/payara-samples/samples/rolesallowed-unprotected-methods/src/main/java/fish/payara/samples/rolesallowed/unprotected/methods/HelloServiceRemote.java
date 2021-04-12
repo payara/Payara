@@ -40,7 +40,7 @@
 
 package fish.payara.samples.rolesallowed.unprotected.methods;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 @Remote
 public interface HelloServiceRemote {

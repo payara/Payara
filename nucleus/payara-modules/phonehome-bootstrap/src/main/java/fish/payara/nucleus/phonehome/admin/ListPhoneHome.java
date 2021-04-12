@@ -20,7 +20,7 @@
 package fish.payara.nucleus.phonehome.admin;
 
 import fish.payara.nucleus.phonehome.PhoneHomeRuntimeConfiguration;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.admin.AdminCommand;

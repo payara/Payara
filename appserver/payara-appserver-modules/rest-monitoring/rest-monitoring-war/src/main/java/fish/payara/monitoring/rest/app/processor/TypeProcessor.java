@@ -39,8 +39,8 @@
  */
 package fish.payara.monitoring.rest.app.processor;
 
-import javax.json.JsonException;
-import javax.json.JsonValue;
+import jakarta.json.JsonException;
+import jakarta.json.JsonValue;
 import javax.management.openmbean.OpenType;
 
 /**

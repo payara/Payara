@@ -47,7 +47,7 @@ import com.sun.enterprise.deployment.InboundResourceAdapter;
 import com.sun.enterprise.deployment.MessageListener;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 
-import javax.resource.spi.Activation;
+import jakarta.resource.spi.Activation;
 import java.lang.annotation.Annotation;
 import java.util.logging.Level;
 

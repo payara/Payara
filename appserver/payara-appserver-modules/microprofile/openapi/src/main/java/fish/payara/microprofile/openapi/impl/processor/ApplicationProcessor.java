@@ -80,10 +80,10 @@ import static java.util.logging.Level.WARNING;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.FormParam;
-import javax.ws.rs.HttpMethod;
-import javax.ws.rs.core.Response.Status;
+import jakarta.ws.rs.DefaultValue;
+import jakarta.ws.rs.FormParam;
+import jakarta.ws.rs.HttpMethod;
+import jakarta.ws.rs.core.Response.Status;
 
 import org.eclipse.microprofile.openapi.models.Components;
 import org.eclipse.microprofile.openapi.models.ExternalDocumentation;
@@ -329,8 +329,8 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
                 if (response != null) {
                     // Find the wildcard return type
                     if (response.getContent() != null
-                            && response.getContent().getMediaType(javax.ws.rs.core.MediaType.WILDCARD) != null) {
-                        MediaType wildcardMedia = response.getContent().getMediaType(javax.ws.rs.core.MediaType.WILDCARD);
+                            && response.getContent().getMediaType(jakarta.ws.rs.core.MediaType.WILDCARD) != null) {
+                        MediaType wildcardMedia = response.getContent().getMediaType(jakarta.ws.rs.core.MediaType.WILDCARD);
 
                         // Merge the wildcard return type with the valid response types
                         //This keeps the specific details of a reponse type that has a schema
@@ -344,7 +344,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
                             }
                         }
                         // If there is an @Produces, remove the wildcard
-                        response.getContent().removeMediaType(javax.ws.rs.core.MediaType.WILDCARD);
+                        response.getContent().removeMediaType(jakarta.ws.rs.core.MediaType.WILDCARD);
                     }
                 }
             }
@@ -360,8 +360,8 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             if (requestBody != null) {
                 // Find the wildcard return type
                 if (requestBody.getContent() != null
-                        && requestBody.getContent().getMediaType(javax.ws.rs.core.MediaType.WILDCARD) != null) {
-                    MediaType wildcardMedia = requestBody.getContent().getMediaType(javax.ws.rs.core.MediaType.WILDCARD);
+                        && requestBody.getContent().getMediaType(jakarta.ws.rs.core.MediaType.WILDCARD) != null) {
+                    MediaType wildcardMedia = requestBody.getContent().getMediaType(jakarta.ws.rs.core.MediaType.WILDCARD);
 
                     // Copy the wildcard return type to the valid request body types
                     List<String> mediaTypes = consumes.getValue("value", List.class);
@@ -369,7 +369,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
                         requestBody.getContent().addMediaType(getContentType(mediaType), wildcardMedia);
                     }
                     // If there is an @Consumes, remove the wildcard
-                    requestBody.getContent().removeMediaType(javax.ws.rs.core.MediaType.WILDCARD);
+                    requestBody.getContent().removeMediaType(jakarta.ws.rs.core.MediaType.WILDCARD);
                 }
             }
         }
@@ -408,7 +408,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             // If there's no request body, fill out a new one right down to the schema
             if (workingOperation.getRequestBody() == null) {
                 workingOperation.setRequestBody(new RequestBodyImpl().content(new ContentImpl()
-                        .addMediaType(javax.ws.rs.core.MediaType.WILDCARD, new MediaTypeImpl()
+                        .addMediaType(jakarta.ws.rs.core.MediaType.WILDCARD, new MediaTypeImpl()
                                 .schema(new SchemaImpl()))));
             }
 
@@ -684,7 +684,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             }
             // Insert the schema to the request body media type
             MediaType mediaType = context.getWorkingOperation().getRequestBody().getContent()
-                    .getMediaType(javax.ws.rs.core.MediaType.WILDCARD);
+                    .getMediaType(jakarta.ws.rs.core.MediaType.WILDCARD);
             Schema schema = SchemaImpl.createInstance(schemaAnnotation, context);
             SchemaImpl.merge(schema, mediaType.getSchema(), true, context);
             if (schema.getRef() != null && !schema.getRef().isEmpty()) {
@@ -863,7 +863,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             if (isVoid(method.getReturnType())) {
                 if (HttpMethod.POST.equals(operation.getMethod())) {
                     responseCode = "201";
-                } else if (Arrays.asList(method.getArgumentTypes()).contains("javax.ws.rs.container.AsyncResponse")) {
+                } else if (Arrays.asList(method.getArgumentTypes()).contains("jakarta.ws.rs.container.AsyncResponse")) {
                     responseCode = "200";
                 } else {
                     responseCode = "204";
@@ -1153,7 +1153,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
         // Create the default request body with a wildcard mediatype
         MediaType mediaType = new MediaTypeImpl().schema(createSchema(context, bodyType));
-        requestBody.getContent().addMediaType(javax.ws.rs.core.MediaType.WILDCARD, mediaType);
+        requestBody.getContent().addMediaType(jakarta.ws.rs.core.MediaType.WILDCARD, mediaType);
 
         operation.setRequestBody(requestBody);
         return requestBody;
@@ -1183,29 +1183,29 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         MediaType mediaType = new MediaTypeImpl().schema(
                 createSchema(context, method.getReturnType())
         );
-        defaultResponse.getContent().addMediaType(javax.ws.rs.core.MediaType.WILDCARD, mediaType);
+        defaultResponse.getContent().addMediaType(jakarta.ws.rs.core.MediaType.WILDCARD, mediaType);
 
         // Add responses for the applicable declared exceptions
-        for (String exceptionType : method.getExceptionTypes()) {
-            final APIResponseImpl mappedResponse = (APIResponseImpl) context.getMappedExceptionResponses().get(exceptionType);
-            if (mappedResponse != null) {
-                final String responseCode = mappedResponse.getResponseCode();
-                if (responseCode != null) {
-                    responses.addAPIResponse(responseCode, mappedResponse);
-                }
-            }
-            operation.addExceptionType(exceptionType);
-        }
+//        for (String exceptionType : method.getExceptionTypes()) {
+//            final APIResponseImpl mappedResponse = (APIResponseImpl) context.getMappedExceptionResponses().get(exceptionType);
+//            if (mappedResponse != null) {
+//                final String responseCode = mappedResponse.getResponseCode();
+//                if (responseCode != null) {
+//                    responses.addAPIResponse(responseCode, mappedResponse);
+//                }
+//            }
+//            operation.addExceptionType(exceptionType);
+//        }
     }
 
     /**
-     * @return the {@link javax.ws.rs.core.MediaType} with the given name.
+     * @return the {@link jakarta.ws.rs.core.MediaType} with the given name.
      * Defaults to <code>WILDCARD</code>.
      */
     private static String getContentType(String name) {
-        String contentType = javax.ws.rs.core.MediaType.WILDCARD;
+        String contentType = jakarta.ws.rs.core.MediaType.WILDCARD;
         try {
-            javax.ws.rs.core.MediaType mediaType = javax.ws.rs.core.MediaType.valueOf(name);
+            jakarta.ws.rs.core.MediaType mediaType = jakarta.ws.rs.core.MediaType.valueOf(name);
             if (mediaType != null) {
                 contentType = mediaType.toString();
             }
@@ -1381,7 +1381,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         }
 
         // If the object is a Java EE object type
-        if (referenceClassName.startsWith("javax.")) {
+        if (referenceClassName.startsWith("javax.") || referenceClassName.startsWith("jakarta.")) {
             return false;
         }
 

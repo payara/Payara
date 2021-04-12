@@ -74,8 +74,8 @@ import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.servlet.ReadListener;
-import javax.servlet.http.WebConnection;
+import jakarta.servlet.ReadListener;
+import jakarta.servlet.http.WebConnection;
 
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import org.apache.catalina.ContainerEvent;

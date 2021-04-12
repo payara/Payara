@@ -58,9 +58,9 @@ import static org.glassfish.api.admin.ServerEnvironment.DEFAULT_INSTANCE_NAME;
 import java.security.Policy;
 import java.util.logging.Logger;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.inject.Singleton;
 
 import org.glassfish.hk2.api.IterableProvider;
 import org.jvnet.hk2.annotations.Service;
@@ -83,9 +83,9 @@ public class PolicyLoader {
     private static final Logger LOGGER = SecurityLoggerInfo.getLogger();
     private static final StringManager STRING_MANAGER = StringManager.getManager(PolicyLoader.class);
     
-    private static final String POLICY_PROVIDER_14 = "javax.security.jacc.policy.provider";
-    private static final String POLICY_PROVIDER_13 = "javax.security.jacc.auth.policy.provider";
-    private static final String POLICY_CONF_FACTORY = "javax.security.jacc.PolicyConfigurationFactory.provider";
+    private static final String POLICY_PROVIDER_14 = "jakarta.security.jacc.policy.provider";
+    private static final String POLICY_PROVIDER_13 = "jakarta.security.jacc.auth.policy.provider";
+    private static final String POLICY_CONF_FACTORY = "jakarta.security.jacc.PolicyConfigurationFactory.provider";
     private static final String POLICY_PROP_PREFIX = "com.sun.enterprise.jaccprovider.property.";
 
     @Inject
@@ -104,11 +104,11 @@ public class PolicyLoader {
      * The policy-provider element in domain.xml is consulted for the class to use.
      * 
      * <p>
-     * Note that if the <code>javax.security.jacc.policy.provider</code> system property is set it will override 
+     * Note that if the <code>jakarta.security.jacc.policy.provider</code> system property is set it will override 
      * the domain.xml configuration. This will normally not be the case in Payara.
      *
      * <P>
-     * The J2EE 1.3 property <code>javax.security.jacc.auth.policy.provider</code> is checked as a last resort. 
+     * The J2EE 1.3 property <code>jakarta.security.jacc.auth.policy.provider</code> is checked as a last resort. 
      * It should not be set in J2EE 1.4.
      */
     public void loadPolicy() {

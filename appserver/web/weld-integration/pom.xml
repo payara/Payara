@@ -86,7 +86,7 @@
                 <includes>
                     <include>**/faces-config.xml</include>
                     <include>**/com.sun.faces.spi.FacesConfigResourceProvider</include>
-                    <include>**/javax.enterprise.inject.spi.Extension</include>
+                    <include>**/jakarta.enterprise.inject.spi.Extension</include>
                 </includes>
             </resource>
         </resources>
@@ -142,8 +142,8 @@
                     <artifactId>weld-spi</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>javax.enterprise</groupId>
-                    <artifactId>cdi-api</artifactId>
+                    <groupId>jakarta.enterprise</groupId>
+                    <artifactId>jakarta.enterprise.cdi-api</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>jakarta.enterprise</groupId>

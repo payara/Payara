@@ -44,8 +44,8 @@ import io.opentracing.Span;
 import io.opentracing.Tracer;
 import org.eclipse.microprofile.opentracing.Traced;
 
-import javax.ejb.Stateless;
-import javax.inject.Inject;
+import jakarta.ejb.Stateless;
+import jakarta.inject.Inject;
 import java.util.Map;
 import java.util.Random;
 

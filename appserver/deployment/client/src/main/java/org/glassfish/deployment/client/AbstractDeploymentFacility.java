@@ -101,7 +101,7 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
     // Reserve this range [AS-DEPLOYMENT-04001, AS-DEPLOYMENT-06000]
     // for message ids used in this deployment dol module
     @LoggerInfo(subsystem = "DEPLOYMENT", description = "Deployment logger for client module", publish = true)
-    private static final String DEPLOYMENT_LOGGER = "javax.enterprise.system.tools.deployment.client";
+    private static final String DEPLOYMENT_LOGGER = "jakarta.enterprise.system.tools.deployment.client";
 
     /** Shared deployment logger: {@value #DEPLOYMENT_LOGGER} */
     public static final Logger deplLogger = Logger.getLogger(DEPLOYMENT_LOGGER, SHARED_LOGMESSAGE_RESOURCE);

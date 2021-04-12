@@ -43,8 +43,8 @@ package org.glassfish.webservices.connector.annotation.handlers;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.ws.WebServiceRefs;
-import javax.xml.ws.WebServiceRef;
+import jakarta.xml.ws.WebServiceRefs;
+import jakarta.xml.ws.WebServiceRef;
 
 import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;

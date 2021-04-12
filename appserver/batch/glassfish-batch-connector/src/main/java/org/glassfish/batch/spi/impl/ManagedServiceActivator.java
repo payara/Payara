@@ -41,7 +41,7 @@ package org.glassfish.batch.spi.impl;
 
 import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 /**
  * @author Mahesh Kannan

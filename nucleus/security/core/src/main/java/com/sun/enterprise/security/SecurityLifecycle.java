@@ -47,8 +47,8 @@ import static java.util.logging.Level.SEVERE;
 
 import java.util.logging.Logger;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.EventTypes;

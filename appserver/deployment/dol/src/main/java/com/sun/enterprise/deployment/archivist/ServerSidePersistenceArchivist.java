@@ -45,7 +45,7 @@ import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.admin.*;
 import org.jvnet.hk2.annotations.Service;
 import com.sun.enterprise.deployment.util.DOLUtils;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 
 /**

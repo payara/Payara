@@ -48,8 +48,8 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Locale;
 import java.util.Map;
-import javax.servlet.*;
-import javax.servlet.http.*;
+import jakarta.servlet.*;
+import jakarta.servlet.http.*;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.RequestFacade;
 

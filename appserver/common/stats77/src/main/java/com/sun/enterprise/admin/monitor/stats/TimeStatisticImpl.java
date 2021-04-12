@@ -41,7 +41,7 @@
 
 package com.sun.enterprise.admin.monitor.stats;
 
-import javax.management.j2ee.statistics.TimeStatistic;
+import org.glassfish.j2ee.statistics.TimeStatistic;
 import com.sun.enterprise.util.i18n.StringManager;
 
 /** An implementation of a TimeStatistic. All instances of this class are

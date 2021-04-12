@@ -50,8 +50,8 @@ import com.sun.enterprise.resource.listener.PoolLifeCycleListener;
 import com.sun.enterprise.resource.pool.waitqueue.PoolWaitQueue;
 import org.glassfish.resourcebase.resources.api.PoolInfo;
 
-import javax.resource.spi.RetryableUnavailableException;
-import javax.transaction.Transaction;
+import jakarta.resource.spi.RetryableUnavailableException;
+import jakarta.transaction.Transaction;
 
 /**
  * @author Tony Ng

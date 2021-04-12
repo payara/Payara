@@ -45,10 +45,10 @@ import static org.glassfish.api.admin.ServerEnvironment.DEFAULT_INSTANCE_NAME;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Provider;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.inject.Provider;
+import jakarta.inject.Singleton;
 
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.security.common.CNonceCache;

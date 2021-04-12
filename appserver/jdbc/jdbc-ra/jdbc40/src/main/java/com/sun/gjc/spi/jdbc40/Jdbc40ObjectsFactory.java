@@ -76,7 +76,7 @@ public class Jdbc40ObjectsFactory extends JdbcObjectsFactory {
     @Override
     public ConnectionHolder getConnection(Connection conObject,
                                           ManagedConnectionImpl mcObject,
-                                          javax.resource.spi.ConnectionRequestInfo criObject,
+                                          jakarta.resource.spi.ConnectionRequestInfo criObject,
                                           boolean statementWrapping,
                                           SQLTraceDelegator sqlTraceDelegator) {
         ConnectionHolder connection = null;
@@ -107,7 +107,7 @@ public class Jdbc40ObjectsFactory extends JdbcObjectsFactory {
      */
     @Override
     public javax.sql.DataSource getDataSourceInstance(ManagedConnectionFactoryImpl mcfObject,
-                                                      javax.resource.spi.ConnectionManager cmObject) {
+                                                      jakarta.resource.spi.ConnectionManager cmObject) {
         return new DataSource40(mcfObject, cmObject);
     }
 

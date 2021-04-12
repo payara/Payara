@@ -43,8 +43,8 @@ package com.sun.enterprise.web.accesslog;
 import org.apache.catalina.Request;
 import org.apache.catalina.Response;
 
-import javax.servlet.ServletRequest;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.nio.CharBuffer;
 
 /**

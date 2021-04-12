@@ -45,8 +45,8 @@ package com.sun.enterprise.resource.allocator;
 import java.util.logging.Level;
 
 import javax.transaction.xa.XAResource;
-import javax.resource.spi.*;
-import javax.resource.ResourceException;
+import jakarta.resource.spi.*;
+import jakarta.resource.ResourceException;
 import javax.security.auth.Subject;
 
 import com.sun.enterprise.deployment.ConnectorDescriptor;

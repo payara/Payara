@@ -40,6 +40,6 @@
 
 package org.glassfish.cdi.transaction;
 
-@javax.transaction.Transactional(value = javax.transaction.Transactional.TxType.NEVER)
+@jakarta.transaction.Transactional(value = jakarta.transaction.Transactional.TxType.NEVER)
 public class BeanNever extends BeanBase {
 }

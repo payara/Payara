@@ -41,7 +41,7 @@
 
 package com.sun.enterprise.admin.monitor.stats;
 
-import javax.management.j2ee.statistics.RangeStatistic;
+import org.glassfish.j2ee.statistics.RangeStatistic;
 
 /** An implementation of a RangeStatistic. All instances of this class are
  * immutable. Provides all the necessary accessors for properties.

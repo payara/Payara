@@ -68,7 +68,7 @@ public interface StreamWriter {
      *
      * @throws Exception Any exception thrown while writing. E.g. for JSON this
      * might be a
-     * {@link javax.json.stream.JsonGenerationException JsonGenerationException}.
+     * {@link jakarta.json.stream.JsonGenerationException JsonGenerationException}.
      */
     public void writeStartDocument() throws Exception;
 
@@ -78,7 +78,7 @@ public interface StreamWriter {
      *
      * @throws Exception Any exception thrown while writing. E.g. for JSON this
      * might be a
-     * {@link javax.json.stream.JsonGenerationException JsonGenerationException}.
+     * {@link jakarta.json.stream.JsonGenerationException JsonGenerationException}.
      */
     public void writeEndDocument() throws Exception;
 
@@ -88,7 +88,7 @@ public interface StreamWriter {
      * @param element The name of the object
      * @throws Exception Any exception thrown while writing. E.g. for JSON this
      * might be a
-     * {@link javax.json.stream.JsonGenerationException JsonGenerationException}.
+     * {@link jakarta.json.stream.JsonGenerationException JsonGenerationException}.
      */
     public void writeStartObject(String element) throws Exception;
 
@@ -98,7 +98,7 @@ public interface StreamWriter {
      *
      * @throws Exception Any exception thrown while writing. E.g. for JSON this
      * might be a
-     * {@link javax.json.stream.JsonGenerationException JsonGenerationException}.
+     * {@link jakarta.json.stream.JsonGenerationException JsonGenerationException}.
      */
     public void writeEndObject() throws Exception;
 
@@ -109,7 +109,7 @@ public interface StreamWriter {
      * @param element The name of the array
      * @throws Exception Any exception thrown while writing. E.g. for JSON this
      * might be a
-     * {@link javax.json.stream.JsonGenerationException JsonGenerationException}.
+     * {@link jakarta.json.stream.JsonGenerationException JsonGenerationException}.
      */
     public void writeStartArray(String element) throws Exception;
 
@@ -120,7 +120,7 @@ public interface StreamWriter {
      *
      * @throws Exception Any exception thrown while writing. E.g. for JSON this
      * might be a
-     * {@link javax.json.stream.JsonGenerationException JsonGenerationException}.
+     * {@link jakarta.json.stream.JsonGenerationException JsonGenerationException}.
      */
     public void writeEndArray() throws Exception;
 
@@ -132,7 +132,7 @@ public interface StreamWriter {
      * @param value The value of the attribute
      * @throws Exception Any exception thrown while writing. E.g. for JSON this
      * might be a
-     * {@link javax.json.stream.JsonGenerationException JsonGenerationException}.
+     * {@link jakarta.json.stream.JsonGenerationException JsonGenerationException}.
      */
     public void writeAttribute(String name, String value) throws Exception;
 
@@ -144,7 +144,7 @@ public interface StreamWriter {
      * @param value The value of the attribute
      * @throws Exception Any exception thrown while writing. E.g. for JSON this
      * might be a
-     * {@link javax.json.stream.JsonGenerationException JsonGenerationException}.
+     * {@link jakarta.json.stream.JsonGenerationException JsonGenerationException}.
      */
     public void writeAttribute(String name, Boolean value) throws Exception;
 
@@ -154,7 +154,7 @@ public interface StreamWriter {
      *
      * @throws Exception Any exception thrown while closing the OutputStream.
      * E.g. for JSON this might be a
-     * {@link javax.json.stream.JsonGenerationException JsonGenerationException}.
+     * {@link jakarta.json.stream.JsonGenerationException JsonGenerationException}.
      */
     public void close() throws Exception;
 

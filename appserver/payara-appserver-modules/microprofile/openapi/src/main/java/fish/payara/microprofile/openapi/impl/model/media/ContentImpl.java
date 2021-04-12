@@ -72,7 +72,7 @@ public class ContentImpl extends LinkedHashMap<String, MediaType> implements Con
         ContentImpl from = new ContentImpl();
         String typeName = annotation.getValue("mediaType", String.class);
         if (typeName == null || typeName.isEmpty()) {
-            typeName = javax.ws.rs.core.MediaType.WILDCARD;
+            typeName = jakarta.ws.rs.core.MediaType.WILDCARD;
         }
         MediaType mediaType = new MediaTypeImpl();
         from.addMediaType(typeName, mediaType);

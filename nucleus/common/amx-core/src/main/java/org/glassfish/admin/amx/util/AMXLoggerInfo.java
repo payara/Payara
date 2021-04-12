@@ -61,7 +61,7 @@ public class AMXLoggerInfo {
     public static final String SHARED_LOGMESSAGE_RESOURCE = "org.glassfish.admin.amx.util.LogMessages";
     
     @LoggerInfo(subsystem = "COMMON", description = "AMX Services", publish = true)
-    public static final String AMX_LOGGER = "javax.enterprise.system.tools.amx";
+    public static final String AMX_LOGGER = "jakarta.enterprise.system.tools.amx";
     private static final Logger amxLogger = Logger.getLogger(
                 AMX_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
 

@@ -68,13 +68,13 @@ import org.glassfish.api.deployment.OpsParams;
 import org.glassfish.deployment.common.SimpleDeployer;
 import org.glassfish.deployment.common.DeploymentException;
 import org.glassfish.persistence.common.Java2DBProcessorHelper;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PostConstruct;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.PersistenceException;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.PersistenceException;
 import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
@@ -222,7 +222,7 @@ public class JPADeployer extends SimpleDeployer<JPAContainer, JPApplicationConta
                         DeployCommandParameters deployParams = context.getCommandParameters(DeployCommandParameters.class);
 
                         //If on DAS and not generating schema for remotes then return here
-                        String jpaScemaGeneration = pud.getProperties().getProperty("javax.persistence.schema-generation.database.action", "none").toLowerCase();
+                        String jpaScemaGeneration = pud.getProperties().getProperty("jakarta.persistence.schema-generation.database.action", "none").toLowerCase();
                         String eclipselinkSchemaGeneration = pud.getProperties().getProperty("eclipselink.ddl-generation", "none").toLowerCase();
                         if ("none".equals(jpaScemaGeneration) && "none".equals(eclipselinkSchemaGeneration)) {
                             return;

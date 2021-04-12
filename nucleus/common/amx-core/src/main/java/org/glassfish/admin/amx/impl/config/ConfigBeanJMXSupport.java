@@ -69,9 +69,9 @@ import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.CompositeDataSupport;
 import javax.management.openmbean.CompositeType;
 import javax.management.openmbean.OpenType;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.external.arc.Stability;
 import org.glassfish.external.arc.Taxonomy;
@@ -1076,7 +1076,7 @@ class ConfigBeanJMXSupport
 
         public String pattern()
         {
-            final javax.validation.constraints.Pattern pat = mMethod.getAnnotation(javax.validation.constraints.Pattern.class);
+            final jakarta.validation.constraints.Pattern pat = mMethod.getAnnotation(jakarta.validation.constraints.Pattern.class);
             return pat == null ? null : pat.regexp();
         }
 

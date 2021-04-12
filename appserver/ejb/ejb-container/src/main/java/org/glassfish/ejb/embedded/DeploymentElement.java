@@ -53,7 +53,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
-import javax.ejb.EJBException;
+import jakarta.ejb.EJBException;
 
 import org.glassfish.embeddable.archive.ScatteredArchive;
 import org.glassfish.deployment.common.ModuleExploder;

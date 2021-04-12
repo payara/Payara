@@ -47,15 +47,14 @@ import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
 import org.jvnet.hk2.annotations.Service;
-
-import javax.persistence.PersistenceContext;
-import javax.persistence.PersistenceContexts;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.PersistenceContexts;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * This handler is responsible for handling the 
- * javax.persistence.PersistenceContexts annotation.
+ * jakarta.persistence.PersistenceContexts annotation.
  *
  */
 @Service

@@ -42,9 +42,9 @@ package com.sun.appserv.web.taglibs.cache;
 
 import com.sun.appserv.util.cache.Cache;
 
-import javax.servlet.jsp.JspException;
-import javax.servlet.jsp.PageContext;
-import javax.servlet.jsp.tagext.TagSupport;
+import jakarta.servlet.jsp.JspException;
+import jakarta.servlet.jsp.PageContext;
+import jakarta.servlet.jsp.tagext.TagSupport;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 

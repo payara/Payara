@@ -309,7 +309,7 @@ public class ConnectionManager {
 
     /**
      * List of Connections associated with transactions, indexed by
-     * transaction object (javax.transaction.Transaction).
+     * transaction object (jakarta.transaction.Transaction).
      * @serial
      */
     private transient Hashtable xactConnections;

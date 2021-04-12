@@ -44,16 +44,16 @@ package com.sun.enterprise.transaction;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import com.sun.enterprise.transaction.api.TransactionImport;
 
-import javax.inject.Inject;
-import javax.resource.spi.XATerminator;
-import javax.transaction.HeuristicMixedException;
-import javax.transaction.HeuristicRollbackException;
-import javax.transaction.InvalidTransactionException;
-import javax.transaction.NotSupportedException;
-import javax.transaction.RollbackException;
-import javax.transaction.SystemException;
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
+import jakarta.inject.Inject;
+import jakarta.resource.spi.XATerminator;
+import jakarta.transaction.HeuristicMixedException;
+import jakarta.transaction.HeuristicRollbackException;
+import jakarta.transaction.InvalidTransactionException;
+import jakarta.transaction.NotSupportedException;
+import jakarta.transaction.RollbackException;
+import jakarta.transaction.SystemException;
+import jakarta.transaction.Transaction;
+import jakarta.transaction.TransactionManager;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
@@ -138,7 +138,7 @@ public class TransactionManagerHelper implements TransactionManager, Transaction
 
         try {
             tm.recreate(xid, timeout);
-        } catch (javax.resource.spi.work.WorkException ex) {
+        } catch (jakarta.resource.spi.work.WorkException ex) {
             throw new IllegalStateException(ex);
         }
         preInvokeTx(true);
@@ -151,7 +151,7 @@ public class TransactionManagerHelper implements TransactionManager, Transaction
         postInvokeTx(false, true);
         try {
             tm.release(xid);
-        } catch (javax.resource.spi.work.WorkException ex) {
+        } catch (jakarta.resource.spi.work.WorkException ex) {
             throw new IllegalStateException(ex);
         }  finally {
             if (tm instanceof JavaEETransactionManagerSimplified) {

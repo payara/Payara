@@ -40,7 +40,7 @@
 
 package fish.payara.ejb.http.protocol;
 
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.MediaType;
 
 public interface MediaTypes {
     String JSON = MediaType.APPLICATION_JSON;

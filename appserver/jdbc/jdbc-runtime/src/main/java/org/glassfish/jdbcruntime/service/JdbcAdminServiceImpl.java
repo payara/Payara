@@ -52,11 +52,11 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.logging.Level;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 import javax.naming.NamingException;
-import javax.resource.ResourceException;
-import javax.resource.spi.ManagedConnection;
-import javax.resource.spi.ManagedConnectionFactory;
+import jakarta.resource.ResourceException;
+import jakarta.resource.spi.ManagedConnection;
+import jakarta.resource.spi.ManagedConnectionFactory;
 
 import org.glassfish.resourcebase.resources.api.PoolInfo;
 import org.jvnet.hk2.annotations.Service;
@@ -222,7 +222,7 @@ public class JdbcAdminServiceImpl extends ConnectorService {
      * connection pool refers to. This is used for connection validation.
      * @param poolInfo
      * @return all validation table names.
-     * @throws javax.resource.ResourceException
+     * @throws jakarta.resource.ResourceException
      * @throws javax.naming.NamingException
      */
     public Set<String> getValidationTableNames(PoolInfo poolInfo)
@@ -292,7 +292,7 @@ public class JdbcAdminServiceImpl extends ConnectorService {
      * @param con
      * @param catalog database name used.
      * @return
-     * @throws javax.resource.ResourceException
+     * @throws jakarta.resource.ResourceException
      */
     public static Set<String> getValidationTableNames(java.sql.Connection con, String catalog)
             throws ResourceException {

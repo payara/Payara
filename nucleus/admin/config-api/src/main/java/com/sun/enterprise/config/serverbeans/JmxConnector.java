@@ -45,9 +45,9 @@ import com.sun.enterprise.config.serverbeans.customvalidators.ReferenceConstrain
 
 import java.beans.PropertyVetoException;
 import java.util.List;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
-import javax.validation.Payload;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.Payload;
 
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.config.types.PropertyBag;

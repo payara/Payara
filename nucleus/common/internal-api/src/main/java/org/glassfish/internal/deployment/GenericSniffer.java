@@ -45,7 +45,7 @@ import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.module.ModuleDefinition;
 import com.sun.enterprise.module.HK2Module;
 import java.io.ByteArrayOutputStream;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;

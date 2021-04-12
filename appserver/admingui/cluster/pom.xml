@@ -95,7 +95,7 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>com.sun.jsftemplating</groupId>
+            <groupId>org.glassfish.jsftemplating</groupId>
             <artifactId>jsftemplating</artifactId>
         </dependency>
     </dependencies>

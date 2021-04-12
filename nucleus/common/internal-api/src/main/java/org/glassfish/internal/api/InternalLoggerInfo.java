@@ -56,7 +56,7 @@ public class InternalLoggerInfo {
     public static final String SHARED_LOGMESSAGE_RESOURCE = "org.glassfish.internal.api.LogMessages";
     
     @LoggerInfo(subsystem = "COMMON", description = "Internal API", publish = true)
-    public static final String INT_LOGGER = "javax.enterprise.system.tools.util";
+    public static final String INT_LOGGER = "jakarta.enterprise.system.tools.util";
     private static final Logger intLogger = Logger.getLogger(
                 INT_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
 

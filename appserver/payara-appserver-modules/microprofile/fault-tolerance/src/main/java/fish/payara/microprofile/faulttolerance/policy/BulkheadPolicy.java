@@ -42,7 +42,7 @@ package fish.payara.microprofile.faulttolerance.policy;
 import java.lang.reflect.Method;
 import java.util.concurrent.CompletionStage;
 
-import javax.interceptor.InvocationContext;
+import jakarta.interceptor.InvocationContext;
 
 import org.eclipse.microprofile.faulttolerance.Bulkhead;
 

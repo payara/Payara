@@ -80,11 +80,11 @@
 
     <dependencies>
         <dependency>
-            <groupId>jakarta.security.jacc</groupId>
-            <artifactId>jakarta.security.jacc-api</artifactId>
+            <groupId>jakarta.authorization</groupId>
+            <artifactId>jakarta.authorization-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>jakarta.servlet</groupId>
+             <groupId>jakarta.servlet</groupId>
              <artifactId>jakarta.servlet-api</artifactId>
         </dependency>
 

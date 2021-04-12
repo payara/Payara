@@ -62,7 +62,7 @@
                 
         <sun:property id="resTyped"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.common.resType}">
             <sun:dropDown id="resType" selected="#{pageSession.valueMap['connectionDefinitionName']}" rendered="#{!edit}"
-                labels={"javax.jms.TopicConnectionFactory","javax.jms.QueueConnectionFactory","javax.jms.ConnectionFactory"} />
+                labels={"jakarta.jms.TopicConnectionFactory","jakarta.jms.QueueConnectionFactory","jakarta.jms.ConnectionFactory"} />
             <sun:staticText text="#{pageSession.valueMap['connectionDefinitionName']}" rendered="#{edit}"/>
         </sun:property>
                 

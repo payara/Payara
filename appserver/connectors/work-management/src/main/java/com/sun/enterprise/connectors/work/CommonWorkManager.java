@@ -51,7 +51,7 @@ import com.sun.enterprise.connectors.work.monitor.WorkManagementProbeProvider;
 import com.sun.enterprise.connectors.work.monitor.WorkManagementStatsProvider;
 import com.sun.enterprise.connectors.work.context.WorkContextHandlerImpl;
 
-import javax.resource.spi.work.*;
+import jakarta.resource.spi.work.*;
 
 import java.text.MessageFormat;
 import java.util.logging.Level;

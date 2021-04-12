@@ -48,8 +48,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.ejb.EJBException;
-import javax.ejb.NoSuchEJBException;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.NoSuchEJBException;
 
 import org.glassfish.ejb.LogFacade;
 import org.glassfish.ejb.api.EjbContainerServices;
@@ -148,7 +148,7 @@ public class EjbContainerServicesImpl implements EjbContainerServices {
             localObjectImpl.remove();
         } catch(EJBException e) {
             LogFacade.getLogger().log(Level.FINE, "EJBException during remove. ", e);    
-        } catch(javax.ejb.RemoveException re) {
+        } catch(jakarta.ejb.RemoveException re) {
             throw new NoSuchEJBException(re.getMessage(), re);
         }
 

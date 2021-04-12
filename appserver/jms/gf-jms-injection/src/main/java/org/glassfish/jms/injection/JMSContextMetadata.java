@@ -44,10 +44,10 @@ package org.glassfish.jms.injection;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.internal.api.RelativePathResolver;
 
-import javax.jms.JMSConnectionFactory;
-import javax.jms.JMSContext;
-import javax.jms.JMSPasswordCredential;
-import javax.jms.JMSSessionMode;
+import jakarta.jms.JMSConnectionFactory;
+import jakarta.jms.JMSContext;
+import jakarta.jms.JMSPasswordCredential;
+import jakarta.jms.JMSSessionMode;
 import java.io.Serializable;
 import java.security.MessageDigest;
 import java.util.logging.Level;

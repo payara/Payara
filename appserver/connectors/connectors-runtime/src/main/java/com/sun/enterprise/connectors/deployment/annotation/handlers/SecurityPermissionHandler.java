@@ -45,8 +45,8 @@ import com.sun.enterprise.deployment.ConnectorDescriptor;
 import com.sun.enterprise.deployment.annotation.handlers.AbstractHandler;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 
-import javax.resource.spi.Connector;
-import javax.resource.spi.SecurityPermission;
+import jakarta.resource.spi.Connector;
+import jakarta.resource.spi.SecurityPermission;
 import java.lang.annotation.Annotation;
 import java.util.logging.Logger;
 import java.util.logging.Level;

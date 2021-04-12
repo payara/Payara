@@ -61,8 +61,8 @@ import org.glassfish.config.support.TargetType;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.ServerEnvironment;
 
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
 

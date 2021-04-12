@@ -46,7 +46,7 @@ import org.glassfish.logging.annotation.LogMessagesResourceBundle;
 public class LogFacade {
 
     @LoggerInfo(subsystem = "connector", description = "logger for connector work manager module", publish = true)
-    public static final String CONNECTOR_WORK_MANAGER_LOGGER = "javax.enterprise.connector.work";
+    public static final String CONNECTOR_WORK_MANAGER_LOGGER = "jakarta.enterprise.connector.work";
 
     @LogMessagesResourceBundle
     public static final String SHARING_MESSAGE_RB = "com.sun.enterprise.connectors.work.LogMessages";

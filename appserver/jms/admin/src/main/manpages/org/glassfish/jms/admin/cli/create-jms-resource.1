@@ -25,10 +25,10 @@ OPTIONS
            Displays the help text for the subcommand.
 
        --restype
-           The JMS resource type, which can be javax.jms.Topic,
-           javax.jms.Queue, javax.jms.ConnectionFactory,
-           javax.jms.TopicConnectionFactory, or
-           javax.jms.QueueConnectionFactory.
+           The JMS resource type, which can be jakarta.jms.Topic,
+           jakarta.jms.Queue, jakarta.jms.ConnectionFactory,
+           jakarta.jms.TopicConnectionFactory, or
+           jakarta.jms.QueueConnectionFactory.
 
        --target
            Creates the JMS resource only for the specified target. Valid
@@ -170,13 +170,13 @@ EXAMPLES
        Example 1, Creating a JMS connection factory resource for durable
        subscriptions
            The following subcommand creates a connection factory resource of
-           type javax.jms.ConnectionFactory whose JNDI name is
+           type jakarta.jms.ConnectionFactory whose JNDI name is
            jms/DurableConnectionFactory. The ClientId property sets a client
            ID on the connection factory so that it can be used for durable
            subscriptions. The JNDI name for a JMS resource customarily
            includes the jms/ naming subcontext.
 
-               asadmin> create-jms-resource --restype javax.jms.ConnectionFactory
+               asadmin> create-jms-resource --restype jakarta.jms.ConnectionFactory
                --description "connection factory for durable subscriptions"
                --property ClientId=MyID jms/DurableConnectionFactory
                Connector resource jms/DurableConnectionFactory created.
@@ -187,7 +187,7 @@ EXAMPLES
            name is jms/MyQueue. The Name property specifies the physical
            destination to which the resource refers.
 
-               asadmin> create-jms-resource --restype javax.jms.Queue
+               asadmin> create-jms-resource --restype jakarta.jms.Queue
                --property Name=PhysicalQueue jms/MyQueue
                Administered object jms/MyQueue created.
                Command create-jms-resource executed successfully.

@@ -53,8 +53,8 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.javaee.core.deployment.ApplicationHolder;
 
 import org.jvnet.hk2.annotations.Service;
-import javax.inject.Singleton;
-import javax.inject.Inject;
+import jakarta.inject.Singleton;
+import jakarta.inject.Inject;
 import javax.enterprise.deploy.shared.ModuleType;
 
 import java.util.Enumeration;

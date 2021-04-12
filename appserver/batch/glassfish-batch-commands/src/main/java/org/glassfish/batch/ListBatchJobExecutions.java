@@ -52,9 +52,9 @@ import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.batch.operations.*;
-import javax.batch.runtime.JobExecution;
-import javax.batch.runtime.JobInstance;
+import jakarta.batch.operations.*;
+import jakarta.batch.runtime.JobExecution;
+import jakarta.batch.runtime.JobInstance;
 import java.util.*;
 import java.util.logging.Level;
 import static org.glassfish.batch.BatchConstants.LIST_BATCH_JOBS_EXECUTIONS;

@@ -42,11 +42,11 @@ package fish.payara.monitoring.rest.app.handler;
 import fish.payara.monitoring.rest.app.RestMonitoringAppResponseToken;
 import fish.payara.monitoring.rest.app.RestMonitoringAppState;
 import fish.payara.monitoring.rest.app.MBeanServerDelegate;
-import javax.inject.Singleton;
-import javax.json.Json;
-import javax.json.JsonException;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+import jakarta.inject.Singleton;
+import jakarta.json.Json;
+import jakarta.json.JsonException;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 
 /**
  *

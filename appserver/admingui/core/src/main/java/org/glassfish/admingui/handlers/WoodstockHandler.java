@@ -59,9 +59,9 @@ import com.sun.webui.jsf.component.Calendar;
 import com.sun.webui.jsf.model.UploadedFile;
 import com.sun.webui.jsf.component.Hyperlink;
 
-import javax.faces.context.ExternalContext;
-import javax.faces.context.FacesContext;
-import javax.faces.model.SelectItem;
+import jakarta.faces.context.ExternalContext;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.model.SelectItem;
 import com.sun.webui.jsf.model.Option;
 import com.sun.webui.jsf.model.OptionGroup;
 import com.sun.webui.jsf.component.DropDown;

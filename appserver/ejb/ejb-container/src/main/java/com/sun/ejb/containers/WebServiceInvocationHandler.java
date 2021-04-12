@@ -52,8 +52,8 @@ import java.lang.reflect.Method;
 import java.rmi.UnmarshalException;
 import java.util.Map;
 
-import javax.ejb.AccessLocalException;
-import javax.ejb.EJBException;
+import jakarta.ejb.AccessLocalException;
+import jakarta.ejb.EJBException;
 
 import org.glassfish.api.invocation.InvocationManager;
 

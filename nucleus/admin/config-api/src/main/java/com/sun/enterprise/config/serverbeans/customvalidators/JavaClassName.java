@@ -46,8 +46,8 @@ import java.lang.annotation.Documented;
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
-import javax.validation.Constraint;
-import javax.validation.Payload;
+import jakarta.validation.Constraint;
+import jakarta.validation.Payload;
 /**
  * User-defined constraint to check if an attribute is a valid Java class name
  * The class name can be a fully qualified classname inlcuding its package name

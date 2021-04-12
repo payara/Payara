@@ -43,7 +43,7 @@ import com.sun.ejb.containers.EJBTimerSchedule;
 import com.sun.ejb.containers.TimerPrimaryKey;
 import java.io.Serializable;
 import java.util.Date;
-import javax.ejb.TimerConfig;
+import jakarta.ejb.TimerConfig;
 
 /**
  *

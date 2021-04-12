@@ -51,8 +51,8 @@ import java.util.logging.Level;
 
 import com.sun.logging.LogDomains;
 
-import javax.inject.Inject;
-import javax.inject.Provider;
+import jakarta.inject.Inject;
+import jakarta.inject.Provider;
 
 /**
  * We support two policies:

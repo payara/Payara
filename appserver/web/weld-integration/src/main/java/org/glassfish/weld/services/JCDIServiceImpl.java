@@ -66,16 +66,16 @@ import org.jboss.weld.manager.api.WeldInjectionTarget;
 import org.jboss.weld.manager.api.WeldManager;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.enterprise.context.*;
-import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.inject.spi.*;
-import javax.inject.Inject;
-import javax.inject.Scope;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
+import jakarta.enterprise.context.*;
+import jakarta.enterprise.context.spi.CreationalContext;
+import jakarta.enterprise.inject.spi.*;
+import jakarta.inject.Inject;
+import jakarta.inject.Scope;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.*;
@@ -117,7 +117,7 @@ public class JCDIServiceImpl implements JCDIService {
     private InvocationManager invocationManager;
 
     @LoggerInfo(subsystem = "AS-WELD", description = "WELD", publish = true)
-    public static final String WELD_LOGGER_SUBSYSTEM_NAME = "javax.enterprise.resource.weld";
+    public static final String WELD_LOGGER_SUBSYSTEM_NAME = "jakarta.enterprise.resource.weld";
     
     private static final Logger logger = Logger.getLogger(WELD_LOGGER_SUBSYSTEM_NAME,
             SHARED_LOGMESSAGE_RESOURCE);

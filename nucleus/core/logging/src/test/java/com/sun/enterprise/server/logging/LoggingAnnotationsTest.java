@@ -80,7 +80,7 @@ public class LoggingAnnotationsTest {
     private static final String ULF_LOG = BASE_PATH + FILE_SEP + "ulf.log";
 
     @LoggerInfo(subsystem = "Logging", description="Main logger for testing logging annotations.")
-    public static final String LOGGER_NAME = "javax.enterprise.test.logging.annotations";
+    public static final String LOGGER_NAME = "jakarta.enterprise.test.logging.annotations";
 
     @LogMessagesResourceBundle()
     public static final String RB_NAME = "com.sun.enterprise.server.logging.test.LogMessages";

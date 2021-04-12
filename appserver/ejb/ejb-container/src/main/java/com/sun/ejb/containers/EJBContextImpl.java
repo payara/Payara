@@ -50,13 +50,13 @@ import org.glassfish.api.invocation.ComponentInvocation;
 
 import com.sun.enterprise.container.common.spi.JCDIService;
 
-import javax.ejb.*;
+import jakarta.ejb.*;
 import javax.naming.Context;
 import javax.naming.InitialContext;
-import javax.transaction.Status;
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
-import javax.transaction.UserTransaction;
+import jakarta.transaction.Status;
+import jakarta.transaction.Transaction;
+import jakarta.transaction.TransactionManager;
+import jakarta.transaction.UserTransaction;
 import java.lang.reflect.Method;
 import java.security.Identity;
 import java.security.Principal;
@@ -65,7 +65,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Implementation of javax.ejb.EJBContext for the J2EE Reference Implementation.
+ * Implementation of jakarta.ejb.EJBContext for the J2EE Reference Implementation.
  *
  */
 

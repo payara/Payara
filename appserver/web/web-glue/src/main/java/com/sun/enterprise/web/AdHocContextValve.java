@@ -46,10 +46,10 @@ import org.apache.catalina.Wrapper;
 import org.glassfish.web.LogFacade;
 import org.glassfish.web.valve.GlassFishValve;
 
-import javax.servlet.Servlet;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.Servlet;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;

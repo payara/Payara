@@ -43,7 +43,7 @@ package org.glassfish.persistence.ejb.entitybean.container.spi;
 import com.sun.appserv.ejb.ReadOnlyBeanLocalNotifier;
 
 public interface ReadOnlyEJBLocalHome
-	extends javax.ejb.EJBLocalHome
+	extends jakarta.ejb.EJBLocalHome
 {
 
     public ReadOnlyBeanLocalNotifier getReadOnlyBeanLocalNotifier();

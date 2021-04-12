@@ -56,7 +56,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Logger;
 
-import javax.security.jacc.PolicyContext;
+import jakarta.security.jacc.PolicyContext;
 
 import com.sun.enterprise.security.common.AppservAccessController;
 import com.sun.enterprise.security.jacc.cache.CachedPermissionImpl.Epoch;

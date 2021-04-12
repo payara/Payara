@@ -53,7 +53,7 @@ import org.glassfish.hk2.api.ServiceLocator;
 import com.sun.enterprise.admin.cli.remote.*;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 /**
  * THe restart-domain command.

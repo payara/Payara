@@ -46,9 +46,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.resource.spi.ManagedConnection;
-import javax.resource.spi.ResourceAllocationException;
-import javax.transaction.SystemException;
+import jakarta.resource.spi.ManagedConnection;
+import jakarta.resource.spi.ResourceAllocationException;
+import jakarta.transaction.SystemException;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;

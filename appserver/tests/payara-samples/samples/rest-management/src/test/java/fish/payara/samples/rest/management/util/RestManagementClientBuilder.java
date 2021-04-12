@@ -41,8 +41,8 @@ package fish.payara.samples.rest.management.util;
 
 import java.net.URI;
 
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.WebTarget;
+import jakarta.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.client.WebTarget;
 
 public abstract class RestManagementClientBuilder {
 

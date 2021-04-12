@@ -43,8 +43,8 @@ package com.sun.enterprise.deployment;
 
 import org.glassfish.deployment.common.Descriptor;
 
-import javax.persistence.SharedCacheMode;
-import javax.persistence.ValidationMode;
+import jakarta.persistence.SharedCacheMode;
+import jakarta.persistence.ValidationMode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

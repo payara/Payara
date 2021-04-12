@@ -42,7 +42,7 @@ package org.glassfish.webservices.monitoring;
 
 import org.glassfish.webservices.monitoring.MessageTraceImpl;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * This class encapsulates all information contained in the thread local

@@ -45,7 +45,7 @@ import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.configapi.tests.ConfigApiTest;
 import java.util.HashMap;
 import java.util.Map;
-import javax.validation.ConstraintViolationException;
+import jakarta.validation.ConstraintViolationException;
 import org.junit.Test;
 import org.junit.Before;
 import org.glassfish.hk2.api.ServiceLocator;

@@ -45,7 +45,7 @@ import fish.payara.nucleus.executorservice.PayaraExecutorServiceConfiguration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;

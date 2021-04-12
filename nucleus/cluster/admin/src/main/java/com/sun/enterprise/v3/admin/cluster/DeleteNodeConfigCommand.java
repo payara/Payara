@@ -45,7 +45,7 @@ import static org.glassfish.api.admin.RestEndpoint.OpType.DELETE;
 
 import java.util.logging.Logger;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;

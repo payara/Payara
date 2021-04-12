@@ -47,7 +47,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.glassfish.flashlight.datatree.TreeNode;
 
 import org.jvnet.hk2.annotations.Service;
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 
 /**
  * @author Harpreet Singh

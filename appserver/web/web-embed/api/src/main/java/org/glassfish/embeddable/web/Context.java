@@ -41,7 +41,7 @@
 package org.glassfish.embeddable.web;
 
 import java.util.*;
-import javax.servlet.*;
+import jakarta.servlet.*;
 import org.glassfish.embeddable.web.config.SecurityConfig;
 
 /**
@@ -68,13 +68,13 @@ public interface Context extends ServletContext {
      * <p>The given listener must be an instance of one or more of the
      * following interfaces:
      * <ul>
-     * <li><tt>javax.servlet.ServletContextAttributeListener</tt>
-     * <li><tt>javax.servlet.ServletRequestAttributeListener</tt>
-     * <li><tt>javax.servlet.ServletRequestListener</tt>
-     * <li><tt>javax.servlet.ServletContextListener</tt>
-     * <li><tt>javax.servlet.http.HttpSessionAttributeListener</tt>
-     * <li><tt>javax.servlet.http.HttpSessionIdListener</tt>
-     * <li><tt>javax.servlet.http.HttpSessionListener</tt>
+     * <li><tt>jakarta.servlet.ServletContextAttributeListener</tt>
+     * <li><tt>jakarta.servlet.ServletRequestAttributeListener</tt>
+     * <li><tt>jakarta.servlet.ServletRequestListener</tt>
+     * <li><tt>jakarta.servlet.ServletContextListener</tt>
+     * <li><tt>jakarta.servlet.http.HttpSessionAttributeListener</tt>
+     * <li><tt>jakarta.servlet.http.HttpSessionIdListener</tt>
+     * <li><tt>jakarta.servlet.http.HttpSessionListener</tt>
      * </ul>
      *
      * @param t the listener to be registered with this <tt>Context</tt>
@@ -93,12 +93,12 @@ public interface Context extends ServletContext {
      * <p>The given listener must be an instance of one or more of the
      * following interfaces:
      * <ul>
-     * <li><tt>javax.servlet.ServletContextAttributeListener</tt>
-     * <li><tt>javax.servlet.ServletRequestAttributeListener</tt>
-     * <li><tt>javax.servlet.ServletRequestListener</tt>
-     * <li><tt>javax.servlet.ServletContextListener</tt>
-     * <li><tt>javax.servlet.http.HttpSessionAttributeListener</tt>
-     * <li><tt>javax.servlet.http.HttpSessionListener</tt>
+     * <li><tt>jakarta.servlet.ServletContextAttributeListener</tt>
+     * <li><tt>jakarta.servlet.ServletRequestAttributeListener</tt>
+     * <li><tt>jakarta.servlet.ServletRequestListener</tt>
+     * <li><tt>jakarta.servlet.ServletContextListener</tt>
+     * <li><tt>jakarta.servlet.http.HttpSessionAttributeListener</tt>
+     * <li><tt>jakarta.servlet.http.HttpSessionListener</tt>
      * </ul>
      *
      * @param c the class from which to instantiate of the listener

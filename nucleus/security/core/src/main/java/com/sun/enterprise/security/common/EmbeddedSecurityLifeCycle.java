@@ -54,8 +54,8 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.internal.embedded.EmbeddedFileSystem;
 import org.glassfish.internal.embedded.EmbeddedLifecycle;
 import org.glassfish.internal.embedded.Server;
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 import org.jvnet.hk2.annotations.Service;
 

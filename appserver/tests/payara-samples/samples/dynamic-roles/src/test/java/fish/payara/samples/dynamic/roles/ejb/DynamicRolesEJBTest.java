@@ -47,8 +47,8 @@ import fish.payara.samples.dynamic.roles.common.Person;
 import java.io.File;
 import java.net.URL;
 
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -65,8 +65,8 @@ import static fish.payara.samples.dynamic.roles.common.AuthoritiesConstants.DEFA
 import static fish.payara.samples.dynamic.roles.common.AuthoritiesConstants.DEFAULT_USER;
 import static fish.payara.samples.dynamic.roles.common.Person.DEFAULT_INSTANCE;
 import static fish.payara.samples.dynamic.roles.common.Person.DEFAULT_INVALID_ACCEESS_TYPE_INSTANCE;
-import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import static jakarta.ws.rs.core.Response.Status.CREATED;
+import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static org.valid4j.matchers.http.HttpResponseMatchers.hasStatus;

@@ -57,7 +57,7 @@ public final class LogUtils {
     public static final String LOG_MESSAGES = "org.glassfish.webservices.transport.tcp.LogMessages";
 
     @LoggerInfo(subsystem = "WEBSERVICES", description = "SOAP/TCP Transport Logger", publish = true)
-    public static final String LOG_DOMAIN = "javax.enterprise.webservices.transport.tcp";
+    public static final String LOG_DOMAIN = "jakarta.enterprise.webservices.transport.tcp";
 
     private static final Logger LOGGER = Logger.getLogger(LOG_DOMAIN, LOG_MESSAGES);
 

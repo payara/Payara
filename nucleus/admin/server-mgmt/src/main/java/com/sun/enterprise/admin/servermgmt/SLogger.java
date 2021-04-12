@@ -61,7 +61,7 @@ public class SLogger {
     @LogMessagesResourceBundle
     public static final String SHARED_LOGMESSAGE_RESOURCE = "com.sun.enterprise.admin.servermgmt.LogMessages";
     @LoggerInfo(subsystem = "ServerManagement", description = "Server Management Logger", publish = true)
-    public static final String LOGGER_NAME = "javax.enterprise.servermgmt";
+    public static final String LOGGER_NAME = "jakarta.enterprise.servermgmt";
     private static final Logger LOGGER = Logger.getLogger(LOGGER_NAME, SHARED_LOGMESSAGE_RESOURCE);
     // these messages are historical.  We've transitioned to this latest Logging API
     @LogMessageInfo(message =

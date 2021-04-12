@@ -46,7 +46,7 @@ import org.glassfish.ejb.spi.MessageBeanClientFactory;
 import org.glassfish.ejb.spi.MessageBeanClient;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 /**
  * MessageBeanClientFactory for connector message bean clients.

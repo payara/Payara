@@ -53,16 +53,16 @@ import org.glassfish.apf.*;
 import org.glassfish.web.deployment.descriptor.WebComponentDescriptorImpl;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.servlet.annotation.WebInitParam;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
+import jakarta.servlet.annotation.WebInitParam;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
 import java.util.Arrays;
 import java.util.logging.Level;
 import org.glassfish.config.support.TranslatedConfigView;
 
 /**
  * This handler is responsible in handling
- * javax.servlet.annotation.WebServlet.
+ * jakarta.servlet.annotation.WebServlet.
  *
  * @author Shing Wai Chan
  */

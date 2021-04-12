@@ -42,7 +42,7 @@ package fish.payara.samples.jaxws.endpoint.ejb;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 import javax.jws.WebService;
 
 import org.eclipse.microprofile.opentracing.Traced;

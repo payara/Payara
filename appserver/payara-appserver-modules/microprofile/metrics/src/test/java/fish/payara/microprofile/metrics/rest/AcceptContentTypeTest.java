@@ -42,7 +42,7 @@ package fish.payara.microprofile.metrics.rest;
 
 import org.junit.Test;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.Optional;
 
 import static fish.payara.microprofile.metrics.rest.MetricsResource.parseMetricsAcceptHeader;

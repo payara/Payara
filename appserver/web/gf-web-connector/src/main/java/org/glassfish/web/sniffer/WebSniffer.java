@@ -47,10 +47,10 @@ import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.deployment.GenericSniffer;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.jvnet.hk2.annotations.Service;
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -185,7 +185,7 @@ public class WebSniffer  extends GenericSniffer {
     // TODO(Sahoo): Ideally we should have separate sniffer for JSP, but since WebSniffer is already
     // handling JSPs, we must make sure that all JSP related modules get installed by WebSniffer as well.
     private String[] containerModuleNames = {"fish.payara.server.internal.web.glue",
-            "org.glassfish.web.javax.servlet.jsp"
+            "org.glassfish.web.jakarta.servlet.jsp"
     };
 
     @Override

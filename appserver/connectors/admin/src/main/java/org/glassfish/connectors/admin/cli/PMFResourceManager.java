@@ -50,7 +50,7 @@ import org.glassfish.resources.admin.cli.ResourceManager;
 import org.glassfish.resourcebase.resources.api.ResourceStatus;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.resource.ResourceException;
+import jakarta.resource.ResourceException;
 import java.util.HashMap;
 import java.util.Properties;
 

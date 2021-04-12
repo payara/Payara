@@ -171,7 +171,7 @@ public class EjbFactory
                 }
             } else {
                 String javaxEjbFactoryClassName =
-                    System.getProperty("javax.ejb.Factory",
+                    System.getProperty("jakarta.ejb.Factory",
                                        Constants.OPENEJB_EJB_FACTORY);
                 try {
                     factory = (ObjectFactory)

@@ -41,7 +41,7 @@
 
 package com.sun.enterprise.deployment;
 
-import javax.enterprise.inject.spi.Interceptor;
+import jakarta.enterprise.inject.spi.Interceptor;
 
 /**
  * Contains information about 1 ejb interceptor.

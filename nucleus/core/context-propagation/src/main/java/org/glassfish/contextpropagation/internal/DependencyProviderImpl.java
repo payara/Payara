@@ -53,7 +53,7 @@ import org.jvnet.hk2.annotations.Service;
 
 //@Singleton
 //@Named("myService")
-//@Default from javax.enterprise.inject may be appropriate
+//@Default from jakarta.enterprise.inject may be appropriate
 /**
  * Provides the context-propagation dependencies in Glassfish. Other products
  * should consider replacing this implementation with their own.

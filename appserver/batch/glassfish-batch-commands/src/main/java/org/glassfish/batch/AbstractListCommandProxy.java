@@ -49,7 +49,7 @@ import org.glassfish.api.admin.*;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Target;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;

@@ -39,7 +39,7 @@
  */
 package com.sun.enterprise.connectors.jms.system;
 
-import javax.jms.ConnectionFactory;
+import jakarta.jms.ConnectionFactory;
 import javax.naming.NamingException;
 import org.glassfish.api.naming.DefaultResourceProxy;
 import org.glassfish.api.naming.NamedNamingObjectProxy;

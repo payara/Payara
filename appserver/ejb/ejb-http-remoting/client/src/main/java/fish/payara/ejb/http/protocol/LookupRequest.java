@@ -39,7 +39,7 @@
  */
 package fish.payara.ejb.http.protocol;
 
-import javax.json.bind.annotation.JsonbProperty;
+import jakarta.json.bind.annotation.JsonbProperty;
 import java.io.Serializable;
 
 

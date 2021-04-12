@@ -41,7 +41,7 @@
 package org.glassfish.admin.rest.resources;
 
 import com.sun.enterprise.config.serverbeans.Domain;
-import javax.ws.rs.core.Context;
+import jakarta.ws.rs.core.Context;
 
 import org.glassfish.admin.rest.adapter.LocatorBridge;
 import org.jvnet.hk2.config.Dom;

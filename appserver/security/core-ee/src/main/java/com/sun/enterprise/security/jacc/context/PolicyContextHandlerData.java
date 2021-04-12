@@ -47,7 +47,7 @@ import static com.sun.enterprise.security.jacc.context.PolicyContextHandlerImpl.
 import static com.sun.enterprise.security.jacc.context.PolicyContextHandlerImpl.SOAP_MESSAGE;
 import static com.sun.enterprise.security.jacc.context.PolicyContextHandlerImpl.SUBJECT;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import com.sun.enterprise.security.SecurityContext;
 import com.sun.enterprise.security.jacc.cache.PermissionCacheFactory;

@@ -17,7 +17,7 @@ package fish.payara.service.example.config.admin;
 import com.sun.enterprise.config.serverbeans.Config;
 import fish.payara.service.example.config.ExampleServiceConfiguration;
 import java.util.logging.Logger;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;

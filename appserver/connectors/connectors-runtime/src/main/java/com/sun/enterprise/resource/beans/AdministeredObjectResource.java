@@ -54,9 +54,9 @@ import org.glassfish.resources.naming.SerializableObjectRefAddr;
 import org.glassfish.resourcebase.resources.api.ResourceInfo;
 
 import javax.naming.Reference;
-import javax.resource.ResourceException;
-import javax.resource.spi.ResourceAdapter;
-import javax.resource.spi.ResourceAdapterAssociation;
+import jakarta.resource.ResourceException;
+import jakarta.resource.spi.ResourceAdapter;
+import jakarta.resource.spi.ResourceAdapterAssociation;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;

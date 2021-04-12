@@ -41,7 +41,7 @@ package fish.payara.deployment.admin;
 
 import com.sun.enterprise.config.serverbeans.Applications;
 import java.util.logging.Logger;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.ExecuteOn;

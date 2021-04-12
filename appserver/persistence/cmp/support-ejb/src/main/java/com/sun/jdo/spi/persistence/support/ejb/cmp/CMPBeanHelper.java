@@ -54,9 +54,9 @@ import com.sun.jdo.spi.persistence.support.sqlstore.ejb.EJBHelper;
 import com.sun.jdo.spi.persistence.utility.logging.Logger;
 import org.glassfish.persistence.common.I18NHelper;
 
-import javax.ejb.DuplicateKeyException;
-import javax.ejb.EJBException;
-import javax.ejb.ObjectNotFoundException;
+import jakarta.ejb.DuplicateKeyException;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.ObjectNotFoundException;
 import java.util.Collection;
 import java.util.ResourceBundle;
 

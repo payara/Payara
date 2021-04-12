@@ -52,8 +52,8 @@ import java.io.StringWriter;
 import org.glassfish.api.admin.config.ApplicationName;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 
 /**
  * Bunch of utility methods for the new serverbeans config api based on jaxb

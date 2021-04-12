@@ -41,8 +41,8 @@
 package org.glassfish.ejb.deployment.annotation.handlers;
 
 import java.lang.annotation.Annotation;
-import javax.ejb.TransactionManagement;
-import javax.ejb.TransactionManagementType;
+import jakarta.ejb.TransactionManagement;
+import jakarta.ejb.TransactionManagementType;
 
 import com.sun.enterprise.deployment.annotation.context.EjbContext;
 import org.glassfish.apf.AnnotationHandlerFor;
@@ -53,7 +53,7 @@ import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 import org.jvnet.hk2.annotations.Service;
 
 /**
- * This handler is responsible for handling the javax.ejb.TransactionManagement.
+ * This handler is responsible for handling the jakarta.ejb.TransactionManagement.
  *
  * @author Shing Wai Chan
  */

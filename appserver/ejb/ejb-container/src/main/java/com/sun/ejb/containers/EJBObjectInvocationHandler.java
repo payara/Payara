@@ -53,8 +53,8 @@ import java.util.logging.Level;
 
 import java.rmi.RemoteException;
 
-import javax.ejb.EJBException;
-import javax.ejb.EJBObject;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.EJBObject;
 
 import com.sun.ejb.EjbInvocation;
 import com.sun.ejb.InvocationInfo;
@@ -165,7 +165,7 @@ public final class EJBObjectInvocationHandler
                                           + method);
             }
             
-            if( (methodClass == javax.ejb.EJBObject.class) ||
+            if( (methodClass == jakarta.ejb.EJBObject.class) ||
                 invInfo.ejbIntfOverride ) {
                 return invokeEJBObjectMethod(method.getName(), args);
             } else if( invInfo.targetMethod1 == null ) {

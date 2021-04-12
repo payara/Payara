@@ -43,22 +43,22 @@
 package org.glassfish.admin.rest.testing;
 
 import java.io.StringReader;
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonValue;
-import javax.json.stream.JsonParser;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonValue;
+import jakarta.json.stream.JsonParser;
 import static org.glassfish.admin.rest.testing.Common.*;
 
 public class Response {
     private String method;
-    private javax.ws.rs.core.Response jaxrsResponse;
+    private jakarta.ws.rs.core.Response jaxrsResponse;
     private String bodyAsString;
 
-    public Response(String method, javax.ws.rs.core.Response jaxrsResponse) {
+    public Response(String method, jakarta.ws.rs.core.Response jaxrsResponse) {
         this(method, jaxrsResponse, true);
     }
 
-    public Response(String method, javax.ws.rs.core.Response jaxrsResponse, boolean readEntity) {
+    public Response(String method, jakarta.ws.rs.core.Response jaxrsResponse, boolean readEntity) {
         this.method = method;
         this.jaxrsResponse = jaxrsResponse;
         if (readEntity) {
@@ -70,7 +70,7 @@ public class Response {
         }
     }
 
-    public javax.ws.rs.core.Response getJaxrsResponse() {
+    public jakarta.ws.rs.core.Response getJaxrsResponse() {
         return this.jaxrsResponse;
     }
 

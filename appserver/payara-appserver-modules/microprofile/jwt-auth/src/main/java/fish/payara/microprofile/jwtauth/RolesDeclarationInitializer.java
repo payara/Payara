@@ -45,11 +45,11 @@ import static java.util.logging.Level.INFO;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import javax.enterprise.inject.Instance;
-import javax.enterprise.inject.spi.CDI;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
+import jakarta.enterprise.inject.Instance;
+import jakarta.enterprise.inject.spi.CDI;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextListener;
 
 import fish.payara.microprofile.jwtauth.cdi.JwtAuthCdiExtension;
 

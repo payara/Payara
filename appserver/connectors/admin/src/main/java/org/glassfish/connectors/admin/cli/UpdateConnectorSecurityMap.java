@@ -67,7 +67,7 @@ import java.util.List;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 /**
  * Update Connector SecurityMap command

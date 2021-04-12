@@ -363,7 +363,7 @@ public class StaticRmiStubGenerator {
 
     	// Licensee bug 4959550
     	// if(name.startsWith("com.sun.") || name.startsWith("javax."))
-    	if(name.startsWith("javax.")) {
+    	if(name.startsWith("javax.") || name.startsWith("jakarta.")) {
     		return true;
         }
 
@@ -386,8 +386,8 @@ public class StaticRmiStubGenerator {
             String intfName = (String) iter.next();
             Class  intfClass = jcl.loadClass(intfName);
             if ( java.rmi.Remote.class.isAssignableFrom(intfClass) &&
-                 !(intfName.equals("javax.ejb.EJBHome")) &&
-                 !(intfName.equals("javax.ejb.EJBObject")) ) {
+                 !(intfName.equals("jakarta.ejb.EJBHome")) &&
+                 !(intfName.equals("jakarta.ejb.EJBObject")) ) {
                 remoteSuperInterfaces.add(intfName);
             }
         }

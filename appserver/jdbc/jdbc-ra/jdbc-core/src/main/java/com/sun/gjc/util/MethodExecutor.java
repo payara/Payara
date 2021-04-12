@@ -45,7 +45,7 @@ import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.gjc.common.DataSourceObjectBuilder;
 import com.sun.logging.LogDomains;
 
-import javax.resource.ResourceException;
+import jakarta.resource.ResourceException;
 import java.io.StringReader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

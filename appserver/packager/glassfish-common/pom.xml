@@ -177,10 +177,20 @@
        <dependency>
             <groupId>jakarta.enterprise.concurrent</groupId>
             <artifactId>jakarta.enterprise.concurrent-api</artifactId>
-        </dependency>
+       </dependency>
        <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>javax.enterprise.concurrent</artifactId>
-        </dependency>
+           <groupId>org.glassfish</groupId>
+           <artifactId>jakarta.enterprise.concurrent</artifactId>
+       </dependency> 
+       <dependency>
+            <groupId>jakarta.inject</groupId>
+            <artifactId>jakarta.inject-api</artifactId>
+       </dependency>
+       <dependency>
+            <groupId>jakarta.activation</groupId>
+            <artifactId>jakarta.activation-api</artifactId>
+       </dependency>
+       
+       
     </dependencies>
 </project>

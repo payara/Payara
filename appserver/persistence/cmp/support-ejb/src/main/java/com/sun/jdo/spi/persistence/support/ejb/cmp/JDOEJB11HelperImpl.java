@@ -51,8 +51,8 @@ import java.util.Set;
 import java.util.ResourceBundle;
 import java.io.*;
 
-import javax.ejb.EJBObject;
-import javax.ejb.EJBException;
+import jakarta.ejb.EJBObject;
+import jakarta.ejb.EJBException;
 
 import com.sun.jdo.api.persistence.support.PersistenceManager;
 import com.sun.jdo.api.persistence.support.JDOHelper;

@@ -66,7 +66,7 @@ import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.loadbalancer.admin.cli.helper.LbConfigHelper;
 import org.jvnet.hk2.config.types.Property;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 /**
  * Class to publish the loadbalancer.xml to the physical loadbalancer.

@@ -41,9 +41,9 @@ package fish.payara.security.openid;
 
 import java.util.Optional;
 import java.util.function.Predicate;
-import javax.el.ELProcessor;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.CDI;
+import jakarta.el.ELProcessor;
+import jakarta.enterprise.inject.spi.BeanManager;
+import jakarta.enterprise.inject.spi.CDI;
 import org.eclipse.microprofile.config.Config;
 import org.glassfish.config.support.TranslatedConfigView;
 

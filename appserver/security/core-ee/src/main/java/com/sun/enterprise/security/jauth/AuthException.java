@@ -45,7 +45,7 @@ package com.sun.enterprise.security.jauth;
  *
  * @version %I%, %G%
  */
-public class AuthException extends javax.security.auth.message.AuthException {
+public class AuthException extends jakarta.security.auth.message.AuthException {
 
     private static final long serialVersionUID = -1156951780670243758L;
 

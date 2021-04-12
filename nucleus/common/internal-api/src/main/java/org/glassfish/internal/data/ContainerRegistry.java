@@ -45,10 +45,9 @@ import org.glassfish.api.container.Sniffer;
 import org.glassfish.hk2.api.ServiceLocator;
 
 import org.jvnet.hk2.annotations.Service;
+import jakarta.inject.Singleton;
 
-import javax.inject.Singleton;
-
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.util.*;
 
 /**

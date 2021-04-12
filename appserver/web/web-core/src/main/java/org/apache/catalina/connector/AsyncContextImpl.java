@@ -46,8 +46,8 @@ import org.apache.catalina.LogFacade;
 import org.apache.catalina.Globals;
 import org.apache.catalina.core.*;
 
-import javax.servlet.*;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.*;
+import jakarta.servlet.http.HttpServletRequest;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.EventListener;

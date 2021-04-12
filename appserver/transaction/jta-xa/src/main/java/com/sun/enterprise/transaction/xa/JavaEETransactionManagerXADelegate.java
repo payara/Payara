@@ -40,7 +40,7 @@
 
 package com.sun.enterprise.transaction.xa;
 
-import javax.transaction.*;
+import jakarta.transaction.*;
 import javax.transaction.xa.*;
 
 import com.sun.enterprise.transaction.api.JavaEETransaction;
@@ -99,7 +99,7 @@ public class JavaEETransactionManagerXADelegate
         if ( tx != null && tx.isLocalTx())
             return tx.getStatus();
         else
-            return javax.transaction.Status.STATUS_NO_TRANSACTION;
+            return jakarta.transaction.Status.STATUS_NO_TRANSACTION;
     }
 
     public Transaction getTransaction() 

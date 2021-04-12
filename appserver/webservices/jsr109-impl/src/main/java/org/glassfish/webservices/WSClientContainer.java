@@ -60,8 +60,7 @@ public class WSClientContainer extends Container {
 
     public <T> T getSPI(Class<T> spiType) {
         
-        if((spiType == com.sun.xml.ws.assembler.ClientPipelineHook.class) ||
-           (spiType == com.sun.xml.ws.assembler.dev.ClientPipelineHook.class)){
+        if (spiType == com.sun.xml.ws.assembler.metro.dev.ClientPipelineHook.class) {
             if (secServ != null) {
                 return((T)(secServ.getClientPipelineHook(svcRef)));
             }

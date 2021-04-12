@@ -54,7 +54,7 @@ import javax.naming.Name;
 import javax.naming.NamingException;
 import javax.naming.Reference;
 import javax.naming.spi.ObjectFactory;
-import javax.resource.spi.ManagedConnectionFactory;
+import jakarta.resource.spi.ManagedConnectionFactory;
 
 import org.glassfish.api.naming.GlassfishNamingManager;
 import org.glassfish.resourcebase.resources.api.PoolInfo;

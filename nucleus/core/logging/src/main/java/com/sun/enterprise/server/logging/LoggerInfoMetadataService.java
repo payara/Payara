@@ -57,8 +57,8 @@ import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 
 import org.jvnet.hk2.annotations.Service;
 

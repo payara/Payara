@@ -41,7 +41,7 @@ package com.sun.enterprise.v3.admin;
 
 import org.hibernate.validator.HibernateValidator;
 
-import javax.validation.ValidationProviderResolver;
+import jakarta.validation.ValidationProviderResolver;
 import java.util.List;
 
 import static java.util.Collections.singletonList;

@@ -40,7 +40,7 @@
 
 package fish.payara.samples.ejbhttp.server;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 @Local
 public interface LocalService {

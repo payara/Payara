@@ -58,7 +58,7 @@ public class LogFacade {
             "org.glassfish.web.admin.monitor.LogMessages";
 
     @LoggerInfo(subsystem="WEB", description="WEB Admin Logger", publish=true)
-    private static final String WEB_ADMIN_LOGGER = "javax.enterprise.web.admin";
+    private static final String WEB_ADMIN_LOGGER = "jakarta.enterprise.web.admin";
 
     private static final Logger LOGGER =
             Logger.getLogger(WEB_ADMIN_LOGGER, SHARED_LOGMESSAGE_RESOURCE);

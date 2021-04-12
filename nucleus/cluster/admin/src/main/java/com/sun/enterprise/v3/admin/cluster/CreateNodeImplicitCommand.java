@@ -47,7 +47,7 @@ import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_NODEHOST;
 import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_TYPE;
 import static org.glassfish.api.admin.RestEndpoint.OpType.POST;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;

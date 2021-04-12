@@ -61,7 +61,7 @@ public @interface ClaimsDefinition {
 
     /**
      * Maps the callerNameClaim's value to caller name value in
-     * javax.security.enterprise.identitystore.IdentityStore#validate
+     * jakarta.security.enterprise.identitystore.IdentityStore#validate
      *
      * <p>
      * To set this using Microprofile Config use
@@ -80,7 +80,7 @@ public @interface ClaimsDefinition {
 
     /**
      * Maps the callerGroupsClaim's value to caller groups value in
-     * javax.security.enterprise.identitystore.IdentityStore#validate
+     * jakarta.security.enterprise.identitystore.IdentityStore#validate
      *
      * <p>
      * To set this using Microprofile Config use

@@ -40,8 +40,8 @@
 
 package org.glassfish.weld.jsf;
 
-import javax.faces.application.Application;
-import javax.faces.application.ApplicationFactory;
+import jakarta.faces.application.Application;
+import jakarta.faces.application.ApplicationFactory;
 
 public class WeldApplicationFactory extends ApplicationFactory {
     

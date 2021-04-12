@@ -41,7 +41,7 @@ package fish.payara.ejb.http.client;
 
 import java.net.URI;
 
-import javax.ws.rs.client.WebTarget;
+import jakarta.ws.rs.client.WebTarget;
 
 class LookupDiscoveryResponse {
 

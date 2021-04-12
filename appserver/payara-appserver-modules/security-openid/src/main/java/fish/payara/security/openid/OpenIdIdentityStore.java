@@ -52,14 +52,14 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import java.util.Set;
 import static java.util.stream.Collectors.toSet;
-import javax.inject.Inject;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonValue;
-import javax.security.enterprise.authentication.mechanism.http.HttpMessageContext;
-import javax.enterprise.inject.Typed;
-import javax.security.enterprise.identitystore.CredentialValidationResult;
-import javax.security.enterprise.identitystore.IdentityStore;
+import jakarta.inject.Inject;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonValue;
+import jakarta.security.enterprise.authentication.mechanism.http.HttpMessageContext;
+import jakarta.enterprise.inject.Typed;
+import jakarta.security.enterprise.identitystore.CredentialValidationResult;
+import jakarta.security.enterprise.identitystore.IdentityStore;
 import net.minidev.json.JSONArray;
 
 /**

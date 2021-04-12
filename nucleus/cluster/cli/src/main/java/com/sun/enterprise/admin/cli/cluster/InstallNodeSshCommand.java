@@ -49,7 +49,7 @@ import com.trilead.ssh2.SFTPv3DirectoryEntry;
 import java.io.*;
 import java.util.*;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;

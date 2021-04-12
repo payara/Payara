@@ -53,7 +53,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.validation.constraints.Min;
+import jakarta.validation.constraints.Min;
 
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;

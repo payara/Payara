@@ -59,7 +59,7 @@
 
 package org.apache.catalina;
 
-import javax.servlet.http.Cookie;
+import jakarta.servlet.http.Cookie;
 import java.io.IOException;
 import java.util.Collection;
 

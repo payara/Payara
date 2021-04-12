@@ -42,8 +42,8 @@ package org.glassfish.enterprise.iiop.impl;
 
 import java.io.*;
 
-import javax.ejb.*;
-import javax.ejb.spi.HandleDelegate;
+import jakarta.ejb.*;
+import jakarta.ejb.spi.HandleDelegate;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
@@ -82,27 +82,27 @@ public final class IIOPHandleDelegate
     }
     
     
-    public void writeEJBObject(javax.ejb.EJBObject ejbObject,
+    public void writeEJBObject(jakarta.ejb.EJBObject ejbObject,
             java.io.ObjectOutputStream ostream)
         throws java.io.IOException
     {
         ostream.writeObject(ejbObject); // IIOP stubs are Serializable
     }
     
-    public javax.ejb.EJBObject readEJBObject(java.io.ObjectInputStream istream)
+    public jakarta.ejb.EJBObject readEJBObject(java.io.ObjectInputStream istream)
         throws java.io.IOException, ClassNotFoundException
     {
         return (EJBObject)getStub(istream, EJBObject.class);
     }
     
-    public void writeEJBHome(javax.ejb.EJBHome ejbHome,
+    public void writeEJBHome(jakarta.ejb.EJBHome ejbHome,
             java.io.ObjectOutputStream ostream)
         throws java.io.IOException
     {
         ostream.writeObject(ejbHome); // IIOP stubs are Serializable
     }
     
-    public javax.ejb.EJBHome readEJBHome(java.io.ObjectInputStream istream)
+    public jakarta.ejb.EJBHome readEJBHome(java.io.ObjectInputStream istream)
         throws java.io.IOException, ClassNotFoundException
     {
         return (EJBHome)getStub(istream, EJBHome.class);

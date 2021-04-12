@@ -40,8 +40,8 @@
 
 package com.sun.enterprise.config.serverbeans.customvalidators;
 
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 
 /**
  * Implementation for the user-defined constraint annotation @JavaClassName 

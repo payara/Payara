@@ -42,9 +42,9 @@
                         org.glassfish.admin.rest.client, org.glassfish.admin.rest.client.utils
 DynamicImport-Package: \
                         com.sun.ws.rs.ext, \
-                        javax.ws.rs, \
-                        javax.ws.rs.core, \
-                        javax.ws.rs.ext, \
+                        jakarta.ws.rs, \
+                        jakarta.ws.rs.core, \
+                        jakarta.ws.rs.ext, \
                         com.sun.enterprise.server.logging.logviewer.backend, \
                         org.glassfish.external.statistics, \
                         org.glassfish.external.statistics.impl, \

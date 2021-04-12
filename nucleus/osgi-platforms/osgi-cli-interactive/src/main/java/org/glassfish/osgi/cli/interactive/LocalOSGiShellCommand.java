@@ -49,7 +49,7 @@ import java.io.*;
 import java.nio.charset.Charset;
 import java.util.*;
 import java.util.logging.Level;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;

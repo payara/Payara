@@ -48,7 +48,7 @@ import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.*;
 import org.glassfish.common.util.admin.CommandModelImpl;

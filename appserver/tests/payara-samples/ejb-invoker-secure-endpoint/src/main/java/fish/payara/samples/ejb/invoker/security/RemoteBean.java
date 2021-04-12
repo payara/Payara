@@ -39,7 +39,7 @@
  */
 package fish.payara.samples.ejb.invoker.security;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 @Remote
 public interface RemoteBean {

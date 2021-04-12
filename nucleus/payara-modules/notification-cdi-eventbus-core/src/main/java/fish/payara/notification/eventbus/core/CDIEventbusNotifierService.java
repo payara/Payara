@@ -42,8 +42,8 @@ package fish.payara.notification.eventbus.core;
 import java.lang.annotation.Annotation;
 import java.util.logging.Logger;
 
-import javax.enterprise.inject.spi.CDI;
-import javax.inject.Inject;
+import jakarta.enterprise.inject.spi.CDI;
+import jakarta.inject.Inject;
 
 import com.sun.enterprise.util.Utility;
 

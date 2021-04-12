@@ -41,7 +41,7 @@ package fish.payara.microprofile.jwtauth.jwt;
 
 import static org.eclipse.microprofile.jwt.Claims.UNKNOWN;
 
-import javax.enterprise.util.AnnotationLiteral;
+import jakarta.enterprise.util.AnnotationLiteral;
 
 import org.eclipse.microprofile.jwt.Claim;
 import org.eclipse.microprofile.jwt.Claims;

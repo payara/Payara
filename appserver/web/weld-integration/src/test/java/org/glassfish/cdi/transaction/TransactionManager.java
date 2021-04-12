@@ -41,11 +41,11 @@
 
 package org.glassfish.cdi.transaction;
 
-import javax.transaction.*;
+import jakarta.transaction.*;
 
 
 
-public class TransactionManager implements javax.transaction.TransactionManager {
+public class TransactionManager implements jakarta.transaction.TransactionManager {
     ThreadLocal transactionThreadLocal = new ThreadLocal();
 
     @SuppressWarnings("unchecked")
@@ -67,12 +67,12 @@ public class TransactionManager implements javax.transaction.TransactionManager 
         return 0;  
     }
 
-    public javax.transaction.Transaction getTransaction() throws SystemException {
-        return (javax.transaction.Transaction) transactionThreadLocal.get();
+    public jakarta.transaction.Transaction getTransaction() throws SystemException {
+        return (jakarta.transaction.Transaction) transactionThreadLocal.get();
     }
 
     @SuppressWarnings("unchecked")
-    public void resume(javax.transaction.Transaction transaction) throws InvalidTransactionException, IllegalStateException, SystemException {
+    public void resume(jakarta.transaction.Transaction transaction) throws InvalidTransactionException, IllegalStateException, SystemException {
         transactionThreadLocal.set(transaction);
     }
 
@@ -90,8 +90,8 @@ public class TransactionManager implements javax.transaction.TransactionManager 
     }
 
     @SuppressWarnings("unchecked")
-    public javax.transaction.Transaction suspend() throws SystemException {
-        javax.transaction.Transaction transaction = (javax.transaction.Transaction)transactionThreadLocal.get();
+    public jakarta.transaction.Transaction suspend() throws SystemException {
+        jakarta.transaction.Transaction transaction = (jakarta.transaction.Transaction)transactionThreadLocal.get();
         transactionThreadLocal.set(null);
         return transaction;
     }

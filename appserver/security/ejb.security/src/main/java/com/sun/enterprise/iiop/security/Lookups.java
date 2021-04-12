@@ -51,8 +51,8 @@ import org.glassfish.internal.api.Globals;
 
 import com.sun.enterprise.config.serverbeans.Servers;
 
-import javax.inject.Inject;
-import javax.inject.Provider;
+import jakarta.inject.Inject;
+import jakarta.inject.Provider;
 
 /**
  * This class is a local utility class to provide for hk2 lookups during runtime.

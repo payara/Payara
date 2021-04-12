@@ -40,7 +40,7 @@
 package fish.payara.security.openid.domain;
 
 import static fish.payara.security.openid.domain.OpenIdConfiguration.BASE_URL_EXPRESSION;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  *

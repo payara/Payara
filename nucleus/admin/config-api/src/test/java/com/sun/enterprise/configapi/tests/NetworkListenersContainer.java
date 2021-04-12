@@ -52,7 +52,7 @@ import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.NotProcessed;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 /**
  * Fake container for http service configuration

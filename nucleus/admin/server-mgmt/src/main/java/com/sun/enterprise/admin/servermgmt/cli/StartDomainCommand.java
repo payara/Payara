@@ -46,7 +46,7 @@ import java.io.*;
 import java.util.*;
 import java.util.logging.*;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.jvnet.hk2.annotations.*;
 import org.glassfish.api.Param;

@@ -40,11 +40,11 @@
 package fish.payara.monitoring.rest.app.processor;
 
 import java.lang.reflect.Array;
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonException;
-import javax.json.JsonValue;
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonException;
+import jakarta.json.JsonValue;
 import javax.management.openmbean.ArrayType;
 
 /**

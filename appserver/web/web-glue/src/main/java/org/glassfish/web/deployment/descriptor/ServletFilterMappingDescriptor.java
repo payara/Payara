@@ -44,7 +44,7 @@ import com.sun.enterprise.deployment.web.ServletFilterMapping;
 import org.glassfish.deployment.common.Descriptor;
 
 import java.util.*;
-import javax.servlet.DispatcherType;
+import jakarta.servlet.DispatcherType;
 
 /**
  * Deployment object representing the servlet filter mapping spec

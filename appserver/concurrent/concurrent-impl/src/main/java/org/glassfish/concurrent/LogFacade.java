@@ -47,7 +47,7 @@ import java.util.logging.Logger;
 public class LogFacade {
 
     @LoggerInfo(subsystem = "GlassFish-Concurrency", description = "GlassFish Concurrency Logger", publish = true)
-    private static final String LOGGER_NAME = "javax.enterprise.concurrent";
+    private static final String LOGGER_NAME = "jakarta.enterprise.concurrent";
 
     @LogMessagesResourceBundle
     private static final String LOGGER_RB = "org.glassfish.concurrent.LogMessages";

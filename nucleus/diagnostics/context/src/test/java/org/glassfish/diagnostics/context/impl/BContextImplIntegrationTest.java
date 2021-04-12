@@ -43,7 +43,7 @@ package org.glassfish.diagnostics.context.impl;
 import static java.lang.System.out;
 import static org.junit.Assert.assertNotNull;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.glassfish.diagnostics.context.ContextManager;
 import org.junit.Test;

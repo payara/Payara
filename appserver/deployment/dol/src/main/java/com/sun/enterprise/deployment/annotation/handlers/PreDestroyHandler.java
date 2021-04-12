@@ -47,11 +47,11 @@ import com.sun.enterprise.deployment.annotation.context.ResourceContainerContext
 import org.glassfish.apf.*;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.annotation.PreDestroy;
+import jakarta.annotation.PreDestroy;
 import java.lang.reflect.Method;
 
 /**
- * This handler is responsible for handling javax.annotation.PreDestroy 
+ * This handler is responsible for handling jakarta.annotation.PreDestroy 
  *
  */
 @Service

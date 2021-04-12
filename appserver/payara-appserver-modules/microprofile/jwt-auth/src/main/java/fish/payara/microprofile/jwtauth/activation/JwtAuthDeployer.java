@@ -43,7 +43,7 @@ import java.util.Collection;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
 
-import javax.enterprise.inject.spi.Extension;
+import jakarta.enterprise.inject.spi.Extension;
 
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.hk2.api.PerLookup;

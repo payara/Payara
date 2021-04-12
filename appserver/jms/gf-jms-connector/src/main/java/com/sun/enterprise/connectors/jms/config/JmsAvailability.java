@@ -53,7 +53,7 @@ import java.util.List;
 
 import org.glassfish.api.admin.config.PropertiesDesc;
 import org.jvnet.hk2.config.types.PropertyBag;
-import javax.validation.constraints.Pattern;
+import jakarta.validation.constraints.Pattern;
 
 import org.glassfish.quality.ToDo;
 

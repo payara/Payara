@@ -39,7 +39,7 @@
  */
 package fish.payara.samples.datagridencryption.sfsb;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 /**
  * @author Andrew Pielage <andrew.pielage@payara.fish>

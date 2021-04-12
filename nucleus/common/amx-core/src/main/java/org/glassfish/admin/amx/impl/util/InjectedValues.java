@@ -45,7 +45,7 @@ import org.glassfish.internal.api.Globals;
 
 import org.glassfish.api.Async;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import javax.management.MBeanServer;
 import org.glassfish.server.ServerEnvironmentImpl;
 

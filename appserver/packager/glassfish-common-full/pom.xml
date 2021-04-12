@@ -131,19 +131,7 @@
             <artifactId>sun-as-jsr88-dm-frag</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
-        </dependency> 
-        <dependency>
-            <groupId>fish.payara.server.internal.common</groupId>
-            <artifactId>mejb-frag</artifactId>
-	    <version>${project.version}</version>
-	    <type>zip</type>
-       </dependency>
-       <dependency>
-           <groupId>fish.payara.server.internal.packager</groupId>
-           <artifactId>jaxr-ra</artifactId>
-           <version>${project.version}</version>
-           <type>zip</type>
-       </dependency>
+        </dependency>
        <dependency>
            <groupId>fish.payara.server.internal.admingui</groupId>
 	   <artifactId>console-common-full-plugin</artifactId>
@@ -183,16 +171,6 @@
             <artifactId>payara-jbatch</artifactId>
            <version>${project.version}</version>
         </dependency>
-
-
-       <!-- The following dependencies is for JSR236.  Including this in glassfish-common-full is a temporary solution.  This will be moved
-            to its own package when GLASSFISH-19604 is being worked on.
-         -->
-
-        <dependency>
-            <groupId>jakarta.xml.rpc</groupId>
-            <artifactId>jakarta.xml.rpc-api</artifactId>
-        </dependency>  
     </dependencies>
 </project>
 

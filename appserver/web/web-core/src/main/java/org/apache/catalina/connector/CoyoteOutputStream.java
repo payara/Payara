@@ -61,8 +61,8 @@ package org.apache.catalina.connector;
 
 import org.apache.catalina.LogFacade;
 
-import javax.servlet.ServletOutputStream;
-import javax.servlet.WriteListener;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.WriteListener;
 import java.io.IOException;
 import java.util.ResourceBundle;
 

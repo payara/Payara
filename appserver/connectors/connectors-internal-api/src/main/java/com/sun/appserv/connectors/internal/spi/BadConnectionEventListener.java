@@ -40,7 +40,7 @@
 
 package com.sun.appserv.connectors.internal.spi;
 
-import javax.resource.spi.ConnectionEvent;
+import jakarta.resource.spi.ConnectionEvent;
 
 /**
  * Inteface for resource adapters to signal that the connection being closed is bad.

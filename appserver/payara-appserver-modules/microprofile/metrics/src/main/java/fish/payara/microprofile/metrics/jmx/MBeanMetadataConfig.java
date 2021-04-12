@@ -40,7 +40,7 @@
 
 package fish.payara.microprofile.metrics.jmx;
 
-import javax.xml.bind.annotation.*;
+import jakarta.xml.bind.annotation.*;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 

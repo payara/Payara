@@ -40,7 +40,7 @@
 package fish.payara.samples.clustered.singleton.api;
 
 import java.io.Serializable;
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 /**
  *

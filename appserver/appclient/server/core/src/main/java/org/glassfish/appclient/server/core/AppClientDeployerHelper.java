@@ -68,7 +68,7 @@ import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipException;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.glassfish.api.admin.ProcessEnvironment;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.DeploymentContext;
@@ -123,7 +123,7 @@ public abstract class AppClientDeployerHelper {
     private static final Logger logger = Logger.getLogger(JavaWebStartInfo.APPCLIENT_SERVER_MAIN_LOGGER, 
                 JavaWebStartInfo.APPCLIENT_SERVER_LOGMESSAGE_RESOURCE);
     
-    public static final String ACC_MAIN_LOGGER = "javax.enterprise.system.container.appclient";
+    public static final String ACC_MAIN_LOGGER = "jakarta.enterprise.system.container.appclient";
     public static final String LOG_MESSAGE_RESOURCE = "org.glassfish.appclient.server.LogMessages";
     
     /**

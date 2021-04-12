@@ -115,7 +115,7 @@
             <resource>
                 <directory>src/main/resources</directory>
                 <includes>
-                    <include>**/javax.enterprise.inject.spi.Extension</include>
+                    <include>**/jakarta.enterprise.inject.spi.Extension</include>
                 </includes>
             </resource>
         </resources>

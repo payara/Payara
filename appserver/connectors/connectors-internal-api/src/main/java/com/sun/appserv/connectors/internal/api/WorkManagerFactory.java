@@ -42,7 +42,7 @@ package com.sun.appserv.connectors.internal.api;
 
 import org.jvnet.hk2.annotations.Contract;
 
-import javax.resource.spi.work.WorkManager;
+import jakarta.resource.spi.work.WorkManager;
 
 @Contract
 public interface WorkManagerFactory {

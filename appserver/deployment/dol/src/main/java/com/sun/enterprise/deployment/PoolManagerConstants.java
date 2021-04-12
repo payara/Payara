@@ -62,7 +62,7 @@ public class PoolManagerConstants {
     static public final int KERBV5 = 1;
 
     // Credential Interest levels
-    static public final String PASSWORD_CREDENTIAL = "javax.resource.spi.security.PasswordCredential";
-    static public final String GENERIC_CREDENTIAL = "javax.resource.spi.security.GenericCredential";
+    static public final String PASSWORD_CREDENTIAL = "jakarta.resource.spi.security.PasswordCredential";
+    static public final String GENERIC_CREDENTIAL = "jakarta.resource.spi.security.GenericCredential";
     
 }

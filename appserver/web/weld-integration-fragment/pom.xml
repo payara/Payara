@@ -124,7 +124,7 @@
                                     org.jboss.weld.exceptions
                                 </Export-Package>
                                 <Import-Package>org.glassfish.weld,
-                                    javax.ejb,org.glassfish.weld.services</Import-Package>
+                                    jakarta.ejb,org.glassfish.weld.services</Import-Package>
                                 <Bundle-Description>${project.description}</Bundle-Description>
                             </instructions>
                         </configuration>

@@ -42,7 +42,7 @@ package fish.payara.security.openid.azure;
 import fish.payara.security.annotations.AzureAuthenticationDefinition;
 import fish.payara.security.openid.OpenIdAuthenticationMechanism;
 import static fish.payara.security.openid.azure.AzureOpenIdExtension.toOpenIdAuthDefinition;
-import javax.enterprise.inject.Typed;
+import jakarta.enterprise.inject.Typed;
 
 /**
  * The Azure AD AuthenticationMechanism used to authenticate users using the

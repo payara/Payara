@@ -40,11 +40,11 @@
 package fish.payara.monitoring.rest.app.processor;
 
 import java.util.Map;
-import javax.json.Json;
-import javax.json.JsonException;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonValue;
+import jakarta.json.Json;
+import jakarta.json.JsonException;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonValue;
 import javax.management.openmbean.TabularDataSupport;
 import javax.management.openmbean.TabularType;
 

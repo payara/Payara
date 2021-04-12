@@ -45,7 +45,7 @@ import static java.lang.String.format;
 import java.util.logging.Handler;
 import java.util.logging.Logger;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.hk2.api.ServiceLocator;

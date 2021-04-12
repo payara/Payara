@@ -47,7 +47,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 import static java.util.logging.Level.WARNING;
-import javax.ejb.FinderException;
+import jakarta.ejb.FinderException;
 
 public class NonPersistentEJBTimerService extends EJBTimerService {
 

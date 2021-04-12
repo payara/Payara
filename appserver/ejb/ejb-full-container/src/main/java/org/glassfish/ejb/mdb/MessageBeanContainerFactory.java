@@ -41,7 +41,7 @@
 package org.glassfish.ejb.mdb;
 
 import com.sun.ejb.containers.BaseContainerFactory;
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 import org.glassfish.api.deployment.DeploymentContext;
 import com.sun.enterprise.security.SecurityManager;
 import org.jvnet.hk2.annotations.Service;

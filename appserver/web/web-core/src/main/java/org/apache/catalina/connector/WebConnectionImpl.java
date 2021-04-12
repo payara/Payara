@@ -43,10 +43,10 @@ package org.apache.catalina.connector;
 
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax.servlet.ServletInputStream;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpUpgradeHandler;
-import javax.servlet.http.WebConnection;
+import jakarta.servlet.ServletInputStream;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpUpgradeHandler;
+import jakarta.servlet.http.WebConnection;
 import org.apache.catalina.ContainerEvent;
 import org.apache.catalina.Context;
 

@@ -41,8 +41,8 @@
 
 package com.sun.jaspic.config.helper;
 
-import javax.security.auth.message.AuthException;
-import javax.security.auth.message.AuthStatus;
+import jakarta.security.auth.message.AuthException;
+import jakarta.security.auth.message.AuthStatus;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;

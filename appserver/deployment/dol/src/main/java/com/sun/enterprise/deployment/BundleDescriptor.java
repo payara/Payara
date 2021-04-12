@@ -54,7 +54,7 @@ import com.sun.enterprise.util.io.FileUtils;
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.security.common.Role;
 
-import javax.persistence.EntityManagerFactory;
+import jakarta.persistence.EntityManagerFactory;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;

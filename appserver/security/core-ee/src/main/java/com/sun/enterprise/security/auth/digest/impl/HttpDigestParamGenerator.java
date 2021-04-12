@@ -58,8 +58,8 @@ import java.security.spec.AlgorithmParameterSpec;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
 
-import javax.servlet.ServletInputStream;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.ServletInputStream;
+import jakarta.servlet.http.HttpServletRequest;
 
 import com.sun.enterprise.security.auth.digest.api.DigestAlgorithmParameter;
 

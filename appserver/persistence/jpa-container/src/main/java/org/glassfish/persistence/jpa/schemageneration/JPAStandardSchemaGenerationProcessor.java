@@ -53,9 +53,9 @@ import java.util.Map;
  * @author Mitesh Meswani
  */
 public class JPAStandardSchemaGenerationProcessor implements SchemaGenerationProcessor {
-    private static final String SCHEMA_GENERATION_DATABASE_ACTION_PROPERTY = "javax.persistence.schema-generation.database.action";
-    private static final String SCHEMA_GENERATION_SCRIPTS_ACTION_PROPERTY = "javax.persistence.schema-generation.scripts.action";
-    private static final String SQL_LOAD_SCRIPT_SOURCE = "javax.persistence.sql_load-script-source";
+    private static final String SCHEMA_GENERATION_DATABASE_ACTION_PROPERTY = "jakarta.persistence.schema-generation.database.action";
+    private static final String SCHEMA_GENERATION_SCRIPTS_ACTION_PROPERTY = "jakarta.persistence.schema-generation.scripts.action";
+    private static final String SQL_LOAD_SCRIPT_SOURCE = "jakarta.persistence.sql_load-script-source";
 
     private static final String SCHEMA_GENERATION_ACTION_NONE = "none";
 

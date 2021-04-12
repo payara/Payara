@@ -40,7 +40,7 @@
 
 package com.sun.ejb.containers;
 
-import javax.ejb.EJBHome;
+import jakarta.ejb.EJBHome;
 import java.rmi.RemoteException;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.TimeUnit;

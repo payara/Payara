@@ -50,8 +50,8 @@ import org.jvnet.hk2.annotations.Contract;
 
 /**
  * This class acts as a contract to resolve the
- * </code>javax.xml.ws.WebServiceRef</code> references
- * and also <code>javax.xml.ws.WebServiceContext</code>
+ * </code>jakarta.xml.ws.WebServiceRef</code> references
+ * and also <code>jakarta.xml.ws.WebServiceContext</code>
  * Whenever a lookup is done from GlassfishNamingManagerImpl
  * these methods are invoked to resolve the references
  *

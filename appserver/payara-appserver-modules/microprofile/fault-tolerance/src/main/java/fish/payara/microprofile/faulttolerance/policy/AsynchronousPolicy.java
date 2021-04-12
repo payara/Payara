@@ -43,7 +43,7 @@ import java.lang.reflect.Method;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.Future;
 
-import javax.interceptor.InvocationContext;
+import jakarta.interceptor.InvocationContext;
 
 import org.eclipse.microprofile.faulttolerance.Asynchronous;
 import org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceDefinitionException;

@@ -42,7 +42,7 @@ package fish.payara.jmx.monitoring.admin;
 import com.sun.enterprise.config.serverbeans.Domain;
 import fish.payara.jmx.monitoring.JMXMonitoringService;
 import java.util.Properties;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;

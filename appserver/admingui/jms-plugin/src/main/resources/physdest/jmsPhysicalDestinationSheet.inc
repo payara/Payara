@@ -114,7 +114,7 @@
         <sun:property id="typeProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njms.jmsPhysDestinations.type}">
             <h:outputText id="TypeStatic" rendered="#{edit}" value="#{pageSession.destType}"/>
             <h:inputHidden rendered="#{edit}" value="#{pageSession.destType}" />
-            <sun:dropDown id="type" rendered="#{!edit}" labels={"javax.jms.Topic" "javax.jms.Queue"} values={"topic" "queue"} selected="#{type}"/>
+            <sun:dropDown id="type" rendered="#{!edit}" labels={"jakarta.jms.Topic" "jakarta.jms.Queue"} values={"topic" "queue"} selected="#{type}"/>
         </sun:property>
 
         <sun:property id="maxNumMsgsProp" labelAlign="left" noWrap="#{false}" overlapLabel="#{false}" label="$resource{i18njms.jmsPhysDestinations.MaxNumMsgs}" helpText="$resource{i18njms.jmsPhysDestinations.MaxNumMsgsHelp}" >

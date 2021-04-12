@@ -43,8 +43,8 @@ package com.sun.ejb.portable;
 import java.io.*;
 import java.rmi.RemoteException;
 
-import javax.ejb.*;
-import javax.ejb.spi.HandleDelegate;
+import jakarta.ejb.*;
+import jakarta.ejb.spi.HandleDelegate;
 import javax.naming.*;
 
 
@@ -66,7 +66,7 @@ public final class HomeHandleImpl implements HomeHandle, Serializable
 	this.ejbHome = ejbHome;
     }
 
-    // This is the public API from javax.ejb.HomeHandle
+    // This is the public API from jakarta.ejb.HomeHandle
     public EJBHome getEJBHome() throws RemoteException
     {
 	return ejbHome;

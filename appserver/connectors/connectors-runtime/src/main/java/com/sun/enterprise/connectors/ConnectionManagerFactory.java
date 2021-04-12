@@ -45,7 +45,7 @@ import com.sun.logging.LogDomains;
 import org.glassfish.resourcebase.resources.api.PoolInfo;
 import org.glassfish.resourcebase.resources.api.ResourceInfo;
 
-import javax.resource.spi.ConnectionManager;
+import jakarta.resource.spi.ConnectionManager;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 

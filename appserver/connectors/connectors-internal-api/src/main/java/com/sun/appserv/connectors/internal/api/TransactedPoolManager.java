@@ -42,7 +42,7 @@ package com.sun.appserv.connectors.internal.api;
 
 import org.jvnet.hk2.annotations.Contract;
 
-import javax.transaction.Transaction;
+import jakarta.transaction.Transaction;
 
 
 /**

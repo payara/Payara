@@ -49,7 +49,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.message.config.AuthConfigProvider;
+import jakarta.security.auth.message.config.AuthConfigProvider;
 
 import org.glassfish.internal.api.Globals;
 
@@ -62,7 +62,7 @@ import com.sun.enterprise.security.jaspic.WebServicesDelegate;
 
 public class PayaraJaspicServletServices extends PayaraJaspicServices {
     
-    public static final String AUTH_TYPE = "javax.servlet.http.authType";
+    public static final String AUTH_TYPE = "jakarta.servlet.http.authType";
     
     private String realmName;
 

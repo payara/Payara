@@ -39,7 +39,7 @@
  */
 package fish.payara.microprofile.jwtauth.eesecurity;
 
-import javax.security.enterprise.credential.Credential;
+import jakarta.security.enterprise.credential.Credential;
 
 /**
  * A credential carrying a signed JWT token 

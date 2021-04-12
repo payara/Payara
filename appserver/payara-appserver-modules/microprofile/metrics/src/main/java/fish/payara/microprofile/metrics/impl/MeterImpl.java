@@ -57,7 +57,7 @@ package fish.payara.microprofile.metrics.impl;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
-import javax.enterprise.inject.Vetoed;
+import jakarta.enterprise.inject.Vetoed;
 import org.eclipse.microprofile.metrics.Meter;
 
 /**

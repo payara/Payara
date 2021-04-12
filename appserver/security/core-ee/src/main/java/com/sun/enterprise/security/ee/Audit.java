@@ -67,7 +67,7 @@ import com.sun.enterprise.deployment.WebComponentDescriptor;
 
 import org.glassfish.security.common.Role;
 import org.glassfish.deployment.common.SecurityRoleMapper;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import com.sun.appserv.security.AuditModule;
 

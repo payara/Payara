@@ -76,7 +76,7 @@ import org.jvnet.hk2.config.WriteableView;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.tiger_types.Types;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.beans.PropertyVetoException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;

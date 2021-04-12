@@ -141,7 +141,7 @@
         </dependency>
         <dependency>
             <groupId>com.sun.woodstock</groupId>
-            <artifactId>webui-jsf-suntheme</artifactId>
+            <artifactId>woodstock-webui-jsf-suntheme</artifactId>
             <scope>provided</scope>
             <classifier>enterprise</classifier>
         </dependency>

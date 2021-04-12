@@ -63,11 +63,11 @@ import java.security.PrivilegedAction;
 import java.util.Hashtable;
 import java.util.Properties;
 import java.util.Enumeration;
-import javax.mail.Session;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimePart;
-import javax.mail.internet.MimePartDataSource;
+import jakarta.mail.Session;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.internet.MimePart;
+import jakarta.mail.internet.MimePartDataSource;
 import javax.naming.Name;
 import javax.naming.Context;
 import javax.naming.Reference;
@@ -85,7 +85,7 @@ import javax.naming.spi.ObjectFactory;
  * <p>
  * <pre>
  * &lt;Resource name="mail/send" auth="CONTAINER"
- *           type="javax.mail.internet.MimePartDataSource"/>
+ *           type="jakarta.mail.internet.MimePartDataSource"/>
  * &lt;ResourceParams name="mail/send">
  *   &lt;parameter>&lt;name>factory&lt;/name>
  *     &lt;value>org.apache.naming.factory.SendMailFactory&lt;/value>
@@ -118,7 +118,7 @@ public class SendMailFactory implements ObjectFactory
 {
     // The class name for the javamail MimeMessageDataSource
     protected static final String DataSourceClassName =
-	"javax.mail.internet.MimePartDataSource";
+	"jakarta.mail.internet.MimePartDataSource";
 
     public Object getObjectInstance(Object RefObj, Name Nm, Context Ctx,
 				    Hashtable<?,?> Env) throws Exception 

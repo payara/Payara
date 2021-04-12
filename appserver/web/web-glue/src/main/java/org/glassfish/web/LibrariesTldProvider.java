@@ -43,11 +43,11 @@ package org.glassfish.web;
 import com.sun.enterprise.util.net.JarURIPattern;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.web.TldProvider;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PostConstruct;
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 
 import java.io.File;
 import java.io.FileFilter;

@@ -66,7 +66,7 @@ import org.apache.catalina.LogFacade;
 import org.apache.catalina.Session;
 import org.apache.catalina.core.StandardContext;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;

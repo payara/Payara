@@ -42,11 +42,11 @@ package slsbnicmt;
 
 import java.io.*;
 import java.net.*;
-import javax.servlet.*;
-import javax.servlet.http.*;
-import javax.ejb.EJB;
+import jakarta.servlet.*;
+import jakarta.servlet.http.*;
+import jakarta.ejb.EJB;
 import javax.sql.DataSource;
-import javax.transaction.UserTransaction;
+import jakarta.transaction.UserTransaction;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 

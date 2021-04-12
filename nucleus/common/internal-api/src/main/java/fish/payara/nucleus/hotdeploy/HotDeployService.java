@@ -43,7 +43,7 @@ import java.io.File;
 import java.util.Map;
 import java.util.Optional;
 import java.util.WeakHashMap;
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.jvnet.hk2.annotations.Service;

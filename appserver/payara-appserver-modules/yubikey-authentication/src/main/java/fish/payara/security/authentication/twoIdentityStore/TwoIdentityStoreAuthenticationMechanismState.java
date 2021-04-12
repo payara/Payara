@@ -45,8 +45,8 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import javax.enterprise.context.SessionScoped;
-import javax.security.enterprise.identitystore.CredentialValidationResult;
+import jakarta.enterprise.context.SessionScoped;
+import jakarta.security.enterprise.identitystore.CredentialValidationResult;
 
 /**
  * Maintains the state of the TwoIdentityStoreAuthenticationMechanism per session

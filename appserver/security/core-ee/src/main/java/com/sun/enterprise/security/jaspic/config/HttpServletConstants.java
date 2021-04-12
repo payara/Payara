@@ -44,11 +44,11 @@ package com.sun.enterprise.security.jaspic.config;
  * This is used to do HttpServlet security for app server
  */
 public class HttpServletConstants {
-    public static final String AUTH_TYPE = "javax.servlet.http.authType";
+    public static final String AUTH_TYPE = "jakarta.servlet.http.authType";
     public static final String WEB_BUNDLE = "WEB_BUNDLE";
-    public static final String POLICY_CONTEXT = "javax.security.jacc.PolicyContext";
-    public static final String IS_MANDATORY = "javax.security.auth.message.MessagePolicy.isMandatory";
-    public static final String REGISTER_SESSION = "javax.servlet.http.registerSession";
+    public static final String POLICY_CONTEXT = "jakarta.security.jacc.PolicyContext";
+    public static final String IS_MANDATORY = "jakarta.security.auth.message.MessagePolicy.isMandatory";
+    public static final String REGISTER_SESSION = "jakarta.servlet.http.registerSession";
     @Deprecated public static final String REGISTER_WITH_AUTHENTICATOR = "com.sun.web.RealmAdapter.register";
 
     private HttpServletConstants() {

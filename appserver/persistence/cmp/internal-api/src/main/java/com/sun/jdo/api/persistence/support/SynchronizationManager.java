@@ -47,7 +47,7 @@
 
 package com.sun.jdo.api.persistence.support;
 
-import javax.transaction.Synchronization;
+import jakarta.transaction.Synchronization;
 import java.util.ArrayList;
 import java.util.List;
 

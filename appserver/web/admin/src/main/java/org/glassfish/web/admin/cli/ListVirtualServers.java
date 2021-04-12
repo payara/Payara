@@ -49,8 +49,8 @@ import static org.glassfish.config.support.CommandTarget.STANDALONE_INSTANCE;
 
 import java.util.List;
 
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;

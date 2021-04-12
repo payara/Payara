@@ -67,7 +67,7 @@ import org.glassfish.external.probe.provider.StatsProviderManager;
 
 import javax.security.auth.Subject;
 import javax.security.auth.SubjectDomainCombiner;
-import javax.security.jacc.*;
+import jakarta.security.jacc.*;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URI;

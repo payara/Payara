@@ -42,8 +42,8 @@ package com.sun.enterprise.container.common.spi.util;
 
 import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import org.glassfish.hk2.api.PostConstruct;
 
 import java.io.*;

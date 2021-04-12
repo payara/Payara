@@ -49,12 +49,12 @@ import java.security.PrivilegedExceptionAction;
 import java.util.Timer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.resource.NotSupportedException;
-import javax.resource.spi.ActivationSpec;
-import javax.resource.spi.AuthenticationMechanism;
-import javax.resource.spi.BootstrapContext;
-import javax.resource.spi.Connector;
-import javax.resource.spi.endpoint.MessageEndpointFactory;
+import jakarta.resource.NotSupportedException;
+import jakarta.resource.spi.ActivationSpec;
+import jakarta.resource.spi.AuthenticationMechanism;
+import jakarta.resource.spi.BootstrapContext;
+import jakarta.resource.spi.Connector;
+import jakarta.resource.spi.endpoint.MessageEndpointFactory;
 import javax.transaction.xa.XAResource;
 
 /**
@@ -74,7 +74,7 @@ import javax.transaction.xa.XAResource;
             credentialInterface=AuthenticationMechanism.CredentialInterface.PasswordCredential)
     }
 )
-public class ResourceAdapterImpl implements javax.resource.spi.ResourceAdapter {
+public class ResourceAdapterImpl implements jakarta.resource.spi.ResourceAdapter {
     private static ResourceAdapterImpl ra;
     private BootstrapContext bootstrapContext;
     private Timer timer;

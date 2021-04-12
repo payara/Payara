@@ -49,7 +49,7 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import com.sun.ejb.Container;
 import com.sun.ejb.ContainerFactory;

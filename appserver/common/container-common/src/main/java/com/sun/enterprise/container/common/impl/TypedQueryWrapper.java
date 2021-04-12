@@ -41,13 +41,13 @@
 package com.sun.enterprise.container.common.impl;
 
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.util.List;
 import java.util.Date;
 import java.util.Calendar;
 
 /**
- * Wrapper class for javax.persistence.TypedQuery objects returned from
+ * Wrapper class for jakarta.persistence.TypedQuery objects returned from
  * non-transactional access of a container-managed transactional
  * EntityManager.
  *

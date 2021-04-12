@@ -209,7 +209,7 @@
         </dependency>
         
         <!-- Healthcheck -->
-        <dependency>
+<!--        <dependency>
             <groupId>org.eclipse.microprofile.health</groupId>
             <artifactId>microprofile-health-api</artifactId>
         </dependency>
@@ -222,7 +222,7 @@
             <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
             <artifactId>healthcheck-checker</artifactId>
             <version>${project.version}</version>
-        </dependency>
+        </dependency>-->
 
         <!-- REST Client -->
         <dependency>
@@ -233,15 +233,15 @@
             <groupId>org.glassfish.jersey.ext</groupId>
             <artifactId>jersey-proxy-client</artifactId>
         </dependency>
-        <dependency>
+<!--        <dependency>
             <groupId>org.glassfish.jersey.ext.microprofile</groupId>
             <artifactId>jersey-mp-rest-client</artifactId>
-            <!-- temporary add explicit version as bom artifact may be cached -->
+             temporary add explicit version as bom artifact may be cached 
             <version>${jersey.version}</version>
-        </dependency>
+        </dependency>-->
             
         <!-- OpenTracing -->
-        <dependency>
+<!--        <dependency>
             <groupId>org.eclipse.microprofile.opentracing</groupId>
             <artifactId>microprofile-opentracing-api</artifactId>
         </dependency>
@@ -254,7 +254,7 @@
             <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>microprofile-opentracing-repackaged</artifactId>
             <version>${project.version}</version>
-        </dependency>
+        </dependency>-->
         
         <!-- Admin MicroProfile Admin GUI -->
         <dependency>

@@ -48,8 +48,8 @@ import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.appserv.connectors.internal.api.ConnectorConstants;
 
-import javax.resource.spi.ResourceAdapter;
-import javax.resource.spi.ActivationSpec;
+import jakarta.resource.spi.ResourceAdapter;
+import jakarta.resource.spi.ActivationSpec;
 import java.util.Hashtable;
 import java.util.Collection;
 import java.util.Iterator;

@@ -75,9 +75,9 @@ import org.glassfish.server.ServerEnvironmentImpl;
 import org.junit.*;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.inject.Singleton;
 
 import java.util.Collections;
 import java.util.HashMap;

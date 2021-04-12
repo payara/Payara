@@ -41,7 +41,7 @@ package fish.payara.microprofile.jwtauth.eesecurity;
 
 import static java.lang.Thread.currentThread;
 import static java.util.logging.Level.INFO;
-import static javax.security.enterprise.identitystore.CredentialValidationResult.INVALID_RESULT;
+import static jakarta.security.enterprise.identitystore.CredentialValidationResult.INVALID_RESULT;
 import static org.eclipse.microprofile.jwt.config.Names.ISSUER;
 
 import java.io.IOException;
@@ -55,8 +55,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import javax.security.enterprise.identitystore.CredentialValidationResult;
-import javax.security.enterprise.identitystore.IdentityStore;
+import jakarta.security.enterprise.identitystore.CredentialValidationResult;
+import jakarta.security.enterprise.identitystore.IdentityStore;
 
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;

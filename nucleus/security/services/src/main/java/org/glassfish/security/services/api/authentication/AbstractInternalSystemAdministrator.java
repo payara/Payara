@@ -39,7 +39,7 @@
  */
 package org.glassfish.security.services.api.authentication;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import javax.security.auth.Subject;
 import javax.security.auth.login.LoginException;
 import org.glassfish.hk2.api.PostConstruct;

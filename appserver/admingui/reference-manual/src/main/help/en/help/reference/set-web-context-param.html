@@ -259,14 +259,14 @@ Application</p>
 </div>
 <div class="paragraph">
 <p>This example sets the servlet context-initialization parameter
-<code>javax.faces.STATE_SAVING_METHOD</code> of the web application <code>basic-ezcomp</code>
+<code>jakarta.faces.STATE_SAVING_METHOD</code> of the web application <code>basic-ezcomp</code>
 to <code>client</code>. The description
 <code>The location where the application's state is preserved</code> is provided
 for this parameter.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; set-web-context-param --name=javax.faces.STATE_SAVING_METHOD
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; set-web-context-param --name=jakarta.faces.STATE_SAVING_METHOD
 --description="The location where the application's state is preserved"
 --value=client basic-ezcomp
 
@@ -282,11 +282,11 @@ Defined in a Deployment Descriptor</p>
 </div>
 <div class="paragraph">
 <p>This example ignores the servlet context-initialization parameter
-<code>javax.faces.PROJECT_STAGE</code> of the web application <code>basic-ezcomp</code>.</p>
+<code>jakarta.faces.PROJECT_STAGE</code> of the web application <code>basic-ezcomp</code>.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; set-web-context-param --name=javax.faces.PROJECT_STAGE
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; set-web-context-param --name=jakarta.faces.PROJECT_STAGE
 --ignoredescriptoritem=true
 basic-ezcomp
 

@@ -63,23 +63,23 @@ import java.util.function.Consumer;
 
 import static java.util.logging.Level.WARNING;
 import java.util.logging.Logger;
-import javax.inject.Inject;
-import javax.ws.rs.BeanParam;
-import javax.ws.rs.CookieParam;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.FormParam;
-import javax.ws.rs.GET;
-import javax.ws.rs.HEAD;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.MatrixParam;
-import javax.ws.rs.OPTIONS;
-import javax.ws.rs.PATCH;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.ext.Provider;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.BeanParam;
+import jakarta.ws.rs.CookieParam;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.FormParam;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.HEAD;
+import jakarta.ws.rs.HeaderParam;
+import jakarta.ws.rs.MatrixParam;
+import jakarta.ws.rs.OPTIONS;
+import jakarta.ws.rs.PATCH;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.ext.Provider;
 import org.eclipse.microprofile.openapi.models.Constructible;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.eclipse.microprofile.openapi.models.Operation;
@@ -289,8 +289,8 @@ public final class ModelUtils {
 
         final Class<? extends Annotation>[] ANNOTATION_TYPES = new Class[] {
             org.eclipse.microprofile.openapi.annotations.media.Schema.class,
-            javax.xml.bind.annotation.XmlRootElement.class,
-            javax.xml.bind.annotation.XmlElement.class
+            jakarta.xml.bind.annotation.XmlRootElement.class,
+            jakarta.xml.bind.annotation.XmlElement.class
         };
 
         for (Class<? extends Annotation> annotationType : ANNOTATION_TYPES) {

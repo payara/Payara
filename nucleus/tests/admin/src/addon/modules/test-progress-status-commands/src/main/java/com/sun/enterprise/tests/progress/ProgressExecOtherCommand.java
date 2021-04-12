@@ -39,7 +39,7 @@
  */
 package com.sun.enterprise.tests.progress;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.glassfish.api.I18n;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;

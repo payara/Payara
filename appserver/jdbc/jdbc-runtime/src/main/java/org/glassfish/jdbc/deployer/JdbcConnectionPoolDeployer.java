@@ -58,8 +58,8 @@ import java.util.concurrent.ThreadFactory;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 
 import org.glassfish.jdbc.config.JdbcConnectionPool;
 import org.glassfish.jdbc.util.JdbcResourcesUtil;

@@ -79,11 +79,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.management.MBeanPermission;
-import javax.security.jacc.EJBRoleRefPermission;
-import javax.security.jacc.PolicyContext;
-import javax.security.jacc.PolicyContextException;
-import javax.security.jacc.WebResourcePermission;
-import javax.security.jacc.WebRoleRefPermission;
+import jakarta.security.jacc.EJBRoleRefPermission;
+import jakarta.security.jacc.PolicyContext;
+import jakarta.security.jacc.PolicyContextException;
+import jakarta.security.jacc.WebResourcePermission;
+import jakarta.security.jacc.WebRoleRefPermission;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.logging.LogDomains;
@@ -99,7 +99,7 @@ import sun.security.util.PropertyExpander.ExpandException;
  * jdkPolicyFile object It multiples jdkPolicyFile decisions to the context specific instance of sun.security.provider.PolicyFile.
  * Although this Policy provider is implemented using another Policy class, this class is not a "delegating Policy
  * provider" as defined by JACC, and as such it SHOULD not be configured using the JACC system property
- * javax.security.jacc.policy.provider.
+ * jakarta.security.jacc.policy.provider.
  *
  * @author Harpreet Singh (harpreet.singh@sun.com)
  * @author Jean-Francois Arcand

@@ -47,7 +47,7 @@ import com.sun.enterprise.util.StringUtils;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.util.logging.Logger;
 
 import org.glassfish.hk2.api.ServiceLocator;

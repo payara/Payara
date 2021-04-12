@@ -69,7 +69,7 @@ public class JavaClientClassWriter implements ClientClassWriter {
             "package " + Constants.CLIENT_JAVA_PACKAGE +";\n" +
             "import java.util.HashMap;\n" +
             "import java.util.Map;\n" +
-            "import javax.ws.rs.client.Client;\n\n" +
+            "import jakarta.ws.rs.client.Client;\n\n" +
             "public class CLASSNAME extends RestClientBase {\n";
     private static final String TMPL_CTOR_DOMAIN =
             "    private RestClient parent;\n" +
@@ -94,7 +94,7 @@ public class JavaClientClassWriter implements ClientClassWriter {
             "    }\n\n";
     private static final String TMPL_CTOR_SIMPLE =
             "package " + Constants.CLIENT_JAVA_PACKAGE +";\n" +
-            "import javax.ws.rs.client.Client;\n\n" +
+            "import jakarta.ws.rs.client.Client;\n\n" +
             "public class CLASSNAME extends PARENTCLASS {\n" +
             "    protected  CLASSNAME (Client c, RestClientBase p) {\n" +
             "        super(c,p);\n"+

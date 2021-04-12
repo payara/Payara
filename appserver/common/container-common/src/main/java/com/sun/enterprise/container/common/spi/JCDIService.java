@@ -43,10 +43,10 @@ package com.sun.enterprise.container.common.spi;
 
 import java.util.Set;
 
-import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.inject.spi.InjectionTarget;
+import jakarta.enterprise.context.spi.CreationalContext;
+import jakarta.enterprise.inject.spi.InjectionTarget;
 import javax.naming.NamingException;
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 import java.util.Collection;
 import java.util.Map;
 import com.sun.enterprise.deployment.BundleDescriptor;

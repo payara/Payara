@@ -41,10 +41,10 @@ package fish.payara.security.oauth2.api;
 
 import java.util.EnumSet;
 import java.util.Set;
-import javax.security.enterprise.credential.RememberMeCredential;
-import javax.security.enterprise.identitystore.CredentialValidationResult;
-import javax.security.enterprise.identitystore.IdentityStore;
-import static javax.security.enterprise.identitystore.IdentityStore.ValidationType.VALIDATE;
+import jakarta.security.enterprise.credential.RememberMeCredential;
+import jakarta.security.enterprise.identitystore.CredentialValidationResult;
+import jakarta.security.enterprise.identitystore.IdentityStore;
+import static jakarta.security.enterprise.identitystore.IdentityStore.ValidationType.VALIDATE;
 
 /**
  * This is a basic identity store that will always validate as a valid result. This class does not add the user

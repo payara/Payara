@@ -42,8 +42,8 @@ package fish.payara.samples.rolespermitted;
 import java.io.Serializable;
 import java.security.Principal;
 
-import javax.enterprise.context.SessionScoped;
-import javax.inject.Inject;
+import jakarta.enterprise.context.SessionScoped;
+import jakarta.inject.Inject;
 
 import fish.payara.cdi.auth.roles.RolesPermitted;
 

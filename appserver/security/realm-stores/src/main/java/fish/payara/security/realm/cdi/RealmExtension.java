@@ -74,20 +74,20 @@ import java.util.Set;
 import static java.util.logging.Level.INFO;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.event.Observes;
-import javax.enterprise.inject.spi.AfterBeanDiscovery;
-import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.BeforeBeanDiscovery;
-import javax.enterprise.inject.spi.CDI;
-import javax.enterprise.inject.spi.Extension;
-import javax.enterprise.inject.spi.ProcessBean;
-import javax.security.enterprise.authentication.mechanism.http.HttpAuthenticationMechanism;
-import javax.security.enterprise.identitystore.IdentityStore;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.event.Observes;
+import jakarta.enterprise.inject.spi.AfterBeanDiscovery;
+import jakarta.enterprise.inject.spi.Bean;
+import jakarta.enterprise.inject.spi.BeanManager;
+import jakarta.enterprise.inject.spi.BeforeBeanDiscovery;
+import jakarta.enterprise.inject.spi.CDI;
+import jakarta.enterprise.inject.spi.Extension;
+import jakarta.enterprise.inject.spi.ProcessBean;
+import jakarta.security.enterprise.authentication.mechanism.http.HttpAuthenticationMechanism;
+import jakarta.security.enterprise.identitystore.IdentityStore;
+import org.glassfish.common.util.PayaraCdiProducer;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
-import org.glassfish.soteria.cdi.CdiProducer;
 import static org.glassfish.soteria.cdi.CdiUtils.getAnnotation;
 
 /**
@@ -160,7 +160,7 @@ public class RealmExtension implements Extension {
             validateDefinition(definition);
             logActivatedIdentityStore(RealmIdentityStore.class, beanClass);
 
-            identityStoreBeans.add(new CdiProducer<IdentityStore>()
+            identityStoreBeans.add(new PayaraCdiProducer<IdentityStore>()
                     .scope(ApplicationScoped.class)
                     .beanClass(IdentityStore.class)
                     .types(Object.class, IdentityStore.class)
@@ -182,7 +182,7 @@ public class RealmExtension implements Extension {
                 validateDefinition(definition);
                 logActivatedIdentityStore(RealmIdentityStore.class, beanClass);
 
-                identityStoreBeans.add(new CdiProducer<IdentityStore>()
+                identityStoreBeans.add(new PayaraCdiProducer<IdentityStore>()
                         .scope(ApplicationScoped.class)
                         .beanClass(IdentityStore.class)
                         .types(Object.class, IdentityStore.class)
@@ -232,7 +232,7 @@ public class RealmExtension implements Extension {
                     props
             );
 
-            identityStoreBeans.add(new CdiProducer<IdentityStore>()
+            identityStoreBeans.add(new PayaraCdiProducer<IdentityStore>()
                     .scope(ApplicationScoped.class)
                     .beanClass(IdentityStore.class)
                     .types(Object.class, IdentityStore.class)
@@ -278,7 +278,7 @@ public class RealmExtension implements Extension {
                     new Properties()
             );
 
-            identityStoreBeans.add(new CdiProducer<IdentityStore>()
+            identityStoreBeans.add(new PayaraCdiProducer<IdentityStore>()
                     .scope(ApplicationScoped.class)
                     .beanClass(IdentityStore.class)
                     .types(Object.class, IdentityStore.class)
@@ -308,7 +308,7 @@ public class RealmExtension implements Extension {
 
         optionalStore.ifPresent(definition -> {
             logActivatedAuthenticationMechanism(CertificateAuthenticationMechanism.class, beanClass);
-            authenticationMechanismBean = new CdiProducer<HttpAuthenticationMechanism>()
+            authenticationMechanismBean = new PayaraCdiProducer<HttpAuthenticationMechanism>()
                     .scope(ApplicationScoped.class)
                     .beanClass(HttpAuthenticationMechanism.class)
                     .types(Object.class, HttpAuthenticationMechanism.class)
@@ -350,7 +350,7 @@ public class RealmExtension implements Extension {
                     props
             );
 
-            identityStoreBeans.add(new CdiProducer<IdentityStore>()
+            identityStoreBeans.add(new PayaraCdiProducer<IdentityStore>()
                     .scope(ApplicationScoped.class)
                     .beanClass(IdentityStore.class)
                     .types(Object.class, IdentityStore.class)
@@ -398,7 +398,7 @@ public class RealmExtension implements Extension {
                     props
             );
 
-            identityStoreBeans.add(new CdiProducer<IdentityStore>()
+            identityStoreBeans.add(new PayaraCdiProducer<IdentityStore>()
                     .scope(ApplicationScoped.class)
                     .beanClass(IdentityStore.class)
                     .types(Object.class, IdentityStore.class)

@@ -42,8 +42,8 @@ package fish.payara.ejb.http.client;
 import java.net.URI;
 
 import javax.naming.NamingException;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.WebTarget;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.WebTarget;
 
 /**
  * Abstraction for the discovery strategy used to find possible endpoints that can be used to do the initial EJB lookup

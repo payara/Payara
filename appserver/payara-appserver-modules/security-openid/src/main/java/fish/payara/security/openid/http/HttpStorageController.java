@@ -41,8 +41,8 @@ package fish.payara.security.openid.http;
 
 import fish.payara.security.openid.domain.OpenIdConfiguration;
 import java.util.Optional;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  *

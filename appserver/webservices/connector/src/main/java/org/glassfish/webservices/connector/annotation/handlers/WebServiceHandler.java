@@ -146,7 +146,7 @@ public class WebServiceHandler extends AbstractHandler {
       /*  TODO These conditions will change since ejb in war will be supported
         //uncomment if needed
              if(annCtx instanceof EjbContext &&   (provider !=null) &&
-                    (provider.getType("javax.ejb.Stateless") == null)) {
+                    (provider.getType("jakarta.ejb.Stateless") == null)) {
                 AnnotationProcessorException ape = new AnnotationProcessorException(
                         localStrings.getLocalString("enterprise.deployment.annotation.handlers.webeppkgwrong",
                                 "Class {0} is annotated with @WebService and without @Stateless
@@ -160,7 +160,7 @@ public class WebServiceHandler extends AbstractHandler {
             }
 
             if(annCtx instanceof EjbBundleContext && (provider !=null) &&
-                    (provider.getType("javax.ejb.Stateless") == null)) {
+                    (provider.getType("jakarta.ejb.Stateless") == null)) {
                 AnnotationProcessorException ape = new AnnotationProcessorException(
                         localStrings.getLocalString  ("enterprise.deployment.annotation.handlers.webeppkgwrong",
                                 "Class {0} is annotated with @WebService and without @Stateless but is packaged in a JAR." +
@@ -171,7 +171,7 @@ public class WebServiceHandler extends AbstractHandler {
                 throw ape;
             }
             if(annCtx instanceof WebBundleContext && (provider !=null) &&
-                    (provider.getType("javax.ejb.Stateless") != null)) {
+                    (provider.getType("jakarta.ejb.Stateless") != null)) {
                 AnnotationProcessorException ape = new AnnotationProcessorException(
                         localStrings.getLocalString
                          ("enterprise.deployment.annotation.handlers.ejbeppkgwrong",
@@ -182,7 +182,7 @@ public class WebServiceHandler extends AbstractHandler {
                 throw ape;
             }*/
             // let's see the type of web service we are dealing with...
-            if (ejbProvider != null && ejbProvider.getType("javax.ejb.Stateless") != null) {
+            if (ejbProvider != null && ejbProvider.getType("jakarta.ejb.Stateless") != null) {
                 // this is an ejb !
                 if (annCtx instanceof EjbContext) {
                     EjbContext ctx = (EjbContext) annCtx;
@@ -249,8 +249,8 @@ public class WebServiceHandler extends AbstractHandler {
 
         // Store binding type specified in Impl class
         String userSpecifiedBinding = null;
-        javax.xml.ws.BindingType bindingAnn = (javax.xml.ws.BindingType)
-                ((Class)annElem).getAnnotation(javax.xml.ws.BindingType.class);
+        jakarta.xml.ws.BindingType bindingAnn = (jakarta.xml.ws.BindingType)
+                ((Class)annElem).getAnnotation(jakarta.xml.ws.BindingType.class);
         if(bindingAnn != null) {
             userSpecifiedBinding = bindingAnn.value();
         }
@@ -286,7 +286,7 @@ public class WebServiceHandler extends AbstractHandler {
             }
 
             // SEI cannot have @BindingType
-            if(annElem.getAnnotation(javax.xml.ws.BindingType.class) != null) {
+            if(annElem.getAnnotation(jakarta.xml.ws.BindingType.class) != null) {
                 throw new AnnotationProcessorException(
                         wsLocalStrings.getLocalString("cannot.have.bindingtype",
                             "WS00026: SEI {0} cannot have @BindingType",
@@ -546,7 +546,7 @@ public class WebServiceHandler extends AbstractHandler {
      */
     private boolean ignoreWebserviceAnnotations(AnnotatedElement annElem,AnnotatedElementHandler annCtx){
 
-        javax.ejb.Stateless stateless = annElem.getAnnotation(javax.ejb.Stateless.class);
+        jakarta.ejb.Stateless stateless = annElem.getAnnotation(jakarta.ejb.Stateless.class);
         javax.jws.WebService webservice = annElem.getAnnotation(javax.jws.WebService.class);
         if ((stateless != null) && (webservice != null)
                && ( (annCtx instanceof WebBundleContext) || (annCtx instanceof WebComponentContext)) ) {

@@ -46,7 +46,7 @@ import java.util.*;
 
 import com.sun.gjc.util.MethodExecutor;
 
-import javax.resource.ResourceException;
+import jakarta.resource.ResourceException;
 
 import com.sun.logging.*;
 

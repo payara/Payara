@@ -55,7 +55,7 @@ import org.glassfish.internal.deployment.SnifferManager;
 import org.jvnet.hk2.annotations.Service;
 import com.sun.enterprise.config.serverbeans.Module;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import javax.security.auth.Subject;
 import java.util.*;
 

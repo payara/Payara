@@ -41,8 +41,8 @@
 package com.sun.enterprise.v3.server;
 
 import org.jvnet.hk2.annotations.Service;
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 
 import javax.xml.stream.XMLInputFactory;
 

@@ -51,7 +51,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.resource.ResourceException;
+import jakarta.resource.ResourceException;
 import javax.transaction.xa.XAResource;
 
 public final class BasicResourceAllocator extends AbstractConnectorAllocator {

@@ -41,10 +41,10 @@ package fish.payara.jacc;
 
 import java.security.Policy;
 
-import javax.security.jacc.PolicyConfiguration;
-import javax.security.jacc.PolicyConfigurationFactory;
-import javax.security.jacc.PolicyContextException;
-import javax.servlet.ServletContextListener;
+import jakarta.security.jacc.PolicyConfiguration;
+import jakarta.security.jacc.PolicyConfigurationFactory;
+import jakarta.security.jacc.PolicyContextException;
+import jakarta.servlet.ServletContextListener;
 
 /**
  * An alternative interface for Payara's {@link PolicyConfigurationFactory} that allows to install

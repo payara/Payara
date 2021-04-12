@@ -40,8 +40,8 @@
 
 package org.glassfish.webservices;
 
-import javax.xml.ws.Provider;
-import javax.xml.ws.WebServiceContext;
+import jakarta.xml.ws.Provider;
+import jakarta.xml.ws.WebServiceContext;
 import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
 import com.sun.xml.ws.api.message.Packet;

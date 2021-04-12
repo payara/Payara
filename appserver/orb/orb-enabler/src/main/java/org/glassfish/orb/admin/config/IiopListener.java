@@ -58,9 +58,9 @@ import org.glassfish.grizzly.config.dom.Ssl;
 import static org.glassfish.config.support.Constants.NAME_REGEX;
 import org.glassfish.quality.ToDo;
 
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
-import javax.validation.Payload;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.Payload;
 
 /**
  *

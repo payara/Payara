@@ -41,7 +41,7 @@ package fish.payara.jacc;
 
 import java.security.Policy;
 
-import javax.security.jacc.PolicyConfigurationFactory;
+import jakarta.security.jacc.PolicyConfigurationFactory;
 
 /**
  * This interface is used to bundle the two elements that make up a full JACC Provider

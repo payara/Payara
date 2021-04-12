@@ -51,7 +51,7 @@ import java.util.List;
 import java.util.Map;
 
 import java.beans.PropertyVetoException;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 import com.sun.enterprise.config.serverbeans.customvalidators.JavaClassName;
 
 /**

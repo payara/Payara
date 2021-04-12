@@ -49,7 +49,7 @@ import static fish.payara.ejb.http.admin.Constants.EJB_INVOKER_APP;
 import static fish.payara.ejb.http.admin.Constants.ENDPOINTS_DIR;
 import java.nio.file.Path;
 import java.util.logging.Logger;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import javax.security.auth.Subject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;

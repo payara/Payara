@@ -47,7 +47,7 @@ import com.sun.enterprise.naming.spi.NamingUtils;
 import org.glassfish.logging.annotation.LogMessageInfo;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 import javax.naming.Context;
 import java.io.*;
 import java.security.AccessController;

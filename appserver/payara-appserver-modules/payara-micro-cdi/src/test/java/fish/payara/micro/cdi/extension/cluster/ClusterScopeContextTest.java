@@ -42,7 +42,7 @@ package fish.payara.micro.cdi.extension.cluster;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 
-import javax.enterprise.inject.spi.Bean;
+import jakarta.enterprise.inject.spi.Bean;
 
 import org.junit.Before;
 import org.junit.Test;

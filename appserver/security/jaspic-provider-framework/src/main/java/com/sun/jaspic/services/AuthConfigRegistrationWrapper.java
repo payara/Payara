@@ -44,7 +44,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import javax.security.auth.message.config.RegistrationListener;
+import jakarta.security.auth.message.config.RegistrationListener;
 
 // Adding package private class because specializing the listener implementation class would
 // make the Payara JASPIC (JSR 196) implementation non-replaceable.

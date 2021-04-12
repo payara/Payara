@@ -48,16 +48,16 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.logging.annotation.LoggerInfo;
 
-import javax.annotation.PreDestroy;
-import javax.enterprise.context.ContextNotActiveException;
-import javax.enterprise.inject.Instance;
-import javax.enterprise.inject.spi.InjectionPoint;
-import javax.inject.Inject;
-import javax.jms.*;
+import jakarta.annotation.PreDestroy;
+import jakarta.enterprise.context.ContextNotActiveException;
+import jakarta.enterprise.inject.Instance;
+import jakarta.enterprise.inject.spi.InjectionPoint;
+import jakarta.inject.Inject;
+import jakarta.jms.*;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.transaction.SystemException;
-import javax.transaction.Transaction;
+import jakarta.transaction.SystemException;
+import jakarta.transaction.Transaction;
 import java.io.Serializable;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -74,7 +74,7 @@ public class InjectableJMSContext extends ForwardingJMSContext implements Serial
     // All fields are therefore either serializable or transient
 
     @LoggerInfo(subsystem="JMS_INJECTION", description="JMS Injection Logger", publish=true)
-    public static final String JMS_INJECTION_LOGGER = "javax.enterprise.resource.jms.injection";
+    public static final String JMS_INJECTION_LOGGER = "jakarta.enterprise.resource.jms.injection";
 
     private static final Logger logger = Logger.getLogger(JMS_INJECTION_LOGGER);
     private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(InjectableJMSContext.class);

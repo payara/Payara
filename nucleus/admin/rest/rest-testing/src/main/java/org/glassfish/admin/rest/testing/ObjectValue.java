@@ -45,10 +45,10 @@ package org.glassfish.admin.rest.testing;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.Map;
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonValue;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonValue;
 
 import static org.glassfish.admin.rest.testing.Common.*;
 

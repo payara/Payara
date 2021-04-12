@@ -119,40 +119,29 @@
 
         <!-- Servlet -->
         <!-- Requires JDK8u161 or above-->
-        <grizzly.npn.api.version>1.9.payara-p1</grizzly.npn.api.version>
-        <grizzly.npn.osgi.version>1.9</grizzly.npn.osgi.version>
-
-        <!-- Microprofile -->
-        <!-- JAX-RS -->
-        <jax-rs-api.spec.version>2.1.5</jax-rs-api.spec.version>
-        <jakarta.validation.version>2.0.2</jakarta.validation.version>
-
-        <!-- JAX-B -->
-        <jaxb.version>2.3.2</jaxb.version>
-
-        <management-api.version>1.1-rev-1</management-api.version>
+        <grizzly.npn.api.version>2.0.0</grizzly.npn.api.version>
+        <grizzly.npn.osgi.version>2.0.0</grizzly.npn.osgi.version>
 
         <!-- Other -->
-
-        <hk2.plugin.version>2.6.1.payara-p1</hk2.plugin.version>
+        <hk2.plugin.version>3.0.1</hk2.plugin.version>
         <tiger.types.version>1.4.payara-p1</tiger.types.version>
 
-        <glassfish-corba.version>4.1.1.payara-p3</glassfish-corba.version>
+        <glassfish-corba.version>4.2.4</glassfish-corba.version>
         <saaj-api.version>1.4.0</saaj-api.version>
 
         <!-- Library for introspecting types with full generic information including resolving of field and method types. -->
         <classmate.version>1.5.0</classmate.version>
         <jboss.logging.version>3.3.2.Final</jboss.logging.version>
         <!-- Javassist (JAVA programming ASSISTant) makes Java bytecode manipulation simple. It is a class library for editing bytecodes in Java. -->
-        <javassist.version>3.26.0-GA</javassist.version>
+        <javassist.version>3.27.0-GA</javassist.version>
 
         <!-- A pure Java implementation of the SSH-2 protocol -->
         <trilead-ssh2.version>build-217-jenkins-16</trilead-ssh2.version>
 
         <!-- Primitive Function Library (PFL); a library of simple utilities used by Glassfish -->
-        <pfl.version>4.0.2.payara-p1</pfl.version>
+        <pfl.version>4.1.2</pfl.version>
         <!-- GlassFish MBean Annotation Library -->
-        <gmbal.version>4.0.0</gmbal.version>
+        <gmbal.version>4.0.2</gmbal.version>
         <antlr.version>2.7.7</antlr.version>
 
         <commons-io.version>2.6</commons-io.version>
@@ -200,7 +189,7 @@
         <findbugs.exclude/>
         <findbugs-maven-plugin.version>3.0.5</findbugs-maven-plugin.version>
         <findbugs.version>1.7</findbugs.version>
-        <findbugs.glassfish.logging.validLoggerPrefixes>javax.enterprise</findbugs.glassfish.logging.validLoggerPrefixes>
+        <findbugs.glassfish.logging.validLoggerPrefixes>jakarta.enterprise</findbugs.glassfish.logging.validLoggerPrefixes>
         <jacoco.plugin.version>0.8.0</jacoco.plugin.version>
 
     </properties>
@@ -847,11 +836,6 @@ Parent is ${project.parent}</echo>
             <dependency>
                 <groupId>org.glassfish.pfl</groupId>
                 <artifactId>pfl-basic-tools</artifactId>
-                <version>${pfl.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.pfl</groupId>
-                <artifactId>pfl-asm</artifactId>
                 <version>${pfl.version}</version>
             </dependency>
             <dependency>

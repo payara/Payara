@@ -42,7 +42,7 @@ package com.sun.enterprise.security.jacc.provider;
 
 import static java.util.logging.Level.FINEST;
 import static java.util.logging.Level.WARNING;
-import static javax.security.jacc.PolicyContext.getContextID;
+import static jakarta.security.jacc.PolicyContext.getContextID;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -51,7 +51,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Logger;
 
-import javax.security.jacc.PolicyContextException;
+import jakarta.security.jacc.PolicyContextException;
 
 /**
  * 
@@ -156,7 +156,7 @@ public class SharedState {
      * 
      * @param id
      * @param otherId
-     * @throws javax.security.jacc.PolicyContextException
+     * @throws jakarta.security.jacc.PolicyContextException
      *             If otherID equals receiverID. no relationship is formed.
      */
     static void link(String id, String otherId) throws PolicyContextException {

@@ -44,7 +44,7 @@ package com.sun.ejb.containers;
 import org.glassfish.common.util.timer.TimerSchedule;
 import org.glassfish.ejb.deployment.descriptor.ScheduledTimerDescriptor;
 
-import javax.ejb.ScheduleExpression;
+import jakarta.ejb.ScheduleExpression;
 
 /**
  * A runtime representation of the user-defined calendar-based

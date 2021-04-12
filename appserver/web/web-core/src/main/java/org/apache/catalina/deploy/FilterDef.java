@@ -61,7 +61,7 @@ package org.apache.catalina.deploy;
 
 import org.apache.catalina.util.Enumerator;
 
-import javax.servlet.Filter;
+import jakarta.servlet.Filter;
 import java.io.Serializable;
 import java.util.*;
 

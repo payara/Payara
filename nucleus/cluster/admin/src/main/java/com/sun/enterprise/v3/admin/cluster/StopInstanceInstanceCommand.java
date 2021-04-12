@@ -47,7 +47,7 @@ import com.sun.enterprise.v3.admin.StopServer;
 import org.glassfish.api.Async;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;

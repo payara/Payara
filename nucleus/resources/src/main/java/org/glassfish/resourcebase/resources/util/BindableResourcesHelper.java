@@ -47,7 +47,7 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.resourcebase.resources.api.ResourceStatus;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.lang.reflect.Proxy;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -75,7 +75,7 @@ public class BindableResourcesHelper {
 
     @LoggerInfo(subsystem="RESOURCE", description="Nucleus Resource", publish=true)
 
-    public static final String LOGGER = "javax.enterprise.resources.util";
+    public static final String LOGGER = "jakarta.enterprise.resources.util";
 
     private final Logger _logger = Logger.getLogger(LOGGER, LOGMESSAGE_RESOURCE);
 

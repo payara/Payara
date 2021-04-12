@@ -49,7 +49,7 @@ import static org.glassfish.deployment.autodeploy.AutoDeployer.getNameFromFilePa
 
 import java.nio.file.Path;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 import static fish.payara.ejb.http.admin.Constants.EJB_INVOKER_APP;

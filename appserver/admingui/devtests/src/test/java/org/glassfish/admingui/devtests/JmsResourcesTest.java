@@ -67,7 +67,7 @@ public class JmsResourcesTest extends BaseSeleniumTestClass {
         clickAndWait("propertyForm:resourcesTable:topActionsGroup1:newButton", TRIGGER_NEW_JMS_CONN_FACT);
 
         setFieldValue("form:propertySheet:generalPropertySheet:jndiProp:jndiProp", poolName);
-        selectDropdownOption("form:propertySheet:generalPropertySheet:resType:resType", "javax.jms.TopicConnectionFactory");
+        selectDropdownOption("form:propertySheet:generalPropertySheet:resType:resType", "jakarta.jms.TopicConnectionFactory");
         setFieldValue("form:propertySheet:generalPropertySheet:descProp:descProp", description);
         selectDropdownOption("form:propertySheet:poolPropertySheet:transprop:trans", "LocalTransaction");
         clickAndWait("form:propertyContentPage:topButtons:newButton", TRIGGER_JMS_CONNECTION_FACTORIES);
@@ -101,7 +101,7 @@ public class JmsResourcesTest extends BaseSeleniumTestClass {
         clickAndWait("propertyForm:resourcesTable:topActionsGroup1:newButton", TRIGGER_NEW_JMS_CONN_FACT);
 
         setFieldValue("form:propertySheet:generalPropertySheet:jndiProp:jndiProp", poolName);
-        selectDropdownOption("form:propertySheet:generalPropertySheet:resType:resType", "javax.jms.TopicConnectionFactory"); // i18n?
+        selectDropdownOption("form:propertySheet:generalPropertySheet:resType:resType", "jakarta.jms.TopicConnectionFactory"); // i18n?
         setFieldValue("form:propertySheet:generalPropertySheet:descProp:descProp", description);
         selectDropdownOption("form:propertySheet:poolPropertySheet:transprop:trans", "LocalTransaction"); //i18n
         

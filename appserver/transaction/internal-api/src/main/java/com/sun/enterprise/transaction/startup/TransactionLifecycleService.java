@@ -43,7 +43,7 @@ package com.sun.enterprise.transaction.startup;
 
 import java.util.logging.Logger;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import javax.naming.Context;
 import javax.naming.NamingException;
 
@@ -114,7 +114,7 @@ public class TransactionLifecycleService implements PostConstruct, PreDestroy {
                     @Override
                     public Object create(Context ic) throws NamingException {
                         ActiveDescriptor<?> descriptor = habitat.getBestDescriptor(
-                                BuilderHelper.createContractFilter("javax.transaction.UserTransaction"));
+                                BuilderHelper.createContractFilter("jakarta.transaction.UserTransaction"));
                         if (descriptor == null) return null;
 
                         return habitat.getServiceHandle(descriptor).getService();

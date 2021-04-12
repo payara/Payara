@@ -49,9 +49,9 @@ import org.jvnet.hk2.config.ConfigBeanProxy;
 import static org.glassfish.config.support.Constants.NAME_SERVER_REGEX;
 
 import java.beans.PropertyVetoException;
-import javax.validation.Payload;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
+import jakarta.validation.Payload;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 /**
  *
  */

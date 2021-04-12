@@ -43,7 +43,7 @@ package fish.payara.samples.ejbhttp.server;
 import fish.payara.samples.ejbhttp.api.ExposedService;
 import fish.payara.samples.ejbhttp.api.User;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 import java.time.LocalDate;
 import java.util.UUID;
 

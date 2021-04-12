@@ -318,23 +318,21 @@
         jakarta.servlet-api.jar
         jakarta.servlet.jsp-api.jar
         jakarta.servlet.jsp.jstl-api.jar
-        javax.servlet.jsp.jstl.jar
+        jakarta.servlet.jsp.jstl.jar
         jakarta.jms-api.jar
         jakarta.faces.jar
-        javax.servlet.jsp.jar
+        jakarta.servlet.jsp.jar
         jspcaching-connector.jar
         web-glue.jar
         bean-validator.jar
         jakarta.ejb-api.jar
         jakarta.enterprise.deploy-api.jar
         jakarta.mail.jar
-        jakarta.management.j2ee-api.jar
         jakarta.persistence.jar
         jakarta.resource-api.jar
         jakarta.security.auth.message-api.jar
         jakarta.security.jacc-api.jar
         jakarta.transaction-api.jar
-        jakarta.xml.rpc-api.jar
         webservices-osgi.jar
         weld-osgi-bundle.jar
         jersey-mvc-jsp.jar

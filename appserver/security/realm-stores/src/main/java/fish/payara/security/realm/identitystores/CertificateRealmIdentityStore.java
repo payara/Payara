@@ -54,13 +54,13 @@ import static java.util.Arrays.asList;
 import java.util.Properties;
 import java.util.Set;
 import static java.util.stream.Collectors.toSet;
-import javax.enterprise.inject.Typed;
+import jakarta.enterprise.inject.Typed;
 import javax.security.auth.Subject;
-import javax.security.enterprise.credential.Credential;
-import javax.security.enterprise.identitystore.CredentialValidationResult;
-import static javax.security.enterprise.identitystore.CredentialValidationResult.INVALID_RESULT;
-import static javax.security.enterprise.identitystore.CredentialValidationResult.NOT_VALIDATED_RESULT;
-import javax.security.enterprise.identitystore.IdentityStore;
+import jakarta.security.enterprise.credential.Credential;
+import jakarta.security.enterprise.identitystore.CredentialValidationResult;
+import static jakarta.security.enterprise.identitystore.CredentialValidationResult.INVALID_RESULT;
+import static jakarta.security.enterprise.identitystore.CredentialValidationResult.NOT_VALIDATED_RESULT;
+import jakarta.security.enterprise.identitystore.IdentityStore;
 import org.glassfish.security.common.Group;
 
 /**
