@@ -87,7 +87,7 @@ import com.sun.enterprise.server.pluggable.SecuritySupport;
 @Singleton
 public final class SSLUtils implements PostConstruct {
 
-    private static final Logger _logger = SecurityLoggerInfo.getLogger();
+    private static final Logger LOGGER = SecurityLoggerInfo.getLogger();
 
     public static final String HTTPS_OUTBOUND_KEY_ALIAS = "com.sun.enterprise.security.httpsOutboundKeyAlias";
     private static final String DEFAULT_SSL_PROTOCOL = "TLS";
@@ -128,7 +128,7 @@ public final class SSLUtils implements PostConstruct {
             mergedTrustStore = mergingTrustStores(securitySupport.getTrustStores());
             getSSLContext(null, null, null);
         } catch (Exception ex) {
-            _logger.log(FINE, "SSLUtils static init fails.", ex);
+            LOGGER.log(FINE, "SSLUtils static init fails.", ex);
             throw new IllegalStateException(ex);
         }
     }

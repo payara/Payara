@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2019-2021] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.common;
 
 import java.security.Principal;
@@ -143,11 +143,7 @@ public final class ClientSecurityContext extends AbstractSecurityContext {
             return true;
         }
 
-        if (subject.getPrincipals().isEmpty()) {
-            return true;
-        }
-
-        return false;
+        return subject.getPrincipals().isEmpty();
     }
 
     @Override

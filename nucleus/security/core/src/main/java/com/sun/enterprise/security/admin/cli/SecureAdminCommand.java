@@ -249,8 +249,7 @@ public abstract class SecureAdminCommand implements AdminCommand {
         private final TopLevelContext topLevelContext;
 
         private Protocols protocols_w = null;
-        private Map<String,Protocol> namedProtocols_w = new
-                HashMap<String,Protocol>();
+        private Map<String,Protocol> namedProtocols_w = new HashMap<>();
 
         private JmxConnector jmxConnector_w = null;
         private Ssl jmxConnectorSsl_w = null;

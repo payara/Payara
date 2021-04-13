@@ -189,7 +189,7 @@ public class RealmsManager {
     public void putIntoLoadedRealms(String configName, String realmName, Realm realm) {
         Map<String, Realm> containedRealms = loadedRealms.get(configName);
         if (containedRealms == null) {
-            containedRealms = new ConcurrentHashMap<String, Realm>();
+            containedRealms = new ConcurrentHashMap<>();
             if (configName == null) { // Is "null" really a valid key above?
                 configName = config.getName();
             }

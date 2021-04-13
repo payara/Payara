@@ -214,7 +214,7 @@ public class EnableSecureAdminCommand extends SecureAdminCommand {
          * even for the default aliases.
          */
         try {
-            final List<String> badAliases = new ArrayList<String>();
+            final List<String> badAliases = new ArrayList<>();
             secureAdmin_w.setDasAlias(processAlias(adminalias, 
                     SecureAdmin.Duck.DEFAULT_ADMIN_ALIAS, 
                     secureAdmin_w, badAliases));

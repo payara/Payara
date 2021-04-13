@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security;
 
 import static com.sun.enterprise.security.SecurityLoggerInfo.defaultSecurityContextError;
@@ -317,10 +317,12 @@ public class SecurityContext extends AbstractSecurityContext {
      * 
      * @return The caller Principal.
      */
+    @Override
     public Principal getCallerPrincipal() {
         return this == defaultSecurityContext ? getDefaultCallerPrincipal() : callerPrincipal;
     }
 
+    @Override
     public Subject getSubject() {
         return subject;
     }
@@ -333,16 +335,19 @@ public class SecurityContext extends AbstractSecurityContext {
         initDefaultCallerPrincipal();
     }
 
+    @Override
     public AppServSecurityContext newInstance(String username, Subject subject, String realm) {
         LOGGER.fine("SecurityContext: newInstance method called");
         return new SecurityContext(username, subject, realm);
     }
 
+    @Override
     public AppServSecurityContext newInstance(String username, Subject subject) {
         LOGGER.fine("SecurityContext: newInstance method called");
         return new SecurityContext(username, subject);
     }
 
+    @Override
     public void setCurrentSecurityContext(AppServSecurityContext context) {
         LOGGER.fine("SecurityContext: setCurrentSecurityContext method called");
         
@@ -359,20 +364,24 @@ public class SecurityContext extends AbstractSecurityContext {
         throw new IllegalArgumentException("Expected SecurityContext, found " + context);
     }
 
+    @Override
     public AppServSecurityContext getCurrentSecurityContext() {
         LOGGER.fine("SecurityContext: getCurrent() method called");
         return getCurrent();
     }
 
+    @Override
     public void setUnauthenticatedSecurityContext() {
         LOGGER.fine("SecurityContext: setUnauthenticatedSecurityContext method called");
         setUnauthenticatedContext();
     }
 
+    @Override
     public void setSecurityContextWithPrincipal(Principal principal) {
         setCurrent(getSecurityContextForPrincipal(principal));
     }
     
+    @Override
     public String toString() {
         return "SecurityContext[ " + "Initiator: " + callerPrincipal + "Subject " + subject + " ]";
     }

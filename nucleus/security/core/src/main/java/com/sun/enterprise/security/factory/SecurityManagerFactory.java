@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.factory;
 
 import java.util.ArrayList;
@@ -139,7 +139,7 @@ public class SecurityManagerFactory {
                     managers = getManagers(iD2sMmap, id, remove);
                     if (managers != null) {
                         if (managerList == null) {
-                            managerList = new ArrayList<T>();
+                            managerList = new ArrayList<>();
                         }
                         managerList.addAll(managers);
                     }
@@ -194,7 +194,7 @@ public class SecurityManagerFactory {
             Map<String, T> managerMap = iD2sMmap.get(ctxId);
 
             if (managerMap == null) {
-                managerMap = new HashMap<String, T>();
+                managerMap = new HashMap<>();
                 iD2sMmap.put(ctxId, managerMap);
             }
 

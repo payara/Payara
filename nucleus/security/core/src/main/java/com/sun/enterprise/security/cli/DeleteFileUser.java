@@ -152,6 +152,7 @@ public class DeleteFileUser implements /* UndoableCommand */ AdminCommand, Admin
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
 
         final ActionReport report = context.getActionReport();

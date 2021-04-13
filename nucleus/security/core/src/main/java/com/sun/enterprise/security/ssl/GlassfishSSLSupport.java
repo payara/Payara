@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.ssl;
 
 import com.sun.enterprise.security.SecurityLoggerInfo;
@@ -97,6 +97,7 @@ public class GlassfishSSLSupport implements SSLSupport {
         }
     }
 
+    @Override
     public String getCipherSuite() throws IOException {
         if (session == null) {
             return null;
@@ -104,10 +105,12 @@ public class GlassfishSSLSupport implements SSLSupport {
         return session.getCipherSuite();
     }
 
+    @Override
     public Object[] getPeerCertificateChain() throws IOException {
         return getPeerCertificateChain(false);
     }
 
+    @Override
     public Object[] getPeerCertificateChain(boolean force) throws IOException {
         if (session == null) {
             return null;
@@ -133,6 +136,7 @@ public class GlassfishSSLSupport implements SSLSupport {
         return getX509Certs();
     }
 
+    @Override
     public Integer getKeySize() throws IOException {
         if (session == null) {
             return null;
@@ -155,6 +159,7 @@ public class GlassfishSSLSupport implements SSLSupport {
         return keySize;
     }
 
+    @Override
     public String getSessionId() throws IOException {
         if (session == null) {
             return null;

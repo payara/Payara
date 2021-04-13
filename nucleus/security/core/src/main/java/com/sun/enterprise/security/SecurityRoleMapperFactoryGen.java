@@ -37,13 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 
-/*
- * SecurityRoleMapperFactoryGen.java
- *
- * Created on September 23, 2009, 12:34 PM
- */
 package com.sun.enterprise.security;
 
 import java.lang.ref.WeakReference;
@@ -52,7 +47,7 @@ import org.glassfish.deployment.common.SecurityRoleMapperFactory;
 import org.glassfish.internal.api.Globals;
 
 /**
- *
+ * @since September 23, 2009
  * @author nasradu8
  */
 public class SecurityRoleMapperFactoryGen {
