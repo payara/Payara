@@ -39,6 +39,7 @@
  */
 package fish.payara.logging.jul.formatter;
 
+import fish.payara.logging.jul.cfg.LoggingSystemEnvironment;
 import fish.payara.logging.jul.i18n.MessageResolver;
 import fish.payara.logging.jul.record.EnhancedLogRecord;
 import fish.payara.logging.jul.tracing.PayaraLoggingTracer;
@@ -69,7 +70,7 @@ import static java.time.temporal.ChronoField.SECOND_OF_MINUTE;
  * @author savage
  * @author David Matejcek
  */
-public class JSONLogFormatter extends BroadcastingFormatter {
+public class JSONLogFormatter extends PayaraLogFormatter {
 
     private static final boolean LOG_SOURCE_IN_KEY_VALUE = Boolean.getBoolean(JVM_OPT_LOGGING_KEYVALUE_LOGSOURCE);
     private static final boolean RECORD_NUMBER_IN_KEY_VALUE = Boolean.getBoolean(JVM_OPT_LOGGING_KEYVALUE_RECORDNUMBER);
@@ -189,7 +190,7 @@ public class JSONLogFormatter extends BroadcastingFormatter {
             final Level level = record.getLevel();
             json.add(LOG_LEVEL_KEY, level.getLocalizedName());
 
-            final String productId = getProductId();
+            final String productId = LoggingSystemEnvironment.getProductId();
             json.add(PRODUCT_ID_KEY, productId);
 
             json.add(LOGGER_NAME_KEY, record.getLoggerName());

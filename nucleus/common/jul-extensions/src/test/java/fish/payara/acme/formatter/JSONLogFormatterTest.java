@@ -40,6 +40,7 @@
 
 package fish.payara.acme.formatter;
 
+import fish.payara.logging.jul.cfg.LoggingSystemEnvironment;
 import fish.payara.logging.jul.formatter.ExcludeFieldsSupport.SupplementalAttribute;
 import fish.payara.logging.jul.formatter.JSONLogFormatter;
 import fish.payara.logging.jul.record.EnhancedLogRecord;
@@ -52,6 +53,8 @@ import java.util.logging.LogRecord;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -69,6 +72,19 @@ public class JSONLogFormatterTest {
     private static final String P_TIME = "\\d\\d:\\d\\d:\\d\\d.\\d\\d\\d";
     private static final String P_TIMEZONE = "[0-9:.+-]{6}";
     private static final String P_TIMESTAMP = "[0-9]{4}\\-[0-9]{2}\\-[0-9]{2}T" + P_TIME + P_TIMEZONE;
+    private String backupProductId;
+
+    @BeforeEach
+    public void initProductId() {
+        this.backupProductId = LoggingSystemEnvironment.getProductId();
+    }
+
+
+    @AfterEach
+    public void resetProductId() {
+        LoggingSystemEnvironment.setProductId(backupProductId);
+    }
+
 
     @Test
     public void nullRecord() {
@@ -86,13 +102,13 @@ public class JSONLogFormatterTest {
 
     @Test
     public void fullLog() {
+        LoggingSystemEnvironment.setProductId("PAYARA TEST");
         final String message = "Ok, this works!";
         final LogRecord record = new LogRecord(Level.INFO, message);
         record.setLoggerName("the.test.logger");
         record.setSourceClassName("fish.payara.FakeClass");
         record.setSourceMethodName("fakeMethod");
         final JSONLogFormatter formatter = new JSONLogFormatter();
-        formatter.setProductId("PAYARA TEST");
         formatter.setPrintRecordNumber(true);
         formatter.setPrintSource(true);
 

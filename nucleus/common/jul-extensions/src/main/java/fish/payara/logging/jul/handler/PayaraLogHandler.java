@@ -43,7 +43,6 @@ package fish.payara.logging.jul.handler;
 import fish.payara.logging.jul.cfg.JulConfigurationFactory;
 import fish.payara.logging.jul.cfg.LoggingSystemEnvironment;
 import fish.payara.logging.jul.cfg.PayaraLogHandlerConfiguration;
-import fish.payara.logging.jul.formatter.BroadcastingFormatter;
 import fish.payara.logging.jul.formatter.LogFormatHelper;
 import fish.payara.logging.jul.i18n.MessageResolver;
 import fish.payara.logging.jul.record.EnhancedLogRecord;
@@ -284,10 +283,6 @@ public class PayaraLogHandler extends StreamHandler implements ExternallyManaged
             this.configuration.getMaxHistoryFiles(), this::setOutputStream, super::close);
 
         final Formatter formatter = configuration.getFormatterConfiguration();
-        if (BroadcastingFormatter.class.isInstance(formatter)) {
-            final BroadcastingFormatter broadcast = (BroadcastingFormatter) formatter;
-            broadcast.setProductId(this.configuration.getProductId());
-        }
         final String detectedFormatterName = new LogFormatHelper().detectFormatter(configuration.getLogFile());
         if (detectedFormatterName != null && !formatter.getClass().getName().equals(detectedFormatterName)) {
             this.logFileManager.roll();

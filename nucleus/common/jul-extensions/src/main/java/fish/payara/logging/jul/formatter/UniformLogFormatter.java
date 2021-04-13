@@ -42,6 +42,7 @@
 
 package fish.payara.logging.jul.formatter;
 
+import fish.payara.logging.jul.cfg.LoggingSystemEnvironment;
 import fish.payara.logging.jul.formatter.ExcludeFieldsSupport.SupplementalAttribute;
 import fish.payara.logging.jul.i18n.MessageResolver;
 import fish.payara.logging.jul.record.EnhancedLogRecord;
@@ -182,8 +183,9 @@ public class UniformLogFormatter extends AnsiColorFormatter {
     }
 
     private void appendProductId(final StringBuilder output) {
-        if (getProductId() != null) {
-            output.append(getProductId());
+        final String productId = LoggingSystemEnvironment.getProductId();
+        if (productId != null) {
+            output.append(productId);
         }
         output.append(recordFieldSeparator);
     }

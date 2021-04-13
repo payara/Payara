@@ -55,7 +55,7 @@ import static fish.payara.logging.jul.cfg.PayaraLoggingConstants.JVM_OPT_LOGGING
  *
  * @author David Matejcek
  */
-public abstract class BroadcastingFormatter extends Formatter {
+public abstract class PayaraLogFormatter extends Formatter {
 
     private static final boolean LOG_SOURCE_IN_KEY_VALUE = Boolean.getBoolean(JVM_OPT_LOGGING_KEYVALUE_LOGSOURCE);
     private static final boolean RECORD_NUMBER_IN_KEY_VALUE = Boolean.getBoolean(JVM_OPT_LOGGING_KEYVALUE_RECORDNUMBER);
@@ -64,7 +64,7 @@ public abstract class BroadcastingFormatter extends Formatter {
     private boolean printRecordNumber;
     private boolean printSource;
 
-    public BroadcastingFormatter() {
+    public PayaraLogFormatter() {
         this.printRecordNumber = RECORD_NUMBER_IN_KEY_VALUE;
         this.printSource = LOG_SOURCE_IN_KEY_VALUE;
     }
@@ -105,20 +105,6 @@ public abstract class BroadcastingFormatter extends Formatter {
      */
     public boolean isPrintSource() {
         return printSource;
-    }
-
-    /**
-     * @param productId some meaningful identification of the application; default is null.
-     */
-    public final void setProductId(final String productId) {
-        this.productId = productId;
-    }
-
-    /**
-     * @return Usually some meaningful identification of the application; default is null.
-     */
-    public final String getProductId() {
-        return productId;
     }
 
 

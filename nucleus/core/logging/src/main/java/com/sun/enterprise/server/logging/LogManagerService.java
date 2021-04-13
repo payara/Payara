@@ -148,6 +148,7 @@ public final class LogManagerService implements PostConstruct, PreDestroy, org.g
                 + " Used log manager: " + LogManager.getLogManager());
             return;
         }
+        setProductId();
 
         final File loggingPropertiesFile = getOrCreateLoggingProperties();
         reconfigure(loggingPropertiesFile);
@@ -323,6 +324,25 @@ public final class LogManagerService implements PostConstruct, PreDestroy, org.g
         }
     }
 
+    private void setProductId() {
+        final ServiceLocator locator = Globals.getDefaultBaseServiceLocator();
+        final VersionInfo versionInfo = locator.getService(VersionInfo.class);
+        if (versionInfo == null) {
+            LoggingSystemEnvironment.setProductId(null);
+            return;
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append(versionInfo.getAbbreviatedProductName());
+        sb.append(' ');
+        sb.append(versionInfo.getVersionPrefix());
+        sb.append(versionInfo.getMajorVersion());
+        sb.append('.');
+        sb.append(versionInfo.getMinorVersion());
+        sb.append('.');
+        sb.append(versionInfo.getUpdateVersion());
+        LoggingSystemEnvironment.setProductId(sb.toString());
+    }
+
     private boolean isOneOf(final String key, final PayaraLogHandlerProperty attribute, final Class<?>... handlerClasses) {
         for (Class<?> handlerClass : handlerClasses) {
             if (attribute.getPropertyFullName(handlerClass).equals(key)) {
@@ -357,7 +377,6 @@ public final class LogManagerService implements PostConstruct, PreDestroy, org.g
         final JulConfigurationFactory factory = new JulConfigurationFactory();
         final PayaraLogHandlerConfiguration payaraLogHandlerCfg = factory
             .createPayaraLogHandlerConfiguration(PayaraLogHandler.class, "server.log");
-        payaraLogHandlerCfg.setProductId(resolveProductId());
         if (payaraLogHandler == null) {
            addHandler(new PayaraLogHandler(payaraLogHandlerCfg));
         } else {
@@ -421,25 +440,6 @@ public final class LogManagerService implements PostConstruct, PreDestroy, org.g
             return true;
         }
         return false;
-    }
-
-
-    private String resolveProductId() {
-        final ServiceLocator locator = Globals.getDefaultBaseServiceLocator();
-        final VersionInfo versionInfo = locator.getService(VersionInfo.class);
-        if (versionInfo == null) {
-            return "";
-        }
-        StringBuilder sb = new StringBuilder();
-        sb.append(versionInfo.getAbbreviatedProductName());
-        sb.append(' ');
-        sb.append(versionInfo.getVersionPrefix());
-        sb.append(versionInfo.getMajorVersion());
-        sb.append('.');
-        sb.append(versionInfo.getMinorVersion());
-        sb.append('.');
-        sb.append(versionInfo.getUpdateVersion());
-        return sb.toString();
     }
 
     private final class ReconfigurationAction implements Action {

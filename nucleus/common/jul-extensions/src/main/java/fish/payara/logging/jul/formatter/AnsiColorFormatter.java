@@ -55,13 +55,13 @@ import static java.time.temporal.ChronoField.NANO_OF_SECOND;
 import static java.time.temporal.ChronoField.SECOND_OF_MINUTE;
 
 /**
- * {@link BroadcastingFormatter} which is able to print colored logs.
+ * {@link PayaraLogFormatter} which is able to print colored logs.
  *
  * @since 4.1.1.173
  * @author Steve Millidge (Payara Foundation)
  * @author David Matejcek
  */
-public abstract class AnsiColorFormatter extends BroadcastingFormatter {
+public abstract class AnsiColorFormatter extends PayaraLogFormatter {
 
     // This was required, because we need 3 decimal numbers of the second fraction
     // DateTimeFormatter.ISO_LOCAL_DATE_TIME prints just nonzero values

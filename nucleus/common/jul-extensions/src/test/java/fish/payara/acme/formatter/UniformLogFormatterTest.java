@@ -40,6 +40,7 @@
 
 package fish.payara.acme.formatter;
 
+import fish.payara.logging.jul.cfg.LoggingSystemEnvironment;
 import fish.payara.logging.jul.formatter.AnsiColor;
 import fish.payara.logging.jul.formatter.ExcludeFieldsSupport.SupplementalAttribute;
 import fish.payara.logging.jul.formatter.UniformLogFormatter;
@@ -52,6 +53,8 @@ import java.util.logging.LogRecord;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -94,6 +97,20 @@ public class UniformLogFormatterTest {
         + "\\|_ThreadID=1;_ThreadName=main;_TimeMillis=[0-9]+;_LevelValue=" + P_LEVEL_VALUE + P_MESSAGE_KEY + ";"
         + ".+"
     );
+
+    private String backupProductId;
+
+    @BeforeEach
+    public void initProductId() {
+        this.backupProductId = LoggingSystemEnvironment.getProductId();
+    }
+
+
+    @AfterEach
+    public void resetProductId() {
+        LoggingSystemEnvironment.setProductId(backupProductId);
+    }
+
 
     @Test
     public void nullRecord() {
@@ -145,6 +162,7 @@ public class UniformLogFormatterTest {
 
     @Test
     public void fullLogRecordSingleLine() {
+        LoggingSystemEnvironment.setProductId("PAYARA TEST");
         final String message = "Ok, this works!";
         final LogRecord record = new LogRecord(Level.INFO, message);
         record.setLoggerName("the.test.logger");
@@ -152,7 +170,6 @@ public class UniformLogFormatterTest {
         record.setSourceMethodName("fakeMethod");
         final UniformLogFormatter formatter = new UniformLogFormatter();
         formatter.setMultiLineMode(false);
-        formatter.setProductId("PAYARA TEST");
         formatter.setPrintRecordNumber(true);
         formatter.setPrintSource(true);
 

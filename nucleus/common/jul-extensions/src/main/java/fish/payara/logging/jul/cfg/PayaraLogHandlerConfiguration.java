@@ -71,7 +71,6 @@ public class PayaraLogHandlerConfiguration implements Cloneable {
     private boolean logStandardStreams;
 
     private Formatter formatterConfiguration;
-    private String productId;
 
     public Level getLevel() {
         return level;
@@ -216,16 +215,6 @@ public class PayaraLogHandlerConfiguration implements Cloneable {
 
     public void setFormatterConfiguration(final Formatter formatterConfiguration) {
         this.formatterConfiguration = formatterConfiguration;
-    }
-
-
-    public String getProductId() {
-        return productId;
-    }
-
-
-    public void setProductId(final String productId) {
-        this.productId = productId;
     }
 
 

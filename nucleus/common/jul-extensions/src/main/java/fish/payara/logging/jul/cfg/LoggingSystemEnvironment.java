@@ -50,6 +50,7 @@ import java.io.PrintStream;
  * <li>STDOUT
  * <li>STDERR
  * </ul>
+ * It holds also other informations about the environment, required for logs.
  *
  * @author David Matejcek
  */
@@ -57,6 +58,7 @@ public class LoggingSystemEnvironment {
 
     private static final PrintStream originalStdErr = System.err;
     private static final PrintStream originalStdOut = System.out;
+    private static volatile String productId;
 
     /**
      * Call this method before you do any changes in global JVM objects like {@link System#out}!
@@ -88,5 +90,20 @@ public class LoggingSystemEnvironment {
     public static void resetStandardOutputs() {
         System.setOut(originalStdOut);
         System.setErr(originalStdErr);
+    }
+
+    /**
+     * @return the name of the product. Can be null if not explicitly set.
+     */
+    public static String getProductId() {
+        return productId;
+    }
+
+
+    /**
+     * @param productId the name of the product. It is null by default.
+     */
+    public static void setProductId(final String productId) {
+        LoggingSystemEnvironment.productId = productId;
     }
 }
