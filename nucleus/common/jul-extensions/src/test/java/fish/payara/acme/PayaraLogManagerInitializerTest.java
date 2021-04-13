@@ -48,9 +48,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
-import static fish.payara.logging.jul.cfg.PayaraLoggingConstants.CLASS_LOG_MANAGER_JUL;
-import static fish.payara.logging.jul.cfg.PayaraLoggingConstants.CLASS_LOG_MANAGER_PAYARA;
-import static fish.payara.logging.jul.cfg.PayaraLoggingConstants.JVM_OPT_LOGGING_MANAGER;
+import static fish.payara.logging.jul.cfg.PayaraLoggingJvmOptions.CLASS_LOG_MANAGER_JUL;
+import static fish.payara.logging.jul.cfg.PayaraLoggingJvmOptions.CLASS_LOG_MANAGER_PAYARA;
+import static fish.payara.logging.jul.cfg.PayaraLoggingJvmOptions.JVM_OPT_LOGGING_MANAGER;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
@@ -61,7 +61,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
  * The problem is that the LogManager is set forever when anything in JVM tries to use the logging
  * system for the first time. And that is ServiceLoaderTestEngineRegistry of JUnit5 at this moment.
  * <p>
- * So we have three possible test methods, at least one should pass.
+ * So we have three possible test methods, one of them should be executed.
  *
  * @author David Matejcek
  */

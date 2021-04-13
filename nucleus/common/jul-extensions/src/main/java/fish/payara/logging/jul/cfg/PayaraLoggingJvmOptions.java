@@ -40,18 +40,46 @@
 
 package fish.payara.logging.jul.cfg;
 
-
 /**
+ * JVM options used to configure the Java Util Logging.
+ * <p>
+ * <b>Always remember - you cannot switch the LogManager used in the JVM once any runtime
+ * touches the Logger class or the LogManager class.</b>
+ * If you want to use PayaraLogManager, you need to set the system property
+ * {@value #JVM_OPT_LOGGING_MANAGER} to {@value #CLASS_LOG_MANAGER_PAYARA} before it happens.
+ *
  * @author David Matejcek
  */
-public class PayaraLoggingConstants {
+// do not reference JUL classes from here, they can be initialized when you don't want it.
+public class PayaraLoggingJvmOptions {
 
-    // do not reference the class from here, it would be initialized.
+    /** Default JUL LogManager class name */
     public static final String CLASS_LOG_MANAGER_JUL = "java.util.logging.LogManager";
+    /** Payara's JUL LogManager implementation class name */
     public static final String CLASS_LOG_MANAGER_PAYARA = "fish.payara.logging.jul.PayaraLogManager";
 
+    /**
+     * System property name defining LogManager implementation for the rest of the JVM runtime
+     * existence.
+     */
     public static final String JVM_OPT_LOGGING_MANAGER = "java.util.logging.manager";
+    /**
+     * System property name defining property file which will be automatically loaded on startup.
+     * Usually it is named <code>logging.properties</code>
+     */
     public static final String JVM_OPT_LOGGING_CFG_FILE = "java.util.logging.config.file";
+    /**
+     * System property telling the PayaraLogManager to use defaults if there would not be any
+     * logging.properties neither set by {@value #JVM_OPT_LOGGING_CFG_FILE} nor available on classpath.
+     * <p>
+     * Defaults use the SimpleLogHandler and level INFO or level set by
+     * {@value #JVM_OPT_LOGGING_CFG_DEFAULT_LEVEL}
+     */
     public static final String JVM_OPT_LOGGING_CFG_USE_DEFAULTS = "java.util.logging.config.useDefaults";
+    /**
+     * If the PayaraLogManager would use defaults as configured by
+     * the {@value #JVM_OPT_LOGGING_CFG_USE_DEFAULTS}, this system property tells him to use this
+     * level and not the default INFO.
+     */
     public static final String JVM_OPT_LOGGING_CFG_DEFAULT_LEVEL = "java.util.logging.config.defaultLevel";
 }

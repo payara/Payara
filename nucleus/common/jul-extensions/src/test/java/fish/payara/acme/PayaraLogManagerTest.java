@@ -59,8 +59,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
-import static fish.payara.logging.jul.cfg.PayaraLoggingConstants.CLASS_LOG_MANAGER_PAYARA;
-import static fish.payara.logging.jul.cfg.PayaraLoggingConstants.JVM_OPT_LOGGING_MANAGER;
+import static fish.payara.logging.jul.cfg.PayaraLoggingJvmOptions.CLASS_LOG_MANAGER_PAYARA;
+import static fish.payara.logging.jul.cfg.PayaraLoggingJvmOptions.JVM_OPT_LOGGING_MANAGER;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;

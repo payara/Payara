@@ -100,7 +100,7 @@ import org.jvnet.hk2.annotations.Service;
 
 import static com.sun.enterprise.util.PropertyPlaceholderHelper.ENV_REGEX;
 import static fish.payara.logging.jul.cfg.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.*;
-import static fish.payara.logging.jul.cfg.PayaraLoggingConstants.JVM_OPT_LOGGING_CFG_FILE;
+import static fish.payara.logging.jul.cfg.PayaraLoggingJvmOptions.JVM_OPT_LOGGING_CFG_FILE;
 
 /**
  * Reinitialise the log manager using our logging.properties file.

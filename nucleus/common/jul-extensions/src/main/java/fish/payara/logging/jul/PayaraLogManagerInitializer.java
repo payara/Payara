@@ -46,8 +46,8 @@ import java.util.Properties;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
-import static fish.payara.logging.jul.cfg.PayaraLoggingConstants.CLASS_LOG_MANAGER_PAYARA;
-import static fish.payara.logging.jul.cfg.PayaraLoggingConstants.JVM_OPT_LOGGING_MANAGER;
+import static fish.payara.logging.jul.cfg.PayaraLoggingJvmOptions.CLASS_LOG_MANAGER_PAYARA;
+import static fish.payara.logging.jul.cfg.PayaraLoggingJvmOptions.JVM_OPT_LOGGING_MANAGER;
 
 /**
  * This class tries to set the {@link PayaraLogManager} as the default {@link LogManager}
