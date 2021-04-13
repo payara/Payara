@@ -37,38 +37,20 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.samples.grpc;
+package fish.payara.grpc;
 
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.Dependent;
-import javax.inject.Inject;
+import java.util.Set;
 
-import fish.payara.samples.grpc.PayaraServiceGrpc.PayaraServiceImplBase;
-import io.grpc.stub.StreamObserver;
+import javax.enterprise.inject.spi.CDI;
+import javax.servlet.ServletContainerInitializer;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 
-@Dependent
-public class PayaraService extends PayaraServiceImplBase {
-
-    @Inject
-    private CdiBean bean;
-
-    @PostConstruct
-    public void init() {
-        System.out.println("PostConstruct(): " + bean.getNextInt());
-    }
+public class GrpcServletInitializer implements ServletContainerInitializer {
 
     @Override
-    public void communicate(PayaraReq request, StreamObserver<PayaraResp> responseObserver) {
-        final String message = request.getMessage();
-        System.out.println("communicate(): " + bean.getNextInt());
-        responseObserver.onNext(response(message));
-        responseObserver.onCompleted();
-    }
-
-    private static final PayaraResp response(String message) {
-        return PayaraResp.newBuilder() //
-                .setMessage(message) //
-                .build();
+    public void onStartup(Set<Class<?>> c, ServletContext ctx) throws ServletException {
+        CDI.current().getBeanManager().fireEvent(ctx);
     }
 
 }

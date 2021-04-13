@@ -39,36 +39,17 @@
  */
 package fish.payara.samples.grpc;
 
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.Dependent;
-import javax.inject.Inject;
+import java.util.Random;
 
-import fish.payara.samples.grpc.PayaraServiceGrpc.PayaraServiceImplBase;
-import io.grpc.stub.StreamObserver;
+import javax.enterprise.context.ApplicationScoped;
 
-@Dependent
-public class PayaraService extends PayaraServiceImplBase {
+@ApplicationScoped
+public class CdiBean {
 
-    @Inject
-    private CdiBean bean;
+    private int randomInt = new Random().nextInt(10);
 
-    @PostConstruct
-    public void init() {
-        System.out.println("PostConstruct(): " + bean.getNextInt());
-    }
-
-    @Override
-    public void communicate(PayaraReq request, StreamObserver<PayaraResp> responseObserver) {
-        final String message = request.getMessage();
-        System.out.println("communicate(): " + bean.getNextInt());
-        responseObserver.onNext(response(message));
-        responseObserver.onCompleted();
-    }
-
-    private static final PayaraResp response(String message) {
-        return PayaraResp.newBuilder() //
-                .setMessage(message) //
-                .build();
+    public int getNextInt() {
+        return randomInt;
     }
 
 }

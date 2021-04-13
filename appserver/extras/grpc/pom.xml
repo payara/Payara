@@ -71,14 +71,9 @@
         </dependency>
 
         <dependency>
-            <groupId>fish.payara.server.internal.common</groupId>
-            <artifactId>glassfish-api</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.admin</groupId>
-            <artifactId>config-api</artifactId>
-            <version>${project.version}</version>
+            <groupId>jakarta.enterprise</groupId>
+            <artifactId>jakarta.enterprise.cdi-api</artifactId>
+            <version>${cdi-api.version}</version>
         </dependency>
     </dependencies>
 </project>

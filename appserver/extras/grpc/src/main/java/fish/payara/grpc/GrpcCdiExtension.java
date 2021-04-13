@@ -37,38 +37,53 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.samples.grpc;
+package fish.payara.grpc;
 
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.Dependent;
-import javax.inject.Inject;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import fish.payara.samples.grpc.PayaraServiceGrpc.PayaraServiceImplBase;
-import io.grpc.stub.StreamObserver;
+import javax.enterprise.context.spi.CreationalContext;
+import javax.enterprise.event.Observes;
+import javax.enterprise.inject.spi.Bean;
+import javax.enterprise.inject.spi.BeanManager;
+import javax.enterprise.inject.spi.Extension;
+import javax.enterprise.inject.spi.ProcessManagedBean;
+import javax.servlet.Servlet;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletRegistration;
 
-@Dependent
-public class PayaraService extends PayaraServiceImplBase {
+import io.grpc.BindableService;
 
-    @Inject
-    private CdiBean bean;
+public class GrpcCdiExtension implements Extension {
 
-    @PostConstruct
-    public void init() {
-        System.out.println("PostConstruct(): " + bean.getNextInt());
+    private static final Logger LOGGER = Logger.getLogger(GrpcCdiExtension.class.getName());
+
+    private final Set<Bean<? extends BindableService>> services = new HashSet<>();
+
+    public void registerBean(@Observes ProcessManagedBean<? extends BindableService> event) {
+        final Bean<? extends BindableService> bean = event.getBean();
+
+        LOGGER.log(Level.INFO, "Registered gRPC Bean: {0}.", bean.getBeanClass().getName());
+
+        services.add(bean);
     }
 
-    @Override
-    public void communicate(PayaraReq request, StreamObserver<PayaraResp> responseObserver) {
-        final String message = request.getMessage();
-        System.out.println("communicate(): " + bean.getNextInt());
-        responseObserver.onNext(response(message));
-        responseObserver.onCompleted();
-    }
+    public <T extends BindableService> void init(@Observes ServletContext ctx, BeanManager bm) {
+        LOGGER.log(Level.INFO, "Registering gRPC Servlets...");
 
-    private static final PayaraResp response(String message) {
-        return PayaraResp.newBuilder() //
-                .setMessage(message) //
-                .build();
+        for (Bean<? extends BindableService> service : services) {
+            final CreationalContext<? extends BindableService> createContext = bm.createCreationalContext(service);
+
+            // Suppress warnings, createCreationalContext doesn't handle generics correctly
+            @SuppressWarnings({ "unchecked", "rawtypes" })
+            final Servlet servlet = new GrpcServlet(service, createContext);
+
+            final ServletRegistration.Dynamic registration = ctx.addServlet(service.getBeanClass().getName(), servlet);
+            registration.setAsyncSupported(true);
+            registration.addMapping("/fish.payara.samples.grpc.PayaraService/*");
+        }
     }
 
 }
