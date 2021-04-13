@@ -179,7 +179,7 @@ public class ODLLogFormatterTest {
         record.setSourceMethodName("fakeMethod");
         final ODLLogFormatter formatter = new ODLLogFormatter();
         formatter.setMultiLineMode(false);
-        formatter.setPrintRecordNumber(true);
+        formatter.setPrintSequenceNumber(true);
         formatter.setPrintSource(true);
 
         final String log = formatter.format(record);

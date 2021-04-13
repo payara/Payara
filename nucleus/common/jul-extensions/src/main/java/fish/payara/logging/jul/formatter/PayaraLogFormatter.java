@@ -40,13 +40,11 @@
 
 package fish.payara.logging.jul.formatter;
 
+import fish.payara.logging.jul.cfg.LoggingConfigurationHelper;
 import fish.payara.logging.jul.record.EnhancedLogRecord;
 
 import java.util.logging.Formatter;
 import java.util.logging.LogRecord;
-
-import static fish.payara.logging.jul.cfg.PayaraLoggingConstants.JVM_OPT_LOGGING_KEYVALUE_LOGSOURCE;
-import static fish.payara.logging.jul.cfg.PayaraLoggingConstants.JVM_OPT_LOGGING_KEYVALUE_RECORDNUMBER;
 
 
 /**
@@ -57,16 +55,16 @@ import static fish.payara.logging.jul.cfg.PayaraLoggingConstants.JVM_OPT_LOGGING
  */
 public abstract class PayaraLogFormatter extends Formatter {
 
-    private static final boolean LOG_SOURCE_IN_KEY_VALUE = Boolean.getBoolean(JVM_OPT_LOGGING_KEYVALUE_LOGSOURCE);
-    private static final boolean RECORD_NUMBER_IN_KEY_VALUE = Boolean.getBoolean(JVM_OPT_LOGGING_KEYVALUE_RECORDNUMBER);
-
-    private String productId;
-    private boolean printRecordNumber;
+    private boolean printSequenceNumber;
     private boolean printSource;
 
+    /**
+     * Creates an instance and initializes defaults from log manager's configuration
+     */
     public PayaraLogFormatter() {
-        this.printRecordNumber = RECORD_NUMBER_IN_KEY_VALUE;
-        this.printSource = LOG_SOURCE_IN_KEY_VALUE;
+        final LoggingConfigurationHelper helper = new LoggingConfigurationHelper(getClass());
+        this.printSequenceNumber = helper.getBoolean("printSequenceNumber", false);
+        this.printSource = helper.getBoolean("printSource", false);
     }
 
     /**
@@ -78,17 +76,17 @@ public abstract class PayaraLogFormatter extends Formatter {
     protected abstract String formatRecord(LogRecord record);
 
     /**
-     * @param printRecordNumber true enables printing the log record sequence number
+     * @param printSequenceNumber true enables printing the log record sequence number
      */
-    public void setPrintRecordNumber(final boolean printRecordNumber) {
-        this.printRecordNumber = printRecordNumber;
+    public void setPrintSequenceNumber(final boolean printSequenceNumber) {
+        this.printSequenceNumber = printSequenceNumber;
     }
 
     /**
      * @return true enables printing the log record sequence number
      */
-    public boolean isPrintRecordNumber() {
-        return printRecordNumber;
+    public boolean isPrintSequenceNumber() {
+        return printSequenceNumber;
     }
 
     /**

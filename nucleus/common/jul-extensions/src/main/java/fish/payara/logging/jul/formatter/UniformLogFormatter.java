@@ -236,7 +236,7 @@ public class UniformLogFormatter extends AnsiColorFormatter {
             }
         }
 
-        if (isPrintRecordNumber()) {
+        if (isPrintSequenceNumber()) {
             final long recNumber = record.getSequenceNumber();
             output.append(LABEL_RECORDNUMBER).append(VALUE_SEPARATOR).append(recNumber).append(PAIR_SEPARATOR);
         }

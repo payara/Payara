@@ -223,7 +223,7 @@ public class ODLLogFormatter extends AnsiColorFormatter {
     }
 
     private void appendSequenceNumber(final StringBuilder output, final long sequenceNumber) {
-        if (isPrintRecordNumber()) {
+        if (isPrintSequenceNumber()) {
             output.append(FIELD_BEGIN_MARKER);
             output.append(LABEL_RECORDNUMBER).append(": ").append(sequenceNumber);
             output.append(FIELD_END_MARKER).append(recordFieldSeparator);

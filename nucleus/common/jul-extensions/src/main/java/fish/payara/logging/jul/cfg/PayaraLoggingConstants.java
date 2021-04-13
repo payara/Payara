@@ -54,8 +54,4 @@ public class PayaraLoggingConstants {
     public static final String JVM_OPT_LOGGING_CFG_FILE = "java.util.logging.config.file";
     public static final String JVM_OPT_LOGGING_CFG_USE_DEFAULTS = "java.util.logging.config.useDefaults";
     public static final String JVM_OPT_LOGGING_CFG_DEFAULT_LEVEL = "java.util.logging.config.defaultLevel";
-
-    // FIXME: respect formatter's class name and move to property file
-    public static final String JVM_OPT_LOGGING_KEYVALUE_LOGSOURCE = "com.sun.aas.logging.keyvalue.logsource";
-    public static final String JVM_OPT_LOGGING_KEYVALUE_RECORDNUMBER = "com.sun.aas.logging.keyvalue.recordnumber";
 }

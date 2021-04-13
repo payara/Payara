@@ -109,7 +109,7 @@ public class JSONLogFormatterTest {
         record.setSourceClassName("fish.payara.FakeClass");
         record.setSourceMethodName("fakeMethod");
         final JSONLogFormatter formatter = new JSONLogFormatter();
-        formatter.setPrintRecordNumber(true);
+        formatter.setPrintSequenceNumber(true);
         formatter.setPrintSource(true);
 
         final String log = formatter.format(record);
@@ -123,6 +123,9 @@ public class JSONLogFormatterTest {
             + "\\\"ThreadName\\\"\\:\\\"main\\\","
             + "\\\"TimeMillis\\\"\\:\\\"[0-9]+\\\","
             + "\\\"LevelValue\\\"\\:\\\"800\\\","
+            + "\\\"ClassName\\\"\\:\\\"fish.payara.FakeClass\\\","
+            + "\\\"MethodName\\\"\\:\\\"fakeMethod\\\","
+            + "\\\"RecordNumber\\\"\\:\\\"\\d+\\\","
             + "\\\"LogMessage\\\"\\:\\\"Ok, this works!\\\""
             + "\\}\n"));
     }

@@ -170,7 +170,7 @@ public class UniformLogFormatterTest {
         record.setSourceMethodName("fakeMethod");
         final UniformLogFormatter formatter = new UniformLogFormatter();
         formatter.setMultiLineMode(false);
-        formatter.setPrintRecordNumber(true);
+        formatter.setPrintSequenceNumber(true);
         formatter.setPrintSource(true);
 
         final String log = formatter.format(record);

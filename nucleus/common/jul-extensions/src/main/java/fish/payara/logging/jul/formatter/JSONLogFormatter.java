@@ -56,8 +56,6 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
-import static fish.payara.logging.jul.cfg.PayaraLoggingConstants.JVM_OPT_LOGGING_KEYVALUE_LOGSOURCE;
-import static fish.payara.logging.jul.cfg.PayaraLoggingConstants.JVM_OPT_LOGGING_KEYVALUE_RECORDNUMBER;
 import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 import static java.time.temporal.ChronoField.HOUR_OF_DAY;
 import static java.time.temporal.ChronoField.MINUTE_OF_HOUR;
@@ -71,9 +69,6 @@ import static java.time.temporal.ChronoField.SECOND_OF_MINUTE;
  * @author David Matejcek
  */
 public class JSONLogFormatter extends PayaraLogFormatter {
-
-    private static final boolean LOG_SOURCE_IN_KEY_VALUE = Boolean.getBoolean(JVM_OPT_LOGGING_KEYVALUE_LOGSOURCE);
-    private static final boolean RECORD_NUMBER_IN_KEY_VALUE = Boolean.getBoolean(JVM_OPT_LOGGING_KEYVALUE_RECORDNUMBER);
 
     private static final String RECORD_NUMBER = "RecordNumber";
     private static final String METHOD_NAME = "MethodName";
@@ -216,7 +211,7 @@ public class JSONLogFormatter extends PayaraLogFormatter {
             final String messageId = record.getMessageKey();
             json.add(MESSAGE_ID_KEY, messageId);
 
-            if (LOG_SOURCE_IN_KEY_VALUE || level.intValue() <= Level.FINE.intValue()) {
+            if (isPrintSource()) {
                 final String sourceClassName = record.getSourceClassName();
                 if (sourceClassName != null && !sourceClassName.isEmpty()) {
                     json.add(CLASS_NAME, sourceClassName);
@@ -228,7 +223,7 @@ public class JSONLogFormatter extends PayaraLogFormatter {
                 }
             }
 
-            if (RECORD_NUMBER_IN_KEY_VALUE) {
+            if (isPrintSequenceNumber()) {
                 json.add(RECORD_NUMBER, String.valueOf(record.getSequenceNumber()));
             }
 
