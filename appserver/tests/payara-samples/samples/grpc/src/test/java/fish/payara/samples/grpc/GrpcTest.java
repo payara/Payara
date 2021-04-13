@@ -39,13 +39,16 @@
  */
 package fish.payara.samples.grpc;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
 
+import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.Response;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -61,8 +64,6 @@ import fish.payara.samples.PayaraTestShrinkWrap;
 @RunWith(PayaraArquillianTestRunner.class)
 @NotMicroCompatible
 public class GrpcTest {
-
-    protected WebTarget target;
 
     @ArquillianResource
     private URL baseUrl;
@@ -102,9 +103,19 @@ public class GrpcTest {
     }
 
     @Test
-    public void testResponse() throws InterruptedException, URISyntaxException {
+    public void test_async_grpc_call_streams_correctly() throws InterruptedException, URISyntaxException {
         final GrpcClient client = new GrpcClient(baseUrl);
         client.communicate();
         assertNull(client.getError());
+    }
+
+    @Test
+    public void test_non_grpc_call_skips_grpc_filtering() throws URISyntaxException {
+        final WebTarget target = ClientBuilder.newClient()
+                .target(baseUrl.toURI().resolve("/fish.payara.samples.grpc.PayaraService"));
+        final Response response = target.request().get();
+
+        final String body = response.readEntity(String.class);
+        assertEquals("Hello World!", body);
     }
 }

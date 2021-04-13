@@ -43,8 +43,9 @@ import java.io.IOException;
 
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.spi.Bean;
+import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -52,39 +53,42 @@ import io.grpc.BindableService;
 import io.grpc.servlet.ServletAdapter;
 import io.grpc.servlet.ServletAdapterBuilder;
 
-public class GrpcServlet<BS extends BindableService> extends HttpServlet {
+public class GrpcFilter<BS extends BindableService> extends HttpFilter {
 
     private static final long serialVersionUID = 1L;
 
-    private Bean<BS> serviceBean;
-    private CreationalContext<BS> cdiContext;
+    private final Bean<BS> serviceBean;
+    private final CreationalContext<BS> cdiContext;
 
     private BS service;
     private ServletAdapter adapter;
 
-    protected GrpcServlet(Bean<BS> serviceBean, CreationalContext<BS> cdiContext) {
+    protected GrpcFilter(Bean<BS> serviceBean, CreationalContext<BS> cdiContext) {
         this.serviceBean = serviceBean;
         this.cdiContext = cdiContext;
     }
 
     @Override
-    protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        if (ServletAdapter.isGrpc(req)) {
-            super.service(req, resp);
-        } else {
-            resp.setStatus(200);
-            resp.getWriter().println("Hello World!");
+    protected void doFilter(HttpServletRequest req, HttpServletResponse res, FilterChain chain)
+            throws IOException, ServletException {
+        final String method = req.getMethod();
+
+        // Ignore non-gRPC requests
+        if (method == null || !ServletAdapter.isGrpc(req)) {
+            chain.doFilter(req, res);
+            return;
         }
-    }
 
-    @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        adapter.doGet(req, resp);
-    }
-
-    @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        adapter.doPost(req, resp);
+        switch (method.toUpperCase()) {
+            case "GET":
+                adapter.doGet(req, res);
+                break;
+            case "POST":
+                adapter.doPost(req, res);
+                break;
+            default:
+                throw new UnsupportedOperationException("Unsupported HTTP method: " + method);
+        }
     }
 
     @Override
@@ -94,9 +98,14 @@ public class GrpcServlet<BS extends BindableService> extends HttpServlet {
         if (service == null) {
             service = serviceBean.create(cdiContext);
         }
-        this.adapter = new ServletAdapterBuilder() //
+
+        if (adapter == null) {
+            this.adapter = new ServletAdapterBuilder() //
                 .addService(service) //
                 .buildServletAdapter();
+        }
+
+        super.init();
     }
 
     @Override

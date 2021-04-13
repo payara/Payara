@@ -39,6 +39,7 @@
  */
 package fish.payara.grpc;
 
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
@@ -50,9 +51,10 @@ import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.Extension;
 import javax.enterprise.inject.spi.ProcessManagedBean;
-import javax.servlet.Servlet;
+import javax.servlet.DispatcherType;
+import javax.servlet.Filter;
+import javax.servlet.FilterRegistration;
 import javax.servlet.ServletContext;
-import javax.servlet.ServletRegistration;
 
 import io.grpc.BindableService;
 
@@ -78,11 +80,14 @@ public class GrpcCdiExtension implements Extension {
 
             // Suppress warnings, createCreationalContext doesn't handle generics correctly
             @SuppressWarnings({ "unchecked", "rawtypes" })
-            final Servlet servlet = new GrpcServlet(service, createContext);
+            final Filter filter = new GrpcFilter(service, createContext);
 
-            final ServletRegistration.Dynamic registration = ctx.addServlet(service.getBeanClass().getName(), servlet);
+            // TODO: utilise same servlet for all gRPC services
+            final FilterRegistration.Dynamic registration = ctx.addFilter(service.getBeanClass().getName(), filter);
             registration.setAsyncSupported(true);
-            registration.addMapping("/fish.payara.samples.grpc.PayaraService/*");
+            registration.addMappingForUrlPatterns( //
+                    EnumSet.of(DispatcherType.ASYNC, DispatcherType.REQUEST) //
+                    , false, "/fish.payara.samples.grpc.PayaraService/*");
         }
     }
 
