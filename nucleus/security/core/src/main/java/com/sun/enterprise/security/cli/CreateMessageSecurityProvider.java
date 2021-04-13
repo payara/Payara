@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2021] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.security.cli;
 
@@ -76,7 +77,6 @@ import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
-import org.jvnet.hk2.config.ConfigListener;
 
 /**
  * Create Message Security Provider Command
@@ -191,6 +191,7 @@ public class CreateMessageSecurityProvider implements AdminCommand, AdminCommand
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
 
@@ -237,13 +238,13 @@ public class CreateMessageSecurityProvider implements AdminCommand, AdminCommand
                         // default-client-provider or BOTH in the message 
                         // security config object
                         if (isDefaultProvider) {
-                            if (providerType.equals(SERVER) || 
-                                providerType.equals(CLIENT_SERVER) )
-                            param.setDefaultProvider(providerId);
+                            if (providerType.equals(SERVER) || providerType.equals(CLIENT_SERVER) ) {
+                                param.setDefaultProvider(providerId);
+                            }
                             
-                            if (providerType.equals(CLIENT) || 
-                                providerType.equals(CLIENT_SERVER) )
-                            param.setDefaultClientProvider(providerId);
+                            if (providerType.equals(CLIENT) || providerType.equals(CLIENT_SERVER) ) {
+                                param.setDefaultClientProvider(providerId);
+                            }
                         }
                         return newPC;
                     }
@@ -285,13 +286,13 @@ public class CreateMessageSecurityProvider implements AdminCommand, AdminCommand
                         // default-client-provider or BOTH in the message 
                         // security config object
                         if (isDefaultProvider) {
-                            if (providerType.equals(SERVER) || 
-                                providerType.equals(CLIENT_SERVER) )
-                            newMSC.setDefaultProvider(providerId);
+                            if (providerType.equals(SERVER) || providerType.equals(CLIENT_SERVER) ) {
+                                newMSC.setDefaultProvider(providerId);
+                            }
                             
-                            if (providerType.equals(CLIENT) || 
-                                providerType.equals(CLIENT_SERVER) )
-                            newMSC.setDefaultClientProvider(providerId);
+                            if (providerType.equals(CLIENT) || providerType.equals(CLIENT_SERVER) ) {
+                                newMSC.setDefaultClientProvider(providerId);
+                            }
                         }
                         return newMSC;
                     }

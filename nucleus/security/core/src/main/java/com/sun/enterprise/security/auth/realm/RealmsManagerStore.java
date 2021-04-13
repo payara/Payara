@@ -76,7 +76,7 @@ public class RealmsManagerStore {
     static synchronized RealmsManager _getRealmsManager() {
         if (realmsManager.get() == null) {
             if (Globals.getDefaultHabitat() != null) {
-                realmsManager = new WeakReference<RealmsManager>(Globals.get(RealmsManager.class));
+                realmsManager = new WeakReference<>(Globals.get(RealmsManager.class));
             } else {
                 return null;
             }

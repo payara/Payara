@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2021] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.security.ssl;
 
@@ -63,10 +64,12 @@ public class GlassfishSSLImpl extends SSLImplementation {
     public GlassfishSSLImpl() {
     }
 
+    @Override
     public String getImplementationName() {
         return "Glassfish";
     }
 
+    @Override
     public ServerSocketFactory getServerSocketFactory() {
         if(Boolean.valueOf(System.getProperty(PROP_GLASSFISH_SOCKETFACTORY, "false"))) {
             return new GlassfishServerSocketFactory();
@@ -76,6 +79,7 @@ public class GlassfishSSLImpl extends SSLImplementation {
         }
     }
 
+    @Override
     public SSLSupport getSSLSupport(Socket socket) {
         if(socket instanceof SSLSocket) {
             return new GlassfishSSLSupport((SSLSocket)socket);
@@ -83,6 +87,7 @@ public class GlassfishSSLImpl extends SSLImplementation {
         return null;
     }
 
+    @Override
     public SSLSupport getSSLSupport(SSLEngine ssle) {
         return new GlassfishSSLSupport(ssle);
     }

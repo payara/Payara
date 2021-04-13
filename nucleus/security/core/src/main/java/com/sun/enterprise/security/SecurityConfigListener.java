@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security;
 
 import com.sun.enterprise.security.auth.realm.NoSuchRealmException;
@@ -61,6 +61,7 @@ import com.sun.enterprise.security.auth.realm.RealmsManager;
 import java.beans.PropertyChangeEvent;
 import java.util.List;
 import java.util.Properties;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.inject.Named;
 import javax.security.auth.login.Configuration;
@@ -103,6 +104,7 @@ public class SecurityConfigListener implements ConfigListener, PostConstruct {
      *
      * @param events list of changes
      */
+    @Override
     public UnprocessedChangeEvents changed(PropertyChangeEvent[] events) {
         // I am not so interested with the list of events, just sort who got added or removed for me.
         ConfigSupport.sortAndDispatch(events, new Changed() {
@@ -118,17 +120,17 @@ public class SecurityConfigListener implements ConfigListener, PostConstruct {
                 NotProcessed np = null;
                 switch (type) {
                 case ADD:
-                    logger.fine("A new " + changedType.getName() + " was added : " + changedInstance);
+                    logger.log(Level.FINE, "A new {0} was added : {1}", new Object[]{changedType.getName(), changedInstance});
                     np = handleAddEvent(changedInstance);
                     break;
 
                 case CHANGE:
-                    logger.fine("A " + changedType.getName() + " was changed : " + changedInstance);
+                    logger.log(Level.FINE, "A {0} was changed : {1}", new Object[]{changedType.getName(), changedInstance});
                     np = handleChangeEvent(changedInstance);
                     break;
 
                 case REMOVE:
-                    logger.fine("A " + changedType.getName() + " was removed : " + changedInstance);
+                    logger.log(Level.FINE, "A {0} was removed : {1}", new Object[]{changedType.getName(), changedInstance});
                     np = handleRemoveEvent(changedInstance);
                     break;
                 }
@@ -367,6 +369,7 @@ public class SecurityConfigListener implements ConfigListener, PostConstruct {
         Configuration.getConfiguration().refresh();
     }
 
+    @Override
     public void postConstruct() {
         if (securityService == null) {
             // Should never happen

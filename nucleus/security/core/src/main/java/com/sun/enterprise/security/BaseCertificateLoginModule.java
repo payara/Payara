@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security;
 
 import static java.util.logging.Level.FINE;
@@ -87,7 +87,7 @@ public abstract class BaseCertificateLoginModule implements LoginModule {
     /**
      * System Logger.
      */
-    protected static final Logger _logger = SecurityLoggerInfo.getLogger();
+    protected static final Logger LOGGER = SecurityLoggerInfo.getLogger();
     private CallbackHandler callbackHandler;
     
     private boolean success;
@@ -98,28 +98,31 @@ public abstract class BaseCertificateLoginModule implements LoginModule {
     private String[] groups;
     private String appName;
 
+    @Override
     public final void initialize(Subject subject, CallbackHandler callbackHandler, Map<String, ?> sharedState, Map<String, ?> options) {
         this.subject = subject;
         this._sharedState = sharedState;
         this._options = options;
         this.callbackHandler = callbackHandler;
         
-        if (_logger.isLoggable(FINE)) {
-            _logger.log(FINE, "Login module initialized: {0}", getClass());
+        if (LOGGER.isLoggable(FINE)) {
+            LOGGER.log(FINE, "Login module initialized: {0}", getClass());
         }
     }
 
+    @Override
     public final boolean login() throws LoginException {
         // Extract the certificates from the subject.
         extractCredentials();
 
         // Delegate the actual authentication to subclass.
         authenticateUser();
-        _logger.fine("JAAS login complete.");
+        LOGGER.fine("JAAS login complete.");
         
         return true;
     }
 
+    @Override
     public final boolean commit() throws LoginException {
         if (!success) {
             return false;
@@ -136,14 +139,15 @@ public abstract class BaseCertificateLoginModule implements LoginModule {
         }
         groups = null;
         commitsuccess = true;
-        if (_logger.isLoggable(Level.FINE)) {
-            _logger.log(Level.FINE, "JAAS authentication committed.");
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "JAAS authentication committed.");
         }
         return true;
     }
 
+    @Override
     public final boolean abort() throws LoginException {
-        _logger.fine("JAAS authentication aborted.");
+        LOGGER.fine("JAAS authentication aborted.");
 
         if (!success) {
             return false;
@@ -172,9 +176,10 @@ public abstract class BaseCertificateLoginModule implements LoginModule {
         return true;
     }
 
+    @Override
     public final boolean logout() throws LoginException {
-        if (_logger.isLoggable(FINE)) {
-            _logger.log(FINE, "JAAS logout for: {0}", subject);
+        if (LOGGER.isLoggable(FINE)) {
+            LOGGER.log(FINE, "JAAS logout for: {0}", subject);
         }
 
         subject.getPrincipals().clear();
