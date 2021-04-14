@@ -38,7 +38,9 @@
  *  holder.
  */
 
-package fish.payara.logging.jul.cfg;
+package fish.payara.logging.jul.env;
+
+import fish.payara.logging.jul.tracing.PayaraLoggingTracer;
 
 import java.io.PrintStream;
 
@@ -58,7 +60,12 @@ public class LoggingSystemEnvironment {
 
     private static final PrintStream originalStdErr = System.err;
     private static final PrintStream originalStdOut = System.out;
-    private static volatile String productId;
+
+    // These values are global for this JVM
+    // Why they are not volatile? Because it affects JIT optimizations
+    // and they are not so critical.
+    private static String productId;
+    private static boolean releaseParametersEarly;
 
     /**
      * Call this method before you do any changes in global JVM objects like {@link System#out}!
@@ -88,6 +95,7 @@ public class LoggingSystemEnvironment {
      * Sets original values of the STDOUT and STDERR print streams back.
      */
     public static void resetStandardOutputs() {
+        logSetter("Output streams reset to JVM defaults.");
         System.setOut(originalStdOut);
         System.setErr(originalStdErr);
     }
@@ -104,6 +112,35 @@ public class LoggingSystemEnvironment {
      * @param productId the name of the product. It is null by default.
      */
     public static void setProductId(final String productId) {
+        logSetter("productId: " + productId);
         LoggingSystemEnvironment.productId = productId;
+    }
+
+
+    /**
+     * @return if true, parameters are forgotten after they were used in the message.
+     */
+    public static boolean isReleaseParametersEarly() {
+        return releaseParametersEarly;
+    }
+
+
+    /**
+     * Note: This method is used internally.
+     *
+     * @param releaseParametersEarly if true, parameters are forgotten after they were used in the message.
+     */
+    public static void setReleaseParametersEarly(boolean releaseParametersEarly) {
+        logSetter("releaseParametersEarly: " + releaseParametersEarly);
+        LoggingSystemEnvironment.releaseParametersEarly = releaseParametersEarly;
+    }
+
+
+    /**
+     * Reason for this method? Like {@link System} class setters, it's quite important to have a clue
+     * which part of the JVM changed the setting.
+     */
+    private static void logSetter(final String message) {
+        PayaraLoggingTracer.stacktrace(LoggingSystemEnvironment.class, message);
     }
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,8 +39,6 @@
  */
 package fish.payara.enterprise.server.logging;
 
-import fish.payara.logging.jul.cfg.JulConfigurationFactory;
-import fish.payara.logging.jul.cfg.PayaraLogHandlerConfiguration;
 import fish.payara.logging.jul.handler.PayaraLogHandler;
 
 /**
@@ -51,12 +49,6 @@ import fish.payara.logging.jul.handler.PayaraLogHandler;
 public class PayaraNotificationFileHandler extends PayaraLogHandler {
 
     public PayaraNotificationFileHandler() {
-        super(createConfiguration());
-    }
-
-
-    private static PayaraLogHandlerConfiguration createConfiguration() {
-        return new JulConfigurationFactory().createPayaraLogHandlerConfiguration(PayaraNotificationFileHandler.class,
-            "notification.log");
+        super(createPayaraLogHandlerConfiguration(PayaraNotificationFileHandler.class));
     }
 }

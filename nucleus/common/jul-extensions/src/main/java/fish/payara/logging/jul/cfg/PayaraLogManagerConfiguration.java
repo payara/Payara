@@ -51,6 +51,8 @@ import java.util.Properties;
 import java.util.SortedSet;
 import java.util.stream.Stream;
 
+import static java.lang.Boolean.parseBoolean;
+
 /**
  * Replacement (wrapper) for {@link Properties} used in JUL.
  *
@@ -62,6 +64,7 @@ public class PayaraLogManagerConfiguration implements Serializable, Cloneable {
     public static final String KEY_TRACING_ENABLED = "fish.payara.logging.jul.tracingEnabled";
     private static final long serialVersionUID = 1L;
     private final SortedProperties properties;
+    private final boolean tracingEnabled;
 
 
     /**
@@ -69,6 +72,7 @@ public class PayaraLogManagerConfiguration implements Serializable, Cloneable {
      */
     public PayaraLogManagerConfiguration(final SortedProperties properties) {
         this.properties = properties.clone();
+        this.tracingEnabled = parseBoolean(this.properties.getProperty(KEY_TRACING_ENABLED));
     }
 
 
@@ -110,7 +114,7 @@ public class PayaraLogManagerConfiguration implements Serializable, Cloneable {
      *         reporting, which is always enabled.
      */
     public boolean isTracingEnabled() {
-        return Boolean.parseBoolean(this.properties.getProperty(KEY_TRACING_ENABLED));
+        return this.tracingEnabled;
     }
 
 

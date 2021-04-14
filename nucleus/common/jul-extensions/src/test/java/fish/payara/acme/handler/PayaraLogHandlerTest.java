@@ -40,8 +40,8 @@
 
 package fish.payara.acme.handler;
 
-import fish.payara.logging.jul.cfg.LoggingSystemEnvironment;
 import fish.payara.logging.jul.cfg.PayaraLogHandlerConfiguration;
+import fish.payara.logging.jul.env.LoggingSystemEnvironment;
 import fish.payara.logging.jul.formatter.OneLineFormatter;
 import fish.payara.logging.jul.handler.PayaraLogHandler;
 import fish.payara.logging.jul.record.EnhancedLogRecord;
@@ -59,8 +59,8 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
-import static fish.payara.logging.jul.cfg.LoggingSystemEnvironment.getOriginalStdErr;
-import static fish.payara.logging.jul.cfg.LoggingSystemEnvironment.getOriginalStdOut;
+import static fish.payara.logging.jul.env.LoggingSystemEnvironment.getOriginalStdErr;
+import static fish.payara.logging.jul.env.LoggingSystemEnvironment.getOriginalStdOut;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;

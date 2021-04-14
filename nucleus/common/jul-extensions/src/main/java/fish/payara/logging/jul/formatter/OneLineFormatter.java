@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) 2020-2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -39,13 +39,11 @@
  */
 package fish.payara.logging.jul.formatter;
 
-import fish.payara.logging.jul.i18n.MessageResolver;
 import fish.payara.logging.jul.record.EnhancedLogRecord;
+import fish.payara.logging.jul.record.MessageResolver;
 
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
-import java.util.logging.Formatter;
-import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 
 /**
@@ -54,7 +52,7 @@ import java.util.logging.LogRecord;
  *
  * @author David Matejcek
  */
-public class OneLineFormatter extends Formatter {
+public class OneLineFormatter extends PayaraLogFormatter {
 
     private static final DateTimeFormatter TS_FORMAT = DateTimeFormatter.ofPattern("HH:mm:ss.SSS");
     private static final String LINE_SEPARATOR = System.lineSeparator();
@@ -66,31 +64,22 @@ public class OneLineFormatter extends Formatter {
 
 
     /**
-     * Configures the formatter.
+     * Creates an instance and initializes defaults from log manager's configuration
      */
     public OneLineFormatter() {
-        // FIXME: use factory/helper
-        this.sizeOfLevel = getIntPropertyValue("sizeOfLevel", 7);
-        this.sizeOfThread = getIntPropertyValue("sizeOfThread", 20);
-        this.sizeOfClass = getIntPropertyValue("sizeOfClass", 60);
+        final FormatterConfigurationHelper helper = new FormatterConfigurationHelper(getClass());
+        this.sizeOfLevel = helper.getNonNegativeInteger("size.level", 7);
+        this.sizeOfThread = helper.getNonNegativeInteger("size.thread", 20);
+        this.sizeOfClass = helper.getNonNegativeInteger("size.class", 60);
+        // Tests are primary target of this formatter
+        // In tests date is usually not much useful
+        setDateTimeFormatter(helper.getDateTimeFormatter("timestampFormatter", TS_FORMAT));
+        // false is more effective, but source is more useful in tests.
+        setPrintSource(helper.getBoolean("printSource", true));
     }
-
-    protected int getIntPropertyValue(final String localKey, final int defaultValue) {
-        final String value = getPropertyValue(localKey);
-        return value == null ? defaultValue : Integer.parseInt(value);
-    }
-
-    protected String getPropertyValue(final String localKey) {
-        return LogManager.getLogManager().getProperty(getPropertyKey(localKey));
-    }
-
-    protected String getPropertyKey(final String localKey) {
-        return getClass().getName() + '.' + localKey;
-    }
-
 
     @Override
-    public String format(final LogRecord record) {
+    public String formatRecord(final LogRecord record) {
         return formatEnhancedLogRecord(MSG_RESOLVER.resolve(record));
     }
 
@@ -104,13 +93,17 @@ public class OneLineFormatter extends Formatter {
             return "";
         }
         final StringBuilder sb = new StringBuilder(256);
-        sb.append(TS_FORMAT.format(record.getTime()));
+        sb.append(getDateTimeFormatter().format(record.getTime()));
         addPadded(record.getLevel(), this.sizeOfLevel, sb);
         addPadded(record.getThreadName(), this.sizeOfThread, sb);
-        addPadded(record.getSourceClassName(), this.sizeOfClass, sb);
-        sb.append('.');
-        if (record.getSourceMethodName() != null) {
-            sb.append(record.getSourceMethodName());
+        if (isPrintSource()) {
+            addPadded(record.getSourceClassName(), this.sizeOfClass, sb);
+            sb.append('.');
+            if (record.getSourceMethodName() != null) {
+                sb.append(record.getSourceMethodName());
+            }
+        } else {
+            addPadded(record.getLoggerName(), sizeOfClass, sb);
         }
         sb.append(' ').append(record.getMessage());
 

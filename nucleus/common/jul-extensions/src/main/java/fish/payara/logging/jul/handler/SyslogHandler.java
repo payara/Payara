@@ -42,8 +42,8 @@
 package fish.payara.logging.jul.handler;
 
 import fish.payara.logging.jul.handler.Syslog.SyslogLevel;
-import fish.payara.logging.jul.i18n.MessageResolver;
 import fish.payara.logging.jul.record.EnhancedLogRecord;
+import fish.payara.logging.jul.record.MessageResolver;
 
 import java.net.UnknownHostException;
 import java.time.format.DateTimeFormatter;

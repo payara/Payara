@@ -40,7 +40,7 @@
 
 package fish.payara.acme.formatter;
 
-import fish.payara.logging.jul.cfg.LoggingSystemEnvironment;
+import fish.payara.logging.jul.env.LoggingSystemEnvironment;
 import fish.payara.logging.jul.formatter.AnsiColor;
 import fish.payara.logging.jul.formatter.ExcludeFieldsSupport.SupplementalAttribute;
 import fish.payara.logging.jul.formatter.ODLLogFormatter;
@@ -50,6 +50,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -197,13 +198,17 @@ public class ODLLogFormatterTest {
 
     @Test
     public void enhancedLogRecordAndAnsiColoring() {
-        final EnhancedLogRecord record = new EnhancedLogRecord(Level.SEVERE, "Ok!", false);
-        record.setLoggerName("the.test.logger");
-        record.setMessageKey("error.message.key");
+        // the logger must exist before the message resolution, because resource bundles
+        // are resolved when Logger instance is created, and the result is cached.
+        // LogRecord doesn't do any bundle resolution.
+        final Logger logger = Logger.getLogger("the.test.logger", "test-resource-bundle");
+        final EnhancedLogRecord record = new EnhancedLogRecord(Level.SEVERE, "error.message.key.ok", false);
+        record.setLoggerName(logger.getName());
+        record.setResourceBundleName(logger.getResourceBundleName());
         final ODLLogFormatter formatter = new ODLLogFormatter();
         formatter.setAnsiColor(true);
         formatter.setLoggerColor(AnsiColor.BOLD_INTENSE_WHITE);
-        formatter.setLevelColors(Collections.singletonMap(Level.SEVERE,AnsiColor.BOLD_INTENSE_RED));
+        formatter.setLevelColors(Collections.singletonMap(Level.SEVERE, AnsiColor.BOLD_INTENSE_RED));
 
         final String log = formatter.format(record);
         assertNotNull(log, "log");
@@ -213,11 +218,11 @@ public class ODLLogFormatterTest {
             () -> assertThat(lines[0], stringContainsInOrder(
                 "0] []"
                 + " [" + AnsiColor.BOLD_INTENSE_RED + "SEVERE" + AnsiColor.RESET + "]"
-                + " [error.message.key] [" + AnsiColor.BOLD_INTENSE_WHITE + "the.test.logger" + AnsiColor.RESET + "]"
+                + " [error.message.key.ok] [" + AnsiColor.BOLD_INTENSE_WHITE + "the.test.logger" + AnsiColor.RESET + "]"
                 + " [tid",
                 "main] [timeMillis: ",
                 "] [levelValue: 1000] [[")),
-            () -> assertThat(lines[1], equalTo("  Ok!]]"))
+            () -> assertThat(lines[1], equalTo("  \"Ok!\"]]"))
         );
     }
 

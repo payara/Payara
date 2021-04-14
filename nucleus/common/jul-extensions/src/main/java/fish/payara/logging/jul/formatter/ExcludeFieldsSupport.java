@@ -42,6 +42,8 @@
 
 package fish.payara.logging.jul.formatter;
 
+import fish.payara.logging.jul.tracing.PayaraLoggingTracer;
+
 import java.util.BitSet;
 import java.util.logging.Level;
 
@@ -94,13 +96,16 @@ public class ExcludeFieldsSupport {
      */
     public void setExcludeFields(final String excludeFields) {
         excludedAttributes.clear();
-        if (excludeFields != null) {
-            final String[] fields = excludeFields.split(",");
-            for (final String field : fields) {
-                final SupplementalAttribute found = getById(field);
-                if (found != null) {
-                    excludedAttributes.set(found.ordinal());
-                }
+        if (excludeFields == null) {
+            return;
+        }
+        final String[] fields = excludeFields.split(",");
+        for (final String field : fields) {
+            final SupplementalAttribute found = getById(field);
+            if (found != null) {
+                excludedAttributes.set(found.ordinal());
+            } else {
+                PayaraLoggingTracer.error(getClass(), "Ignoring excluded field because no such exists: " + field);
             }
         }
     }

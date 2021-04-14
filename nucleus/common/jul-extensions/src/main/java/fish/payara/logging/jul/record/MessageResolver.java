@@ -38,9 +38,9 @@
  *  holder.
  */
 
-package fish.payara.logging.jul.i18n;
+package fish.payara.logging.jul.record;
 
-import fish.payara.logging.jul.record.EnhancedLogRecord;
+import fish.payara.logging.jul.env.LoggingSystemEnvironment;
 
 import java.text.MessageFormat;
 import java.util.MissingResourceException;
@@ -95,11 +95,13 @@ public class MessageResolver {
         enhancedLogRecord.setMessageKey(message.key);
         enhancedLogRecord.setMessage(message.message);
         // values were used and they are not required any more.
-        // not only this, it is good to even avoid their usage as backup mechanism does it in JUL
-        // implementation. We also use them in isAlreadyResolved to avoid redundant work.
+        // not only this, it is good to even avoid their usage as JUL implementation does it.
+        // We also touch them in isAlreadyResolved to avoid redundant work.
         enhancedLogRecord.setResourceBundle(null);
         enhancedLogRecord.setResourceBundleName(null);
-//        enhancedLogRecord.setParameters(null);
+        if (LoggingSystemEnvironment.isReleaseParametersEarly()) {
+            enhancedLogRecord.setParameters(null);
+        }
         return enhancedLogRecord;
     }
 

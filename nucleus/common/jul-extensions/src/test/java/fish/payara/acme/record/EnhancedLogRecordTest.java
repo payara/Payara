@@ -72,7 +72,6 @@ public class EnhancedLogRecordTest {
         record.setLevel(Level.FINEST);
         record.setMessage("message2");
         record.setLoggerName("loggerNameX");
-        record.setMessageKey("TheMessageKey");
         record.setMillis(10001L);
         record.setParameters(new Object[] {3000, "value2", new NonSerializableClass()});
         record.setResourceBundleName("resourceBundleName");

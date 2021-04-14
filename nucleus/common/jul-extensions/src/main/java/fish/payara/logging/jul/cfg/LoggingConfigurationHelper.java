@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) 2020-2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -40,235 +40,36 @@
 
 package fish.payara.logging.jul.cfg;
 
-import fish.payara.logging.jul.tracing.PayaraLoggingTracer;
+import fish.payara.logging.jul.formatter.FormatterConfigurationHelper;
 
-import java.io.File;
-import java.nio.charset.Charset;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.logging.Formatter;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.LogManager;
 
 /**
- * This is a tool to help with parsing the logging.properties file.
+ * This is a tool to help with parsing the logging.properties file to configure handlers.
+ * <p>
  * It respects JUL configuration standards, so ie. each formatter knows best how to configure itself,
  * but still can use this helper to parse properties directly to objects instead of plain strings.
  * Helper also supports custom error handlers.
  *
  * @author David Matejcek
  */
-public class LoggingConfigurationHelper {
-
-    /**
-     * Logs an error via the {@link PayaraLoggingTracer}
-     */
-    private static final LoggingPropertyErrorHandler PRINT_TO_STDERR = (k, v, e) -> {
-        PayaraLoggingTracer.error(LoggingConfigurationHelper.class, "Invalid value for the key: " + k + ": " + v, e);
-    };
-
-    private static final Function<String, Character> STR_TO_CHAR = v -> v == null || v.isEmpty() ? null : v.charAt(0);
-
-    private static final Function<String, Integer> STR_TO_POSITIVE_INT = v -> {
-        final Integer value = Integer.valueOf(v);
-        if (value >= 0) {
-            return value;
-        }
-        throw new NumberFormatException("Value must be higher or equal to zero!");
-    };
-
-
-    private static final Function<String, ?> STR_TO_CLASS = v -> {
-        if (v == null) {
-            return null;
-        }
-        final ClassLoader logManagerCL = LogManager.getLogManager().getClass().getClassLoader();
-        if (logManagerCL != null) {
-        try {
-                return logManagerCL.loadClass(v).newInstance();
-        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException
-            | NoClassDefFoundError e) {
-                // still ok, maybe the class is not visible for boot classloader,
-                // but it still might be visible for the thread classloader.
-                PayaraLoggingTracer.trace(LoggingConfigurationHelper.class,
-                    () -> "Could not find the class by the log manager's classloader, we will try classloader"
-                        + " of the thread. Exception: " + e.toString());
-            }
-        }
-        final ClassLoader threadCL = Thread.currentThread().getContextClassLoader();
-        try {
-            return threadCL.loadClass(v).newInstance();
-        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | NoClassDefFoundError e) {
-            PayaraLoggingTracer.error(LoggingConfigurationHelper.class,
-                "Classloader: " + threadCL, e);
-            throw new IllegalStateException("Formatter instantiation failed! ClassLoader used: " + threadCL, e);
-        }
-    };
-
+public class LoggingConfigurationHelper extends FormatterConfigurationHelper {
 
     private static final Function<String, Formatter> STR_TO_FORMATTER = STR_TO_CLASS.andThen(Formatter.class::cast);
-    private static final Function<String, Handler> STR_TO_HANDLER = STR_TO_CLASS.andThen(Handler.class::cast);
 
-
-    private static final Function<String, DateTimeFormatter> STR_TO_DF = v -> {
-        final DateTimeFormatter df = DateTimeFormatter.ofPattern(v);
-        // test that it is able to format this type.
-        df.format(ZonedDateTime.now());
-        return df;
-    };
-
-
-    private static final Function<String, List<String>> STR_TO_LIST = v -> {
-        if (v == null || v.isEmpty()) {
-            return Collections.emptyList();
-        }
-        return Arrays.asList(v.split("[\\s]*,[\\s]*"));
-    };
-
-
-    private final LogManager manager;
-    private final String prefix;
-    private final LoggingPropertyErrorHandler errorHandler;
 
     public LoggingConfigurationHelper() {
-        this((String) null, PRINT_TO_STDERR);
+        super();
     }
 
 
     public LoggingConfigurationHelper(final Class<?> clazz) {
-        this(clazz.getName(), PRINT_TO_STDERR);
-    }
-
-
-    public LoggingConfigurationHelper(final String prefix) {
-        this(prefix, PRINT_TO_STDERR);
-    }
-
-
-    /**
-     * @param prefix Usually a canonical class name
-     * @param errorHandler
-     */
-    public LoggingConfigurationHelper(final String prefix, final LoggingPropertyErrorHandler errorHandler) {
-        this.manager = LogManager.getLogManager();
-        this.prefix = prefix == null ? "" : prefix + ".";
-        this.errorHandler = errorHandler;
-    }
-
-
-    public String getString(final String key, final String defaultValue) {
-        return parse(key, defaultValue, Function.identity());
-    }
-
-    public Character getCharacter(final String key, final Character defaultValue) {
-        return parse(key, defaultValue, STR_TO_CHAR);
-    }
-
-    public Integer getInteger(final String key, final Integer defaultValue) {
-        return parse(key, defaultValue, Integer::valueOf);
-    }
-
-    public Integer getNonNegativeInteger(final String key, final Integer defaultValue) {
-        return parse(key, defaultValue, STR_TO_POSITIVE_INT);
-    }
-
-
-    public Boolean getBoolean(final String key, final Boolean defaultValue) {
-        return parse(key, defaultValue, Boolean::valueOf);
-    }
-
-
-    public Level getLevel(final String key, final Level defaultValue) {
-        return parse(key, defaultValue, Level::parse);
-    }
-
-
-    public File getFile(final String key, final File defaultValue) {
-        return parse(key, defaultValue, File::new);
-    }
-
-
-    public DateTimeFormatter getDateTimeFormatter(final String key, final DateTimeFormatter defaultValue) {
-        return parse(key, defaultValue, STR_TO_DF);
+        super(clazz);
     }
 
 
     public Formatter getFormatter(final String key, final String defaultFormatterClass) {
         return parseOrSupply(key, () -> STR_TO_FORMATTER.apply(defaultFormatterClass), STR_TO_FORMATTER);
-    }
-
-
-    public Charset getCharset(final String key, final Charset defaultValue) {
-        return parse(key, defaultValue, Charset::forName);
-    }
-
-
-    public List<String> getList(final String key, final String defaultValue) {
-        return parseOrSupply(key, () -> STR_TO_LIST.apply(defaultValue), STR_TO_LIST);
-    }
-
-
-    public <T> T getSomething(final String key, final T defaultValue, final Function<String, T> parser) {
-        return parse(key, defaultValue, parser);
-    }
-
-
-    /**
-     * Note: if you want to use untrimmed value, use the {@link LogManager#getProperty(String)}
-     * directly.
-     *
-     * @param key
-     * @return trimmed value for the key or null
-     */
-    private String getProperty(final String key) {
-        final String value = manager.getProperty(key);
-        if (value == null) {
-            return null;
-        }
-        final String trimmed = value.trim();
-        return trimmed.isEmpty() ?  null : trimmed;
-    }
-
-
-    private <T> T parse(final String key, final T defaultValue, final Function<String, T> converter) {
-        final Supplier<T> defaultValueSupplier = () -> defaultValue;
-        return parseOrSupply(key, defaultValueSupplier, converter);
-    }
-
-
-    private <T> T parseOrSupply(final String key, final Supplier<T> defaultValueSupplier, final Function<String, T> converter) {
-        final String realKey = prefix + key;
-        final String property = getProperty(realKey);
-        if (property == null) {
-            return defaultValueSupplier.get();
-        }
-        try {
-            return converter.apply(property);
-        } catch (final Exception e) {
-            if (errorHandler != null) {
-                errorHandler.handle(realKey, property, e);
-            }
-            return defaultValueSupplier.get();
-        }
-    }
-
-
-    /**
-     * Allows custom error handling (ie. throwing a runtime exception or collecting errors)
-     */
-    @FunctionalInterface
-    public interface LoggingPropertyErrorHandler {
-        /**
-         * @param key the whole key used
-         * @param value found string value
-         * @param e exception thrown
-         */
-        void handle(String key, Object value, Exception e);
     }
 }

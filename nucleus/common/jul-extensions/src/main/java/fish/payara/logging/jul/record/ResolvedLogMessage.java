@@ -38,14 +38,14 @@
  *  holder.
  */
 
-package fish.payara.logging.jul.i18n;
+package fish.payara.logging.jul.record;
 
 /**
  * Trivial class with the only target - to bind the message and it's bundle key.
  *
  * @author David Matejcek
  */
-public class ResolvedLogMessage {
+class ResolvedLogMessage {
 
     final String key;
     final String message;

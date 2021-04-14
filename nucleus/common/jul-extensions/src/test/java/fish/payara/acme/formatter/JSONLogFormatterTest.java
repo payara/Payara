@@ -40,8 +40,8 @@
 
 package fish.payara.acme.formatter;
 
-import fish.payara.logging.jul.cfg.LoggingSystemEnvironment;
 import fish.payara.logging.jul.formatter.ExcludeFieldsSupport.SupplementalAttribute;
+import fish.payara.logging.jul.env.LoggingSystemEnvironment;
 import fish.payara.logging.jul.formatter.JSONLogFormatter;
 import fish.payara.logging.jul.record.EnhancedLogRecord;
 
@@ -50,6 +50,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -57,6 +58,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static java.util.Collections.singletonMap;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.StringContains.containsString;
 import static org.hamcrest.text.MatchesPattern.matchesPattern;
@@ -73,15 +75,18 @@ public class JSONLogFormatterTest {
     private static final String P_TIMEZONE = "[0-9:.+-]{6}";
     private static final String P_TIMESTAMP = "[0-9]{4}\\-[0-9]{2}\\-[0-9]{2}T" + P_TIME + P_TIMEZONE;
     private String backupProductId;
+    private boolean backupReleaseParametersEarly;
 
     @BeforeEach
     public void initProductId() {
         this.backupProductId = LoggingSystemEnvironment.getProductId();
+        this.backupReleaseParametersEarly = LoggingSystemEnvironment.isReleaseParametersEarly();
     }
 
 
     @AfterEach
     public void resetProductId() {
+        LoggingSystemEnvironment.setReleaseParametersEarly(backupReleaseParametersEarly);
         LoggingSystemEnvironment.setProductId(backupProductId);
     }
 
@@ -133,9 +138,13 @@ public class JSONLogFormatterTest {
 
     @Test
     public void enhancedLogRecord() {
-        final EnhancedLogRecord record = new EnhancedLogRecord(Level.SEVERE, "\"Ok!\"", false);
-        record.setLoggerName("the.test.logger");
-        record.setMessageKey("error.message.key");
+        // the logger must exist before the message resolution, because resource bundles
+        // are resolved when Logger instance is created, and the result is cached.
+        // LogRecord doesn't do any bundle resolution.
+        final Logger logger = Logger.getLogger("the.test.logger", "test-resource-bundle");
+        final EnhancedLogRecord record = new EnhancedLogRecord(Level.SEVERE, "error.message.key.ok", false);
+        record.setLoggerName(logger.getName());
+        record.setResourceBundleName(logger.getResourceBundleName());
         final JSONLogFormatter formatter = new JSONLogFormatter();
 
         final String log = formatter.format(record);
@@ -148,7 +157,7 @@ public class JSONLogFormatterTest {
             + "\\\"ThreadName\\\"\\:\\\"main\\\","
             + "\\\"TimeMillis\\\"\\:\\\"[0-9]+\\\","
             + "\\\"LevelValue\\\"\\:\\\"1000\\\","
-            + "\\\"MessageID\\\"\\:\\\"error\\.message\\.key\\\","
+            + "\\\"MessageID\\\"\\:\\\"error\\.message\\.key\\.ok\\\","
             + "\\\"LogMessage\\\"\\:\\\"\\\\\"Ok!\\\\\"\\\""
             + "\\}\n"));
     }
@@ -220,7 +229,7 @@ public class JSONLogFormatterTest {
             + "\\\"[\\w ]+\\\"\\:\\\"[\\w ]+\\\","
             + "\\\"[\\w ]+\\\"\\:\\\"[\\w ]+\\\","
             + "\\\"LogMessage\\\"\\:\\\"This is a message with the simple parameter `x1`"
-            + " and map parameter `\\{null=value for null key, key3=value not in the message, some key=some value}`.\\\""
+            + " and map parameter `\\{null=value for null key, key3=value not in the message, some key=some value\\}`.\\\""
             + "\\}\n"));
         assertThat(log, containsString(",\"null\":\"value for null key\""));
         assertThat(log, containsString(",\"some key\":\"some value\""));
@@ -229,5 +238,27 @@ public class JSONLogFormatterTest {
         assertThat(log, containsString("null=value for null key"));
         assertThat(log, containsString("some key=some value"));
         assertThat(log, containsString("key3=value not in the message"));
+    }
+
+
+    @Test
+    public void mapParametersVsReleaseParametersEarly() {
+        LoggingSystemEnvironment.setReleaseParametersEarly(true);
+        final LogRecord record = new LogRecord(Level.SEVERE, "Hi {0}!");
+        record.setLoggerName("the.test.logger");
+        record.setParameters(new Object[] {singletonMap("key1", "value1")});
+        final JSONLogFormatter formatter = new JSONLogFormatter();
+        final String log = formatter.format(record);
+        assertNotNull(log, "log");
+        assertThat(log, matchesPattern("\\{"
+            + "\\\"Timestamp\\\"\\:\\\"" + P_TIMESTAMP + "\\\","
+            + "\\\"Level\\\"\\:\\\"SEVERE\\\","
+            + "\\\"LoggerName\\\"\\:\\\"the\\.test\\.logger\\\","
+            + "\\\"ThreadID\\\"\\:\\\"1\\\","
+            + "\\\"ThreadName\\\"\\:\\\"main\\\","
+            + "\\\"TimeMillis\\\"\\:\\\"[0-9]+\\\","
+            + "\\\"LevelValue\\\"\\:\\\"1000\\\","
+            + "\\\"LogMessage\\\"\\:\\\"Hi \\{key1=value1\\}!\\\""
+            + "\\}\n"));
     }
 }

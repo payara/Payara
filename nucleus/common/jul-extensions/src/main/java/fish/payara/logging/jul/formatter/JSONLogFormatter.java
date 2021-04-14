@@ -39,14 +39,11 @@
  */
 package fish.payara.logging.jul.formatter;
 
-import fish.payara.logging.jul.cfg.LoggingSystemEnvironment;
-import fish.payara.logging.jul.i18n.MessageResolver;
+import fish.payara.logging.jul.env.LoggingSystemEnvironment;
 import fish.payara.logging.jul.record.EnhancedLogRecord;
+import fish.payara.logging.jul.record.MessageResolver;
 import fish.payara.logging.jul.tracing.PayaraLoggingTracer;
 
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
-import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
@@ -55,12 +52,6 @@ import java.util.logging.LogRecord;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
-
-import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME;
-import static java.time.temporal.ChronoField.HOUR_OF_DAY;
-import static java.time.temporal.ChronoField.MINUTE_OF_HOUR;
-import static java.time.temporal.ChronoField.NANO_OF_SECOND;
-import static java.time.temporal.ChronoField.SECOND_OF_MINUTE;
 
 /**
  * Class for converting a {@link LogRecord} to Json format
@@ -74,9 +65,7 @@ public class JSONLogFormatter extends PayaraLogFormatter {
     private static final String METHOD_NAME = "MethodName";
     private static final String CLASS_NAME = "ClassName";
 
-    private final MessageResolver messageResolver;
-    private DateTimeFormatter dateTimeFormatter;
-
+    private static final MessageResolver MESSAGE_RESOLVER = new MessageResolver();
     private static final String LINE_SEPARATOR = System.lineSeparator();
 
     // String values for field keys
@@ -98,40 +87,22 @@ public class JSONLogFormatter extends PayaraLogFormatter {
     private String LOG_MESSAGE_KEY = "LogMessage";
     private String THROWABLE_KEY = "Throwable";
 
-    private final ExcludeFieldsSupport excludeFieldsSupport = new ExcludeFieldsSupport();
+    private final ExcludeFieldsSupport excludeFieldsSupport;
 
     /**
      * For backwards compatibility with log format for pre-182
+     *
      * @deprecated remove in Payara 6
      */
     @Deprecated
-    private static final String PAYARA_JSONLOGFORMATTER_UNDERSCORE="fish.payara.deprecated.jsonlogformatter.underscoreprefix";
+    private static final String PAYARA_JSONLOGFORMATTER_UNDERSCORE
+        = "fish.payara.deprecated.jsonlogformatter.underscoreprefix";
 
-    // This was required, because we need 3 decimal numbers of the second fraction
-    // DateTimeFormatter.ISO_LOCAL_DATE_TIME prints just nonzero values
-    private static final DateTimeFormatter iSO_LOCAL_TIME = new DateTimeFormatterBuilder()
-        .appendValue(HOUR_OF_DAY, 2).appendLiteral(':')
-        .appendValue(MINUTE_OF_HOUR, 2).optionalStart().appendLiteral(':')
-        .appendValue(SECOND_OF_MINUTE, 2).optionalStart()
-        .appendFraction(NANO_OF_SECOND, 3, 3, true)
-        .toFormatter(Locale.ROOT);
-
-    private static final DateTimeFormatter ISO_LOCAL_DATE_TIME = new DateTimeFormatterBuilder()
-        .parseCaseInsensitive()
-        .append(DateTimeFormatter.ISO_LOCAL_DATE)
-        .appendLiteral('T')
-        .append(iSO_LOCAL_TIME)
-        .toFormatter(Locale.ROOT);
-
-    private static final DateTimeFormatter DEFAULT_DATETIME_FORMATTER = new DateTimeFormatterBuilder()
-        .parseCaseInsensitive()
-        .append(ISO_LOCAL_DATE_TIME)
-        .appendOffsetId()
-        .toFormatter(Locale.ROOT);
-
+    /**
+     * Creates an instance and initializes defaults from log manager's configuration
+     */
     public JSONLogFormatter() {
-        this.dateTimeFormatter = DEFAULT_DATETIME_FORMATTER;
-        this.messageResolver = new MessageResolver();
+        this.excludeFieldsSupport = new ExcludeFieldsSupport();
 
         final LogManager logManager = LogManager.getLogManager();
         final String underscorePrefix = logManager.getProperty(PAYARA_JSONLOGFORMATTER_UNDERSCORE);
@@ -169,7 +140,7 @@ public class JSONLogFormatter extends PayaraLogFormatter {
     }
 
     private String formatLogRecord(final LogRecord record) {
-        return formatEnhancedLogRecord(messageResolver.resolve(record));
+        return formatEnhancedLogRecord(MESSAGE_RESOLVER.resolve(record));
     }
 
     private String formatEnhancedLogRecord(final EnhancedLogRecord record) {
@@ -179,7 +150,7 @@ public class JSONLogFormatter extends PayaraLogFormatter {
         }
         try {
             final JsonBuilderWrapper json = new JsonBuilderWrapper();
-            final String timestampValue = dateTimeFormatter.format(record.getTime());
+            final String timestampValue = getDateTimeFormatter().format(record.getTime());
             json.add(TIMESTAMP_KEY, timestampValue);
 
             final Level level = record.getLevel();
@@ -230,17 +201,16 @@ public class JSONLogFormatter extends PayaraLogFormatter {
             final Object[] parameters = record.getParameters();
             if (parameters != null) {
                 for (final Object parameter : parameters) {
-                    // FIXME: parameter map: conflicts with same keys in other maps are not resolved!
-                    // FIXME: parameters cannot be mapped here, they were already resolved in EnhancedLogRecord.
-                    //        possible solution: cfg parameter - release parameters after resolving (default) OR not
-                    //        release -> no maps, just strings
-                    //        not -> still possible to use original parameters in formatter's thread may be affected by concurrent
-                    //        changes of states of objects in the map
+                    // Possible issues here (feature, not a bug!):
+                    // 1) If the record was deserialized, all parameters were converted to strings,
+                    // so this will not work then - we don't care, usually there's no serialization
+                    // between logger, handler and formatter.
+                    //
+                    // 2) If there is more maps using same keys, conflicts are not resolved,
+                    //    then last map wins!
                     if (parameter instanceof Map) {
-                        for (final Map.Entry<Object, Object> entry : ((Map<Object, Object>) parameter).entrySet()) {
-                            // there are implementations that allow <null> keys...
-                            final String key = entry.getKey() == null ? "null" : entry.getKey().toString();
-                            json.add(key, entry.getValue());
+                        for (final Map.Entry<?, ?> entry : ((Map<?, ?>) parameter).entrySet()) {
+                            json.add(String.valueOf(entry.getKey()), entry.getValue());
                         }
                     }
                 }
@@ -266,20 +236,6 @@ public class JSONLogFormatter extends PayaraLogFormatter {
             PayaraLoggingTracer.error(getClass(), "Error in formatting Logrecord", e);
             return record.getMessage();
         }
-    }
-
-    /**
-     * @return The date format for the record.
-     */
-    public final String getDateTimeFormatter() {
-        return dateTimeFormatter.toString();
-    }
-
-    /**
-     * @param format The date format to set for records.
-     */
-    public void setDateTimeFormatter(final String format) {
-        this.dateTimeFormatter = format == null ? ISO_OFFSET_DATE_TIME : DateTimeFormatter.ofPattern(format);
     }
 
 

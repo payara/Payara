@@ -41,9 +41,9 @@
 package fish.payara.logging.jul;
 
 import fish.payara.logging.jul.cfg.LoggingConfigurationHelper;
-import fish.payara.logging.jul.cfg.LoggingSystemEnvironment;
 import fish.payara.logging.jul.cfg.PayaraLogManagerConfiguration;
 import fish.payara.logging.jul.cfg.SortedProperties;
+import fish.payara.logging.jul.env.LoggingSystemEnvironment;
 import fish.payara.logging.jul.handler.ExternallyManagedLogHandler;
 import fish.payara.logging.jul.handler.PayaraLogHandler;
 import fish.payara.logging.jul.handler.SimpleLogHandler;
@@ -403,6 +403,8 @@ public class PayaraLogManager extends LogManager {
         }
         setLoggingStatus(PayaraLoggingStatus.CONFIGURING);
         this.configuration = cfg;
+        LoggingSystemEnvironment.setReleaseParametersEarly(
+            Boolean.parseBoolean(cfg.getProperty("fish.payara.logging.jul.record.releaseParametersEarly")));
         // it is used to configure new objects in LogManager class
         final Thread currentThread = Thread.currentThread();
         final ClassLoader originalCL = currentThread.getContextClassLoader();

@@ -40,8 +40,8 @@
 
 package fish.payara.logging.jul.handler;
 
-import fish.payara.logging.jul.i18n.MessageResolver;
 import fish.payara.logging.jul.record.EnhancedLogRecord;
+import fish.payara.logging.jul.record.MessageResolver;
 
 import java.util.ArrayList;
 import java.util.List;

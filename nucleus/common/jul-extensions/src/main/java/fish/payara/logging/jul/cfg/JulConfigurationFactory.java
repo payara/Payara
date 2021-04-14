@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) 2020-2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -43,48 +43,14 @@ package fish.payara.logging.jul.cfg;
 import fish.payara.logging.jul.formatter.JSONLogFormatter;
 import fish.payara.logging.jul.formatter.ODLLogFormatter;
 import fish.payara.logging.jul.formatter.UniformLogFormatter;
-import fish.payara.logging.jul.handler.PayaraLogHandler;
 import fish.payara.logging.jul.tracing.PayaraLoggingTracer;
 
-import java.nio.charset.StandardCharsets;
 import java.util.logging.Formatter;
-import java.util.logging.Level;
-
-import static fish.payara.logging.jul.cfg.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.*;
 
 /**
  * @author David Matejcek
  */
 public class JulConfigurationFactory {
-
-    public PayaraLogHandlerConfiguration createPayaraLogHandlerConfiguration(
-        final Class<? extends PayaraLogHandler> handlerClass, final String defaultLogFileName) {
-        final LoggingConfigurationHelper helper = new LoggingConfigurationHelper(handlerClass);
-        final PayaraLogHandlerConfiguration configuration = new PayaraLogHandlerConfiguration();
-        configuration.setLevel(helper.getLevel("level", Level.ALL));
-        configuration.setEncoding(helper.getCharset("encoding", StandardCharsets.UTF_8));
-        configuration.setLogToFile(helper.getBoolean("logtoFile", true));
-        configuration.setLogFile(helper.getFile("file", null));
-        configuration.setLogStandardStreams(helper.getBoolean("logStandardStreams", Boolean.FALSE));
-
-        configuration.setFlushFrequency(helper.getNonNegativeInteger("flushFrequency", 1));
-        configuration.setBufferCapacity(helper.getInteger("bufferCapacity", DEFAULT_BUFFER_CAPACITY));
-        configuration.setBufferTimeout(helper.getInteger("bufferTimeout", DEFAULT_BUFFER_TIMEOUT));
-
-        final Integer rotationLimit = helper.getInteger(ROTATION_LIMIT_SIZE.getPropertyName(), DEFAULT_ROTATION_LIMIT_BYTES);
-        configuration.setLimitForFileRotation(
-            rotationLimit >= MINIMUM_ROTATION_LIMIT_BYTES ? rotationLimit : DEFAULT_ROTATION_LIMIT_BYTES);
-        configuration.setCompressionOnRotation(helper.getBoolean("compressOnRotation", Boolean.FALSE));
-        configuration.setRotationOnDateChange(helper.getBoolean(ROTATION_ON_DATE_CHANGE.getPropertyName(), Boolean.FALSE));
-        configuration.setRotationTimeLimitValue(helper.getNonNegativeInteger(ROTATION_LIMIT_TIME.getPropertyName(), 0));
-        configuration.setMaxHistoryFiles(helper.getNonNegativeInteger("maxHistoryFiles", 10));
-
-        final Formatter formatter = helper.getFormatter("formatter", UniformLogFormatter.class.getName());
-        configureFormatter(formatter, helper);
-        configuration.setFormatterConfiguration(formatter);
-        return configuration;
-    }
-
 
     /**
      * Configures the formatter. Formatter can be already configured by his direct defaults. This

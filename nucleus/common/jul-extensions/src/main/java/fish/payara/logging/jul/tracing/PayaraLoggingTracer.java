@@ -111,13 +111,13 @@ public final class PayaraLoggingTracer {
      * to STDOUT if the tracing is enabled.
      *
      * @param source
-     * @param message
+     * @param exceptionMessage
      */
-    public static synchronized void stacktrace(final Class<?> source, final String message) {
+    public static synchronized void stacktrace(final Class<?> source, final String exceptionMessage) {
         if (tracingEnabled) {
             OUT.println(
                 source.getCanonicalName() + ": Don't panic, following stacktrace is only to see what invoked this!");
-            new RuntimeException(message).printStackTrace(OUT);
+            new RuntimeException(exceptionMessage).printStackTrace(OUT);
             OUT.flush();
         }
     }

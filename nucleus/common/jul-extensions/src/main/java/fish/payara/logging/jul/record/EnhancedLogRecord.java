@@ -114,9 +114,12 @@ public class EnhancedLogRecord extends LogRecord {
 
 
     /**
+     * This is called just to remember the original message value after it was translated using
+     * the resource bundle.
+     *
      * @param messageKey the message identifier (generally not unique, may be null)
      */
-    public void setMessageKey(final String messageKey) {
+    void setMessageKey(final String messageKey) {
         this.messageKey = messageKey;
     }
 
@@ -324,8 +327,12 @@ public class EnhancedLogRecord extends LogRecord {
     }
 
 
+    /**
+     * @param sourceClassName usually class which created this record
+     * @return if true the class will not be used as a source.
+     */
     protected boolean isIgnoredStackTraceElement(final String sourceClassName) {
-        // FIXME: make it configurable from logging.properties, allow to use custom loggers. This is fragile.
+        // TODO: make it configurable from logging.properties, allow to use custom loggers. This is fragile.
         return "fish.payara.logging.jul.PayaraLogger".equals(sourceClassName)
             // see LogDomains in Payara sources
             || "com.sun.logging.LogDomainsLogger".equals(sourceClassName)

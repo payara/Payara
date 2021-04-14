@@ -40,7 +40,7 @@
 package fish.payara.logging.jul.handler;
 
 import fish.payara.logging.jul.cfg.LoggingConfigurationHelper;
-import fish.payara.logging.jul.cfg.LoggingSystemEnvironment;
+import fish.payara.logging.jul.env.LoggingSystemEnvironment;
 import fish.payara.logging.jul.formatter.OneLineFormatter;
 
 import java.io.PrintStream;

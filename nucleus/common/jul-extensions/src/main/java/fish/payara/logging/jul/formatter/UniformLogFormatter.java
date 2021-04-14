@@ -42,10 +42,10 @@
 
 package fish.payara.logging.jul.formatter;
 
-import fish.payara.logging.jul.cfg.LoggingSystemEnvironment;
+import fish.payara.logging.jul.env.LoggingSystemEnvironment;
 import fish.payara.logging.jul.formatter.ExcludeFieldsSupport.SupplementalAttribute;
-import fish.payara.logging.jul.i18n.MessageResolver;
 import fish.payara.logging.jul.record.EnhancedLogRecord;
+import fish.payara.logging.jul.record.MessageResolver;
 
 import java.util.logging.ErrorManager;
 import java.util.logging.Level;
@@ -66,7 +66,7 @@ public class UniformLogFormatter extends AnsiColorFormatter {
 
     private static final int REC_BUFFER_CAPACITY = 512;
 
-    private static final String INDENT = "  ";
+    private static final String MULTILINE_INDENTATION = "  ";
     private static final char FIELD_SEPARATOR = '|';
     private static final String RECORD_BEGIN_MARKER = "[#|";
     private static final String RECORD_END_MARKER = "|#]";
@@ -85,32 +85,43 @@ public class UniformLogFormatter extends AnsiColorFormatter {
     private char recordFieldSeparator;
     private boolean multiLineMode;
 
+    /**
+     * Creates an instance and initializes defaults from log manager's configuration
+     */
     public UniformLogFormatter() {
-        this.multiLineMode = true;
+        final FormatterConfigurationHelper helper = new FormatterConfigurationHelper(getClass());
+        this.multiLineMode = helper.getBoolean("multiLineMode", true);
         this.excludeFieldsSupport = new ExcludeFieldsSupport();
+        setExcludeFields(helper.getString("excludeFields", null));
         this.recordBeginMarker = RECORD_BEGIN_MARKER;
         this.recordEndMarker = RECORD_END_MARKER;
         this.recordFieldSeparator = FIELD_SEPARATOR;
     }
+
 
     @Override
     public String formatRecord(final LogRecord record) {
         return formatEnhancedLogRecord(MSG_RESOLVER.resolve(record));
     }
 
+
     /**
-     * @param recordBeginMarker separates log records, marks beginning of the record. Default: {@value #RECORD_BEGIN_MARKER}
+     * @param recordBeginMarker separates log records, marks beginning of the record. Default:
+     *            {@value #RECORD_BEGIN_MARKER}
      */
     public void setRecordBeginMarker(final String recordBeginMarker) {
         this.recordBeginMarker = recordBeginMarker == null ? RECORD_BEGIN_MARKER : recordBeginMarker;
     }
 
+
     /**
-     * @param recordEndMarker separates log records, marks ending of the record. Default: {@value #RECORD_END_MARKER}
+     * @param recordEndMarker separates log records, marks ending of the record. Default:
+     *            {@value #RECORD_END_MARKER}
      */
     public void setRecordEndMarker(final String recordEndMarker) {
         this.recordEndMarker = recordEndMarker == null ? RECORD_END_MARKER : recordEndMarker;
     }
+
 
     /**
      * @param recordFieldSeparator separates log record fields, default: {@value #FIELD_SEPARATOR}
@@ -119,12 +130,14 @@ public class UniformLogFormatter extends AnsiColorFormatter {
         this.recordFieldSeparator = recordFieldSeparator == null ? FIELD_SEPARATOR : recordFieldSeparator;
     }
 
+
     /**
      * @param multiLineMode the multiLineMode to set
      */
     public void setMultiLineMode(final boolean multiLineMode) {
         this.multiLineMode = multiLineMode;
     }
+
 
     /**
      * @param excludeFields the excludeFields to set
@@ -152,7 +165,7 @@ public class UniformLogFormatter extends AnsiColorFormatter {
 
             if (multiLineMode) {
                 output.append(lineSeparator());
-                output.append(INDENT);
+                output.append(MULTILINE_INDENTATION);
             }
             output.append(message);
             output.append(recordEndMarker);
@@ -170,6 +183,7 @@ public class UniformLogFormatter extends AnsiColorFormatter {
         output.append(recordFieldSeparator);
     }
 
+
     private void appendLogLevel(final StringBuilder output, final Level logLevel) {
         final AnsiColor levelColor = getLevelColor(logLevel);
         if (levelColor != null) {
@@ -182,6 +196,7 @@ public class UniformLogFormatter extends AnsiColorFormatter {
         output.append(recordFieldSeparator);
     }
 
+
     private void appendProductId(final StringBuilder output) {
         final String productId = LoggingSystemEnvironment.getProductId();
         if (productId != null) {
@@ -189,6 +204,7 @@ public class UniformLogFormatter extends AnsiColorFormatter {
         }
         output.append(recordFieldSeparator);
     }
+
 
     private void appendLoggerName(final StringBuilder output, final String loggerName) {
         if (loggerName != null) {
@@ -202,6 +218,7 @@ public class UniformLogFormatter extends AnsiColorFormatter {
         }
         output.append(recordFieldSeparator);
     }
+
 
     private void appendDetails(final StringBuilder output, final EnhancedLogRecord record) {
         if (!excludeFieldsSupport.isSet(SupplementalAttribute.TID)) {

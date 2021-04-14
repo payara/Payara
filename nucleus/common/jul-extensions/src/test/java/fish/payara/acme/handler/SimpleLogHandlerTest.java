@@ -40,7 +40,7 @@
 
 package fish.payara.acme.handler;
 
-import fish.payara.logging.jul.cfg.LoggingSystemEnvironment;
+import fish.payara.logging.jul.env.LoggingSystemEnvironment;
 import fish.payara.logging.jul.handler.SimpleLogHandler;
 import fish.payara.logging.jul.record.EnhancedLogRecord;
 

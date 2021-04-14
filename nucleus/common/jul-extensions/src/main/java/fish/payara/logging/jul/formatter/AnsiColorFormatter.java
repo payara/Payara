@@ -41,18 +41,10 @@ package fish.payara.logging.jul.formatter;
 
 import fish.payara.logging.jul.tracing.PayaraLoggingTracer;
 
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
-
-import static java.time.temporal.ChronoField.HOUR_OF_DAY;
-import static java.time.temporal.ChronoField.MINUTE_OF_HOUR;
-import static java.time.temporal.ChronoField.NANO_OF_SECOND;
-import static java.time.temporal.ChronoField.SECOND_OF_MINUTE;
 
 /**
  * {@link PayaraLogFormatter} which is able to print colored logs.
@@ -63,32 +55,9 @@ import static java.time.temporal.ChronoField.SECOND_OF_MINUTE;
  */
 public abstract class AnsiColorFormatter extends PayaraLogFormatter {
 
-    // This was required, because we need 3 decimal numbers of the second fraction
-    // DateTimeFormatter.ISO_LOCAL_DATE_TIME prints just nonzero values
-    private static final DateTimeFormatter iSO_LOCAL_TIME = new DateTimeFormatterBuilder()
-        .appendValue(HOUR_OF_DAY, 2).appendLiteral(':')
-        .appendValue(MINUTE_OF_HOUR, 2).optionalStart().appendLiteral(':')
-        .appendValue(SECOND_OF_MINUTE, 2).optionalStart()
-        .appendFraction(NANO_OF_SECOND, 3, 3, true)
-        .toFormatter(Locale.ROOT);
-
-    private static final DateTimeFormatter ISO_LOCAL_DATE_TIME = new DateTimeFormatterBuilder()
-        .parseCaseInsensitive()
-        .append(DateTimeFormatter.ISO_LOCAL_DATE)
-        .appendLiteral('T')
-        .append(iSO_LOCAL_TIME)
-        .toFormatter(Locale.ROOT);
-
-    private static final DateTimeFormatter DEFAULT_DATETIME_FORMATTER = new DateTimeFormatterBuilder()
-        .parseCaseInsensitive()
-        .append(ISO_LOCAL_DATE_TIME)
-        .appendOffsetId()
-        .toFormatter(Locale.ROOT);
-
     private AnsiColor loggerColor;
     private HashMap<Level,AnsiColor> colors;
     private boolean ansiColor;
-    private DateTimeFormatter dateTimeFormatter;
 
     /**
      * Creates the formatter, initialized from (starting from highest priority)
@@ -133,7 +102,6 @@ public abstract class AnsiColorFormatter extends PayaraLogFormatter {
         }
 
         loggerColor = getLoggerColor(manager);
-        dateTimeFormatter = DEFAULT_DATETIME_FORMATTER;
     }
 
 
@@ -196,26 +164,5 @@ public abstract class AnsiColorFormatter extends PayaraLogFormatter {
             return null;
         }
         return colors.get(level);
-    }
-
-    /**
-     * @return {@link DateTimeFormatter} used for timestamps
-     */
-    public final DateTimeFormatter getDateTimeFormatter() {
-        return dateTimeFormatter;
-    }
-
-    /**
-     * @param dateTimeFormatter {@link DateTimeFormatter} used for timestamps
-     */
-    public final void setDateTimeFormatter(final DateTimeFormatter dateTimeFormatter) {
-        this.dateTimeFormatter = dateTimeFormatter == null ? DEFAULT_DATETIME_FORMATTER : dateTimeFormatter;
-    }
-
-    /**
-     * @param format The date format to set for records. See {@link DateTimeFormatter} for details.
-     */
-    public final void setDateTimeFormatter(final String format) {
-        setDateTimeFormatter(format == null ? DEFAULT_DATETIME_FORMATTER : DateTimeFormatter.ofPattern(format));
     }
 }

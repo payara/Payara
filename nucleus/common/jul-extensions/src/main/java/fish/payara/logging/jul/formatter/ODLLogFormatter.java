@@ -38,16 +38,17 @@
  * holder.
  */
 
-// Portions Copyright [2017-2020] [Payara Foundation and/or affiliates]
+// Portions Copyright [2017-2021] [Payara Foundation and/or affiliates]
 
 package fish.payara.logging.jul.formatter;
 
-import fish.payara.logging.jul.cfg.LoggingSystemEnvironment;
+import fish.payara.logging.jul.env.LoggingSystemEnvironment;
 import fish.payara.logging.jul.formatter.ExcludeFieldsSupport.SupplementalAttribute;
-import fish.payara.logging.jul.i18n.MessageResolver;
 import fish.payara.logging.jul.record.EnhancedLogRecord;
+import fish.payara.logging.jul.record.MessageResolver;
 import fish.payara.logging.jul.tracing.PayaraLoggingTracer;
 
+import java.time.OffsetDateTime;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
@@ -69,7 +70,7 @@ public class ODLLogFormatter extends AnsiColorFormatter {
     private static final String FIELD_BEGIN_MARKER = "[";
     private static final String FIELD_END_MARKER = "]";
     private static final String FIELD_SEPARATOR = " ";
-    private static final String INDENT = "  ";
+    private static final String MULTILINE_INDENTATION = "  ";
 
     private static final String LABEL_CLASSNAME = "CLASSNAME";
     private static final String LABEL_METHODNAME = "METHODNAME";
@@ -81,16 +82,23 @@ public class ODLLogFormatter extends AnsiColorFormatter {
     private final String recordFieldSeparator;
     private boolean multiLineMode;
 
+    /**
+     * Creates an instance and initializes defaults from log manager's configuration
+     */
     public ODLLogFormatter() {
-        this.multiLineMode = true;
+        final FormatterConfigurationHelper helper = new FormatterConfigurationHelper(getClass());
+        this.multiLineMode = helper.getBoolean("multiLineMode", true);
         this.excludeFieldsSupport = new ExcludeFieldsSupport();
-        this.recordFieldSeparator = FIELD_SEPARATOR;
+        setExcludeFields(helper.getString("excludeFields", null));
+        this.recordFieldSeparator = helper.getString("fieldSeparator", FIELD_SEPARATOR);
     }
+
 
     @Override
     public String formatRecord(final LogRecord record) {
         return formatEnhancedLogRecord(MSG_RESOLVER.resolve(record));
     }
+
 
     /**
      * @param excludeFields comma separated field names which should not be in the ouptut
@@ -98,6 +106,7 @@ public class ODLLogFormatter extends AnsiColorFormatter {
     public void setExcludeFields(final String excludeFields) {
         this.excludeFieldsSupport.setExcludeFields(excludeFields);
     }
+
 
     /**
      * @param multiLineMode true if the log message is on the next line. Default: true.
@@ -114,13 +123,12 @@ public class ODLLogFormatter extends AnsiColorFormatter {
                 return "";
             }
             final boolean multiLine = multiLineMode || message.contains(lineSeparator());
-            final String timestamp = getDateTimeFormatter().format(record.getTime());
             final Level logLevel = record.getLevel();
             final String msgId = record.getMessageKey();
             final String loggerName = record.getLoggerName();
             final String threadName = record.getThreadName();
             final StringBuilder output = new StringBuilder(REC_BUFFER_CAPACITY);
-            appendTimestamp(output, timestamp);
+            appendTimestamp(output, record.getTime());
             appendProductId(output);
             appendLogLevel(output, logLevel);
             appendMessageKey(output, msgId);
@@ -134,7 +142,7 @@ public class ODLLogFormatter extends AnsiColorFormatter {
             if (multiLine) {
                 output.append(FIELD_BEGIN_MARKER).append(FIELD_BEGIN_MARKER);
                 output.append(lineSeparator());
-                output.append(INDENT);
+                output.append(MULTILINE_INDENTATION);
             }
             output.append(message);
             if (multiLine) {
@@ -148,9 +156,9 @@ public class ODLLogFormatter extends AnsiColorFormatter {
         }
     }
 
-    private void appendTimestamp(final StringBuilder output, final String timestamp) {
+    private void appendTimestamp(final StringBuilder output, final OffsetDateTime timestamp) {
         output.append(FIELD_BEGIN_MARKER);
-        output.append(timestamp);
+        output.append(getDateTimeFormatter().format(timestamp));
         output.append(FIELD_END_MARKER).append(recordFieldSeparator);
     }
 

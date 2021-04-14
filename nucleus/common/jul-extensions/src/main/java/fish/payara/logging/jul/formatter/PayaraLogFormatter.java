@@ -40,11 +40,18 @@
 
 package fish.payara.logging.jul.formatter;
 
-import fish.payara.logging.jul.cfg.LoggingConfigurationHelper;
 import fish.payara.logging.jul.record.EnhancedLogRecord;
 
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.util.Locale;
 import java.util.logging.Formatter;
 import java.util.logging.LogRecord;
+
+import static java.time.temporal.ChronoField.HOUR_OF_DAY;
+import static java.time.temporal.ChronoField.MINUTE_OF_HOUR;
+import static java.time.temporal.ChronoField.NANO_OF_SECOND;
+import static java.time.temporal.ChronoField.SECOND_OF_MINUTE;
 
 
 /**
@@ -55,17 +62,45 @@ import java.util.logging.LogRecord;
  */
 public abstract class PayaraLogFormatter extends Formatter {
 
+    // This was required, because we need 3 decimal numbers of the second fraction
+    // DateTimeFormatter.ISO_LOCAL_DATE_TIME prints just nonzero values
+    /** Example: 15:35:40.123 */
+    protected static final DateTimeFormatter iSO_LOCAL_TIME = new DateTimeFormatterBuilder()
+        .appendValue(HOUR_OF_DAY, 2).appendLiteral(':')
+        .appendValue(MINUTE_OF_HOUR, 2).optionalStart().appendLiteral(':')
+        .appendValue(SECOND_OF_MINUTE, 2).optionalStart()
+        .appendFraction(NANO_OF_SECOND, 3, 3, true)
+        .toFormatter(Locale.ROOT);
+
+    /** Example: 2011-12-03T15:35:40.123 */
+    protected static final DateTimeFormatter ISO_LOCAL_DATE_TIME = new DateTimeFormatterBuilder()
+        .parseCaseInsensitive()
+        .append(DateTimeFormatter.ISO_LOCAL_DATE)
+        .appendLiteral('T')
+        .append(iSO_LOCAL_TIME)
+        .toFormatter(Locale.ROOT);
+
+    /** Example: 2011-12-03T15:35:40.123+01:00 */
+    protected static final DateTimeFormatter DEFAULT_DATETIME_FORMATTER = new DateTimeFormatterBuilder()
+        .parseCaseInsensitive()
+        .append(ISO_LOCAL_DATE_TIME)
+        .appendOffsetId()
+        .toFormatter(Locale.ROOT);
+
     private boolean printSequenceNumber;
     private boolean printSource;
+    private DateTimeFormatter timestampFormatter;
 
     /**
      * Creates an instance and initializes defaults from log manager's configuration
      */
     public PayaraLogFormatter() {
-        final LoggingConfigurationHelper helper = new LoggingConfigurationHelper(getClass());
+        final FormatterConfigurationHelper helper = new FormatterConfigurationHelper(getClass());
         this.printSequenceNumber = helper.getBoolean("printSequenceNumber", false);
         this.printSource = helper.getBoolean("printSource", false);
+        this.timestampFormatter = helper.getDateTimeFormatter("timestampFormatter", DEFAULT_DATETIME_FORMATTER);
     }
+
 
     /**
      * Formats the record.
@@ -75,6 +110,7 @@ public abstract class PayaraLogFormatter extends Formatter {
      */
     protected abstract String formatRecord(LogRecord record);
 
+
     /**
      * @param printSequenceNumber true enables printing the log record sequence number
      */
@@ -82,12 +118,14 @@ public abstract class PayaraLogFormatter extends Formatter {
         this.printSequenceNumber = printSequenceNumber;
     }
 
+
     /**
      * @return true enables printing the log record sequence number
      */
     public boolean isPrintSequenceNumber() {
         return printSequenceNumber;
     }
+
 
     /**
      * @param printSource if true, the source class and method will be printed to the output (but
@@ -97,12 +135,38 @@ public abstract class PayaraLogFormatter extends Formatter {
         this.printSource = printSource;
     }
 
+
     /**
      * @return if true, the source class and method will be printed to the output (but
      *         only if they are set)
      */
     public boolean isPrintSource() {
         return printSource;
+    }
+
+
+    /**
+     * @return {@link DateTimeFormatter} used for timestamps
+     */
+    public final DateTimeFormatter getDateTimeFormatter() {
+        return timestampFormatter;
+    }
+
+
+    /**
+     * @param timestampFormatter {@link DateTimeFormatter} used for timestamps. Null sets default.
+     */
+    public final void setDateTimeFormatter(final DateTimeFormatter timestampFormatter) {
+        this.timestampFormatter = timestampFormatter == null ? DEFAULT_DATETIME_FORMATTER : timestampFormatter;
+    }
+
+
+    /**
+     * @param format The date format to set for records. Null sets default.
+     *            See {@link DateTimeFormatter} for details.
+     */
+    public final void setDateTimeFormatter(final String format) {
+        setDateTimeFormatter(format == null ? DEFAULT_DATETIME_FORMATTER : DateTimeFormatter.ofPattern(format));
     }
 
 
