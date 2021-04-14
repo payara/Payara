@@ -58,6 +58,11 @@
             <artifactId>payara-api</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>fish.payara.security.connectors</groupId>
+            <artifactId>security-api</artifactId>
+            <version>${payara.openid.version}</version>
+        </dependency>
     </dependencies>
 </project>
 
