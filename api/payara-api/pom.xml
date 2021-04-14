@@ -153,6 +153,11 @@
                 <version>${project.version}</version>
                 <scope>import</scope>
             </dependency>
+            <dependency>
+                <groupId>fish.payara.security.connectors</groupId>
+                <artifactId>security-api</artifactId>
+                <version>${payara.openid.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

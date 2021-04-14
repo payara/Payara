@@ -141,9 +141,9 @@
                     <artifactId>javax.security.enterprise</artifactId>
                 </dependency>
                 <dependency>
-                    <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
-                    <artifactId>oauth2-client-integration</artifactId>
-                    <version>${project.version}</version>
+                    <groupId>fish.payara.security.connectors</groupId>
+                    <artifactId>security-connector-oauth2-client</artifactId>
+                    <version>${payara.openid.version}</version>
                 </dependency>
                 <dependency>
                     <groupId>fish.payara.security.connectors</groupId>
