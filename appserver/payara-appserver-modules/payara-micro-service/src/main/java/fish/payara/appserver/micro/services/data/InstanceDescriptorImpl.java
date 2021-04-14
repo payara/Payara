@@ -2,7 +2,7 @@
 
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
- Copyright (c) 2016-2020 Payara Foundation. All rights reserved.
+ Copyright (c) 2016-2021 Payara Foundation. All rights reserved.
 
  The contents of this file are subject to the terms of the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
@@ -25,7 +25,6 @@ import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -46,6 +45,10 @@ import org.glassfish.internal.data.ApplicationInfo;
 import fish.payara.micro.data.ApplicationDescriptor;
 import fish.payara.micro.data.InstanceDescriptor;
 import fish.payara.micro.data.ModuleDescriptor;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -58,8 +61,8 @@ public class InstanceDescriptorImpl implements InstanceDescriptor {
 
     private final UUID memberUUID;
     private String instanceName;
-    private final List<Integer> httpPorts;
-    private final List<Integer> httpsPorts;
+    private final Set<Integer> httpPorts;
+    private final Set<Integer> httpsPorts;
     private InetAddress hostName;
     private Map<String, ApplicationDescriptor> deployedApplications;
     private boolean liteMember;
@@ -72,8 +75,8 @@ public class InstanceDescriptorImpl implements InstanceDescriptor {
     public InstanceDescriptorImpl(UUID uuid) throws UnknownHostException {
         hostName = InetAddress.getLocalHost();
         memberUUID = uuid;
-        httpPorts = new ArrayList<>();
-        httpsPorts = new ArrayList<>();
+        httpPorts = new LinkedHashSet<>();
+        httpsPorts = new LinkedHashSet<>();
         heartBeatTS = System.currentTimeMillis();
     }
 
@@ -116,7 +119,7 @@ public class InstanceDescriptorImpl implements InstanceDescriptor {
      */
     @Override
     public List<Integer> getHttpPorts() {
-        return httpPorts;
+        return Collections.unmodifiableList(new ArrayList<>(httpPorts));
     }
 
     /**
@@ -157,7 +160,7 @@ public class InstanceDescriptorImpl implements InstanceDescriptor {
      */
     @Override
     public List<Integer> getHttpsPorts() {
-        return httpsPorts;
+        return Collections.unmodifiableList(new ArrayList<>(httpsPorts));
     }
 
     /**
@@ -342,7 +345,7 @@ public class InstanceDescriptorImpl implements InstanceDescriptor {
                     });
                     appBuilder.add("Mappings", servletMappings.build());
                 }
-            
+
             // If there's more modules, print info for each module
             } else {
                 JsonArrayBuilder modules = Json.createArrayBuilder();
@@ -398,7 +401,7 @@ public class InstanceDescriptorImpl implements InstanceDescriptor {
         if (memberUUID != null) {
             sb.append("Hazelcast Member UUID ").append(this.memberUUID).append('\n');
         }
-        
+
         for (ApplicationDescriptor applicationDescriptor : getDeployedApplications()) {
             sb.append("Deployed: ");
             sb.append(applicationDescriptor.getName()).append(" ( ");
@@ -409,7 +412,7 @@ public class InstanceDescriptorImpl implements InstanceDescriptor {
                 } else {
                     sb.append("***");
                 }
-                
+
                 sb.append(" [ ");
                 for (Entry<String, String> servletMapping : moduleDescriptor.getServletMappings().entrySet()) {
                     sb.append("< ")
@@ -419,7 +422,7 @@ public class InstanceDescriptorImpl implements InstanceDescriptor {
                 sb.append(" ] ");
             }
             sb.append(")\n");
-            
+
             String libraries = applicationDescriptor.getLibraries();
             if (libraries != null) {
                 sb.append(' ').append(applicationDescriptor.getLibraries());
@@ -457,7 +460,7 @@ public class InstanceDescriptorImpl implements InstanceDescriptor {
         }
         return result;
     }
-    
+
     /**
      * Gets the instance group name
      * @return The instance group name
@@ -465,7 +468,7 @@ public class InstanceDescriptorImpl implements InstanceDescriptor {
     public String getInstanceGroup() {
         return instanceGroup;
     }
-    
+
     /**
      * Sets the instance group name
      * @param instanceGroup The instance group name
@@ -473,7 +476,7 @@ public class InstanceDescriptorImpl implements InstanceDescriptor {
     public void setInstanceGroup(String instanceGroup) {
         this.instanceGroup = instanceGroup;
     }
-    
+
     public void setLastHeartBeat(long val) {
         heartBeatTS = val;
     }

@@ -558,7 +558,9 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver implement
                 PayaraConfig appConfig = applicationRegistry.get(appName).getTransientAppMetaData(METADATA_KEY, PayaraConfig.class);
                 //Server will have already populated cache in deployment before this point,
                 //cache needs clearing as config extensions have not yet been loaded and may have values
-                appConfig.clearCache();
+                if (appConfig != null) {
+                    appConfig.clearCache();
+                }
             }
         }
     }

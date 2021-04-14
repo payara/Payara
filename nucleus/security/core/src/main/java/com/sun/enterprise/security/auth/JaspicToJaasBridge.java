@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.security.auth;
 
 import static com.sun.enterprise.security.SecurityLoggerInfo.auditAtnRefusedError;
@@ -87,7 +88,7 @@ import com.sun.enterprise.security.auth.realm.certificate.OID;
  */
 public class JaspicToJaasBridge {
 
-    private static final Logger _logger = SecurityLoggerInfo.getLogger();
+    private static final Logger LOGGER = SecurityLoggerInfo.getLogger();
 
     /**
      * Performs username/password login validation against a configured JAAS context and realm for JASPIC security.
@@ -119,14 +120,14 @@ public class JaspicToJaasBridge {
 
         String jaasCtx = getJaasContext(validRealm);
 
-        if (_logger.isLoggable(FINE)) {
-            _logger.fine("JASPIC login user [" + username + "] into realm: " + validRealm + " using JAAS module: " + jaasCtx);
+        if (LOGGER.isLoggable(FINE)) {
+            LOGGER.log(FINE, "JASPIC login user [{0}] into realm: {1} using JAAS module: {2}", new Object[]{username, validRealm, jaasCtx});
         }
 
         validateJaasLogin(username, jaasCtx, validRealm, validSubject);
 
-        if (_logger.isLoggable(Level.FINE)) {
-            _logger.fine("JASPIC Password login succeeded for : " + username);
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(FINE, "JASPIC Password login succeeded for : {0}", username);
         }
 
         return subject;
@@ -153,7 +154,7 @@ public class JaspicToJaasBridge {
             // Sets security context
             certRealm.authenticate(validSubject, x500Principal);
         } catch (Exception ex) {
-            _logger.log(INFO, auditAtnRefusedError, callerPrincipalName);
+            LOGGER.log(INFO, auditAtnRefusedError, callerPrincipalName);
 
             auditAuthenticate(callerPrincipalName, CertificateRealm.AUTH_TYPE, false);
 
@@ -164,8 +165,8 @@ public class JaspicToJaasBridge {
             throw (LoginException) new LoginException(ex.toString()).initCause(ex);
         }
 
-        if (_logger.isLoggable(Level.FINE)) {
-            _logger.fine("JASPIC certificate login succeeded for: " + callerPrincipalName);
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(FINE, "JASPIC certificate login succeeded for: {0}", callerPrincipalName);
         }
 
         auditAuthenticate(callerPrincipalName, CertificateRealm.AUTH_TYPE, true);
@@ -188,8 +189,8 @@ public class JaspicToJaasBridge {
                                     .forEach(groupName -> validSubject.getPrincipals().add(new Group(groupName))));
             }
         } catch (Exception ex) {
-            if (_logger.isLoggable(FINE)) {
-                _logger.log(FINE, "Exception when trying to populate groups for CallerPrincipal " + callerPrincipalName, ex);
+            if (LOGGER.isLoggable(FINE)) {
+                LOGGER.log(FINE, "Exception when trying to populate groups for CallerPrincipal " + callerPrincipalName, ex);
             }
         }
 

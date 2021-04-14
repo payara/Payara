@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth.login;
 
 import java.io.IOException;
@@ -64,7 +64,7 @@ public class LoginCallbackHandler implements CallbackHandler {
     private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(LoginCallbackHandler.class);
 
     private boolean isGUI;
-    protected ThreadLocal<Boolean> cancelStatus = new ThreadLocal<Boolean>();
+    protected ThreadLocal<Boolean> cancelStatus = new ThreadLocal<>();
 
     /**
      * Check whether the authentication was cancelled by the user.
@@ -98,9 +98,9 @@ public class LoginCallbackHandler implements CallbackHandler {
             String user = localStrings.getLocalString("login.user", "user");
             new GUILoginDialog(user, callbacks);
 
-            for (int i = 0; i < callbacks.length; i++) {
-                if (callbacks[i] instanceof NameCallback) {
-                    cancelStatus.set(((NameCallback) callbacks[i]).getName() == null);
+            for (Callback callback : callbacks) {
+                if (callback instanceof NameCallback) {
+                    cancelStatus.set(((NameCallback) callback).getName() == null);
                     break;
                 }
             }

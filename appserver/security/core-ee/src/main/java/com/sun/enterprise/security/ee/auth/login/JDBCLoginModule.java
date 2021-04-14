@@ -80,8 +80,8 @@ public class JDBCLoginModule extends BasePasswordLoginModule {
             throw new LoginException(sm.getString("jdbclm.loginfail", _username));
         }
 
-        if (_logger.isLoggable(FINEST)) {
-            _logger.finest("JDBC login succeeded for: " + _username + " groups:" + Arrays.toString(groups));
+        if (LOGGER.isLoggable(FINEST)) {
+            LOGGER.log(FINEST, "JDBC login succeeded for: {0} groups:{1}", new Object[]{_username, Arrays.toString(groups)});
         }
 
         commitUserAuthentication(groups);

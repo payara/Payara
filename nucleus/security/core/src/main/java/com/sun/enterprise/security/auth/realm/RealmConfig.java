@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth.realm;
 
 import static com.sun.enterprise.security.SecurityLoggerInfo.noRealmsError;
@@ -61,7 +61,7 @@ import com.sun.enterprise.security.SecurityLoggerInfo;
  */
 public class RealmConfig {
 
-    private static Logger logger = SecurityLoggerInfo.getLogger();
+    private static final Logger LOGGER = SecurityLoggerInfo.getLogger();
 
     public static void createRealms(String defaultRealm, List<AuthRealm> realms) {
         createRealms(defaultRealm, realms, null);
@@ -82,16 +82,16 @@ public class RealmConfig {
                 }
                 
                 Realm.instantiate(realmName, realmClass, properties, configName);
-                if (logger.isLoggable(FINE)) {
-                    logger.fine("Configured realm: " + realmName);
+                if (LOGGER.isLoggable(FINE)) {
+                    LOGGER.log(FINE, "Configured realm: {0}", realmName);
                 }
 
                 if (goodRealm == null) {
                     goodRealm = realmName;
                 }
             } catch (Exception e) {
-                logger.log(WARNING, realmConfigDisabledError, realmName);
-                logger.log(WARNING, securityExceptionError, e);
+                LOGGER.log(WARNING, realmConfigDisabledError, realmName);
+                LOGGER.log(WARNING, securityExceptionError, e);
             }
         }
 
@@ -100,7 +100,7 @@ public class RealmConfig {
         // to the first one loaded (arbitrarily).
 
         if (goodRealm == null) {
-            logger.severe(noRealmsError);
+            LOGGER.severe(noRealmsError);
         } else {
             try {
                 Realm.getInstance(defaultRealm);
@@ -109,8 +109,8 @@ public class RealmConfig {
             }
             
             Realm.setDefaultRealm(defaultRealm);
-            if (logger.isLoggable(FINE)) {
-                logger.fine("Default realm is set to: " + defaultRealm);
+            if (LOGGER.isLoggable(FINE)) {
+                LOGGER.log(FINE, "Default realm is set to: {0}", defaultRealm);
             }
         }
     }
