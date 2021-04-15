@@ -38,9 +38,7 @@
  * holder.
  */
 // Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates]
-
 package com.sun.enterprise.config.serverbeans;
-
 import com.sun.enterprise.config.serverbeans.customvalidators.ConfigRefConstraint;
 import com.sun.enterprise.config.serverbeans.customvalidators.ConfigRefValidator;
 import com.sun.enterprise.config.serverbeans.customvalidators.NotDuplicateTargetName;
@@ -49,7 +47,6 @@ import com.sun.enterprise.config.serverbeans.customvalidators.ReferenceConstrain
 import com.sun.enterprise.config.util.ConfigApiLoggerInfo;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
-
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.security.SecureRandom;
@@ -57,14 +54,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import javax.inject.Inject;
 import javax.validation.Payload;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
-
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -94,7 +89,6 @@ import org.jvnet.hk2.config.Transaction;
 import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.config.types.PropertyBag;
-
 import static com.sun.enterprise.config.util.ConfigApiLoggerInfo.clusterGSMBroadCast;
 import static com.sun.enterprise.config.util.ConfigApiLoggerInfo.clusterGSMDeliveryURI;
 import static com.sun.enterprise.config.util.ConfigApiLoggerInfo.clusterMustNotContainInstance;
@@ -102,29 +96,29 @@ import static com.sun.enterprise.config.util.ConfigApiLoggerInfo.deleteConfigFai
 import static com.sun.enterprise.config.util.ConfigApiLoggerInfo.formatMessage;
 import static com.sun.enterprise.config.util.ConfigApiLoggerInfo.noDefaultConfigFound;
 import static org.glassfish.config.support.Constants.NAME_SERVER_REGEX;
-
 /**
  * A cluster defines a homogeneous set of server instances that share the same
  * applications, resources, and configuration.
  */
 @Configured
-@ConfigRefConstraint(message="{configref.invalid}", payload= ConfigRefValidator.class)
-@NotDuplicateTargetName(message="{cluster.duplicate.name}", payload=Cluster.class)
-@ReferenceConstraint(skipDuringCreation=true, payload=Cluster.class)
-public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemPropertyBag, ReferenceContainer, RefContainer, Payload {
-
+@ConfigRefConstraint(message = "{configref.invalid}", payload = ConfigRefValidator.class)
+@NotDuplicateTargetName(message = "{cluster.duplicate.name}", payload = Cluster.class)
+@ReferenceConstraint(skipDuringCreation = true, payload = Cluster.class)
+public interface Cluster
+    extends ConfigBeanProxy, PropertyBag, Named, SystemPropertyBag, ReferenceContainer, RefContainer, Payload {
     /**
      * Sets the cluster name
+     *
      * @param value cluster name
      * @throws PropertyVetoException if a listener vetoes the change
      */
-    @Param(name="name", primary = true)
-    @Override void setName(String value) throws PropertyVetoException;
-
-    @NotTargetKeyword(message="{cluster.reserved.name}", payload=Cluster.class)
-    @Pattern(regexp=NAME_SERVER_REGEX, message="{cluster.invalid.name}", payload=Cluster.class)
-    @Override String getName();
-
+    @Param(name = "name", primary = true)
+    @Override
+    void setName(String value) throws PropertyVetoException;
+    @NotTargetKeyword(message = "{cluster.reserved.name}", payload = Cluster.class)
+    @Pattern(regexp = NAME_SERVER_REGEX, message = "{cluster.invalid.name}", payload = Cluster.class)
+    @Override
+    String getName();
     /**
      * points to a named config. All server instances in the cluster
      * will share this config.
@@ -133,47 +127,41 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
      */
     @Attribute
     @NotNull
-    @Pattern(regexp=NAME_SERVER_REGEX)
-    @ReferenceConstraint.RemoteKey(message="{resourceref.invalid.configref}", type=Config.class)
+    @Pattern(regexp = NAME_SERVER_REGEX)
+    @ReferenceConstraint.RemoteKey(message = "{resourceref.invalid.configref}", type = Config.class)
     String getConfigRef();
-
     /**
      * Sets the value of the configRef property.
      *
      * @param value allowed object is
-     *              {@link String }
+     *            {@link String }
      * @throws PropertyVetoException if a listener vetoes the change
      */
-    @Param(name="config", optional=true)
+    @Param(name = "config", optional = true)
     @I18n("generic.config")
     void setConfigRef(String value) throws PropertyVetoException;
-
     /**
      * Gets the value of the gmsEnabled property.
-     *
      * When "gms-enabled" is set to "true", the GMS services will be
      * started as a lifecycle module in each the application server in the
      * cluster.
      *
      * @return true | false as a string, null means false
      */
-    @Attribute (defaultValue="true", dataType=Boolean.class, required=true)
+    @Attribute(defaultValue = "true", dataType = Boolean.class, required = true)
     @NotNull
     String getGmsEnabled();
-
     /**
      * Sets the value of the gmsEnabled property.
      *
      * @param value allowed object is
-     *              {@link String }
+     *            {@link String }
      * @throws PropertyVetoException if a listener vetoes the change
      */
-    @Param(name="gmsenabled", optional=true)
+    @Param(name = "gmsenabled", optional = true)
     void setGmsEnabled(String value) throws PropertyVetoException;
-
     /**
      * Gets the value of the broadcast property.
-     *
      * When "broadcast" is set to default of "udpmulticast" and GmsMulticastPort
      * GMSMulticastAddress are not set, then their values are generated.
      * When "broadcast" is set to implied unicast using udp or tcp protocol,
@@ -182,48 +170,44 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
      *
      * @return true | false as a string, null means false
      */
-    @Attribute (defaultValue="udpmulticast", dataType=String.class, required=true)
+    @Attribute(defaultValue = "udpmulticast", dataType = String.class, required = true)
     @NotNull
     String getBroadcast();
-
     /**
      * Sets the value of the broadcast property.
      *
      * @param value allowed object is
-     *              {@link String }
+     *            {@link String }
      * @throws PropertyVetoException if a listener vetoes the change
      */
-    @Param(name="gmsbroadcast", optional=true)
+    @Param(name = "gmsbroadcast", optional = true)
     void setBroadcast(String value) throws PropertyVetoException;
-
 
     /**
      * Gets the value of the gmsMulticastPort property.
-     *
-     * This is the communication port GMS uses to listen for group  events.
+     * This is the communication port GMS uses to listen for group events.
      * This should be a valid port number.
      *
      * @return possible object is
      *         {@link String }
      */
     @Attribute
-    @Min(value=2048)
-    @Max(value=49151)  // fix bug 13475586
+    @Min(value = 2048)
+    @Max(value = 49151) // fix bug 13475586
     String getGmsMulticastPort();
 
     /**
      * Sets the value of the gmsMulticastPort property.
      *
      * @param value allowed object is
-     *              {@link String }
+     *            {@link String }
      * @throws PropertyVetoException if a listener vetoes the change
      */
-    @Param(name="multicastport", optional=true, alias="heartbeatport")
+    @Param(name = "multicastport", optional = true, alias = "heartbeatport")
     void setGmsMulticastPort(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the gmsMulticastAddress property.
-     *
      * This is the address (only multicast supported) at which GMS will
      * listen for group events. Must be unique for each cluster.
      *
@@ -237,10 +221,10 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
      * Sets the value of the gmsMulticastAddress property.
      *
      * @param value allowed object is
-     *              {@link String }
+     *            {@link String }
      * @throws PropertyVetoException if a listener vetoes the change
      */
-    @Param(name="multicastaddress", optional=true, alias="heartbeataddress")
+    @Param(name = "multicastaddress", optional = true, alias = "heartbeataddress")
     void setGmsMulticastAddress(String value) throws PropertyVetoException;
 
     /**
@@ -256,15 +240,14 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
      * Sets the value of the gmsBindInterfaceAddress property.
      *
      * @param value allowed object is
-     *              {@link String }
+     *            {@link String }
      * @throws PropertyVetoException if a listener vetoes the change
      */
-    @Param(name="bindaddress", optional=true)
+    @Param(name = "bindaddress", optional = true)
     void setGmsBindInterfaceAddress(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the heartbeatEnabled property.
-     *
      * When "heartbeat-enabled" is set to "true", the GMS services will be
      * started as a lifecycle module in each the application server in the
      * cluster.When "heartbeat-enabled" is set to "false", GMS will not be
@@ -281,7 +264,7 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
      * Sets the value of the heartbeatEnabled property.
      *
      * @param value allowed object is
-     *              {@link String }
+     *            {@link String }
      * @throws PropertyVetoException if a listener vetoes the change
      */
     @Deprecated
@@ -289,16 +272,15 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
 
     /**
      * Gets the value of the heartbeatPort property.
-     *
-     * This is the communication port GMS uses to listen for group  events.
+     * This is the communication port GMS uses to listen for group events.
      * This should be a valid port number.
      *
      * @return possible object is
      *         {@link String }
      */
     @Attribute
-    //@Min(value=2048)
-    //@Max(value=49151)
+    // @Min(value=2048)
+    // @Max(value=49151)
     @Deprecated
     String getHeartbeatPort();
 
@@ -306,7 +288,7 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
      * Sets the value of the heartbeatPort property.
      *
      * @param value allowed object is
-     *              {@link String }
+     *            {@link String }
      * @throws PropertyVetoException if a listener vetoes the change
      */
     @Deprecated
@@ -314,7 +296,6 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
 
     /**
      * Gets the value of the heartbeatAddress property.
-     *
      * This is the address (only multicast supported) at which GMS will
      * listen for group events.
      *
@@ -329,7 +310,7 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
      * Sets the value of the heartbeatAddress property.
      *
      * @param value allowed object is
-     *              {@link String }
+     *            {@link String }
      * @throws PropertyVetoException if a listener vetoes the change
      */
     @Deprecated
@@ -337,7 +318,6 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
 
     /**
      * Gets the value of the serverRef property.
-     *
      * List of servers in the cluster
      *
      * @return list of configured {@link ServerRef }
@@ -356,32 +336,32 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
      * <p/>
      * <p/>
      * For example, to add a new item, do as follows:
+     *
      * <pre>
-     *    getSystemProperty().add(newItem);
+     * getSystemProperty().add(newItem);
      * </pre>
      * <p/>
      * <p/>
      * <p/>
      * Objects of the following type(s) are allowed in the list
      * {@link SystemProperty }
+     *
      * @return
      */
     @Element
-    @ToDo(priority=ToDo.Priority.IMPORTANT, details="Provide PropertyDesc for legal system props" )
-    @Param(name="systemproperties",optional=true)
+    @ToDo(priority = ToDo.Priority.IMPORTANT, details = "Provide PropertyDesc for legal system props")
+    @Param(name = "systemproperties", optional = true)
     @Override
     List<SystemProperty> getSystemProperty();
 
     /**
-     *	Properties as per {@link org.jvnet.hk2.config.types.PropertyBag}
+     * Properties as per {@link org.jvnet.hk2.config.types.PropertyBag}
      */
-    @ToDo(priority=ToDo.Priority.IMPORTANT, details="Complete PropertyDesc for legal props" )
-    @PropertiesDesc(props={
-        @PropertyDesc(name="GMS_LISTENER_PORT", defaultValue = "9090",
-            description = "GMS listener port")
-    })
+    @ToDo(priority = ToDo.Priority.IMPORTANT, details = "Complete PropertyDesc for legal props")
+    @PropertiesDesc(
+        props = {@PropertyDesc(name = "GMS_LISTENER_PORT", defaultValue = "9090", description = "GMS listener port")})
     @Element
-    @Param(name="properties", optional=true)
+    @Param(name = "properties", optional = true)
     @Override
     List<Property> getProperty();
 
@@ -390,6 +370,7 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
 
     /**
      * Returns the cluster configuration reference
+     *
      * @return the config-ref attribute
      */
     @DuckTyped
@@ -399,7 +380,8 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
     @DuckTyped
     List<Server> getInstances();
 
-    @DuckTyped ServerRef getServerRefByRef(String ref);
+    @DuckTyped
+    ServerRef getServerRefByRef(String ref);
 
     // five trivial methods that ReferenceContainer's need to implement
     @DuckTyped
