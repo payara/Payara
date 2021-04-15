@@ -57,6 +57,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
 import java.util.Enumeration;
+import java.util.Arrays;
 
 /**
  * This class implements an adapter for password manipulation a JCEKS.
