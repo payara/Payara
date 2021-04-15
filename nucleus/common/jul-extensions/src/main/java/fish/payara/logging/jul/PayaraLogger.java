@@ -371,7 +371,7 @@ public class PayaraLogger extends Logger {
             return;
         }
         String msg = "ENTRY";
-        if (params == null) {
+        if (params == null || params.length == 0) {
             logp(Level.FINER, sourceClass, sourceMethod, msg);
             return;
         }
@@ -379,10 +379,12 @@ public class PayaraLogger extends Logger {
         if (!processNow && !isToQueue(status)) {
             return;
         }
+        // ' {i}' are 4 characters per parameter. Methods with many parameters will inflate.
+        final StringBuilder template = new StringBuilder(msg.length() + 4 * params.length).append(msg);
         for (int i = 0; i < params.length; i++) {
-            msg = msg + " {" + i + "}";
+            template.append(" {").append(i).append('}');
         }
-        logp(Level.FINER, sourceClass, sourceMethod, msg, params);
+        logp(Level.FINER, sourceClass, sourceMethod, template.toString(), params);
     }
 
 
@@ -470,7 +472,7 @@ public class PayaraLogger extends Logger {
             return;
         }
         final EnhancedLogRecord resolvedLogRecord = MSG_RESOLVER.resolve(record);
-        handlers.stream().forEach(handler -> handler.publish(resolvedLogRecord));
+        handlers.forEach(handler -> handler.publish(resolvedLogRecord));
     }
 
 

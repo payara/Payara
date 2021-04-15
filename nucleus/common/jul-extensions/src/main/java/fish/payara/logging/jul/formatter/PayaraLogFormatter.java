@@ -192,7 +192,7 @@ public abstract class PayaraLogFormatter extends Formatter {
     /**
      * @return {@link DateTimeFormatter} used for timestamps
      */
-    public final DateTimeFormatter getDateTimeFormatter() {
+    public final DateTimeFormatter getTimestampFormatter() {
         return timestampFormatter;
     }
 
@@ -237,7 +237,7 @@ public abstract class PayaraLogFormatter extends Formatter {
         final String message = record.getMessage();
         final String stackTrace = record.getThrownStackTrace();
         if (message == null || message.isEmpty()) {
-            return stackTrace == null ? null : stackTrace;
+            return stackTrace;
         }
         if (stackTrace == null) {
             return message;

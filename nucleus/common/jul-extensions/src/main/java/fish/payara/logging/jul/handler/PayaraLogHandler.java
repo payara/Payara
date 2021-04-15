@@ -374,8 +374,8 @@ public class PayaraLogHandler extends StreamHandler implements ExternallyManaged
     private void initStandardStreamsLogging() {
         trace(PayaraLogHandler.class, "initStandardStreamsLogging()");
         // FIXME: capacity should be configurable
-        this.stdoutStream = new LoggingPrintStream(STDOUT_LOGGER, INFO, 5000);
-        this.stderrStream = new LoggingPrintStream(STDERR_LOGGER, SEVERE, 1000);
+        this.stdoutStream = LoggingPrintStream.create(STDOUT_LOGGER, INFO, 5000);
+        this.stderrStream = LoggingPrintStream.create(STDERR_LOGGER, SEVERE, 1000);
         System.setOut(this.stdoutStream);
         System.setErr(this.stderrStream);
     }
@@ -450,8 +450,11 @@ public class PayaraLogHandler extends StreamHandler implements ExternallyManaged
     }
 
     private enum PayaraLogHandlerStatus {
+        /** Closed of after failure, no records accepted. */
         OFF,
+        /** Partially configured, accepting records, but doesn't push them to the output */
         ACCEPTING,
+        /** Full service, accepting and processing records */
         ON
     }
 }

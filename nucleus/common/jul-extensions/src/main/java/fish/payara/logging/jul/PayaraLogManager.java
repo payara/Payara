@@ -146,7 +146,7 @@ public class PayaraLogManager extends LogManager {
         if (payaraLogManager == null) {
             return getLogManager() != null;
         }
-        return payaraLogManager != null;
+        return true;
     }
 
 
@@ -169,7 +169,7 @@ public class PayaraLogManager extends LogManager {
             }
             // If the tracing is off and another LogManager implementation is used,
             // we don't need to spam stderr so much
-            // But it the tracing is on, do spam a lot, because even tracing is not much useful
+            // But if the tracing is on, do spam a lot, because even tracing is not much useful
             // except this message.
             if (PayaraLoggingTracer.isTracingEnabled()) {
                 PayaraLoggingTracer.stacktrace(PayaraLogManager.class,

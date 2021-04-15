@@ -44,6 +44,7 @@ import fish.payara.logging.jul.record.EnhancedLogRecord;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -58,30 +59,29 @@ import java.util.logging.Logger;
  * @author Carla Mott
  * @author David Matejcek
  */
-class LoggingOutputStream extends ByteArrayOutputStream {
+final class LoggingOutputStream extends ByteArrayOutputStream {
 
     private final String lineSeparator;
-    private final Level level;
-    private final AtomicBoolean shutdown = new AtomicBoolean();
+    private final Level logRecordLevel;
     private final LogRecordBuffer logRecordBuffer;
-
-    private final Logger logger;
-    private Thread pump;
+    private final String loggerName;
+    private final Pump pump;
+    private final AtomicBoolean closed = new AtomicBoolean();
 
     /**
      * Constructor
      *
      * @param logger Logger to write to
-     * @param level  Level at which to write the log message
+     * @param logRecordLevel  Level at which to write the log message
      * @param bufferCapacity maximal count of unprocessed records.
      */
-    public LoggingOutputStream(final Logger logger, final Level level, final int bufferCapacity) {
+    LoggingOutputStream(final Logger logger, final Level logRecordLevel, final int bufferCapacity) {
         super();
-        this.logger = logger;
-        this.level = level;
+        this.lineSeparator = System.lineSeparator();
+        this.loggerName = logger.getName();
+        this.logRecordLevel = logRecordLevel;
         this.logRecordBuffer = new LogRecordBuffer(bufferCapacity);
-        lineSeparator = System.lineSeparator();
-        initializePump();
+        this.pump = new Pump(logger, this.logRecordBuffer);
     }
 
     /**
@@ -92,80 +92,121 @@ class LoggingOutputStream extends ByteArrayOutputStream {
      */
     @Override
     public void flush() throws IOException {
-        final String logMessage;
-        synchronized (this) {
-            super.flush();
-            logMessage = this.toString().trim();
-            super.reset();
+        if (closed.get()) {
+            return;
         }
+        final String logMessage = getMessage();
         if (logMessage.isEmpty() || lineSeparator.equals(logMessage)) {
             // avoid empty records
             return;
         }
-        final EnhancedLogRecord logRecord = new EnhancedLogRecord(level, logMessage);
-        logRecord.setLoggerName(this.logger.getName());
+        final EnhancedLogRecord logRecord = new EnhancedLogRecord(logRecordLevel, logMessage, false);
+        logRecord.setLoggerName(this.loggerName);
         logRecordBuffer.add(logRecord);
     }
 
+    private synchronized String getMessage() throws IOException {
+        super.flush();
+        final String logMessage = super.toString(StandardCharsets.UTF_8.name()).trim();
+        super.reset();
+        return logMessage;
+    }
 
+
+    /**
+     * Shutdown the internal logging pump.
+     */
     @Override
     public void close() throws IOException {
-        shutdown.set(true);
-        while (true) {
-            if (!logRecord(logRecordBuffer.poll())) {
-                // end if there was nothing more to log
-                break;
-            }
-        }
+        closed.set(true);
+        pump.shutdown();
         super.close();
     }
 
 
-    private void initializePump() {
-        pump = new Thread() {
-            @Override
-            public void run() {
-                while (!shutdown.get()) {
-                    try {
-                        logAllPendingRecords();
-                    } catch (Exception e) {
-                        // Continue the loop without exiting
-                        // Something is broken, but we cannot log it
-                    }
+    /**
+     * Paren't {@link ByteArrayOutputStream#toString()} is synchronized. This method isn't.
+     *
+     * @return name of the class and information about the logger
+     */
+    @Override
+    public String toString() {
+        return getClass().getName() + " redirecting messages to the " + loggerName;
+    }
+
+
+    private static final class Pump extends Thread {
+
+        private final LogRecordBuffer buffer;
+        private final Logger logger;
+
+        private Pump(final Logger logger, final LogRecordBuffer buffer) {
+            this.buffer = buffer;
+            this.logger = logger;
+            setName("Logging pump for '" + logger.getName() + "'");
+            setDaemon(true);
+            setPriority(Thread.MAX_PRIORITY);
+            start();
+        }
+
+
+        @Override
+        public void run() {
+            // the thread will be interrupted by it's owner finally
+            while (true) {
+                try {
+                    logAllPendingRecordsOrWait();
+                } catch (Exception e) {
+                    // Continue the loop without exiting
+                    // Something is broken, but we cannot log it
                 }
             }
-        };
-        pump.setName("Logging pump for '" + logger.getName() + "'");
-        pump.setDaemon(true);
-        pump.setPriority(Thread.MAX_PRIORITY);
-        pump.start();
-    }
-
-
-    /**
-     * Retrieves all log records from the buffer and logs them
-     */
-    private void logAllPendingRecords() {
-        if (!logRecord(logRecordBuffer.pollOrWait())) {
-            return;
         }
-        while (true) {
-            if (!logRecord(logRecordBuffer.poll())) {
-                // end if there was nothing more to log
+
+
+        /**
+         * Kindly asks the pump to closed it's service. If the pump is locked waiting
+         * on the buffer, interrupts the thread.
+         * <p>
+         * The pump can be locked, waiting
+         */
+        void shutdown() {
+            this.interrupt();
+            // we interrupted waiting or working thread, now we have to process remaining records.
+            logAllPendingRecords();
+        }
+
+
+        /**
+         * Retrieves all log records from the buffer and logs them or waits for some.
+         */
+        private void logAllPendingRecordsOrWait() {
+            if (!logRecord(buffer.pollOrWait())) {
                 return;
             }
+            logAllPendingRecords();
         }
-    }
 
 
-    /**
-     * @return true if the record was not null
-     */
-    private boolean logRecord(final LogRecord record) {
-        if (record == null) {
-            return false;
+        private void logAllPendingRecords() {
+            while (true) {
+                if (!logRecord(buffer.poll())) {
+                    // end if there was nothing more to log
+                    return;
+                }
+            }
         }
-        logger.log(record);
-        return true;
+
+
+        /**
+         * @return false if the record was null
+         */
+        private boolean logRecord(final LogRecord record) {
+            if (record == null) {
+                return false;
+            }
+            logger.log(record);
+            return true;
+        }
     }
 }

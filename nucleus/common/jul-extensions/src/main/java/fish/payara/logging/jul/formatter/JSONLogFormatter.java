@@ -140,7 +140,7 @@ public class JSONLogFormatter extends PayaraLogFormatter {
         }
         try {
             final JsonBuilderWrapper json = new JsonBuilderWrapper(underscorePrefix);
-            final String timestampValue = getDateTimeFormatter().format(record.getTime());
+            final String timestampValue = getTimestampFormatter().format(record.getTime());
             json.add(TIMESTAMP_KEY, timestampValue);
 
             final Level level = record.getLevel();

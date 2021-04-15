@@ -45,6 +45,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.Formatter;
 import java.util.Locale;
 import java.util.logging.Level;
@@ -74,21 +76,27 @@ import java.util.logging.Logger;
  * Care is taken to optimise the frequently used path where exceptions
  * are not being printed.
  */
-public class LoggingPrintStream extends PrintStream {
+final class LoggingPrintStream extends PrintStream {
     private final LogManager logManager = LogManager.getLogManager();
     private final ThreadLocal<StackTraceObjects> perThreadStObjects = new ThreadLocal<>();
     // FIXME: this lock and all it's checking should probably go to LoggingOutputStream
     private final Logger logger;
 
-    /**
-     * @param logger - used just for locking
-     * @param level
-     * @param bufferCapacity
-     */
-    public LoggingPrintStream(final Logger logger, final Level level, final int bufferCapacity) {
-        super(new LoggingOutputStream(logger, level, bufferCapacity), false);
+    public static LoggingPrintStream create(final Logger logger, final Level level, final int bufferCapacity) {
+        try {
+            return new LoggingPrintStream(logger, level, bufferCapacity);
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalStateException("Impossible happened, UTF-8 is not supported!", e);
+        }
+    }
+
+
+    private LoggingPrintStream(final Logger logger, final Level level, final int bufferCapacity)
+        throws UnsupportedEncodingException {
+        super(new LoggingOutputStream(logger, level, bufferCapacity), false, StandardCharsets.UTF_8.name());
         this.logger = logger;
     }
+
 
     @Override
     public void println(Object x) {
@@ -157,12 +165,14 @@ public class LoggingPrintStream extends PrintStream {
         if (sTO == null) {
             // lets get done with the common case fast
             super.println(str);
+            flush();
             return;
         }
 
         if (!sTO.ignorePrintln(str)) {
             perThreadStObjects.set(null);
             super.println(str);
+            flush();
             return;
         }
 
@@ -301,10 +311,7 @@ public class LoggingPrintStream extends PrintStream {
                     throw new IOException("Stream closed");
                 }
                 out.write(buf, off, len);
-                // FIXME: magic number. Also flushes each empty string, line endings, but not long strings. wtf?.
-                if (len <= 8129) {
-                    out.flush();
-                }
+                out.flush();
             }
         } catch (InterruptedIOException x) {
             Thread.currentThread().interrupt();

@@ -163,7 +163,7 @@ public class UniformLogFormatter extends AnsiColorFormatter {
                 return "";
             }
 
-            final String timestamp = getDateTimeFormatter().format(record.getTime());
+            final String timestamp = getTimestampFormatter().format(record.getTime());
             final Level logLevel = record.getLevel();
             final StringBuilder output = new StringBuilder(REC_BUFFER_CAPACITY).append(recordBeginMarker);
             appendTimestamp(output, timestamp);

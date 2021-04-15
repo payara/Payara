@@ -81,7 +81,7 @@ public class SysLogHandlerTest {
      * Ths test is dumb, it just uses the handler and expects it will not throw an exception.
      */
     @Test
-    void standardUsage() throws Exception {
+    void standardUsage() {
         final SortedProperties properties = new SortedProperties();
         properties.setProperty(SyslogHandler.class.getName() + ".useSystemLogging", "true");
         final PayaraLogManagerConfiguration cfg = new PayaraLogManagerConfiguration(properties);

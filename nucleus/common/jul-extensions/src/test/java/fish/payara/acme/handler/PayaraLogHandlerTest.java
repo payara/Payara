@@ -48,6 +48,7 @@ import fish.payara.logging.jul.record.EnhancedLogRecord;
 import fish.payara.logging.jul.tracing.PayaraLoggingTracer;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
@@ -64,7 +65,9 @@ import static fish.payara.logging.jul.env.LoggingSystemEnvironment.getOriginalSt
 import static fish.payara.logging.jul.handler.PayaraLogHandler.createPayaraLogHandlerConfiguration;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.stringContainsInOrder;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
@@ -126,19 +129,19 @@ public class PayaraLogHandlerTest {
         );
 
         System.out.println("Tommy, can you hear me?");
+        // output stream is pumped in parallel to the error stream, order is not guaranteed between streams
+        Thread.sleep(MILLIS_FOR_PUMP);
         System.err.println("Can you feel me near you?");
+        System.err.println("Příliš žluťoučký kůň úpěl ďábelské ódy");
         Thread.sleep(MILLIS_FOR_PUMP);
         assertAll(
             () -> assertTrue(handler.isReady(), "handler.ready"),
-            () -> assertTrue(handler.getConfiguration().getLogFile().exists(), "file exists"),
-            () -> assertThat("size of file", handler.getConfiguration().getLogFile().length(), greaterThan(50L))
-        );
-    }
-
-
-    @Test
-    @Order(20)
-    public void disabledlogStansdardStreams() throws Exception {
+            () -> assertTrue(cfg.getLogFile().exists(), "file exists"),
+            () -> assertThat("file content: \n", Files.readAllLines(cfg.getLogFile().toPath()),
+                contains(
+                    stringContainsInOrder("INFO", "main", "Tommy, can you hear me?"),
+                    stringContainsInOrder("SEVERE", "main", "Can you feel me near you?"),
+                    stringContainsInOrder("SEVERE", "main", "Příliš žluťoučký kůň úpěl ďábelské ódy"))));
     }
 
 

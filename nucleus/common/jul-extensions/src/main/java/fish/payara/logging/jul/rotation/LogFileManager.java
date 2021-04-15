@@ -230,10 +230,13 @@ public class LogFileManager {
     }
 
 
+    /**
+     * @return archived rolled file or null
+     */
     private File rollToNewFile() {
         try {
-            if (!this.logFile.exists()) {
-                this.logFile.createNewFile();
+            if (this.logFile.createNewFile()) {
+                LOG.log(FINE, "Created new log file: {0}", this.logFile);
                 return null;
             }
             LOG.log(FINE, "Rolling log file: {0}", this.logFile);

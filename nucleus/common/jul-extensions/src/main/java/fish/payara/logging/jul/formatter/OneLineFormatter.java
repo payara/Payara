@@ -103,7 +103,7 @@ public class OneLineFormatter extends PayaraLogFormatter {
             return "";
         }
         final StringBuilder sb = new StringBuilder(256);
-        sb.append(getDateTimeFormatter().format(record.getTime()));
+        sb.append(getTimestampFormatter().format(record.getTime()));
         addPadded(record.getLevel(), this.sizeOfLevel, sb);
         addPadded(record.getThreadName(), this.sizeOfThread, sb);
         if (isPrintSource()) {
@@ -126,12 +126,11 @@ public class OneLineFormatter extends PayaraLogFormatter {
     }
 
 
-    private StringBuilder addPadded(final Object value, final int size, final StringBuilder sb) {
+    private void addPadded(final Object value, final int size, final StringBuilder sb) {
         final String text = value == null ? "" : String.valueOf(value);
         sb.append(' ');
         sb.append(getPad(text, size));
         sb.append(text);
-        return sb;
     }
 
 

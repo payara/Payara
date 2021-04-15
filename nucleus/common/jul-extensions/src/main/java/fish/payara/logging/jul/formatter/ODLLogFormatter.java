@@ -167,7 +167,7 @@ public class ODLLogFormatter extends AnsiColorFormatter {
 
     private void appendTimestamp(final StringBuilder output, final OffsetDateTime timestamp) {
         output.append(FIELD_BEGIN_MARKER);
-        output.append(getDateTimeFormatter().format(timestamp));
+        output.append(getTimestampFormatter().format(timestamp));
         output.append(FIELD_END_MARKER).append(recordFieldSeparator);
     }
 
