@@ -59,7 +59,7 @@ public class KernelLoggerInfo {
     private static final String SHARED_LOGMESSAGE_RESOURCE = "org.glassfish.kernel.LogMessages";
     
     @LoggerInfo(subsystem = "CORE", description = "Core Kernel", publish = true)
-    private static final String CORE_LOGGER = "jakarta.enterprise.system.core";
+    private static final String CORE_LOGGER = "javax.enterprise.system.core";
     private static final Logger coreLogger = Logger.getLogger(
                 CORE_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
 

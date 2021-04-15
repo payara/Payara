@@ -88,7 +88,7 @@ import java.util.regex.Pattern;
 public class CommandSecurityChecker implements PostConstruct {
 
     @LoggerInfo(subsystem="ADMSECAUTHZ", description="Admin security authorization")
-    private static final String ADMSEC_AUTHZ_LOGGER_NAME = "jakarta.enterprise.system.tools.admin.security.authorization";
+    private static final String ADMSEC_AUTHZ_LOGGER_NAME = "javax.enterprise.system.tools.admin.security.authorization";
 
     @LogMessagesResourceBundle
     private static final String LOG_MESSAGES_RB = "com.sun.enterprise.admin.util.LogMessages";

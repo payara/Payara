@@ -92,7 +92,7 @@
         Turn on fine logging by default to help with diagnosis.  Users will not
         usually see the output anyway.
     -->
-    <property name="jakarta.enterprise.resource.corba.level" value="FINE"/>
+    <property name="javax.enterprise.resource.corba.level" value="FINE"/>
 
 
 <!-- --------------------------------------------------------------------------------------

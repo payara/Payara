@@ -43,5 +43,5 @@ import org.glassfish.logging.annotation.LoggerInfo;
 
 public class LogUtils {
     @LoggerInfo(subsystem="JMS_ADMIN", description="Main JMS Logger", publish=true)
-    public static final String JMS_ADMIN_LOGGER = "jakarta.enterprise.system.tools.admin";
+    public static final String JMS_ADMIN_LOGGER = "javax.enterprise.system.tools.admin";
 }

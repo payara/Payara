@@ -56,7 +56,7 @@ public class FlashlightLoggerInfo {
     public static final String SHARED_LOGMESSAGE_RESOURCE = "org.glassfish.flashlight.LogMessages";
     
     @LoggerInfo(subsystem = "MON", description = "Flashlight Services", publish = true)
-    public static final String MONITORING_LOGGER = "jakarta.enterprise.system.tools.monitor";
+    public static final String MONITORING_LOGGER = "javax.enterprise.system.tools.monitor";
     private static final Logger monitoringLogger = Logger.getLogger(
                 MONITORING_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
 

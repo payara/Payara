@@ -114,7 +114,7 @@ public class SecuritySupportImpl extends SecuritySupport {
     public static final String SHARED_LOGMESSAGE_RESOURCE = "com.sun.enterprise.security.ssl.LogMessages";
 
     @LoggerInfo(subsystem = "SECURITY - SSL", description = "Security - SSL", publish = true)
-    public static final String SEC_SSL_LOGGER = "jakarta.enterprise.system.security.ssl";
+    public static final String SEC_SSL_LOGGER = "javax.enterprise.system.security.ssl";
 
     protected static final Logger _logger = Logger.getLogger(SEC_SSL_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
 

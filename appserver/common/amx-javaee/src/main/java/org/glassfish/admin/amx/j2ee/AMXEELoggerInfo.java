@@ -56,7 +56,7 @@ public class AMXEELoggerInfo {
     public static final String SHARED_LOGMESSAGE_RESOURCE = "org.glassfish.admin.amx.j2ee.LogMessages";
     
     @LoggerInfo(subsystem = "AMX-JAVAEE", description = "AMX Services", publish = true)
-    public static final String AMXEE_LOGGER = "jakarta.enterprise.system.tools.amxee";
+    public static final String AMXEE_LOGGER = "javax.enterprise.system.tools.amxee";
     private static final Logger amxEELogger = Logger.getLogger(
                 AMXEE_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
 

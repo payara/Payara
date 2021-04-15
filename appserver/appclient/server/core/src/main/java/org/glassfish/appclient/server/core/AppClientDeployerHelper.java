@@ -122,7 +122,7 @@ public abstract class AppClientDeployerHelper {
     private static final Logger logger = Logger.getLogger(JavaWebStartInfo.APPCLIENT_SERVER_MAIN_LOGGER, 
                 JavaWebStartInfo.APPCLIENT_SERVER_LOGMESSAGE_RESOURCE);
     
-    public static final String ACC_MAIN_LOGGER = "jakarta.enterprise.system.container.appclient";
+    public static final String ACC_MAIN_LOGGER = "javax.enterprise.system.container.appclient";
     public static final String LOG_MESSAGE_RESOURCE = "org.glassfish.appclient.server.LogMessages";
     
     /**

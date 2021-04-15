@@ -133,7 +133,7 @@ public class JavaWebStartInfo implements ConfigListener {
     public static final String APPCLIENT_SERVER_LOGMESSAGE_RESOURCE = "org.glassfish.appclient.server.LogMessages";
     
     @LoggerInfo(subsystem="SERVER", description="Appclient Server-side Logger", publish=true)
-    public static final String APPCLIENT_SERVER_MAIN_LOGGER = "jakarta.enterprise.system.container.appclient";
+    public static final String APPCLIENT_SERVER_MAIN_LOGGER = "javax.enterprise.system.container.appclient";
     private static final Logger logger =
           Logger.getLogger(APPCLIENT_SERVER_MAIN_LOGGER, APPCLIENT_SERVER_LOGMESSAGE_RESOURCE);
 
