@@ -60,7 +60,7 @@
         </dependency>
         <dependency>
             <groupId>fish.payara.security.connectors</groupId>
-            <artifactId>security-api</artifactId>
+            <artifactId>security-connectors-api</artifactId>
             <version>${payara.openid.version}</version>
         </dependency>
     </dependencies>
