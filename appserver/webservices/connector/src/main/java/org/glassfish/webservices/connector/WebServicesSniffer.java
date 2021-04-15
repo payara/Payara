@@ -58,8 +58,11 @@ import java.io.IOException;
 @Singleton
 public class WebServicesSniffer extends GenericSniffer {
 
-    private static final Class[]  handledAnnotations = new Class[] {javax.jws.WebService.class,
-            jakarta.xml.ws.WebServiceProvider.class, jakarta.xml.ws.WebServiceRef.class};
+    private static final Class[] handledAnnotations = new Class[]{
+        jakarta.jws.WebService.class,
+        jakarta.xml.ws.WebServiceProvider.class,
+        jakarta.xml.ws.WebServiceRef.class
+    };
 
     final String[] containers = {
         "org.glassfish.webservices.WebServicesContainer",

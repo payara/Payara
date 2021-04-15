@@ -86,7 +86,6 @@ import org.glassfish.deployment.versioning.VersioningSyntaxException;
 import org.glassfish.deployment.versioning.VersioningUtils;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.ServerContext;
-import org.jboss.logging.LogMessage;
 
 /**
  * Encapsulates the details of generating the required JAR file(s),

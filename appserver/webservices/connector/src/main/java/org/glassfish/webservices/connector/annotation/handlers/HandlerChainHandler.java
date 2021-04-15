@@ -67,8 +67,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.jws.HandlerChain;
-import javax.jws.WebService;
+import jakarta.jws.HandlerChain;
+import jakarta.jws.WebService;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import jakarta.xml.ws.WebServiceProvider;
@@ -86,7 +86,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 /**
- * This handler takes care of the javax.jws.HandlerChain
+ * This handler takes care of the jakarta.jws.HandlerChain
  *
  * @author Jerome Dochez
  */

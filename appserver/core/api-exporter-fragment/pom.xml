@@ -142,8 +142,8 @@
                                     javax.imageio.stream; \
                                     jakarta.interceptor; \
                                     jakarta.jms; \
-                                    javax.jws; \
-                                    javax.jws.soap; \
+                                    jakarta.jws; \
+                                    jakarta.jws.soap; \
                                     javax.lang.model; \
                                     javax.lang.model.element; \
                                     javax.lang.model.type; \

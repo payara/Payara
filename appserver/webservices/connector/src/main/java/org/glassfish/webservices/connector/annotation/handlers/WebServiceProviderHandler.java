@@ -71,7 +71,7 @@ import org.glassfish.webservices.node.WebServicesDescriptorNode;
 import org.jvnet.hk2.annotations.Service;
 
 /**
- * This annotation handler is responsible for processing the javax.jws.WebService 
+ * This annotation handler is responsible for processing the jakarta.jws.WebService 
  * annotation type.
  *
  * @author Jerome Dochez
