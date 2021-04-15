@@ -43,7 +43,7 @@
 package com.sun.enterprise.glassfish.bootstrap;
 
 import fish.payara.boot.runtime.BootCommands;
-import fish.payara.logging.jul.PayaraLogManager;
+import fish.payara.jul.PayaraLogManager;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -91,7 +91,7 @@ public class GlassFishMain {
         final ClassLoader jdkExtensionCL = ClassLoader.getSystemClassLoader().getParent();
         final File installRoot = MainHelper.findInstallRoot();
         final GlassfishMainClassLoader gfMainCL = new GlassfishMainClassLoader(installRoot, jdkExtensionCL);
-        final Class<?> plm = gfMainCL.loadClass("fish.payara.logging.jul.PayaraLogManagerInitializer");
+        final Class<?> plm = gfMainCL.loadClass("fish.payara.jul.PayaraLogManagerInitializer");
         final Properties loggingCfg = createDefaultLoggingProperties();
         plm.getMethod("tryToSetAsDefault", Properties.class).invoke(plm, loggingCfg);
 
@@ -122,11 +122,11 @@ public class GlassFishMain {
         // an instance configuration so it will have complete information about filtering
         // and formatting those records
         cfg.setProperty("handlers",
-            "fish.payara.logging.jul.handler.SimpleLogHandler,fish.payara.logging.jul.handler.PayaraLogHandler");
-        cfg.setProperty("fish.payara.logging.jul.handler.SimpleLogHandler.formatter",
-            "fish.payara.logging.jul.formatter.UniformLogFormatter");
+            "fish.payara.jul.handler.SimpleLogHandler,fish.payara.jul.handler.PayaraLogHandler");
+        cfg.setProperty("fish.payara.jul.handler.SimpleLogHandler.formatter",
+            "fish.payara.jul.formatter.UniformLogFormatter");
         // useful to track any startup race conditions etc. Logging is always in game.
-//        cfg.setProperty("fish.payara.logging.jul.tracingEnabled", "true");
+//        cfg.setProperty("fish.payara.jul.tracingEnabled", "true");
         // warning: there is no other way to force HK2 loggers or any other loggers, created
         // via new Logger(..) constructor to wait until logging would be completely configured.
         // These instances make decisions about log loggability immediately.

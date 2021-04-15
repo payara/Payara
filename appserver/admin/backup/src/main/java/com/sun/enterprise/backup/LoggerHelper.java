@@ -108,7 +108,7 @@ class LoggerHelper
 	{
 		try
 		{
-			//System.setProperty("java.util.logging.ConsoleHandler.level", Constants.logLevel);
+			//System.setProperty("fish.payara.jul.handler.SimpleLogHandler.level", Constants.logLevel);
 			logger = Logger.getLogger("backup", Constants.loggingResourceBundle);
 			
 			// attach a handler that will at least be capable of spitting out FINEST messages

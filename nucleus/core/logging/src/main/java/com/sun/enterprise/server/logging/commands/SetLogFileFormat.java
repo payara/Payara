@@ -73,8 +73,8 @@ import com.sun.enterprise.config.serverbeans.Servers;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 
-import fish.payara.logging.jul.formatter.ODLLogFormatter;
-import fish.payara.logging.jul.formatter.UniformLogFormatter;
+import fish.payara.jul.formatter.ODLLogFormatter;
+import fish.payara.jul.formatter.UniformLogFormatter;
 
 /**
  * Set log file format command.
@@ -136,7 +136,7 @@ public class SetLogFileFormat implements AdminCommand {
         }
 
         Map<String, String> loggingProperties = new HashMap<>();
-        loggingProperties.put("fish.payara.logging.jul.handler.PayaraLogHandler.formatter", formatterClassName);
+        loggingProperties.put("fish.payara.jul.handler.PayaraLogHandler.formatter", formatterClassName);
 
         final ActionReport report = context.getActionReport();
         boolean isCluster = false;

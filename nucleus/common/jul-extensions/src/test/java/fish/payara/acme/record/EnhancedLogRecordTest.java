@@ -40,7 +40,7 @@
 
 package fish.payara.acme.record;
 
-import fish.payara.logging.jul.record.EnhancedLogRecord;
+import fish.payara.jul.record.EnhancedLogRecord;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

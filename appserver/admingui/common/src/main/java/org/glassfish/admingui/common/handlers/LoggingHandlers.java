@@ -195,13 +195,13 @@ public class LoggingHandlers {
         try{
             for (Map.Entry<String, Object> e : attrs.entrySet()) {
                 String key=e.getKey();
-                if ((key.equals("fish.payara.logging.jul.handler.SyslogHandler.useSystemLogging")||
-                      key.equals("fish.payara.logging.jul.handler.PayaraLogHandler.logtoFile") ||
-                      key.equals("fish.payara.logging.jul.handler.PayaraLogHandler.logtoConsole") ||
-                      key.equals("fish.payara.logging.jul.handler.PayaraLogHandler.multiLineMode") ||
-                      key.equals("fish.payara.logging.jul.handler.PayaraLogHandler.rotationOnDateChange" ) ||
-                      key.equals("fish.payara.logging.jul.handler.PayaraLogHandler.compressOnRotation") ||
-                      key.equals("fish.payara.logging.jul.handler.PayaraLogHandler.logStandardStreams") ||
+                if ((key.equals("fish.payara.jul.handler.SyslogHandler.useSystemLogging")||
+                      key.equals("fish.payara.jul.handler.PayaraLogHandler.logtoFile") ||
+                      key.equals("fish.payara.jul.handler.PayaraLogHandler.logtoConsole") ||
+                      key.equals("fish.payara.jul.handler.PayaraLogHandler.multiLineMode") ||
+                      key.equals("fish.payara.jul.handler.PayaraLogHandler.rotationOnDateChange" ) ||
+                      key.equals("fish.payara.jul.handler.PayaraLogHandler.compressOnRotation") ||
+                      key.equals("fish.payara.jul.handler.PayaraLogHandler.logStandardStreams") ||
                       key.equals("fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.logtoFile") ||
                       key.equals("fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.rotationOnDateChange") ||
                       key.equals("fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.compressOnRotation"))

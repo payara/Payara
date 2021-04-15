@@ -40,7 +40,8 @@
 
 package fish.payara.micro;
 
-import fish.payara.logging.jul.PayaraLogManagerInitializer;
+import fish.payara.jul.PayaraLogManagerInitializer;
+
 import java.util.Properties;
 import java.util.logging.Level;
 
@@ -55,11 +56,11 @@ public class PayaraMicroLoggingInitializer {
     private static final Properties CFG;
     static {
         CFG = new Properties();
-        CFG.setProperty("handlers", "fish.payara.logging.jul.handler.SimpleLogHandler");
+        CFG.setProperty("handlers", "fish.payara.jul.handler.SimpleLogHandler");
         CFG.setProperty("systemRootLoggerLevel", Level.INFO.getName());
         CFG.setProperty(".level", Level.INFO.getName());
         // useful to track any startup race conditions etc. Logging is always in game.
-//        CFG.setProperty("fish.payara.logging.jul.tracingEnabled", "true");
+//        CFG.setProperty("fish.payara.jul.tracingEnabled", "true");
     }
 
 

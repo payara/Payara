@@ -42,7 +42,7 @@
  */
 package com.sun.enterprise.util;
 
-import fish.payara.logging.jul.cfg.SortedProperties;
+import fish.payara.jul.cfg.SortedProperties;
 
 import java.util.Map;
 import java.util.Properties;

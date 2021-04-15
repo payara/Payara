@@ -157,8 +157,10 @@ public interface LogService extends ConfigBeanProxy  {
      * provided by JSR 047 log API.
      * 
      * @return possible object is {@link String }
+     * @deprecated not used except upgrade
      */
     @Attribute
+    @Deprecated
     public String getLogFilter();
 
     /**
@@ -166,7 +168,9 @@ public interface LogService extends ConfigBeanProxy  {
      *
      * @param value allowed object is {@link String }
      * @throws PropertyVetoException
+     * @deprecated not used
      */
+    @Deprecated
     public void setLogFilter(String value) throws PropertyVetoException;
 
     /**

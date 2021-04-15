@@ -57,7 +57,7 @@
     <description>Glassfish logging classes</description>
 
     <properties>
-        <test.logManager>fish.payara.logging.jul.PayaraLogManager</test.logManager>
+        <test.logManager>fish.payara.jul.PayaraLogManager</test.logManager>
     </properties>
 
     <dependencies>
@@ -129,7 +129,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <systemProperties>
-                        <fish.payara.logging.jul.tracingEnabled>false</fish.payara.logging.jul.tracingEnabled>
+                        <fish.payara.jul.tracingEnabled>false</fish.payara.jul.tracingEnabled>
                     </systemProperties>
                 </configuration>
             </plugin>

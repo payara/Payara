@@ -39,11 +39,11 @@
  */
 package fish.payara.acme.formatter;
 
-import fish.payara.logging.jul.formatter.JSONLogFormatter;
-import fish.payara.logging.jul.formatter.LogFormatDetector;
-import fish.payara.logging.jul.formatter.ODLLogFormatter;
-import fish.payara.logging.jul.formatter.OneLineFormatter;
-import fish.payara.logging.jul.formatter.UniformLogFormatter;
+import fish.payara.jul.formatter.JSONLogFormatter;
+import fish.payara.jul.formatter.LogFormatDetector;
+import fish.payara.jul.formatter.ODLLogFormatter;
+import fish.payara.jul.formatter.OneLineFormatter;
+import fish.payara.jul.formatter.UniformLogFormatter;
 
 import org.junit.jupiter.api.Test;
 

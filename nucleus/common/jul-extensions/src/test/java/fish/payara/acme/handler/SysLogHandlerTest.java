@@ -40,11 +40,11 @@
 
 package fish.payara.acme.handler;
 
-import fish.payara.logging.jul.PayaraLogManager;
-import fish.payara.logging.jul.cfg.PayaraLogManagerConfiguration;
-import fish.payara.logging.jul.cfg.SortedProperties;
-import fish.payara.logging.jul.handler.SyslogHandler;
-import fish.payara.logging.jul.record.EnhancedLogRecord;
+import fish.payara.jul.PayaraLogManager;
+import fish.payara.jul.cfg.PayaraLogManagerConfiguration;
+import fish.payara.jul.cfg.SortedProperties;
+import fish.payara.jul.handler.SyslogHandler;
+import fish.payara.jul.record.EnhancedLogRecord;
 
 import java.util.logging.Level;
 

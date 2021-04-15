@@ -42,58 +42,55 @@
 
 package com.sun.common.util.logging;
 
-import fish.payara.logging.jul.handler.PayaraLogHandler;
-import fish.payara.logging.jul.handler.SyslogHandler;
+import fish.payara.jul.handler.PayaraLogHandler;
+import fish.payara.jul.handler.SyslogHandler;
 
-import static fish.payara.logging.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.LOG_FILTER;
-import static fish.payara.logging.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.ROTATION_LIMIT_SIZE;
-import static fish.payara.logging.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.ROTATION_LIMIT_TIME;
+import static fish.payara.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.ROTATION_LIMIT_SIZE;
+import static fish.payara.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.ROTATION_LIMIT_TIME;
 
 public class LoggingPropertyNames {
 
-    private static final String GFFileHandler = PayaraLogHandler.class.getName() + ".";
+    private static final String PAYARA_LOG_HANDLER = PayaraLogHandler.class.getName() + ".";
 
-    private static final String PYFileHandler = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.";
+    private static final String PAYARA_NOTIFICATION_HANDLER = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.";
 
     public static final String SyslogHandler = SyslogHandler.class.getName() + ".";
 
     public static final String logRotationLimitInBytes = ROTATION_LIMIT_SIZE.getPropertyFullName(PayaraLogHandler.class);
 
-    public static final String payaraNotificationLogRotationLimitInBytes  = PYFileHandler + "rotationLimitInBytes";
+    public static final String payaraNotificationLogRotationLimitInBytes  = PAYARA_NOTIFICATION_HANDLER + "rotationLimitInBytes";
 
     public static final String logRotationTimelimitInMinutes = ROTATION_LIMIT_TIME.getPropertyFullName(PayaraLogHandler.class);
 
-    public static final String payaraNotificationLogRotationTimelimitInMinutes  = PYFileHandler + "rotationTimelimitInMinutes";
+    public static final String payaraNotificationLogRotationTimelimitInMinutes  = PAYARA_NOTIFICATION_HANDLER + "rotationTimelimitInMinutes";
 
-    public static final String file = GFFileHandler + "file";
+    public static final String file = PAYARA_LOG_HANDLER + "file";
 
-    public static final String payaraNotificationFile  = PYFileHandler + "file";
+    public static final String payaraNotificationFile  = PAYARA_NOTIFICATION_HANDLER + "file";
 
-    public static final String logFormatter = GFFileHandler + "formatter";
+    public static final String logFormatter = PAYARA_LOG_HANDLER + "formatter";
 
-    public static final String payaraNotificationLogFormatter = PYFileHandler + "formatter";
+    public static final String payaraNotificationLogFormatter = PAYARA_NOTIFICATION_HANDLER + "formatter";
 
     public static final String logHandler = "handlers";
 
     public static final String useSystemLogging = SyslogHandler + "useSystemLogging";
 
-    public static final String retainErrorStatisticsForHours = GFFileHandler + "retainErrorsStasticsForHours";
+    public static final String retainErrorStatisticsForHours = PAYARA_LOG_HANDLER + "retainErrorsStasticsForHours";
 
-    public static final String logFilter = LOG_FILTER.getPropertyFullName(PayaraLogHandler.class);
+    public static final String logToFile = PAYARA_LOG_HANDLER + "logtoFile";
 
-    public static final String logToFile = GFFileHandler + "logtoFile";
+    public static final String payaraNotificationLogToFile  = PAYARA_NOTIFICATION_HANDLER + "logtoFile";
 
-    public static final String payaraNotificationLogToFile  = PYFileHandler + "logtoFile";
+    public static final String logToConsole = PAYARA_LOG_HANDLER + "logtoConsole";
 
-    public static final String logToConsole = GFFileHandler + "logtoConsole";
+    public static final String alarms = PAYARA_LOG_HANDLER + "alarms";
 
-    public static final String alarms = GFFileHandler + "alarms";
+    public static final String logStandardStreams = PAYARA_LOG_HANDLER + "logStandardStreams";
 
-    public static final String logStandardStreams = GFFileHandler + "logStandardStreams";
+    public static final String MAX_QUEUE_SIZE = PAYARA_LOG_HANDLER + "maxQueueSize";
 
-    public static final String MAX_QUEUE_SIZE = GFFileHandler + "maxQueueSize";
-
-    public static final String QUEUE_FLUSH_FREQUENCY = GFFileHandler + "queueFlushFrequency";
+    public static final String QUEUE_FLUSH_FREQUENCY = PAYARA_LOG_HANDLER + "queueFlushFrequency";
 
 }
 

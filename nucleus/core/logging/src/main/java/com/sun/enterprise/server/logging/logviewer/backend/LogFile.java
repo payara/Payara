@@ -47,7 +47,7 @@ import com.sun.enterprise.server.logging.parser.LogParserFactory;
 import com.sun.enterprise.server.logging.parser.LogParserListener;
 import com.sun.enterprise.server.logging.parser.ParsedLogRecord;
 
-import fish.payara.logging.jul.formatter.LogFormatDetector;
+import fish.payara.jul.formatter.LogFormatDetector;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

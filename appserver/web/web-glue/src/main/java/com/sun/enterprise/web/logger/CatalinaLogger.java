@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2020-2021] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.web.logger;
 
@@ -53,7 +53,7 @@ import java.util.logging.Logger;
  *
  */
 public final class CatalinaLogger extends LoggerBase {
-    private Logger logger = null;
+    private final Logger logger;
 
     /**
      * Construct a new instance of this class, that uses the specified

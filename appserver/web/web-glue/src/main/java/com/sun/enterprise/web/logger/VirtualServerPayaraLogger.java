@@ -40,7 +40,7 @@
 
 package com.sun.enterprise.web.logger;
 
-import fish.payara.logging.jul.PayaraLogger;
+import fish.payara.jul.PayaraLogger;
 
 import java.util.ResourceBundle;
 import java.util.logging.Handler;

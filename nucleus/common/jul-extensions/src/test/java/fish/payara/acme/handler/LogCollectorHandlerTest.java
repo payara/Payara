@@ -40,9 +40,9 @@
 
 package fish.payara.acme.handler;
 
-import fish.payara.logging.jul.handler.LogCollectorHandler;
-import fish.payara.logging.jul.record.EnhancedLogRecord;
-import fish.payara.logging.jul.tracing.PayaraLoggingTracer;
+import fish.payara.jul.handler.LogCollectorHandler;
+import fish.payara.jul.record.EnhancedLogRecord;
+import fish.payara.jul.tracing.PayaraLoggingTracer;
 
 import java.util.List;
 import java.util.logging.Level;

@@ -41,7 +41,7 @@ package com.sun.enterprise.server.logging;
 
 import com.sun.common.util.logging.LoggingConfigImpl;
 
-import fish.payara.logging.jul.handler.PayaraLogHandler;
+import fish.payara.jul.handler.PayaraLogHandler;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;

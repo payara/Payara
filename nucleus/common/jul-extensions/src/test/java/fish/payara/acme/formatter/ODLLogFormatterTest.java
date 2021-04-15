@@ -40,11 +40,11 @@
 
 package fish.payara.acme.formatter;
 
-import fish.payara.logging.jul.env.LoggingSystemEnvironment;
-import fish.payara.logging.jul.formatter.AnsiColor;
-import fish.payara.logging.jul.formatter.ExcludeFieldsSupport.SupplementalAttribute;
-import fish.payara.logging.jul.formatter.ODLLogFormatter;
-import fish.payara.logging.jul.record.EnhancedLogRecord;
+import fish.payara.jul.env.LoggingSystemEnvironment;
+import fish.payara.jul.formatter.AnsiColor;
+import fish.payara.jul.formatter.ODLLogFormatter;
+import fish.payara.jul.formatter.ExcludeFieldsSupport.SupplementalAttribute;
+import fish.payara.jul.record.EnhancedLogRecord;
 
 import java.util.Arrays;
 import java.util.Collections;

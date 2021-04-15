@@ -48,10 +48,10 @@ import com.sun.enterprise.universal.io.SmartFile;
 import com.sun.enterprise.util.JDK;
 import com.sun.enterprise.util.SystemPropertyConstants;
 
-import fish.payara.logging.jul.PayaraLogManagerInitializer;
-import fish.payara.logging.jul.cfg.PayaraLogManagerConfiguration;
-import fish.payara.logging.jul.cfg.SortedProperties;
-import fish.payara.logging.jul.tracing.PayaraLoggingTracer;
+import fish.payara.jul.PayaraLogManagerInitializer;
+import fish.payara.jul.cfg.PayaraLogManagerConfiguration;
+import fish.payara.jul.cfg.SortedProperties;
+import fish.payara.jul.tracing.PayaraLoggingTracer;
 
 import java.io.File;
 import java.io.PrintStream;
@@ -78,7 +78,7 @@ import org.glassfish.api.admin.InvalidCommandException;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.common.util.admin.AsadminInput;
 
-import static fish.payara.logging.jul.PayaraLogManager.getLogManager;
+import static fish.payara.jul.PayaraLogManager.getLogManager;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINER;
 import static java.util.logging.Level.FINEST;
@@ -95,7 +95,7 @@ public class AdminMain {
         PayaraLoggingTracer.trace(AdminMain.class, "Preconfiguring logging for asadmin.");
         // The logging is explicitly configured in doMain method
         LOGGING_CFG = new SortedProperties();
-        LOGGING_CFG.setProperty("handlers", "fish.payara.logging.jul.handler.BlockingExternallyManagedLogHandler");
+        LOGGING_CFG.setProperty("handlers", "fish.payara.jul.handler.BlockingExternallyManagedLogHandler");
         if (!PayaraLogManagerInitializer.tryToSetAsDefault(LOGGING_CFG)) {
             throw new IllegalStateException("PayaraLogManager is not set as the default LogManager!");
         }

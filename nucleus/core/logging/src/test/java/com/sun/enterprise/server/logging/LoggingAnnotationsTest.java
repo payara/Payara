@@ -41,12 +41,12 @@
 
 package com.sun.enterprise.server.logging;
 
-import fish.payara.logging.jul.PayaraLogManager;
-import fish.payara.logging.jul.PayaraLoggingStatus;
-import fish.payara.logging.jul.formatter.ODLLogFormatter;
-import fish.payara.logging.jul.formatter.UniformLogFormatter;
-import fish.payara.logging.jul.handler.SimpleLogHandler;
-import fish.payara.logging.jul.record.EnhancedLogRecord;
+import fish.payara.jul.PayaraLogManager;
+import fish.payara.jul.PayaraLoggingStatus;
+import fish.payara.jul.formatter.ODLLogFormatter;
+import fish.payara.jul.formatter.UniformLogFormatter;
+import fish.payara.jul.handler.SimpleLogHandler;
+import fish.payara.jul.record.EnhancedLogRecord;
 
 import java.io.BufferedReader;
 import java.io.File;

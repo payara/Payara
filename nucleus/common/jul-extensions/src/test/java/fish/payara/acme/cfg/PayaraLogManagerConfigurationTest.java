@@ -40,10 +40,10 @@
 
 package fish.payara.acme.cfg;
 
-import fish.payara.logging.jul.PayaraLogManager;
-import fish.payara.logging.jul.cfg.PayaraLogManagerConfiguration;
-import fish.payara.logging.jul.cfg.SortedProperties;
-import fish.payara.logging.jul.cfg.PayaraLogManagerConfiguration.ConfigurationEntry;
+import fish.payara.jul.PayaraLogManager;
+import fish.payara.jul.cfg.PayaraLogManagerConfiguration;
+import fish.payara.jul.cfg.SortedProperties;
+import fish.payara.jul.cfg.PayaraLogManagerConfiguration.ConfigurationEntry;
 
 import java.io.File;
 import java.util.stream.Collectors;

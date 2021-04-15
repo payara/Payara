@@ -44,7 +44,7 @@ package com.sun.common.util.logging;
 
 import com.sun.enterprise.util.PropertyPlaceholderHelper;
 
-import fish.payara.logging.jul.cfg.SortedProperties;
+import fish.payara.jul.cfg.SortedProperties;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -84,7 +84,7 @@ import static com.sun.common.util.logging.LoggingXMLNames.xmltoPropsMap;
 @Contract
 public class LoggingConfigImpl implements LoggingConfig {
 
-    private static final String HANDLER_SERVER_LOG = "fish.payara.logging.jul.handler.PayaraLogHandler";
+    private static final String HANDLER_SERVER_LOG = "fish.payara.jul.handler.PayaraLogHandler";
     private static final String HANDLER_NOTIFICATION_LOG = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler";
     private static final String LOGGER_WEB_CONTAINER = "javax.enterprise.system.container.web";
 
@@ -96,7 +96,7 @@ public class LoggingConfigImpl implements LoggingConfig {
         DEFAULT_LOG_PROPERTIES.put(HANDLER_SERVER_LOG + ".file", "${com.sun.aas.instanceRoot}/logs/server.log");
         DEFAULT_LOG_PROPERTIES.put(HANDLER_SERVER_LOG + ".rotationLimitInBytes", "2000000");
         DEFAULT_LOG_PROPERTIES.put(HANDLER_SERVER_LOG + ".logStandardStreams", "true");
-        DEFAULT_LOG_PROPERTIES.put(HANDLER_SERVER_LOG + ".formatter", "fish.payara.logging.jul.formatter.ODLLogFormatter");
+        DEFAULT_LOG_PROPERTIES.put(HANDLER_SERVER_LOG + ".formatter", "fish.payara.jul.formatter.ODLLogFormatter");
 
         DEFAULT_LOG_PROPERTIES.put(HANDLER_NOTIFICATION_LOG + ".logtoFile", "true");
         DEFAULT_LOG_PROPERTIES.put(HANDLER_NOTIFICATION_LOG + ".rotationOnDateChange", "false");
@@ -105,7 +105,7 @@ public class LoggingConfigImpl implements LoggingConfig {
         DEFAULT_LOG_PROPERTIES.put(HANDLER_NOTIFICATION_LOG + ".maxHistoryFiles", "0");
         DEFAULT_LOG_PROPERTIES.put(HANDLER_NOTIFICATION_LOG + ".file", "${com.sun.aas.instanceRoot}/logs/notification.log");
         DEFAULT_LOG_PROPERTIES.put(HANDLER_NOTIFICATION_LOG + ".compressOnRotation", "false");
-        DEFAULT_LOG_PROPERTIES.put(HANDLER_NOTIFICATION_LOG + ".formatter", "fish.payara.logging.jul.formatter.ODLLogFormatter");
+        DEFAULT_LOG_PROPERTIES.put(HANDLER_NOTIFICATION_LOG + ".formatter", "fish.payara.jul.formatter.ODLLogFormatter");
     }
 
     @Inject
@@ -431,12 +431,12 @@ public class LoggingConfigImpl implements LoggingConfig {
             // Convert the name in domain.xml to the name in logging.properties if needed
             key = xmltoPropsMap.getOrDefault(key, key);
 
-            if (key != null && key.equals("fish.payara.logging.jul.handler.PayaraLogHandler.file")) {
+            if (key != null && key.equals("fish.payara.jul.handler.PayaraLogHandler.file")) {
                 return props.getProperty(key);
             }
         }
 
-        // If "fish.payara.logging.jul.handler.PayaraLogHandler.file" not found, check "java.util.logging.FileHandler.pattern"
+        // If "fish.payara.jul.handler.PayaraLogHandler.file" not found, check "java.util.logging.FileHandler.pattern"
         // This property can have been set by Payara Micro when using the --logtofile
         return props.getProperty("java.util.logging.FileHandler.pattern");
     }

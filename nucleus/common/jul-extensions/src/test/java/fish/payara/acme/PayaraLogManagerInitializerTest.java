@@ -40,7 +40,7 @@
 
 package fish.payara.acme;
 
-import fish.payara.logging.jul.PayaraLogManagerInitializer;
+import fish.payara.jul.PayaraLogManagerInitializer;
 
 import java.util.logging.LogManager;
 
@@ -48,9 +48,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
-import static fish.payara.logging.jul.cfg.PayaraLoggingJvmOptions.CLASS_LOG_MANAGER_JUL;
-import static fish.payara.logging.jul.cfg.PayaraLoggingJvmOptions.CLASS_LOG_MANAGER_PAYARA;
-import static fish.payara.logging.jul.cfg.PayaraLoggingJvmOptions.JVM_OPT_LOGGING_MANAGER;
+import static fish.payara.jul.cfg.PayaraLoggingJvmOptions.CLASS_LOG_MANAGER_JUL;
+import static fish.payara.jul.cfg.PayaraLoggingJvmOptions.CLASS_LOG_MANAGER_PAYARA;
+import static fish.payara.jul.cfg.PayaraLoggingJvmOptions.JVM_OPT_LOGGING_MANAGER;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 

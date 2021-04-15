@@ -13,7 +13,7 @@
  */
 package com.sun.logging;
 
-import fish.payara.logging.jul.PayaraLogger;
+import fish.payara.jul.PayaraLogger;
 
 import java.util.ResourceBundle;
 

@@ -45,5 +45,5 @@
                         version=${project.osgi.version}
 
 Import-Package: \
-          fish.payara.logging.jul.*; resolution:=optional, \
+          fish.payara.jul.*; resolution:=optional, \
           *

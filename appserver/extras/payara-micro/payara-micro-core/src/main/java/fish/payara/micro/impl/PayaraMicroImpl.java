@@ -47,9 +47,9 @@ import fish.payara.appserver.rest.endpoints.config.admin.ListRestEndpointsComman
 import fish.payara.boot.runtime.BootCommand;
 import fish.payara.boot.runtime.BootCommands;
 import fish.payara.deployment.util.GAVConvertor;
-import fish.payara.logging.jul.formatter.ODLLogFormatter;
-import fish.payara.logging.jul.PayaraLogManager;
-import fish.payara.logging.jul.cfg.PayaraLogManagerConfiguration;
+import fish.payara.jul.PayaraLogManager;
+import fish.payara.jul.cfg.PayaraLogManagerConfiguration;
+import fish.payara.jul.formatter.ODLLogFormatter;
 import fish.payara.micro.BootstrapException;
 import fish.payara.micro.PayaraMicroLoggingInitializer;
 import fish.payara.micro.PayaraMicroRuntime;
@@ -1786,7 +1786,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
 
                     // add file handler properties
                     currentProps.setProperty("java.util.logging.FileHandler.pattern", userLogFile);
-                    currentProps.setProperty("handlers", "java.util.logging.FileHandler, fish.payara.logging.jul.handler.SimpleLogHandler");
+                    currentProps.setProperty("handlers", "java.util.logging.FileHandler, fish.payara.jul.handler.SimpleLogHandler");
                     currentProps.setProperty("java.util.logging.FileHandler.limit", "1024000");
                     currentProps.setProperty("java.util.logging.FileHandler.count", "10");
                     currentProps.setProperty("java.util.logging.FileHandler.level", "INFO");
@@ -1809,7 +1809,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
 
                 // reset the formatters on the two handlers
                 //Logger rootLogger = Logger.getLogger("");
-                String formatter = LogManager.getLogManager().getProperty("fish.payara.logging.jul.handler.SimpleLogHandler.formatter");
+                String formatter = LogManager.getLogManager().getProperty("fish.payara.jul.handler.SimpleLogHandler.formatter");
                 Formatter formatterClass = new ODLLogFormatter();
                 try {
                     formatterClass = (Formatter) Class.forName(formatter).newInstance();

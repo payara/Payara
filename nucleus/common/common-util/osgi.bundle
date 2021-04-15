@@ -79,5 +79,5 @@ Bundle-Activator: org.glassfish.common.util.CommonUtilsActivator
                         org.glassfish.server; version=${project.osgi.version}
 
 Import-Package: \
-                        fish.payara.logging.jul.*; resolution:=optional, \
+                        fish.payara.jul.*; resolution:=optional, \
                         *

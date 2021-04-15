@@ -40,9 +40,9 @@
 
 package fish.payara.acme.handler;
 
-import fish.payara.logging.jul.env.LoggingSystemEnvironment;
-import fish.payara.logging.jul.handler.SimpleLogHandler;
-import fish.payara.logging.jul.record.EnhancedLogRecord;
+import fish.payara.jul.env.LoggingSystemEnvironment;
+import fish.payara.jul.handler.SimpleLogHandler;
+import fish.payara.jul.record.EnhancedLogRecord;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;

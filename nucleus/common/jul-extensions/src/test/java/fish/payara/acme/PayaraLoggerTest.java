@@ -41,10 +41,10 @@
 package fish.payara.acme;
 
 import fish.payara.acme.handler.LogCollectorHandlerTest;
-import fish.payara.logging.jul.PayaraLogger;
-import fish.payara.logging.jul.handler.LogCollectorHandler;
-import fish.payara.logging.jul.record.EnhancedLogRecord;
-import fish.payara.logging.jul.tracing.PayaraLoggingTracer;
+import fish.payara.jul.PayaraLogger;
+import fish.payara.jul.handler.LogCollectorHandler;
+import fish.payara.jul.record.EnhancedLogRecord;
+import fish.payara.jul.tracing.PayaraLoggingTracer;
 
 import java.util.Collections;
 import java.util.Enumeration;

@@ -40,7 +40,7 @@
 
 package fish.payara.acme.rotation;
 
-import fish.payara.logging.jul.rotation.DailyLogRotationTimerTask;
+import fish.payara.jul.rotation.DailyLogRotationTimerTask;
 
 import org.junit.jupiter.api.Test;
 

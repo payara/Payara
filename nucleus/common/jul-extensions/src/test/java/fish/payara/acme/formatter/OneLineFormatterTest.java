@@ -40,8 +40,8 @@
 
 package fish.payara.acme.formatter;
 
-import fish.payara.logging.jul.formatter.OneLineFormatter;
-import fish.payara.logging.jul.record.EnhancedLogRecord;
+import fish.payara.jul.formatter.OneLineFormatter;
+import fish.payara.jul.record.EnhancedLogRecord;
 
 import java.util.logging.Level;
 import java.util.logging.LogRecord;

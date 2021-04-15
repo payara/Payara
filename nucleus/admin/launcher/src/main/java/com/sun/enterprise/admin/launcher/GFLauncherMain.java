@@ -42,7 +42,7 @@
 
 package com.sun.enterprise.admin.launcher;
 
-import fish.payara.logging.jul.PayaraLogManagerInitializer;
+import fish.payara.jul.PayaraLogManagerInitializer;
 
 import org.glassfish.api.admin.RuntimeType;
 

@@ -56,7 +56,7 @@ import java.util.logging.SimpleFormatter;
 
 import com.sun.enterprise.util.io.FileUtils;
 
-import fish.payara.logging.jul.PayaraLogger;
+import fish.payara.jul.PayaraLogger;
 
 import org.glassfish.appclient.client.acc.config.LogService;
 

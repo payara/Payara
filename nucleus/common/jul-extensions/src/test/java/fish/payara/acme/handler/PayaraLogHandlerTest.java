@@ -40,12 +40,12 @@
 
 package fish.payara.acme.handler;
 
-import fish.payara.logging.jul.env.LoggingSystemEnvironment;
-import fish.payara.logging.jul.formatter.OneLineFormatter;
-import fish.payara.logging.jul.handler.PayaraLogHandler;
-import fish.payara.logging.jul.handler.PayaraLogHandlerConfiguration;
-import fish.payara.logging.jul.record.EnhancedLogRecord;
-import fish.payara.logging.jul.tracing.PayaraLoggingTracer;
+import fish.payara.jul.env.LoggingSystemEnvironment;
+import fish.payara.jul.formatter.OneLineFormatter;
+import fish.payara.jul.handler.PayaraLogHandler;
+import fish.payara.jul.handler.PayaraLogHandlerConfiguration;
+import fish.payara.jul.record.EnhancedLogRecord;
+import fish.payara.jul.tracing.PayaraLoggingTracer;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -60,9 +60,9 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
-import static fish.payara.logging.jul.env.LoggingSystemEnvironment.getOriginalStdErr;
-import static fish.payara.logging.jul.env.LoggingSystemEnvironment.getOriginalStdOut;
-import static fish.payara.logging.jul.handler.PayaraLogHandler.createPayaraLogHandlerConfiguration;
+import static fish.payara.jul.env.LoggingSystemEnvironment.getOriginalStdErr;
+import static fish.payara.jul.env.LoggingSystemEnvironment.getOriginalStdOut;
+import static fish.payara.jul.handler.PayaraLogHandler.createPayaraLogHandlerConfiguration;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;

@@ -50,35 +50,33 @@ import java.util.Map;
 public class LoggingXMLNames {
 
     public static final String file = "file";
-    
+
     public static final String payaraNotificationFile = "payara-notification-file";
 
     public static final String logRotationLimitInBytes = "log-rotation-limit-in-bytes";
-    
+
     public static final String payaraNotificationLogRotationLimitInBytes = "payara-notification-log-rotation-limit-in-bytes";
 
     public static final String logRotationTimelimitInMinutes = "log-rotation-timelimit-in-minutes";
-    
+
     public static final String payaraNotificationLogRotationTimelimitInMinutes = "payara-notification-log-rotation-timelimit-in-minutes";
 
     public static final String logFormatter = "log-formatter";
-    
+
     public static final String payaraNotificationLogFormatter = "payara-notification-log-formatter";
 
     public static final String logHandler = "log-handler";
 
     public static final String useSystemLogging = "use-system-logging";
 
-    public static final String logFilter = "log-filter";
-    
     public static final String logToFile = "log-to-file";
-    
+
     public static final String payaraNotificationLogToFile = "payara-notification-log-to-file";
 
     public static final String logToConsole = "log-to-console";
 
     public static final String alarms = "alarms";
-    
+
     public static final String logStandardStreams = "log-standard-streams";
 
     public static final String retainErrorStatisticsForHours = "retain-error-statistics-for-hours";
@@ -120,7 +118,7 @@ public class LoggingXMLNames {
 //mapping of the names used in domain.xml to the names used in logging.properties
 
     public static final Map<String, String> xmltoPropsMap =
-            new HashMap<String, String>() {{            
+            new HashMap<String, String>() {{
                 put(logRotationLimitInBytes, LoggingPropertyNames.logRotationLimitInBytes);
                 put(payaraNotificationLogRotationLimitInBytes, LoggingPropertyNames.payaraNotificationLogRotationLimitInBytes);
                 put(logRotationTimelimitInMinutes, LoggingPropertyNames.logRotationTimelimitInMinutes);
@@ -133,7 +131,6 @@ public class LoggingXMLNames {
                 put(logHandler, LoggingPropertyNames.logHandler);
                 put(useSystemLogging, LoggingPropertyNames.useSystemLogging);
                 put(retainErrorStatisticsForHours, LoggingPropertyNames.retainErrorStatisticsForHours);
-                put(logFilter, LoggingPropertyNames.logFilter);
                 put(logToFile, LoggingPropertyNames.logToFile);
                 put(payaraNotificationLogToFile, LoggingPropertyNames.payaraNotificationLogToFile);
                 put(logToConsole, LoggingPropertyNames.logToConsole);

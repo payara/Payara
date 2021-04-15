@@ -211,7 +211,7 @@
         <jacoco.plugin.version>0.8.0</jacoco.plugin.version>
 
 <!--         <test.logManager>java.util.logging.LogManager</test.logManager> -->
-        <test.logManager>fish.payara.logging.jul.PayaraLogManager</test.logManager>
+        <test.logManager>fish.payara.jul.PayaraLogManager</test.logManager>
     </properties>
 
     <modules>

@@ -82,7 +82,7 @@
                 <!command
                     gf.isConfigName(configName="#{pageSession.configName}" );
                     convertArrayToCommaString(array="#{pageSession.excludeFields}"  commaString="#{requestScope.tmp}");
-                    mapPut(map="#{pageSession.logAttributes}" key="fish.payara.logging.jul.handler.PayaraLogHandler.excludeFields" value="#{requestScope.tmp}");
+                    mapPut(map="#{pageSession.logAttributes}" key="fish.payara.jul.handler.PayaraLogHandler.excludeFields" value="#{requestScope.tmp}");
                     prepareSuccessfulMsg();
                     saveLoggingAttributes(attrs="#{pageSession.logAttributes}" config="#{pageSession.configName}");
                     gf.redirect(page="#{request.contextPath}/common/configuration/loggerGeneral.jsf?configName=#{pageSession.configName}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
@@ -110,39 +110,39 @@
 #include "/common/shared/configNameSection.inc"
     <sun:propertySheetSection id="sheetSection">
           <sun:property id="writeSystemLogEnabledProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.WriteSystemLog}" helpText="$resource{i18nc.log.WriteSystemlogHelp}">
-                <sun:checkbox id="writeSystemLogEnabled" label="$resource{i18n.common.Enabled}" selected="#{pageSession.logAttributes['fish.payara.logging.jul.handler.SyslogHandler.useSystemLogging']}" selectedValue="true" />
+                <sun:checkbox id="writeSystemLogEnabled" label="$resource{i18n.common.Enabled}" selected="#{pageSession.logAttributes['fish.payara.jul.handler.SyslogHandler.useSystemLogging']}" selectedValue="true" />
            </sun:property>
 
           <sun:property id="logtoFile"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.LogtoFile}" helpText="$resource{i18nc.log.LogtoFileHelp}">
-                <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.logAttributes['fish.payara.logging.jul.handler.PayaraLogHandler.logtoFile']}"  selectedValue="true" />
+                <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.logAttributes['fish.payara.jul.handler.PayaraLogHandler.logtoFile']}"  selectedValue="true" />
            </sun:property>
 
            <sun:property id="logtoConsole"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.LogtoConsole}" helpText="$resource{i18nc.log.LogtoConsoleHelp}">
-                <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.logAttributes['fish.payara.logging.jul.handler.PayaraLogHandler.logtoConsole']}"  selectedValue="true" />
+                <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.logAttributes['fish.payara.jul.handler.PayaraLogHandler.logtoConsole']}"  selectedValue="true" />
            </sun:property>
 
            <sun:property id="rotationOnDateChange"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.rotationOnDateChange}" helpText="$resource{i18nc.log.rotationOnDateChangeHelp}">
-                <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.logAttributes['fish.payara.logging.jul.handler.PayaraLogHandler.rotationOnDateChange']}"  selectedValue="true" />
+                <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.logAttributes['fish.payara.jul.handler.PayaraLogHandler.rotationOnDateChange']}"  selectedValue="true" />
            </sun:property>
 
           <sun:property id="multiline"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.multiLineMode}" helpText="$resource{i18nc.log.multiLineModeHelp}">
-                <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.logAttributes['fish.payara.logging.jul.handler.PayaraLogHandler.multiLineMode']}"  selectedValue="true" />
+                <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.logAttributes['fish.payara.jul.handler.PayaraLogHandler.multiLineMode']}"  selectedValue="true" />
            </sun:property>
 
            <sun:property id="consoleFormat"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.ConsoleLogFormat}" helpText="$resource{i18nc.log.ConsoleLogFormatHelp}">
-                <sun:dropDown id="consoleFormat" selected="#{pageSession.logAttributes['fish.payara.logging.jul.handler.SimpleLogHandler.formatter']}"
+                <sun:dropDown id="consoleFormat" selected="#{pageSession.logAttributes['fish.payara.jul.handler.SimpleLogHandler.formatter']}"
                     labels={ "ULF","ODL","JSON"}
-                    values={"fish.payara.logging.jul.formatter.UniformLogFormatter", "fish.payara.logging.jul.formatter.ODLLogFormatter", "fish.payara.logging.jul.formatter.JSONLogFormatter"} />
+                    values={"fish.payara.jul.formatter.UniformLogFormatter", "fish.payara.jul.formatter.ODLLogFormatter", "fish.payara.jul.formatter.JSONLogFormatter"} />
           </sun:property>
 
         <sun:property id="logStandardStreamsProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.LogStandardStreams}" helpText="$resource{i18nc.log.LogStandardStreamsHelp}">
-            <sun:checkbox id="logStandardStreamsEnabled" label="$resource{i18n.common.Enabled}" selected="#{pageSession.logAttributes['fish.payara.logging.jul.handler.PayaraLogHandler.logStandardStreams']}" selectedValue="true"/>
+            <sun:checkbox id="logStandardStreamsEnabled" label="$resource{i18n.common.Enabled}" selected="#{pageSession.logAttributes['fish.payara.jul.handler.PayaraLogHandler.logStandardStreams']}" selectedValue="true"/>
         </sun:property>
 
         <sun:property id="logfileFormat"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.FileLogFormat}" helpText="$resource{i18nc.log.FileLogFormatHelp}">
-          <sun:dropDown id="logfileFormat" selected="#{pageSession.logAttributes['fish.payara.logging.jul.handler.PayaraLogHandler.formatter']}"
+          <sun:dropDown id="logfileFormat" selected="#{pageSession.logAttributes['fish.payara.jul.handler.PayaraLogHandler.formatter']}"
                 labels={ "ULF","ODL","JSON"}
-                values={"fish.payara.logging.jul.formatter.UniformLogFormatter", "fish.payara.logging.jul.formatter.ODLLogFormatter", "fish.payara.logging.jul.formatter.JSONLogFormatter"} />
+                values={"fish.payara.jul.formatter.UniformLogFormatter", "fish.payara.jul.formatter.ODLLogFormatter", "fish.payara.jul.formatter.JSONLogFormatter"} />
         </sun:property>
 
         <sun:property id="excludeFields"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.excludeFields}" helpText="$resource{i18nc.log.excludeFieldsHelp}">
@@ -151,7 +151,7 @@
                 <!beforeCreate
                     getListBoxOptions(
                         availableList={ "tid", "timeMillis", "levelValue" },
-                        selectedCommaString="#{pageSession.logAttributes['fish.payara.logging.jul.handler.PayaraLogHandler.excludeFields']}",
+                        selectedCommaString="#{pageSession.logAttributes['fish.payara.jul.handler.PayaraLogHandler.excludeFields']}",
                         availableListResult="#{pageSession.excludeFieldsOptions}",
                         selectedOptions="#{pageSession.excludeFields}"
                         addEmptyFirstChoice="true");
@@ -161,25 +161,25 @@
 
 
             <sun:property id="FileRotationLimitProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.FileRotationLimit}" helpText="$resource{i18nc.log.FileRotationLimitHelp}">
-                <sun:textField id="FileRotationLimit" styleClass="integer" columns="$int{30}" maxLength="#{sessionScope.fieldLengths['maxLength.log.FileRotationLimit']}" text="#{pageSession.logAttributes['fish.payara.logging.jul.handler.PayaraLogHandler.rotationLimitInBytes']}" />
+                <sun:textField id="FileRotationLimit" styleClass="integer" columns="$int{30}" maxLength="#{sessionScope.fieldLengths['maxLength.log.FileRotationLimit']}" text="#{pageSession.logAttributes['fish.payara.jul.handler.PayaraLogHandler.rotationLimitInBytes']}" />
                 <sun:staticText id="byte" style="padding: 8pt" text="$resource{i18n.common.Bytes}"/>
             </sun:property>
 
             <sun:property id="FileRotationTimeLimitProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.FileRotationTimeLimit}" helpText="$resource{i18nc.log.FileRotationTimeLimitHelp}">
-                <sun:textField id="FileRotationTimeLimit" styleClass="integer" columns="$int{30}" maxLength="#{sessionScope.fieldLengths['maxLength.log.FileRotationTimeLimit']}" text="#{pageSession.logAttributes['fish.payara.logging.jul.handler.PayaraLogHandler.rotationTimelimitInMinutes']}"/>
+                <sun:textField id="FileRotationTimeLimit" styleClass="integer" columns="$int{30}" maxLength="#{sessionScope.fieldLengths['maxLength.log.FileRotationTimeLimit']}" text="#{pageSession.logAttributes['fish.payara.jul.handler.PayaraLogHandler.rotationTimelimitInMinutes']}"/>
                 <sun:staticText id="min" style="padding: 8pt" text="$resource{i18n.common.Minutes}"/>
             </sun:property>
 
             <sun:property id="FlushFrequencyProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.FlushFrequency}" helpText="$resource{i18nc.log.FlushFrequencyHelp}">
-                <sun:textField id="FlushFrequency" styleClass="integer" columns="$int{30}" maxLength="#{sessionScope.fieldLengths['maxLength.log.FlushFrequency']}" text="#{pageSession.logAttributes['fish.payara.logging.jul.handler.PayaraLogHandler.flushFrequency']}"/>
+                <sun:textField id="FlushFrequency" styleClass="integer" columns="$int{30}" maxLength="#{sessionScope.fieldLengths['maxLength.log.FlushFrequency']}" text="#{pageSession.logAttributes['fish.payara.jul.handler.PayaraLogHandler.flushFrequency']}"/>
             </sun:property>
 
             <sun:property id="MaxHistoryFiles"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.MaxHistoryFiles}" helpText="$resource{i18nc.log.MaxHistoryFilesHelp}">
-                <sun:textField id="MaxHistoryFiles" styleClass="integer" columns="$int{30}" maxLength="#{sessionScope.fieldLengths['maxLength.log.MaxHistoryFiles']}" text="#{pageSession.logAttributes['fish.payara.logging.jul.handler.PayaraLogHandler.maxHistoryFiles']}"/>
+                <sun:textField id="MaxHistoryFiles" styleClass="integer" columns="$int{30}" maxLength="#{sessionScope.fieldLengths['maxLength.log.MaxHistoryFiles']}" text="#{pageSession.logAttributes['fish.payara.jul.handler.PayaraLogHandler.maxHistoryFiles']}"/>
             </sun:property>
 
             <sun:property id="logFileProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.LogFile}" helpText="$resource{i18nc.log.LogFileHelp}">
-                <sun:textField id="LogFile" columns="$int{70}" maxLength="#{sessionScope.fieldLengths['maxLength.log.LogFile']}" text="#{pageSession.logAttributes['fish.payara.logging.jul.handler.PayaraLogHandler.file']}"/>
+                <sun:textField id="LogFile" columns="$int{70}" maxLength="#{sessionScope.fieldLengths['maxLength.log.LogFile']}" text="#{pageSession.logAttributes['fish.payara.jul.handler.PayaraLogHandler.file']}"/>
             </sun:property>
 
             <sun:property id="logHandlerProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.Handler}" helpText="$resource{i18nc.log.HandlerHelp}">
@@ -187,7 +187,7 @@
             </sun:property>
 
             <sun:property id="CompressOnRotationProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.CompressOnRotation}" helpText="$resource{i18nc.log.CompressOnRotationHelp}">
-                <sun:checkbox id="CompressOnRotationEnabled" label="$resource{i18n.common.Enabled}" selected="#{pageSession.logAttributes['fish.payara.logging.jul.handler.PayaraLogHandler.compressOnRotation']}"  selectedValue="true" />
+                <sun:checkbox id="CompressOnRotationEnabled" label="$resource{i18n.common.Enabled}" selected="#{pageSession.logAttributes['fish.payara.jul.handler.PayaraLogHandler.compressOnRotation']}"  selectedValue="true" />
             </sun:property>
             "<br />
     </sun:propertySheetSection>

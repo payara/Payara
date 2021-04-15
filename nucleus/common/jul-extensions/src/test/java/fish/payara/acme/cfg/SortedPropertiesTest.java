@@ -40,7 +40,7 @@
 
 package fish.payara.acme.cfg;
 
-import fish.payara.logging.jul.cfg.SortedProperties;
+import fish.payara.jul.cfg.SortedProperties;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -48,7 +48,7 @@ import java.util.SortedSet;
 
 import org.junit.jupiter.api.Test;
 
-import static fish.payara.logging.jul.cfg.SortedProperties.loadFrom;
+import static fish.payara.jul.cfg.SortedProperties.loadFrom;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.lessThan;

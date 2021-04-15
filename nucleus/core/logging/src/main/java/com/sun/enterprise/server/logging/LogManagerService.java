@@ -44,7 +44,6 @@ package com.sun.enterprise.server.logging;
 import com.sun.appserv.server.util.Version;
 import com.sun.common.util.logging.LoggingConfig;
 import com.sun.common.util.logging.LoggingConfigFactory;
-import com.sun.common.util.logging.LoggingPropertyNames;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.module.bootstrap.EarlyLogHandler;
@@ -53,16 +52,16 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.io.FileUtils;
 
 import fish.payara.enterprise.server.logging.PayaraNotificationFileHandler;
-import fish.payara.logging.jul.PayaraLogManager;
-import fish.payara.logging.jul.PayaraLogManager.Action;
-import fish.payara.logging.jul.PayaraLogger;
-import fish.payara.logging.jul.cfg.PayaraLogManagerConfiguration;
-import fish.payara.logging.jul.cfg.SortedProperties;
-import fish.payara.logging.jul.env.LoggingSystemEnvironment;
-import fish.payara.logging.jul.handler.PayaraLogHandler;
-import fish.payara.logging.jul.handler.PayaraLogHandlerConfiguration;
-import fish.payara.logging.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty;
-import fish.payara.logging.jul.tracing.PayaraLoggingTracer;
+import fish.payara.jul.PayaraLogManager;
+import fish.payara.jul.PayaraLogger;
+import fish.payara.jul.PayaraLogManager.Action;
+import fish.payara.jul.cfg.PayaraLogManagerConfiguration;
+import fish.payara.jul.cfg.SortedProperties;
+import fish.payara.jul.env.LoggingSystemEnvironment;
+import fish.payara.jul.handler.PayaraLogHandler;
+import fish.payara.jul.handler.PayaraLogHandlerConfiguration;
+import fish.payara.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty;
+import fish.payara.jul.tracing.PayaraLoggingTracer;
 
 import java.io.File;
 import java.io.IOException;
@@ -98,11 +97,11 @@ import org.jvnet.hk2.annotations.ContractsProvided;
 import org.jvnet.hk2.annotations.Service;
 
 import static com.sun.enterprise.util.PropertyPlaceholderHelper.ENV_REGEX;
-import static fish.payara.logging.jul.cfg.PayaraLoggingJvmOptions.JVM_OPT_LOGGING_CFG_FILE;
-import static fish.payara.logging.jul.handler.PayaraLogHandler.createPayaraLogHandlerConfiguration;
-import static fish.payara.logging.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.MINIMUM_ROTATION_LIMIT_BYTES;
-import static fish.payara.logging.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.ROTATION_LIMIT_SIZE;
-import static fish.payara.logging.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.ROTATION_LIMIT_TIME;
+import static fish.payara.jul.cfg.PayaraLoggingJvmOptions.JVM_OPT_LOGGING_CFG_FILE;
+import static fish.payara.jul.handler.PayaraLogHandler.createPayaraLogHandlerConfiguration;
+import static fish.payara.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.MINIMUM_ROTATION_LIMIT_BYTES;
+import static fish.payara.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.ROTATION_LIMIT_SIZE;
+import static fish.payara.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.ROTATION_LIMIT_TIME;
 
 /**
  * Reinitialise the log manager using our logging.properties file.
@@ -119,7 +118,7 @@ import static fish.payara.logging.jul.handler.PayaraLogHandlerConfiguration.Paya
 public final class LogManagerService implements PostConstruct, PreDestroy, org.glassfish.internal.api.LogManager {
 
     private static final Logger LOG = LogFacade.LOGGING_LOGGER;
-    private static final String H_CONSOLE_HANDLER = "fish.payara.logging.jul.handler.SimpleLogHandler";
+    private static final String H_CONSOLE_HANDLER = "fish.payara.jul.handler.SimpleLogHandler";
     private static final String H_FILE_HANDLER = "java.util.logging.FileHandler";
 
 
@@ -462,13 +461,6 @@ public final class LogManagerService implements PostConstruct, PreDestroy, org.g
         @Override
         public void run() {
             createOrUpdatePayaraLogHandler();
-
-            // FIXME: This is a feature of the logger, not handler
-            final String filterClassName = cfg.getProperty(LoggingPropertyNames.logFilter);
-            final Logger rootLogger = getRootLogger();
-            if (filterClassName == null) {
-                rootLogger.setFilter(null);
-            }
 
             final Map<String, Level> loggerLevels = new HashMap<>();
             final Map<String, Level> handlerLevels = new HashMap<>();

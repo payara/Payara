@@ -51,7 +51,7 @@
 
     <name>Payara Extensions for Java Util Logging</name>
     <properties>
-        <test.logManager>fish.payara.logging.jul.PayaraLogManager</test.logManager>
+        <test.logManager>fish.payara.jul.PayaraLogManager</test.logManager>
     </properties>
 
     <dependencies>

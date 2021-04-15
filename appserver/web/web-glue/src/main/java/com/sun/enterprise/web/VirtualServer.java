@@ -174,8 +174,8 @@ import com.sun.enterprise.web.pluggable.WebContainerFeatureFactory;
 import com.sun.enterprise.web.session.SessionCookieConfig;
 import com.sun.web.security.RealmAdapter;
 
-import fish.payara.logging.jul.PayaraLogManager;
-import fish.payara.logging.jul.handler.PayaraLogHandler;
+import fish.payara.jul.PayaraLogManager;
+import fish.payara.jul.handler.PayaraLogHandler;
 
 /**
  * Standard implementation of a virtual server (aka virtual host) in the Payara Server.

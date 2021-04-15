@@ -44,7 +44,7 @@ package com.sun.enterprise.admin.launcher;
 
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 
-import fish.payara.logging.jul.formatter.ODLLogFormatter;
+import fish.payara.jul.formatter.ODLLogFormatter;
 
 import java.io.IOException;
 import java.util.logging.ConsoleHandler;

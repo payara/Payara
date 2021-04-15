@@ -40,15 +40,16 @@
 
 package fish.payara.acme;
 
-import fish.payara.logging.jul.PayaraLogManager;
-import fish.payara.logging.jul.PayaraLogManager.Action;
-import fish.payara.logging.jul.PayaraLogger;
-import fish.payara.logging.jul.PayaraLoggingStatus;
-import fish.payara.logging.jul.cfg.PayaraLogManagerConfiguration;
-import fish.payara.logging.jul.cfg.SortedProperties;
-import fish.payara.logging.jul.env.LoggingSystemEnvironment;
-import fish.payara.logging.jul.formatter.OneLineFormatter;
-import fish.payara.logging.jul.handler.ExternallyManagedLogHandler;
+import fish.payara.jul.PayaraLogManager;
+import fish.payara.jul.PayaraLogger;
+import fish.payara.jul.PayaraLoggingStatus;
+import fish.payara.jul.PayaraLogManager.Action;
+import fish.payara.jul.cfg.PayaraLogManagerConfiguration;
+import fish.payara.jul.cfg.SortedProperties;
+import fish.payara.jul.env.LoggingSystemEnvironment;
+import fish.payara.jul.formatter.OneLineFormatter;
+import fish.payara.jul.handler.ExternallyManagedLogHandler;
+
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
@@ -59,8 +60,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
-import static fish.payara.logging.jul.cfg.PayaraLoggingJvmOptions.CLASS_LOG_MANAGER_PAYARA;
-import static fish.payara.logging.jul.cfg.PayaraLoggingJvmOptions.JVM_OPT_LOGGING_MANAGER;
+import static fish.payara.jul.cfg.PayaraLoggingJvmOptions.CLASS_LOG_MANAGER_PAYARA;
+import static fish.payara.jul.cfg.PayaraLoggingJvmOptions.JVM_OPT_LOGGING_MANAGER;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -120,7 +121,7 @@ public class PayaraLogManagerTest {
         );
         assertAll(
             () -> assertThat("global logger via PayaraLogManager", globalLogger.getClass().getName(),
-                equalTo("fish.payara.logging.jul.PayaraLoggerWrapper")),
+                equalTo("fish.payara.jul.PayaraLoggerWrapper")),
             () -> assertThat("global logger name", Logger.getGlobal().getName(), equalTo(globalLogger.getName()))
         );
     }
