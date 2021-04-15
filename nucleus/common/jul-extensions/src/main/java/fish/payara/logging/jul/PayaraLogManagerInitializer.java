@@ -60,7 +60,12 @@ import static fish.payara.logging.jul.cfg.PayaraLoggingJvmOptions.JVM_OPT_LOGGIN
  *
  * @author David Matejcek
  */
-public class PayaraLogManagerInitializer {
+public final class PayaraLogManagerInitializer {
+
+    private PayaraLogManagerInitializer() {
+        // hidden
+    }
+
 
     /**
      * Tries to set the {@link PayaraLogManager}as the JVM's {@link LogManager} implementation.

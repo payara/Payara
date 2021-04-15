@@ -104,9 +104,9 @@ public class PayaraLogManager extends LogManager {
     /** Empty string - standard root logger name */
     public static final String ROOT_LOGGER_NAME = "";
 
+    private static final AtomicBoolean RESET_PROTECTION = new AtomicBoolean(true);
     private static volatile PayaraLoggingStatus status = PayaraLoggingStatus.UNINITIALIZED;
     private static PayaraLogManager payaraLogManager;
-    private static final AtomicBoolean protectBeforeReset = new AtomicBoolean(true);
 
     private volatile PayaraLogger systemRootLogger;
     private volatile PayaraLogger userRootLogger;
@@ -294,7 +294,7 @@ public class PayaraLogManager extends LogManager {
         // reset causes closing of current handlers
         // reset is invoked automatically also in the begining of super.readConfiguration(is).
         // btw LogManager.createLogHandlers exists in JDK11, but not in JDK8
-        if (protectBeforeReset.get()) {
+        if (RESET_PROTECTION.get()) {
             PayaraLoggingTracer.trace(PayaraLogManager.class, "reset() ignored.");
             return;
         }
@@ -397,9 +397,9 @@ public class PayaraLogManager extends LogManager {
             + cfg + "\n reconfigureAction: " + reconfigureAction + "\n flushAction: " + flushAction);
         if (cfg.isTracingEnabled()) {
             // if enabled, start immediately. If not, don't change it yet, it could be set by JVM option.
-            PayaraLoggingTracer.setTracing(cfg.isTracingEnabled());
+            PayaraLoggingTracer.setTracingEnabled(cfg.isTracingEnabled());
         }
-        setLoggingStatus(PayaraLoggingStatus.CONFIGURING);
+        setStatus(PayaraLoggingStatus.CONFIGURING);
         this.configuration = cfg;
         LoggingSystemEnvironment.setReleaseParametersEarly(
             Boolean.parseBoolean(cfg.getProperty("fish.payara.logging.jul.record.releaseParametersEarly")));
@@ -441,7 +441,7 @@ public class PayaraLogManager extends LogManager {
                 || ExternallyManagedLogHandler.class.cast(h).isReady();
             final List<Handler> handlers = getAllHandlers();
             if (handlers.isEmpty() || handlers.stream().allMatch(isReadyPredicate)) {
-                setLoggingStatus(PayaraLoggingStatus.FLUSHING_BUFFERS);
+                setStatus(PayaraLoggingStatus.FLUSHING_BUFFERS);
                 if (flushAction != null) {
                     try {
                         currentThread.setContextClassLoader(flushAction.getClassLoader());
@@ -453,11 +453,11 @@ public class PayaraLogManager extends LogManager {
                 final StartupQueue queue = StartupQueue.getInstance();
                 queue.toStream().forEach(o -> o.getLogger().checkAndLog(o.getRecord()));
                 queue.reset();
-                setLoggingStatus(PayaraLoggingStatus.FULL_SERVICE);
+                setStatus(PayaraLoggingStatus.FULL_SERVICE);
             }
         } finally {
             // regardless of the result, set tracing.
-            PayaraLoggingTracer.setTracing(cfg.isTracingEnabled());
+            PayaraLoggingTracer.setTracingEnabled(cfg.isTracingEnabled());
         }
     }
 
@@ -483,7 +483,7 @@ public class PayaraLogManager extends LogManager {
     }
 
 
-    private void setLoggingStatus(final PayaraLoggingStatus status) {
+    private void setStatus(final PayaraLoggingStatus status) {
         PayaraLoggingTracer.trace(PayaraLogManager.class, () -> "setLoggingStatus(status=" + status + ")");
         PayaraLogManager.status = status;
     }
@@ -521,8 +521,8 @@ public class PayaraLogManager extends LogManager {
     private void doFirstInitialization(final SortedProperties properties) {
         PayaraLoggingTracer.trace(PayaraLogManager.class, () -> "Initializing logManager: " + this);
         try {
-            protectBeforeReset.set(false);
-            setLoggingStatus(PayaraLoggingStatus.UNCONFIGURED);
+            RESET_PROTECTION.set(false);
+            setStatus(PayaraLoggingStatus.UNCONFIGURED);
             this.configuration = new PayaraLogManagerConfiguration(properties);
             this.globalLogger.setParent(this.userRootLogger);
             initializeRootLoggers();
@@ -531,7 +531,7 @@ public class PayaraLogManager extends LogManager {
             PayaraLoggingTracer.error(PayaraLogManager.class, "Initialization of " + this + " failed!", e);
             throw e;
         } finally {
-            protectBeforeReset.set(true);
+            RESET_PROTECTION.set(true);
         }
     }
 

@@ -51,7 +51,11 @@ package fish.payara.logging.jul.cfg;
  * @author David Matejcek
  */
 // do not reference JUL classes from here, they can be initialized when you don't want it.
-public class PayaraLoggingJvmOptions {
+public final class PayaraLoggingJvmOptions {
+
+    private PayaraLoggingJvmOptions() {
+        // hidden constructor
+    }
 
     /** Default JUL LogManager class name */
     public static final String CLASS_LOG_MANAGER_JUL = "java.util.logging.LogManager";

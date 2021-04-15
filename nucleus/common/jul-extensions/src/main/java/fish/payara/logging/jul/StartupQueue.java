@@ -55,7 +55,7 @@ import java.util.stream.Stream;
  *
  * @author David Matejcek
  */
-class StartupQueue {
+final class StartupQueue {
 
     private static final StartupQueue INSTANCE = new StartupQueue();
     private final ConcurrentLinkedQueue<DeferredRecord> queue = new ConcurrentLinkedQueue<>();

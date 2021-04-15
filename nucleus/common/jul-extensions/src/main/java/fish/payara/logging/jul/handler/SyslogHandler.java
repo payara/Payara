@@ -67,7 +67,7 @@ public class SyslogHandler extends Handler {
         final String cname = getClass().getName();
         final LogManager manager = LogManager.getLogManager();
         final String systemLogging = manager.getProperty(cname + ".useSystemLogging");
-        if (systemLogging == null || systemLogging.equals("false")) {
+        if (systemLogging == null || "false".equals(systemLogging)) {
             return;
         }
         sysLogger = setupConnection();

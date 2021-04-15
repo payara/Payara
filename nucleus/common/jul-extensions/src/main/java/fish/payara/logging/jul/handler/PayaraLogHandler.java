@@ -156,7 +156,7 @@ public class PayaraLogHandler extends StreamHandler implements ExternallyManaged
         setLevel(configuration.getLevel());
         setEncoding(configuration.getEncoding());
 
-        this.logRecordBuffer = new LogRecordBuffer( //
+        this.logRecordBuffer = new LogRecordBuffer(
             configuration.getBufferCapacity(), configuration.getBufferTimeout());
 
         reconfigure(configuration);

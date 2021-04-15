@@ -64,50 +64,24 @@ public class JSONLogFormatter extends PayaraLogFormatter {
     private static final String RECORD_NUMBER = "RecordNumber";
     private static final String METHOD_NAME = "MethodName";
     private static final String CLASS_NAME = "ClassName";
+    private static final String TIMESTAMP_KEY = "Timestamp";
+    private static final String LOG_LEVEL_KEY = "Level";
+    private static final String PRODUCT_ID_KEY = "Version";
+    private static final String LOGGER_NAME_KEY = "LoggerName";
+    // String values for exception keys
+    private static final String EXCEPTION_KEY = "Exception";
+    private static final String STACK_TRACE_KEY = "StackTrace";
+    // String values for thread excludable keys
+    private static final String THREAD_ID_KEY = "ThreadID";
+    private static final String THREAD_NAME_KEY = "ThreadName";
+    private static final String LEVEL_VALUE_KEY = "LevelValue";
+    private static final String TIME_MILLIS_KEY = "TimeMillis";
+    private static final String MESSAGE_ID_KEY = "MessageID";
+    private static final String LOG_MESSAGE_KEY = "LogMessage";
+    private static final String THROWABLE_KEY = "Throwable";
 
     private static final MessageResolver MESSAGE_RESOLVER = new MessageResolver();
     private static final String LINE_SEPARATOR = System.lineSeparator();
-
-    private final ExcludeFieldsSupport excludeFieldsSupport = new ExcludeFieldsSupport();
-
-    // String values for field keys
-    private String TIMESTAMP_KEY = "Timestamp";
-    private String LOG_LEVEL_KEY = "Level";
-    private String PRODUCT_ID_KEY = "Version";
-    private String LOGGER_NAME_KEY = "LoggerName";
-    // String values for exception keys
-    private String EXCEPTION_KEY = "Exception";
-    private String STACK_TRACE_KEY = "StackTrace";
-    // String values for thread excludable keys
-    private String THREAD_ID_KEY = "ThreadID";
-    private String THREAD_NAME_KEY = "ThreadName";
-    private String LEVEL_VALUE_KEY = "LevelValue";
-    private String TIME_MILLIS_KEY = "TimeMillis";
-    private String MESSAGE_ID_KEY = "MessageID";
-    private String LOG_MESSAGE_KEY = "LogMessage";
-    private String THROWABLE_KEY = "Throwable";
-
-    {
-        final LogManager logManager = LogManager.getLogManager();
-        final String underscorePrefix = logManager.getProperty(PAYARA_JSONLOGFORMATTER_UNDERSCORE);
-        if (Boolean.parseBoolean(underscorePrefix)) {
-            TIMESTAMP_KEY = "_" + TIMESTAMP_KEY;
-            LOG_LEVEL_KEY = "_" + LOG_LEVEL_KEY;
-            PRODUCT_ID_KEY = "_" + PRODUCT_ID_KEY;
-            LOGGER_NAME_KEY = "_" + LOGGER_NAME_KEY;
-            EXCEPTION_KEY = "_" + EXCEPTION_KEY;
-            STACK_TRACE_KEY = "_" + STACK_TRACE_KEY;
-            // String values for thread excludable keys
-            THREAD_ID_KEY = "_" + THREAD_ID_KEY;
-            THREAD_NAME_KEY = "_" + THREAD_NAME_KEY;
-            LEVEL_VALUE_KEY = "_" + LEVEL_VALUE_KEY;
-            TIME_MILLIS_KEY = "_" + TIME_MILLIS_KEY;
-            MESSAGE_ID_KEY = "_" + MESSAGE_ID_KEY;
-            LOG_MESSAGE_KEY = "_" + LOG_MESSAGE_KEY;
-            THROWABLE_KEY = "_" + THROWABLE_KEY;
-        }
-    }
-
 
     /**
      * For backwards compatibility with log format for pre-182
@@ -117,6 +91,10 @@ public class JSONLogFormatter extends PayaraLogFormatter {
     @Deprecated
     private static final String PAYARA_JSONLOGFORMATTER_UNDERSCORE
         = "fish.payara.deprecated.jsonlogformatter.underscoreprefix";
+
+    private final ExcludeFieldsSupport excludeFieldsSupport = new ExcludeFieldsSupport();
+    private final boolean underscorePrefix = Boolean
+        .parseBoolean(LogManager.getLogManager().getProperty(PAYARA_JSONLOGFORMATTER_UNDERSCORE));
 
     public JSONLogFormatter(final HandlerId handlerId) {
         super(handlerId);
@@ -161,7 +139,7 @@ public class JSONLogFormatter extends PayaraLogFormatter {
             return "";
         }
         try {
-            final JsonBuilderWrapper json = new JsonBuilderWrapper();
+            final JsonBuilderWrapper json = new JsonBuilderWrapper(underscorePrefix);
             final String timestampValue = getDateTimeFormatter().format(record.getTime());
             json.add(TIMESTAMP_KEY, timestampValue);
 
@@ -230,7 +208,7 @@ public class JSONLogFormatter extends PayaraLogFormatter {
 
             json.add(LOG_MESSAGE_KEY, record.getMessage());
             if (record.getThrown() != null) {
-                final JsonBuilderWrapper traceObject = new JsonBuilderWrapper();
+                final JsonBuilderWrapper traceObject = new JsonBuilderWrapper(underscorePrefix);
                 final String exceptionMessage = record.getThrown().getMessage();
                 if (exceptionMessage != null) {
                     traceObject.add(EXCEPTION_KEY, exceptionMessage);
@@ -260,9 +238,11 @@ public class JSONLogFormatter extends PayaraLogFormatter {
 
 
     private static final class JsonBuilderWrapper {
+        private final boolean underscore;
         private final JsonObjectBuilder builder;
 
-        public JsonBuilderWrapper() {
+        public JsonBuilderWrapper(final boolean underscore) {
+            this.underscore = underscore;
             this.builder = Json.createObjectBuilder();
         }
 
@@ -279,7 +259,7 @@ public class JSONLogFormatter extends PayaraLogFormatter {
             }
             final String stringValue = value.toString();
             if (stringValue != null) {
-                this.builder.add(key, stringValue);
+                this.builder.add(underscore ? '_' + key : key, stringValue);
             }
             return this;
         }

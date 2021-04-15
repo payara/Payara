@@ -56,16 +56,21 @@ import java.io.PrintStream;
  *
  * @author David Matejcek
  */
-public class LoggingSystemEnvironment {
+public final class LoggingSystemEnvironment {
 
-    private static final PrintStream originalStdErr = System.err;
-    private static final PrintStream originalStdOut = System.out;
+    private static final PrintStream ORIGINAL_STD_ERR = System.err;
+    private static final PrintStream ORIGINAL_STD_OUT = System.out;
 
     // These values are global for this JVM
     // Why they are not volatile? Because it affects JIT optimizations
     // and they are not so critical.
     private static String productId;
     private static boolean releaseParametersEarly;
+
+    private LoggingSystemEnvironment() {
+        // hidden
+    }
+
 
     /**
      * Call this method before you do any changes in global JVM objects like {@link System#out}!
@@ -79,7 +84,7 @@ public class LoggingSystemEnvironment {
      * @return the STDOUT {@link PrintStream} used at startup.
      */
     public static PrintStream getOriginalStdErr() {
-        return originalStdErr;
+        return ORIGINAL_STD_ERR;
     }
 
 
@@ -87,7 +92,7 @@ public class LoggingSystemEnvironment {
      * @return the STDOUT {@link PrintStream} used at startup.
      */
     public static PrintStream getOriginalStdOut() {
-        return originalStdOut;
+        return ORIGINAL_STD_OUT;
     }
 
 
@@ -96,8 +101,8 @@ public class LoggingSystemEnvironment {
      */
     public static void resetStandardOutputs() {
         logSetter("Output streams reset to JVM defaults.");
-        System.setOut(originalStdOut);
-        System.setErr(originalStdErr);
+        System.setOut(ORIGINAL_STD_OUT);
+        System.setErr(ORIGINAL_STD_ERR);
     }
 
     /**

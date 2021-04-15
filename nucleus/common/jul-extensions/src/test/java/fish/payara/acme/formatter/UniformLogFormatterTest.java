@@ -242,7 +242,7 @@ public class UniformLogFormatterTest {
     public void exclusionsAndCustomTimestampFormat() {
         final LogRecord record = new LogRecord(Level.INFO, "This is a message.");
         final UniformLogFormatter formatter = new UniformLogFormatter();
-        formatter.setDateTimeFormatter("HH:mm:ss.SSS");
+        formatter.setTimestampFormatter("HH:mm:ss.SSS");
         formatter.setMultiLineMode(false);
         formatter.setExcludeFields(Arrays.stream(SupplementalAttribute.values()).map(SupplementalAttribute::getId)
             .collect(Collectors.joining(",")));

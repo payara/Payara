@@ -193,7 +193,7 @@ public class JSONLogFormatterTest {
         // name of the root logger is an empty string!
         record.setLoggerName("");
         final JSONLogFormatter formatter = new JSONLogFormatter();
-        formatter.setDateTimeFormatter("HH:mm:ss.SSS");
+        formatter.setTimestampFormatter("HH:mm:ss.SSS");
         formatter.setExcludeFields(Arrays.stream(SupplementalAttribute.values()).map(SupplementalAttribute::getId)
             .collect(Collectors.joining(",")));
         final String log = formatter.format(record);
@@ -217,7 +217,7 @@ public class JSONLogFormatterTest {
             "This is a message with the simple parameter `{0}` and map parameter `{1}`.");
         record.setParameters(new Object[] {"x1", map});
         final JSONLogFormatter formatter = new JSONLogFormatter();
-        formatter.setDateTimeFormatter("HH:mm:ss.SSS");
+        formatter.setTimestampFormatter("HH:mm:ss.SSS");
         formatter.setExcludeFields(Arrays.stream(SupplementalAttribute.values()).map(SupplementalAttribute::getId)
             .collect(Collectors.joining(",")));
         final String log = formatter.format(record);

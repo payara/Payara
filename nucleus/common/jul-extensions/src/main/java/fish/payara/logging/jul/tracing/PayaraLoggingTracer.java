@@ -66,7 +66,7 @@ public final class PayaraLoggingTracer {
      *
      * @param tracingEnabled
      */
-    public static void setTracing(final boolean tracingEnabled) {
+    public static void setTracingEnabled(final boolean tracingEnabled) {
         PayaraLoggingTracer.tracingEnabled = tracingEnabled;
     }
 

@@ -93,7 +93,7 @@ public class HandlerConfigurationHelper extends ConfigurationHelper {
             }
             return constructor.newInstance(handlerId);
         } catch (ReflectiveOperationException | RuntimeException e) {
-            errorHandler.handle(key, clazz, e);
+            handleError(e, key, clazz);
             return null;
         }
     }

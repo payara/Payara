@@ -92,10 +92,9 @@ public class ConfigurationHelper {
         }
         final ClassLoader logManagerCL = LogManager.getLogManager().getClass().getClassLoader();
         if (logManagerCL != null) {
-        try {
+            try {
                 return logManagerCL.loadClass(v).newInstance();
-        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException
-            | NoClassDefFoundError e) {
+            } catch (ReflectiveOperationException | NoClassDefFoundError e) {
                 // still ok, maybe the class is not visible for boot classloader,
                 // but it still might be visible for the thread classloader.
                 PayaraLoggingTracer.trace(ConfigurationHelper.class,
@@ -130,9 +129,9 @@ public class ConfigurationHelper {
     };
 
 
-    protected final LogManager manager;
-    protected final String prefix;
-    protected final LoggingPropertyErrorHandler errorHandler;
+    private final LogManager manager;
+    private final String prefix;
+    private final LoggingPropertyErrorHandler errorHandler;
 
 
     /**
@@ -225,10 +224,23 @@ public class ConfigurationHelper {
         try {
             return converter.apply(property);
         } catch (final Exception e) {
-            if (errorHandler != null) {
-                errorHandler.handle(realKey, property, e);
-            }
+            handleError(e, realKey, property);
             return defaultValueSupplier.get();
+        }
+    }
+
+
+    /**
+     * Calls the {@link LoggingPropertyErrorHandler} set in constructor.
+     *
+     * @param cause
+     * @param key
+     * @param property
+     * @throws RuntimeException - depends on the implementation of the error handler
+     */
+    protected void handleError(final Exception cause, final String key, final Object property) {
+        if (errorHandler != null) {
+            errorHandler.handle(key, property, cause);
         }
     }
 

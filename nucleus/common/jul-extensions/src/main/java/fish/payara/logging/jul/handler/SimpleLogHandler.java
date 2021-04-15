@@ -108,7 +108,7 @@ public class SimpleLogHandler extends StreamHandler {
      * {@link Handler#close()} closes also stream it used for the output, but we don't want to close
      * STDOUT and STDERR
      */
-    private static class UncloseablePrintStream extends PrintStream {
+    private static final class UncloseablePrintStream extends PrintStream {
 
         private UncloseablePrintStream(PrintStream out) {
             super(out, false);

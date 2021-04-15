@@ -355,14 +355,14 @@ public class LoggingPrintStream extends PrintStream {
      * avoid duplicate logging of stacktrace
      */
     // FIXME: smells alot - is all that magic worth?
-    private static class StackTraceObjects {
+    private static final class StackTraceObjects {
 
         private final ByteArrayOutputStream stackTraceBuf;
         private final PrintStream stStream;
         private final String stString;
         private final ByteArrayOutputStream comparisonBuf;
         private final PrintStream cbStream;
-        private int stackTraceBufBytes = 0;
+        private final int stackTraceBufBytes;
         private int charsIgnored = 0;
 
         private StackTraceObjects(Throwable throwable) {

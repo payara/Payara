@@ -105,16 +105,16 @@ public class ExcludeFieldsSupport {
      */
     public void setExcludeFields(final String excludeFields) {
         excludedAttributes.clear();
-        if (excludeFields == null) {
+        if (excludeFields == null || excludeFields.isEmpty()) {
             return;
         }
         final String[] fields = excludeFields.split(",");
         for (final String field : fields) {
             final SupplementalAttribute found = getById(field);
-            if (found != null) {
-                excludedAttributes.set(found.ordinal());
-            } else {
+            if (found == null) {
                 PayaraLoggingTracer.error(getClass(), "Ignoring excluded field because no such exists: " + field);
+            } else {
+                excludedAttributes.set(found.ordinal());
             }
         }
     }

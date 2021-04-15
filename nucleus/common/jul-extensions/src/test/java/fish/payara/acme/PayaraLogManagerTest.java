@@ -166,7 +166,7 @@ public class PayaraLogManagerTest {
         // we will reuse both actions
         reconfigActionCalled.set(false);
         flushActionCalled.set(false);
-        final String handlerName = PayaraLogManagerTest.class.getCanonicalName() + "$TestHandler";
+        final String handlerName = PayaraLogManagerTest.class.getName() + "$TestHandler";
         properties.setProperty("handlers", handlerName);
         final PayaraLogManagerConfiguration cfg2 = new PayaraLogManagerConfiguration(properties);
         logManager.reconfigure(cfg2, () -> reconfigActionCalled.set(true), () -> flushActionCalled.set(true));
@@ -174,7 +174,7 @@ public class PayaraLogManagerTest {
             () -> assertTrue(reconfigActionCalled.get(), "reconfig action was executed"),
             () -> assertFalse(flushActionCalled.get(), "flush action was executed"),
             () -> assertNotNull(logManager.getRootLogger().getHandler(TestHandler.class), "test handler"),
-            () -> assertFalse(logManager.getRootLogger().getHandler(TestHandler.class).ready, "test handler ready"),
+            () -> assertFalse(logManager.getRootLogger().getHandler(TestHandler.class).isReady(), "test handler ready"),
             () -> assertEquals(PayaraLoggingStatus.CONFIGURING, logManager.getLoggingStatus())
         );
 
@@ -221,8 +221,8 @@ public class PayaraLogManagerTest {
 
 
     public static class TestHandler extends Handler implements ExternallyManagedLogHandler {
-        public boolean ready;
-        public boolean published;
+        private boolean ready;
+        private boolean published;
 
         public TestHandler() {
             setFormatter(new OneLineFormatter());

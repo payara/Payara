@@ -343,11 +343,11 @@ public class LogFileManager {
 
 
     private boolean gzipFile(final File inputFile, final File outputFile) {
-        try ( //
-            FileInputStream fis = new FileInputStream(inputFile); //
-            FileOutputStream fos = new FileOutputStream(outputFile); //
-            GZIPOutputStream gzos = new GZIPOutputStream(fos) //
-        ) { //
+        try (
+            FileInputStream fis = new FileInputStream(inputFile);
+            FileOutputStream fos = new FileOutputStream(outputFile);
+            GZIPOutputStream gzos = new GZIPOutputStream(fos)
+        ) {
             byte[] buffer = new byte[1024];
             int len;
             while ((len = fis.read(buffer)) != -1) {

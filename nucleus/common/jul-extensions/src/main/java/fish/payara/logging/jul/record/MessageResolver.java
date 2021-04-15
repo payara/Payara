@@ -59,7 +59,7 @@ import java.util.logging.Logger;
  *
  * @author David Matejcek
  */
-public class MessageResolver {
+public final class MessageResolver {
 
     private final LogManager manager;
 
@@ -175,6 +175,29 @@ public class MessageResolver {
             return MessageFormat.format(template, parameters);
         } catch (final Exception e) {
             return template;
+        }
+    }
+
+    /**
+     * Bind the message and it's bundle key.
+     */
+    private static final class ResolvedLogMessage {
+
+        private final String key;
+        private final String message;
+
+        ResolvedLogMessage(final String key, final String message) {
+            this.key = key;
+            this.message = message;
+        }
+
+
+        /**
+         * Returns key:message
+         */
+        @Override
+        public String toString() {
+            return key + ":" + message;
         }
     }
 }

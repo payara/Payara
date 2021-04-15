@@ -84,7 +84,7 @@ public class PayaraLogHandlerTest {
 
     @BeforeAll
     public static void initEnv() throws Exception {
-        PayaraLoggingTracer.setTracing(true);
+        PayaraLoggingTracer.setTracingEnabled(true);
         LogManager.getLogManager().reset();
         LoggingSystemEnvironment.initialize();
         final PayaraLogHandlerConfiguration cfg = new PayaraLogHandlerConfiguration();
@@ -102,7 +102,7 @@ public class PayaraLogHandlerTest {
             handler.close();
         }
         LogManager.getLogManager().reset();
-        PayaraLoggingTracer.setTracing(false);
+        PayaraLoggingTracer.setTracingEnabled(false);
     }
 
 

@@ -277,7 +277,8 @@ public class PayaraLogger extends Logger {
 
 
     @Override
-    public void logp(final Level level, final String sourceClass, final String sourceMethod, final String msg, final Object[] params) {
+    public void logp(final Level level, final String sourceClass, final String sourceMethod, final String msg,
+        final Object[] params) {
         final PayaraLoggingStatus status = getLoggingStatus();
         if (!isLoggable(level, status)) {
             return;
@@ -364,7 +365,7 @@ public class PayaraLogger extends Logger {
 
 
     @Override
-    public void entering(final String sourceClass, final String sourceMethod, final Object params[]) {
+    public void entering(final String sourceClass, final String sourceMethod, final Object[] params) {
         final PayaraLoggingStatus status = getLoggingStatus();
         if (!isLoggable(Level.FINER, status)) {
             return;

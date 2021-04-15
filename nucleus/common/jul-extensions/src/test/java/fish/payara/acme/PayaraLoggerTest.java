@@ -78,7 +78,7 @@ public class PayaraLoggerTest {
 
     @BeforeAll
     public static void initEnv() throws Exception {
-        PayaraLoggingTracer.setTracing(true);
+        PayaraLoggingTracer.setTracingEnabled(true);
         LogManager.getLogManager().reset();
         final Logger originalLogger = Logger.getLogger(LogCollectorHandlerTest.class.getName());
         originalLogger.setResourceBundle(new TestResourceBundle());
@@ -101,7 +101,7 @@ public class PayaraLoggerTest {
         }
         assertThat("Nothing should remain after close", handler.getAll(), hasSize(0));
         LogManager.getLogManager().reset();
-        PayaraLoggingTracer.setTracing(false);
+        PayaraLoggingTracer.setTracingEnabled(false);
     }
 
 

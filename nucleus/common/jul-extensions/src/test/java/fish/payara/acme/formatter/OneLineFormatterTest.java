@@ -121,7 +121,8 @@ public class OneLineFormatterTest {
         assertAll(
             () -> assertThat(lines, arrayWithSize(1)),
             () -> assertThat(lines[0], matchesPattern(PATTERN_SINGLELINE)),
-            () -> assertThat(lines[0], endsWith(leftPad("INFO", 8) + leftPad("main", 21) + leftPad("fish.payara.FakeClass", 61) + ".fakeMethod " + message))
+            () -> assertThat(lines[0], endsWith(leftPad("INFO", 8) + leftPad("main", 21)
+                    + leftPad("fish.payara.FakeClass", 61) + ".fakeMethod " + message))
         );
     }
 

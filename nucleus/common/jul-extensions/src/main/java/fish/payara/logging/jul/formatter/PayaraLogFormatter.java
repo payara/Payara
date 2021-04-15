@@ -65,7 +65,7 @@ public abstract class PayaraLogFormatter extends Formatter {
     // This was required, because we need 3 decimal numbers of the second fraction
     // DateTimeFormatter.ISO_LOCAL_DATE_TIME prints just nonzero values
     /** Example: 15:35:40.123 */
-    protected static final DateTimeFormatter iSO_LOCAL_TIME = new DateTimeFormatterBuilder()
+    protected static final DateTimeFormatter ISO_LOCAL_TIME = new DateTimeFormatterBuilder()
         .appendValue(HOUR_OF_DAY, 2).appendLiteral(':')
         .appendValue(MINUTE_OF_HOUR, 2).optionalStart().appendLiteral(':')
         .appendValue(SECOND_OF_MINUTE, 2).optionalStart()
@@ -77,7 +77,7 @@ public abstract class PayaraLogFormatter extends Formatter {
         .parseCaseInsensitive()
         .append(DateTimeFormatter.ISO_LOCAL_DATE)
         .appendLiteral('T')
-        .append(iSO_LOCAL_TIME)
+        .append(ISO_LOCAL_TIME)
         .toFormatter(Locale.ROOT);
 
     /** Example: 2011-12-03T15:35:40.123+01:00 */
@@ -200,7 +200,7 @@ public abstract class PayaraLogFormatter extends Formatter {
     /**
      * @param timestampFormatter {@link DateTimeFormatter} used for timestamps. Null sets default.
      */
-    public final void setDateTimeFormatter(final DateTimeFormatter timestampFormatter) {
+    public final void setTimestampFormatter(final DateTimeFormatter timestampFormatter) {
         this.timestampFormatter = timestampFormatter == null ? DEFAULT_DATETIME_FORMATTER : timestampFormatter;
     }
 
@@ -209,8 +209,8 @@ public abstract class PayaraLogFormatter extends Formatter {
      * @param format The date format to set for records. Null sets default.
      *            See {@link DateTimeFormatter} for details.
      */
-    public final void setDateTimeFormatter(final String format) {
-        setDateTimeFormatter(format == null ? DEFAULT_DATETIME_FORMATTER : DateTimeFormatter.ofPattern(format));
+    public final void setTimestampFormatter(final String format) {
+        setTimestampFormatter(format == null ? DEFAULT_DATETIME_FORMATTER : DateTimeFormatter.ofPattern(format));
     }
 
 
