@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,12 +39,9 @@
  */
 package fish.payara.logging.jul.formatter;
 
-import fish.payara.logging.jul.tracing.PayaraLoggingTracer;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
-import java.util.logging.LogManager;
 
 /**
  * {@link PayaraLogFormatter} which is able to print colored logs.
@@ -55,68 +52,29 @@ import java.util.logging.LogManager;
  */
 public abstract class AnsiColorFormatter extends PayaraLogFormatter {
 
-    private AnsiColor loggerColor;
-    private HashMap<Level,AnsiColor> colors;
+    private AnsiColor loggerColor = AnsiColor.BOLD_INTENSE_BLUE;
+    private ColorMap colors = new ColorMap();
     private boolean ansiColor;
 
-    /**
-     * Creates the formatter, initialized from (starting from highest priority)
-     * <ul>
-     * <li>logging configuration.
-     * <li>JVM options
-     * </ul>
-     */
+    public AnsiColorFormatter(final HandlerId handlerId) {
+        configure(this, FormatterConfigurationHelper.forFormatterClass(getClass()));
+        configure(this, FormatterConfigurationHelper.forHandlerId(handlerId));
+    }
+
+
     public AnsiColorFormatter() {
-        final LogManager manager = LogManager.getLogManager();
-        final String color = manager.getProperty(this.getClass().getCanonicalName() + ".ansiColor");
-        if (Boolean.TRUE.toString().equalsIgnoreCase(color)) {
-            ansiColor = true;
-        }
-        colors = new HashMap<>();
-        colors.put(Level.INFO, AnsiColor.BOLD_INTENSE_GREEN);
-        colors.put(Level.WARNING, AnsiColor.BOLD_INTENSE_YELLOW);
-        colors.put(Level.SEVERE, AnsiColor.BOLD_INTENSE_RED);
-        final String infoColor = manager.getProperty(this.getClass().getCanonicalName() + ".infoColor");
-        if (infoColor != null) {
-            try {
-                colors.put(Level.INFO, AnsiColor.valueOf(infoColor));
-            } catch (final IllegalArgumentException iae) {
-                colors.put(Level.INFO, AnsiColor.BOLD_INTENSE_GREEN);
-            }
-        }
-        String colorProp = manager.getProperty(this.getClass().getCanonicalName() + ".warnColor");
-        if (colorProp != null) {
-            try {
-                colors.put(Level.WARNING, AnsiColor.valueOf(colorProp));
-            } catch (final IllegalArgumentException iae) {
-                colors.put(Level.WARNING, AnsiColor.BOLD_INTENSE_YELLOW);
-            }
-        }
-        colorProp = manager.getProperty(this.getClass().getCanonicalName() + ".severeColor");
-        if (colorProp != null) {
-            try {
-                colors.put(Level.SEVERE, AnsiColor.valueOf(colorProp));
-            } catch (final IllegalArgumentException iae) {
-                colors.put(Level.SEVERE, AnsiColor.BOLD_INTENSE_RED);
-            }
-        }
-
-        loggerColor = getLoggerColor(manager);
+        configure(this, FormatterConfigurationHelper.forFormatterClass(getClass()));
     }
 
 
-    private AnsiColor getLoggerColor(final LogManager manager) {
-        final String key = this.getClass().getCanonicalName() + ".loggerColor";
-        final String colorProp = manager.getProperty(key);
-        if (colorProp != null) {
-            try {
-                return AnsiColor.valueOf(colorProp);
-            } catch (final IllegalArgumentException e) {
-                PayaraLoggingTracer.error(getClass(), "Invalid property: " + key + ": " + e);
-            }
-        }
-        return AnsiColor.BOLD_INTENSE_BLUE;
+    private static void configure(final AnsiColorFormatter formatter, final FormatterConfigurationHelper helper) {
+        formatter.ansiColor = helper.getBoolean("ansiColor", false);
+        formatter.loggerColor = helper.getAnsiColor("loggerColor", formatter.loggerColor);
+        formatter.colors.overwriteIfNotNull(Level.INFO, helper.getAnsiColor("infoColor", null));
+        formatter.colors.overwriteIfNotNull(Level.WARNING, helper.getAnsiColor("warnColor", null));
+        formatter.colors.overwriteIfNotNull(Level.SEVERE, helper.getAnsiColor("severeColor", null));
     }
+
 
     /**
      * Enables/disables ANSI coloring in logs
@@ -127,12 +85,14 @@ public abstract class AnsiColorFormatter extends PayaraLogFormatter {
         this.ansiColor = ansiColor;
     }
 
+
     /**
      * @return true if ANSI coloring is enabled (default: true)
      */
     protected boolean isAnsiColor() {
         return ansiColor;
     }
+
 
     /**
      * @param loggerColor {@link AnsiColor} used for the logger name.
@@ -141,6 +101,7 @@ public abstract class AnsiColorFormatter extends PayaraLogFormatter {
         this.loggerColor = loggerColor;
     }
 
+
     /**
      * @return {@link AnsiColor} for the logger name value
      */
@@ -148,21 +109,47 @@ public abstract class AnsiColorFormatter extends PayaraLogFormatter {
         return loggerColor;
     }
 
+
     /**
      * @param mapping colors used for log levels
      */
     public void setLevelColors(final Map<Level, AnsiColor> mapping) {
-        this.colors = new HashMap<>(mapping);
+        this.colors = new ColorMap(mapping);
     }
+
 
     /**
      * @param level
-     * @return {@link AnsiColor} for the level value or null if {@link #isAnsiColor()} returns false.
+     * @return {@link AnsiColor} for the level value or null if {@link #isAnsiColor()} returns
+     *         false.
      */
     protected AnsiColor getLevelColor(final Level level) {
         if (!isAnsiColor()) {
             return null;
         }
         return colors.get(level);
+    }
+
+    private static class ColorMap extends HashMap<Level, AnsiColor> {
+
+        private static final long serialVersionUID = 1L;
+
+        ColorMap() {
+            put(Level.INFO, AnsiColor.BOLD_INTENSE_GREEN);
+            put(Level.WARNING, AnsiColor.BOLD_INTENSE_YELLOW);
+            put(Level.SEVERE, AnsiColor.BOLD_INTENSE_RED);
+        }
+
+
+        ColorMap(final Map<Level, AnsiColor> originalMap) {
+            super(originalMap);
+        }
+
+
+        public void overwriteIfNotNull(final Level key, final AnsiColor color) {
+            if (color != null) {
+                put(key, color);
+            }
+        }
     }
 }

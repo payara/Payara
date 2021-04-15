@@ -40,11 +40,8 @@
 
 package fish.payara.logging.jul.handler;
 
-import fish.payara.logging.jul.cfg.JulConfigurationFactory;
-import fish.payara.logging.jul.cfg.LoggingConfigurationHelper;
-import fish.payara.logging.jul.cfg.PayaraLogHandlerConfiguration;
 import fish.payara.logging.jul.env.LoggingSystemEnvironment;
-import fish.payara.logging.jul.formatter.LogFormatHelper;
+import fish.payara.logging.jul.formatter.LogFormatDetector;
 import fish.payara.logging.jul.formatter.UniformLogFormatter;
 import fish.payara.logging.jul.record.EnhancedLogRecord;
 import fish.payara.logging.jul.record.MessageResolver;
@@ -65,13 +62,14 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.StreamHandler;
 
-import static fish.payara.logging.jul.cfg.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.DEFAULT_BUFFER_CAPACITY;
-import static fish.payara.logging.jul.cfg.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.DEFAULT_BUFFER_TIMEOUT;
-import static fish.payara.logging.jul.cfg.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.DEFAULT_ROTATION_LIMIT_BYTES;
-import static fish.payara.logging.jul.cfg.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.MINIMUM_ROTATION_LIMIT_BYTES;
-import static fish.payara.logging.jul.cfg.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.ROTATION_LIMIT_SIZE;
-import static fish.payara.logging.jul.cfg.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.ROTATION_LIMIT_TIME;
-import static fish.payara.logging.jul.cfg.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.ROTATION_ON_DATE_CHANGE;
+import static fish.payara.logging.jul.handler.HandlerConfigurationHelper.forHandlerClass;
+import static fish.payara.logging.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.DEFAULT_BUFFER_CAPACITY;
+import static fish.payara.logging.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.DEFAULT_BUFFER_TIMEOUT;
+import static fish.payara.logging.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.DEFAULT_ROTATION_LIMIT_BYTES;
+import static fish.payara.logging.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.MINIMUM_ROTATION_LIMIT_BYTES;
+import static fish.payara.logging.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.ROTATION_LIMIT_SIZE;
+import static fish.payara.logging.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.ROTATION_LIMIT_TIME;
+import static fish.payara.logging.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.ROTATION_ON_DATE_CHANGE;
 import static fish.payara.logging.jul.tracing.PayaraLoggingTracer.error;
 import static fish.payara.logging.jul.tracing.PayaraLoggingTracer.trace;
 import static java.security.AccessController.doPrivileged;
@@ -121,7 +119,7 @@ public class PayaraLogHandler extends StreamHandler implements ExternallyManaged
      */
     public static PayaraLogHandlerConfiguration createPayaraLogHandlerConfiguration(
         final Class<? extends PayaraLogHandler> handlerClass) {
-        final LoggingConfigurationHelper helper = new LoggingConfigurationHelper(handlerClass);
+        final HandlerConfigurationHelper helper = forHandlerClass(handlerClass);
         final PayaraLogHandlerConfiguration configuration = new PayaraLogHandlerConfiguration();
         configuration.setLevel(helper.getLevel("level", Level.ALL));
         configuration.setEncoding(helper.getCharset("encoding", StandardCharsets.UTF_8));
@@ -141,8 +139,7 @@ public class PayaraLogHandler extends StreamHandler implements ExternallyManaged
         configuration.setRotationTimeLimitValue(helper.getNonNegativeInteger(ROTATION_LIMIT_TIME.getPropertyName(), 0));
         configuration.setMaxHistoryFiles(helper.getNonNegativeInteger("maxHistoryFiles", 10));
 
-        final Formatter formatter = helper.getFormatter("formatter", UniformLogFormatter.class.getName());
-        new JulConfigurationFactory().configureFormatter(formatter, helper);
+        final Formatter formatter = helper.getFormatter(UniformLogFormatter.class);
         configuration.setFormatterConfiguration(formatter);
         return configuration;
     }
@@ -331,7 +328,7 @@ public class PayaraLogHandler extends StreamHandler implements ExternallyManaged
             this.configuration.getMaxHistoryFiles(), this::setOutputStream, super::close);
 
         final Formatter formatter = configuration.getFormatterConfiguration();
-        final String detectedFormatterName = new LogFormatHelper().detectFormatter(configuration.getLogFile());
+        final String detectedFormatterName = new LogFormatDetector().detectFormatter(configuration.getLogFile());
         if (detectedFormatterName != null && !formatter.getClass().getName().equals(detectedFormatterName)) {
             this.logFileManager.roll();
         }

@@ -45,9 +45,9 @@ package com.sun.common.util.logging;
 import fish.payara.logging.jul.handler.PayaraLogHandler;
 import fish.payara.logging.jul.handler.SyslogHandler;
 
-import static fish.payara.logging.jul.cfg.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.LOG_FILTER;
-import static fish.payara.logging.jul.cfg.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.ROTATION_LIMIT_SIZE;
-import static fish.payara.logging.jul.cfg.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.ROTATION_LIMIT_TIME;
+import static fish.payara.logging.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.LOG_FILTER;
+import static fish.payara.logging.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.ROTATION_LIMIT_SIZE;
+import static fish.payara.logging.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.ROTATION_LIMIT_TIME;
 
 public class LoggingPropertyNames {
 

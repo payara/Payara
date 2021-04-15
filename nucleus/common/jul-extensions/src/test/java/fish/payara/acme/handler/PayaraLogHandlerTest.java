@@ -40,10 +40,10 @@
 
 package fish.payara.acme.handler;
 
-import fish.payara.logging.jul.cfg.PayaraLogHandlerConfiguration;
 import fish.payara.logging.jul.env.LoggingSystemEnvironment;
 import fish.payara.logging.jul.formatter.OneLineFormatter;
 import fish.payara.logging.jul.handler.PayaraLogHandler;
+import fish.payara.logging.jul.handler.PayaraLogHandlerConfiguration;
 import fish.payara.logging.jul.record.EnhancedLogRecord;
 import fish.payara.logging.jul.tracing.PayaraLoggingTracer;
 
@@ -61,10 +61,12 @@ import org.junit.jupiter.api.TestMethodOrder;
 
 import static fish.payara.logging.jul.env.LoggingSystemEnvironment.getOriginalStdErr;
 import static fish.payara.logging.jul.env.LoggingSystemEnvironment.getOriginalStdOut;
+import static fish.payara.logging.jul.handler.PayaraLogHandler.createPayaraLogHandlerConfiguration;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -180,5 +182,13 @@ public class PayaraLogHandlerTest {
             () -> assertSame(System.out, getOriginalStdOut(), "System.out should not be redirected"),
             () -> assertSame(System.err, getOriginalStdErr(), "System.err should not be redirected")
         );
+    }
+
+
+    @Test
+    @Order(60)
+    public void createConfiguration() throws Exception {
+        final PayaraLogHandlerConfiguration cfg = createPayaraLogHandlerConfiguration(PayaraLogHandler.class);
+        assertNotNull(cfg, "cfg");
     }
 }

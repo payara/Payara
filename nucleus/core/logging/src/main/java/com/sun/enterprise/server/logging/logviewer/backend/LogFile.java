@@ -47,7 +47,7 @@ import com.sun.enterprise.server.logging.parser.LogParserFactory;
 import com.sun.enterprise.server.logging.parser.LogParserListener;
 import com.sun.enterprise.server.logging.parser.ParsedLogRecord;
 
-import fish.payara.logging.jul.formatter.LogFormatHelper;
+import fish.payara.logging.jul.formatter.LogFormatDetector;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -237,7 +237,7 @@ public class LogFile implements java.io.Serializable {
     private Optional<BufferedReader> getLogFileReader(long fromFilePosition) {
         InputStream file = null;
         try {
-            if (new LogFormatHelper().isCompressedFile(getLogFileName())) {
+            if (new LogFormatDetector().isCompressedFile(getLogFileName())) {
                 file = new GZIPInputStream(new FileInputStream(getLogFileName()));
             } else {
                 file = new FileInputStream(getLogFileName());

@@ -165,7 +165,6 @@ class LoggingOutputStream extends ByteArrayOutputStream {
         if (record == null) {
             return false;
         }
-        // FIXME: possible deadlock
         logger.log(record);
         return true;
     }

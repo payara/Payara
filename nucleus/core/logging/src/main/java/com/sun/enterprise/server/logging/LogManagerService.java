@@ -56,12 +56,12 @@ import fish.payara.enterprise.server.logging.PayaraNotificationFileHandler;
 import fish.payara.logging.jul.PayaraLogManager;
 import fish.payara.logging.jul.PayaraLogManager.Action;
 import fish.payara.logging.jul.PayaraLogger;
-import fish.payara.logging.jul.cfg.PayaraLogHandlerConfiguration;
-import fish.payara.logging.jul.cfg.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty;
 import fish.payara.logging.jul.cfg.PayaraLogManagerConfiguration;
 import fish.payara.logging.jul.cfg.SortedProperties;
 import fish.payara.logging.jul.env.LoggingSystemEnvironment;
 import fish.payara.logging.jul.handler.PayaraLogHandler;
+import fish.payara.logging.jul.handler.PayaraLogHandlerConfiguration;
+import fish.payara.logging.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty;
 import fish.payara.logging.jul.tracing.PayaraLoggingTracer;
 
 import java.io.File;
@@ -98,11 +98,11 @@ import org.jvnet.hk2.annotations.ContractsProvided;
 import org.jvnet.hk2.annotations.Service;
 
 import static com.sun.enterprise.util.PropertyPlaceholderHelper.ENV_REGEX;
-import static fish.payara.logging.jul.cfg.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.MINIMUM_ROTATION_LIMIT_BYTES;
-import static fish.payara.logging.jul.cfg.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.ROTATION_LIMIT_SIZE;
-import static fish.payara.logging.jul.cfg.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.ROTATION_LIMIT_TIME;
 import static fish.payara.logging.jul.cfg.PayaraLoggingJvmOptions.JVM_OPT_LOGGING_CFG_FILE;
 import static fish.payara.logging.jul.handler.PayaraLogHandler.createPayaraLogHandlerConfiguration;
+import static fish.payara.logging.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.MINIMUM_ROTATION_LIMIT_BYTES;
+import static fish.payara.logging.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.ROTATION_LIMIT_SIZE;
+import static fish.payara.logging.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.ROTATION_LIMIT_TIME;
 
 /**
  * Reinitialise the log manager using our logging.properties file.

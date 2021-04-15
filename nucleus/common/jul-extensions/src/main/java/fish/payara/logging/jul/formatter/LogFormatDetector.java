@@ -56,7 +56,7 @@ import javax.json.JsonReader;
 /**
  * Helper class that provides methods to detect the log format of a record.
  */
-public class LogFormatHelper {
+public class LogFormatDetector {
 
     public static final String UNKNOWN_FORMAT = "unknown";
 

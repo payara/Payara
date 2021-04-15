@@ -58,35 +58,45 @@ public class OneLineFormatter extends PayaraLogFormatter {
     private static final String LINE_SEPARATOR = System.lineSeparator();
     private static final MessageResolver MSG_RESOLVER = new MessageResolver();
 
-    private final int sizeOfLevel;
-    private final int sizeOfThread;
-    private final int sizeOfClass;
+    private int sizeOfLevel = 7;
+    private int sizeOfThread = 20;
+    private int sizeOfClass = 60;
+
+
+    public OneLineFormatter(final HandlerId handlerId) {
+        super(handlerId, true, TS_FORMAT);
+        configure(this, FormatterConfigurationHelper.forFormatterClass(getClass()));
+        configure(this, FormatterConfigurationHelper.forHandlerId(handlerId));
+    }
 
 
     /**
      * Creates an instance and initializes defaults from log manager's configuration
      */
     public OneLineFormatter() {
-        final FormatterConfigurationHelper helper = new FormatterConfigurationHelper(getClass());
-        this.sizeOfLevel = helper.getNonNegativeInteger("size.level", 7);
-        this.sizeOfThread = helper.getNonNegativeInteger("size.thread", 20);
-        this.sizeOfClass = helper.getNonNegativeInteger("size.class", 60);
-        // Tests are primary target of this formatter
-        // In tests date is usually not much useful
-        setDateTimeFormatter(helper.getDateTimeFormatter("timestampFormatter", TS_FORMAT));
-        // false is more effective, but source is more useful in tests.
-        setPrintSource(helper.getBoolean("printSource", true));
+        super(true, TS_FORMAT);
+        configure(this, FormatterConfigurationHelper.forFormatterClass(getClass()));
     }
+
+
+    private static void configure(OneLineFormatter formatter, final FormatterConfigurationHelper helper) {
+        formatter.sizeOfLevel = helper.getNonNegativeInteger("size.level", formatter.sizeOfLevel);
+        formatter.sizeOfThread = helper.getNonNegativeInteger("size.thread", formatter.sizeOfThread);
+        formatter.sizeOfClass = helper.getNonNegativeInteger("size.class", formatter.sizeOfClass);
+    }
+
 
     @Override
     public String formatRecord(final LogRecord record) {
         return formatEnhancedLogRecord(MSG_RESOLVER.resolve(record));
     }
 
+
     @Override
     public String formatMessage(final LogRecord record) {
         throw new UnsupportedOperationException("String formatMessage(LogRecord record)");
     }
+
 
     private String formatEnhancedLogRecord(final EnhancedLogRecord record) {
         if (record.getMessage() == null) {

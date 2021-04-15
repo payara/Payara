@@ -38,12 +38,16 @@
  *  holder.
  */
 
-package fish.payara.logging.jul.cfg;
+package fish.payara.logging.jul.handler;
 
-import fish.payara.logging.jul.formatter.FormatterConfigurationHelper;
+import fish.payara.logging.jul.cfg.ConfigurationHelper;
+import fish.payara.logging.jul.formatter.HandlerId;
+import fish.payara.logging.jul.tracing.PayaraLoggingTracer;
 
+import java.lang.reflect.Constructor;
 import java.util.function.Function;
 import java.util.logging.Formatter;
+import java.util.logging.Handler;
 
 /**
  * This is a tool to help with parsing the logging.properties file to configure handlers.
@@ -54,22 +58,55 @@ import java.util.logging.Formatter;
  *
  * @author David Matejcek
  */
-public class LoggingConfigurationHelper extends FormatterConfigurationHelper {
+public class HandlerConfigurationHelper extends ConfigurationHelper {
 
     private static final Function<String, Formatter> STR_TO_FORMATTER = STR_TO_CLASS.andThen(Formatter.class::cast);
 
+    private final HandlerId handlerId;
 
-    public LoggingConfigurationHelper() {
-        super();
+    public static HandlerConfigurationHelper forHandlerClass(final Class<? extends Handler> handlerClass) {
+        return new HandlerConfigurationHelper(HandlerId.forHandlerClass(handlerClass));
     }
 
 
-    public LoggingConfigurationHelper(final Class<?> clazz) {
-        super(clazz);
+    public HandlerConfigurationHelper(final HandlerId handlerId) {
+        super(handlerId.getPropertyPrefix(), ERROR_HANDLER_PRINT_TO_STDERR);
+        this.handlerId = handlerId;
     }
 
 
-    public Formatter getFormatter(final String key, final String defaultFormatterClass) {
-        return parseOrSupply(key, () -> STR_TO_FORMATTER.apply(defaultFormatterClass), STR_TO_FORMATTER);
+    /**
+     * @param defaultFormatterClass
+     * @return preconfigured {@link Formatter}, defaults are defined by the formatter and properties
+     */
+    public Formatter getFormatter(final Class<? extends Formatter> defaultFormatterClass) {
+        return parseOrSupply("formatter", () -> createNewFormatter("formatter", defaultFormatterClass), STR_TO_FORMATTER);
+    }
+
+
+    private <F extends Formatter> F createNewFormatter(final String key, final Class<F> clazz) {
+        try {
+            final Constructor<F> constructor = getFormatterConstructor(clazz);
+            if (constructor == null) {
+                // All formatters must have default constructor
+                return clazz.newInstance();
+            }
+            return constructor.newInstance(handlerId);
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            errorHandler.handle(key, clazz, e);
+            return null;
+        }
+    }
+
+
+    private <F extends Formatter> Constructor<F> getFormatterConstructor(final Class<F> formatterClass) {
+        try {
+            return formatterClass.getConstructor(HandlerId.class);
+        } catch (NoSuchMethodException | SecurityException e) {
+            PayaraLoggingTracer.trace(getClass(),
+                "This formatter doesn't support configuration by handler's formatter properties subset: "
+                    + formatterClass + ", so we will use formatter's default constructor");
+            return null;
+        }
     }
 }

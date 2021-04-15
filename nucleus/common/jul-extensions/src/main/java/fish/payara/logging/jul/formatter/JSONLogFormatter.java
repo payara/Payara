@@ -68,6 +68,8 @@ public class JSONLogFormatter extends PayaraLogFormatter {
     private static final MessageResolver MESSAGE_RESOLVER = new MessageResolver();
     private static final String LINE_SEPARATOR = System.lineSeparator();
 
+    private final ExcludeFieldsSupport excludeFieldsSupport = new ExcludeFieldsSupport();
+
     // String values for field keys
     private String TIMESTAMP_KEY = "Timestamp";
     private String LOG_LEVEL_KEY = "Level";
@@ -79,31 +81,13 @@ public class JSONLogFormatter extends PayaraLogFormatter {
     // String values for thread excludable keys
     private String THREAD_ID_KEY = "ThreadID";
     private String THREAD_NAME_KEY = "ThreadName";
-    private String USER_ID_KEY = "UserId";
-    private String ECID_KEY = "ECId";
     private String LEVEL_VALUE_KEY = "LevelValue";
     private String TIME_MILLIS_KEY = "TimeMillis";
     private String MESSAGE_ID_KEY = "MessageID";
     private String LOG_MESSAGE_KEY = "LogMessage";
     private String THROWABLE_KEY = "Throwable";
 
-    private final ExcludeFieldsSupport excludeFieldsSupport;
-
-    /**
-     * For backwards compatibility with log format for pre-182
-     *
-     * @deprecated remove in Payara 6
-     */
-    @Deprecated
-    private static final String PAYARA_JSONLOGFORMATTER_UNDERSCORE
-        = "fish.payara.deprecated.jsonlogformatter.underscoreprefix";
-
-    /**
-     * Creates an instance and initializes defaults from log manager's configuration
-     */
-    public JSONLogFormatter() {
-        this.excludeFieldsSupport = new ExcludeFieldsSupport();
-
+    {
         final LogManager logManager = LogManager.getLogManager();
         final String underscorePrefix = logManager.getProperty(PAYARA_JSONLOGFORMATTER_UNDERSCORE);
         if (Boolean.parseBoolean(underscorePrefix)) {
@@ -116,17 +100,43 @@ public class JSONLogFormatter extends PayaraLogFormatter {
             // String values for thread excludable keys
             THREAD_ID_KEY = "_" + THREAD_ID_KEY;
             THREAD_NAME_KEY = "_" + THREAD_NAME_KEY;
-            USER_ID_KEY = "_" + USER_ID_KEY;
-            ECID_KEY = "_" + ECID_KEY;
             LEVEL_VALUE_KEY = "_" + LEVEL_VALUE_KEY;
             TIME_MILLIS_KEY = "_" + TIME_MILLIS_KEY;
             MESSAGE_ID_KEY = "_" + MESSAGE_ID_KEY;
             LOG_MESSAGE_KEY = "_" + LOG_MESSAGE_KEY;
             THROWABLE_KEY = "_" + THROWABLE_KEY;
         }
+    }
 
+
+    /**
+     * For backwards compatibility with log format for pre-182
+     *
+     * @deprecated remove in Payara 6
+     */
+    @Deprecated
+    private static final String PAYARA_JSONLOGFORMATTER_UNDERSCORE
+        = "fish.payara.deprecated.jsonlogformatter.underscoreprefix";
+
+    public JSONLogFormatter(final HandlerId handlerId) {
+        super(handlerId);
+        configure(this, FormatterConfigurationHelper.forFormatterClass(getClass()));
+        configure(this, FormatterConfigurationHelper.forHandlerId(handlerId));
+    }
+
+
+    /**
+     * Creates an instance and initializes defaults from log manager's configuration
+     */
+    public JSONLogFormatter() {
+        configure(this, FormatterConfigurationHelper.forFormatterClass(getClass()));
+    }
+
+
+    private static void configure(final JSONLogFormatter formatter, final FormatterConfigurationHelper helper) {
+        formatter.setExcludeFields(helper.getString("excludeFields", formatter.excludeFieldsSupport.toString()));
         // to validate it can work, especially depends on JSON support
-        format(new EnhancedLogRecord(Level.ALL, "msg", false));
+        formatter.format(new EnhancedLogRecord(Level.ALL, "msg", false));
     }
 
 
@@ -139,9 +149,11 @@ public class JSONLogFormatter extends PayaraLogFormatter {
         return formatLogRecord(record);
     }
 
+
     private String formatLogRecord(final LogRecord record) {
         return formatEnhancedLogRecord(MESSAGE_RESOLVER.resolve(record));
     }
+
 
     private String formatEnhancedLogRecord(final EnhancedLogRecord record) {
         if (record == null || (record.getMessage() == null && record.getThrown() == null)) {

@@ -89,16 +89,60 @@ public abstract class PayaraLogFormatter extends Formatter {
 
     private boolean printSequenceNumber;
     private boolean printSource;
-    private DateTimeFormatter timestampFormatter;
+    private DateTimeFormatter timestampFormatter = DEFAULT_DATETIME_FORMATTER;
+
+    /**
+     * Creates an instance and initializes defaults from log manager's configuration
+     *
+     * @param timestampFormatter
+     * @param printSource
+     */
+    public PayaraLogFormatter(final boolean printSource, final DateTimeFormatter timestampFormatter) {
+        this.printSource = printSource;
+        this.timestampFormatter = timestampFormatter;
+        configure(this, FormatterConfigurationHelper.forFormatterClass(getClass()));
+    }
+
+
+    /**
+     * Creates an instance and initializes defaults from log manager's configuration
+     *
+     * @param handlerId
+     * @param timestampFormatter
+     * @param printSource
+     */
+    public PayaraLogFormatter(final HandlerId handlerId, final boolean printSource,
+        final DateTimeFormatter timestampFormatter) {
+        this.printSource = printSource;
+        this.timestampFormatter = timestampFormatter;
+        configure(this, FormatterConfigurationHelper.forFormatterClass(getClass()));
+        configure(this, FormatterConfigurationHelper.forHandlerId(handlerId));
+    }
+
+
+    /**
+     * Creates an instance and initializes defaults from log manager's configuration
+     *
+     * @param handlerId
+     */
+    public PayaraLogFormatter(final HandlerId handlerId) {
+        configure(this, FormatterConfigurationHelper.forFormatterClass(getClass()));
+        configure(this, FormatterConfigurationHelper.forHandlerId(handlerId));
+    }
+
 
     /**
      * Creates an instance and initializes defaults from log manager's configuration
      */
     public PayaraLogFormatter() {
-        final FormatterConfigurationHelper helper = new FormatterConfigurationHelper(getClass());
-        this.printSequenceNumber = helper.getBoolean("printSequenceNumber", false);
-        this.printSource = helper.getBoolean("printSource", false);
-        this.timestampFormatter = helper.getDateTimeFormatter("timestampFormatter", DEFAULT_DATETIME_FORMATTER);
+        configure(this, FormatterConfigurationHelper.forFormatterClass(getClass()));
+    }
+
+
+    private static void configure(final PayaraLogFormatter formatter, final FormatterConfigurationHelper helper) {
+        formatter.printSequenceNumber = helper.getBoolean("printSequenceNumber", formatter.printSequenceNumber);
+        formatter.printSource = helper.getBoolean("printSource", formatter.printSource);
+        formatter.timestampFormatter = helper.getDateTimeFormatter("timestampFormat", formatter.timestampFormatter);
     }
 
 

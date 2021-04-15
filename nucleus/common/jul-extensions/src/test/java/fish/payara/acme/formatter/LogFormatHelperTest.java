@@ -40,7 +40,7 @@
 package fish.payara.acme.formatter;
 
 import fish.payara.logging.jul.formatter.JSONLogFormatter;
-import fish.payara.logging.jul.formatter.LogFormatHelper;
+import fish.payara.logging.jul.formatter.LogFormatDetector;
 import fish.payara.logging.jul.formatter.ODLLogFormatter;
 import fish.payara.logging.jul.formatter.OneLineFormatter;
 import fish.payara.logging.jul.formatter.UniformLogFormatter;
@@ -75,7 +75,7 @@ public class LogFormatHelperTest {
         + "                        fish.payara.acme.PayaraLogManagerTest.externalHandlers Tick tock!";
     private static final String RANDOM_RECORD = "liuasudhfuk fhuashfu hiufh fueqrhfuqrehf qufhr uihuih uih jj";
 
-    private final LogFormatHelper helper = new LogFormatHelper();
+    private final LogFormatDetector helper = new LogFormatDetector();
 
     @Test
     public void json() {
@@ -128,7 +128,7 @@ public class LogFormatHelperTest {
             () -> assertFalse(helper.isODLFormatLogHeader(RANDOM_RECORD), "is ODL"),
             () -> assertFalse(helper.isOneLineLFormatLogHeader(RANDOM_RECORD), "is OneLine"),
             () -> assertFalse(helper.isUniformFormatLogHeader(RANDOM_RECORD), "is UNL"),
-            () -> assertEquals(LogFormatHelper.UNKNOWN_FORMAT, helper.detectFormatter(RANDOM_RECORD))
+            () -> assertEquals(LogFormatDetector.UNKNOWN_FORMAT, helper.detectFormatter(RANDOM_RECORD))
         );
     }
 }

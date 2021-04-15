@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) 2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -40,22 +40,55 @@
 
 package fish.payara.logging.jul.formatter;
 
-import java.util.logging.Formatter;
+import java.util.logging.Handler;
 
 /**
+ * HandlerId holds a handler id used in logging.properties. The id is used as a key prefix of all
+ * handler's properties.
+ *
  * @author David Matejcek
  */
-public class JulFormatterConfiguration {
+public final class HandlerId {
 
-    private Class<? extends Formatter> formatterClass;
+    private final String name;
 
-    public Class<? extends Formatter> getFormatterClass() {
-        return formatterClass;
+    private HandlerId(final String name) {
+        this.name = name;
     }
 
 
-    public void setFormatterClass(Class<? extends Formatter> formatterClass) {
-        this.formatterClass = formatterClass;
+    /**
+     * @return name of the handler, usually same as the class name
+     */
+    public String getName() {
+        return this.name;
     }
 
+
+    /**
+     * @return prefix of all properties opf the handler, usually handler's class name.
+     */
+    public String getPropertyPrefix() {
+        return this.name;
+    }
+
+
+    /**
+     * Returns name of the handler.
+     */
+    @Override
+    public String toString() {
+        return getName();
+    }
+
+
+    /**
+     * Creates a {@link HandlerId} instance for handler's class.
+     *
+     * @param handlerClass
+     * @return {@link HandlerId}, never null.
+     */
+    public static HandlerId forHandlerClass(final Class<? extends Handler> handlerClass) {
+        return new HandlerId(handlerClass.getName());
+    }
 }

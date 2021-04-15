@@ -78,19 +78,28 @@ public class ODLLogFormatter extends AnsiColorFormatter {
 
     private static final MessageResolver MSG_RESOLVER = new MessageResolver();
 
-    private final ExcludeFieldsSupport excludeFieldsSupport;
-    private final String recordFieldSeparator;
-    private boolean multiLineMode;
+    private final ExcludeFieldsSupport excludeFieldsSupport = new ExcludeFieldsSupport();
+    private String recordFieldSeparator = FIELD_SEPARATOR;
+    private boolean multiLineMode = true;
+
+    public ODLLogFormatter(final HandlerId handlerId) {
+        configure(this, FormatterConfigurationHelper.forFormatterClass(getClass()));
+        configure(this, FormatterConfigurationHelper.forHandlerId(handlerId));
+    }
+
 
     /**
      * Creates an instance and initializes defaults from log manager's configuration
      */
     public ODLLogFormatter() {
-        final FormatterConfigurationHelper helper = new FormatterConfigurationHelper(getClass());
-        this.multiLineMode = helper.getBoolean("multiLineMode", true);
-        this.excludeFieldsSupport = new ExcludeFieldsSupport();
-        setExcludeFields(helper.getString("excludeFields", null));
-        this.recordFieldSeparator = helper.getString("fieldSeparator", FIELD_SEPARATOR);
+        configure(this, FormatterConfigurationHelper.forFormatterClass(getClass()));
+    }
+
+
+    private static void configure(final ODLLogFormatter formatter, final FormatterConfigurationHelper helper) {
+        formatter.multiLineMode = helper.getBoolean("multiLineMode", formatter.multiLineMode);
+        formatter.recordFieldSeparator = helper.getString("fieldSeparator", formatter.recordFieldSeparator);
+        formatter.setExcludeFields(helper.getString("excludeFields", formatter.excludeFieldsSupport.toString()));
     }
 
 

@@ -39,7 +39,6 @@
  */
 package fish.payara.logging.jul.handler;
 
-import fish.payara.logging.jul.cfg.LoggingConfigurationHelper;
 import fish.payara.logging.jul.env.LoggingSystemEnvironment;
 import fish.payara.logging.jul.formatter.OneLineFormatter;
 
@@ -66,13 +65,13 @@ public class SimpleLogHandler extends StreamHandler {
      * Configures the instance with properties prefixed by the name of this class.
      */
     public SimpleLogHandler() {
-        final LoggingConfigurationHelper helper = new LoggingConfigurationHelper(getClass());
+        final HandlerConfigurationHelper helper = HandlerConfigurationHelper.forHandlerClass(getClass());
         if (helper.getBoolean("useErrorStream", false)) {
             setOutputStream(new UncloseablePrintStream(LoggingSystemEnvironment.getOriginalStdErr()));
         } else {
             setOutputStream(new UncloseablePrintStream(LoggingSystemEnvironment.getOriginalStdOut()));
         }
-        setFormatter(helper.getFormatter("formatter", OneLineFormatter.class.getName()));
+        setFormatter(helper.getFormatter(OneLineFormatter.class));
     }
 
 

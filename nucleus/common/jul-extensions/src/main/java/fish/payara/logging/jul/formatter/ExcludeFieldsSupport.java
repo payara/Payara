@@ -46,6 +46,10 @@ import fish.payara.logging.jul.tracing.PayaraLoggingTracer;
 
 import java.util.BitSet;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
+
+import static fish.payara.logging.jul.formatter.ExcludeFieldsSupport.SupplementalAttribute.values;
+import static java.util.Arrays.stream;
 
 /**
  * @author sanshriv
@@ -71,25 +75,30 @@ public class ExcludeFieldsSupport {
             this.id = id;
         }
 
+
+        /**
+         * @return name of the attribute in logging.properties
+         */
         public String getId() {
             return this.id;
         }
     }
 
-    private final BitSet excludedAttributes = new BitSet(SupplementalAttribute.values().length);
+    private final BitSet excludedAttributes = new BitSet(values().length);
 
     /**
      * @param id
      * @return {@link SupplementalAttribute} if such exists with the same id.
      */
     public static SupplementalAttribute getById(final String id) {
-        for (SupplementalAttribute value : SupplementalAttribute.values()) {
+        for (SupplementalAttribute value : values()) {
             if (value.getId().equals(id)) {
                 return value;
             }
         }
         return null;
     }
+
 
     /**
      * @param excludeFields comma-separated list of {@link SupplementalAttribute} names.
@@ -110,11 +119,21 @@ public class ExcludeFieldsSupport {
         }
     }
 
+
     /**
      * @param attribute
      * @return true if the attribute should be excluded.
      */
     public boolean isSet(final SupplementalAttribute attribute) {
         return excludedAttributes.get(attribute.ordinal());
+    }
+
+
+    /**
+     * Returns excluded field identificators, separated by comma.
+     */
+    @Override
+    public String toString() {
+        return stream(values()).filter(this::isSet).map(SupplementalAttribute::getId).collect(Collectors.joining(","));
     }
 }

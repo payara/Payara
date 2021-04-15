@@ -41,7 +41,7 @@
 
 package com.sun.enterprise.server.logging.parser;
 
-import fish.payara.logging.jul.formatter.LogFormatHelper;
+import fish.payara.logging.jul.formatter.LogFormatDetector;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -64,7 +64,7 @@ public class LogParserFactory {
     }
 
     private static final LogParserFactory SINGLETON = new LogParserFactory();
-    private final LogFormatHelper logFormatHelper;
+    private final LogFormatDetector logFormatDetector;
 
     public static LogParserFactory getInstance() {
         return SINGLETON;
@@ -72,7 +72,7 @@ public class LogParserFactory {
 
 
     private LogParserFactory() {
-        logFormatHelper = new LogFormatHelper();
+        logFormatDetector = new LogFormatDetector();
     }
 
     public LogParser createLogParser(final File logFile) throws LogParserException, IOException {
@@ -94,7 +94,7 @@ public class LogParserFactory {
 
 
     private BufferedReader createReader(File logFile) throws IOException {
-        if (logFormatHelper.isCompressedFile(logFile.getName())) {
+        if (logFormatDetector.isCompressedFile(logFile.getName())) {
             return new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(logFile))));
         }
         return new BufferedReader(new FileReader(logFile));
@@ -103,9 +103,9 @@ public class LogParserFactory {
 
     private LogFormat detectLogFormat(final String line) {
         if (line != null) {
-            if (logFormatHelper.isODLFormatLogHeader(line)) {
+            if (logFormatDetector.isODLFormatLogHeader(line)) {
                 return LogFormat.ODL_LOG_FORMAT;
-            } else if (logFormatHelper.isUniformFormatLogHeader(line)) {
+            } else if (logFormatDetector.isUniformFormatLogHeader(line)) {
                 return LogFormat.UNIFORM_LOG_FORMAT;
             }
         }

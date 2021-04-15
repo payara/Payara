@@ -41,17 +41,11 @@ package fish.payara.acme;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 /**
@@ -158,15 +152,5 @@ public class SimpleTest {
                 LOG.log(level, "I would like to say this {0} times", index);
             }
         }
-    }
-
-
-    @Test
-    public void test() {
-        Pattern pattern = Pattern.compile("[q\\s]+=\\s*(.+)");
-        assertTrue(pattern.matcher("q=0.1").matches());
-        final Matcher matcher = pattern.matcher("q = .1");
-        matcher.find();
-        assertEquals(".1", matcher.group(1));
     }
 }

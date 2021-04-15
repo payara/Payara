@@ -38,7 +38,7 @@
  *  holder.
  */
 
-package fish.payara.logging.jul.cfg;
+package fish.payara.logging.jul.handler;
 
 import java.io.File;
 import java.nio.charset.Charset;

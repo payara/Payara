@@ -40,7 +40,7 @@
 
 package fish.payara.logging.jul;
 
-import fish.payara.logging.jul.cfg.LoggingConfigurationHelper;
+import fish.payara.logging.jul.cfg.ConfigurationHelper;
 import fish.payara.logging.jul.cfg.PayaraLogManagerConfiguration;
 import fish.payara.logging.jul.cfg.SortedProperties;
 import fish.payara.logging.jul.env.LoggingSystemEnvironment;
@@ -97,8 +97,6 @@ import static java.util.logging.Logger.GLOBAL_LOGGER_NAME;
  */
 public class PayaraLogManager extends LogManager {
 
-    /** Property key for a list of root handler implementations */
-    public static final String KEY_ROOT_HANDLERS = "handlers";
     /** Property key for a level of system root logger. System root loggers children are not configurable. */
     public static final String KEY_SYS_ROOT_LOGGER_LEVEL = "systemRootLoggerLevel";
     /** Property key for a level of user root logger. User root loggers children can have own level.  */
@@ -541,8 +539,7 @@ public class PayaraLogManager extends LogManager {
     private void initializeRootLoggers() {
         PayaraLoggingTracer.trace(PayaraLogManager.class, "initializeRootLoggers()");
         final PayaraLogger referenceLogger = getRootLogger();
-        final LoggingConfigurationHelper helper = new LoggingConfigurationHelper();
-        final List<String> requestedHandlerNames = helper.getList(KEY_ROOT_HANDLERS, null);
+        final List<String> requestedHandlerNames = ConfigurationHelper.getRootHandlers();
         final List<Handler> currentHandlers = Arrays.asList(referenceLogger.getHandlers());
 
         final List<Handler> handlersToAdd = new ArrayList<>();
@@ -679,7 +676,7 @@ public class PayaraLogManager extends LogManager {
         final String level = System.getProperty(JVM_OPT_LOGGING_CFG_DEFAULT_LEVEL, Level.INFO.getName());
         cfg.setProperty(KEY_SYS_ROOT_LOGGER_LEVEL, level);
         cfg.setProperty(KEY_USR_ROOT_LOGGER_LEVEL, level);
-        cfg.setProperty(KEY_ROOT_HANDLERS, SimpleLogHandler.class.getName());
+        cfg.setProperty(ConfigurationHelper.KEY_ROOT_HANDLERS, SimpleLogHandler.class.getName());
         cfg.setProperty(SimpleLogHandler.class.getName() + ".level", level);
         return cfg;
     }

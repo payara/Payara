@@ -71,6 +71,7 @@ public enum AnsiColor {
     BOLD_INTENSE_CYAN("\u001B[1;96m"),
     BOLD_INTENSE_WHITE("\u001B[1;97m"),
     BOLD_INTENSE_GREEN("\u001B[1;92m"),
+    NOTHING(""),
 
     /** Resets the color after some colored string */
     RESET("\u001b[0m"),

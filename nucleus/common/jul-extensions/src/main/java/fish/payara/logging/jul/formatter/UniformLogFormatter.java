@@ -79,23 +79,32 @@ public class UniformLogFormatter extends AnsiColorFormatter {
 
     private static final MessageResolver MSG_RESOLVER = new MessageResolver();
 
-    private final ExcludeFieldsSupport excludeFieldsSupport;
-    private String recordBeginMarker;
-    private String recordEndMarker;
-    private char recordFieldSeparator;
-    private boolean multiLineMode;
+    private final ExcludeFieldsSupport excludeFieldsSupport = new ExcludeFieldsSupport();
+    private String recordBeginMarker = RECORD_BEGIN_MARKER;
+    private String recordEndMarker = RECORD_END_MARKER;
+    private char recordFieldSeparator = FIELD_SEPARATOR;
+    private boolean multiLineMode = true;
+
+    public UniformLogFormatter(final HandlerId handlerId) {
+        configure(this, FormatterConfigurationHelper.forFormatterClass(getClass()));
+        configure(this, FormatterConfigurationHelper.forHandlerId(handlerId));
+    }
+
 
     /**
      * Creates an instance and initializes defaults from log manager's configuration
      */
     public UniformLogFormatter() {
-        final FormatterConfigurationHelper helper = new FormatterConfigurationHelper(getClass());
-        this.multiLineMode = helper.getBoolean("multiLineMode", true);
-        this.excludeFieldsSupport = new ExcludeFieldsSupport();
-        setExcludeFields(helper.getString("excludeFields", null));
-        this.recordBeginMarker = RECORD_BEGIN_MARKER;
-        this.recordEndMarker = RECORD_END_MARKER;
-        this.recordFieldSeparator = FIELD_SEPARATOR;
+        configure(this, FormatterConfigurationHelper.forFormatterClass(getClass()));
+    }
+
+
+    private static void configure(final UniformLogFormatter formatter, final FormatterConfigurationHelper helper) {
+        formatter.setExcludeFields(helper.getString("excludeFields", formatter.excludeFieldsSupport.toString()));
+        formatter.setMultiLineMode(helper.getBoolean("multiLineMode", formatter.multiLineMode));
+        formatter.setRecordFieldSeparator(helper.getCharacter("fieldSeparator", formatter.recordFieldSeparator));
+        formatter.setRecordBeginMarker(helper.getString("beginMarker", formatter.recordBeginMarker));
+        formatter.setRecordEndMarker(helper.getString("endMarker", formatter.recordEndMarker));
     }
 
 
