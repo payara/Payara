@@ -60,7 +60,7 @@ public final class ThrowableMapper
     By default, any Throwable whose package does not start with one
     of these packages must be mapped to something standard.
      */
-    private static final Set<String> OK_PACKAGES = SetUtil.newUnmodifiableStringSet("java.", "javax.");
+    private static final Set<String> OK_PACKAGES = SetUtil.newUnmodifiableStringSet("java.", "javax.", "jakarta.");
 
     public ThrowableMapper(final Throwable t)
     {

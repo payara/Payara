@@ -170,7 +170,9 @@ public class SSIServletExternalResolver implements SSIExternalResolver {
 
 
     protected boolean isNameReserved(String name) {
-        return name.startsWith("java.") || name.startsWith("javax.")
+        return name.startsWith("java.")
+                || name.startsWith("javax.")
+                || name.startsWith("jakarta.")
                 || name.startsWith("sun.");
     }
 
