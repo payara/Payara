@@ -165,6 +165,10 @@ public class ProxyServicesImpl implements ProxyServices {
             throw new RuntimeException(ex);
         }
     }
+    
+    public Class<?> loadClass(Class<?> originalClass, String classBinaryName) throws ClassNotFoundException {
+        return originalClass;
+    }
 
     @Override
     public void cleanup() {
