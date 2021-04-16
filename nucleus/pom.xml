@@ -128,7 +128,7 @@
         <jakarta.validation.version>2.0.2</jakarta.validation.version>
 
         <!-- JAX-B -->
-        <jaxb.version>2.3.3</jaxb.version>
+        <jaxb.version>2.3.2</jaxb.version>
 
         <management-api.version>1.1-rev-1</management-api.version>
 
