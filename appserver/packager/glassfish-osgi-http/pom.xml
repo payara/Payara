@@ -123,13 +123,5 @@
             </build>
         </profile>
     </profiles>    
-
-    <dependencies>
-        <dependency>
-            <groupId>org.glassfish.fighterfish</groupId>
-            <artifactId>osgi-http</artifactId>
-            <optional>true</optional>
-        </dependency>
-    </dependencies>
 </project>
 

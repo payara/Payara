@@ -93,12 +93,12 @@
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
-        <dependency>
+-->        <dependency>
             <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>glassfish-osgi</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
-        </dependency>-->
+        </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>glassfish-jcdi</artifactId>
