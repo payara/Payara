@@ -83,6 +83,16 @@
 
     <pluginRepositories>
         <pluginRepository>
+            <id>payara-nexus-artifacts</id>
+            <url>https://nexus.payara.fish/repository/payara-artifacts</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </pluginRepository>
+        <pluginRepository>
             <id>payara-patched-externals</id>
             <name>Payara Patched Externals</name>
             <url>https://raw.github.com/payara/Payara_PatchedProjects/master</url>
