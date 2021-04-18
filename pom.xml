@@ -221,7 +221,7 @@
         <monitoring-console-process.version>2.0.1</monitoring-console-process.version>
         <monitoring-console-webapp.version>2.0.1</monitoring-console-webapp.version>
         <validation.xml.root>${project.build.outputDirectory}</validation.xml.root>
-        <payara.transformer>0.2.3</payara.transformer>
+        <payara.transformer>0.2.4</payara.transformer>
     </properties>
 
     <profiles>
