@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.admin.amx.impl.mbean;
 
@@ -46,35 +46,76 @@ import com.sun.common.util.logging.LoggingConfigImpl;
 import com.sun.enterprise.server.logging.GFFileHandler;
 import com.sun.enterprise.server.logging.diagnostics.MessageIdCatalog;
 import com.sun.enterprise.server.logging.logviewer.backend.LogFilter;
+
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 import java.util.logging.Formatter;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import javax.management.*;
+
+import javax.management.Attribute;
+import javax.management.AttributeList;
+import javax.management.MBeanNotificationInfo;
+import javax.management.Notification;
+import javax.management.ObjectName;
+
 import org.glassfish.admin.amx.core.Util;
 import org.glassfish.admin.amx.impl.util.InjectedValues;
 import org.glassfish.admin.amx.logging.Logging;
-import org.glassfish.admin.amx.util.*;
+import org.glassfish.admin.amx.util.CollectionUtil;
+import org.glassfish.admin.amx.util.ExceptionUtil;
+import org.glassfish.admin.amx.util.ListUtil;
+import org.glassfish.admin.amx.util.SetUtil;
+import org.glassfish.admin.amx.util.ThrowableMapper;
+import org.glassfish.admin.amx.util.TypeCast;
 import org.glassfish.admin.amx.util.jmx.JMXUtil;
 import org.glassfish.admin.amx.util.jmx.NotificationBuilder;
 import org.glassfish.external.amx.AMXGlassfish;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.server.ServerEnvironmentImpl;
 
-import static org.glassfish.admin.amx.logging.LogAnalyzer.*;
-import static org.glassfish.admin.amx.logging.LogFileAccess.*;
-import static org.glassfish.admin.amx.logging.LogRecordEmitter.*;
+import static org.glassfish.admin.amx.logging.LogAnalyzer.SEVERE_COUNT_KEY;
+import static org.glassfish.admin.amx.logging.LogAnalyzer.TIMESTAMP_KEY;
+import static org.glassfish.admin.amx.logging.LogAnalyzer.WARNING_COUNT_KEY;
+import static org.glassfish.admin.amx.logging.LogFileAccess.ACCESS_KEY;
+import static org.glassfish.admin.amx.logging.LogFileAccess.MOST_RECENT_NAME;
+import static org.glassfish.admin.amx.logging.LogFileAccess.SERVER_KEY;
+import static org.glassfish.admin.amx.logging.LogRecordEmitter.ALL_LOG_RECORD_NOTIFICATION_TYPES;
+import static org.glassfish.admin.amx.logging.LogRecordEmitter.LOG_RECORD_AS_STRING_KEY;
+import static org.glassfish.admin.amx.logging.LogRecordEmitter.LOG_RECORD_CONFIG_NOTIFICATION_TYPE;
+import static org.glassfish.admin.amx.logging.LogRecordEmitter.LOG_RECORD_FINER_NOTIFICATION_TYPE;
+import static org.glassfish.admin.amx.logging.LogRecordEmitter.LOG_RECORD_FINEST_NOTIFICATION_TYPE;
+import static org.glassfish.admin.amx.logging.LogRecordEmitter.LOG_RECORD_FINE_NOTIFICATION_TYPE;
+import static org.glassfish.admin.amx.logging.LogRecordEmitter.LOG_RECORD_INFO_NOTIFICATION_TYPE;
+import static org.glassfish.admin.amx.logging.LogRecordEmitter.LOG_RECORD_LEVEL_KEY;
+import static org.glassfish.admin.amx.logging.LogRecordEmitter.LOG_RECORD_LOGGER_NAME_KEY;
+import static org.glassfish.admin.amx.logging.LogRecordEmitter.LOG_RECORD_MESSAGE_KEY;
+import static org.glassfish.admin.amx.logging.LogRecordEmitter.LOG_RECORD_MILLIS_KEY;
+import static org.glassfish.admin.amx.logging.LogRecordEmitter.LOG_RECORD_ROOT_CAUSE_KEY;
+import static org.glassfish.admin.amx.logging.LogRecordEmitter.LOG_RECORD_SEQUENCE_NUMBER_KEY;
+import static org.glassfish.admin.amx.logging.LogRecordEmitter.LOG_RECORD_SEVERE_NOTIFICATION_TYPE;
+import static org.glassfish.admin.amx.logging.LogRecordEmitter.LOG_RECORD_SOURCE_CLASS_NAME_KEY;
+import static org.glassfish.admin.amx.logging.LogRecordEmitter.LOG_RECORD_SOURCE_METHOD_NAME_KEY;
+import static org.glassfish.admin.amx.logging.LogRecordEmitter.LOG_RECORD_THREAD_ID_KEY;
+import static org.glassfish.admin.amx.logging.LogRecordEmitter.LOG_RECORD_THROWN_KEY;
+import static org.glassfish.admin.amx.logging.LogRecordEmitter.LOG_RECORD_WARNING_NOTIFICATION_TYPE;
 
 /**
- * Implementation of {@link Logging}. <p> The following is a GlassFish V2
- * comment, and needs work for v3:<br> AMX Logging MBean is hooked directly into
- * the logging subsystem via
+ * Implementation of {@link Logging}.
+ * <p>
+ * The following is a GlassFish V2 comment, and needs work for v3:<br>
+ * AMX Logging MBean is hooked directly into the logging subsystem via
  * com.sun.enterprise.server.logging.FileandSyslogHandler which uses
  * com.sun.enterprise.server.logging.AMXLoggingHook to instantiate and call an
  * instance of LoggingImpl.
- * @deprecated from Payara 5.193 as does not appear to be used
  */
 public final class LoggingImpl extends AMXImplBase //implements /*Logging,*/ LoggingImplHook
 {
@@ -88,7 +129,7 @@ public final class LoggingImpl extends AMXImplBase //implements /*Logging,*/ Log
     private final Logger logger;
     private final ServiceLocator mHabitat;
     final String FILE_SEP;
-    
+
     private static MBeanNotificationInfo[] SELF_NOTIFICATION_INFOS = null;
 
     /**
@@ -113,7 +154,7 @@ public final class LoggingImpl extends AMXImplBase //implements /*Logging,*/ Log
         FILE_SEP = System.getProperty("file.separator");
 
         mLevelToNotificationTypeMap = initLevelToNotificationTypeMap();
-        mNotificationTypeToNotificationBuilderMap = new HashMap<String, NotificationBuilder>();
+        mNotificationTypeToNotificationBuilderMap = new HashMap<>();
         final ServerEnvironmentImpl env = InjectedValues.getInstance().getServerEnvironment();
         loggingConfig = new LoggingConfigImpl(env.getConfigDirPath(), env.getLibPath());
         msgIdCatalog = new MessageIdCatalog();
@@ -218,23 +259,32 @@ public final class LoggingImpl extends AMXImplBase //implements /*Logging,*/ Log
     }
 
     public Map<String, String> getLoggingAttributes() {
-        String gfHandler = "com.sun.enterprise.server.logging.GFFileHandler";
-        String sysHandler = "com.sun.enterprise.server.logging.SyslogHandler";
         try {
             Map<String, String> props = loggingConfig.getLoggingProperties();
             if (props == null) {
                 return null;
             }
-            Map<String, String> attributes = new HashMap<String, String>();
-            attributes.put(gfHandler + ".file", props.get(gfHandler + ".file"));
-            attributes.put(gfHandler + ".rotationTimelimitInMinutes", props.get(gfHandler + ".rotationTimelimitInMinutes"));
-            attributes.put(gfHandler + ".rotationLimitInBytes", props.get(gfHandler + ".rotationLimitInBytes"));
-            attributes.put(gfHandler + ".logtoFile", props.get(gfHandler + ".logtoFile"));
-            attributes.put(gfHandler + ".logtoConsole", props.get(gfHandler + ".logtoConsole"));
-            attributes.put(gfHandler + ".flushFrequency", props.get(gfHandler + ".flushFrequency"));
-            attributes.put(gfHandler + ".logStandardStreams", props.get(gfHandler + ".logStandardStreams"));
-            attributes.put("handlers", props.get("handlers"));
-            attributes.put(sysHandler + ".useSystemLogging", props.get(sysHandler + ".useSystemLogging"));
+            final String[] keys = new String[] {
+                "handlers",
+                "fish.payara.jul.handler.PayaraLogHandler.enabled",
+                "fish.payara.jul.handler.PayaraLogHandler.level",
+                "fish.payara.jul.handler.PayaraLogHandler.encoding",
+                "fish.payara.jul.handler.PayaraLogHandler.file",
+                "fish.payara.jul.handler.PayaraLogHandler.formatter",
+                "fish.payara.jul.handler.PayaraLogHandler.buffer.capacity",
+                "fish.payara.jul.handler.PayaraLogHandler.buffer.timeoutInSeconds",
+                "fish.payara.jul.handler.PayaraLogHandler.flushFrequency",
+                "fish.payara.jul.handler.PayaraLogHandler.redirectStandardStreams",
+                "fish.payara.jul.handler.PayaraLogHandler.rotation.compress",
+                "fish.payara.jul.handler.PayaraLogHandler.rotation.rollOnDateChange",
+                "fish.payara.jul.handler.PayaraLogHandler.rotation.limit.megabytes",
+                "fish.payara.jul.handler.PayaraLogHandler.rotation.limit.minutes",
+                "fish.payara.jul.handler.PayaraLogHandler.rotation.maxArchiveFiles"
+            };
+            Map<String, String> attributes = new HashMap<>();
+            for (String key : keys) {
+                attributes.put(key, props.get(key));
+            }
             return attributes;
         } catch (java.io.IOException e) {
             logger.log(Level.WARNING, "Can not get logging attributes");
@@ -258,14 +308,16 @@ public final class LoggingImpl extends AMXImplBase //implements /*Logging,*/ Log
 
         if (null == key) {
             throw new IllegalArgumentException("" + key);
-        } else switch (key) {
-            case ACCESS_KEY:
-                throw new IllegalArgumentException("not supported: " + key);
-            case SERVER_KEY:
-                gfFileHandler.rotate();
-                break;
-            default:
-                throw new IllegalArgumentException("" + key);
+        } else {
+            switch (key) {
+                case ACCESS_KEY:
+                    throw new IllegalArgumentException("not supported: " + key);
+                case SERVER_KEY:
+                    gfFileHandler.rotate();
+                    break;
+                default:
+                    throw new IllegalArgumentException("" + key);
+            }
         }
     }
 
@@ -299,7 +351,7 @@ public final class LoggingImpl extends AMXImplBase //implements /*Logging,*/ Log
                 ((Attribute) queryResult.get(1)).getValue());
 
         // create the new results, making the first Object[] be the field headers
-        final List<Serializable[]> results = new ArrayList<Serializable[]>(srcRecords.size());
+        final List<Serializable[]> results = new ArrayList<>(srcRecords.size());
         results.add(fieldHeaders);
 
         // extract every record
@@ -399,7 +451,7 @@ public final class LoggingImpl extends AMXImplBase //implements /*Logging,*/ Log
             final Integer severeCount = Integer.parseInt(info.get(SEVERE_COUNT_KEY).toString());
             final Integer warningCount = Integer.parseInt(info.get(WARNING_COUNT_KEY).toString());
 
-            final Map<String, Number> item = new HashMap<String, Number>(info.size());
+            final Map<String, Number> item = new HashMap<>(info.size());
             item.put(TIMESTAMP_KEY, timestamp);
             item.put(SEVERE_COUNT_KEY, severeCount);
             item.put(WARNING_COUNT_KEY, warningCount);
@@ -506,7 +558,7 @@ public final class LoggingImpl extends AMXImplBase //implements /*Logging,*/ Log
         Level.FINEST, LOG_RECORD_FINEST_NOTIFICATION_TYPE,};
 
     private static Map<Level, String> initLevelToNotificationTypeMap() {
-        final Map<Level, String> m = new HashMap<Level, String>();
+        final Map<Level, String> m = new HashMap<>();
 
         for (int i = 0; i < LEVELS_AND_NOTIF_TYPES.length; i += 2) {
             final Level level = (Level) LEVELS_AND_NOTIF_TYPES[ i];
@@ -548,7 +600,7 @@ public final class LoggingImpl extends AMXImplBase //implements /*Logging,*/ Log
     private Map<String, Serializable> logRecordToMap(
             final LogRecord record,
             final String recordAsString) {
-        final Map<String, Serializable> m = new HashMap<String, Serializable>();
+        final Map<String, Serializable> m = new HashMap<>();
 
         m.put(LOG_RECORD_AS_STRING_KEY, recordAsString);
         m.put(LOG_RECORD_LEVEL_KEY, record.getLevel());
@@ -614,7 +666,7 @@ public final class LoggingImpl extends AMXImplBase //implements /*Logging,*/ Log
             }
         }
     }
-    
+
     public void
     testEmitLogMessage( final String level, final String message )
     {

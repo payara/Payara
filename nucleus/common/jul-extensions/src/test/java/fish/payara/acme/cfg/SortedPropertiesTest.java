@@ -62,12 +62,14 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
  */
 public class SortedPropertiesTest {
 
+    private static final int PROPERTY_COUNT = 5;
+
     @Test
     void conversions() throws Exception {
         final SortedProperties properties = loadFrom(getClass().getResourceAsStream("/logging.properties"));
         assertAll("properties: " + properties,
             () -> assertNotNull(properties),
-            () -> assertThat(properties.getPropertyNames(), hasSize(3))
+            () -> assertThat(properties.getPropertyNames(), hasSize(PROPERTY_COUNT))
         );
 
         final File file = File.createTempFile("logging", "properties");
@@ -77,7 +79,7 @@ public class SortedPropertiesTest {
         final SortedProperties properties2 = loadFrom(file);
         assertAll("properties2: " + properties2,
             () -> assertNotNull(properties2),
-            () -> assertThat(properties2.getPropertyNames(), hasSize(3))
+            () -> assertThat(properties2.getPropertyNames(), hasSize(PROPERTY_COUNT))
         );
 
         final ByteArrayInputStream inputStream = properties2.toInputStream(null);

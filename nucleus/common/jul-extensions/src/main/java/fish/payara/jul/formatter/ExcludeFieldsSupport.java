@@ -103,7 +103,7 @@ public class ExcludeFieldsSupport {
     /**
      * @param excludeFields comma-separated list of {@link SupplementalAttribute} names.
      */
-    public void setExcludeFields(final String excludeFields) {
+    public void setExcludedFields(final String excludeFields) {
         excludedAttributes.clear();
         if (excludeFields == null || excludeFields.isEmpty()) {
             return;

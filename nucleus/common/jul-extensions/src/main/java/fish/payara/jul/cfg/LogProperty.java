@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) 2020-2021 Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) 2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -38,45 +38,50 @@
  *  holder.
  */
 
-package fish.payara.jul.formatter;
+package fish.payara.jul.cfg;
 
-import fish.payara.jul.cfg.ConfigurationHelper;
-import fish.payara.jul.formatter.AnsiColorFormatter.AnsiColorFormatterProperty;
-
-import java.util.logging.Formatter;
 
 /**
- * This is a tool to help with parsing the logging.properties file to configure formatters.
+ * Representation of a key in logging.properties file.
  * <p>
- * It respects JUL configuration standards, so ie. each formatter knows best how to configure itself,
- * but still can use this helper to parse properties directly to objects instead of plain strings.
- * Helper also supports custom error handlers.
+ * The representation is basically relative to some bussiness object of the JUL system..
  *
  * @author David Matejcek
  */
-public class FormatterConfigurationHelper extends ConfigurationHelper {
+@FunctionalInterface
+public interface LogProperty {
+    // note: usual usage is implementing by an enum, so don't shorten getter names,
+    // it would be confusing with enum.name().
 
-    public static FormatterConfigurationHelper forHandlerId(final HandlerId handlerId) {
-        return new FormatterConfigurationHelper(handlerId.getPropertyPrefix() + ".formatter",
-            ERROR_HANDLER_PRINT_TO_STDERR);
-    }
+    /**
+     * @return a name of the property, used as a last part of property name in logging.properties
+     */
+    String getPropertyName();
 
 
-    public static FormatterConfigurationHelper forFormatterClass(final Class<? extends Formatter> formatterClass) {
-        return new FormatterConfigurationHelper(formatterClass.getName(), ERROR_HANDLER_PRINT_TO_STDERR);
+    /**
+     * Concatenates the {@link Class#getName()} with a dot and {@link #getPropertyName()}
+     *
+     * @param bussinessObjectClass
+     * @return complete name of the property, used to access the value.
+     */
+    default String getPropertyFullName(final Class<?> bussinessObjectClass) {
+        return getPropertyFullName(bussinessObjectClass.getName());
     }
 
 
     /**
-     * @param prefix Usually a canonical class name
-     * @param errorHandler
+     * Concatenates the prefix with a dot and {@link #getPropertyName()}.
+     * If the prefix is null or an empty String, returns just {@link #getPropertyName()} without
+     * the dot.
+     *
+     * @param prefix
+     * @return complete name of the property, used to access the value.
      */
-    public FormatterConfigurationHelper(final String prefix, final LoggingPropertyErrorHandler errorHandler) {
-        super(prefix, errorHandler);
-    }
-
-
-    public AnsiColor getAnsiColor(final AnsiColorFormatterProperty key, final AnsiColor defaultColor) {
-        return parse(key, defaultColor, AnsiColor::valueOf);
+    default String getPropertyFullName(final String prefix) {
+        if (prefix == null || prefix.isEmpty()) {
+            return getPropertyName();
+        }
+        return prefix + "." + getPropertyName();
     }
 }

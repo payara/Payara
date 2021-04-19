@@ -39,6 +39,7 @@
  */
 package fish.payara.jul.handler;
 
+import fish.payara.jul.cfg.LogProperty;
 import fish.payara.jul.env.LoggingSystemEnvironment;
 import fish.payara.jul.formatter.OneLineFormatter;
 
@@ -66,7 +67,7 @@ public class SimpleLogHandler extends StreamHandler {
      */
     public SimpleLogHandler() {
         final HandlerConfigurationHelper helper = HandlerConfigurationHelper.forHandlerClass(getClass());
-        if (helper.getBoolean("useErrorStream", false)) {
+        if (helper.getBoolean(SimpleLogHandlerProperty.USE_ERROR_STREAM, false)) {
             setOutputStream(new UncloseablePrintStream(LoggingSystemEnvironment.getOriginalStdErr()));
         } else {
             setOutputStream(new UncloseablePrintStream(LoggingSystemEnvironment.getOriginalStdOut()));
@@ -117,6 +118,29 @@ public class SimpleLogHandler extends StreamHandler {
         @Override
         public void close() {
             // don't close
+        }
+    }
+
+
+    /**
+     * Configuration property set of this handler except formatter.
+     */
+    public enum SimpleLogHandlerProperty implements LogProperty {
+
+        /** Use STDERR instead of STDOUT */
+        USE_ERROR_STREAM("useErrorStream"),
+        ;
+
+        private final String propertyName;
+
+        SimpleLogHandlerProperty(final String propertyName) {
+            this.propertyName = propertyName;
+        }
+
+
+        @Override
+        public String getPropertyName() {
+            return propertyName;
         }
     }
 }

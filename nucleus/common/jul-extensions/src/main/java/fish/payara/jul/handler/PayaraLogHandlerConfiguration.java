@@ -40,35 +40,43 @@
 
 package fish.payara.jul.handler;
 
+import fish.payara.jul.cfg.LogProperty;
+
 import java.io.File;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.logging.Formatter;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
+
+import static fish.payara.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.DEFAULT_BUFFER_CAPACITY;
+import static fish.payara.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.DEFAULT_BUFFER_TIMEOUT;
+import static fish.payara.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.DEFAULT_ROTATION_LIMIT_MB;
 
 /**
  * @author David Matejcek
  */
 public class PayaraLogHandlerConfiguration implements Cloneable {
 
+    public static final long BYTES_PER_MEGABYTES = 1_000_000;
     private Level level = Level.INFO;
     private Charset encoding = StandardCharsets.UTF_8;
 
-    private boolean logToFile = true;
+    private boolean enabled = true;
     private File logFile;
     /** Count of flushed records in one batch, not a frequency at all */
     private int flushFrequency;
-    private int maxHistoryFiles;
+    private int maxArchiveFiles;
 
-    private int bufferCapacity = PayaraLogHandlerProperty.DEFAULT_BUFFER_CAPACITY;
-    private int bufferTimeout = PayaraLogHandlerProperty.DEFAULT_BUFFER_TIMEOUT;
+    private int bufferCapacity = DEFAULT_BUFFER_CAPACITY;
+    private int bufferTimeout = DEFAULT_BUFFER_TIMEOUT;
 
     private boolean rotationOnDateChange;
-    private int rotationTimeLimitValue;
-    private long limitForFileRotation = PayaraLogHandlerProperty.DEFAULT_ROTATION_LIMIT_BYTES;
+    private int rotationTimeLimitMinutes;
+    private long rotationSizeLimitBytes = DEFAULT_ROTATION_LIMIT_MB * BYTES_PER_MEGABYTES;
     private boolean compressionOnRotation;
 
-    private boolean logStandardStreams;
+    private boolean redirectStandardStreams;
 
     private Formatter formatterConfiguration;
 
@@ -92,13 +100,13 @@ public class PayaraLogHandlerConfiguration implements Cloneable {
     }
 
 
-    public boolean isLogToFile() {
-        return logToFile;
+    public boolean isEnabled() {
+        return enabled;
     }
 
 
-    public void setLogToFile(final boolean logToFile) {
-        this.logToFile = logToFile;
+    public void setEnabled(final boolean logToFile) {
+        this.enabled = logToFile;
     }
 
 
@@ -112,13 +120,13 @@ public class PayaraLogHandlerConfiguration implements Cloneable {
     }
 
 
-    public boolean isLogStandardStreams() {
-        return logStandardStreams;
+    public boolean isRedirectStandardStreams() {
+        return redirectStandardStreams;
     }
 
 
-    public void setLogStandardStreams(final boolean logStandardStreams) {
-        this.logStandardStreams = logStandardStreams;
+    public void setRedirectStandardStreams(final boolean logStandardStreams) {
+        this.redirectStandardStreams = logStandardStreams;
     }
 
 
@@ -152,13 +160,18 @@ public class PayaraLogHandlerConfiguration implements Cloneable {
     }
 
 
-    public long getLimitForFileRotation() {
-        return limitForFileRotation;
+    public long getRotationSizeLimitBytes() {
+        return rotationSizeLimitBytes;
     }
 
 
-    public void setLimitForFileRotation(final long limitForFileRotation) {
-        this.limitForFileRotation = limitForFileRotation;
+    public void setRotationSizeLimitMB(final long megabytes) {
+        this.rotationSizeLimitBytes = megabytes * BYTES_PER_MEGABYTES;
+    }
+
+
+    public void setRotationSizeLimitBytes(final long bytes) {
+        this.rotationSizeLimitBytes = bytes;
     }
 
 
@@ -185,26 +198,26 @@ public class PayaraLogHandlerConfiguration implements Cloneable {
     /**
      * @return minutes
      */
-    public int getRotationTimeLimitValue() {
-        return rotationTimeLimitValue;
+    public int getRotationTimeLimitMinutes() {
+        return rotationTimeLimitMinutes;
     }
 
 
     /**
      * @param rotationTimeLimitValue minutes
      */
-    public void setRotationTimeLimitValue(final int rotationTimeLimitValue) {
-        this.rotationTimeLimitValue = rotationTimeLimitValue;
+    public void setRotationTimeLimitMinutes(final int rotationTimeLimitValue) {
+        this.rotationTimeLimitMinutes = rotationTimeLimitValue;
     }
 
 
-    public int getMaxHistoryFiles() {
-        return maxHistoryFiles;
+    public int getMaxArchiveFiles() {
+        return maxArchiveFiles;
     }
 
 
-    public void setMaxHistoryFiles(final int maxHistoryFiles) {
-        this.maxHistoryFiles = maxHistoryFiles;
+    public void setMaxArchiveFiles(final int maxHistoryFiles) {
+        this.maxArchiveFiles = maxHistoryFiles;
     }
 
 
@@ -228,31 +241,63 @@ public class PayaraLogHandlerConfiguration implements Cloneable {
     }
 
 
-    public enum PayaraLogHandlerProperty {
-        /** File containing more bytes will be rotated */
-        ROTATION_LIMIT_SIZE("rotationLimitInBytes"),
+    /**
+     * Configuration property set of this handler except formatter.
+     */
+    public enum PayaraLogHandlerProperty implements LogProperty {
+
+        /** False means that handler will stay in logging structure, but will ignore incoming records */
+        ENABLED("enabled"),
+        /** Minimal acceptable level of the incoming log record */
+        LEVEL("level"),
+        /** Absolute path to the output file */
+        OUTPUT_FILE("file"),
+        /** Charset */
+        ENCODING("encoding"),
+        /**
+         * LogRecord buffer size. If the buffer is full and it is not possible to add new record for
+         * {@link #BUFFER_TIMEOUT} seconds, buffer will reset and replace all records with just one
+         * severe {@link LogRecord} explaining what happened.
+         */
+        BUFFER_CAPACITY("buffer.capacity"),
+        /**
+         * LogRecord buffer timeout for adding new records if the buffer is full.
+         * If the buffer is full and it is not possible to add new record for
+         * this count of seconds, buffer will reset and replace all records with just one
+         * severe {@link LogRecord} explaining what happened.
+         * <p>
+         * 0 means wait forever.
+         */
+        BUFFER_TIMEOUT("buffer.timeoutInSeconds"),
+        /** Count of records processed until handler flushes the output */
+        FLUSH_FREQUENCY("flushFrequency"),
+        /** Log STDOUT and STDERR to the log file too */
+        REDIRECT_STANDARD_STREAMS("redirectStandardStreams"),
+        /** Compress rolled file to a zio file */
+        ROTATION_COMPRESS("rotation.compress"),
         /** File will be rotated after mignight */
-        ROTATION_ON_DATE_CHANGE("rotationOnDateChange"),
+        ROTATION_ON_DATE_CHANGE("rotation.rollOnDateChange"),
+        /** File containing more megabytes (1 000 000 B) will be rotated */
+        ROTATION_LIMIT_SIZE("rotation.limit.megabytes"),
         /** File will be rotated after given count of minutes */
-        ROTATION_LIMIT_TIME("rotationTimelimitInMinutes"),
+        ROTATION_LIMIT_TIME("rotation.limit.minutes"),
+        /** Maximal count of archived files */
+        ROTATION_MAX_HISTORY("rotation.maxArchiveFiles"),
         ;
-        public static final int MINIMUM_ROTATION_LIMIT_BYTES = 500_000;
-        public static final int DEFAULT_ROTATION_LIMIT_BYTES = 2_000_000;
+        public static final int MINIMUM_ROTATION_LIMIT_MB = 1;
+        public static final int DEFAULT_ROTATION_LIMIT_MB = 2;
         public static final int DEFAULT_BUFFER_CAPACITY = 10_000;
         public static final int DEFAULT_BUFFER_TIMEOUT = 0;
 
         private final String propertyName;
 
-        PayaraLogHandlerProperty(String propertyName) {
+        PayaraLogHandlerProperty(final String propertyName) {
             this.propertyName = propertyName;
         }
 
+        @Override
         public String getPropertyName() {
             return propertyName;
-        }
-
-        public String getPropertyFullName(final Class<?> handlerClass) {
-            return handlerClass.getName() + "." + getPropertyName();
         }
     }
 }

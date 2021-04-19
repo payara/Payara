@@ -42,6 +42,7 @@
 
 package fish.payara.jul.formatter;
 
+import fish.payara.jul.cfg.LogProperty;
 import fish.payara.jul.env.LoggingSystemEnvironment;
 import fish.payara.jul.formatter.ExcludeFieldsSupport.SupplementalAttribute;
 import fish.payara.jul.record.EnhancedLogRecord;
@@ -51,6 +52,11 @@ import java.util.logging.ErrorManager;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
+import static fish.payara.jul.formatter.UniformLogFormatter.UniformFormatterProperty.EXCLUDED_FIELDS;
+import static fish.payara.jul.formatter.UniformLogFormatter.UniformFormatterProperty.MULTILINE;
+import static fish.payara.jul.formatter.UniformLogFormatter.UniformFormatterProperty.RECORD_MARKER_BEGIN;
+import static fish.payara.jul.formatter.UniformLogFormatter.UniformFormatterProperty.RECORD_MARKER_END;
+import static fish.payara.jul.formatter.UniformLogFormatter.UniformFormatterProperty.SEPARATOR_FIELD;
 import static java.lang.System.lineSeparator;
 
 /**
@@ -83,9 +89,11 @@ public class UniformLogFormatter extends AnsiColorFormatter {
     private String recordBeginMarker = RECORD_BEGIN_MARKER;
     private String recordEndMarker = RECORD_END_MARKER;
     private char recordFieldSeparator = FIELD_SEPARATOR;
-    private boolean multiLineMode = true;
+    private boolean multiline = true;
 
+    // this constructor is used by reflection in HandlerConfigurationHelper
     public UniformLogFormatter(final HandlerId handlerId) {
+        super(handlerId);
         configure(this, FormatterConfigurationHelper.forFormatterClass(getClass()));
         configure(this, FormatterConfigurationHelper.forHandlerId(handlerId));
     }
@@ -100,11 +108,11 @@ public class UniformLogFormatter extends AnsiColorFormatter {
 
 
     private static void configure(final UniformLogFormatter formatter, final FormatterConfigurationHelper helper) {
-        formatter.setExcludeFields(helper.getString("excludeFields", formatter.excludeFieldsSupport.toString()));
-        formatter.setMultiLineMode(helper.getBoolean("multiLineMode", formatter.multiLineMode));
-        formatter.setRecordFieldSeparator(helper.getCharacter("fieldSeparator", formatter.recordFieldSeparator));
-        formatter.setRecordBeginMarker(helper.getString("beginMarker", formatter.recordBeginMarker));
-        formatter.setRecordEndMarker(helper.getString("endMarker", formatter.recordEndMarker));
+        formatter.setExcludeFields(helper.getString(EXCLUDED_FIELDS, formatter.excludeFieldsSupport.toString()));
+        formatter.setMultiline(helper.getBoolean(MULTILINE, formatter.multiline));
+        formatter.setRecordFieldSeparator(helper.getCharacter(SEPARATOR_FIELD, formatter.recordFieldSeparator));
+        formatter.setRecordBeginMarker(helper.getString(RECORD_MARKER_BEGIN, formatter.recordBeginMarker));
+        formatter.setRecordEndMarker(helper.getString(RECORD_MARKER_END, formatter.recordEndMarker));
     }
 
 
@@ -141,10 +149,10 @@ public class UniformLogFormatter extends AnsiColorFormatter {
 
 
     /**
-     * @param multiLineMode the multiLineMode to set
+     * @param multiline the multiline to set
      */
-    public void setMultiLineMode(final boolean multiLineMode) {
-        this.multiLineMode = multiLineMode;
+    public void setMultiline(final boolean multiline) {
+        this.multiline = multiline;
     }
 
 
@@ -152,7 +160,7 @@ public class UniformLogFormatter extends AnsiColorFormatter {
      * @param excludeFields the excludeFields to set
      */
     public void setExcludeFields(final String excludeFields) {
-        this.excludeFieldsSupport.setExcludeFields(excludeFields);
+        this.excludeFieldsSupport.setExcludedFields(excludeFields);
     }
 
 
@@ -172,7 +180,7 @@ public class UniformLogFormatter extends AnsiColorFormatter {
             appendLoggerName(output, record.getLoggerName());
             appendDetails(output, record);
 
-            if (multiLineMode) {
+            if (multiline) {
                 output.append(lineSeparator());
                 output.append(MULTILINE_INDENTATION);
             }
@@ -217,11 +225,11 @@ public class UniformLogFormatter extends AnsiColorFormatter {
 
     private void appendLoggerName(final StringBuilder output, final String loggerName) {
         if (loggerName != null) {
-            if (isAnsiColor()) {
+            if (isAnsiColorEnabled()) {
                 output.append(getLoggerColor());
             }
             output.append(loggerName);
-            if (isAnsiColor()) {
+            if (isAnsiColorEnabled()) {
                 output.append(AnsiColor.RESET);
             }
         }
@@ -268,5 +276,35 @@ public class UniformLogFormatter extends AnsiColorFormatter {
         }
 
         output.append(recordFieldSeparator);
+    }
+
+    /**
+     * Configuration property set of this formatter
+     */
+    public enum UniformFormatterProperty implements LogProperty {
+
+        /** Excluded fields from the output */
+        EXCLUDED_FIELDS("excludedFields"),
+        /** If false, each log record is on a single line (except messages containing new lines) */
+        MULTILINE("multiline"),
+        /** Character between record fields */
+        SEPARATOR_FIELD("fieldSeparator"),
+        /** Record prefix */
+        RECORD_MARKER_BEGIN("recordMarker.begin"),
+        /** Record suffix */
+        RECORD_MARKER_END("recordMarker.end"),
+        ;
+
+        private final String propertyName;
+
+        UniformFormatterProperty(final String propertyName) {
+            this.propertyName = propertyName;
+        }
+
+
+        @Override
+        public String getPropertyName() {
+            return propertyName;
+        }
     }
 }

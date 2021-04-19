@@ -77,8 +77,7 @@
 
 Import-Package: \
                         com.sun.logging.enterprise.system.container.web, \
-                        fish.payara.jul; resolution:=optional, \
-                        fish.payara.jul.handler; resolution:=optional, \
+                        fish.payara.jul.*; resolution:=optional, \
                         *
 
 # This is required because WebContainer requires JavaEEUtils service which is provided by ejb-container.

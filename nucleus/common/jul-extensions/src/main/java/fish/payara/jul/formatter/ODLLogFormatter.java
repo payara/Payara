@@ -42,6 +42,7 @@
 
 package fish.payara.jul.formatter;
 
+import fish.payara.jul.cfg.LogProperty;
 import fish.payara.jul.env.LoggingSystemEnvironment;
 import fish.payara.jul.formatter.ExcludeFieldsSupport.SupplementalAttribute;
 import fish.payara.jul.record.EnhancedLogRecord;
@@ -52,6 +53,9 @@ import java.time.OffsetDateTime;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
+import static fish.payara.jul.formatter.ODLLogFormatter.ODLFormatterProperty.EXCLUDED_FIELDS;
+import static fish.payara.jul.formatter.ODLLogFormatter.ODLFormatterProperty.FIELD_SEPARATOR;
+import static fish.payara.jul.formatter.ODLLogFormatter.ODLFormatterProperty.MULTILINE;
 import static java.lang.System.lineSeparator;
 
 /**
@@ -69,7 +73,7 @@ public class ODLLogFormatter extends AnsiColorFormatter {
 
     private static final String FIELD_BEGIN_MARKER = "[";
     private static final String FIELD_END_MARKER = "]";
-    private static final String FIELD_SEPARATOR = " ";
+    private static final String DEFAULT_FIELD_SEPARATOR = " ";
     private static final String MULTILINE_INDENTATION = "  ";
 
     private static final String LABEL_CLASSNAME = "CLASSNAME";
@@ -79,10 +83,11 @@ public class ODLLogFormatter extends AnsiColorFormatter {
     private static final MessageResolver MSG_RESOLVER = new MessageResolver();
 
     private final ExcludeFieldsSupport excludeFieldsSupport = new ExcludeFieldsSupport();
-    private String recordFieldSeparator = FIELD_SEPARATOR;
-    private boolean multiLineMode = true;
+    private String recordFieldSeparator = DEFAULT_FIELD_SEPARATOR;
+    private boolean multiline = true;
 
     public ODLLogFormatter(final HandlerId handlerId) {
+        super(handlerId);
         configure(this, FormatterConfigurationHelper.forFormatterClass(getClass()));
         configure(this, FormatterConfigurationHelper.forHandlerId(handlerId));
     }
@@ -97,9 +102,9 @@ public class ODLLogFormatter extends AnsiColorFormatter {
 
 
     private static void configure(final ODLLogFormatter formatter, final FormatterConfigurationHelper helper) {
-        formatter.multiLineMode = helper.getBoolean("multiLineMode", formatter.multiLineMode);
-        formatter.recordFieldSeparator = helper.getString("fieldSeparator", formatter.recordFieldSeparator);
-        formatter.setExcludeFields(helper.getString("excludeFields", formatter.excludeFieldsSupport.toString()));
+        formatter.setExcludeFields(helper.getString(EXCLUDED_FIELDS, formatter.excludeFieldsSupport.toString()));
+        formatter.multiline = helper.getBoolean(MULTILINE, formatter.multiline);
+        formatter.recordFieldSeparator = helper.getString(FIELD_SEPARATOR, formatter.recordFieldSeparator);
     }
 
 
@@ -113,15 +118,15 @@ public class ODLLogFormatter extends AnsiColorFormatter {
      * @param excludeFields comma separated field names which should not be in the ouptut
      */
     public void setExcludeFields(final String excludeFields) {
-        this.excludeFieldsSupport.setExcludeFields(excludeFields);
+        this.excludeFieldsSupport.setExcludedFields(excludeFields);
     }
 
 
     /**
-     * @param multiLineMode true if the log message is on the next line. Default: true.
+     * @param multiline true if the log message is on the next line. Default: true.
      */
-    public void setMultiLineMode(final boolean multiLineMode) {
-        this.multiLineMode = multiLineMode;
+    public void setMultiline(final boolean multiline) {
+        this.multiline = multiline;
     }
 
 
@@ -131,7 +136,7 @@ public class ODLLogFormatter extends AnsiColorFormatter {
             if (message == null) {
                 return "";
             }
-            final boolean multiLine = multiLineMode || message.contains(lineSeparator());
+            final boolean forceMultiline = multiline || message.contains(lineSeparator());
             final Level logLevel = record.getLevel();
             final String msgId = record.getMessageKey();
             final String loggerName = record.getLoggerName();
@@ -148,13 +153,13 @@ public class ODLLogFormatter extends AnsiColorFormatter {
             appendSequenceNumber(output, record.getSequenceNumber());
             appendSource(output, record.getSourceClassName(), record.getSourceMethodName());
 
-            if (multiLine) {
+            if (forceMultiline) {
                 output.append(FIELD_BEGIN_MARKER).append(FIELD_BEGIN_MARKER);
                 output.append(lineSeparator());
                 output.append(MULTILINE_INDENTATION);
             }
             output.append(message);
-            if (multiLine) {
+            if (forceMultiline) {
                 output.append(FIELD_END_MARKER).append(FIELD_END_MARKER);
             }
             output.append(lineSeparator()).append(lineSeparator());
@@ -204,11 +209,11 @@ public class ODLLogFormatter extends AnsiColorFormatter {
     private void appendLoggerName(final StringBuilder output, final String loggerName) {
         output.append(FIELD_BEGIN_MARKER);
         if (loggerName != null) {
-            if (isAnsiColor()) {
+            if (isAnsiColorEnabled()) {
                 output.append(getLoggerColor());
             }
             output.append(loggerName);
-            if (isAnsiColor()) {
+            if (isAnsiColorEnabled()) {
                 output.append(AnsiColor.RESET);
             }
         }
@@ -260,6 +265,32 @@ public class ODLLogFormatter extends AnsiColorFormatter {
             output.append(FIELD_BEGIN_MARKER);
             output.append(LABEL_METHODNAME).append(": ").append(methodName);
             output.append(FIELD_END_MARKER).append(recordFieldSeparator);
+        }
+    }
+
+    /**
+     * Configuration property set of this formatter
+     */
+    public enum ODLFormatterProperty implements LogProperty {
+
+        /** Excluded fields from the output */
+        EXCLUDED_FIELDS("excludedFields"),
+        /** If false, each log record is on a single line (except messages containing new lines) */
+        MULTILINE("multiline"),
+        /** Character between record fields */
+        FIELD_SEPARATOR("fieldSeparator"),
+        ;
+
+        private final String propertyName;
+
+        ODLFormatterProperty(final String propertyName) {
+            this.propertyName = propertyName;
+        }
+
+
+        @Override
+        public String getPropertyName() {
+            return propertyName;
         }
     }
 }

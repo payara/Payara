@@ -58,6 +58,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.TestMethodOrder;
 
 import static fish.payara.jul.env.LoggingSystemEnvironment.getOriginalStdErr;
@@ -82,7 +83,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @TestMethodOrder(OrderAnnotation.class)
 public class PayaraLogHandlerTest {
 
-    private static final long MILLIS_FOR_PUMP = 10L;
+    private static final long MILLIS_FOR_PUMP = 20L;
     private static PayaraLogHandler handler;
 
     @BeforeAll
@@ -91,7 +92,9 @@ public class PayaraLogHandlerTest {
         LogManager.getLogManager().reset();
         LoggingSystemEnvironment.initialize();
         final PayaraLogHandlerConfiguration cfg = new PayaraLogHandlerConfiguration();
-        cfg.setLogFile(File.createTempFile(PayaraLogHandlerTest.class.getCanonicalName(), ".log"));
+        final File logFile = File.createTempFile(PayaraLogHandlerTest.class.getCanonicalName(), ".log");
+        logFile.deleteOnExit();
+        cfg.setLogFile(logFile);
         cfg.setFormatterConfiguration(new OneLineFormatter());
         handler = new PayaraLogHandler(cfg);
         getRootLogger().addHandler(handler);
@@ -116,11 +119,10 @@ public class PayaraLogHandlerTest {
 
     @Test
     @Order(10)
-    public void enablelogStandardStreams() throws Exception {
+    public void enableStandardStreamsLoggers(TestInfo testInfo) throws Exception {
         assertTrue(handler.isReady(), "handler.ready");
         final PayaraLogHandlerConfiguration cfg = handler.getConfiguration();
-        cfg.setLogStandardStreams(true);
-        cfg.setFlushFrequency(2);
+        cfg.setRedirectStandardStreams(true);
         handler.reconfigure(cfg);
         assertAll(
             () -> assertTrue(handler.isReady(), "handler.ready"),
@@ -131,15 +133,19 @@ public class PayaraLogHandlerTest {
         System.out.println("Tommy, can you hear me?");
         // output stream is pumped in parallel to the error stream, order is not guaranteed between streams
         Thread.sleep(MILLIS_FOR_PUMP);
+        Logger.getLogger("some.usual.logger").info("Some info message");
         System.err.println("Can you feel me near you?");
         System.err.println("Příliš žluťoučký kůň úpěl ďábelské ódy");
         Thread.sleep(MILLIS_FOR_PUMP);
         assertAll(
             () -> assertTrue(handler.isReady(), "handler.ready"),
             () -> assertTrue(cfg.getLogFile().exists(), "file exists"),
-            () -> assertThat("file content: \n", Files.readAllLines(cfg.getLogFile().toPath()),
+            () -> assertThat("file content", Files.readAllLines(cfg.getLogFile().toPath()),
                 contains(
                     stringContainsInOrder("INFO", "main", "Tommy, can you hear me?"),
+                    stringContainsInOrder("INFO", "main",
+                        PayaraLogHandlerTest.class.getName() + "." + testInfo.getTestMethod().get().getName(),
+                        "Some info message"),
                     stringContainsInOrder("SEVERE", "main", "Can you feel me near you?"),
                     stringContainsInOrder("SEVERE", "main", "Příliš žluťoučký kůň úpěl ďábelské ódy"))));
     }
@@ -178,7 +184,7 @@ public class PayaraLogHandlerTest {
     public void disabledlogStandardStreams() throws Exception {
         assertTrue(handler.isReady(), "handler.ready");
         final PayaraLogHandlerConfiguration cfg = handler.getConfiguration();
-        cfg.setLogStandardStreams(false);
+        cfg.setRedirectStandardStreams(false);
         handler.reconfigure(cfg);
         assertAll(
             () -> assertTrue(handler.isReady(), "handler.ready"),

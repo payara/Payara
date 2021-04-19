@@ -40,6 +40,7 @@
 package fish.payara.enterprise.server.logging;
 
 import fish.payara.jul.handler.PayaraLogHandler;
+import fish.payara.jul.handler.PayaraLogHandlerConfiguration;
 
 /**
  * Handler which is created and initialised by @{code fish.payara.nucleus.notification.log.LogNotifierService}
@@ -49,6 +50,15 @@ import fish.payara.jul.handler.PayaraLogHandler;
 public class PayaraNotificationFileHandler extends PayaraLogHandler {
 
     public PayaraNotificationFileHandler() {
-        super(createPayaraLogHandlerConfiguration(PayaraNotificationFileHandler.class));
+        super(createNotificationHandlerConfiguration());
+    }
+
+
+    private static PayaraLogHandlerConfiguration createNotificationHandlerConfiguration() {
+        final PayaraLogHandlerConfiguration configuration = PayaraLogHandler
+            .createPayaraLogHandlerConfiguration(PayaraNotificationFileHandler.class);
+        // this handler is not allowed to redirect streams.
+        configuration.setRedirectStandardStreams(false);
+        return configuration;
     }
 }

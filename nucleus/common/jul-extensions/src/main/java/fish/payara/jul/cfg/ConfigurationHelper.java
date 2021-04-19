@@ -65,9 +65,6 @@ import java.util.logging.LogManager;
  */
 public class ConfigurationHelper {
 
-    /** Property key for a list of root handler implementations */
-    public static final String KEY_ROOT_HANDLERS = "handlers";
-
     /**
      * Logs an error via the {@link PayaraLoggingTracer}
      */
@@ -83,33 +80,6 @@ public class ConfigurationHelper {
             return value;
         }
         throw new NumberFormatException("Value must be higher or equal to zero!");
-    };
-
-
-    protected static final Function<String, ?> STR_TO_CLASS = v -> {
-        if (v == null) {
-            return null;
-        }
-        final ClassLoader logManagerCL = LogManager.getLogManager().getClass().getClassLoader();
-        if (logManagerCL != null) {
-            try {
-                return logManagerCL.loadClass(v).newInstance();
-            } catch (ReflectiveOperationException | NoClassDefFoundError e) {
-                // still ok, maybe the class is not visible for boot classloader,
-                // but it still might be visible for the thread classloader.
-                PayaraLoggingTracer.trace(ConfigurationHelper.class,
-                    () -> "Could not find the class by the log manager's classloader, we will try classloader"
-                        + " of the thread. Exception: " + e.toString());
-            }
-        }
-        final ClassLoader threadCL = Thread.currentThread().getContextClassLoader();
-        try {
-            return threadCL.loadClass(v).newInstance();
-        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | NoClassDefFoundError e) {
-            PayaraLoggingTracer.error(ConfigurationHelper.class,
-                "Classloader: " + threadCL, e);
-            throw new IllegalStateException("Formatter instantiation failed! ClassLoader used: " + threadCL, e);
-        }
     };
 
 
@@ -135,88 +105,85 @@ public class ConfigurationHelper {
 
 
     /**
-     * @return value of the {@value #KEY_ROOT_HANDLERS} property, default is null.
-     */
-    public static List<String> getRootHandlers() {
-        return new ConfigurationHelper(null, ERROR_HANDLER_PRINT_TO_STDERR).getList(KEY_ROOT_HANDLERS, null);
-    }
-
-    public ConfigurationHelper(final Class<?> clazz) {
-        this(clazz.getName(), ERROR_HANDLER_PRINT_TO_STDERR);
-    }
-
-
-    /**
      * @param prefix Usually a canonical class name
      * @param errorHandler
      */
     public ConfigurationHelper(final String prefix, final LoggingPropertyErrorHandler errorHandler) {
         this.manager = LogManager.getLogManager();
-        this.prefix = prefix == null ? "" : prefix + ".";
+        this.prefix = prefix == null ? "" : prefix;
         this.errorHandler = errorHandler;
     }
 
 
-    public String getString(final String key, final String defaultValue) {
+    public String getString(final LogProperty key, final String defaultValue) {
         return parse(key, defaultValue, Function.identity());
     }
 
-    public Character getCharacter(final String key, final Character defaultValue) {
+    public Character getCharacter(final LogProperty key, final Character defaultValue) {
         return parse(key, defaultValue, STR_TO_CHAR);
     }
 
-    public Integer getInteger(final String key, final Integer defaultValue) {
+    public Integer getInteger(final LogProperty key, final Integer defaultValue) {
         return parse(key, defaultValue, Integer::valueOf);
     }
 
-    public Integer getNonNegativeInteger(final String key, final Integer defaultValue) {
+    public Integer getNonNegativeInteger(final LogProperty key, final Integer defaultValue) {
         return parse(key, defaultValue, STR_TO_POSITIVE_INT);
     }
 
 
-    public Boolean getBoolean(final String key, final Boolean defaultValue) {
+    public Boolean getBoolean(final LogProperty key, final Boolean defaultValue) {
         return parse(key, defaultValue, Boolean::valueOf);
     }
 
 
-    public Level getLevel(final String key, final Level defaultValue) {
+    public Level getLevel(final LogProperty key, final Level defaultValue) {
         return parse(key, defaultValue, Level::parse);
     }
 
 
-    public File getFile(final String key, final File defaultValue) {
+    public File getFile(final LogProperty key, final File defaultValue) {
         return parse(key, defaultValue, File::new);
     }
 
 
-    public DateTimeFormatter getDateTimeFormatter(final String key, final DateTimeFormatter defaultValue) {
+    public DateTimeFormatter getDateTimeFormatter(final LogProperty key, final DateTimeFormatter defaultValue) {
         return parse(key, defaultValue, STR_TO_DF);
     }
 
 
-    public Charset getCharset(final String key, final Charset defaultValue) {
+    public Charset getCharset(final LogProperty key, final Charset defaultValue) {
         return parse(key, defaultValue, Charset::forName);
     }
 
 
-    public List<String> getList(final String key, final String defaultValue) {
+    public List<String> getList(final LogProperty key, final String defaultValue) {
         return parseOrSupply(key, () -> STR_TO_LIST.apply(defaultValue), STR_TO_LIST);
     }
 
 
-    public <T> T getSomething(final String key, final T defaultValue, final Function<String, T> parser) {
-        return parse(key, defaultValue, parser);
-    }
-
-
-    protected <T> T parse(final String key, final T defaultValue, final Function<String, T> converter) {
+    protected <T> T parse(final LogProperty key, final T defaultValue, final Function<String, T> converter) {
         final Supplier<T> defaultValueSupplier = () -> defaultValue;
         return parseOrSupply(key, defaultValueSupplier, converter);
     }
 
 
-    protected <T> T parseOrSupply(final String key, final Supplier<T> defaultValueSupplier, final Function<String, T> converter) {
-        final String realKey = prefix + key;
+    protected <T> T parseOrSupply(final LogProperty key, final Supplier<T> defaultValueSupplier,
+        final Function<String, T> converter) {
+        return parseOrSupplyByRealKey(key, defaultValueSupplier, converter);
+    }
+
+
+    protected <T> T parseOrSupply(final String key, final Supplier<T> defaultValueSupplier,
+        final Function<String, T> converter) {
+        final LogProperty property = () -> key;
+        return parseOrSupplyByRealKey(property, defaultValueSupplier, converter);
+    }
+
+
+    private <T> T parseOrSupplyByRealKey(final LogProperty key, final Supplier<T> defaultValueSupplier,
+        final Function<String, T> converter) {
+        final String realKey = key.getPropertyFullName(prefix);
         final String property = getProperty(realKey);
         if (property == null) {
             return defaultValueSupplier.get();

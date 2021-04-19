@@ -155,7 +155,7 @@ public class ODLLogFormatterTest {
         final String message = "Ok!\nThis works!";
         final LogRecord record = new LogRecord(Level.INFO, message);
         final ODLLogFormatter formatter = new ODLLogFormatter();
-        formatter.setMultiLineMode(false);
+        formatter.setMultiline(false);
         final String log = formatter.format(record);
         assertNotNull(log, "log");
         final String[] lines = log.split("\n");
@@ -179,7 +179,7 @@ public class ODLLogFormatterTest {
         record.setSourceClassName("fish.payara.FakeClass");
         record.setSourceMethodName("fakeMethod");
         final ODLLogFormatter formatter = new ODLLogFormatter();
-        formatter.setMultiLineMode(false);
+        formatter.setMultiline(false);
         formatter.setPrintSequenceNumber(true);
         formatter.setPrintSource(true);
 
@@ -206,7 +206,7 @@ public class ODLLogFormatterTest {
         record.setLoggerName(logger.getName());
         record.setResourceBundleName(logger.getResourceBundleName());
         final ODLLogFormatter formatter = new ODLLogFormatter();
-        formatter.setAnsiColor(true);
+        formatter.setAnsiColorEnabled(true);
         formatter.setLoggerColor(AnsiColor.BOLD_INTENSE_WHITE);
         formatter.setLevelColors(Collections.singletonMap(Level.SEVERE, AnsiColor.BOLD_INTENSE_RED));
 
@@ -252,7 +252,7 @@ public class ODLLogFormatterTest {
         final LogRecord record = new LogRecord(Level.INFO, "This is a message.");
         final ODLLogFormatter formatter = new ODLLogFormatter();
         formatter.setTimestampFormatter("HH:mm:ss.SSS");
-        formatter.setMultiLineMode(false);
+        formatter.setMultiline(false);
         formatter.setExcludeFields(Arrays.stream(SupplementalAttribute.values()).map(SupplementalAttribute::getId)
             .collect(Collectors.joining(",")));
         final String log = formatter.format(record);

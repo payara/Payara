@@ -40,6 +40,7 @@
 
 package fish.payara.jul.formatter;
 
+import fish.payara.jul.cfg.LogProperty;
 import fish.payara.jul.record.EnhancedLogRecord;
 
 import java.time.format.DateTimeFormatter;
@@ -48,6 +49,9 @@ import java.util.Locale;
 import java.util.logging.Formatter;
 import java.util.logging.LogRecord;
 
+import static fish.payara.jul.formatter.PayaraLogFormatter.PayaraLogFormatterProperty.PRINT_SEQUENCE_NUMBER;
+import static fish.payara.jul.formatter.PayaraLogFormatter.PayaraLogFormatterProperty.PRINT_SOURCE;
+import static fish.payara.jul.formatter.PayaraLogFormatter.PayaraLogFormatterProperty.TIMESTAMP_FORMAT;
 import static java.time.temporal.ChronoField.HOUR_OF_DAY;
 import static java.time.temporal.ChronoField.MINUTE_OF_HOUR;
 import static java.time.temporal.ChronoField.NANO_OF_SECOND;
@@ -80,7 +84,7 @@ public abstract class PayaraLogFormatter extends Formatter {
         .append(ISO_LOCAL_TIME)
         .toFormatter(Locale.ROOT);
 
-    /** Example: 2011-12-03T15:35:40.123+01:00 */
+    /** ISO-8601. Example: 2011-12-03T15:35:40.123+01:00 */
     protected static final DateTimeFormatter DEFAULT_DATETIME_FORMATTER = new DateTimeFormatterBuilder()
         .parseCaseInsensitive()
         .append(ISO_LOCAL_DATE_TIME)
@@ -140,9 +144,9 @@ public abstract class PayaraLogFormatter extends Formatter {
 
 
     private static void configure(final PayaraLogFormatter formatter, final FormatterConfigurationHelper helper) {
-        formatter.printSequenceNumber = helper.getBoolean("printSequenceNumber", formatter.printSequenceNumber);
-        formatter.printSource = helper.getBoolean("printSource", formatter.printSource);
-        formatter.timestampFormatter = helper.getDateTimeFormatter("timestampFormat", formatter.timestampFormatter);
+        formatter.printSequenceNumber = helper.getBoolean(PRINT_SEQUENCE_NUMBER, formatter.printSequenceNumber);
+        formatter.printSource = helper.getBoolean(PRINT_SOURCE, formatter.printSource);
+        formatter.timestampFormatter = helper.getDateTimeFormatter(TIMESTAMP_FORMAT, formatter.timestampFormatter);
     }
 
 
@@ -243,5 +247,35 @@ public abstract class PayaraLogFormatter extends Formatter {
             return message;
         }
         return message + System.lineSeparator() + stackTrace;
+    }
+
+
+    /**
+     * Configuration property set of this formatter
+     */
+    public enum PayaraLogFormatterProperty implements LogProperty {
+
+        /** Format used by {@link DateTimeFormatter} */
+        TIMESTAMP_FORMAT("timestampFormat"),
+        /** Enable printing the sequence number of the LogRecord. See {@link LogRecord#getSequenceNumber()} */
+        PRINT_SEQUENCE_NUMBER("printSequenceNumber"),
+        /**
+         * Enable printing the source class and method of the LogRecord.
+         * See {@link LogRecord#getSourceClassName()} and {@link LogRecord#getSourceMethodName()}
+         */
+        PRINT_SOURCE("printSource"),
+        ;
+
+        private final String propertyName;
+
+        PayaraLogFormatterProperty(final String propertyName) {
+            this.propertyName = propertyName;
+        }
+
+
+        @Override
+        public String getPropertyName() {
+            return propertyName;
+        }
     }
 }

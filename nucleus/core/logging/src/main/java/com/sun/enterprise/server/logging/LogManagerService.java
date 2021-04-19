@@ -99,7 +99,7 @@ import org.jvnet.hk2.annotations.Service;
 import static com.sun.enterprise.util.PropertyPlaceholderHelper.ENV_REGEX;
 import static fish.payara.jul.cfg.PayaraLoggingJvmOptions.JVM_OPT_LOGGING_CFG_FILE;
 import static fish.payara.jul.handler.PayaraLogHandler.createPayaraLogHandlerConfiguration;
-import static fish.payara.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.MINIMUM_ROTATION_LIMIT_BYTES;
+import static fish.payara.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.MINIMUM_ROTATION_LIMIT_MB;
 import static fish.payara.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.ROTATION_LIMIT_SIZE;
 import static fish.payara.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.ROTATION_LIMIT_TIME;
 
@@ -312,9 +312,9 @@ public final class LogManagerService implements PostConstruct, PreDestroy, org.g
     public void validateProp(String key, String value) {
         if (isOneOf(key, ROTATION_LIMIT_SIZE, PayaraLogHandler.class, PayaraNotificationFileHandler.class)) {
             int rotationSizeLimit = Integer.parseInt(value);
-            if (rotationSizeLimit != 0 && rotationSizeLimit < MINIMUM_ROTATION_LIMIT_BYTES) {
+            if (rotationSizeLimit != 0 && rotationSizeLimit < MINIMUM_ROTATION_LIMIT_MB) {
                 throw new ValidationException(String.format("'%s' value must be greater than %d, but was %d.",
-                    key, MINIMUM_ROTATION_LIMIT_BYTES, rotationSizeLimit));
+                    key, MINIMUM_ROTATION_LIMIT_MB, rotationSizeLimit));
             }
         } else if (isOneOf(key, ROTATION_LIMIT_TIME, PayaraLogHandler.class, PayaraNotificationFileHandler.class)) {
             int rotationTimeLimit = Integer.parseInt(value);

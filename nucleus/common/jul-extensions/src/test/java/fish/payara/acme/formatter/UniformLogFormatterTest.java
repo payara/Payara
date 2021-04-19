@@ -131,7 +131,7 @@ public class UniformLogFormatterTest {
     public void simpleLogRecordMultiLineEnabled() {
         final LogRecord record = new LogRecord(Level.INFO, "Ok, this works!");
         final UniformLogFormatter formatter = new UniformLogFormatter();
-        formatter.setMultiLineMode(true);
+        formatter.setMultiline(true);
         final String log = formatter.format(record);
         assertNotNull(log, "log");
         final String[] lines = log.split("\n");
@@ -148,7 +148,7 @@ public class UniformLogFormatterTest {
         final String message = "Ok!\nThis works!";
         final LogRecord record = new LogRecord(Level.INFO, message);
         final UniformLogFormatter formatter = new UniformLogFormatter();
-        formatter.setMultiLineMode(false);
+        formatter.setMultiline(false);
         final String log = formatter.format(record);
         assertNotNull(log, "log");
         final String[] lines = log.split("\n");
@@ -170,7 +170,7 @@ public class UniformLogFormatterTest {
         record.setSourceClassName("fish.payara.FakeClass");
         record.setSourceMethodName("fakeMethod");
         final UniformLogFormatter formatter = new UniformLogFormatter();
-        formatter.setMultiLineMode(false);
+        formatter.setMultiline(false);
         formatter.setPrintSequenceNumber(true);
         formatter.setPrintSource(true);
 
@@ -199,8 +199,8 @@ public class UniformLogFormatterTest {
         record.setLoggerName(logger.getName());
         record.setResourceBundleName(logger.getResourceBundleName());
         final UniformLogFormatter formatter = new UniformLogFormatter();
-        formatter.setAnsiColor(true);
-        formatter.setMultiLineMode(true);
+        formatter.setAnsiColorEnabled(true);
+        formatter.setMultiline(true);
         formatter.setLoggerColor(AnsiColor.BOLD_INTENSE_WHITE);
         formatter.setLevelColors(Collections.singletonMap(Level.SEVERE, AnsiColor.BOLD_INTENSE_RED));
 
@@ -225,7 +225,7 @@ public class UniformLogFormatterTest {
         final EnhancedLogRecord record = new EnhancedLogRecord(Level.SEVERE, "Failure!", false);
         record.setThrown(new RuntimeException("Ooops!"));
         final UniformLogFormatter formatter = new UniformLogFormatter();
-        formatter.setMultiLineMode(false);
+        formatter.setMultiline(false);
         final String log = formatter.format(record);
         assertNotNull(log, "log");
         final String[] lines = log.split("\n");
@@ -243,7 +243,7 @@ public class UniformLogFormatterTest {
         final LogRecord record = new LogRecord(Level.INFO, "This is a message.");
         final UniformLogFormatter formatter = new UniformLogFormatter();
         formatter.setTimestampFormatter("HH:mm:ss.SSS");
-        formatter.setMultiLineMode(false);
+        formatter.setMultiline(false);
         formatter.setExcludeFields(Arrays.stream(SupplementalAttribute.values()).map(SupplementalAttribute::getId)
             .collect(Collectors.joining(",")));
         final String log = formatter.format(record);

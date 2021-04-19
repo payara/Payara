@@ -39,12 +39,17 @@
  */
 package fish.payara.jul.formatter;
 
+import fish.payara.jul.cfg.LogProperty;
 import fish.payara.jul.record.EnhancedLogRecord;
 import fish.payara.jul.record.MessageResolver;
 
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.logging.LogRecord;
+
+import static fish.payara.jul.formatter.OneLineFormatter.OneLineFormatterProperty.SIZE_CLASS;
+import static fish.payara.jul.formatter.OneLineFormatter.OneLineFormatterProperty.SIZE_LEVEL;
+import static fish.payara.jul.formatter.OneLineFormatter.OneLineFormatterProperty.SIZE_THREAD;
 
 /**
  * Fast formatter usable in tests or even in production if you need only simple logs with time,
@@ -80,9 +85,9 @@ public class OneLineFormatter extends PayaraLogFormatter {
 
 
     private static void configure(OneLineFormatter formatter, final FormatterConfigurationHelper helper) {
-        formatter.sizeOfLevel = helper.getNonNegativeInteger("size.level", formatter.sizeOfLevel);
-        formatter.sizeOfThread = helper.getNonNegativeInteger("size.thread", formatter.sizeOfThread);
-        formatter.sizeOfClass = helper.getNonNegativeInteger("size.class", formatter.sizeOfClass);
+        formatter.sizeOfLevel = helper.getNonNegativeInteger(SIZE_LEVEL, formatter.sizeOfLevel);
+        formatter.sizeOfThread = helper.getNonNegativeInteger(SIZE_THREAD, formatter.sizeOfThread);
+        formatter.sizeOfClass = helper.getNonNegativeInteger(SIZE_CLASS, formatter.sizeOfClass);
     }
 
 
@@ -142,5 +147,31 @@ public class OneLineFormatter extends PayaraLogFormatter {
         final char[] spaces = new char[countOfSpaces];
         Arrays.fill(spaces, ' ');
         return spaces;
+    }
+
+    /**
+     * Configuration property set of this formatter
+     */
+    public enum OneLineFormatterProperty implements LogProperty {
+
+        /** Count of characters for the log record's level */
+        SIZE_LEVEL("size.level"),
+        /** Count of characters for the log record's thread name */
+        SIZE_THREAD("size.thread"),
+        /** Count of characters for the log record's source class */
+        SIZE_CLASS("size.class"),
+        ;
+
+        private final String propertyName;
+
+        OneLineFormatterProperty(final String propertyName) {
+            this.propertyName = propertyName;
+        }
+
+
+        @Override
+        public String getPropertyName() {
+            return propertyName;
+        }
     }
 }

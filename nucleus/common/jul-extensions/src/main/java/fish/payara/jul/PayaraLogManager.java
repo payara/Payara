@@ -41,6 +41,7 @@
 package fish.payara.jul;
 
 import fish.payara.jul.cfg.ConfigurationHelper;
+import fish.payara.jul.cfg.LogProperty;
 import fish.payara.jul.cfg.PayaraLogManagerConfiguration;
 import fish.payara.jul.cfg.SortedProperties;
 import fish.payara.jul.env.LoggingSystemEnvironment;
@@ -76,6 +77,7 @@ import java.util.stream.Stream;
 import static fish.payara.jul.cfg.PayaraLoggingJvmOptions.JVM_OPT_LOGGING_CFG_DEFAULT_LEVEL;
 import static fish.payara.jul.cfg.PayaraLoggingJvmOptions.JVM_OPT_LOGGING_CFG_FILE;
 import static fish.payara.jul.cfg.PayaraLoggingJvmOptions.JVM_OPT_LOGGING_CFG_USE_DEFAULTS;
+import static fish.payara.jul.env.LoggingSystemEnvironment.setReleaseParametersEarly;
 import static java.util.logging.Logger.GLOBAL_LOGGER_NAME;
 
 
@@ -103,6 +105,17 @@ public class PayaraLogManager extends LogManager {
     public static final String KEY_USR_ROOT_LOGGER_LEVEL = ".level";
     /** Empty string - standard root logger name */
     public static final String ROOT_LOGGER_NAME = "";
+
+    /** Property key for a list of root handler implementations */
+    public static final LogProperty KEY_ROOT_HANDLERS = () -> "handlers";
+    /**
+     * Property key for boolean value enabling forgetting log record parameters right after
+     * the message is resolved. If false, message are held until the record is processed
+     * by a formatter, unused in an application and finally garbage collected.
+     * <br>
+     * Releasing them when they are not used may help performance (depends on type of load).
+     */
+    public static final LogProperty KEY_RELEASE_PARAMETERS_EARLY = () -> "fish.payara.jul.record.releaseParametersEarly";
 
     private static final AtomicBoolean RESET_PROTECTION = new AtomicBoolean(true);
     private static volatile PayaraLoggingStatus status = PayaraLoggingStatus.UNINITIALIZED;
@@ -401,8 +414,7 @@ public class PayaraLogManager extends LogManager {
         }
         setStatus(PayaraLoggingStatus.CONFIGURING);
         this.configuration = cfg;
-        LoggingSystemEnvironment.setReleaseParametersEarly(
-            Boolean.parseBoolean(cfg.getProperty("fish.payara.jul.record.releaseParametersEarly")));
+        setReleaseParametersEarly(getConfigurationHelper().getBoolean(KEY_RELEASE_PARAMETERS_EARLY, false));
         // it is used to configure new objects in LogManager class
         final Thread currentThread = Thread.currentThread();
         final ClassLoader originalCL = currentThread.getContextClassLoader();
@@ -539,7 +551,7 @@ public class PayaraLogManager extends LogManager {
     private void initializeRootLoggers() {
         PayaraLoggingTracer.trace(PayaraLogManager.class, "initializeRootLoggers()");
         final PayaraLogger referenceLogger = getRootLogger();
-        final List<String> requestedHandlerNames = ConfigurationHelper.getRootHandlers();
+        final List<String> requestedHandlerNames = getConfigurationHelper().getList(KEY_ROOT_HANDLERS, null);
         final List<Handler> currentHandlers = Arrays.asList(referenceLogger.getHandlers());
 
         final List<Handler> handlersToAdd = new ArrayList<>();
@@ -568,6 +580,12 @@ public class PayaraLogManager extends LogManager {
         configureRootLogger(userRootLogger, rootLoggerLevel, requestedHandlerNames, handlersToRemove, handlersToAdd);
         setMissingParentToRootLogger(userRootLogger);
     }
+
+
+    private ConfigurationHelper getConfigurationHelper() {
+        return new ConfigurationHelper(null,  ConfigurationHelper.ERROR_HANDLER_PRINT_TO_STDERR);
+    }
+
 
     private void setMissingParentToRootLogger(final PayaraLogger rootParentLogger) {
         final Enumeration<String> names = getLoggerNames();
@@ -676,7 +694,7 @@ public class PayaraLogManager extends LogManager {
         final String level = System.getProperty(JVM_OPT_LOGGING_CFG_DEFAULT_LEVEL, Level.INFO.getName());
         cfg.setProperty(KEY_SYS_ROOT_LOGGER_LEVEL, level);
         cfg.setProperty(KEY_USR_ROOT_LOGGER_LEVEL, level);
-        cfg.setProperty(ConfigurationHelper.KEY_ROOT_HANDLERS, SimpleLogHandler.class.getName());
+        cfg.setProperty(KEY_ROOT_HANDLERS.getPropertyName(), SimpleLogHandler.class.getName());
         cfg.setProperty(SimpleLogHandler.class.getName() + ".level", level);
         return cfg;
     }

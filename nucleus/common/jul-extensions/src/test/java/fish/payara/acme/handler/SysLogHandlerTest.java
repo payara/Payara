@@ -83,7 +83,7 @@ public class SysLogHandlerTest {
     @Test
     void standardUsage() {
         final SortedProperties properties = new SortedProperties();
-        properties.setProperty(SyslogHandler.class.getName() + ".useSystemLogging", "true");
+        properties.setProperty(SyslogHandler.ENABLED.getPropertyFullName(SyslogHandler.class), "true");
         final PayaraLogManagerConfiguration cfg = new PayaraLogManagerConfiguration(properties);
         PayaraLogManager.getLogManager().reconfigure(cfg);
         handler = new SyslogHandler();

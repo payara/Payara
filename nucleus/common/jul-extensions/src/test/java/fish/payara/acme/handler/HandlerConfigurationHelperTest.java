@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) 2020-2021 Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) 2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -38,45 +38,50 @@
  *  holder.
  */
 
-package fish.payara.jul.formatter;
+package fish.payara.acme.handler;
 
-import fish.payara.jul.cfg.ConfigurationHelper;
-import fish.payara.jul.formatter.AnsiColorFormatter.AnsiColorFormatterProperty;
+import fish.payara.jul.formatter.HandlerId;
+import fish.payara.jul.formatter.ODLLogFormatter;
+import fish.payara.jul.formatter.OneLineFormatter;
+import fish.payara.jul.handler.HandlerConfigurationHelper;
+import fish.payara.jul.handler.PayaraLogHandler;
 
+import java.util.logging.ConsoleHandler;
 import java.util.logging.Formatter;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+
+import org.hamcrest.core.IsInstanceOf;
+import org.junit.jupiter.api.Test;
+
+import static fish.payara.jul.formatter.HandlerId.forHandlerClass;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasLength;
+
 
 /**
- * This is a tool to help with parsing the logging.properties file to configure formatters.
- * <p>
- * It respects JUL configuration standards, so ie. each formatter knows best how to configure itself,
- * but still can use this helper to parse properties directly to objects instead of plain strings.
- * Helper also supports custom error handlers.
- *
  * @author David Matejcek
  */
-public class FormatterConfigurationHelper extends ConfigurationHelper {
+public class HandlerConfigurationHelperTest {
 
-    public static FormatterConfigurationHelper forHandlerId(final HandlerId handlerId) {
-        return new FormatterConfigurationHelper(handlerId.getPropertyPrefix() + ".formatter",
-            ERROR_HANDLER_PRINT_TO_STDERR);
+    @Test
+    void customFormatter() {
+        final HandlerId handlerId = forHandlerClass(PayaraLogHandler.class);
+        final HandlerConfigurationHelper helper = new HandlerConfigurationHelper(handlerId);
+        final Formatter formatter = helper.getFormatter(ODLLogFormatter.class);
+        assertThat("formatter", formatter, IsInstanceOf.instanceOf(OneLineFormatter.class));
+        final String line = formatter.format(new LogRecord(Level.INFO, "something"));
+        assertThat("line length", line, hasLength(55));
     }
 
 
-    public static FormatterConfigurationHelper forFormatterClass(final Class<? extends Formatter> formatterClass) {
-        return new FormatterConfigurationHelper(formatterClass.getName(), ERROR_HANDLER_PRINT_TO_STDERR);
-    }
-
-
-    /**
-     * @param prefix Usually a canonical class name
-     * @param errorHandler
-     */
-    public FormatterConfigurationHelper(final String prefix, final LoggingPropertyErrorHandler errorHandler) {
-        super(prefix, errorHandler);
-    }
-
-
-    public AnsiColor getAnsiColor(final AnsiColorFormatterProperty key, final AnsiColor defaultColor) {
-        return parse(key, defaultColor, AnsiColor::valueOf);
+    @Test
+    void defaultFormatter() {
+        final HandlerId handlerId = forHandlerClass(ConsoleHandler.class);
+        final HandlerConfigurationHelper helper = new HandlerConfigurationHelper(handlerId);
+        final Formatter formatter = helper.getFormatter(OneLineFormatter.class);
+        assertThat("formatter", formatter, IsInstanceOf.instanceOf(OneLineFormatter.class));
+        final String line = formatter.format(new LogRecord(Level.INFO, "something"));
+        assertThat("line length", line, hasLength(114));
     }
 }

@@ -41,11 +41,13 @@
 package fish.payara.jul.handler;
 
 import fish.payara.jul.cfg.ConfigurationHelper;
+import fish.payara.jul.cfg.LogProperty;
 import fish.payara.jul.formatter.HandlerId;
 import fish.payara.jul.tracing.PayaraLoggingTracer;
 
 import java.lang.reflect.Constructor;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
 
@@ -60,8 +62,10 @@ import java.util.logging.Handler;
  */
 public class HandlerConfigurationHelper extends ConfigurationHelper {
 
-    private static final Function<String, Formatter> STR_TO_FORMATTER = STR_TO_CLASS.andThen(Formatter.class::cast);
-
+    /**
+     * Handler's property for formatter
+     */
+    public static final LogProperty FORMATTER = () -> "formatter";
     private final HandlerId handlerId;
 
     public static HandlerConfigurationHelper forHandlerClass(final Class<? extends Handler> handlerClass) {
@@ -80,26 +84,59 @@ public class HandlerConfigurationHelper extends ConfigurationHelper {
      * @return preconfigured {@link Formatter}, defaults are defined by the formatter and properties
      */
     public Formatter getFormatter(final Class<? extends Formatter> defaultFormatterClass) {
-        return parseOrSupply("formatter", () -> createNewFormatter("formatter", defaultFormatterClass), STR_TO_FORMATTER);
+        final Supplier<Formatter> defaultSupplier = () -> createNewFormatter(defaultFormatterClass);
+        final Function<String, Formatter> converter = value -> createNewFormatter(value);
+        return parseOrSupply(FORMATTER, defaultSupplier, converter);
     }
 
 
-    private <F extends Formatter> F createNewFormatter(final String key, final Class<F> clazz) {
+    @SuppressWarnings("unchecked")
+    private <F extends Formatter> F createNewFormatter(final String className) {
+        final Class<Formatter> formatterClass = findClass(className);
+        return (F) createNewFormatter(formatterClass);
+    }
+
+
+    @SuppressWarnings("unchecked")
+    private  <F extends Formatter> Class<F> findClass(final String className) {
+        if (className == null) {
+            return null;
+        }
+        final ClassLoader classLoader = getClassLoader();
         try {
-            final Constructor<F> constructor = getFormatterConstructor(clazz);
+            return (Class<F>) classLoader.loadClass(className);
+        } catch (ClassCastException | ClassNotFoundException | NoClassDefFoundError e) {
+            PayaraLoggingTracer.error(ConfigurationHelper.class, "Classloader: " + classLoader, e);
+            throw new IllegalStateException("Formatter instantiation failed! ClassLoader used: " + classLoader, e);
+        }
+    }
+
+
+    private ClassLoader getClassLoader() {
+        final ClassLoader threadCL = Thread.currentThread().getContextClassLoader();
+        if (threadCL != null) {
+            return threadCL;
+        }
+        return getClass().getClassLoader();
+    }
+
+
+    private <F extends Formatter> F createNewFormatter(final Class<F> clazz) {
+        try {
+            final Constructor<F> constructor = getFormatterConstructorForHandler(clazz);
             if (constructor == null) {
                 // All formatters must have default constructor
                 return clazz.newInstance();
             }
             return constructor.newInstance(handlerId);
         } catch (ReflectiveOperationException | RuntimeException e) {
-            handleError(e, key, clazz);
+            handleError(e, FORMATTER.getPropertyFullName(handlerId.getPropertyPrefix()), clazz);
             return null;
         }
     }
 
 
-    private <F extends Formatter> Constructor<F> getFormatterConstructor(final Class<F> formatterClass) {
+    private <F extends Formatter> Constructor<F> getFormatterConstructorForHandler(final Class<F> formatterClass) {
         try {
             return formatterClass.getConstructor(HandlerId.class);
         } catch (NoSuchMethodException | SecurityException e) {

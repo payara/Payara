@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
 
 /**
@@ -194,18 +194,17 @@ public class LoggingHandlers {
         Map<String, Object> props = new HashMap();
         try{
             for (Map.Entry<String, Object> e : attrs.entrySet()) {
-                String key=e.getKey();
-                if ((key.equals("fish.payara.jul.handler.SyslogHandler.useSystemLogging")||
-                      key.equals("fish.payara.jul.handler.PayaraLogHandler.logtoFile") ||
-                      key.equals("fish.payara.jul.handler.PayaraLogHandler.logtoConsole") ||
-                      key.equals("fish.payara.jul.handler.PayaraLogHandler.multiLineMode") ||
-                      key.equals("fish.payara.jul.handler.PayaraLogHandler.rotationOnDateChange" ) ||
-                      key.equals("fish.payara.jul.handler.PayaraLogHandler.compressOnRotation") ||
-                      key.equals("fish.payara.jul.handler.PayaraLogHandler.logStandardStreams") ||
-                      key.equals("fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.logtoFile") ||
-                      key.equals("fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.rotationOnDateChange") ||
-                      key.equals("fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.compressOnRotation"))
-                        && (e.getValue() == null)) {
+                String key = e.getKey();
+                if ((key.equals("fish.payara.jul.handler.SyslogHandler.enabled")||
+                      key.equals("fish.payara.jul.handler.PayaraLogHandler.enabled") ||
+                      key.equals("fish.payara.jul.handler.PayaraLogHandler.formatter.multiLine") ||
+                      key.equals("fish.payara.jul.handler.PayaraLogHandler.rotation.rollOnDateChange" ) ||
+                      key.equals("fish.payara.jul.handler.PayaraLogHandler.rotation.compress") ||
+                      key.equals("fish.payara.jul.handler.PayaraLogHandler.redirectStandardStreams") ||
+                      key.equals("fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.enabled") ||
+                      key.equals("fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.rotation.rollOnDateChange") ||
+                      key.equals("fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.rotation.compress"))
+                        && e.getValue() == null) {
                     attrs.put(key, "false");
                 }
                 props.put("id", key + "='" + attrs.get(key) + "'");

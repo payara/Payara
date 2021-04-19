@@ -45,6 +45,8 @@ package com.sun.common.util.logging;
 import com.sun.enterprise.util.PropertyPlaceholderHelper;
 
 import fish.payara.jul.cfg.SortedProperties;
+import fish.payara.jul.formatter.ODLLogFormatter;
+import fish.payara.jul.handler.PayaraLogHandler;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -74,6 +76,8 @@ import org.jvnet.hk2.annotations.Contract;
 import org.jvnet.hk2.annotations.Service;
 
 import static com.sun.common.util.logging.LoggingXMLNames.xmltoPropsMap;
+import static fish.payara.jul.handler.HandlerConfigurationHelper.FORMATTER;
+import static fish.payara.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.*;
 
 /**
  * Implementation of Logging Commands
@@ -84,28 +88,30 @@ import static com.sun.common.util.logging.LoggingXMLNames.xmltoPropsMap;
 @Contract
 public class LoggingConfigImpl implements LoggingConfig {
 
-    private static final String HANDLER_SERVER_LOG = "fish.payara.jul.handler.PayaraLogHandler";
-    private static final String HANDLER_NOTIFICATION_LOG = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler";
-    private static final String LOGGER_WEB_CONTAINER = "javax.enterprise.system.container.web";
+    private static final String DEFAULT_SERVER_LOG_PATH = "${com.sun.aas.instanceRoot}/logs/server.log";
+    private static final String DEFAULT_NOTIFICATION_LOG_PATH = "${com.sun.aas.instanceRoot}/logs/notification.log";
+    private static final Class<PayaraLogHandler> HANDLER_SERVER = PayaraLogHandler.class;
+    private static final String HANDLER_NOTIFICATION = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler";
 
     private static final Logger LOG = Logger.getLogger(LoggingConfigImpl.class.getName());
 
-    protected static final Map<String, String> DEFAULT_LOG_PROPERTIES = new HashMap<>();
+    private static final Map<String, String> DEFAULT_LOG_PROPERTIES = new HashMap<>();
     static {
-        DEFAULT_LOG_PROPERTIES.put(HANDLER_SERVER_LOG + ".logtoFile", "true");
-        DEFAULT_LOG_PROPERTIES.put(HANDLER_SERVER_LOG + ".file", "${com.sun.aas.instanceRoot}/logs/server.log");
-        DEFAULT_LOG_PROPERTIES.put(HANDLER_SERVER_LOG + ".rotationLimitInBytes", "2000000");
-        DEFAULT_LOG_PROPERTIES.put(HANDLER_SERVER_LOG + ".logStandardStreams", "true");
-        DEFAULT_LOG_PROPERTIES.put(HANDLER_SERVER_LOG + ".formatter", "fish.payara.jul.formatter.ODLLogFormatter");
+        DEFAULT_LOG_PROPERTIES.put(ENABLED.getPropertyFullName(HANDLER_SERVER), "true");
+        DEFAULT_LOG_PROPERTIES.put(OUTPUT_FILE.getPropertyFullName(HANDLER_SERVER), DEFAULT_SERVER_LOG_PATH);
+        DEFAULT_LOG_PROPERTIES.put(FORMATTER.getPropertyFullName(HANDLER_SERVER), ODLLogFormatter.class.getName());
+        DEFAULT_LOG_PROPERTIES.put(REDIRECT_STANDARD_STREAMS.getPropertyFullName(HANDLER_SERVER), "true");
+        DEFAULT_LOG_PROPERTIES.put(ROTATION_LIMIT_SIZE.getPropertyFullName(HANDLER_SERVER), "2");
 
-        DEFAULT_LOG_PROPERTIES.put(HANDLER_NOTIFICATION_LOG + ".logtoFile", "true");
-        DEFAULT_LOG_PROPERTIES.put(HANDLER_NOTIFICATION_LOG + ".rotationOnDateChange", "false");
-        DEFAULT_LOG_PROPERTIES.put(HANDLER_NOTIFICATION_LOG + ".rotationTimelimitInMinutes", "0");
-        DEFAULT_LOG_PROPERTIES.put(HANDLER_NOTIFICATION_LOG + ".rotationLimitInBytes", "2000000");
-        DEFAULT_LOG_PROPERTIES.put(HANDLER_NOTIFICATION_LOG + ".maxHistoryFiles", "0");
-        DEFAULT_LOG_PROPERTIES.put(HANDLER_NOTIFICATION_LOG + ".file", "${com.sun.aas.instanceRoot}/logs/notification.log");
-        DEFAULT_LOG_PROPERTIES.put(HANDLER_NOTIFICATION_LOG + ".compressOnRotation", "false");
-        DEFAULT_LOG_PROPERTIES.put(HANDLER_NOTIFICATION_LOG + ".formatter", "fish.payara.jul.formatter.ODLLogFormatter");
+        DEFAULT_LOG_PROPERTIES.put(ENABLED.getPropertyFullName(HANDLER_NOTIFICATION), "true");
+        DEFAULT_LOG_PROPERTIES.put(OUTPUT_FILE.getPropertyFullName(HANDLER_NOTIFICATION), DEFAULT_NOTIFICATION_LOG_PATH);
+        DEFAULT_LOG_PROPERTIES.put(FORMATTER.getPropertyFullName(HANDLER_NOTIFICATION), ODLLogFormatter.class.getName());
+        DEFAULT_LOG_PROPERTIES.put(REDIRECT_STANDARD_STREAMS.getPropertyFullName(HANDLER_NOTIFICATION), "false");
+        DEFAULT_LOG_PROPERTIES.put(ROTATION_COMPRESS.getPropertyFullName(HANDLER_NOTIFICATION), "false");
+        DEFAULT_LOG_PROPERTIES.put(ROTATION_LIMIT_TIME.getPropertyFullName(HANDLER_NOTIFICATION), "0");
+        DEFAULT_LOG_PROPERTIES.put(ROTATION_LIMIT_SIZE.getPropertyFullName(HANDLER_NOTIFICATION), "2");
+        DEFAULT_LOG_PROPERTIES.put(ROTATION_MAX_HISTORY.getPropertyFullName(HANDLER_NOTIFICATION), "0");
+        DEFAULT_LOG_PROPERTIES.put(ROTATION_ON_DATE_CHANGE.getPropertyFullName(HANDLER_NOTIFICATION), "false");
     }
 
     @Inject

@@ -64,6 +64,7 @@ import static org.junit.jupiter.api.Assertions.assertNotSame;
  */
 public class PayaraLogManagerConfigurationTest {
 
+    private static final int PROPERTY_COUNT = 5;
     private static PayaraLogManager logManager;
     private static PayaraLogManagerConfiguration originalCfg;
 
@@ -82,8 +83,8 @@ public class PayaraLogManagerConfigurationTest {
     void toStream() {
         final SortedProperties properties = originalCfg.toProperties();
         assertAll(
-            () -> assertEquals(3, originalCfg.toStream().count()),
-            () -> assertEquals(3, properties.size())
+            () -> assertEquals(PROPERTY_COUNT, originalCfg.toStream().count()),
+            () -> assertEquals(PROPERTY_COUNT, properties.size())
         );
         originalCfg.toStream().forEach(entry -> {
             assertEquals(entry.getValue(), originalCfg.getProperty(entry.getKey()));

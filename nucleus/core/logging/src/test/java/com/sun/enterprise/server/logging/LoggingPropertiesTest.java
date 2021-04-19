@@ -65,6 +65,7 @@ import org.mockito.Mock;
 import org.mockito.internal.util.reflection.FieldSetter;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import static fish.payara.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.REDIRECT_STANDARD_STREAMS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -76,8 +77,8 @@ import static org.junit.Assert.assertNull;
 @RunWith(MockitoJUnitRunner.class)
 public class LoggingPropertiesTest {
 
-    private static final String LOG_STANDARD_STREAMS_PROPERTY = PayaraLogHandler.class.getName()
-        + ".logStandardStreams";
+    private static final String LOG_STANDARD_STREAMS_PROPERTY = REDIRECT_STANDARD_STREAMS
+        .getPropertyFullName(PayaraLogHandler.class);
 
     private final Properties props = new Properties();
     private Map<String, String> properties;

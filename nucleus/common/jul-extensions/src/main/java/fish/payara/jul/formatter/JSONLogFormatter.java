@@ -39,6 +39,7 @@
  */
 package fish.payara.jul.formatter;
 
+import fish.payara.jul.cfg.LogProperty;
 import fish.payara.jul.env.LoggingSystemEnvironment;
 import fish.payara.jul.record.EnhancedLogRecord;
 import fish.payara.jul.record.MessageResolver;
@@ -52,6 +53,8 @@ import java.util.logging.LogRecord;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+
+import static fish.payara.jul.formatter.JSONLogFormatter.JSONFormatterProperty.EXCLUDED_FIELDS;
 
 /**
  * Class for converting a {@link LogRecord} to Json format
@@ -89,13 +92,20 @@ public class JSONLogFormatter extends PayaraLogFormatter {
      * @deprecated remove in Payara 6
      */
     @Deprecated
-    private static final String PAYARA_JSONLOGFORMATTER_UNDERSCORE
+    public static final String PAYARA_JSONLOGFORMATTER_UNDERSCORE
         = "fish.payara.deprecated.jsonlogformatter.underscoreprefix";
 
     private final ExcludeFieldsSupport excludeFieldsSupport = new ExcludeFieldsSupport();
     private final boolean underscorePrefix = Boolean
         .parseBoolean(LogManager.getLogManager().getProperty(PAYARA_JSONLOGFORMATTER_UNDERSCORE));
 
+
+    /**
+     * Creates an instance and initializes defaults from log manager's configuration.
+     * Respects also handler's settings which have higher priority.
+     *
+     * @param handlerId
+     */
     public JSONLogFormatter(final HandlerId handlerId) {
         super(handlerId);
         configure(this, FormatterConfigurationHelper.forFormatterClass(getClass()));
@@ -112,7 +122,7 @@ public class JSONLogFormatter extends PayaraLogFormatter {
 
 
     private static void configure(final JSONLogFormatter formatter, final FormatterConfigurationHelper helper) {
-        formatter.setExcludeFields(helper.getString("excludeFields", formatter.excludeFieldsSupport.toString()));
+        formatter.setExcludeFields(helper.getString(EXCLUDED_FIELDS, formatter.excludeFieldsSupport.toString()));
         // to validate it can work, especially depends on JSON support
         formatter.format(new EnhancedLogRecord(Level.ALL, "msg", false));
     }
@@ -233,7 +243,7 @@ public class JSONLogFormatter extends PayaraLogFormatter {
      * @param excludeFields Fields to exclude.
      */
     public void setExcludeFields(final String excludeFields) {
-        this.excludeFieldsSupport.setExcludeFields(excludeFields);
+        this.excludeFieldsSupport.setExcludedFields(excludeFields);
     }
 
 
@@ -271,6 +281,29 @@ public class JSONLogFormatter extends PayaraLogFormatter {
         @Override
         public String toString() {
             return toJsonObject().toString();
+        }
+    }
+
+
+    /**
+     * Configuration property set of this formatter
+     */
+    public enum JSONFormatterProperty implements LogProperty {
+
+        /** Excluded fields from the output */
+        EXCLUDED_FIELDS("excludedFields"),
+        ;
+
+        private final String propertyName;
+
+        JSONFormatterProperty(final String propertyName) {
+            this.propertyName = propertyName;
+        }
+
+
+        @Override
+        public String getPropertyName() {
+            return propertyName;
         }
     }
 }

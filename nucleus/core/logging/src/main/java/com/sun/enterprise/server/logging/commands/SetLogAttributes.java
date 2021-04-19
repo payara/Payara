@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.server.logging.commands;
 
 import com.sun.common.util.logging.LoggingConfigFactory;
@@ -47,12 +47,42 @@ import com.sun.enterprise.config.serverbeans.Servers;
 import com.sun.enterprise.server.logging.LogManagerService;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
+
+import fish.payara.enterprise.server.logging.PayaraNotificationFileHandler;
+import fish.payara.jul.PayaraLogManager;
+import fish.payara.jul.cfg.LogProperty;
+import fish.payara.jul.formatter.AnsiColorFormatter;
+import fish.payara.jul.formatter.AnsiColorFormatter.AnsiColorFormatterProperty;
+import fish.payara.jul.formatter.JSONLogFormatter;
+import fish.payara.jul.formatter.JSONLogFormatter.JSONFormatterProperty;
+import fish.payara.jul.formatter.ODLLogFormatter;
+import fish.payara.jul.formatter.ODLLogFormatter.ODLFormatterProperty;
+import fish.payara.jul.formatter.OneLineFormatter;
+import fish.payara.jul.formatter.OneLineFormatter.OneLineFormatterProperty;
+import fish.payara.jul.formatter.PayaraLogFormatter.PayaraLogFormatterProperty;
+import fish.payara.jul.formatter.UniformLogFormatter;
+import fish.payara.jul.formatter.UniformLogFormatter.UniformFormatterProperty;
+import fish.payara.jul.handler.HandlerConfigurationHelper;
+import fish.payara.jul.handler.PayaraLogHandler;
+import fish.payara.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty;
+import fish.payara.jul.handler.SimpleLogHandler;
+import fish.payara.jul.handler.SimpleLogHandler.SimpleLogHandlerProperty;
+import fish.payara.jul.handler.SyslogHandler;
+
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import javax.inject.Inject;
 import javax.validation.ValidationException;
+
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -88,6 +118,9 @@ import org.jvnet.hk2.annotations.Service;
 public class SetLogAttributes implements AdminCommand {
 
     private static final String LINE_SEP = System.lineSeparator();
+    private static final Logger LOG = Logger.getLogger(SetLogAttributes.class.getName());
+
+    private static final Set<String> VALID_ATTRIBUTES;
 
     @Param(name = "name_value", primary = true, separator = ':')
     Properties properties;
@@ -116,50 +149,79 @@ public class SetLogAttributes implements AdminCommand {
     @Inject
     UnprocessedConfigListener ucl;
 
-    String[] validAttributes = { //
-            "handlers",
-            "fish.payara.jul.handler.SyslogHandler.useSystemLogging",
-            "fish.payara.jul.handler.PayaraLogHandler.file",
-            "fish.payara.jul.handler.PayaraLogHandler.rotationTimelimitInMinutes",
-            "fish.payara.jul.handler.PayaraLogHandler.flushFrequency",
-            "fish.payara.jul.handler.PayaraLogHandler.formatter",
-            "fish.payara.jul.handler.PayaraLogHandler.logtoFile",
-            "fish.payara.jul.handler.PayaraLogHandler.logtoConsole",
-            "fish.payara.jul.handler.PayaraLogHandler.rotationLimitInBytes",
-            "fish.payara.jul.handler.PayaraLogHandler.alarms",
-            "fish.payara.jul.handler.PayaraLogHandler.retainErrorsStasticsForHours",
-            "fish.payara.jul.handler.PayaraLogHandler.maxHistoryFiles",
-            "fish.payara.jul.handler.PayaraLogHandler.rotationOnDateChange",
-            "fish.payara.jul.handler.PayaraLogHandler.logFormatDateFormat",
-            "fish.payara.jul.handler.PayaraLogHandler.excludeFields",
-            "fish.payara.jul.handler.PayaraLogHandler.multiLineMode",
-            "fish.payara.jul.handler.PayaraLogHandler.compressOnRotation",
-            "fish.payara.jul.handler.PayaraLogHandler.logStandardStreams",
-            "fish.payara.jul.formatter.UniformLogFormatter.ansiColor",
-            "fish.payara.jul.formatter.UniformLogFormatter.infoColor",
-            "fish.payara.jul.formatter.UniformLogFormatter.warnColor",
-            "fish.payara.jul.formatter.UniformLogFormatter.severeColor",
-            "fish.payara.jul.formatter.UniformLogFormatter.loggerColor",
-            "fish.payara.jul.formatter.ODLLogFormatter.ansiColor",
-            "fish.payara.jul.formatter.ODLLogFormatter.loggerColor",
-            "fish.payara.jul.formatter.ODLLogFormatter.infoColor",
-            "fish.payara.jul.formatter.ODLLogFormatter.warnColor",
-            "fish.payara.jul.formatter.ODLLogFormatter.severeColor",
-            "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.file",
-            "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.logtoFile",
-            "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.formatter",
-            "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.rotationTimelimitInMinutes",
-            "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.rotationOnDateChange",
-            "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.rotationLimitInBytes",
-            "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.maxHistoryFiles",
-            "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.compressOnRotation",
-            "fish.payara.deprecated.jsonlogformatter.underscoreprefix", //
-            "fish.payara.jul.handler.SimpleLogHandler.formatter",
-            "java.util.logging.FileHandler.count",
-            "java.util.logging.FileHandler.formatter",
-            "java.util.logging.FileHandler.limit",
-            "java.util.logging.FileHandler.pattern", //
+    static {
+        // the set of valid attribute keys affects Admin GUI! Try to save values in Logger settings.
+        final Set<String> properties = new HashSet<>();
+        properties.add(PayaraLogManager.KEY_ROOT_HANDLERS.getPropertyName());
+        properties.add(PayaraLogManager.KEY_RELEASE_PARAMETERS_EARLY.getPropertyName());
+        properties.add(SyslogHandler.ENABLED.getPropertyFullName(SyslogHandler.class));
+
+        final Class<?>[] formatters = new Class<?>[] {
+            UniformLogFormatter.class, ODLLogFormatter.class, OneLineFormatter.class, JSONLogFormatter.class
         };
+
+        // all handlers with their own properties
+        Arrays.stream(PayaraLogHandlerProperty.values())
+            .forEach(p -> properties.add(p.getPropertyFullName(PayaraLogHandler.class)));
+        Arrays.stream(PayaraLogHandlerProperty.values())
+            .forEach(p -> properties.add(p.getPropertyFullName(PayaraNotificationFileHandler.class)));
+        Arrays.stream(SimpleLogHandlerProperty.values())
+            .forEach(p -> properties.add(p.getPropertyFullName(SimpleLogHandler.class)));
+
+        // all formatters and their own properties
+        Arrays.stream(UniformFormatterProperty.values())
+            .forEach(p -> properties.add(p.getPropertyFullName(UniformLogFormatter.class)));
+        Arrays.stream(ODLFormatterProperty.values())
+            .forEach(p -> properties.add(p.getPropertyFullName(ODLLogFormatter.class)));
+        Arrays.stream(OneLineFormatterProperty.values())
+            .forEach(p -> properties.add(p.getPropertyFullName(OneLineFormatter.class)));
+        Arrays.stream(JSONFormatterProperty.values())
+            .forEach(p -> properties.add(p.getPropertyFullName(JSONLogFormatter.class)));
+        for (Class<?> formatter : formatters) {
+            Arrays.stream(PayaraLogFormatterProperty.values())
+                .forEach(p -> properties.add(p.getPropertyFullName(formatter)));
+            if (AnsiColorFormatter.class.isAssignableFrom(formatter)) {
+                Arrays.stream(AnsiColorFormatterProperty.values())
+                    .forEach(p -> properties.add(p.getPropertyFullName(formatter)));
+            }
+        }
+
+        // and finally all formatters used with handlers
+        final Class<?>[] handlersWithFormatter = new Class<?>[] {
+            PayaraLogHandler.class, SimpleLogHandler.class, PayaraNotificationFileHandler.class
+        };
+        final Set<LogProperty> formatterParameters = new HashSet<>();
+        Arrays.stream(UniformFormatterProperty.values()).forEach(formatterParameters::add);
+        Arrays.stream(ODLFormatterProperty.values()).forEach(formatterParameters::add);
+        Arrays.stream(OneLineFormatterProperty.values()).forEach(formatterParameters::add);
+        Arrays.stream(AnsiColorFormatterProperty.values()).forEach(formatterParameters::add);
+        Arrays.stream(PayaraLogFormatterProperty.values()).forEach(formatterParameters::add);
+
+        for (Class<?> handler : handlersWithFormatter) {
+            properties.add(HandlerConfigurationHelper.FORMATTER.getPropertyFullName(handler));
+        }
+        for (LogProperty logProperty : formatterParameters) {
+            for (Class<?> handler : handlersWithFormatter) {
+                String formatterPrefix = HandlerConfigurationHelper.FORMATTER.getPropertyFullName(handler);
+                properties.add(logProperty.getPropertyFullName(formatterPrefix));
+            }
+        }
+
+        properties.add("java.util.logging.FileHandler.count");
+        properties.add("java.util.logging.FileHandler.formatter");
+        properties.add("java.util.logging.FileHandler.limit");
+        properties.add("java.util.logging.FileHandler.pattern");
+        properties.add("java.util.logging.ConsoleHandler.encoding");
+        properties.add("java.util.logging.ConsoleHandler.filter");
+        properties.add("java.util.logging.ConsoleHandler.formatter");
+        properties.add("java.util.logging.ConsoleHandler.level");
+        properties.add("java.util.logging.SimpleFormatter.format");
+
+        properties.add(JSONLogFormatter.PAYARA_JSONLOGFORMATTER_UNDERSCORE);
+        VALID_ATTRIBUTES = Collections.unmodifiableSet(properties);
+        LOG.log(Level.FINE, "Acceptable logging properties for the set-log-attribute command (except loggers): {0}",
+            VALID_ATTRIBUTES);
+    }
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(SetLogLevel.class);
 
@@ -233,8 +295,7 @@ public class SetLogAttributes implements AdminCommand {
 
 
     private boolean isValid(final String att_name, final String att_value, final ActionReport report) {
-        // TODO: use map
-        for (final String attrName : validAttributes) {
+        for (final String attrName : VALID_ATTRIBUTES) {
             if (attrName.equals(att_name)) {
                 try {
                     logManager.validateProp(att_name, att_value);

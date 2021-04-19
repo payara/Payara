@@ -41,6 +41,7 @@
 
 package fish.payara.jul.handler;
 
+import fish.payara.jul.cfg.LogProperty;
 import fish.payara.jul.handler.Syslog.SyslogLevel;
 import fish.payara.jul.record.EnhancedLogRecord;
 import fish.payara.jul.record.MessageResolver;
@@ -48,7 +49,6 @@ import fish.payara.jul.record.MessageResolver;
 import java.net.UnknownHostException;
 import java.time.format.DateTimeFormatter;
 import java.util.logging.Handler;
-import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 import java.util.logging.SimpleFormatter;
 
@@ -56,18 +56,18 @@ import java.util.logging.SimpleFormatter;
 public class SyslogHandler extends Handler {
     private static final MessageResolver MSG_RESOLVER = new MessageResolver();
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("MMM dd HH:mm:ss");
+    public static final LogProperty ENABLED = () -> "enabled";
 
     private final SimpleFormatter simpleFormatter = new SimpleFormatter();
     private final LogRecordBuffer pendingRecords = new LogRecordBuffer(5000);
 
-    private Syslog sysLogger;
+    private final Syslog sysLogger;
     private LoggingPump pump;
 
     public SyslogHandler() {
-        final String cname = getClass().getName();
-        final LogManager manager = LogManager.getLogManager();
-        final String systemLogging = manager.getProperty(cname + ".useSystemLogging");
-        if (systemLogging == null || "false".equals(systemLogging)) {
+        if (!HandlerConfigurationHelper.forHandlerClass(getClass()).getBoolean(ENABLED, false)) {
+            sysLogger = null;
+            pump = null;
             return;
         }
         sysLogger = setupConnection();
@@ -133,7 +133,7 @@ public class SyslogHandler extends Handler {
 
         @Override
         protected boolean isShutdownRequested() {
-            return sysLogger == null || pump == null;
+            return pump == null;
         }
 
 

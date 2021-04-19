@@ -86,7 +86,7 @@ public class SecurityAccessFilter implements Filter {
             }
         }
 
-        LOG.log(Level.FINE, "The instance `{0}` has no 'Secure' annotatation", d.getImplementation());
+        LOG.log(Level.FINE, "The instance `{0}` has no 'Secure' annotation", d.getImplementation());
         return false;
     }
 }

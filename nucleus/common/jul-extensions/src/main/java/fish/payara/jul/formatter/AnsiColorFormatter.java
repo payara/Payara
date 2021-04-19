@@ -39,9 +39,17 @@
  */
 package fish.payara.jul.formatter;
 
+import fish.payara.jul.cfg.LogProperty;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
+
+import static fish.payara.jul.formatter.AnsiColorFormatter.AnsiColorFormatterProperty.ANSI_COLOR_ENABLED;
+import static fish.payara.jul.formatter.AnsiColorFormatter.AnsiColorFormatterProperty.ANSI_COLOR_INFO;
+import static fish.payara.jul.formatter.AnsiColorFormatter.AnsiColorFormatterProperty.ANSI_COLOR_LOGGER;
+import static fish.payara.jul.formatter.AnsiColorFormatter.AnsiColorFormatterProperty.ANSI_COLOR_SEVERE;
+import static fish.payara.jul.formatter.AnsiColorFormatter.AnsiColorFormatterProperty.ANSI_COLOR_WARN;
 
 /**
  * {@link PayaraLogFormatter} which is able to print colored logs.
@@ -54,9 +62,10 @@ public abstract class AnsiColorFormatter extends PayaraLogFormatter {
 
     private AnsiColor loggerColor = AnsiColor.BOLD_INTENSE_BLUE;
     private ColorMap colors = new ColorMap();
-    private boolean ansiColor;
+    private boolean ansiColorEnabled;
 
     public AnsiColorFormatter(final HandlerId handlerId) {
+        super(handlerId);
         configure(this, FormatterConfigurationHelper.forFormatterClass(getClass()));
         configure(this, FormatterConfigurationHelper.forHandlerId(handlerId));
     }
@@ -68,29 +77,29 @@ public abstract class AnsiColorFormatter extends PayaraLogFormatter {
 
 
     private static void configure(final AnsiColorFormatter formatter, final FormatterConfigurationHelper helper) {
-        formatter.ansiColor = helper.getBoolean("ansiColor", false);
-        formatter.loggerColor = helper.getAnsiColor("loggerColor", formatter.loggerColor);
-        formatter.colors.overwriteIfNotNull(Level.INFO, helper.getAnsiColor("infoColor", null));
-        formatter.colors.overwriteIfNotNull(Level.WARNING, helper.getAnsiColor("warnColor", null));
-        formatter.colors.overwriteIfNotNull(Level.SEVERE, helper.getAnsiColor("severeColor", null));
+        formatter.ansiColorEnabled = helper.getBoolean(ANSI_COLOR_ENABLED, false);
+        formatter.loggerColor = helper.getAnsiColor(ANSI_COLOR_LOGGER, formatter.loggerColor);
+        formatter.colors.overwriteIfNotNull(Level.INFO, helper.getAnsiColor(ANSI_COLOR_INFO, null));
+        formatter.colors.overwriteIfNotNull(Level.WARNING, helper.getAnsiColor(ANSI_COLOR_WARN, null));
+        formatter.colors.overwriteIfNotNull(Level.SEVERE, helper.getAnsiColor(ANSI_COLOR_SEVERE, null));
     }
 
 
     /**
      * Enables/disables ANSI coloring in logs
      *
-     * @param ansiColor true to enable
+     * @param enabled true to enable
      */
-    public void setAnsiColor(final boolean ansiColor) {
-        this.ansiColor = ansiColor;
+    public void setAnsiColorEnabled(final boolean enabled) {
+        this.ansiColorEnabled = enabled;
     }
 
 
     /**
      * @return true if ANSI coloring is enabled (default: true)
      */
-    protected boolean isAnsiColor() {
-        return ansiColor;
+    protected boolean isAnsiColorEnabled() {
+        return ansiColorEnabled;
     }
 
 
@@ -120,15 +129,44 @@ public abstract class AnsiColorFormatter extends PayaraLogFormatter {
 
     /**
      * @param level
-     * @return {@link AnsiColor} for the level value or null if {@link #isAnsiColor()} returns
+     * @return {@link AnsiColor} for the level value or null if {@link #isAnsiColorEnabled()} returns
      *         false.
      */
     protected AnsiColor getLevelColor(final Level level) {
-        if (!isAnsiColor()) {
+        if (!isAnsiColorEnabled()) {
             return null;
         }
         return colors.get(level);
     }
+
+
+    /**
+     * Configuration property set of this formatter.
+     */
+    public enum AnsiColorFormatterProperty implements LogProperty {
+        /** Enable ANSI colors in output */
+        ANSI_COLOR_ENABLED("ansiColor.enabled"),
+        /** ANSI color of the logger name */
+        ANSI_COLOR_LOGGER("ansiColor.logger"),
+        /** ANSI color of the INFO log level */
+        ANSI_COLOR_INFO("ansiColor.info"),
+        /** ANSI color of the WARN log level */
+        ANSI_COLOR_WARN("ansiColor.warn"),
+        /** ANSI color of the SEVERE log level */
+        ANSI_COLOR_SEVERE("ansiColor.severe"),
+        ;
+        private final String propertyName;
+
+        AnsiColorFormatterProperty(final String propertyName) {
+            this.propertyName = propertyName;
+        }
+
+        @Override
+        public String getPropertyName() {
+            return propertyName;
+        }
+    }
+
 
     private static class ColorMap extends HashMap<Level, AnsiColor> {
 

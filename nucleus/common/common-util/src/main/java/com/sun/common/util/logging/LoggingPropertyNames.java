@@ -42,55 +42,59 @@
 
 package com.sun.common.util.logging;
 
+import fish.payara.jul.PayaraLogManager;
+import fish.payara.jul.cfg.LogProperty;
 import fish.payara.jul.handler.PayaraLogHandler;
 import fish.payara.jul.handler.SyslogHandler;
 
+import static fish.payara.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.ENABLED;
+import static fish.payara.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.OUTPUT_FILE;
+import static fish.payara.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.REDIRECT_STANDARD_STREAMS;
 import static fish.payara.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.ROTATION_LIMIT_SIZE;
 import static fish.payara.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.ROTATION_LIMIT_TIME;
 
 public class LoggingPropertyNames {
 
-    private static final String PAYARA_LOG_HANDLER = PayaraLogHandler.class.getName() + ".";
+    private static final LogProperty FORMATTER = () -> "formatter";
+    private static final String PAYARA_NOTIFICATION_HANDLER = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler";
 
-    private static final String PAYARA_NOTIFICATION_HANDLER = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.";
+    public static final String logRotationLimitInMB = ROTATION_LIMIT_SIZE.getPropertyFullName(PayaraLogHandler.class);
 
-    public static final String SyslogHandler = SyslogHandler.class.getName() + ".";
-
-    public static final String logRotationLimitInBytes = ROTATION_LIMIT_SIZE.getPropertyFullName(PayaraLogHandler.class);
-
-    public static final String payaraNotificationLogRotationLimitInBytes  = PAYARA_NOTIFICATION_HANDLER + "rotationLimitInBytes";
+    public static final String payaraNotificationLogRotationLimitInMB  = ROTATION_LIMIT_SIZE.getPropertyFullName(PAYARA_NOTIFICATION_HANDLER);
 
     public static final String logRotationTimelimitInMinutes = ROTATION_LIMIT_TIME.getPropertyFullName(PayaraLogHandler.class);
 
-    public static final String payaraNotificationLogRotationTimelimitInMinutes  = PAYARA_NOTIFICATION_HANDLER + "rotationTimelimitInMinutes";
+    public static final String payaraNotificationLogRotationTimelimitInMinutes  = ROTATION_LIMIT_TIME.getPropertyFullName(PAYARA_NOTIFICATION_HANDLER);
 
-    public static final String file = PAYARA_LOG_HANDLER + "file";
+    public static final String file = OUTPUT_FILE.getPropertyFullName(PayaraLogHandler.class);
 
-    public static final String payaraNotificationFile  = PAYARA_NOTIFICATION_HANDLER + "file";
+    public static final String payaraNotificationFile  = OUTPUT_FILE.getPropertyFullName(PAYARA_NOTIFICATION_HANDLER);
 
-    public static final String logFormatter = PAYARA_LOG_HANDLER + "formatter";
+    public static final String logFormatter = FORMATTER.getPropertyFullName(PayaraLogHandler.class);
 
-    public static final String payaraNotificationLogFormatter = PAYARA_NOTIFICATION_HANDLER + "formatter";
+    public static final String payaraNotificationLogFormatter = FORMATTER.getPropertyFullName(PAYARA_NOTIFICATION_HANDLER);
 
-    public static final String logHandler = "handlers";
+    public static final String logHandler = PayaraLogManager.KEY_ROOT_HANDLERS.getPropertyName();
 
-    public static final String useSystemLogging = SyslogHandler + "useSystemLogging";
+    public static final String useSystemLogging = SyslogHandler.ENABLED.getPropertyFullName(SyslogHandler.class);
 
-    public static final String retainErrorStatisticsForHours = PAYARA_LOG_HANDLER + "retainErrorsStasticsForHours";
+    /** @deprecated dead, used in GF2 */
+    @Deprecated
+    public static final String retainErrorStatisticsForHours = "";
 
-    public static final String logToFile = PAYARA_LOG_HANDLER + "logtoFile";
+    public static final String logToFile = ENABLED.getPropertyFullName(PayaraLogHandler.class);
 
-    public static final String payaraNotificationLogToFile  = PAYARA_NOTIFICATION_HANDLER + "logtoFile";
+    public static final String payaraNotificationLogToFile = ENABLED.getPropertyFullName(PAYARA_NOTIFICATION_HANDLER);
 
-    public static final String logToConsole = PAYARA_LOG_HANDLER + "logtoConsole";
+    /** @deprecated dead for a long time */
+    @Deprecated
+    public static final String logToConsole = "logtoConsole";
 
-    public static final String alarms = PAYARA_LOG_HANDLER + "alarms";
+    /** @deprecated dead for a long time */
+    @Deprecated
+    public static final String alarms = "";
 
-    public static final String logStandardStreams = PAYARA_LOG_HANDLER + "logStandardStreams";
-
-    public static final String MAX_QUEUE_SIZE = PAYARA_LOG_HANDLER + "maxQueueSize";
-
-    public static final String QUEUE_FLUSH_FREQUENCY = PAYARA_LOG_HANDLER + "queueFlushFrequency";
+    public static final String logStandardStreams = REDIRECT_STANDARD_STREAMS.getPropertyFullName(PayaraLogHandler.class);
 
 }
 

@@ -79,6 +79,8 @@ public class LoggingXMLNames {
 
     public static final String logStandardStreams = "log-standard-streams";
 
+    /** Used in GF2 */
+    @Deprecated
     public static final String retainErrorStatisticsForHours = "retain-error-statistics-for-hours";
     // logger names from DTD
     public static final String root = "root";
@@ -119,8 +121,8 @@ public class LoggingXMLNames {
 
     public static final Map<String, String> xmltoPropsMap =
             new HashMap<String, String>() {{
-                put(logRotationLimitInBytes, LoggingPropertyNames.logRotationLimitInBytes);
-                put(payaraNotificationLogRotationLimitInBytes, LoggingPropertyNames.payaraNotificationLogRotationLimitInBytes);
+                put(logRotationLimitInBytes, LoggingPropertyNames.logRotationLimitInMB);
+                put(payaraNotificationLogRotationLimitInBytes, LoggingPropertyNames.payaraNotificationLogRotationLimitInMB);
                 put(logRotationTimelimitInMinutes, LoggingPropertyNames.logRotationTimelimitInMinutes);
                 put(payaraNotificationLogRotationTimelimitInMinutes, LoggingPropertyNames.payaraNotificationLogRotationTimelimitInMinutes);
                 put(file, LoggingPropertyNames.file);
