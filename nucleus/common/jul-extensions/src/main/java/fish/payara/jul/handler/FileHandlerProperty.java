@@ -51,6 +51,7 @@ import java.util.logging.Formatter;
  * @author David Matejcek
  */
 public enum FileHandlerProperty implements LogProperty {
+    APPEND("append"),
     COUNT("count"),
     FILTER("filter"),
     /** Class of the {@link Formatter} used with this handler */

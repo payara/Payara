@@ -17,7 +17,7 @@
     SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
 
 -->
-<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2019-2021] [Payara Foundation and/or its affiliates] -->
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
@@ -159,29 +159,44 @@ options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> 
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; list-log-attributes
-com.sun.enterprise.server.logging.GFFileHandler.alarms &lt;false&gt;
-com.sun.enterprise.server.logging.GFFileHandler.file \
-&lt;${com.sun.aas.instanceRoot}/logs/server.log&gt;
-com.sun.enterprise.server.logging.GFFileHandler.flushFrequency <b class="conum">(1)</b>
-com.sun.enterprise.server.logging.GFFileHandler.formatter \
-&lt;com.sun.enterprise.server.logging.UniformLogFormatter&gt;
-com.sun.enterprise.server.logging.GFFileHandler.logtoConsole &lt;false&gt;
-com.sun.enterprise.server.logging.GFFileHandler.maxHistoryFiles <b class="conum">(0)</b>
-com.sun.enterprise.server.logging.GFFileHandler.retainErrorsStasticsForHours <b class="conum">(0)</b>
-com.sun.enterprise.server.logging.GFFileHandler.rotation.limit.megabytes <b class="conum">(2)</b>
-com.sun.enterprise.server.logging.GFFileHandler.rotation.limit.minutes <b class="conum">(0)</b>
-com.sun.enterprise.server.logging.SyslogHandler.enabled &lt;false&gt;
-handlers &lt;fish.payara.jul.handler.SimpleLogHandler&gt;
-fish.payara.jul.handler.SimpleLogHandler.formatter \
-&lt;com.sun.enterprise.server.logging.UniformLogFormatter&gt;
-java.util.logging.FileHandler.count <b class="conum">(1)</b>
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">
+asadmin&gt; list-log-attributes
+fish.payara.deprecated.jsonlogformatter.underscoreprefix        &lt;false&gt;
+fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.enabled     &lt;true&gt;
+fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.file        &lt;${com.sun.aas.instanceRoot}/logs/notification.log&gt;
+fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.formatter   &lt;fish.payara.jul.formatter.ODLLogFormatter&gt;
+fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.redirectStandardStreams     &lt;false&gt;
+fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.rotation.compress   &lt;false&gt;
+fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.rotation.limit.megabytes    <b class="conum">(2)</b>
+fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.rotation.limit.minutes      <b class="conum">(0)</b>
+fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.rotation.maxArchiveFiles    <b class="conum">(0)</b>
+fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.rotation.rollOnDateChange   &lt;false&gt;
+fish.payara.jul.formatter.UniformLogFormatter.ansiColor.enabled &lt;true&gt;
+fish.payara.jul.handler.PayaraLogHandler.enabled        &lt;true&gt;
+fish.payara.jul.handler.PayaraLogHandler.file   &lt;${com.sun.aas.instanceRoot}/logs/server.log&gt;
+fish.payara.jul.handler.PayaraLogHandler.flushFrequency <b class="conum">(1)</b>
+fish.payara.jul.handler.PayaraLogHandler.formatter      &lt;fish.payara.jul.formatter.ODLLogFormatter&gt;
+fish.payara.jul.handler.PayaraLogHandler.formatter.excludedFields       <>
+fish.payara.jul.handler.PayaraLogHandler.formatter.multiline    &lt;true&gt;
+fish.payara.jul.handler.PayaraLogHandler.redirectStandardStreams        &lt;true&gt;
+fish.payara.jul.handler.PayaraLogHandler.rotation.compress      &lt;false&gt;
+fish.payara.jul.handler.PayaraLogHandler.rotation.limit.megabytes       <b class="conum">(2)</b>
+fish.payara.jul.handler.PayaraLogHandler.rotation.limit.minutes <b class="conum">(0)</b>
+fish.payara.jul.handler.PayaraLogHandler.rotation.maxArchiveFiles       <b class="conum">(0)</b>
+fish.payara.jul.handler.PayaraLogHandler.rotation.rollOnDateChange      &lt;false&gt;
+fish.payara.jul.handler.SimpleLogHandler.formatter      &lt;fish.payara.jul.formatter.UniformLogFormatter&gt;
+fish.payara.jul.handler.SimpleLogHandler.formatter.ansiColor.enabled    &lt;true&gt;
+fish.payara.jul.handler.SimpleLogHandler.formatter.printSource  &lt;false&gt;
+fish.payara.jul.handler.SimpleLogHandler.useErrorStream &lt;false&gt;
+fish.payara.jul.handler.SyslogHandler.enabled   &lt;false&gt;
+fish.payara.jul.record.releaseParametersEarly   &lt;false&gt;
+handlers        &lt;fish.payara.jul.handler.SimpleLogHandler,fish.payara.jul.handler.PayaraLogHandler&gt;
+java.util.logging.FileHandler.count     <b class="conum">(1)</b>
 java.util.logging.FileHandler.formatter &lt;java.util.logging.XMLFormatter&gt;
-java.util.logging.FileHandler.limit <b class="conum">(50000)</b>
-java.util.logging.FileHandler.pattern &lt;%h/java%u.log&gt;
-log4j.logger.org.hibernate.validator.util.Version &lt;warn&gt;
-
-Command list-log-attributes executed successfully.</code></pre>
+java.util.logging.FileHandler.limit     <b class="conum">(50000)</b>
+java.util.logging.FileHandler.pattern   &lt;%h/java%u.log&gt;
+Command list-log-attributes executed successfully.
+</code></pre>
 </div>
 </div>
 <div id="sthref1636" class="paragraph">

@@ -17,7 +17,7 @@
     SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
 
 -->
-<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2019-2021] [Payara Foundation and/or its affiliates] -->
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
@@ -160,61 +160,53 @@ currently defined attributes.</p>
 The attribute values that can be specified include the following.<br></p>
 <div class="dlist">
 <dl>
-<dt class="hdlist1"><code>com.sun.enterprise.server.logging.GFFileHandler.alarms</code></dt>
-<dd>
-<p>Default is <code>false</code>.</p>
-</dd>
-<dt class="hdlist1"><code>com.sun.enterprise.server.logging.GFFileHandler.excludeFields</code></dt>
+<dt class="hdlist1"><code>fish.payara.jul.handler.PayaraLogHandler.excludeFields</code></dt>
 <dd>
 <p>Default is an empty string.</p>
 </dd>
-<dt class="hdlist1"><code>com.sun.enterprise.server.logging.GFFileHandler.file</code></dt>
+<dt class="hdlist1"><code>fish.payara.jul.handler.PayaraLogHandler.file</code></dt>
 <dd>
 <p>Default is <code>${com.sun.aas.instanceRoot}/logs/server.log</code>.</p>
 </dd>
-<dt class="hdlist1"><code>com.sun.enterprise.server.logging.GFFileHandler.flushFrequency</code></dt>
+<dt class="hdlist1"><code>fish.payara.jul.handler.PayaraLogHandler.flushFrequency</code></dt>
 <dd>
 <p>Default is <code>1</code>.</p>
 </dd>
-<dt class="hdlist1"><code>com.sun.enterprise.server.logging.GFFileHandler.formatter</code></dt>
+<dt class="hdlist1"><code>fish.payara.jul.handler.PayaraLogHandler.formatter</code></dt>
 <dd>
-<p>Default is <code>com.sun.enterprise.server.logging.UniformLogFormatter</code>.</p>
+<p>Default is <code>fish.payara.jul.formatter.UniformLogFormatter</code>.</p>
 </dd>
-<dt class="hdlist1"><code>com.sun.enterprise.server.logging.GFFileHandler.logtoConsole</code></dt>
-<dd>
-<p>Default is <code>false</code>.</p>
-</dd>
-<dt class="hdlist1"><code>com.sun.enterprise.server.logging.GFFileHandler.maxHistoryFiles</code></dt>
-<dd>
-<p>Default is <code>0</code>.</p>
-</dd>
-<dt class="hdlist1"><code>com.sun.enterprise.server.logging.GFFileHandler.formatter.multiline</code></dt>
+<dt class="hdlist1"><code>fish.payara.jul.handler.PayaraLogHandler.formatter.multiline</code></dt>
 <dd>
 <p>Default is <code>true</code>.</p>
 </dd>
-<dt class="hdlist1"><code>com.sun.enterprise.server.logging.GFFileHandler.retainErrorsStasticsForHours</code></dt>
+<dt class="hdlist1"><code>fish.payara.jul.handler.PayaraLogHandler.retainErrorsStasticsForHours</code></dt>
 <dd>
 <p>Default is <code>0</code>.</p>
 </dd>
-<dt class="hdlist1"><code>com.sun.enterprise.server.logging.GFFileHandler.rotation.limit.megabytes</code></dt>
+<dt class="hdlist1"><code>fish.payara.jul.handler.PayaraLogHandler.rotation.limit.megabytes</code></dt>
 <dd>
 <p>Default is <code>2000000</code>.</p>
 </dd>
-<dt class="hdlist1"><code>com.sun.enterprise.server.logging.GFFileHandler.rotation.limit.minutes</code></dt>
+<dt class="hdlist1"><code>fish.payara.jul.handler.PayaraLogHandler.rotation.limit.minutes</code></dt>
 <dd>
 <p>Default is <code>0</code>.</p>
 </dd>
-<dt class="hdlist1"><code>com.sun.enterprise.server.logging.SyslogHandler.enabled</code></dt>
+<dt class="hdlist1"><code>fish.payara.jul.handler.PayaraLogHandler.rotation.maxArchiveFiles</code></dt>
+<dd>
+<p>Default is <code>0</code>.</p>
+</dd>
+<dt class="hdlist1"><code>fish.payara.jul.handler.SyslogHandler.enabled</code></dt>
 <dd>
 <p>Default is <code>false</code>.</p>
 </dd>
 <dt class="hdlist1"><code>handlers</code></dt>
 <dd>
-<p>Default is <code>fish.payara.jul.handler.SimpleLogHandler</code>.</p>
+<p>Default is <code>fish.payara.jul.handler.SimpleLogHandler,fish.payara.jul.handler.PayaraLogHandler</code>.</p>
 </dd>
 <dt class="hdlist1"><code>fish.payara.jul.handler.SimpleLogHandler.formatter</code></dt>
 <dd>
-<p>Default is <code>com.sun.enterprise.server.logging.UniformLogFormatter</code>.</p>
+<p>Default is <code>fish.payara.jul.formatter..UniformLogFormatter</code>.</p>
 </dd>
 <dt class="hdlist1"><code>java.util.logging.FileHandler.count</code></dt>
 <dd>
@@ -231,10 +223,6 @@ The attribute values that can be specified include the following.<br></p>
 <dt class="hdlist1"><code>java.util.logging.FileHandler.pattern</code></dt>
 <dd>
 <p>Default is <code>%h/java%u.log</code>.</p>
-</dd>
-<dt class="hdlist1"><code>log4j.logger.org.hibernate.validator.util.Version</code></dt>
-<dd>
-<p>Default is <code>warn</code>.</p>
 </dd>
 </dl>
 </div>
@@ -257,8 +245,8 @@ server as a whole.</p>
 <div class="listingblock">
 <div class="content">
 <pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; set-log-attributes --target=server \
-com.sun.enterprise.server.logging.GFFileHandler.maxHistoryFiles=8
-com.sun.enterprise.server.logging.GFFileHandler.maxHistoryFiles logging
+fish.payara.jul.handler.PayaraLogHandler.rotation.maxArchiveFiles=8
+fish.payara.jul.handler.PayaraLogHandler.rotation.maxArchiveFiles logging
 attribute set with value 8.
 These logging attributes are set for server.
 Command set-log-attributes executed successfully.</code></pre>

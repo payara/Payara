@@ -50,6 +50,10 @@ import fish.payara.deployment.util.GAVConvertor;
 import fish.payara.jul.PayaraLogManager;
 import fish.payara.jul.cfg.PayaraLogManagerConfiguration;
 import fish.payara.jul.formatter.ODLLogFormatter;
+import fish.payara.jul.handler.FileHandlerProperty;
+import fish.payara.jul.handler.HandlerConfigurationHelper;
+import fish.payara.jul.handler.SimpleLogHandler;
+import fish.payara.jul.handler.SimpleLogHandler.SimpleLogHandlerProperty;
 import fish.payara.micro.BootstrapException;
 import fish.payara.micro.PayaraMicroLoggingInitializer;
 import fish.payara.micro.PayaraMicroRuntime;
@@ -92,11 +96,13 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.logging.FileHandler;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 import org.glassfish.embeddable.BootstrapProperties;
 import org.glassfish.embeddable.CommandRunner;
@@ -106,6 +112,8 @@ import org.glassfish.embeddable.GlassFish.Status;
 import org.glassfish.embeddable.GlassFishException;
 import org.glassfish.embeddable.GlassFishProperties;
 import org.glassfish.embeddable.GlassFishRuntime;
+
+import static fish.payara.jul.cfg.PayaraLoggingJvmOptions.JVM_OPT_LOGGING_CFG_FILE;
 
 /**
  * Main class for Bootstrapping Payara Micro Edition This class is used from
@@ -358,7 +366,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
      */
     @Override
     public PayaraMicroImpl setLogPropertiesFile(File fileName) {
-        System.setProperty("java.util.logging.config.file", fileName.getAbsolutePath());
+        System.setProperty(JVM_OPT_LOGGING_CFG_FILE, fileName.getAbsolutePath());
         logPropertiesFile = true;
         userLogPropertiesFile = fileName.getAbsolutePath();
         return this;
@@ -1000,7 +1008,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         } catch (IOException | URISyntaxException ex) {
             throw new BootstrapException("Problem unpacking the Runtime", ex);
         }
-        final String loggingProperty = System.getProperty("java.util.logging.config.file");
+        final String loggingProperty = System.getProperty(JVM_OPT_LOGGING_CFG_FILE);
         resetLogging(loggingProperty);
         // If it's been enabled, watch the log file for changes
         if (enableDynamicLogging) {
@@ -1759,14 +1767,15 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                 LOGGER.log(Level.WARNING, "logToFile command line option ignored as a logging.properties file has been provided");
             }
 
-            System.setProperty("java.util.logging.config.file", runtimeDir.getLoggingProperties().getAbsolutePath());
+            System.setProperty(JVM_OPT_LOGGING_CFG_FILE, runtimeDir.getLoggingProperties().getAbsolutePath());
             try {
                 resetAndReloadLoggingConfiguration();
 
                 // go through all root handlers and set formatters based on properties
-                Logger rootLogger = LogManager.getLogManager().getLogger("");
+                Logger rootLogger = LogManager.getLogManager().getLogger(PayaraLogManager.ROOT_LOGGER_NAME);
                 for (Handler handler : rootLogger.getHandlers()) {
-                    String formatter = LogManager.getLogManager().getProperty(handler.getClass().getCanonicalName() + ".formatter");
+                    String formatter = LogManager.getLogManager()
+                        .getProperty(HandlerConfigurationHelper.FORMATTER.getPropertyFullName(handler.getClass()));
                     if (formatter != null) {
                         handler.setFormatter((Formatter) Class.forName(formatter).newInstance());
                     }
@@ -1785,13 +1794,14 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                     currentProps.load(is);
 
                     // add file handler properties
-                    currentProps.setProperty("java.util.logging.FileHandler.pattern", userLogFile);
-                    currentProps.setProperty("handlers", "java.util.logging.FileHandler, fish.payara.jul.handler.SimpleLogHandler");
-                    currentProps.setProperty("java.util.logging.FileHandler.limit", "1024000");
-                    currentProps.setProperty("java.util.logging.FileHandler.count", "10");
-                    currentProps.setProperty("java.util.logging.FileHandler.level", "INFO");
-                    currentProps.setProperty("java.util.logging.FileHandler.formatter", "java.util.logging.SimpleFormatter");
-                    currentProps.setProperty("java.util.logging.FileHandler.append", "true");
+                    currentProps.setProperty(PayaraLogManager.KEY_ROOT_HANDLERS.getPropertyName(),
+                        String.join(",", FileHandler.class.getName(), SimpleLogHandler.class.getName()));
+                    currentProps.setProperty(FileHandlerProperty.PATTERN.getPropertyFullName(), userLogFile);
+                    currentProps.setProperty(FileHandlerProperty.LIMIT.getPropertyFullName(), "1024000");
+                    currentProps.setProperty(FileHandlerProperty.COUNT.getPropertyFullName(), "10");
+                    currentProps.setProperty(FileHandlerProperty.LEVEL.getPropertyFullName(), "INFO");
+                    currentProps.setProperty(FileHandlerProperty.FORMATTER.getPropertyFullName(), SimpleFormatter.class.getName());
+                    currentProps.setProperty(FileHandlerProperty.APPEND.getPropertyFullName(), "true");
                 } catch (IOException ex) {
                     LOGGER.log(Level.SEVERE, "Unable to load the logging properties from the runtime directory", ex);
                 }
@@ -1803,20 +1813,20 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                     LOGGER.log(Level.SEVERE, "Unable to load the logging properties from the runtime directory", ex);
                 }
             }
-            System.setProperty("java.util.logging.config.file", runtimeDir.getLoggingProperties().getAbsolutePath());
+            System.setProperty(JVM_OPT_LOGGING_CFG_FILE, runtimeDir.getLoggingProperties().getAbsolutePath());
             try {
                 resetAndReloadLoggingConfiguration();
 
                 // reset the formatters on the two handlers
-                //Logger rootLogger = Logger.getLogger("");
-                String formatter = LogManager.getLogManager().getProperty("fish.payara.jul.handler.SimpleLogHandler.formatter");
+                String formatter = LogManager.getLogManager()
+                    .getProperty(SimpleLogHandlerProperty.FORMATTER.getPropertyFullName());
                 Formatter formatterClass = new ODLLogFormatter();
                 try {
                     formatterClass = (Formatter) Class.forName(formatter).newInstance();
                 } catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
                     LOGGER.log(Level.SEVERE, "Specified Formatter class could not be loaded " + formatter, ex);
                 }
-                Logger rootLogger = Logger.getLogger("");
+                Logger rootLogger = Logger.getLogger(PayaraLogManager.ROOT_LOGGER_NAME);
                 for (Handler handler : rootLogger.getHandlers()) {
                     handler.setFormatter(formatterClass);
                 }

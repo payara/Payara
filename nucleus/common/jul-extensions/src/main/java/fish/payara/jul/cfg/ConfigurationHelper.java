@@ -188,13 +188,6 @@ public class ConfigurationHelper {
     }
 
 
-    protected <T> T parseOrSupply(final String key, final Supplier<T> defaultValueSupplier,
-        final Function<String, T> converter) {
-        final LogProperty property = () -> key;
-        return parseOrSupplyByRealKey(property, defaultValueSupplier, converter);
-    }
-
-
     private <T> T parseOrSupplyByRealKey(final LogProperty key, final Supplier<T> defaultValueSupplier,
         final Function<String, T> converter) {
         final String realKey = key.getPropertyFullName(prefix);

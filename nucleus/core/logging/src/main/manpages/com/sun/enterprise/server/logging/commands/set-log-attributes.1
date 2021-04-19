@@ -49,42 +49,37 @@ OPERANDS
            Server Administration Guide for complete explanations of each of
            these values.
 
-           com.sun.enterprise.server.logging.GFFileHandler.alarms
-               Default is false.
-
-           com.sun.enterprise.server.logging.GFFileHandler.excludeFields
+           fish.payara.jul.handler.PayaraLogHandler.formatter.excludedFields
                Default is an empty string.
 
-           com.sun.enterprise.server.logging.GFFileHandler.file
+           fish.payara.jul.handler.PayaraLogHandler.file
                Default is ${com.sun.aas.instanceRoot}/logs/server.log.
 
-           com.sun.enterprise.server.logging.GFFileHandler.flushFrequency
+           fish.payara.jul.handler.PayaraLogHandler.flushFrequency
                Default is 1.
 
-           com.sun.enterprise.server.logging.GFFileHandler.formatter
+           fish.payara.jul.handler.PayaraLogHandler.formatter
                Default is
                fish.payara.jul.formatter.UniformLogFormatter.
 
-           com.sun.enterprise.server.logging.GFFileHandler.logtoConsole
-               Default is false.
-
-           com.sun.enterprise.server.logging.GFFileHandler.maxHistoryFiles
-               Default is 0.
-
-           com.sun.enterprise.server.logging.GFFileHandler.formatter.multiline
+           fish.payara.jul.handler.PayaraLogHandler.formatter.multiline
                Default is true.
 
-           com.sun.enterprise.server.logging.GFFileHandler.rotation.limit.megabytes
-               Default is 2000000.
-
-           com.sun.enterprise.server.logging.GFFileHandler.rotation.limit.minutes
+           fish.payara.jul.handler.PayaraLogHandler.rotation.maxArchiveFiles
                Default is 0.
 
-           com.sun.enterprise.server.logging.SyslogHandler.enabled
+           fish.payara.jul.handler.PayaraLogHandler.rotation.limit.megabytes
+               Default is 2000000.
+
+           fish.payara.jul.handler.PayaraLogHandler.rotation.limit.minutes
+               Default is 0.
+
+           fish.payara.jul.handler.SyslogHandler.enabled
                Default is false.
 
            handlers
-               Default is fish.payara.jul.handler.SimpleLogHandler.
+               Default is
+               fish.payara.jul.handler.SimpleLogHandler,fish.payara.jul.handler.PayaraLogHandler.
 
            fish.payara.jul.handler.SimpleLogHandler.formatter
                Default is
@@ -102,18 +97,15 @@ OPERANDS
            java.util.logging.FileHandler.pattern
                Default is %h/java%u.log.
 
-           org.hibernate.validator.util.Version.level
-               Default is WARNING.
-
 EXAMPLES
        Example 1, Setting the Maximum Number of Log History Files to Maintain
            This example sets to 8 the maximum number of log history files for
            the server as a whole.
 
                asadmin> set-log-attributes --target=server \
-               com.sun.enterprise.server.logging.GFFileHandler.maxHistoryFiles=8
-               com.sun.enterprise.server.logging.GFFileHandler.maxHistoryFiles logging
-               attribute set with value 8.
+               fish.payara.jul.handler.PayaraLogHandler.rotation.maxArchiveFiles=8
+               fish.payara.jul.handler.PayaraLogHandler.rotation.maxArchiveFiles
+               logging attribute set with value 8.
                These logging attributes are set for server.
                Command set-log-attributes executed successfully.
 

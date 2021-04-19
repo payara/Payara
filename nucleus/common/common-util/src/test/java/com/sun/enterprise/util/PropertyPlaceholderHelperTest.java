@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2018-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -42,9 +42,13 @@
  */
 package com.sun.enterprise.util;
 
+import fish.payara.jul.handler.PayaraLogHandler;
+import fish.payara.jul.handler.SyslogHandler;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.logging.ConsoleHandler;
 
 import org.junit.After;
 import org.junit.Before;
@@ -58,14 +62,14 @@ import static org.junit.Assert.assertEquals;
  */
 public class PropertyPlaceholderHelperTest {
 
+    private static final String HANDLERS = PayaraLogHandler.class.getName() + "," + SyslogHandler.class.getName();
     private Map<String, String> env = new HashMap<>();
 
 
     @Before
     public void setUp() {
-        env.put("testEnvironmentHandlers", "java.util.logging.ConsoleHandler");
-        env.put("testEnvironmentHandlerServices",
-            "com.sun.enterprise.server.logging.GFFileHandler,com.sun.enterprise.server.logging.SyslogHandler");
+        env.put("testEnvironmentHandlers", ConsoleHandler.class.getName());
+        env.put("testEnvironmentHandlerServices", HANDLERS);
     }
 
     @After
@@ -81,14 +85,12 @@ public class PropertyPlaceholderHelperTest {
         String loggingProperty2 = "testEnvironmentHandlerServices";
 
         PropertyPlaceholderHelper propertyPlaceholderHelper = new PropertyPlaceholderHelper(env, ENV_REGEX);
-        String expResult1 = "java.util.logging.ConsoleHandler";
         String result1 = propertyPlaceholderHelper.getPropertyValue(loggingProperty1);
-        assertEquals(expResult1, result1);
+        assertEquals(ConsoleHandler.class.getName(), result1);
 
         propertyPlaceholderHelper = new PropertyPlaceholderHelper(env, ENV_REGEX);
-        String expResult2 = "com.sun.enterprise.server.logging.GFFileHandler,com.sun.enterprise.server.logging.SyslogHandler";
         String result2 = propertyPlaceholderHelper.getPropertyValue(loggingProperty2);
-        assertEquals(expResult2, result2);
+        assertEquals(HANDLERS, result2);
     }
 
 
@@ -100,9 +102,8 @@ public class PropertyPlaceholderHelperTest {
         props.setProperty("testEnvironmentHandlerServicesProperties", "${ENV=testEnvironmentHandlerServices}");
 
         Properties expResultProps = new Properties();
-        expResultProps.setProperty("testEnvironmentHandlersProperties", "java.util.logging.ConsoleHandler");
-        expResultProps.setProperty("testEnvironmentHandlerServicesProperties",
-            "com.sun.enterprise.server.logging.GFFileHandler,com.sun.enterprise.server.logging.SyslogHandler");
+        expResultProps.setProperty("testEnvironmentHandlersProperties", ConsoleHandler.class.getName());
+        expResultProps.setProperty("testEnvironmentHandlerServicesProperties", HANDLERS);
 
         PropertyPlaceholderHelper propertyPlaceholderHelper = new PropertyPlaceholderHelper(env, ENV_REGEX);
         Properties result = propertyPlaceholderHelper.replacePropertiesPlaceholder(props);

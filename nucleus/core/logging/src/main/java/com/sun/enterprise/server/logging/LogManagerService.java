@@ -61,6 +61,7 @@ import fish.payara.jul.env.LoggingSystemEnvironment;
 import fish.payara.jul.handler.PayaraLogHandler;
 import fish.payara.jul.handler.PayaraLogHandlerConfiguration;
 import fish.payara.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty;
+import fish.payara.jul.handler.SimpleLogHandler;
 import fish.payara.jul.tracing.PayaraLoggingTracer;
 
 import java.io.File;
@@ -73,6 +74,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.function.Consumer;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.FileHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
@@ -118,9 +121,6 @@ import static fish.payara.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHan
 public final class LogManagerService implements PostConstruct, PreDestroy, org.glassfish.internal.api.LogManager {
 
     private static final Logger LOG = LogFacade.LOGGING_LOGGER;
-    private static final String H_CONSOLE_HANDLER = "fish.payara.jul.handler.SimpleLogHandler";
-    private static final String H_FILE_HANDLER = "java.util.logging.FileHandler";
-
 
     @Inject
     private ServerEnvironmentImpl env;
@@ -429,9 +429,10 @@ public final class LogManagerService implements PostConstruct, PreDestroy, org.g
             final String name = key.substring(0, key.lastIndexOf(".level"));
             final Level level = Level.parse(value);
             if (name.equals(PayaraNotificationFileHandler.class.getName()) //
+                || name.equals(SimpleLogHandler.class.getName()) //
                 || name.equals(PayaraLogHandler.class.getName()) //
-                || name.equals(H_CONSOLE_HANDLER) //
-                || name.equals(H_FILE_HANDLER)) {
+                || name.equals(ConsoleHandler.class.getName()) //
+                || name.equals(FileHandler.class.getName())) {
                 handlerLevels.put(name, level);
             } else {
                 loggerLevels.put(name, level);
