@@ -106,29 +106,40 @@ public class OpenApiService {
         this.withCorsHeaders = withCorsHeaders;
     }
 
-	public void registerApp(String applicationId, DeploymentContext ctx) {
+    public void registerApp(String applicationId, DeploymentContext ctx) {
         final WebBundleDescriptorImpl descriptor = ctx.getModuleMetaData(WebBundleDescriptorImpl.class);
         final String contextRoot = descriptor.getContextRoot();
         final ReadableArchive archive = ctx.getSource();
         final ClassLoader classLoader = ctx.getClassLoader();
-        documents.put(applicationId, new OpenAPISupplier(applicationId, contextRoot, archive, classLoader));
-        cachedResult = null;
-	}
 
-	public void deregisterApp(String applicationId) {
-        documents.remove(applicationId);
+        if (this.enabled) {
+            documents.put(applicationId, new OpenAPISupplier(applicationId, contextRoot, archive, classLoader));
+        }
         cachedResult = null;
-	}
+    }
 
-	public void resumeApp(String applicationId) {
-        documents.get(applicationId).setEnabled(true);
+    public void deregisterApp(String applicationId) {
+        if (documents.get(applicationId) != null) {
+            documents.remove(applicationId);
+        }
         cachedResult = null;
-	}
+    }
 
-	public void suspendApp(String applicationId) {
-        documents.get(applicationId).setEnabled(false);
+    public void resumeApp(String applicationId) {
+        OpenAPISupplier supplier=documents.get(applicationId);
+        if (supplier != null) {
+            supplier.setEnabled(true);
+        }
         cachedResult = null;
-	}
+    }
+
+    public void suspendApp(String applicationId) {
+        OpenAPISupplier supplier=documents.get(applicationId);
+        if (supplier != null) {
+            supplier.setEnabled(false);
+        }
+        cachedResult = null;
+    }
 
     /**
      * @return the document If multiple application deployed then merge all the
