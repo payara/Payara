@@ -41,7 +41,7 @@
 package com.sun.enterprise.server.logging.commands;
 
 import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.server.logging.GFFileHandler;
+import com.sun.enterprise.server.logging.ServerLogFileService;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.api.ActionReport;
@@ -72,7 +72,7 @@ import org.glassfish.hk2.api.PerLookup;
 public class RotateLog implements AdminCommand {
 
     @Inject
-    GFFileHandler gf;
+    ServerLogFileService gf;
 
     @Inject
     Domain domain;

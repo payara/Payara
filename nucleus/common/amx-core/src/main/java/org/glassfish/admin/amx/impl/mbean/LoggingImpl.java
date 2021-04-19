@@ -43,7 +43,7 @@
 package org.glassfish.admin.amx.impl.mbean;
 
 import com.sun.common.util.logging.LoggingConfigImpl;
-import com.sun.enterprise.server.logging.GFFileHandler;
+import com.sun.enterprise.server.logging.ServerLogFileService;
 import com.sun.enterprise.server.logging.diagnostics.MessageIdCatalog;
 import com.sun.enterprise.server.logging.logviewer.backend.LogFilter;
 
@@ -127,7 +127,7 @@ public final class LoggingImpl extends AMXImplBase //implements /*Logging,*/ Log
     private final Map<Level, String> mLevelToNotificationTypeMap;
     private final Map<String, NotificationBuilder> mNotificationTypeToNotificationBuilderMap;
     private final LoggingConfigImpl loggingConfig;
-    private final GFFileHandler gfFileHandler;
+    private final ServerLogFileService serverLogService;
     private final LogFilter logFilter;
     private final MessageIdCatalog msgIdCatalog;
     private final Logger logger;
@@ -163,7 +163,7 @@ public final class LoggingImpl extends AMXImplBase //implements /*Logging,*/ Log
         loggingConfig = new LoggingConfigImpl(env.getConfigDirPath(), env.getLibPath());
         msgIdCatalog = new MessageIdCatalog();
         mHabitat = InjectedValues.getInstance().getHabitat();
-        gfFileHandler = mHabitat.getService(GFFileHandler.class);
+        serverLogService = mHabitat.getService(ServerLogFileService.class);
         logFilter = mHabitat.getService(LogFilter.class);
         logger = Logger.getAnonymousLogger();
 
@@ -288,7 +288,7 @@ public final class LoggingImpl extends AMXImplBase //implements /*Logging,*/ Log
     }
 
     public synchronized void rotateAllLogFiles() {
-        gfFileHandler.rotate();
+        serverLogService.rotate();
     }
 
     public synchronized void rotateLogFile(final String key) {
@@ -300,7 +300,7 @@ public final class LoggingImpl extends AMXImplBase //implements /*Logging,*/ Log
                 case ACCESS_KEY:
                     throw new IllegalArgumentException("not supported: " + key);
                 case SERVER_KEY:
-                    gfFileHandler.rotate();
+                    serverLogService.rotate();
                     break;
                 default:
                     throw new IllegalArgumentException("" + key);

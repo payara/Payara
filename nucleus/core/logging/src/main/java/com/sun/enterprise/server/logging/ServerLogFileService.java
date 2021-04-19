@@ -52,8 +52,7 @@ import org.jvnet.hk2.annotations.ContractsProvided;
 import org.jvnet.hk2.annotations.Service;
 
 /**
- * GFFileHandler publishes formatted log Messages to a FILE.
- * FIXME: no, it doesn't any more, it just knows how to roll the server.log file
+ * This service is used to rotate the server.log file (if it is configured).
  *
  * @author Jerome Dochez
  * @author Carla Mott
@@ -61,8 +60,8 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service
 @Singleton
-@ContractsProvided({GFFileHandler.class, LoggingRuntime.class})
-public class GFFileHandler implements LoggingRuntime {
+@ContractsProvided({ServerLogFileService.class, LoggingRuntime.class})
+public class ServerLogFileService implements LoggingRuntime {
 
 
     @Override
@@ -72,6 +71,9 @@ public class GFFileHandler implements LoggingRuntime {
     }
 
 
+    /**
+     * Renames the server.log file and starts logging to a new file.
+     */
     public void rotate() {
         final PayaraLogHandler payaraLogHandler = getLogHandler();
         if (payaraLogHandler != null) {
