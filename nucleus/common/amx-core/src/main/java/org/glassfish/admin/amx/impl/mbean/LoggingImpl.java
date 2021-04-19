@@ -47,8 +47,11 @@ import com.sun.enterprise.server.logging.GFFileHandler;
 import com.sun.enterprise.server.logging.diagnostics.MessageIdCatalog;
 import com.sun.enterprise.server.logging.logviewer.backend.LogFilter;
 
+import fish.payara.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty;
+
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -82,6 +85,7 @@ import org.glassfish.external.amx.AMXGlassfish;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.server.ServerEnvironmentImpl;
 
+import static fish.payara.jul.PayaraLogManager.KEY_ROOT_HANDLERS;
 import static org.glassfish.admin.amx.logging.LogAnalyzer.SEVERE_COUNT_KEY;
 import static org.glassfish.admin.amx.logging.LogAnalyzer.TIMESTAMP_KEY;
 import static org.glassfish.admin.amx.logging.LogAnalyzer.WARNING_COUNT_KEY;
@@ -260,31 +264,14 @@ public final class LoggingImpl extends AMXImplBase //implements /*Logging,*/ Log
 
     public Map<String, String> getLoggingAttributes() {
         try {
-            Map<String, String> props = loggingConfig.getLoggingProperties();
+            final Map<String, String> props = loggingConfig.getLoggingProperties();
             if (props == null) {
                 return null;
             }
-            final String[] keys = new String[] {
-                "handlers",
-                "fish.payara.jul.handler.PayaraLogHandler.enabled",
-                "fish.payara.jul.handler.PayaraLogHandler.level",
-                "fish.payara.jul.handler.PayaraLogHandler.encoding",
-                "fish.payara.jul.handler.PayaraLogHandler.file",
-                "fish.payara.jul.handler.PayaraLogHandler.formatter",
-                "fish.payara.jul.handler.PayaraLogHandler.buffer.capacity",
-                "fish.payara.jul.handler.PayaraLogHandler.buffer.timeoutInSeconds",
-                "fish.payara.jul.handler.PayaraLogHandler.flushFrequency",
-                "fish.payara.jul.handler.PayaraLogHandler.redirectStandardStreams",
-                "fish.payara.jul.handler.PayaraLogHandler.rotation.compress",
-                "fish.payara.jul.handler.PayaraLogHandler.rotation.rollOnDateChange",
-                "fish.payara.jul.handler.PayaraLogHandler.rotation.limit.megabytes",
-                "fish.payara.jul.handler.PayaraLogHandler.rotation.limit.minutes",
-                "fish.payara.jul.handler.PayaraLogHandler.rotation.maxArchiveFiles"
-            };
-            Map<String, String> attributes = new HashMap<>();
-            for (String key : keys) {
-                attributes.put(key, props.get(key));
-            }
+            final Map<String, String> attributes = new HashMap<>();
+            attributes.put(KEY_ROOT_HANDLERS.getPropertyName(), props.get(KEY_ROOT_HANDLERS.getPropertyName()));
+            Arrays.stream(PayaraLogHandlerProperty.values()).map(PayaraLogHandlerProperty::getPropertyFullName)
+                .forEach(k -> attributes.put(k, props.get(k)));
             return attributes;
         } catch (java.io.IOException e) {
             logger.log(Level.WARNING, "Can not get logging attributes");

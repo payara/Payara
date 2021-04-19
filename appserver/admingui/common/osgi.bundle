@@ -43,3 +43,6 @@
                         org.glassfish.admingui.common.plugin; \
                         version=${project.osgi.version}
 
+Import-Package: \
+          fish.payara.jul.*; resolution:=optional, \
+          *

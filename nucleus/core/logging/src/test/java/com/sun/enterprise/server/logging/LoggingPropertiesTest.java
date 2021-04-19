@@ -41,8 +41,6 @@ package com.sun.enterprise.server.logging;
 
 import com.sun.common.util.logging.LoggingConfigImpl;
 
-import fish.payara.jul.handler.PayaraLogHandler;
-
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -77,8 +75,7 @@ import static org.junit.Assert.assertNull;
 @RunWith(MockitoJUnitRunner.class)
 public class LoggingPropertiesTest {
 
-    private static final String LOG_STANDARD_STREAMS_PROPERTY = REDIRECT_STANDARD_STREAMS
-        .getPropertyFullName(PayaraLogHandler.class);
+    private static final String LOG_STANDARD_STREAMS_PROPERTY = REDIRECT_STANDARD_STREAMS.getPropertyFullName();
 
     private final Properties props = new Properties();
     private Map<String, String> properties;

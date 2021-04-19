@@ -44,6 +44,7 @@ import fish.payara.jul.env.LoggingSystemEnvironment;
 import fish.payara.jul.formatter.OneLineFormatter;
 
 import java.io.PrintStream;
+import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import java.util.logging.StreamHandler;
@@ -123,12 +124,14 @@ public class SimpleLogHandler extends StreamHandler {
 
 
     /**
-     * Configuration property set of this handler except formatter.
+     * Configuration property set of this handler.
      */
     public enum SimpleLogHandlerProperty implements LogProperty {
 
         /** Use STDERR instead of STDOUT */
         USE_ERROR_STREAM("useErrorStream"),
+        /** Class of the {@link Formatter} used with this handler */
+        FORMATTER(HandlerConfigurationHelper.FORMATTER.getPropertyName()),
         ;
 
         private final String propertyName;
@@ -141,6 +144,13 @@ public class SimpleLogHandler extends StreamHandler {
         @Override
         public String getPropertyName() {
             return propertyName;
+        }
+
+        /**
+         * @return full name using the {@link SimpleLogHandler} class.
+         */
+        public String getPropertyFullName() {
+            return getPropertyFullName(SimpleLogHandler.class);
         }
     }
 }

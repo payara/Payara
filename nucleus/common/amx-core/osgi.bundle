@@ -43,23 +43,25 @@
                 fish.payara.admin.amx; \
                 fish.payara.admin.amx.cli; \
                 fish.payara.admin.amx.config; \
-		org.glassfish.admin.amx.util; \
-		org.glassfish.admin.amx.util.jmx; \
-		org.glassfish.admin.amx.util.jmx.stringifier; \
-		org.glassfish.admin.amx.util.stringifier; \
-		org.glassfish.admin.amx.annotation; \
-		org.glassfish.admin.amx.base; \
-		org.glassfish.admin.amx.core; \
-		org.glassfish.admin.amx.config; \
-		org.glassfish.admin.amx.core.proxy; \
-		org.glassfish.admin.amx.monitoring; \
-		org.glassfish.admin.amx.logging; \
-		org.glassfish.admin.amx.impl.mbean; \
-		org.glassfish.admin.amx.impl.loader; \
-		org.glassfish.admin.amx.impl.path; \
-		org.glassfish.admin.amx.impl.util; \
-		org.glassfish.admin.amx.impl.cmd; \
-		org.glassfish.admin.amx.impl.config.*; \
-		version=${project.osgi.version}
-		
+                org.glassfish.admin.amx.util; \
+                org.glassfish.admin.amx.util.jmx; \
+                org.glassfish.admin.amx.util.jmx.stringifier; \
+                org.glassfish.admin.amx.util.stringifier; \
+                org.glassfish.admin.amx.annotation; \
+                org.glassfish.admin.amx.base; \
+                org.glassfish.admin.amx.core; \
+                org.glassfish.admin.amx.config; \
+                org.glassfish.admin.amx.core.proxy; \
+                org.glassfish.admin.amx.monitoring; \
+                org.glassfish.admin.amx.logging; \
+                org.glassfish.admin.amx.impl.mbean; \
+                org.glassfish.admin.amx.impl.loader; \
+                org.glassfish.admin.amx.impl.path; \
+                org.glassfish.admin.amx.impl.util; \
+                org.glassfish.admin.amx.impl.cmd; \
+                org.glassfish.admin.amx.impl.config.*; \
+                version=${project.osgi.version}
 
+Import-Package: \
+          fish.payara.jul.*; resolution:=optional, \
+          *

@@ -68,11 +68,23 @@ public class HandlerConfigurationHelper extends ConfigurationHelper {
     public static final LogProperty FORMATTER = () -> "formatter";
     private final HandlerId handlerId;
 
+
+    /**
+     * Creates a helper based on {@link HandlerId}. For the id uses the handlerClass parameter.
+     *
+     * @param handlerClass
+     * @return {@link HandlerConfigurationHelper}
+     */
     public static HandlerConfigurationHelper forHandlerClass(final Class<? extends Handler> handlerClass) {
         return new HandlerConfigurationHelper(HandlerId.forHandlerClass(handlerClass));
     }
 
 
+    /**
+     * Creates a helper based on {@link HandlerId}
+     *
+     * @param handlerId
+     */
     public HandlerConfigurationHelper(final HandlerId handlerId) {
         super(handlerId.getPropertyPrefix(), ERROR_HANDLER_PRINT_TO_STDERR);
         this.handlerId = handlerId;

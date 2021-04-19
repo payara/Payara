@@ -112,7 +112,7 @@ public class UpgradeLogging implements ConfigurationUpgrade, PostConstruct {
             //Get the logLevels
             ModuleLogLevels mll = logService.getModuleLogLevels();
 
-            Map<String, String> logLevels = mll.getAllLogLevels();
+            Map<String, String> xmlAttributesToPropertyKeys = mll.getAllLogLevels();
             String file = logService.getFile();
             String payaraNotificationFile = logService.getPayaraNotificationFile();
             String instanceRoot = System.getProperty("com.sun.aas.instanceRoot");
@@ -124,23 +124,23 @@ public class UpgradeLogging implements ConfigurationUpgrade, PostConstruct {
                 payaraNotificationFile = payaraNotificationFile.replace(instanceRoot, "${com.sun.aas.instanceRoot}");
             }
             
-            logLevels.put("file", file);
-            logLevels.put("payara-notification-file", payaraNotificationFile);
-            logLevels.put("use-system-logging", logService.getUseSystemLogging());
+            xmlAttributesToPropertyKeys.put("file", file);
+            xmlAttributesToPropertyKeys.put("payara-notification-file", payaraNotificationFile);
+            xmlAttributesToPropertyKeys.put("use-system-logging", logService.getUseSystemLogging());
             //this can have multiple values so need to add
-            logLevels.put("log-handler", logService.getLogHandler());
-            logLevels.put("log-filter", logService.getLogFilter());
-            logLevels.put("log-to-file", logService.getLogToFile());
-            logLevels.put("payara-notification-log-to-file", logService.getPayaraNotificationLogToFile());
-            logLevels.put("log-to-console", logService.getLogToConsole());
-            logLevels.put("log-rotation-limit-in-bytes", logService.getLogRotationLimitInBytes());
-            logLevels.put("payara-notification-log-rotation-limit-in-bytes", logService.getPayaraNotificationLogRotationLimitInBytes());
-            logLevels.put("log-rotation-timelimit-in-minutes", logService.getLogRotationTimelimitInMinutes());
-            logLevels.put("payara-notification-log-rotation-timelimit-in-minutes", logService.getPayaraNotificationLogRotationTimelimitInMinutes());
-            logLevels.put("alarms", logService.getAlarms());
-            logLevels.put("retain-error-statistics-for-hours", logService.getRetainErrorStatisticsForHours());
-            logLevels.put("log-standard-streams", logService.getLogStandardStreams());
-            final Map<String, String> m = new HashMap<String, String>(logLevels);
+            xmlAttributesToPropertyKeys.put("log-handler", logService.getLogHandler());
+            xmlAttributesToPropertyKeys.put("log-filter", logService.getLogFilter());
+            xmlAttributesToPropertyKeys.put("log-to-file", logService.getLogToFile());
+            xmlAttributesToPropertyKeys.put("payara-notification-log-to-file", logService.getPayaraNotificationLogToFile());
+            xmlAttributesToPropertyKeys.put("log-to-console", logService.getLogToConsole());
+            xmlAttributesToPropertyKeys.put("log-rotation-limit-in-bytes", logService.getLogRotationLimitInBytes());
+            xmlAttributesToPropertyKeys.put("payara-notification-log-rotation-limit-in-bytes", logService.getPayaraNotificationLogRotationLimitInBytes());
+            xmlAttributesToPropertyKeys.put("log-rotation-timelimit-in-minutes", logService.getLogRotationTimelimitInMinutes());
+            xmlAttributesToPropertyKeys.put("payara-notification-log-rotation-timelimit-in-minutes", logService.getPayaraNotificationLogRotationTimelimitInMinutes());
+            xmlAttributesToPropertyKeys.put("alarms", logService.getAlarms());
+            xmlAttributesToPropertyKeys.put("retain-error-statistics-for-hours", logService.getRetainErrorStatisticsForHours());
+            xmlAttributesToPropertyKeys.put("log-standard-streams", logService.getLogStandardStreams());
+            final Map<String, String> m = new HashMap<String, String>(xmlAttributesToPropertyKeys);
 
             ConfigSupport.apply(new SingleConfigCode<Config>() {
                 @Override

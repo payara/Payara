@@ -50,13 +50,25 @@ import com.sun.jsftemplating.annotation.Handler;
 import com.sun.jsftemplating.annotation.HandlerInput;
 import com.sun.jsftemplating.annotation.HandlerOutput;
 import com.sun.jsftemplating.layout.descriptors.handler.HandlerContext;
+
+import fish.payara.enterprise.server.logging.PayaraNotificationFileHandler;
+import fish.payara.jul.formatter.ODLLogFormatter.ODLFormatterProperty;
+import fish.payara.jul.handler.SyslogHandler;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
+
 import org.glassfish.admingui.common.util.GuiUtil;
 import org.glassfish.admingui.common.util.RestUtil;
+
+import static fish.payara.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.ENABLED;
+import static fish.payara.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.FORMATTER;
+import static fish.payara.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.REDIRECT_STANDARD_STREAMS;
+import static fish.payara.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.ROTATION_COMPRESS;
+import static fish.payara.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.ROTATION_ON_DATE_CHANGE;
 
 
 public class LoggingHandlers {
@@ -195,15 +207,15 @@ public class LoggingHandlers {
         try{
             for (Map.Entry<String, Object> e : attrs.entrySet()) {
                 String key = e.getKey();
-                if ((key.equals("fish.payara.jul.handler.SyslogHandler.enabled")||
-                      key.equals("fish.payara.jul.handler.PayaraLogHandler.enabled") ||
-                      key.equals("fish.payara.jul.handler.PayaraLogHandler.formatter.multiLine") ||
-                      key.equals("fish.payara.jul.handler.PayaraLogHandler.rotation.rollOnDateChange" ) ||
-                      key.equals("fish.payara.jul.handler.PayaraLogHandler.rotation.compress") ||
-                      key.equals("fish.payara.jul.handler.PayaraLogHandler.redirectStandardStreams") ||
-                      key.equals("fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.enabled") ||
-                      key.equals("fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.rotation.rollOnDateChange") ||
-                      key.equals("fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.rotation.compress"))
+                if ((SyslogHandler.ENABLED.getPropertyFullName(SyslogHandler.class).equals(key)
+                    || ENABLED.getPropertyFullName().equals(key)
+                    || ODLFormatterProperty.MULTILINE.getPropertyFullName(FORMATTER.getPropertyFullName()).equals(key)
+                    || ROTATION_ON_DATE_CHANGE.getPropertyFullName().equals(key)
+                    || ROTATION_COMPRESS.getPropertyFullName().equals(key)
+                    || REDIRECT_STANDARD_STREAMS.getPropertyFullName().equals(key)
+                    || ENABLED.getPropertyFullName(PayaraNotificationFileHandler.class).equals(key)
+                    || ROTATION_ON_DATE_CHANGE.getPropertyFullName(PayaraNotificationFileHandler.class).equals(key)
+                    || ROTATION_COMPRESS.getPropertyFullName(PayaraNotificationFileHandler.class).equals(key))
                         && e.getValue() == null) {
                     attrs.put(key, "false");
                 }
@@ -212,7 +224,7 @@ public class LoggingHandlers {
                 RestUtil.restRequest((String)GuiUtil.getSessionValue("REST_URL") + "/set-log-attributes",
                         props, "POST", null, false, true);
             }
-        }catch (Exception ex){
+        } catch (Exception ex){
             GuiUtil.handleException(handlerCtx, ex);
             if (GuiUtil.getLogger().isLoggable(Level.FINE)){
                 ex.printStackTrace();

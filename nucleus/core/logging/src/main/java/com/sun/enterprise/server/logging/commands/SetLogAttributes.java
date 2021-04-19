@@ -62,6 +62,8 @@ import fish.payara.jul.formatter.OneLineFormatter.OneLineFormatterProperty;
 import fish.payara.jul.formatter.PayaraLogFormatter.PayaraLogFormatterProperty;
 import fish.payara.jul.formatter.UniformLogFormatter;
 import fish.payara.jul.formatter.UniformLogFormatter.UniformFormatterProperty;
+import fish.payara.jul.handler.ConsoleHandlerProperty;
+import fish.payara.jul.handler.FileHandlerProperty;
 import fish.payara.jul.handler.HandlerConfigurationHelper;
 import fish.payara.jul.handler.PayaraLogHandler;
 import fish.payara.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty;
@@ -99,6 +101,7 @@ import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.internal.config.UnprocessedConfigListener;
 import org.jvnet.hk2.annotations.Service;
 
+
 /**
  * Set Log Attributes Command
  *
@@ -120,34 +123,8 @@ public class SetLogAttributes implements AdminCommand {
     private static final String LINE_SEP = System.lineSeparator();
     private static final Logger LOG = Logger.getLogger(SetLogAttributes.class.getName());
 
+    private static final LocalStringManagerImpl LOCAL_STRINGS = new LocalStringManagerImpl(SetLogLevel.class);
     private static final Set<String> VALID_ATTRIBUTES;
-
-    @Param(name = "name_value", primary = true, separator = ':')
-    Properties properties;
-
-    @Param(optional = true)
-    String target = SystemPropertyConstants.DAS_SERVER_NAME;
-
-    @Param(optional = true, defaultValue = "true")
-    boolean validate;
-
-    @Inject
-    private LoggingConfigFactory loggingConfigFactory;
-
-    @Inject
-    private LogManagerService logManager;
-
-    @Inject
-    Domain domain;
-
-    @Inject
-    Servers servers;
-
-    @Inject
-    Clusters clusters;
-
-    @Inject
-    UnprocessedConfigListener ucl;
 
     static {
         // the set of valid attribute keys affects Admin GUI! Try to save values in Logger settings.
@@ -197,9 +174,6 @@ public class SetLogAttributes implements AdminCommand {
         Arrays.stream(AnsiColorFormatterProperty.values()).forEach(formatterParameters::add);
         Arrays.stream(PayaraLogFormatterProperty.values()).forEach(formatterParameters::add);
 
-        for (Class<?> handler : handlersWithFormatter) {
-            properties.add(HandlerConfigurationHelper.FORMATTER.getPropertyFullName(handler));
-        }
         for (LogProperty logProperty : formatterParameters) {
             for (Class<?> handler : handlersWithFormatter) {
                 String formatterPrefix = HandlerConfigurationHelper.FORMATTER.getPropertyFullName(handler);
@@ -207,23 +181,48 @@ public class SetLogAttributes implements AdminCommand {
             }
         }
 
-        properties.add("java.util.logging.FileHandler.count");
-        properties.add("java.util.logging.FileHandler.formatter");
-        properties.add("java.util.logging.FileHandler.limit");
-        properties.add("java.util.logging.FileHandler.pattern");
-        properties.add("java.util.logging.ConsoleHandler.encoding");
-        properties.add("java.util.logging.ConsoleHandler.filter");
-        properties.add("java.util.logging.ConsoleHandler.formatter");
-        properties.add("java.util.logging.ConsoleHandler.level");
-        properties.add("java.util.logging.SimpleFormatter.format");
+        properties.add(FileHandlerProperty.COUNT.getPropertyFullName());
+        properties.add(FileHandlerProperty.FORMATTER.getPropertyFullName());
+        properties.add(FileHandlerProperty.LIMIT.getPropertyFullName());
+        properties.add(FileHandlerProperty.PATTERN.getPropertyFullName());
+        properties.add(ConsoleHandlerProperty.ENCODING.getPropertyFullName());
+        properties.add(ConsoleHandlerProperty.FILTER.getPropertyFullName());
+        properties.add(ConsoleHandlerProperty.FORMATTER.getPropertyFullName());
+        properties.add(ConsoleHandlerProperty.LEVEL.getPropertyFullName());
 
+        properties.add("java.util.logging.SimpleFormatter.format");
         properties.add(JSONLogFormatter.PAYARA_JSONLOGFORMATTER_UNDERSCORE);
         VALID_ATTRIBUTES = Collections.unmodifiableSet(properties);
         LOG.log(Level.FINE, "Acceptable logging properties for the set-log-attribute command (except loggers): {0}",
             VALID_ATTRIBUTES);
     }
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(SetLogLevel.class);
+    @Param(name = "name_value", primary = true, separator = ':')
+    Properties properties;
+
+    @Param(optional = true)
+    String target = SystemPropertyConstants.DAS_SERVER_NAME;
+
+    @Param(optional = true, defaultValue = "true")
+    boolean validate;
+
+    @Inject
+    private LoggingConfigFactory loggingConfigFactory;
+
+    @Inject
+    private LogManagerService logManager;
+
+    @Inject
+    Domain domain;
+
+    @Inject
+    Servers servers;
+
+    @Inject
+    Clusters clusters;
+
+    @Inject
+    UnprocessedConfigListener ucl;
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -242,7 +241,7 @@ public class SetLogAttributes implements AdminCommand {
                     final boolean vlAttribute = isValid(att_name, att_value, report);
                     if (vlAttribute) {
                         m.put(att_name, att_value);
-                        sbfSuccessMsg.append(localStrings.getLocalString(
+                        sbfSuccessMsg.append(LOCAL_STRINGS.getLocalString(
                             "set.log.attribute.properties",
                             "{0} logging attribute set with value {1}.",
                             att_name, att_value)).append(LINE_SEP);
@@ -252,7 +251,7 @@ public class SetLogAttributes implements AdminCommand {
                     }
                 } else {
                     m.put(att_name, att_value);
-                    sbfSuccessMsg.append(localStrings.getLocalString(
+                    sbfSuccessMsg.append(LOCAL_STRINGS.getLocalString(
                             "set.log.attribute.properties",
                             "{0} logging attribute set with value {1}.",
                             att_name, att_value)).append(LINE_SEP);
@@ -273,21 +272,21 @@ public class SetLogAttributes implements AdminCommand {
 
             if (success) {
                 String effectiveTarget = (isDas ? SystemPropertyConstants.DAS_SERVER_NAME : targetConfigName);
-                sbfSuccessMsg.append(localStrings.getLocalString(
+                sbfSuccessMsg.append(LOCAL_STRINGS.getLocalString(
                         "set.log.attribute.success",
                         "These logging attributes are set for {0}.", effectiveTarget)).append(LINE_SEP);
                 report.setMessage(sbfSuccessMsg.toString());
                 report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
             } else {
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                String msg = localStrings.getLocalString("invalid.target.sys.props",
+                String msg = LOCAL_STRINGS.getLocalString("invalid.target.sys.props",
                         "Invalid target: {0}. Valid default target is a server named ''server'' (default) or cluster name.", target);
                 report.setMessage(msg);
                 return;
             }
 
         } catch (IOException e) {
-            report.setMessage(localStrings.getLocalString("set.log.attribute.failed",
+            report.setMessage(LOCAL_STRINGS.getLocalString("set.log.attribute.failed",
                     "Could not set logging attributes for {0}.", target));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
         }
@@ -309,7 +308,7 @@ public class SetLogAttributes implements AdminCommand {
                 }
             }
         }
-        report.appendMessage(localStrings.getLocalString("set.log.attribute.invalid",
+        report.appendMessage(LOCAL_STRINGS.getLocalString("set.log.attribute.invalid",
             "Invalid logging attribute name {0} or value {1}.", att_name, att_value));
         return false;
     }

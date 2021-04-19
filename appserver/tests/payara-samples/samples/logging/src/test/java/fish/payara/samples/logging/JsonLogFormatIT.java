@@ -42,6 +42,9 @@ package fish.payara.samples.logging;
 import com.gargoylesoftware.htmlunit.TextPage;
 import com.gargoylesoftware.htmlunit.WebClient;
 
+import fish.payara.jul.formatter.JSONLogFormatter;
+import fish.payara.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty;
+import fish.payara.jul.handler.SimpleLogHandler.SimpleLogHandlerProperty;
 import fish.payara.samples.CliCommands;
 import fish.payara.samples.NotMicroCompatible;
 import fish.payara.samples.PayaraArquillianTestRunner;
@@ -138,12 +141,12 @@ public class JsonLogFormatIT {
         boolean foundFile = false;
         boolean foundConsole = false;
         for (final String keyValue : output) {
-            if (keyValue.startsWith("fish.payara.jul.handler.PayaraLogHandler.formatter")) {
+            if (keyValue.startsWith(PayaraLogHandlerProperty.FORMATTER.getPropertyFullName())) {
                 originalFileHandlerFormatter = keyValue.substring(keyValue.indexOf("\t<") + 2, keyValue.length() - 1);
                 foundFile = true;
                 continue;
             }
-            if (keyValue.startsWith("fish.payara.jul.handler.SimpleLogHandler.formatter")) {
+            if (keyValue.startsWith(SimpleLogHandlerProperty.FORMATTER.getPropertyFullName())) {
                 originalConsoleHandlerFormatter = keyValue.substring(keyValue.indexOf("\t<") + 2, keyValue.length() - 1);
                 foundConsole = true;
                 continue;
@@ -167,8 +170,9 @@ public class JsonLogFormatIT {
         final ArrayList<String> output = new ArrayList<>();
         command.add("set-log-attributes");
         command.add(
-            "fish.payara.jul.handler.SimpleLogHandler.formatter='" + originalConsoleHandlerFormatter + "'"
-         + ":fish.payara.jul.handler.PayaraLogHandler.formatter='" + originalFileHandlerFormatter + "'");
+            SimpleLogHandlerProperty.FORMATTER.getPropertyFullName() + "='" + originalConsoleHandlerFormatter + "'"
+            + ":" + PayaraLogHandlerProperty.FORMATTER.getPropertyFullName() + "='" + originalFileHandlerFormatter + "'"
+        );
         final int result = CliCommands.payaraGlassFish(command, output);
         assertEquals("set-log-attributes result", 0, result);
         assertEquals("Command set-log-attributes executed successfully.", output.get(output.size() - 1));
@@ -181,8 +185,9 @@ public class JsonLogFormatIT {
         final ArrayList<String> output = new ArrayList<>();
         command.add("set-log-attributes");
         command.add(
-            "fish.payara.jul.handler.SimpleLogHandler.formatter='fish.payara.jul.formatter.JSONLogFormatter'"
-         + ":fish.payara.jul.handler.PayaraLogHandler.formatter='fish.payara.jul.formatter.JSONLogFormatter'");
+            SimpleLogHandlerProperty.FORMATTER.getPropertyFullName() + "='" + JSONLogFormatter.class.getName()
+            + "'" + ":" + PayaraLogHandlerProperty.FORMATTER.getPropertyFullName() + "='" + JSONLogFormatter.class.getName() + "'"
+        );
         final int result = CliCommands.payaraGlassFish(command, output);
         assertEquals("set-log-attributes result", 0, result);
         assertEquals("Command set-log-attributes executed successfully.", output.get(output.size() - 1));

@@ -126,7 +126,7 @@ Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights re
         <sun:property id="PayaraNotificationFileRotationLimitProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.FileRotationLimit}" helpText="$resource{i18nc.log.FileRotationLimitHelp}">
             <sun:textField id="FileRotationLimit" styleClass="integer" columns="$int{30}"
               maxLength="#{sessionScope.fieldLengths['maxLength.log.FileRotationLimit']}" text="#{pageSession.logAttributes['fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.rotation.limit.megabytes']}" />
-            <sun:staticText id="byte" style="padding: 8pt" text="$resource{i18n.common.Bytes}"/>
+            <sun:staticText id="byte" style="padding: 8pt" text="$resource{i18n.common.Megabytes}"/>
         </sun:property>
 
         <sun:property id="PayaraNotificationFileRotationTimeLimitProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.FileRotationTimeLimit}" helpText="$resource{i18nc.log.FileRotationTimeLimitHelp}">

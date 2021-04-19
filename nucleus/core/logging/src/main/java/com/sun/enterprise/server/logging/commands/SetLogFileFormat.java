@@ -75,6 +75,7 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 
 import fish.payara.jul.formatter.ODLLogFormatter;
 import fish.payara.jul.formatter.UniformLogFormatter;
+import fish.payara.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty;
 
 /**
  * Set log file format command.
@@ -136,7 +137,7 @@ public class SetLogFileFormat implements AdminCommand {
         }
 
         Map<String, String> loggingProperties = new HashMap<>();
-        loggingProperties.put("fish.payara.jul.handler.PayaraLogHandler.formatter", formatterClassName);
+        loggingProperties.put(PayaraLogHandlerProperty.FORMATTER.getPropertyFullName(), formatterClassName);
 
         final ActionReport report = context.getActionReport();
         boolean isCluster = false;

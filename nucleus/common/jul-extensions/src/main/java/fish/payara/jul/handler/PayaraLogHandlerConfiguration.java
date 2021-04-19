@@ -242,7 +242,7 @@ public class PayaraLogHandlerConfiguration implements Cloneable {
 
 
     /**
-     * Configuration property set of this handler except formatter.
+     * Configuration property set of this handler.
      */
     public enum PayaraLogHandlerProperty implements LogProperty {
 
@@ -254,6 +254,8 @@ public class PayaraLogHandlerConfiguration implements Cloneable {
         OUTPUT_FILE("file"),
         /** Charset */
         ENCODING("encoding"),
+        /** Class of the {@link Formatter} used with this handler */
+        FORMATTER(HandlerConfigurationHelper.FORMATTER.getPropertyName()),
         /**
          * LogRecord buffer size. If the buffer is full and it is not possible to add new record for
          * {@link #BUFFER_TIMEOUT} seconds, buffer will reset and replace all records with just one
@@ -299,5 +301,13 @@ public class PayaraLogHandlerConfiguration implements Cloneable {
         public String getPropertyName() {
             return propertyName;
         }
+
+        /**
+         * @return full name using the {@link PayaraLogHandler} class.
+         */
+        public String getPropertyFullName() {
+            return getPropertyFullName(PayaraLogHandler.class);
+        }
+
     }
 }

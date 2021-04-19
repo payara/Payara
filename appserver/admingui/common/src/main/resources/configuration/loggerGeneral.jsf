@@ -131,8 +131,8 @@
                     values={"fish.payara.jul.formatter.UniformLogFormatter", "fish.payara.jul.formatter.ODLLogFormatter", "fish.payara.jul.formatter.JSONLogFormatter"} />
           </sun:property>
 
-        <sun:property id="logStandardStreamsProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.LogStandardStreams}" helpText="$resource{i18nc.log.LogStandardStreamsHelp}">
-            <sun:checkbox id="logStandardStreamsEnabled" label="$resource{i18n.common.Enabled}" selected="#{pageSession.logAttributes['fish.payara.jul.handler.PayaraLogHandler.redirectStandardStreams']}" selectedValue="true"/>
+        <sun:property id="redirectStandardStreamsProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.LogStandardStreams}" helpText="$resource{i18nc.log.LogStandardStreamsHelp}">
+            <sun:checkbox id="redirectStandardStreamsEnabled" label="$resource{i18n.common.Enabled}" selected="#{pageSession.logAttributes['fish.payara.jul.handler.PayaraLogHandler.redirectStandardStreams']}" selectedValue="true"/>
         </sun:property>
 
         <sun:property id="logfileFormat"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.FileLogFormat}" helpText="$resource{i18nc.log.FileLogFormatHelp}">
@@ -159,7 +159,7 @@
             <sun:property id="FileRotationLimitProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.FileRotationLimit}" helpText="$resource{i18nc.log.FileRotationLimitHelp}">
                 <sun:textField id="FileRotationLimit" styleClass="integer" columns="$int{30}"
                   maxLength="#{sessionScope.fieldLengths['maxLength.log.FileRotationLimit']}" text="#{pageSession.logAttributes['fish.payara.jul.handler.PayaraLogHandler.rotation.limit.megabytes']}" />
-                <sun:staticText id="byte" style="padding: 8pt" text="$resource{i18n.common.Bytes}"/>
+                <sun:staticText id="byte" style="padding: 8pt" text="$resource{i18n.common.Megabytes}"/>
             </sun:property>
 
             <sun:property id="FileRotationTimeLimitProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.FileRotationTimeLimit}" helpText="$resource{i18nc.log.FileRotationTimeLimitHelp}">

@@ -46,7 +46,8 @@ import com.sun.enterprise.util.PropertyPlaceholderHelper;
 
 import fish.payara.jul.cfg.SortedProperties;
 import fish.payara.jul.formatter.ODLLogFormatter;
-import fish.payara.jul.handler.PayaraLogHandler;
+import fish.payara.jul.handler.FileHandlerProperty;
+import fish.payara.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -76,8 +77,15 @@ import org.jvnet.hk2.annotations.Contract;
 import org.jvnet.hk2.annotations.Service;
 
 import static com.sun.common.util.logging.LoggingXMLNames.xmltoPropsMap;
-import static fish.payara.jul.handler.HandlerConfigurationHelper.FORMATTER;
-import static fish.payara.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.*;
+import static fish.payara.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.ENABLED;
+import static fish.payara.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.FORMATTER;
+import static fish.payara.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.OUTPUT_FILE;
+import static fish.payara.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.REDIRECT_STANDARD_STREAMS;
+import static fish.payara.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.ROTATION_COMPRESS;
+import static fish.payara.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.ROTATION_LIMIT_SIZE;
+import static fish.payara.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.ROTATION_LIMIT_TIME;
+import static fish.payara.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.ROTATION_MAX_HISTORY;
+import static fish.payara.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.ROTATION_ON_DATE_CHANGE;
 
 /**
  * Implementation of Logging Commands
@@ -90,18 +98,17 @@ public class LoggingConfigImpl implements LoggingConfig {
 
     private static final String DEFAULT_SERVER_LOG_PATH = "${com.sun.aas.instanceRoot}/logs/server.log";
     private static final String DEFAULT_NOTIFICATION_LOG_PATH = "${com.sun.aas.instanceRoot}/logs/notification.log";
-    private static final Class<PayaraLogHandler> HANDLER_SERVER = PayaraLogHandler.class;
     private static final String HANDLER_NOTIFICATION = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler";
 
     private static final Logger LOG = Logger.getLogger(LoggingConfigImpl.class.getName());
 
     private static final Map<String, String> DEFAULT_LOG_PROPERTIES = new HashMap<>();
     static {
-        DEFAULT_LOG_PROPERTIES.put(ENABLED.getPropertyFullName(HANDLER_SERVER), "true");
-        DEFAULT_LOG_PROPERTIES.put(OUTPUT_FILE.getPropertyFullName(HANDLER_SERVER), DEFAULT_SERVER_LOG_PATH);
-        DEFAULT_LOG_PROPERTIES.put(FORMATTER.getPropertyFullName(HANDLER_SERVER), ODLLogFormatter.class.getName());
-        DEFAULT_LOG_PROPERTIES.put(REDIRECT_STANDARD_STREAMS.getPropertyFullName(HANDLER_SERVER), "true");
-        DEFAULT_LOG_PROPERTIES.put(ROTATION_LIMIT_SIZE.getPropertyFullName(HANDLER_SERVER), "2");
+        DEFAULT_LOG_PROPERTIES.put(ENABLED.getPropertyFullName(), "true");
+        DEFAULT_LOG_PROPERTIES.put(OUTPUT_FILE.getPropertyFullName(), DEFAULT_SERVER_LOG_PATH);
+        DEFAULT_LOG_PROPERTIES.put(FORMATTER.getPropertyFullName(), ODLLogFormatter.class.getName());
+        DEFAULT_LOG_PROPERTIES.put(REDIRECT_STANDARD_STREAMS.getPropertyFullName(), "true");
+        DEFAULT_LOG_PROPERTIES.put(ROTATION_LIMIT_SIZE.getPropertyFullName(), "2");
 
         DEFAULT_LOG_PROPERTIES.put(ENABLED.getPropertyFullName(HANDLER_NOTIFICATION), "true");
         DEFAULT_LOG_PROPERTIES.put(OUTPUT_FILE.getPropertyFullName(HANDLER_NOTIFICATION), DEFAULT_NOTIFICATION_LOG_PATH);
@@ -175,7 +182,7 @@ public class LoggingConfigImpl implements LoggingConfig {
     }
 
     private void rewritePropertiesFileAndNotifyMonitoring() throws IOException {
-        LOG.info("rewritePropertiesFileAndNotifyMonitoring");
+        LOG.finest("rewritePropertiesFileAndNotifyMonitoring");
         File file = getLoggingPropertiesFile();
         File parentFile = file.getParentFile();
         if (!parentFile.exists() && !parentFile.mkdirs()) {
@@ -217,6 +224,7 @@ public class LoggingConfigImpl implements LoggingConfig {
         return m;
     }
 
+    // FIXME: shitty code, mixes XML attributes with properties. It should be processed somewhere else.
     private Map<String, String> getMap(Map<String, String> properties) {
         Map<String, String> m = new HashMap<>();
         for (Map.Entry<String, String> e : properties.entrySet()) {
@@ -420,9 +428,12 @@ public class LoggingConfigImpl implements LoggingConfig {
         }
     }
 
-    /* Return a logging file details  in the logging.properties file.
-      * @throws  IOException
-      */
+
+    /**
+     * Return a logging file details in the logging.properties file.
+     *
+     * @throws IOException
+     */
     @Override
     public synchronized String getLoggingFileDetails() throws IOException {
         LOG.finest("getLoggingFileDetails()");
@@ -437,13 +448,13 @@ public class LoggingConfigImpl implements LoggingConfig {
             // Convert the name in domain.xml to the name in logging.properties if needed
             key = xmltoPropsMap.getOrDefault(key, key);
 
-            if (key != null && key.equals("fish.payara.jul.handler.PayaraLogHandler.file")) {
+            if (key != null && key.equals(PayaraLogHandlerProperty.OUTPUT_FILE.getPropertyFullName())) {
                 return props.getProperty(key);
             }
         }
 
         // If "fish.payara.jul.handler.PayaraLogHandler.file" not found, check "java.util.logging.FileHandler.pattern"
         // This property can have been set by Payara Micro when using the --logtofile
-        return props.getProperty("java.util.logging.FileHandler.pattern");
+        return props.getProperty(FileHandlerProperty.PATTERN.getPropertyFullName());
     }
 }

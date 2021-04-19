@@ -38,57 +38,42 @@
  *  holder.
  */
 
-package fish.payara.jul.formatter;
+package fish.payara.jul.handler;
 
-import java.util.logging.Handler;
+import fish.payara.jul.cfg.LogProperty;
+
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Formatter;
 
 /**
- * HandlerId holds a handler id used in logging.properties. The id is used as a key prefix of all
- * handler's properties. Usually it is a full class name of the handler implementation.
+ * Configuration property set of the {@link ConsoleHandler}.
  *
  * @author David Matejcek
  */
-public final class HandlerId {
+public enum ConsoleHandlerProperty implements LogProperty {
+    FILTER("filter"),
+    ENCODING("encoding"),
+    /** Class of the {@link Formatter} used with this handler */
+    FORMATTER(HandlerConfigurationHelper.FORMATTER.getPropertyName()),
+    LEVEL("level"),
+    ;
 
-    private final String name;
+    private final String propertyName;
 
-    private HandlerId(final String name) {
-        this.name = name;
+    ConsoleHandlerProperty(final String propertyName) {
+        this.propertyName = propertyName;
     }
 
-
-    /**
-     * @return name of the handler, usually same as the class name
-     */
-    public String getName() {
-        return this.name;
-    }
-
-
-    /**
-     * @return prefix of all properties opf the handler, usually handler's class name.
-     */
-    public String getPropertyPrefix() {
-        return this.name;
-    }
-
-
-    /**
-     * Returns name of the handler.
-     */
     @Override
-    public String toString() {
-        return getName();
+    public String getPropertyName() {
+        return propertyName;
     }
 
 
     /**
-     * Creates a {@link HandlerId} instance for handler's class.
-     *
-     * @param handlerClass
-     * @return {@link HandlerId}, never null.
+     * @return full name using the {@link ConsoleHandler} class.
      */
-    public static HandlerId forHandlerClass(final Class<? extends Handler> handlerClass) {
-        return new HandlerId(handlerClass.getName());
+    public String getPropertyFullName() {
+        return getPropertyFullName(ConsoleHandler.class);
     }
 }
