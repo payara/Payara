@@ -41,8 +41,8 @@ package fish.payara.samples.jaxws.security.servlet;
 
 import fish.payara.cdi.auth.roles.RolesPermitted;
 import jakarta.enterprise.context.Dependent;
-import javax.jws.WebMethod;
-import javax.jws.WebService;
+import jakarta.jws.WebMethod;
+import jakarta.jws.WebService;
 
 @WebService(serviceName="CalculatorService")
 @Dependent

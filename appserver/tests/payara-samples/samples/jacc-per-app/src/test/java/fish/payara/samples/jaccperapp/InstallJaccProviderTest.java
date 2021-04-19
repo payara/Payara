@@ -91,11 +91,11 @@ public class InstallJaccProviderTest {
         // checking for access to our protected servlet.
 
         assertTrue(
-            response.contains("\"javax.security.jacc.WebResourcePermission\" \"/protected/servlet\" \"GET\"")
+            response.contains("\"jakarta.security.jacc.WebResourcePermission\" \"/protected/servlet\" \"GET\"")
         );
 
         assertTrue(
-            response.contains("\"javax.security.jacc.WebRoleRefPermission\" \"fish.payara.samples.jaccperapp.ProtectedServlet\" \"a\"")
+            response.contains("\"jakarta.security.jacc.WebRoleRefPermission\" \"fish.payara.samples.jaccperapp.ProtectedServlet\" \"a\"")
         );
 
     }

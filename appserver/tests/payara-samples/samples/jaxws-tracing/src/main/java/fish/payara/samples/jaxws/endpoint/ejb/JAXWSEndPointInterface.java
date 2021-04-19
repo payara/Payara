@@ -39,11 +39,11 @@
  */
 package fish.payara.samples.jaxws.endpoint.ejb;
 
-import static javax.jws.soap.SOAPBinding.Style.RPC;
+import static jakarta.jws.soap.SOAPBinding.Style.RPC;
 
-import javax.jws.WebMethod;
-import javax.jws.WebService;
-import javax.jws.soap.SOAPBinding;
+import jakarta.jws.WebMethod;
+import jakarta.jws.WebService;
+import jakarta.jws.soap.SOAPBinding;
 
 
 @WebService

@@ -39,8 +39,8 @@
  */
 package fish.payara.samples.jaxws.endpoint.servlet;
 
-import javax.jws.WebMethod;
-import javax.jws.WebService;
+import jakarta.jws.WebMethod;
+import jakarta.jws.WebService;
 
 
 @WebService

@@ -45,7 +45,7 @@ import javax.xml.stream.XMLInputFactory;
 /**
  * Simple Webservice to be deployed using jsr109
  */
-@javax.jws.WebService
+@jakarta.jws.WebService
 public class AddNumbers {
     
     public int addNumbers (int number1, int number2) {

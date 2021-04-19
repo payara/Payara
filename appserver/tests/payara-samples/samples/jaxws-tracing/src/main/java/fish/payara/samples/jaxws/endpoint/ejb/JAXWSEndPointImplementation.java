@@ -43,7 +43,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import jakarta.ejb.Stateless;
-import javax.jws.WebService;
+import jakarta.jws.WebService;
 
 import org.eclipse.microprofile.opentracing.Traced;
 

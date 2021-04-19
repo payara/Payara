@@ -46,7 +46,7 @@ import com.sun.messaging.QueueConnectionFactory;
 import fish.payara.ejb.http.client.RemoteEJBContextFactory;
 import fish.payara.ejb.http.client.adapter.CompositeClientAdapter;
 
-import javax.jms.JMSException;
+import jakarta.jms.JMSException;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
