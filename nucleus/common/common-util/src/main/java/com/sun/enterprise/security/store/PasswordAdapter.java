@@ -57,6 +57,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
 import java.util.Enumeration;
+import java.util.Arrays;
 
 /**
  * This class implements an adapter for password manipulation a JCEKS.
@@ -299,7 +300,12 @@ public final class PasswordAdapter {
         // if the KeyStore exists, update it in a manner that doesn't destroy
         // the existing store if a failure occurs.
         if (keystoreExists) {
-            final KeyStore newKeyStore = duplicateKeyStore(masterPassword);
+            final KeyStore newKeyStore;
+            if (Arrays.equals(masterPassword, this.masterPassword)) {
+                newKeyStore = this.pwdStore;
+            } else {
+                newKeyStore = duplicateKeyStore(masterPassword);
+            }
 
             // 'newKeyStore' is now complete; rename the old KeyStore, the write the new one in its place
             final File saveOld = new File(keyFile.toString() + ".save");
