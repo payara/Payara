@@ -64,7 +64,7 @@ import static org.junit.jupiter.api.Assertions.assertNotSame;
  */
 public class PayaraLogManagerConfigurationTest {
 
-    private static final int PROPERTY_COUNT = 5;
+    private static final int PROPERTY_COUNT = 8;
     private static PayaraLogManager logManager;
     private static PayaraLogManagerConfiguration originalCfg;
 

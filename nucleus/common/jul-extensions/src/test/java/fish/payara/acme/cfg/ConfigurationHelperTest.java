@@ -40,53 +40,30 @@
 
 package fish.payara.acme.cfg;
 
-import fish.payara.jul.cfg.SortedProperties;
-
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.util.SortedSet;
+import fish.payara.jul.cfg.ConfigurationHelper;
 
 import org.junit.jupiter.api.Test;
 
-import static fish.payara.jul.cfg.SortedProperties.loadFrom;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.lessThan;
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 /**
  * @author David Matejcek
  */
-public class SortedPropertiesTest {
-
-    private static final int PROPERTY_COUNT = 8;
+public class ConfigurationHelperTest {
 
     @Test
-    void conversions() throws Exception {
-        final SortedProperties properties = loadFrom(getClass().getResourceAsStream("/logging.properties"));
-        assertAll("properties: " + properties,
-            () -> assertNotNull(properties),
-            () -> assertThat(properties.getPropertyNames(), hasSize(PROPERTY_COUNT))
+    void getBoolean() {
+        final ConfigurationHelper helper = new ConfigurationHelper(ConfigurationHelperTest.class.getPackage().getName(),
+            ConfigurationHelper.ERROR_HANDLER_PRINT_TO_STDERR);
+        assertAll(
+            () -> assertFalse(helper.getBoolean(() -> "boolean.false", true), "boolean.false"),
+            () -> assertTrue(helper.getBoolean(() -> "boolean.true", false), "boolean.true"),
+            () -> assertFalse(helper.getBoolean(() -> "boolean.incorrect", false), "boolean.incorrect and false as default"),
+            () -> assertTrue(helper.getBoolean(() -> "boolean.incorrect", true), "boolean.incorrect and true as default"),
+            () -> assertNull(helper.getBoolean(() -> "boolean.unset", null), "boolean.unset and null as default"),
+            () -> assertTrue(helper.getBoolean(() -> "boolean.unset", true), "boolean.unset and true as default")
         );
-
-        final File file = File.createTempFile("logging", "properties");
-        file.deleteOnExit();
-        properties.store(file, "This is a test: " + getClass());
-
-        final SortedProperties properties2 = loadFrom(file);
-        assertAll("properties2: " + properties2,
-            () -> assertNotNull(properties2),
-            () -> assertThat(properties2.getPropertyNames(), hasSize(PROPERTY_COUNT))
-        );
-
-        final ByteArrayInputStream inputStream = properties2.toInputStream(null);
-        final SortedProperties properties3 = loadFrom(inputStream);
-        assertEquals(properties.size(), properties3.size(), "size of properties1 and properties3");
-
-        final SortedSet<String> names = properties3.getPropertyNames();
-        assertThat(names.first(), lessThan(names.last()));
     }
+
 }

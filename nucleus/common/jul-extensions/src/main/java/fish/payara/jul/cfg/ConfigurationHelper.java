@@ -74,6 +74,20 @@ public class ConfigurationHelper {
 
     private static final Function<String, Character> STR_TO_CHAR = v -> v == null || v.isEmpty() ? null : v.charAt(0);
 
+    private static final Function<String, Boolean> STR_TO_BOOL = v -> {
+        if (v == null || v.isEmpty()) {
+            return null;
+        }
+        if ("true".equals(v)) {
+            return true;
+        }
+        if ("false".equals(v)) {
+            return false;
+        }
+        throw new IllegalArgumentException("Value is not a boolean: " + v);
+    };
+
+
     private static final Function<String, Integer> STR_TO_POSITIVE_INT = v -> {
         final Integer value = Integer.valueOf(v);
         if (value >= 0) {
@@ -133,7 +147,7 @@ public class ConfigurationHelper {
 
 
     public Boolean getBoolean(final LogProperty key, final Boolean defaultValue) {
-        return parse(key, defaultValue, Boolean::valueOf);
+        return parse(key, defaultValue, STR_TO_BOOL);
     }
 
 
