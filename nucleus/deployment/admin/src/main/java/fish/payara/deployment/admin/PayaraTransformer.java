@@ -64,45 +64,27 @@ public class PayaraTransformer {
 
     private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(PayaraTransformer.class);
 
-    private static final String[] commonJavaxClasses = {
-        "javax.inject.Inject",
-        "javax.servlet.http.HttpServlet",
-        "javax.ws.rs.core.Application",
-        "jakarta.persistence.Entity"
-    };
     private static final String[] commonJakartaClasses = {
         "jakarta.inject.Inject",
         "jakarta.servlet.http.HttpServlet",
         "jakarta.ws.rs.core.Application",
         "jakarta.persistence.Entity"
     };
-    private static final String JAKARTA_PACKAGE_PREFIX = "jakarta.";
 
     public static boolean isJakartaEEApplication(Types types) {
 
         // Quick check for the most common Javax/Jakarta APIs
-        for (String _class : commonJavaxClasses) {
+        for (String _class : commonJakartaClasses) {
             if (types.getBy(_class) != null) {
                 return false;
             }
         }
-        for (String _class : commonJakartaClasses) {
-            if (types.getBy(_class) != null) {
-                return true;
-            }
-        }
-        // If not found scan all classes
-        for (Type classType : types.getAllTypes()) {
-            if (classType.getName().startsWith(JAKARTA_PACKAGE_PREFIX)) {
-                return true;
-            }
-        }
-        return false;
+        return true;
     }
 
     public static File transformApplication(File path, AdminCommandContext context, boolean isDirectoryDeployed) throws IOException {
         JakartaNamespaceTransformer transformer = new JakartaNamespaceTransformer(
-                context.getLogger(), path, true
+                context.getLogger(), path, false
         );
         int result = transformer.run();
         if (result == SUCCESS_RC) {

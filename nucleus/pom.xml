@@ -48,7 +48,7 @@
     <parent>
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-aggregator</artifactId>
-        <version>5.2021.3-SNAPSHOT</version>
+        <version>6.2021.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>payara-nucleus-parent</artifactId>
@@ -82,6 +82,16 @@
     </repositories>
 
     <pluginRepositories>
+        <pluginRepository>
+            <id>payara-nexus-artifacts</id>
+            <url>https://nexus.payara.fish/repository/payara-artifacts</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </pluginRepository>
         <pluginRepository>
             <id>payara-patched-externals</id>
             <name>Payara Patched Externals</name>
@@ -123,7 +133,7 @@
         <grizzly.npn.osgi.version>2.0.0</grizzly.npn.osgi.version>
 
         <!-- Other -->
-        <hk2.plugin.version>3.0.1</hk2.plugin.version>
+        <hk2.plugin.version>3.0.1.payara-p1</hk2.plugin.version>
         <tiger.types.version>1.4.payara-p1</tiger.types.version>
 
         <glassfish-corba.version>4.2.4</glassfish-corba.version>
@@ -131,7 +141,7 @@
 
         <!-- Library for introspecting types with full generic information including resolving of field and method types. -->
         <classmate.version>1.5.0</classmate.version>
-        <jboss.logging.version>3.3.2.Final</jboss.logging.version>
+        <jboss.logging.version>3.4.1.Final</jboss.logging.version>
         <!-- Javassist (JAVA programming ASSISTant) makes Java bytecode manipulation simple. It is a class library for editing bytecodes in Java. -->
         <javassist.version>3.27.0-GA</javassist.version>
 

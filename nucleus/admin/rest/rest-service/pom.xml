@@ -48,7 +48,7 @@
     <parent>
         <groupId>fish.payara.server.internal.admin</groupId>
         <artifactId>rest-service-parent</artifactId>
-        <version>5.2021.3-SNAPSHOT</version>
+        <version>6.2021.1-SNAPSHOT</version>
     </parent>
     
     <artifactId>rest-service</artifactId>
@@ -148,7 +148,7 @@
         </dependency>
         <dependency> <!-- for FindBugs -->
             <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.core</artifactId>
+            <artifactId>osgi.core</artifactId>
             <scope>provided</scope>
         </dependency>
         

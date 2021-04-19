@@ -101,7 +101,7 @@ public class WebContainerStarter
     private static final String SHARED_LOGMESSAGE_RESOURCE = "org.glassfish.kernel.javaee.LogMessages";
     
     @LoggerInfo(subsystem = "AS-CORE", description = "Java EE Core Kernel", publish = true)
-    private static final String ASCORE_LOGGER = "jakarta.enterprise.system.core.ee";
+    private static final String ASCORE_LOGGER = "javax.enterprise.system.core.ee";
     private static final Logger logger = Logger.getLogger(
                 ASCORE_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
     private static final ResourceBundle rb = logger.getResourceBundle();

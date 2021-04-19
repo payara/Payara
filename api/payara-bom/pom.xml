@@ -44,7 +44,7 @@
     <parent>
         <groupId>fish.payara.api</groupId>
         <artifactId>api-parent</artifactId>
-        <version>5.2021.3-SNAPSHOT</version>
+        <version>6.2021.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>payara-bom</artifactId>
@@ -404,8 +404,8 @@
             </dependency>
             <dependency>
                 <groupId>org.osgi</groupId>
-                <artifactId>org.osgi.core</artifactId>
-                <version>6.0.0</version>
+                <artifactId>osgi.core</artifactId>
+                <version>7.0.0</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>

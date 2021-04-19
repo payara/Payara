@@ -65,13 +65,13 @@ import org.glassfish.webservices.node.WebServicesDescriptorNode;
 import org.jvnet.hk2.annotations.Service;
 
 /**
- * This annotation handler is responsible for processing the javax.jws.WebService
+ * This annotation handler is responsible for processing the jakarta.jws.WebService
  * annotation type.
  *
  * @author Jerome Dochez
  */
 @Service
-@AnnotationHandlerFor(javax.jws.WebService.class)
+@AnnotationHandlerFor(jakarta.jws.WebService.class)
 public class WebServiceHandler extends AbstractHandler {
 
     private static final Logger conLogger = LogUtils.getLogger();
@@ -137,7 +137,7 @@ public class WebServiceHandler extends AbstractHandler {
         }
 
         // let's get the main annotation of interest.
-        javax.jws.WebService ann = (javax.jws.WebService) annInfo.getAnnotation();
+        jakarta.jws.WebService ann = (jakarta.jws.WebService) annInfo.getAnnotation();
 
         BundleDescriptor bundleDesc = null;
 
@@ -276,12 +276,12 @@ public class WebServiceHandler extends AbstractHandler {
             }
             annElem = endpointIntf;
 
-            ann = annElem.getAnnotation(javax.jws.WebService.class);
+            ann = annElem.getAnnotation(jakarta.jws.WebService.class);
             if (ann==null) {
                 throw new AnnotationProcessorException(
                         wsLocalStrings.getLocalString("no.webservice.annotation",
                             "WS00025: SEI {0} referenced from the @WebService annotation on {1}  does not contain a @WebService annotation",
-                            ((javax.jws.WebService) annInfo.getAnnotation()).endpointInterface(),
+                            ((jakarta.jws.WebService) annInfo.getAnnotation()).endpointInterface(),
                             ((Class) annElem).getName()));
             }
 
@@ -290,7 +290,7 @@ public class WebServiceHandler extends AbstractHandler {
                 throw new AnnotationProcessorException(
                         wsLocalStrings.getLocalString("cannot.have.bindingtype",
                             "WS00026: SEI {0} cannot have @BindingType",
-                            ((javax.jws.WebService) annInfo.getAnnotation()).endpointInterface()
+                            ((jakarta.jws.WebService) annInfo.getAnnotation()).endpointInterface()
                     ));
             }
         }
@@ -504,7 +504,7 @@ public class WebServiceHandler extends AbstractHandler {
                 } else {
                     throw new AnnotationProcessorException(
                             wsLocalStrings.getLocalString("missing.targetnamespace",
-                            "WS00029: The javax.jws.WebService annotation targetNamespace must be used for classes or interfaces that are in no package"));
+                            "WS00029: The jakarta.jws.WebService annotation targetNamespace must be used for classes or interfaces that are in no package"));
                 }
                 targetNameSpace = "http://" + (targetNameSpace==null?"":targetNameSpace+"/");
             }
@@ -530,7 +530,7 @@ public class WebServiceHandler extends AbstractHandler {
         // Now force a HandlerChain annotation processing
         // This is to take care of the case where the endpoint Impl class does not
         // have @HandlerChain but the SEI has one specified through JAXWS customization
-        if((((Class)origAnnElem).getAnnotation(javax.jws.HandlerChain.class)) == null) {
+        if((((Class)origAnnElem).getAnnotation(jakarta.jws.HandlerChain.class)) == null) {
             return (new HandlerChainHandler()).processHandlerChainAnnotation(annInfo, annCtx, origAnnElem, (Class)origAnnElem, true);
         }
         return HandlerProcessingResultImpl.getDefaultResult(getAnnotationType(), ResultType.PROCESSED);
@@ -547,7 +547,7 @@ public class WebServiceHandler extends AbstractHandler {
     private boolean ignoreWebserviceAnnotations(AnnotatedElement annElem,AnnotatedElementHandler annCtx){
 
         jakarta.ejb.Stateless stateless = annElem.getAnnotation(jakarta.ejb.Stateless.class);
-        javax.jws.WebService webservice = annElem.getAnnotation(javax.jws.WebService.class);
+        jakarta.jws.WebService webservice = annElem.getAnnotation(jakarta.jws.WebService.class);
         if ((stateless != null) && (webservice != null)
                && ( (annCtx instanceof WebBundleContext) || (annCtx instanceof WebComponentContext)) ) {
             return true;

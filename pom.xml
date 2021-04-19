@@ -46,7 +46,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>fish.payara.server</groupId>
     <artifactId>payara-aggregator</artifactId>
-    <version>5.2021.3-SNAPSHOT</version>
+    <version>6.2021.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Payara Project</name>
@@ -62,7 +62,7 @@
         <connection>scm:git:git@github.com:payara/payara.git</connection>
         <url>scm:git:git@github.com:payara/payara.git</url>
         <developerConnection>scm:git:git@github.com:payara/payara.git</developerConnection>
-        <tag>payara-server-5.2021.3-SNAPSHOT</tag>
+        <tag>payara-server-6.2021.1-SNAPSHOT</tag>
     </scm>
 
     <issueManagement>
@@ -145,14 +145,14 @@
         <hibernate.validator-cdi.version>7.0.1.Final</hibernate.validator-cdi.version>
         <jakarta.el.version>4.0.1</jakarta.el.version>
         <jakarta.el-api.version>4.0.0</jakarta.el-api.version>
-        <javax.cache-api.version>1.1.1</javax.cache-api.version>
+        <javax.cache-api.version>1.1.1.payara-p1</javax.cache-api.version>
         <mail.version>2.0.0</mail.version>
         <jakarta.annotation-api.version>2.0.0</jakarta.annotation-api.version>
-        <hk2.version>3.0.1</hk2.version>
+        <hk2.version>3.0.1.payara-p1</hk2.version>
         <osgi-resource-locator.version>1.0.3</osgi-resource-locator.version>
         <stax-api.version>1.0-2</stax-api.version>
-        <jackson.version>2.10.2</jackson.version>
-        <snakeyaml.version>1.25</snakeyaml.version>
+        <jackson.version>2.11.3</jackson.version>
+        <snakeyaml.version>1.28</snakeyaml.version>
         <hazelcast.version>4.2</hazelcast.version>
         <hazelcast.kubernetes.version>2.2</hazelcast.kubernetes.version>
         <jaxb-api.version>3.0.0</jaxb-api.version>
@@ -174,7 +174,7 @@
         <jakarta.interceptor-api.version>2.0.0</jakarta.interceptor-api.version>
         <jakarta.inject.version>2.0.0</jakarta.inject.version>
         <cdi-api.version>3.0.0</cdi-api.version>
-        <weld.version>4.0.1.Final</weld.version>
+        <weld.version>4.0.0.Final</weld.version>
         <weld-api.version>4.0.Final</weld-api.version>
         <jakarta.security.enterprise-api.version>2.0.0</jakarta.security.enterprise-api.version>
         <jakarta.security.enterprise.version>2.0.1</jakarta.security.enterprise.version>
@@ -204,8 +204,8 @@
         <microprofile-release.version>4.0</microprofile-release.version>
         <microprofile-opentracing.version>2.0</microprofile-opentracing.version>
         <microprofile-config.version>2.0.payara-p1</microprofile-config.version>
-        <microprofile-fault-tolerance.version>3.0</microprofile-fault-tolerance.version>
-        <microprofile-jwt-auth.version>1.2</microprofile-jwt-auth.version>
+        <microprofile-fault-tolerance.version>3.0.payara-p1</microprofile-fault-tolerance.version>
+        <microprofile-jwt-auth.version>1.2.payara-p1</microprofile-jwt-auth.version>
         <microprofile-healthcheck.version>3.0</microprofile-healthcheck.version>
         <microprofile-metrics.version>3.0.payara-p1</microprofile-metrics.version>
         <microprofile-rest-client.version>2.0</microprofile-rest-client.version>
@@ -217,11 +217,11 @@
         <concurrent-api.version>2.0.0</concurrent-api.version>
         <concurrent.version>2.0.0</concurrent.version>
         <asm.version>9.1</asm.version>
-        <monitoring-console-api.version>1.2</monitoring-console-api.version>
-        <monitoring-console-process.version>1.7</monitoring-console-process.version>
-        <monitoring-console-webapp.version>1.7</monitoring-console-webapp.version>
+        <monitoring-console-api.version>2.0.1</monitoring-console-api.version>
+        <monitoring-console-process.version>2.0.1</monitoring-console-process.version>
+        <monitoring-console-webapp.version>2.0.1</monitoring-console-webapp.version>
         <validation.xml.root>${project.build.outputDirectory}</validation.xml.root>
-        <payara.transformer>0.2.3</payara.transformer>
+        <payara.transformer>0.2.4</payara.transformer>
     </properties>
 
     <profiles>

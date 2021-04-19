@@ -41,8 +41,8 @@ package fish.payara.samples.jaxws.security.ejb;
 
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.ejb.Stateless;
-import javax.jws.WebMethod;
-import javax.jws.WebService;
+import jakarta.jws.WebMethod;
+import jakarta.jws.WebService;
 
 @WebService(serviceName="CalculatorService")
 @Stateless

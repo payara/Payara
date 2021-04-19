@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server.internal.osgi-platforms</groupId>
         <artifactId>osgi-platforms</artifactId>
-        <version>5.2021.3-SNAPSHOT</version>
+        <version>6.2021.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>osgi-cli-remote</artifactId>
@@ -64,7 +64,7 @@
     <dependencies>
         <dependency>
             <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.core</artifactId>
+            <artifactId>osgi.core</artifactId>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.common</groupId>

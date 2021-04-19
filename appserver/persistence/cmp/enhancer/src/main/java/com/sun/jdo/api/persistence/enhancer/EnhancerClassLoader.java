@@ -422,7 +422,7 @@ public class EnhancerClassLoader extends URLClassLoader {
             // by testing for entire "java/" package in the check here.
             if (classPath.startsWith("java/")//NOI18N
                 || classPath.startsWith("javax/sql/")//NOI18N
-                || classPath.startsWith("jakarta.transaction/")//NOI18N
+                || classPath.startsWith("jakarta/transaction/")//NOI18N
                 || classPath.startsWith("com/sun/jdo/")) {//NOI18N
                 message("EnhancerClassLoader: bootstrap class, using parent loader for class: " + name);//NOI18N
                 return super.loadClass(name, resolve);

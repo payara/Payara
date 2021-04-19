@@ -173,6 +173,7 @@ public class WebappClassLoader
      */
     private static final String[] packageTriggers = {
         "javax",                                     // Java extensions
+        "jakarta",
         // START PE 4985680
         "sun",                                       // Sun classes
         // END PE 4985680
@@ -2235,7 +2236,8 @@ public class WebappClassLoader
                                 setAccessible(field);
                                 if (Modifier.isFinal(mods)) {
                                     if (!((field.getType().getName().startsWith("java."))
-                                            || (field.getType().getName().startsWith("javax.")))) {
+                                            || (field.getType().getName().startsWith("javax."))
+                                            || (field.getType().getName().startsWith("jakarta.")))) {
                                         nullInstance(field.get(null));
                                     }
                                 } else {
@@ -3551,7 +3553,7 @@ public class WebappClassLoader
      */
     private boolean isResourceDelegate(String name) {
         return (delegate
-                || (name.startsWith("javax") &&
+                || ((name.startsWith("javax") || name.startsWith("jakarta")) &&
                     (!name.startsWith("jakarta.faces") || !useMyFaces))
                 || name.startsWith("sun")
                 || (name.startsWith("com/sun/faces") &&

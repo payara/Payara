@@ -74,7 +74,7 @@ public class InjectableJMSContext extends ForwardingJMSContext implements Serial
     // All fields are therefore either serializable or transient
 
     @LoggerInfo(subsystem="JMS_INJECTION", description="JMS Injection Logger", publish=true)
-    public static final String JMS_INJECTION_LOGGER = "jakarta.enterprise.resource.jms.injection";
+    public static final String JMS_INJECTION_LOGGER = "javax.enterprise.resource.jms.injection";
 
     private static final Logger logger = Logger.getLogger(JMS_INJECTION_LOGGER);
     private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(InjectableJMSContext.class);

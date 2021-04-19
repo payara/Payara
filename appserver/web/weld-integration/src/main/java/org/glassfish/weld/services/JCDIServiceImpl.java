@@ -117,7 +117,7 @@ public class JCDIServiceImpl implements JCDIService {
     private InvocationManager invocationManager;
 
     @LoggerInfo(subsystem = "AS-WELD", description = "WELD", publish = true)
-    public static final String WELD_LOGGER_SUBSYSTEM_NAME = "jakarta.enterprise.resource.weld";
+    public static final String WELD_LOGGER_SUBSYSTEM_NAME = "javax.enterprise.resource.weld";
     
     private static final Logger logger = Logger.getLogger(WELD_LOGGER_SUBSYSTEM_NAME,
             SHARED_LOGMESSAGE_RESOURCE);

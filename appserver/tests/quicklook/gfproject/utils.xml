@@ -83,7 +83,7 @@
     <!-- like in IT 9896, 9212 -->
     <property name="msg_double_apos" value="\[#\|\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d\.\d\d\d\D\d\d\d\d\|(INFO|WARNING|SEVERE)\|[\w.]+?\|.+?\|.*?\|.*?\w''\w.*?\|#\]"/>
     <!-- example msg for reference to understand above regex's:
-    [#|2010-05-15T15:07:39.453+1000|INFO|glassfishv3.0|jakarta.enterprise.resource.jta.com.sun.enterprise.transaction|_ThreadID=15;_ThreadName=Thread-1;|DTX5019: Using [com.sun.enterprise.transaction.jts.JavaEETransactionManagerJTSDelegate] as the delegate|#]
+    [#|2010-05-15T15:07:39.453+1000|INFO|glassfishv3.0|javax.enterprise.resource.jta.com.sun.enterprise.transaction|_ThreadID=15;_ThreadName=Thread-1;|DTX5019: Using [com.sun.enterprise.transaction.jts.JavaEETransactionManagerJTSDelegate] as the delegate|#]
     [#|yyyy-mm-ddTHH:mm:ss:SSS-ZZZZ|Level|ProductId|Logger Name|Name Value Pairs|MsgId: Message|#]
     -->
 

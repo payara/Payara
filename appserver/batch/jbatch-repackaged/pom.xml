@@ -44,7 +44,7 @@
     <parent>
         <groupId>fish.payara.server.internal.batch</groupId>
         <artifactId>batch</artifactId>
-        <version>5.2021.3-SNAPSHOT</version>
+        <version>6.2021.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>payara-jbatch</artifactId>
@@ -124,7 +124,7 @@
                         </Export-Package>
                         <Import-Package>
                             com.ibm.websphere.asynchbeans;resolution:=optional,
-                            jakarta.annotation;version="[1.1,2)";resolution:=optional,
+                            jakarta.annotation;version="[2.0,3)";resolution:=optional,
                             jakarta.batch.api,
                             jakarta.batch.api.chunk,
                             jakarta.batch.api.chunk.listener,
@@ -136,14 +136,14 @@
                             jakarta.enterprise.context;resolution:=optional,
                             jakarta.enterprise.context.spi;resolution:=optional,
                             jakarta.enterprise.inject;resolution:=optional,
-                            jakarta.enterprise.event;version="[2.0,3)";resolution:=optional,
+                            jakarta.enterprise.event;version="[3.0,4)";resolution:=optional,
                             jakarta.enterprise.inject.spi;resolution:=optional,
                             jakarta.enterprise.util;resolution:=optional,
-                            jakarta.inject;version="[1.0,2)",
+                            jakarta.inject;version="[2.0,3)",
                             javax.naming,
                             javax.naming.spi,
                             javax.sql,
-                            jakarta.transaction;version="1.1.0";resolution:=optional,
+                            jakarta.transaction;version="2.0.0";resolution:=optional,
                             jakarta.transaction.cdi;version="[4.0,5)";resolution:=optional,
                             javax.xml,
                             jakarta.xml.bind,

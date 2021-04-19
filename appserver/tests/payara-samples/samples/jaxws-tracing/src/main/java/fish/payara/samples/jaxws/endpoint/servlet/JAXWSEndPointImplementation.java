@@ -42,7 +42,7 @@ package fish.payara.samples.jaxws.endpoint.servlet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.jws.WebService;
+import jakarta.jws.WebService;
 
 import org.eclipse.microprofile.opentracing.Traced;
 

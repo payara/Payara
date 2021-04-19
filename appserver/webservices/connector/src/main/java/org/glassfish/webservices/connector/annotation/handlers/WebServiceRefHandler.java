@@ -70,7 +70,7 @@ import com.sun.enterprise.deployment.annotation.handlers.AbstractHandler;
 import static com.sun.enterprise.util.StringUtils.ok;
 
 /**
- * This annotation handler is responsible for processing the javax.jws.WebServiceRef annotation type.
+ * This annotation handler is responsible for processing the jakarta.jws.WebServiceRef annotation type.
  *
  * @author Jerome Dochez
  */
@@ -282,7 +282,7 @@ public class WebServiceRefHandler extends AbstractHandler  {
                     ok(getLookupValue(annotation, annInfo)))
                 aRef.setLookupName(getLookupValue(annotation, annInfo));
 
-            aRef.setInjectResourceType("javax.jws.WebServiceRef");
+            aRef.setInjectResourceType("jakarta.jws.WebServiceRef");
 
             if (target != null)
                 aRef.addInjectionTarget(target);
@@ -346,7 +346,7 @@ public class WebServiceRefHandler extends AbstractHandler  {
         // Now force a HandlerChain annotation processing
         // This is to take care of the case where the client class does not
         // have @HandlerChain but the SEI has one specified through JAXWS customization
-        if(annElem.getAnnotation(javax.jws.HandlerChain.class) == null) {
+        if(annElem.getAnnotation(jakarta.jws.HandlerChain.class) == null) {
             return (new HandlerChainHandler()).processHandlerChainAnnotation(annInfo, annCtx, annotatedType, declaringClass, false);
         }
         return HandlerProcessingResultImpl.getDefaultResult(getAnnotationType(), ResultType.PROCESSED);        

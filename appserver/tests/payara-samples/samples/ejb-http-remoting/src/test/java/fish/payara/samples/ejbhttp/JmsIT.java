@@ -49,7 +49,7 @@ import fish.payara.samples.ejbhttp.client.JmsClientExample;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import javax.jms.*;
+import jakarta.jms.*;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.rmi.PortableRemoteObject;

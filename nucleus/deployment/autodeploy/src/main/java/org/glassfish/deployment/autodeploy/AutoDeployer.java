@@ -86,7 +86,7 @@ public class AutoDeployer {
     // Reserve this range [NCLS-DEPLOYMENT-02001, NCLS-DEPLOYMENT-04000]
     // for message ids used in this deployment autodeploy module
     @LoggerInfo(subsystem = "DEPLOYMENT", description = "Deployment logger for autodeploy module", publish = true)
-    private static final String DEPLOYMENT_LOGGER = "jakarta.enterprise.system.tools.deployment.autodeploy";
+    private static final String DEPLOYMENT_LOGGER = "javax.enterprise.system.tools.deployment.autodeploy";
 
     public static final Logger deplLogger = Logger.getLogger(DEPLOYMENT_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
 

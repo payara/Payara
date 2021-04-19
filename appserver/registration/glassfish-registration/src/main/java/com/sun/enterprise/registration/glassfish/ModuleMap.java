@@ -88,7 +88,7 @@ public class ModuleMap {
                 put("com.sun.jersey.jersey-core", 29);
                 put("com.sun.jersey.jersey-grizzly", 30);
                 put("com.sun.jersey.jersey-json", 31);
-                put("com.sun.jsftemplating", 32);
+                put("org.glassfish.jsftemplating", 32);
                 put("com.sun.mail.jakarta.mail", 33);
                 put("com.sun.pkg.client", 34);
                 put("com.sun.xml.bind.jaxb-osgi", 35);
@@ -327,9 +327,9 @@ public class ModuleMap {
                 put("com.fasterxml.jackson.dataformat.xml", 268);
                 put("org.objectweb.asm", 269);
                 put("org.objectweb.asm.commons", 270);
-                put("org.objectweb.asm.tree", 271)
+                put("org.objectweb.asm.tree", 271);
                 put("org.objectweb.asm.tree.analysis", 272);
-                put("org.objectweb.asm.util", 273)
+                put("org.objectweb.asm.util", 273);
             }});
 
     public ModuleMap() {

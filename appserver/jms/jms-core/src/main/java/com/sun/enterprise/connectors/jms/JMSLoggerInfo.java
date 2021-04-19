@@ -56,7 +56,7 @@ public class JMSLoggerInfo {
     public static final String SHARED_LOGMESSAGE_RESOURCE = "com.sun.enterprise.connectors.jms.LogMessages";
 
     @LoggerInfo(subsystem="JMS", description="Main JMS Logger", publish=true)
-    public static final String JMS_MAIN_LOGGER = "jakarta.enterprise.resource.jms";
+    public static final String JMS_MAIN_LOGGER = "javax.enterprise.resource.jms";
 
     private static final Logger jmsLogger =
             Logger.getLogger(JMS_MAIN_LOGGER, SHARED_LOGMESSAGE_RESOURCE);

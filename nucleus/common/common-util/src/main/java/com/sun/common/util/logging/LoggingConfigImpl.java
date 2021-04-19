@@ -189,7 +189,7 @@ public class LoggingConfigImpl implements LoggingConfig {
             key = propertyName;
         }
         String property = (String) props.setProperty(key, propertyValue);
-        if (propertyName.contains("jakarta.enterprise.system.container.web")) {
+        if (propertyName.contains("javax.enterprise.system.container.web")) {
             setWebLoggers(propertyValue);
         }
 
@@ -215,7 +215,7 @@ public class LoggingConfigImpl implements LoggingConfig {
                 key = e.getKey();
             }
             String property = (String) props.setProperty(key, e.getValue());
-            if (e.getKey().contains("jakarta.enterprise.system.container.web")) {
+            if (e.getKey().contains("javax.enterprise.system.container.web")) {
                 setWebLoggers(new PropertyPlaceholderHelper(System.getenv(), PropertyPlaceholderHelper.ENV_REGEX).replacePlaceholder(e.getValue()));
             }
             //build Map of entries to return

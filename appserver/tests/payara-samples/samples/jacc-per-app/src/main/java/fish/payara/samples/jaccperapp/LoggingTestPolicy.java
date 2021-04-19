@@ -6,9 +6,9 @@ import java.security.Permission;
 import java.security.ProtectionDomain;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import javax.security.jacc.WebResourcePermission;
-import javax.security.jacc.WebRoleRefPermission;
-import javax.security.jacc.WebUserDataPermission;
+import jakarta.security.jacc.WebResourcePermission;
+import jakarta.security.jacc.WebRoleRefPermission;
+import jakarta.security.jacc.WebUserDataPermission;
 
 import org.omnifaces.jaccprovider.TestPolicy;
 

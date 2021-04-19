@@ -57,7 +57,7 @@ public class CULoggerInfo {
     private static final String SHARED_LOGMESSAGE_RESOURCE = "com.sun.enterprise.util.LogMessages";
 
     @LoggerInfo(subsystem = "COMMON", description = "Common Utilities", publish = true)
-    private static final String UTIL_LOGGER = "jakarta.enterprise.system.util";
+    private static final String UTIL_LOGGER = "javax.enterprise.system.util";
     private static final Logger utilLogger = Logger.getLogger(
                 UTIL_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
 
