@@ -43,6 +43,7 @@ import com.gargoylesoftware.htmlunit.TextPage;
 import com.gargoylesoftware.htmlunit.WebClient;
 
 import fish.payara.jul.formatter.JSONLogFormatter;
+import fish.payara.jul.formatter.LogFormatDetector;
 import fish.payara.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty;
 import fish.payara.jul.handler.SimpleLogHandler.SimpleLogHandlerProperty;
 import fish.payara.samples.CliCommands;
@@ -92,11 +93,8 @@ import static org.junit.Assert.assertNotNull;
 @NotMicroCompatible
 public class JsonLogFormatIT {
 
-    private static final String P_TIME = "\\d\\d:\\d\\d:\\d\\d.\\d\\d\\d";
-    private static final String P_TIMEZONE = "[0-9:.+-]{6}";
-    private static final String P_TIMESTAMP = "[0-9]{4}\\-[0-9]{2}\\-[0-9]{2}T" + P_TIME + P_TIMEZONE;
     private static final String P_RECORD = "\\{"
-        + "\\\"Timestamp\\\"\\:\\\"" + P_TIMESTAMP + "\\\","
+        + "\\\"Timestamp\\\"\\:\\\"" + LogFormatDetector.P_TIMESTAMP + "\\\","
         + "\\\"Level\\\"\\:\\\"INFO\\\","
         + "\\\"Version\\\"\\:\\\"Payara 5[A-Z0-9\\.\\-]+\\\","
         + "\\\"LoggerName\\\"\\:\\\"[a-zA-Z0-9\\.]*\\\","

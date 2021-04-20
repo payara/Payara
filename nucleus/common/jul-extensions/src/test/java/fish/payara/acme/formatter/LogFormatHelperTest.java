@@ -50,6 +50,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -77,60 +78,60 @@ public class LogFormatHelperTest {
         + "                        fish.payara.acme.PayaraLogManagerTest.externalHandlers Tick tock!";
     private static final String RANDOM_RECORD = "liuasudhfuk fhuashfu hiufh fueqrhfuqrehf qufhr uihuih uih jj";
 
-    private final LogFormatDetector helper = new LogFormatDetector();
+    private final LogFormatDetector detector = new LogFormatDetector();
 
     @Test
     public void json() {
         assertAll(
-            () -> assertTrue(helper.isJSONFormatLogHeader(JSON_RECORD), "is json"),
-            () -> assertFalse(helper.isODLFormatLogHeader(JSON_RECORD), "is ODL"),
-            () -> assertFalse(helper.isOneLineLFormatLogHeader(JSON_RECORD), "is OneLine"),
-            () -> assertFalse(helper.isUniformFormatLogHeader(JSON_RECORD), "is UNL"),
-            () -> assertEquals(JSONLogFormatter.class.getName(), helper.detectFormatter(JSON_RECORD))
+            () -> assertTrue(detector.isJSONFormatLogHeader(JSON_RECORD), "is json"),
+            () -> assertFalse(detector.isODLFormatLogHeader(JSON_RECORD), "is ODL"),
+            () -> assertFalse(detector.isOneLineLFormatLogHeader(JSON_RECORD), "is OneLine"),
+            () -> assertFalse(detector.isUniformFormatLogHeader(JSON_RECORD), "is UNL"),
+            () -> assertEquals(JSONLogFormatter.class.getName(), detector.detectFormatter(JSON_RECORD))
         );
     }
 
     @Test
     public void odl() {
         assertAll(
-            () -> assertFalse(helper.isJSONFormatLogHeader(ODL_RECORD), "is json"),
-            () -> assertTrue(helper.isODLFormatLogHeader(ODL_RECORD), "is ODL"),
-            () -> assertFalse(helper.isOneLineLFormatLogHeader(ODL_RECORD), "is OneLine"),
-            () -> assertFalse(helper.isUniformFormatLogHeader(ODL_RECORD), "is UNL"),
-            () -> assertEquals(ODLLogFormatter.class.getName(), helper.detectFormatter(ODL_RECORD))
+            () -> assertFalse(detector.isJSONFormatLogHeader(ODL_RECORD), "is json"),
+            () -> assertTrue(detector.isODLFormatLogHeader(ODL_RECORD), "is ODL"),
+            () -> assertFalse(detector.isOneLineLFormatLogHeader(ODL_RECORD), "is OneLine"),
+            () -> assertFalse(detector.isUniformFormatLogHeader(ODL_RECORD), "is UNL"),
+            () -> assertEquals(ODLLogFormatter.class.getName(), detector.detectFormatter(ODL_RECORD))
         );
     }
 
     @Test
     public void oneline() {
         assertAll(
-            () -> assertFalse(helper.isJSONFormatLogHeader(ONELINE_RECORD), "is json"),
-            () -> assertFalse(helper.isODLFormatLogHeader(ONELINE_RECORD), "is ODL"),
-            () -> assertTrue(helper.isOneLineLFormatLogHeader(ONELINE_RECORD), "is OneLine"),
-            () -> assertFalse(helper.isUniformFormatLogHeader(ONELINE_RECORD), "is UNL"),
-            () -> assertEquals(OneLineFormatter.class.getName(), helper.detectFormatter(ONELINE_RECORD))
+            () -> assertFalse(detector.isJSONFormatLogHeader(ONELINE_RECORD), "is json"),
+            () -> assertFalse(detector.isODLFormatLogHeader(ONELINE_RECORD), "is ODL"),
+            () -> assertTrue(detector.isOneLineLFormatLogHeader(ONELINE_RECORD), "is OneLine"),
+            () -> assertFalse(detector.isUniformFormatLogHeader(ONELINE_RECORD), "is UNL"),
+            () -> assertEquals(OneLineFormatter.class.getName(), detector.detectFormatter(ONELINE_RECORD))
         );
     }
 
     @Test
     public void uniform() {
         assertAll(
-            () -> assertFalse(helper.isJSONFormatLogHeader(ULF_RECORD), "is json"),
-            () -> assertFalse(helper.isODLFormatLogHeader(ULF_RECORD), "is ODL"),
-            () -> assertFalse(helper.isOneLineLFormatLogHeader(ULF_RECORD), "is OneLine"),
-            () -> assertTrue(helper.isUniformFormatLogHeader(ULF_RECORD), "is UNL"),
-            () -> assertEquals(UniformLogFormatter.class.getName(), helper.detectFormatter(ULF_RECORD))
+            () -> assertFalse(detector.isJSONFormatLogHeader(ULF_RECORD), "is json"),
+            () -> assertFalse(detector.isODLFormatLogHeader(ULF_RECORD), "is ODL"),
+            () -> assertFalse(detector.isOneLineLFormatLogHeader(ULF_RECORD), "is OneLine"),
+            () -> assertTrue(detector.isUniformFormatLogHeader(ULF_RECORD), "is UNL"),
+            () -> assertEquals(UniformLogFormatter.class.getName(), detector.detectFormatter(ULF_RECORD))
         );
     }
 
     @Test
     public void unknown() {
         assertAll(
-            () -> assertFalse(helper.isJSONFormatLogHeader(RANDOM_RECORD), "is json"),
-            () -> assertFalse(helper.isODLFormatLogHeader(RANDOM_RECORD), "is ODL"),
-            () -> assertFalse(helper.isOneLineLFormatLogHeader(RANDOM_RECORD), "is OneLine"),
-            () -> assertFalse(helper.isUniformFormatLogHeader(RANDOM_RECORD), "is UNL"),
-            () -> assertEquals(LogFormatDetector.UNKNOWN_FORMAT, helper.detectFormatter(RANDOM_RECORD))
+            () -> assertFalse(detector.isJSONFormatLogHeader(RANDOM_RECORD), "is json"),
+            () -> assertFalse(detector.isODLFormatLogHeader(RANDOM_RECORD), "is ODL"),
+            () -> assertFalse(detector.isOneLineLFormatLogHeader(RANDOM_RECORD), "is OneLine"),
+            () -> assertFalse(detector.isUniformFormatLogHeader(RANDOM_RECORD), "is UNL"),
+            () -> assertNull(detector.detectFormatter(RANDOM_RECORD))
         );
     }
 }

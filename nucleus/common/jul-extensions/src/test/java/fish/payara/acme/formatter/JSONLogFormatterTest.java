@@ -41,8 +41,8 @@
 package fish.payara.acme.formatter;
 
 import fish.payara.jul.env.LoggingSystemEnvironment;
-import fish.payara.jul.formatter.JSONLogFormatter;
 import fish.payara.jul.formatter.ExcludeFieldsSupport.SupplementalAttribute;
+import fish.payara.jul.formatter.JSONLogFormatter;
 import fish.payara.jul.record.EnhancedLogRecord;
 
 import java.util.Arrays;
@@ -58,6 +58,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static fish.payara.jul.formatter.LogFormatDetector.P_TIME;
+import static fish.payara.jul.formatter.LogFormatDetector.P_TIMESTAMP;
 import static java.util.Collections.singletonMap;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.StringContains.containsString;
@@ -71,9 +73,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
  */
 public class JSONLogFormatterTest {
 
-    private static final String P_TIME = "\\d\\d:\\d\\d:\\d\\d.\\d\\d\\d";
-    private static final String P_TIMEZONE = "[0-9:.+-]{6}";
-    private static final String P_TIMESTAMP = "[0-9]{4}\\-[0-9]{2}\\-[0-9]{2}T" + P_TIME + P_TIMEZONE;
     private String backupProductId;
     private boolean backupReleaseParametersEarly;
 

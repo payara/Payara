@@ -42,8 +42,8 @@ package fish.payara.acme.formatter;
 
 import fish.payara.jul.env.LoggingSystemEnvironment;
 import fish.payara.jul.formatter.AnsiColor;
-import fish.payara.jul.formatter.UniformLogFormatter;
 import fish.payara.jul.formatter.ExcludeFieldsSupport.SupplementalAttribute;
+import fish.payara.jul.formatter.UniformLogFormatter;
 import fish.payara.jul.record.EnhancedLogRecord;
 
 import java.util.Arrays;
@@ -58,6 +58,12 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static fish.payara.jul.formatter.LogFormatDetector.P_LEVEL_NAME;
+import static fish.payara.jul.formatter.LogFormatDetector.P_LEVEL_VALUE;
+import static fish.payara.jul.formatter.LogFormatDetector.P_LOGGER_NAME;
+import static fish.payara.jul.formatter.LogFormatDetector.P_PRODUCT_ID;
+import static fish.payara.jul.formatter.LogFormatDetector.P_TIME;
+import static fish.payara.jul.formatter.LogFormatDetector.P_TIMESTAMP;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
@@ -73,21 +79,14 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
  */
 public class UniformLogFormatterTest {
 
-    private static final String P_TIME = "\\d\\d:\\d\\d:\\d\\d.\\d\\d\\d";
-    private static final String P_TIMEZONE = "[0-9:.+-]{6}";
-    private static final String P_LEVEL_NAME = "[A-Z]+";
-    private static final String P_LEVEL_VALUE = "[0-9]{3,4}";
-    private static final String P_LOGGER_NAME = "[a-z.]*";
-    private static final String P_MESSAGE_KEY = "(;_MessageID=[a-zA-Z0-9.]+)*";
-    private static final String P_PRODUCT_ID = ".*";
-    private static final String P_TIMESTAMP = "[0-9]{4}\\-[0-9]{2}\\-[0-9]{2}T" + P_TIME + P_TIMEZONE;
+    private static final String P_MESSAGE_KEY_ENTRY = "(;_MessageID=[a-zA-Z0-9.]+)*";
 
     private static final Pattern PATTERN_MULTILINE = Pattern.compile(
         "\\[#\\|" + P_TIMESTAMP
         + "\\|" + P_LEVEL_NAME
         + "\\|" + P_PRODUCT_ID
         + "\\|" + P_LOGGER_NAME
-        + "\\|_ThreadID=1;_ThreadName=main;_TimeMillis=[0-9]+;_LevelValue=" + P_LEVEL_VALUE + P_MESSAGE_KEY + ";"
+        + "\\|_ThreadID=1;_ThreadName=main;_TimeMillis=[0-9]+;_LevelValue=" + P_LEVEL_VALUE + P_MESSAGE_KEY_ENTRY + ";"
         + "\\|.*"
     );
     private static final Pattern PATTERN_SINGLELINE = Pattern.compile(
@@ -95,7 +94,7 @@ public class UniformLogFormatterTest {
         + "\\|" + P_LEVEL_NAME
         + "\\|" + P_PRODUCT_ID
         + "\\|" + P_LOGGER_NAME
-        + "\\|_ThreadID=1;_ThreadName=main;_TimeMillis=[0-9]+;_LevelValue=" + P_LEVEL_VALUE + P_MESSAGE_KEY + ";"
+        + "\\|_ThreadID=1;_ThreadName=main;_TimeMillis=[0-9]+;_LevelValue=" + P_LEVEL_VALUE + P_MESSAGE_KEY_ENTRY + ";"
         + ".+"
     );
 
@@ -138,7 +137,7 @@ public class UniformLogFormatterTest {
         assertAll(
             () -> assertThat(lines, arrayWithSize(2)),
             () -> assertThat(lines[0], matchesPattern(PATTERN_MULTILINE)),
-            () -> assertThat(lines[0], stringContainsInOrder("0|INFO|||_ThreadID=", "main;_TimeMillis=", "_LevelValue=800;|")),
+            () -> assertThat(lines[0], stringContainsInOrder("|INFO|||_ThreadID=", "main;_TimeMillis=", "_LevelValue=800;|")),
             () -> assertThat(lines[1], equalTo("  Ok, this works!|#]"))
         );
     }
@@ -155,7 +154,7 @@ public class UniformLogFormatterTest {
         assertAll(
             () -> assertThat(lines, arrayWithSize(2)),
             () -> assertThat(lines[0], matchesPattern(PATTERN_MULTILINE)),
-            () -> assertThat(lines[0], stringContainsInOrder("0|INFO|||_ThreadID=", "main;_TimeMillis=", "_LevelValue=800;|Ok!")),
+            () -> assertThat(lines[0], stringContainsInOrder("|INFO|||_ThreadID=", "main;_TimeMillis=", "_LevelValue=800;|Ok!")),
             () -> assertThat(lines[1], equalTo("This works!|#]"))
         );
     }
@@ -181,7 +180,7 @@ public class UniformLogFormatterTest {
             () -> assertThat(lines, arrayWithSize(1)),
             () -> assertThat(lines[0], matchesPattern(PATTERN_SINGLELINE)),
             () -> assertThat(lines[0], stringContainsInOrder(
-                "0|INFO|PAYARA TEST|the.test.logger|_ThreadID=",
+                "|INFO|PAYARA TEST|the.test.logger|_ThreadID=",
                 ";_ThreadName=main;_TimeMillis=",
                 ";_LevelValue=800;ClassName=fish.payara.FakeClass;MethodName=fakeMethod;RecordNumber=",
                 ";|" + message + "|#]"))
@@ -211,7 +210,7 @@ public class UniformLogFormatterTest {
             () -> assertThat(lines, arrayWithSize(2)),
             () -> assertThat(lines[0], stringContainsInOrder(
                 "[#|20",
-                "0|" + AnsiColor.BOLD_INTENSE_RED + "SEVERE" + AnsiColor.RESET
+                "|" + AnsiColor.BOLD_INTENSE_RED + "SEVERE" + AnsiColor.RESET
                 + "||" + AnsiColor.BOLD_INTENSE_WHITE + "the.test.logger" + AnsiColor.RESET
                 + "|_ThreadID=1;_ThreadName=main;_TimeMillis=",
                 ";_LevelValue=1000;_MessageID=error.message.key.ok;|")),
@@ -232,7 +231,7 @@ public class UniformLogFormatterTest {
         assertAll(
             () -> assertThat(lines, arrayWithSize(greaterThan(20))),
             () -> assertThat(lines[0], stringContainsInOrder(
-                    "0|SEVERE|||_ThreadID=",";_ThreadName=","_TimeMillis=", "LevelValue=1000;|Failure!")),
+                    "|SEVERE|||_ThreadID=",";_ThreadName=","_TimeMillis=", "LevelValue=1000;|Failure!")),
             () -> assertThat(lines[1], equalTo("java.lang.RuntimeException: Ooops!"))
         );
     }
