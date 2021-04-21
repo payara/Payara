@@ -111,33 +111,22 @@ public class OpenApiService {
         final String contextRoot = descriptor.getContextRoot();
         final ReadableArchive archive = ctx.getSource();
         final ClassLoader classLoader = ctx.getClassLoader();
-
-        if (this.enabled) {
-            documents.put(applicationId, new OpenAPISupplier(applicationId, contextRoot, archive, classLoader));
-        }
+        documents.put(applicationId, new OpenAPISupplier(applicationId, contextRoot, archive, classLoader));
         cachedResult = null;
     }
 
     public void deregisterApp(String applicationId) {
-        if (documents.get(applicationId) != null) {
-            documents.remove(applicationId);
-        }
+        documents.remove(applicationId);
         cachedResult = null;
     }
 
     public void resumeApp(String applicationId) {
-        OpenAPISupplier supplier=documents.get(applicationId);
-        if (supplier != null) {
-            supplier.setEnabled(true);
-        }
+        documents.get(applicationId).setEnabled(true);
         cachedResult = null;
     }
 
     public void suspendApp(String applicationId) {
-        OpenAPISupplier supplier=documents.get(applicationId);
-        if (supplier != null) {
-            supplier.setEnabled(false);
-        }
+        documents.get(applicationId).setEnabled(false);
         cachedResult = null;
     }
 

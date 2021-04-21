@@ -55,6 +55,9 @@ import java.util.logging.Logger;
 import org.glassfish.config.support.TranslatedConfigView;
 import org.glassfish.internal.api.Globals;
 
+import java.util.Set;
+import java.util.HashSet;
+
 /**
  *
  * @author steve
@@ -85,6 +88,20 @@ public class PasswordAliasConfigSource extends PayaraConfigSource {
         }
         return properties;
     }
+
+    @Override
+    public Set<String> getPropertyNames() {
+        Set<String> propertyNames = new HashSet<>();
+        if (store != null) {
+            Iterator<String> keys = store.keys();
+            while (keys.hasNext()){
+                String key = keys.next();
+                propertyNames.add(key);
+            }
+        }
+        return propertyNames;
+    }
+
 
     @Override
     public String getValue(String name) {
