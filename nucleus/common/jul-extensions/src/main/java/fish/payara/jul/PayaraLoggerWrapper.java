@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) 2020-2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -49,6 +49,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * Special {@link PayaraLogger} for system loggers which have non-standard behavior.
+ *
  * @author David Matejcek
  */
 class PayaraLoggerWrapper extends PayaraLogger {
@@ -56,7 +58,7 @@ class PayaraLoggerWrapper extends PayaraLogger {
     private final Logger logger;
 
 
-    public PayaraLoggerWrapper(final Logger logger) {
+    PayaraLoggerWrapper(final Logger logger) {
         super(logger.getName());
         this.logger = logger;
         // warn: jul uses setters, but instead of getters it uses fields directly.

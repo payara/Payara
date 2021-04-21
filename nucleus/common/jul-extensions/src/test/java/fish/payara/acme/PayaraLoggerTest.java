@@ -40,7 +40,6 @@
 
 package fish.payara.acme;
 
-import fish.payara.acme.handler.LogCollectorHandlerTest;
 import fish.payara.jul.PayaraLogger;
 import fish.payara.jul.handler.LogCollectorHandler;
 import fish.payara.jul.record.EnhancedLogRecord;
@@ -80,10 +79,10 @@ public class PayaraLoggerTest {
     public static void initEnv() throws Exception {
         PayaraLoggingTracer.setTracingEnabled(true);
         LogManager.getLogManager().reset();
-        final Logger originalLogger = Logger.getLogger(LogCollectorHandlerTest.class.getName());
+        final Logger originalLogger = Logger.getLogger(PayaraLoggerTest.class.getName());
         originalLogger.setResourceBundle(new TestResourceBundle());
         handler = new LogCollectorHandler(originalLogger);
-        logger = new PayaraLogger(originalLogger);
+        logger = (PayaraLogger) Logger.getLogger(originalLogger.getName());
         logger.setLevel(Level.FINEST);
     }
 

@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) 2020-2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -63,6 +63,11 @@ import static java.util.Objects.requireNonNull;
 
 
 /**
+ * Custom {@link Logger}, integrated with {@link PayaraLogManager}, so if the log manager is reconfiguring,
+ * the logger reacts on states of the log manager. Then log records can be redirected to a startup queue
+ * (if the logging is not configured or is reconfiguring) or the calling thread is blocked until the log
+ * manager finishes flushing of the queue) or processed as usually.
+ *
  * @author David Matejcek
  */
 public class PayaraLogger extends Logger {
@@ -70,12 +75,22 @@ public class PayaraLogger extends Logger {
     private static final MessageResolver MSG_RESOLVER = new MessageResolver();
     private static final Function<Logger, Stream<Handler>> LOGER_TO_HANDLER = x -> Arrays.stream(x.getHandlers());
 
-
+    /**
+     * Creates a logger without predefined resource bundle.
+     *
+     * @param name a logger name
+     */
     protected PayaraLogger(final String name) {
         super(name, null);
     }
 
-    public PayaraLogger(final Logger logger) {
+
+    /**
+     * Creates a copy of the logger. Used just in PayaraLogManager for default system loggers.
+     *
+     * @param logger
+     */
+    PayaraLogger(final Logger logger) {
         // resource bundle name is taken from the set resource bundle
         super(requireNonNull(logger, "logger is null!").getName(), null);
         setLevel(logger.getLevel());
@@ -147,32 +162,26 @@ public class PayaraLogger extends Logger {
     @Override
     public void log(final Level level, final String msg) {
         final PayaraLoggingStatus status = getLoggingStatus();
-        if (!isLoggable(level, status)) {
+        if (!isProcessible(level, status)) {
             return;
         }
-        final boolean processNow = isReady(status);
-        if (processNow || isToQueue(status)) {
-            final LogRecord record = new EnhancedLogRecord(level, msg);
-            record.setLoggerName(getName());
-            record.setResourceBundle(getResourceBundle());
-            record.setResourceBundleName(getResourceBundleName());
-            logOrQueue(processNow, record);
-        }
+        final LogRecord record = new EnhancedLogRecord(level, msg);
+        record.setLoggerName(getName());
+        record.setResourceBundle(getResourceBundle());
+        record.setResourceBundleName(getResourceBundleName());
+        logOrQueue(record);
     }
 
 
     @Override
     public void log(final Level level, final Supplier<String> msgSupplier) {
         final PayaraLoggingStatus status = getLoggingStatus();
-        if (!isLoggable(level, status)) {
+        if (!isProcessible(level, status)) {
             return;
         }
-        final boolean processNow = isReady(status);
-        if (processNow || isToQueue(status)) {
-            final LogRecord record = new EnhancedLogRecord(level, msgSupplier.get());
-            record.setLoggerName(getName());
-            logOrQueue(processNow, record);
-        }
+        final LogRecord record = new EnhancedLogRecord(level, msgSupplier.get());
+        record.setLoggerName(getName());
+        logOrQueue(record);
     }
 
 
@@ -185,65 +194,53 @@ public class PayaraLogger extends Logger {
     @Override
     public void log(final Level level, final String msg, final Object[] params) {
         final PayaraLoggingStatus status = getLoggingStatus();
-        if (!isLoggable(level, status)) {
+        if (!isProcessible(level, status)) {
             return;
         }
-        final boolean processNow = isReady(status);
-        if (processNow || isToQueue(status)) {
-            final LogRecord record = new EnhancedLogRecord(level, msg);
-            record.setLoggerName(getName());
-            record.setResourceBundle(getResourceBundle());
-            record.setResourceBundleName(getResourceBundleName());
-            record.setParameters(params);
-            logOrQueue(processNow, record);
-        }
+        final LogRecord record = new EnhancedLogRecord(level, msg);
+        record.setLoggerName(getName());
+        record.setResourceBundle(getResourceBundle());
+        record.setResourceBundleName(getResourceBundleName());
+        record.setParameters(params);
+        logOrQueue(record);
     }
 
 
     @Override
     public void log(final Level level, final String msg, final Throwable thrown) {
         final PayaraLoggingStatus status = getLoggingStatus();
-        if (!isLoggable(level, status)) {
+        if (!isProcessible(level, status)) {
             return;
         }
-        final boolean processNow = isReady(status);
-        if (processNow || isToQueue(status)) {
-            final LogRecord record = new EnhancedLogRecord(level, msg);
-            record.setLoggerName(getName());
-            record.setResourceBundle(getResourceBundle());
-            record.setResourceBundleName(getResourceBundleName());
-            record.setThrown(thrown);
-            logOrQueue(processNow, record);
-        }
+        final LogRecord record = new EnhancedLogRecord(level, msg);
+        record.setLoggerName(getName());
+        record.setResourceBundle(getResourceBundle());
+        record.setResourceBundleName(getResourceBundleName());
+        record.setThrown(thrown);
+        logOrQueue(record);
     }
 
 
     @Override
     public void log(final Level level, final Throwable thrown, final Supplier<String> msgSupplier) {
         final PayaraLoggingStatus status = getLoggingStatus();
-        if (!isLoggable(level, status)) {
+        if (!isProcessible(level, status)) {
             return;
         }
-        final boolean processNow = isReady(status);
-        if (processNow || isToQueue(status)) {
-            final LogRecord record = new EnhancedLogRecord(level, msgSupplier.get());
-            record.setLoggerName(getName());
-            record.setThrown(thrown);
-            logOrQueue(processNow, record);
-        }
+        final LogRecord record = new EnhancedLogRecord(level, msgSupplier.get());
+        record.setLoggerName(getName());
+        record.setThrown(thrown);
+        logOrQueue(record);
     }
 
 
     @Override
     public void logp(final Level level, final String sourceClass, final String sourceMethod, final String msg) {
         final PayaraLoggingStatus status = getLoggingStatus();
-        if (!isLoggable(level, status)) {
+        if (!isProcessible(level, status)) {
             return;
         }
-        final boolean processNow = isReady(status);
-        if (processNow || isToQueue(status)) {
-            logOrQueue(processNow, level, sourceClass, sourceMethod, msg, null);
-        }
+        logOrQueue(level, sourceClass, sourceMethod, msg, null);
     }
 
 
@@ -251,13 +248,10 @@ public class PayaraLogger extends Logger {
     public void logp(final Level level, final String sourceClass, final String sourceMethod,
         final Supplier<String> msgSupplier) {
         final PayaraLoggingStatus status = getLoggingStatus();
-        if (!isLoggable(level, status)) {
+        if (!isProcessible(level, status)) {
             return;
         }
-        final boolean processNow = isReady(status);
-        if (processNow || isToQueue(status)) {
-            logOrQueue(processNow, level, sourceClass, sourceMethod, msgSupplier.get(), null);
-        }
+        logOrQueue(level, sourceClass, sourceMethod, msgSupplier.get(), null);
     }
 
 
@@ -265,13 +259,10 @@ public class PayaraLogger extends Logger {
     public void logp(final Level level, final String sourceClass, final String sourceMethod, final String msg,
         final Object param) {
         final PayaraLoggingStatus status = getLoggingStatus();
-        if (!isLoggable(level, status)) {
+        if (!isProcessible(level, status)) {
             return;
         }
-        final boolean processNow = isReady(status);
-        if (processNow || isToQueue(status)) {
-            logOrQueue(processNow, level, sourceClass, sourceMethod, msg, null, param);
-        }
+        logOrQueue(level, sourceClass, sourceMethod, msg, null, param);
     }
 
 
@@ -280,13 +271,10 @@ public class PayaraLogger extends Logger {
     public void logp(final Level level, final String sourceClass, final String sourceMethod, final String msg,
         final Object[] params) {
         final PayaraLoggingStatus status = getLoggingStatus();
-        if (!isLoggable(level, status)) {
+        if (!isProcessible(level, status)) {
             return;
         }
-        final boolean processNow = isReady(status);
-        if (processNow || isToQueue(status)) {
-            logOrQueue(processNow, level, sourceClass, sourceMethod, msg, null, params);
-        }
+        logOrQueue(level, sourceClass, sourceMethod, msg, null, params);
     }
 
 
@@ -294,13 +282,10 @@ public class PayaraLogger extends Logger {
     public void logp(final Level level, final String sourceClass, final String sourceMethod, final String msg,
         final Throwable thrown) {
         final PayaraLoggingStatus status = getLoggingStatus();
-        if (!isLoggable(level, status)) {
+        if (!isProcessible(level, status)) {
             return;
         }
-        final boolean processNow = isReady(status);
-        if (processNow || isToQueue(status)) {
-            logOrQueue(processNow, level, sourceClass, sourceMethod, msg, thrown);
-        }
+        logOrQueue(level, sourceClass, sourceMethod, msg, thrown);
     }
 
 
@@ -308,13 +293,10 @@ public class PayaraLogger extends Logger {
     public void logp(final Level level, final String sourceClass, final String sourceMethod, final Throwable thrown,
         final Supplier<String> msgSupplier) {
         final PayaraLoggingStatus status = getLoggingStatus();
-        if (!isLoggable(level, status)) {
+        if (!isProcessible(level, status)) {
             return;
         }
-        final boolean processNow = isReady(status);
-        if (processNow || isToQueue(status)) {
-            logOrQueue(processNow, level, sourceClass, sourceMethod, msgSupplier.get(), thrown);
-        }
+        logOrQueue(level, sourceClass, sourceMethod, msgSupplier.get(), thrown);
     }
 
 
@@ -322,22 +304,19 @@ public class PayaraLogger extends Logger {
     public void logrb(final Level level, final String sourceClass, final String sourceMethod,
         final ResourceBundle bundle, final String msg, final Object... params) {
         final PayaraLoggingStatus status = getLoggingStatus();
-        if (!isLoggable(level, status)) {
+        if (!isProcessible(level, status)) {
             return;
         }
-        final boolean processNow = isReady(status);
-        if (processNow || isToQueue(status)) {
-            final LogRecord record = new EnhancedLogRecord(level, msg, false);
-            record.setLoggerName(getName());
-            record.setSourceClassName(sourceClass);
-            record.setSourceMethodName(sourceMethod);
-            record.setParameters(params);
-            if (bundle != null) {
-                record.setResourceBundleName(bundle.getBaseBundleName());
-                record.setResourceBundle(bundle);
-            }
-            logOrQueue(processNow, record);
+        final LogRecord record = new EnhancedLogRecord(level, msg, false);
+        record.setLoggerName(getName());
+        record.setSourceClassName(sourceClass);
+        record.setSourceMethodName(sourceMethod);
+        record.setParameters(params);
+        if (bundle != null) {
+            record.setResourceBundleName(bundle.getBaseBundleName());
+            record.setResourceBundle(bundle);
         }
+        logOrQueue(record);
     }
 
 
@@ -345,38 +324,31 @@ public class PayaraLogger extends Logger {
     public void logrb(final Level level, final String sourceClass, final String sourceMethod,
         final ResourceBundle bundle, final String msg, final Throwable thrown) {
         final PayaraLoggingStatus status = getLoggingStatus();
-        if (!isLoggable(level, status)) {
+        if (!isProcessible(level, status)) {
             return;
         }
-        final boolean processNow = isReady(status);
-        if (processNow || isToQueue(status)) {
-            final LogRecord record = new EnhancedLogRecord(level, msg, false);
-            record.setLoggerName(getName());
-            record.setSourceClassName(sourceClass);
-            record.setSourceMethodName(sourceMethod);
-            record.setThrown(thrown);
-            if (bundle != null) {
-                record.setResourceBundleName(bundle.getBaseBundleName());
-                record.setResourceBundle(bundle);
-            }
-            logOrQueue(processNow, record);
+        final LogRecord record = new EnhancedLogRecord(level, msg, false);
+        record.setLoggerName(getName());
+        record.setSourceClassName(sourceClass);
+        record.setSourceMethodName(sourceMethod);
+        record.setThrown(thrown);
+        if (bundle != null) {
+            record.setResourceBundleName(bundle.getBaseBundleName());
+            record.setResourceBundle(bundle);
         }
+        logOrQueue(record);
     }
 
 
     @Override
     public void entering(final String sourceClass, final String sourceMethod, final Object[] params) {
         final PayaraLoggingStatus status = getLoggingStatus();
-        if (!isLoggable(Level.FINER, status)) {
+        if (!isProcessible(Level.FINER, status)) {
             return;
         }
         String msg = "ENTRY";
         if (params == null || params.length == 0) {
             logp(Level.FINER, sourceClass, sourceMethod, msg);
-            return;
-        }
-        final boolean processNow = isReady(status);
-        if (!processNow && !isToQueue(status)) {
             return;
         }
         // ' {i}' are 4 characters per parameter. Methods with many parameters will inflate.
@@ -397,18 +369,10 @@ public class PayaraLogger extends Logger {
     @Override
     public void log(final LogRecord record) {
         final PayaraLoggingStatus status = getLoggingStatus();
-        // Logging not configured yet, don't block client, but buffer the record
-        // to be formatted on completely configured system.
-        if (isToQueue(status)) {
-            StartupQueue.getInstance().add(this, record);
+        if (!isProcessible(record.getLevel(), status)) {
             return;
         }
-        // Logging is configured, but now flushes buffers, we have to wait
-        // to avoid racing with buffers
-        while (status == PayaraLoggingStatus.FLUSHING_BUFFERS) {
-            Thread.yield();
-        }
-        checkAndLog(record);
+        logOrQueue(record);
     }
 
 
@@ -421,7 +385,7 @@ public class PayaraLogger extends Logger {
      */
     @Override
     public boolean isLoggable(final Level level) {
-        return isLoggable(level, getLoggingStatus());
+        return isProcessible(level, getLoggingStatus());
     }
 
 
@@ -430,10 +394,8 @@ public class PayaraLogger extends Logger {
      * @param status the state of the logging system
      * @return true if the given message level is currently being logged or if we don't know yet.
      */
-    protected boolean isLoggable(final Level level, final PayaraLoggingStatus status) {
-        // if it is to queue, we cannot decide it for now, but
-        // we will check again later when processing the queue
-        return isLoggableLevel(level) || isToQueue(status);
+    protected boolean isProcessible(final Level level, final PayaraLoggingStatus status) {
+        return isLoggableLevel(level) || !isLevelResolutionPossible(status);
     }
 
 
@@ -446,8 +408,13 @@ public class PayaraLogger extends Logger {
     }
 
 
-    private boolean isReady(final PayaraLoggingStatus status) {
-        return status == PayaraLoggingStatus.FULL_SERVICE || status == PayaraLoggingStatus.FLUSHING_BUFFERS;
+    private boolean isFullService(final PayaraLoggingStatus status) {
+        return status == PayaraLoggingStatus.FULL_SERVICE;
+    }
+
+
+    private boolean isLevelResolutionPossible(final PayaraLoggingStatus status) {
+        return status == PayaraLoggingStatus.FLUSHING_BUFFERS || status == PayaraLoggingStatus.FULL_SERVICE;
     }
 
 
@@ -493,13 +460,13 @@ public class PayaraLogger extends Logger {
 
     private PayaraLoggingStatus getLoggingStatus() {
         if (PayaraLogManager.isPayaraLogManager()) {
-            PayaraLogManager.getLogManager().getLoggingStatus();
+            return PayaraLogManager.getLogManager().getLoggingStatus();
         }
         return PayaraLoggingStatus.FULL_SERVICE;
     }
 
 
-    private void logOrQueue(final boolean processNow, final Level level, final String sourceClass,
+    private void logOrQueue(final Level level, final String sourceClass,
         final String sourceMethod, final String msg, final Throwable thrown, final Object... params) {
         final LogRecord record = new EnhancedLogRecord(level, msg, false);
         record.setLoggerName(getName());
@@ -509,16 +476,23 @@ public class PayaraLogger extends Logger {
         record.setSourceMethodName(sourceMethod);
         record.setThrown(thrown);
         record.setParameters(params);
-        logOrQueue(processNow, record);
+        logOrQueue(record);
     }
 
 
-    private void logOrQueue(final boolean processNow, final LogRecord record) {
-        if (processNow) {
+    private void logOrQueue(final LogRecord record) {
+        final PayaraLoggingStatus status = getLoggingStatus();
+        if (isFullService(status)) {
             checkAndLog(record);
-        } else {
-            // isToQueue had to be true here
+            return;
+        }
+        if (isToQueue(status)) {
             StartupQueue.getInstance().add(this, record);
+        } else {
+            while (!isFullService(getLoggingStatus())) {
+                Thread.yield();
+            }
+            checkAndLog(record);
         }
     }
 }

@@ -137,7 +137,7 @@ public class PayaraLogManagerTest {
             () -> assertSame(customLogger, logManager.getLogger(loggerName), "LogManager.getLogger"),
             () -> assertSame(logManager.getLogger(loggerName), Logger.getLogger(loggerName), "getLogger results"),
             () -> assertFalse(logManager.addLogger(new CustomLogger(Logger.GLOBAL_LOGGER_NAME)), "add as global"),
-            () -> assertFalse(logManager.addLogger(new PayaraLogger(logManager.getRootLogger())), "add as root"),
+            () -> assertFalse(logManager.addLogger(Logger.getLogger(logManager.getRootLogger().getName())), "add as root"),
             () -> assertFalse(logManager.addLogger(customLogger), "added for the second time"),
             () -> assertThrows(NullPointerException.class,
                 () -> logManager.addLogger(Logger.getAnonymousLogger()), "add anonymous")
