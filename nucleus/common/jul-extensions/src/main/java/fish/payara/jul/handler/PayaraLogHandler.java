@@ -385,7 +385,6 @@ public class PayaraLogHandler extends StreamHandler implements ExternallyManaged
 
     private void initStandardStreamsLogging() {
         trace(PayaraLogHandler.class, "initStandardStreamsLogging()");
-        // FIXME: capacity should be configurable
         this.stdoutStream = LoggingPrintStream.create(STDOUT_LOGGER, INFO, 5000);
         this.stderrStream = LoggingPrintStream.create(STDERR_LOGGER, SEVERE, 1000);
         System.setOut(this.stdoutStream);

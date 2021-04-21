@@ -61,7 +61,3 @@
                 org.glassfish.admin.amx.impl.cmd; \
                 org.glassfish.admin.amx.impl.config.*; \
                 version=${project.osgi.version}
-
-Import-Package: \
-          fish.payara.jul.*; resolution:=optional, \
-          *

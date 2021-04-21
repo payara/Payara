@@ -51,7 +51,6 @@ import java.util.logging.LogRecord;
  *
  * @author David Matejcek
  */
-// FIXME: it would be better to explicitly say the PLM to wait OR log reason of waiting after reconfig
 public class BlockingExternallyManagedLogHandler extends Handler implements ExternallyManagedLogHandler {
 
     @Override

@@ -52,7 +52,7 @@
     <artifactId>glassfish-extra-jre-packages</artifactId>
     <name>GlassFish Extra JRE Packages</name>
     <description>This bundle extends System Bundle to provide access to additional classes available in JRE</description>
-    
+
     <developers>
         <developer>
             <id>ss141213</id>
@@ -63,7 +63,7 @@
             </roles>
         </developer>
     </developers>
-    
+
     <build>
         <plugins>
             <plugin>
@@ -125,6 +125,13 @@
                                     com.sun.security.auth.callback,
                                     com.sun.tools.apt,
                                     com.sun.tools.javac,
+                                    fish.payara.jul,
+                                    fish.payara.jul.cfg,
+                                    fish.payara.jul.env,
+                                    fish.payara.jul.formatter,
+                                    fish.payara.jul.handler,
+                                    fish.payara.jul.record,
+                                    fish.payara.jul.tracing,
                                     org.omg.stub.java.rmi,
                                     org.w3c.dom.css,
                                     org.w3c.dom.html,
