@@ -1186,16 +1186,16 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         defaultResponse.getContent().addMediaType(jakarta.ws.rs.core.MediaType.WILDCARD, mediaType);
 
         // Add responses for the applicable declared exceptions
-//        for (String exceptionType : method.getExceptionTypes()) {
-//            final APIResponseImpl mappedResponse = (APIResponseImpl) context.getMappedExceptionResponses().get(exceptionType);
-//            if (mappedResponse != null) {
-//                final String responseCode = mappedResponse.getResponseCode();
-//                if (responseCode != null) {
-//                    responses.addAPIResponse(responseCode, mappedResponse);
-//                }
-//            }
-//            operation.addExceptionType(exceptionType);
-//        }
+        for (String exceptionType : method.getExceptionTypes()) {
+            final APIResponseImpl mappedResponse = (APIResponseImpl) context.getMappedExceptionResponses().get(exceptionType);
+            if (mappedResponse != null) {
+                final String responseCode = mappedResponse.getResponseCode();
+                if (responseCode != null) {
+                    responses.addAPIResponse(responseCode, mappedResponse);
+                }
+            }
+            operation.addExceptionType(exceptionType);
+        }
     }
 
     /**
