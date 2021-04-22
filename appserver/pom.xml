@@ -76,9 +76,9 @@
         <production_domain_template>production-domain.jar</production_domain_template>
         <version_prefix />
         <version_suffix>#badassfish</version_suffix>
-        <major_version>5</major_version>
+        <major_version>6</major_version>
         <minor_version>2021</minor_version>
-        <update_version>3-SNAPSHOT</update_version>
+        <update_version>1-SNAPSHOT</update_version>
         <install.dir.name>payara${major_version}</install.dir.name>
         <uc-pkg-client.version>1.122-57.2889</uc-pkg-client.version>
         <uc-pkg-bootstrap.version>1.122-57.2889</uc-pkg-bootstrap.version>
