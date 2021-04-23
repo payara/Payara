@@ -107,8 +107,6 @@ public class LogFormatDetector {
      *         null or could not be read.
      */
     public String detectFormatter(final File logFile) {
-        // if it is not readable, better throw an io exception than returning null.
-        // if the file does not exist, null is the right answer.
         if (logFile == null || !logFile.canRead()) {
             return null;
         }

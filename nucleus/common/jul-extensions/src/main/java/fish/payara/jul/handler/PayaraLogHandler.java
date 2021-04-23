@@ -341,9 +341,11 @@ public class PayaraLogHandler extends StreamHandler implements ExternallyManaged
             this.configuration.getMaxArchiveFiles(), this::setOutputStream, super::close);
 
         final Formatter formatter = configuration.getFormatterConfiguration();
-        final String detectedFormatterName = new LogFormatDetector().detectFormatter(configuration.getLogFile());
-        if (detectedFormatterName != null && !formatter.getClass().getName().equals(detectedFormatterName)) {
-            this.logFileManager.roll();
+        if (configuration.getLogFile().length() > 0) {
+            final String detectedFormatterName = new LogFormatDetector().detectFormatter(configuration.getLogFile());
+            if (detectedFormatterName == null || !formatter.getClass().getName().equals(detectedFormatterName)) {
+                this.logFileManager.roll();
+            }
         }
         setFormatter(formatter);
         this.logFileManager.enableOutput();
