@@ -56,6 +56,7 @@ import org.glassfish.internal.api.Globals;
 
 import java.util.Set;
 import java.util.HashSet;
+import java.util.Objects;
 
 /**
  *
@@ -92,9 +93,7 @@ public class PasswordAliasConfigSource extends PayaraConfigSource {
 
     @Override
     public String getValue(String name) {
-        if (name == null || store == null) {
-            return null;
-        }
+        Objects.requireNonNull(name, "Name perameter cannot be null");
 
         String value = null;
 
