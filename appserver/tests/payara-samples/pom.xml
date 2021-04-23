@@ -98,7 +98,7 @@
             </activation>
             <properties>
                 <payara.domain.name>domain1</payara.domain.name>
-                <payara.directory.name>payara5</payara.directory.name>
+                <payara.directory.name>payara6</payara.directory.name>
             </properties>
 
             <dependencies>

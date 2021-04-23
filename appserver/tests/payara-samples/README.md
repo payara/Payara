@@ -23,7 +23,7 @@ Note that any test must have a `@Deployment` since otherwise the tests aren't de
 * `payara-server-remote`: 
   connects to a running server (cannot be micro)
 
-* `payara5`: 
+* `payara6`: 
   downloads, installs and runs tests on a Payara 5 with `{$payara.version}` (use with `-Dpayara-version=???`)
 
 * `payara4`: 

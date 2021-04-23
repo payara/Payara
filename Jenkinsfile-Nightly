@@ -56,7 +56,7 @@ pipeline {
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 sh """mvn -B -V -ff -e clean test -Pall --strict-checksums \
-                -Dglassfish.home=\"${pwd()}/appserver/distributions/payara/target/stage/payara5/glassfish\" \
+                -Dglassfish.home=\"${pwd()}/appserver/distributions/payara/target/stage/payara6/glassfish\" \
                 -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
                 -Djavax.xml.accessExternalSchema=all \
                 -f appserver/tests/quicklook/pom.xml"""
@@ -140,7 +140,7 @@ pipeline {
                     sh """mvn -B -V -ff -e clean install --strict-checksums -Dsurefire.useFile=false \
                     -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
                     -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
-                    -Dsurefire.rerunFailingTestsCount=2 -Ppayara-server-embedded,payara5"""
+                    -Dsurefire.rerunFailingTestsCount=2 -Ppayara-server-embedded,payara6"""
                 }
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
@@ -172,7 +172,7 @@ pipeline {
                     -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
                     -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
                     -Dpayara_domain=${DOMAIN_NAME} \
-                    -Dsurefire.rerunFailingTestsCount=2 -Ppayara-server-remote,stable,payara5"""
+                    -Dsurefire.rerunFailingTestsCount=2 -Ppayara-server-remote,stable,payara6"""
                 }
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
@@ -333,7 +333,7 @@ pipeline {
 void setupDomain() {
     echo '*#*#*#*#*#*#*#*#*#*#*#*#  Setting up tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
     script{
-        ASADMIN = "./appserver/distributions/payara/target/stage/payara5/bin/asadmin"
+        ASADMIN = "./appserver/distributions/payara/target/stage/payara6/bin/asadmin"
         DOMAIN_NAME = "test-domain"
     }
     sh "${ASADMIN} create-domain --nopassword ${DOMAIN_NAME}"
