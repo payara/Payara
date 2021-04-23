@@ -39,7 +39,7 @@ pipeline {
                 success{
                     archiveArtifacts artifacts: 'appserver/distributions/payara/target/payara.zip', fingerprint: true
                     archiveArtifacts artifacts: 'appserver/extras/payara-micro/payara-micro-distribution/target/payara-micro.jar', fingerprint: true
-                    archiveArtifacts allowEmptyArchive: true, artifacts: 'appserver/distributions/payara/target/stage/payara5/glassfish/logs/server.log'
+                    archiveArtifacts allowEmptyArchive: true, artifacts: 'appserver/distributions/payara/target/stage/payara6/glassfish/logs/server.log'
                 }
             }
         }
@@ -53,7 +53,7 @@ pipeline {
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 sh """mvn -B -V -ff -e clean test --strict-checksums -Pall \
-                -Dglassfish.home=\"${pwd()}/appserver/distributions/payara/target/stage/payara5/glassfish\" \
+                -Dglassfish.home=\"${pwd()}/appserver/distributions/payara/target/stage/payara6/glassfish\" \
                 -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
                 -Djavax.xml.accessExternalSchema=all \
                 -f appserver/tests/quicklook/pom.xml"""
@@ -61,7 +61,7 @@ pipeline {
             }
             post {
                 failure {
-                    zip archive: true, dir: "appserver/distributions/payara/target/stage/payara5/glassfish/domains/${DOMAIN_NAME}/logs", glob: 'server.*', zipFile: 'quicklook-log.zip'
+                    zip archive: true, dir: "appserver/distributions/payara/target/stage/payara6/glassfish/domains/${DOMAIN_NAME}/logs", glob: 'server.*', zipFile: 'quicklook-log.zip'
                 }
                 always {
                     junit '**/target/surefire-reports/*.xml'
@@ -76,7 +76,7 @@ pipeline {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 sh """mvn -V -B -ff clean install --strict-checksums -Ppayara-server-managed \
                 -Dpayara.version=${pom.version} \
-                -Dglassfish.home=\"${pwd()}/appserver/distributions/payara/target/stage/payara5/glassfish\" \
+                -Dglassfish.home=\"${pwd()}/appserver/distributions/payara/target/stage/payara6/glassfish\" \
                 -Dpayara_domain=${DOMAIN_NAME} \
                 -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
                 -Djavax.xml.accessExternalSchema=all \
@@ -106,7 +106,7 @@ pipeline {
                 -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
                 -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
                 -Dpayara_domain=${DOMAIN_NAME} -Duse.cnHost=true \
-                -Dsurefire.rerunFailingTestsCount=2 -Ppayara-server-managed,payara5"""
+                -Dsurefire.rerunFailingTestsCount=2 -Ppayara-server-managed,payara6"""
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
@@ -141,7 +141,7 @@ pipeline {
             }
             post {
                 failure {
-                    zip archive: true, dir: "appserver/distributions/payara/target/stage/payara5/glassfish/domains/${DOMAIN_NAME}/logs", glob: 'server.*', zipFile: 'ee8-samples-log.zip'
+                    zip archive: true, dir: "appserver/distributions/payara/target/stage/payara6/glassfish/domains/${DOMAIN_NAME}/logs", glob: 'server.*', zipFile: 'ee8-samples-log.zip'
                 }
                 always {
                     junit '**/target/surefire-reports/*.xml'
@@ -169,7 +169,7 @@ pipeline {
                 sh """mvn -B -V -ff -e clean install --strict-checksums -Dsurefire.useFile=false \
                 -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
                 -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
-                -Dsurefire.rerunFailingTestsCount=2 -Ppayara-server-managed,payara5"""
+                -Dsurefire.rerunFailingTestsCount=2 -Ppayara-server-managed,payara6"""
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
@@ -200,12 +200,12 @@ pipeline {
                 -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
                 -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
                 -Dpayara_domain=${DOMAIN_NAME} -Duse.cnHost=true \
-                -Dsurefire.rerunFailingTestsCount=2 -Ppayara-server-remote,stable,payara5"""
+                -Dsurefire.rerunFailingTestsCount=2 -Ppayara-server-remote,stable,payara6"""
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
                 failure {
-                    zip archive: true, dir: "appserver/distributions/payara/target/stage/payara5/glassfish/domains/${DOMAIN_NAME}/logs", glob: 'server.*', zipFile: 'ee7-samples-log.zip'
+                    zip archive: true, dir: "appserver/distributions/payara/target/stage/payara6/glassfish/domains/${DOMAIN_NAME}/logs", glob: 'server.*', zipFile: 'ee7-samples-log.zip'
                 }
                 always {
                     junit '**/target/surefire-reports/*.xml'
@@ -220,7 +220,7 @@ pipeline {
 
 void makeDomain() {
     script{
-        ASADMIN = "./appserver/distributions/payara/target/stage/payara5/bin/asadmin"
+        ASADMIN = "./appserver/distributions/payara/target/stage/payara6/bin/asadmin"
         DOMAIN_NAME = "test-domain"
     }
     sh "${ASADMIN} create-domain --nopassword ${DOMAIN_NAME}"
