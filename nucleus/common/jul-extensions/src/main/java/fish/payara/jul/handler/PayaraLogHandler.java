@@ -177,7 +177,8 @@ public class PayaraLogHandler extends StreamHandler implements ExternallyManaged
 
     @Override
     public boolean isReady() {
-        return status == PayaraLogHandlerStatus.ON;
+        // if it ignores all data, they are still processed.
+        return status == PayaraLogHandlerStatus.ON || !this.configuration.isEnabled() ;
     }
 
 
