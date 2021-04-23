@@ -98,6 +98,14 @@ final class StartupQueue {
 
 
     /**
+     * @return actual count of log records.
+     */
+    public int getSize() {
+        return queue.size();
+    }
+
+
+    /**
      * This class is used to bind the {@link LogRecord} and the {@link PayaraLogger}.
      * Instances are comparable by their sequence numbers.
      */

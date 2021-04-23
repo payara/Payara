@@ -406,6 +406,7 @@ public class PayaraLogManager extends LogManager {
      */
     public synchronized void reconfigure(final PayaraLogManagerConfiguration cfg, final Action reconfigureAction,
         final Action flushAction) {
+        final long start = System.nanoTime();
         PayaraLoggingTracer.trace(PayaraLogManager.class, () -> "reconfigure(cfg, action, action); Configuration:\n"
             + cfg + "\n reconfigureAction: " + reconfigureAction + "\n flushAction: " + flushAction);
         if (cfg.isTracingEnabled()) {
@@ -463,11 +464,13 @@ public class PayaraLogManager extends LogManager {
                     }
                 }
                 final StartupQueue queue = StartupQueue.getInstance();
+                PayaraLoggingTracer.trace(getClass(), () -> "Count of records waiting in the queue: " + queue.getSize());
                 queue.toStream().forEach(o -> o.getLogger().checkAndLog(o.getRecord()));
                 queue.reset();
                 setStatus(PayaraLoggingStatus.FULL_SERVICE);
             }
         } finally {
+            PayaraLoggingTracer.trace(getClass(), "Reconfiguration finished in " + (System.nanoTime() - start) + " ns");
             // regardless of the result, set tracing.
             PayaraLoggingTracer.setTracingEnabled(cfg.isTracingEnabled());
         }
