@@ -47,6 +47,9 @@ import jakarta.enterprise.inject.spi.CDI;
 import org.eclipse.microprofile.config.Config;
 import org.glassfish.config.support.TranslatedConfigView;
 
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+
 /**
  *
  * @author Gaurav Gupta
@@ -71,11 +74,24 @@ public final class OpenIdUtil {
         }
         if (type == String.class && isELExpression((String) value)) {
             ELProcessor elProcessor = new ELProcessor();
-            BeanManager beanManager = CDI.current().getBeanManager();
+            BeanManager beanManager = getBeanManagerForCurrentModule();
             elProcessor.getELManager().addELResolver(beanManager.getELResolver());
             result = (T) elProcessor.getValue(toRawExpression((String) result), type);
         }
         return result;
+    }
+
+    private static BeanManager getBeanManagerForCurrentModule() {
+        /*
+         For some reason, CDI.current().getBeanManager() doesn't always return
+         the correct bean manager in EAR, therefore we're using JNDI lookup until this is fixed.
+         See https://lists.jboss.org/pipermail/cdi-dev/2016-April/008185.html
+        */
+        try {
+            return (BeanManager) new InitialContext().lookup("java:comp/BeanManager");
+        } catch (NamingException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     public static boolean isELExpression(String expression) {
