@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2018-2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -47,7 +47,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -65,11 +64,11 @@ import java.util.HashSet;
 public class PasswordAliasConfigSource extends PayaraConfigSource {
 
     private final DomainScopedPasswordAliasStore store;
-    
+
     public PasswordAliasConfigSource() {
         store = Globals.getDefaultHabitat().getService(DomainScopedPasswordAliasStore.class);
     }
-    
+
     @Override
     public int getOrdinal() {
         return Integer.parseInt(configService.getMPConfig().getPasswordOrdinality());
@@ -79,26 +78,14 @@ public class PasswordAliasConfigSource extends PayaraConfigSource {
     @Override
     public Map<String, String> getProperties() {
         Map<String,String> properties = new HashMap<>();
-        if (store != null) {
-            Iterator<String> keys = store.keys();
-            while (keys.hasNext()){
-                String key = keys.next();
-                properties.put(key, new String(store.get(key)));
-            }
-        }
+        store.keys().forEachRemaining(key -> properties.put(key, new String(store.get(key))));
         return properties;
     }
 
     @Override
     public Set<String> getPropertyNames() {
         Set<String> propertyNames = new HashSet<>();
-        if (store != null) {
-            Iterator<String> keys = store.keys();
-            while (keys.hasNext()){
-                String key = keys.next();
-                propertyNames.add(key);
-            }
-        }
+        store.keys().forEachRemaining(propertyNames::add);
         return propertyNames;
     }
 
@@ -136,5 +123,4 @@ public class PasswordAliasConfigSource extends PayaraConfigSource {
     public String getName() {
         return "Password Alias";
     }
-    
 }
