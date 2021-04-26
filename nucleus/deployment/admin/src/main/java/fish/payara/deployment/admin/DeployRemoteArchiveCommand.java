@@ -203,6 +203,8 @@ public class DeployRemoteArchiveCommand extends DeployCommandParameters implemen
     private List<URL> formatRepositoryUrls(List<String> additionalRepositories) throws MalformedURLException {
         List<URL> repositoryUrls = new ArrayList<>();
 
+        repositoryUrls.add(new URL(defaultMavenRepository));
+
         if (additionalRepositories != null) {
             for (String repository : additionalRepositories) {
                 if (!repository.endsWith("/")) {
