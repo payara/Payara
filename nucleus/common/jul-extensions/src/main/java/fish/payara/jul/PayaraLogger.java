@@ -46,6 +46,7 @@ import fish.payara.jul.tracing.PayaraLoggingTracer;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.function.Function;
@@ -59,6 +60,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static fish.payara.jul.env.LoggingSystemEnvironment.isResolveLevelWithIncompleteConfiguration;
 import static java.util.Objects.requireNonNull;
 
 
@@ -117,14 +119,14 @@ public class PayaraLogger extends Logger {
 
     @Override
     public void addHandler(final Handler handler) throws SecurityException {
-        PayaraLoggingTracer.trace(PayaraLogger.class, "addHandler(" + handler + "); this: " + this);
+        PayaraLoggingTracer.trace(PayaraLogger.class, () -> "addHandler(" + handler + "); this: " + this);
         super.addHandler(handler);
     }
 
 
     @Override
     public void removeHandler(final Handler handler) throws SecurityException {
-        PayaraLoggingTracer.trace(PayaraLogger.class, "removeHandler(" + handler + "); this: " + this);
+        PayaraLoggingTracer.trace(PayaraLogger.class, () -> "removeHandler(" + handler + "); this: " + this);
         super.removeHandler(handler);
     }
 
@@ -169,7 +171,7 @@ public class PayaraLogger extends Logger {
         record.setLoggerName(getName());
         record.setResourceBundle(getResourceBundle());
         record.setResourceBundleName(getResourceBundleName());
-        logOrQueue(record);
+        logOrQueue(record, status);
     }
 
 
@@ -181,7 +183,7 @@ public class PayaraLogger extends Logger {
         }
         final LogRecord record = new EnhancedLogRecord(level, msgSupplier.get());
         record.setLoggerName(getName());
-        logOrQueue(record);
+        logOrQueue(record, status);
     }
 
 
@@ -202,7 +204,7 @@ public class PayaraLogger extends Logger {
         record.setResourceBundle(getResourceBundle());
         record.setResourceBundleName(getResourceBundleName());
         record.setParameters(params);
-        logOrQueue(record);
+        logOrQueue(record, status);
     }
 
 
@@ -217,7 +219,7 @@ public class PayaraLogger extends Logger {
         record.setResourceBundle(getResourceBundle());
         record.setResourceBundleName(getResourceBundleName());
         record.setThrown(thrown);
-        logOrQueue(record);
+        logOrQueue(record, status);
     }
 
 
@@ -230,7 +232,7 @@ public class PayaraLogger extends Logger {
         final LogRecord record = new EnhancedLogRecord(level, msgSupplier.get());
         record.setLoggerName(getName());
         record.setThrown(thrown);
-        logOrQueue(record);
+        logOrQueue(record, status);
     }
 
 
@@ -240,7 +242,7 @@ public class PayaraLogger extends Logger {
         if (!isProcessible(level, status)) {
             return;
         }
-        logOrQueue(level, sourceClass, sourceMethod, msg, null);
+        logOrQueue(level, status, sourceClass, sourceMethod, msg, null);
     }
 
 
@@ -251,7 +253,7 @@ public class PayaraLogger extends Logger {
         if (!isProcessible(level, status)) {
             return;
         }
-        logOrQueue(level, sourceClass, sourceMethod, msgSupplier.get(), null);
+        logOrQueue(level, status, sourceClass, sourceMethod, msgSupplier.get(), null);
     }
 
 
@@ -262,7 +264,7 @@ public class PayaraLogger extends Logger {
         if (!isProcessible(level, status)) {
             return;
         }
-        logOrQueue(level, sourceClass, sourceMethod, msg, null, param);
+        logOrQueue(level, status, sourceClass, sourceMethod, msg, null, param);
     }
 
 
@@ -274,7 +276,7 @@ public class PayaraLogger extends Logger {
         if (!isProcessible(level, status)) {
             return;
         }
-        logOrQueue(level, sourceClass, sourceMethod, msg, null, params);
+        logOrQueue(level, status, sourceClass, sourceMethod, msg, null, params);
     }
 
 
@@ -285,7 +287,7 @@ public class PayaraLogger extends Logger {
         if (!isProcessible(level, status)) {
             return;
         }
-        logOrQueue(level, sourceClass, sourceMethod, msg, thrown);
+        logOrQueue(level, status, sourceClass, sourceMethod, msg, thrown);
     }
 
 
@@ -296,7 +298,7 @@ public class PayaraLogger extends Logger {
         if (!isProcessible(level, status)) {
             return;
         }
-        logOrQueue(level, sourceClass, sourceMethod, msgSupplier.get(), thrown);
+        logOrQueue(level, status, sourceClass, sourceMethod, msgSupplier.get(), thrown);
     }
 
 
@@ -316,7 +318,7 @@ public class PayaraLogger extends Logger {
             record.setResourceBundleName(bundle.getBaseBundleName());
             record.setResourceBundle(bundle);
         }
-        logOrQueue(record);
+        logOrQueue(record, status);
     }
 
 
@@ -336,7 +338,7 @@ public class PayaraLogger extends Logger {
             record.setResourceBundleName(bundle.getBaseBundleName());
             record.setResourceBundle(bundle);
         }
-        logOrQueue(record);
+        logOrQueue(record, status);
     }
 
 
@@ -372,7 +374,7 @@ public class PayaraLogger extends Logger {
         if (!isProcessible(record.getLevel(), status)) {
             return;
         }
-        logOrQueue(record);
+        logOrQueue(record, status);
     }
 
 
@@ -414,7 +416,8 @@ public class PayaraLogger extends Logger {
 
 
     private boolean isLevelResolutionPossible(final PayaraLoggingStatus status) {
-        return status == PayaraLoggingStatus.FLUSHING_BUFFERS || status == PayaraLoggingStatus.FULL_SERVICE;
+        return isResolveLevelWithIncompleteConfiguration() || status == PayaraLoggingStatus.FLUSHING_BUFFERS
+            || status == PayaraLoggingStatus.FULL_SERVICE;
     }
 
 
@@ -433,13 +436,13 @@ public class PayaraLogger extends Logger {
         }
 
         final Predicate<Handler> handlerFilter = h -> h.isLoggable(record);
-        final List<Handler> handlers = getLoggers().stream().flatMap(LOGER_TO_HANDLER).filter(handlerFilter)
-            .collect(Collectors.toList());
-        if (handlers.isEmpty()) {
+        final Iterator<Handler> handlers = getLoggers().stream().flatMap(LOGER_TO_HANDLER).filter(handlerFilter)
+            .iterator();
+        if (!handlers.hasNext()) {
             return;
         }
         final EnhancedLogRecord resolvedLogRecord = MSG_RESOLVER.resolve(record);
-        handlers.forEach(handler -> handler.publish(resolvedLogRecord));
+        handlers.forEachRemaining(h -> h.publish(resolvedLogRecord));
     }
 
 
@@ -466,7 +469,7 @@ public class PayaraLogger extends Logger {
     }
 
 
-    private void logOrQueue(final Level level, final String sourceClass,
+    private void logOrQueue(final Level level, final PayaraLoggingStatus status, final String sourceClass,
         final String sourceMethod, final String msg, final Throwable thrown, final Object... params) {
         final LogRecord record = new EnhancedLogRecord(level, msg, false);
         record.setLoggerName(getName());
@@ -476,23 +479,22 @@ public class PayaraLogger extends Logger {
         record.setSourceMethodName(sourceMethod);
         record.setThrown(thrown);
         record.setParameters(params);
-        logOrQueue(record);
+        logOrQueue(record, status);
     }
 
 
-    private void logOrQueue(final LogRecord record) {
-        final PayaraLoggingStatus status = getLoggingStatus();
+    private void logOrQueue(final LogRecord record, final PayaraLoggingStatus status) {
         if (isFullService(status)) {
             checkAndLog(record);
             return;
         }
         if (isToQueue(status)) {
             StartupQueue.getInstance().add(this, record);
-        } else {
-            while (!isFullService(getLoggingStatus())) {
-                Thread.yield();
-            }
-            checkAndLog(record);
+            return;
         }
+        while (!isFullService(getLoggingStatus())) {
+            Thread.yield();
+        }
+        checkAndLog(record);
     }
 }

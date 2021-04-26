@@ -38,55 +38,60 @@
  *  holder.
  */
 
-package fish.payara.acme.cfg;
+package fish.payara.jul.cfg;
 
-import fish.payara.jul.cfg.SortedProperties;
-
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.util.SortedSet;
-
-import org.junit.jupiter.api.Test;
-
-import static fish.payara.jul.cfg.SortedProperties.loadFrom;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.lessThan;
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
+import fish.payara.jul.PayaraLogManager;
 
 /**
+ * Properties used directly by the {@link PayaraLogManager}
+ *
  * @author David Matejcek
  */
-public class SortedPropertiesTest {
+public enum PayaraLogManagerProperty implements LogProperty {
 
-    public static final int PROPERTY_COUNT = 10;
+    /** Property key for a list of root handler implementations */
+    KEY_ROOT_HANDLERS("handlers"),
+    /** Property key for a level of user root logger. User root loggers children can have own level.  */
+    KEY_USR_ROOT_LOGGER_LEVEL(".level"),
+    /** Property key for a level of system root logger. System root loggers children are not configurable. */
+    KEY_SYS_ROOT_LOGGER_LEVEL("systemRootLoggerLevel"),
+    /**
+     * Property key for a boolean value enabling forgetting log record parameters right after
+     * the message is resolved. If false, message are held until the record is processed
+     * by a formatter, unused in an application and finally garbage collected.
+     * <br>
+     * Releasing them when they are not used may help performance (depends on type of load).
+     */
+    KEY_RELEASE_PARAMETERS_EARLY("fish.payara.jul.record.releaseParametersEarly"),
+    /**
+     * Property key for a boolean value enabling log record level resolution even when the logging
+     * is configured just partially.
+     * It can save some time and memory, on the other hand some verbose log records not passing
+     * currently set log levels will be lost (as in all releases before 5.2021.5)
+     */
+    KEY_RESOLVE_LEVEL_WITH_INCOMPLETE_CONFIGURATION("fish.payara.jul.record.resolveLevelWithIncompleteConfiguration"),
+    ;
 
-    @Test
-    void conversions() throws Exception {
-        final SortedProperties properties = loadFrom(getClass().getResourceAsStream("/logging.properties"));
-        assertAll("properties: " + properties,
-            () -> assertNotNull(properties),
-            () -> assertThat(properties.getPropertyNames(), hasSize(PROPERTY_COUNT))
-        );
+    private final String propertyName;
 
-        final File file = File.createTempFile("logging", "properties");
-        file.deleteOnExit();
-        properties.store(file, "This is a test: " + getClass());
+    PayaraLogManagerProperty(final String propertyName) {
+        this.propertyName = propertyName;
+    }
 
-        final SortedProperties properties2 = loadFrom(file);
-        assertAll("properties2: " + properties2,
-            () -> assertNotNull(properties2),
-            () -> assertThat(properties2.getPropertyNames(), hasSize(PROPERTY_COUNT))
-        );
 
-        final ByteArrayInputStream inputStream = properties2.toInputStream(null);
-        final SortedProperties properties3 = loadFrom(inputStream);
-        assertEquals(properties.size(), properties3.size(), "size of properties1 and properties3");
+    @Override
+    public String getPropertyName() {
+        return propertyName;
+    }
 
-        final SortedSet<String> names = properties3.getPropertyNames();
-        assertThat(names.first(), lessThan(names.last()));
+
+    /**
+     * @return full name is same as get.
+     * @deprecated use {@link #getPropertyName()} for this enum, it cannot be relativized
+     */
+    @Override
+    @Deprecated
+    public String getPropertyFullName(final Class<?> bussinessObjectClass) {
+        return getPropertyName();
     }
 }

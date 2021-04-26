@@ -372,13 +372,11 @@ public final class LogManagerService implements PostConstruct, PreDestroy, org.g
         }
     }
 
-    private void createOrUpdatePayaraLogHandler() {
+    private void reconfigurePayaraLogHandler() {
         final PayaraLogManager manager = PayaraLogManager.getLogManager();
         final PayaraLogHandler payaraLogHandler = manager.getPayaraLogHandler();
         final PayaraLogHandlerConfiguration cfg = createPayaraLogHandlerConfiguration(PayaraLogHandler.class);
-        if (payaraLogHandler == null) {
-           addHandler(new PayaraLogHandler(cfg));
-        } else {
+        if (payaraLogHandler != null) {
             payaraLogHandler.reconfigure(cfg);
         }
     }
@@ -461,7 +459,7 @@ public final class LogManagerService implements PostConstruct, PreDestroy, org.g
 
         @Override
         public void run() {
-            createOrUpdatePayaraLogHandler();
+            reconfigurePayaraLogHandler();
 
             final Map<String, Level> loggerLevels = new HashMap<>();
             final Map<String, Level> handlerLevels = new HashMap<>();

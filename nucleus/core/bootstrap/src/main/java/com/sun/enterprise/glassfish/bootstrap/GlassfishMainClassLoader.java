@@ -74,6 +74,24 @@ public class GlassfishMainClassLoader extends GlassfishUrlClassLoader {
     }
 
 
+    /**
+     * This classloader doesn't provide any resources
+     *
+     * @return always null
+     */
+    @Override
+    public final URL findResource(final String name) {
+        return null;
+    }
+
+
+    @Override
+    public String toString() {
+        // don't add the list again
+        return super.toString();
+    }
+
+
     private static URL[] createUrls(final File glassfishDir) throws IOException {
         final List<URL> urls = new ArrayList<>();
         final File libDir = new File(glassfishDir, "lib");

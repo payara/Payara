@@ -113,6 +113,7 @@ import org.glassfish.embeddable.GlassFishException;
 import org.glassfish.embeddable.GlassFishProperties;
 import org.glassfish.embeddable.GlassFishRuntime;
 
+import static fish.payara.jul.cfg.PayaraLogManagerProperty.KEY_ROOT_HANDLERS;
 import static fish.payara.jul.cfg.PayaraLoggingJvmOptions.JVM_OPT_LOGGING_CFG_FILE;
 
 /**
@@ -1794,7 +1795,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                     currentProps.load(is);
 
                     // add file handler properties
-                    currentProps.setProperty(PayaraLogManager.KEY_ROOT_HANDLERS.getPropertyName(),
+                    currentProps.setProperty(KEY_ROOT_HANDLERS.getPropertyName(),
                         String.join(",", FileHandler.class.getName(), SimpleLogHandler.class.getName()));
                     currentProps.setProperty(FileHandlerProperty.PATTERN.getPropertyFullName(), userLogFile);
                     currentProps.setProperty(FileHandlerProperty.LIMIT.getPropertyFullName(), "1024000");

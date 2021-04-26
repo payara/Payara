@@ -85,15 +85,15 @@ public class GlassFishMain {
     private static final PrintStream STDOUT = System.out;
     private static final PrintStream STDERR = System.err;
 
-    public static void main(final String args[]) throws Exception {
+    public static void main(final String[] args) throws Exception {
         // The PayaraLogManager must be set before the first usage of any JUL component,
         // it would be replaced by another implementation otherwise.
         final ClassLoader jdkExtensionCL = ClassLoader.getSystemClassLoader().getParent();
         final File installRoot = MainHelper.findInstallRoot();
         final GlassfishMainClassLoader gfMainCL = new GlassfishMainClassLoader(installRoot, jdkExtensionCL);
-        final Class<?> plm = gfMainCL.loadClass("fish.payara.jul.PayaraLogManagerInitializer");
+        final Class<?> loggingInitializer = gfMainCL.loadClass("fish.payara.jul.PayaraLogManagerInitializer");
         final Properties loggingCfg = createDefaultLoggingProperties();
-        plm.getMethod("tryToSetAsDefault", Properties.class).invoke(plm, loggingCfg);
+        loggingInitializer.getMethod("tryToSetAsDefault", Properties.class).invoke(loggingInitializer, loggingCfg);
 
         MainHelper.checkJdkVersion();
 
@@ -112,30 +112,30 @@ public class GlassFishMain {
         // on all other places is used classloader which loaded the GlassfishRuntime class
         // -> it must not be loaded by any parent classloader, it's children would be ignored.
         method.invoke(launcher, startupCtx);
+
+        // also note that debugging is not possible until the debug port is open.
     }
 
 
     private static Properties createDefaultLoggingProperties() {
         final Properties cfg = new Properties();
-        // ConsoleHandler processes output to STDOUT
-        // PayaraLogHandler collects log records until it will be completely configured with
-        // an instance configuration so it will have complete information about filtering
-        // and formatting those records
         cfg.setProperty("handlers",
             "fish.payara.jul.handler.SimpleLogHandler,fish.payara.jul.handler.PayaraLogHandler");
         cfg.setProperty("fish.payara.jul.handler.SimpleLogHandler.formatter",
             "fish.payara.jul.formatter.UniformLogFormatter");
         // useful to track any startup race conditions etc. Logging is always in game.
-//        cfg.setProperty("fish.payara.jul.tracingEnabled", "true");
-        // warning: there is no other way to force HK2 loggers or any other loggers, created
-        // via new Logger(..) constructor to wait until logging would be completely configured.
-        // These instances make decisions about log loggability immediately.
-        // So in case you need to trace what server does between startup
-        // and completing the configuration, set this.
+        if ("true".equals(System.getenv("AS_TRACE_LOGGING"))) {
+            cfg.setProperty("fish.payara.jul.tracingEnabled", "true");
+        }
         cfg.setProperty("systemRootLoggerLevel", Level.INFO.getName());
         cfg.setProperty(".level", Level.INFO.getName());
+        // affects startup performance vs. losing log records.
+        if ("true".equals(System.getenv("AS_TRACE_BOOTSTRAP"))) {
+            cfg.setProperty("fish.payara.jul.record.resolveLevelWithIncompleteConfiguration", "false");
+        } else {
+            cfg.setProperty("fish.payara.jul.record.resolveLevelWithIncompleteConfiguration", "true");
+        }
 
-        // also note that debugging is not possible until the debug port is open.
         return cfg;
     }
 

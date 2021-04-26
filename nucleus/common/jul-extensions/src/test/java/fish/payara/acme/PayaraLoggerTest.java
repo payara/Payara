@@ -43,15 +43,12 @@ package fish.payara.acme;
 import fish.payara.jul.PayaraLogger;
 import fish.payara.jul.handler.LogCollectorHandler;
 import fish.payara.jul.record.EnhancedLogRecord;
-import fish.payara.jul.tracing.PayaraLoggingTracer;
-
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
-import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 import org.hamcrest.collection.IsEmptyCollection;
@@ -77,8 +74,6 @@ public class PayaraLoggerTest {
 
     @BeforeAll
     public static void initEnv() throws Exception {
-        PayaraLoggingTracer.setTracingEnabled(true);
-        LogManager.getLogManager().reset();
         final Logger originalLogger = Logger.getLogger(PayaraLoggerTest.class.getName());
         originalLogger.setResourceBundle(new TestResourceBundle());
         handler = new LogCollectorHandler(originalLogger);
@@ -99,8 +94,6 @@ public class PayaraLoggerTest {
             handler.close();
         }
         assertThat("Nothing should remain after close", handler.getAll(), hasSize(0));
-        LogManager.getLogManager().reset();
-        PayaraLoggingTracer.setTracingEnabled(false);
     }
 
 

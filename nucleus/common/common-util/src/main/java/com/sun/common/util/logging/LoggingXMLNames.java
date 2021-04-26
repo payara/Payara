@@ -44,12 +44,12 @@ package com.sun.common.util.logging;
 
 import com.sun.logging.LogDomains;
 
-import fish.payara.jul.PayaraLogManager;
 import fish.payara.jul.handler.SyslogHandler;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import static fish.payara.jul.cfg.PayaraLogManagerProperty.KEY_ROOT_HANDLERS;
 import static fish.payara.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.ENABLED;
 import static fish.payara.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.FORMATTER;
 import static fish.payara.jul.handler.PayaraLogHandlerConfiguration.PayaraLogHandlerProperty.OUTPUT_FILE;
@@ -134,19 +134,23 @@ public class LoggingXMLNames {
 
     public static final Map<String, String> xmltoPropsMap =
             new HashMap<String, String>() {{
-                put(logRotationLimitInBytes, ROTATION_LIMIT_SIZE.getPropertyFullName());
-                put(payaraNotificationLogRotationLimitInBytes, ROTATION_LIMIT_SIZE.getPropertyFullName(PAYARA_NOTIFICATION_HANDLER));
-                put(logRotationTimelimitInMinutes, ROTATION_LIMIT_TIME.getPropertyFullName());
-                put(payaraNotificationLogRotationTimelimitInMinutes, ROTATION_LIMIT_TIME.getPropertyFullName(PAYARA_NOTIFICATION_HANDLER));
-                put(file, OUTPUT_FILE.getPropertyFullName());
-                put(payaraNotificationFile, OUTPUT_FILE.getPropertyFullName(PAYARA_NOTIFICATION_HANDLER));
-                put(logFormatter, FORMATTER.getPropertyFullName());
-                put(payaraNotificationLogFormatter, FORMATTER.getPropertyFullName(PAYARA_NOTIFICATION_HANDLER));
-                put(logStandardStreams, REDIRECT_STANDARD_STREAMS.getPropertyFullName());
-                put(logHandler, PayaraLogManager.KEY_ROOT_HANDLERS.getPropertyName());
+                put(logHandler, KEY_ROOT_HANDLERS.getPropertyName());
+
                 put(useSystemLogging, SyslogHandler.ENABLED.getPropertyFullName(SyslogHandler.class));
+
+                put(file, OUTPUT_FILE.getPropertyFullName());
                 put(logToFile, ENABLED.getPropertyFullName());
+                put(logStandardStreams, REDIRECT_STANDARD_STREAMS.getPropertyFullName());
+                put(logFormatter, FORMATTER.getPropertyFullName());
+                put(logRotationLimitInBytes, ROTATION_LIMIT_SIZE.getPropertyFullName());
+                put(logRotationTimelimitInMinutes, ROTATION_LIMIT_TIME.getPropertyFullName());
+
+                put(payaraNotificationFile, OUTPUT_FILE.getPropertyFullName(PAYARA_NOTIFICATION_HANDLER));
                 put(payaraNotificationLogToFile, ENABLED.getPropertyFullName(PAYARA_NOTIFICATION_HANDLER));
+                put(payaraNotificationLogFormatter, FORMATTER.getPropertyFullName(PAYARA_NOTIFICATION_HANDLER));
+                put(payaraNotificationLogRotationLimitInBytes, ROTATION_LIMIT_SIZE.getPropertyFullName(PAYARA_NOTIFICATION_HANDLER));
+                put(payaraNotificationLogRotationTimelimitInMinutes, ROTATION_LIMIT_TIME.getPropertyFullName(PAYARA_NOTIFICATION_HANDLER));
+
                 put(root, LogDomains.DOMAIN_ROOT + LEVEL);
                 put(server, LogDomains.SERVER_LOGGER + LEVEL);
                 put(ejbcontainer, LogDomains.EJB_LOGGER + LEVEL);
@@ -172,6 +176,7 @@ public class LoggingXMLNames {
                 put(util, LogDomains.UTIL_LOGGER + LEVEL);
                 put(resourceadapter, LogDomains.RSR_LOGGER + LEVEL);
                 put(selfmanagement, LogDomains.SELF_MANAGEMENT_LOGGER + LEVEL);
+
                 // following values will be removed, because they would not be used.
                 put(logToConsole, null);
                 put(alarms, null);

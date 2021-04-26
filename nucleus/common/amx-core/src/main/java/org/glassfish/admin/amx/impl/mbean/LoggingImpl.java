@@ -85,7 +85,7 @@ import org.glassfish.external.amx.AMXGlassfish;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.server.ServerEnvironmentImpl;
 
-import static fish.payara.jul.PayaraLogManager.KEY_ROOT_HANDLERS;
+import static fish.payara.jul.cfg.PayaraLogManagerProperty.KEY_ROOT_HANDLERS;
 import static org.glassfish.admin.amx.logging.LogAnalyzer.SEVERE_COUNT_KEY;
 import static org.glassfish.admin.amx.logging.LogAnalyzer.TIMESTAMP_KEY;
 import static org.glassfish.admin.amx.logging.LogAnalyzer.WARNING_COUNT_KEY;

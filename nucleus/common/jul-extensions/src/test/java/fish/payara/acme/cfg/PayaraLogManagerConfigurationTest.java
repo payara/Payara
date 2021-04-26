@@ -51,6 +51,7 @@ import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import static fish.payara.acme.cfg.SortedPropertiesTest.PROPERTY_COUNT;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
@@ -64,7 +65,6 @@ import static org.junit.jupiter.api.Assertions.assertNotSame;
  */
 public class PayaraLogManagerConfigurationTest {
 
-    private static final int PROPERTY_COUNT = 8;
     private static PayaraLogManager logManager;
     private static PayaraLogManagerConfiguration originalCfg;
 

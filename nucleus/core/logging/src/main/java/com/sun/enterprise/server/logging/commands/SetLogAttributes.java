@@ -49,8 +49,8 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 
 import fish.payara.enterprise.server.logging.PayaraNotificationFileHandler;
-import fish.payara.jul.PayaraLogManager;
 import fish.payara.jul.cfg.LogProperty;
+import fish.payara.jul.cfg.PayaraLogManagerProperty;
 import fish.payara.jul.formatter.AnsiColorFormatter;
 import fish.payara.jul.formatter.AnsiColorFormatter.AnsiColorFormatterProperty;
 import fish.payara.jul.formatter.JSONLogFormatter;
@@ -129,8 +129,8 @@ public class SetLogAttributes implements AdminCommand {
     static {
         // the set of valid attribute keys affects Admin GUI! Try to save values in Logger settings.
         final Set<String> properties = new HashSet<>();
-        properties.add(PayaraLogManager.KEY_ROOT_HANDLERS.getPropertyName());
-        properties.add(PayaraLogManager.KEY_RELEASE_PARAMETERS_EARLY.getPropertyName());
+        Arrays.stream(PayaraLogManagerProperty.values()).forEach(p -> properties.add(p.getPropertyName()));
+
         properties.add(SyslogHandler.ENABLED.getPropertyFullName(SyslogHandler.class));
 
         final Class<?>[] formatters = new Class<?>[] {

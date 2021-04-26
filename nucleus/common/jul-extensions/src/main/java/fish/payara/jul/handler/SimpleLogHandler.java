@@ -46,8 +46,11 @@ import fish.payara.jul.formatter.OneLineFormatter;
 import java.io.PrintStream;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
+import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.StreamHandler;
+
+import static fish.payara.jul.handler.SimpleLogHandler.SimpleLogHandlerProperty.USE_ERROR_STREAM;
 
 
 /**
@@ -68,7 +71,7 @@ public class SimpleLogHandler extends StreamHandler {
      */
     public SimpleLogHandler() {
         final HandlerConfigurationHelper helper = HandlerConfigurationHelper.forHandlerClass(getClass());
-        if (helper.getBoolean(SimpleLogHandlerProperty.USE_ERROR_STREAM, false)) {
+        if (helper.getBoolean(USE_ERROR_STREAM, false)) {
             setOutputStream(new UncloseablePrintStream(LoggingSystemEnvironment.getOriginalStdErr()));
         } else {
             setOutputStream(new UncloseablePrintStream(LoggingSystemEnvironment.getOriginalStdOut()));
@@ -132,6 +135,12 @@ public class SimpleLogHandler extends StreamHandler {
         USE_ERROR_STREAM("useErrorStream"),
         /** Class of the {@link Formatter} used with this handler */
         FORMATTER(HandlerConfigurationHelper.FORMATTER.getPropertyName()),
+        /** Minimal level accepted by this handler, default is {@link Level#ALL} */
+        LEVEL("level"),
+        /** Additional filter class used to filter log records. Default is null. */
+        FILTER("filter"),
+        /** Output stream encoding. Default is null */
+        ENCODING("encoding"),
         ;
 
         private final String propertyName;

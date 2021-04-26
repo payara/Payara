@@ -66,6 +66,7 @@ public final class LoggingSystemEnvironment {
     // and they are not so critical.
     private static String productId;
     private static boolean releaseParametersEarly;
+    private static boolean resolveLevelWithIncompleteConfiguration;
 
     private LoggingSystemEnvironment() {
         // hidden
@@ -138,6 +139,27 @@ public final class LoggingSystemEnvironment {
     public static void setReleaseParametersEarly(boolean releaseParametersEarly) {
         logSetter("releaseParametersEarly: " + releaseParametersEarly);
         LoggingSystemEnvironment.releaseParametersEarly = releaseParametersEarly;
+    }
+
+
+    /**
+     * Note: This method is used internally.
+     *
+     * @param resolveLevelWithIncompleteConfiguration If true, log record level threshold is
+     *            resolved even if the logging is not completely configured.
+     */
+    public static void setResolveLevelWithIncompleteConfiguration(boolean resolveLevelWithIncompleteConfiguration) {
+        logSetter("resolveLevelWithIncompleteConfiguration: " + resolveLevelWithIncompleteConfiguration);
+        LoggingSystemEnvironment.resolveLevelWithIncompleteConfiguration = resolveLevelWithIncompleteConfiguration;
+    }
+
+
+    /**
+     * @return if true, log record level threshold is resolved even if the logging is not completely
+     *         configured.
+     */
+    public static boolean isResolveLevelWithIncompleteConfiguration() {
+        return resolveLevelWithIncompleteConfiguration;
     }
 
 
