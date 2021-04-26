@@ -134,6 +134,7 @@ public class CertificateRealmITest {
         + " EMAILADDRESS=payara@payara.fish, DC=, DC=Payara1, DC=Payara2";
     private static final int RESPONSE_LINE_COUNT = 6;
 
+    private static final Provider PROVIDER = new BouncyCastleProvider();
     private static final AtomicInteger ix = new AtomicInteger();
     private static TestConfiguration testConfiguration;
     private static KeyStoreManager clientKeyStore;
@@ -426,7 +427,7 @@ public class CertificateRealmITest {
 
     private static KeyPair createKeyPair() {
         try {
-            final KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
+            final KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA", PROVIDER);
             keyPairGenerator.initialize(2048);
             return keyPairGenerator.generateKeyPair();
         } catch (NoSuchAlgorithmException e) {
@@ -438,15 +439,14 @@ public class CertificateRealmITest {
     private static X509Certificate createClientCertificate(final KeyPair keys) {
         try {
             final Instant now = Instant.now();
-            final Provider provider = new BouncyCastleProvider();
             final JcaContentSignerBuilder signerBuilder = new JcaContentSignerBuilder("SHA256WithRSA");
-            signerBuilder.setProvider(provider);
+            signerBuilder.setProvider(PROVIDER);
             final ContentSigner signer = signerBuilder.build(keys.getPrivate());
             final X500Name x500Name = new X500Name(DN_CLIENT);
             final X509v3CertificateBuilder certificateBuilder = new X509v3CertificateBuilder( //
                 x500Name, BigInteger.ONE, Date.from(now), Date.from(now.plus(1, ChronoUnit.DAYS)), //
                 x500Name, SubjectPublicKeyInfo.getInstance(keys.getPublic().getEncoded()));
-            return new JcaX509CertificateConverter().setProvider(provider)
+            return new JcaX509CertificateConverter().setProvider(PROVIDER)
                 .getCertificate(certificateBuilder.build(signer));
         } catch (final CertificateException | OperatorCreationException e) {
             throw new IllegalStateException(e);
@@ -457,7 +457,7 @@ public class CertificateRealmITest {
     private static KeyStoreManager createClientKeyStore(final PrivateKey privateKey,
         final X509Certificate certificate) {
         LOG.debug("createClientKeyStore(privateKey=\n{}\n, certificate=\n{}\n)", privateKey, certificate);
-        final KeyStoreManager manager = new KeyStoreManager(KeyStoreType.PKCS12, KS_PASSWORD);
+        final KeyStoreManager manager = new KeyStoreManager(KeyStoreType.JKS, KS_PASSWORD);
         manager.putEntry("client", new PrivateKeyEntry(privateKey, new Certificate[] {certificate}),
             new PasswordProtection(KS_PASSWORD.toCharArray()));
         return manager;
@@ -466,7 +466,7 @@ public class CertificateRealmITest {
 
     private static KeyStoreManager createClientTrustStore(final X509Certificate certificate) {
         LOG.debug("createClientTrustStore(certificates=\n{}\n)", certificate);
-        final KeyStoreManager manager = new KeyStoreManager(KeyStoreType.PKCS12, KS_PASSWORD);
+        final KeyStoreManager manager = new KeyStoreManager(KeyStoreType.JKS, KS_PASSWORD);
         manager.putTrusted("localhost", certificate);
         return manager;
     }
