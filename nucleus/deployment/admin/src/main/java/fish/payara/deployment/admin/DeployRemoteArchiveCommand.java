@@ -137,6 +137,8 @@ public class DeployRemoteArchiveCommand extends DeployCommandParameters implemen
                     name = path.substring(path.lastIndexOf("/") + 1, path.indexOf(".war"));
                 } else if (path.endsWith(".ear")) {
                     name = path.substring(path.lastIndexOf("/") + 1, path.indexOf(".ear"));
+                } else if (path.endsWith(".rar")) {
+                    name = path.substring(path.lastIndexOf("/") + 1, path.indexOf(".rar"));
                 }
             }
 
@@ -148,6 +150,8 @@ public class DeployRemoteArchiveCommand extends DeployCommandParameters implemen
                     contextroot = "/" + path.substring(path.lastIndexOf("/") + 1, path.indexOf(".war"));
                 } else if (path.endsWith(".ear")) {
                     contextroot = "/" + path.substring(path.lastIndexOf("/") + 1, path.indexOf(".ear"));
+                } else if (path.endsWith(".rar")) {
+                    contextroot = "/" + path.substring(path.lastIndexOf("/") + 1, path.indexOf(".rar"));
                 }
             }
         } else {
