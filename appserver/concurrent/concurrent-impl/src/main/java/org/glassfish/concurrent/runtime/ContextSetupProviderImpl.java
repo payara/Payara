@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.concurrent.runtime;
 
@@ -239,17 +239,19 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
 
         // Check for propagated span
         if (handle.getSpanContextMap() != null) {
+            @SuppressWarnings("unchecked")
             SpanContext spanContext = tracer.extract(Format.Builtin.TEXT_MAP, new MapToTextMap(handle.getSpanContextMap()));
-            builder.asChildOf(spanContext);
-
-            // Check for the presence of a propagated parent operation name
-            try {
-                String operationName = ((RequestTraceSpanContext) spanContext).getBaggageItems().get("operation.name");
-                if (operationName != null) {
-                    builder.withTag("Parent Operation Name", operationName);
+            if (spanContext != null) {
+                builder.asChildOf(spanContext);
+                // Check for the presence of a propagated parent operation name
+                try {
+                    String operationName = ((RequestTraceSpanContext) spanContext).getBaggageItems().get("operation.name");
+                    if (operationName != null) {
+                        builder.withTag("Parent Operation Name", operationName);
+                    }
+                } catch (ClassCastException cce) {
+                    logger.log(Level.FINE, "ClassCastException caught converting Span Context", cce);
                 }
-            } catch (ClassCastException cce) {
-                logger.log(Level.FINE, "ClassCastException caught converting Span Context", cce);
             }
         }
 
@@ -420,7 +422,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
             return eq;
         }
     }
-    
+
     private void initialiseServices() {
         try {
             this.requestTracing = Globals.getDefaultHabitat().getService(RequestTracingService.class);
@@ -440,7 +442,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
             logger.log(Level.INFO, "Error retrieving OpenTracing service "
                     + "during initialisation of Concurrent Context - NullPointerException", ex);
         }
-        
+
     }
 }
 
