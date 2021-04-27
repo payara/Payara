@@ -13,7 +13,10 @@ pipeline {
             }
             post{
                 always{
-					testFailure()
+                    testFailure()
+                }
+                cleanup {
+                    doCleanup()
                 }
             }
         }
@@ -27,5 +30,11 @@ void testFailure() {
     sh "false"
     echo 'CCC'
     sh "true"
-	echo 'DDD'
+    echo 'DDD'
+}
+
+void cleanup() {
+    echo 'CCC'
+    sh "true"
+    echo 'DDD'
 }
