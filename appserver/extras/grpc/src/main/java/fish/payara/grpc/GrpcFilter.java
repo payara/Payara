@@ -40,6 +40,10 @@
 package fish.payara.grpc;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.spi.Bean;
@@ -53,18 +57,21 @@ import io.grpc.BindableService;
 import io.grpc.servlet.ServletAdapter;
 import io.grpc.servlet.ServletAdapterBuilder;
 
-public class GrpcFilter<BS extends BindableService> extends HttpFilter {
+public class GrpcFilter extends HttpFilter {
 
     private static final long serialVersionUID = 1L;
 
-    private final Bean<BS> serviceBean;
-    private final CreationalContext<BS> cdiContext;
+    private final CreationalContext<BindableService> cdiContext;
 
-    private BS service;
+    private final Map<Bean<BindableService>, BindableService> services;
+
     private ServletAdapter adapter;
 
-    protected GrpcFilter(Bean<BS> serviceBean, CreationalContext<BS> cdiContext) {
-        this.serviceBean = serviceBean;
+    protected GrpcFilter(CreationalContext<BindableService> cdiContext, Bean<BindableService>... serviceBeans) {
+        services = new HashMap<>();
+        for (Bean<BindableService> serviceBean : serviceBeans) {
+            services.put(serviceBean, null);
+        }
         this.cdiContext = cdiContext;
     }
 
@@ -80,29 +87,42 @@ public class GrpcFilter<BS extends BindableService> extends HttpFilter {
         }
 
         switch (method.toUpperCase()) {
-            case "GET":
-                adapter.doGet(req, res);
-                break;
-            case "POST":
-                adapter.doPost(req, res);
-                break;
-            default:
-                throw new UnsupportedOperationException("Unsupported HTTP method: " + method);
+        case "GET":
+            adapter.doGet(req, res);
+            break;
+        case "POST":
+            adapter.doPost(req, res);
+            break;
+        default:
+            throw new UnsupportedOperationException("Unsupported HTTP method: " + method);
         }
     }
 
     @Override
     public void init() throws ServletException {
-        // TODO: allow RequestScoped beans by starting the request scope manually in an
-        // interceptor or listener
-        if (service == null) {
-            service = serviceBean.create(cdiContext);
+
+        // For each service
+        final Iterator<Entry<Bean<BindableService>, BindableService>> iterator = services.entrySet().iterator();
+        while (iterator.hasNext()) {
+            final Entry<Bean<BindableService>, BindableService> entry = iterator.next();
+            if (entry.getValue() == null) {
+
+                // Create the service
+                final BindableService service = entry.getKey().create(cdiContext);
+
+                entry.setValue(service);
+            }
         }
 
         if (adapter == null) {
-            this.adapter = new ServletAdapterBuilder() //
-                .addService(service) //
-                .buildServletAdapter();
+            ServletAdapterBuilder builder = new ServletAdapterBuilder();
+
+            // Register each service
+            for (BindableService service : services.values()) {
+                builder = builder.addService(service);
+            }
+
+            this.adapter = builder.buildServletAdapter();
         }
 
         super.init();
@@ -110,12 +130,24 @@ public class GrpcFilter<BS extends BindableService> extends HttpFilter {
 
     @Override
     public void destroy() {
-        if (serviceBean != null) {
-            serviceBean.destroy(service, cdiContext);
+
+        // For each service
+        final Iterator<Entry<Bean<BindableService>, BindableService>> iterator = services.entrySet().iterator();
+        while (iterator.hasNext()) {
+            final Entry<Bean<BindableService>, BindableService> entry = iterator.next();
+            if (entry.getValue() != null) {
+
+                // Destroy the service
+                entry.getKey().destroy(entry.getValue(), cdiContext);
+
+                iterator.remove();
+            }
         }
+
         if (adapter != null) {
             adapter.destroy();
         }
+
         super.destroy();
     }
 

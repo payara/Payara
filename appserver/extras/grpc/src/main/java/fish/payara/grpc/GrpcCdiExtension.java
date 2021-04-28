@@ -72,23 +72,24 @@ public class GrpcCdiExtension implements Extension {
         services.add(bean);
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public <T extends BindableService> void init(@Observes ServletContext ctx, BeanManager bm) {
         LOGGER.log(Level.INFO, "Registering gRPC Servlets...");
 
-        for (Bean<? extends BindableService> service : services) {
-            final CreationalContext<? extends BindableService> createContext = bm.createCreationalContext(service);
+        final CreationalContext cdiContext = bm.createCreationalContext(null);
 
-            // Suppress warnings, createCreationalContext doesn't handle generics correctly
-            @SuppressWarnings({ "unchecked", "rawtypes" })
-            final Filter filter = new GrpcFilter(service, createContext);
+        // Create the filter
+        final Filter filter = new GrpcFilter(cdiContext, services.toArray(new Bean[0]));
 
-            // TODO: utilise same servlet for all gRPC services
-            final FilterRegistration.Dynamic registration = ctx.addFilter(service.getBeanClass().getName(), filter);
-            registration.setAsyncSupported(true);
-            registration.addMappingForUrlPatterns( //
-                    EnumSet.of(DispatcherType.ASYNC, DispatcherType.REQUEST) //
-                    , false, "/fish.payara.samples.grpc.PayaraService/*");
-        }
+        // Register the filter
+        final FilterRegistration.Dynamic registration = ctx.addFilter(filter.getClass().getName(), filter);
+
+        // Configure the filter
+        // TODO: parse the method name from the prototype generation
+        registration.setAsyncSupported(true);
+        registration.addMappingForUrlPatterns( //
+                EnumSet.of(DispatcherType.ASYNC, DispatcherType.REQUEST) //
+                , false, "/*");
     }
 
 }
