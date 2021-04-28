@@ -71,17 +71,8 @@ public class GrpcTest {
     @Deployment(testable = false)
     public static Archive<?> deploy() {
 
-        final File[] dependencies = Maven.resolver() //
-                .resolve( //
-                        "io.grpc:grpc-protobuf:1.24.0", //
-                        "io.grpc:grpc-core:1.24.0" //
-                ) //
-                .withTransitivity() //
-                .asFile();
-
         final File[] singleDependencies = Maven.resolver() //
                 .resolve( //
-                        "io.grpc:grpc-stub:1.24.0", //
                         "fish.payara.extras:grpc:5.2021.2-SNAPSHOT" //
                 ) //
                 .withoutTransitivity() //
@@ -97,7 +88,6 @@ public class GrpcTest {
                 // Make sure context root and classloading is configured by GF descriptor
                 .addAsWebInfResource("glassfish-web.xml")
                 // Add libraries
-                .addAsLibraries(dependencies) //
                 .addAsLibraries(singleDependencies);
 
         System.out.println(archive.toString(true));

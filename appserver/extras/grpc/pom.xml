@@ -53,13 +53,23 @@
 
     <artifactId>grpc</artifactId>
     <name>Payara gRPC Support</name>
-    <packaging>glassfish-jar</packaging>
+    <packaging>jar</packaging>
 
     <dependencies>
         <!-- gRPC dependencies -->
         <dependency>
             <groupId>io.grpc</groupId>
             <artifactId>grpc-core</artifactId>
+            <version>1.24.0</version>
+        </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-stub</artifactId>
+            <version>1.24.0</version>
+        </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-protobuf</artifactId>
             <version>1.24.0</version>
         </dependency>
 
@@ -76,4 +86,74 @@
             <version>${cdi-api.version}</version>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-shade-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <artifactSet>
+                                <excludes>
+                                    <exclude>jakarta.*:*</exclude>
+                                    <exclude>javax.*:*</exclude>
+                                    <exclude>*:jsr305</exclude>
+                                </excludes>
+                            </artifactSet>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/MANIFEST.MF</exclude>
+                                        <exclude>META-INF/io.netty.versions.properties</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
+                                    <resource>META-INF/MANIFEST.MF</resource>
+                                    <file>${project.build.directory}/classes/META-INF/MANIFEST.MF</file>
+                                </transformer>
+                            </transformers>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>bundle-manifest</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>manifest</goal>
+                        </goals>
+                        <configuration>
+                            <instructions>
+                                <Import-Package>
+                                    javax.enterprise.context.spi,
+                                    javax.enterprise.inject.spi,
+                                    javax.servlet,
+                                    javax.servlet.http,
+                                    javax.xml.bind
+                                </Import-Package>
+                                <Export-Package>
+                                    fish.payara.grpc,
+                                    io.grpc,
+                                    io.grpc.stub,
+                                    io.grpc.servlet,
+                                    com.google.protobuf
+                                </Export-Package>
+                            </instructions>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>

@@ -21,7 +21,7 @@ nb-configuration.xml
 /appserver/tests/quicklook/*.output
 /appserver/tests/quicklook/**/*.war
 *.log
-appserver/extras/arquillian-containers/payara-common/dependency-reduced-pom.xml
+dependency-reduced-pom.xml
 appserver/tests/quicklook/quicklook_summary.txt
 **/nbproject
 .flattened-pom.xml
