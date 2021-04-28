@@ -35,6 +35,6 @@ void testFailure() {
 
 void doCleanup() {
     echo 'CCC'
-    sh "true"
+    sh "false"
     echo 'DDD'
 }
