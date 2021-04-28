@@ -73,13 +73,15 @@ public class GrpcTest {
 
         final File[] dependencies = Maven.resolver() //
                 .resolve( //
-                        "io.grpc:grpc-all:1.24.0" //
+                        "io.grpc:grpc-protobuf:1.24.0", //
+                        "io.grpc:grpc-core:1.24.0" //
                 ) //
                 .withTransitivity() //
                 .asFile();
 
         final File[] singleDependencies = Maven.resolver() //
                 .resolve( //
+                        "io.grpc:grpc-stub:1.24.0", //
                         "fish.payara.extras:grpc:5.2021.2-SNAPSHOT" //
                 ) //
                 .withoutTransitivity() //
