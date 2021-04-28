@@ -33,7 +33,7 @@ void testFailure() {
     echo 'DDD'
 }
 
-void cleanup() {
+void doCleanup() {
     echo 'CCC'
     sh "true"
     echo 'DDD'
