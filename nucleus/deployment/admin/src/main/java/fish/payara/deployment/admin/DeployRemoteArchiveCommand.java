@@ -71,7 +71,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.logging.Level;
@@ -106,8 +105,6 @@ public class DeployRemoteArchiveCommand extends DeployCommandParameters implemen
 
     @Inject
     ServiceLocator serviceLocator;
-
-    private static final String defaultMavenRepository = "https://repo.maven.apache.org/maven2/";
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -158,15 +155,9 @@ public class DeployRemoteArchiveCommand extends DeployCommandParameters implemen
                 // If the path String doesn't start with Http or Https, then assume it's a GAV coordinate
                 logger.log(Level.FINE, "Path does not appear to be a URI, will attempt to read as GAV coordinate");
 
-                List<String> repositoryUris = new LinkedList<>();
-                repositoryUris.add(defaultMavenRepository);
-                if (additionalRepositories != null) {
-                    repositoryUris.addAll(additionalRepositories);
-                }
-
                 // Get the URI for the given GAV coordinate
                 GAVConvertor gavConvertor = new GAVConvertor();
-                Entry<String, URI> artefactEntry = gavConvertor.getArtefactMapEntry(path, repositoryUris);
+                Entry<String, URI> artefactEntry = gavConvertor.getArtefactMapEntry(path, additionalRepositories);
 
                 // Download the file to temp, and return a File object to pass to the deploy command
                 fileToDeploy = convertUriToFile(artefactEntry.getValue());

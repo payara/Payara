@@ -164,8 +164,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     private boolean outputLauncher;
     private File copyDirectory;
     private Properties userSystemProperties;
-    private List<String> repositoryURLs;
-    private final String defaultMavenRepository = "https://repo.maven.apache.org/maven2/";
+    private List<String> repositoryURIs;
     private final short defaultHttpPort = 8080;
     private final short defaultHttpsPort = 8181;
     private final BootCommands preBootCommands;
@@ -715,7 +714,10 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     public PayaraMicroImpl addRepoUrl(String... URLs) {
         //if (runtime != null) {
         checkNotRunning();
-        repositoryURLs.addAll(Arrays.asList(URLs));
+        if (repositoryURIs == null) {
+            repositoryURIs = new LinkedList<>();
+        }
+        repositoryURIs.addAll(Arrays.asList(URLs));
         return this;
     }
 
@@ -1107,11 +1109,9 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
 
     private PayaraMicroImpl() {
         // Initialise a random instance name
-        repositoryURLs = new LinkedList<>();
         preBootCommands = new BootCommands();
         postBootCommands = new BootCommands();
         postDeployCommands = new BootCommands();
-        repositoryURLs.add(defaultMavenRepository);
         addShutdownHook();
     }
 
@@ -1241,7 +1241,10 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                     enableHealthCheck = Boolean.parseBoolean(value);
                     break;
                 case additionalrepository:
-                    repositoryURLs.add(value);
+                    if (repositoryURIs == null) {
+                        repositoryURIs = new LinkedList<>();
+                    }
+                    repositoryURIs.add(value);
                     break;
                 case outputuberjar:
                     uberJar = new File(value);
@@ -2066,7 +2069,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     private Map.Entry<String, URI> getGAVURI(String gav) throws GlassFishException {
         GAVConvertor gavConvertor = new GAVConvertor();
         try {
-            Map.Entry<String, URI> artefactMapEntry = gavConvertor.getArtefactMapEntry(gav, repositoryURLs);
+            Map.Entry<String, URI> artefactMapEntry = gavConvertor.getArtefactMapEntry(gav, repositoryURIs);
             return new AbstractMap.SimpleImmutableEntry<>(artefactMapEntry.getKey(), artefactMapEntry.getValue());
         } catch (URISyntaxException ex) {
             throw new GlassFishException(ex.getMessage());

@@ -67,6 +67,8 @@ import java.util.logging.Logger;
 public class GAVConvertor {
     
     private static final Logger logger = Logger.getLogger("PayaraMicro");
+
+    private static final String defaultMavenRepository = "https://repo.maven.apache.org/maven2/";
     
     /**
      * Returns a valid URI for a provided GAV (GroupId, ArtifactId, Version).
@@ -82,12 +84,17 @@ public class GAVConvertor {
         final Map<String, String> GAVMap = splitGAV(GAV);
 
         List<String> repoURIs = new LinkedList<>();
-        for (String uri : repositoryURIs) {
-            String convertedURI = TranslatedConfigView.expandValue(uri);
-            if (!convertedURI.endsWith("/")) {
-              convertedURI += "/";
+
+        repoURIs.add(defaultMavenRepository);
+
+        if (repositoryURIs != null) {
+            for (String uri : repositoryURIs) {
+                String convertedURI = TranslatedConfigView.expandValue(uri);
+                if (!convertedURI.endsWith("/")) {
+                    convertedURI += "/";
+                }
+                repoURIs.add(convertedURI);
             }
-            repoURIs.add(convertedURI);
         }
 
         final String relativeURIString = constructRelativeURIString(GAVMap);
