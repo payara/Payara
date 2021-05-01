@@ -164,7 +164,8 @@ public class DeployRemoteArchiveCommand extends DeployCommandParameters implemen
 
                 // If a name hasn't been provided, get it from the artefact name
                 if (name == null) {
-                    name = artefactEntry.getKey();
+                    String fileName = new File(artefactEntry.getValue().getPath()).getName();
+                    name = fileName.substring(0, fileName.length() - 4);
                 }
 
                 // If a context root hasn't been provided, get it from the artefact name
