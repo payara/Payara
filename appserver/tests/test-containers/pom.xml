@@ -63,8 +63,6 @@
         </maven.test.jvmoptions>
         <failsafe.argLine>${maven.test.jvmoptions}</failsafe.argLine>
         <surefire.argLine>${maven.test.jvmoptions}</surefire.argLine>
-
-        <slf4j.version>1.7.30</slf4j.version>
     </properties>
 
     <dependencyManagement>
@@ -89,44 +87,7 @@
                 <version>${project.version}</version>
                 <scope>test</scope>
             </dependency>
-            <dependency>
-                <groupId>org.jboss.shrinkwrap.resolver</groupId>
-                <artifactId>shrinkwrap-resolver-bom</artifactId>
-                <version>3.1.4</version>
-                <type>pom</type>
-                <scope>import</scope>
-                <exclusions>
-                    <exclusion>
-                        <groupId>javax.inject</groupId>
-                        <artifactId>javax.inject</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.arquillian</groupId>
-                <artifactId>arquillian-bom</artifactId>
-                <type>pom</type>
-                <version>1.7.0.Alpha5</version>
-                <scope>import</scope>
-                <exclusions>
-                    <exclusion>
-                        <groupId>junit</groupId>
-                        <artifactId>junit</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-api</artifactId>
-                <version>${slf4j.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>jul-to-slf4j</artifactId>
-                <version>${slf4j.version}</version>
-                <scope>test</scope>
-            </dependency>
+
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-log4j12</artifactId>
@@ -142,52 +103,13 @@
             <dependency>
                 <groupId>net.sourceforge.htmlunit</groupId>
                 <artifactId>htmlunit</artifactId>
-                <version>2.45.0</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.junit.jupiter</groupId>
-                <artifactId>junit-jupiter-engine</artifactId>
-                <version>5.7.0</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.junit.jupiter</groupId>
-                <artifactId>junit-jupiter-params</artifactId>
-                <version>5.7.0</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <!-- depends on JUnit4, which cannot be excluded -->
-                <groupId>org.testcontainers</groupId>
-                <artifactId>testcontainers</artifactId>
-                <version>1.15.1</version>
-                <scope>test</scope>
-                <exclusions>
-                    <exclusion>
-                        <groupId>javax.xml.bind</groupId>
-                        <artifactId>jaxb-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>javax.annotation</groupId>
-                        <artifactId>javax.annotation-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.hamcrest</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.testcontainers</groupId>
-                <artifactId>junit-jupiter</artifactId>
-                <version>1.15.1</version>
+                <version>2.47.1</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.testcontainers</groupId>
                 <artifactId>mysql</artifactId>
-                <version>1.15.1</version>
+                <version>${testcontainers.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
@@ -205,7 +127,7 @@
             <dependency>
                 <groupId>com.github.database-rider</groupId>
                 <artifactId>rider-junit5</artifactId>
-                <version>1.22.0</version>
+                <version>1.23.0</version>
                 <scope>test</scope>
                 <exclusions>
                     <exclusion>
@@ -225,18 +147,6 @@
                         <artifactId>cdi-api</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.commons</groupId>
-                <artifactId>commons-lang3</artifactId>
-                <version>3.11</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>commons-io</groupId>
-                <artifactId>commons-io</artifactId>
-                <version>2.8.0</version>
-                <scope>test</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -262,23 +172,4 @@
             </plugins>
         </pluginManagement>
     </build>
-
-    <profiles>
-        <profile>
-            <id>payara4</id>
-            <!-- This profile if important for experimenting with Payara4 in this branch -->
-            <properties>
-                <docker.payara.cfg.logging.newImplementation>false</docker.payara.cfg.logging.newImplementation>
-                <docker.payara.domainName>test</docker.payara.domainName>
-            </properties>
-        </profile>
-    </profiles>
-
-    <!--
-     mvn clean install -PBuildExtras,BuildDockerImages -pl :docker-images -amd -Ddocker.payara.tag=XZY-JDK11 -Ddocker.java.repository=adoptopenjdk/openjdk11 -Ddocker.java.tag=jdk-11.0.6_10-debian-slim
-     mvn clean install -Ptest-containers -pl :test-containers -Ddocker.payara.image.forceNew -Ddocker.payara.tag=XZY-JDK11
-
-     mvn clean install -PBuildExtras,BuildDockerImages -pl :docker-images -amd -Dpayara.version=4.1.2.191.14-SNAPSHOT -Ddocker.payara.tag=4.1.2.191.14-SNAPSHOT -Ddocker.payara.rootDirectoryName=payara41 -Ddocker.payara.domainName=payaradomain -Ddocker.payara.serverLogHandler.class=com.sun.enterprise.server.logging.GFFileHandler
-     mvn clean install -Ptest-containers -pl :test-containers -Ddocker.payara.image.forceNew -Ddocker.payara.tag=4.1.2.191.14-SNAPSHOT -Ppayara4
-     -->
 </project>

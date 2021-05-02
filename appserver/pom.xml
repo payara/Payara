@@ -98,7 +98,6 @@
         <jcip-annotations.version>1.0-1</jcip-annotations.version>
         <!-- Yubico client validation version property -->
         <yubico-validation-client2.version>3.0.2.payara-p1</yubico-validation-client2.version>
-        <dockerfile-maven-plugin.version>1.4.13</dockerfile-maven-plugin.version>
     </properties>
 
 
@@ -503,16 +502,6 @@
                 </configuration>
             </plugin>
         </plugins>
-
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>com.spotify</groupId>
-                    <artifactId>dockerfile-maven-plugin</artifactId>
-                    <version>${dockerfile-maven-plugin.version}</version>
-                </plugin>
-            </plugins>
-        </pluginManagement>
     </build>
 
     <dependencyManagement>
@@ -683,7 +672,7 @@
                 <version>${jboss.logging.version}</version>
                 <optional>true</optional>
             </dependency>
-            
+
             <dependency>
                 <groupId>fish.payara.monitoring-console</groupId>
                 <artifactId>monitoring-console-api</artifactId>

@@ -41,13 +41,6 @@
             <artifactId>log4j</artifactId>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.core</groupId>
-            <artifactId>logging</artifactId>
-            <!-- use the version compatible with tests, not with the tested server! -->
-            <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>fish.payara.extras</groupId>
             <artifactId>server-full-docker-image</artifactId>
             <type>pom</type>
@@ -65,20 +58,6 @@
             <groupId>fish.payara.server.internal.deployment</groupId>
             <artifactId>deployment-client</artifactId>
         </dependency>
-
-<!--         <dependency> -->
-<!--             <groupId>org.jboss.arquillian.graphene</groupId> -->
-<!--             <artifactId>graphene-webdriver</artifactId> -->
-<!--             <version>2.3.2</version> -->
-<!--             <type>pom</type> -->
-<!--             <scope>test</scope> -->
-<!--             <exclusions> -->
-<!--                 <exclusion> -->
-<!--                     <groupId>org.hamcrest</groupId> -->
-<!--                     <artifactId>*</artifactId> -->
-<!--                 </exclusion> -->
-<!--             </exclusions> -->
-<!--         </dependency> -->
 
         <dependency>
             <groupId>org.bouncycastle</groupId>
@@ -219,12 +198,4 @@
             </plugin>
         </plugins>
     </build>
-
-    <!--
-     mvn clean install -PBuildExtras,BuildDockerImages -pl :docker-images -amd -Ddocker.payara.tag=XZY-JDK11 -Ddocker.java.repository=adoptopenjdk/openjdk11 -Ddocker.java.tag=jdk-11.0.6_10-debian-slim
-     mvn clean install -Ptest-containers -pl :test-containers -Ddocker.payara.image.forceNew -Ddocker.payara.tag=XZY-JDK11
-
-     mvn clean install -PBuildExtras,BuildDockerImages -pl :docker-images -amd -Dpayara.version=4.1.2.191.14-SNAPSHOT -Ddocker.payara.tag=4.1.2.191.14-SNAPSHOT -Ddocker.payara.rootDirectoryName=payara41 -Ddocker.payara.domainName=payaradomain -Ddocker.payara.serverLogHandler.class=com.sun.enterprise.server.logging.GFFileHandler
-     mvn clean install -Ptest-containers -pl :test-containers -Ddocker.payara.image.forceNew -Ddocker.payara.tag=4.1.2.191.14-SNAPSHOT -Ppayara4
-     -->
 </project>

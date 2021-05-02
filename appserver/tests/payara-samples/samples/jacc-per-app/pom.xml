@@ -53,8 +53,7 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.shrinkwrap.resolver</groupId>
-            <artifactId>shrinkwrap-resolver-impl-maven</artifactId>
-
+            <artifactId>shrinkwrap-resolver-impl-maven-archive</artifactId>
         </dependency>
     </dependencies>
 
