@@ -51,9 +51,9 @@
     </parent>
     <artifactId>security</artifactId>
     <packaging>glassfish-jar</packaging>
-    
+
     <name>Security Core Classes</name>
-    
+
     <developers>
         <developer>
             <id>kumarjayanti</id>
@@ -167,7 +167,7 @@
                  <!--<outputDirectory>${maven.project.build.outputDirectory}</outputDirectory>-->
                  <outputDirectory>target/classes</outputDirectory>
                </configuration>
-             </execution>           
+             </execution>
            </executions>
          </plugin>
         </plugins>
@@ -219,17 +219,21 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-	    <groupId>org.glassfish.external</groupId>
-	    <artifactId>management-api</artifactId>
+            <groupId>org.glassfish.external</groupId>
+            <artifactId>management-api</artifactId>
         </dependency>
         <dependency>
-    	    <groupId>org.glassfish.gmbal</groupId>
-	    <artifactId>gmbal</artifactId>
+            <groupId>org.glassfish.gmbal</groupId>
+            <artifactId>gmbal</artifactId>
         </dependency>
         <dependency>
             <groupId>org.glassfish.annotations</groupId>
             <artifactId>logging-annotation-processor</artifactId>
             <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
         </dependency>
     </dependencies>
 </project>

@@ -44,16 +44,16 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    
+
     <parent>
         <groupId>fish.payara.server.internal.core</groupId>
         <artifactId>nucleus-core</artifactId>
         <version>5.2021.4-SNAPSHOT</version>
     </parent>
-    
+
     <artifactId>glassfish</artifactId>
     <packaging>glassfish-jar</packaging>
-    
+
     <name>Appserver Core Bootstraping Classes</name>
     <description>Glassfish appserver boostraping classes</description>
 
@@ -76,8 +76,8 @@
                 <role>developer</role>
             </roles>
         </developer>
-    </developers> 
-       
+    </developers>
+
     <build>
         <plugins>
             <plugin>
@@ -94,7 +94,7 @@
                     </archive>
                 </configuration>
             </plugin>
-            
+
             <plugin>
                 <!-- We package simple-glassfish-api classes in this bundle for embedded scenario,
                      we expect user to just bootstrap the runtime by installing glassfish.jar alone
@@ -124,7 +124,7 @@
             </plugin>
         </plugins>
     </build>
-    
+
     <dependencies>
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
@@ -146,9 +146,9 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <!-- 
+            <!--
                 Although we package simple-glassfish-api bundle's content in glassfish.jar,
-                in standalone mode, we have to create a launcher classloader that has the 
+                in standalone mode, we have to create a launcher classloader that has the
                 launching APIs and OSGi APIs in same level. SO, we need this jar to be
                 part of distribution. Making it a compile scoped dependency forces this jar
                 to be part of all distribution.
@@ -158,14 +158,18 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-          <groupId>org.glassfish.annotations</groupId>
-          <artifactId>logging-annotation-processor</artifactId>
-          <optional>true</optional>
+            <groupId>org.glassfish.annotations</groupId>
+            <artifactId>logging-annotation-processor</artifactId>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.admin</groupId>
             <artifactId>config-api</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
         </dependency>
     </dependencies>
 </project>

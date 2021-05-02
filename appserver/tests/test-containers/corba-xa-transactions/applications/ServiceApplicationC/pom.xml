@@ -4,7 +4,7 @@
     <parent>
         <artifactId>test-containers-corba-xa-transactions-app</artifactId>
         <groupId>fish.payara.server.internal.tests.corba-xa-transactions-app</groupId>
-        <version>5.2021.2-SNAPSHOT</version>
+        <version>5.2021.4-SNAPSHOT</version>
     </parent>
     <artifactId>ServiceApplicationC</artifactId>
     <packaging>ejb</packaging>

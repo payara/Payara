@@ -49,7 +49,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
     <packaging>glassfish-jar</packaging>
     <name>JMX Monitoring</name>
     <description>Monitoring and logging data from MBeans</description>
-    
+
     <developers>
         <developer>
             <id>thesavage-me</id>
@@ -166,6 +166,10 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
             <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>amx-core</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
         </dependency>
     </dependencies>
 </project>

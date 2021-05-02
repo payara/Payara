@@ -49,7 +49,7 @@
         <artifactId>payara-parent</artifactId>
         <version>5.2021.4-SNAPSHOT</version>
     </parent>
-    
+
     <groupId>fish.payara.server.internal.installer</groupId>
     <artifactId>installer</artifactId>
     <name>Glassfish Installer</name>
@@ -81,23 +81,22 @@
                 </configuration>
             </plugin>
             <plugin>
-		<groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
+                <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
                 <artifactId>maven-antrun-extended-plugin</artifactId>
-   		<executions>
-                   <execution>
-                     <phase>package</phase>
-                     <configuration>
-                       <tasks>
-                         <ant dir="." antfile="build.xml" target="all">
-			 </ant>
-                       </tasks>
-                     </configuration>
-		     <goals>
-                        <goal>run</goal>
-                     </goals>
-                  </execution>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <configuration>
+                            <tasks>
+                                <ant dir="." antfile="build.xml" target="all" />
+                            </tasks>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
                 </executions>
-             </plugin>
+            </plugin>
         </plugins>
     </build>
     <dependencies>
@@ -106,22 +105,22 @@
            <artifactId>engine</artifactId>
            <version>0.9.5.3</version>
            <type>zip</type>
-        </dependency> 
+        </dependency>
         <dependency>
            <groupId>org.openinstaller</groupId>
            <artifactId>resources</artifactId>
            <version>0.9.4.4</version>
            <type>zip</type>
-        </dependency> 
+        </dependency>
         <dependency>
            <groupId>com.sun.pkg</groupId>
            <artifactId>pkg-bootstrap</artifactId>
-         </dependency>
-         <dependency>
+        </dependency>
+        <dependency>
            <groupId>com.sun.pkg</groupId>
            <artifactId>pkg-client</artifactId>
-	</dependency> 
-	<dependency>
+        </dependency>
+        <dependency>
             <groupId>fish.payara.server.internal.registration</groupId>
             <artifactId>registration-api</artifactId>
             <version>${project.parent.version}</version>
@@ -129,7 +128,7 @@
         <dependency>
             <groupId>fish.payara.server.internal.registration</groupId>
             <artifactId>registration-impl</artifactId>
-            <version>${project.parent.version}</version>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>

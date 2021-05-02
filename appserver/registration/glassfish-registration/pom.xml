@@ -50,7 +50,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>glassfish-registration</artifactId>
     <packaging>glassfish-jar</packaging>
-    
+
     <name>GlassFish Registration</name>
     <description>GlassFish specific module for registration</description>
 
@@ -58,12 +58,12 @@
         <dependency>
             <groupId>fish.payara.server.internal.registration</groupId>
             <artifactId>registration-impl</artifactId>
-            <version>${project.parent.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.registration</groupId>
             <artifactId>registration-api</artifactId>
-            <version>${project.parent.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
@@ -81,8 +81,8 @@
         </dependency>
         <dependency>
             <groupId>com.sun.pkg</groupId>
-	    <artifactId>pkg-client</artifactId>
-	    <scope>provided</scope>
-        </dependency>        
-    </dependencies>            
+            <artifactId>pkg-client</artifactId>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
 </project>

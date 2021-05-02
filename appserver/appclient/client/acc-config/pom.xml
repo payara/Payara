@@ -52,9 +52,9 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>acc-config</artifactId>
     <packaging>glassfish-jar</packaging>
-    
+
     <name>ACC Config Classes (JAXB)</name>
-    
+
     <!--
         This module contains classes for the app client configuration
         XML, generated using JAXB from sun-application-client-container_x_y.dtd.
@@ -81,7 +81,7 @@
             <url>http://blogs.sun.com/quinn</url>
             <organization>Oracle, Inc.</organization>
             <roles>
-		        <role>lead</role>
+                <role>lead</role>
                 <role>developer</role>
             </roles>
         </developer>
@@ -101,7 +101,7 @@
             <!--
                 Extracts the DTD(s) from the
                 deployment/dtds module into a temp file.
-                The "generate" phase will use it to create JAXB classes.  
+                The "generate" phase will use it to create JAXB classes.
                 Unit tests use both DTDs for parse testing.
             -->
             <plugin>
@@ -225,5 +225,10 @@
             <groupId>com.sun.xml.bind</groupId>
             <artifactId>jaxb-osgi</artifactId>
         </dependency>
-   </dependencies>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
+    </dependencies>
 </project>

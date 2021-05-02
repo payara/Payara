@@ -51,7 +51,7 @@
     </parent>
     <artifactId>orb-connector</artifactId>
     <packaging>glassfish-jar</packaging>
-    
+
     <name>GlassFish ORB connector implementation</name>
 
     <properties>
@@ -71,11 +71,11 @@
         </developer>
     </developers>
     <dependencies>
-    	<dependency>
+        <dependency>
             <groupId>fish.payara.server.internal.orb</groupId>
             <artifactId>orb-enabler</artifactId>
             <version>${project.version}</version>
-        </dependency>         
+        </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.admin</groupId>
             <artifactId>admin-util</artifactId>
@@ -111,11 +111,11 @@
             <artifactId>jakarta.ejb-api</artifactId>
         </dependency>
         <dependency>
-           <groupId>fish.payara.server.internal.cluster</groupId>
-           <artifactId>cluster-admin</artifactId>
-	   <version>${project.version}</version>
-	   <scope>test</scope>
-       </dependency>
+            <groupId>fish.payara.server.internal.cluster</groupId>
+            <artifactId>cluster-admin</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
            <groupId>fish.payara.server.internal.common</groupId>
            <artifactId>glassfish-api</artifactId>
@@ -131,13 +131,13 @@
            <artifactId>monitoring-core</artifactId>
            <version>${project.version}</version>
        </dependency>
-       <dependency>
-	    <groupId>org.glassfish.external</groupId>
-	    <artifactId>management-api</artifactId>
-	</dependency>
         <dependency>
-	    <groupId>org.glassfish.gmbal</groupId>
-	    <artifactId>gmbal</artifactId>
+            <groupId>org.glassfish.external</groupId>
+            <artifactId>management-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.gmbal</groupId>
+            <artifactId>gmbal</artifactId>
         </dependency>
        <dependency>
            <groupId>fish.payara.server.internal.test-utils</groupId>
@@ -145,6 +145,10 @@
            <version>${project.version}</version>
            <scope>test</scope>
        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
     </dependencies>
     <build>
         <resources>

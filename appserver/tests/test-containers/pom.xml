@@ -5,7 +5,7 @@
     <parent>
         <groupId>fish.payara.server.internal.tests</groupId>
         <artifactId>payara-tests</artifactId>
-        <version>5.2021.2-SNAPSHOT</version>
+        <version>5.2021.4-SNAPSHOT</version>
     </parent>
     <artifactId>test-containers</artifactId>
     <name>Payara Test Containers Modules</name>
@@ -276,8 +276,8 @@
     </profiles>
 
     <!--
-     mvn clean install -PBuildExtras,BuildDockerImages -pl :docker-images -amd -Ddocker.payara.tag=5.2021.2-SNAPSHOT-JDK11 -Ddocker.java.repository=adoptopenjdk/openjdk11 -Ddocker.java.tag=jdk-11.0.6_10-debian-slim
-     mvn clean install -Ptest-containers -pl :test-containers -Ddocker.payara.image.forceNew -Ddocker.payara.tag=5.2021.2-SNAPSHOT-JDK11
+     mvn clean install -PBuildExtras,BuildDockerImages -pl :docker-images -amd -Ddocker.payara.tag=XZY-JDK11 -Ddocker.java.repository=adoptopenjdk/openjdk11 -Ddocker.java.tag=jdk-11.0.6_10-debian-slim
+     mvn clean install -Ptest-containers -pl :test-containers -Ddocker.payara.image.forceNew -Ddocker.payara.tag=XZY-JDK11
 
      mvn clean install -PBuildExtras,BuildDockerImages -pl :docker-images -amd -Dpayara.version=4.1.2.191.14-SNAPSHOT -Ddocker.payara.tag=4.1.2.191.14-SNAPSHOT -Ddocker.payara.rootDirectoryName=payara41 -Ddocker.payara.domainName=payaradomain -Ddocker.payara.serverLogHandler.class=com.sun.enterprise.server.logging.GFFileHandler
      mvn clean install -Ptest-containers -pl :test-containers -Ddocker.payara.image.forceNew -Ddocker.payara.tag=4.1.2.191.14-SNAPSHOT -Ppayara4

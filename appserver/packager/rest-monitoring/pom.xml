@@ -142,7 +142,7 @@
     </profiles>
 
     <dependencies>
-	<dependency>
+        <dependency>
             <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
             <artifactId>rest-monitoring-service</artifactId>
             <version>${project.version}</version>

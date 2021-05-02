@@ -207,9 +207,9 @@
     </properties>
 
     <modules>
+        <module>common</module>
         <module>osgi-platforms</module>
         <module>cluster</module>
-        <module>common</module>
         <module>core</module>
         <module>admin</module>
         <module>flashlight</module>
@@ -256,7 +256,6 @@
                 </plugin>
 
                 <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>${maven.surefire.plugin.version}</version>
                     <configuration>
@@ -933,6 +932,12 @@ Parent is ${project.parent}</echo>
                 <scope>test</scope>
             </dependency>
             <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-core</artifactId>
+                <version>${mockito.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
                 <groupId>org.hamcrest</groupId>
                 <artifactId>hamcrest</artifactId>
                 <version>2.2</version>
@@ -942,6 +947,12 @@ Parent is ${project.parent}</echo>
                 <groupId>org.awaitility</groupId>
                 <artifactId>awaitility</artifactId>
                 <version>4.0.3</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.assertj</groupId>
+                <artifactId>assertj-core</artifactId>
+                <version>3.9.1</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
@@ -1021,12 +1032,6 @@ Parent is ${project.parent}</echo>
                 <groupId>org.bouncycastle</groupId>
                 <artifactId>bcpkix-jdk15on</artifactId>
                 <version>1.64</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.mockito</groupId>
-                <artifactId>mockito-core</artifactId>
-                <version>${mockito.version}</version>
                 <scope>test</scope>
             </dependency>
         </dependencies>
@@ -1254,14 +1259,6 @@ Parent is ${project.parent}</echo>
         </profile>
     </profiles>
 
-    <dependencies>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-            <optional>true</optional>
-        </dependency>
-    </dependencies>
 
     <reporting>
         <plugins>

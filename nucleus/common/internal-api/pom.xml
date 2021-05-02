@@ -48,10 +48,10 @@
         <groupId>fish.payara.server.internal.common</groupId>
         <artifactId>nucleus-common</artifactId>
         <version>5.2021.4-SNAPSHOT</version>
-    </parent>    
+    </parent>
     <artifactId>internal-api</artifactId>
     <packaging>glassfish-jar</packaging>
-    
+
     <name>Private APIs of Glassfish</name>
 
     <build>
@@ -114,24 +114,24 @@
         <dependency>
             <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>simple-glassfish-api</artifactId>
-	    <version>${project.version}</version>
-	    <scope>provided</scope>
+            <version>${project.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.admin</groupId>
             <artifactId>config-api</artifactId>
             <version>${project.version}</version>
-        </dependency> 
+        </dependency>
          <dependency>
             <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>common-util</artifactId>
             <version>${project.version}</version>
-        </dependency> 
+        </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.grizzly</groupId>
             <artifactId>nucleus-grizzly-all</artifactId>
             <version>${project.version}</version>
-      	    <!-- grizzly was bringing in the following old hk2 jar that we don't want on the classpath -->
+            <!-- grizzly was bringing in the following old hk2 jar that we don't want on the classpath -->
             <exclusions>
                <exclusion>
                   <groupId>fish.payara.server.internal.hk2</groupId>
@@ -147,8 +147,10 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>${mockito.version}</version>
-            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
         </dependency>
     </dependencies>
 </project>

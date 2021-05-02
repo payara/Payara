@@ -4,7 +4,7 @@
     <parent>
         <groupId>fish.payara.server.internal.tests.corba-xa-transactions-app</groupId>
         <artifactId>test-containers-corba-xa-transactions-app</artifactId>
-        <version>5.2021.2-SNAPSHOT</version>
+        <version>5.2021.4-SNAPSHOT</version>
     </parent>
     <name>XA TX over CORBA - ComplexCrossEJBCommon</name>
     <artifactId>ComplexCrossEJBCommon</artifactId>

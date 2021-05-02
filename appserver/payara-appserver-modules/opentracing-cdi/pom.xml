@@ -47,11 +47,11 @@
     </parent>
 
     <artifactId>opentracing-cdi</artifactId>
-    
+
     <packaging>glassfish-jar</packaging>
-    
+
     <name>OpenTracing CDI</name>
-    
+
     <dependencies>
         <dependency>
             <groupId>fish.payara.server.internal.payara-modules</groupId>
@@ -61,6 +61,15 @@
         <dependency>
             <groupId>jakarta.platform</groupId>
             <artifactId>jakarta.jakartaee-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
         </dependency>
     </dependencies>
 </project>

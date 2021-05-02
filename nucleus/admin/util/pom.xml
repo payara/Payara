@@ -49,7 +49,7 @@
         <artifactId>nucleus-admin</artifactId>
         <version>5.2021.4-SNAPSHOT</version>
     </parent>
-    
+
     <artifactId>admin-util</artifactId>
     <packaging>glassfish-jar</packaging>
 
@@ -89,7 +89,7 @@
             </resource>
         </resources>
     </build>
-    
+
     <dependencies>
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
@@ -143,7 +143,7 @@
             <groupId>org.jvnet.mimepull</groupId>
             <artifactId>mimepull</artifactId>
             <scope>provided</scope>
-        </dependency>        
+        </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
@@ -164,6 +164,11 @@
             <groupId>org.jline</groupId>
             <artifactId>jline</artifactId>
             <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
         </dependency>
     </dependencies>
 </project>

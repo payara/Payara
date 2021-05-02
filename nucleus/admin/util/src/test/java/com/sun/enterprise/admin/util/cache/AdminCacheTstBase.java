@@ -40,16 +40,21 @@
 package com.sun.enterprise.admin.util.cache;
 
 import com.sun.enterprise.security.store.AsadminSecurityUtil;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.Date;
-import org.glassfish.tests.utils.Utils;
+
 import org.junit.AfterClass;
-import static org.junit.Assert.*;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-/** General test for AdminCache implementations which has file system 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+/** General test for AdminCache implementations which has file system
  * on background
  *
  * @author mmares
@@ -58,7 +63,7 @@ public abstract class AdminCacheTstBase {
 
     public static final String TEST_CACHE_COTEXT = "junit-test-temp/";
     private static boolean skipThisTest = false;
-    private AdminCache cache;
+    private final AdminCache cache;
 
     public AdminCacheTstBase(AdminCache cache) {
         this.cache = cache;
@@ -134,7 +139,7 @@ public abstract class AdminCacheTstBase {
     public AdminCache getCache() {
         return cache;
     }
-    
+
     @Test
     public void testPutGet() {
         if (isSkipThisTest()) {
@@ -175,7 +180,7 @@ public abstract class AdminCacheTstBase {
         //Done
         System.out.println(this.getClass().getName() + ".testPutGet(): Done");
     }
-    
+
     @Test
     public void testExistence() throws InterruptedException {
         if (isSkipThisTest()) {

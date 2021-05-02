@@ -50,12 +50,16 @@ holder.
     <artifactId>payara-rest-endpoints</artifactId>
     <packaging>glassfish-jar</packaging>
     <name>REST Endpoints</name>
-    
+
     <dependencies>
         <dependency>
             <groupId>fish.payara.server.internal.web</groupId>
             <artifactId>web-glue</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
         </dependency>
     </dependencies>
 </project>

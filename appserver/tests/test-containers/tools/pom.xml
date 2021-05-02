@@ -5,7 +5,7 @@
     <parent>
         <groupId>fish.payara.server.internal.tests</groupId>
         <artifactId>test-containers</artifactId>
-        <version>5.2021.2-SNAPSHOT</version>
+        <version>5.2021.4-SNAPSHOT</version>
     </parent>
     <artifactId>test-containers-tools</artifactId>
     <name>Payara Test Containers Tools</name>

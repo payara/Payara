@@ -51,7 +51,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>deployment-admin</artifactId>
     <packaging>glassfish-jar</packaging>
-    
+
     <name>Deployment Related Admin Classes</name>
 
     <developers>
@@ -83,9 +83,9 @@
                 <role>developer</role>
             </roles>
         </developer>
-    </developers>       
+    </developers>
     <build>
-	<resources>
+        <resources>
             <resource>
                 <directory>src/main/java</directory>
                 <includes>
@@ -105,7 +105,7 @@
             <groupId>org.glassfish.hk2</groupId>
             <artifactId>hk2-core</artifactId>
         </dependency>
-	    <dependency>
+        <dependency>
             <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>glassfish-api</artifactId>
             <version>${project.version}</version>
@@ -133,6 +133,11 @@
         <dependency>
             <groupId>org.eclipse.transformer</groupId>
             <artifactId>org.eclipse.transformer.payara</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
         </dependency>
     </dependencies>
 </project>

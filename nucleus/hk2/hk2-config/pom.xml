@@ -50,7 +50,7 @@
         <version>5.2021.4-SNAPSHOT</version>
     </parent>
     <artifactId>hk2-config</artifactId>
-    
+
     <name>HK2 configuration module</name>
     <description>${project.name}</description>
     <packaging>glassfish-jar</packaging>
@@ -59,7 +59,7 @@
         <jakarta.validation.version.upperbound>3</jakarta.validation.version.upperbound>
         <hibernate.validator.version.upperbound>7</hibernate.validator.version.upperbound>
     </properties>
-    
+
     <build>
         <plugins>
             <plugin>
@@ -161,6 +161,10 @@
             <groupId>org.glassfish</groupId>
             <artifactId>jakarta.el</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
         </dependency>
     </dependencies>
     <profiles>

@@ -45,19 +45,25 @@
         <artifactId>rest-monitoring-parent</artifactId>
         <version>5.2021.4-SNAPSHOT</version>
     </parent>
-    
+
     <artifactId>rest-monitoring-war</artifactId>
     <packaging>war</packaging>
     <name>Rest Monitoring War</name>
     <version>1.0.0-Beta</version>
-    
+
     <properties>
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <deploy.skip>true</deploy.skip>
     </properties>
-    
+
     <dependencies>
+        <!-- JSONP Provider -->
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>jakarta.json</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
@@ -77,19 +83,13 @@
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
-            <version>3.9.1</version>
-            <scope>test</scope>
         </dependency>
-
-        <!-- JSONP Provider -->
         <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>jakarta.json</artifactId>
-            <scope>test</scope>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
         </dependency>
     </dependencies>
 

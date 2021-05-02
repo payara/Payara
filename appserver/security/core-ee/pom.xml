@@ -52,7 +52,7 @@
     </parent>
     <artifactId>security-ee</artifactId>
     <packaging>glassfish-jar</packaging>
-    
+
     <name>Java EE Security Core Classes</name>
     <developers>
         <developer>
@@ -148,42 +148,39 @@
                 </configuration>
             </plugin>
             <plugin>
-           <groupId>org.apache.maven.plugins</groupId>
-           <artifactId>maven-dependency-plugin</artifactId>
-           <executions>
-             <execution>
-               <id>copy-installed</id>
-               <phase>process-classes</phase>
-               <goals>
-                 <goal>copy</goal>
-               </goals>
-               <configuration>
-                 <artifactItems>
-                   <artifactItem>
-                     <groupId>solarisrealm</groupId>
-                     <artifactId>libsolsparcauth</artifactId>
-                     <version>1.0</version>
-                     <type>so</type>
-                   </artifactItem>
-                   <artifactItem>
-                     <groupId>solarisrealm</groupId>
-                     <artifactId>libsolx86auth</artifactId>
-                     <version>1.0</version>
-                     <type>so</type>
-                   </artifactItem>
-                 </artifactItems>
-                 <stripVersion>
-                    true
-                 </stripVersion>
-                 <!--<outputDirectory>${maven.project.build.outputDirectory}</outputDirectory>-->
-                 <outputDirectory>target/classes</outputDirectory>
-               </configuration>
-             </execution>    
-           </executions>
-         </plugin> 
-        </plugins> 
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-installed</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>solarisrealm</groupId>
+                                    <artifactId>libsolsparcauth</artifactId>
+                                    <version>1.0</version>
+                                    <type>so</type>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>solarisrealm</groupId>
+                                    <artifactId>libsolx86auth</artifactId>
+                                    <version>1.0</version>
+                                    <type>so</type>
+                                </artifactItem>
+                            </artifactItems>
+                            <stripVersion>true</stripVersion>
+                            <outputDirectory>${project.build.outputDirectory}</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
     </build>
-    
+
     <dependencies>
         <dependency>
             <groupId>fish.payara.server.internal.security</groupId>
@@ -272,12 +269,12 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-	    <groupId>org.glassfish.external</groupId>
-	    <artifactId>management-api</artifactId>
+            <groupId>org.glassfish.external</groupId>
+            <artifactId>management-api</artifactId>
         </dependency>
         <dependency>
-    	    <groupId>org.glassfish.gmbal</groupId>
-	    <artifactId>gmbal</artifactId>
+            <groupId>org.glassfish.gmbal</groupId>
+            <artifactId>gmbal</artifactId>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.packager</groupId>
@@ -288,6 +285,10 @@
             <groupId>fish.payara.server.internal.deployment</groupId>
             <artifactId>deployment-javaee-core</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
         </dependency>
     </dependencies>
 </project>

@@ -47,7 +47,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>hazelcast-bootstrap</artifactId>
     <packaging>glassfish-jar</packaging>
-    
+
     <name>Payara Hazelcast Bootstrap</name>
 
     <developers>
@@ -60,7 +60,7 @@
                 <role>lead</role>
                 <role>developer</role>
             </roles>
-	</developer>
+        </developer>
     </developers>
 
     <dependencies>
@@ -98,6 +98,10 @@
         <dependency>
             <groupId>fish.payara.monitoring-console</groupId>
             <artifactId>monitoring-console-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
         </dependency>
     </dependencies>
 </project>

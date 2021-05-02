@@ -47,17 +47,17 @@
         <groupId>fish.payara.server.internal.cluster</groupId>
         <artifactId>cluster</artifactId>
         <version>5.2021.4-SNAPSHOT</version>
-    </parent>    
+    </parent>
     <artifactId>cluster-common</artifactId>
     <packaging>glassfish-jar</packaging>
-    
+
     <name>cluster-common</name>
     <properties>
         <findbugs.exclude>${project.basedir}/exclude.xml</findbugs.exclude>
     </properties>
 
     <build>
-	<resources>
+        <resources>
             <resource>
                 <directory>src/main/java</directory>
                 <includes>
@@ -71,9 +71,9 @@
                     <include>**/*.1</include>
                 </includes>
             </resource>
-          </resources>
+        </resources>
     </build>
-    
+
     <dependencies>
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
@@ -104,6 +104,10 @@
             <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>j-interop-repackaged</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
         </dependency>
     </dependencies>
 </project>

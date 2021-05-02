@@ -48,7 +48,7 @@
         <artifactId>web</artifactId>
         <version>5.2021.4-SNAPSHOT</version>
     </parent>
-    
+
     <artifactId>web-glue</artifactId>
     <packaging>glassfish-jar</packaging>
 
@@ -85,7 +85,7 @@
     </developers>
 
     <properties>
-	   <findbugs.exclude>${project.basedir}/exclude.xml</findbugs.exclude>
+        <findbugs.exclude>${project.basedir}/exclude.xml</findbugs.exclude>
     </properties>
 
     <build>
@@ -102,7 +102,7 @@
             </resource>
         </resources>
     </build>
-    
+
     <dependencies>
         <dependency>
             <groupId>jakarta.servlet</groupId>
@@ -165,7 +165,6 @@
          <dependency>
             <groupId>fish.payara.api</groupId>
             <artifactId>payara-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.web</groupId>
@@ -260,9 +259,14 @@
             <artifactId>war-util</artifactId>
             <version>${project.version}</version>
         </dependency>
+
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
         </dependency>
     </dependencies>
 </project>

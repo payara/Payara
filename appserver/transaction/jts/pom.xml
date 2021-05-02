@@ -52,9 +52,9 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>jts</artifactId>
     <packaging>glassfish-jar</packaging>
-    
+
     <name>JTS Implementation for Glassfish</name>
-    
+
     <developers>
         <developer>
             <id>mvatkina</id>
@@ -150,6 +150,10 @@
             <artifactId>connectors-runtime</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
         </dependency>
     </dependencies>
 </project>

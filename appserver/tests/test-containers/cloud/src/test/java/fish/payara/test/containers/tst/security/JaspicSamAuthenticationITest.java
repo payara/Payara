@@ -77,14 +77,13 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
+ * This test verifies that JASPIC SAM authentication works after a war file is deployed to
+ * a new clustered domain.
+ * <p>
+ * This test was created as a reproducer for issue CUSTCOM-133.
+ *
  * @author David Matejcek
- * <pre>
- * ./runme-local.sh -Ptest-containers -pl :test-containers -Ddocker.payara.version=4.1.2.191.13 -Ppayara4 -Dit.test=JaspicSamAuthenticationITest
- * ./runme-local.sh -Ptest-containers -pl :test-containers -Ddocker.payara.version=5.2021.2-SNAPSHOT -Ddocker.payara.tag=5.2021.2-4176 -Dit.test=JaspicSamAuthenticationITest
- * ./runme-local.sh -Ptest-containers -pl :test-containers -Ddocker.payara.version=5.2021.2-SNAPSHOT -Ddocker.payara.cfg.logging.newImplementation=false -Dit.test=JaspicSamAuthenticationITest
- * </pre>
  */
-// CUSTCOM-133
 @ExtendWith(DockerITestExtension.class)
 public class JaspicSamAuthenticationITest {
 

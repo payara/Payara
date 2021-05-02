@@ -50,7 +50,7 @@
     </parent>
     <artifactId>jsr109-impl</artifactId>
     <packaging>glassfish-jar</packaging>
-    
+
     <name>JSR-109 implementation to deploy Metro</name>
 
     <developers>
@@ -147,6 +147,10 @@
             <groupId>fish.payara.server.internal.payara-modules</groupId>
             <artifactId>requesttracing-core</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
         </dependency>
     </dependencies>
 </project>
