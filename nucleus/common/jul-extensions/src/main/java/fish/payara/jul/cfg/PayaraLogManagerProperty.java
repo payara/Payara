@@ -67,7 +67,7 @@ public enum PayaraLogManagerProperty implements LogProperty {
      * Property key for a boolean value enabling log record level resolution even when the logging
      * is configured just partially.
      * It can save some time and memory, on the other hand some verbose log records not passing
-     * currently set log levels will be lost (as in all releases before 5.2021.5)
+     * currently set log levels will be lost (as in all releases before 5.2021.4)
      */
     KEY_RESOLVE_LEVEL_WITH_INCOMPLETE_CONFIGURATION("fish.payara.jul.record.resolveLevelWithIncompleteConfiguration"),
     ;
