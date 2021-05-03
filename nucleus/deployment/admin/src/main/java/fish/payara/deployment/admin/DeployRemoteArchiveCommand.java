@@ -45,6 +45,7 @@ import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.util.io.FileUtils;
 import fish.payara.deployment.util.GAVConvertor;
+import fish.payara.deployment.util.URIUtils;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
@@ -322,7 +323,7 @@ public class DeployRemoteArchiveCommand extends DeployCommandParameters implemen
 
 
     private File convertUriToFile(URI uri) throws URISyntaxException, IOException {
-        try (InputStream in = uri.toURL().openStream()) {
+        try (InputStream in = URIUtils.openHttpConnection(uri).getInputStream()) {
             return createFile(in);
         }
     }
