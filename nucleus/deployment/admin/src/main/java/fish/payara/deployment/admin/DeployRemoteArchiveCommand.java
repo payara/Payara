@@ -115,8 +115,11 @@ public class DeployRemoteArchiveCommand extends DeployCommandParameters implemen
         // Initialise to null so we can do a null check later
         File fileToDeploy = null;
 
+        // Should treat uppercase letters as equivalent to lowercase in scheme names
+        // (section 3.1 of the RFC 2396)
+        String lowerPath = path.toLowerCase();
         // Assume only Http or Https connections are direct URIs
-        if (path.startsWith("http://") || path.startsWith("https://")) {
+        if (lowerPath.startsWith("http://") || lowerPath.startsWith("https://")) {
             try {
                 // Download the file to temp, and return a File object to pass to the deploy command
                 fileToDeploy = convertUriToFile(new URI(path));
