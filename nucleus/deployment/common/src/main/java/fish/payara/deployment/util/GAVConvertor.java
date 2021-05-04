@@ -53,9 +53,9 @@ import java.nio.file.Paths;
 import java.util.AbstractMap;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -83,9 +83,7 @@ public class GAVConvertor {
     public Map.Entry<String, URI> getArtefactMapEntry(String GAV, Collection<String> repositoryURIs) throws URISyntaxException {
         final Map<String, String> GAVMap = splitGAV(GAV);
 
-        List<String> repoURIs = new LinkedList<>();
-
-        repoURIs.add(defaultMavenRepository);
+        Set<String> repoURIs = new LinkedHashSet<>();
 
         if (repositoryURIs != null) {
             for (String uri : repositoryURIs) {
@@ -96,6 +94,8 @@ public class GAVConvertor {
                 repoURIs.add(convertedURI);
             }
         }
+
+        repoURIs.add(defaultMavenRepository);
 
         final String relativeURIString = constructRelativeURIString(GAVMap);
         final URI artefactURI = findArtefactURI(repoURIs, relativeURIString);
@@ -151,7 +151,7 @@ public class GAVConvertor {
      * @throws URISyntaxException Thrown if an artefact cannot be found for
      * the provided GAV
      */
-    private URI findArtefactURI(List<String> repositoryURIs, String relativeURIString) throws URISyntaxException {
+    private URI findArtefactURI(Collection<String> repositoryURIs, String relativeURIString) throws URISyntaxException {
         final String[] archiveTypes = new String[] {".jar", ".war", ".ear", ".rar"};
 
         // For each URI...
