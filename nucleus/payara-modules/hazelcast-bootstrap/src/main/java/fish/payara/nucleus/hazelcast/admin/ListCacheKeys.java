@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,7 +40,6 @@
 package fish.payara.nucleus.hazelcast.admin;
 
 import com.hazelcast.cache.impl.CacheEntry;
-import com.hazelcast.cache.impl.CachePartitionsIterator;
 import com.hazelcast.cache.impl.CacheProxy;
 import com.hazelcast.core.DistributedObject;
 import com.hazelcast.core.HazelcastInstance;
@@ -118,7 +117,7 @@ public class ListCacheKeys implements AdminCommand {
                         CacheProxy jcache = (CacheProxy) dobject;
                         if (cacheName == null || cacheName.isEmpty() || cacheName.equals(jcache.getName())) {
                             builder.append("JCache ").append(jcache.getName()).append("\n{");
-                            keyIterator = new CachePartitionsIterator<>(jcache, 10, true);
+                            keyIterator = jcache.iterator();
                         }
                     }
                     while (keyIterator != null && keyIterator.hasNext()) {

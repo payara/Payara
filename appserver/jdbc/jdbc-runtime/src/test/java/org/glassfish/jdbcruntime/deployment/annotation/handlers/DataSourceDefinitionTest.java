@@ -40,17 +40,93 @@
 package org.glassfish.jdbcruntime.deployment.annotation.handlers;
 
 import com.sun.enterprise.deployment.DataSourceDefinitionDescriptor;
-import java.lang.annotation.Annotation;
-import javax.annotation.sql.DataSourceDefinition;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+
+import javax.annotation.sql.DataSourceDefinition;
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.mockito.Mockito.when;
 
 /**
  * Test for DataSourceDefinition processing in DataSourceDefinitionHandler
  * @author jonathan coustick
  */
+@RunWith(MockitoJUnitRunner.class)
 public class DataSourceDefinitionTest {
- 
+
+    @Mock
+    private DataSourceDefinition dataSourceDefinition;
+
+    @Before
+    public void before() {
+        when(dataSourceDefinition.portNumber()).thenReturn(-1);
+        when(dataSourceDefinition.isolationLevel()).thenReturn(-1);
+        when(dataSourceDefinition.transactional()).thenReturn(false);
+        when(dataSourceDefinition.initialPoolSize()).thenReturn(-1);
+        when(dataSourceDefinition.maxPoolSize()).thenReturn(-1);
+        when(dataSourceDefinition.minPoolSize()).thenReturn(-1);
+        when(dataSourceDefinition.maxIdleTime()).thenReturn(-1);
+        when(dataSourceDefinition.maxStatements()).thenReturn(-1);
+        when(dataSourceDefinition.loginTimeout()).thenReturn(-1);
+    }
+
+    @Test
+    public void test_environment_variable_expansion_works() throws Exception {
+        String url = "url";
+        String serverName = "server name";
+        String className = "class name";
+        String name = "name";
+        String description = "description";
+        String user = "user";
+        String password = "password";
+        String databaseName = "database name";
+        String property1 = "property 1";
+        String property2 = "property 2";
+
+        Map<String,String> env = new HashMap<>();
+        env.put("DB_URL", url);
+        env.put("DB_SERVER_NAME", serverName);
+        env.put("DB_CLASS_NAME", className);
+        env.put("DB_NAME", name);
+        env.put("DB_DESCRIPTION", description);
+        env.put("DB_USER", user);
+        env.put("DB_PASSWORD", password);
+        env.put("DB_DATABASE_NAME", databaseName);
+        env.put("DB_PROPERTY1", property1);
+        env.put("DB_PROPERTY2", property2);
+        EnvironmentUtil.setEnv(env);
+        DataSourceDefinitionHandler handler = new DataSourceDefinitionHandler();
+
+        when(dataSourceDefinition.url()).thenReturn("${ENV=DB_URL}");
+        when(dataSourceDefinition.serverName()).thenReturn("${ENV=DB_SERVER_NAME}");
+        when(dataSourceDefinition.className()).thenReturn("${ENV=DB_CLASS_NAME}");
+        when(dataSourceDefinition.name()).thenReturn("${ENV=DB_NAME}");
+        when(dataSourceDefinition.description()).thenReturn("${ENV=DB_DESCRIPTION}");
+        when(dataSourceDefinition.user()).thenReturn("${ENV=DB_USER}");
+        when(dataSourceDefinition.password()).thenReturn("${ENV=DB_PASSWORD}");
+        when(dataSourceDefinition.databaseName()).thenReturn("${ENV=DB_DATABASE_NAME}");
+        when(dataSourceDefinition.properties()).thenReturn(new String[]{"property1=${ENV=DB_PROPERTY1}", "property2=${ENV=DB_PROPERTY2}"});
+
+        DataSourceDefinitionDescriptor descriptor = handler.createDescriptor(dataSourceDefinition);
+
+        Assert.assertEquals(url,descriptor.getUrl());
+        Assert.assertNull(descriptor.getServerName()); // because url is set
+        Assert.assertEquals(className,descriptor.getClassName());
+        Assert.assertEquals(name,descriptor.getName());
+        Assert.assertEquals(description,descriptor.getDescription());
+        Assert.assertEquals(user,descriptor.getUser());
+        Assert.assertEquals(password,descriptor.getPassword());
+        Assert.assertEquals(databaseName,descriptor.getDatabaseName());
+        Assert.assertEquals(property1,descriptor.getProperty("property1"));
+        Assert.assertEquals(property2,descriptor.getProperty("property2"));
+    }
+
     /**
      * Test to ensure that if the URL has been set, it will override the default serverName of localhost
      * and cause that to be set to null.
@@ -58,126 +134,23 @@ public class DataSourceDefinitionTest {
     @Test
     public void testServerAndURL() {
         DataSourceDefinitionHandler handler = new DataSourceDefinitionHandler();
-        
+
+        String url = "http://database:5432/demo";
+        String serverName = "localhost";
+
         //Check url overrides serverName and sets it to null
-        DataSourceDefinition definition = new DataSourceDefinitionImpl() {
-            @Override
-            public String url() {
-                return "http://database:5432/demo";
-            }
+        when(dataSourceDefinition.url()).thenReturn(url);
+        when(dataSourceDefinition.serverName()).thenReturn(serverName);
 
-            @Override
-            public String serverName() {
-                return "localhost";
-            }
-            
-        };
-        DataSourceDefinitionDescriptor descriptor = handler.createDescriptor(definition);
+        DataSourceDefinitionDescriptor descriptor = handler.createDescriptor(dataSourceDefinition);
+
         Assert.assertNull(descriptor.getServerName());
-        
-        
-        //Check if url is not set then serverName is left as-is
-        definition = new DataSourceDefinitionImpl() {
-            @Override
-            public String url() {
-                return null;
-            }
 
-            @Override
-            public String serverName() {
-                return "localhost";
-            }
-        };
-        descriptor = handler.createDescriptor(definition);
+        //Check if url is not set then serverName is left as-is
+        when(dataSourceDefinition.url()).thenReturn(null);
+
+        descriptor = handler.createDescriptor(dataSourceDefinition );
+
         Assert.assertEquals("localhost", descriptor.getServerName());
     }
-    
-    abstract class DataSourceDefinitionImpl implements DataSourceDefinition {
-        @Override
-            public String name() {
-                return null;
-            }
-
-            @Override
-            public String className() {
-                return null;
-            }
-
-            @Override
-            public String description() {
-                return null;
-            }
-
-            @Override
-            public String user() {
-                return null;
-            }
-
-            @Override
-            public String password() {
-                return null;
-            }
-
-            @Override
-            public String databaseName() {
-                return null;
-            }
-
-            @Override
-            public int portNumber() {
-                return -1;
-            }
-
-            @Override
-            public int isolationLevel() {
-                return -1;
-            }
-
-            @Override
-            public boolean transactional() {
-                return false;
-            }
-
-            @Override
-            public int initialPoolSize() {
-                return -1;
-            }
-
-            @Override
-            public int maxPoolSize() {
-                return -1;
-            }
-
-            @Override
-            public int minPoolSize() {
-                return -1;
-            }
-
-            @Override
-            public int maxIdleTime() {
-                return -1;
-            }
-
-            @Override
-            public int maxStatements() {
-                return -1;
-            }
-
-            @Override
-            public String[] properties() {
-                return null;
-            }
-
-            @Override
-            public int loginTimeout() {
-                return -1;
-            }
-
-            @Override
-            public Class<? extends Annotation> annotationType() {
-                return DataSourceDefinition.class;
-            }
-    }
-            
-            
 }

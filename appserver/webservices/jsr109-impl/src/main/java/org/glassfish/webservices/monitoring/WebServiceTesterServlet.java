@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2021 Payara Foundation and/or its affiliates
 /*
  * WebServiceTesterServlet.java
  *
@@ -101,6 +101,13 @@ public class WebServiceTesterServlet extends HttpServlet {
             WebServiceTesterServlet servlet = new WebServiceTesterServlet(endpoint);
 
             response.setCharacterEncoding("UTF-8");
+
+            // Validate Host Header to help prevent Host Header Attacks
+            if (!servlet.isValidHostHeader(request)) {
+                throw new ServletException("Host Header does not appear to be valid - it does not appear to be a " +
+                        "valid IPv6 literal, IPv4 dotted-decimal, or DNS name.");
+            }
+
             if (request.getMethod().equalsIgnoreCase("GET")) {
                 servlet.doGet(request, response);
             } else {
@@ -645,5 +652,65 @@ public class WebServiceTesterServlet extends HttpServlet {
 
     private String encodeHTML(String html) {
         return html.replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+    }
+
+    /**
+     * Method to test that the Host Header is valid and doesn't have any illegal characters, to help prevent Host Header
+     * Attacks.
+     *
+     * @param request The {@link HttpServletRequest} from the
+     * {@link WebServiceTesterServlet#invoke(HttpServletRequest, HttpServletResponse, WebServiceEndpoint)} method
+     * @return True if the Host Header is valid, false if it isn't
+     */
+    private boolean isValidHostHeader(HttpServletRequest request) {
+        // Get the Host Header
+        String serverName = request.getServerName();
+
+        // Decode the Host Header
+        String decodedServerName = null;
+        try {
+            decodedServerName = URLDecoder.decode(serverName, "UTF-8");
+        } catch (UnsupportedEncodingException unsupportedEncodingException) {
+            logger.log(Level.WARNING, "Could not decode URL during validation, assuming Host Header is invalid.",
+                    unsupportedEncodingException);
+            return false;
+        }
+
+        // Shouldn't Happen™, but just in case
+        if (decodedServerName == null) {
+            logger.log(Level.WARNING, "Host Header decoded to null during validation, assuming Host Header is invalid.");
+            return false;
+        }
+
+        // Check IPv6 literal: []
+        if (decodedServerName.startsWith("[") && decodedServerName.endsWith("]")) {
+            return true;
+        }
+
+        // Check IPv4 dotted-decimal: xxx.xxx.xxx.xxx
+        if (checkValidIpv4DottedDecimal(decodedServerName)) {
+            return true;
+        }
+
+        // Check DNS name is valid - ASCII alphanumerics and "-" only, no segment longer than 63 characters,
+        // sections separated with ".", possibly ending with "."
+        if (checkValidDnsName(decodedServerName)) {
+            return true;
+        }
+
+        // No match implies invalid host header / server name
+        return false;
+    }
+
+    // Split off for unit testing
+    protected static boolean checkValidIpv4DottedDecimal(String decodedServerName) {
+        return decodedServerName.matches(
+                "^((0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)\\.){3}(0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)$");
+    }
+
+    // Split off for unit testing
+    protected static boolean checkValidDnsName(String decodedServerName) {
+        // NOTE: HttpServletRequest.getServerName strips the port so no need to check
+        return decodedServerName.matches("((?!-)[\\w-]{1,63}(?<!-)(\\.|$))+");
     }
 }

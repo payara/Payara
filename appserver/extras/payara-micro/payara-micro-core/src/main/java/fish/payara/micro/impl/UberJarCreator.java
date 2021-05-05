@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,6 +39,8 @@
  */
 package fish.payara.micro.impl;
 
+import fish.payara.deployment.util.URIUtils;
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -46,9 +48,17 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.JarURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
-import java.util.*;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
@@ -58,12 +68,13 @@ import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 
 /**
- *
  * Class for creating the UberJar
  *
  * @author steve
  */
 public class UberJarCreator {
+
+    private static final Logger LOGGER = Logger.getLogger(UberJarCreator.class.getName());
 
     private File outputFile;
     private String mainClassName;
@@ -72,11 +83,9 @@ public class UberJarCreator {
     private File domainDir;
     private final List<File> libs = new LinkedList<>();
     private final List<File> classes = new LinkedList<>();
-    private final List<File> deployments = new LinkedList<>();
-    private final Map<String, URL> deploymentURLs = new LinkedHashMap<>();
-    private List<File> copiedFiles = new LinkedList();
+    private final Map<String, URI> deployments = new LinkedHashMap<>();
+    private final List<File> copiedFiles = new LinkedList<>();
 
-    private File deploymentDir;
     private File copyDirectory;
     private final Properties bootProperties = new Properties();
     private Properties loggingProperties;
@@ -87,7 +96,6 @@ public class UberJarCreator {
     private File postBootCommands;
     private Properties contextRoots;
 
-    private static final Logger LOGGER = Logger.getLogger(UberJarCreator.class.getName());
     private File postDeployCommands;
 
     UberJarCreator(String fileName) {
@@ -118,10 +126,6 @@ public class UberJarCreator {
         contextRoots = props;
     }
 
-    public void setDeploymentDir(File deploymentDir) {
-        this.deploymentDir = deploymentDir;
-    }
-
     public void setDomainDir(File domainDir) {
         this.domainDir = domainDir;
     }
@@ -140,7 +144,7 @@ public class UberJarCreator {
 
     /**
      * Directory to be copied into the root of the uber Jar file
-     * @param copyDirectory
+     * @param copyDirectory the copied directory
      */
     public void setDirectoryToCopy(File copyDirectory){
         this.copyDirectory = copyDirectory;
@@ -158,12 +162,8 @@ public class UberJarCreator {
         libs.add(jar);
     }
 
-    public void addDeployment(File jar) {
-        deployments.add(jar);
-    }
-
-    public void addDeployment(String name, URL url) {
-        deploymentURLs.put(name, url);
+    public void addDeployment(String name, URI uri) {
+        deployments.put(name, uri);
     }
 
     public void setDomainXML(File domainXML) {
@@ -171,7 +171,7 @@ public class UberJarCreator {
     }
 
     public void addBootProperties(Properties props) {
-        Enumeration names = props.propertyNames();
+        Enumeration<?> names = props.propertyNames();
         while (names.hasMoreElements()) {
             String name = (String) names.nextElement();
             bootProperties.setProperty(name, props.getProperty(name));
@@ -201,8 +201,8 @@ public class UberJarCreator {
                     // skip the entry as we will add later
                 } else {
                     JarEntry newEntry = new JarEntry(entry.getName());
-                    if (entry.getName().endsWith("jar") || entry.getName().endsWith("rar")) {
-                        newEntry.setMethod(entry.STORED);
+                    if (entry.getName().endsWith(".jar") || entry.getName().endsWith(".rar")) {
+                        newEntry.setMethod(JarEntry.STORED);
                         newEntry.setSize(entry.getSize());
                         newEntry.setCrc(entry.getCrc());
                         if (entry.getMethod() == JarEntry.STORED) {
@@ -212,7 +212,7 @@ public class UberJarCreator {
                     jos.putNextEntry(newEntry);
                     try (InputStream is = getInputStream(jFile, entry)) {
                         byte[] buffer = new byte[4096];
-                        int bytesRead = 0;
+                        int bytesRead;
                         while ((bytesRead = is.read(buffer)) != -1) {
                             jos.write(buffer, 0, bytesRead);
                         }
@@ -230,8 +230,8 @@ public class UberJarCreator {
 
                     try (CheckedInputStream check = new CheckedInputStream(new FileInputStream(lib), new CRC32());
                          BufferedInputStream in = new BufferedInputStream(check)) {
-                        while (in.read(new byte[3000]) != -1){
-                            //read in file completly
+                        while (in.read(new byte[3000]) != -1) {
+                            // read in file completely
                         }
                         libEntry.setCrc(check.getChecksum().getValue());
                         jos.putNextEntry(libEntry);
@@ -242,58 +242,34 @@ public class UberJarCreator {
                 }
             }
 
-            if (deployments != null) {
-                for (File deployment : deployments) {
-                    JarEntry deploymentEntry = new JarEntry("MICRO-INF/deploy/" + deployment.getName());
-                    jos.putNextEntry(deploymentEntry);
-                    Files.copy(deployment.toPath(), jos);
-                    jos.flush();
-                    jos.closeEntry();
-                }
-            }
-
-            if (deploymentDir != null) {
-                for (File deployment : deploymentDir.listFiles()) {
-                    if (deployment.isFile()) {
-                        JarEntry deploymentEntry = new JarEntry("MICRO-INF/deploy/" + deployment.getName());
-                        jos.putNextEntry(deploymentEntry);
-                        Files.copy(deployment.toPath(), jos);
-                        jos.flush();
-                        jos.closeEntry();
-
+            for (Map.Entry<String, URI> deployment : deployments.entrySet()) {
+                JarEntry deploymentEntry = new JarEntry("MICRO-INF/deploy/" + deployment.getKey());
+                jos.putNextEntry(deploymentEntry);
+                URI deploymentURI = deployment.getValue();
+                if ("file".equalsIgnoreCase(deploymentURI.getScheme())) {
+                    Files.copy(Paths.get(deploymentURI), jos);
+                } else {
+                    try (InputStream is = URIUtils.openHttpConnection(deploymentURI).getInputStream()) {
+                        byte[] buffer = new byte[4096];
+                        int bytesRead;
+                        while ((bytesRead = is.read(buffer)) != -1) {
+                            jos.write(buffer, 0, bytesRead);
+                        }
                     }
                 }
+                jos.flush();
+                jos.closeEntry();
             }
 
             if (copyDirectory != null) {
                 String basePath = copyDirectory.getCanonicalPath().replaceAll(copyDirectory + "$", "");
                 List<File> filesToCopy = fillFiles(copyDirectory);
                 for (File file : filesToCopy) {
-
                         JarEntry deploymentEntry = new JarEntry(file.getCanonicalPath().replace(basePath, ""));
                         jos.putNextEntry(deploymentEntry);
                         Files.copy(file.toPath(), jos);
                         jos.flush();
                         jos.closeEntry();
-                }
-            }
-
-            // add deployment URLs
-            for (Map.Entry<String, URL> deploymentMapEntry : deploymentURLs.entrySet()) {
-                URL deployment = deploymentMapEntry.getValue();
-                String name = deploymentMapEntry.getKey();
-                try (InputStream is = deployment.openStream()) {
-                    JarEntry deploymentEntry = new JarEntry("MICRO-INF/deploy/" + name);
-                    jos.putNextEntry(deploymentEntry);
-                    byte[] buffer = new byte[4096];
-                    int bytesRead = 0;
-                    while ((bytesRead = is.read(buffer)) != -1) {
-                        jos.write(buffer, 0, bytesRead);
-                    }
-                    jos.flush();
-                    jos.closeEntry();
-                } catch (IOException ioe) {
-                    LOGGER.log(Level.WARNING, "Error adding deployment " + name + " to the Uber Jar Skipping...", ioe);
                 }
             }
 
@@ -368,8 +344,8 @@ public class UberJarCreator {
                             appEntry.setSize(app.length());
                             try (CheckedInputStream check = new CheckedInputStream(new FileInputStream(app), new CRC32());
                                  BufferedInputStream in = new BufferedInputStream(check)) {
-                                while (in.read(new byte[300]) != -1){
-                                //read in file completly
+                                while (in.read(new byte[300]) != -1) {
+                                    // read in file completely
                                 }
                                 appEntry.setCrc(check.getChecksum().getValue());
                                 jos.putNextEntry(appEntry);
@@ -382,11 +358,9 @@ public class UberJarCreator {
                 }
             }
             LOGGER.info("Built Uber Jar " + outputFile.getAbsolutePath() + " in " + (System.currentTimeMillis() - start) + " (ms)");
-
         } catch (IOException ex) {
             LOGGER.log(Level.SEVERE, "Error creating Uber Jar " + outputFile.getAbsolutePath(), ex);
         }
-
     }
 
     private InputStream getInputStream(JarFile jFile, JarEntry entry) throws IOException {
@@ -412,15 +386,15 @@ public class UberJarCreator {
     /**
      * Returns a list of all files in directory and subdirectories
      * @param directory The parent directory to search within
-     * @return
+     * @return the list of files
      */
     public static List<File> fillFiles(File directory){
         List<File> allFiles = new LinkedList<>();
-        for (File file : directory.listFiles()){
-            if (file.isDirectory()){
+        for (File file : directory.listFiles()) {
+            if (file.isDirectory()) {
                 allFiles.addAll(fillFiles(file));
             } else {
-                if (file.canRead()){
+                if (file.canRead()) {
                     allFiles.add(file);
                 } else {
                     LOGGER.log(Level.WARNING, "Unable to read file " + file.getAbsolutePath() + ", skipping...");
@@ -449,5 +423,4 @@ public class UberJarCreator {
         }
         return files;
     }
-
 }

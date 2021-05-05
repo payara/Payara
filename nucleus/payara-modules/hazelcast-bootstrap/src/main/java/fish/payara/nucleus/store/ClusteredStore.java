@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2016-2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -64,6 +64,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Logger;
+import org.glassfish.internal.api.JavaEEContextUtil;
+import org.glassfish.internal.api.JavaEEContextUtil.Context;
 
 /**
  * Very Simple Store interface to Hazelcast
@@ -73,13 +75,16 @@ import java.util.logging.Logger;
 @RunLevel(StartupRunLevel.VAL)
 public class ClusteredStore implements EventListener, MonitoringDataSource {
     private static final Logger logger = Logger.getLogger(ClusteredStore.class.getCanonicalName());
-    
+
     @Inject
     private HazelcastCore hzCore;
-    
+
     @Inject
     private Events events;
-    
+
+    @Inject
+    private JavaEEContextUtil ctxUtil;
+
     @PostConstruct
     public void postConstruct() {
         events.register(this);
@@ -88,18 +93,20 @@ public class ClusteredStore implements EventListener, MonitoringDataSource {
     @Override
     public void collect(MonitoringDataCollector collector) {
         if (hzCore.isEnabled()) {
-            HazelcastInstance hz = hzCore.getInstance();
-            for (DistributedObject obj : hz.getDistributedObjects()) {
-                if (MapService.SERVICE_NAME.equals(obj.getServiceName())) {
-                    MapConfig config = hz.getConfig().getMapConfig(obj.getName());
-                    if (config.isStatisticsEnabled()) {
-                        IMap<Object, Object> map = hz.getMap(obj.getName());
-                        if (map != null) {
-                            LocalMapStats stats = map.getLocalMapStats();
-                            collector.in("map").group(map.getName())
-                                .collect("GetCount", stats.getGetOperationCount())
-                                .collect("PutCount", stats.getPutOperationCount())
-                                .collect("EntryCount", stats.getOwnedEntryCount());
+            try (Context ctx = ctxUtil.empty().pushContext()) {
+                HazelcastInstance hz = hzCore.getInstance();
+                for (DistributedObject obj : hz.getDistributedObjects()) {
+                    if (MapService.SERVICE_NAME.equals(obj.getServiceName())) {
+                        MapConfig config = hz.getConfig().getMapConfig(obj.getName());
+                        if (config.isStatisticsEnabled()) {
+                            IMap<Object, Object> map = hz.getMap(obj.getName());
+                            if (map != null) {
+                                LocalMapStats stats = map.getLocalMapStats();
+                                collector.in("map").group(map.getName())
+                                        .collect("GetCount", stats.getGetOperationCount())
+                                        .collect("PutCount", stats.getPutOperationCount())
+                                        .collect("EntryCount", stats.getOwnedEntryCount());
+                            }
                         }
                     }
                 }
@@ -110,15 +117,15 @@ public class ClusteredStore implements EventListener, MonitoringDataSource {
     public UUID getInstanceId() {
         return hzCore.getUUID();
     }
-    
+
     /**
      * Returns true if Hazelcast is enabled
-     * @return 
+     * @return
      */
     public boolean isEnabled() {
         return hzCore.isEnabled();
     }
-    
+
     /**
      * Stores a value in Hazelcast
      * @param storeName The name of the store to put the value into.
@@ -130,16 +137,18 @@ public class ClusteredStore implements EventListener, MonitoringDataSource {
     public boolean set(String storeName, Serializable key, Serializable value) {
         boolean result = false;
         if (isEnabled()) {
-            if (value != null && hzCore.isDatagridEncryptionEnabled()) {
-                value = new PayaraHazelcastEncryptedValueHolder(HazelcastSymmetricEncryptor.encode(
-                        HazelcastSymmetricEncryptor.objectToByteArray(value)));
+            try (Context ctx = ctxUtil.empty().pushContext()) {
+                if (value != null && hzCore.isDatagridEncryptionEnabled()) {
+                    value = new PayaraHazelcastEncryptedValueHolder(HazelcastSymmetricEncryptor.encode(
+                            HazelcastSymmetricEncryptor.objectToByteArray(value)));
+                }
+                hzCore.getInstance().getMap(storeName).set(key, value);
+                result = true;
             }
-            hzCore.getInstance().getMap(storeName).set(key, value);
-            result = true;
         }
         return result;
     }
-    
+
     /**
      * Removes a key/value pair of a Hazelcast store.
      * The store will be created if it does not already exist.
@@ -150,51 +159,57 @@ public class ClusteredStore implements EventListener, MonitoringDataSource {
     public boolean remove(String storeName, Serializable key) {
         boolean result = false;
         if (isEnabled()) {
-            IMap map = hzCore.getInstance().getMap(storeName);
-            if (map != null) {
-                Object value = map.remove(key);
-                result = true;
+            try (Context ctx = ctxUtil.empty().pushContext()) {
+                IMap map = hzCore.getInstance().getMap(storeName);
+                if (map != null) {
+                    Object value = map.remove(key);
+                    result = true;
+                }
             }
         }
         return result;
     }
-    
+
     /**
      * Checks to see if a a key already exists in Hazelcast.
      * The store will be created if it does not already exist.
      * @param storeName
      * @param key
-     * @return 
+     * @return
      */
     public boolean containsKey(String storeName, Serializable key) {
          boolean result = false;
         if (isEnabled()) {
-            IMap map = hzCore.getInstance().getMap(storeName);
-            if (map != null) {
-                result = map.containsKey(key);
+            try (Context ctx = ctxUtil.empty().pushContext()) {
+                IMap map = hzCore.getInstance().getMap(storeName);
+                if (map != null) {
+                    result = map.containsKey(key);
+                }
             }
         }
-        return result;       
+        return result;
     }
-    
+
     /**
      * Gets the value from Hazelcast with the specified key in the given store.
      * The store will be created if it does not already exist.
      * @param storeName
      * @param key
-     * @return 
+     * @return
      */
     public Serializable get(String storeName, Serializable key) {
         Serializable result = null;
         if (isEnabled()) {
-            IMap map = hzCore.getInstance().getMap(storeName);
-            if (map != null) {
-                result = (Serializable) map.get(key);
+            try (Context ctx = ctxUtil.empty().pushContext()) {
+                IMap map = hzCore.getInstance().getMap(storeName);
+                if (map != null) {
+                    result = (Serializable) map.get(key);
 
-                if (result instanceof PayaraHazelcastEncryptedValueHolder && hzCore.isDatagridEncryptionEnabled()) {
-                    result = (Serializable) HazelcastSymmetricEncryptor.byteArrayToObject(
-                            HazelcastSymmetricEncryptor.decode(
-                                    ((PayaraHazelcastEncryptedValueHolder) result).getEncryptedObjectBytes()));
+                    if (result instanceof PayaraHazelcastEncryptedValueHolder && hzCore.isDatagridEncryptionEnabled()) {
+                        result = (Serializable) HazelcastSymmetricEncryptor.byteArrayToObject(
+                                HazelcastSymmetricEncryptor.decode(
+                                        ((PayaraHazelcastEncryptedValueHolder) result).getEncryptedObjectBytes()));
+                    }
                 }
             }
         }
@@ -220,19 +235,21 @@ public class ClusteredStore implements EventListener, MonitoringDataSource {
     public Map<Serializable, Serializable> getMap(String storeName) {
         HashMap<Serializable,Serializable> result = new HashMap<>();
         if (hzCore.isEnabled()) {
-            IMap map = hzCore.getInstance().getMap(storeName);
-            if (map != null) {
-                Set<Serializable> keys = map.keySet();
-                for (Serializable key : keys) {
-                    Serializable value = (Serializable) map.get(key);
+            try (Context ctx = ctxUtil.empty().pushContext()) {
+                IMap map = hzCore.getInstance().getMap(storeName);
+                if (map != null) {
+                    Set<Serializable> keys = map.keySet();
+                    for (Serializable key : keys) {
+                        Serializable value = (Serializable) map.get(key);
 
-                    if (value instanceof PayaraHazelcastEncryptedValueHolder && hzCore.isDatagridEncryptionEnabled()) {
-                        value = (Serializable) HazelcastSymmetricEncryptor.byteArrayToObject(
-                                HazelcastSymmetricEncryptor.decode(
-                                        ((PayaraHazelcastEncryptedValueHolder) value).getEncryptedObjectBytes()));
+                        if (value instanceof PayaraHazelcastEncryptedValueHolder && hzCore.isDatagridEncryptionEnabled()) {
+                            value = (Serializable) HazelcastSymmetricEncryptor.byteArrayToObject(
+                                    HazelcastSymmetricEncryptor.decode(
+                                            ((PayaraHazelcastEncryptedValueHolder) value).getEncryptedObjectBytes()));
+                        }
+
+                        result.put(key, value);
                     }
-
-                    result.put(key, value);
                 }
             }
         }

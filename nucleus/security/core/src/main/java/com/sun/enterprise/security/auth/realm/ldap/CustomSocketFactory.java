@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.security.auth.realm.ldap;
 
 import java.io.IOException;
@@ -71,7 +72,7 @@ public class CustomSocketFactory extends SocketFactory implements Comparator<Soc
     private SocketFactory socketFactory;
 
     public static final String SSL = "SSL";
-    protected static final Logger _logger = SecurityLoggerInfo.getLogger();
+    protected static final Logger LOGGER = SecurityLoggerInfo.getLogger();
     protected static final StringManager sm = StringManager.getManager(CustomSocketFactory.class);
     private static final CustomSocketFactory customSocketFactory = new CustomSocketFactory();
 
@@ -83,13 +84,14 @@ public class CustomSocketFactory extends SocketFactory implements Comparator<Soc
             sc.init(sslUtils.getKeyManagers(), sslUtils.getTrustManagers(), SharedSecureRandom.get());
             socketFactory = sc.getSocketFactory();
         } catch (Exception ex) {
-            _logger.log(Level.WARNING, SecurityLoggerInfo.securityExceptionError, ex);
+            LOGGER.log(Level.WARNING, SecurityLoggerInfo.securityExceptionError, ex);
         }
     }
 
     /**
      * @see javax.net.SocketFactory#createSocket(java.lang.String, int)
      */
+    @Override
     public Socket createSocket(String arg0, int arg1) throws IOException, UnknownHostException {
         return socketFactory.createSocket(arg0, arg1);
     }
@@ -97,6 +99,7 @@ public class CustomSocketFactory extends SocketFactory implements Comparator<Soc
     /**
      * @see javax.net.SocketFactory#createSocket(java.net.InetAddress, int)
      */
+    @Override
     public Socket createSocket(InetAddress arg0, int arg1) throws IOException {
         return socketFactory.createSocket(arg0, arg1);
     }
@@ -104,6 +107,7 @@ public class CustomSocketFactory extends SocketFactory implements Comparator<Soc
     /**
      * @see javax.net.SocketFactory#createSocket(java.lang.String, int, java.net.InetAddress, int)
      */
+    @Override
     public Socket createSocket(String arg0, int arg1, InetAddress arg2, int arg3) throws IOException, UnknownHostException {
         return socketFactory.createSocket(arg0, arg1, arg2, arg3);
     }
@@ -111,10 +115,12 @@ public class CustomSocketFactory extends SocketFactory implements Comparator<Soc
     /**
      * @see javax.net.SocketFactory#createSocket(java.net.InetAddress, int, java.net.InetAddress, int)
      */
+    @Override
     public Socket createSocket(InetAddress arg0, int arg1, InetAddress arg2, int arg3) throws IOException {
         return socketFactory.createSocket(arg0, arg1, arg2, arg3);
     }
 
+    @Override
     public int compare(SocketFactory s1, SocketFactory s2) {
         return s1.getClass().toString().compareTo(s2.getClass().toString());
     }

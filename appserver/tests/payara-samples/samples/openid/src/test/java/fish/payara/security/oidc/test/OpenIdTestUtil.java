@@ -44,6 +44,8 @@ import com.gargoylesoftware.htmlunit.WebClient;
 import fish.payara.security.oidc.client.Callback;
 import fish.payara.security.oidc.client.SecuredPage;
 import fish.payara.security.oidc.client.UnsecuredPage;
+import fish.payara.security.oidc.client.ear.SomeEJB;
+import fish.payara.security.oidc.client.eltests.SecuredPageEL;
 import fish.payara.security.oidc.server.ApplicationConfig;
 import fish.payara.security.oidc.server.OidcProvider;
 import java.io.IOException;
@@ -51,7 +53,7 @@ import java.net.URL;
 import javax.ws.rs.core.Response.Status;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.shrinkwrap.api.spec.*;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -68,19 +70,37 @@ public class OpenIdTestUtil {
                 .addClass(ApplicationConfig.class)
                 .addAsResource("openid-configuration.json")
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
-        System.out.println(war.toString(true));
         return war;
     }
 
     public static WebArchive createClientDeployment() {
         WebArchive war = ShrinkWrap
-                .create(WebArchive.class)
+                .create(WebArchive.class, "openid-client.war")
                 .addClass(Callback.class)
                 .addClass(SecuredPage.class)
                 .addClass(UnsecuredPage.class)
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
-        System.out.println(war.toString(true));
         return war;
+    }
+
+    public static WebArchive createClientDeploymentForELTest() {
+        WebArchive war = ShrinkWrap
+                .create(WebArchive.class, "openid-client.war")
+                .addPackage(SecuredPageEL.class.getPackage())
+                .addClass(Callback.class)
+                .addClass(UnsecuredPage.class)
+                .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+        return war;
+    }
+
+    public static EnterpriseArchive createClientDeploymentForELInEarTest() {
+        WebArchive war = createClientDeploymentForELTest();
+        JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "openid-client-dummy-ejb.jar")
+                .addClass(SomeEJB.class);
+        EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "openid-client.ear")
+                .addAsModules(war, ejbJar)
+                .addAsResource("ear/META-INF/application.xml", "application.xml");
+        return ear;
     }
 
     public static void testOpenIdConnect(WebClient webClient, URL base) throws IOException {

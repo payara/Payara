@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2021] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.mbeanserver.ssl;
 
@@ -86,7 +87,9 @@ public class SSLParams {
     private String ssl3TlsCiphers;
     private Boolean tlsEnabled=true;
     private Boolean tlsRollBackEnabled=false;
-
+    private Boolean hstsEnabled = false;
+    private Boolean hstsSubDomains = false;
+    private Boolean hstsPreload = false;
 
 
 
@@ -335,6 +338,33 @@ public class SSLParams {
 
     public void setTlsRollbackEnabled(String tlsRollBackEnabled) {
         this.tlsRollBackEnabled = Boolean.parseBoolean(tlsRollBackEnabled);
+    }
+
+    /**
+     * Determines whether Strict Transport Security is set
+     */
+    public Boolean getHstsEnabled() {
+        return hstsEnabled;
+    }
+
+    public void setHstsEnabled(String hstsEnabled) {
+        this.hstsEnabled = Boolean.parseBoolean(hstsEnabled);
+    }
+
+    public Boolean getHstsSubDomains() {
+        return hstsSubDomains;
+    }
+
+    public void setHstsSubDomains(Boolean hstsSubDomains) {
+        this.hstsSubDomains = hstsSubDomains;
+    }
+
+    public Boolean getHstsPreload() {
+        return hstsPreload;
+    }
+
+    public void setHstsPreload(Boolean hstsPreload) {
+        this.hstsPreload = hstsPreload;
     }
 
 }

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.v3.server;
 
@@ -47,7 +47,10 @@ import com.sun.enterprise.config.serverbeans.ServerTags;
 import com.sun.enterprise.v3.admin.CommandRunnerImpl;
 import com.sun.enterprise.admin.report.XMLActionReporter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -55,12 +58,15 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.security.auth.Subject;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.config.ApplicationName;
+import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.deployment.common.DeploymentProperties;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.InternalSystemAdministrator;
@@ -194,6 +200,7 @@ public class DynamicReloader implements Runnable {
                 AppReloadInfo reloadInfo = findOrCreateAppReloadInfo(app);
                 if (reloadInfo.needsReload()) {
                     logger.fine("[Reloader] Selecting app " + reloadInfo.getApplication().getName() + " to reload");
+                    
                     result.add(reloadInfo);
                 }
                 possiblyUndeployedApps.remove(reloadInfo);
@@ -242,9 +249,22 @@ public class DynamicReloader implements Runnable {
         deployParam.set(DeploymentProperties.PATH, appInfo.getApplicationDirectory().getCanonicalPath());
         deployParam.set(DeploymentProperties.NAME, appInfo.getApplication().getName());
         deployParam.set(DeploymentProperties.KEEP_REPOSITORY_DIRECTORY, "true");
+
+        Properties reloadFile = appInfo.readReloadFile();
+        boolean hotDeploy = Boolean.parseBoolean(reloadFile.getProperty(DeployCommandParameters.ParameterNames.HOT_DEPLOY));
+        if (hotDeploy) {
+            deployParam.set(DeployCommandParameters.ParameterNames.HOT_DEPLOY, "true");
+            boolean metadataChanged = Boolean.parseBoolean(reloadFile.getProperty(DeployCommandParameters.ParameterNames.METADATA_CHANGED));
+            if (metadataChanged) {
+                deployParam.set(DeployCommandParameters.ParameterNames.METADATA_CHANGED, "true");
+            }
+            String sourcesChanged = reloadFile.getProperty(DeployCommandParameters.ParameterNames.SOURCES_CHANGED);
+            if (sourcesChanged != null && !sourcesChanged.isEmpty()) {
+                deployParam.set(DeployCommandParameters.ParameterNames.SOURCES_CHANGED, sourcesChanged);
+            }
+        }
         commandRunner.getCommandInvocation("deploy", new XMLActionReporter(), kernelSubject).parameters(deployParam).execute();
-        
-        
+
         appInfo.recordLoad();
     }
     
@@ -303,6 +323,16 @@ public class DynamicReloader implements Runnable {
         private boolean needsReload() {
             boolean answer = reloadFile.lastModified() > latestRecordedLoad;
             return answer;
+        }
+        
+        private Properties readReloadFile() {
+            Properties prop = new Properties();
+            try (InputStream istream = new FileInputStream(reloadFile)) {
+                prop.load(istream);
+            } catch (Exception ex) {
+                // skip
+            }
+            return prop;
         }
         
         private void recordLoad() {

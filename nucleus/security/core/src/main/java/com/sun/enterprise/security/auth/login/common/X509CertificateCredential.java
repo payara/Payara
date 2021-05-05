@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.security.auth.login.common;
 
 import java.security.cert.X509Certificate;
@@ -49,9 +50,9 @@ import java.util.Arrays;
  */
 public class X509CertificateCredential {
 
-    private X509Certificate[] certChain;
-    private String realm;
-    private String alias;
+    private final X509Certificate[] certChain;
+    private final String realm;
+    private final String alias;
 
     /**
      * Construct a credential with the specified X509Certificate certificate chain, realm name and alias.
@@ -99,6 +100,7 @@ public class X509CertificateCredential {
      *
      * @return true if the instances are equal, false otherwise.
      */
+    @Override
     public boolean equals(Object o) {
         if (o instanceof X509CertificateCredential) {
             X509CertificateCredential pc = (X509CertificateCredential) o;
@@ -121,6 +123,7 @@ public class X509CertificateCredential {
      *
      * @return the hash code.
      */
+    @Override
     public int hashCode() {
         return Arrays.hashCode(certChain) + realm.hashCode() + ((alias != null) ? alias.hashCode() : 0);
     }
@@ -128,6 +131,7 @@ public class X509CertificateCredential {
     /**
      * String representation of the credential.
      */
+    @Override
     public String toString() {
         String s = "Realm=" + realm;
         s = s + " alias=" + alias;

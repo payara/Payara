@@ -1,7 +1,7 @@
 <!--
    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
   
-   Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+   Copyright (c) 2017-2021 Payara Foundation and/or its affiliates. All rights reserved.
   
    The contents of this file are subject to the terms of either the GNU
    General Public License Version 2 only ("GPL") or the Common Development
@@ -38,7 +38,7 @@
    holder.
 -->
 <sun:hyperlink id="cdiDevModeLink" rendered="#{requestScope.isCDIDevMode[td.value.name]}" text="$resource{i18nhc.cdiDevMode.toolLink}"
-               onClick="var win=window.open('#{request.contextPath}/payaraExtras/cdiDevMode/cdiDevMode.jsf?appName=#{pageSession.encodedAppName}&contextRoot=#{td.value.contextRoot}','ViewerWindow','width='+.75*screen.width+',height='+.75*screen.height+',top='+.1*screen.height+',left='+.1*screen.width+',toolbar=yes,status=yes,menubar=yes,scrollbars=yes,resizable=yes,directories=yes,location=yes');win.focus(); return false;" >
+               onClick="var win=window.open('#{request.contextPath}/payaraExtras/cdiDevMode/cdiDevMode.jsf?appName=#{pageSession.encodedAppName}&contextRoot=#{pageSession.td.value.contextRoot}','ViewerWindow','width='+.75*screen.width+',height='+.75*screen.height+',top='+.1*screen.height+',left='+.1*screen.width+',toolbar=yes,status=yes,menubar=yes,scrollbars=yes,resizable=yes,directories=yes,location=yes');win.focus(); return false;" >
     <!beforeCreate
         setResourceBundle(key="i18nhc" bundle="fish.payara.admingui.extras.Strings");
         setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings");

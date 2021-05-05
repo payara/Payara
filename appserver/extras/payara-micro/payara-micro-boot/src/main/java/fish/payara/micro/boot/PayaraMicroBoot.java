@@ -165,13 +165,6 @@ public interface PayaraMicroBoot {
     String getHzClusterName();
 
     /**
-     * Gets the password of the Hazelcast cluster group
-     *
-     * @return
-     */
-    String getHzClusterPassword();
-
-    /**
      * Gets the logical name for this PayaraMicro Server within the server
      * cluster
      *
@@ -388,15 +381,6 @@ public interface PayaraMicroBoot {
      * @return
      */
     PayaraMicroBoot setHzClusterName(String hzClusterName);
-
-    /**
-     * Sets the Hazelcast cluster group password. For two clusters to work
-     * together then the group name and password must be the same
-     *
-     * @param hzClusterPassword The password to set
-     * @return
-     */
-    PayaraMicroBoot setHzClusterPassword(String hzClusterPassword);
 
     /**
      * Sets the logical instance name for this PayaraMicro server within the
