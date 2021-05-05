@@ -326,6 +326,10 @@ public class DeployRemoteArchiveCommand extends DeployCommandParameters implemen
 
 
     private File convertUriToFile(URI uri) throws URISyntaxException, IOException {
+        if ("file".equalsIgnoreCase(uri.getScheme())) {
+            return new File(uri);
+        }
+
         try (InputStream in = URIUtils.openHttpConnection(uri).getInputStream()) {
             return createFile(in);
         }
