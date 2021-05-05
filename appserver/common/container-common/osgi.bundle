@@ -48,6 +48,7 @@
                         org.glassfish.javaee.services; version=${project.osgi.version}
 
 DynamicImport-Package: \
+                        org.glassfish.common.util, \
                         com.sun.enterprise.security, \
                         com.sun.enterprise.security.auth.login, \
                         com.sun.enterprise.security.auth.realm, \
