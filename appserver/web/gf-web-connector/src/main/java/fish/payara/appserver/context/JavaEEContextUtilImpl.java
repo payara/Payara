@@ -58,7 +58,6 @@ import org.glassfish.grizzly.utils.Holder;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
-import org.glassfish.internal.data.ModuleInfo;
 import org.jboss.weld.context.bound.BoundRequestContext;
 import org.jvnet.hk2.annotations.Service;
 
@@ -152,14 +151,12 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil, Serializable {
             } catch (IllegalArgumentException e) {
                 // empty environment, not associated with any app
             }
-            if (appInfo != null) {
-                // Check if deployed vs. Payara internal application
-                Collection<ModuleInfo> modules = appInfo.getModuleInfos();
-                String moduleName = DOLUtils.getModuleName(env);
-                if (modules.stream().filter(mod -> mod.getName().equals(moduleName))
-                        .anyMatch(moduleInfo -> !moduleInfo.isLoaded())) {
-                    return false;
-                }
+            if (appInfo != null && appInfo.getModuleInfos().stream()
+                    .filter(mod -> DOLUtils.isEarApplication(env) ? true
+                    // Check if deployed vs. Payara internal application
+                    : mod.getName().equals(DOLUtils.getModuleName(env)))
+                    .anyMatch(moduleInfo -> !moduleInfo.isLoaded())) {
+                return false;
             }
         }
         return env != null;
