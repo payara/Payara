@@ -165,7 +165,7 @@ public final class  GlassfishNamingManagerImpl implements GlassfishNamingManager
             // Now that we have an ORB, initialize the CosNaming service
             // and set it on the server's naming service.
             Hashtable<String, Object> cosNamingEnv = new Hashtable<>();
-            cosNamingEnv.put("java.naming.factory.initial", "com.sun.jndi.cosnaming.CNCtxFactory");
+            cosNamingEnv.put("java.naming.factory.initial", org.glassfish.jndi.cosnaming.CNCtxFactory.class.getName());
             cosNamingEnv.put("java.naming.corba.orb", orb);
             cosContext = new InitialContext(cosNamingEnv);
             ProviderManager pm = ProviderManager.getProviderManager();
