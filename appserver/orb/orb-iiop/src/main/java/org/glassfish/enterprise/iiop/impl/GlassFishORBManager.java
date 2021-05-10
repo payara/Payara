@@ -750,7 +750,7 @@ public final class GlassFishORBManager {
         }
 
         // Make sure we set initial port in System properties so that
-        // any instantiations of com.sun.jndi.cosnaming.CNCtxFactory
+        // any instantiations of org.glassfish.jndi.cosnaming.CNCtxFactory
         // use same port.
         props.setProperty(ORBConstants.INITIAL_PORT_PROPERTY, initialPort);
 

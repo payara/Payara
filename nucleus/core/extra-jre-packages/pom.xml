@@ -94,7 +94,6 @@
                                     com.sun.j3d.utils.image,
                                     com.sun.j3d.utils.timer,
                                     com.sun.java.swing.plaf.windows,
-                                    com.sun.jndi.cosnaming,
                                     com.sun.jndi.ldap,
                                     com.sun.mirror.apt,
                                     com.sun.mirror.declaration,
