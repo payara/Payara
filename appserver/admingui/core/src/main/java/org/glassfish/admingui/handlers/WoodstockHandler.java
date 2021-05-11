@@ -182,6 +182,9 @@ public class WoodstockHandler {
                 }
                 tmpFile = File.createTempFile(prefix, suffix);
                 FileUtils.deleteOnExit(tmpFile);
+
+                // org.apache.commons.io.FileUtils#moveTo requires non-existent destination file otherwise throws error
+                tmpFile.delete();
                 if (logger.isLoggable(Level.FINE)) {
                     logger.fine(GuiUtil.getCommonMessage("log.writeToTmpFile"));
                 }

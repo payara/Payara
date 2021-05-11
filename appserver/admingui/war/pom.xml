@@ -126,10 +126,6 @@
         <!-- following provided scopes are to avoid maven-war-plugin's resolution of libs directory, -->
         <!-- because we need these dependencies in extra directory -->
         <dependency>
-            <groupId>commons-fileupload</groupId>
-            <artifactId>commons-fileupload</artifactId>
-        </dependency>
-        <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <scope>provided</scope>
