@@ -56,6 +56,7 @@ import org.junit.runner.RunWith;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -63,6 +64,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 
 @RunWith(PayaraArquillianTestRunner.class)
@@ -162,12 +164,30 @@ public class JsonLogFormatIT {
     }
 
     @Test
-    public void testNumberFormat() {
+    public void testNumberFormat() throws FileNotFoundException {
+        ArrayList<String> command = new ArrayList<>();
+        ArrayList<String> output = new ArrayList<>();
+        command.add("rotate-log");
+        CliCommands.payaraGlassFish(command, output);
+        command.clear();
+        output.clear();
+
         Logger logger = Logger.getLogger(getClass().getName());
         logger.log(Level.INFO, "This number {0,number,#} is greater than this one {1,number,#}",
                 new Object[]{ new Long(50), new Long(33) });
         logger.log(Level.INFO, "This number {0} is greater than this one {1}",
                 new Object[]{ new Long(50), new Long(33) });
+
+        File logFile = getLogFile();
+        if (logFile == null) {
+            fail("Could not determine or read log file.");
+        }
+        try (Scanner scanner = new Scanner(new FileInputStream(logFile))) {
+            while (scanner.hasNext()) {
+                String line = scanner.nextLine();
+                assertFalse("there should be no errors in logs", line.contains("SEVERE"));
+            }
+        }
     }
 
     private File getLogFile() {
