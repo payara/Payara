@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2017-2020] [Payara Foundation and/or affiliates]
+// Portions Copyright [2017-2021] [Payara Foundation and/or affiliates]
 
 package com.sun.enterprise.server.logging;
 
@@ -52,7 +52,6 @@ import org.jvnet.hk2.annotations.Service;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.Formatter;
@@ -390,24 +389,7 @@ public class ODLLogFormatter extends AnsiColorFormatter implements LogEventBroad
         if (logMessage == null) {
             logMessage = "";
         }
-        if (logMessage.indexOf("{0") >= 0 && logMessage.contains("}") && record.getParameters() != null) {
-            // If we find {0} or {1} etc., in the message, then it's most
-            // likely finer level messages for Method Entry, Exit etc.,
-            logMessage = java.text.MessageFormat.format(
-                    logMessage, record.getParameters());
-        } else {
-            ResourceBundle rb = getResourceBundle(record.getLoggerName());
-            if (rb != null && rb.containsKey(logMessage)) {
-                try {
-                    logMessage = MessageFormat.format(
-                            rb.getString(logMessage),
-                            record.getParameters());
-                } catch (java.util.MissingResourceException e) {
-                    // If we don't find an entry, then we are covered
-                    // because the logMessage is initialized already
-                }
-            }
-        }
+        logMessage = UniformLogFormatter.formatLogMessage(logMessage, record, this::getResourceBundle);
         Throwable throwable = UniformLogFormatter.getThrowable(record);
         if (throwable != null) {
             StringBuilder buffer = new StringBuilder();

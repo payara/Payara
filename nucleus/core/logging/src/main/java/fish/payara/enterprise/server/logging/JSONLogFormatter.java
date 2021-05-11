@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -45,9 +45,9 @@ import com.sun.enterprise.server.logging.FormatterDelegate;
 import com.sun.enterprise.server.logging.LogEvent;
 import com.sun.enterprise.server.logging.LogEventBroadcaster;
 import com.sun.enterprise.server.logging.LogEventImpl;
+import com.sun.enterprise.server.logging.UniformLogFormatter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.ErrorManager;
@@ -421,24 +421,7 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
                     }
                 }
             } else {
-                if (logMessage.contains("{0") && logMessage.contains("}")
-                        && null != record.getParameters()) {
-                    logMessage = MessageFormat
-                            .format(logMessage, record.getParameters());
-                } else {
-                    ResourceBundle bundle = getResourceBundle(record.getLoggerName());
-                    if (null != bundle) {
-                        try {
-                            logMessage = MessageFormat.format(bundle
-                                .getString(logMessage),
-                                record.getParameters());
-                        } catch (MissingResourceException ex) {
-                            // Leave logMessage as it is because it already has
-                            // an exception message
-                        }
-                    }
-                }
-
+                logMessage = UniformLogFormatter.formatLogMessage(logMessage, record, this::getResourceBundle);
                 StringBuilder logMessageBuilder = new StringBuilder();
                 logMessageBuilder.append(logMessage);
 

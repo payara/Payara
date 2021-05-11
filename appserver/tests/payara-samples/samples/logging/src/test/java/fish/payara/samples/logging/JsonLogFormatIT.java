@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -59,6 +59,8 @@ import java.io.FileInputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -157,6 +159,15 @@ public class JsonLogFormatIT {
                     + ":com.sun.enterprise.server.logging.GFFileHandler.formatter=" + originalFileHandlerFormatter);
             CliCommands.payaraGlassFish(command, output);
         }
+    }
+
+    @Test
+    public void testNumberFormat() {
+        Logger logger = Logger.getLogger(getClass().getName());
+        logger.log(Level.INFO, "This number {0,number,#} is greater than this one {1,number,#}",
+                new Object[]{ new Long(50), new Long(33) });
+        logger.log(Level.INFO, "This number {0} is greater than this one {1}",
+                new Object[]{ new Long(50), new Long(33) });
     }
 
     private File getLogFile() {
