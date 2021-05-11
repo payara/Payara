@@ -178,6 +178,14 @@ public class JsonLogFormatIT {
         logger.log(Level.INFO, "This number {0} is greater than this one {1}",
                 new Object[]{ new Long(50), new Long(33) });
 
+        command.clear();
+        output.clear();
+        // wait for log
+        command.add("list-applications");
+        CliCommands.payaraGlassFish(command, output);
+        command.clear();
+        output.clear();
+
         File logFile = getLogFile();
         if (logFile == null) {
             fail("Could not determine or read log file.");
