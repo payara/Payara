@@ -155,7 +155,6 @@
     </modules>
 
     <properties>
-        <commons-fileupload.version>1.3.3</commons-fileupload.version>
         <woodstock-dojo-ajax-nodemo.version>1.12.4</woodstock-dojo-ajax-nodemo.version>
         <woodstock-json.version>2.0</woodstock-json.version>
         <woodstock-prototype.version>1.7.3</woodstock-prototype.version>
@@ -197,12 +196,6 @@
 
     <dependencyManagement>
         <dependencies>
-            <dependency>
-                <groupId>commons-fileupload</groupId>
-                <artifactId>commons-fileupload</artifactId>
-                <version>${commons-fileupload.version}</version>
-                <scope>provided</scope>
-            </dependency>
             <dependency>
                 <groupId>org.glassfish.woodstock</groupId>
                 <artifactId>woodstock-webui-jsf</artifactId>
