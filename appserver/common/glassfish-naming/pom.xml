@@ -102,5 +102,9 @@
             <artifactId>common-util</artifactId>
             <version>${project.version}</version>
         </dependency>
-   </dependencies>
+        <dependency>
+            <groupId>org.glassfish.corba</groupId>
+            <artifactId>glassfish-corba-orb</artifactId>
+        </dependency>
+    </dependencies>
 </project>
