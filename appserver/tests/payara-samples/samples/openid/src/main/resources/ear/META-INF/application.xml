@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<application xmlns="http://xmlns.jcp.org/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee/ http://xmlns.jcp.org/xml/ns/javaee/application_8.xsd" version="8">
+  <display-name>ElBugExample-ear</display-name>
+  <module>
+    <web>
+      <web-uri>openid-client.war</web-uri>
+      <context-root>/openid-client</context-root>
+    </web>
+  </module>
+  <module>
+    <ejb>openid-client-dummy-ejb.jar</ejb>
+  </module>
+</application>

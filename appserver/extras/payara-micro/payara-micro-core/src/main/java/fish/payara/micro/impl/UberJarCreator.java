@@ -39,6 +39,8 @@
  */
 package fish.payara.micro.impl;
 
+import fish.payara.deployment.util.URIUtils;
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -247,7 +249,7 @@ public class UberJarCreator {
                 if ("file".equalsIgnoreCase(deploymentURI.getScheme())) {
                     Files.copy(Paths.get(deploymentURI), jos);
                 } else {
-                    try (InputStream is = deploymentURI.toURL().openStream()) {
+                    try (InputStream is = URIUtils.openHttpConnection(deploymentURI).getInputStream()) {
                         byte[] buffer = new byte[4096];
                         int bytesRead;
                         while ((bytesRead = is.read(buffer)) != -1) {

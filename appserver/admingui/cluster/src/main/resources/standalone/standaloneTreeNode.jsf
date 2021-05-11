@@ -37,6 +37,7 @@
     and therefore, elected the GPL Version 2 license, then the option applies
     only if the new code is made subject to such option by the copyright
     holder.
+    Portions Copyright [2021] [Payara Foundation and/or its affiliates]
 
 -->
 
@@ -52,7 +53,7 @@
 	url="/cluster/standalone/standaloneInstances.jsf">
     <ui:event type="beforeCreate">
 	setResourceBundle(key="i18ncs" bundle="org.glassfish.cluster.admingui.Strings");
-	gf.restRequest(endpoint="#{sessionScope.REST_URL}/list-instances.json?standaloneonly=true" method="get" result="#{requestScope.resp}"); 
+	gf.restRequest(endpoint="#{sessionScope.REST_URL}/list-instances.json?standaloneonly=true&nostatus=true" method="get" result="#{requestScope.resp}"); 
 	setAttribute(key="children" value="#{requestScope.resp.data.extraProperties.instanceList}");
     </ui:event>
 </dynamicTreeNode>
