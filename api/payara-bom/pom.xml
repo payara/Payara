@@ -255,14 +255,7 @@
             <!-- These are hopefully no longer needed with this BOM, but just to be sure -->
             <dependency>
                 <groupId>fish.payara.arquillian</groupId>
-                <artifactId>payara-client-ee8</artifactId>
-                <version>${payara-arquillian-container.version}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>fish.payara.arquillian</groupId>
-                <artifactId>payara-client-ee7</artifactId>
+                <artifactId>payara-client-ee9</artifactId>
                 <version>${payara-arquillian-container.version}</version>
                 <scope>test</scope>
             </dependency>
