@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016-2020] [Payara Foundation]
+// Portions Copyright [2016-2021] [Payara Foundation]
 
 package com.sun.enterprise.server.logging;
 
@@ -55,6 +55,7 @@ import java.io.StringWriter;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.function.Function;
 import java.util.logging.Formatter;
 import java.util.logging.*;
 
@@ -425,25 +426,7 @@ public class UniformLogFormatter extends AnsiColorFormatter implements LogEventB
                 logEvent.setMessage(logMessage);
                 recordBuffer.append(logMessage);
             } else {
-                if (logMessage.indexOf("{0") >= 0 && logMessage.contains("}") && record.getParameters() != null) {
-                    // If we find {0} or {1} etc., in the message, then it's most
-                    // likely finer level messages for Method Entry, Exit etc.,
-                    logMessage = java.text.MessageFormat.format(
-                            logMessage, record.getParameters());
-                } else {
-                    ResourceBundle rb = getResourceBundle(record.getLoggerName());
-                    if (rb != null) {
-                        try {
-                            logMessage = MessageFormat.format(
-                                    rb.getString(logMessage),
-                                    record.getParameters());
-                        } catch (java.util.MissingResourceException e) {
-                            // If we don't find an entry, then we are covered
-                            // because the logMessage is initialized already
-                        }
-                    }
-                }
-
+                logMessage = formatLogMessage(logMessage, record, this::getResourceBundle);
                 StringBuilder logMessageBuffer = new StringBuilder();
                 logMessageBuffer.append(logMessage);
 
@@ -473,6 +456,44 @@ public class UniformLogFormatter extends AnsiColorFormatter implements LogEventB
             // return is to keep javac happy
             return "";
         }
+    }
+
+    public static String formatLogMessage(String logMessage, LogRecord record, Function<String, ResourceBundle> rbGetter) {
+        try {
+            return formatLogMessage0(logMessage, record.getLoggerName(), record.getParameters(), rbGetter);
+        } catch (IllegalArgumentException e) {
+            // could not format string objects, try with original objects
+            if (record.getParameters() == null || record.getParameters().length < 2
+                    // not a multiple of two
+                    || (record.getParameters().length % 2) != 0) {
+                throw e;
+            }
+            Object[] parameters = new Object[record.getParameters().length / 2];
+            System.arraycopy(record.getParameters(), parameters.length,
+                    parameters, 0, parameters.length);
+            return formatLogMessage0(logMessage, record.getLoggerName(), parameters, rbGetter);
+        }
+    }
+
+    private static String formatLogMessage0(String logMessage, String loggerName, Object[] parameters,
+            Function<String, ResourceBundle> rbGetter) {
+        if (logMessage.contains("{0") && logMessage.contains("}") && parameters != null) {
+            // If we find {0} or {1} etc., in the message, then it's most
+            // likely finer level messages for Method Entry, Exit etc.,
+            logMessage = java.text.MessageFormat.format( logMessage, parameters);
+        } else {
+            ResourceBundle rb = rbGetter.apply(loggerName);
+            if (rb != null && rb.containsKey(logMessage)) {
+                try {
+                    logMessage = MessageFormat.format(
+                            rb.getString(logMessage), parameters);
+                } catch (java.util.MissingResourceException e) {
+                    // If we don't find an entry, then we are covered
+                    // because the logMessage is initialized already
+                }
+            }
+        }
+        return logMessage;
     }
 
     static String getMessageId(LogRecord lr) {

@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016-2020] [Payara Foundation]
+// Portions Copyright [2016-2021] [Payara Foundation]
 
 package com.sun.common.util.logging;
 
@@ -124,13 +124,13 @@ public class GFLogRecord extends LogRecord {
             return null;
         }
         Object[] result = new Object[params.length * 2];
+        System.arraycopy(params, 0, result, params.length, params.length);
         for (int stringParamsIndex = 0, originalParamsIndex = params.length;
                 stringParamsIndex < params.length;
                 ++stringParamsIndex, ++originalParamsIndex) {
             Object param = params[stringParamsIndex];
             if (param != null) {
                 result[stringParamsIndex] = param.toString();
-                result[originalParamsIndex] = params[stringParamsIndex];
             }
         }
         return result;
