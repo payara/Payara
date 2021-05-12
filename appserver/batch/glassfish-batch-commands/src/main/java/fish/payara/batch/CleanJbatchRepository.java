@@ -77,7 +77,7 @@ public class CleanJbatchRepository implements AdminCommand {
     @Param(acceptableValues = "ALL,COMPLETED", defaultValue = "COMPLETED", optional = true)
     String status;
 
-    @Param(optional = false)
+    @Param(optional = true, defaultValue = "1")
     int days;
 
     @Param(name = "jobname", primary = true, optional = false)
@@ -118,7 +118,19 @@ public class CleanJbatchRepository implements AdminCommand {
                 DataSource datasource = (DataSource) object;
                 Feedback feedback = new Feedback();
                 try (Connection conn = datasource.getConnection()) {
-
+                    try {
+                        boolean valid = conn.isValid(0);
+                        if (!valid) {
+                            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                            report.setMessage("Database not accessible" );
+                            return;
+                        }
+                    } catch (SQLException ex) {
+                        report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                        report.setMessage("Database not accessible" );
+                        report.setFailureCause(ex);
+                        return;
+                    }
                     cleanTables(conn, feedback);
                 } catch (SQLException ex) {
                     Logger.getLogger("fish.payara.batch").log(Level.SEVERE, "Error cleaning repository with table " + feedback.tableToClean, ex);

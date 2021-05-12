@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017-2018] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2021] Payara Foundation and/or affiliates
  */
 
 package com.sun.enterprise.admin.remote;
@@ -127,6 +127,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
     private static final String COMMAND_NAME_REGEXP =
                                     "^[a-zA-Z_][-a-zA-Z0-9_]*$";
     private static final String READ_TIMEOUT = "AS_ADMIN_READTIMEOUT";
+    private static final String CONNECT_TIMEOUT = "AS_ADMIN_CONNECTTIMEOUT";
     public static final String COMMAND_MODEL_MATCH_HEADER = "X-If-Command-Model-Match";
     private static final String MEDIATYPE_TXT = "text/plain";
     private static final String MEDIATYPE_JSON = "application/json";
@@ -134,6 +135,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
     private static final String MEDIATYPE_SSE = "text/event-stream";
     private static final String EOL = StringUtils.EOL;
     private static final int DEFAULT_READ_TIMEOUT; // read timeout for URL conns
+    private static final int DEFAULT_CONNECT_TIMEOUT; // connect timeout for URL conns
 
     private String              responseFormatType = "hk2-agent";
     // return output string rather than printing it
@@ -170,7 +172,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
     private CommandModel        commandModel;
     private boolean             commandModelFromCache = false;
     private int                 readTimeout = DEFAULT_READ_TIMEOUT;
-    private int                 connectTimeout = -1;
+    private int                 connectTimeout = DEFAULT_CONNECT_TIMEOUT;
     private boolean             interactive = true;
 
     private final List<Header>  requestHeaders = new ArrayList<>();
@@ -190,6 +192,21 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
             DEFAULT_READ_TIMEOUT = Integer.parseInt(rt);
         } else {
             DEFAULT_READ_TIMEOUT = 10 * 60 * 1000;       // 10 minutes
+        }
+    }
+
+    /*
+     * Set a default connect timeout for URL connections.
+     */
+    static {
+        String ct = System.getProperty(CONNECT_TIMEOUT);
+        if (ct == null) {
+            ct = System.getenv(CONNECT_TIMEOUT);
+        }
+        if (ct != null) {
+            DEFAULT_CONNECT_TIMEOUT = Integer.parseInt(ct);
+        } else {
+            DEFAULT_CONNECT_TIMEOUT = 10 * 1000;       // 10 seconds
         }
     }
 
@@ -1102,9 +1119,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
                 }
                 urlConnection.setRequestMethod(httpMethod);
                 urlConnection.setReadTimeout(readTimeout);
-                if (connectTimeout >= 0) {
-                    urlConnection.setConnectTimeout(connectTimeout);
-                }
+                urlConnection.setConnectTimeout(connectTimeout);
                 addAdditionalHeaders(urlConnection);
                 urlConnection.addRequestProperty("X-Requested-By", "cli");
                 cmd.prepareConnection(urlConnection);

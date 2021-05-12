@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.embedded;
 
 import com.sun.enterprise.config.serverbeans.AuthRealm;
@@ -76,8 +76,9 @@ import org.jvnet.hk2.config.types.Property;
 @Singleton
 public class EmbeddedSecurityUtil implements EmbeddedSecurity {
 
-    private static final Logger _logger = SecurityLoggerInfo.getLogger();
+    private static final Logger LOGGER = SecurityLoggerInfo.getLogger();
 
+    @Override
     public void copyConfigFiles(ServiceLocator habitat, File fromInstanceDir, File domainXml) {
         // For security reasons, permit only an embedded server instance to carry out the copy operations
         ServerEnvironment se = habitat.getService(ServerEnvironment.class);
@@ -91,7 +92,7 @@ public class EmbeddedSecurityUtil implements EmbeddedSecurity {
 
         File toInstanceDir = habitat.<ServerEnvironmentImpl>getService(ServerEnvironmentImpl.class).getInstanceRoot();
 
-        List<String> fileNames = new ArrayList<String>();
+        List<String> fileNames = new ArrayList<>();
 
         // Handling the exception here, since it is causing CTS failure - CR 6981191
 
@@ -132,13 +133,14 @@ public class EmbeddedSecurityUtil implements EmbeddedSecurity {
                 FileUtils.copyFile(new File(fileName), new File(toConfigDir, parseFileName(fileName)));
             }
         } catch (IOException e) {
-            _logger.log(Level.WARNING, SecurityLoggerInfo.ioError, e);
+            LOGGER.log(Level.WARNING, SecurityLoggerInfo.ioError, e);
         } catch (XMLStreamException e) {
-            _logger.log(Level.WARNING, SecurityLoggerInfo.xmlStreamingError, e);
+            LOGGER.log(Level.WARNING, SecurityLoggerInfo.xmlStreamingError, e);
         }
 
     }
 
+    @Override
     public String parseFileName(String fullFilePath) {
         if (fullFilePath == null) {
             return null;
@@ -148,15 +150,14 @@ public class EmbeddedSecurityUtil implements EmbeddedSecurity {
 
     }
 
+    @Override
     public boolean isEmbedded(ServerEnvironment se) {
-        if (se.getRuntimeType() == RuntimeType.EMBEDDED) {
-            return true;
-        }
-        return false;
+        return se.getRuntimeType() == RuntimeType.EMBEDDED;
     }
 
+    @Override
     public List<String> getKeyFileNames(SecurityService securityService) {
-        List<String> keyFileNames = new ArrayList<String>();
+        List<String> keyFileNames = new ArrayList<>();
 
         List<AuthRealm> authRealms = securityService.getAuthRealm();
         for (AuthRealm authRealm : authRealms) {
@@ -203,7 +204,7 @@ public class EmbeddedSecurityUtil implements EmbeddedSecurity {
 
         // Obtain the keyfile names for the server-config (the first appearing config in domain.xml
         List<String> getAbsolutePathKeyFileNames(File fromInstanceDir) throws XMLStreamException {
-            List<String> keyFileNames = new ArrayList<String>();
+            List<String> keyFileNames = new ArrayList<>();
             while (skipToStartButNotPast(AUTH_REALM, CONFIG)) {
                 String realmClass = xmlReader.getAttributeValue(null, CLASSNAME);
                 if (realmClass.equals(FILE_REALM_CLASS)) {

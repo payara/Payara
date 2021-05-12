@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -46,8 +46,6 @@ import com.sun.enterprise.deployment.JndiNameEnvironment;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.util.Utility;
 import java.io.Serializable;
-import java.lang.reflect.Proxy;
-import java.util.Collection;
 import org.glassfish.internal.api.JavaEEContextUtil;
 import java.util.HashMap;
 import javax.enterprise.inject.spi.CDI;
@@ -57,7 +55,6 @@ import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
-import org.glassfish.internal.data.ModuleInfo;
 import org.jboss.weld.context.bound.BoundRequestContext;
 import org.jvnet.hk2.annotations.Service;
 
@@ -145,10 +142,16 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil, Serializable {
         JndiNameEnvironment env = invocation != null ? ((JndiNameEnvironment) invocation.getJNDIEnvironment())
                 : compEnvMgr.getJndiNameEnvironment(componentId);
         if (env != null) {
-            ApplicationInfo appInfo = appRegistry.get(DOLUtils.getApplicationFromEnv(env).getRegistrationName());
-            Collection<ModuleInfo> modules = appInfo.getModuleInfos();
-            String moduleName = DOLUtils.getModuleName(env);
-            if (modules.stream().filter(mod -> mod.getName().equals(moduleName))
+            ApplicationInfo appInfo = null;
+            try {
+                appInfo = appRegistry.get(DOLUtils.getApplicationFromEnv(env).getRegistrationName());
+            } catch (IllegalArgumentException e) {
+                // empty environment, not associated with any app
+            }
+            if (appInfo != null && appInfo.getModuleInfos().stream()
+                    .filter(mod -> DOLUtils.isEarApplication(env) ? true
+                    // Check if deployed vs. Payara internal application
+                    : mod.getName().equals(DOLUtils.getModuleName(env)))
                     .anyMatch(moduleInfo -> !moduleInfo.isLoaded())) {
                 return false;
             }
@@ -225,7 +228,7 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil, Serializable {
         @Override
         public Context pushContext() {
             if (isEmpty()) {
-                return pushEmptyContext();
+                return new ContextImpl.EmptyContext(invocationManager);
             }
             if (!isValidAndNotEmpty()) {
                 // same as invocation, or app not running
@@ -235,14 +238,6 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil, Serializable {
             invocationManager.preInvoke(newInvocation);
             return new ContextImpl.Context(newInvocation, invocationManager, compEnvMgr,
                     Utility.setContextClassLoader(getInvocationClassLoader()));
-        }
-
-        private Context pushEmptyContext() {
-            JndiNameEnvironment env = (JndiNameEnvironment)Proxy.newProxyInstance(Utility.getClassLoader(),
-                    new Class[] { JndiNameEnvironment.class }, (proxy, method, args) -> null);
-            ComponentInvocation newInvocation = createInvocation(env, "___EMPTY___");
-            invocationManager.preInvoke(newInvocation);
-            return new ContextImpl.Context(newInvocation, invocationManager, compEnvMgr, Utility.getClassLoader());
         }
 
         @Override

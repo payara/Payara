@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.admingui.common.util;
 
@@ -83,6 +83,7 @@ public class TargetUtil {
         String endpoint = GuiUtil.getSessionValue("REST_URL") + "/list-instances" ;
         Map<String, Object> attrsMap = new HashMap<>();
         attrsMap.put("standaloneonly", "true");
+        attrsMap.put("nostatus", "true");
         try{
             Map<String, Object> responseMap = RestUtil.restRequest( endpoint , attrsMap, "get" , null, false);
             Map<?, ?>  dataMap = (Map<?, ?>) responseMap.get("data");

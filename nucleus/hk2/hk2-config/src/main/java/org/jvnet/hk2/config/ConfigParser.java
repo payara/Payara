@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2020-2021] Payara Foundation and/or affiliates
 
 package org.jvnet.hk2.config;
 
@@ -169,7 +170,7 @@ public class ConfigParser {
             // flush the sub element content from the parser
             int depth=1;
             while(depth>0) {
-                final int tag = in.nextTag();
+                final int tag = in.next();
                 if (tag==START_ELEMENT && in.getLocalName().equals(localName)) {
                     if (Logger.getAnonymousLogger().isLoggable(Level.FINE)) {
                         Logger.getAnonymousLogger().fine("Found child of same type "+localName+" ignoring too");

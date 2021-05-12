@@ -37,11 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2016-2018] [Payara Foundation]
+//Portions Copyright [2016-2021] [Payara Foundation]
 
 package com.sun.enterprise.admin.cli.embeddable;
 
 import com.sun.enterprise.util.io.FileUtils;
+import fish.payara.deployment.util.URIUtils;
 import org.glassfish.admin.payload.PayloadFilesManager;
 import org.glassfish.admin.payload.PayloadImpl;
 import org.glassfish.api.ActionReport;
@@ -50,11 +51,11 @@ import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.Payload;
 import org.glassfish.embeddable.Deployer;
 import org.glassfish.embeddable.GlassFishException;
-import org.jvnet.hk2.annotations.ContractsProvided;
-
-import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.InternalSystemAdministrator;
+import org.jvnet.hk2.annotations.ContractsProvided;
+import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
 import java.io.ByteArrayInputStream;
@@ -65,16 +66,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.HttpURLConnection;
 import java.net.URI;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.Collection;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.glassfish.internal.api.InternalSystemAdministrator;
 
 /**
  * This is an implementation of {@link Deployer}.
@@ -177,7 +174,7 @@ public class DeployerImpl implements Deployer {
             CommandExecutorImpl executer = habitat.getService(CommandExecutorImpl.class);
             ActionReport report = executer.executeCommand("list-components");
             Properties props = report.getTopMessagePart().getProps();
-            return new ArrayList<String>(props.stringPropertyNames());
+            return new ArrayList<>(props.stringPropertyNames());
         } catch (Exception e) {
             throw new GlassFishException(e);
         }
@@ -188,15 +185,7 @@ public class DeployerImpl implements Deployer {
         if ("file".equalsIgnoreCase(archive.getScheme())) {
             file = new File(archive);
         } else {
-            URL urlArchive = archive.toURL();
-            String auth = urlArchive.getUserInfo();
-            HttpURLConnection httpConnection = (HttpURLConnection) urlArchive.openConnection();
-                    if (auth != null) {
-                        String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes());
-                        httpConnection.setRequestProperty("Authorization", "Basic " + encodedAuth);
-                    }
-
-            file = createFile(httpConnection.getInputStream());
+            file = createFile(URIUtils.openHttpConnection(archive).getInputStream());
         }
         return file;
     }

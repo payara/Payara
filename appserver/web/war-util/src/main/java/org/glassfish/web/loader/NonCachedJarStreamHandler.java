@@ -44,6 +44,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
+import java.security.AccessController;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.util.jar.JarFile;
 
 /**
@@ -70,9 +73,10 @@ public class NonCachedJarStreamHandler extends URLStreamHandler {
             return url;
         }
         try {
-            return new URL(url, url.toExternalForm(), INSTANCE);
-        } catch (MalformedURLException ex) {
-            throw new IllegalArgumentException(ex);
+            return AccessController.doPrivileged((PrivilegedExceptionAction<URL>)
+                    () -> new URL(url, url.toExternalForm(), INSTANCE));
+        } catch (PrivilegedActionException ex) {
+            throw new IllegalArgumentException(ex.getException());
         }
     }
 
