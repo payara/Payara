@@ -51,7 +51,7 @@ import org.glassfish.pfl.dynamic.codegen.spi.Type ;
 
 import java.util.logging.Logger;
 
-import javax.jws.WebMethod;
+import jakarta.jws.WebMethod;
 
 import static java.lang.reflect.Modifier.*;
 

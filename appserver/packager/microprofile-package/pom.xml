@@ -241,7 +241,7 @@
         </dependency>-->
             
         <!-- OpenTracing -->
-<!--        <dependency>
+        <dependency>
             <groupId>org.eclipse.microprofile.opentracing</groupId>
             <artifactId>microprofile-opentracing-api</artifactId>
         </dependency>
@@ -254,7 +254,7 @@
             <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>microprofile-opentracing-repackaged</artifactId>
             <version>${project.version}</version>
-        </dependency>-->
+        </dependency>
         
         <!-- Admin MicroProfile Admin GUI -->
         <dependency>

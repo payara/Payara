@@ -59,7 +59,7 @@ Import-Package: \
                         jakarta.xml.soap;resolution:=optional, \
                         jakarta.xml.ws;resolution:=optional, \
                         jakarta.xml.ws.handler;resolution:=optional, \
-                        javax.jws;resolution:=optional, \
+                        jakarta.jws;resolution:=optional, \
                         org.glassfish.apf.context, \
                         org.glassfish.ejb.deployment.archive, \
                         *
