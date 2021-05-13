@@ -53,6 +53,7 @@
 
     <properties>
         <grpc.client.version>1.37.0</grpc.client.version>
+        <payara.grpc.version>0.0.1</payara.grpc.version>
     </properties>
 
     <dependencies>
@@ -86,7 +87,7 @@
         <dependency>
             <groupId>fish.payara.extras</groupId>
             <artifactId>grpc</artifactId>
-            <version>${project.version}</version>
+            <version>${payara.grpc.version}</version>
         </dependency>
 
         <!-- Resolve dependencies in Shrinkwrap -->
