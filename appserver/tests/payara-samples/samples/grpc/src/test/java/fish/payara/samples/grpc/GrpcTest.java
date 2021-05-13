@@ -71,11 +71,10 @@ public class GrpcTest {
     @Deployment(testable = false)
     public static Archive<?> deploy() {
 
-        final File[] singleDependencies = Maven.resolver() //
-                .resolve( //
-                        "fish.payara.extras:grpc:5.2021.2-SNAPSHOT" //
-                ) //
-                .withoutTransitivity() //
+        final File[] singleDependencies = Maven.resolver()
+                .loadPomFromFile("pom.xml")
+                .resolve("fish.payara.extras:grpc")
+                .withoutTransitivity()
                 .asFile();
 
         final Archive<?> archive = PayaraTestShrinkWrap.getWebArchive() //
@@ -90,7 +89,6 @@ public class GrpcTest {
                 // Add libraries
                 .addAsLibraries(singleDependencies);
 
-        System.out.println(archive.toString(true));
         return archive;
     }
 

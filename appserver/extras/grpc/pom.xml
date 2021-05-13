@@ -48,42 +48,44 @@
     <parent>
         <groupId>fish.payara.extras</groupId>
         <artifactId>extras</artifactId>
-        <version>5.2021.2-SNAPSHOT</version>
+        <version>5.2021.4-SNAPSHOT</version>
     </parent>
 
     <artifactId>grpc</artifactId>
     <name>Payara gRPC Support</name>
     <packaging>jar</packaging>
 
+    <properties>
+        <grpc.version>1.24.0</grpc.version>
+    </properties>
+
     <dependencies>
         <!-- gRPC dependencies -->
         <dependency>
             <groupId>io.grpc</groupId>
             <artifactId>grpc-core</artifactId>
-            <version>1.24.0</version>
+            <version>${grpc.version}</version>
         </dependency>
         <dependency>
             <groupId>io.grpc</groupId>
             <artifactId>grpc-stub</artifactId>
-            <version>1.24.0</version>
+            <version>${grpc.version}</version>
         </dependency>
         <dependency>
             <groupId>io.grpc</groupId>
             <artifactId>grpc-protobuf</artifactId>
-            <version>1.24.0</version>
+            <version>${grpc.version}</version>
         </dependency>
 
         <!-- Servlet dependency -->
         <dependency>
             <groupId>jakarta.servlet</groupId>
             <artifactId>jakarta.servlet-api</artifactId>
-            <version>${servlet-api.version}</version>
         </dependency>
 
         <dependency>
             <groupId>jakarta.enterprise</groupId>
             <artifactId>jakarta.enterprise.cdi-api</artifactId>
-            <version>${cdi-api.version}</version>
         </dependency>
     </dependencies>
 
