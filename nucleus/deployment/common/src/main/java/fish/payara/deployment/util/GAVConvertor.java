@@ -43,13 +43,10 @@ package fish.payara.deployment.util;
 import org.glassfish.config.support.TranslatedConfigView;
 
 import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.AbstractMap;
 import java.util.Collection;
 import java.util.HashMap;
@@ -162,18 +159,8 @@ public class GAVConvertor {
                 try {
                     artefactURI = new URI(repositoryURI + relativeURIString + archiveType);
 
-                    if ("file".equalsIgnoreCase(artefactURI.getScheme())) {
-                        if (Files.exists(Paths.get(artefactURI))) {
-                            return artefactURI;
-                        }
-                    } else {
-                        HttpURLConnection httpConnection = URIUtils.openHttpConnection(artefactURI);
-
-                        httpConnection.setRequestMethod("HEAD");
-
-                        if (httpConnection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                            return artefactURI;
-                        }
+                    if (URIUtils.exists(artefactURI)) {
+                        return artefactURI;
                     }
 
                     logger.log(Level.FINE, "Artefact not found at URI: {0}", artefactURI.toString());

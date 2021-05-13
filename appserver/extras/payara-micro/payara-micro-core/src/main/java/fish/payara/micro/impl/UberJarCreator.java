@@ -39,6 +39,8 @@
  */
 package fish.payara.micro.impl;
 
+import com.sun.enterprise.util.io.FileUtils;
+import fish.payara.deployment.util.JavaArchiveUtils;
 import fish.payara.deployment.util.URIUtils;
 
 import java.io.BufferedInputStream;
@@ -51,7 +53,6 @@ import java.net.JarURLConnection;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.LinkedHashMap;
@@ -201,7 +202,7 @@ public class UberJarCreator {
                     // skip the entry as we will add later
                 } else {
                     JarEntry newEntry = new JarEntry(entry.getName());
-                    if (entry.getName().endsWith(".jar") || entry.getName().endsWith(".rar")) {
+                    if (JavaArchiveUtils.hasJavaArchiveExtension(entry.getName(), false)) {
                         newEntry.setMethod(JarEntry.STORED);
                         newEntry.setSize(entry.getSize());
                         newEntry.setCrc(entry.getCrc());
@@ -211,11 +212,7 @@ public class UberJarCreator {
                     }
                     jos.putNextEntry(newEntry);
                     try (InputStream is = getInputStream(jFile, entry)) {
-                        byte[] buffer = new byte[4096];
-                        int bytesRead;
-                        while ((bytesRead = is.read(buffer)) != -1) {
-                            jos.write(buffer, 0, bytesRead);
-                        }
+                        FileUtils.copy(is, jos, 0L);
                     }
                 }
                 jos.flush();
@@ -246,16 +243,8 @@ public class UberJarCreator {
                 JarEntry deploymentEntry = new JarEntry("MICRO-INF/deploy/" + deployment.getKey());
                 jos.putNextEntry(deploymentEntry);
                 URI deploymentURI = deployment.getValue();
-                if ("file".equalsIgnoreCase(deploymentURI.getScheme())) {
-                    Files.copy(Paths.get(deploymentURI), jos);
-                } else {
-                    try (InputStream is = URIUtils.openHttpConnection(deploymentURI).getInputStream()) {
-                        byte[] buffer = new byte[4096];
-                        int bytesRead;
-                        while ((bytesRead = is.read(buffer)) != -1) {
-                            jos.write(buffer, 0, bytesRead);
-                        }
-                    }
+                try (InputStream is = URIUtils.openStream(deploymentURI)) {
+                    FileUtils.copy(is, jos, 0L);
                 }
                 jos.flush();
                 jos.closeEntry();
@@ -265,11 +254,11 @@ public class UberJarCreator {
                 String basePath = copyDirectory.getCanonicalPath().replaceAll(copyDirectory + "$", "");
                 List<File> filesToCopy = fillFiles(copyDirectory);
                 for (File file : filesToCopy) {
-                        JarEntry deploymentEntry = new JarEntry(file.getCanonicalPath().replace(basePath, ""));
-                        jos.putNextEntry(deploymentEntry);
-                        Files.copy(file.toPath(), jos);
-                        jos.flush();
-                        jos.closeEntry();
+                    JarEntry deploymentEntry = new JarEntry(file.getCanonicalPath().replace(basePath, ""));
+                    jos.putNextEntry(deploymentEntry);
+                    Files.copy(file.toPath(), jos);
+                    jos.flush();
+                    jos.closeEntry();
                 }
             }
 
@@ -296,7 +285,6 @@ public class UberJarCreator {
                 Files.copy(alternateHZConfigFile.toPath(), jos);
                 jos.flush();
                 jos.closeEntry();
-
             }
 
             if (domainDir != null) {
@@ -339,7 +327,7 @@ public class UberJarCreator {
                 if (applicationsDir.exists()){
                     for (File app : fillFiles(applicationsDir)){
                         String path = app.getPath();
-                        if (path.endsWith(".war") || path.endsWith(".jar") || path.endsWith(".rar") || path.endsWith(".ear")){
+                        if (JavaArchiveUtils.hasJavaArchiveExtension(path, false)){
                             JarEntry appEntry = new JarEntry("MICRO-INF/deploy/" + app.getName());
                             appEntry.setSize(app.length());
                             try (CheckedInputStream check = new CheckedInputStream(new FileInputStream(app), new CRC32());
