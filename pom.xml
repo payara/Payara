@@ -202,7 +202,7 @@
         <jbi.version>1.0</jbi.version>
         <jakarta-platform.version>9.1.0-RC1</jakarta-platform.version>
         <microprofile-release.version>4.0</microprofile-release.version>
-        <microprofile-opentracing.version>2.0.payara-p1</microprofile-opentracing.version>
+        <microprofile-opentracing.version>2.0.payara-p2</microprofile-opentracing.version>
         <microprofile-config.version>2.0.payara-p1</microprofile-config.version>
         <microprofile-fault-tolerance.version>3.0.payara-p1</microprofile-fault-tolerance.version>
         <microprofile-jwt-auth.version>1.2.payara-p1</microprofile-jwt-auth.version>
