@@ -2051,9 +2051,8 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     }
 
     private Map.Entry<String, URI> getGAVURI(String gav) throws GlassFishException {
-        GAVConvertor gavConvertor = new GAVConvertor();
         try {
-            Map.Entry<String, URI> artefactMapEntry = gavConvertor.getArtefactMapEntry(gav, repositoryURIs);
+            Map.Entry<String, URI> artefactMapEntry = GAVConvertor.getArtefactMapEntry(gav, repositoryURIs);
             return new AbstractMap.SimpleImmutableEntry<>(artefactMapEntry.getKey(), artefactMapEntry.getValue());
         } catch (URISyntaxException ex) {
             throw new GlassFishException(ex.getMessage());

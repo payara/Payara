@@ -61,11 +61,16 @@ import java.util.logging.Logger;
  * coordinates into a URI.
  * @author Andrew Pielage
  */
-public class GAVConvertor {
+public final class GAVConvertor {
     
     private static final Logger logger = Logger.getLogger("PayaraMicro");
 
     private static final String defaultMavenRepository = "https://repo.maven.apache.org/maven2/";
+
+    // Suppress default constructor
+    private GAVConvertor() {
+        throw new AssertionError();
+    }
     
     /**
      * Returns a valid URI for a provided GAV (GroupId, ArtifactId, Version).
@@ -77,7 +82,7 @@ public class GAVConvertor {
      * @throws URISyntaxException Thrown if an artefact cannot be found for
      * the provided GAV
      */
-    public Map.Entry<String, URI> getArtefactMapEntry(String GAV, Collection<String> repositoryURIs) throws URISyntaxException {
+    public static Map.Entry<String, URI> getArtefactMapEntry(String GAV, Collection<String> repositoryURIs) throws URISyntaxException {
         final Map<String, String> GAVMap = splitGAV(GAV);
 
         Set<String> repoURIs = new LinkedHashSet<>();
@@ -108,7 +113,7 @@ public class GAVConvertor {
      * @return A Map containing the groupId, artefactId, and versionNumber of 
      * the provided GAV as Strings
      */
-    private Map<String, String> splitGAV(String GAV) throws URISyntaxException {
+    private static Map<String, String> splitGAV(String GAV) throws URISyntaxException {
         final String[] splitGAV = GAV.split("[,:]");
         final Map<String, String> GAVMap = new HashMap<>();
         try {
@@ -130,7 +135,7 @@ public class GAVConvertor {
      * and version number.
      * @return A String representing the relative URI of the provided GAV.
      */
-    private String constructRelativeURIString(Map<String, String> GAVMap) {
+    private static String constructRelativeURIString(Map<String, String> GAVMap) {
         final String artefactFileName = GAVMap.get("artefactId") + "-" + GAVMap.get("versionNumber");
 
         return GAVMap.get("groupId") + "/" + GAVMap.get("artefactId") + "/"
@@ -148,7 +153,7 @@ public class GAVConvertor {
      * @throws URISyntaxException Thrown if an artefact cannot be found for
      * the provided GAV
      */
-    private URI findArtefactURI(Collection<String> repositoryURIs, String relativeURIString) throws URISyntaxException {
+    private static URI findArtefactURI(Collection<String> repositoryURIs, String relativeURIString) throws URISyntaxException {
         final String[] archiveTypes = new String[] {".jar", ".war", ".ear", ".rar"};
 
         // For each URI...

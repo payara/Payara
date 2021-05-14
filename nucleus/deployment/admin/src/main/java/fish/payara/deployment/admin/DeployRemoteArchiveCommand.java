@@ -145,8 +145,7 @@ public class DeployRemoteArchiveCommand extends DeployCommandParameters implemen
                 logger.log(Level.FINE, "Path does not appear to be a URI, will attempt to read as GAV coordinate");
 
                 // Get the URI for the given GAV coordinate
-                GAVConvertor gavConvertor = new GAVConvertor();
-                Entry<String, URI> artefactEntry = gavConvertor.getArtefactMapEntry(path, additionalRepositories);
+                Entry<String, URI> artefactEntry = GAVConvertor.getArtefactMapEntry(path, additionalRepositories);
 
                 // Download the file to temp, and return a File object to pass to the deploy command
                 fileToDeploy = URIUtils.convertToFile(artefactEntry.getValue());
