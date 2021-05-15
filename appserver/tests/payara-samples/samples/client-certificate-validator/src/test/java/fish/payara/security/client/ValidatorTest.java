@@ -62,7 +62,7 @@ import org.junit.runner.RunWith;
  * @author lprimak
  */
 @RunWith(PayaraArquillianTestRunner.class)
-@SincePayara("5.2021.4")
+@SincePayara("5.2021.3")
 @NotMicroCompatible
 public class ValidatorTest {
     @ArquillianResource
