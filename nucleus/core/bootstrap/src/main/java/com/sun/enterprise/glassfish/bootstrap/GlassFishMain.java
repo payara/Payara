@@ -38,10 +38,12 @@
  * holder.
  *
  */
-// Portions Copyright [2017-2019] Payara Foundation and/or affilates
+// Portions Copyright [2017-2021] Payara Foundation and/or affilates
 
 package com.sun.enterprise.glassfish.bootstrap;
 
+import fish.payara.boot.runtime.BootCommands;
+import fish.payara.logging.PayaraLogManager;
 import org.glassfish.embeddable.*;
 
 import java.io.BufferedReader;
@@ -50,16 +52,16 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Method;
 import java.net.URI;
-import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
-import static com.sun.enterprise.module.bootstrap.ArgumentManager.argsToMap;
-import fish.payara.boot.runtime.BootCommands;
-import static java.util.logging.Level.SEVERE;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static com.sun.enterprise.module.bootstrap.ArgumentManager.argsToMap;
+import static java.util.logging.Level.SEVERE;
 
 /**
  * @author Sanjeeb.Sahoo@Sun.COM
@@ -68,22 +70,30 @@ public class GlassFishMain {
 
     private static final Pattern COMMAND_PATTERN = Pattern.compile("([^\"']\\S*|\".*?\"|'.*?')\\s*");
     private static final String[] COMMAND_TYPE = new String[0];
-    private static final Logger LOGGER = Logger.getLogger(GlassFishMain.class.getName());
+    private static final Logger LOGGER;
 
     // TODO(Sahoo): Move the code to ASMain once we are ready to phase out ASMain
+
+    static {
+        // This is not a JVM parameter in the domain as users should not have the possibility to not use the Payara Log Manager.
+        System.setProperty("java.util.logging.manager", PayaraLogManager.class.getName());
+
+        // Do not use as variable initialization as that will trigger LogManager before System property is set.
+        LOGGER = Logger.getLogger(GlassFishMain.class.getName());
+    }
 
     public static void main(final String args[]) throws Exception {
         MainHelper.checkJdkVersion();
 
         final Properties argsAsProps = argsToMap(args);
-        
+
         String platform = MainHelper.whichPlatform();
 
         System.out.println("Launching Payara Server on " + platform + " platform");
 
         // Set the system property if downstream code wants to know about it
         System.setProperty(Constants.PLATFORM_PROPERTY_KEY, platform); // TODO(Sahoo): Why is this a system property?
-        
+
         File installRoot = MainHelper.findInstallRoot();
 
         // domainDir can be passed as argument, so pass the agrgs as well.
