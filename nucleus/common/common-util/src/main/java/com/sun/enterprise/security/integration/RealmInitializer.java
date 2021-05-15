@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2019-2021] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.integration;
 
 /**
@@ -57,7 +57,7 @@ public interface RealmInitializer {
      *            any other configured in the descriptor.
      */
     void initializeRealm(Object bundleDescriptor, boolean isSystemApp, String defaultRealmName);
-
+    default void initializeRealm(String componentId) { }
 
     /**
      * Sets the realm's virtual server container.
