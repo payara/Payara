@@ -151,7 +151,7 @@
         <!-- Primitive Function Library (PFL); a library of simple utilities used by Glassfish -->
         <pfl.version>4.1.2</pfl.version>
         <!-- GlassFish MBean Annotation Library -->
-        <gmbal.version>4.0.2</gmbal.version>
+        <gmbal.version>4.0.3</gmbal.version>
         <antlr.version>2.7.7</antlr.version>
 
         <commons-io.version>2.6</commons-io.version>
@@ -176,7 +176,7 @@
         <btrace.version>1.2.3</btrace.version>
         <opendmk.version>1.0-b01-ea</opendmk.version>
         <l10n.version>3.1-b41</l10n.version>
-        <ha-api.version>3.1.12</ha-api.version>
+        <ha-api.version>3.1.13</ha-api.version>
         <mockito.version>2.2.6</mockito.version>
 
         <!-- Build -->
@@ -872,7 +872,7 @@ Parent is ${project.parent}</echo>
             <dependency>
                 <groupId>org.testng</groupId>
                 <artifactId>testng</artifactId>
-                <version>6.14.3</version>
+                <version>7.4.0</version>
                 <scope>test</scope>
             </dependency>
             <dependency>

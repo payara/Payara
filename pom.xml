@@ -146,17 +146,17 @@
         <jakarta.el.version>4.0.1</jakarta.el.version>
         <jakarta.el-api.version>4.0.0</jakarta.el-api.version>
         <javax.cache-api.version>1.1.1.payara-p1</javax.cache-api.version>
-        <mail.version>2.0.0</mail.version>
+        <mail.version>2.0.1</mail.version>
         <jakarta.annotation-api.version>2.0.0</jakarta.annotation-api.version>
         <hk2.version>3.0.1.payara-p1</hk2.version>
         <osgi-resource-locator.version>1.0.3</osgi-resource-locator.version>
         <stax-api.version>1.0-2</stax-api.version>
-        <jackson.version>2.11.3</jackson.version>
+        <jackson.version>2.12.2</jackson.version>
         <snakeyaml.version>1.28</snakeyaml.version>
         <hazelcast.version>4.2</hazelcast.version>
         <hazelcast.kubernetes.version>2.2</hazelcast.kubernetes.version>
-        <jaxb-api.version>3.0.0</jaxb-api.version>
-        <jaxb-impl.version>3.0.0</jaxb-impl.version>
+        <jaxb-api.version>3.0.1</jaxb-api.version>
+        <jaxb-impl.version>3.0.1</jaxb-impl.version>
         <jakarta.ejb-api.version>4.0.0</jakarta.ejb-api.version>
         <jsp-api.version>3.0.0</jsp-api.version>
         <jsp-impl.version>3.0.0</jsp-impl.version>
@@ -169,7 +169,7 @@
         <json.bind-api.version>2.0.0</json.bind-api.version>
         <yasson.version>2.0.2</yasson.version>
         <jakarta-persistence-api.version>3.0.0</jakarta-persistence-api.version>
-        <eclipselink.version>3.0.0</eclipselink.version>
+        <eclipselink.version>3.0.1</eclipselink.version>
         <jakarta.transaction-api.version>2.0.0</jakarta.transaction-api.version>
         <jakarta.interceptor-api.version>2.0.0</jakarta.interceptor-api.version>
         <jakarta.inject.version>2.0.0</jakarta.inject.version>
@@ -181,20 +181,20 @@
         <jakarta.security.jacc-api.version>2.0.0</jakarta.security.jacc-api.version>
         <jakarta.security.auth.message-api.version>2.0.0</jakarta.security.auth.message-api.version>
         <jms-api.version>3.0.0</jms-api.version>
-        <mq.version>6.0.0</mq.version>
+        <mq.version>6.1.0</mq.version>
         <jakarta.batch-api.version>2.0.0</jakarta.batch-api.version>
         <com.ibm.jbatch.container.version>2.0.0</com.ibm.jbatch.container.version>
         <com.ibm.jbatch.spi.version>2.0.0</com.ibm.jbatch.spi.version>
         <jaxws-api.version>3.0.0</jaxws-api.version>
         <jakarta.jws-api.version>3.0.0</jakarta.jws-api.version>
-        <webservices.version>3.0.0</webservices.version>
+        <webservices.version>3.0.1</webservices.version>
         <woodstox.version>6.2.4</woodstox.version>
         <woodstock-jsf.version>5.0.0</woodstock-jsf.version>
         <stax2-api.version>4.2.1</stax2-api.version>
         <jakarta.resource-api.version>2.0.0</jakarta.resource-api.version>
         <jakarta.enterprise.deploy-api.version>1.7.2</jakarta.enterprise.deploy-api.version>
-        <jakarta.activation-api.version>2.0.0</jakarta.activation-api.version>
-        <jakarta.activation-impl.version>2.0.0</jakarta.activation-impl.version>
+        <jakarta.activation-api.version>2.0.1</jakarta.activation-api.version>
+        <jakarta.activation-impl.version>2.0.1</jakarta.activation-impl.version>
         <istack-commons-runtime.version>3.0.10</istack-commons-runtime.version>
         <jline.version>3.13.3</jline.version>
         <wsdl4j.version>1.6.3</wsdl4j.version>
