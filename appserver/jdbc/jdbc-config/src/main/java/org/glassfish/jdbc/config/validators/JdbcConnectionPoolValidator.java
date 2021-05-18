@@ -128,9 +128,6 @@ public class JdbcConnectionPoolValidator implements ConstraintValidator<JdbcConn
         final String stmtCacheSize = jdbcPool.getStatementCacheSize();
         final String stmtLeakTimeout = jdbcPool.getStatementLeakTimeoutInSeconds();
         final boolean wrappingEnabled = isTrue(jdbcPool.getWrapJdbcObjects());
-        if (!wrappingEnabled && !isEmpty(jdbcPool.getSqlTraceListeners())) {
-            return false;
-        }
         if (!wrappingEnabled && isPositiveInt(stmtCacheSize)) {
             return false;
         }
