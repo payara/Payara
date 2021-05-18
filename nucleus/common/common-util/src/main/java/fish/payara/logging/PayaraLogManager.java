@@ -58,7 +58,7 @@ public class PayaraLogManager extends LogManager {
         configuration = new PropertyPlaceholderHelper(System.getenv(), PropertyPlaceholderHelper.ENV_REGEX).replacePropertiesPlaceholder(configuration);
 
         StringWriter writer = new StringWriter();
-        configuration.list(new PrintWriter(writer));
+        configuration.store(new PrintWriter(writer), null);
 
         super.readConfiguration(new ByteArrayInputStream(writer.getBuffer().toString().getBytes()));
     }
