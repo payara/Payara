@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 package org.glassfish.jdbc.config.validators;
 
 import com.sun.enterprise.config.serverbeans.ResourcePool;
@@ -128,9 +128,6 @@ public class JdbcConnectionPoolValidator implements ConstraintValidator<JdbcConn
         final String stmtCacheSize = jdbcPool.getStatementCacheSize();
         final String stmtLeakTimeout = jdbcPool.getStatementLeakTimeoutInSeconds();
         final boolean wrappingEnabled = isTrue(jdbcPool.getWrapJdbcObjects());
-        if (!wrappingEnabled && !isEmpty(jdbcPool.getSqlTraceListeners())) {
-            return false;
-        }
         if (!wrappingEnabled && isPositiveInt(stmtCacheSize)) {
             return false;
         }
