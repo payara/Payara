@@ -44,6 +44,7 @@ import com.sun.enterprise.util.io.FileUtils;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
@@ -118,7 +119,29 @@ public final class URIUtils {
         if (hasFileScheme(uri)) {
             return new File(uri);
         }
-        return FileUtils.createTempFile(openHttpConnection(uri).getInputStream(), "app", "tmp");
+
+        HttpURLConnection connection = openHttpConnection(uri);
+        try {
+            return FileUtils.createTempFile(connection.getInputStream(), "app", "tmp");
+        } catch (IOException e) {
+            try (InputStream err = connection.getErrorStream()) {
+                if (err != null) {
+                    // Dry error stream
+                    FileUtils.copy(err, new OutputStream() {
+                        @Override
+                        public void write(int b) {
+                            // ignore
+                        }
+                    }, 0L);
+                }
+            } catch (IOException ex) {
+                // ignore
+            }
+            // Rethrow original exception
+            throw e;
+        } finally {
+            connection.disconnect();
+        }
     }
 
     /**
@@ -133,9 +156,17 @@ public final class URIUtils {
         if (hasFileScheme(uri)) {
             return Files.exists(Paths.get(uri));
         }
+
         HttpURLConnection connection = openHttpConnection(uri);
         connection.setRequestMethod("HEAD");
-        return connection.getResponseCode() == HttpURLConnection.HTTP_OK;
+
+        if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+            return true;
+        }
+
+        connection.disconnect();
+
+        return false;
     }
 
     /**
