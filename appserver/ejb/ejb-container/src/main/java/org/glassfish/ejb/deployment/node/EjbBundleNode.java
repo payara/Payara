@@ -94,8 +94,9 @@ public class EjbBundleNode extends AbstractBundleNode<EjbBundleDescriptorImpl> {
     public final static String SCHEMA_ID_21 = "ejb-jar_2_1.xsd";
     public final static String SCHEMA_ID_30 = "ejb-jar_3_0.xsd";
     public final static String SCHEMA_ID_31 = "ejb-jar_3_1.xsd";
-    public final static String SCHEMA_ID = "ejb-jar_3_2.xsd";
-    public final static String SPEC_VERSION = "3.2";
+    public final static String SCHEMA_ID_32 = "ejb-jar_3_2.xsd";
+    public final static String SCHEMA_ID = "ejb-jar_4_0.xsd";
+    public final static String SPEC_VERSION = "4.0";
     private final static List<String> systemIDs = initSystemIDs();
 
     /**
@@ -124,6 +125,7 @@ public class EjbBundleNode extends AbstractBundleNode<EjbBundleDescriptorImpl> {
     private static List<String> initSystemIDs() {
         List<String> systemIDs = new ArrayList<String>(3);
         systemIDs.add(SCHEMA_ID);
+        systemIDs.add(SCHEMA_ID_32);
         systemIDs.add(SCHEMA_ID_31);
         systemIDs.add(SCHEMA_ID_30);
         systemIDs.add(SCHEMA_ID_21);

@@ -774,11 +774,13 @@ public class DOLUtils {
 		    schema = (String) st.nextElement();
 		} else {
 		    schema = namespace;
-		    namespace = TagNames.JAVAEE_NAMESPACE;
+		    namespace = TagNames.JAKARTAEE_NAMESPACE;
 		}
                 if (namespace.equals(TagNames.J2EE_NAMESPACE)) 
                     continue;
                 if (namespace.equals(TagNames.JAVAEE_NAMESPACE)) 
+                    continue;
+                if (namespace.equals(TagNames.JAKARTAEE_NAMESPACE))
                     continue;
                 if (namespace.equals(W3C_XML_SCHEMA)) 
                     continue;
