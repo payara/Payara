@@ -55,10 +55,15 @@ public class HelloServlet extends HttpServlet {
             return false;
         }
     };
+    static boolean authenticationCheckSuccess = true;
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
+            String nextFailureStr = req.getParameter("setNextFailure");
+            if (nextFailureStr != null) {
+                authenticationCheckSuccess = !Boolean.parseBoolean(nextFailureStr);
+            }
             if (validatorCalled.get()) {
                 // Get the DN name of the Certificate
                 resp.getOutputStream().print("Hello " + req.getRemoteUser());

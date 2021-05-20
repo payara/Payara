@@ -154,7 +154,7 @@ public interface ContextProducer {
 
     interface Context extends Closeable {
         boolean isValid();
-        default <TT> TT inject(TT instance, boolean invokePostContruct) { return instance; }
+        default <TT> TT inject(TT instance, boolean invokePostConstruct) { return instance; }
     };
 
     interface Closeable extends AutoCloseable {

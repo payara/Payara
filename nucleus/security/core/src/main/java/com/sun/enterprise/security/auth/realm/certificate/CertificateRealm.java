@@ -145,7 +145,7 @@ public final class CertificateRealm extends BaseRealm {
         setProperty(DN_PARTS_USED_FOR_GROUPS, dnPartsForGroup);
 
         String validationCheckProperty = props.getProperty("validation-check");
-        doValidation = validationCheckProperty != null ? Boolean.parseBoolean(validationCheckProperty) : true;
+        doValidation = validationCheckProperty == null || Boolean.parseBoolean(validationCheckProperty);
     }
 
     /**

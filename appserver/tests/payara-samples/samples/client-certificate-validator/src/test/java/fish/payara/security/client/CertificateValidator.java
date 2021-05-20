@@ -48,6 +48,7 @@ import fish.payara.security.api.ClientCertificateValidator;
 import static fish.payara.security.client.HelloServlet.validatorCalled;
 import javax.ejb.EJB;
 import javax.inject.Inject;
+import static fish.payara.security.client.HelloServlet.authenticationCheckSuccess;
 
 public class CertificateValidator implements ClientCertificateValidator {
     @Inject
@@ -70,7 +71,13 @@ public class CertificateValidator implements ClientCertificateValidator {
         isValid &= referredEjbBean.isValid();
         isValid &= injectedCDIBean.isValid();
 
-        validatorCalled.set(true);
+        isValid &= authenticationCheckSuccess;
+        authenticationCheckSuccess = true;
+
+        // so thread locals aren't left hanging around
+        if (isValid == true) {
+            validatorCalled.set(true);
+        }
         return isValid;
     }
 }

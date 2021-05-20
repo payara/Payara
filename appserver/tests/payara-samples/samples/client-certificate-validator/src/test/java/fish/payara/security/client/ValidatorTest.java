@@ -75,15 +75,32 @@ public class ValidatorTest {
         webClient.getOptions().setThrowExceptionOnFailingStatusCode(false);
         URL baseHttps = ServerOperations.createClientTrustStore(webClient, base,
                 ServerOperations.addClientCertificateFromServer(base));
-        doConnect(webClient, baseHttps);
-        doConnect(webClient, baseHttps);
-        doConnect(webClient, baseHttps);
+        doConnect(webClient, baseHttps, false);
+        doConnect(webClient, baseHttps, false);
+        doConnect(webClient, baseHttps, false);
+        setNextRunFailure(webClient, baseHttps, true);
+        doConnect(webClient, baseHttps, true);
+        setNextRunFailure(webClient, baseHttps, true);
+        doConnect(webClient, baseHttps, true);
+        setNextRunFailure(webClient, baseHttps, false);
+        doConnect(webClient, baseHttps, false);
     }
 
-    private void doConnect(WebClient webClient, URL baseHttps) throws FailingHttpStatusCodeException, IOException {
+    private void doConnect(WebClient webClient, URL baseHttps,
+            boolean isFailureExpected) throws FailingHttpStatusCodeException, IOException {
         WebResponse response = webClient.getPage(baseHttps + "secure/hello").getWebResponse();
+        if (isFailureExpected) {
+            assertEquals("http status code", 401, response.getStatusCode());
+        } else {
+            assertEquals("http status code", 200, response.getStatusCode());
+            assertEquals("Hello C=UK,ST=lak,L=zak,O=kaz,OU=bar,CN=lfoo", response.getContentAsString());
+        }
+    }
+
+
+    private void setNextRunFailure(WebClient webClient, URL baseHttps, boolean fail) throws IOException {
+        WebResponse response = webClient.getPage(baseHttps + String.format("secure/hello?setNextFailure=%s", fail)).getWebResponse();
         assertEquals("http status code", 200, response.getStatusCode());
-        assertEquals("Hello C=UK,ST=lak,L=zak,O=kaz,OU=bar,CN=lfoo", response.getContentAsString());
     }
 
     @Deployment
