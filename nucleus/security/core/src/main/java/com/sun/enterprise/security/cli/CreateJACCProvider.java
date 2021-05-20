@@ -84,7 +84,7 @@ import org.jvnet.hk2.config.types.Property;
  *
  *
  * domain.xml element example
- *   <jacc-provider policy-provider="com.sun.enterprise.security.provider.PolicyWrapper" name="default" policy-configuration-factory-provider="com.sun.enterprise.security.provider.PolicyConfigurationFactoryImpl">
+ *   <jacc-provider policy-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyProvider" name="default" policy-configuration-factory-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyConfigurationFactory">
  *         <property name="repository" value="${com.sun.aas.instanceRoot}/generated/policy" />
  *   </jacc-provider>
  *
