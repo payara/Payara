@@ -149,7 +149,7 @@
     </auth-realm>
     <auth-realm name="certificate" classname="com.sun.enterprise.security.auth.realm.certificate.CertificateRealm">
     </auth-realm>
-    <jacc-provider name="default" policy-provider="com.sun.enterprise.security.provider.PolicyWrapper" policy-configuration-factory-provider="com.sun.enterprise.security.provider.PolicyConfigurationFactoryImpl">
+    <jacc-provider name="default" policy-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyProvider" policy-configuration-factory-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyConfigurationFactory">
      <property name="repository" value="${com.sun.aas.instanceRoot}/generated/policy"/>
     </jacc-provider>
     <audit-module name="default" classname="com.sun.enterprise.security.ee.Audit">

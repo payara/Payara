@@ -507,7 +507,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
      *      <property name="jaas-context" value="fileRealm"/>
      *  </auth-realm>
      *  <auth-realm classname="com.sun.enterprise.security.auth.realm.certificate.CertificateRealm" name="certificate"/>
-     *  <jacc-provider policy-provider="com.sun.enterprise.security.provider.PolicyWrapper" name="default" policy-configuration-factory-provider="com.sun.enterprise.security.provider.PolicyConfigurationFactoryImpl">
+     *  <jacc-provider policy-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyProvider" name="default" policy-configuration-factory-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyConfigurationFactory">
      *      <property name="repository" value="${com.sun.aas.instanceRoot}/generated/policy"/>
      *  </jacc-provider>
      *  <jacc-provider policy-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyProvider" name="simple" policy-configuration-factory-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyConfigurationFactory"/>
@@ -625,7 +625,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
     /* Loop through all jacc-provider elements in the template and create JaccProvider config objects.
      * Cursor should already be at first jacc-provider START_ELEMENT.
      * from template:
-     * <jacc-provider policy-provider="com.sun.enterprise.security.provider.PolicyWrapper" name="default" policy-configuration-factory-provider="com.sun.enterprise.security.provider.PolicyConfigurationFactoryImpl">
+     * <jacc-provider policy-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyProvider" name="default" policy-configuration-factory-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyConfigurationFactory">
      *  <property name="repository" value="${com.sun.aas.instanceRoot}/generated/policy"/>
      * </jacc-provider>
      * <jacc-provider policy-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyProvider" name="simple" policy-configuration-factory-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyConfigurationFactory"/>

@@ -95,8 +95,8 @@ EXAMPLES
            testJACC on the default server target.
 
                asadmin> create-jacc-provider
-               --policyproviderclass com.sun.enterprise.security.provider.PolicyWrapper
-               --policyconfigfactoryclass com.sun.enterprise.security.provider.PolicyConfigurationFactoryImpl
+               --policyproviderclass com.sun.enterprise.security.jacc.provider.SimplePolicyProvider
+               --policyconfigfactoryclass com.sun.enterprise.security.jacc.provider.SimplePolicyConfigurationFactory
                testJACC
 
                Command create-jacc-provider executed successfully.
