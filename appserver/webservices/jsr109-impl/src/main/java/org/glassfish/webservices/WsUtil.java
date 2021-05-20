@@ -635,7 +635,18 @@ public class WsUtil {
 
                                             File appFile = new File(se.getApplicationRepositoryPath(),serviceRef.getBundleDescriptor().getApplication().getAppName());
                                             if (appFile.exists()) {
-                                               retVal = new File(appFile,serviceRef.getWsdlFileUri()).toURL();
+                                                File wsdlFile = new File(appFile, serviceRef.getWsdlFileUri());
+                                                retVal = wsdlFile.toURI().toURL();
+                                                if (!wsdlFile.exists()) {
+                                                    // try the module path for example when we are in an EAR file
+                                                    wsdlFile = new File(serviceRef.getBundleDescriptor().getRawModuleID(), serviceRef.getWsdlFileUri());
+                                                    if (!wsdlFile.exists()) {
+                                                        // finally try to load via classloader
+                                                        retVal = Thread.currentThread().getContextClassLoader().getResource(serviceRef.getWsdlFileUri());
+                                                    } else {
+                                                        retVal = wsdlFile.toURI().toURL();
+                                                    }
+                                                }
                                             } else {
                                                //Fix for 6853656 and 6868695
                                                //In case of appclients the wsdl will be in the classpath
@@ -645,7 +656,7 @@ public class WsUtil {
                                                retVal = Thread.currentThread().getContextClassLoader().getResource(serviceRef.getWsdlFileUri()) ;
                                             }
                                         }else {
-                                            retVal = new File(serviceRef.getWsdlFileUri()).toURL();
+                                            retVal = new File(serviceRef.getWsdlFileUri()).toURI().toURL();
                                         }
                                     }
                                 }

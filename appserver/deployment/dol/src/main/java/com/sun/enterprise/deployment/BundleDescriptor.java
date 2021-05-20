@@ -645,7 +645,9 @@ public abstract class BundleDescriptor extends RootDeploymentDescriptor implemen
         return DEPLOYMENT_DESCRIPTOR_DIR;
     }
 
-
+    public String getRawModuleID() {
+        return moduleID;
+    }
     /**
      * @return the wsdl directory location inside the archive file
      */
