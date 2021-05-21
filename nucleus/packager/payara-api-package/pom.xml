@@ -61,7 +61,7 @@
         <dependency>
             <groupId>fish.payara.security.connectors</groupId>
             <artifactId>security-connectors-api</artifactId>
-            <version>${payara.openid.version}</version>
+            <version>${payara.security-connectors.version}</version>
         </dependency>
     </dependencies>
 </project>
