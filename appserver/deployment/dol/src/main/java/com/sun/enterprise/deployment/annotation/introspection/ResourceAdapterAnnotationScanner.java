@@ -76,14 +76,14 @@ public class ResourceAdapterAnnotationScanner implements AnnotationScanner {
 
     private void init() {
         annotations = new HashSet();
-        annotations.add("Ljakarta.resource/spi/Connector;");
-        annotations.add("Ljakarta.resource/spi/AdministeredObject;");
-        annotations.add("Ljakarta.resource/spi/Activation;");
-        annotations.add("Ljakarta.resource/spi/AuthenticationMechanism;");
-        annotations.add("Ljakarta.resource/spi/ConfigProperty;");
-        annotations.add("Ljakarta.resource/spi/ConnectionDefinition;");
-        annotations.add("Ljakarta.resource/spi/ConnectionDefinitions;");
-        annotations.add("Ljakarta.resource/spi/SecurityPermission;");
+        annotations.add("Ljakarta/resource/spi/Connector;");
+        annotations.add("Ljakarta/resource/spi/AdministeredObject;");
+        annotations.add("Ljakarta/resource/spi/Activation;");
+        annotations.add("Ljakarta/resource/spi/AuthenticationMechanism;");
+        annotations.add("Ljakarta/resource/spi/ConfigProperty;");
+        annotations.add("Ljakarta/resource/spi/ConnectionDefinition;");
+        annotations.add("Ljakarta/resource/spi/ConnectionDefinitions;");
+        annotations.add("Ljakarta/resource/spi/SecurityPermission;");
     }
 
     @Override

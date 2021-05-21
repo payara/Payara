@@ -83,10 +83,10 @@ public class EjbComponentAnnotationScanner implements AnnotationScanner {
     
     private void init() {
         annotations = new HashSet();
-        annotations.add("Ljakarta.ejb/Stateless;");
-        annotations.add("Ljakarta.ejb/Stateful;");
-        annotations.add("Ljakarta.ejb/MessageDriven;");
-        annotations.add("Ljakarta.ejb/Singleton;");
+        annotations.add("Ljakarta/ejb/Stateless;");
+        annotations.add("Ljakarta/ejb/Stateful;");
+        annotations.add("Ljakarta/ejb/MessageDriven;");
+        annotations.add("Ljakarta/ejb/Singleton;");
     }
 
     @Override
