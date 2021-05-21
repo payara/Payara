@@ -1806,13 +1806,14 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
 
         // set i18n info from locale-charset-info tag in sun-web.xml
         webModule.setI18nInfo();
+        RealmInitializer realmInitializer = null;
         if (webBundleDescriptor != null) {
             final boolean isSystem = webModuleConfig.isSystemObjectType();
             final Realm realm = serviceLocator.getService(Realm.class);
             logger.finest(() -> "Realm provided by the service locator: " + realm);
             if (realm instanceof RealmInitializer) {
-                ((RealmInitializer) realm).initializeRealm(webBundleDescriptor, isSystem,
-                    virtualServer.getAuthRealmName());
+                realmInitializer = ((RealmInitializer) realm);
+                realmInitializer.initializeRealm(webBundleDescriptor, isSystem, virtualServer.getAuthRealmName());
             }
             webModule.setRealm(realm);
             // post processing DOL object for standalone web module
@@ -1849,6 +1850,9 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         webStatsProviderBootstrap.registerApplicationStatsProviders(monitoringNodeName, virtualServer.getName(), getServletNames(webBundleDescriptor));
 
         virtualServer.addChild(webModule);
+        if (realmInitializer != null) {
+            realmInitializer.initializeRealm(new WebComponentInvocation(webModule).getComponentId());
+        }
 
         webModule.loadSessions(deploymentProperties);
 

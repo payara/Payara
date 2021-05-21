@@ -96,6 +96,8 @@
                                     io.opentracing,
                                     jakarta.inject,
                                     jakarta.enterprise.util,
+                                    jakarta.security.auth,
+                                    jakarta.security.auth.x500,
                                     jakarta.security.enterprise.credential,
                                     jakarta.security.enterprise.identitystore,
                                     jakarta.security.enterprise.authentication.mechanism.http,

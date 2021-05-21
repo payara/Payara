@@ -39,7 +39,11 @@
  */
 package fish.payara.appserver.context;
 
+import com.sun.enterprise.container.common.spi.JCDIService;
 import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
+import com.sun.enterprise.container.common.spi.util.InjectionException;
+import com.sun.enterprise.container.common.spi.util.InjectionManager;
+import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.util.Utility;
 import java.util.Map;
 import org.glassfish.api.invocation.ComponentInvocation;
@@ -68,17 +72,33 @@ class ContextImpl {
                     invocation, invocation.getComponentId());
         }
 
+        @Override
+        public <TT> TT inject(TT instance, boolean invokePostConstruct) {
+            try {
+                injectionMgr.injectInstance(instance, invokePostConstruct);
+                if (jcdiService.isCurrentModuleJCDIEnabled()) {
+                    jcdiService.injectManagedObject(instance, (BundleDescriptor)invocation.getJNDIEnvironment());
+                }
+            } catch (InjectionException ex) {
+                throw new IllegalStateException(ex);
+            }
+            return instance;
+        }
 
         private final ComponentInvocation invocation;
         private final InvocationManager invMgr;
         private final ComponentEnvManager compEnvMgr;
+        private final InjectionManager injectionMgr;
+        private final JCDIService jcdiService;
         private final ClassLoader oldClassLoader;
 
         public Context(ComponentInvocation invocation, InvocationManager invMgr, ComponentEnvManager compEnvMgr,
-                ClassLoader oldClassLoader) {
+                InjectionManager injectionMgr, JCDIService jcdiService, ClassLoader oldClassLoader) {
             this.invocation = invocation;
             this.invMgr = invMgr;
             this.compEnvMgr = compEnvMgr;
+            this.injectionMgr = injectionMgr;
+            this.jcdiService = jcdiService;
             this.oldClassLoader = oldClassLoader;
         }
     }

@@ -39,7 +39,9 @@
  */
 package fish.payara.appserver.context;
 
+import com.sun.enterprise.container.common.spi.JCDIService;
 import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
+import com.sun.enterprise.container.common.spi.util.InjectionManager;
 import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.JndiNameEnvironment;
@@ -54,6 +56,7 @@ import jakarta.enterprise.inject.spi.CDI;
 import jakarta.inject.Inject;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.grizzly.utils.Holder;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
@@ -76,6 +79,12 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil, Serializable {
     private transient ApplicationRegistry appRegistry;
     @Inject
     private transient InvocationManager invocationManager;
+    @Inject
+    private transient InjectionManager injectionManager;
+    // JCDIService hangs HK2 on startup if @Injected
+    private transient final Holder.LazyHolder<JCDIService> jcdiService
+            = Holder.LazyHolder.lazyHolder(() -> Globals.getDefaultHabitat()
+                    .getService(JCDIService.class));
 
 
     @Override
@@ -171,7 +180,7 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil, Serializable {
         return false;
     }
 
-    // deals with @Injected transient fields correctly
+    // deals with @Injected and final transient fields correctly
     private Object readResolve() {
         return Globals.getDefaultHabitat().getService(JavaEEContextUtil.class);
     }
@@ -232,11 +241,13 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil, Serializable {
             }
             if (!isValidAndNotEmpty()) {
                 // same as invocation, or app not running
-                return new ContextImpl.Context(null, invocationManager, compEnvMgr, null);
+                return new ContextImpl.Context(null, invocationManager, compEnvMgr,
+                        injectionManager, jcdiService.get(), null);
             }
             ComponentInvocation newInvocation = ensureCached(true).clone();
             invocationManager.preInvoke(newInvocation);
-            return new ContextImpl.Context(newInvocation, invocationManager, compEnvMgr,
+            return new ContextImpl.Context(newInvocation, invocationManager,
+                    compEnvMgr, injectionManager, jcdiService.get(),
                     Utility.setContextClassLoader(getInvocationClassLoader()));
         }
 
