@@ -143,12 +143,10 @@
                 <dependency>
                     <groupId>fish.payara.security.connectors</groupId>
                     <artifactId>security-connector-oauth2-client</artifactId>
-                    <version>${payara.openid.version}</version>
                 </dependency>
                 <dependency>
                     <groupId>fish.payara.security.connectors</groupId>
                     <artifactId>security-connector-oidc-client</artifactId>
-                    <version>${payara.openid.version}</version>
                 </dependency>
                 <dependency>
                     <groupId>fish.payara.server.internal.security</groupId>
