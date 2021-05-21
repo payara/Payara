@@ -55,8 +55,8 @@ import jakarta.inject.Singleton;
 public class AppClientPersistenceDependencyAnnotationScanner extends AbstractAnnotationScanner {
 
     protected void init(java.util.Set<String> annotationsSet) {
-        annotationsSet.add("Ljakarta.persistence/PersistenceUnit");
-        annotationsSet.add("Ljakarta.persistence/PersistenceUnits");
+        annotationsSet.add("Ljakarta/persistence/PersistenceUnit");
+        annotationsSet.add("Ljakarta/persistence/PersistenceUnits");
     }
     
 }
