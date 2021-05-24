@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2020] Payara Foundation and/or affiliates
+// Portions Copyright [2020-2021] Payara Foundation and/or affiliates
 
 package org.glassfish.jdbc.admin.cli;
 
@@ -326,8 +326,7 @@ public class JDBCConnectionPoolManager implements ResourceManager {
         initsql = (String) attrList.get(INIT_SQL);
         logJDBCCalls = (String) attrList.get(LOG_JDBC_CALLS);
         
-        // Can't be set to null as the default value is now the SilentSqlTraceListener class, which requires statement 
-        // wrapping to be enabled
+        // Can't be set to null as the default value is now the SilentSqlTraceListener class
         sqltracelisteners = (String) attrList.get(SQL_TRACE_LISTENERS);
         if (sqltracelisteners == null) {
             sqltracelisteners = "";

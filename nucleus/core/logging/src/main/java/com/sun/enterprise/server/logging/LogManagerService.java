@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.server.logging;
 
@@ -49,7 +49,6 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.module.bootstrap.EarlyLogHandler;
 import com.sun.enterprise.util.EarlyLogger;
-import com.sun.enterprise.util.PropertyPlaceholderHelper;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.v3.logging.AgentFormatterDelegate;
 import fish.payara.enterprise.server.logging.JSONLogFormatter;
@@ -58,7 +57,6 @@ import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -70,7 +68,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Properties;
 import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -401,16 +398,6 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
             }
             
             logMgr.readConfiguration();
-
-            // replace placehoders with values from system environment variables
-            try {
-                final Field propsLogManagerField = logMgr.getClass().getDeclaredField("props");
-                propsLogManagerField.setAccessible(true);
-                Properties props = (Properties) propsLogManagerField.get(logMgr);
-                propsLogManagerField.set(logMgr, new PropertyPlaceholderHelper(System.getenv(), PropertyPlaceholderHelper.ENV_REGEX).replacePropertiesPlaceholder(props));
-            } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException ex) {
-                LOGGER.log(Level.SEVERE, LogFacade.ERROR_PLACEHOLDERS_REPLACEMENT, ex);
-            }
 
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, LogFacade.ERROR_READING_CONF_FILE, e);

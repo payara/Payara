@@ -192,7 +192,7 @@ public final class WebAndEjbToJaasBridge {
             doGSSUPLogin(subject);
 
         } else if (credentialClass.equals(X500Principal.class)) {
-            doX500Login(subject, null);
+            doX500Login(subject, null, null);
 
         } else {
             LOGGER.log(INFO, unknownCredentialError, credentialClass.toString());
@@ -200,8 +200,8 @@ public final class WebAndEjbToJaasBridge {
         }
     }
 
-    public static void doX500Login(Subject subject, String appModuleID) {
-        doX500Login(subject, CertificateRealm.AUTH_TYPE, appModuleID);
+    public static void doX500Login(Subject subject, String appModuleID, String componentId) {
+        doX500Login(subject, CertificateRealm.AUTH_TYPE, appModuleID, componentId);
     }
 
     /**
@@ -215,7 +215,7 @@ public final class WebAndEjbToJaasBridge {
      * @throws LoginException when login fails
      *
      */
-    public static void doX500Login(Subject subject, String realmName, String appModuleID) {
+    public static void doX500Login(Subject subject, String realmName, String appModuleID, String componentId) {
         LOGGER.finest(() -> String.format("doX500Login(subject=%s, realmName=%s, appModuleID=%s)",
             subject, realmName, appModuleID));
 
@@ -255,7 +255,7 @@ public final class WebAndEjbToJaasBridge {
                 }
 
                 // The name that the cert realm decided to set as the caller principal name
-                user = certRealm.authenticate(subject, x500principal);
+                user = certRealm.authenticate(subject, x500principal, componentId);
 
                 auditAuthenticate(user, realmName, true);
             } else {

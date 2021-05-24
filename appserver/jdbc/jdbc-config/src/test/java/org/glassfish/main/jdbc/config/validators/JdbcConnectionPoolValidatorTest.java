@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) 2019-2020 Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) 2019-2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -187,12 +187,6 @@ public class JdbcConnectionPoolValidatorTest {
 
         updateMock(pool, p -> expect(p.getWrapJdbcObjects()).andStubReturn("false"));
         assertTrue("wrapping disabled, all related settings ok", this.validator.isValid(pool, null));
-
-        updateMock(pool, p -> {
-            expect(p.getWrapJdbcObjects()).andStubReturn("false");
-            expect(p.getSqlTraceListeners()).andStubReturn(SQLTraceListener.class.getName());
-        });
-        assertFalse("wrapping disabled, but trace listeners enabled", this.validator.isValid(pool, null));
 
         updateMock(pool, p -> {
             expect(p.getWrapJdbcObjects()).andStubReturn("false");
