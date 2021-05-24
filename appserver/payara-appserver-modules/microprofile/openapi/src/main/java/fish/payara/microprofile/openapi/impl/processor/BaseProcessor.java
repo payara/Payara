@@ -49,6 +49,7 @@ import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.normal
 
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -147,11 +148,16 @@ public class BaseProcessor implements OASProcessor {
 
     private static void removeEmptyPaths(Paths paths) {
         final PathItem emptyPath = new PathItemImpl();
+        HashSet<String> namesToRemove = new HashSet<>();
         for (Entry<String, PathItem> pathItem : paths.getPathItems().entrySet()) {
             final String pathName = pathItem.getKey();
             if (emptyPath.equals(pathItem.getValue())) {
-                paths.removePathItem(pathName);
+                namesToRemove.add(pathName);
             }
+        }
+        // remove all names
+        for(String name : namesToRemove) {
+            paths.removePathItem(name);
         }
     }
 }
