@@ -201,6 +201,7 @@ public class LoggingHandlers {
         String config = (String)handlerCtx.getInputValue("config");
         Map<String, Object> props = new HashMap();
         try{
+            StringBuilder data = new StringBuilder();
             for (Map.Entry<String, Object> e : attrs.entrySet()) {
                 String key=e.getKey();
                 if ((key.equals("com.sun.enterprise.server.logging.SyslogHandler.useSystemLogging")||
@@ -216,11 +217,15 @@ public class LoggingHandlers {
                         && (e.getValue() == null)) {
                     attrs.put(key, "false");
                 }
-                props.put("id", key + "='" + attrs.get(key) + "'");
-                props.put("target", config);
-                RestUtil.restRequest((String)GuiUtil.getSessionValue("REST_URL") + "/set-log-attributes",
-                        props, "POST", null, false, true);
+                if (data.length() > 0) {
+                    data.append(":");
+                }
+                data.append(key).append("='").append(attrs.get(key)).append("'");
             }
+            props.put("id", data.toString());
+            props.put("target", config);
+            RestUtil.restRequest((String) GuiUtil.getSessionValue("REST_URL") + "/set-log-attributes",
+                    props, "POST", null, false, true);
         }catch (Exception ex){
             GuiUtil.handleException(handlerCtx, ex);
             if (GuiUtil.getLogger().isLoggable(Level.FINE)){
