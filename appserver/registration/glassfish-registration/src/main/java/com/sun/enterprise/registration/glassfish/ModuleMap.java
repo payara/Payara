@@ -222,7 +222,7 @@ public class ModuleMap {
                 put("fish.payara.server.internal.core.branding", 163);
                 put("fish.payara.server.internal.core.glassfish", 164);
                 put("fish.payara.server.internal.core.glassfish-extra-jre-packages", 165);
-                put("fish.payara.server.internal.core.javaee-kernel", 166);
+                put("fish.payara.server.internal.core.jakartaee-kernel", 166);
                 put("fish.payara.server.internal.core.kernel", 167);
                 put("fish.payara.server.internal.core.logging", 168);
                 put("fish.payara.server.internal.deployment.admin", 169);

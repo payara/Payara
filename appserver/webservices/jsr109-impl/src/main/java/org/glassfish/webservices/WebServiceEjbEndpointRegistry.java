@@ -155,11 +155,6 @@ public class WebServiceEjbEndpointRegistry implements WSEjbEndpointRegistry {
         // notify monitoring layers that a new endpoint is being created.
         WebServiceEngineImpl engine = WebServiceEngineImpl.getInstance();
         engine.createHandler(endpoint.getEndpoint());
-        try {
-            endpoint.initRuntimeInfo(adapterListMap.get(uri));
-        } catch (Exception e) {
-            logger.log(Level.WARNING, LogUtils.EJB_POSTPROCESSING_ERROR, e);
-        }
     }
 
 

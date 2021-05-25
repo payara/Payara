@@ -40,7 +40,7 @@
 
 //Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
-package org.glassfish.kernel.javaee;
+package org.glassfish.kernel.jakartaee;
 
 import jakarta.inject.Inject;
 import jakarta.inject.Provider;

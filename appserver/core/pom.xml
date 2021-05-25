@@ -53,7 +53,7 @@
     <packaging>pom</packaging>
     <name>GlassFish Core modules</name>
     <modules>
-        <module>javaee-kernel</module>
+        <module>jakartaee-kernel</module>
         <module>api-exporter-fragment</module>
     </modules>
 </project>
