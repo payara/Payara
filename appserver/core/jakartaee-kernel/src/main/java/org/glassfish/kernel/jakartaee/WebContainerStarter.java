@@ -38,7 +38,7 @@
  * holder.
  */
 // Portions Copyright [2019] [Payara Foundation and/or its affiliates]
-package org.glassfish.kernel.javaee;
+package org.glassfish.kernel.jakartaee;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;

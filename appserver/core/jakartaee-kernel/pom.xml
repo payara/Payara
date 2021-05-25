@@ -48,10 +48,10 @@
         <artifactId>core</artifactId>
         <version>6.2021.1-SNAPSHOT</version>
     </parent>
-    <artifactId>javaee-kernel</artifactId>
+    <artifactId>jakartaee-kernel</artifactId>
     <packaging>glassfish-jar</packaging>
     
-    <name>Java EE related distributions kernel Classes</name>
+    <name>Jakarta EE related distributions kernel Classes</name>
     
     <developers>
         <developer>
