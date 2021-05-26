@@ -40,6 +40,7 @@
 package org.glassfish.internal.api;
 
 import java.io.Serializable;
+import org.glassfish.internal.data.ModuleInfo;
 
 /**
  * Utility to create / push Jakarta EE and CDI thread contexts
@@ -93,6 +94,16 @@ public interface ContextProducer {
      * @return true if current invocation exists and is loaded / ready
      */
     boolean isInvocationLoaded();
+
+    /**
+     * Checks if the supplied module matches the component / application ID
+     * Works for both EAR application IDs or other module (WAR, JAR) IDs
+     *
+     * @param moduleInfo
+     * @param appOrComponentId
+     * @return true if matches
+     */
+    boolean moduleMatches(ModuleInfo moduleInfo, String appOrComponentId);
 
     /**
      * specific, immutable, thread-safe instance of the context

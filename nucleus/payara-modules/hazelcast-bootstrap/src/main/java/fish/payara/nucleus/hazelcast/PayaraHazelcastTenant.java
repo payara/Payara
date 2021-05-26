@@ -58,10 +58,8 @@ import java.util.logging.Logger;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
 import org.glassfish.api.invocation.InvocationManager;
-import org.glassfish.deployment.versioning.VersioningUtils;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.JavaEEContextUtil;
-import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ModuleInfo;
 import org.glassfish.internal.deployment.Deployment;
 
@@ -90,7 +88,7 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
     PayaraHazelcastTenant() {
         if (invMgr.getCurrentInvocation() != null) {
             contextInstance = ctxUtil.currentInvocation();
-            moduleName = VersioningUtils.getUntaggedName(invMgr.getCurrentInvocation().getModuleName());
+            moduleName = contextInstance.getInstanceComponentId();
         } else {
             contextInstance = ctxUtil.empty();
         }
@@ -197,8 +195,7 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
         @Override
         public void event(EventListener.Event<?> payaraEvent) {
             if (payaraEvent.is(Deployment.MODULE_STARTED)) {
-                ModuleInfo hook = (ModuleInfo) payaraEvent.hook();
-                if (!(hook instanceof ApplicationInfo) && VersioningUtils.getUntaggedName(hook.getName()).equals(moduleName)) {
+                if (ctxUtil.moduleMatches((ModuleInfo)payaraEvent.hook(), moduleName)) {
                     lock.lock();
                     try {
                         condition.signalAll();
@@ -207,8 +204,7 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
                     }
                 }
             } else if (payaraEvent.is(Deployment.MODULE_STOPPED)) {
-                ModuleInfo hook = (ModuleInfo) payaraEvent.hook();
-                if (!(hook instanceof ApplicationInfo) && VersioningUtils.getUntaggedName(hook.getName()).equals(moduleName)) {
+                if (ctxUtil.moduleMatches((ModuleInfo)payaraEvent.hook(), moduleName)) {
                     // decouple the tenant classes from the event
                     tenantUnavailable();
                     destroyEvent.tenantUnavailable();
