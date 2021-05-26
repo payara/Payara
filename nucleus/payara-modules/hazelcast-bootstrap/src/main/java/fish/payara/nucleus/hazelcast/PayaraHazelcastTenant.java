@@ -58,6 +58,7 @@ import java.util.logging.Logger;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
 import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.deployment.versioning.VersioningUtils;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.JavaEEContextUtil;
 import org.glassfish.internal.data.ModuleInfo;
@@ -88,7 +89,7 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
     PayaraHazelcastTenant() {
         if (invMgr.getCurrentInvocation() != null) {
             contextInstance = ctxUtil.currentInvocation();
-            moduleName = contextInstance.getInstanceComponentId();
+            moduleName = VersioningUtils.getUntaggedName(invMgr.getCurrentInvocation().getModuleName());
         } else {
             contextInstance = ctxUtil.empty();
         }

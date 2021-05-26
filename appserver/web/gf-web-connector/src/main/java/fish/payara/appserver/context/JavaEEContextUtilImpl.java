@@ -128,9 +128,7 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil, Serializable {
 
     @Override
     public boolean moduleMatches(ModuleInfo moduleInfo, String modulNameToMatch) {
-        String moduleName = VersioningUtils.getUntaggedName(moduleInfo.getName());
-        return (moduleInfo instanceof ApplicationInfo ?
-                DOLUtils.toEarComponentId(moduleName) : moduleName).equals(modulNameToMatch);
+        return VersioningUtils.getUntaggedName(moduleInfo.getName()).equals(modulNameToMatch);
     }
 
     private static ClassLoader getClassLoaderForEnvironment(JndiNameEnvironment componentEnv) {
@@ -219,7 +217,7 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil, Serializable {
         private InstanceImpl(ComponentInvocation currentInvocation) {
             boolean isApplicationComponent = false;
             if (currentInvocation.getComponentId() != null) {
-                componentId = currentInvocation.getComponentId();
+                componentId = VersioningUtils.getUntaggedName(currentInvocation.getComponentId());
             } else if (currentInvocation.getJNDIEnvironment() instanceof JndiNameEnvironment) {
                 componentId = DOLUtils.toEarComponentId(
                         DOLUtils.getApplicationName((JndiNameEnvironment)
