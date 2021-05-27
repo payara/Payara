@@ -826,7 +826,11 @@ public class DOLUtils {
   }
 
   public static boolean isEarApplication(JndiNameEnvironment env) {
-      return env instanceof Application;
+    return env instanceof Application;
+  }
+
+  public static String toEarComponentId(String appName) {
+    return appName + "_/";
   }
 
   /**
