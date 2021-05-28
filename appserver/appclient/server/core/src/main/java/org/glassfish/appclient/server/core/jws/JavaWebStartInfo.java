@@ -43,6 +43,7 @@ package org.glassfish.appclient.server.core.jws;
 
 import com.sun.enterprise.deployment.ApplicationClientDescriptor;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
+import com.sun.enterprise.util.JDK;
 import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -552,11 +553,13 @@ public class JavaWebStartInfo implements ConfigListener {
                     acServerApp.getDescriptor().getName());
         }
 
-        /*
+        if (JDK.getMajor() < 9) {
+            /*
          * Add static content representing any extension libraries this client
          * (or the JARs it depends on) uses.
-         */
-        processExtensionReferences();
+             */
+            processExtensionReferences();
+        }
 
         /*
          * Make sure that there are versions of all GF system JARs
