@@ -398,9 +398,11 @@ public class GSSUtils {
         if (token[index] != 0x06)
             throw new IOException("Defective Token");
 
-        byte[] buf = new byte[token.length - index];
+        // add first two bytes to the MECH_OID_LEN
+        int oidlen = token[index + 1] + 2;
+        byte[] buf = new byte[oidlen];
 
-        System.arraycopy(token, index, buf, 0, token.length - index);
+        System.arraycopy(token, index, buf, 0, oidlen);
 
         ObjectIdentifier mechoid = getOID(buf);
 
