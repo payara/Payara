@@ -84,6 +84,7 @@ grant codebase "file:/module/Web" {
     permission java.io.FilePermission "*", "read,write"; 
     permission java.io.FilePermission "SERVLET-CONTEXT-TEMPDIR", "read,write";
     permission java.util.PropertyPermission "*", "read";
+    permission java.lang.RuntimePermission "accessClassInPackage.com.sun.jndi.ldap";
 };
 
 // Resource adapter EE permissions
