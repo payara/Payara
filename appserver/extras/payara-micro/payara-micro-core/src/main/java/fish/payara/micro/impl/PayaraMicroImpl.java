@@ -166,7 +166,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     private boolean outputLauncher;
     private File copyDirectory;
     private Properties userSystemProperties;
-    private List<String> repositoryURIs;
+    private final List<String> repositoryURIs;
     private final short defaultHttpPort = 8080;
     private final short defaultHttpsPort = 8181;
     private final BootCommands preBootCommands;
@@ -212,7 +212,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
      * --help Shows this message and exits\n
      * @throws BootstrapException If there is a problem booting the server
      */
-    public static void main(String args[]) throws Exception {
+    public static void main(String[] args) throws Exception {
         create(args);
     }
 
@@ -716,9 +716,6 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     public PayaraMicroImpl addRepoUrl(String... URLs) {
         //if (runtime != null) {
         checkNotRunning();
-        if (repositoryURIs == null) {
-            repositoryURIs = new LinkedList<>();
-        }
         repositoryURIs.addAll(Arrays.asList(URLs));
         return this;
     }
@@ -1111,6 +1108,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
 
     private PayaraMicroImpl() {
         // Initialise a random instance name
+        repositoryURIs = new LinkedList<>();
         preBootCommands = new BootCommands();
         postBootCommands = new BootCommands();
         postDeployCommands = new BootCommands();
@@ -1243,9 +1241,6 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                     enableHealthCheck = Boolean.parseBoolean(value);
                     break;
                 case additionalrepository:
-                    if (repositoryURIs == null) {
-                        repositoryURIs = new LinkedList<>();
-                    }
                     repositoryURIs.add(value);
                     break;
                 case outputuberjar:
