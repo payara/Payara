@@ -63,6 +63,8 @@ import javax.xml.stream.XMLStreamException;
 import org.glassfish.api.deployment.DeploymentContext;
 
 import com.sun.logging.LogDomains;
+import java.util.Arrays;
+import java.util.List;
 
 import sun.security.provider.PolicyFile;
 
@@ -135,6 +137,14 @@ public class GlobalPolicyUtil {
 
     public static final String EAR_CLASS_LOADER = "org.glassfish.javaee.full.deployment.EarClassLoader";
 
+    // permissions needed by applications using java.desktop module defined in ${JDK_HOME}/lib/security/default.policy
+    private static final List<String> JDK_REQUIRED_PERMISSIONS = Arrays.asList(
+            "accessClassInPackage.com.sun.beans",
+            "accessClassInPackage.com.sun.beans.*", 
+            "accessClassInPackage.com.sun.java.swing.plaf.*", 
+            "accessClassInPackage.com.apple.*"
+    );
+    
     // Map recording the 'Java EE component type' to its code source URL
     private static final Map<CommponentType, String> CompTypeToCodeBaseMap = new HashMap<CommponentType, String>();
 
@@ -396,12 +406,12 @@ public class GlobalPolicyUtil {
         Enumeration<Permission> checkEnum = toBeCheckedPC.elements();
         while (checkEnum.hasMoreElements()) {
             Permission permissions = checkEnum.nextElement();
-            if (containPC.implies(permissions)) {
+            if (!JDK_REQUIRED_PERMISSIONS.contains(permissions.getName())
+                    && containPC.implies(permissions)) {
                 throw new SecurityException("Restricted permission " + permissions + " is declared or implied in the " + containPC);
             }
         }
 
-        return;
     }
 
     /**
