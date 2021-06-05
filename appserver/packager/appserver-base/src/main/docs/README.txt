@@ -56,7 +56,7 @@ Make sure to also check the Payara Server 5.2021.5 Release Notes as they contain
 5. Documentation
 ================
 
-Payara Server 5.2021.5 Release Notes: https://docs.payara.fish/docs/5.2021.5/release-notes/release-notes-2020-7.html
+Payara Server 5.2021.5 Release Notes: https://docs.payara.fish/docs/5.2021.5/release-notes/release-notes-2021-5.html
 
 Payara Server Documentation: https://docs.payara.fish/
 
