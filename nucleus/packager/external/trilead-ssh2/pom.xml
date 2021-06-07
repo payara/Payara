@@ -117,7 +117,19 @@
             <artifactId>trilead-ssh2</artifactId>
             <scope>compile</scope>
             <optional>true</optional>
+            <exclusions>
+        		<exclusion>
+          			<groupId>org.connectbot.jbcrypt</groupId>
+          			<artifactId>jbcrypt</artifactId>
+        		</exclusion>
+      		</exclusions>
         </dependency>
+        <!-- Import seperately to avoid http block in Maven 3.8.1 -->
+		<dependency>
+		    <groupId>org.connectbot</groupId>
+		    <artifactId>jbcrypt</artifactId>
+		    <version>1.0.2</version>
+		</dependency>
         <dependency>
             <groupId>net.i2p.crypto</groupId>
             <artifactId>eddsa</artifactId>
