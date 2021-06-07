@@ -39,6 +39,8 @@
  */
 package fish.payara.micro.cmd.options;
 
+import fish.payara.deployment.util.JavaArchiveUtils;
+
 import java.io.File;
 import java.text.MessageFormat;
 
@@ -64,19 +66,19 @@ public class DeploymentFileValidator extends Validator {
         File deployment = new File(filePath);
 
         if (!deployment.exists()) {
-            throw new ValidationException(MessageFormat.format(RuntimeOptions.commandlogstrings.getString("fileDoesNotExist"), filePath));
+            throw new ValidationException(MessageFormat.format(RuntimeOptions.commandlogstrings.getString("fileDoesNotExist"), deployment.getPath()));
         }
 
         if (!deployment.canRead()) {
-            throw new ValidationException(MessageFormat.format(RuntimeOptions.commandlogstrings.getString("fileNotReadable"), filePath));
+            throw new ValidationException(MessageFormat.format(RuntimeOptions.commandlogstrings.getString("fileNotReadable"), deployment.getPath()));
         }
 
-        if (deployment.isFile() && !(filePath.endsWith(".rar") || filePath.endsWith(".jar") || filePath.endsWith(".war"))) {
-            throw new ValidationException(filePath + " is a not valid type of deployment archive");
+        if (deployment.isFile() && !JavaArchiveUtils.hasJavaArchiveExtension(deployment.getName(), false)) {
+            throw new ValidationException(deployment.getPath() + " is a not valid type of deployment archive");
         }
 
-        if (deployment.isDirectory() && !new File(filePath, "WEB-INF").exists()) {
-            throw new ValidationException(filePath + " is a not valid exploded web archive");
+        if (deployment.isDirectory() && !JavaArchiveUtils.hasWebInf(deployment)) {
+            throw new ValidationException(deployment.getPath() + " is a not valid exploded web archive");
         }
 
         return true;

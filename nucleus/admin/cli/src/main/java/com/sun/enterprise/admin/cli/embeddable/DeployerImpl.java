@@ -65,7 +65,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -101,13 +100,11 @@ public class DeployerImpl implements Deployer {
 
     @Override
     public String deploy(URI archive, String... params) throws GlassFishException {
-        File file;
         try {
-            file = convertToFile(archive);
+            return deploy(URIUtils.convertToFile(archive), params);
         } catch (IOException e) {
             throw new GlassFishException("Unable to make a file out of " + archive, e);
         }
-        return deploy(file, params);
     }
 
     @Override
@@ -146,7 +143,7 @@ public class DeployerImpl implements Deployer {
     @Override
     public String deploy(InputStream is, String... params) throws GlassFishException {
         try {
-            return deploy(createFile(is), params);
+            return deploy(FileUtils.createTempFile(is, "app", "tmp"), params);
         } catch (IOException e) {
             throw new GlassFishException(e);
         }
@@ -177,42 +174,6 @@ public class DeployerImpl implements Deployer {
             return new ArrayList<>(props.stringPropertyNames());
         } catch (Exception e) {
             throw new GlassFishException(e);
-        }
-    }
-
-    private File convertToFile(URI archive) throws IOException {
-        File file;
-        if ("file".equalsIgnoreCase(archive.getScheme())) {
-            file = new File(archive);
-        } else {
-            file = createFile(URIUtils.openHttpConnection(archive).getInputStream());
-        }
-        return file;
-    }
-
-    private File createFile(InputStream in) throws IOException {
-        File file;
-        file = File.createTempFile("app", "tmp");
-        FileUtils.deleteOnExit(file);
-        try (OutputStream out = new FileOutputStream(file)) {
-            copyStream(in, out);
-        } finally {
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (IOException e) {
-                    // ignore
-                }
-            }
-        }
-        return file;
-    }
-
-    private void copyStream(InputStream in, OutputStream out) throws IOException {
-        byte[] buf = new byte[4096];
-        int len;
-        while ((len = in.read(buf)) >= 0) {
-            out.write(buf, 0, len);
         }
     }
 

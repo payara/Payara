@@ -39,6 +39,8 @@
  */
 package fish.payara.micro.cmd.options;
 
+import fish.payara.deployment.util.JavaArchiveUtils;
+
 import java.text.MessageFormat;
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -129,7 +131,7 @@ public class RuntimeOptions {
                 } catch (ValidationException ve) {
                     throw new ValidationException(arg + " " + ve.getMessage(), ve);
                 }
-            } else if (arg.endsWith(".war") || arg.endsWith(".rar") || arg.endsWith(".jar")) {
+            } else if (JavaArchiveUtils.hasJavaArchiveExtension(arg, false)) {
                 // we have a "raw" deployment
                 RUNTIME_OPTION.deploy.validate(arg);
                 options.add(new AbstractMap.SimpleImmutableEntry<>(RUNTIME_OPTION.deploy, arg));
