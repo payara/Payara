@@ -39,10 +39,17 @@
  */
 package fish.payara.deployment.util;
 
+import com.sun.enterprise.util.io.FileUtils;
+
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Base64;
 
 /**
@@ -54,6 +61,25 @@ public final class URIUtils {
     // Suppress default constructor
     private URIUtils() {
         throw new AssertionError();
+    }
+
+    /**
+     * Opens a connection to the {@code uri} and returns an {@code InputStream} for reading
+     * from that connection.
+     * <p/>
+     * If {@code uri} represents an HTTP(S) resource and contains the user info part, set the
+     * <em>Authorization</em> header with Basic authentication credentials.
+     *
+     * @param uri the {@code URI} to returns {@code InputStream} from.
+     * @return An input stream for reading from the {@code URI}.
+     * @throws IOException if an I/O exception occurs.
+     * @throws ClassCastException if the {@code uri} is not a file and does not represent HTTP(S) resource.
+     */
+    public static InputStream openStream(URI uri) throws IOException {
+        if (hasFileScheme(uri)) {
+            return Files.newInputStream(Paths.get(uri));
+        }
+        return openHttpConnection(uri).getInputStream();
     }
 
     /**
@@ -70,7 +96,7 @@ public final class URIUtils {
      * @throws IOException if an I/O exception occurs.
      * @throws ClassCastException if the connection is not instance of {@code HttpURLConnection}.
      */
-    public static HttpURLConnection openHttpConnection(URI uri) throws IOException {
+    private static HttpURLConnection openHttpConnection(URI uri) throws IOException {
         URL url = uri.toURL();
         HttpURLConnection httpConnection = (HttpURLConnection) url.openConnection();
         String userInfo = url.getUserInfo();
@@ -79,5 +105,77 @@ public final class URIUtils {
             httpConnection.setRequestProperty("Authorization", "Basic " + encodedUserInfo);
         }
         return httpConnection;
+    }
+
+    /**
+     * Downloads {@code uri} to a temporary file.
+     *
+     * @param uri the URI to download.
+     * @return The temporary file.
+     * @throws IOException if an I/O exception occurs.
+     * @throws ClassCastException if the {@code uri} is not a file and does not represent HTTP(S) resource.
+     */
+    public static File convertToFile(URI uri) throws IOException {
+        if (hasFileScheme(uri)) {
+            return new File(uri);
+        }
+
+        HttpURLConnection connection = openHttpConnection(uri);
+        try {
+            return FileUtils.createTempFile(connection.getInputStream(), "app", "tmp");
+        } catch (IOException e) {
+            try (InputStream err = connection.getErrorStream()) {
+                if (err != null) {
+                    // Dry error stream
+                    FileUtils.copy(err, new OutputStream() {
+                        @Override
+                        public void write(int b) {
+                            // ignore
+                        }
+                    }, 0L);
+                }
+            } catch (IOException ex) {
+                // ignore
+            }
+            // Rethrow original exception
+            throw e;
+        } finally {
+            connection.disconnect();
+        }
+    }
+
+    /**
+     * Tests whether resource represented by {@code uri} exists.
+     *
+     * @param uri the URI to test.
+     * @return {@code true} if a resource exists; {@code false} otherwise.
+     * @throws IOException if an I/O error occurs.
+     * @throws ClassCastException if the {@code uri} is not a file and does not represent HTTP(S) resource.
+     */
+    public static boolean exists(URI uri) throws IOException {
+        if (hasFileScheme(uri)) {
+            return Files.exists(Paths.get(uri));
+        }
+
+        HttpURLConnection connection = openHttpConnection(uri);
+        connection.setRequestMethod("HEAD");
+
+        if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+            return true;
+        }
+
+        connection.disconnect();
+
+        return false;
+    }
+
+    /**
+     * Tests whether {@code uri} has the {@code file} scheme.
+     *
+     * @param uri the URI to test.
+     * @return {@code true} if {@code uri} has the {@code file} scheme; {@code false} otherwise.
+     */
+    public static boolean hasFileScheme(URI uri) {
+        return "file".equalsIgnoreCase(uri.getScheme());
     }
 }
