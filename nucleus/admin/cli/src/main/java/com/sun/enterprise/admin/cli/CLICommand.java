@@ -1447,10 +1447,15 @@ public abstract class CLICommand implements PostConstruct {
     }
     
     protected LineReaderBuilder newLineReaderBuilder() {
+    	// In community this should be disabled by default
+    	boolean disabled = true;
+    	if(System.getenv("DISABLE_EVENT_EXPANSION") != null) {
+    		disabled = Boolean.valueOf(System.getenv("DISABLE_EVENT_EXPANSION"));
+    	}
         return LineReaderBuilder.builder()
                 .appName(ASADMIN)
                 // disable event expansion because it swallows backslashes and we don't need to support events
-                .option(LineReader.Option.DISABLE_EVENT_EXPANSION, true);
+                .option(LineReader.Option.DISABLE_EVENT_EXPANSION, disabled);
     }
     
     protected void closeTerminal() {
