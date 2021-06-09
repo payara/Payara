@@ -1440,10 +1440,17 @@ public abstract class CLICommand implements PostConstruct {
     
     protected void buildLineReader() {
         if (lineReader == null) {
-            lineReader = LineReaderBuilder.builder()
+            lineReader = newLineReaderBuilder()
                     .terminal(terminal)
                     .build();
         }
+    }
+    
+    protected LineReaderBuilder newLineReaderBuilder() {
+        return LineReaderBuilder.builder()
+                .appName(ASADMIN)
+                // disable event expansion because it swallows backslashes and we don't need to support events
+                .option(LineReader.Option.DISABLE_EVENT_EXPANSION, true);
     }
     
     protected void closeTerminal() {
