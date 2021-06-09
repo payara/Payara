@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiiates
+// Portions Copyright [2018-2021] Payara Foundation and/or affiiates
 
 package com.sun.enterprise.config.serverbeans;
 
