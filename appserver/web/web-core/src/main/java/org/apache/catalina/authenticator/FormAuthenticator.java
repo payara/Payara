@@ -1,5 +1,5 @@
 /*
-√è * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+œ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 package org.apache.catalina.authenticator;
 
 import static java.util.logging.Level.FINE;

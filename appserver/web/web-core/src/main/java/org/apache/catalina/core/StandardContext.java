@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
 package org.apache.catalina.core;
 
@@ -209,7 +209,7 @@ import org.glassfish.web.valve.GlassFishValve;
  * @version $Revision: 1.48 $ $Date: 2007/07/25 00:52:04 $
  */
 
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
 public class StandardContext
     extends ContainerBase

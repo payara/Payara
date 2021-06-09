@@ -46,7 +46,7 @@
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
  */
-// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates]
 package org.glassfish.admingui.handlers;
 
 import com.sun.enterprise.util.io.FileUtils;

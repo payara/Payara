@@ -47,7 +47,7 @@
  *
  * Created on May 23, 2002, 1:56 PM
  */
-// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.provider;
 
 import static java.io.File.separatorChar;
