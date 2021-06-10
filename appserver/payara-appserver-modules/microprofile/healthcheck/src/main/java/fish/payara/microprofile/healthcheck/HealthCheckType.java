@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2019-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2019-2021] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -46,11 +46,13 @@ import javax.enterprise.util.AnnotationLiteral;
 
 import org.eclipse.microprofile.health.Liveness;
 import org.eclipse.microprofile.health.Readiness;
+import org.eclipse.microprofile.health.Startup;
 
 public enum HealthCheckType {
 
     READINESS("/ready", new Readiness.Literal()),
     LIVENESS("/live", new Liveness.Literal()),
+    STARTUP("/started", new Startup.Literal()),
     UNKNOWN(null, null);
     
     private String path;
