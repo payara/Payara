@@ -46,11 +46,13 @@ import jakarta.enterprise.util.AnnotationLiteral;
 
 import org.eclipse.microprofile.health.Liveness;
 import org.eclipse.microprofile.health.Readiness;
+import org.eclipse.microprofile.health.Startup;
 
 public enum HealthCheckType {
 
     READINESS("/ready", new Readiness.Literal()),
     LIVENESS("/live", new Liveness.Literal()),
+    STARTUP("/started", new Startup.Literal()),
     UNKNOWN(null, null);
     
     private String path;
