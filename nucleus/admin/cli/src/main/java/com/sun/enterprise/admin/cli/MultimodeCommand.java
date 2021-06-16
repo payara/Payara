@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2021] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.cli;
 
@@ -61,7 +61,6 @@ import org.glassfish.hk2.utilities.BuilderHelper;
 import org.jline.reader.Completer;
 import org.jline.reader.EndOfFileException;
 import org.jline.reader.LineReader;
-import org.jline.reader.LineReaderBuilder;
 import org.jline.reader.UserInterruptException;
 import org.jline.reader.impl.completer.StringsCompleter;
 import org.jline.terminal.Terminal;
@@ -149,8 +148,7 @@ public class MultimodeCommand extends CLICommand {
                         .encoding(encoding != null ? Charset.forName(encoding) : Charset.defaultCharset())
                         .build();
 
-                reader = LineReaderBuilder.builder()
-                        .appName(ASADMIN)
+                reader = newLineReaderBuilder()
                         .terminal(asadminTerminal)
                         .completer(completer)
                         .build();
@@ -183,9 +181,8 @@ public class MultimodeCommand extends CLICommand {
                 Terminal asadminTerminal = new ExternalTerminal(ASADMIN, "",
                         new FileInputStream(file), out, encoding != null ? Charset.forName(encoding) : Charset.defaultCharset());
                 
-                reader = LineReaderBuilder.builder()
+                reader = newLineReaderBuilder()
                         .terminal(asadminTerminal)
-                        .appName(ASADMIN)
                         .build();
             }
 
