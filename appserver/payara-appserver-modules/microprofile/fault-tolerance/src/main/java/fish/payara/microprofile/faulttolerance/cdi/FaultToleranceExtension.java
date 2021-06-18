@@ -47,24 +47,27 @@ import org.eclipse.microprofile.faulttolerance.Asynchronous;
 import org.eclipse.microprofile.faulttolerance.Bulkhead;
 import org.eclipse.microprofile.faulttolerance.CircuitBreaker;
 import org.eclipse.microprofile.faulttolerance.Fallback;
+import org.eclipse.microprofile.faulttolerance.FallbackHandler;
 import org.eclipse.microprofile.faulttolerance.Retry;
 import org.eclipse.microprofile.faulttolerance.Timeout;
 
 import javax.annotation.Priority;
+import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.event.Observes;
-import javax.enterprise.inject.spi.Annotated;
-import javax.enterprise.inject.spi.AnnotatedMethod;
-import javax.enterprise.inject.spi.AnnotatedType;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.BeforeBeanDiscovery;
-import javax.enterprise.inject.spi.Extension;
-import javax.enterprise.inject.spi.ProcessAnnotatedType;
-import javax.enterprise.inject.spi.WithAnnotations;
+import javax.enterprise.inject.spi.*;
 import javax.enterprise.inject.spi.configurator.AnnotatedMethodConfigurator;
 import javax.enterprise.util.AnnotationLiteral;
+import javax.interceptor.InvocationContext;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * CDI Extension that does the setup for FT interceptor handling.
@@ -76,40 +79,28 @@ public class FaultToleranceExtension implements Extension {
 
     private static final String INTERCEPTOR_PRIORITY_PROPERTY = "mp.fault.tolerance.interceptor.priority";
 
-    /**
-     * The {@link FaultTolerance} "instance" we use to dynamically mark methods at runtime that should be
-     * handled by the {@link FaultToleranceInterceptor} that handles all of the FT annotations.
-     */
-    private static final Annotation MARKER = () -> FaultTolerance.class;
-
     void beforeBeanDiscovery(@Observes BeforeBeanDiscovery beforeBeanDiscovery, BeanManager beanManager) {
-        beforeBeanDiscovery.addAnnotatedType(beanManager.createAnnotatedType(AsynchronousInterceptor.class), "MP-FT-Asynchronous");
-        beforeBeanDiscovery.addAnnotatedType(beanManager.createAnnotatedType(BulkheadInterceptor.class), "MP-FT-Bulkhead");
-        beforeBeanDiscovery.addAnnotatedType(beanManager.createAnnotatedType(CircuitBreakerInterceptor.class), "MP-FT-CircuitBreaker");
-        beforeBeanDiscovery.addAnnotatedType(beanManager.createAnnotatedType(RetryInterceptor.class), "MP-FT-Retry");
-        beforeBeanDiscovery.addAnnotatedType(beanManager.createAnnotatedType(TimeoutInterceptor.class), "MP-FT-Timeout");
-//        beforeBeanDiscovery.addAnnotatedType(beanManager.createAnnotatedType(FallbackInterceptor.class), "MP-FT-Fallback");
-//        beforeBeanDiscovery.addAnnotatedType(beanManager.createAnnotatedType(FaultToleranceInterceptor.class), "MP-FT");
+        beforeBeanDiscovery.addAnnotatedType(beanManager.createAnnotatedType(FaultToleranceInterceptor.class), "MP-FT");
+    }
+
+    void enableInterceptor(@Observes AfterTypeDiscovery afterTypeDiscovery) {
+        afterTypeDiscovery.getInterceptors().add(FaultToleranceInterceptor.class);
+    }
+
+    void installInterceptor(@Observes AfterBeanDiscovery afterBeanDiscovery, BeanManager beanManager) {
+        AnnotatedType<FaultToleranceInterceptor> at = afterBeanDiscovery.getAnnotatedType(FaultToleranceInterceptor.class, "MP-FT");
+
+        ALL_BINDINGS.forEach(a -> afterBeanDiscovery.addBean(new ProgrammaticInterceptor(at, beanManager, a)));
     }
 
     /**
-     * Marks all {@link Method}s *affected* by FT annotation with the {@link FaultTolerance} annotation which
-     * is handled by the {@link FaultToleranceInterceptor} which processes the FT annotations.
      * 
      * @param processAnnotatedType type currently processed
      */
     <T> void processAnnotatedType(@Observes @WithAnnotations({ Asynchronous.class, Bulkhead.class, CircuitBreaker.class,
         Fallback.class, Retry.class, Timeout.class }) ProcessAnnotatedType<T> processAnnotatedType) throws Exception {
-        // Ignore our own interceptor classes
-        Class<T> annotatedClass = processAnnotatedType.getAnnotatedType().getJavaClass();
-        if (annotatedClass.equals(AsynchronousInterceptor.class)
-                || annotatedClass.equals(BulkheadInterceptor.class)
-                || annotatedClass.equals(CircuitBreakerInterceptor.class)
-                || annotatedClass.equals(RetryInterceptor.class)
-                || annotatedClass.equals(TimeoutInterceptor.class)) {
-            return;
-        }
 
+        // TODO: To support alternative asynchronous annotations we need to add FT Asynchronous annotation.
         Class<? extends Annotation>[] alternativeAsynchronousAnnotations = getAlternativeAsynchronousAnnotations();
         AnnotatedType<T> type = processAnnotatedType.getAnnotatedType();
         boolean markAllMethods = FaultToleranceUtils.isAnnotatedWithFaultToleranceAnnotations(type)
@@ -120,7 +111,6 @@ public class FaultToleranceExtension implements Extension {
             if (markAllMethods || FaultToleranceUtils.isAnnotatedWithFaultToleranceAnnotations(method)
                     || isAnyAnnotationPresent(method, alternativeAsynchronousAnnotations)) {
                 FaultTolerancePolicy.asAnnotated(targetClass, method.getJavaMember());
-//                methodConfigurator.add(MARKER);
             }
         }
     }
@@ -168,4 +158,256 @@ public class FaultToleranceExtension implements Extension {
             return value;
         }
     }
+
+    static class ProgrammaticInterceptor implements Interceptor<FaultToleranceInterceptor> {
+
+        private final BeanManager bm;
+        private final Annotation binding;
+        private final BeanAttributes<FaultToleranceInterceptor> beanAttributes;
+        private final InjectionTarget<FaultToleranceInterceptor> injectionTarget;
+
+        ProgrammaticInterceptor(AnnotatedType<FaultToleranceInterceptor> at, BeanManager bm, Annotation binding) {
+            this.bm = bm;
+            this.binding = binding;
+            beanAttributes = bm.createBeanAttributes(at);
+            injectionTarget = bm.createInjectionTarget(at);
+        }
+
+        @Override
+        public Set<Annotation> getInterceptorBindings() {
+            return Collections.singleton(binding);
+        }
+
+        @Override
+        public boolean intercepts(InterceptionType type) {
+            return type == InterceptionType.AROUND_INVOKE;
+        }
+
+        @Override
+        public Object intercept(InterceptionType type, FaultToleranceInterceptor instance, InvocationContext ctx) throws Exception {
+            return instance.intercept(ctx);
+        }
+
+        @Override
+        public Class<?> getBeanClass() {
+            return FaultToleranceInterceptor.class;
+        }
+
+        @Override
+        public Set<InjectionPoint> getInjectionPoints() {
+            return injectionTarget.getInjectionPoints();
+        }
+
+        @Override
+        public boolean isNullable() {
+            return false;
+        }
+
+        @Override
+        public FaultToleranceInterceptor create(CreationalContext<FaultToleranceInterceptor> creationalContext) {
+            FaultToleranceInterceptor instance = injectionTarget.produce(creationalContext);
+            injectionTarget.inject(instance, creationalContext);
+            injectionTarget.postConstruct(instance);
+            return instance;
+        }
+
+        @Override
+        public void destroy(FaultToleranceInterceptor instance, CreationalContext<FaultToleranceInterceptor> creationalContext) {
+            try {
+                injectionTarget.preDestroy(instance);
+                injectionTarget.dispose(instance);
+            } finally {
+                creationalContext.release();
+            }
+        }
+
+        @Override
+        public Set<Type> getTypes() {
+            return beanAttributes.getTypes();
+        }
+
+        @Override
+        public Set<Annotation> getQualifiers() {
+            return beanAttributes.getQualifiers();
+        }
+
+        @Override
+        public Class<? extends Annotation> getScope() {
+            return beanAttributes.getScope();
+        }
+
+        @Override
+        public String getName() {
+            return beanAttributes.getName();
+        }
+
+        @Override
+        public Set<Class<? extends Annotation>> getStereotypes() {
+            return beanAttributes.getStereotypes();
+        }
+
+        @Override
+        public boolean isAlternative() {
+            return beanAttributes.isAlternative();
+        }
+    }
+
+    private static final Collection<Annotation> ALL_BINDINGS = Arrays.asList(
+            new Asynchronous() {
+                @Override
+                public Class<? extends Annotation> annotationType() {
+                    return Asynchronous.class;
+                }
+            },
+            new Bulkhead(){
+                @Override
+                public Class<? extends Annotation> annotationType() {
+                    return Bulkhead.class;
+                }
+
+                @Override
+                public int value() {
+                    return 0;
+                }
+
+                @Override
+                public int waitingTaskQueue() {
+                    return 0;
+                }
+            },
+            new CircuitBreaker() {
+                @Override
+                public Class<? extends Annotation> annotationType() {
+                    return CircuitBreaker.class;
+                }
+
+                @Override
+                public Class<? extends Throwable>[] failOn() {
+                    return new Class[0];
+                }
+
+                @Override
+                public Class<? extends Throwable>[] skipOn() {
+                    return new Class[0];
+                }
+
+                @Override
+                public long delay() {
+                    return 0;
+                }
+
+                @Override
+                public ChronoUnit delayUnit() {
+                    return null;
+                }
+
+                @Override
+                public int requestVolumeThreshold() {
+                    return 0;
+                }
+
+                @Override
+                public double failureRatio() {
+                    return 0;
+                }
+
+                @Override
+                public int successThreshold() {
+                    return 0;
+                }
+            },
+            new Fallback() {
+                @Override
+                public Class<? extends Annotation> annotationType() {
+                    return Fallback.class;
+                }
+
+                @Override
+                public Class<? extends FallbackHandler<?>> value() {
+                    return null;
+                }
+
+                @Override
+                public String fallbackMethod() {
+                    return null;
+                }
+
+                @Override
+                public Class<? extends Throwable>[] applyOn() {
+                    return new Class[0];
+                }
+
+                @Override
+                public Class<? extends Throwable>[] skipOn() {
+                    return new Class[0];
+                }
+            },
+            new Retry() {
+                @Override
+                public Class<? extends Annotation> annotationType() {
+                    return Retry.class;
+                }
+
+                @Override
+                public int maxRetries() {
+                    return 0;
+                }
+
+                @Override
+                public long delay() {
+                    return 0;
+                }
+
+                @Override
+                public ChronoUnit delayUnit() {
+                    return null;
+                }
+
+                @Override
+                public long maxDuration() {
+                    return 0;
+                }
+
+                @Override
+                public ChronoUnit durationUnit() {
+                    return null;
+                }
+
+                @Override
+                public long jitter() {
+                    return 0;
+                }
+
+                @Override
+                public ChronoUnit jitterDelayUnit() {
+                    return null;
+                }
+
+                @Override
+                public Class<? extends Throwable>[] retryOn() {
+                    return new Class[0];
+                }
+
+                @Override
+                public Class<? extends Throwable>[] abortOn() {
+                    return new Class[0];
+                }
+            },
+            new Timeout() {
+                @Override
+                public Class<? extends Annotation> annotationType() {
+                    return Timeout.class;
+                }
+
+                @Override
+                public long value() {
+                    return 0;
+                }
+
+                @Override
+                public ChronoUnit unit() {
+                    return null;
+                }
+            }
+    );
 }
