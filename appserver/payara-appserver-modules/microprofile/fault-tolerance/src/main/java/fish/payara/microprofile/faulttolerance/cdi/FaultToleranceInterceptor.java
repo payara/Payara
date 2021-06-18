@@ -39,11 +39,6 @@
  */
 package fish.payara.microprofile.faulttolerance.cdi;
 
-import jakarta.enterprise.context.control.RequestContextController;
-import jakarta.enterprise.inject.Instance;
-import jakarta.enterprise.inject.spi.BeanManager;
-import jakarta.inject.Inject;
-import jakarta.interceptor.InvocationContext;
 
 import fish.payara.microprofile.faulttolerance.FaultToleranceConfig;
 import fish.payara.microprofile.faulttolerance.FaultToleranceService;
@@ -52,6 +47,12 @@ import fish.payara.microprofile.faulttolerance.service.Stereotypes;
 import org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceDefinitionException;
 import org.glassfish.internal.api.Globals;
 
+import jakarta.enterprise.context.Dependent;
+import jakarta.enterprise.context.control.RequestContextController;
+import jakarta.enterprise.inject.Instance;
+import jakarta.enterprise.inject.spi.BeanManager;
+import jakarta.inject.Inject;
+import jakarta.interceptor.InvocationContext;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.util.Map;
@@ -61,6 +62,7 @@ import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+@Dependent
 public class FaultToleranceInterceptor implements Stereotypes, Serializable {
 
     private static final Logger logger = Logger.getLogger(FaultToleranceInterceptor.class.getName());
@@ -77,6 +79,9 @@ public class FaultToleranceInterceptor implements Stereotypes, Serializable {
             "fish.payara.microprofile.faulttolerance.executed";
 
     public Object intercept(InvocationContext context) throws Exception {
+        if (!shouldIntercept(context)) {
+            return context.proceed();
+        }
         context.getContextData().put(PAYARA_FAULT_TOLERANCE_INTERCEPTOR_EXECUTED, Boolean.TRUE);
         try {
             initialize();
