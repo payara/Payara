@@ -57,10 +57,7 @@ import com.sun.jsftemplating.layout.descriptors.handler.HandlerContext;
 import org.glassfish.admingui.common.util.GuiUtil;
 import org.glassfish.admingui.common.util.RestUtil;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Level;
 
 /**
@@ -83,14 +80,16 @@ public class LoggingHandlers {
     public static void getLoggerLevels(HandlerContext handlerCtx) {
 
         Map<String, String> loggerLevels = (Map) handlerCtx.getInputValue("loggerLevels");
-        List result = new ArrayList();
+        List<Map<String, Object>> result = new ArrayList<>();
         if (loggerLevels != null)    {
-            for(Map.Entry<String,String> e : loggerLevels.entrySet()){
-                Map oneRow = new HashMap();
-                    oneRow.put("loggerName", e.getKey());
-                    oneRow.put("level", e.getValue());
-                    oneRow.put("selected", false);
-                    result.add(oneRow);
+            List<String> keys = new ArrayList<>(loggerLevels.keySet());
+            Collections.sort(keys);
+            for (String key : keys) {
+                Map<String, Object> oneRow = new HashMap<>();
+                oneRow.put("loggerName", key);
+                oneRow.put("level", loggerLevels.get(key));
+                oneRow.put("selected", false);
+                result.add(oneRow);
             }
         }
         handlerCtx.setOutputValue("loggerList",  result);
