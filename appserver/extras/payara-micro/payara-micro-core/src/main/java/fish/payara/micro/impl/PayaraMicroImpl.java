@@ -75,6 +75,7 @@ import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 import com.sun.appserv.server.util.Version;
+import com.sun.common.util.logging.SortedLoggingProperties;
 import com.sun.enterprise.glassfish.bootstrap.Constants;
 import com.sun.enterprise.glassfish.bootstrap.GlassFishImpl;
 import com.sun.enterprise.server.logging.ODLLogFormatter;
@@ -1772,7 +1773,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
 
                 // now write them back
                 try (OutputStream os = new FileOutputStream(runtimeDir.getLoggingProperties())) {
-                    currentProps.store(os, "Generated Logging properties file from Payara Micro log to file option");
+                    new SortedLoggingProperties(currentProps).store(os, "Generated Logging properties file from Payara Micro log to file option");
                 } catch (IOException ex) {
                     LOGGER.log(Level.SEVERE, "Unable to load the logging properties from the runtime directory", ex);
                 }

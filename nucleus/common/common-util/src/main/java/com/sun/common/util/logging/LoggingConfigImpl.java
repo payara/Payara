@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2014-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2014-2021] [Payara Foundation and/or its affiliates]
 
 package com.sun.common.util.logging;
 
@@ -164,7 +164,7 @@ public class LoggingConfigImpl implements LoggingConfig {
             throw new IOException();
         }
         try (OutputStream os = new BufferedOutputStream(new FileOutputStream(file))) {
-            props.store(os, "GlassFish logging.properties list");
+            new SortedLoggingProperties(props).store(os, "GlassFish logging.properties list");
             os.flush();
             fileMonitoring.fileModified(file);
         }
