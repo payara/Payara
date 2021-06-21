@@ -42,8 +42,6 @@ package fish.payara.nucleus.hazelcast;
 import com.hazelcast.cluster.Address;
 import com.hazelcast.spi.discovery.DiscoveryNode;
 import com.hazelcast.spi.discovery.SimpleDiscoveryNode;
-import com.hazelcast.spi.discovery.integration.DiscoveryService;
-import com.hazelcast.spi.discovery.integration.DiscoveryServiceSettings;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Node;
 import com.sun.enterprise.util.io.InstanceDirs;
@@ -53,10 +51,8 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -64,7 +60,6 @@ import java.util.logging.Logger;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.grizzly.utils.Holder;
 import org.glassfish.internal.api.Globals;
-import org.glassfish.internal.api.ServerContext;
 
 /**
  * Provides a Discovery SPI implementation for Hazelcast that uses knowledge
@@ -72,26 +67,15 @@ import org.glassfish.internal.api.ServerContext;
  * @since 5.0
  * @author steve
  */
-public class DomainDiscoveryService implements DiscoveryService {
+public class DomainDiscoveryService {
     private static Logger logger = Logger.getLogger(DomainDiscoveryService.class.getName());
     private final Holder.LazyHolder<InetAddress> chosenAddress =
             Holder.LazyHolder.lazyHolder(MemberAddressPicker::findMyAddressOrLocalHost);
 
-    public DomainDiscoveryService(DiscoveryServiceSettings settings) {
-
-    }
-
-    @Override
-    public void start() {
-        //
-    }
-
-    @Override
     public Iterable<DiscoveryNode> discoverNodes() {
         logger.fine("Starting Domain Node Discovery");
         List<DiscoveryNode> nodes = new LinkedList<>();
         Domain domain = Globals.getDefaultHabitat().getService(Domain.class);
-        ServerContext ctxt = Globals.getDefaultHabitat().getService(ServerContext.class);
         ServerEnvironment env = Globals.getDefaultHabitat().getService(ServerEnvironment.class);
         // add the DAS
         HazelcastRuntimeConfiguration hzConfig = domain.getExtensionByType(HazelcastRuntimeConfiguration.class);
@@ -184,15 +168,5 @@ public class DomainDiscoveryService implements DiscoveryService {
         }
 
         return nodes;
-    }
-
-    @Override
-    public void destroy() {
-        //
-    }
-
-    @Override
-    public Map<String, String> discoverLocalMetadata() {
-        return Collections.emptyMap();
     }
 }
