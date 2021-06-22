@@ -43,14 +43,6 @@ import fish.payara.microprofile.faulttolerance.FaultToleranceConfig;
 import fish.payara.microprofile.faulttolerance.policy.FaultTolerancePolicy;
 import fish.payara.microprofile.faulttolerance.service.FaultToleranceUtils;
 
-import jakarta.enterprise.inject.spi.Annotated;
-import jakarta.enterprise.inject.spi.AnnotatedMethod;
-import jakarta.enterprise.inject.spi.AnnotatedType;
-import jakarta.enterprise.inject.spi.BeanManager;
-import jakarta.enterprise.inject.spi.BeforeBeanDiscovery;
-import jakarta.enterprise.inject.spi.Extension;
-import jakarta.enterprise.inject.spi.ProcessAnnotatedType;
-import jakarta.enterprise.inject.spi.WithAnnotations;
 
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.faulttolerance.Asynchronous;
@@ -64,17 +56,30 @@ import org.eclipse.microprofile.faulttolerance.Timeout;
 import jakarta.annotation.Priority;
 import jakarta.enterprise.context.spi.CreationalContext;
 import jakarta.enterprise.event.Observes;
-import jakarta.enterprise.inject.spi.*;
+import jakarta.enterprise.inject.spi.AfterBeanDiscovery;
+import jakarta.enterprise.inject.spi.AfterTypeDiscovery;
+import jakarta.enterprise.inject.spi.Annotated;
+import jakarta.enterprise.inject.spi.AnnotatedMethod;
+import jakarta.enterprise.inject.spi.AnnotatedType;
+import jakarta.enterprise.inject.spi.BeanAttributes;
+import jakarta.enterprise.inject.spi.BeanManager;
+import jakarta.enterprise.inject.spi.BeforeBeanDiscovery;
+import jakarta.enterprise.inject.spi.Extension;
+import jakarta.enterprise.inject.spi.InjectionPoint;
+import jakarta.enterprise.inject.spi.InjectionTarget;
+import jakarta.enterprise.inject.spi.InterceptionType;
+import jakarta.enterprise.inject.spi.Interceptor;
+import jakarta.enterprise.inject.spi.ProcessAnnotatedType;
+import jakarta.enterprise.inject.spi.WithAnnotations;
 import jakarta.enterprise.inject.spi.configurator.AnnotatedMethodConfigurator;
-import jakarta.enterprise.util.AnnotationLiteral;
 import jakarta.interceptor.InvocationContext;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -90,16 +95,6 @@ public class FaultToleranceExtension implements Extension {
 
     void beforeBeanDiscovery(@Observes BeforeBeanDiscovery beforeBeanDiscovery, BeanManager beanManager) {
         beforeBeanDiscovery.addAnnotatedType(beanManager.createAnnotatedType(FaultToleranceInterceptor.class), "MP-FT");
-    }
-
-    void enableInterceptor(@Observes AfterTypeDiscovery afterTypeDiscovery) {
-        afterTypeDiscovery.getInterceptors().add(FaultToleranceInterceptor.class);
-    }
-
-    void installInterceptor(@Observes AfterBeanDiscovery afterBeanDiscovery, BeanManager beanManager) {
-        AnnotatedType<FaultToleranceInterceptor> at = afterBeanDiscovery.getAnnotatedType(FaultToleranceInterceptor.class, "MP-FT");
-
-        ALL_BINDINGS.forEach(a -> afterBeanDiscovery.addBean(new ProgrammaticInterceptor(at, beanManager, a)));
     }
 
     /**
@@ -143,31 +138,130 @@ public class FaultToleranceExtension implements Extension {
                 : FaultToleranceConfig.NO_ALTERNATIVE_ANNOTATIONS;
     }
 
-    void changeInterceptorPriority(@Observes ProcessAnnotatedType<FaultToleranceInterceptor> interceptorType) {
-        Optional<Integer> priorityOverride = ConfigProvider.getConfig().getOptionalValue(INTERCEPTOR_PRIORITY_PROPERTY,
-                Integer.class);
-        if (priorityOverride.isPresent()) {
-            interceptorType.configureAnnotatedType()
-                    .remove(annotation -> annotation instanceof Priority)
-                    .add(new PriorityLiteral(priorityOverride.get()));
+    void enableInterceptor(@Observes AfterTypeDiscovery afterTypeDiscovery) {
+        // Determine the priority of our interceptor
+        int priority = ConfigProvider.getConfig().getOptionalValue(INTERCEPTOR_PRIORITY_PROPERTY,
+                Integer.class).orElse(jakarta.interceptor.Interceptor.Priority.PLATFORM_AFTER + 15);
+
+        // Enable our interceptor since we're adding it programmatically rather than via annotation, adding it
+        // at the appropriate index (since the list has already been sorted)
+        List<Class<?>> interceptors = afterTypeDiscovery.getInterceptors();
+        int index = interceptors.size() - 1;
+
+        // Binary search - sometimes another interceptor gets added after the list is sorted (WeldCdi1x), so running
+        // backwards through the list under the assumption that most Payara interceptors are registered at
+        // PLATFORM_AFTER is not always guaranteed to register this interceptor at the right point.
+        int lowIndex = 0;
+        int highIndex = interceptors.size() - 1;
+        while (lowIndex <= highIndex) {
+            int midIndex = lowIndex  + ((highIndex - lowIndex) / 2);
+            Priority priorityAnnotation = interceptors.get(midIndex).getAnnotation(Priority.class);
+
+            if (priorityAnnotation != null) {
+                // Check for a matching priority value, otherwise determine which way to move the search
+                if (priorityAnnotation.value() < priority) {
+                    lowIndex = midIndex + 1;
+                } else if (priorityAnnotation.value() > priority) {
+                    highIndex = midIndex - 1;
+                } else if (priorityAnnotation.value() == priority) {
+                    index = midIndex;
+                    break;
+                }
+            } else {
+                // If no priority annotation, we need to look around at the other interceptors
+                // First check immediate lower neighbour (assuming we're not at the bottom of the list)
+                if (midIndex > 0) {
+                    priorityAnnotation = interceptors.get(midIndex - 1).getAnnotation(Priority.class);
+                    if (priorityAnnotation != null) {
+                        // Check for a matching priority value, otherwise determine which way to move the search
+                        if (priorityAnnotation.value() < priority) {
+                            lowIndex = midIndex + 1;
+                        } else if (priorityAnnotation.value() > priority) {
+                            highIndex = midIndex - 1;
+                        } else if (priorityAnnotation.value() == priority) {
+                            index = midIndex;
+                            break;
+                        }
+                    } else {
+                        // No priority annotation on the interceptor below! Try the interceptor above if we're not at
+                        // the end of the list
+                        if (midIndex < interceptors.size() - 1) {
+                            priorityAnnotation = interceptors.get(midIndex + 1).getAnnotation(Priority.class);
+                            if (priorityAnnotation != null) {
+                                // Check for a matching priority value, otherwise determine which way to move the search
+                                if (priorityAnnotation.value() < priority) {
+                                    lowIndex = midIndex + 1;
+                                } else if (priorityAnnotation.value() > priority) {
+                                    highIndex = midIndex - 1;
+                                } else if (priorityAnnotation.value() == priority) {
+                                    index = midIndex;
+                                    break;
+                                }
+                            }
+                        } else {
+                            // Can't check higher either! Stop searching
+                            break;
+                        }
+                    }
+                } else {
+                    // Can't check lower neighbour, already at the bottom of the list!
+                    // Check higher neighbour instead assuming we're not at the end
+                    if (midIndex < interceptors.size() - 1) {
+                        priorityAnnotation = interceptors.get(midIndex + 1).getAnnotation(Priority.class);
+                        if (priorityAnnotation != null) {
+                            // Check for a matching priority value, otherwise determine which way to move the search
+                            if (priorityAnnotation.value() < priority) {
+                                lowIndex = midIndex + 1;
+                            } else if (priorityAnnotation.value() > priority) {
+                                highIndex = midIndex - 1;
+                            } else if (priorityAnnotation.value() == priority) {
+                                index = midIndex;
+                                break;
+                            }
+                        }
+                    } else {
+                        // This is apparently a list containing one unprioritised interceptor, just add to the end
+                        break;
+                    }
+                }
+            }
+        }
+
+        // If the index isn't at its default of the last element in the array, that implies we found a matching priority
+        // so just add it at that point
+        if (index != interceptors.size() - 1) {
+            afterTypeDiscovery.getInterceptors().add(index, FaultToleranceInterceptor.class);
+        } else {
+            // If the highIndex isn't the last element in the list, that implies we narrowed down on an index but
+            // found no matching priority
+            if (highIndex != interceptors.size() - 1) {
+                // If the lowIndex is greater than highIndex that means the narrowed down mid point has a lower priority
+                // If the lowIndex is less than highIndex that means the narrowed down mid point has a greater priority
+                // In either case, we want to use the low index so that we're either before or after it
+                index = lowIndex;
+
+                if (index > interceptors.size() - 1) {
+                    afterTypeDiscovery.getInterceptors().add(FaultToleranceInterceptor.class);
+                } else {
+                    afterTypeDiscovery.getInterceptors().add(index, FaultToleranceInterceptor.class);
+                }
+            } else {
+                afterTypeDiscovery.getInterceptors().add(FaultToleranceInterceptor.class);
+            }
         }
     }
 
-    public static final class PriorityLiteral extends AnnotationLiteral<Priority> implements Priority {
-        private static final long serialVersionUID = 1L;
-
-        private final int value;
-
-        public PriorityLiteral(int value) {
-            this.value = value;
-        }
-
-        @Override
-        public int value() {
-            return value;
-        }
+    void installInterceptor(@Observes AfterBeanDiscovery afterBeanDiscovery, BeanManager beanManager) {
+        // Registers all Fault Tolerance annotations against our programmatic interceptor
+        AnnotatedType<FaultToleranceInterceptor> at = afterBeanDiscovery.getAnnotatedType(
+                FaultToleranceInterceptor.class, "MP-FT");
+        ALL_BINDINGS.forEach(a -> afterBeanDiscovery.addBean(new ProgrammaticInterceptor(at, beanManager, a)));
     }
 
+    /**
+     * Programmatic Interceptor for all Fault Tolerance annotations, since Weld won't pick up our
+     * "not quite stereotype" synthetic interceptor on the Rest Client side (WARNING: NO TCK TEST FOR THIS).
+     */
     static class ProgrammaticInterceptor implements Interceptor<FaultToleranceInterceptor> {
 
         private final BeanManager bm;
@@ -261,6 +355,10 @@ public class FaultToleranceExtension implements Extension {
         }
     }
 
+    /**
+     * "Not quite" literal annotation impls for each of the Fault Tolerance annotations. The default values of the
+     * overridden methods don't need to match those of the "official" annotation since these are just placeholders.
+     */
     private static final Collection<Annotation> ALL_BINDINGS = Arrays.asList(
             new Asynchronous() {
                 @Override
