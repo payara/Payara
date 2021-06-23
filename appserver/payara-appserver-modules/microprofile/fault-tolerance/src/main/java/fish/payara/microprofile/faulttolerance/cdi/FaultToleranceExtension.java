@@ -144,16 +144,26 @@ public class FaultToleranceExtension implements Extension {
         // Enable our interceptor since we're adding it programmatically rather than via annotation, adding it
         // at the appropriate index (since the list has already been sorted)
         List<Class<?>> interceptors = afterTypeDiscovery.getInterceptors();
-        int index = interceptors.size() - 1;
+
+        int index = determineInterceptorIndex(interceptors, priority);
+        if (index != interceptors.size() - 1 || index > interceptors.size() - 1) {
+            afterTypeDiscovery.getInterceptors().add(index, FaultToleranceInterceptor.class);
+        } else {
+            afterTypeDiscovery.getInterceptors().add(FaultToleranceInterceptor.class);
+        }
+    }
+
+    static int determineInterceptorIndex(List<Class<?>> interceptorsList, int priority) {
+        int index = interceptorsList.size() - 1;
 
         // Binary search - sometimes another interceptor gets added after the list is sorted (WeldCdi1x), so running
         // backwards through the list under the assumption that most Payara interceptors are registered at
         // PLATFORM_AFTER is not always guaranteed to register this interceptor at the right point.
         int lowIndex = 0;
-        int highIndex = interceptors.size() - 1;
+        int highIndex = interceptorsList.size() - 1;
         while (lowIndex <= highIndex) {
             int midIndex = lowIndex  + ((highIndex - lowIndex) / 2);
-            Priority priorityAnnotation = interceptors.get(midIndex).getAnnotation(Priority.class);
+            Priority priorityAnnotation = interceptorsList.get(midIndex).getAnnotation(Priority.class);
 
             // If no priority annotation, assume APPLICATION
             int priorityAnnotationValue = priorityAnnotation != null ? priorityAnnotation.value() :
@@ -172,24 +182,18 @@ public class FaultToleranceExtension implements Extension {
 
         // If the index isn't at its default of the last element in the array, that implies we found a matching priority
         // so just add it at that point
-        if (index != interceptors.size() - 1) {
-            afterTypeDiscovery.getInterceptors().add(index, FaultToleranceInterceptor.class);
+        if (index != interceptorsList.size() - 1) {
+            return index;
         } else {
             // If the highIndex isn't the last element in the list, that implies we narrowed down on an index but
             // found no matching priority
-            if (highIndex != interceptors.size() - 1) {
+            if (highIndex != interceptorsList.size() - 1) {
                 // If the lowIndex is greater than highIndex that means the narrowed down mid point has a lower priority
                 // If the lowIndex is less than highIndex that means the narrowed down mid point has a greater priority
                 // In either case, we want to use the low index so that we're either before or after it
-                index = lowIndex;
-
-                if (index > interceptors.size() - 1) {
-                    afterTypeDiscovery.getInterceptors().add(FaultToleranceInterceptor.class);
-                } else {
-                    afterTypeDiscovery.getInterceptors().add(index, FaultToleranceInterceptor.class);
-                }
+                return lowIndex;
             } else {
-                afterTypeDiscovery.getInterceptors().add(FaultToleranceInterceptor.class);
+                return interceptorsList.size() - 1;
             }
         }
     }
