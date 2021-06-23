@@ -80,7 +80,7 @@ public class JNDIConfigSource extends PayaraConfigSource {
         if (storedOrdinal != null) {
             return Integer.parseInt(storedOrdinal);
         }
-        return Integer.parseInt(configService.getMPConfig().getJNDIOrdinality());
+        return Integer.parseInt(configService.getMPConfig().getJndiOrdinality());
     }
 
     @Override
