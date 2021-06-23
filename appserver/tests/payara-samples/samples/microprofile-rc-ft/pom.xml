@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>payara-samples-profiled-tests</artifactId>
+        <groupId>fish.payara.samples</groupId>
+        <version>5.2021.5-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>microprofile-rc-ft</artifactId>
+
+    <name>Payara Samples - Payara - Microprofile Rest Client Fault Tolerance</name>
+    <packaging>war</packaging>
+
+    <dependencies>
+        <dependency>
+            <groupId>fish.payara.samples</groupId>
+            <artifactId>samples-test-utils</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.platform</groupId>
+            <artifactId>jakarta.jakartaee-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.microprofile.rest.client</groupId>
+            <artifactId>microprofile-rest-client-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.microprofile.fault-tolerance</groupId>
+            <artifactId>microprofile-fault-tolerance-api</artifactId>
+        </dependency>
+    </dependencies>
+
+</project>
