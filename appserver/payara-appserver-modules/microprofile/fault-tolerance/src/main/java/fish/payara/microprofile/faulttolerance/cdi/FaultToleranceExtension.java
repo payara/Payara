@@ -155,73 +155,18 @@ public class FaultToleranceExtension implements Extension {
             int midIndex = lowIndex  + ((highIndex - lowIndex) / 2);
             Priority priorityAnnotation = interceptors.get(midIndex).getAnnotation(Priority.class);
 
-            if (priorityAnnotation != null) {
-                // Check for a matching priority value, otherwise determine which way to move the search
-                if (priorityAnnotation.value() < priority) {
-                    lowIndex = midIndex + 1;
-                } else if (priorityAnnotation.value() > priority) {
-                    highIndex = midIndex - 1;
-                } else if (priorityAnnotation.value() == priority) {
-                    index = midIndex;
-                    break;
-                }
-            } else {
-                // If no priority annotation, we need to look around at the other interceptors
-                // First check immediate lower neighbour (assuming we're not at the bottom of the list)
-                if (midIndex > 0) {
-                    priorityAnnotation = interceptors.get(midIndex - 1).getAnnotation(Priority.class);
-                    if (priorityAnnotation != null) {
-                        // Check for a matching priority value, otherwise determine which way to move the search
-                        if (priorityAnnotation.value() < priority) {
-                            lowIndex = midIndex + 1;
-                        } else if (priorityAnnotation.value() > priority) {
-                            highIndex = midIndex - 1;
-                        } else if (priorityAnnotation.value() == priority) {
-                            index = midIndex;
-                            break;
-                        }
-                    } else {
-                        // No priority annotation on the interceptor below! Try the interceptor above if we're not at
-                        // the end of the list
-                        if (midIndex < interceptors.size() - 1) {
-                            priorityAnnotation = interceptors.get(midIndex + 1).getAnnotation(Priority.class);
-                            if (priorityAnnotation != null) {
-                                // Check for a matching priority value, otherwise determine which way to move the search
-                                if (priorityAnnotation.value() < priority) {
-                                    lowIndex = midIndex + 1;
-                                } else if (priorityAnnotation.value() > priority) {
-                                    highIndex = midIndex - 1;
-                                } else if (priorityAnnotation.value() == priority) {
-                                    index = midIndex;
-                                    break;
-                                }
-                            }
-                        } else {
-                            // Can't check higher either! Stop searching
-                            break;
-                        }
-                    }
-                } else {
-                    // Can't check lower neighbour, already at the bottom of the list!
-                    // Check higher neighbour instead assuming we're not at the end
-                    if (midIndex < interceptors.size() - 1) {
-                        priorityAnnotation = interceptors.get(midIndex + 1).getAnnotation(Priority.class);
-                        if (priorityAnnotation != null) {
-                            // Check for a matching priority value, otherwise determine which way to move the search
-                            if (priorityAnnotation.value() < priority) {
-                                lowIndex = midIndex + 1;
-                            } else if (priorityAnnotation.value() > priority) {
-                                highIndex = midIndex - 1;
-                            } else if (priorityAnnotation.value() == priority) {
-                                index = midIndex;
-                                break;
-                            }
-                        }
-                    } else {
-                        // This is apparently a list containing one unprioritised interceptor, just add to the end
-                        break;
-                    }
-                }
+            // If no priority annotation, assume APPLICATION
+            int priorityAnnotationValue = priorityAnnotation != null ? priorityAnnotation.value() :
+                    javax.interceptor.Interceptor.Priority.APPLICATION;
+
+            // Check for a matching priority value, otherwise determine which way to move the search
+            if (priorityAnnotationValue < priority) {
+                lowIndex = midIndex + 1;
+            } else if (priorityAnnotationValue > priority) {
+                highIndex = midIndex - 1;
+            } else if (priorityAnnotationValue == priority) {
+                index = midIndex;
+                break;
             }
         }
 
