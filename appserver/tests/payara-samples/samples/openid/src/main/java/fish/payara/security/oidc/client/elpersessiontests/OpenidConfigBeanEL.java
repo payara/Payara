@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *  Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2021] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -37,38 +37,36 @@
  *  only if the new code is made subject to such option by the copyright
  *  holder.
  */
-package fish.payara.security.oidc.client;
+package fish.payara.security.oidc.client.elpersessiontests;
 
-import fish.payara.security.annotations.OpenIdAuthenticationDefinition;
-import static fish.payara.security.oidc.server.OidcProvider.CLIENT_ID_VALUE;
-import static fish.payara.security.oidc.server.OidcProvider.CLIENT_SECRET_VALUE;
-import java.io.IOException;
-import javax.annotation.security.DeclareRoles;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.HttpConstraint;
-import javax.servlet.annotation.ServletSecurity;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
+import javax.inject.Inject;
+import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import org.eclipse.microprofile.config.Config;
 
-/**
- * @author Gaurav Gupta
- */
-@WebServlet("/Secured")
-@OpenIdAuthenticationDefinition(
-        providerURI = "http://localhost:8080/openid-server/webresources/oidc-provider",
-        clientId = CLIENT_ID_VALUE,
-        clientSecret = CLIENT_SECRET_VALUE,
-        redirectURI = "${baseURL}/Callback"
-)
-@DeclareRoles("all")
-@ServletSecurity(@HttpConstraint(rolesAllowed = "all"))
-public class SecuredPage extends HttpServlet {
-
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        response.getWriter().println("This is a secured web page");
+@Named
+public class OpenidConfigBeanEL {
+    
+    @Inject
+    HttpServletRequest request;
+    
+    @Inject
+    Config config;
+    
+    private static final String BASE_OPENID_KEY = "payara.security.openid";
+    
+    public String getTokenEndpointURL() {
+        String tenant = getTenant(request);
+        return config
+                .getOptionalValue(BASE_OPENID_KEY + "." + tenant + ".providerURI", String.class)
+                // e.g. payara.security.openid.employee.providerURI
+                .orElseGet(() -> {
+                    // e.g. payara.security.openid.providerURI - the standard Payara key, should never get here because it overrides the value with the EL expression
+                   return config.getValue(BASE_OPENID_KEY + ".default.providerURI", String.class);
+                });
+    }
+    
+    private static String getTenant(HttpServletRequest request) {
+        return request.getParameter("tenant");
     }
 }
