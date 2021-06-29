@@ -1,8 +1,8 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- *  Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
- *
+ * 
+ *  Copyright (c) [2018-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ * 
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
  *  and Distribution License("CDDL") (collectively, the "License").  You
@@ -11,20 +11,20 @@
  *  https://github.com/payara/Payara/blob/master/LICENSE.txt
  *  See the License for the specific
  *  language governing permissions and limitations under the License.
- *
+ * 
  *  When distributing the software, include this License Header Notice in each
  *  file and include the License file at glassfish/legal/LICENSE.txt.
- *
+ * 
  *  GPL Classpath Exception:
  *  The Payara Foundation designates this particular file as subject to the "Classpath"
  *  exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  *  file that accompanied this code.
- *
+ * 
  *  Modifications:
  *  If applicable, add the following below the License Header, with the fields
  *  enclosed by brackets [] replaced by your own identifying information:
  *  "Portions Copyright [year] [name of copyright owner]"
- *
+ * 
  *  Contributor(s):
  *  If you wish your version of this file to be governed by only the CDDL or
  *  only the GPL Version 2, indicate your decision by adding "[Contributor]
@@ -59,11 +59,14 @@ import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
+import fish.payara.security.openid.api.OpenIdConstant;
 import static fish.payara.security.openid.api.OpenIdConstant.ACCESS_TOKEN;
 import static fish.payara.security.openid.api.OpenIdConstant.AUTHORIZATION_CODE;
 import static fish.payara.security.openid.api.OpenIdConstant.CLIENT_ID;
@@ -79,26 +82,43 @@ import static fish.payara.security.openid.api.OpenIdConstant.SCOPE;
 import static fish.payara.security.openid.api.OpenIdConstant.STATE;
 import static fish.payara.security.openid.api.OpenIdConstant.SUBJECT_IDENTIFIER;
 import static fish.payara.security.openid.api.OpenIdConstant.TOKEN_TYPE;
+import static fish.payara.security.openid.api.OpenIdConstant.EXPIRES_IN;
 import static java.util.Arrays.asList;
 import static java.util.logging.Level.SEVERE;
 import static java.util.stream.Collectors.joining;
+import javax.inject.Inject;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 /**
  *
  * @author Gaurav Gupta
  */
-@Path("/oidc-provider")
+@Path("/oidc-provider{subject:/subject-[^/]+|}")
 public class OidcProvider {
 
     private static final String AUTHORIZATION_HEADER = "Authorization";
     private static final String BEARER_TYPE = "Bearer";
-
+    
     private static final String AUTH_CODE_VALUE = "sample_auth_code";
     private static final String ACCESS_TOKEN_VALUE = "sample_access_token";
     public static final String CLIENT_ID_VALUE = "sample_client_id";
     public static final String CLIENT_SECRET_VALUE = "sample_client_secret";
-    private static final String SUBJECT_VALUE = "sample_subject";
+    
+    public static final String ROLES_IN_USERINFO_KEY = "test.openid.rolesInUserInfoEndpoint";
+    
+    @Inject @ConfigProperty(name = ROLES_IN_USERINFO_KEY, defaultValue = "false")
+    boolean rolesInUserInfoEndpoint;
+    
+    @PathParam("subject")
+    String subject;
+    
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    public String get() {
+        return getSubject();
+    }
 
     private static String nonce;
 
@@ -113,6 +133,10 @@ public class OidcProvider {
         try (InputStream inputStream = classLoader.getResourceAsStream("openid-configuration.json")) {
             result = new BufferedReader(new InputStreamReader(inputStream))
                     .lines()
+                    .map(line -> {
+                        String tenant = subject;
+                        return line.replaceAll("\\$\\{tenant\\}", tenant);  // replace ${tenant} with empty value or subject
+                    })
                     .collect(joining("\n"));
         } catch (IOException ex) {
             LOGGER.log(SEVERE, null, ex);
@@ -175,38 +199,42 @@ public class OidcProvider {
         } else {
 
             Date now = new Date();
-            JWTClaimsSet jwtClaims = new JWTClaimsSet.Builder()
-                    .issuer("http://localhost:8080/openid-server/webresources/oidc-provider")
-                    .subject(SUBJECT_VALUE)
+            JWTClaimsSet.Builder jstClaimsBuilder = new JWTClaimsSet.Builder()
+                    .issuer("http://localhost:8080/openid-server/webresources/oidc-provider" + subject)
+                    .subject(getSubject())
                     .audience(asList(CLIENT_ID_VALUE))
                     .expirationTime(new Date(now.getTime() + 1000 * 60 * 10))
                     .notBeforeTime(now)
                     .issueTime(now)
                     .jwtID(UUID.randomUUID().toString())
-                    .claim(NONCE, nonce)
-
-                    .build();
+                    .claim(NONCE, nonce);
+            if (!rolesInUserInfoEndpoint) {
+                jstClaimsBuilder.claim(OpenIdConstant.GROUPS, String.join(",", "all"));
+            }
+            JWTClaimsSet jwtClaims = jstClaimsBuilder.build();
+                    
             PlainJWT idToken = new PlainJWT(jwtClaims);
             jsonBuilder.add(IDENTITY_TOKEN, idToken.serialize());
             jsonBuilder.add(ACCESS_TOKEN, ACCESS_TOKEN_VALUE);
             jsonBuilder.add(TOKEN_TYPE, BEARER_TYPE);
+            jsonBuilder.add(EXPIRES_IN, 1000);
             builder = Response.ok();
         }
 
         return builder.entity(jsonBuilder.build()).build();
     }
-
+    
     @Path("/userinfo")
     @Produces(APPLICATION_JSON)
     @GET
     public Response userinfoEndpoint(@HeaderParam(AUTHORIZATION_HEADER) String authorizationHeader) {
         String accessToken = authorizationHeader.substring(BEARER_TYPE.length() + 1);
-
+        
         ResponseBuilder builder;
         JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
         if (ACCESS_TOKEN_VALUE.equals(accessToken)) {
             builder = Response.ok();
-            jsonBuilder.add(SUBJECT_IDENTIFIER, SUBJECT_VALUE)
+            jsonBuilder.add(SUBJECT_IDENTIFIER, getSubject())
                     .add("name", "Gaurav")
                     .add("family_name", "Gupta   ")
                     .add("given_name", "Gaurav Gupta")
@@ -216,11 +244,24 @@ public class OidcProvider {
                     .add("email_verified", true)
                     .add("gender", "male")
                     .add("locale", "en");
+            if (rolesInUserInfoEndpoint) {
+                jsonBuilder.add(OpenIdConstant.GROUPS, Json.createArrayBuilder().add("all"));      
+            }
         } else {
             jsonBuilder.add(ERROR_PARAM, "invalid_access_token");
             builder = Response.serverError();
         }
         return builder.entity(jsonBuilder.build().toString()).build();
+    }
+
+    private String getSubject() {
+        String subjectPrefix = "/subject-";
+        return subject != null && subject.startsWith(subjectPrefix) ? subject.substring(subjectPrefix.length()) : "sample_subject";
+    }
+
+    private String getTenant() {
+        String subjectPrefix = "/subject-";
+        return subject != null && subject.startsWith(subjectPrefix) ? subject.substring(subjectPrefix.length()) : "";
     }
 
 }

@@ -1,10 +1,10 @@
 {
-    "issuer": "http://localhost:8080/openid-server/webresources/oidc-provider",
-    "authorization_endpoint": "http://localhost:8080/openid-server/webresources/oidc-provider/auth",
-    "token_endpoint": "http://localhost:8080/openid-server/webresources/oidc-provider/token",
-    "userinfo_endpoint": "http://localhost:8080/openid-server/webresources/oidc-provider/userinfo",
-    "revocation_endpoint": "http://localhost:8080/openid-server/webresources/oidc-provider/revoke",
-    "jwks_uri": "http://localhost:8080/openid-server/webresources/oidc-provider/certs",
+    "issuer": "http://localhost:8080/openid-server/webresources/oidc-provider${tenant}",
+    "authorization_endpoint": "http://localhost:8080/openid-server/webresources/oidc-provider${tenant}/auth",
+    "token_endpoint": "http://localhost:8080/openid-server/webresources/oidc-provider${tenant}/token",
+    "userinfo_endpoint": "http://localhost:8080/openid-server/webresources/oidc-provider${tenant}/userinfo",
+    "revocation_endpoint": "http://localhost:8080/openid-server/webresources/oidc-provider${tenant}/revoke",
+    "jwks_uri": "http://localhost:8080/openid-server/webresources/oidc-provider${tenant}/certs",
     "response_types_supported": [
         "code",
         "token",
