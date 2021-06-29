@@ -84,9 +84,11 @@ import static fish.payara.security.openid.api.OpenIdConstant.SUBJECT_IDENTIFIER;
 import static fish.payara.security.openid.api.OpenIdConstant.TOKEN_TYPE;
 import static fish.payara.security.openid.api.OpenIdConstant.EXPIRES_IN;
 import static java.util.Arrays.asList;
+import java.util.List;
 import static java.util.logging.Level.SEVERE;
 import static java.util.stream.Collectors.joining;
 import javax.inject.Inject;
+import javax.json.JsonArrayBuilder;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -106,11 +108,19 @@ public class OidcProvider {
     public static final String CLIENT_ID_VALUE = "sample_client_id";
     public static final String CLIENT_SECRET_VALUE = "sample_client_secret";
     
-    public static final String ROLES_IN_USERINFO_KEY = "test.openid.rolesInUserInfoEndpoint";
+    public static final String USER_GROUPS_LIST_KEY = "test.openid.userGroupsList";
+    public static final String ROLES_IN_USERINFO_KEY = "fish.payara.test.openid.rolesInUserInfoEndpoint";
+    public static final String EXPIRES_IN_SECONDS_KEY = "fish.payara.test.openid.expiresInSeconds";
     
     @Inject @ConfigProperty(name = ROLES_IN_USERINFO_KEY, defaultValue = "false")
     boolean rolesInUserInfoEndpoint;
     
+    @Inject @ConfigProperty(name = USER_GROUPS_LIST_KEY, defaultValue = "all")
+    List<String> userGroups;
+    
+    @Inject @ConfigProperty(name = EXPIRES_IN_SECONDS_KEY, defaultValue = "3600")
+    Integer expiresInSeconds;
+
     @PathParam("subject")
     String subject;
     
@@ -209,7 +219,7 @@ public class OidcProvider {
                     .jwtID(UUID.randomUUID().toString())
                     .claim(NONCE, nonce);
             if (!rolesInUserInfoEndpoint) {
-                jstClaimsBuilder.claim(OpenIdConstant.GROUPS, String.join(",", "all"));
+                jstClaimsBuilder.claim(OpenIdConstant.GROUPS, userGroups);
             }
             JWTClaimsSet jwtClaims = jstClaimsBuilder.build();
                     
@@ -245,7 +255,11 @@ public class OidcProvider {
                     .add("gender", "male")
                     .add("locale", "en");
             if (rolesInUserInfoEndpoint) {
-                jsonBuilder.add(OpenIdConstant.GROUPS, Json.createArrayBuilder().add("all"));      
+                JsonArrayBuilder groupsBuilder = Json.createArrayBuilder();
+                userGroups.forEach(g -> {
+                    groupsBuilder.add(g);
+                });
+                jsonBuilder.add(OpenIdConstant.GROUPS, groupsBuilder);
             }
         } else {
             jsonBuilder.add(ERROR_PARAM, "invalid_access_token");
