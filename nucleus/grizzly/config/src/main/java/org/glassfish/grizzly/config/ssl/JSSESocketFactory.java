@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2021] [Payara Foundation and/or affiliates]
 
 package org.glassfish.grizzly.config.ssl;
 
@@ -245,18 +246,32 @@ public abstract class JSSESocketFactory extends ServerSocketFactory {
     }
 
     /**
-     * Gets the SSL server's keystore.
+     * Gets the SSL server's keystores.
+     * @return ArrayList of keystores.
      */
-    protected KeyStore getKeystore(String pass) throws IOException {
+    protected ArrayList<KeyStore> getKeystore(String pass) throws IOException {
         String keystoreFile = (String) attributes.get("keystore");
+        String[] additionalKeyStoreFileNames = null;
+        if(attributes.get("additionalKeystores") != null){
+            additionalKeyStoreFileNames = ((String) attributes.get("additionalKeystores")).split(":");
+        }
+
         if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, "Keystore file= {0}", keystoreFile);
+            logger.log(Level.FINE, "Keystore file= {0}.", keystoreFile);
+            logger.log(Level.FINE, "Additional Keystores = {0}", additionalKeyStoreFileNames);
         }
         String keystoreType = (String) attributes.get("keystoreType");
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, "Keystore type= {0}", keystoreType);
         }
-        return getStore(keystoreType, keystoreFile, pass);
+        ArrayList<KeyStore> keyStores = new ArrayList<>();
+        keyStores.add(getStore(keystoreType, keystoreFile, pass));
+        if(additionalKeyStoreFileNames != null){
+            for(String keystoreFileName : additionalKeyStoreFileNames){
+                keyStores.add(getStore(keystoreType, keystoreFileName, pass));
+            }
+        }
+        return keyStores;
     }
     /*
     * Gets the SSL server's truststore password.
@@ -275,22 +290,36 @@ public abstract class JSSESocketFactory extends ServerSocketFactory {
 
     /**
      * Gets the SSL server's truststore.
+     * @return Array of truststores.
      */
-    protected KeyStore getTrustStore() throws IOException {
-        KeyStore ts = null;
+    protected KeyStore[] getTrustStore() throws IOException {
         String truststore = (String) attributes.get("truststore");
+
+        String[] additionalTrustStoreFileNames = null;
+        if(attributes.get("additionalTruststores") != null){
+            additionalTrustStoreFileNames = ((String) attributes.get("additionalTruststores")).split(":");
+        }
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, "Truststore file= {0}", truststore);
+            logger.log(Level.FINE, "Additional truststores= {0}", additionalTrustStoreFileNames);
         }
         String truststoreType = (String) attributes.get("truststoreType");
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, "Truststore type= {0}", truststoreType);
         }
+        ArrayList<KeyStore> trustStores = new ArrayList<>();
         String truststorePassword = getTruststorePassword();
-        if (truststore != null && truststorePassword != null) {
-            ts = getStore(truststoreType, truststore, truststorePassword);
+        if (truststorePassword != null) {
+            if(truststore != null){
+                trustStores.add(getStore(truststoreType, truststore, truststorePassword));
+            }
+            if(additionalTrustStoreFileNames != null){
+                for(String trustStoreFileName : additionalTrustStoreFileNames){
+                    trustStores.add(getStore(truststoreType, trustStoreFileName, truststorePassword));
+                }
+            }
         }
-        return ts;
+        return trustStores.toArray(new KeyStore[0]);
     }
 
     /**

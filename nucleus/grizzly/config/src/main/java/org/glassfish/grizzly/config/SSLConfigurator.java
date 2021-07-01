@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 package org.glassfish.grizzly.config;
 
 import java.io.IOException;
@@ -252,11 +252,13 @@ public class SSLConfigurator extends SSLEngineConfigurator {
                 
                 //key store settings
                 setAttribute(serverSF, "keystore", ssl.getKeyStore(), "javax.net.ssl.keyStore", null);
+                setAttribute(serverSF, "additionalKeystores", ssl.getKeyStore(), "fish.payara.ssl.additionalKeyStores", null);
                 setAttribute(serverSF, "keystoreType", ssl.getKeyStoreType(), "javax.net.ssl.keyStoreType", "JKS");
                 setAttribute(serverSF, "keystorePass", getKeyStorePassword(ssl), "javax.net.ssl.keyStorePassword", "changeit");
                 
                 //trust store settings
                 setAttribute(serverSF, "truststore", ssl.getTrustStore(), "javax.net.ssl.trustStore", null);
+                setAttribute(serverSF, "additionalTruststores", ssl.getTrustStore(), "fish.payara.ssl.additionalTrustStores", null);
                 setAttribute(serverSF, "truststoreType", ssl.getTrustStoreType(), "javax.net.ssl.trustStoreType", "JKS");
                 setAttribute(serverSF, "truststorePass", getTrustStorePassword(ssl), "javax.net.ssl.trustStorePassword", "changeit");
                 setAttribute(serverSF, "tlsSessionTimeout", ssl.getTlsSessionTimeout(), "javax.net.ssl.sessionTimeout", null);
@@ -264,11 +266,13 @@ public class SSLConfigurator extends SSLEngineConfigurator {
             } else {
                 //key store settings
                 setAttribute(serverSF, "keystore", null, "javax.net.ssl.keyStore", null);
+                setAttribute(serverSF, "additionalKeystores", null, "fish.payara.ssl.additionalKeyStores", null);
                 setAttribute(serverSF, "keystoreType", null, "javax.net.ssl.keyStoreType", "JKS");
                 setAttribute(serverSF, "keystorePass", null, "javax.net.ssl.keyStorePassword", "changeit");
                 
                 //trust store settings
                 setAttribute(serverSF, "truststore", null, "javax.net.ssl.trustStore", null);
+                setAttribute(serverSF, "additionalTruststores", null, "fish.payara.ssl.additionalTrustStores", null);
                 setAttribute(serverSF, "truststoreType", null, "javax.net.ssl.trustStoreType", "JKS");
                 setAttribute(serverSF, "truststorePass", null, "javax.net.ssl.trustStorePassword", "changeit");
                 
