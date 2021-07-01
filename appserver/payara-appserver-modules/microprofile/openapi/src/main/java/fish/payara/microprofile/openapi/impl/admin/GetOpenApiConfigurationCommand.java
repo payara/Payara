@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -101,6 +101,7 @@ public class GetOpenApiConfigurationCommand implements AdminCommand {
         ColumnFormatter columnFormatter = new ColumnFormatter(OUTPUT_HEADERS);
         Object[] outputValues = {
             openApiConfig.getEnabled(),
+            openApiConfig.getEndpoint(),
             openApiConfig.getVirtualServers(),
             openApiConfig.getCorsHeaders(),
             openApiConfig.getSecurityEnabled(),
@@ -112,6 +113,7 @@ public class GetOpenApiConfigurationCommand implements AdminCommand {
 
         Map<String, Object> extraPropertiesMap = new HashMap<>();
         extraPropertiesMap.put("enabled", openApiConfig.getEnabled());
+        extraPropertiesMap.put("endpoint", openApiConfig.getEndpoint());
         extraPropertiesMap.put("virtualServers", openApiConfig.getVirtualServers());
         extraPropertiesMap.put("corsHeaders", openApiConfig.getCorsHeaders());
         extraPropertiesMap.put("securityenabled", openApiConfig.getSecurityEnabled());
