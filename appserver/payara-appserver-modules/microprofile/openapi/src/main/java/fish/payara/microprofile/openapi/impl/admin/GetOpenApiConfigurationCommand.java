@@ -76,7 +76,7 @@ import org.jvnet.hk2.annotations.Service;
 })
 public class GetOpenApiConfigurationCommand implements AdminCommand {
 
-    private final String[] OUTPUT_HEADERS = {"Enabled", "VirtualServers", "CorsHeaders", "Security Enabled", "Roles"};
+    private final String[] OUTPUT_HEADERS = {"Enabled", "EndPoint", "VirtualServers", "CorsHeaders", "Security Enabled", "Roles"};
 
     @Inject
     private Target targetUtil;
