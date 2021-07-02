@@ -1248,7 +1248,15 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
                 schema.setItems(null);
             }
         }
-
+        if (type instanceof AnnotatedElement) {
+            AnnotatedElement element = (AnnotatedElement) type;
+            final AnnotationModel schemaAnnotation = element
+                    .getAnnotation(org.eclipse.microprofile.openapi.annotations.media.Schema.class.getName());
+            if (schemaAnnotation != null) {
+                SchemaImpl.merge(SchemaImpl.createInstance(schemaAnnotation, context), schema, false, context);
+            }
+        }
+        
         return schema;
     }
 
