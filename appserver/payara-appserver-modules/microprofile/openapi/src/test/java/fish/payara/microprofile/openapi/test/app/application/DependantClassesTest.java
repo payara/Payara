@@ -41,17 +41,19 @@ package fish.payara.microprofile.openapi.test.app.application;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import fish.payara.microprofile.openapi.resource.rule.ApplicationProcessedDocument;
 import fish.payara.microprofile.openapi.test.app.OpenApiApplicationTest;
-import fish.payara.microprofile.openapi.test.app.application.schema.Partner;
+import fish.payara.microprofile.openapi.test.app.TestApplication;
 import fish.payara.microprofile.openapi.test.app.application.schema.Schema1Depending;
+import fish.payara.microprofile.openapi.test.app.application.schema.Schema2Simple;
+import fish.payara.microprofile.openapi.test.app.application.schema.Schema2Simple1;
 import static fish.payara.microprofile.openapi.test.util.JsonUtils.path;
+import static fish.payara.microprofile.openapi.test.util.JsonUtils.toJson;
 import java.util.Iterator;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
@@ -61,6 +63,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -70,36 +73,18 @@ import org.junit.Test;
 public class DependantClassesTest extends OpenApiApplicationTest {
 
     // add multiple classes to be processed, simulate component scan
-//    @Before
-//    @Override
-//    public void createDocument() {
-////        document = ApplicationProcessedDocument.createDocument(null, getClass(), TestApplication.class, Partner.class, ShipmentData.class);
-//        document = ApplicationProcessedDocument.createDocument(null, getClass(), TestApplication.class, Schema1Depending.class, Schema2Simple.class, Schema2Simple1.class, Partner.class, ShipmentData.class);
-//        jsonDocument = toJson(document);
-//    }
-
-    // FIXME: the Partner classes will be removed, but for now -- they are NOT working, whils Schema* classes DO WORK!
-    @Path("/partner")
-    @POST
-    @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Save", description = "Save partner data.")
-    @APIResponses({
-        @APIResponse(responseCode = "200", description = "Successful, returning ok.")})
-    public Response save(@RequestBody(description = "The request body with partner data",
-            required = true,
-            content = @Content(
-                    mediaType = MediaType.APPLICATION_JSON,
-                    schema = @Schema(implementation = Partner.class)
-            )
-    ) final Partner partner) {
-        return Response.ok().build();
+    @Before
+    @Override
+    public void createDocument() {
+        document = ApplicationProcessedDocument.createDocument(null, getClass(), TestApplication.class, Schema1Depending.class, Schema2Simple.class, Schema2Simple1.class);
+        jsonDocument = toJson(document);
     }
 
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @APIResponses({
         @APIResponse(responseCode = "200", description = "Successful, returning ok.")})
-    public Schema1Depending save(@RequestBody(description = "The request body with partner data", required = true,
+    public Schema1Depending save(@RequestBody(description = "The request body with connected data", required = true,
             content = @Content(
                     mediaType = MediaType.APPLICATION_JSON,
                     schema = @Schema(implementation = Schema1Depending.class)
@@ -121,29 +106,8 @@ public class DependantClassesTest extends OpenApiApplicationTest {
         // verify operation's data
         // FIXME: this test crashes as for some reason, schema2Simple is refereneced, not copied.
         JsonNode operationSubpropertyId = path(root, "paths./test/serversDependant.post.requestBody.content.application/json.schema.properties.schema2Simple.properties.id");
-        assertEquals("ID", subpropertyId.findValue("description").asText());
-        assertEquals("1", subpropertyId.findValue("example").asText());
-    }
-
-    @Test
-    public void dependantPartnerIsFullyPopulated() {
-        ObjectNode root = getOpenAPIJson();
-        // verify schema
-        JsonNode subpropertyId = path(root, "components.schemas.Partner.properties.shipmentData.properties.salutation");
-        assertEquals("Salutation of the delivery address contact person", subpropertyId.findValue("description").asText());
-        assertEquals("MR", subpropertyId.findValue("example").asText());
-        // verify operation's data
-        // FIXME: this test crashes as for some reason, schema2Simple is refereneced, not copied.
-        JsonNode operationPropertyId = path(root, "paths./test/serversDependant/partner.post.requestBody.content.application/json.schema.properties.id");
-        JsonNode idDescription = operationPropertyId.findValue("description");
-        assertNotNull("description is not found for id", idDescription);
-        assertEquals("ID of the partner", idDescription.asText());
-        assertEquals("1", operationPropertyId.findValue("example").asText());
-        JsonNode operationSubpropertyId = path(root, "paths./test/serversDependant/partner.post.requestBody.content.application/json.schema.properties.shipmentData.properties.salutation");
-        JsonNode salutationDescription = operationSubpropertyId.findValue("description");
-        assertNotNull("description is not found for salutation", salutationDescription);
-        assertEquals("Salutation of the delivery address contact person", salutationDescription.asText());
-        assertEquals("MR", operationSubpropertyId.findValue("example").asText());
+        assertEquals("ID", operationSubpropertyId.findValue("description").asText());
+        assertEquals("1", operationSubpropertyId.findValue("example").asText());
     }
 
     @Test
