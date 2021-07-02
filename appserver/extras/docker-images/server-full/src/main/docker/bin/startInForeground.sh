@@ -42,7 +42,7 @@ if [ -z $DOMAIN_NAME ]; then echo "Variable DOMAIN_NAME is not set."; exit 1; fi
 touch $POSTBOOT_COMMANDS
 touch $PREBOOT_COMMANDS
 
-OUTPUT=`${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} start-domain --dry-run --prebootcommandfile=${PREBOOT_COMMANDS} --postbootcommandfile=${POSTBOOT_COMMANDS} $@ $DOMAIN_NAME`
+OUTPUT=`${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} start-domain --verbose --dry-run --prebootcommandfile=${PREBOOT_COMMANDS} --postbootcommandfile=${POSTBOOT_COMMANDS} $@ $DOMAIN_NAME`
 STATUS=$?
 if [ "$STATUS" -ne 0 ]
   then

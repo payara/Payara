@@ -69,6 +69,7 @@ Bundle-Activator: org.glassfish.common.util.CommonUtilsActivator
                         com.sun.enterprise.util.uuid; \
                         com.sun.enterprise.util.zip; \
                         com.sun.logging; \
+                        fish.payara.logging; \
                         org.glassfish.admin.payload; \
                         org.glassfish.common.util.admin; \
                         org.glassfish.common.util; \
