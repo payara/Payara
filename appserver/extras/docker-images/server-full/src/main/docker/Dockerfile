@@ -11,6 +11,7 @@ ENV DOMAIN_NAME=@docker.payara.domainName@ \
     PAYARA_ARGS="" \
     PREBOOT_COMMANDS=${CONFIG_DIR}/pre-boot-commands.asadmin \
     POSTBOOT_COMMANDS=${CONFIG_DIR}/post-boot-commands.asadmin \
+    POSTBOOT_COMMANDS_FINAL=${CONFIG_DIR}/post-boot-commands-final.asadmin \
     DEPLOY_PROPS=""
 
 COPY --chown=payara:payara maven/bin/* ${SCRIPT_DIR}/
