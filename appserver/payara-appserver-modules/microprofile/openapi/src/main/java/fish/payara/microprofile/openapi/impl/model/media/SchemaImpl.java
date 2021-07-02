@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,13 +43,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-
 import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import fish.payara.microprofile.openapi.impl.model.ExternalDocumentationImpl;
 import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
-import fish.payara.microprofile.openapi.impl.rest.app.provider.ObjectMapperFactory;
-
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.applyReference;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.createList;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.createMap;
@@ -57,16 +54,14 @@ import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extrac
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeImmutableList;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.readOnlyView;
+import fish.payara.microprofile.openapi.impl.rest.app.provider.ObjectMapperFactory;
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
 import static java.util.logging.Level.WARNING;
-
 import java.util.logging.Logger;
-
 import org.eclipse.microprofile.openapi.models.ExternalDocumentation;
 import org.eclipse.microprofile.openapi.models.media.Discriminator;
 import org.eclipse.microprofile.openapi.models.media.Schema;
@@ -133,7 +128,6 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
                 .readValue(content, SchemaImpl.class);
     }
 
-    //@SuppressWarnings("unchecked")
     public static SchemaImpl createInstance(AnnotationModel annotation, ApiContext context) {
         SchemaImpl from = new SchemaImpl();
 
