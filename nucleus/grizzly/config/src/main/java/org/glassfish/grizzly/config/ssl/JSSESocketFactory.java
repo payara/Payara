@@ -98,6 +98,8 @@ public abstract class JSSESocketFactory extends ServerSocketFactory {
     public final static String defaultAlgorithm = KeyManagerFactory.getDefaultAlgorithm();
     final static boolean defaultClientAuth = false;
     private static final String defaultKeyPass = "changeit";
+    private static final String ADDITIONAL_KEY_STORES_ATTR = "additionalKeystores";
+    private static final String ADDITIONAL_TRUST_STORES_ATTR = "additionalTruststores";
     protected static final Logger logger = GrizzlyConfig.logger();
     protected boolean initialized;
     protected boolean clientAuthNeed = false;
@@ -252,8 +254,8 @@ public abstract class JSSESocketFactory extends ServerSocketFactory {
     protected ArrayList<KeyStore> getKeystore(String pass) throws IOException {
         String keystoreFile = (String) attributes.get("keystore");
         String[] additionalKeyStoreFileNames = null;
-        if(attributes.get("additionalKeystores") != null){
-            additionalKeyStoreFileNames = ((String) attributes.get("additionalKeystores")).split(":");
+        if(attributes.get(ADDITIONAL_KEY_STORES_ATTR) != null){
+            additionalKeyStoreFileNames = ((String) attributes.get(ADDITIONAL_KEY_STORES_ATTR)).split(":");
         }
 
         if (logger.isLoggable(Level.FINE)) {
@@ -296,8 +298,8 @@ public abstract class JSSESocketFactory extends ServerSocketFactory {
         String truststore = (String) attributes.get("truststore");
 
         String[] additionalTrustStoreFileNames = null;
-        if(attributes.get("additionalTruststores") != null){
-            additionalTrustStoreFileNames = ((String) attributes.get("additionalTruststores")).split(":");
+        if(attributes.get(ADDITIONAL_TRUST_STORES_ATTR) != null){
+            additionalTrustStoreFileNames = ((String) attributes.get(ADDITIONAL_TRUST_STORES_ATTR)).split(":");
         }
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, "Truststore file= {0}", truststore);
