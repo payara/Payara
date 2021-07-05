@@ -41,6 +41,7 @@ package fish.payara.nucleus.hazelcast;
 
 import com.hazelcast.spi.tenantcontrol.TenantControl;
 import com.hazelcast.spi.tenantcontrol.TenantControlFactory;
+import java.util.function.Supplier;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.internal.api.Globals;
@@ -53,11 +54,13 @@ import org.glassfish.internal.api.JavaEEContextUtil;
  */
 public class PayaraHazelcastTenantFactory implements TenantControlFactory {
     private static final String DISABLE_BLOCKING_PROPERTY = "fish.payara.tenantcontrol.blocking.disable";
+    private static final Supplier<Boolean> getDisableBlockingProperty =
+            () -> Boolean.parseBoolean(System.getProperty(DISABLE_BLOCKING_PROPERTY, Boolean.TRUE.toString()));
 
     private final JavaEEContextUtil ctxUtil = Globals.getDefaultHabitat().getService(JavaEEContextUtil.class);
     private final InvocationManager invocationMgr = Globals.getDefaultHabitat().getService(InvocationManager.class);
 
-    static boolean blockingDisabled = Boolean.getBoolean(DISABLE_BLOCKING_PROPERTY);
+    static boolean blockingDisabled = getDisableBlockingProperty.get();
 
     @Override
     public TenantControl saveCurrentTenant() {
@@ -66,7 +69,7 @@ public class PayaraHazelcastTenantFactory implements TenantControlFactory {
         if (invocation != null) {
             tenantControl = invocation.getRegistryFor(TenantControl.class);
             if (tenantControl == null && ctxUtil.isInvocationLoaded()) {
-                blockingDisabled = Boolean.getBoolean(DISABLE_BLOCKING_PROPERTY);
+                blockingDisabled = getDisableBlockingProperty.get();
                 tenantControl = new PayaraHazelcastTenant();
                 invocation.setRegistryFor(TenantControl.class, tenantControl);
             } else if (tenantControl == null) {
