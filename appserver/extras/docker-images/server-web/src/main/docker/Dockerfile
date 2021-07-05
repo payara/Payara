@@ -10,6 +10,7 @@ EXPOSE 4848 9009 8080 8181
 ENV DOMAIN_NAME=@docker.payara.domainName@ \
     PAYARA_ARGS="" \
     PREBOOT_COMMANDS=${CONFIG_DIR}/pre-boot-commands.asadmin \
+    PREBOOT_COMMANDS_FINAL=${CONFIG_DIR}/pre-boot-commands-final.asadmin \
     POSTBOOT_COMMANDS=${CONFIG_DIR}/post-boot-commands.asadmin \
     POSTBOOT_COMMANDS_FINAL=${CONFIG_DIR}/post-boot-commands-final.asadmin \
     DEPLOY_PROPS=""

@@ -18,6 +18,7 @@
 #
 # Environment variables used:
 #   - $PREBOOT_COMMANDS - the pre boot command file.
+#   - $PREBOOT_COMMANDS_FINAL - copy of the pre boot command file.
 #   - $POSTBOOT_COMMANDS - the post boot command file.
 #   - $POSTBOOT_COMMANDS_FINAL - copy of the post boot command file.
 #
@@ -28,17 +29,21 @@
 # Check required variables are set
 if [ -z $DEPLOY_DIR ]; then echo "Variable DEPLOY_DIR is not set."; exit 1; fi
 if [ -z $PREBOOT_COMMANDS ]; then echo "Variable PREBOOT_COMMANDS is not set."; exit 1; fi
+if [ -z $PREBOOT_COMMANDS_FINAL ]; then echo "Variable PREBOOT_COMMANDS_FINAL is not set."; exit 1; fi
 if [ -z $POSTBOOT_COMMANDS ]; then echo "Variable POSTBOOT_COMMANDS is not set."; exit 1; fi
 if [ -z $POSTBOOT_COMMANDS_FINAL ]; then echo "Variable POSTBOOT_COMMANDS_FINAL is not set."; exit 1; fi
 
 # Create pre and post boot command files if they don't exist
-touch $POSTBOOT_COMMANDS
-touch $PREBOOT_COMMANDS
+touch $PREBOOT_COMMANDS_FINAL
 touch $POSTBOOT_COMMANDS_FINAL
 
 # Create copy of POSTBOOT_COMMANDS instead of modifying original and add new line
 [ -f  $POSTBOOT_COMMANDS ] && cp $POSTBOOT_COMMANDS $POSTBOOT_COMMANDS_FINAL
 echo >> $POSTBOOT_COMMANDS_FINAL
+
+# Create copy of PREBOOT_COMMANDS instead of modifying original and add new line
+[ -f  $PREBOOT_COMMANDS ] && cp $PREBOOT_COMMANDS $PREBOOT_COMMANDS_FINAL
+echo >> $PREBOOT_COMMANDS_FINAL
 
 deploy() {
 
