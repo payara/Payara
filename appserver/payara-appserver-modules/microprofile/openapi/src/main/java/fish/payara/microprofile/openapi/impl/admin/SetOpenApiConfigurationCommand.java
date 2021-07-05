@@ -85,6 +85,9 @@ public class SetOpenApiConfigurationCommand extends SetSecureMicroprofileConfigu
     @Param(name = "enabled", optional = true)
     private Boolean enabled;
 
+    @Param(name = "endpoint", optional = true)
+    private String endpoint;
+
     @Param(name = "virtualServers", optional = true)
     private String virtualServers;
 
@@ -125,6 +128,9 @@ public class SetOpenApiConfigurationCommand extends SetSecureMicroprofileConfigu
             ConfigSupport.apply(configProxy -> {
                 if (enabled != null) {
                     configProxy.setEnabled(Boolean.toString(enabled));
+                }
+                if (endpoint != null) {
+                    configProxy.setEndpoint(endpoint);
                 }
                 if (virtualServers != null) {
                     configProxy.setVirtualServers(virtualServers);
