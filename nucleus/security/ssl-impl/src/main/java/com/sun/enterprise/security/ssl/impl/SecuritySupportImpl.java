@@ -453,10 +453,11 @@ public class SecuritySupportImpl extends SecuritySupport {
                 for(String trustStoreName : additionalTrustStoreFileNames){
                     trustStoresList.add(loadStore(getProperty(KEYSTORE_TYPE_PROP, KeyStore.getDefaultType()), null, trustStoreName, keyStorePass));
                 }
-            } catch (FileNotFoundException fnfe){
-                _logger.fine("Additional keystore file not found "+fnfe.getMessage());
-            } catch (NullPointerException npe){
+            }
+            catch (NullPointerException npe){
                 _logger.fine("No additional keystores or truststores requested"+npe.getMessage());
+            } catch (FileNotFoundException fnfe){
+                _logger.warning("Additional keystore file not found "+fnfe.getMessage());
             }
 
             
