@@ -147,52 +147,52 @@ public final class GAVConvertor {
      * @return A String representing the relative URI of the provided GAV.
      */
     private static String constructRelativeURIString(Map<String, String> GAVMap, Collection<String> repositoryURIs) {
-    	String relativeURI = GAVMap.get("groupId") + "/" + GAVMap.get("artefactId") + "/"
+        String relativeURI = GAVMap.get("groupId") + "/" + GAVMap.get("artefactId") + "/"
                 + GAVMap.get("versionNumber");
-    	String artefactFileName = GAVMap.get("artefactId") + "-" + GAVMap.get("versionNumber");
-    	
-    	//Check if version is not a snapshot
-    	if(!relativeURI.endsWith("SNAPSHOT")) {
-    		return relativeURI + "/" + artefactFileName;
-    	}
-    	//Loop through each repoURI
-    	for(String repoURI : repositoryURIs) {
-        	URI mavenMetaDataURI = null;
-    		try {
-    			mavenMetaDataURI = new URI(repoURI + relativeURI + "/" + "maven-metadata.xml");
+        String artefactFileName = GAVMap.get("artefactId") + "-" + GAVMap.get("versionNumber");
+        
+        //Check if version is not a snapshot
+        if (!relativeURI.endsWith("SNAPSHOT")) {
+            return relativeURI + "/" + artefactFileName;
+        }
+        //Loop through each repoURI
+        for (String repoURI : repositoryURIs) {
+            URI mavenMetaDataURI = null;
+            try {
+                mavenMetaDataURI = new URI(repoURI + relativeURI + "/" + "maven-metadata.xml");
+                
+                //Check if maven metadata exists
+                if (URIUtils.exists(mavenMetaDataURI)) {
+                    File mavenMetaData = URIUtils.convertToFile(mavenMetaDataURI);
+                    DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+                    documentBuilderFactory.setAttribute(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+                    DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+                    Document document = documentBuilder.parse(mavenMetaData);
+                    document.getDocumentElement().normalize();
+                    NodeList nodeList = document.getElementsByTagName("snapshotVersion");
+                    Node node = nodeList.item(0);
+                    Element element = (Element) node;
+                    //Get latest snapshot version
+                    String version = element.getElementsByTagName("value").item(0).getTextContent();
+                    artefactFileName = GAVMap.get("artefactId") + "-" + version;
+                    logger.log(Level.FINE, "Found version {0} from maven-metadata.xml", version);
+                    break;
+                }
+            } catch (URISyntaxException e) {
+                logger.log(Level.WARNING, "Error creating maven metadata URI");
+            } catch (IOException e) {
+                logger.log(Level.WARNING, "Error getting HTTP connection response code");
+            } catch (ParserConfigurationException e) {
+                logger.log(Level.WARNING, "Error creating Document Builder");
+            } catch (SAXException e) {
+                logger.log(Level.WARNING, "Error parsing maven-metadata.xml");
+            }
 
-    			//Check if maven metadata exists
-    			if(URIUtils.exists(mavenMetaDataURI)) {
-    				File mavenMetaData = URIUtils.convertToFile(mavenMetaDataURI);
-    				DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-    				documentBuilderFactory.setAttribute(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-    				DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
-    				Document document = documentBuilder.parse(mavenMetaData);
-    				document.getDocumentElement().normalize();
-    				NodeList nodeList = document.getElementsByTagName("snapshotVersion");
-    				Node node = nodeList.item(0);
-    				Element element = (Element) node;
-    				//Get latest snapshot version
-    				String version = element.getElementsByTagName("value").item(0).getTextContent();
-    				artefactFileName = GAVMap.get("artefactId") + "-" + version;
-    				logger.log(Level.FINE, "Found version {0} from maven-metadata.xml", version);
-    				break;
-    			}
-    		}catch (URISyntaxException e) {
-    			logger.log(Level.WARNING, "Error creating maven metadata URI");
-    		} catch (IOException e) {
-    			logger.log(Level.WARNING, "Error getting HTTP connection response code");
-    		} catch (ParserConfigurationException e) {
-    			logger.log(Level.WARNING, "Error creating Document Builder");
-    		} catch (SAXException e) {
-    			logger.log(Level.WARNING, "Error parsing maven-metadata.xml");
-    		}
-
-    	}
-    	//For local maven repos, the maven-metadata-local isn't checked 
-    	//The standard URI is generated
-    	logger.log(Level.FINE, "Relative URI String is: {0}", relativeURI + "/" + artefactFileName);
-		return relativeURI + "/" + artefactFileName;
+        }
+        //For local maven repos, the maven-metadata-local isn't checked 
+        //The standard URI is generated
+        logger.log(Level.FINE, "Relative URI String is: {0}", relativeURI + "/" + artefactFileName);
+        return relativeURI + "/" + artefactFileName;
     }
     
     /**
