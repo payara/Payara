@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,13 +43,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-
 import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import fish.payara.microprofile.openapi.impl.model.ExternalDocumentationImpl;
 import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
-import fish.payara.microprofile.openapi.impl.rest.app.provider.ObjectMapperFactory;
-
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.applyReference;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.createList;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.createMap;
@@ -57,16 +54,14 @@ import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extrac
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeImmutableList;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.readOnlyView;
+import fish.payara.microprofile.openapi.impl.rest.app.provider.ObjectMapperFactory;
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
 import static java.util.logging.Level.WARNING;
-
 import java.util.logging.Logger;
-
 import org.eclipse.microprofile.openapi.models.ExternalDocumentation;
 import org.eclipse.microprofile.openapi.models.media.Discriminator;
 import org.eclipse.microprofile.openapi.models.media.Schema;
@@ -133,7 +128,6 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
                 .readValue(content, SchemaImpl.class);
     }
 
-    @SuppressWarnings("unchecked")
     public static SchemaImpl createInstance(AnnotationModel annotation, ApiContext context) {
         SchemaImpl from = new SchemaImpl();
 
@@ -141,12 +135,18 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
             return from;
         }
 
+        // Solve the required attribute before "ref" as it is the only one which doesn't conflict with it.
+        final Boolean isRequired = annotation.getValue("required", Boolean.class);
+        if (isRequired != null) {
+            from.isRequired = isRequired;
+        }
+
         String ref = annotation.getValue("ref", String.class);
         if (ref != null && !ref.isEmpty()) {
             from.setRef(ref);
             return from;
         }
-        
+
         EnumModel typeEnum = annotation.getValue("type", EnumModel.class);
         if (typeEnum != null) {
             from.setType(SchemaType.valueOf(typeEnum.getValue()));
@@ -183,11 +183,6 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
         from.setMaxProperties(annotation.getValue("maxProperties", Integer.class));
         from.setMinProperties(annotation.getValue("minProperties", Integer.class));
         from.setRequired(annotation.getValue("requiredProperties", List.class));
-
-        final Boolean isRequired = annotation.getValue("required", Boolean.class);
-        if (isRequired != null) {
-            from.isRequired = isRequired;
-        }
 
         extractAnnotations(annotation, context, "properties", "name", SchemaImpl::createInstance, from::addProperty);
         for (Entry<String, Schema> property : from.getProperties().entrySet()) {
@@ -925,7 +920,7 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
                 } else {
                     schemaName = ModelUtils.getSimpleName(implementationClass);
                 }
-                // Get the schema reference, and copy it's values over to the new schema model
+                // Get the schema reference, and copy it's values over to the new schema model if they are missing
                 Schema copyFrom = context.getApi().getComponents().getSchemas().get(schemaName);
                 if (copyFrom == null) {
                     // If the class hasn't been parsed
@@ -934,9 +929,9 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
                 }
                 if (schema.getType() == SchemaType.ARRAY) {
                     schema.setItems(new SchemaImpl());
-                    ModelUtils.merge(copyFrom, schema.getItems(), true);
+                    ModelUtils.merge(copyFrom, schema.getItems(), false);
                 } else {
-                    ModelUtils.merge(copyFrom, schema, true);
+                    ModelUtils.merge(copyFrom, schema, false);
                 }
                 schema.setRef(null);
             }
