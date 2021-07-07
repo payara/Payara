@@ -40,8 +40,7 @@
 
 package fish.payara.deployment.util;
 
-import org.glassfish.config.support.TranslatedConfigView;
-
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
@@ -55,6 +54,18 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.glassfish.config.support.TranslatedConfigView;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 /**
  * Performs the functions required for converting GAV (group, artefact, version)
@@ -99,7 +110,7 @@ public final class GAVConvertor {
 
         repoURIs.add(defaultMavenRepository);
 
-        final String relativeURIString = constructRelativeURIString(GAVMap);
+        final String relativeURIString = constructRelativeURIString(GAVMap, repoURIs);
         final URI artefactURI = findArtefactURI(repoURIs, relativeURIString);
 
         return new AbstractMap.SimpleImmutableEntry<>(GAVMap.get("artefactId"), artefactURI);
@@ -135,11 +146,53 @@ public final class GAVConvertor {
      * and version number.
      * @return A String representing the relative URI of the provided GAV.
      */
-    private static String constructRelativeURIString(Map<String, String> GAVMap) {
-        final String artefactFileName = GAVMap.get("artefactId") + "-" + GAVMap.get("versionNumber");
+    private static String constructRelativeURIString(Map<String, String> GAVMap, Collection<String> repositoryURIs) {
+    	String relativeURI = GAVMap.get("groupId") + "/" + GAVMap.get("artefactId") + "/"
+                + GAVMap.get("versionNumber");
+    	String artefactFileName = GAVMap.get("artefactId") + "-" + GAVMap.get("versionNumber");
+    	
+    	//Check if version is not a snapshot
+    	if(!relativeURI.endsWith("SNAPSHOT")) {
+    		return relativeURI + "/" + artefactFileName;
+    	}
+    	//Loop through each repoURI
+    	for(String repoURI : repositoryURIs) {
+        	URI mavenMetaDataURI = null;
+    		try {
+    			mavenMetaDataURI = new URI(repoURI + relativeURI + "/" + "maven-metadata.xml");
 
-        return GAVMap.get("groupId") + "/" + GAVMap.get("artefactId") + "/"
-               + GAVMap.get("versionNumber") + "/" + artefactFileName;
+    			//Check if maven metadata exists
+    			if(URIUtils.exists(mavenMetaDataURI)) {
+    				File mavenMetaData = URIUtils.convertToFile(mavenMetaDataURI);
+    				DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+    				documentBuilderFactory.setAttribute(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+    				DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+    				Document document = documentBuilder.parse(mavenMetaData);
+    				document.getDocumentElement().normalize();
+    				NodeList nodeList = document.getElementsByTagName("snapshotVersion");
+    				Node node = nodeList.item(0);
+    				Element element = (Element) node;
+    				//Get latest snapshot version
+    				String version = element.getElementsByTagName("value").item(0).getTextContent();
+    				artefactFileName = GAVMap.get("artefactId") + "-" + version;
+    				logger.log(Level.FINE, "Found version {0} from maven-metadata.xml", version);
+    				break;
+    			}
+    		}catch (URISyntaxException e) {
+    			logger.log(Level.WARNING, "Error creating maven metadata URI");
+    		} catch (IOException e) {
+    			logger.log(Level.WARNING, "Error getting HTTP connection response code");
+    		} catch (ParserConfigurationException e) {
+    			logger.log(Level.WARNING, "Error creating Document Builder");
+    		} catch (SAXException e) {
+    			logger.log(Level.WARNING, "Error parsing maven-metadata.xml");
+    		}
+
+    	}
+    	//For local maven repos, the maven-metadata-local isn't checked 
+    	//The standard URI is generated
+    	logger.log(Level.FINE, "Relative URI String is: {0}", relativeURI + "/" + artefactFileName);
+		return relativeURI + "/" + artefactFileName;
     }
     
     /**
