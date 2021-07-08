@@ -155,7 +155,7 @@ public class DOLUtils {
     // set to true, WLS DD will have higher precedence over other DD. */
     private static final String WLSDD_PRECEDENCE = "wlsdd.precedence";
     
-    /** The system property to control the precedence between WLS DD
+    /** The system property to control the precedence between GF DD
     // and other DD when they are present. When this property is
     // set to true, GF DD will have higher precedence over other DD. */
     private static final String GFDD_PRECEDENCE = "gfdd.precedence";
