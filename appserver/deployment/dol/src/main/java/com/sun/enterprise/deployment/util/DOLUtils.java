@@ -150,10 +150,15 @@ public class DOLUtils {
     @LogMessageInfo(message = "DOLUtils: converting EJB to web bundle id {0}.", level="FINER")
     private static final String CONVERT_EJB_TO_WEB_ID = "AS-DEPLOYMENT-00017";
 
-    /** The system property to control the precedence between GF DD
-    // and WLS DD when they are both present. When this property is
-    // set to true, GF DD will have higher precedence over WLS DD. */
-    private static final String GFDD_OVER_WLSDD = "gfdd.over.wlsdd";
+    /** The system property to control the precedence between WLS DD
+    // and other DD when they are present. When this property is
+    // set to true, WLS DD will have higher precedence over other DD. */
+    private static final String WLSDD_PRECEDENCE = "wlsdd.precedence";
+    
+    /** The system property to control the precedence between WLS DD
+    // and other DD when they are present. When this property is
+    // set to true, GF DD will have higher precedence over other DD. */
+    private static final String GFDD_PRECEDENCE = "gfdd.precedence";
 
     /** The system property to control whether we should just ignore
     // WLS DD. When this property is set to true, WLS DD will be ignored.*/
@@ -378,17 +383,33 @@ public class DOLUtils {
         return result;
     }
 
-    /** returns true if GF DD should have higher precedence over
-     * WLS DD when both present in the same archive
-     * @return  */
-    public static boolean isGFDDOverWLSDD() {
-        return Boolean.valueOf(System.getProperty(GFDD_OVER_WLSDD));
+    /**
+     * returns true if WLS DD should have higher precedence over other DD when
+     * both present in the same archive
+     *
+     * @return
+     */
+    public static boolean isWLSDDPrecedence() {
+        return Boolean.valueOf(System.getProperty(WLSDD_PRECEDENCE));
     }
 
-    /** returns true if we should ignore WLS DD in the archive
-     * @return  */
+    /**
+     * returns true if we should ignore WLS DD in the archive
+     *
+     * @return
+     */
     public static boolean isIgnoreWLSDD() {
         return Boolean.valueOf(System.getProperty(IGNORE_WLSDD));
+    }
+
+    /**
+     * returns true if GF DD should have higher precedence over other DD when both
+     * present in the same archive
+     *
+     * @return
+     */
+    public static boolean isGFDDPrecedence() {
+        return Boolean.valueOf(System.getProperty(GFDD_PRECEDENCE));
     }
 
     /** process the list of the configuration files, and return the sorted
@@ -434,37 +455,40 @@ public class DOLUtils {
         // sort the deployment descriptor files by precedence order
         // when they are present in the same archive
 
-        if (Boolean.valueOf(System.getProperty(GFDD_OVER_WLSDD))) {
-            // if this property set, it means we need to make GF deployment
-            // descriptors higher precedence then weblogic
-            if (payaraConfDD != null){
-                sortedConfDDFiles.add(payaraConfDD);
-            }
-            if (gfConfDD != null) {
-                sortedConfDDFiles.add(gfConfDD);
-            }
+        if (isWLSDDPrecedence()) {
+            // if this property set, it means we need to make weblogic deployment
+            // descriptors higher precedence then other DDs
             if (wlsConfDD != null) {
                 sortedConfDDFiles.add(wlsConfDD);
             }
-        } else if (Boolean.valueOf(System.getProperty(IGNORE_WLSDD))) {
-            // if this property set, it means we need to ignore
-            // WLS deployment descriptors
+            if (payaraConfDD != null){
+                sortedConfDDFiles.add(payaraConfDD);
+            }
+            if (gfConfDD != null) {
+                sortedConfDDFiles.add(gfConfDD);
+            }
+        } else if (isGFDDPrecedence()) {
+            // if this property set, it means we need to make glassfish deployment
+            // descriptors higher precedence then other DDs
             if (gfConfDD != null) {
                 sortedConfDDFiles.add(gfConfDD);
             }
             if (payaraConfDD != null){
                 sortedConfDDFiles.add(payaraConfDD);
+            }
+            if (!isIgnoreWLSDD() && wlsConfDD != null) {
+                sortedConfDDFiles.add(wlsConfDD);
             }
         } else  {
-            // the default will be WLS DD has higher precedence
-            if (wlsConfDD != null) {
-                sortedConfDDFiles.add(wlsConfDD);
-            }
+            // the default will be Payara DD has higher precedence
             if (payaraConfDD != null){
                 sortedConfDDFiles.add(payaraConfDD);
             }
             if (gfConfDD != null) {
                 sortedConfDDFiles.add(gfConfDD);
+            }
+            if (!isIgnoreWLSDD() && wlsConfDD != null) {
+                sortedConfDDFiles.add(wlsConfDD);
             }
         }
 
