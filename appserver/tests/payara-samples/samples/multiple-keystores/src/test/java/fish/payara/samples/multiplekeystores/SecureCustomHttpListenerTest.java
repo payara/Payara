@@ -42,7 +42,8 @@ package fish.payara.samples.multiplekeystores;
 
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.WebResponse;
-import org.jboss.arquillian.junit.Arquillian;
+import fish.payara.samples.NotMicroCompatible;
+import fish.payara.samples.PayaraArquillianTestRunner;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -57,7 +58,8 @@ import static org.junit.Assert.assertNotNull;
  * @author James Hillyard
  */
 
-@RunWith(Arquillian.class)
+@RunWith(PayaraArquillianTestRunner.class)
+@NotMicroCompatible
 public class SecureCustomHttpListenerTest {
     private WebResponse webResponse;
     private static WebClient WEB_CLIENT;
