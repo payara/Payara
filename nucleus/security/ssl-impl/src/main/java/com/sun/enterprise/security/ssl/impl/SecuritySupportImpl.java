@@ -447,17 +447,24 @@ public class SecuritySupportImpl extends SecuritySupport {
 
             // Load in all additional keystores
             try{
-                for(String keyStoreName : additionalKeyStoreFileNames){
-                    keyStoresList.add(loadStore(getProperty(KEYSTORE_TYPE_PROP, KeyStore.getDefaultType()), null, keyStoreName, keyStorePass));
+                if(additionalKeyStoreFileNames != null){
+                    for(String keyStoreName : additionalKeyStoreFileNames){
+                        keyStoresList.add(loadStore(getProperty(KEYSTORE_TYPE_PROP, KeyStore.getDefaultType()), null, keyStoreName, keyStorePass));
+                    }
+                } else {
+                    _logger.fine("No additional keystores set");
                 }
-                for(String trustStoreName : additionalTrustStoreFileNames){
-                    trustStoresList.add(loadStore(getProperty(KEYSTORE_TYPE_PROP, KeyStore.getDefaultType()), null, trustStoreName, keyStorePass));
+
+                if(additionalTrustStoreFileNames != null){
+                    for(String trustStoreName : additionalTrustStoreFileNames){
+                        trustStoresList.add(loadStore(getProperty(KEYSTORE_TYPE_PROP, KeyStore.getDefaultType()), null, trustStoreName, keyStorePass));
+                    }
+                } else {
+                    _logger.fine("No additional truststores set");
                 }
             }
-            catch (NullPointerException npe){
-                _logger.fine("No additional keystores or truststores requested"+npe.getMessage());
-            } catch (FileNotFoundException fnfe){
-                _logger.warning("Additional keystore file not found "+fnfe.getMessage());
+            catch (FileNotFoundException fnfe){
+                _logger.warning("Additional keystore or truststore file not found "+fnfe.getMessage());
             }
 
             
