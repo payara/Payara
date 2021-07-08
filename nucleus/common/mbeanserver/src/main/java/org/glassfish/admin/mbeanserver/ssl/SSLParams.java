@@ -86,6 +86,9 @@ public class SSLParams {
     private Boolean ssl3Enabled = true;
     private String ssl3TlsCiphers;
     private Boolean tlsEnabled=true;
+    private Boolean tls11Enabled=true;
+    private Boolean tls12Enabled=true;
+    private Boolean tls13Enabled=true;
     private Boolean tlsRollBackEnabled=false;
     private Boolean hstsEnabled = false;
     private Boolean hstsSubDomains = false;
@@ -326,7 +329,38 @@ public class SSLParams {
         this.tlsEnabled = Boolean.parseBoolean(tlsEnabled);
     }
 
+    /**
+     * Determines whether TLSv1.1 is enabled.
+     */
+    public Boolean getTls11Enabled() {
+        return tls11Enabled;
+    }
 
+    public void setTls11Enabled(String tls11Enabled) {
+        this.tls11Enabled = Boolean.parseBoolean(tls11Enabled);
+    }
+
+    /**
+     * Determines whether TLSv1.2 is enabled.
+     */
+    public Boolean getTls12Enabled() {
+        return tls12Enabled;
+    }
+
+    public void setTls12Enabled(String tls12Enabled) {
+        this.tls12Enabled = Boolean.parseBoolean(tls12Enabled);
+    }
+
+    /**
+     * Determines whether TLSv1.3 is enabled.
+     */
+    public Boolean getTls13Enabled() {
+        return tls13Enabled;
+    }
+
+    public void setTls13Enabled(String tls13Enabled) {
+        this.tls13Enabled = Boolean.parseBoolean(tls13Enabled);
+    }
     /**
      * Determines whether TLS rollback is enabled. TLS rollback should be enabled for Microsoft Internet Explorer 5.0
      * and 5.5. NOT Used in PE

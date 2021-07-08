@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,23 +43,9 @@ package fish.payara.deployment.admin;
 import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Server;
-import com.sun.enterprise.util.io.FileUtils;
 import fish.payara.deployment.util.GAVConvertor;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.inject.Inject;
+import fish.payara.deployment.util.JavaArchiveUtils;
+import fish.payara.deployment.util.URIUtils;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
@@ -77,6 +63,16 @@ import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
+
+import javax.inject.Inject;
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -108,8 +104,6 @@ public class DeployRemoteArchiveCommand extends DeployCommandParameters implemen
     @Inject
     ServiceLocator serviceLocator;
 
-    private static final String defaultMavenRepository = "https://repo.maven.apache.org/maven2/";
-
     @Override
     public void execute(AdminCommandContext context) {
         CommandRunner commandRunner = serviceLocator.getService(CommandRunner.class);
@@ -118,69 +112,57 @@ public class DeployRemoteArchiveCommand extends DeployCommandParameters implemen
         // Initialise to null so we can do a null check later
         File fileToDeploy = null;
 
-        // Assume only Http or Https connections are direct URLs
-        if (path.startsWith("http://") || path.startsWith("https://")) {
+        // Should treat uppercase letters as equivalent to lowercase
+        // in schema names (section 3.1 of the RFC 2396)
+        String lowerPath = path.toLowerCase();
+        // Assume only Http or Https connections are direct URIs
+        if (lowerPath.startsWith("http://") || lowerPath.startsWith("https://")) {
             try {
+                URI pathURI = new URI(path);
                 // Download the file to temp, and return a File object to pass to the deploy command
-                fileToDeploy = convertUriToFile(new URI(path));
+                fileToDeploy = URIUtils.convertToFile(pathURI);
+
+                // Get file name from URI
+                String fileName = new File(pathURI.getPath()).getName();
+
+                // If a name hasn't been provided, get it from the file name
+                if (name == null) {
+                    name = JavaArchiveUtils.removeJavaArchiveExtension(fileName, true);
+                }
+
+                // If a context root hasn't been provided, get it from the file name
+                if (contextroot == null) {
+                    contextroot = "/" + JavaArchiveUtils.removeJavaArchiveExtension(fileName, true);
+                }
             } catch (IOException | URISyntaxException ex) {
                 logger.log(Level.SEVERE, ex.getMessage());
                 actionReport.setMessage("Exception converting URI to File: " + path);
                 actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
             }
-
-            // If a name hasn't been provided, get it from the URI
-            if (name == null) {
-                if (path.endsWith(".jar")) {
-                    name = path.substring(path.lastIndexOf("/") + 1, path.indexOf(".jar"));
-                } else if (path.endsWith(".war")) {
-                    name = path.substring(path.lastIndexOf("/") + 1, path.indexOf(".war"));
-                } else if (path.endsWith(".ear")) {
-                    name = path.substring(path.lastIndexOf("/") + 1, path.indexOf(".ear"));
-                }
-            }
-
-            // If a context root hasn't been provided, get it from the URI
-            if (contextroot == null) {
-                if (path.endsWith(".jar")) {
-                    contextroot = "/" + path.substring(path.lastIndexOf("/") + 1, path.indexOf(".jar"));
-                } else if (path.endsWith(".war")) {
-                    contextroot = "/" + path.substring(path.lastIndexOf("/") + 1, path.indexOf(".war"));
-                } else if (path.endsWith(".ear")) {
-                    contextroot = "/" + path.substring(path.lastIndexOf("/") + 1, path.indexOf(".ear"));
-                }
-            }
         } else {
             try {
                 // If the path String doesn't start with Http or Https, then assume it's a GAV coordinate
-                logger.log(Level.FINE, "Path does not appear to be a URL, will attempt to read as GAV coordinate");
+                logger.log(Level.FINE, "Path does not appear to be a URI, will attempt to read as GAV coordinate");
 
-                // Convert the Array to a List of Urls, and append "/" to the Urls if they don't already end with one
-                List<URL> repositoryUrls = formatRepositoryUrls(additionalRepositories);
-
-                // Get the URL for the given GAV coordinate
-                GAVConvertor gavConvertor = new GAVConvertor();
-                Entry<String, URL> artefactEntry = gavConvertor.getArtefactMapEntry(path, repositoryUrls);
+                // Get the URI for the given GAV coordinate
+                Entry<String, URI> artefactEntry = GAVConvertor.getArtefactMapEntry(path, additionalRepositories);
 
                 // Download the file to temp, and return a File object to pass to the deploy command
-                fileToDeploy = convertUriToFile(artefactEntry.getValue().toURI());
+                fileToDeploy = URIUtils.convertToFile(artefactEntry.getValue());
 
-                // If a name hasn't been provided, get it from the artefact name
+                // If a name hasn't been provided, get it from the artefact URI
                 if (name == null) {
-                    name = artefactEntry.getKey();
+                    String fileName = new File(artefactEntry.getValue().getPath()).getName();
+                    name = JavaArchiveUtils.removeJavaArchiveExtension(fileName, true);
                 }
 
                 // If a context root hasn't been provided, get it from the artefact name
                 if (contextroot == null) {
                     contextroot = "/" + artefactEntry.getKey();
                 }
-            } catch (MalformedURLException ex) {
-                logger.log(Level.SEVERE, ex.getMessage());
-                actionReport.setMessage("Exception converting GAV to URL: " + path);
-                actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
             } catch (IOException | URISyntaxException ex) {
                 logger.log(Level.SEVERE, ex.getMessage());
-                actionReport.setMessage("Exception converting URI to File: " + path);
+                actionReport.setMessage("Exception converting GAV to File: " + path);
                 actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
             }
         }
@@ -194,23 +176,10 @@ public class DeployRemoteArchiveCommand extends DeployCommandParameters implemen
             commandInvocation.parameters(parameters);
             commandInvocation.execute();
         } else {
-            actionReport.setMessage("Provided path does not appear to be a valid URL or GAV coordinate: " + path
+            actionReport.setMessage("Provided path does not appear to be a valid URI or GAV coordinate: " + path
                     + "\nSee the server log for more details");
             actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
         }
-    }
-
-    private List<URL> formatRepositoryUrls(List<String> additionalRepositories) throws MalformedURLException {
-        List<URL> repositoryUrls = new ArrayList<>();
-        for (String repository : additionalRepositories) {
-            if (!repository.endsWith("/")) {
-                repositoryUrls.add(new URL(repository + "/"));
-            } else {
-                repositoryUrls.add(new URL(repository));
-            }
-        }
-
-        return repositoryUrls;
     }
 
     private ParameterMap createAndPopulateParameterMap(File fileToDeploy) {
@@ -337,32 +306,5 @@ public class DeployRemoteArchiveCommand extends DeployCommandParameters implemen
         }
 
         return parameterMap;
-    }
-
-
-    private File convertUriToFile(URI uri) throws URISyntaxException, IOException {
-        try (InputStream in = uri.toURL().openStream()) {
-            return createFile(in);
-        }
-    }
-
-    private File createFile(InputStream in) throws IOException {
-        File file;
-        file = File.createTempFile("app", "tmp");
-        FileUtils.deleteOnExit(file);
-
-        try (OutputStream out = new FileOutputStream(file)) {
-            copyStream(in, out);
-        }
-
-        return file;
-    }
-
-    private void copyStream(InputStream in, OutputStream out) throws IOException {
-        byte[] buf = new byte[4096];
-        int len;
-        while ((len = in.read(buf)) >= 0) {
-            out.write(buf, 0, len);
-        }
     }
 }

@@ -40,75 +40,69 @@
 
 package fish.payara.deployment.util;
 
+import org.glassfish.config.support.TranslatedConfigView;
+
 import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
+import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.AbstractMap;
-import java.util.Base64;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.glassfish.config.support.TranslatedConfigView;
 
 /**
  * Performs the functions required for converting GAV (group, artefact, version)
- * coordinates into a URL.
+ * coordinates into a URI.
  * @author Andrew Pielage
  */
-public class GAVConvertor {
+public final class GAVConvertor {
     
     private static final Logger logger = Logger.getLogger("PayaraMicro");
-    
-    /**
-     * Returns a valid URL for a provided GAV (GroupId, ArtifactId, Version).
-     * @param GAV A comma separated list of the groupId, artifactId, 
-     * and version number
-     * @param repositoryURLs A list of repository URLs to search for the 
-     * target artefact in
-     * @return A URL matching the provided GAV
-     * @throws MalformedURLException Thrown if an artefact cannot be found for
-     * the provided GAV
-     */
-    public Map.Entry<String, URL> getArtefactMapEntry(String GAV, List<URL> repositoryURLs) throws MalformedURLException {
-        final Map<String, String> GAVMap = splitGAV(GAV);
-        Map.Entry<String, URL> artefactMapEntry;
-        
-        final String relativeURLString = constructRelativeURLString(GAVMap);
-        final URL artefactURL = findArtefactURL(repositoryURLs, relativeURLString);
-        artefactMapEntry = new AbstractMap.SimpleImmutableEntry<>(GAVMap.get("artefactId"), artefactURL);
-        
-        return artefactMapEntry;
+
+    private static final String defaultMavenRepository = "https://repo.maven.apache.org/maven2/";
+
+    // Suppress default constructor
+    private GAVConvertor() {
+        throw new AssertionError();
     }
     
     /**
-     * Returns a valid URL for a provided GAV (GroupId, ArtifactId, Version).
+     * Returns a valid URI for a provided GAV (GroupId, ArtifactId, Version).
      * @param GAV A comma separated list of the groupId, artifactId, 
      * and version number
-     * @param repositoryURLs A collection of repository URLs to search for the 
+     * @param repositoryURIs A collection of repository URIs to search for the
      * target artefact in
-     * @return A URL matching the provided GAV
-     * @throws MalformedURLException Thrown if an artefact cannot be found for
+     * @return A URI matching the provided GAV
+     * @throws URISyntaxException Thrown if an artefact cannot be found for
      * the provided GAV
      */
-    public Map.Entry<String, URL> getArtefactMapEntry(String GAV, Collection<String> repositoryURLs) throws MalformedURLException {
-        List<URL> repoURLs = new LinkedList<>();
-        for (String url: repositoryURLs) {
-            String convertedURL = TranslatedConfigView.expandValue(url);
-            if (!convertedURL.endsWith("/")) {
-              convertedURL += "/";
+    public static Map.Entry<String, URI> getArtefactMapEntry(String GAV, Collection<String> repositoryURIs) throws URISyntaxException {
+        final Map<String, String> GAVMap = splitGAV(GAV);
+
+        Set<String> repoURIs = new LinkedHashSet<>();
+
+        if (repositoryURIs != null) {
+            for (String uri : repositoryURIs) {
+                String convertedURI = TranslatedConfigView.expandValue(uri);
+                if (!convertedURI.endsWith("/")) {
+                    convertedURI += "/";
+                }
+                repoURIs.add(convertedURI);
             }
-            repoURLs.add(new URL(convertedURL));
         }
-        return getArtefactMapEntry(GAV, repoURLs);
+
+        repoURIs.add(defaultMavenRepository);
+
+        final String relativeURIString = constructRelativeURIString(GAVMap);
+        final URI artefactURI = findArtefactURI(repoURIs, relativeURIString);
+
+        return new AbstractMap.SimpleImmutableEntry<>(GAVMap.get("artefactId"), artefactURI);
     }
     
     /**
@@ -119,7 +113,7 @@ public class GAVConvertor {
      * @return A Map containing the groupId, artefactId, and versionNumber of 
      * the provided GAV as Strings
      */
-    private Map<String, String> splitGAV(String GAV) throws MalformedURLException {
+    private static Map<String, String> splitGAV(String GAV) throws URISyntaxException {
         final String[] splitGAV = GAV.split("[,:]");
         final Map<String, String> GAVMap = new HashMap<>();
         try {
@@ -129,19 +123,19 @@ public class GAVConvertor {
         } catch (ArrayIndexOutOfBoundsException ex) {
             logger.log(Level.WARNING, "Error converting String \"{0}\" to GAV, make sure it takes the form of "
                     + "groupId,artifactId,version", GAV);
-            throw new MalformedURLException(ex.toString() + "\nGAV does not appear to be in the correct format");
+            throw new URISyntaxException("\nGAV does not appear to be in the correct format", ex.toString());
         }
         
         return GAVMap;
     }
     
     /**
-     * Constructs the relative URL of the provided GAV as a String.
+     * Constructs the relative URI of the provided GAV as a String.
      * @param GAVMap A map containing the target artefact's groupId, artifactId,
      * and version number.
-     * @return A String representing the relative URL of the provided GAV.
+     * @return A String representing the relative URI of the provided GAV.
      */
-    private String constructRelativeURLString(Map<String, String> GAVMap) {
+    private static String constructRelativeURIString(Map<String, String> GAVMap) {
         final String artefactFileName = GAVMap.get("artefactId") + "-" + GAVMap.get("versionNumber");
 
         return GAVMap.get("groupId") + "/" + GAVMap.get("artefactId") + "/"
@@ -149,77 +143,46 @@ public class GAVConvertor {
     }
     
     /**
-     * Searches for a valid URL for the target artefact in the list of
+     * Searches for a valid URI for the target artefact in the list of
      * provided repositories. 
-     * @param repositoryURLs A list of the repositories to search for
+     * @param repositoryURIs A list of the repositories to search for
      * the artefact in.
-     * @param relativeURLString A String representation of the relative
-     * artefact URL.
-     * @return A valid URL to download the target artefact from.
-     * @throws MalformedURLException Thrown if an artefact cannot be found for
+     * @param relativeURIString A String representation of the relative
+     * artefact URI.
+     * @return A valid URI to download the target artefact from.
+     * @throws URISyntaxException Thrown if an artefact cannot be found for
      * the provided GAV
      */
-    private URL findArtefactURL(List<URL> repositoryURLs, String relativeURLString) throws MalformedURLException {     
-        final String[] archiveTypes = new String[]{".jar", ".war", ".ear", ".rar"};
-        
-        boolean validURLFound = false;
-        
-        URL artefactURL = null;
-        
-        // For each URL...
-        for (URL repositoryURL : repositoryURLs) {    
-            // Append each archive type until a valid URL is found
+    private static URI findArtefactURI(Collection<String> repositoryURIs, String relativeURIString) throws URISyntaxException {
+        final String[] archiveTypes = new String[] {".jar", ".war", ".ear", ".rar"};
+
+        // For each URI...
+        for (String repositoryURI : repositoryURIs) {
+            URI artefactURI = null;
+            // Append each archive type until a valid URI is found
             for (String archiveType : archiveTypes) { 
                 try {
-                    artefactURL = new URL(repositoryURL, relativeURLString + archiveType);
+                    artefactURI = new URI(repositoryURI + relativeURIString + archiveType);
 
-                    if ("file".equalsIgnoreCase(artefactURL.getProtocol())) {
-                        if (Files.exists(Paths.get(artefactURL.toURI()))) {
-                            validURLFound = true;
-                        }
-                    } else {
-                        HttpURLConnection httpConnection = (HttpURLConnection) artefactURL.openConnection();
-
-                        String auth = artefactURL.getUserInfo();
-                        if (auth != null) {
-                            String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes());
-                            httpConnection.setRequestProperty("Authorization", "Basic " + encodedAuth);
-                        }
-
-                        httpConnection.setRequestMethod("HEAD");
-
-                        if (httpConnection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                            validURLFound = true;
-                        }
+                    if (URIUtils.exists(artefactURI)) {
+                        return artefactURI;
                     }
 
-                    if (validURLFound) {
-                        break;
-                    } else {
-                        logger.log(Level.FINE, "Artefact not found at URL: {0}", artefactURL.toString());
-                    }
-                } catch (MalformedURLException ex) {
-                    String[] errorParameters = new String[]{repositoryURL.toString(), relativeURLString, archiveType};
-                    logger.log(Level.WARNING, "Error creating URL from repository URL, {0}, relative URL, {1}, and archive"
-                            + " type, {2}", errorParameters);
+                    logger.log(Level.FINE, "Artefact not found at URI: {0}", artefactURI.toString());
                 } catch (URISyntaxException ex) {
-                    logger.log(Level.WARNING, "Error creating URI from artefact URL, {0}", artefactURL.toString());
+                    String[] errorParameters = new String[] {repositoryURI, relativeURIString, archiveType};
+                    logger.log(Level.WARNING, "Error creating URI from repository URI, {0}, relative URI, {1}, and archive"
+                            + " type, {2}", errorParameters);
+                } catch (MalformedURLException ex) {
+                    logger.log(Level.WARNING, "Error creating URL from artefact URI, {0}", artefactURI.toString());
                 } catch (ProtocolException ex) {
                     logger.log(Level.WARNING,"Error setting request method to \"HEAD\"");
                 } catch (IOException ex) {
                     logger.log(Level.WARNING, "Error getting HTTP connection response code");
                 }      
             }
-            
-            if (validURLFound) {
-                break;
-            }
         }
-        
-        if (!validURLFound) {
-            throw new MalformedURLException("No artefact can be found for relative URL: "+ relativeURLString);
-        }
-        
-        return artefactURL;
+
+        throw new URISyntaxException(relativeURIString, "No artefact can be found for relative URI");
     }
 }

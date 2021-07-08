@@ -423,6 +423,9 @@ final class RMIConnectorStarter extends ConnectorStarter {
         sslParams.setSsl3Enabled(sslConfig.getSsl3Enabled());
         sslParams.setSsl3TlsCiphers(sslConfig.getSsl3TlsCiphers());
         sslParams.setTlsEnabled(sslConfig.getTlsEnabled());
+        sslParams.setTls11Enabled(sslConfig.getTls11Enabled());
+        sslParams.setTls12Enabled(sslConfig.getTls12Enabled());
+        sslParams.setTls13Enabled(sslConfig.getTls13Enabled());
         sslParams.setTlsRollbackEnabled(sslConfig.getTlsRollbackEnabled());
         sslParams.setHstsEnabled(sslConfig.getHstsEnabled());
 

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.jdbc.deployer;
 
@@ -62,6 +62,7 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.naming.NamingException;
 
+import org.glassfish.config.support.TranslatedConfigView;
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import org.glassfish.javaee.services.CommonResourceProxy;
@@ -642,7 +643,7 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
         @Override
         public String getSteadyPoolSize() {
             int minPoolSize = desc.getMinPoolSize();
-            if (minPoolSize <= 0) {
+            if (minPoolSize < 0) {
                 _logger.log(Level.WARNING, "Value of steadyPoolSize Given, {0}, was outside the bounds"
                         + ", default value of 8 will be used - PLEASE UPDATE YOUR VALUE", minPoolSize);
                 minPoolSize = 8;
@@ -1060,7 +1061,7 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
             String value = null;
             value = (String) desc.getProperties().get(name);
             if (value != null) {
-                return value;
+                return TranslatedConfigView.expandValue(value);
             } else {
                 return defaultValue;
             }

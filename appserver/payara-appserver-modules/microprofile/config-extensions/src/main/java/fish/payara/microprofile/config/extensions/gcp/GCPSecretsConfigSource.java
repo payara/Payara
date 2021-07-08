@@ -79,16 +79,14 @@ import com.nimbusds.jose.crypto.RSASSASigner;
 import com.nimbusds.jose.util.Base64;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
-
-import org.glassfish.api.admin.ServerEnvironment;
-import org.jvnet.hk2.annotations.Service;
-
+import fish.payara.microprofile.config.extensions.oauth.OAuth2Client;
 import fish.payara.microprofile.config.extensions.gcp.model.Secret;
 import fish.payara.microprofile.config.extensions.gcp.model.SecretHolder;
 import fish.payara.microprofile.config.extensions.gcp.model.SecretsResponse;
 import fish.payara.nucleus.microprofile.config.source.extension.ConfiguredExtensionConfigSource;
 import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
-import fish.payara.security.oauth2.OAuth2Client;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.jvnet.hk2.annotations.Service;
 
 @Service(name = "gcp-secrets-config-source")
 public class GCPSecretsConfigSource extends ConfiguredExtensionConfigSource<GCPSecretsConfigSourceConfiguration> {
