@@ -147,9 +147,8 @@ public final class GAVConvertor {
      * @return A String representing the relative URI of the provided GAV.
      */
     private static String constructRelativeURIString(Map<String, String> GAVMap, Collection<String> repositoryURIs) {
-        String relativeURI = GAVMap.get("groupId") + "/" + GAVMap.get("artefactId") + "/"
-                + GAVMap.get("versionNumber");
-        String artefactFileName = GAVMap.get("artefactId") + "-" + GAVMap.get("versionNumber");
+        String relativeURI = String.format("%s/%s/%s", GAVMap.get("groupId"), GAVMap.get("artefactId"), GAVMap.get("versionNumber")); 
+        String artefactFileName = String.format("%s-%s", GAVMap.get("artefactId"),GAVMap.get("versionNumber"));
         
         //Check if version is not a snapshot
         if (!relativeURI.endsWith("SNAPSHOT")) {
