@@ -13,6 +13,6 @@
     <properties>
         <docker.noCache>false</docker.noCache>
         <docker.payara.repository>payara/basic</docker.payara.repository>
-        <docker.keyserver.url>hkp://ipv4.pool.sks-keyservers.net</docker.keyserver.url>
+        <docker.keyserver.url>keyserver.ubuntu.com</docker.keyserver.url>
     </properties>
 </project>
