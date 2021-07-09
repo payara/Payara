@@ -49,7 +49,7 @@
     <groupId>org.glassfish.admin</groupId>
     <artifactId>devtests</artifactId>
     <packaging>pom</packaging>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.04.1.2.191.4.1.2.191.26</version>
     <name>Admin Devtests</name>
     <scm>
         <connection>scm:svn:https://svn.dev.java.net/svn/glassfish-svn/trunk/v2/appserv-tests/devtests/admin/cli</connection>

@@ -47,7 +47,7 @@ holder.
   <parent>
     <groupId>fish.payara.server.internal.extras</groupId>
     <artifactId>glassfish-embedded-common</artifactId>
-    <version>4.1-SNAPSHOT</version>
+    <version>4.14.1.2.191.4.1.2.191.26</version>
   </parent>
 
     <artifactId>osgi-modules-uninstaller</artifactId>
@@ -63,7 +63,7 @@ holder.
         <dependency>
             <groupId>fish.payara.server.internal.core</groupId>
             <artifactId>glassfish</artifactId>
-            <version>4.1-SNAPSHOT</version>
+            <version>4.14.1.2.191.4.1.2.191.26</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>

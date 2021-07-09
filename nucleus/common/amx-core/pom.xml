@@ -45,7 +45,7 @@
     <parent>
         <groupId>fish.payara.server.internal.common</groupId>
         <artifactId>nucleus-common</artifactId>
-        <version>5.2021.5-SNAPSHOT</version>
+        <version>5.2021.54.1.2.191.4.1.2.191.26</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>amx-core</artifactId>

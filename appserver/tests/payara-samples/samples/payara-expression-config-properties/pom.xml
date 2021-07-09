@@ -46,7 +46,7 @@
     <parent>
         <artifactId>payara-samples-profiled-tests</artifactId>
         <groupId>fish.payara.samples</groupId>
-        <version>5.2021.5-SNAPSHOT</version>
+        <version>5.2021.54.1.2.191.4.1.2.191.26</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 

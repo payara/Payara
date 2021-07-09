@@ -46,7 +46,7 @@
     <parent>
         <groupId>org.glassfish.admin.runtime.rtapt</groupId>
         <artifactId>rtapt</artifactId>
-        <version>1.1-SNAPSHOT</version>
+        <version>1.14.1.2.191.4.1.2.191.26</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>apt</artifactId>
@@ -57,7 +57,7 @@
         <dependency>
           <groupId>org.glassfish.admin.runtime.rtapt</groupId>
           <artifactId>annotations</artifactId>
-          <version>1.1-SNAPSHOT</version>
+          <version>1.14.1.2.191.4.1.2.191.26</version>
        </dependency>
      </dependencies>
 </project>

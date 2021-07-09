@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-parent</artifactId>
-        <version>5.2021.5-SNAPSHOT</version>
+        <version>5.2021.54.1.2.191.4.1.2.191.26</version>
     </parent>
     <groupId>fish.payara.server.internal.deployment</groupId>
     <artifactId>deployment</artifactId>
