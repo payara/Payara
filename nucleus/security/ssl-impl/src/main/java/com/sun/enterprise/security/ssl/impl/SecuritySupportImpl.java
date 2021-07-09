@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]"
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]"
 package com.sun.enterprise.security.ssl.impl;
 
 import static java.lang.System.getProperty;
@@ -49,6 +49,7 @@ import static java.util.logging.Level.WARNING;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.AccessControlException;
 import java.security.AccessController;
@@ -63,13 +64,7 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Map;
-import java.util.PropertyPermission;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
@@ -187,8 +182,7 @@ public class SecuritySupportImpl extends SecuritySupport {
     @Override
     public String[] getTokenNames() {
         List<String> tokenNamesList = tokenNames.get(DEFAULT_MAP_KEY);
-        
-        return tokenNamesList.toArray(new String[tokenNamesList.size()]);
+        return tokenNamesList.toArray(new String[keyStores.get(DEFAULT_MAP_KEY).size()]);
     }
     
     /**
@@ -245,7 +239,7 @@ public class SecuritySupportImpl extends SecuritySupport {
         for (int i = 0; i < keyStores.length; i++) {
             checkCertificateDates(keyStores[i]);
             
-            KeyManager[] keyManagersPerStore = getKeyManagerFactory(keyStores[i], keyStorePasswords.get(DEFAULT_MAP_KEY).get(i), algorithm).getKeyManagers();
+            KeyManager[] keyManagersPerStore = getKeyManagerFactory(keyStores[i], keyStorePasswords.get(DEFAULT_MAP_KEY).get(0), algorithm).getKeyManagers();
             if (keyManagersPerStore != null) {
                 keyManagers.addAll(asList(keyManagersPerStore));
             }
@@ -392,12 +386,14 @@ public class SecuritySupportImpl extends SecuritySupport {
      * This method will get the keystore and trust store files and optionally the passwords from system properties, 
      * and then load both the keystore and truststore and add them into their corresponding list.
      * 
-     * @param keyStorePass the password for the keystore, may be null, may be ignored.
-     * @param trustStorePass the password for the truststore, may be null, may be ignored.
+     * @param keyStorePassIn the password for the keystore, may be null, may be ignored.
+     * @param trustStorePassIn the password for the truststore, may be null, may be ignored.
      */
     private void initStores(char[] keyStorePassIn, char[] trustStorePassIn) {
         String keyStoreFileName = System.getProperty(keyStoreProp);
+        String additionalKeyStoreFileName = System.getProperty(additionalKeyStoreProp);
         String trustStoreFileName = System.getProperty(trustStoreProp);
+        String additionalTrustStoreFileName = System.getProperty(additionalTrustStoreProp);
         
         // Initially consider the passwords that are passed-in
         char[] keyStorePass = keyStorePassIn;
@@ -408,8 +404,18 @@ public class SecuritySupportImpl extends SecuritySupport {
             keyStorePass = getKeyStorePass(keyStorePass);
             trustStorePass = getTrustStorePass(trustStorePass);
         }
-        
-        initStores(keyStoreFileName, keyStorePass, trustStoreFileName, trustStorePass);
+
+        //Split additional stores by delimiter
+        String[] additionalKeyStoreFileNames = null;
+        String[] additionalTrustStoreFileNames = null;
+        if(additionalKeyStoreFileName != null){
+            additionalKeyStoreFileNames = additionalKeyStoreFileName.split(":");
+        }
+        if(additionalTrustStoreFileName != null){
+            additionalTrustStoreFileNames = additionalTrustStoreFileName.split(":");
+        }
+
+        initStores(keyStoreFileName, keyStorePass, trustStoreFileName, trustStorePass, additionalKeyStoreFileNames, additionalTrustStoreFileNames);
     }
     
     /**
@@ -419,8 +425,10 @@ public class SecuritySupportImpl extends SecuritySupport {
      * @param keyStorePass
      * @param trustStoreFileName
      * @param trustStorePass
+     * @param additionalKeyStoreFileNames Array of additional keystores from JVM property: fish.payara.ssl.additionalKeyStores
+     * @param additionalTrustStoreFileNames Array of additional truststores from JVM property: fish.payara.ssl.additionalTrustStores
      */
-    private static void initStores(String keyStoreFileName, char[] keyStorePass, String trustStoreFileName, char[] trustStorePass) {
+    private static void initStores(String keyStoreFileName, char[] keyStorePass, String trustStoreFileName, char[] trustStorePass, String[] additionalKeyStoreFileNames, String[] additionalTrustStoreFileNames) {
         try {
             
             // Create the initial lists to store the various data items
@@ -436,6 +444,29 @@ public class SecuritySupportImpl extends SecuritySupport {
             trustStoresList.add(loadStore(getProperty(TRUSTSTORE_TYPE_PROP, KeyStore.getDefaultType()), null, trustStoreFileName, trustStorePass));
             keyStorePasswordsList.add(copyOf(keyStorePass, keyStorePass.length));
             tokenNamesList.add(null); // This is slightly weird, but the original code did this too.
+
+            // Load in all additional keystores
+            try{
+                if(additionalKeyStoreFileNames != null){
+                    for(String keyStoreName : additionalKeyStoreFileNames){
+                        keyStoresList.add(loadStore(getProperty(KEYSTORE_TYPE_PROP, KeyStore.getDefaultType()), null, keyStoreName, keyStorePass));
+                    }
+                } else {
+                    _logger.fine("No additional keystores set");
+                }
+
+                if(additionalTrustStoreFileNames != null){
+                    for(String trustStoreName : additionalTrustStoreFileNames){
+                        trustStoresList.add(loadStore(getProperty(KEYSTORE_TYPE_PROP, KeyStore.getDefaultType()), null, trustStoreName, keyStorePass));
+                    }
+                } else {
+                    _logger.fine("No additional truststores set");
+                }
+            }
+            catch (FileNotFoundException fnfe){
+                _logger.warning("Additional keystore or truststore file not found "+fnfe.getMessage());
+            }
+
             
             // Atomically put each list in the concurrent maps holding that list
             // Note: this can either be the first insert for when this service is first initialized, or can
@@ -592,5 +623,4 @@ public class SecuritySupportImpl extends SecuritySupport {
         
         return keyManagerFactory;
     }
-    
 }
