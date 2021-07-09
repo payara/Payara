@@ -39,9 +39,11 @@
  */
 package fish.payara.security.oidc.test;
 
+import com.gargoylesoftware.htmlunit.TextPage;
 import com.gargoylesoftware.htmlunit.WebClient;
 import fish.payara.samples.NotMicroCompatible;
 import fish.payara.samples.PayaraArquillianTestRunner;
+import fish.payara.security.oidc.client.eltests.SecuredPageEL;
 import java.io.IOException;
 import java.net.URL;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -49,6 +51,8 @@ import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import static org.junit.Assert.assertEquals;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -64,6 +68,13 @@ public class OpenIdELTest {
     @ArquillianResource
     private URL base;
 
+    private WebClient webClient;
+
+    @Before
+    public void init() {
+        webClient = new WebClient();
+    }
+
     @Deployment(name = "openid-server")
     public static WebArchive createServerDeployment() {
         return OpenIdTestUtil.createServerDeployment();
@@ -71,13 +82,14 @@ public class OpenIdELTest {
 
     @Deployment(name = "openid-client")
     public static WebArchive createClientDeployment() {
-        return OpenIdTestUtil.createClientDeploymentForELTest();
+        WebArchive war = OpenIdTestUtil.createClientDeployment()
+                .addPackage(SecuredPageEL.class.getPackage());
+        return war;
     }
 
     @Test
     @RunAsClient
     public void testOpenIdConnect() throws IOException {
-        WebClient webClient = new WebClient();
         OpenIdTestUtil.testOpenIdConnect(webClient, base);
     }
 
