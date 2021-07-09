@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2018-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -54,7 +54,6 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -84,7 +83,7 @@ public class InvalidRedirectURITest {
     public static WebArchive createClientDeployment() {
         StringAsset mpConfig = new StringAsset(OPENID_MP_REDIRECT_URI + "=invalid_callback");
         return OpenIdTestUtil
-                .createClientDeployment()
+                .createClientDefaultDeployment()
                 .addAsWebInfResource(mpConfig, "classes/META-INF/microprofile-config.properties");
     }
 
