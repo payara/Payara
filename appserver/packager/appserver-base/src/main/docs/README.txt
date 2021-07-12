@@ -50,7 +50,7 @@ To stop Payara Server, just issue the following command:
 Open the following in your browser: https://docs.payara.fish/. It contains useful information such as the details about the Payara Project, links to the Payara Server Documentation, etc.
 
 
-Make sure to also check the Payara Server 5.2021.6 Release Notes as they contain important information: https://docs.payara.fish/docs/5.2021.6/release-notes/release-notes-2020-7.html
+Make sure to also check the Payara Server 5.2021.6 Release Notes as they contain important information: https://docs.payara.fish/docs/5.2021.6/release-notes/release-notes-2021-6.html
 
 
 5. Documentation
