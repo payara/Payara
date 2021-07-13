@@ -380,7 +380,8 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                 loggingPropertiesFile = new File(env.getConfigDirPath(), ServerEnvironmentImpl.kLoggingPropertiesFileName);
             }
 
-            reconfigureLoggers();
+            // Apply logging.properties to the logging system (JDK level parts).
+            logManager.readConfiguration();
 
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, LogFacade.ERROR_READING_CONF_FILE, e);
@@ -392,9 +393,9 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
 
         }
 
-        // force the ConsoleHandler to use GF formatter
-        String formatterClassName = null;
+        String formatterClassName;
         try {
+            // force the ConsoleHandler to use GF formatter
             Map<String, String> props = getLoggingProperties();
             formatterClassName = props.get(CONSOLEHANDLER_FORMATTER_PROPERTY);
             setConsoleHandlerLogFormat(formatterClassName, props);
@@ -409,6 +410,9 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                     addHandler(handler);
                 }
             }
+
+            // All handlers are added, now we can get reference to GFFileHandler.
+            findGFFileHandler();
 
             // add the filter if there is one
             String filterClassName = props.get(LoggingXMLNames.xmltoPropsMap.get("log-filter"));
@@ -475,12 +479,12 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
 
     private void reconfigureLoggers() throws IOException {
         logManager.readConfiguration();
+    }
 
-        // We need to 'refresh' the reference to the GFFileHandler
+    private void findGFFileHandler() {
         gfFileHandler = (GFFileHandler) Arrays.stream(logManager.getLogger("").getHandlers())
                 .filter(h -> h.getClass().equals(GFFileHandler.class))
                 .findAny().orElse(null);
-
     }
 
     public void listenToChangesOnloggingPropsFile(File loggingPropertiesFile){
