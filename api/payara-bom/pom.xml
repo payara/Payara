@@ -114,12 +114,6 @@
             </dependency>
 
             <dependency>
-                <groupId>fish.payara.security.connectors</groupId>
-                <artifactId>security-connectors-api</artifactId>
-                <version>${payara.security-connectors.version}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>fish.payara.server.appclient</groupId>
                 <artifactId>payara-client</artifactId>
                 <version>${payara.version}</version>
@@ -212,13 +206,6 @@
                 <groupId>com.h2database</groupId>
                 <artifactId>h2</artifactId>
                 <version>${h2db.version}</version>
-            </dependency>
-
-            <!-- Security connectors for standalone use -->
-            <dependency>
-                <groupId>fish.payara.security.connectors</groupId>
-                <artifactId>openid-standalone</artifactId>
-                <version>${payara.security-connectors.version}</version>
             </dependency>
 
             <!-- Arquillian containers (test scope)-->

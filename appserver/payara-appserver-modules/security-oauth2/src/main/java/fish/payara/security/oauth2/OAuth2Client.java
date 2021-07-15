@@ -1,4 +1,4 @@
-package fish.payara.microprofile.config.extensions.oauth;
+package fish.payara.security.oauth2;
 
 import java.io.Serializable;
 import java.time.Duration;
