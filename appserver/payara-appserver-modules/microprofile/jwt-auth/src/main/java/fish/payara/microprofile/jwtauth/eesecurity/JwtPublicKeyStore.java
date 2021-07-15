@@ -39,10 +39,16 @@
  */
 package fish.payara.microprofile.jwtauth.eesecurity;
 
-import static java.lang.Thread.currentThread;
-import static org.eclipse.microprofile.jwt.config.Names.VERIFIER_PUBLIC_KEY;
-import static org.eclipse.microprofile.jwt.config.Names.VERIFIER_PUBLIC_KEY_LOCATION;
+import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.ConfigProvider;
+import org.glassfish.grizzly.http.util.ContentType;
 
+import javax.enterprise.inject.spi.DeploymentException;
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+import javax.json.JsonValue;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -55,14 +61,17 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
+import java.security.AlgorithmParameters;
 import java.security.KeyFactory;
 import java.security.PublicKey;
+import java.security.spec.ECGenParameterSpec;
+import java.security.spec.ECParameterSpec;
+import java.security.spec.ECPoint;
+import java.security.spec.ECPublicKeySpec;
 import java.security.spec.RSAPublicKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 import java.util.Base64;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -70,21 +79,15 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.enterprise.inject.spi.DeploymentException;
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
-import javax.json.JsonValue;
-
-import org.eclipse.microprofile.config.Config;
-import org.eclipse.microprofile.config.ConfigProvider;
-import org.glassfish.grizzly.http.util.ContentType;
+import static java.lang.Thread.currentThread;
+import static org.eclipse.microprofile.jwt.config.Names.VERIFIER_PUBLIC_KEY;
+import static org.eclipse.microprofile.jwt.config.Names.VERIFIER_PUBLIC_KEY_LOCATION;
 
 class JwtPublicKeyStore {
     
     private static final Logger LOGGER = Logger.getLogger(JwtPublicKeyStore.class.getName());
     private static final String RSA_ALGORITHM = "RSA";
+    private static final String EC_ALGORITHM = "EC";
     
         
     private final Config config;
@@ -248,17 +251,46 @@ class JwtPublicKeyStore {
         JsonArray keys = jwks.getJsonArray("keys");
         JsonObject jwk = keys != null ? findJwk(keys, keyID) : jwks;
 
-        // the public exponent
-        byte[] exponentBytes = Base64.getUrlDecoder().decode(jwk.getString("e"));
-        BigInteger exponent = new BigInteger(1, exponentBytes);
+        // Check if an RSA or ECDSA key needs to be created
+        String kty = jwk.getString("kty");
+        if (kty == null) {
+            throw new DeploymentException("Could not determine key type - kty field not present");
+        }
+        if (kty.equals("RSA")) {
+            // the public exponent
+            byte[] exponentBytes = Base64.getUrlDecoder().decode(jwk.getString("e"));
+            BigInteger exponent = new BigInteger(1, exponentBytes);
 
-        // the modulus
-        byte[] modulusBytes = Base64.getUrlDecoder().decode(jwk.getString("n"));
-        BigInteger modulus = new BigInteger(1, modulusBytes);
+            // the modulus
+            byte[] modulusBytes = Base64.getUrlDecoder().decode(jwk.getString("n"));
+            BigInteger modulus = new BigInteger(1, modulusBytes);
 
-        RSAPublicKeySpec publicKeySpec = new RSAPublicKeySpec(modulus, exponent);
-        return KeyFactory.getInstance(RSA_ALGORITHM)
-                .generatePublic(publicKeySpec);
+            RSAPublicKeySpec publicKeySpec = new RSAPublicKeySpec(modulus, exponent);
+            return KeyFactory.getInstance(RSA_ALGORITHM)
+                    .generatePublic(publicKeySpec);
+        } else if (kty.equals("EC")) {
+            // Get x and y to create EC point
+            byte[] xBytes = Base64.getUrlDecoder().decode(jwk.getString("x"));
+            BigInteger x = new BigInteger(1, xBytes);
+            byte[] yBytes = Base64.getUrlDecoder().decode(jwk.getString("y"));
+            BigInteger y = new BigInteger(1, yBytes);
+            ECPoint ecPoint = new ECPoint(x, y);
+
+            // Get params
+            AlgorithmParameters parameters = AlgorithmParameters.getInstance(EC_ALGORITHM);
+            String crv = jwk.getString("crv");
+
+            if (!crv.equals("P-256")) {
+                throw new DeploymentException("Could not get EC key from JWKS: crv does not equal P-256");
+            }
+            parameters.init(new ECGenParameterSpec("secp256r1"));
+
+            ECPublicKeySpec publicKeySpec = new ECPublicKeySpec(ecPoint, parameters.getParameterSpec(ECParameterSpec.class));
+            return KeyFactory.getInstance(EC_ALGORITHM)
+                    .generatePublic(publicKeySpec);
+        } else {
+            throw new DeploymentException("Could not determine key type - JWKS kty field does not equal RSA or EC");
+        }
     }
 
     private JsonObject parseJwks(String jwksValue) throws Exception {
