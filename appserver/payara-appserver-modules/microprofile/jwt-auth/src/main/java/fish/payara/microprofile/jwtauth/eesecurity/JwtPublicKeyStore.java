@@ -68,6 +68,7 @@ import java.security.spec.ECGenParameterSpec;
 import java.security.spec.ECParameterSpec;
 import java.security.spec.ECPoint;
 import java.security.spec.ECPublicKeySpec;
+import java.security.spec.InvalidKeySpecException;
 import java.security.spec.RSAPublicKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.time.Duration;
@@ -241,9 +242,15 @@ class JwtPublicKeyStore {
 
         byte[] keyBytes = Base64.getDecoder().decode(key);
         X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(keyBytes);
-        return KeyFactory.getInstance(RSA_ALGORITHM)
-                .generatePublic(publicKeySpec);
-
+        // Is there a better way to determine which key spec to use here?
+        try {
+            return KeyFactory.getInstance(RSA_ALGORITHM).generatePublic(publicKeySpec);
+        } catch (InvalidKeySpecException invalidKeySpecException) {
+            // Try ECDSA
+            LOGGER.finer("Caught InvalidKeySpecException creating public key from PEM using RSA algorithm, " +
+                    "attempting again using ECDSA");
+            return KeyFactory.getInstance(EC_ALGORITHM).generatePublic(publicKeySpec);
+        }
     }
 
     private PublicKey createPublicKeyFromJWKS(String jwksValue, String keyID) throws Exception {
