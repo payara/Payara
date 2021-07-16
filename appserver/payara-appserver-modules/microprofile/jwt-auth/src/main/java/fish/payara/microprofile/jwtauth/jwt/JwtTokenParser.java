@@ -41,6 +41,7 @@ package fish.payara.microprofile.jwtauth.jwt;
 
 import com.nimbusds.jose.JOSEObjectType;
 import com.nimbusds.jose.JWSHeader;
+import com.nimbusds.jose.crypto.ECDSAVerifier;
 import com.nimbusds.jose.crypto.RSASSAVerifier;
 import com.nimbusds.jwt.SignedJWT;
 import org.eclipse.microprofile.jwt.Claims;
@@ -48,6 +49,7 @@ import org.eclipse.microprofile.jwt.Claims;
 import javax.json.*;
 import java.io.StringReader;
 import java.security.PublicKey;
+import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.HashMap;
 import java.util.List;
@@ -55,6 +57,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 
+import static com.nimbusds.jose.JWSAlgorithm.ES256;
 import static com.nimbusds.jose.JWSAlgorithm.RS256;
 import static java.util.Arrays.asList;
 import static javax.json.Json.createObjectBuilder;
@@ -106,8 +109,9 @@ public class JwtTokenParser {
         }
         
         // 1.0 4.1 alg + MP-JWT 1.0 6.1 1
-        if (!signedJWT.getHeader().getAlgorithm().equals(RS256)) {
-            throw new IllegalStateException("Not RS256");
+        if (!signedJWT.getHeader().getAlgorithm().equals(RS256)
+                && !signedJWT.getHeader().getAlgorithm().equals(ES256)) {
+            throw new IllegalStateException("Not RS256 or ES256");
         }
 
         try (JsonReader reader = Json.createReader(new StringReader(signedJWT.getPayload().toString()))) {
@@ -137,8 +141,14 @@ public class JwtTokenParser {
             }
 
             // MP-JWT 1.0 6.1 2
-            if (!signedJWT.verify(new RSASSAVerifier((RSAPublicKey) publicKey))) {
-                throw new IllegalStateException("Signature invalid");
+            if (signedJWT.getHeader().getAlgorithm().equals(RS256)) {
+                if (!signedJWT.verify(new RSASSAVerifier((RSAPublicKey) publicKey))) {
+                    throw new IllegalStateException("Signature invalid");
+                }
+            } else {
+                if (!signedJWT.verify(new ECDSAVerifier((ECPublicKey) publicKey))) {
+                    throw new IllegalStateException("Signature invalid");
+                }
             }
 
             rawClaims.put(
