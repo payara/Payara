@@ -85,13 +85,30 @@ public class JWTAuthenticationMechanism implements HttpAuthenticationMechanism {
     }
 
     private SignedJWTCredential getCredential(HttpServletRequest request) {
-
         String authorizationHeader = request.getHeader("Authorization");
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            String token = authorizationHeader.substring("Bearer ".length());
-            if (token != null && !token.isEmpty()) {
-                return new SignedJWTCredential(token);
+            SignedJWTCredential signedJWTCredential = createSignedJWTCredential(
+                    authorizationHeader.substring("Bearer ".length()));
+            if (signedJWTCredential != null) {
+                return signedJWTCredential;
             }
+        }
+
+        String cookieHeader = request.getHeader("Cookie");
+        if (cookieHeader != null && cookieHeader.startsWith("$Version=") && cookieHeader.contains(";Bearer=")) {
+            SignedJWTCredential signedJWTCredential = createSignedJWTCredential(
+                    cookieHeader.substring(cookieHeader.indexOf(";Bearer=") + ";Bearer=".length()));
+            if (signedJWTCredential != null) {
+                return signedJWTCredential;
+            }
+        }
+
+        return null;
+    }
+
+    private SignedJWTCredential createSignedJWTCredential(String token) {
+        if (token != null && !token.isEmpty()) {
+            return new SignedJWTCredential(token);
         }
 
         return null;
