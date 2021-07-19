@@ -52,6 +52,8 @@ import javax.enterprise.inject.spi.CDI;
 import javax.inject.Inject;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.deployment.versioning.VersioningUtils;
+import org.glassfish.grizzly.utils.Holder;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
