@@ -120,7 +120,7 @@ public final class CertificateRealm extends BaseRealm {
     /** Descriptive string of the authentication type of this realm. */
     public static final String AUTH_TYPE = "certificate";
 
-    private boolean doValidation;
+    private boolean doValidation = true;
     private final Map<ClassLoader,
             // ServiceLoader keeps a reference to ClassLoader, so it has
             // to be explicitly weak as well
@@ -145,7 +145,7 @@ public final class CertificateRealm extends BaseRealm {
         setProperty(DN_PARTS_USED_FOR_GROUPS, dnPartsForGroup);
 
         String validationCheckProperty = props.getProperty("validation-check");
-        doValidation = validationCheckProperty != null && Boolean.parseBoolean(validationCheckProperty);
+        doValidation = validationCheckProperty == null || Boolean.parseBoolean(validationCheckProperty);
     }
 
     /**
