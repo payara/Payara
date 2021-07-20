@@ -3,6 +3,6 @@ contact_links:
   - name: Payara Community Forum
     url: http://www.payara.org/forum
     about: Please ask and answer questions about the Payara Platform here.
-  - name: Security Issue Report
-    url: mailto:security@payara.fish
-    about: Report security vulnerabilities and flaws
+  - name: Security Issues
+    url: https://docs.payara.fish/community/docs/security/security.html#reporting-security-issues
+    about: Find out how to report security flaws and vulnerabilities here.
