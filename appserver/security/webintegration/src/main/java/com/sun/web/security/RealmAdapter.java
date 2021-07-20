@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
 package com.sun.web.security;
 
 import com.sun.enterprise.deployment.Application;
@@ -175,7 +175,6 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
     private final static SecurityConstraint[] emptyConstraints = new SecurityConstraint[] {};
 
     private String moduleID;
-    private String componentId;
 
     @Inject
     private ServerContext serverContext;
@@ -256,11 +255,6 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
         moduleID = webDescriptor.getModuleID();
         jaspicRealm = new JaspicRealm(realmName, isSystemApp, webDescriptor, requestTracing);
         cNonceValidator = new CNonceValidator(webDescriptor, appCNonceCacheMapProvider, cNonceCacheFactoryProvider);
-    }
-
-    @Override
-    public void initializeRealm(String componentId) {
-        this.componentId = componentId;
     }
 
     /**
@@ -884,7 +878,7 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
         try {
             if (certs != null) {
                 // Certificate credential used to authenticate
-                WebAndEjbToJaasBridge.doX500Login(createSubjectWithCerts(certs), moduleID, componentId);
+                WebAndEjbToJaasBridge.doX500Login(createSubjectWithCerts(certs), moduleID);
             } else if (digestParams != null) {
                 // Digest credential used to authenticate
                 WebAndEjbToJaasBridge.login(new DigestCredentials(realmName, username, digestParams));
