@@ -92,7 +92,7 @@ import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
  *
  * @author Gaurav Gupta
  */
-@Path("/oidc-provider{subject:/subject-[^/]+|}")
+@Path("/oidc-provider")
 public class OidcProvider {
 
     private static final String AUTHORIZATION_HEADER = "Authorization";
@@ -102,29 +102,7 @@ public class OidcProvider {
     private static final String ACCESS_TOKEN_VALUE = "sample_access_token";
     public static final String CLIENT_ID_VALUE = "sample_client_id";
     public static final String CLIENT_SECRET_VALUE = "sample_client_secret";
-
-    public static final String USER_GROUPS_LIST_KEY = "test.openid.userGroupsList";
-    public static final String ROLES_IN_USERINFO_KEY = "fish.payara.test.openid.rolesInUserInfoEndpoint";
-    public static final String EXPIRES_IN_SECONDS_KEY = "fish.payara.test.openid.expiresInSeconds";
-
-    @Inject
-    @ConfigProperty(name = ROLES_IN_USERINFO_KEY, defaultValue = "false")
-    boolean rolesInUserInfoEndpoint;
-
-    @Inject @ConfigProperty(name = USER_GROUPS_LIST_KEY, defaultValue = "all")
-    List<String> userGroups;
-
-    @Inject @ConfigProperty(name = EXPIRES_IN_SECONDS_KEY, defaultValue = "3600")
-    Integer expiresInSeconds;
-
-    @PathParam("subject")
-    String subject;
-
-    @GET
-    @Produces(MediaType.TEXT_PLAIN)
-    public String get() {
-        return getSubject();
-    }
+    private static final String SUBJECT_VALUE = "sample_subject";
 
     private static String nonce;
 
@@ -139,10 +117,6 @@ public class OidcProvider {
         try (InputStream inputStream = classLoader.getResourceAsStream("openid-configuration.json")) {
             result = new BufferedReader(new InputStreamReader(inputStream))
                     .lines()
-                    .map(line -> {
-                        String tenant = subject;
-                        return line.replaceAll("\\$\\{tenant\\}", tenant);  // replace ${tenant} with empty value or subject
-                    })
                     .collect(joining("\n"));
         } catch (IOException ex) {
             LOGGER.log(SEVERE, null, ex);
@@ -205,25 +179,21 @@ public class OidcProvider {
         } else {
 
             Date now = new Date();
-            JWTClaimsSet.Builder jstClaimsBuilder = new JWTClaimsSet.Builder()
-                    .issuer("http://localhost:8080/openid-server/webresources/oidc-provider" + subject)
-                    .subject(getSubject())
+            JWTClaimsSet jwtClaims = new JWTClaimsSet.Builder()
+                    .issuer("http://localhost:8080/openid-server/webresources/oidc-provider")
+                    .subject(SUBJECT_VALUE)
                     .audience(asList(CLIENT_ID_VALUE))
                     .expirationTime(new Date(now.getTime() + 1000 * 60 * 10))
                     .notBeforeTime(now)
                     .issueTime(now)
                     .jwtID(UUID.randomUUID().toString())
-                    .claim(NONCE, nonce);
-            if (!rolesInUserInfoEndpoint) {
-                jstClaimsBuilder.claim(OpenIdConstant.GROUPS, userGroups);
-            }
-            JWTClaimsSet jwtClaims = jstClaimsBuilder.build();
+                    .claim(NONCE, nonce)
 
+                    .build();
             PlainJWT idToken = new PlainJWT(jwtClaims);
             jsonBuilder.add(IDENTITY_TOKEN, idToken.serialize());
             jsonBuilder.add(ACCESS_TOKEN, ACCESS_TOKEN_VALUE);
             jsonBuilder.add(TOKEN_TYPE, BEARER_TYPE);
-            jsonBuilder.add(EXPIRES_IN, 1000);
             builder = Response.ok();
         }
 
@@ -240,7 +210,7 @@ public class OidcProvider {
         JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
         if (ACCESS_TOKEN_VALUE.equals(accessToken)) {
             builder = Response.ok();
-            jsonBuilder.add(SUBJECT_IDENTIFIER, getSubject())
+            jsonBuilder.add(SUBJECT_IDENTIFIER, SUBJECT_VALUE)
                     .add("name", "Gaurav")
                     .add("family_name", "Gupta   ")
                     .add("given_name", "Gaurav Gupta")
@@ -250,28 +220,11 @@ public class OidcProvider {
                     .add("email_verified", true)
                     .add("gender", "male")
                     .add("locale", "en");
-            if (rolesInUserInfoEndpoint) {
-                JsonArrayBuilder groupsBuilder = Json.createArrayBuilder();
-                userGroups.forEach(g -> {
-                    groupsBuilder.add(g);
-                });
-                jsonBuilder.add(OpenIdConstant.GROUPS, groupsBuilder);
-            }
         } else {
             jsonBuilder.add(ERROR_PARAM, "invalid_access_token");
             builder = Response.serverError();
         }
         return builder.entity(jsonBuilder.build().toString()).build();
-    }
-
-    private String getSubject() {
-        String subjectPrefix = "/subject-";
-        return subject != null && subject.startsWith(subjectPrefix) ? subject.substring(subjectPrefix.length()) : "sample_subject";
-    }
-
-    private String getTenant() {
-        String subjectPrefix = "/subject-";
-        return subject != null && subject.startsWith(subjectPrefix) ? subject.substring(subjectPrefix.length()) : "";
     }
 
 }
