@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
@@ -90,7 +90,7 @@
         <jaxr.version>JAXR_RA_20091012</jaxr.version>
         <rest.monitoring.version>1.0.0-Beta</rest.monitoring.version>
 
-        <nimbus-jose-jwt.version>9.8.1</nimbus-jose-jwt.version>
+        <nimbus-jose-jwt.version>8.20</nimbus-jose-jwt.version>
         <accessors-smart.version>1.2.payara-p2</accessors-smart.version>
         <json-smart.version>2.3</json-smart.version>
         <reactor-core.version>3.4.0</reactor-core.version>
@@ -688,17 +688,6 @@
                 <groupId>fish.payara.monitoring-console</groupId>
                 <artifactId>monitoring-console-api</artifactId>
                 <version>${monitoring-console-api.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>fish.payara.security.connectors</groupId>
-                <artifactId>security-connector-oidc-client</artifactId>
-                <version>${payara.security-connectors.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>fish.payara.security.connectors</groupId>
-                <artifactId>security-connector-oauth2-client</artifactId>
-                <version>${payara.security-connectors.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
