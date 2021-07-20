@@ -152,7 +152,7 @@ public class JaspicToJaasBridge {
             }
 
             // Sets security context
-            certRealm.authenticate(validSubject, x500Principal, null);
+            certRealm.authenticate(validSubject, x500Principal);
         } catch (Exception ex) {
             LOGGER.log(INFO, auditAtnRefusedError, callerPrincipalName);
 
