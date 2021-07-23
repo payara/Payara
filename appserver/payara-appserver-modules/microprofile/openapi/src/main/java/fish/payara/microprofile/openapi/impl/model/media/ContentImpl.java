@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -80,7 +80,10 @@ public class ContentImpl extends LinkedHashMap<String, MediaType> implements Con
         mediaType.setExample(annotation.getValue("example", String.class));
         AnnotationModel schemaAnnotation = annotation.getValue("schema", AnnotationModel.class);
         if (schemaAnnotation != null) {
-            mediaType.setSchema(SchemaImpl.createInstance(schemaAnnotation, context));
+            Boolean hidden = schemaAnnotation.getValue("hidden", Boolean.class);
+            if (hidden == null || !hidden) {
+                mediaType.setSchema(SchemaImpl.createInstance(schemaAnnotation, context));
+            }
         }
         extractAnnotations(annotation, context, "encoding", "name", EncodingImpl::createInstance, mediaType::addEncoding);
         return from;

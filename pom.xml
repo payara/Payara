@@ -151,7 +151,7 @@
         <hk2.version>2.6.1.payara-p6</hk2.version>
         <osgi-resource-locator.version>1.0.3</osgi-resource-locator.version>
         <stax-api.version>1.0-2</stax-api.version>
-        <jackson.version>2.10.2</jackson.version>
+        <jackson.version>2.12.4</jackson.version>
         <snakeyaml.version>1.28</snakeyaml.version>
         <hazelcast.version>4.2</hazelcast.version>
         <hazelcast.kubernetes.version>2.2</hazelcast.kubernetes.version>
