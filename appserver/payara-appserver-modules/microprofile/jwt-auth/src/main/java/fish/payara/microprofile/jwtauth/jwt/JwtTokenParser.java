@@ -40,28 +40,45 @@
 package fish.payara.microprofile.jwtauth.jwt;
 
 import com.nimbusds.jose.JOSEObjectType;
+import com.nimbusds.jose.JWEHeader;
 import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.crypto.ECDSAVerifier;
+import com.nimbusds.jose.crypto.RSADecrypter;
 import com.nimbusds.jose.crypto.RSASSAVerifier;
+import com.nimbusds.jwt.EncryptedJWT;
 import com.nimbusds.jwt.SignedJWT;
 import org.eclipse.microprofile.jwt.Claims;
 
-import javax.json.*;
+import javax.json.Json;
+import javax.json.JsonNumber;
+import javax.json.JsonReader;
+import javax.json.JsonString;
+import javax.json.JsonValue;
 import java.io.StringReader;
+import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
+import java.text.ParseException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 
+import static com.nimbusds.jose.JWEAlgorithm.RSA_OAEP;
 import static com.nimbusds.jose.JWSAlgorithm.ES256;
 import static com.nimbusds.jose.JWSAlgorithm.RS256;
 import static java.util.Arrays.asList;
 import static javax.json.Json.createObjectBuilder;
-import static org.eclipse.microprofile.jwt.Claims.*;
+import static org.eclipse.microprofile.jwt.Claims.exp;
+import static org.eclipse.microprofile.jwt.Claims.iat;
+import static org.eclipse.microprofile.jwt.Claims.iss;
+import static org.eclipse.microprofile.jwt.Claims.jti;
+import static org.eclipse.microprofile.jwt.Claims.preferred_username;
+import static org.eclipse.microprofile.jwt.Claims.raw_token;
+import static org.eclipse.microprofile.jwt.Claims.sub;
+import static org.eclipse.microprofile.jwt.Claims.upn;
 
 /**
  * Parses a JWT bearer token and validates it according to the MP-JWT rules.
@@ -69,20 +86,20 @@ import static org.eclipse.microprofile.jwt.Claims.*;
  * @author Arjan Tijms
  */
 public class JwtTokenParser {
-    
+
     private final static String DEFAULT_NAMESPACE = "https://payara.fish/mp-jwt/";
 
     // Groups no longer required since 2.0
     private final List<Claims> requiredClaims = asList(iss, sub, exp, iat, jti);
-    
+
     private final boolean enableNamespacedClaims;
     private final boolean disableTypeVerification;
     private final Optional<String> customNamespace;
 
-    
     private String rawToken;
     private SignedJWT signedJWT;
-    
+    private EncryptedJWT encryptedJWT;
+
     public JwtTokenParser(Optional<Boolean> enableNamespacedClaims, Optional<String> customNamespace, Optional<Boolean> disableTypeVerification) {
         this.enableNamespacedClaims = enableNamespacedClaims.orElse(false);
         this.disableTypeVerification = disableTypeVerification.orElse(false);
@@ -92,22 +109,30 @@ public class JwtTokenParser {
     public JwtTokenParser() {
         this(Optional.empty(), Optional.empty(), Optional.empty());
     }
-    
+
     public void parse(String bearerToken) throws Exception {
         rawToken = bearerToken;
-        signedJWT = SignedJWT.parse(rawToken);
 
-        // MP-JWT 1.0 4.1 typ
-        if (!checkIsJWT(signedJWT.getHeader())) {
-            throw new IllegalStateException("Not JWT");
+        try {
+            signedJWT = SignedJWT.parse(rawToken);
+
+            if (!checkIsJWT(signedJWT.getHeader())) {
+                throw new IllegalStateException("Not JWT");
+            }
+        } catch (ParseException parseException) {
+            encryptedJWT = EncryptedJWT.parse(rawToken);
+
+            if (!checkIsJWT(encryptedJWT.getHeader())) {
+                throw new IllegalStateException("Not JWT");
+            }
         }
     }
-    
+
     public JsonWebTokenImpl verify(String issuer, PublicKey publicKey) throws Exception {
         if (signedJWT == null) {
             throw new IllegalStateException("No parsed SignedJWT.");
         }
-        
+
         // 1.0 4.1 alg + MP-JWT 1.0 6.1 1
         if (!signedJWT.getHeader().getAlgorithm().equals(RS256)
                 && !signedJWT.getHeader().getAlgorithm().equals(ES256)) {
@@ -116,10 +141,10 @@ public class JwtTokenParser {
 
         try (JsonReader reader = Json.createReader(new StringReader(signedJWT.getPayload().toString()))) {
             Map<String, JsonValue> rawClaims = new HashMap<>(reader.readObject());
-            
+
             // Vendor - Process namespaced claims
             rawClaims = handleNamespacedClaims(rawClaims);
-            
+
             // MP-JWT 1.0 4.1 Minimum MP-JWT Required Claims
             if (!checkRequiredClaimsPresent(rawClaims)) {
                 throw new IllegalStateException("Not all required claims present");
@@ -158,32 +183,59 @@ public class JwtTokenParser {
             return new JsonWebTokenImpl(callerPrincipalName, rawClaims);
         }
     }
-    
-    public String getKeyID() {
+
+    public JsonWebTokenImpl verify(String issuer, PublicKey publicKey, PrivateKey privateKey) throws Exception {
         if (signedJWT == null) {
-            throw new IllegalStateException("No parsed SignedJWT.");
+            if (encryptedJWT == null) {
+                throw new IllegalStateException("No parsed SignedJWT or EncryptedJWT.");
+            }
+
+            if (!encryptedJWT.getHeader().getAlgorithm().getName().equals(RSA_OAEP.getName())) {
+                throw new IllegalStateException("Not RSA-OAEP");
+            }
+
+            encryptedJWT.decrypt(new RSADecrypter(privateKey));
+
+            signedJWT = encryptedJWT.getPayload().toSignedJWT();
+
+            if (signedJWT == null) {
+                throw new IllegalStateException("No parsed SignedJWT.");
+            }
         }
-        return signedJWT.getHeader().getKeyID();
+
+        return verify(issuer, publicKey);
     }
-    
-    private Map<String, JsonValue> handleNamespacedClaims(Map<String, JsonValue> currentClaims){
-        if(this.enableNamespacedClaims){
+
+    public String getKeyID() {
+        if (signedJWT == null && encryptedJWT == null) {
+            throw new IllegalStateException("No parsed SignedJWT or EncryptedJWT.");
+        }
+
+        if (signedJWT != null) {
+            return signedJWT.getHeader().getKeyID();
+        } else {
+            return encryptedJWT.getHeader().getKeyID();
+        }
+    }
+
+    private Map<String, JsonValue> handleNamespacedClaims(Map<String, JsonValue> currentClaims) {
+        if (this.enableNamespacedClaims) {
             final String namespace = customNamespace.orElse(DEFAULT_NAMESPACE);
             Map<String, JsonValue> processedClaims = new HashMap<>(currentClaims.size());
             for (Entry<String, JsonValue> entry : currentClaims.entrySet()) {
                 String claimName = entry.getKey();
                 JsonValue value = entry.getValue();
-                if(claimName.startsWith(namespace)){
+                if (claimName.startsWith(namespace)) {
                     claimName = claimName.substring(namespace.length());
                 }
                 processedClaims.put(claimName, value);
             }
             return processedClaims;
-        }else{
+        } else {
             return currentClaims;
         }
     }
-        
+
     private boolean checkRequiredClaimsPresent(Map<String, JsonValue> presentedClaims) {
         for (Claims requiredClaim : requiredClaims) {
             if (presentedClaims.get(requiredClaim.name()) == null) {
@@ -196,7 +248,7 @@ public class JwtTokenParser {
     /**
      * Will confirm the token has not expired if the current time and issue time
      * were both before the expiry time
-     * 
+     *
      * @param presentedClaims the claims from the JWT
      * @return if the JWT has expired
      */
@@ -221,9 +273,15 @@ public class JwtTokenParser {
 
     private boolean checkIsJWT(JWSHeader header) {
         return disableTypeVerification || Optional.ofNullable(header.getType())
-                                                    .map(JOSEObjectType::toString)
-                                                    .orElse("")
-                                                    .equals("JWT");
+                .map(JOSEObjectType::toString)
+                .orElse("")
+                .equals("JWT");
+    }
+
+    private boolean checkIsJWT(JWEHeader header) {
+        return disableTypeVerification || Optional.ofNullable(header.getContentType())
+                .orElse("")
+                .equals("JWT");
     }
 
     private String getCallerPrincipalName(Map<String, JsonValue> rawClaims) {
