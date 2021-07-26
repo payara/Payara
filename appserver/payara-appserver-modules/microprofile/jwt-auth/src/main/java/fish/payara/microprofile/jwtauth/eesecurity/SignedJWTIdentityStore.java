@@ -112,7 +112,7 @@ public class SignedJWTIdentityStore implements IdentityStore {
                 jsonWebToken = jwtTokenParser.verify(acceptedIssuer, publicKey);
             } catch (IllegalStateException illegalStateException) {
                 if (illegalStateException.getMessage().equals("No parsed SignedJWT.")) {
-                    jsonWebToken = jwtTokenParser.verify(acceptedIssuer, publicKey, privateKeyStore.getPrivateKey());
+                    jsonWebToken = jwtTokenParser.verify(acceptedIssuer, publicKey, privateKeyStore.getPrivateKey(keyID));
                 } else {
                     throw illegalStateException;
                 }
