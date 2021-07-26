@@ -150,9 +150,9 @@ class JwtPublicKeyStore  {
     }
 
     private PublicKey createPublicKeyFromJWKS(String jwksValue, String keyID) throws Exception {
-        JsonObject jwks = parseJwks(jwksValue);
+        JsonObject jwks = JwtKeyStoreUtils.parseJwks(jwksValue);
         JsonArray keys = jwks.getJsonArray("keys");
-        JsonObject jwk = keys != null ? findJwk(keys, keyID) : jwks;
+        JsonObject jwk = keys != null ? JwtKeyStoreUtils.findJwk(keys, keyID) : jwks;
 
         // Check if an RSA or ECDSA key needs to be created
         String kty = jwk.getString("kty");
@@ -194,35 +194,5 @@ class JwtPublicKeyStore  {
         } else {
             throw new DeploymentException("Could not determine key type - JWKS kty field does not equal RSA or EC");
         }
-    }
-
-    private JsonObject parseJwks(String jwksValue) throws Exception {
-        JsonObject jwks;
-        try (JsonReader reader = Json.createReader(new StringReader(jwksValue))) {
-            jwks = reader.readObject();
-        } catch (Exception ex) {
-            // if jwks is encoded
-            byte[] jwksDecodedValue = Base64.getDecoder().decode(jwksValue);
-            try (InputStream jwksStream = new ByteArrayInputStream(jwksDecodedValue);
-                    JsonReader reader = Json.createReader(jwksStream)) {
-                jwks = reader.readObject();
-            }
-        }
-        return jwks;
-    }
-
-    private JsonObject findJwk(JsonArray keys, String keyID) {
-        if (Objects.isNull(keyID) && keys.size() > 0) {
-            return keys.getJsonObject(0);
-        }
-
-        for (JsonValue value : keys) {
-            JsonObject jwk = value.asJsonObject();
-            if (Objects.equals(keyID, jwk.getString("kid"))) {
-                return jwk;
-            }
-        }
-
-        throw new IllegalStateException("No matching JWK for KeyID.");
     }
 }

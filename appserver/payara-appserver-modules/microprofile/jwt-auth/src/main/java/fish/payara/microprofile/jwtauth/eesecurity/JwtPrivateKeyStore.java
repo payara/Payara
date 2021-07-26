@@ -44,9 +44,13 @@ import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 
 import javax.enterprise.inject.spi.DeploymentException;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import java.math.BigInteger;
 import java.security.KeyFactory;
 import java.security.PrivateKey;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.RSAPrivateKeySpec;
 import java.time.Duration;
 import java.util.Base64;
 import java.util.Optional;
@@ -79,17 +83,21 @@ class JwtPrivateKeyStore {
         return privateKey;
     }
 
-    public PrivateKey getPrivateKey() {
+    public PrivateKey getPrivateKey(String keyId) {
         return cacheSupplier.get()
-                .map(key -> createPrivateKey(key))
+                .map(key -> createPrivateKey(key, keyId))
                 .orElseThrow(() -> new IllegalStateException("No PrivateKey found"));
     }
 
-    private PrivateKey createPrivateKey(String key) {
+    private PrivateKey createPrivateKey(String key, String keyId) {
         try {
             return createPrivateKeyFromPem(key);
         } catch (Exception pemEx) {
-            throw new DeploymentException(pemEx);
+            try {
+                return createPrivateKeyFromJWKS(key, keyId);
+            } catch (Exception jwksEx) {
+                throw new DeploymentException(jwksEx);
+            }
         }
     }
 
@@ -99,5 +107,31 @@ class JwtPrivateKeyStore {
         byte[] keyBytes = Base64.getDecoder().decode(key);
         PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(keyBytes);
         return KeyFactory.getInstance("RSA").generatePrivate(privateKeySpec);
+    }
+
+    private PrivateKey createPrivateKeyFromJWKS(String jwksValue, String keyId) throws Exception {
+        JsonObject jwks = JwtKeyStoreUtils.parseJwks(jwksValue);
+        JsonArray keys = jwks.getJsonArray("keys");
+        JsonObject jwk = keys != null ? JwtKeyStoreUtils.findJwk(keys, keyId) : jwks;
+
+        // Check if an RSA or ECDSA key needs to be created
+        String kty = jwk.getString("kty");
+        if (kty == null) {
+            throw new DeploymentException("Could not determine key type - kty field not present");
+        }
+        if (kty.equals("RSA")) {
+            // The modulus
+            byte[] modulusBytes = Base64.getUrlDecoder().decode(jwk.getString("n"));
+            BigInteger modulus = new BigInteger(1, modulusBytes);
+
+            // The private exponent
+            byte[] exponentBytes = Base64.getUrlDecoder().decode(jwk.getString("d"));
+            BigInteger exponent = new BigInteger(1, exponentBytes);
+
+            RSAPrivateKeySpec privateKeySpec = new RSAPrivateKeySpec(modulus, exponent);
+            return KeyFactory.getInstance("RSA").generatePrivate(privateKeySpec);
+        } else {
+            throw new DeploymentException("Could not determine key type - JWKS kty field does not equal RSA or EC");
+        }
     }
 }
