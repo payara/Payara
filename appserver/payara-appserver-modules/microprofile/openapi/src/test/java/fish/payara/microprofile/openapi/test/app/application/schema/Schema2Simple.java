@@ -1,8 +1,8 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- *  Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
- * 
+ *
+ *  Copyright (c) 2021 Payara Foundation and/or its affiliates. All rights reserved.
+ *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
  *  and Distribution License("CDDL") (collectively, the "License").  You
@@ -11,20 +11,20 @@
  *  https://github.com/payara/Payara/blob/master/LICENSE.txt
  *  See the License for the specific
  *  language governing permissions and limitations under the License.
- * 
+ *
  *  When distributing the software, include this License Header Notice in each
  *  file and include the License file at glassfish/legal/LICENSE.txt.
- * 
+ *
  *  GPL Classpath Exception:
  *  The Payara Foundation designates this particular file as subject to the "Classpath"
  *  exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  *  file that accompanied this code.
- * 
+ *
  *  Modifications:
  *  If applicable, add the following below the License Header, with the fields
  *  enclosed by brackets [] replaced by your own identifying information:
  *  "Portions Copyright [year] [name of copyright owner]"
- * 
+ *
  *  Contributor(s):
  *  If you wish your version of this file to be governed by only the CDDL or
  *  only the GPL Version 2, indicate your decision by adding "[Contributor]
@@ -37,38 +37,59 @@
  *  only if the new code is made subject to such option by the copyright
  *  holder.
  */
-package fish.payara.security.oidc.client;
+package fish.payara.microprofile.openapi.test.app.application.schema;
 
-import fish.payara.security.annotations.OpenIdAuthenticationDefinition;
-import static fish.payara.security.oidc.server.OidcProvider.CLIENT_ID_VALUE;
-import static fish.payara.security.oidc.server.OidcProvider.CLIENT_SECRET_VALUE;
-import java.io.IOException;
-import javax.annotation.security.DeclareRoles;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.HttpConstraint;
-import javax.servlet.annotation.ServletSecurity;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 /**
- * @author Gaurav Gupta
+ * Simple class, which doesn't depend on anything.
+ *
+ * @author Petr Aubrecht <petr@aubrecht.net>
  */
-@WebServlet("/Secured")
-@OpenIdAuthenticationDefinition(
-        providerURI = "http://localhost:8080/openid-server/webresources/oidc-provider",
-        clientId = CLIENT_ID_VALUE,
-        clientSecret = CLIENT_SECRET_VALUE,
-        redirectURI = "${baseURL}/Callback"
-)
-@DeclareRoles("all")
-@ServletSecurity(@HttpConstraint(rolesAllowed = "all"))
-public class SecuredPage extends HttpServlet {
+@Schema(name = "Schema2Simple", description = "Schema2Simple data", implementation = Schema2Simple.class)
+public class Schema2Simple {
+    @Schema(required = true, example = "1", description = "ID", implementation = Integer.class)
+    private Integer id;
 
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        response.getWriter().println("This is a secured web page");
+    @Schema(description = "dd", implementation = Schema2Simple1.class)
+    private Schema2Simple1 next1;
+
+    @Schema(name = "attr1", example = "A", description = "Attr1 desc", enumeration = {"A", "B"}, implementation = String.class)
+    private String attr1;
+
+    @Schema(name = "attr2", example = "-5", description = "Atrr2 desc", implementation = Integer.class)
+    private Integer attr2;
+
+    public Integer getId() {
+        return id;
     }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public String getAttr1() {
+        return attr1;
+    }
+
+    public void setAttr1(String attr1) {
+        this.attr1 = attr1;
+    }
+
+    public Integer getAttr2() {
+        return attr2;
+    }
+
+    public void setAttr2(Integer attr2) {
+        this.attr2 = attr2;
+    }
+
+    public Schema2Simple1 getNext1() {
+        return next1;
+    }
+
+    public void setNext1(Schema2Simple1 next1) {
+        this.next1 = next1;
+    }
+
 }

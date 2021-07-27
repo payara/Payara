@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,35 +37,43 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+
 package fish.payara.microprofile.faulttolerance.cdi;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.junit.Assert;
+import org.junit.Test;
 
-import javax.interceptor.InterceptorBinding;
-
-import org.eclipse.microprofile.faulttolerance.Fallback;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Added to methods at runtime in case they are affected by one of the FT annotations.
- * This means a FT annotation is either present directly on the method or on the class declaring the method.
- * 
- * This indirection is needed for two reasons:
- * 
- * 1) Allow to process all FT annotations with a single interceptor
- * 
- * 2) Allow to process {@link Fallback} even though it cannot be annotated on type level what would be needed to bind it
- *    to an interceptor directly.
- * 
- * @author Jan Bernitt
+ * Tests for the {@link FaultToleranceExtension#determineInterceptorIndex(List, int)} method.
  */
-@Inherited
-@InterceptorBinding
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.METHOD, ElementType.TYPE })
-public @interface FaultTolerance {
-    //marker
+public class DetermineInterceptorIndexTest {
+
+    @Test
+    public void determineInterceptorIndex() {
+        List<Class<?>> interceptors = new ArrayList<>();
+        interceptors.add(DummyInterceptor1k.class);
+        interceptors.add(DummyInterceptor2k.class);
+        interceptors.add(DummyInterceptor3k.class);
+        interceptors.add(DummyInterceptor4k.class);
+        interceptors.add(DummyInterceptor5k.class);
+
+        int index = FaultToleranceExtension.determineInterceptorIndex(interceptors, 3700);
+        Assert.assertTrue(index == 3);
+
+        index = FaultToleranceExtension.determineInterceptorIndex(interceptors, 6000);
+        Assert.assertTrue(index == 4);
+
+        index = FaultToleranceExtension.determineInterceptorIndex(interceptors, 5000);
+        Assert.assertTrue(index == 4);
+
+        index = FaultToleranceExtension.determineInterceptorIndex(interceptors, 2000);
+        Assert.assertTrue(index == 1);
+
+        index = FaultToleranceExtension.determineInterceptorIndex(interceptors, 500);
+        Assert.assertTrue(index == 0);
+    }
+
 }

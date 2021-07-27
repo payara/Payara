@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018--2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,31 +37,41 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.microprofile.openapi.impl.rest.app;
 
-import static fish.payara.microprofile.openapi.impl.rest.app.OpenApiApplication.OPEN_API_APPLICATION_PATH;
-import fish.payara.microprofile.openapi.impl.rest.app.provider.CorsHeadersFilter;
-import fish.payara.microprofile.openapi.impl.rest.app.provider.QueryFormatFilter;
-import fish.payara.microprofile.openapi.impl.rest.app.provider.writer.JsonWriter;
-import fish.payara.microprofile.openapi.impl.rest.app.provider.writer.YamlWriter;
-import fish.payara.microprofile.openapi.impl.rest.app.service.OpenApiResource;
-import javax.ws.rs.ApplicationPath;
-import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
-import org.glassfish.jersey.server.ResourceConfig;
+package fish.payara.samples.setuptests;
 
-@ApplicationPath(OPEN_API_APPLICATION_PATH)
-public class OpenApiApplication extends ResourceConfig {
+import fish.payara.samples.CliCommands;
+import fish.payara.samples.SecurityUtils;
+import org.jboss.arquillian.junit.Arquillian;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
-    public static final String OPEN_API_APPLICATION_PATH = "/openapi";
-    public static final String APPLICATION_YAML = TEXT_PLAIN;
+import java.io.IOException;
+import java.security.KeyPair;
+import java.security.cert.X509Certificate;
 
-    public OpenApiApplication() {
-        register(OpenApiResource.class);
-        register(QueryFormatFilter.class);
-        register(CorsHeadersFilter.class);
-        register(YamlWriter.class);
-        register(JsonWriter.class);
-        property("payara-internal", "true");
+/**
+ *
+ * @Author James Hillyard
+ */
+@RunWith(Arquillian.class)
+public class MultipleKeystoresConfigurationTest {
+
+    @Test
+    public void createAdditionalKeystore() throws IOException {
+        KeyPair clientKeyPair = SecurityUtils.generateRandomRSAKeys();
+        X509Certificate clientCertificate = SecurityUtils.createSelfSignedCertificate(clientKeyPair);
+        String path = SecurityUtils.createTempJKSKeyStore(clientKeyPair.getPrivate(), clientCertificate);
+
+        CliCommands.payaraGlassFish("create-jvm-options", "\"-Dfish.payara.ssl.additionalKeyStores="+path+"\"");
+    }
+
+    @Test
+    public void createNewNetworkListener(){
+        CliCommands.payaraGlassFish("create-protocol", "--securityenabled=true", "--target=server-config", "wibbles-protocol");
+        CliCommands.payaraGlassFish("create-http", "--defaultVirtualServer=server", "--target=server-config", "wibbles-protocol");
+        CliCommands.payaraGlassFish("create-network-listener", "--address=0.0.0.0", "--listenerport=8282", "--protocol=wibbles-protocol", "wibbles");
+        CliCommands.payaraGlassFish("set", "configs.config.server-config.network-config.protocols.protocol.wibbles-protocol.ssl.cert-nickname=omnikey");
     }
 
 }
