@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -63,6 +63,7 @@ import javax.json.JsonNumber;
 import javax.json.JsonObject;
 import javax.json.JsonString;
 import javax.json.JsonStructure;
+import javax.json.JsonValue;
 import javax.security.enterprise.SecurityContext;
 import javax.security.enterprise.authentication.mechanism.http.HttpAuthenticationMechanism;
 import javax.security.enterprise.identitystore.IdentityStore;
@@ -164,15 +165,18 @@ public class CdiInitEventHandler {
 
     private static Set<JWTInjectableType> computeTypes() {
         Set<JWTInjectableType> baseTypes = new HashSet<>(asList(
-            new JWTInjectableType(String.class),
-            new JWTInjectableType(new ParameterizedTypeImpl(Set.class, String.class), Set.class),
-            new JWTInjectableType(Long.class), 
-            new JWTInjectableType(Boolean.class),
-            new JWTInjectableType(JsonString.class),
-            new JWTInjectableType(JsonNumber.class),
-            new JWTInjectableType(JsonStructure.class),
-            new JWTInjectableType(JsonArray.class),
-            new JWTInjectableType(JsonObject.class)));
+                new JWTInjectableType(String.class),
+                new JWTInjectableType(new ParameterizedTypeImpl(Set.class, String.class), Set.class),
+                new JWTInjectableType(Long.class),
+                new JWTInjectableType(Boolean.class),
+                new JWTInjectableType(JsonString.class),
+                new JWTInjectableType(JsonNumber.class),
+                new JWTInjectableType(JsonStructure.class),
+                new JWTInjectableType(JsonArray.class),
+                new JWTInjectableType(JsonObject.class),
+                new JWTInjectableType(long.class),
+                new JWTInjectableType(boolean.class),
+                new JWTInjectableType(JsonValue.class)));
         
         Set<JWTInjectableType> optionalTypes = new HashSet<>(baseTypes);
         optionalTypes.addAll(
