@@ -66,6 +66,23 @@ import jakarta.json.JsonStructure;
 import jakarta.security.enterprise.SecurityContext;
 import jakarta.security.enterprise.authentication.mechanism.http.HttpAuthenticationMechanism;
 import jakarta.security.enterprise.identitystore.IdentityStore;
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.Dependent;
+import javax.enterprise.context.RequestScoped;
+import javax.enterprise.context.spi.CreationalContext;
+import javax.enterprise.inject.spi.AfterBeanDiscovery;
+import javax.enterprise.inject.spi.Bean;
+import javax.enterprise.inject.spi.BeanManager;
+import javax.enterprise.inject.spi.InjectionPoint;
+import javax.json.JsonArray;
+import javax.json.JsonNumber;
+import javax.json.JsonObject;
+import javax.json.JsonString;
+import javax.json.JsonStructure;
+import javax.json.JsonValue;
+import javax.security.enterprise.SecurityContext;
+import javax.security.enterprise.authentication.mechanism.http.HttpAuthenticationMechanism;
+import javax.security.enterprise.identitystore.IdentityStore;
 
 import org.eclipse.microprofile.auth.LoginConfig;
 import org.eclipse.microprofile.jwt.Claim;
@@ -174,8 +191,12 @@ public class CdiInitEventHandler {
                 new JWTInjectableType(JsonNumber.class),
                 new JWTInjectableType(JsonStructure.class),
                 new JWTInjectableType(JsonArray.class),
-                new JWTInjectableType(JsonObject.class)));
-
+                new JWTInjectableType(JsonObject.class),
+                new JWTInjectableType(long.class),
+                new JWTInjectableType(boolean.class),
+                new JWTInjectableType(JsonValue.class)
+            ));
+        
         Set<JWTInjectableType> optionalTypes = new HashSet<>(baseTypes);
         optionalTypes.addAll(
                 baseTypes.stream()

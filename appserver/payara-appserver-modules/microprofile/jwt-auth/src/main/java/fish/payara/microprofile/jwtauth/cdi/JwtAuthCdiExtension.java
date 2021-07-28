@@ -147,7 +147,7 @@ public class JwtAuthCdiExtension implements Extension {
                 
                 Class<?> scope = bean != null ? injectionPoint.getBean().getScope() : null;
                 
-                if (scope != null && (scope.equals(ApplicationScoped.class) || scope.equals(SessionScoped.class))) {
+                if (scope != null && scope.equals(SessionScoped.class)) {
                     throw new DeploymentException(
                         "Can't inject using qualifier " + Claim.class + " in a target with scope " + scope);
                 }
