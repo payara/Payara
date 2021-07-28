@@ -39,7 +39,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+    Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
@@ -141,12 +141,14 @@
                     <artifactId>javax.security.enterprise</artifactId>
                 </dependency>
                 <dependency>
-                    <groupId>fish.payara.security.connectors</groupId>
-                    <artifactId>security-connector-oauth2-client</artifactId>
+                    <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
+                    <artifactId>oauth2-client-integration</artifactId>
+                    <version>${project.version}</version>
                 </dependency>
                 <dependency>
-                    <groupId>fish.payara.security.connectors</groupId>
-                    <artifactId>security-connector-oidc-client</artifactId>
+                    <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
+                    <artifactId>openid-client-integration</artifactId>
+                    <version>${project.version}</version>
                 </dependency>
                 <dependency>
                     <groupId>fish.payara.server.internal.security</groupId>
