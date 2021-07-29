@@ -186,8 +186,6 @@ public class CdiInitEventHandler {
                 new JWTInjectableType(JsonStructure.class),
                 new JWTInjectableType(JsonArray.class),
                 new JWTInjectableType(JsonObject.class),
-                new JWTInjectableType(long.class),
-                new JWTInjectableType(boolean.class),
                 new JWTInjectableType(JsonValue.class)));
 
         Set<JWTInjectableType> optionalTypes = new HashSet<>(baseTypes);
