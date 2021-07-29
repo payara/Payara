@@ -115,51 +115,51 @@ public class CdiInitEventHandler {
                           .types(Object.class, JsonWebToken.class)
                           .addToId("token " + LoginConfig.class)
                           .create(e-> getJsonWebToken()));
-      
+
         // MP-JWT 1.0 7.1.2
         for (JWTInjectableType injectableType : computeTypes()) {
-          
+
             // Add a new Bean<T>/Dynamic producer for each type that 7.1.2 asks
             // us to support.
-          
-            afterBeanDiscovery.addBean(new CdiProducer<Object>()
-                              .scope(Dependent.class)
-                              .beanClass(CdiInitEventHandler.class)
-                              .types(injectableType.getFullType())
-                              .qualifiers(new ClaimAnnotationLiteral())
-                              .addToId("claim for " + injectableType.getFullType())
-                              .create(creationalContext -> {
-                      
-                                  // Get the qualifier from the injection point
-                                  Claim claim = getQualifier(
-                                                    getCurrentInjectionPoint(
-                                                        CdiUtils.getBeanManager(), 
-                                                        creationalContext), Claim.class);
-                      
-                                  String claimName = getClaimName(claim);
-                                      
-                                  // Obtain the raw named value from the request scoped JsonWebToken's embedded claims and convert
-                                  // it according to the target type for which this Bean<T> was created.
-                                  Object claimObj = injectableType.convert(
-                                                            getJsonWebToken().getClaims()
-                                                                             .get(claimName));
-                          
-                          
-                                  // If the target type has an Optional in it, wrap the converted value
-                                  // into an Optional. I.e. Optional<Long> or ClaimValue<Optional<Long>>
-                                  if (injectableType.isOptional()) {
-                                      claimObj = Optional.ofNullable(claimObj);
-                                  }
-                          
-                                  // If the target type has a ClaimValue in it, wrap the converted value
-                                  // into a ClaimValue, e.g. ClaimValue<Long> or ClaimValue<Optional<Long>>
-                                  if (injectableType.isClaimValue()) {
-                                      claimObj = new ClaimValueImpl<Object>(claimName, claimObj);
-                                  }
-                          
-                                  return claimObj;
 
-                              }));
+            afterBeanDiscovery.addBean(new CdiProducer<>()
+                    .scope(Dependent.class)
+                    .beanClass(CdiInitEventHandler.class)
+                    .types(injectableType.getFullType())
+                    .qualifiers(new ClaimAnnotationLiteral())
+                    .addToId("claim for " + injectableType.getFullType())
+                    .create(creationalContext -> {
+
+                        // Get the qualifier from the injection point
+                        Claim claim = getQualifier(
+                                getCurrentInjectionPoint(
+                                        CdiUtils.getBeanManager(),
+                                        creationalContext), Claim.class);
+
+                        String claimName = getClaimName(claim);
+
+                        // Obtain the raw named value from the request scoped JsonWebToken's embedded claims and convert
+                        // it according to the target type for which this Bean<T> was created.
+                        Object claimObj = injectableType.convert(
+                                getJsonWebToken().getClaims()
+                                        .get(claimName));
+
+
+                        // If the target type has an Optional in it, wrap the converted value
+                        // into an Optional. I.e. Optional<Long> or ClaimValue<Optional<Long>>
+                        if (injectableType.isOptional()) {
+                            claimObj = Optional.ofNullable(claimObj);
+                        }
+
+                        // If the target type has a ClaimValue in it, wrap the converted value
+                        // into a ClaimValue, e.g. ClaimValue<Long> or ClaimValue<Optional<Long>>
+                        if (injectableType.isClaimValue()) {
+                            claimObj = new ClaimValueImpl<Object>(claimName, claimObj);
+                        }
+
+                        return claimObj;
+
+                    }));
         }
     }
 
