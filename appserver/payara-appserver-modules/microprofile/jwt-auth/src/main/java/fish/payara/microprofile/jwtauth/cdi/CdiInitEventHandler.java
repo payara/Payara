@@ -129,19 +129,20 @@ public class CdiInitEventHandler {
                 .create(e -> new JWTAuthenticationMechanism()));
 
         // MP-JWT 1.0 7.1.1. Injection of JsonWebToken
-        afterBeanDiscovery.addBean(new PayaraCdiProducer<JsonWebToken>()
-                .scope(RequestScoped.class)
-                .beanClass(JsonWebToken.class)
-                .types(Object.class, JsonWebToken.class)
-                .addToId("token " + LoginConfig.class)
-                .create(e -> getJsonWebToken()));
+        afterBeanDiscovery.addBean(new CdiProducer<JsonWebToken>()
+                          .scope(RequestScoped.class)
+                          .beanClass(JsonWebToken.class)
+                          .types(Object.class, JsonWebToken.class)
+                          .addToId("token " + LoginConfig.class)
+                          .create(e-> getJsonWebToken()));
 
         // MP-JWT 1.0 7.1.2
         for (JWTInjectableType injectableType : computeTypes()) {
 
             // Add a new Bean<T>/Dynamic producer for each type that 7.1.2 asks
             // us to support.
-            afterBeanDiscovery.addBean(new PayaraCdiProducer<>()
+
+            afterBeanDiscovery.addBean(new CdiProducer<>()
                     .scope(Dependent.class)
                     .beanClass(CdiInitEventHandler.class)
                     .types(injectableType.getFullType())
@@ -153,7 +154,7 @@ public class CdiInitEventHandler {
                         Claim claim = getQualifier(
                                 getCurrentInjectionPoint(
                                         CdiUtils.getBeanManager(),
-                                        (CreationalContext)creationalContext), Claim.class);
+                                        creationalContext), Claim.class);
 
                         String claimName = getClaimName(claim);
 
