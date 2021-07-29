@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2021 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,16 +39,24 @@
  */
 package fish.payara.microprofile.jwtauth.cdi;
 
-import static java.util.Arrays.asList;
-import static java.util.Collections.emptyMap;
-import static java.util.stream.Collectors.toSet;
-import static org.glassfish.soteria.cdi.CdiUtils.getBeanReference;
+import fish.payara.microprofile.jwtauth.eesecurity.JWTAuthenticationMechanism;
+import fish.payara.microprofile.jwtauth.eesecurity.SignedJWTIdentityStore;
+import fish.payara.microprofile.jwtauth.jwt.ClaimAnnotationLiteral;
+import fish.payara.microprofile.jwtauth.jwt.ClaimValueImpl;
+import fish.payara.microprofile.jwtauth.jwt.JWTInjectableType;
+import fish.payara.microprofile.jwtauth.jwt.JsonWebTokenImpl;
 
 import java.lang.annotation.Annotation;
+
+import java.util.Arrays;
 import java.util.Collections;
+
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
+
+import static java.util.stream.Collectors.toSet;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.context.Dependent;
@@ -110,18 +118,18 @@ import org.glassfish.common.util.PayaraCdiProducer;
  */
 public class CdiInitEventHandler {
 
-    private final static JsonWebTokenImpl emptyJsonWebToken = new JsonWebTokenImpl(null, emptyMap());
+    private final static JsonWebTokenImpl emptyJsonWebToken = new JsonWebTokenImpl(null, Collections.emptyMap());
 
     public static void installAuthenticationMechanism(AfterBeanDiscovery afterBeanDiscovery) {
 
-        afterBeanDiscovery.addBean(new PayaraCdiProducer<IdentityStore>()
+        afterBeanDiscovery.addBean(new CdiProducer<IdentityStore>()
                 .scope(ApplicationScoped.class)
                 .beanClass(IdentityStore.class)
                 .types(Object.class, IdentityStore.class, SignedJWTIdentityStore.class)
                 .addToId("store " + LoginConfig.class)
                 .create(e -> new SignedJWTIdentityStore()));
 
-        afterBeanDiscovery.addBean(new PayaraCdiProducer<HttpAuthenticationMechanism>()
+        afterBeanDiscovery.addBean(new CdiProducer<HttpAuthenticationMechanism>()
                 .scope(ApplicationScoped.class)
                 .beanClass(HttpAuthenticationMechanism.class)
                 .types(Object.class, HttpAuthenticationMechanism.class, JWTAuthenticationMechanism.class)
@@ -130,19 +138,17 @@ public class CdiInitEventHandler {
 
         // MP-JWT 1.0 7.1.1. Injection of JsonWebToken
         afterBeanDiscovery.addBean(new CdiProducer<JsonWebToken>()
-                          .scope(RequestScoped.class)
-                          .beanClass(JsonWebToken.class)
-                          .types(Object.class, JsonWebToken.class)
-                          .addToId("token " + LoginConfig.class)
-                          .create(e-> getJsonWebToken()));
+                .scope(RequestScoped.class)
+                .beanClass(JsonWebToken.class)
+                .types(Object.class, JsonWebToken.class)
+                .addToId("token " + LoginConfig.class)
+                .create(e -> getJsonWebToken()));
 
         // MP-JWT 1.0 7.1.2
         for (JWTInjectableType injectableType : computeTypes()) {
 
-            // Add a new Bean<T>/Dynamic producer for each type that 7.1.2 asks
-            // us to support.
-
-            afterBeanDiscovery.addBean(new CdiProducer<>()
+            // Add a new Bean<T>/Dynamic producer for each type that 7.1.2 asks us to support.
+            afterBeanDiscovery.addBean(new CdiProducer<Object>()
                     .scope(Dependent.class)
                     .beanClass(CdiInitEventHandler.class)
                     .types(injectableType.getFullType())
@@ -158,32 +164,42 @@ public class CdiInitEventHandler {
 
                         String claimName = getClaimName(claim);
 
-                        // Obtain the raw named value from the request scoped JsonWebToken's embedded claims and convert
-                        // it according to the target type for which this Bean<T> was created.
-                        Object claimObj = injectableType.convert(
-                                getJsonWebToken().getClaims()
-                                        .get(claimName));
+                        Function<String, Object> claimValueSupplier = (String claimNameParam) -> {
+                            return loadClaimObject(injectableType, claimNameParam);
+                        };
 
-                        // If the target type has an Optional in it, wrap the converted value
-                        // into an Optional. I.e. Optional<Long> or ClaimValue<Optional<Long>>
-                        if (injectableType.isOptional()) {
-                            claimObj = Optional.ofNullable(claimObj);
-                        }
-
-                        // If the target type has a ClaimValue in it, wrap the converted value
-                        // into a ClaimValue, e.g. ClaimValue<Long> or ClaimValue<Optional<Long>>
+                        Object claimObj;
                         if (injectableType.isClaimValue()) {
-                            claimObj = new ClaimValueImpl<Object>(claimName, claimObj);
+                            // If the target type has a ClaimValue in it, wrap the converted value
+                            // into a ClaimValue, e.g. ClaimValue<Long> or ClaimValue<Optional<Long>>
+                            claimObj = new ClaimValueImpl<>(claimName, claimValueSupplier);
+                        } else {
+                            // otherwise simply return the value
+                            claimObj = claimValueSupplier.apply(claimName);
                         }
 
                         return claimObj;
-
                     }));
         }
     }
 
+    private static Object loadClaimObject(JWTInjectableType injectableType, String claimNameParam) {
+        // Obtain the raw named value from the request scoped JsonWebToken's embedded claims and
+        // convert it according to the target type for which this Bean<T> was created.
+        Object claimObj = injectableType.convert(
+                getJsonWebToken().getClaims()
+                        .get(claimNameParam));
+
+        // If the target type has an Optional in it, wrap the converted value
+        // into an Optional. I.e. Optional<Long> or ClaimValue<Optional<Long>>
+        if (injectableType.isOptional()) {
+            claimObj = Optional.ofNullable(claimObj);
+        }
+        return claimObj;
+    }
+
     private static Set<JWTInjectableType> computeTypes() {
-        Set<JWTInjectableType> baseTypes = new HashSet<>(asList(
+        Set<JWTInjectableType> baseTypes = new HashSet<>(Arrays.asList(
                 new JWTInjectableType(String.class),
                 new JWTInjectableType(new ParameterizedTypeImpl(Set.class, String.class), Set.class),
                 new JWTInjectableType(Long.class),
@@ -195,9 +211,8 @@ public class CdiInitEventHandler {
                 new JWTInjectableType(JsonObject.class),
                 new JWTInjectableType(long.class),
                 new JWTInjectableType(boolean.class),
-                new JWTInjectableType(JsonValue.class)
-            ));
-        
+                new JWTInjectableType(JsonValue.class)));
+
         Set<JWTInjectableType> optionalTypes = new HashSet<>(baseTypes);
         optionalTypes.addAll(
                 baseTypes.stream()
@@ -251,7 +266,7 @@ public class CdiInitEventHandler {
     }
 
     public static JsonWebTokenImpl getJsonWebToken() {
-        JsonWebTokenImpl jsonWebToken = (JsonWebTokenImpl) getBeanReference(SecurityContext.class).getCallerPrincipal();
+        JsonWebTokenImpl jsonWebToken = (JsonWebTokenImpl) CdiUtils.getBeanReference(SecurityContext.class).getCallerPrincipal();
         if (jsonWebToken == null) {
             jsonWebToken = emptyJsonWebToken;
         }
