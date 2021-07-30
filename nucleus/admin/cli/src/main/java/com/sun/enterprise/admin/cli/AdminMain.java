@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2021] Payara Foundation and/or affiliates
 package com.sun.enterprise.admin.cli;
 
 import com.sun.enterprise.admin.remote.reader.ProprietaryReaderFactory;
@@ -54,6 +54,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
+import fish.payara.logging.LoggingUtil;
 import org.glassfish.api.admin.CommandException;
 import org.glassfish.api.admin.CommandValidationException;
 import org.glassfish.api.admin.InvalidCommandException;
@@ -199,11 +200,19 @@ public class AdminMain {
 
     public static void main(String[] args) {
         AdminMain adminMain = new AdminMain();
-        int code = adminMain.doMain(args);
+        int code = adminMain.doMain(args, false);
         System.exit(code);
     }
 
-    protected int doMain(String[] args) {
+    protected int doMain(String[] args, boolean forceVerbose) {
+        // since this method is called to start an instance or the asadmin command
+        // we can force verbose mode for asadmin.
+        boolean verbose = false;
+        if (forceVerbose || Arrays.asList(args).contains("--logToConsole")) {
+            verbose = true;
+            System.setProperty(LoggingUtil.SYSTEM_PROPERTY_PAYARA_LOGGING_VERBOSE, "true");
+        }
+
         int minor = JDK.getMinor();
         int major = JDK.getMajor();
         //In case of JDK1 to JDK8 the major version would be 1 always.Starting from
@@ -234,17 +243,20 @@ public class AdminMain {
             logger.setLevel(Level.FINE);
         }
         logger.setUseParentHandlers(false);
-        Handler h = new CLILoggerHandler();
-        h.setLevel(logger.getLevel());
-        logger.addHandler(h);
+        if (verbose) {
+            // Only when in verbose mode we have console that is visible.
+            Handler h = new CLILoggerHandler();
+            h.setLevel(logger.getLevel());
+            logger.addHandler(h);
 
-        // make sure the root logger uses our handler as well
-        Logger rlogger = Logger.getLogger("");
-        rlogger.setUseParentHandlers(false);
-        for (Handler lh : rlogger.getHandlers()) {
-            rlogger.removeHandler(lh);
+            // make sure the root logger uses our handler as well
+            Logger rlogger = Logger.getLogger("");
+            rlogger.setUseParentHandlers(false);
+            for (Handler lh : rlogger.getHandlers()) {
+                rlogger.removeHandler(lh);
+            }
+            rlogger.addHandler(h);
         }
-        rlogger.addHandler(h);
 
         if (debug) {
             System.setProperty(CLIConstants.WALL_CLOCK_START_PROP, "" + System.currentTimeMillis());

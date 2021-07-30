@@ -39,28 +39,59 @@
  */
 package fish.payara.logging;
 
-import com.sun.enterprise.util.PropertyPlaceholderHelper;
-
-import java.io.*;
+import java.util.Map;
 import java.util.Properties;
-import java.util.logging.LogManager;
+import java.util.logging.ConsoleHandler;
 
-public class PayaraLogManager extends LogManager {
+public final class LoggingUtil {
 
-    @Override
-    public void readConfiguration(InputStream ins) throws IOException, SecurityException {
+    public static final String LOGTOCONSOLE_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.logtoConsole";
+    public static final String SYSTEM_PROPERTY_PAYARA_LOGGING_VERBOSE = "payara.logging.verbose";
 
-        Properties configuration = new Properties();
-        configuration.load(ins);
+    private static final String HANDLERS = "handlers";
 
-        // transform
-        configuration = new PropertyPlaceholderHelper(System.getenv(), PropertyPlaceholderHelper.ENV_REGEX).replacePropertiesPlaceholder(configuration);
+    private LoggingUtil() {
+    }
 
-        LoggingUtil.handleConsoleHandlerLogic(configuration);
+    public static void handleConsoleHandlerLogic(Properties loggingProperties) {
+        boolean verbose = isVerboseMode();
 
-        StringWriter writer = new StringWriter();
-        configuration.store(new PrintWriter(writer), null);
+        if (!verbose) {
+            String handlers = loggingProperties.getProperty(HANDLERS);
+            loggingProperties.setProperty(HANDLERS, filterConsoleHandler(handlers));
+        }
 
-        super.readConfiguration(new ByteArrayInputStream(writer.getBuffer().toString().getBytes()));
+        loggingProperties.put(LOGTOCONSOLE_PROPERTY, Boolean.toString(verbose));
+    }
+
+    public static boolean isVerboseMode() {
+        return Boolean.parseBoolean(System.getProperty(LoggingUtil.SYSTEM_PROPERTY_PAYARA_LOGGING_VERBOSE, "false"));
+    }
+
+    public static void handleConsoleHandlerLogic(Map<String, String> loggingProperties) {
+        boolean verbose = isVerboseMode();
+
+        if (!verbose) {
+            String handlers = loggingProperties.get(HANDLERS);
+            loggingProperties.put(HANDLERS, filterConsoleHandler(handlers));
+        }
+
+        loggingProperties.put(LOGTOCONSOLE_PROPERTY, Boolean.toString(verbose));
+    }
+
+    private static String filterConsoleHandler(String handlers) {
+        StringBuilder result = new StringBuilder();
+        String[] parts = handlers.split(",");
+        for (String part : parts) {
+            if (!part.contains(ConsoleHandler.class.getName())) {
+                if (result.length() > 0) {
+                    result.append(',');
+                }
+                result.append(part);
+            }
+        }
+        return result.toString();
+
     }
 }
+

@@ -57,6 +57,7 @@ import java.util.logging.Logger;
 import jakarta.inject.Inject;
 import jakarta.validation.constraints.Min;
 
+import fish.payara.logging.LoggingUtil;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -279,6 +280,11 @@ public class StartInstanceCommand implements AdminCommand {
       
         if (debug) {
             command.add("--debug");
+        }
+
+        boolean verbose = LoggingUtil.isVerboseMode();
+        if (verbose) {
+            command.add("--logToConsole");
         }
 
         command.add(instanceName);

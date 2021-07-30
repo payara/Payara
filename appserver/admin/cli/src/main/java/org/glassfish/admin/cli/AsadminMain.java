@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2021] Payara Foundation and/or affiliates
 package org.glassfish.admin.cli;
 
 import com.sun.enterprise.admin.cli.AdminMain;
@@ -53,7 +54,8 @@ public class AsadminMain extends AdminMain {
 //        Metrix.event("START");
         Environment.setPrefix("AS_ADMIN_");
         Environment.setShortPrefix("AS_");
-        int code = new AsadminMain().doMain(args);
+        // forceVerbose so that asadmin always runs with output to console
+        int code = new AsadminMain().doMain(args, true);
 //        Metrix.event("DONE");
 //        System.out.println("METRIX:");
 //        System.out.println(Metrix.getInstance().toString());
