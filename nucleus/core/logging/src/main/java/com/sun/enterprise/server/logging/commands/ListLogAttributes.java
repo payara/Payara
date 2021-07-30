@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2019-2021] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.server.logging.commands;
 
@@ -52,6 +52,7 @@ import java.util.Properties;
 
 import javax.inject.Inject;
 
+import fish.payara.logging.LoggingUtil;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -115,7 +116,7 @@ public class ListLogAttributes implements AdminCommand {
         final ActionReport report = context.getActionReport();
         
         try {
-            HashMap<String, String> props = null;
+            HashMap<String, String> props;
             
             TargetInfo targetInfo = new TargetInfo(domain, target);
             String targetConfigName = targetInfo.getConfigName();
@@ -133,17 +134,18 @@ public class ListLogAttributes implements AdminCommand {
                 return;
             }
 
-            List<String> keys = new ArrayList<String>();
-            keys.addAll(props.keySet());
+            LoggingUtil.handleConsoleHandlerLogic(props);
+
+            List<String> keys = new ArrayList<>(props.keySet());
             Collections.sort(keys);
             Iterator<String> it2 = keys.iterator();
 
             // The following Map is used to hold the REST data
-            Map<String, String> logAttributes = new HashMap<String, String>();
+            Map<String, String> logAttributes = new HashMap<>();
 
             while (it2.hasNext()) {
                 String name = it2.next();
-                if (!name.endsWith(".level") && !name.equals(".level")) {
+                if (!name.endsWith(".level")) {
                     final ActionReport.MessagePart part = report.getTopMessagePart()
                             .addChild();
                     part.setMessage(name + "\t" + "<" + props.get(name) + ">");
