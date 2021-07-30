@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,32 +39,29 @@
  */
 package fish.payara.microprofile.jwtauth.eesecurity;
 
-import static java.lang.Thread.currentThread;
-import static java.util.logging.Level.INFO;
-import static javax.security.enterprise.identitystore.CredentialValidationResult.INVALID_RESULT;
-import static org.eclipse.microprofile.jwt.config.Names.ISSUER;
-
+import fish.payara.microprofile.jwtauth.jwt.JsonWebTokenImpl;
+import fish.payara.microprofile.jwtauth.jwt.JwtTokenParser;
 import java.io.IOException;
+import static java.lang.Thread.currentThread;
 import java.net.URL;
-import java.security.Key;
-import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import static java.util.logging.Level.INFO;
 import java.util.logging.Logger;
-
 import javax.security.enterprise.identitystore.CredentialValidationResult;
+import static javax.security.enterprise.identitystore.CredentialValidationResult.INVALID_RESULT;
 import javax.security.enterprise.identitystore.IdentityStore;
-
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
-
-import fish.payara.microprofile.jwtauth.jwt.JsonWebTokenImpl;
-import fish.payara.microprofile.jwtauth.jwt.JwtTokenParser;
+import org.eclipse.microprofile.jwt.config.Names;
+import static org.eclipse.microprofile.jwt.config.Names.ISSUER;
 
 /**
  * Identity store capable of asserting that a signed JWT token is valid
@@ -77,6 +74,7 @@ public class SignedJWTIdentityStore implements IdentityStore {
     private static final Logger LOGGER = Logger.getLogger(SignedJWTIdentityStore.class.getName());
 
     private final String acceptedIssuer;
+    private final Optional<List<String>> allowedAudience;
     private final Optional<Boolean> enabledNamespace;
     private final Optional<String> customNamespace;
     private final Optional<Boolean> disableTypeVerification;
@@ -92,6 +90,11 @@ public class SignedJWTIdentityStore implements IdentityStore {
         acceptedIssuer = readVendorIssuer(properties)
                 .orElseGet(() -> config.getOptionalValue(ISSUER, String.class)
                 .orElseThrow(() -> new IllegalStateException("No issuer found")));
+        Optional<String> allowedAudienceOpt = readAudience(properties);
+        if (!allowedAudienceOpt.isPresent()) {
+            allowedAudienceOpt = config.getOptionalValue(Names.AUDIENCES, String.class);
+        }
+        allowedAudience = allowedAudienceOpt.map(str -> Arrays.asList(str.split(",")));
 
         enabledNamespace = readEnabledNamespace(properties);
         customNamespace = readCustomNamespace(properties);
@@ -118,7 +121,15 @@ public class SignedJWTIdentityStore implements IdentityStore {
                 }
             }
 
-
+            // verify audience
+            final Set<String> recipientsOfThisJWT = jsonWebToken.getAudience();
+            // find if any recipient is in the allowed audience
+            Boolean recipientInAudience = allowedAudience
+                    .map(recipient -> recipient.stream().anyMatch(a -> recipientsOfThisJWT != null && recipientsOfThisJWT.contains(a)))
+                    .orElse(true);
+            if (!recipientInAudience) {
+                throw new Exception("The intended audience " + recipientsOfThisJWT + " is not a part of allowed audience.");
+            }
 
             Set<String> groups = new HashSet<>();
             Collection<String> groupClaims = jsonWebToken.getClaim("groups");
@@ -173,4 +184,8 @@ public class SignedJWTIdentityStore implements IdentityStore {
         		.orElseGet( () -> Duration.ofMinutes(5));
     }
     
+    private Optional<String> readAudience(Optional<Properties> properties) {
+        return properties.isPresent() ? Optional.ofNullable(properties.get().getProperty("accepted.issuer")) : Optional.empty();
+    }
+
 }
