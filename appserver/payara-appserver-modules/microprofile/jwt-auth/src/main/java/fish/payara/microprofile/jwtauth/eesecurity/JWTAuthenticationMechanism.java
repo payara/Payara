@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,18 +39,23 @@
  */
 package fish.payara.microprofile.jwtauth.eesecurity;
 
-import static javax.security.enterprise.identitystore.CredentialValidationResult.Status.VALID;
-
+import java.util.Optional;
+import java.util.Properties;
 import javax.enterprise.inject.spi.CDI;
+import javax.enterprise.inject.spi.DeploymentException;
 import javax.security.enterprise.AuthenticationException;
 import javax.security.enterprise.AuthenticationStatus;
 import javax.security.enterprise.authentication.mechanism.http.HttpAuthenticationMechanism;
 import javax.security.enterprise.authentication.mechanism.http.HttpMessageContext;
 import javax.security.enterprise.identitystore.CredentialValidationResult;
+import static javax.security.enterprise.identitystore.CredentialValidationResult.Status.VALID;
 import javax.security.enterprise.identitystore.IdentityStore;
 import javax.security.enterprise.identitystore.IdentityStoreHandler;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.ConfigProvider;
+import org.eclipse.microprofile.jwt.config.Names;
 
 /**
  * This authentication mechanism reads a JWT token from an HTTP header and passes it
@@ -59,6 +64,27 @@ import javax.servlet.http.HttpServletResponse;
  * @author Arjan Tijms
  */
 public class JWTAuthenticationMechanism implements HttpAuthenticationMechanism {
+
+    public static final String CONFIG_TOKEN_HEADER_AUTHORIZATION = "Authorization";
+    public static final String CONFIG_TOKEN_HEADER_COOKIE = "Cookie";
+
+    private final String configJwtTokenHeader; // either Authorization (default) or Cookie
+    private final String configJwtTokenCookie; // name of the token cookie
+
+    public JWTAuthenticationMechanism() {
+        // load default names and behavior
+        // https://download.eclipse.org/microprofile/microprofile-jwt-auth-1.2/microprofile-jwt-auth-spec-1.2.html#_jwt_and_http_headers
+        Optional<Properties> properties = SignedJWTIdentityStore.readVendorProperties();
+        Config config = ConfigProvider.getConfig();
+        configJwtTokenHeader = readConfig(Names.TOKEN_HEADER, properties, config, CONFIG_TOKEN_HEADER_AUTHORIZATION);
+        if ((!CONFIG_TOKEN_HEADER_AUTHORIZATION.equals(configJwtTokenHeader))
+                && (!CONFIG_TOKEN_HEADER_COOKIE.equals(configJwtTokenHeader))) {
+            throw new DeploymentException("Configuration " + Names.TOKEN_HEADER + " must be either "
+                    + CONFIG_TOKEN_HEADER_AUTHORIZATION + " or " + CONFIG_TOKEN_HEADER_COOKIE
+                    + ", but is " + configJwtTokenHeader);
+        }
+        configJwtTokenCookie = readConfig(Names.TOKEN_COOKIE, properties, config, "Bearer");
+    }
 
     @Override
     public AuthenticationStatus validateRequest(HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext) throws AuthenticationException {
@@ -85,25 +111,24 @@ public class JWTAuthenticationMechanism implements HttpAuthenticationMechanism {
     }
 
     private SignedJWTCredential getCredential(HttpServletRequest request) {
-        String authorizationHeader = request.getHeader("Authorization");
-        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            SignedJWTCredential signedJWTCredential = createSignedJWTCredential(
-                    authorizationHeader.substring("Bearer ".length()));
-            if (signedJWTCredential != null) {
-                return signedJWTCredential;
+        Optional<String> token = Optional.empty();
+        if (CONFIG_TOKEN_HEADER_AUTHORIZATION.equals(configJwtTokenHeader)) {
+            // use Authorization header
+            String authorizationHeader = request.getHeader("Authorization");
+            if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+                token = Optional.of(authorizationHeader.substring("Bearer ".length()));
+            }
+        } else {
+            // use Cookie header
+            String bearerMark = ";" + configJwtTokenCookie + "=";
+            String cookieHeader = request.getHeader("Cookie");
+            if (cookieHeader != null && cookieHeader.startsWith("$Version=") && cookieHeader.contains(bearerMark)) {
+                token = Optional.of(cookieHeader.substring(cookieHeader.indexOf(bearerMark) + bearerMark.length()));
             }
         }
 
-        String cookieHeader = request.getHeader("Cookie");
-        if (cookieHeader != null && cookieHeader.startsWith("$Version=") && cookieHeader.contains(";Bearer=")) {
-            SignedJWTCredential signedJWTCredential = createSignedJWTCredential(
-                    cookieHeader.substring(cookieHeader.indexOf(";Bearer=") + ";Bearer=".length()));
-            if (signedJWTCredential != null) {
-                return signedJWTCredential;
-            }
-        }
-
-        return null;
+        return token.map(t -> createSignedJWTCredential(t))
+                .orElse(null);
     }
 
     private SignedJWTCredential createSignedJWTCredential(String token) {
@@ -112,6 +137,17 @@ public class JWTAuthenticationMechanism implements HttpAuthenticationMechanism {
         }
 
         return null;
+    }
+
+    /**
+     * Read configuration from Vendor or server or return default value.
+     */
+    private String readConfig(String key, Optional<Properties> properties, Config config, String defaultValue) {
+        Optional<String> valueOpt = properties.map(props -> props.getProperty(key));
+        if (!valueOpt.isPresent()) {
+            valueOpt = config.getOptionalValue(key, String.class);
+        }
+        return valueOpt.orElse(defaultValue);
     }
 
 }

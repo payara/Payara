@@ -146,7 +146,7 @@ public class SignedJWTIdentityStore implements IdentityStore {
         return INVALID_RESULT;
     }
 
-    private Optional<Properties> readVendorProperties() {
+    public static Optional<Properties> readVendorProperties() {
         URL mpJwtResource = currentThread().getContextClassLoader().getResource("/payara-mp-jwt.properties");
         Properties properties = null;
         if (mpJwtResource != null) {
@@ -185,7 +185,7 @@ public class SignedJWTIdentityStore implements IdentityStore {
     }
     
     private Optional<String> readAudience(Optional<Properties> properties) {
-        return properties.isPresent() ? Optional.ofNullable(properties.get().getProperty("accepted.issuer")) : Optional.empty();
+        return properties.isPresent() ? Optional.ofNullable(properties.get().getProperty(Names.AUDIENCES)) : Optional.empty();
     }
 
 }
