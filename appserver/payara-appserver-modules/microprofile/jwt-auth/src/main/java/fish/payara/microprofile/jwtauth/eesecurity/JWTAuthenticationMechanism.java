@@ -89,24 +89,25 @@ public class JWTAuthenticationMechanism implements HttpAuthenticationMechanism {
     @Override
     public AuthenticationStatus validateRequest(HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext) throws AuthenticationException {
 
-        if (httpMessageContext.isProtected()) {
-            IdentityStoreHandler identityStoreHandler = CDI.current().select(IdentityStoreHandler.class).get();
-            
-            SignedJWTCredential credential = getCredential(request);
-            
-            if (credential != null) {
-                
-                CredentialValidationResult result = identityStoreHandler.validate(credential);
-                if (result.getStatus() == VALID) {
-                    httpMessageContext.getClientSubject()
-                                      .getPrincipals()
-                                      .add(result.getCallerPrincipal());
-                }
-                
+        // Don't limit processing of JWT to protected pages (httpMessageContext.isProtected())
+        // as MP TCK requires JWT being parsed (if provided) even if not in protected pages.
+        IdentityStoreHandler identityStoreHandler = CDI.current().select(IdentityStoreHandler.class).get();
+
+        SignedJWTCredential credential = getCredential(request);
+
+        if (credential != null) {
+
+            CredentialValidationResult result = identityStoreHandler.validate(credential);
+            if (result.getStatus() == VALID) {
+                httpMessageContext.getClientSubject()
+                        .getPrincipals()
+                        .add(result.getCallerPrincipal());
                 return httpMessageContext.notifyContainerAboutLogin(result);
             }
+
+            return httpMessageContext.responseUnauthorized();
         }
-        
+
         return httpMessageContext.doNothing();
     }
 
