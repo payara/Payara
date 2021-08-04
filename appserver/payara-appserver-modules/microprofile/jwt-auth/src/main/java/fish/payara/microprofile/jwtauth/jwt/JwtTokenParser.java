@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,38 +39,39 @@
  */
 package fish.payara.microprofile.jwtauth.jwt;
 
+import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JOSEObjectType;
-import com.nimbusds.jose.JWEHeader;
-import com.nimbusds.jose.JWSHeader;
+import static com.nimbusds.jose.JWEAlgorithm.RSA_OAEP;
+import com.nimbusds.jose.JWSAlgorithm;
+import static com.nimbusds.jose.JWSAlgorithm.ES256;
+import static com.nimbusds.jose.JWSAlgorithm.RS256;
 import com.nimbusds.jose.crypto.ECDSAVerifier;
 import com.nimbusds.jose.crypto.RSADecrypter;
 import com.nimbusds.jose.crypto.RSASSAVerifier;
 import com.nimbusds.jwt.EncryptedJWT;
 import com.nimbusds.jwt.SignedJWT;
-import org.eclipse.microprofile.jwt.Claims;
-
-import javax.json.Json;
-import javax.json.JsonNumber;
-import javax.json.JsonReader;
-import javax.json.JsonString;
-import javax.json.JsonValue;
+import fish.payara.microprofile.jwtauth.eesecurity.JWTProcessingException;
+import fish.payara.microprofile.jwtauth.eesecurity.JwtPrivateKeyStore;
+import fish.payara.microprofile.jwtauth.eesecurity.JwtPublicKeyStore;
 import java.io.StringReader;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.text.ParseException;
+import static java.util.Arrays.asList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
-
-import static com.nimbusds.jose.JWEAlgorithm.RSA_OAEP;
-import static com.nimbusds.jose.JWSAlgorithm.ES256;
-import static com.nimbusds.jose.JWSAlgorithm.RS256;
-import static java.util.Arrays.asList;
+import javax.json.Json;
 import static javax.json.Json.createObjectBuilder;
+import javax.json.JsonNumber;
+import javax.json.JsonReader;
+import javax.json.JsonString;
+import javax.json.JsonValue;
+import org.eclipse.microprofile.jwt.Claims;
 import static org.eclipse.microprofile.jwt.Claims.exp;
 import static org.eclipse.microprofile.jwt.Claims.iat;
 import static org.eclipse.microprofile.jwt.Claims.iss;
@@ -110,33 +111,59 @@ public class JwtTokenParser {
         this(Optional.empty(), Optional.empty(), Optional.empty());
     }
 
-    public void parse(String bearerToken) throws Exception {
-        rawToken = bearerToken;
-
+    public JsonWebTokenImpl parse(String bearerToken, boolean encryptionRequired, JwtPublicKeyStore publicKeyStore,
+            String acceptedIssuer, JwtPrivateKeyStore privateKeyStore) throws JWTProcessingException {
+        JsonWebTokenImpl jsonWebToken;
         try {
-            signedJWT = SignedJWT.parse(rawToken);
+            rawToken = bearerToken;
+            String keyId;
 
-            if (!checkIsJWT(signedJWT.getHeader())) {
-                throw new IllegalStateException("Not JWT");
-            }
-        } catch (ParseException parseException) {
-            encryptedJWT = EncryptedJWT.parse(rawToken);
+            int parts = rawToken.split("\\.", 5).length; // not interested in parts above 5
+            if (parts == 3) {
+                // signed JWT has 3 parts
+                signedJWT = SignedJWT.parse(rawToken);
 
-            if (!checkIsJWT(encryptedJWT.getHeader())) {
-                throw new IllegalStateException("Not JWT");
+                if (!checkIsSignedJWT(signedJWT)) {
+                    throw new JWTProcessingException("Not signed JWT, typ must be 'JWT'");
+                }
+                keyId = signedJWT.getHeader().getKeyID();
+            } else {
+                // encrypted JWT has 5 parts
+                encryptedJWT = EncryptedJWT.parse(rawToken);
+
+                if (!checkIsEncryptedJWT(encryptedJWT)) {
+                    throw new JWTProcessingException("Not encrypted JWT, cty must be 'JWT'");
+                }
+                keyId = encryptedJWT.getHeader().getKeyID();
             }
+
+            PublicKey publicKey = publicKeyStore.getPublicKey(keyId);
+            // first, parse the payload of the encrypting envelope, save signedJWT
+            if (encryptedJWT == null) {
+                if (encryptionRequired) {
+                    // see JWT Auth 1.2, Requirements for accepting signed and encrypted tokens
+                    throw new JWTProcessingException("JWT expected to be encrypted, mp.jwt.decrypt.key.location was defined!");
+                }
+                jsonWebToken = verifyAndParseSignedJWT(acceptedIssuer, publicKey);
+            } else {
+                jsonWebToken = verifyAndParseEncryptedJWT(acceptedIssuer, publicKey, privateKeyStore.getPrivateKey(keyId));
+            }
+        } catch (JWTProcessingException | ParseException ex) {
+            throw new JWTProcessingException(ex);
         }
+        return jsonWebToken;
     }
 
-    public JsonWebTokenImpl verify(String issuer, PublicKey publicKey) throws Exception {
+    private JsonWebTokenImpl verifyAndParseSignedJWT(String issuer, PublicKey publicKey) throws JWTProcessingException {
         if (signedJWT == null) {
             throw new IllegalStateException("No parsed SignedJWT.");
         }
+        JWSAlgorithm signAlgorithmName = signedJWT.getHeader().getAlgorithm();
 
         // 1.0 4.1 alg + MP-JWT 1.0 6.1 1
-        if (!signedJWT.getHeader().getAlgorithm().equals(RS256)
-                && !signedJWT.getHeader().getAlgorithm().equals(ES256)) {
-            throw new IllegalStateException("Not RS256 or ES256");
+        if (!signAlgorithmName.equals(RS256)
+                && !signAlgorithmName.equals(ES256)) {
+            throw new JWTProcessingException("Only RS256 or ES256 algorithms supported for JWT signing, used " + signAlgorithmName);
         }
 
         try (JsonReader reader = Json.createReader(new StringReader(signedJWT.getPayload().toString()))) {
@@ -147,33 +174,37 @@ public class JwtTokenParser {
 
             // MP-JWT 1.0 4.1 Minimum MP-JWT Required Claims
             if (!checkRequiredClaimsPresent(rawClaims)) {
-                throw new IllegalStateException("Not all required claims present");
+                throw new JWTProcessingException("Not all required claims present");
             }
 
             // MP-JWT 1.0 4.1 upn - has fallbacks
             String callerPrincipalName = getCallerPrincipalName(rawClaims);
             if (callerPrincipalName == null) {
-                throw new IllegalStateException("One of upn, preferred_username or sub is required to be non null");
+                throw new JWTProcessingException("One of upn, preferred_username or sub is required to be non null");
             }
 
             // MP-JWT 1.0 6.1 2
             if (!checkIssuer(rawClaims, issuer)) {
-                throw new IllegalStateException("Bad issuer");
+                throw new JWTProcessingException("Bad issuer");
             }
 
             if (!checkNotExpired(rawClaims)) {
-                throw new IllegalStateException("Expired");
+                throw new JWTProcessingException("JWT token expired");
             }
 
             // MP-JWT 1.0 6.1 2
-            if (signedJWT.getHeader().getAlgorithm().equals(RS256)) {
-                if (!signedJWT.verify(new RSASSAVerifier((RSAPublicKey) publicKey))) {
-                    throw new IllegalStateException("Signature invalid");
+            try {
+                if (signAlgorithmName.equals(RS256)) {
+                    if (!signedJWT.verify(new RSASSAVerifier((RSAPublicKey) publicKey))) {
+                        throw new JWTProcessingException("Signature of the JWT token is invalid");
+                    }
+                } else {
+                    if (!signedJWT.verify(new ECDSAVerifier((ECPublicKey) publicKey))) {
+                        throw new JWTProcessingException("Signature of the JWT token is invalid");
+                    }
                 }
-            } else {
-                if (!signedJWT.verify(new ECDSAVerifier((ECPublicKey) publicKey))) {
-                    throw new IllegalStateException("Signature invalid");
-                }
+            } catch (JOSEException ex) {
+                throw new JWTProcessingException("Exception during JWT signature validation", ex);
             }
 
             rawClaims.put(
@@ -184,38 +215,29 @@ public class JwtTokenParser {
         }
     }
 
-    public JsonWebTokenImpl verify(String issuer, PublicKey publicKey, PrivateKey privateKey) throws Exception {
-        if (signedJWT == null) {
-            if (encryptedJWT == null) {
-                throw new IllegalStateException("No parsed SignedJWT or EncryptedJWT.");
-            }
+    private JsonWebTokenImpl verifyAndParseEncryptedJWT(String issuer, PublicKey publicKey, PrivateKey privateKey) throws JWTProcessingException {
+        if (encryptedJWT == null) {
+            throw new IllegalStateException("EncryptedJWT not parsed");
+        }
 
-            if (!encryptedJWT.getHeader().getAlgorithm().getName().equals(RSA_OAEP.getName())) {
-                throw new IllegalStateException("Not RSA-OAEP");
-            }
+        String algName = encryptedJWT.getHeader().getAlgorithm().getName();
+        if (!RSA_OAEP.getName().equals(algName)) {
+            throw new JWTProcessingException("Only RSA-OAEP algorithm is supported for JWT encryption, used " + algName);
+        }
 
+        try {
             encryptedJWT.decrypt(new RSADecrypter(privateKey));
-
-            signedJWT = encryptedJWT.getPayload().toSignedJWT();
-
-            if (signedJWT == null) {
-                throw new IllegalStateException("No parsed SignedJWT.");
-            }
+        } catch (JOSEException ex) {
+            throw new JWTProcessingException("Exception during decrypting JWT token", ex);
         }
 
-        return verify(issuer, publicKey);
-    }
+        signedJWT = encryptedJWT.getPayload().toSignedJWT();
 
-    public String getKeyID() {
-        if (signedJWT == null && encryptedJWT == null) {
-            throw new IllegalStateException("No parsed SignedJWT or EncryptedJWT.");
+        if (signedJWT == null) {
+            throw new JWTProcessingException("Unable to parse signed JWT.");
         }
 
-        if (signedJWT != null) {
-            return signedJWT.getHeader().getKeyID();
-        } else {
-            return encryptedJWT.getHeader().getKeyID();
-        }
+        return verifyAndParseSignedJWT(issuer, publicKey);
     }
 
     private Map<String, JsonValue> handleNamespacedClaims(Map<String, JsonValue> currentClaims) {
@@ -271,15 +293,15 @@ public class JwtTokenParser {
         return acceptedIssuer.equals(issuer);
     }
 
-    private boolean checkIsJWT(JWSHeader header) {
-        return disableTypeVerification || Optional.ofNullable(header.getType())
+    private boolean checkIsSignedJWT(SignedJWT jwt) {
+        return disableTypeVerification || Optional.ofNullable(jwt.getHeader().getType())
                 .map(JOSEObjectType::toString)
                 .orElse("")
                 .equals("JWT");
     }
 
-    private boolean checkIsJWT(JWEHeader header) {
-        return disableTypeVerification || Optional.ofNullable(header.getContentType())
+    private boolean checkIsEncryptedJWT(EncryptedJWT jwt) {
+        return disableTypeVerification || Optional.ofNullable(jwt.getHeader().getContentType())
                 .orElse("")
                 .equals("JWT");
     }
