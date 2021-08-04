@@ -39,9 +39,6 @@
  */
 package fish.payara.microprofile.jwtauth.eesecurity;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.io.StringReader;
 import java.math.BigInteger;
 import java.security.AlgorithmParameters;
 import java.security.KeyFactory;
@@ -55,24 +52,19 @@ import java.security.spec.RSAPublicKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.time.Duration;
 import java.util.Base64;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
 
 import jakarta.enterprise.inject.spi.DeploymentException;
-import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
-import jakarta.json.JsonReader;
-import jakarta.json.JsonValue;
-
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 import static org.eclipse.microprofile.jwt.config.Names.VERIFIER_PUBLIC_KEY;
 import static org.eclipse.microprofile.jwt.config.Names.VERIFIER_PUBLIC_KEY_LOCATION;
 
-class JwtPublicKeyStore  {
+public class JwtPublicKeyStore {
     
     private static final Logger LOGGER = Logger.getLogger(JwtPublicKeyStore.class.getName());
     private static final String RSA_ALGORITHM = "RSA";
@@ -82,6 +74,7 @@ class JwtPublicKeyStore  {
     private final Config config;
     private final Supplier<Optional<String>> cacheSupplier;
     private final Duration defaultCacheTTL;
+    private String keyLocation = "/publicKey.pem";
     
     /**
      * @param defaultCacheTTL Public key cache TTL 
@@ -90,6 +83,15 @@ class JwtPublicKeyStore  {
         this.config = ConfigProvider.getConfig();
         this.defaultCacheTTL = defaultCacheTTL;
         this.cacheSupplier = new KeyLoadingCache(this::readRawPublicKey)::get;
+    }
+
+    /**
+     * @param defaultCacheTTL Public key cache TTL
+     * @param keyLocation location of the public key
+     */
+    public JwtPublicKeyStore(Duration defaultCacheTTL, Optional<String> keyLocation) {
+        this(defaultCacheTTL);
+        this.keyLocation = keyLocation.orElse(this.keyLocation);
     }
 
     /**
@@ -105,7 +107,7 @@ class JwtPublicKeyStore  {
     }
     
     private CacheableString readRawPublicKey() {
-        CacheableString publicKey = JwtKeyStoreUtils.readKeyFromLocation("/publicKey.pem", defaultCacheTTL);
+        CacheableString publicKey = JwtKeyStoreUtils.readKeyFromLocation(keyLocation, defaultCacheTTL);
         
         if (!publicKey.isPresent()) {
             publicKey = readMPEmbeddedPublicKey();

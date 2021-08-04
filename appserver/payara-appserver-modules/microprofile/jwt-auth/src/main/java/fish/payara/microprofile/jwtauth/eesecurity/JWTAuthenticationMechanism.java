@@ -76,14 +76,14 @@ public class JWTAuthenticationMechanism implements HttpAuthenticationMechanism {
         // https://download.eclipse.org/microprofile/microprofile-jwt-auth-1.2/microprofile-jwt-auth-spec-1.2.html#_jwt_and_http_headers
         Optional<Properties> properties = SignedJWTIdentityStore.readVendorProperties();
         Config config = ConfigProvider.getConfig();
-        configJwtTokenHeader = readConfig(Names.TOKEN_HEADER, properties, config, CONFIG_TOKEN_HEADER_AUTHORIZATION);
+        configJwtTokenHeader = SignedJWTIdentityStore.readConfig(Names.TOKEN_HEADER, properties, config, CONFIG_TOKEN_HEADER_AUTHORIZATION);
         if ((!CONFIG_TOKEN_HEADER_AUTHORIZATION.equals(configJwtTokenHeader))
                 && (!CONFIG_TOKEN_HEADER_COOKIE.equals(configJwtTokenHeader))) {
             throw new DeploymentException("Configuration " + Names.TOKEN_HEADER + " must be either "
                     + CONFIG_TOKEN_HEADER_AUTHORIZATION + " or " + CONFIG_TOKEN_HEADER_COOKIE
                     + ", but is " + configJwtTokenHeader);
         }
-        configJwtTokenCookie = readConfig(Names.TOKEN_COOKIE, properties, config, "Bearer");
+        configJwtTokenCookie = SignedJWTIdentityStore.readConfig(Names.TOKEN_COOKIE, properties, config, "Bearer");
     }
 
     @Override
@@ -139,16 +139,4 @@ public class JWTAuthenticationMechanism implements HttpAuthenticationMechanism {
 
         return null;
     }
-
-    /**
-     * Read configuration from Vendor or server or return default value.
-     */
-    private String readConfig(String key, Optional<Properties> properties, Config config, String defaultValue) {
-        Optional<String> valueOpt = properties.map(props -> props.getProperty(key));
-        if (!valueOpt.isPresent()) {
-            valueOpt = config.getOptionalValue(key, String.class);
-        }
-        return valueOpt.orElse(defaultValue);
-    }
-
 }

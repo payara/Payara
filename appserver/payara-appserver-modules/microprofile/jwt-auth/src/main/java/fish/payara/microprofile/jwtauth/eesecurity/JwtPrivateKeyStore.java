@@ -40,12 +40,6 @@
 
 package fish.payara.microprofile.jwtauth.eesecurity;
 
-import org.eclipse.microprofile.config.Config;
-import org.eclipse.microprofile.config.ConfigProvider;
-
-import javax.enterprise.inject.spi.DeploymentException;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
 import java.math.BigInteger;
 import java.security.KeyFactory;
 import java.security.PrivateKey;
@@ -55,14 +49,19 @@ import java.time.Duration;
 import java.util.Base64;
 import java.util.Optional;
 import java.util.function.Supplier;
-
+import javax.enterprise.inject.spi.DeploymentException;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.ConfigProvider;
 import static org.eclipse.microprofile.jwt.config.Names.DECRYPTOR_KEY_LOCATION;
 
-class JwtPrivateKeyStore {
+public class JwtPrivateKeyStore {
 
     private final Config config;
     private final Supplier<Optional<String>> cacheSupplier;
     private final Duration defaultCacheTTL;
+    private String keyLocation = "/privateKey.pem";
 
     /**
      * @param defaultCacheTTL Private key cache TTL
@@ -73,8 +72,17 @@ class JwtPrivateKeyStore {
         this.cacheSupplier = new KeyLoadingCache(this::readRawPrivateKey)::get;
     }
 
+    /**
+     * @param defaultCacheTTL Private key cache TTL
+     * @param keyLocation location of the private key
+     */
+    public JwtPrivateKeyStore(Duration defaultCacheTTL, Optional<String> keyLocation) {
+        this(defaultCacheTTL);
+        this.keyLocation = keyLocation.orElse(this.keyLocation);
+    }
+
     private CacheableString readRawPrivateKey() {
-        CacheableString privateKey = JwtKeyStoreUtils.readKeyFromLocation("/privateKey.pem", defaultCacheTTL);
+        CacheableString privateKey = JwtKeyStoreUtils.readKeyFromLocation(keyLocation, defaultCacheTTL);
 
         if (!privateKey.isPresent()) {
             privateKey = JwtKeyStoreUtils.readMPKeyFromLocation(config, DECRYPTOR_KEY_LOCATION, defaultCacheTTL);
