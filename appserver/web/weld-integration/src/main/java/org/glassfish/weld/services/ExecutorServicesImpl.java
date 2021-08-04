@@ -40,7 +40,6 @@
 package org.glassfish.weld.services;
 
 import com.sun.enterprise.util.Utility;
-import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import java.util.Collection;
 import java.util.List;
 import java.util.ArrayList;
@@ -52,6 +51,12 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import javax.enterprise.concurrent.ManagedExecutorService;
+import javax.enterprise.concurrent.ManagedScheduledExecutorService;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.Globals;
 
 import org.jboss.weld.executor.AbstractExecutorServices;
 import org.jboss.weld.manager.api.ExecutorServices;
@@ -65,12 +70,16 @@ public class ExecutorServicesImpl extends AbstractExecutorServices implements Ex
 
     private final ExecutorService taskExecutor;
     private final ContextualTimerExecutor timerExecutor;
-    private PayaraExecutorService executor;
+    private final ManagedExecutorService executor;
+    private final org.glassfish.concurrent.config.ManagedExecutorService config;
     
-    public ExecutorServicesImpl(PayaraExecutorService service) {
-        executor = service;
+    public ExecutorServicesImpl() throws NamingException {
+        InitialContext ctx = new InitialContext();
+        executor = (ManagedExecutorService) ctx.lookup("java:comp/DefaultManagedExecutorService");
         taskExecutor = new ContextualTaskExecutor();
         timerExecutor = new ContextualTimerExecutor();
+        this.config = Globals.getDefaultHabitat()
+                .getService(org.glassfish.concurrent.config.ManagedExecutorService.class);
     }
 
     @Override
@@ -89,7 +98,7 @@ public class ExecutorServicesImpl extends AbstractExecutorServices implements Ex
 
     @Override
     protected int getThreadPoolSize() {
-        return executor.getExecutorThreadPoolSize();
+        return Integer.parseInt(this.config.getMaximumPoolSize());
     }
 
     @Override
@@ -135,10 +144,10 @@ public class ExecutorServicesImpl extends AbstractExecutorServices implements Ex
     }
 
     class ContextualTaskExecutor implements ExecutorService {
-        private ExecutorService delegate;
+        private final ExecutorService delegate;
 
         ContextualTaskExecutor() {
-            this.delegate = executor.getUnderlyingExecutorService();
+            this.delegate = executor;
         }
 
         @Override
@@ -214,10 +223,12 @@ public class ExecutorServicesImpl extends AbstractExecutorServices implements Ex
     class ContextualTimerExecutor extends ContextualTaskExecutor implements ScheduledExecutorService {
         private final ScheduledExecutorService delegate;
 
-        ContextualTimerExecutor() {
-            this.delegate = executor.getUnderlyingScheduledExecutorService();
+        ContextualTimerExecutor() throws NamingException {
+            InitialContext ctx = new InitialContext();
+            this.delegate = (ManagedScheduledExecutorService) ctx.lookup("java:comp/DefaultManagedScheduledExecutorService");
         }
 
+        @Override
         protected ScheduledExecutorService delegate() {
             return this.delegate;
         }

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld;
 
@@ -142,6 +142,7 @@ import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.web.ContextParameter;
 import com.sun.enterprise.deployment.web.ServletFilterMapping;
 import fish.payara.nucleus.executorservice.PayaraExecutorService;
+import javax.naming.NamingException;
 import org.jboss.weld.manager.api.ExecutorServices;
 
 @Service
@@ -308,8 +309,12 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
             ProxyServices proxyServices = new ProxyServicesImpl(services);
             deploymentImpl.getServices().add(ProxyServices.class, proxyServices);
 
-            ExecutorServices executorServices = new ExecutorServicesImpl(executorService);
-            deploymentImpl.getServices().add(ExecutorServices.class, executorServices);
+            try {
+                ExecutorServices executorServices = new ExecutorServicesImpl();
+                deploymentImpl.getServices().add(ExecutorServices.class, executorServices);
+            } catch (NamingException ex) {
+                throw new RuntimeException(ex);
+            }
 
             addWeldListenerToAllWars(context);
         } else {
