@@ -117,16 +117,16 @@ public class ChangeMasterPasswordCommand extends CLICommand {
         try {
             if (isDomain()) {  // is it domain
                 command = CLICommand.getCommand(habitat,
-                        CHANGE_MASTER_PASSWORD_DAS);
+                CHANGE_MASTER_PASSWORD_DAS);
                 return command.execute(argv);
             }
-
+            
             if (nodeDir != null) {
                 command = CLICommand.getCommand(habitat,
-                        CHANGE_MASTER_PASSWORD_NODE);
+                CHANGE_MASTER_PASSWORD_NODE);
                 return command.execute(argv);
             } else {
-
+                
                 // nodeDir is not specified and domainNameOrNodeName is not a domain.
                 // It could be a node
                 // We add defaultNodeDir parameter to args
@@ -136,13 +136,15 @@ public class ChangeMasterPasswordCommand extends CLICommand {
                 arguments.add(getDefaultNodesDirs().getAbsolutePath());
                 arguments.add(domainNameOrNodeName);
                 String[] newargs = (String[]) arguments.toArray(new String[arguments.size()]);
-
+                
                 command = CLICommand.getCommand(habitat,
-                        CHANGE_MASTER_PASSWORD_NODE);
+                CHANGE_MASTER_PASSWORD_NODE);
                 return command.execute(newargs);
             }
         } catch (IOException e) {
             throw new CommandException(e.getMessage(),e);
+        } finally {
+            System.out.println("WARNING: Additional Truststores are not re-encrypted, it is your responsibility to do this.");
         }
     }
 
