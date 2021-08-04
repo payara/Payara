@@ -141,7 +141,6 @@ import com.sun.enterprise.deployment.JndiNameEnvironment;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.web.ContextParameter;
 import com.sun.enterprise.deployment.web.ServletFilterMapping;
-import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import javax.naming.NamingException;
 import org.jboss.weld.manager.api.ExecutorServices;
 
@@ -204,9 +203,6 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
 
     @Inject
     private Deployment deployment;
-
-    @Inject
-    private PayaraExecutorService executorService;
 
     private Map<Application, WeldBootstrap> appToBootstrap = new HashMap<>();
 
