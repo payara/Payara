@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,18 +39,6 @@
  */
 package fish.payara.microprofile.jwtauth.eesecurity;
 
-import org.eclipse.microprofile.config.Config;
-import org.eclipse.microprofile.config.ConfigProvider;
-
-import javax.enterprise.inject.spi.DeploymentException;
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
-import javax.json.JsonValue;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.io.StringReader;
 import java.math.BigInteger;
 import java.security.AlgorithmParameters;
 import java.security.KeyFactory;
@@ -64,15 +52,18 @@ import java.security.spec.RSAPublicKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.time.Duration;
 import java.util.Base64;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
-
+import javax.enterprise.inject.spi.DeploymentException;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.ConfigProvider;
 import static org.eclipse.microprofile.jwt.config.Names.VERIFIER_PUBLIC_KEY;
 import static org.eclipse.microprofile.jwt.config.Names.VERIFIER_PUBLIC_KEY_LOCATION;
 
-class JwtPublicKeyStore  {
+public class JwtPublicKeyStore {
     
     private static final Logger LOGGER = Logger.getLogger(JwtPublicKeyStore.class.getName());
     private static final String RSA_ALGORITHM = "RSA";
@@ -82,6 +73,7 @@ class JwtPublicKeyStore  {
     private final Config config;
     private final Supplier<Optional<String>> cacheSupplier;
     private final Duration defaultCacheTTL;
+    private String keyLocation = "/publicKey.pem";
     
     /**
      * @param defaultCacheTTL Public key cache TTL 
@@ -90,6 +82,15 @@ class JwtPublicKeyStore  {
         this.config = ConfigProvider.getConfig();
         this.defaultCacheTTL = defaultCacheTTL;
         this.cacheSupplier = new KeyLoadingCache(this::readRawPublicKey)::get;
+    }
+
+    /**
+     * @param defaultCacheTTL Public key cache TTL
+     * @param keyLocation location of the public key
+     */
+    public JwtPublicKeyStore(Duration defaultCacheTTL, Optional<String> keyLocation) {
+        this(defaultCacheTTL);
+        this.keyLocation = keyLocation.orElse(this.keyLocation);
     }
 
     /**
@@ -105,7 +106,7 @@ class JwtPublicKeyStore  {
     }
     
     private CacheableString readRawPublicKey() {
-        CacheableString publicKey = JwtKeyStoreUtils.readKeyFromLocation("/publicKey.pem", defaultCacheTTL);
+        CacheableString publicKey = JwtKeyStoreUtils.readKeyFromLocation(keyLocation, defaultCacheTTL);
         
         if (!publicKey.isPresent()) {
             publicKey = readMPEmbeddedPublicKey();

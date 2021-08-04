@@ -44,7 +44,6 @@ import fish.payara.microprofile.jwtauth.jwt.JwtTokenParser;
 import java.io.IOException;
 import static java.lang.Thread.currentThread;
 import java.net.URL;
-import java.security.PublicKey;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collection;
@@ -83,6 +82,8 @@ public class SignedJWTIdentityStore implements IdentityStore {
     private final JwtPublicKeyStore publicKeyStore;
     private final JwtPrivateKeyStore privateKeyStore;
 
+    private final boolean isEncryptionRequired;
+
     public SignedJWTIdentityStore() {
         config = ConfigProvider.getConfig();
 
@@ -99,29 +100,23 @@ public class SignedJWTIdentityStore implements IdentityStore {
         enabledNamespace = readEnabledNamespace(properties);
         customNamespace = readCustomNamespace(properties);
         disableTypeVerification = readDisableTypeVerification(properties);
-        publicKeyStore = new JwtPublicKeyStore(readPublicKeyCacheTTL(properties));
-        privateKeyStore = new JwtPrivateKeyStore(readPublicKeyCacheTTL(properties));
+        Optional<String> publicKeyLocation = readConfigOptional(Names.VERIFIER_PUBLIC_KEY_LOCATION, properties, config); //mp.jwt.verifyAndParseEncryptedJWT.publickey.location
+        Optional<String> publicKey = readConfigOptional(Names.VERIFIER_PUBLIC_KEY, properties, config); //mp.jwt.verifyAndParseEncryptedJWT.publickey
+        Optional<String> decryptKeyLocation = readConfigOptional(Names.DECRYPTOR_KEY_LOCATION, properties, config); //mp.jwt.decrypt.key.location
+        publicKeyStore = new JwtPublicKeyStore(readPublicKeyCacheTTL(properties), publicKeyLocation);
+        privateKeyStore = new JwtPrivateKeyStore(readPublicKeyCacheTTL(properties), decryptKeyLocation);
+
+        // Signing is required by default, it doesn't parse if not signed
+        isEncryptionRequired = decryptKeyLocation.isPresent();
     }
 
     public CredentialValidationResult validate(SignedJWTCredential signedJWTCredential) {
         final JwtTokenParser jwtTokenParser = new JwtTokenParser(enabledNamespace, customNamespace, disableTypeVerification);
         try {
-            jwtTokenParser.parse(signedJWTCredential.getSignedJWT());
-            String keyID = jwtTokenParser.getKeyID();
+            JsonWebTokenImpl jsonWebToken = jwtTokenParser.parse(signedJWTCredential.getSignedJWT(),
+                    isEncryptionRequired, publicKeyStore, acceptedIssuer, privateKeyStore);
 
-            PublicKey publicKey = publicKeyStore.getPublicKey(keyID);
-            JsonWebTokenImpl jsonWebToken = null;
-            try {
-                jsonWebToken = jwtTokenParser.verify(acceptedIssuer, publicKey);
-            } catch (IllegalStateException illegalStateException) {
-                if (illegalStateException.getMessage().equals("No parsed SignedJWT.")) {
-                    jsonWebToken = jwtTokenParser.verify(acceptedIssuer, publicKey, privateKeyStore.getPrivateKey(keyID));
-                } else {
-                    throw illegalStateException;
-                }
-            }
-
-            // verify audience
+            // verifyAndParseEncryptedJWT audience
             final Set<String> recipientsOfThisJWT = jsonWebToken.getAudience();
             // find if any recipient is in the allowed audience
             Boolean recipientInAudience = allowedAudience
@@ -188,4 +183,19 @@ public class SignedJWTIdentityStore implements IdentityStore {
         return properties.isPresent() ? Optional.ofNullable(properties.get().getProperty(Names.AUDIENCES)) : Optional.empty();
     }
 
+    /**
+     * Read configuration from Vendor or server or return default value.
+     */
+    public static String readConfig(String key, Optional<Properties> properties, Config config, String defaultValue) {
+        Optional<String> valueOpt = readConfigOptional(key, properties, config);
+        return valueOpt.orElse(defaultValue);
+    }
+
+    public static Optional<String> readConfigOptional(String key, Optional<Properties> properties, Config config) {
+        Optional<String> valueOpt = properties.map(props -> props.getProperty(key));
+        if (!valueOpt.isPresent()) {
+            valueOpt = config.getOptionalValue(key, String.class);
+        }
+        return valueOpt;
+    }
 }
