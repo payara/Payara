@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -48,7 +48,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.annotation.security.RolesAllowed;
-import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.SessionScoped;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.AfterBeanDiscovery;
@@ -146,12 +145,12 @@ public class JwtAuthCdiExtension implements Extension {
                 Bean<?> bean = injectionPoint.getBean();
                 
                 Class<?> scope = bean != null ? injectionPoint.getBean().getScope() : null;
-                
-                if (scope != null && (scope.equals(ApplicationScoped.class) || scope.equals(SessionScoped.class))) {
+
+                if (scope != null && scope.equals(SessionScoped.class)) {
                     throw new DeploymentException(
                         "Can't inject using qualifier " + Claim.class + " in a target with scope " + scope);
                 }
-                
+
                 if (!claim.value().equals("") && claim.standard() != UNKNOWN && !claim.value().equals(claim.standard().name())) {
                     throw new DeploymentException(
                         "Claim value " + claim.value() + " should be equal to claim standard " + claim.standard().name() +
