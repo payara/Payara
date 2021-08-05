@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2021 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,36 +37,38 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.microprofile.jwtauth.jwt;
 
-import java.util.function.Function;
-import org.eclipse.microprofile.jwt.ClaimValue;
+package fish.payara.microprofile.jwtauth.eesecurity;
 
-/**
- * A default implementation of {@link ClaimValue}
- * 
- * @author Arjan Tijms
- *
- * @param <T> the expected type of the claim
- */
-public class ClaimValueImpl<T> implements ClaimValue<T> {
-    
-    private final String name;
-    private final Function<String, T> valueFunction;
-    
-    public ClaimValueImpl(String name, Function<String, T> valueFunction) {
-        this.name = name;
-        this.valueFunction = valueFunction;
+import java.time.Duration;
+import java.util.Optional;
+
+public class CacheableString {
+
+    private String value;
+    private Duration cacheTTL;
+
+    public static CacheableString empty(Duration cacheTTL) {
+        return from(null, cacheTTL);
     }
 
-    @Override
-    public String getName() {
-        return name;
+    public static CacheableString from(String value, Duration cacheTTL) {
+        CacheableString instance = new CacheableString();
+        instance.cacheTTL = cacheTTL;
+        instance.value = value;
+        return instance;
     }
 
-    @Override
-    public T getValue() {
-        return valueFunction.apply(name);
+    public Optional<String> getValue() {
+        return Optional.ofNullable(value);
+    }
+
+    public Duration getCacheTTL() {
+        return cacheTTL;
+    }
+
+    public boolean isPresent() {
+        return value != null;
     }
 
 }

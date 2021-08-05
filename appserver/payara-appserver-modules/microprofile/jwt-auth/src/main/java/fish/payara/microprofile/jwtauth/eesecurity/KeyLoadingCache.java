@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,33 +37,43 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.microprofile.jwtauth.tck;
 
-import java.security.PublicKey;
-import org.eclipse.microprofile.jwt.JsonWebToken;
-import fish.payara.microprofile.jwtauth.jwt.JwtTokenParser;
+package fish.payara.microprofile.jwtauth.eesecurity;
 
-/**
- *
- *  * This implements the artefact mandated by the MP-JWT TCK for offline
- * (outside container) testing
- * of the token parser.
- *
- * @author Arjan Tijms
- *
- */
-public class MockTokenParser {
+import java.time.Duration;
+import java.util.Optional;
+import java.util.function.Supplier;
 
-    private final JwtTokenParser jwtTokenParser = new JwtTokenParser();
+public class KeyLoadingCache {
 
-    public JsonWebToken parse(String bearerToken, String issuer, PublicKey signedBy) throws Exception {
-        try {
-            jwtTokenParser.parse(bearerToken);
-            return jwtTokenParser.verify(issuer, signedBy);
-        } catch (Exception e) {
-            throw new IllegalStateException("", e);
+    private final Supplier<CacheableString> keySupplier;
+    private Duration ttl;
+    private long lastUpdated;
+    private Optional<String> key;
+
+
+    public KeyLoadingCache(Supplier<CacheableString> keySupplier) {
+        this.ttl = Duration.ZERO;
+        this.keySupplier = keySupplier;
+    }
+
+    public Optional<String> get() {
+        long now = System.currentTimeMillis();
+        if (now - lastUpdated > ttl.toMillis()) {
+            refresh();
+        }
+
+        return key;
+    }
+
+    private synchronized void refresh() {
+        long now = System.currentTimeMillis();
+        if (now - lastUpdated > ttl.toMillis()) {
+            CacheableString result = keySupplier.get();
+            key = result.getValue();
+            ttl = result.getCacheTTL();
+            lastUpdated = now;
         }
     }
 
 }
-
