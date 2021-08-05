@@ -43,6 +43,7 @@
 package com.sun.enterprise.glassfish.bootstrap;
 
 import fish.payara.boot.runtime.BootCommands;
+import fish.payara.logging.LoggingUtil;
 import fish.payara.logging.PayaraLogManager;
 import org.glassfish.embeddable.*;
 
@@ -70,22 +71,27 @@ public class GlassFishMain {
 
     private static final Pattern COMMAND_PATTERN = Pattern.compile("([^\"']\\S*|\".*?\"|'.*?')\\s*");
     private static final String[] COMMAND_TYPE = new String[0];
-    private static final Logger LOGGER;
+    private static Logger LOGGER;
 
     // TODO(Sahoo): Move the code to ASMain once we are ready to phase out ASMain
 
     static {
         // This is not a JVM parameter in the domain as users should not have the possibility to not use the Payara Log Manager.
         System.setProperty("java.util.logging.manager", PayaraLogManager.class.getName());
-
-        // Do not use as variable initialization as that will trigger LogManager before System property is set.
-        LOGGER = Logger.getLogger(GlassFishMain.class.getName());
     }
 
     public static void main(final String args[]) throws Exception {
-        MainHelper.checkJdkVersion();
 
+        // Avoid triggering logging for the moment
         final Properties argsAsProps = argsToMap(args);
+        boolean verbose = Boolean.parseBoolean(argsAsProps.getProperty("-verbose"));
+        System.setProperty(LoggingUtil.SYSTEM_PROPERTY_PAYARA_LOGGING_VERBOSE, Boolean.toString(verbose));
+
+        // Do not use as variable initialization as that will trigger LogManager before System property is set.
+        // And only after we have determined if we use verbose logging so that ConsoleHandler usage is correct.
+        LOGGER = Logger.getLogger(GlassFishMain.class.getName());
+
+        MainHelper.checkJdkVersion();
 
         String platform = MainHelper.whichPlatform();
 

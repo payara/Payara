@@ -183,8 +183,8 @@ public final class SSLUtils implements PostConstruct {
         return securitySupport.getTrustStores();
     }
 
-    public KeyStore getTrustStore() throws IOException {
-        return getTrustStores()[0];
+    public KeyStore[] getTrustStore() throws IOException {
+        return getTrustStores();
     }
 
     /**
@@ -344,10 +344,11 @@ public final class SSLUtils implements PostConstruct {
 
     private KeyStore mergingTrustStores(KeyStore[] trustStores) throws IOException, KeyStoreException, NoSuchAlgorithmException, CertificateException {
         KeyStore mergedStore;
+        // Code before loading multiple keystores always had index of 0
         try {
-            mergedStore = securitySupport.loadNullStore("CaseExactJKS", securitySupport.getKeyStores().length - 1);
+            mergedStore = securitySupport.loadNullStore("CaseExactJKS", 0);
         } catch (KeyStoreException ex) {
-            mergedStore = securitySupport.loadNullStore("JKS", securitySupport.getKeyStores().length - 1);
+            mergedStore = securitySupport.loadNullStore("JKS", 0);
         }
 
         String[] tokens = securitySupport.getTokenNames();

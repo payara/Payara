@@ -53,41 +53,10 @@ import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.v3.logging.AgentFormatterDelegate;
 import fish.payara.enterprise.server.logging.JSONLogFormatter;
 import fish.payara.enterprise.server.logging.PayaraNotificationFileHandler;
-import java.beans.PropertyChangeEvent;
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.Vector;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.Filter;
-import java.util.logging.Formatter;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.LogManager;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
-import javax.inject.Inject;
-import javax.validation.ValidationException;
+import fish.payara.logging.LoggingUtil;
 import org.glassfish.api.admin.FileMonitoring;
 import org.glassfish.common.util.Constants;
-import org.glassfish.hk2.api.PostConstruct;
-import org.glassfish.hk2.api.PreDestroy;
-import org.glassfish.hk2.api.Rank;
-import org.glassfish.hk2.api.ServiceHandle;
-import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.api.*;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.internal.api.InitRunLevel;
@@ -97,6 +66,20 @@ import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.UnprocessedChangeEvent;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
+
+import javax.inject.Inject;
+import javax.validation.ValidationException;
+import java.beans.PropertyChangeEvent;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.logging.Filter;
+import java.util.logging.Formatter;
+import java.util.logging.*;
 
 /**
  * Reinitialise the log manager using our logging.properties file.
@@ -137,6 +120,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
 
     PrintStream oStdOutBackup = System.out;
     PrintStream oStdErrBackup = System.err;
+    LogManager logManager;
 
     String serverLogFileDetail = "";
     String handlerDetail = "";
@@ -182,7 +166,6 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     private static final String FLUSHFREQUENCY_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.flushFrequency";
     private static final String FILEHANDLER_LIMIT_PROPERTY = "java.util.logging.FileHandler.limit";
     private static final String LOGTOFILE_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.logtoFile";
-    private static final String LOGTOCONSOLE_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.logtoConsole";
     private static final String ROTATIONLIMITINBYTES_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.rotationLimitInBytes";
     private static final String USESYSTEMLOGGING_PROPERTY = "com.sun.enterprise.server.logging.SyslogHandler.useSystemLogging";
     private static final String FILEHANDLER_COUNT_PROPERTY = "java.util.logging.FileHandler.count";
@@ -231,8 +214,8 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     private String excludeFields;
 
     private boolean multiLineMode = false;
-    
-    private  GFFileHandler gfFileHandler = null;
+
+    private GFFileHandler gfFileHandler = null;
     
     private  PayaraNotificationFileHandler pyFileHandler = null;
     
@@ -372,7 +355,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
         }
 
         // logging.properties massaging.
-        final LogManager logMgr = LogManager.getLogManager();
+        logManager = LogManager.getLogManager();
         File loggingPropertiesFile = null;
 
         // reset settings
@@ -396,8 +379,9 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                 FileUtils.copy(src, dest);
                 loggingPropertiesFile = new File(env.getConfigDirPath(), ServerEnvironmentImpl.kLoggingPropertiesFileName);
             }
-            
-            logMgr.readConfiguration();
+
+            // Apply logging.properties to the logging system (JDK level parts).
+            logManager.readConfiguration();
 
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, LogFacade.ERROR_READING_CONF_FILE, e);
@@ -409,12 +393,12 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
 
         }
 
-        // force the ConsoleHandler to use GF formatter
-        String formatterClassName = null;
+        String formatterClassName;
         try {
+            // force the ConsoleHandler to use GF formatter
             Map<String, String> props = getLoggingProperties();
             formatterClassName = props.get(CONSOLEHANDLER_FORMATTER_PROPERTY);
-            setConsoleHandlerLogFormat(formatterClassName, props, logMgr);
+            setConsoleHandlerLogFormat(formatterClassName, props);
 
             //setting default attributes value for all properties
             setDefaultLoggingProperties(props);
@@ -426,6 +410,9 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                     addHandler(handler);
                 }
             }
+
+            // All handlers are added, now we can get reference to GFFileHandler.
+            findGFFileHandler();
 
             // add the filter if there is one
             String filterClassName = props.get(LoggingXMLNames.xmltoPropsMap.get("log-filter"));
@@ -446,11 +433,11 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
         // The synchronization in Logger class is addressed in JDK 1.7 but in JDK 1.6
         // Logger.getLogger() is still synchronized.
         synchronized (java.util.logging.Logger.class) {
-            synchronized (logMgr) {
-                Enumeration<String> loggerNames = logMgr.getLoggerNames();
+            synchronized (logManager) {
+                Enumeration<String> loggerNames = logManager.getLoggerNames();
                 while (loggerNames.hasMoreElements()) {
                     String loggerName = loggerNames.nextElement();
-                    Logger logger = logMgr.getLogger(loggerName);
+                    Logger logger = logManager.getLogger(loggerName);
                     if (logger == null) {
                         continue;
                     }
@@ -467,7 +454,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
         }
              
         // finally listen to changes to the loggingPropertiesFile.properties file
-        listenToChangesOnloggingPropsFile(loggingPropertiesFile, logMgr);
+        listenToChangesOnloggingPropsFile(loggingPropertiesFile);
    
         // Log the messages that were generated very early before this Service
         // started.  Just use our own logger...
@@ -489,9 +476,19 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
             }
         }
     }
-  
-    public void listenToChangesOnloggingPropsFile(File loggingPropertiesFile, LogManager logMgr){
-             if (loggingPropertiesFile != null) {
+
+    private void reconfigureLoggers() throws IOException {
+        logManager.readConfiguration();
+    }
+
+    private void findGFFileHandler() {
+        gfFileHandler = (GFFileHandler) Arrays.stream(logManager.getLogger("").getHandlers())
+                .filter(h -> h.getClass().equals(GFFileHandler.class))
+                .findAny().orElse(null);
+    }
+
+    public void listenToChangesOnloggingPropsFile(File loggingPropertiesFile){
+        if (loggingPropertiesFile != null) {
             fileMonitoring.monitors(loggingPropertiesFile, new FileMonitoring.FileChangeListener() {
                 @Override
                 public void changed(File changedFile) {
@@ -530,13 +527,8 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                                 } else if (a.equals(SERVER_LOG_FILE_PROPERTY)) {
                                     if (!val.equals(serverLogFileDetail)) {
                                         serverLogFileDetail = val;
-                                        for (Handler handler : logMgr.getLogger("").getHandlers()) {
-                                            // only get the GFFileHandler
-                                            if (handler.getClass().equals(GFFileHandler.class)) {
-                                                gfFileHandler = (GFFileHandler) handler;
-                                                gfFileHandler.setLogFile(serverLogFileDetail);
-                                                break;
-                                            }
+                                        if (gfFileHandler != null) {
+                                            gfFileHandler.setLogFile(serverLogFileDetail);
                                         }
                                     }
                                 } else if (a.equals(HANDLER_PROPERTY)) {
@@ -550,23 +542,18 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                                 } else if (a.equals(CONSOLEHANDLER_FORMATTER_PROPERTY)) {
                                     if (!val.equals(consoleHandlerFormatterDetail)) {
                                         consoleHandlerFormatterDetail = val;
-                                        setConsoleHandlerLogFormat(consoleHandlerFormatterDetail, props, logMgr);
+                                        setConsoleHandlerLogFormat(consoleHandlerFormatterDetail, props);
                                     }
                                 } else if (a.equals(GFFILEHANDLER_FORMATTER_PROPERTY)) {
                                     if (!val.equals(gffileHandlerFormatterDetail)) {
                                         gffileHandlerFormatterDetail = val;
-                                        for (Handler handler : logMgr.getLogger("").getHandlers()) {
-                                            // only get the GFFileHandler
-                                            if (handler.getClass().equals(GFFileHandler.class)) {
-                                                gfFileHandler = (GFFileHandler) handler;
-                                                gfFileHandler.setFileHandlerFormatter(gffileHandlerFormatterDetail);
-                                                break;
-                                            }
+                                        if (gfFileHandler != null) {
+                                            gfFileHandler.setFileHandlerFormatter(gffileHandlerFormatterDetail);
                                         }
                                     }
                                 } else if (a.equals(PAYARA_NOTIFICATION_LOG_FORMATTER_PROPERTY)) {
                                     if (!val.equals(payaraNotificationLogFormatterDetail)) {
-                                        Handler[] payaraNotificationLogFileHandlers = logMgr.getLogger(payaraNotificationLogger).getHandlers();
+                                        Handler[] payaraNotificationLogFileHandlers = logManager.getLogger(payaraNotificationLogger).getHandlers();
                                         if (payaraNotificationLogFileHandlers.length > 0) {
                                             payaraNotificationLogFormatterDetail = val;
                                             for (Handler handler : payaraNotificationLogFileHandlers) {
@@ -583,26 +570,17 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                                 } else if (a.equals(ROTATIONTIMELIMITINMINUTES_PROPERTY)) {
                                     if (!val.equals(rotationOnTimeLimitInMinutesDetail)) {
                                         rotationOnTimeLimitInMinutesDetail = val;
-                                        for (Handler handler : logMgr.getLogger("").getHandlers()) {
-                                            // only get the GFFileHandler
-                                            if (handler.getClass().equals(GFFileHandler.class)) {
-                                                gfFileHandler = (GFFileHandler) handler;
-                                                gfFileHandler.setRotationTimeLimitValue(Long.parseLong(rotationOnTimeLimitInMinutesDetail));
-                                                break;
-                                            }
+                                        if (gfFileHandler != null) {
+                                            gfFileHandler.setRotationTimeLimitValue(Long.parseLong(rotationOnTimeLimitInMinutesDetail));
                                         }
                                     }
                                 } else if (a.equals(FLUSHFREQUENCY_PROPERTY)) {
                                     if (!val.equals(flushFrequencyDetail)) {
                                         flushFrequencyDetail = val;
-                                        for (Handler handler : logMgr.getLogger("").getHandlers()) {
-                                            // only get the GFFileHandler
-                                            if (handler.getClass().equals(GFFileHandler.class)) {
-                                                gfFileHandler = (GFFileHandler) handler;
-                                                gfFileHandler.setFlushFrequency(Integer.parseInt(flushFrequencyDetail));
-                                                break;
-                                            }
+                                        if (gfFileHandler != null) {
+                                            gfFileHandler.setFlushFrequency(Integer.parseInt(flushFrequencyDetail));
                                         }
+
                                     }
                                 } else if (a.equals(FILEHANDLER_LIMIT_PROPERTY)) {
                                     if (!val.equals(filterHandlerDetails)) {
@@ -611,37 +589,61 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                                 } else if (a.equals(LOGTOFILE_PROPERTY)) {
                                     if (!val.equals(logToFileDetail)) {
                                         logToFileDetail = val;
-                                        for (Handler handler : logMgr.getLogger("").getHandlers()) {
-                                            // only get the GFFileHandler
-                                            if (handler.getClass().equals(GFFileHandler.class)) {
-                                                gfFileHandler = (GFFileHandler) handler;
+                                        if (gfFileHandler != null) {
                                                 gfFileHandler.setLogToFile(Boolean.parseBoolean(logToFileDetail));
-                                                break;
+
+                                        }
+
+                                    }
+                                } else if (a.equals(LoggingUtil.LOGTOCONSOLE_PROPERTY)) {
+                                    if (!val.equals(logToConsoleDetail)) {
+                                        logToConsoleDetail = val;
+                                        if (!val.isEmpty()) {
+                                            Boolean logToConsole = Boolean.valueOf(val);
+                                            System.setProperty("payara.logging.verbose", logToConsole.toString());
+
+                                            // Find ConsoleHandler.
+                                            Handler consoleHandler = null;
+                                            Logger logger = Logger.getLogger("");
+                                            Handler[] h = logger.getHandlers();
+                                            for (int i = 0; i < h.length; i++) {
+                                                String name = h[i].toString();
+                                                if (name.contains("java.util.logging.ConsoleHandler")) {
+                                                    consoleHandler = h[i];
+                                                }
+
+                                            }
+                                            // Do we need to re-init the config system?
+                                            if (logToConsole && consoleHandler == null) {
+                                                // We need to restore System.out and System.err as they can be redirected to
+                                                // our LoggingPrintStream and the log file.  We temporarily set them back to the original ones.
+                                                restoreOriginalSystemPrintStreams();
+
+                                                reconfigureLoggers();
+                                                setConsoleHandlerLogFormat(consoleHandlerFormatterDetail, props);
+                                                if (gfFileHandler != null) {
+                                                    gfFileHandler.setLogStandardStreams(Boolean.parseBoolean(logStandardStreamsDetail));
+                                                }
+                                            }
+                                            if (!logToConsole && consoleHandler != null) {
+
+                                                reconfigureLoggers();
                                             }
                                         }
-                                    }
-                                } else if (a.equals(LOGTOCONSOLE_PROPERTY)) {
-                                    if (!val.equals(logToConsoleDetail)) {
-                                        //generateAttributeChangeEvent(LOGTOCONSOLE_PROPERTY, logToConsoleDetail, props);
                                     }
                                 } else if (a.equals(ROTATIONLIMITINBYTES_PROPERTY)) {
                                     if (!val.equals(rotationInTimeLimitInBytesDetail)) {
                                         rotationInTimeLimitInBytesDetail = val;
-                                        for (Handler handler : logMgr.getLogger("").getHandlers()) {
-                                            // only get the GFFileHandler
-                                            if (handler.getClass().equals(GFFileHandler.class)) {
-                                                gfFileHandler = (GFFileHandler) handler;
-                                                gfFileHandler.setRotationLimitAttrValue(Integer.valueOf(rotationInTimeLimitInBytesDetail));
-                                                break;
-                                            }
+                                        if (gfFileHandler != null) {
+                                            gfFileHandler.setRotationLimitAttrValue(Integer.valueOf(rotationInTimeLimitInBytesDetail));
                                         }
                                     }
                                 } else if (a.equals(USESYSTEMLOGGING_PROPERTY)) {
                                     if (!val.equals(useSystemLoggingDetail)) {
                                         useSystemLoggingDetail = val;
                                         SyslogHandler syslogHandler = null;
-                                        for (Handler handler : logMgr.getLogger("").getHandlers()) {
-                                            // only get the GFFileHandler
+                                        for (Handler handler : logManager.getLogger("").getHandlers()) {
+                                            // only get the SyslogHandler
                                             if (handler.getClass().equals(SyslogHandler.class)) {
                                                 syslogHandler = (SyslogHandler) handler;
                                                 syslogHandler.setSystemLogging(Boolean.parseBoolean(useSystemLoggingDetail));
@@ -664,26 +666,15 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                                 } else if (a.equals(MAXHISTORY_FILES_PROPERTY)) {
                                     if (!val.equals(maxHistoryFilesDetail)) {
                                         maxHistoryFilesDetail = val;
-                                        for (Handler handler : logMgr.getLogger("").getHandlers()) {
-                                            // only get the GFFileHandler
-                                            if (handler.getClass().equals(GFFileHandler.class)) {
-                                                gfFileHandler = (GFFileHandler) handler;
-                                                gfFileHandler.setMaxHistoryFiles(Integer.parseInt(maxHistoryFilesDetail));
-                                                break;
-                                            }
+                                        if (gfFileHandler != null) {
+                                            gfFileHandler.setMaxHistoryFiles(Integer.parseInt(maxHistoryFilesDetail));
                                         }
                                     }
                                 } else if (a.equals(ROTATIONONDATECHANGE_PROPERTY)) {
                                     if (!val.equals(rotationOnDateChangeDetail)) {
                                         rotationOnDateChangeDetail = val;
-                                        for (Handler handler : logMgr.getLogger("").getHandlers()) {
-                                            // only get the GFFileHandler
-                                            if (handler.getClass().equals(GFFileHandler.class)) {
-                                                gfFileHandler = (GFFileHandler) handler;
-
-                                                gfFileHandler.setRotationOnDateChange(Boolean.parseBoolean(rotationOnDateChangeDetail));
-                                                break;
-                                            }
+                                        if (gfFileHandler != null) {
+                                            gfFileHandler.setRotationOnDateChange(Boolean.parseBoolean(rotationOnDateChangeDetail));
                                         }
                                     }
                                 } else if (a.equals(FILEHANDLER_PATTERN_PROPERTY)) {
@@ -703,55 +694,35 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                                     excludeFields = (excludeFields == null) ? "" : excludeFields;
                                     if (!val.equals(excludeFields)) {
                                         excludeFields = val;
-                                        for (Handler handler : logMgr.getLogger("").getHandlers()) {
-                                            // only get the GFFileHandler
-                                            if (handler.getClass().equals(GFFileHandler.class)) {
-                                                gfFileHandler = (GFFileHandler) handler;
-                                                gfFileHandler.setExcludeFields(excludeFields);
-                                                break;
-                                            }
+                                        if (gfFileHandler != null) {
+                                            gfFileHandler.setExcludeFields(excludeFields);
                                         }
                                     }
                                 } else if (a.equals(MULTI_LINE_MODE_PROPERTY)) {
                                     String oldVal = Boolean.toString(multiLineMode);
                                     if (!val.equalsIgnoreCase(oldVal)) {
                                         multiLineMode = Boolean.parseBoolean(val);
-                                        for (Handler handler : logMgr.getLogger("").getHandlers()) {
-                                            // only get the GFFileHandler
-                                            if (handler.getClass().equals(GFFileHandler.class)) {
-                                                gfFileHandler = (GFFileHandler) handler;
-                                                gfFileHandler.setMultiLineMode(multiLineMode);
-                                                break;
-                                            }
+                                        if (gfFileHandler != null) {
+                                            gfFileHandler.setMultiLineMode(multiLineMode);
                                         }
                                     }
                                 } else if (a.equals(COMPRESS_ON_ROTATION_PROPERTY)) {
                                     if (!val.equals(compressOnRotationDetail)) {
                                         compressOnRotationDetail = val;
-                                        for (Handler handler : logMgr.getLogger("").getHandlers()) {
-                                            // only get the GFFileHandler
-                                            if (handler.getClass().equals(GFFileHandler.class)) {
-                                                gfFileHandler = (GFFileHandler) handler;
-                                                gfFileHandler.setCompressionOnRotation(Boolean.parseBoolean(compressOnRotationDetail));
-                                                break;
-                                            }
+                                        if (gfFileHandler != null) {
+                                            gfFileHandler.setCompressionOnRotation(Boolean.parseBoolean(compressOnRotationDetail));
                                         }
                                     }
                                 } else if (a.equals(LOG_STANDARD_STREAMS_PROPERTY)) {
                                     if (!val.equals(logStandardStreamsDetail)) {
                                         logStandardStreamsDetail = val;
-                                        for (Handler handler : logMgr.getLogger("").getHandlers()) {
-                                            // only get the GFFileHandler
-                                            if (handler.getClass().equals(GFFileHandler.class)) {
-                                                gfFileHandler = (GFFileHandler) handler;
-                                                gfFileHandler.setLogStandardStreams(Boolean.parseBoolean(logStandardStreamsDetail));
-                                                break;
-                                            }
+                                        if (gfFileHandler != null) {
+                                            gfFileHandler.setLogStandardStreams(Boolean.parseBoolean(logStandardStreamsDetail));
                                         }
                                     }
                                 }else if (a.equals(PAYARA_NOTIFICATION_LOG_FILE_PROPERTY)) {
                                     if (!val.equals(payaraNotificationLogFileDetail)) {
-                                        Handler[] payaraNotificationLogFileHandlers = logMgr.getLogger(payaraNotificationLogger).getHandlers();
+                                        Handler[] payaraNotificationLogFileHandlers = logManager.getLogger(payaraNotificationLogger).getHandlers();
                                         if (payaraNotificationLogFileHandlers.length > 0) {
                                             payaraNotificationLogFileDetail = val;
                                             for (Handler handler : payaraNotificationLogFileHandlers) {
@@ -767,7 +738,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                                     }
                                 } else if (a.equals(PAYARA_NOTIFICATION_LOGTOFILE_PROPERTY)) {
                                     if (!val.equals(payaraNotificationlogToFileDetail)) {
-                                        Handler[] payaraNotificationLogFileHandlers = logMgr.getLogger(payaraNotificationLogger).getHandlers();
+                                        Handler[] payaraNotificationLogFileHandlers = logManager.getLogger(payaraNotificationLogger).getHandlers();
                                         if (payaraNotificationLogFileHandlers.length > 0) {
                                             payaraNotificationlogToFileDetail = val;
                                             for (Handler handler : payaraNotificationLogFileHandlers) {
@@ -783,7 +754,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                                     }
                                 } else if (a.equals(PAYARA_NOTIFICATION_LOG_ROTATIONTIMELIMITINMINUTES_PROPERTY)) {
                                     if (!val.equals(payaraNotificationLogRotationOnTimeLimitInMinutesDetail)) {
-                                        Handler[] payaraNotificationLogFileHandlers = logMgr.getLogger(payaraNotificationLogger).getHandlers();
+                                        Handler[] payaraNotificationLogFileHandlers = logManager.getLogger(payaraNotificationLogger).getHandlers();
                                         if (payaraNotificationLogFileHandlers.length > 0) {
                                             payaraNotificationLogRotationOnTimeLimitInMinutesDetail = val;
                                             for (Handler handler : payaraNotificationLogFileHandlers) {
@@ -799,7 +770,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                                     }
                                 } else if (a.equals(PAYARA_NOTIFICATION_LOG_ROTATIONLIMITINBYTES_PROPERTY)) {
                                     if (!val.equals(payaraNotificationLogRotationLimitInBytesDetail)) {
-                                        Handler[] payaraNotificationLogFileHandlers = logMgr.getLogger(payaraNotificationLogger).getHandlers();
+                                        Handler[] payaraNotificationLogFileHandlers = logManager.getLogger(payaraNotificationLogger).getHandlers();
                                         if (payaraNotificationLogFileHandlers.length > 0) {
                                             payaraNotificationLogRotationLimitInBytesDetail = val;
                                             for (Handler handler : payaraNotificationLogFileHandlers) {
@@ -815,7 +786,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                                     }
                                 } else if (a.equals(PAYARA_NOTIFICATION_LOG_ROTATIONONDATECHANGE_PROPERTY)) {
                                     if (!val.equals(payaraNotificationLogRotationOnDateChangeDetail)) {
-                                        Handler[] payaraNotificationLogFileHandlers = logMgr.getLogger(payaraNotificationLogger).getHandlers();
+                                        Handler[] payaraNotificationLogFileHandlers = logManager.getLogger(payaraNotificationLogger).getHandlers();
                                         if (payaraNotificationLogFileHandlers.length > 0) {
                                             payaraNotificationLogRotationOnDateChangeDetail = val;
                                             for (Handler handler : payaraNotificationLogFileHandlers) {
@@ -831,7 +802,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                                     }
                                 } else if (a.equals(PAYARA_NOTIFICATION_LOG_MAXHISTORY_FILES_PROPERTY)) {
                                     if (!val.equals(payaraNotificationLogmaxHistoryFilesDetail)) {
-                                        Handler[] payaraNotificationLogFileHandlers = logMgr.getLogger(payaraNotificationLogger).getHandlers();
+                                        Handler[] payaraNotificationLogFileHandlers = logManager.getLogger(payaraNotificationLogger).getHandlers();
                                         if (payaraNotificationLogFileHandlers.length > 0) {
                                              payaraNotificationLogmaxHistoryFilesDetail = val;
                                             for (Handler handler : payaraNotificationLogFileHandlers) {
@@ -847,7 +818,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                                     }
                                 } else if (a.equals(PAYARA_NOTIFICATION_LOG_COMPRESS_ON_ROTATION_PROPERTY)) {
                                     if (!val.equals(payaraNotificationLogCompressOnRotationDetail)) {
-                                        Handler[] payaraNotificationLogFileHandlers = logMgr.getLogger(payaraNotificationLogger).getHandlers();
+                                        Handler[] payaraNotificationLogFileHandlers = logManager.getLogger(payaraNotificationLogger).getHandlers();
                                         if (payaraNotificationLogFileHandlers.length > 0) {
                                             payaraNotificationLogCompressOnRotationDetail = val;
                                             for (Handler handler : payaraNotificationLogFileHandlers) {
@@ -879,7 +850,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
             });
         }
     }
-    private void setConsoleHandlerLogFormat(String formatterClassName, Map<String, String> props, LogManager logMgr) {
+    private void setConsoleHandlerLogFormat(String formatterClassName, Map<String, String> props) {
         if (formatterClassName == null || formatterClassName.isEmpty()) {
             formatterClassName = UniformLogFormatter.class.getName();
         }
@@ -928,7 +899,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
             formatter.setRecordFieldSeparator(recordFieldSeparator);
             formatter.setExcludeFields(excludeFields);
             formatter.setMultiLineMode(multiLineMode);
-            for (Handler handler : logMgr.getLogger("").getHandlers()) {
+            for (Handler handler : logManager.getLogger("").getHandlers()) {
                 // only get the ConsoleHandler
                 if (handler.getClass().equals(ConsoleHandler.class)) {
                     handler.setFormatter(formatter);
@@ -940,7 +911,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
             ODLLogFormatter formatter = new ODLLogFormatter();
             formatter.setExcludeFields(excludeFields);
             formatter.setMultiLineMode(multiLineMode);
-            for (Handler handler : logMgr.getLogger("").getHandlers()) {
+            for (Handler handler : logManager.getLogger("").getHandlers()) {
                 // only get the ConsoleHandler
                 if (handler.getClass().equals(ConsoleHandler.class)) {
                     handler.setFormatter(formatter);
@@ -950,7 +921,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
         } else if (formatterClassName.equals(JSONLogFormatter.class.getName())) {
             JSONLogFormatter formatter = new JSONLogFormatter();
             formatter.setExcludeFields(excludeFields);
-            for (Handler handler : logMgr.getLogger("").getHandlers()) {
+            for (Handler handler : logManager.getLogger("").getHandlers()) {
                 // only get the ConsoleHandler
                 if (handler.getClass().equals(ConsoleHandler.class)) {
                     handler.setFormatter(formatter);
@@ -973,7 +944,10 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
         flushFrequencyDetail = props.get(FLUSHFREQUENCY_PROPERTY);
         filterHandlerDetails = props.get(FILEHANDLER_LIMIT_PROPERTY);
         logToFileDetail = props.get(LOGTOFILE_PROPERTY);
-        logToConsoleDetail = props.get(LOGTOCONSOLE_PROPERTY);
+        // logToConsole is special as it needs to match the fact if ConsoleHandler is instantiated and
+        // This is not always reflected on the logging properties file.
+        logToConsoleDetail = Boolean.toString(LoggingUtil.isVerboseMode());
+
         rotationInTimeLimitInBytesDetail = props.get(ROTATIONLIMITINBYTES_PROPERTY);
         useSystemLoggingDetail = props.get(USESYSTEMLOGGING_PROPERTY);
         fileHandlerCountDetail = props.get(FILEHANDLER_COUNT_PROPERTY);
@@ -1049,10 +1023,10 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
         }
     }
 
-    public void generateAttributeChangeEvent(String property, String propertyDetail, Map props) {
+    public void generateAttributeChangeEvent(String property, String propertyDetail, Map<String, String> props) {
         PropertyChangeEvent pce = new PropertyChangeEvent(this, property, propertyDetail, props.get(property));
         UnprocessedChangeEvents ucel = new UnprocessedChangeEvents(new UnprocessedChangeEvent(pce, "server log file attribute " + property + " changed."));
-        List<UnprocessedChangeEvents> b = new ArrayList();
+        List<UnprocessedChangeEvents> b = new ArrayList<>();
         b.add(ucel);
         ucl.unprocessedTransactedEvents(b);
     }
@@ -1075,9 +1049,13 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
         for (ServiceHandle<?> i : habitat.getAllServiceHandles(BuilderHelper.createContractFilter(Handler.class.getName()))) {
             i.destroy();
         }
+        restoreOriginalSystemPrintStreams();
+        System.out.println("Completed shutdown of Log manager service");
+    }
+
+    private void restoreOriginalSystemPrintStreams() {
         System.setOut(oStdOutBackup);
         System.setErr(oStdErrBackup);
-        System.out.println("Completed shutdown of Log manager service");
     }
 
     @Override

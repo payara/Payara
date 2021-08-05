@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2020-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -67,11 +67,11 @@ import static java.time.temporal.ChronoUnit.DAYS;
  *
  * @author David Matejcek
  */
-class SecurityUtils {
+public class SecurityUtils {
     private static final Logger logger = Logger.getLogger(SecurityUtils.class.getName());
     private static final BouncyCastleProvider PROVIDER = new BouncyCastleProvider();
 
-    static X509Certificate createSelfSignedCertificate(KeyPair keys) {
+    public static X509Certificate createSelfSignedCertificate(KeyPair keys) {
         try {
             return new JcaX509CertificateConverter()
                     .setProvider(PROVIDER)
@@ -110,7 +110,7 @@ class SecurityUtils {
     }
 
 
-    static KeyPair generateRandomRSAKeys() {
+    public static KeyPair generateRandomRSAKeys() {
         try {
             KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA", PROVIDER);
             keyPairGenerator.initialize(2048);

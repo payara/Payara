@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  * 
- * Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+ * Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
  */
 package com.sun.enterprise.v3.admin.cluster;
 
@@ -57,6 +57,7 @@ import java.util.logging.Logger;
 import javax.inject.Inject;
 import javax.validation.constraints.Min;
 
+import fish.payara.logging.LoggingUtil;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -279,6 +280,11 @@ public class StartInstanceCommand implements AdminCommand {
       
         if (debug) {
             command.add("--debug");
+        }
+
+        boolean verbose = LoggingUtil.isVerboseMode();
+        if (verbose) {
+            command.add("--logToConsole");
         }
 
         command.add(instanceName);

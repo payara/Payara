@@ -409,7 +409,7 @@ public class SecureAdminConfigUpgrade extends SecureAdminUpgradeHelper implement
          * Reload the keystore and truststore from disk.
          */
         reload(sslUtils().getKeyStore(), keyStoreFile, pw);
-        reload(sslUtils().getTrustStore(), serverEnv.getTrustStore(), pw);
+        reload(sslUtils().getTrustStore()[0], serverEnv.getTrustStore(), pw);
     }
 
     private void reload(final KeyStore keystore, final File keystoreFile, final String pw) throws

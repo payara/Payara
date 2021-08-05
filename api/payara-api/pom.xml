@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
-
-  Copyright (c) [2016-2021] Payara Foundation and/or its affiliates. All rights reserved.
-
+ 
+  Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ 
   The contents of this file are subject to the terms of either the GNU
   General Public License Version 2 only ("GPL") or the Common Development
   and Distribution License("CDDL") (collectively, the "License").  You
@@ -12,20 +12,20 @@
   https://github.com/payara/Payara/blob/master/LICENSE.txt
   See the License for the specific
   language governing permissions and limitations under the License.
-
+ 
   When distributing the software, include this License Header Notice in each
   file and include the License file at glassfish/legal/LICENSE.txt.
-
+ 
   GPL Classpath Exception:
   The Payara Foundation designates this particular file as subject to the "Classpath"
   exception as provided by the Payara Foundation in the GPL Version 2 section of the License
   file that accompanied this code.
-
+ 
   Modifications:
   If applicable, add the following below the License Header, with the fields
   enclosed by brackets [] replaced by your own identifying information:
   "Portions Copyright [year] [name of copyright owner]"
-
+ 
   Contributor(s):
   If you wish your version of this file to be governed by only the CDDL or
   only the GPL Version 2, indicate your decision by adding "[Contributor]
@@ -45,7 +45,7 @@
     <parent>
         <groupId>fish.payara.api</groupId>
         <artifactId>api-parent</artifactId>
-        <version>5.2021.5-SNAPSHOT</version>
+        <version>5.2021.6-SNAPSHOT</version>
     </parent>
     <artifactId>payara-api</artifactId>
     <name>Payara-API</name>
@@ -91,8 +91,36 @@
                         </goals>
                         <configuration>
                             <instructions>
-                                <_nodefaultversion>true</_nodefaultversion>
-                                <Export-Package>*,fish.payara.cdi.jsr107.impl</Export-Package>
+                                <Import-Package>
+                                    fish.payara.cdi.jsr107.implementation,
+                                    io.opentracing,
+                                    javax.inject,
+                                    javax.enterprise.util,
+                                    javax.security.auth,
+                                    javax.security.auth.x500,
+                                    javax.security.enterprise.credential,
+                                    javax.security.enterprise.identitystore,
+                                    javax.security.enterprise.authentication.mechanism.http,
+                                    javax.security.jacc,
+                                    javax.json,
+                                    javax.servlet.http
+                                </Import-Package>
+                                <Export-Package>
+                                    fish.payara.cdi.auth.roles,
+                                    fish.payara.cdi.jsr107.impl,
+                                    fish.payara.cluster,
+                                    fish.payara.jacc,
+                                    fish.payara.micro.cdi,
+                                    fish.payara.nucleus.requesttracing.api,
+                                    fish.payara.notification,
+                                    fish.payara.notification.eventbus,
+                                    fish.payara.notification.healthcheck,
+                                    fish.payara.notification.requesttracing,
+                                    fish.payara.security.annotations,
+                                    fish.payara.security.api,
+                                    fish.payara.security.oauth2.api,
+                                    fish.payara.security.openid.api
+                                </Export-Package>
                             </instructions>
                         </configuration>
                     </execution>
@@ -141,10 +169,6 @@
             <artifactId>opentracing-api</artifactId>
             <optional>true</optional>
             <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.security.connectors</groupId>
-            <artifactId>security-connectors-api</artifactId>
         </dependency>
     </dependencies>
 </project>

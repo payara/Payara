@@ -37,22 +37,18 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth.realm.certificate;
 
-import com.sun.enterprise.security.BaseRealm;
-import com.sun.enterprise.security.SecurityContext;
-import com.sun.enterprise.security.auth.login.DistinguishedPrincipalCredential;
-import com.sun.enterprise.security.auth.login.common.LoginException;
-import com.sun.enterprise.security.auth.realm.BadRealmException;
-import com.sun.enterprise.security.auth.realm.NoSuchRealmException;
-import com.sun.enterprise.util.Utility;
-import java.lang.ref.WeakReference;
+import java.security.Principal;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 import javax.naming.InvalidNameException;
 import javax.naming.ldap.LdapName;
@@ -60,28 +56,15 @@ import javax.naming.ldap.Rdn;
 import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.x500.X500Principal;
-import java.security.Principal;
-import java.security.cert.X509Certificate;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.ServiceLoader;
-import java.util.Spliterator;
-import java.util.Spliterators;
-import java.util.WeakHashMap;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Function;
-import java.util.logging.Level;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
+
 import org.glassfish.security.common.Group;
 import org.jvnet.hk2.annotations.Service;
-import fish.payara.security.api.ClientCertificateValidator;
-import java.security.cert.CertificateException;
-import org.glassfish.grizzly.utils.Holder.LazyHolder;
-import org.glassfish.internal.api.Globals;
-import org.glassfish.internal.api.JavaEEContextUtil;
-import org.glassfish.internal.api.JavaEEContextUtil.Context;
+
+import com.sun.enterprise.security.BaseRealm;
+import com.sun.enterprise.security.SecurityContext;
+import com.sun.enterprise.security.auth.login.DistinguishedPrincipalCredential;
+import com.sun.enterprise.security.auth.realm.BadRealmException;
+import com.sun.enterprise.security.auth.realm.NoSuchRealmException;
 
 /**
  * Realm wrapper for supporting certificate authentication.
@@ -120,17 +103,6 @@ public final class CertificateRealm extends BaseRealm {
     /** Descriptive string of the authentication type of this realm. */
     public static final String AUTH_TYPE = "certificate";
 
-    private boolean doValidation;
-    private final Map<ClassLoader,
-            // ServiceLoader keeps a reference to ClassLoader, so it has
-            // to be explicitly weak as well
-            WeakReference<ServiceLoader<ClientCertificateValidator>>> clientCertificateValidatorMap
-            = Collections.synchronizedMap(new WeakHashMap<>());
-    private final Map<ClassLoader, Set<ClientCertificateValidator>> injectedClasses
-            = Collections.synchronizedMap(new WeakHashMap<>());
-    private final LazyHolder<JavaEEContextUtil> ctxUtil = LazyHolder.lazyHolder(() ->
-                    Globals.getDefaultHabitat().getService(JavaEEContextUtil.class));
-
     @Override
     protected void init(Properties props) throws BadRealmException, NoSuchRealmException {
         super.init(props);
@@ -143,9 +115,6 @@ public final class CertificateRealm extends BaseRealm {
 
         final String dnPartsForGroup = props.getProperty(DN_PARTS_USED_FOR_GROUPS);
         setProperty(DN_PARTS_USED_FOR_GROUPS, dnPartsForGroup);
-
-        String validationCheckProperty = props.getProperty("validation-check");
-        doValidation = validationCheckProperty != null && Boolean.parseBoolean(validationCheckProperty);
     }
 
     /**
@@ -177,16 +146,9 @@ public final class CertificateRealm extends BaseRealm {
     /**
      * @param subject The Subject object for the authentication request.
      * @param principal The Principal object from the user certificate.
-     * @param componentId
      * @return principal's name
-     * @throws java.security.cert.CertificateException
      */
-    public String authenticate(Subject subject, X500Principal principal, String componentId) throws CertificateException {
-        X509Certificate certificate = getCertificateFromSubject(subject, principal);
-        if (doValidation) {
-            certificate.checkValidity();
-        }
-        validateSubjectViaAPI(subject, principal, certificate, componentId);
+    public String authenticate(Subject subject, X500Principal principal) {
         _logger.finest(() -> String.format("authenticate(subject=%s, principal=%s)", subject, principal));
 
         final LdapName dn = getLdapName(principal);
@@ -213,67 +175,6 @@ public final class CertificateRealm extends BaseRealm {
         return principalName;
     }
 
-    private void validateSubjectViaAPI(Subject subject, X500Principal principal,
-            X509Certificate certificate, String componentId) throws LoginException {
-        List<ClientCertificateValidator> validatorList = Collections.emptyList();
-        try {
-            validatorList = loadValidatorClasses();
-        } catch (Throwable exc) {
-            _logger.log(Level.WARNING, "Exception while loading certificate validation class", exc);
-            clientCertificateValidatorMap.remove(Utility.getClassLoader());
-        }
-
-        boolean failed = false;
-        if (!validatorList.isEmpty() && componentId != null) {
-            try (Context context = ctxUtil.get().fromComponentId(componentId).pushContext()) {
-                failed = validatorList.stream().anyMatch(validator
-                        -> !inject(validator, context).isValid(subject, principal, certificate));
-            } catch (Exception exc) {
-                _logger.log(Level.WARNING, "Exception from certificate validation class", exc);
-                clientCertificateValidatorMap.remove(Utility.getClassLoader());
-            }
-
-            if (failed) {
-                throw new LoginException("Certificate Validation Failed via API");
-            }
-        } else if (componentId == null) {
-            _logger.severe("No Jakarta EE Component available for Certificate Validation");
-        }
-    }
-
-    private ClientCertificateValidator inject(ClientCertificateValidator validator, Context context) {
-        Set<ClientCertificateValidator> injectedSet = injectedClasses.computeIfAbsent(Utility.getClassLoader(),
-                key -> Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>())));
-        if (injectedSet.add(validator)) {
-            return context.inject(validator, false);
-        } else {
-            return validator;
-        }
-    }
-
-    private List<ClientCertificateValidator> loadValidatorClasses() {
-        AtomicReference<ServiceLoader<ClientCertificateValidator>> serviceLoader = new AtomicReference<>();
-        clientCertificateValidatorMap.compute(Utility.getClassLoader(), (cl, weak) -> {
-                            serviceLoader.set(weak != null ? weak.get() : null);
-                            if (serviceLoader.get() == null) {
-                                serviceLoader.set(ServiceLoader.load(ClientCertificateValidator.class));
-                                return new WeakReference<>(serviceLoader.get());
-                            } else {
-                                return weak;
-                            }
-                        });
-        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(serviceLoader.get().iterator(),
-                Spliterator.ORDERED), false).collect(Collectors.toList());
-    }
-
-    private X509Certificate getCertificateFromSubject(Subject subject, X500Principal principal) {
-        return subject.getPublicCredentials(List.class).stream()
-                .flatMap(Collection<?>::stream)
-                .filter(X509Certificate.class::isInstance)
-                .map(X509Certificate.class::cast)
-                .filter(cert -> principal.equals(cert.getIssuerX500Principal()))
-                .findAny().get();
-    }
 
     private LdapName getLdapName(final X500Principal principal) {
         try {

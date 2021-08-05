@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -85,6 +85,9 @@ public class SetOpenApiConfigurationCommand extends SetSecureMicroprofileConfigu
     @Param(name = "enabled", optional = true)
     private Boolean enabled;
 
+    @Param(name = "endpoint", optional = true)
+    private String endpoint;
+
     @Param(name = "virtualServers", optional = true)
     private String virtualServers;
 
@@ -125,6 +128,9 @@ public class SetOpenApiConfigurationCommand extends SetSecureMicroprofileConfigu
             ConfigSupport.apply(configProxy -> {
                 if (enabled != null) {
                     configProxy.setEnabled(Boolean.toString(enabled));
+                }
+                if (endpoint != null) {
+                    configProxy.setEndpoint(endpoint);
                 }
                 if (virtualServers != null) {
                     configProxy.setVirtualServers(virtualServers);

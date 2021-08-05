@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 package org.glassfish.grizzly.config;
 
 import java.io.IOException;
@@ -87,6 +87,39 @@ public class SSLConfigurator extends SSLEngineConfigurator {
     private final Ssl ssl;
     protected final Provider<SSLImplementation> sslImplementation;
     private String sniCertAlias;
+
+    /**
+     * Static constants for initializeSSLContext
+     */
+    //Keystore properties
+    public static final String KEYSTORE_ATTR = "keystore";
+    public static final String KEYSTORE_PROP = "javax.net.ssl.keyStore";
+    public static final String KEYSTORE_TYPE_ATTR = "keystoreType";
+    public static final String KEYSTORE_TYPE_PROP =  "javax.net.ssl.keyStoreType";
+    public static final String KEYSTORE_PASS_ATTR = "keystorePass";
+    public static final String KEYSTORE_PASS_PROP = "javax.net.ssl.keyStorePassword";
+    public static final String ADDITIONAL_KEY_STORES_ATTR = "additionalKeystores";
+    public static final String ADDITIONAL_KEY_STORES_PROP = "fish.payara.ssl.additionalKeyStores";
+
+    //Truststore properties
+    public static final String TRUSTSTORE_ATTR = "truststore";
+    public static final String TRUSTSTORE_PROP = "javax.net.ssl.trustStore";
+    public static final String ADDITIONAL_TRUST_STORES_ATTR = "additionalTrustStores";
+    public static final String ADDITIONAL_TRUST_STORES_PROP = "fish.payara.ssl.additionalTrustStores";
+    public static final String TRUSTSTORE_TYPE_ATTR = "truststoreType";
+    public static final String TRUSTSTORE_TYPE_PROP =  "javax.net.ssl.trustStoreType";
+    public static final String TRUSTSTORE_PASS_ATTR = "truststorePass";
+    public static final String TRUSTSTORE_PASS_PROP = "javax.net.ssl.trustStorePassword";
+
+    //TLS properties
+    public static final String TLS_SESSION_TIMEOUT_ATTR = "tlsSessionTimeout";
+    public static final String TLS_SESSION_TIMEOUT_PROP = "javax.net.ssl.sessionTimeout";
+    public static final String TLS_SESSION_CACHE_SIZE_ATTR = "tlsSessionCacheSize";
+    public static final String TLS_SESSION_CACHE_SIZE_PROP = "javax.net.ssl.sessionCacheSize";
+
+    //Default value properties
+    public static final String DEFAULT_KEYSTORE_TYPE = "JKS";
+    public static final String DEFAULT_KEYSTORE_PASSWORD = "changeit";
 
     @SuppressWarnings("unchecked")
     public SSLConfigurator(final ServiceLocator habitat, final Ssl ssl) {
@@ -251,26 +284,30 @@ public class SSLConfigurator extends SSLEngineConfigurator {
                 setAttribute(serverSF, "trustMaxCertLength", ssl.getTrustMaxCertLength(), null, null);
                 
                 //key store settings
-                setAttribute(serverSF, "keystore", ssl.getKeyStore(), "javax.net.ssl.keyStore", null);
-                setAttribute(serverSF, "keystoreType", ssl.getKeyStoreType(), "javax.net.ssl.keyStoreType", "JKS");
-                setAttribute(serverSF, "keystorePass", getKeyStorePassword(ssl), "javax.net.ssl.keyStorePassword", "changeit");
+                setAttribute(serverSF, KEYSTORE_ATTR, ssl.getKeyStore(), KEYSTORE_PROP, null);
+                setAttribute(serverSF, ADDITIONAL_KEY_STORES_ATTR, ssl.getKeyStore(), ADDITIONAL_KEY_STORES_PROP, null);
+                setAttribute(serverSF, KEYSTORE_TYPE_ATTR, ssl.getKeyStoreType(), KEYSTORE_TYPE_PROP, DEFAULT_KEYSTORE_TYPE);
+                setAttribute(serverSF, KEYSTORE_PASS_ATTR, getKeyStorePassword(ssl), KEYSTORE_PASS_PROP, DEFAULT_KEYSTORE_PASSWORD);
                 
                 //trust store settings
-                setAttribute(serverSF, "truststore", ssl.getTrustStore(), "javax.net.ssl.trustStore", null);
-                setAttribute(serverSF, "truststoreType", ssl.getTrustStoreType(), "javax.net.ssl.trustStoreType", "JKS");
-                setAttribute(serverSF, "truststorePass", getTrustStorePassword(ssl), "javax.net.ssl.trustStorePassword", "changeit");
-                setAttribute(serverSF, "tlsSessionTimeout", ssl.getTlsSessionTimeout(), "javax.net.ssl.sessionTimeout", null);
-                setAttribute(serverSF, "tlsSessionCacheSize", ssl.getTlsSessionCacheSize(), "javax.net.ssl.sessionCacheSize", null);
+                setAttribute(serverSF, TRUSTSTORE_ATTR, ssl.getTrustStore(), TRUSTSTORE_PROP, null);
+                setAttribute(serverSF, ADDITIONAL_TRUST_STORES_ATTR, ssl.getTrustStore(), ADDITIONAL_TRUST_STORES_PROP, null);
+                setAttribute(serverSF, TRUSTSTORE_TYPE_ATTR, ssl.getTrustStoreType(), TRUSTSTORE_TYPE_PROP, DEFAULT_KEYSTORE_TYPE);
+                setAttribute(serverSF, TRUSTSTORE_PASS_ATTR , getTrustStorePassword(ssl), TRUSTSTORE_PASS_PROP, DEFAULT_KEYSTORE_PASSWORD);
+                setAttribute(serverSF, TLS_SESSION_TIMEOUT_ATTR, ssl.getTlsSessionTimeout(), TLS_SESSION_TIMEOUT_PROP, null);
+                setAttribute(serverSF, TLS_SESSION_CACHE_SIZE_ATTR, ssl.getTlsSessionCacheSize(), TLS_SESSION_CACHE_SIZE_PROP, null);
             } else {
                 //key store settings
-                setAttribute(serverSF, "keystore", null, "javax.net.ssl.keyStore", null);
-                setAttribute(serverSF, "keystoreType", null, "javax.net.ssl.keyStoreType", "JKS");
-                setAttribute(serverSF, "keystorePass", null, "javax.net.ssl.keyStorePassword", "changeit");
+                setAttribute(serverSF, KEYSTORE_ATTR, null, KEYSTORE_PROP, null);
+                setAttribute(serverSF, ADDITIONAL_KEY_STORES_ATTR, null, ADDITIONAL_KEY_STORES_PROP, null);
+                setAttribute(serverSF, KEYSTORE_TYPE_ATTR, null, KEYSTORE_TYPE_PROP, DEFAULT_KEYSTORE_TYPE);
+                setAttribute(serverSF, KEYSTORE_PASS_ATTR, null, KEYSTORE_PASS_PROP, DEFAULT_KEYSTORE_PASSWORD);
                 
                 //trust store settings
-                setAttribute(serverSF, "truststore", null, "javax.net.ssl.trustStore", null);
-                setAttribute(serverSF, "truststoreType", null, "javax.net.ssl.trustStoreType", "JKS");
-                setAttribute(serverSF, "truststorePass", null, "javax.net.ssl.trustStorePassword", "changeit");
+                setAttribute(serverSF, TRUSTSTORE_ATTR, null, TRUSTSTORE_PROP, null);
+                setAttribute(serverSF, ADDITIONAL_TRUST_STORES_ATTR, null, ADDITIONAL_TRUST_STORES_PROP, null);
+                setAttribute(serverSF, TRUSTSTORE_TYPE_ATTR, null, TRUSTSTORE_TYPE_PROP, DEFAULT_KEYSTORE_TYPE);
+                setAttribute(serverSF, TRUSTSTORE_PASS_ATTR , null, TRUSTSTORE_PASS_PROP , DEFAULT_KEYSTORE_PASSWORD);
                 
             }
             
