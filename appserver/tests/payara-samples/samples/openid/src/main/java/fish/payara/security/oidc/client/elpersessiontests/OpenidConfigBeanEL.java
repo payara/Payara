@@ -1,8 +1,8 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- *  Copyright (c) [2018-2021] Payara Foundation and/or its affiliates. All rights reserved.
- *
+ * 
+ *  Copyright (c) [2021] Payara Foundation and/or its affiliates. All rights reserved.
+ * 
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
  *  and Distribution License("CDDL") (collectively, the "License").  You
@@ -11,20 +11,20 @@
  *  https://github.com/payara/Payara/blob/master/LICENSE.txt
  *  See the License for the specific
  *  language governing permissions and limitations under the License.
- *
+ * 
  *  When distributing the software, include this License Header Notice in each
  *  file and include the License file at glassfish/legal/LICENSE.txt.
- *
+ * 
  *  GPL Classpath Exception:
  *  The Payara Foundation designates this particular file as subject to the "Classpath"
  *  exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  *  file that accompanied this code.
- *
+ * 
  *  Modifications:
  *  If applicable, add the following below the License Header, with the fields
  *  enclosed by brackets [] replaced by your own identifying information:
  *  "Portions Copyright [year] [name of copyright owner]"
- *
+ * 
  *  Contributor(s):
  *  If you wish your version of this file to be governed by only the CDDL or
  *  only the GPL Version 2, indicate your decision by adding "[Contributor]
@@ -37,56 +37,36 @@
  *  only if the new code is made subject to such option by the copyright
  *  holder.
  */
-package fish.payara.security.oidc.test;
+package fish.payara.security.oidc.client.elpersessiontests;
 
-import com.gargoylesoftware.htmlunit.WebClient;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.servlet.http.HttpServletRequest;
+import org.eclipse.microprofile.config.Config;
 
-import fish.payara.samples.NotMicroCompatible;
-import fish.payara.samples.PayaraArquillianTestRunner;
-
-import java.io.IOException;
-import java.net.URL;
-
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.OperateOnDeployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import static fish.payara.security.annotations.OpenIdAuthenticationDefinition.OPENID_MP_USE_NONCE;
-
-/**
- *
- * @author Gaurav Gupta
- */
-@NotMicroCompatible
-@RunWith(PayaraArquillianTestRunner.class)
-public class WithoutNonceTest {
-
-    @OperateOnDeployment("openid-client")
-    @ArquillianResource
-    private URL base;
-
-    @Deployment(name = "openid-server")
-    public static WebArchive createServerDeployment() {
-        return OpenIdTestUtil.createServerDeployment();
+@Named
+public class OpenidConfigBeanEL {
+    
+    @Inject
+    HttpServletRequest request;
+    
+    @Inject
+    Config config;
+    
+    private static final String BASE_OPENID_KEY = "payara.security.openid";
+    
+    public String getTokenEndpointURL() {
+        String tenant = getTenant(request);
+        return config
+                .getOptionalValue(BASE_OPENID_KEY + "." + tenant + ".providerURI", String.class)
+                // e.g. payara.security.openid.employee.providerURI
+                .orElseGet(() -> {
+                    // e.g. payara.security.openid.providerURI - the standard Payara key, should never get here because it overrides the value with the EL expression
+                   return config.getValue(BASE_OPENID_KEY + ".default.providerURI", String.class);
+                });
     }
-
-    @Deployment(name = "openid-client")
-    public static WebArchive createClientDeployment() {
-        StringAsset mpConfig = new StringAsset(OPENID_MP_USE_NONCE + "=" + Boolean.FALSE.toString());
-        return OpenIdTestUtil
-                .createClientDefaultDeployment()
-                .addAsWebInfResource(mpConfig, "classes/META-INF/microprofile-config.properties");
+    
+    private static String getTenant(HttpServletRequest request) {
+        return request.getParameter("tenant");
     }
-
-    @Test
-    @RunAsClient
-    public void testOpenIdConnect() throws IOException {
-        WebClient webClient = new WebClient();
-        OpenIdTestUtil.testOpenIdConnect(webClient, base);
-    }
-
 }
