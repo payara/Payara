@@ -72,14 +72,17 @@ public class ExecutorServicesImpl extends AbstractExecutorServices implements Ex
     private final ContextualTimerExecutor timerExecutor;
     private final ManagedExecutorService executor;
     private final org.glassfish.concurrent.config.ManagedExecutorService config;
-    
+
+    private static final String DEFAULT_MANAGED_SCHEDULED_EXECUTOR_SERVICE = "java:comp/DefaultManagedScheduledExecutorService";
+    private static final String DEFAULT_MANAGED_EXECUTOR_SERVICE = "java:comp/DefaultManagedExecutorService";
+    private static final String DEFAULT_MANAGED_EXECUTOR_SERVICE_PHYS = "concurrent/__defaultManagedExecutorService";
+
     public ExecutorServicesImpl() throws NamingException {
         InitialContext ctx = new InitialContext();
-        executor = (ManagedExecutorService) ctx.lookup("java:comp/DefaultManagedExecutorService");
+        executor = (ManagedExecutorService) ctx.lookup(DEFAULT_MANAGED_EXECUTOR_SERVICE);
         taskExecutor = new ContextualTaskExecutor();
         timerExecutor = new ContextualTimerExecutor();
-        this.config = Globals.getDefaultHabitat()
-                .getService(org.glassfish.concurrent.config.ManagedExecutorService.class);
+        this.config = getManagedExecutorServiceConfig(DEFAULT_MANAGED_EXECUTOR_SERVICE_PHYS);
     }
 
     @Override
@@ -225,7 +228,7 @@ public class ExecutorServicesImpl extends AbstractExecutorServices implements Ex
 
         ContextualTimerExecutor() throws NamingException {
             InitialContext ctx = new InitialContext();
-            this.delegate = (ManagedScheduledExecutorService) ctx.lookup("java:comp/DefaultManagedScheduledExecutorService");
+            this.delegate = (ManagedScheduledExecutorService) ctx.lookup(DEFAULT_MANAGED_SCHEDULED_EXECUTOR_SERVICE);
         }
 
         @Override
@@ -253,4 +256,15 @@ public class ExecutorServicesImpl extends AbstractExecutorServices implements Ex
             return delegate().scheduleWithFixedDelay(inCurrentContextClassloader(command), initialDelay, delay, unit);
         }
     }
+
+    private org.glassfish.concurrent.config.ManagedExecutorService getManagedExecutorServiceConfig(String jndiName) {
+        for (org.glassfish.concurrent.config.ManagedExecutorService service : Globals.getDefaultHabitat()
+                .getAllServices(org.glassfish.concurrent.config.ManagedExecutorService.class)) {
+            if(service.getJndiName().equals(jndiName)) {
+                return service;
+            }
+        }
+        throw new IllegalStateException(jndiName + " executor service config not found.");
+    }
+
 }
