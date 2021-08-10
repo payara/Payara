@@ -41,6 +41,7 @@ package fish.payara.logging;
 
 import com.sun.enterprise.util.PropertyPlaceholderHelper;
 
+
 import java.io.*;
 import java.util.Properties;
 import java.util.logging.LogManager;
@@ -55,8 +56,6 @@ public class PayaraLogManager extends LogManager {
 
         // transform
         configuration = new PropertyPlaceholderHelper(System.getenv(), PropertyPlaceholderHelper.ENV_REGEX).replacePropertiesPlaceholder(configuration);
-
-        LoggingUtil.handleConsoleHandlerLogic(configuration);
 
         StringWriter writer = new StringWriter();
         configuration.store(new PrintWriter(writer), null);
