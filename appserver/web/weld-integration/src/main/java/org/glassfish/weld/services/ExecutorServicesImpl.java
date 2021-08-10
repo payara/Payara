@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2019] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,7 +40,6 @@
 package org.glassfish.weld.services;
 
 import com.sun.enterprise.util.Utility;
-import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import java.util.Collection;
 import java.util.List;
 import java.util.ArrayList;
@@ -52,6 +51,12 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import javax.enterprise.concurrent.ManagedExecutorService;
+import javax.enterprise.concurrent.ManagedScheduledExecutorService;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.Globals;
 
 import org.jboss.weld.executor.AbstractExecutorServices;
 import org.jboss.weld.manager.api.ExecutorServices;
@@ -65,12 +70,19 @@ public class ExecutorServicesImpl extends AbstractExecutorServices implements Ex
 
     private final ExecutorService taskExecutor;
     private final ContextualTimerExecutor timerExecutor;
-    private PayaraExecutorService executor;
-    
-    public ExecutorServicesImpl(PayaraExecutorService service) {
-        executor = service;
+    private final ManagedExecutorService executor;
+    private final org.glassfish.concurrent.config.ManagedExecutorService config;
+
+    private static final String DEFAULT_MANAGED_SCHEDULED_EXECUTOR_SERVICE = "java:comp/DefaultManagedScheduledExecutorService";
+    private static final String DEFAULT_MANAGED_EXECUTOR_SERVICE = "java:comp/DefaultManagedExecutorService";
+    private static final String DEFAULT_MANAGED_EXECUTOR_SERVICE_PHYS = "concurrent/__defaultManagedExecutorService";
+
+    public ExecutorServicesImpl() throws NamingException {
+        InitialContext ctx = new InitialContext();
+        executor = (ManagedExecutorService) ctx.lookup(DEFAULT_MANAGED_EXECUTOR_SERVICE);
         taskExecutor = new ContextualTaskExecutor();
         timerExecutor = new ContextualTimerExecutor();
+        this.config = getManagedExecutorServiceConfig(DEFAULT_MANAGED_EXECUTOR_SERVICE_PHYS);
     }
 
     @Override
@@ -89,7 +101,7 @@ public class ExecutorServicesImpl extends AbstractExecutorServices implements Ex
 
     @Override
     protected int getThreadPoolSize() {
-        return executor.getExecutorThreadPoolSize();
+        return Integer.parseInt(this.config.getMaximumPoolSize());
     }
 
     @Override
@@ -135,10 +147,10 @@ public class ExecutorServicesImpl extends AbstractExecutorServices implements Ex
     }
 
     class ContextualTaskExecutor implements ExecutorService {
-        private ExecutorService delegate;
+        private final ExecutorService delegate;
 
         ContextualTaskExecutor() {
-            this.delegate = executor.getUnderlyingExecutorService();
+            this.delegate = executor;
         }
 
         @Override
@@ -214,10 +226,12 @@ public class ExecutorServicesImpl extends AbstractExecutorServices implements Ex
     class ContextualTimerExecutor extends ContextualTaskExecutor implements ScheduledExecutorService {
         private final ScheduledExecutorService delegate;
 
-        ContextualTimerExecutor() {
-            this.delegate = executor.getUnderlyingScheduledExecutorService();
+        ContextualTimerExecutor() throws NamingException {
+            InitialContext ctx = new InitialContext();
+            this.delegate = (ManagedScheduledExecutorService) ctx.lookup(DEFAULT_MANAGED_SCHEDULED_EXECUTOR_SERVICE);
         }
 
+        @Override
         protected ScheduledExecutorService delegate() {
             return this.delegate;
         }
@@ -242,4 +256,15 @@ public class ExecutorServicesImpl extends AbstractExecutorServices implements Ex
             return delegate().scheduleWithFixedDelay(inCurrentContextClassloader(command), initialDelay, delay, unit);
         }
     }
+
+    private org.glassfish.concurrent.config.ManagedExecutorService getManagedExecutorServiceConfig(String jndiName) {
+        for (org.glassfish.concurrent.config.ManagedExecutorService service : Globals.getDefaultHabitat()
+                .getAllServices(org.glassfish.concurrent.config.ManagedExecutorService.class)) {
+            if(service.getJndiName().equals(jndiName)) {
+                return service;
+            }
+        }
+        throw new IllegalStateException(jndiName + " executor service config not found.");
+    }
+
 }

@@ -107,6 +107,10 @@
             <artifactId>jakarta.enterprise.cdi-api</artifactId>
         </dependency>
         <dependency>
+            <groupId>jakarta.enterprise.concurrent</groupId>
+            <artifactId>jakarta.enterprise.concurrent-api</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging</artifactId>
             <optional>true</optional>
@@ -206,6 +210,11 @@
          <dependency>
              <groupId>jakarta.xml.ws</groupId>
              <artifactId>jakarta.xml.ws-api</artifactId>
+         </dependency>
+         <dependency>
+             <groupId>fish.payara.server.internal.concurrent</groupId>
+             <artifactId>concurrent-connector</artifactId>
+            <version>${project.version}</version>
          </dependency>
     </dependencies>
 </project>
