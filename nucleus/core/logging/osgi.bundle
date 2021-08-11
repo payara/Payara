@@ -49,6 +49,5 @@ DynamicImport-Package: \
 					com.trilead.ssh2, \
 					com.sun.enterprise.util.cluster.windows.io, \
 					com.sun.enterprise.util.cluster.windows.process, \
-					org.glassfish.cluster.ssh.util, \
-					fish.payara.logging
+					org.glassfish.cluster.ssh.util
 

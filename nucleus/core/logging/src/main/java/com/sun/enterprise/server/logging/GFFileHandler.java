@@ -51,7 +51,7 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.v3.logging.AgentFormatterDelegate;
 import fish.payara.enterprise.server.logging.JSONLogFormatter;
-import fish.payara.enterprise.server.logging.PayaraNotificationLogRotationTimer;
+import fish.payara.enterprise.server.logging.PayaraNotificationLogRotationTimer;;
 import java.io.*;
 import java.security.PrivilegedAction;
 import java.text.FieldPosition;
@@ -1066,7 +1066,6 @@ public class GFFileHandler extends StreamHandler implements
     }
 
     private void logStandardStreams() {
-
         // redirect stderr and stdout, a better way to do this
         //http://blogs.sun.com/nickstephen/entry/java_redirecting_system_out_and
 
@@ -1151,7 +1150,7 @@ public class GFFileHandler extends StreamHandler implements
         this.compressionOnRotation = compressionOnRotation;
     }
 
-    synchronized void setLogStandardStreams(boolean logStandardStreams) {
+    public synchronized void setLogStandardStreams(boolean logStandardStreams) {
         this.logStandardStreams = logStandardStreams;
 
         if (logStandardStreams) {
