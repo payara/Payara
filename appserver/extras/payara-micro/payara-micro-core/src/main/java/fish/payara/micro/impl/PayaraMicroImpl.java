@@ -1785,7 +1785,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                 // reset the formatters on the two handlers
                 //Logger rootLogger = Logger.getLogger("");
                 String formatter = LogManager.getLogManager().getProperty("java.util.logging.ConsoleHandler.formatter");
-                Formatter formatterClass = new ODLLogFormatter();
+                Formatter formatterClass = new ODLLogFormatter(null);
                 try {
                     formatterClass = (Formatter) Class.forName(formatter).newInstance();
                 } catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {

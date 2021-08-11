@@ -512,13 +512,12 @@ public class GFFileHandler extends StreamHandler implements
         ODLLogFormatter formatterClass;
         // set the formatter
         if (agent != null) {
-            formatterClass = new ODLLogFormatter(new AgentFormatterDelegate(agent));
+            formatterClass = new ODLLogFormatter(new AgentFormatterDelegate(agent), excludeFields);
             setFormatter(formatterClass);
         } else {
-            formatterClass = new ODLLogFormatter();
+            formatterClass = new ODLLogFormatter(excludeFields);
             setFormatter(formatterClass);
         }
-        formatterClass.setExcludeFields(excludeFields);
         formatterClass.setMultiLineMode(multiLineMode);
         formatterClass.noAnsi();
         formatterClass.setLogEventBroadcaster(this);
@@ -531,14 +530,13 @@ public class GFFileHandler extends StreamHandler implements
         UniformLogFormatter formatterClass;
         // set the formatter
         if (agent != null) {
-            formatterClass = new UniformLogFormatter(new AgentFormatterDelegate(agent));
+            formatterClass = new UniformLogFormatter(new AgentFormatterDelegate(agent), excludeFields);
             setFormatter(formatterClass);
         } else {
-            formatterClass = new UniformLogFormatter();
+            formatterClass = new UniformLogFormatter(excludeFields);
             setFormatter(formatterClass);
         }
 
-        formatterClass.setExcludeFields(excludeFields);
         formatterClass.setMultiLineMode(multiLineMode);
         formatterClass.setLogEventBroadcaster(this);
         formatterClass.noAnsi();
@@ -707,13 +705,12 @@ public class GFFileHandler extends StreamHandler implements
         JSONLogFormatter formatterClass;
         // set the formatter
         if (agent != null) {
-            formatterClass = new JSONLogFormatter(new AgentFormatterDelegate(agent));
+            formatterClass = new JSONLogFormatter(new AgentFormatterDelegate(agent), excludeFields);
             setFormatter(formatterClass);
         } else {
-            formatterClass = new JSONLogFormatter();
+            formatterClass = new JSONLogFormatter(excludeFields);
             setFormatter(formatterClass);
         }
-        formatterClass.setExcludeFields(excludeFields);
         formatterClass.setLogEventBroadcaster(this);
     }
 

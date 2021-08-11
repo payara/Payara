@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,7 +40,6 @@
 package com.sun.enterprise.server.logging;
 
 import java.util.HashMap;
-import java.util.logging.Formatter;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 
@@ -48,13 +47,14 @@ import java.util.logging.LogManager;
  * @since 4.1.1.173
  * @author Steve Millidge (Payara Foundation)
  */
-public abstract class AnsiColorFormatter extends Formatter {
+public abstract class AnsiColorFormatter extends CommonFormatter {
     
     private boolean ansiColor;
     private HashMap<Level,AnsiColor> colors;
     private AnsiColor loggerColor;
     
-    public AnsiColorFormatter() {
+    public AnsiColorFormatter(String excludeFields) {
+        super(excludeFields);
         LogManager manager = LogManager.getLogManager();
         String color = manager.getProperty(this.getClass().getCanonicalName() + ".ansiColor");
         if ("true".equals(color)) {
@@ -65,7 +65,7 @@ public abstract class AnsiColorFormatter extends Formatter {
         colors.put(Level.WARNING, AnsiColor.BOLD_INTENSE_YELLOW);
         colors.put(Level.SEVERE, AnsiColor.BOLD_INTENSE_RED);
         loggerColor = AnsiColor.BOLD_INTENSE_BLUE;
-       String infoColor = manager.getProperty(this.getClass().getCanonicalName()+".infoColor");
+        String infoColor = manager.getProperty(this.getClass().getCanonicalName()+".infoColor");
         if (infoColor != null) {
             try {
                 colors.put(Level.INFO, AnsiColor.valueOf(infoColor));

@@ -80,7 +80,7 @@ public class LogEventListenerTest {
         // Add a file handler with UniformLogFormatter
         gfFileHandler = new GFFileHandler();
         gfFileHandler.changeFileName(testLog);
-        UniformLogFormatter formatter = new UniformLogFormatter();
+        UniformLogFormatter formatter = new UniformLogFormatter(null);
         formatter.setLogEventBroadcaster(gfFileHandler);
         gfFileHandler.setFormatter(formatter );
         gfFileHandler.initializePump();

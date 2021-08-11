@@ -859,7 +859,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
         multiLineMode = Boolean.parseBoolean(props.get(MULTI_LINE_MODE_PROPERTY));
         if (formatterClassName.equals(UniformLogFormatter.class.getName())) {
             // used to support UFL formatter in GF.
-            UniformLogFormatter formatter = new UniformLogFormatter();
+            UniformLogFormatter formatter = new UniformLogFormatter(excludeFields);
             String cname = "com.sun.enterprise.server.logging.GFFileHandler";
             recordBeginMarker = props.get(cname + ".logFormatBeginMarker");
             if (recordBeginMarker == null || ("").equals(recordBeginMarker)) {
@@ -897,7 +897,6 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
             formatter.setRecordEndMarker(recordEndMarker);
             formatter.setRecordDateFormat(recordDateFormat);
             formatter.setRecordFieldSeparator(recordFieldSeparator);
-            formatter.setExcludeFields(excludeFields);
             formatter.setMultiLineMode(multiLineMode);
             for (Handler handler : logManager.getLogger("").getHandlers()) {
                 // only get the ConsoleHandler
@@ -908,8 +907,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
             }
         } else if (formatterClassName.equals(ODLLogFormatter.class.getName())) {
             // used to support ODL formatter in GF.
-            ODLLogFormatter formatter = new ODLLogFormatter();
-            formatter.setExcludeFields(excludeFields);
+            ODLLogFormatter formatter = new ODLLogFormatter(excludeFields);
             formatter.setMultiLineMode(multiLineMode);
             for (Handler handler : logManager.getLogger("").getHandlers()) {
                 // only get the ConsoleHandler
@@ -919,8 +917,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                 }
             }
         } else if (formatterClassName.equals(JSONLogFormatter.class.getName())) {
-            JSONLogFormatter formatter = new JSONLogFormatter();
-            formatter.setExcludeFields(excludeFields);
+            JSONLogFormatter formatter = new JSONLogFormatter(excludeFields);
             for (Handler handler : logManager.getLogger("").getHandlers()) {
                 // only get the ConsoleHandler
                 if (handler.getClass().equals(ConsoleHandler.class)) {
