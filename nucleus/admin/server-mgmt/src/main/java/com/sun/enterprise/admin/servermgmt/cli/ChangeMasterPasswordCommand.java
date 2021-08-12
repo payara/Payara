@@ -41,21 +41,23 @@
 
 package com.sun.enterprise.admin.servermgmt.cli;
 
-import com.sun.enterprise.admin.cli.CLICommand;
-import com.sun.enterprise.util.io.DomainDirs;
-import com.sun.enterprise.universal.i18n.LocalStringsImpl;
-import org.glassfish.api.Param;
-import org.glassfish.api.admin.CommandException;
-
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.hk2.api.ServiceLocator;
-
-import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.logging.Logger;
+
+import javax.inject.Inject;
+
+import com.sun.enterprise.admin.cli.CLICommand;
+import com.sun.enterprise.universal.i18n.LocalStringsImpl;
+import com.sun.enterprise.util.io.DomainDirs;
+
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.CommandException;
+import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.jvnet.hk2.annotations.Service;
 
 /**
  * The change-master-password command.
@@ -105,8 +107,6 @@ public class ChangeMasterPasswordCommand extends CLICommand {
 
     private static final LocalStringsImpl STRINGS = new LocalStringsImpl(ChangeMasterPasswordCommand.class);
 
-
-
     @Override
     protected int executeCommand() throws CommandException {
         CLICommand command = null;
@@ -143,8 +143,6 @@ public class ChangeMasterPasswordCommand extends CLICommand {
             }
         } catch (IOException e) {
             throw new CommandException(e.getMessage(),e);
-        } finally {
-            System.out.println("WARNING: Additional Truststores are not re-encrypted, it is your responsibility to do this.");
         }
     }
 

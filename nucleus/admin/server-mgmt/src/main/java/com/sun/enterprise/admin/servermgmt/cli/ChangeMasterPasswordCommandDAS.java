@@ -41,36 +41,26 @@
 
 package com.sun.enterprise.admin.servermgmt.cli;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.Arrays;
+
+import javax.xml.stream.XMLStreamException;
+
 import com.sun.enterprise.admin.servermgmt.DomainConfig;
 import com.sun.enterprise.admin.servermgmt.pe.PEDomainsManager;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.util.HostAndPort;
+
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
-
-import javax.xml.namespace.QName;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-import javax.xml.stream.XMLEventReader;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.events.Attribute;
-import javax.xml.stream.events.XMLEvent;
-import java.io.FileInputStream;
-import java.io.IOException;
 
 /**
- * The change-master-password command for the DAS.
- * This is a hidden command which is called from change-master-password  command.
+ * The change-master-password command for the DAS. This is a hidden command
+ * which is called from change-master-password command.
  * 
  * @author Bhakti Mehta
  */
@@ -78,7 +68,7 @@ import java.io.IOException;
 @PerLookup
 public class ChangeMasterPasswordCommandDAS extends LocalDomainCommand {
 
-    @Param(name="domain",primary=true, optional=true)
+    @Param(name = "domain", primary = true, optional = true)
     protected String domainName0;
 
     @Param(name = "savemasterpassword", optional = true, defaultValue = "false")
@@ -87,10 +77,9 @@ public class ChangeMasterPasswordCommandDAS extends LocalDomainCommand {
     private static final LocalStringsImpl STRINGS = new LocalStringsImpl(ChangeMasterPasswordCommandDAS.class);
 
     @Override
-    protected void validate()
-            throws CommandException  {
+    protected void validate() throws CommandException {
         String dName;
-        if (domainName0 != null ) {
+        if (domainName0 != null) {
             dName = domainName0;
         } else {
             dName = getDomainName();
@@ -105,10 +94,8 @@ public class ChangeMasterPasswordCommandDAS extends LocalDomainCommand {
         try {
             HostAndPort adminAddress = getAdminAddress();
             if (isRunning(adminAddress.getHost(), adminAddress.getPort()))
-                throw new CommandException(STRINGS.get("domain.is.running",
-                                                    getDomainName(), getDomainRootDir()));
-            DomainConfig domainConfig = new DomainConfig(getDomainName(),
-                getDomainsDir().getAbsolutePath());
+                throw new CommandException(STRINGS.get("domain.is.running", getDomainName(), getDomainRootDir()));
+            DomainConfig domainConfig = new DomainConfig(getDomainName(), getDomainsDir().getAbsolutePath());
             PEDomainsManager manager = new PEDomainsManager();
             String mp = super.readFromMasterPasswordFile();
             if (mp == null) {
@@ -118,21 +105,22 @@ public class ChangeMasterPasswordCommandDAS extends LocalDomainCommand {
                     mp = mpCharArr != null ? new String(mpCharArr) : null;
                 }
             }
-            if (mp == null)     throw new CommandException(STRINGS.get("no.console"));
+            if (mp == null)
+                throw new CommandException(STRINGS.get("no.console"));
             if (!super.verifyMasterPassword(mp))
                 throw new CommandException(STRINGS.get("incorrect.mp"));
-            char[] nmpCharArr = getPassword("newmasterpassword", STRINGS.get("new.mp"),
-                    STRINGS.get("new.mp.again"), true);
+            char[] nmpCharArr = getPassword("newmasterpassword", STRINGS.get("new.mp"), STRINGS.get("new.mp.again"),
+                    true);
             String nmp = nmpCharArr != null ? new String(nmpCharArr) : null;
             if (nmp == null)
                 throw new CommandException(STRINGS.get("no.console"));
-            
+
             // if password is less than 6 characters then the domain can become corrupt
             // FIXES GLASSFISH-21017
             if (nmp.length() < 6) {
                 throw new CommandException(STRINGS.get("password.too.short"));
             }
-            
+
             domainConfig.put(DomainConfig.K_MASTER_PASSWORD, mp);
             domainConfig.put(DomainConfig.K_NEW_MASTER_PASSWORD, nmp);
             domainConfig.put(DomainConfig.K_SAVE_MASTER_PASSWORD, savemp);
@@ -140,22 +128,36 @@ public class ChangeMasterPasswordCommandDAS extends LocalDomainCommand {
 
             try {
                 if (dataGridEncryptionEnabled()) {
-                    logger.warning("Data grid encryption is enabled - " +
-                            "you will need to regenerate the encryption key");
+                    logger.warning(
+                            "Data grid encryption is enabled - " + "you will need to regenerate the encryption key");
                 }
             } catch (IOException | XMLStreamException exception) {
-                logger.warning("Could not determine if data grid encryption is enabled - " +
-                        "you will need to regenerate the encryption key if it is");
+                logger.warning("Could not determine if data grid encryption is enabled - "
+                        + "you will need to regenerate the encryption key if it is");
+            }
+
+            try {
+                HashMap<String, String> additionalTrustandKeyStores = getAdditionalTrustandKeyStores();
+                if (additionalTrustandKeyStores.containsKey("additionalKeyStores")) {
+                    logger.log(Level.INFO,
+                            "The passwords of the additional KeyStores {0} have not been changed - please update these manually to continue using them.",
+                            Arrays.toString(additionalTrustandKeyStores.get("additionalKeyStores").split(":")));
+
+                }
+                if (additionalTrustandKeyStores.containsKey("additionalTrustStores")) {
+                    logger.log(Level.INFO,
+                            "The passwords of the additional TrustStores {0} have not been changed - please update these manually to continue using them.",
+                            Arrays.toString(additionalTrustandKeyStores.get("additionalTrustStores").split(":")));
+                }
+            } catch (IOException | XMLStreamException exception) {
+                logger.warning(
+                        "Could not fetch additional Trust and Keystores - if there are additional Trust Stores or Key Stores, the passwords need to be updated in order to continue using them.");
             }
 
             return 0;
-        } catch(Exception e) {
-            throw new CommandException(e.getMessage(),e);
+        } catch (Exception e) {
+            throw new CommandException(e.getMessage(), e);
         }
     }
 
-
 }
-
-
-

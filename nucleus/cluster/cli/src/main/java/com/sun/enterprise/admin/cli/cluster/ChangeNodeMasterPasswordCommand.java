@@ -47,8 +47,12 @@ import static java.util.Optional.ofNullable;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.xml.stream.XMLStreamException;
 
 import com.sun.enterprise.admin.util.CommandModelData.ParamModelData;
 import com.sun.enterprise.security.store.PasswordAdapter;
@@ -63,8 +67,6 @@ import org.glassfish.api.admin.CommandValidationException;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.security.common.FileProtectionUtility;
 import org.jvnet.hk2.annotations.Service;
-
-import javax.xml.stream.XMLStreamException;
 
 /**
  * The change-master-password command for a node. It takes in a nodeDir and node
@@ -133,13 +135,30 @@ public class ChangeNodeMasterPasswordCommand extends LocalInstanceCommand {
 
         try {
             if (dataGridEncryptionEnabled()) {
-                LOGGER.warning("Data grid encryption is enabled - " +
-                        "you will need to regenerate the encryption key");
+                LOGGER.warning("Data grid encryption is enabled - " + "you will need to regenerate the encryption key");
             }
         } catch (IOException | XMLStreamException exception) {
-            LOGGER.warning("Could not determine if data grid encryption is enabled - " +
-                    "you will need to regenerate the encryption key if it is");
+            LOGGER.warning("Could not determine if data grid encryption is enabled - "
+                    + "you will need to regenerate the encryption key if it is");
         }
+        
+        try {
+            HashMap<String, String> additionalTrustandKeyStores = getAdditionalTrustandKeyStores();
+            if (additionalTrustandKeyStores.containsKey("additionalKeyStores")) {
+                logger.log(Level.INFO,
+                        "The passwords of additional KeyStores {0} have not been changed - please update these manually to continue using them.",
+                        additionalTrustandKeyStores.get("additionalKeyStores").split(":"));
+            }
+            if (additionalTrustandKeyStores.containsKey("additionalTrustStores")) {
+                logger.log(Level.INFO,
+                        "The passwords of additional TrustStores {0} have not been changed - please update these manually to continue using them.",
+                        additionalTrustandKeyStores.get("additionalTrustStores").split(":"));
+            }
+        } catch (IOException | XMLStreamException exception) {
+            logger.warning(
+                    "Could not fetch additional Trust and Keystores - if there are additional Trust Stores or Key Stores, the passwords need to be updated in order to continue using them.");
+        }
+
     }
 
     @Override
