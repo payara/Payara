@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016-2021`] [Payara Foundation and/or affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or affiliates]
 
 package com.sun.enterprise.admin.servermgmt.cli;
 
