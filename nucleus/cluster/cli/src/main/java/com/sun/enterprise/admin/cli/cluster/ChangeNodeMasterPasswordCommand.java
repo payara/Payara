@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.admin.cli.cluster;
 
@@ -141,7 +141,7 @@ public class ChangeNodeMasterPasswordCommand extends LocalInstanceCommand {
             LOGGER.warning("Could not determine if data grid encryption is enabled - "
                     + "you will need to regenerate the encryption key if it is");
         }
-        
+
         try {
             HashMap<String, String> additionalTrustandKeyStores = getAdditionalTrustandKeyStores();
             if (additionalTrustandKeyStores.containsKey("additionalKeyStores")) {

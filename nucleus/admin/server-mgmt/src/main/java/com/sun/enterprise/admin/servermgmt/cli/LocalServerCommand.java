@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016-2019] [Payara Foundation and/or affiliates]
+// Portions Copyright [2016-2021`] [Payara Foundation and/or affiliates]
 
 package com.sun.enterprise.admin.servermgmt.cli;
 
@@ -658,34 +658,35 @@ public abstract class LocalServerCommand extends CLICommand {
     }
 
     protected HashMap<String, String> getAdditionalTrustandKeyStores() throws IOException, XMLStreamException {
-        HashMap<String,String> additionalTrustandKeyStores = new HashMap<>();
+        HashMap<String, String> additionalTrustandKeyStores = new HashMap<>();
         try {
             DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
             Document document = documentBuilder.parse(getDomainXml());
             NodeList jvmOptionsNodes = document.getElementsByTagName("jvm-options");
-    
-            for(int i = 0; i < jvmOptionsNodes.getLength(); i++){
+
+            for (int i = 0; i < jvmOptionsNodes.getLength(); i++) {
                 if (additionalTrustandKeyStores.containsKey("additionalKeyStores")
                         && additionalTrustandKeyStores.containsKey("additionalTrustStores")) {
                     break;
                 }
                 String jvmOption = jvmOptionsNodes.item(i).getTextContent();
-                if(jvmOption.startsWith("-Dfish.payara.ssl.additionalKeyStores")){
+                if (jvmOption.startsWith("-Dfish.payara.ssl.additionalKeyStores")) {
                     String additionalKeyStores = jvmOption.split("=")[1];
                     additionalTrustandKeyStores.put("additionalKeyStores", additionalKeyStores);
                     continue;
                 }
-                if(jvmOption.startsWith("-Dfish.payara.ssl.additionalTrustStores")){
+                if (jvmOption.startsWith("-Dfish.payara.ssl.additionalTrustStores")) {
                     String additionalTrustStores = jvmOption.split("=")[1];
                     additionalTrustandKeyStores.put("additionalTrustStores", additionalTrustStores);
                     continue;
                 }
             }
-            
+
         } catch (ParserConfigurationException | SAXException exception) {
-            logger.warning("Could not determine if there were additional Key Stores or Trust stores, if the master-password has been updated, the password for the additional stores need updating in order to continue using them.");
+            logger.warning(
+                    "Could not determine if there were additional Key Stores or Trust stores, if the master-password has been updated, the password for the additional stores need updating in order to continue using them.");
         }
-        return additionalTrustandKeyStores; 
+        return additionalTrustandKeyStores;
     }
 }
