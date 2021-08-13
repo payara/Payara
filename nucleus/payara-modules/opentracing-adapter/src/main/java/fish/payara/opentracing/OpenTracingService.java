@@ -41,20 +41,6 @@ package fish.payara.opentracing;
 
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import io.opentracing.Tracer;
-import io.opentracing.mock.MockTracer;
-import io.opentracing.util.ThreadLocalScopeManager;
-
-import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.ServiceLoader;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.annotation.PostConstruct;
-import javax.interceptor.InvocationContext;
-
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
 import org.glassfish.api.invocation.ComponentInvocation;
@@ -66,6 +52,17 @@ import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.deployment.Deployment;
 import org.jvnet.hk2.annotations.Service;
+
+import javax.annotation.PostConstruct;
+import javax.interceptor.InvocationContext;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.ServiceLoader;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Service class for the OpenTracing integration.
@@ -135,9 +132,7 @@ public class OpenTracingService implements EventListener {
                 logger.log(Level.SEVERE, "Unable to find Tracer implementation", ex);
             }
 
-            if (Boolean.getBoolean("USE_OPENTRACING_MOCK_TRACER")) {
-                tracer = new MockTracer(new ThreadLocalScopeManager(), MockTracer.Propagator.TEXT_MAP);
-            } else if (tracer == null) {
+            if (tracer == null) {
                 tracer = new fish.payara.opentracing.tracer.Tracer(applicationName, scopeManager);
             }
 
