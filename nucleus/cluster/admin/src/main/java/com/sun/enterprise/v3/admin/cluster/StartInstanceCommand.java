@@ -283,8 +283,15 @@ public class StartInstanceCommand implements AdminCommand {
         }
 
         boolean verbose = LoggingUtil.isVerboseMode();
-        if (verbose) {
-            command.add("--logToConsole");
+        if (verbose && node != null) {
+
+            if (node.isLocal()) {
+                // Do not use --verbose as the start-instance does not return,
+                // and it hangs the Admin console for example. (see StartLocalInstanceCommand.executeCommand)
+                command.add("--logToConsole");
+            } else {
+                command.add("--verbose");
+            }
         }
 
         command.add(instanceName);

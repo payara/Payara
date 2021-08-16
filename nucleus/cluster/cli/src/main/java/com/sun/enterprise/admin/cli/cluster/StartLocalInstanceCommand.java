@@ -82,6 +82,10 @@ public class StartLocalInstanceCommand extends SynchronizeInstanceCommand implem
     @Param(optional = true, shortName = "v", defaultValue = "false")
     private boolean verbose;
 
+    @Param(optional = true, defaultValue = "false")
+    // To avoid the start-instance command to never return with --verbose
+    private boolean logToConsole;
+
     @Param(optional = true, shortName = "w", defaultValue = "false")
     private boolean watchdog;
 
@@ -246,6 +250,7 @@ public class StartLocalInstanceCommand extends SynchronizeInstanceCommand implem
         // now the start-local-instance specific arguments
         args.add(getName()); // the command name
         args.add("--verbose=" + verbose);
+        args.add("--logToConsole=" + logToConsole);
         args.add("--watchdog=" + watchdog);
         args.add("--debug=" + debug);
 

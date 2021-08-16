@@ -208,7 +208,8 @@ public class AdminMain {
         // since this method is called to start an instance or the asadmin command
         // we can force verbose mode for asadmin.
         boolean verbose = false;
-        if (forceVerbose || Arrays.asList(args).contains("--logToConsole")) {
+        if (forceVerbose || Arrays.asList(args).contains("--verbose")
+                || Arrays.asList(args).contains("--logToConsole")) {
             verbose = true;
             System.setProperty(LoggingUtil.SYSTEM_PROPERTY_PAYARA_LOGGING_VERBOSE, "true");
         }
