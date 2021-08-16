@@ -74,7 +74,6 @@ public class OpenTracingService implements EventListener {
 
     // The tracer instances
     private static final Map<String, Tracer> tracers = new ConcurrentHashMap<>();
-    private static final ScopeManager scopeManager = new fish.payara.opentracing.ScopeManager();
     
     // The name of the Corba RMI Tracer
     public static final String PAYARA_CORBA_RMI_TRACER_NAME = "__PAYARA_CORBA_RMI";
@@ -131,8 +130,14 @@ public class OpenTracingService implements EventListener {
         return tracer;
     }
 
-    private Tracer createAndReturnTracer(String applicationName) {
-        Tracer tracer = null;
+    private synchronized Tracer createAndReturnTracer(String applicationName) {
+        // Does this NEED to be synchronised? Tracers don't store state, and Scopes are ThreadLocal
+
+        // Double-checked locking - potentially naughty
+        Tracer tracer = tracers.get(applicationName);
+        if (tracer != null) {
+            return tracer;
+        }
 
         // Check which type of Tracer to create
         try {//See if an alternate implementation of Tracer is available in a library.
@@ -146,7 +151,7 @@ public class OpenTracingService implements EventListener {
         }
 
         if (tracer == null) {
-            tracer = new fish.payara.opentracing.tracer.Tracer(applicationName, scopeManager);
+            tracer = new fish.payara.opentracing.tracer.Tracer(applicationName);
         }
 
         // Register the tracer instance to the application

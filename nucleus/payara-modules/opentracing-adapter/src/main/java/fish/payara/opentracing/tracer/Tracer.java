@@ -92,6 +92,15 @@ public class Tracer implements io.opentracing.Tracer {
     private static final String SPANID_KEY = "spanid";
 
     /**
+     * Constructor that registers this Tracer to an application using a thread-local ScopeManager
+     *
+     * @param applicationName The application to register this tracer to
+     */
+    public Tracer(String applicationName) {
+        this(applicationName, new ScopeManager());
+    }
+
+    /**
      * Constructor that registers this Tracer to an application.
      *
      * @param applicationName The application to register this tracer to
