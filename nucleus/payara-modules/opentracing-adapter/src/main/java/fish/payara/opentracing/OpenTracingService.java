@@ -98,6 +98,11 @@ public class OpenTracingService implements EventListener {
     public void event(Event<?> event) {
         // Listen for application unloaded events (happens during undeployment), so that we remove the tracer instance
         // registered to that application (if there is one)
+        if (event.is(Deployment.APPLICATION_LOADED)) {
+            ApplicationInfo info = (ApplicationInfo) event.hook();
+            createAndReturnTracer(info.getName());
+        }
+
         if (event.is(Deployment.APPLICATION_UNLOADED)) {
             ApplicationInfo info = (ApplicationInfo) event.hook();
             tracers.remove(info.getName());
@@ -110,7 +115,7 @@ public class OpenTracingService implements EventListener {
      * @param applicationName The name of the application to get or create the Tracer for
      * @return The Tracer instance for the given application
      */
-    public synchronized Tracer getTracer(String applicationName) {
+    public Tracer getTracer(String applicationName) {
         if (applicationName == null) {
             return null;
         }
@@ -120,25 +125,32 @@ public class OpenTracingService implements EventListener {
 
         // If there isn't a tracer for the application, create one
         if (tracer == null) {
-            // Check which type of Tracer to create
-
-            try {//See if an alternate implementation of Tracer is available in a library.
-                ServiceLoader<Tracer> tracerLoader = ServiceLoader.load(Tracer.class);
-                Iterator<Tracer> loadedTracer = tracerLoader.iterator();
-                if (loadedTracer.hasNext()) {
-                    tracer = loadedTracer.next();
-                }
-            } catch (NoClassDefFoundError ex) {
-                logger.log(Level.SEVERE, "Unable to find Tracer implementation", ex);
-            }
-
-            if (tracer == null) {
-                tracer = new fish.payara.opentracing.tracer.Tracer(applicationName, scopeManager);
-            }
-
-            // Register the tracer instance to the application
-            tracers.put(applicationName, tracer);
+            tracer = createAndReturnTracer(applicationName);
         }
+
+        return tracer;
+    }
+
+    private Tracer createAndReturnTracer(String applicationName) {
+        Tracer tracer = null;
+
+        // Check which type of Tracer to create
+        try {//See if an alternate implementation of Tracer is available in a library.
+            ServiceLoader<Tracer> tracerLoader = ServiceLoader.load(Tracer.class);
+            Iterator<Tracer> loadedTracer = tracerLoader.iterator();
+            if (loadedTracer.hasNext()) {
+                tracer = loadedTracer.next();
+            }
+        } catch (NoClassDefFoundError ex) {
+            logger.log(Level.SEVERE, "Unable to find Tracer implementation", ex);
+        }
+
+        if (tracer == null) {
+            tracer = new fish.payara.opentracing.tracer.Tracer(applicationName, scopeManager);
+        }
+
+        // Register the tracer instance to the application
+        tracers.put(applicationName, tracer);
 
         return tracer;
     }

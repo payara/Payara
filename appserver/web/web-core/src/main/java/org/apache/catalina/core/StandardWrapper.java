@@ -133,6 +133,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import io.opentracing.Tracer;
 import org.apache.catalina.Container;
 import org.apache.catalina.ContainerServlet;
 import org.apache.catalina.Context;
@@ -1639,12 +1640,13 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
                         String applicationName = openTracing.getApplicationName(
                                 Globals.getDefaultBaseServiceLocator().getService(InvocationManager.class));
 
-                        if (openTracing.getTracer(applicationName).activeSpan() != null) {
+                        Tracer tracer = openTracing.getTracer(applicationName);
+                        if (tracer != null && tracer.activeSpan() != null) {
                             // Presumably held open by return being handled by another thread
-                            openTracing.getTracer(applicationName).activeSpan().setTag(
+                            tracer.activeSpan().setTag(
                                     Tags.HTTP_STATUS.getKey(),
                                     Integer.toString(((HttpServletResponse) response).getStatus()));
-                            openTracing.getTracer(applicationName).activeSpan().finish();
+                            tracer.activeSpan().finish();
                         }
 
                         if (requestTracing.isRequestTracingEnabled() && span != null) {
