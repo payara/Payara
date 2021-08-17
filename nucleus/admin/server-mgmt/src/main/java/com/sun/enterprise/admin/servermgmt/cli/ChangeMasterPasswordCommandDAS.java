@@ -61,7 +61,7 @@ import org.jvnet.hk2.annotations.Service;
 /**
  * The change-master-password command for the DAS. This is a hidden command
  * which is called from change-master-password command.
- * 
+ *
  * @author Bhakti Mehta
  */
 @Service(name = "_change-master-password-das")
@@ -137,21 +137,9 @@ public class ChangeMasterPasswordCommandDAS extends LocalDomainCommand {
             }
 
             try {
-                HashMap<String, String> additionalTrustandKeyStores = getAdditionalTrustandKeyStores();
-                if (additionalTrustandKeyStores.containsKey("additionalKeyStores")) {
-                    logger.log(Level.INFO,
-                            "The passwords of the additional KeyStores {0} have not been changed - please update these manually to continue using them.",
-                            Arrays.toString(additionalTrustandKeyStores.get("additionalKeyStores").split(":")));
-
-                }
-                if (additionalTrustandKeyStores.containsKey("additionalTrustStores")) {
-                    logger.log(Level.INFO,
-                            "The passwords of the additional TrustStores {0} have not been changed - please update these manually to continue using them.",
-                            Arrays.toString(additionalTrustandKeyStores.get("additionalTrustStores").split(":")));
-                }
+                getAdditionalTrustandKeyStores();
             } catch (IOException | XMLStreamException exception) {
-                logger.warning(
-                        "Could not fetch additional Trust and Keystores - if there are additional Trust Stores or Key Stores, the passwords need to be updated in order to continue using them.");
+                logger.warning("Could not determine if there were additional Key Stores or Trust stores, if the master-password has been updated, the password for the additional stores need updating in order to continue using them.");
             }
 
             return 0;

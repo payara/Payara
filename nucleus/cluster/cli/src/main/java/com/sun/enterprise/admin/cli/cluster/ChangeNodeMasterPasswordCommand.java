@@ -143,20 +143,9 @@ public class ChangeNodeMasterPasswordCommand extends LocalInstanceCommand {
         }
 
         try {
-            HashMap<String, String> additionalTrustandKeyStores = getAdditionalTrustandKeyStores();
-            if (additionalTrustandKeyStores.containsKey("additionalKeyStores")) {
-                logger.log(Level.INFO,
-                        "The passwords of additional KeyStores {0} have not been changed - please update these manually to continue using them.",
-                        additionalTrustandKeyStores.get("additionalKeyStores").split(":"));
-            }
-            if (additionalTrustandKeyStores.containsKey("additionalTrustStores")) {
-                logger.log(Level.INFO,
-                        "The passwords of additional TrustStores {0} have not been changed - please update these manually to continue using them.",
-                        additionalTrustandKeyStores.get("additionalTrustStores").split(":"));
-            }
+            getAdditionalTrustandKeyStores();
         } catch (IOException | XMLStreamException exception) {
-            logger.warning(
-                    "Could not fetch additional Trust and Keystores - if there are additional Trust Stores or Key Stores, the passwords need to be updated in order to continue using them.");
+            LOGGER.warning("Could not determine if there were additional Key Stores or Trust stores, if the master-password has been updated, the password for the additional stores need updating in order to continue using them.");
         }
 
     }
@@ -187,7 +176,7 @@ public class ChangeNodeMasterPasswordCommand extends LocalInstanceCommand {
     /**
      * Find the old password from the property in the password file with the name
      * {@link #OLD_PASSWORD_ALIAS} if it exists, or by prompting the user otherwise.
-     * 
+     *
      * @throws CommandException if the password is null
      */
     protected String findOldPassword() throws CommandException {
@@ -217,7 +206,7 @@ public class ChangeNodeMasterPasswordCommand extends LocalInstanceCommand {
      * Set the {@link #newPassword} field from the property in the password file
      * with the name {@link #OLD_PASSWORD_ALIAS} if it exists, or by prompting the
      * user twice otherwise.
-     * 
+     *
      * @throws CommandException if the passwords don't match or are null
      */
     protected void setNewPassword() throws CommandException {
@@ -236,7 +225,7 @@ public class ChangeNodeMasterPasswordCommand extends LocalInstanceCommand {
 
     /**
      * This will get the directory of all instances for the selected node.
-     * 
+     *
      * @return The list of instances for the selected node
      * @throws CommandException if there are no instances
      */

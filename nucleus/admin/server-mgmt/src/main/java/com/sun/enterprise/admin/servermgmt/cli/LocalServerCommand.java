@@ -53,6 +53,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.Arrays;
 
 import com.sun.enterprise.admin.cli.CLICommand;
 import com.sun.enterprise.admin.cli.CLIConstants;
@@ -70,6 +71,7 @@ import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.util.io.ServerDirs;
+
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 
@@ -119,11 +121,12 @@ public abstract class LocalServerCommand extends CLICommand {
     ////////////////////////////////////////////////////////////////
     /// Section: protected methods that are OK to override
     ////////////////////////////////////////////////////////////////
+
     /**
      * Override this method and return false to turn-off the file validation. E.g.
      * it demands that config/domain.xml be present. In special cases like
      * Synchronization -- this is how you turn off the testing.
-     * 
+     *
      * @return true - do the checks, false - don't do the checks
      */
     protected boolean checkForSpecialFiles() {
@@ -133,6 +136,7 @@ public abstract class LocalServerCommand extends CLICommand {
     ////////////////////////////////////////////////////////////////
     /// Section: protected methods that are notOK to override.
     ////////////////////////////////////////////////////////////////
+
     /**
      * Returns the admin address of the local domain. Note that this method should
      * be called only when you own the domain that is available on an accessible
@@ -224,9 +228,9 @@ public abstract class LocalServerCommand extends CLICommand {
     /**
      * Checks if the create-domain was created using --savemasterpassword flag which
      * obtains security by obfuscation! Returns null in case of failure of any kind.
-     * 
+     *
      * @return String representing the password from the JCEKS store named
-     *         master-password in domain folder
+     * master-password in domain folder
      */
     protected final String readFromMasterPasswordFile() {
         File mpf = getMasterPasswordFile();
@@ -234,7 +238,7 @@ public abstract class LocalServerCommand extends CLICommand {
             return null; // no master password saved
         try {
             PasswordAdapter pw = new PasswordAdapter(mpf.getAbsolutePath(), MASTERPASSWORD_FILE.toCharArray()); // fixed
-                                                                                                                // key
+            // key
             return pw.getPasswordForAlias(MASTERPASSWORD_FILE);
         } catch (Exception e) {
             logger.log(Level.FINER, "master password file reading error: {0}", e.getMessage());
@@ -275,7 +279,7 @@ public abstract class LocalServerCommand extends CLICommand {
 
     /**
      * Get the master password, either from a password file or by asking the user.
-     * 
+     *
      * @return the actual master password
      */
     protected final String getMasterPassword() throws CommandException {
@@ -376,17 +380,17 @@ public abstract class LocalServerCommand extends CLICommand {
      * waiting for the server to die. Byron Nevins, Nov 7, 2010 - Check to see if
      * the process itself is still running We use OS tools to figure this out. See
      * ProcessUtils for details. Failover to the JPS check if necessary
-     *
+     * <p>
      * bnevins, May 2013
      * http://serverfault.com/questions/181015/how-do-you-free-up-a-port-being-held-open-by-dead-process
      * In WIndows the admin port may be held open for a while -- if there happens to
      * be an attached running child process. This is the key message from the url:
-     *
+     * <p>
      * If your program spawned any processes while it was running, try killing them.
      * That should cause its process record to be freed and the TCP port to be
      * cleaned up. Apparently windows does this when the record is released not when
      * the process exits as I would have expected.
-     * 
+     *
      * @return
      */
     protected boolean isRunning() {
@@ -432,7 +436,7 @@ public abstract class LocalServerCommand extends CLICommand {
 
                 if (newServerPid > 0 && newServerPid != oldServerPid) {
                     logger.log(Level.FINER, "oldserver-pid, newserver-pid = {0} --- {1}",
-                            new Object[] { oldServerPid, newServerPid });
+                            new Object[]{oldServerPid, newServerPid});
                     return;
                 }
                 Thread.sleep(CLIConstants.RESTART_CHECK_INTERVAL_MSEC);
@@ -491,7 +495,7 @@ public abstract class LocalServerCommand extends CLICommand {
 
     /**
      * Get uptime from the server.
-     * 
+     *
      * @return uptime in milliseconds
      * @throws CommandException if the server is not running
      */
@@ -512,7 +516,7 @@ public abstract class LocalServerCommand extends CLICommand {
      * See if the server is restartable As of March 2011 -- this only returns false
      * if a passwordfile argument was given when the server started -- but it is no
      * longer available - i.e.the user deleted it or made it unreadable.
-     * 
+     *
      * @return true if the server is restartable
      * @throws CommandException
      */
@@ -525,8 +529,7 @@ public abstract class LocalServerCommand extends CLICommand {
         if (report != null) {
             String val = report.findProperty("restartable_value");
 
-            if (ok(val) && val.equals("false"))
-                return false;
+            return !ok(val) || !val.equals("false");
         }
         return true;
     }
@@ -534,6 +537,7 @@ public abstract class LocalServerCommand extends CLICommand {
     ////////////////////////////////////////////////////////////////
     /// Section: private methods
     ////////////////////////////////////////////////////////////////
+
     /**
      * The remote uptime command returns a string like: Uptime: 10 minutes, 53
      * seconds, Total milliseconds: 653859\n We find that last number and extract
@@ -666,24 +670,37 @@ public abstract class LocalServerCommand extends CLICommand {
             NodeList jvmOptionsNodes = document.getElementsByTagName("jvm-options");
 
             for (int i = 0; i < jvmOptionsNodes.getLength(); i++) {
-                if (additionalTrustandKeyStores.containsKey("additionalKeyStores")
-                        && additionalTrustandKeyStores.containsKey("additionalTrustStores")) {
-                    break;
-                }
                 String jvmOption = jvmOptionsNodes.item(i).getTextContent();
                 if (jvmOption.startsWith("-Dfish.payara.ssl.additionalKeyStores")) {
                     String additionalKeyStores = jvmOption.split("=")[1];
-                    additionalTrustandKeyStores.put("additionalKeyStores", additionalKeyStores);
+                    if (!additionalTrustandKeyStores.containsKey("additionalKeyStores")) {
+                        additionalTrustandKeyStores.put("additionalKeyStores", additionalKeyStores);
+                    } else {
+                        additionalTrustandKeyStores.computeIfPresent("additionalKeyStores", (key, value) -> value.concat(", " + additionalKeyStores));
+                    }
                     continue;
                 }
                 if (jvmOption.startsWith("-Dfish.payara.ssl.additionalTrustStores")) {
                     String additionalTrustStores = jvmOption.split("=")[1];
-                    additionalTrustandKeyStores.put("additionalTrustStores", additionalTrustStores);
+                    if (!additionalTrustandKeyStores.containsKey("additionalTrustStores")) {
+                        additionalTrustandKeyStores.put("additionalTrustStores", additionalTrustStores);
+                    } else {
+                        additionalTrustandKeyStores.computeIfPresent("additionalTrustStores", (key, value) -> value.concat(", " + additionalTrustStores));
+                    }
                     continue;
                 }
             }
-
-        } catch (ParserConfigurationException | SAXException exception) {
+            if (additionalTrustandKeyStores.containsKey("additionalKeyStores")) {
+                logger.log(Level.INFO,
+                        "The passwords of additional KeyStores {0} have not been changed - please update these manually to continue using them.",
+                        Arrays.toString(additionalTrustandKeyStores.get("additionalKeyStores").split(":")));
+            }
+            if (additionalTrustandKeyStores.containsKey("additionalTrustStores")) {
+                logger.log(Level.INFO,
+                        "The passwords of additional TrustStores {0} have not been changed - please update these manually to continue using them.",
+                        Arrays.toString(additionalTrustandKeyStores.get("additionalTrustStores").split(":")));
+            }
+        } catch (ParserConfigurationException | SAXException | IOException exception) {
             logger.warning(
                     "Could not determine if there were additional Key Stores or Trust stores, if the master-password has been updated, the password for the additional stores need updating in order to continue using them.");
         }
