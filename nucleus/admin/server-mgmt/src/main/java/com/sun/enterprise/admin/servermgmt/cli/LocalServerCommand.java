@@ -673,32 +673,24 @@ public abstract class LocalServerCommand extends CLICommand {
                 String jvmOption = jvmOptionsNodes.item(i).getTextContent();
                 if (jvmOption.startsWith("-Dfish.payara.ssl.additionalKeyStores")) {
                     String additionalKeyStores = jvmOption.split("=")[1];
-                    if (!additionalTrustandKeyStores.containsKey("additionalKeyStores")) {
-                        additionalTrustandKeyStores.put("additionalKeyStores", additionalKeyStores);
-                    } else {
-                        additionalTrustandKeyStores.computeIfPresent("additionalKeyStores", (key, value) -> value.concat(", " + additionalKeyStores));
-                    }
+                    additionalTrustandKeyStores.compute("additionalKeyStores", (key, value) -> value == null ? additionalKeyStores : value.concat(", " + additionalKeyStores));
                     continue;
                 }
                 if (jvmOption.startsWith("-Dfish.payara.ssl.additionalTrustStores")) {
                     String additionalTrustStores = jvmOption.split("=")[1];
-                    if (!additionalTrustandKeyStores.containsKey("additionalTrustStores")) {
-                        additionalTrustandKeyStores.put("additionalTrustStores", additionalTrustStores);
-                    } else {
-                        additionalTrustandKeyStores.computeIfPresent("additionalTrustStores", (key, value) -> value.concat(", " + additionalTrustStores));
-                    }
+                    additionalTrustandKeyStores.compute("additionalTrustStores", (key, value) -> value == null ? additionalTrustStores : value.concat(", " + additionalTrustStores));
                     continue;
                 }
             }
             if (additionalTrustandKeyStores.containsKey("additionalKeyStores")) {
                 logger.log(Level.INFO,
                         "The passwords of additional KeyStores {0} have not been changed - please update these manually to continue using them.",
-                        Arrays.toString(additionalTrustandKeyStores.get("additionalKeyStores").split(":")));
+                        Arrays.toString(additionalTrustandKeyStores.get("additionalKeyStores").split(":(?!\)")));
             }
             if (additionalTrustandKeyStores.containsKey("additionalTrustStores")) {
                 logger.log(Level.INFO,
                         "The passwords of additional TrustStores {0} have not been changed - please update these manually to continue using them.",
-                        Arrays.toString(additionalTrustandKeyStores.get("additionalTrustStores").split(":")));
+                        Arrays.toString(additionalTrustandKeyStores.get("additionalTrustStores").split(":(?!\)")));
             }
         } catch (ParserConfigurationException | SAXException | IOException exception) {
             logger.warning(
