@@ -661,7 +661,7 @@ public abstract class LocalServerCommand extends CLICommand {
         return installRootPath;
     }
 
-    protected HashMap<String, String> getAdditionalTrustandKeyStores() throws IOException, XMLStreamException {
+    protected void getAdditionalTrustandKeyStores() throws IOException, XMLStreamException {
         HashMap<String, String> additionalTrustandKeyStores = new HashMap<>();
         try {
             DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
@@ -692,10 +692,9 @@ public abstract class LocalServerCommand extends CLICommand {
                         "The passwords of additional TrustStores {0} have not been changed - please update these manually to continue using them.",
                         Arrays.toString(additionalTrustandKeyStores.get("additionalTrustStores").split(":(?!\\\\)")));
             }
-        } catch (ParserConfigurationException | SAXException | IOException exception) {
+        } catch (ParserConfigurationException | SAXException exception) {
             logger.warning(
                     "Could not determine if there were additional Key Stores or Trust stores, if the master-password has been updated, the password for the additional stores need updating in order to continue using them.");
         }
-        return additionalTrustandKeyStores;
     }
 }
