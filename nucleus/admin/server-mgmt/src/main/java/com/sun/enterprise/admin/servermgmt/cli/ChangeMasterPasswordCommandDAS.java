@@ -137,7 +137,7 @@ public class ChangeMasterPasswordCommandDAS extends LocalDomainCommand {
             }
 
             try {
-                getAdditionalTrustandKeyStores();
+                checkAdditionalTrustandKeyStores();
             } catch (IOException | XMLStreamException exception) {
                 logger.warning("Could not determine if there were additional Key Stores or Trust stores, if the master-password has been updated, the password for the additional stores need updating in order to continue using them.");
             }

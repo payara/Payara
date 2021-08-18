@@ -661,7 +661,7 @@ public abstract class LocalServerCommand extends CLICommand {
         return installRootPath;
     }
 
-    protected void getAdditionalTrustandKeyStores() throws IOException, XMLStreamException {
+    protected void checkAdditionalTrustandKeyStores() throws IOException, XMLStreamException {
         HashMap<String, String> additionalTrustandKeyStores = new HashMap<>();
         try {
             DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
