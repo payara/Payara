@@ -337,6 +337,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
     private ComponentInvocation createComponentInvocation(ComponentInvocation currInv) {
         ComponentInvocation newInv = currInv.clone();
         newInv.setResourceTableKey(null);
+        newInv.clearRegistry();
         newInv.instance = currInv.getInstance();
         if (!naming) {
             newInv.setJNDIEnvironment(null);
