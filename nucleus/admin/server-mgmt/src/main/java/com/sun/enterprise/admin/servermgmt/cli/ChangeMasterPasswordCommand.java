@@ -37,25 +37,27 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2021] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt.cli;
 
-import com.sun.enterprise.admin.cli.CLICommand;
-import com.sun.enterprise.util.io.DomainDirs;
-import com.sun.enterprise.universal.i18n.LocalStringsImpl;
-import org.glassfish.api.Param;
-import org.glassfish.api.admin.CommandException;
-
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.hk2.api.ServiceLocator;
-
-import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.logging.Logger;
+
+import javax.inject.Inject;
+
+import com.sun.enterprise.admin.cli.CLICommand;
+import com.sun.enterprise.universal.i18n.LocalStringsImpl;
+import com.sun.enterprise.util.io.DomainDirs;
+
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.CommandException;
+import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.jvnet.hk2.annotations.Service;
 
 /**
  * The change-master-password command.
@@ -105,8 +107,6 @@ public class ChangeMasterPasswordCommand extends CLICommand {
 
     private static final LocalStringsImpl STRINGS = new LocalStringsImpl(ChangeMasterPasswordCommand.class);
 
-
-
     @Override
     protected int executeCommand() throws CommandException {
         CLICommand command = null;
@@ -117,16 +117,16 @@ public class ChangeMasterPasswordCommand extends CLICommand {
         try {
             if (isDomain()) {  // is it domain
                 command = CLICommand.getCommand(habitat,
-                        CHANGE_MASTER_PASSWORD_DAS);
+                CHANGE_MASTER_PASSWORD_DAS);
                 return command.execute(argv);
             }
-
+            
             if (nodeDir != null) {
                 command = CLICommand.getCommand(habitat,
-                        CHANGE_MASTER_PASSWORD_NODE);
+                CHANGE_MASTER_PASSWORD_NODE);
                 return command.execute(argv);
             } else {
-
+                
                 // nodeDir is not specified and domainNameOrNodeName is not a domain.
                 // It could be a node
                 // We add defaultNodeDir parameter to args
@@ -136,9 +136,9 @@ public class ChangeMasterPasswordCommand extends CLICommand {
                 arguments.add(getDefaultNodesDirs().getAbsolutePath());
                 arguments.add(domainNameOrNodeName);
                 String[] newargs = (String[]) arguments.toArray(new String[arguments.size()]);
-
+                
                 command = CLICommand.getCommand(habitat,
-                        CHANGE_MASTER_PASSWORD_NODE);
+                CHANGE_MASTER_PASSWORD_NODE);
                 return command.execute(newargs);
             }
         } catch (IOException e) {

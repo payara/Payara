@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2017-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -41,6 +41,7 @@ package fish.payara.microprofile.healthcheck;
 
 import static fish.payara.microprofile.healthcheck.HealthCheckType.LIVENESS;
 import static fish.payara.microprofile.healthcheck.HealthCheckType.READINESS;
+import static fish.payara.microprofile.healthcheck.HealthCheckType.STARTUP;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonMap;
 import static java.util.logging.Level.WARNING;
@@ -62,6 +63,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -120,6 +122,7 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
 
     private final Map<String, Set<HealthCheck>> readiness = new ConcurrentHashMap<>();
     private final Map<String, Set<HealthCheck>> liveness = new ConcurrentHashMap<>();
+    private final Map<String, Set<HealthCheck>> startup = new ConcurrentHashMap<>();
 
     private final Map<String, ClassLoader> applicationClassLoaders = new ConcurrentHashMap<>();
     private final List<String> applicationsLoaded = new CopyOnWriteArrayList<>();
@@ -140,17 +143,20 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
         Map<String, Set<String>> collected = new HashMap<>();
         Map<String, List<HealthCheckResponse>> readinessResponsesByAppName = collectChecks(collector, readiness, collected);
         Map<String, List<HealthCheckResponse>> livenessResponsesByAppName = collectChecks(collector, liveness, collected);
+        Map<String, List<HealthCheckResponse>> startupResponsesByAppName = collectChecks(collector, startup, collected);
         checksCollected.set(collected);
         if (!collected.isEmpty()) {
             List<HealthCheckResponse> overall = new ArrayList<>();
             overall.addAll(collectJointType(collector, "Readiness", readinessResponsesByAppName));
             overall.addAll(collectJointType(collector, "Liveness", livenessResponsesByAppName));
+            overall.addAll(collectJointType(collector, "Startup", startupResponsesByAppName));
             collectUpDown(collector, computeJointState("Overall", overall));
         }
         for (String appName : collected.keySet()) {
             List<HealthCheckResponse> overallByApp = new ArrayList<>();
             overallByApp.addAll(readinessResponsesByAppName.getOrDefault(appName, emptyList()));
             overallByApp.addAll(livenessResponsesByAppName.getOrDefault(appName, emptyList()));
+            overallByApp.addAll(startupResponsesByAppName.getOrDefault(appName, emptyList()));
             collectUpDown(collector.group(appName), computeJointState("Overall", overallByApp));
         }
     }
@@ -182,11 +188,13 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
                 }
                 addWatch(collector, appName, "Readiness");
                 addWatch(collector, appName, "Liveness");
+                addWatch(collector, appName, "Startup");
                 addWatch(collector, appName, "Health");
             }
             if (!collected.isEmpty()) {
                 addWatch(collector, null, "Readiness");
                 addWatch(collector, null, "Liveness");
+                addWatch(collector, null, "Startup");
                 addWatch(collector, null, "Health");
             }
         }
@@ -323,6 +331,7 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
     public void unregisterHealthCheck(String appName) {
         readiness.remove(appName);
         liveness.remove(appName);
+        startup.remove(appName);
         applicationClassLoaders.remove(appName);
         applicationsLoaded.remove(appName);
     }
@@ -356,6 +365,8 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
                 return liveness;
             case READINESS:
                 return readiness;
+            case STARTUP:
+                return startup;
             case UNKNOWN:
             default:
                 LOG.warning("Unrecognised HealthCheckType: " + type);
@@ -369,16 +380,20 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
             healthChecks = readiness;
         } else if (type == LIVENESS) {
             healthChecks = liveness;
+        } else if (type == STARTUP) {
+            healthChecks = startup;
         } else {
-            healthChecks = new HashMap<>();
+            // Make sure we do a deep-copy first, otherwise the first map the foreach consumer gets used on will be a
+            // shallow copy: the two maps will essentially be the same map (changes to one affecting the other)
+            healthChecks = readiness.entrySet().stream().collect(Collectors.toMap(entry ->
+                    entry.getKey(), entry -> new HashSet(entry.getValue())));
             BiConsumer<? super String, ? super Set<HealthCheck>> mergeHealthCheckMap
                     = (key, value) -> healthChecks.merge(key, value, (oldValue, newValue) -> {
                         oldValue.addAll(newValue);
                         return oldValue;
                     });
-            //FIXME most likely this unintentionally changes the fields
-            readiness.forEach(mergeHealthCheckMap);
             liveness.forEach(mergeHealthCheckMap);
+            startup.forEach(mergeHealthCheckMap);
         }
         return healthChecks;
     }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,57 +39,41 @@
  */
 package fish.payara.microprofile.jwtauth.eesecurity;
 
-import static java.lang.Thread.currentThread;
-import static org.eclipse.microprofile.jwt.config.Names.VERIFIER_PUBLIC_KEY;
-import static org.eclipse.microprofile.jwt.config.Names.VERIFIER_PUBLIC_KEY_LOCATION;
-
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.StringReader;
 import java.math.BigInteger;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.nio.charset.Charset;
-import java.nio.charset.IllegalCharsetNameException;
+import java.security.AlgorithmParameters;
 import java.security.KeyFactory;
 import java.security.PublicKey;
+import java.security.spec.ECGenParameterSpec;
+import java.security.spec.ECParameterSpec;
+import java.security.spec.ECPoint;
+import java.security.spec.ECPublicKeySpec;
+import java.security.spec.InvalidKeySpecException;
 import java.security.spec.RSAPublicKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 import java.util.Base64;
-import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import javax.enterprise.inject.spi.DeploymentException;
-import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
-import javax.json.JsonReader;
-import javax.json.JsonValue;
-
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
-import org.glassfish.grizzly.http.util.ContentType;
+import static org.eclipse.microprofile.jwt.config.Names.VERIFIER_PUBLIC_KEY;
+import static org.eclipse.microprofile.jwt.config.Names.VERIFIER_PUBLIC_KEY_LOCATION;
 
-class JwtPublicKeyStore {
+public class JwtPublicKeyStore {
     
     private static final Logger LOGGER = Logger.getLogger(JwtPublicKeyStore.class.getName());
     private static final String RSA_ALGORITHM = "RSA";
+    private static final String EC_ALGORITHM = "EC";
     
         
     private final Config config;
     private final Supplier<Optional<String>> cacheSupplier;
     private final Duration defaultCacheTTL;
+    private String keyLocation = "/publicKey.pem";
     
     /**
      * @param defaultCacheTTL Public key cache TTL 
@@ -97,7 +81,16 @@ class JwtPublicKeyStore {
     public JwtPublicKeyStore(Duration defaultCacheTTL) {
         this.config = ConfigProvider.getConfig();
         this.defaultCacheTTL = defaultCacheTTL;
-        this.cacheSupplier = new PublicKeyLoadingCache(this::readRawPublicKey)::get;
+        this.cacheSupplier = new KeyLoadingCache(this::readRawPublicKey)::get;
+    }
+
+    /**
+     * @param defaultCacheTTL Public key cache TTL
+     * @param keyLocation location of the public key
+     */
+    public JwtPublicKeyStore(Duration defaultCacheTTL, Optional<String> keyLocation) {
+        this(defaultCacheTTL);
+        this.keyLocation = keyLocation.orElse(this.keyLocation);
     }
 
     /**
@@ -113,108 +106,20 @@ class JwtPublicKeyStore {
     }
     
     private CacheableString readRawPublicKey() {
-        CacheableString publicKey = readDefaultPublicKey();
+        CacheableString publicKey = JwtKeyStoreUtils.readKeyFromLocation(keyLocation, defaultCacheTTL);
         
         if (!publicKey.isPresent()) {
             publicKey = readMPEmbeddedPublicKey();
         }
         if (!publicKey.isPresent()) {
-            publicKey = readMPPublicKeyFromLocation();
+            publicKey = JwtKeyStoreUtils.readMPKeyFromLocation(config, VERIFIER_PUBLIC_KEY_LOCATION, defaultCacheTTL);
         }
         return publicKey;
-    }
-    
-    private CacheableString readDefaultPublicKey() {
-        return readPublicKeyFromLocation("/publicKey.pem");
     }
 
     private CacheableString readMPEmbeddedPublicKey() {
         String publicKey = config.getOptionalValue(VERIFIER_PUBLIC_KEY, String.class).orElse(null);
         return CacheableString.from(publicKey, defaultCacheTTL);
-    }
-
-    private CacheableString readMPPublicKeyFromLocation() {
-        Optional<String> locationOpt = config.getOptionalValue(VERIFIER_PUBLIC_KEY_LOCATION, String.class);
-
-        if (!locationOpt.isPresent()) {
-            return CacheableString.empty(defaultCacheTTL);
-        }
-
-        String publicKeyLocation = locationOpt.get();
-
-        return readPublicKeyFromLocation(publicKeyLocation);
-    }
-    
-    private CacheableString readPublicKeyFromLocation(String publicKeyLocation) {
-
-        URL publicKeyURL = currentThread().getContextClassLoader().getResource(publicKeyLocation);
-
-        if (publicKeyURL == null) {
-            try {
-                publicKeyURL = new URL(publicKeyLocation);
-            } catch (MalformedURLException ex) {
-                publicKeyURL = null;
-            }
-        }
-        if (publicKeyURL == null) {
-            return CacheableString.empty(defaultCacheTTL);
-        }
-        
-        try { 
-            return readPublicKeyFromURL(publicKeyURL);
-        } catch(IOException ex) {
-            throw new IllegalStateException("Failed to read public key.", ex);
-        }
-    }
-    
-    private CacheableString readPublicKeyFromURL(URL publicKeyURL) throws IOException {
-        
-        URLConnection urlConnection = publicKeyURL.openConnection();
-        Charset charset = Charset.defaultCharset();
-        ContentType contentType = ContentType.newContentType(urlConnection.getContentType());
-        if(contentType != null) {
-            String charEncoding = contentType.getCharacterEncoding();
-            if(charEncoding != null) {
-                try {
-                    if (!Charset.isSupported(charEncoding)) {
-                        LOGGER.warning("Charset " + charEncoding + " for remote public key not supported, using default charset instead");
-                    } else {
-                        charset = Charset.forName(contentType.getCharacterEncoding());
-                    }
-                }catch (IllegalCharsetNameException ex){
-                    LOGGER.severe("Charset " + ex.getCharsetName() + " for remote public key not support, Cause: " + ex.getMessage());
-                }
-            }
-            
-        }
-        
-        
-        // There's no guarantee that the response will contain at most one Cache-Control header and at most one max-age directive.
-        // Here, we apply the smallest of all max-age directives.
-        Duration cacheTTL = urlConnection.getHeaderFields().entrySet().stream()
-        		.filter(e -> e.getKey() != null && e.getKey().trim().equalsIgnoreCase("Cache-Control"))
-        		.flatMap(headers -> headers.getValue().stream())
-        		.flatMap(headerValue -> Stream.of(headerValue.split(",")))
-        		.filter(directive -> directive.trim().startsWith("max-age"))
-		        .map(maxAgeDirective -> {
-					String[] keyValue = maxAgeDirective.split("=",2);
-					String maxAge = keyValue[keyValue.length-1];
-					try {
-						return Duration.ofSeconds(Long.parseLong(maxAge));
-					} catch(NumberFormatException e) {
-						return null;
-					}
-				})
-		        .filter(Objects::nonNull)
-		        .min(Duration::compareTo)
-		        .orElse(defaultCacheTTL);        	
-        
-        try (InputStream inputStream = urlConnection.getInputStream();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, charset))){
-            String keyContents = reader.lines().collect(Collectors.joining(System.lineSeparator()));
-            return CacheableString.from(keyContents, cacheTTL);
-        }
-        
     }
 
     private PublicKey createPublicKey(String key, String keyID) {
@@ -230,127 +135,65 @@ class JwtPublicKeyStore {
     }
 
     private PublicKey createPublicKeyFromPem(String key) throws Exception {
-        key = key.replaceAll("-----BEGIN (.*)-----", "")
-                .replaceAll("-----END (.*)----", "")
-                .replaceAll("\r\n", "")
-                .replaceAll("\n", "")
-                .trim();
+        key = JwtKeyStoreUtils.trimPem(key);
 
         byte[] keyBytes = Base64.getDecoder().decode(key);
         X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(keyBytes);
-        return KeyFactory.getInstance(RSA_ALGORITHM)
-                .generatePublic(publicKeySpec);
-
+        // Is there a better way to determine which key spec to use here?
+        try {
+            return KeyFactory.getInstance(RSA_ALGORITHM).generatePublic(publicKeySpec);
+        } catch (InvalidKeySpecException invalidKeySpecException) {
+            // Try ECDSA
+            LOGGER.finer("Caught InvalidKeySpecException creating public key from PEM using RSA algorithm, " +
+                    "attempting again using ECDSA");
+            return KeyFactory.getInstance(EC_ALGORITHM).generatePublic(publicKeySpec);
+        }
     }
 
     private PublicKey createPublicKeyFromJWKS(String jwksValue, String keyID) throws Exception {
-        JsonObject jwks = parseJwks(jwksValue);
+        JsonObject jwks = JwtKeyStoreUtils.parseJwks(jwksValue);
         JsonArray keys = jwks.getJsonArray("keys");
-        JsonObject jwk = keys != null ? findJwk(keys, keyID) : jwks;
+        JsonObject jwk = keys != null ? JwtKeyStoreUtils.findJwk(keys, keyID) : jwks;
 
-        // the public exponent
-        byte[] exponentBytes = Base64.getUrlDecoder().decode(jwk.getString("e"));
-        BigInteger exponent = new BigInteger(1, exponentBytes);
+        // Check if an RSA or ECDSA key needs to be created
+        String kty = jwk.getString("kty");
+        if (kty == null) {
+            throw new DeploymentException("Could not determine key type - kty field not present");
+        }
+        if (kty.equals("RSA")) {
+            // the public exponent
+            byte[] exponentBytes = Base64.getUrlDecoder().decode(jwk.getString("e"));
+            BigInteger exponent = new BigInteger(1, exponentBytes);
 
-        // the modulus
-        byte[] modulusBytes = Base64.getUrlDecoder().decode(jwk.getString("n"));
-        BigInteger modulus = new BigInteger(1, modulusBytes);
+            // the modulus
+            byte[] modulusBytes = Base64.getUrlDecoder().decode(jwk.getString("n"));
+            BigInteger modulus = new BigInteger(1, modulusBytes);
 
-        RSAPublicKeySpec publicKeySpec = new RSAPublicKeySpec(modulus, exponent);
-        return KeyFactory.getInstance(RSA_ALGORITHM)
-                .generatePublic(publicKeySpec);
-    }
+            RSAPublicKeySpec publicKeySpec = new RSAPublicKeySpec(modulus, exponent);
+            return KeyFactory.getInstance(RSA_ALGORITHM)
+                    .generatePublic(publicKeySpec);
+        } else if (kty.equals("EC")) {
+            // Get x and y to create EC point
+            byte[] xBytes = Base64.getUrlDecoder().decode(jwk.getString("x"));
+            BigInteger x = new BigInteger(1, xBytes);
+            byte[] yBytes = Base64.getUrlDecoder().decode(jwk.getString("y"));
+            BigInteger y = new BigInteger(1, yBytes);
+            ECPoint ecPoint = new ECPoint(x, y);
 
-    private JsonObject parseJwks(String jwksValue) throws Exception {
-        JsonObject jwks;
-        try (JsonReader reader = Json.createReader(new StringReader(jwksValue))) {
-            jwks = reader.readObject();
-        } catch (Exception ex) {
-            // if jwks is encoded
-            byte[] jwksDecodedValue = Base64.getDecoder().decode(jwksValue);
-            try (InputStream jwksStream = new ByteArrayInputStream(jwksDecodedValue);
-                    JsonReader reader = Json.createReader(jwksStream)) {
-                jwks = reader.readObject();
+            // Get params
+            AlgorithmParameters parameters = AlgorithmParameters.getInstance(EC_ALGORITHM);
+            String crv = jwk.getString("crv");
+
+            if (!crv.equals("P-256")) {
+                throw new DeploymentException("Could not get EC key from JWKS: crv does not equal P-256");
             }
-        }
-        return jwks;
-    }
+            parameters.init(new ECGenParameterSpec("secp256r1"));
 
-    private JsonObject findJwk(JsonArray keys, String keyID) {
-        if (Objects.isNull(keyID) && keys.size() > 0) {
-            return keys.getJsonObject(0);
+            ECPublicKeySpec publicKeySpec = new ECPublicKeySpec(ecPoint, parameters.getParameterSpec(ECParameterSpec.class));
+            return KeyFactory.getInstance(EC_ALGORITHM)
+                    .generatePublic(publicKeySpec);
+        } else {
+            throw new DeploymentException("Could not determine key type - JWKS kty field does not equal RSA or EC");
         }
-
-        for (JsonValue value : keys) {
-            JsonObject jwk = value.asJsonObject();
-            if (Objects.equals(keyID, jwk.getString("kid"))) {
-                return jwk;
-            }
-        }
-
-        throw new IllegalStateException("No matching JWK for KeyID.");
-    }
-    
-    private static class PublicKeyLoadingCache {
-        
-        private final Supplier<CacheableString> keySupplier;
-        private Duration ttl;
-        private long lastUpdated;
-        private Optional<String> publicKey;
-        
-        
-        public PublicKeyLoadingCache(Supplier<CacheableString> keySupplier) {
-            this.ttl = Duration.ZERO;
-            this.keySupplier = keySupplier;
-        }
-        
-        public Optional<String> get() {
-            long now = System.currentTimeMillis();
-            if(now - lastUpdated > ttl.toMillis()) {
-            	refresh();
-            }
-            
-            return publicKey;
-        }
-        
-        private synchronized void refresh() {
-            long now = System.currentTimeMillis();
-            if(now - lastUpdated > ttl.toMillis()) {
-                CacheableString result = keySupplier.get();
-                publicKey = result.getValue();
-                ttl = result.getCacheTTL();
-                lastUpdated = now;
-            }
-        }
-        
-    }
-    
-    private static class CacheableString {
-    	
-    	public static CacheableString empty(Duration cacheTTL) {
-    		return from(null, cacheTTL);
-    	}
-    	
-    	public static CacheableString from(String value, Duration cacheTTL) {
-    		CacheableString instance = new CacheableString();
-    		instance.cacheTTL = cacheTTL;
-    		instance.value = value;
-    		return instance;
-    	}
-    	
-    	private String value;
-    	private Duration cacheTTL;
-    	
-    	public Optional<String> getValue() {
-    		return Optional.ofNullable(value);
-    	}
-    	
-    	public Duration getCacheTTL() {
-    		return cacheTTL;
-    	}
-    	
-    	public boolean isPresent() {
-    		return value != null;
-    	}
     }
 }

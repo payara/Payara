@@ -2,7 +2,7 @@
 name: Enhancement Request
 about: Propose a new minor enhancement for the Payara Platform
 title: 'Enhancement: '
-labels: 'Type: Enhancement'
+labels: 'Type: Enhancement, Status: Open'
 assignees: ''
 
 ---
