@@ -37,11 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2021] Payara Foundation and/or affiliates
 package org.glassfish.admin.cli;
 
 import com.sun.enterprise.admin.cli.AdminMain;
 import com.sun.enterprise.admin.cli.Environment;
 import com.sun.enterprise.admin.remote.Metrix;
+
+import java.util.Arrays;
 
 /**
  * The asadmin main program.
@@ -53,7 +56,9 @@ public class AsadminMain extends AdminMain {
 //        Metrix.event("START");
         Environment.setPrefix("AS_ADMIN_");
         Environment.setShortPrefix("AS_");
-        int code = new AsadminMain().doMain(args);
+        // forceVerbose so that asadmin always runs with output to console
+        // (re-)start-instance can set --logToConsole which means forceVerbose should not be set
+        int code = new AsadminMain().doMain(args, !Arrays.asList(args).contains("--logToConsole"));
 //        Metrix.event("DONE");
 //        System.out.println("METRIX:");
 //        System.out.println(Metrix.getInstance().toString());
