@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.admin.cli.cluster;
 
@@ -47,8 +47,12 @@ import static java.util.Optional.ofNullable;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.xml.stream.XMLStreamException;
 
 import com.sun.enterprise.admin.util.CommandModelData.ParamModelData;
 import com.sun.enterprise.security.store.PasswordAdapter;
@@ -63,8 +67,6 @@ import org.glassfish.api.admin.CommandValidationException;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.security.common.FileProtectionUtility;
 import org.jvnet.hk2.annotations.Service;
-
-import javax.xml.stream.XMLStreamException;
 
 /**
  * The change-master-password command for a node. It takes in a nodeDir and node
@@ -133,13 +135,19 @@ public class ChangeNodeMasterPasswordCommand extends LocalInstanceCommand {
 
         try {
             if (dataGridEncryptionEnabled()) {
-                LOGGER.warning("Data grid encryption is enabled - " +
-                        "you will need to regenerate the encryption key");
+                LOGGER.warning("Data grid encryption is enabled - " + "you will need to regenerate the encryption key");
             }
         } catch (IOException | XMLStreamException exception) {
-            LOGGER.warning("Could not determine if data grid encryption is enabled - " +
-                    "you will need to regenerate the encryption key if it is");
+            LOGGER.warning("Could not determine if data grid encryption is enabled - "
+                    + "you will need to regenerate the encryption key if it is");
         }
+
+        try {
+            checkAdditionalTrustAndKeyStores();
+        } catch (IOException | XMLStreamException exception) {
+            LOGGER.warning("Could not determine if there were additional Key Stores or Trust stores, if the master-password has been updated, the password for the additional stores need updating in order to continue using them.");
+        }
+
     }
 
     @Override
@@ -168,7 +176,7 @@ public class ChangeNodeMasterPasswordCommand extends LocalInstanceCommand {
     /**
      * Find the old password from the property in the password file with the name
      * {@link #OLD_PASSWORD_ALIAS} if it exists, or by prompting the user otherwise.
-     * 
+     *
      * @throws CommandException if the password is null
      */
     protected String findOldPassword() throws CommandException {
@@ -198,7 +206,7 @@ public class ChangeNodeMasterPasswordCommand extends LocalInstanceCommand {
      * Set the {@link #newPassword} field from the property in the password file
      * with the name {@link #OLD_PASSWORD_ALIAS} if it exists, or by prompting the
      * user twice otherwise.
-     * 
+     *
      * @throws CommandException if the passwords don't match or are null
      */
     protected void setNewPassword() throws CommandException {
@@ -217,7 +225,7 @@ public class ChangeNodeMasterPasswordCommand extends LocalInstanceCommand {
 
     /**
      * This will get the directory of all instances for the selected node.
-     * 
+     *
      * @return The list of instances for the selected node
      * @throws CommandException if there are no instances
      */
