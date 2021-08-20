@@ -229,7 +229,7 @@ final class ConfigExpressionResolver {
      */
     private static boolean isExpressionStart(final char[] characters, final int index) {
         return index >= 0
-            && index < characters.length
+            && index + 1 < characters.length
             && characters[index] == '$'
             && characters[index + 1] == '{'
             && !isCharacterEscaped(characters, index);
