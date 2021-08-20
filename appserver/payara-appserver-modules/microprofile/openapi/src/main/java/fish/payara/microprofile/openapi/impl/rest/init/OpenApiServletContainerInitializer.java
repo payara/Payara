@@ -91,6 +91,7 @@ public class OpenApiServletContainerInitializer implements ServletContainerIniti
 
         ServletContainer servletContainer = new ServletContainer(new OpenApiApplication());
         ServletRegistration.Dynamic reg = ctx.addServlet("microprofile-openapi-servlet", servletContainer);
+        reg.setLoadOnStartup(1);
         reg.addMapping("/" + configuration.getEndpoint()  + "/*");
         if (Boolean.parseBoolean(configuration.getSecurityEnabled())) {
             String[] roles = configuration.getRoles().split(",");
