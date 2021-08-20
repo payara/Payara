@@ -37,36 +37,57 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+
+// Portions Copyright [2021] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.server.logging;
 
 import java.util.BitSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author sanshriv
  *
  */
 public class ExcludeFieldsSupport {
-    
-    public static enum SupplementalAttribute {TID, USERID, ECID, TIME_MILLIS, LEVEL_VALUE};
 
-    private BitSet excludeSuppAttrsBits = new BitSet();
+    private static final Logger LOG = LogFacade.LOGGING_LOGGER;
 
-    public void setExcludeFields(String excludeFields) {
+    public enum SupplementalAttribute {TID, USERID, ECID, TIME_MILLIS, LEVEL_VALUE, VERSION}
+
+    private final BitSet excludeSuppAttrsBits = new BitSet();
+
+    public ExcludeFieldsSupport(String excludeFields) {
+        setExcludeFields(excludeFields);
+    }
+
+    private void setExcludeFields(String excludeFields) {
         excludeSuppAttrsBits.clear();
         if (excludeFields != null) {
             String[] fields = excludeFields.split(",");
             for (String field : fields) {
-                if (field.equals("tid")) {
-                    excludeSuppAttrsBits.set(SupplementalAttribute.TID.ordinal());
-                } else if (field.equals("userId")) {
-                    excludeSuppAttrsBits.set(SupplementalAttribute.USERID.ordinal());
-                } else if (field.equals("ecid")) {
-                    excludeSuppAttrsBits.set(SupplementalAttribute.ECID.ordinal());
-                } else if (field.equals("timeMillis")) {
-                    excludeSuppAttrsBits.set(SupplementalAttribute.TIME_MILLIS.ordinal());
-                } else if (field.equals("levelValue")) {
-                    excludeSuppAttrsBits.set(SupplementalAttribute.LEVEL_VALUE.ordinal());
-                } 
+                switch (field) {
+                    case "tid":
+                        excludeSuppAttrsBits.set(SupplementalAttribute.TID.ordinal());
+                        break;
+                    case "userId":
+                        excludeSuppAttrsBits.set(SupplementalAttribute.USERID.ordinal());
+                        break;
+                    case "ecid":
+                        excludeSuppAttrsBits.set(SupplementalAttribute.ECID.ordinal());
+                        break;
+                    case "timeMillis":
+                        excludeSuppAttrsBits.set(SupplementalAttribute.TIME_MILLIS.ordinal());
+                        break;
+                    case "levelValue":
+                        excludeSuppAttrsBits.set(SupplementalAttribute.LEVEL_VALUE.ordinal());
+                        break;
+                    case "version":
+                        excludeSuppAttrsBits.set(SupplementalAttribute.VERSION.ordinal());
+                        break;
+                    default:
+                        LOG.log(Level.WARNING, String.format("Unknown Exclude Field provided : '%s'", field));
+                }
             }
         } 
     }

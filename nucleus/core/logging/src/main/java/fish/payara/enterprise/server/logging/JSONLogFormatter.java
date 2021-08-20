@@ -40,46 +40,31 @@
 package fish.payara.enterprise.server.logging;
 
 import com.sun.common.util.logging.GFLogRecord;
-import com.sun.enterprise.server.logging.ExcludeFieldsSupport;
-import com.sun.enterprise.server.logging.FormatterDelegate;
-import com.sun.enterprise.server.logging.LogEvent;
-import com.sun.enterprise.server.logging.LogEventBroadcaster;
-import com.sun.enterprise.server.logging.LogEventImpl;
-import com.sun.enterprise.server.logging.UniformLogFormatter;
+import com.sun.enterprise.server.logging.*;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.ErrorManager;
-import java.util.logging.Formatter;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
-import org.glassfish.api.VersionInfo;
-import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.internal.api.Globals;
-import org.jvnet.hk2.annotations.ContractsProvided;
-import org.jvnet.hk2.annotations.Service;
 
 /**
  * Class for converting a {@link LogRecord} to Json format
  * @since 4.1.1.164
  * @author savage
  */
-@Service()
-@ContractsProvided({JSONLogFormatter.class, Formatter.class})
-@PerLookup
-public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
+// Removed HK2 service annotations as never used as such, only plain Java instantiation.
+public class JSONLogFormatter extends CommonFormatter implements LogEventBroadcaster {
 
     private static final String RECORD_NUMBER = "RecordNumber";
     private static final String METHOD_NAME = "MethodName";
     private static final String CLASS_NAME = "ClassName";
-
-    private final ServiceLocator habitat = Globals.getDefaultBaseServiceLocator();
 
     private Map<String, ResourceBundle> loggerResourceBundleTable;
     private LogManager logManager;
@@ -136,9 +121,7 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
     private static final String RFC3339_DATE_FORMAT =
             "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
 
-    private final ExcludeFieldsSupport excludeFieldsSupport = new ExcludeFieldsSupport();
     private LogEventBroadcaster logEventBroadcasterDelegate;
-    private String productId = "";
 
     /**
      * For backwards compatibility with log format for pre-182
@@ -147,8 +130,8 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
     @Deprecated
     private static final String PAYARA_JSONLOGFORMATTER_UNDERSCORE="fish.payara.deprecated.jsonlogformatter.underscoreprefix";
 
-    public JSONLogFormatter() {
-        super();
+    public JSONLogFormatter(String excludeFields) {
+        super(excludeFields);
         loggerResourceBundleTable = new HashMap<>();
         logManager = LogManager.getLogManager();
 
@@ -173,8 +156,8 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
         }
     }
 
-    public JSONLogFormatter(FormatterDelegate delegate) {
-        this();
+    public JSONLogFormatter(FormatterDelegate delegate, String excludeFields) {
+        this(excludeFields);
         _delegate = delegate;
     }
 
@@ -190,29 +173,6 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
     @Override
     public String formatMessage(LogRecord record) {
         return jsonLogFormat(record);
-    }
-
-    /**
-     * Payara can override this to specify product version.
-     * @return The string value of the product id.
-     */
-    protected String getProductId() {
-        if (habitat != null) {
-            VersionInfo version = habitat.getService(VersionInfo.class);
-            if (productId.isEmpty() && version != null) {
-                StringBuilder builder = new StringBuilder();
-                builder.append(version.getAbbreviatedProductName());
-                builder.append(' ');
-                builder.append(version.getVersionPrefix());
-                builder.append(version.getMajorVersion());
-                builder.append('.');
-                builder.append(version.getMinorVersion());
-                builder.append('.');
-                builder.append(version.getUpdateVersion());
-                productId = builder.toString();
-            }
-        }
-        return productId;
     }
 
     /**
@@ -250,10 +210,13 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
             /*
              * Get the product id and append to object.
              */
-            productId = getProductId();
-            logEvent.setComponentId(productId);
-            eventObject.add(PRODUCT_ID_KEY, productId);
+            if (!isFieldExcluded(ExcludeFieldsSupport
+                    .SupplementalAttribute.VERSION)) {
 
+                String productId = getProductId();
+                logEvent.setComponentId(productId);
+                eventObject.add(PRODUCT_ID_KEY, productId);
+            }
             /*
              * Get the logger name and append to object.
              */
@@ -269,7 +232,7 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
             /*
              * Get thread information and append to object if not excluded.
              */
-            if (!excludeFieldsSupport.isSet(ExcludeFieldsSupport
+            if (!isFieldExcluded(ExcludeFieldsSupport
                     .SupplementalAttribute.TID)) {
                 // Thread ID
                 int threadId = record.getThreadID();
@@ -292,7 +255,7 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
             /*
              * Get user id and append if not excluded and exists with value.
              */
-            if (!excludeFieldsSupport.isSet(ExcludeFieldsSupport
+            if (!isFieldExcluded(ExcludeFieldsSupport
                     .SupplementalAttribute.USERID)) {
                 String userId = logEvent.getUser();
                 if (null != userId && !userId.isEmpty()) {
@@ -303,7 +266,7 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
             /*
              * Get ec id and append if not excluded and exists with value.
              */
-            if (!excludeFieldsSupport.isSet(ExcludeFieldsSupport
+            if (!isFieldExcluded(ExcludeFieldsSupport
                     .SupplementalAttribute.ECID)) {
                 String ecid = logEvent.getECId();
                 if (null != ecid && !ecid.isEmpty()) {
@@ -314,7 +277,7 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
             /*
              * Get millis time for log entry timestamp
              */
-            if (!excludeFieldsSupport.isSet(ExcludeFieldsSupport
+            if (!isFieldExcluded(ExcludeFieldsSupport
                     .SupplementalAttribute.TIME_MILLIS)) {
                 long timestamp = record.getMillis();
                 logEvent.setTimeMillis(timestamp);
@@ -325,7 +288,7 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
              * Include the integer value for log level
              */
             Level level = record.getLevel();
-            if (!excludeFieldsSupport.isSet(ExcludeFieldsSupport
+            if (!isFieldExcluded(ExcludeFieldsSupport
                     .SupplementalAttribute.LEVEL_VALUE)) {
                 int levelValue = level.intValue();
                 logEvent.setLevelValue(levelValue);
@@ -543,10 +506,4 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
         }
     }
 
-    /**
-     * @param excludeFields Fields to exclude.
-     */
-    public void setExcludeFields(String excludeFields) {
-        this.excludeFieldsSupport.setExcludeFields(excludeFields);
-    }
 }

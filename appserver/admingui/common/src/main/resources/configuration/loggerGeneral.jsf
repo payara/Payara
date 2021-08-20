@@ -150,7 +150,7 @@
                 labels="#{pageSession.excludeFieldsOptions}" selected="#{pageSession.excludeFields}" >
                 <!beforeCreate
                     getListBoxOptions(
-                        availableList={ "tid", "userId", "ecid", "timeMillis", "levelValue" },
+                        availableList={ "tid", "userId", "ecid", "timeMillis", "levelValue", "version" },
                         selectedCommaString="#{pageSession.logAttributes['com.sun.enterprise.server.logging.GFFileHandler.excludeFields']}",
                         availableListResult="#{pageSession.excludeFieldsOptions}",
                         selectedOptions="#{pageSession.excludeFields}"

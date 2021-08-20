@@ -112,7 +112,7 @@ public class GFLauncherLogger {
                 return;
             }
             logfileHandler = new FileHandler(logFile, true);
-            logfileHandler.setFormatter(new ODLLogFormatter());
+            logfileHandler.setFormatter(new ODLLogFormatter(null));
             logfileHandler.setLevel(Level.INFO);
             LOGGER.addHandler(logfileHandler);
         }

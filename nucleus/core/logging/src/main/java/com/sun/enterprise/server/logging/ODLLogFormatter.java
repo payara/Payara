@@ -43,18 +43,13 @@
 package com.sun.enterprise.server.logging;
 
 
-import com.sun.appserv.server.util.Version;
 import com.sun.common.util.logging.GFLogRecord;
-import org.glassfish.hk2.api.PerLookup;
-import org.jvnet.hk2.annotations.ContractsProvided;
-import org.jvnet.hk2.annotations.Service;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.logging.Formatter;
 import java.util.logging.*;
 
 /**
@@ -66,9 +61,7 @@ import java.util.logging.*;
  *
  * @author Naman Mehta
  */
-@Service()
-@ContractsProvided({ODLLogFormatter.class, Formatter.class})
-@PerLookup
+// Removed HK2 service annotations as never used as such, only plain Java instantiation.
 public class ODLLogFormatter extends AnsiColorFormatter implements LogEventBroadcaster {
 
     // loggerResourceBundleTable caches references to all the ResourceBundle
@@ -86,8 +79,6 @@ public class ODLLogFormatter extends AnsiColorFormatter implements LogEventBroad
     private static String ecID = "";
 
     private FormatterDelegate _delegate = null;
-
-    private UniformLogFormatter uniformLogFormatter = new UniformLogFormatter();
 
     private static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
@@ -117,8 +108,6 @@ public class ODLLogFormatter extends AnsiColorFormatter implements LogEventBroad
 
     private boolean multiLineMode;
 
-    private ExcludeFieldsSupport excludeFieldsSupport = new ExcludeFieldsSupport();
-
     private static final String FIELD_BEGIN_MARKER = "[";
     private static final String FIELD_END_MARKER = "]";
 
@@ -129,14 +118,14 @@ public class ODLLogFormatter extends AnsiColorFormatter implements LogEventBroad
 
     private static final String INDENT = "  ";
 
-    public ODLLogFormatter() {
-        super();
+    public ODLLogFormatter(String excludeFields) {
+        super(excludeFields);
         loggerResourceBundleTable = new HashMap<String,ResourceBundle>();
         logManager = LogManager.getLogManager();
     }
 
-    public ODLLogFormatter(FormatterDelegate delegate) {
-        this();
+    public ODLLogFormatter(FormatterDelegate delegate, String excludeFields) {
+        this(excludeFields);
         _delegate = delegate;
     }
 
@@ -160,17 +149,6 @@ public class ODLLogFormatter extends AnsiColorFormatter implements LogEventBroad
     @Override
     public String formatMessage(LogRecord record) {
         return odlLogFormat(record);
-    }
-
-
-    /**
-     * GlassFish can override to specify their product version
-     */
-    protected String getProductId() {
-
-        String version = Version.getAbbreviatedVersion() + Version.getVersionPrefix() +
-                Version.getMajorVersion() + "." + Version.getMinorVersion() + "." + Version.getUpdateVersion();
-        return (version);
     }
 
 
@@ -208,11 +186,15 @@ public class ODLLogFormatter extends AnsiColorFormatter implements LogEventBroad
             recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
 
             // Adding organization ID
-            recordBuffer.append(FIELD_BEGIN_MARKER);
-            logEvent.setComponentId(uniformLogFormatter.getProductId());
-            recordBuffer.append(uniformLogFormatter.getProductId());
-            recordBuffer.append(FIELD_END_MARKER);
-            recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
+            if (!isFieldExcluded(ExcludeFieldsSupport.SupplementalAttribute.VERSION)) {
+
+                recordBuffer.append(FIELD_BEGIN_MARKER);
+                String productId = getProductId();
+                logEvent.setComponentId(productId);
+                recordBuffer.append(productId);
+                recordBuffer.append(FIELD_END_MARKER);
+                recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
+            }
 
             // Adding messageType
             Level logLevel = record.getLevel();
@@ -252,7 +234,7 @@ public class ODLLogFormatter extends AnsiColorFormatter implements LogEventBroad
             recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
 
             // Adding thread ID
-            if (!excludeFieldsSupport.isSet(ExcludeFieldsSupport.SupplementalAttribute.TID)) {
+            if (!isFieldExcluded(ExcludeFieldsSupport.SupplementalAttribute.TID)) {
                 recordBuffer.append(FIELD_BEGIN_MARKER);
                 recordBuffer.append("tid: _ThreadID=");
                 recordBuffer.append(record.getThreadID());
@@ -271,7 +253,7 @@ public class ODLLogFormatter extends AnsiColorFormatter implements LogEventBroad
             }
 
             // Adding user ID
-            if (!excludeFieldsSupport.isSet(ExcludeFieldsSupport.SupplementalAttribute.USERID) &&
+            if (!isFieldExcluded(ExcludeFieldsSupport.SupplementalAttribute.USERID) &&
                     userID != null && !("").equals(userID.trim()))
             {
                 recordBuffer.append(FIELD_BEGIN_MARKER);
@@ -283,7 +265,7 @@ public class ODLLogFormatter extends AnsiColorFormatter implements LogEventBroad
             }
 
             // Adding ec ID
-            if (!excludeFieldsSupport.isSet(ExcludeFieldsSupport.SupplementalAttribute.ECID) &&
+            if (!isFieldExcluded(ExcludeFieldsSupport.SupplementalAttribute.ECID) &&
                     ecID != null && !("").equals(ecID.trim()))
             {
                 recordBuffer.append(FIELD_BEGIN_MARKER);
@@ -295,7 +277,7 @@ public class ODLLogFormatter extends AnsiColorFormatter implements LogEventBroad
             }
 
             // Include the raw time stamp
-            if (!excludeFieldsSupport.isSet(ExcludeFieldsSupport.SupplementalAttribute.TIME_MILLIS)) {
+            if (!isFieldExcluded(ExcludeFieldsSupport.SupplementalAttribute.TIME_MILLIS)) {
                 recordBuffer.append(FIELD_BEGIN_MARKER);
                 recordBuffer.append("timeMillis: ");
                 logEvent.setTimeMillis(record.getMillis());
@@ -305,7 +287,7 @@ public class ODLLogFormatter extends AnsiColorFormatter implements LogEventBroad
             }
 
             // Include the level value
-            if (!excludeFieldsSupport.isSet(ExcludeFieldsSupport.SupplementalAttribute.LEVEL_VALUE)) {
+            if (!isFieldExcluded(ExcludeFieldsSupport.SupplementalAttribute.LEVEL_VALUE)) {
                 recordBuffer.append(FIELD_BEGIN_MARKER);
                 recordBuffer.append("levelValue: ");
                 logEvent.setLevelValue(logLevel.intValue());
@@ -472,10 +454,6 @@ public class ODLLogFormatter extends AnsiColorFormatter implements LogEventBroad
      */
     void setMultiLineMode(boolean value) {
         this.multiLineMode = value;
-    }
-
-    void setExcludeFields(String excludeFields) {
-        excludeFieldsSupport.setExcludeFields(excludeFields);
     }
 
 }
