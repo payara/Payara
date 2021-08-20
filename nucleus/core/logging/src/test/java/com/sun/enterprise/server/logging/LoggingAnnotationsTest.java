@@ -111,15 +111,15 @@ public class LoggingAnnotationsTest {
         // Add a file handler with UniformLogFormatter
         uniformFormatHandler = new FileHandler(ULF_LOG);
         uniformFormatHandler.setLevel(Level.FINE);
-        uniformFormatHandler.setFormatter(new UniformLogFormatter());
+        uniformFormatHandler.setFormatter(new UniformLogFormatter(null));
 
         // Add a file handler with ODLLogFormatter
         odlFormatHandler = new FileHandler(ODL_LOG);
         odlFormatHandler.setLevel(Level.FINE);
-        odlFormatHandler.setFormatter(new ODLLogFormatter());
+        odlFormatHandler.setFormatter(new ODLLogFormatter(null));
 
         consoleHandler = new ConsoleHandler();
-        consoleHandler.setFormatter(new UniformLogFormatter());
+        consoleHandler.setFormatter(new UniformLogFormatter(null));
 
         LOGGER.addHandler(uniformFormatHandler);
         LOGGER.addHandler(odlFormatHandler);
