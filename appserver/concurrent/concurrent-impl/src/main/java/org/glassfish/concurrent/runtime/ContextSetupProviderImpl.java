@@ -324,9 +324,9 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
                 // if app is null then it is likely that appId is still deploying
                 // and its enabled status has not been written to the domain.xml yet
                 // this can happen for example with a Startup EJB submitting something
-                // it its startup method. Reference Payara GitHub issue 204
+                // it its startup method, and since Aug 2021 CDI deployment in general. Reference Payara GitHub issue 204
                 if(applicationRegistry.get(appId) != null){
-                    logger.log(Level.INFO, "Job submitted for {0} likely during deployment. Continuing...", appId);
+                    logger.log(Level.FINE, "Job submitted for {0} likely during deployment. Continuing...", appId);
                     result = true;
                 }
             }
@@ -337,6 +337,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
     private ComponentInvocation createComponentInvocation(ComponentInvocation currInv) {
         ComponentInvocation newInv = currInv.clone();
         newInv.setResourceTableKey(null);
+        newInv.clearRegistry();
         newInv.instance = currInv.getInstance();
         if (!naming) {
             newInv.setJNDIEnvironment(null);
