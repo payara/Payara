@@ -53,6 +53,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.List;
@@ -138,6 +139,7 @@ public class InvocationManagerImpl implements InvocationManager {
         InvocationFrames frames = framesByThread.get();
         if (invocation.getInvocationType() == SERVICE_STARTUP) {
             frames.setState(SERVICE_STARTUP);
+            LOGGER.finest(() -> "Not storing service startup invocation on the stack:" + invocation);
             return;
         }
 
@@ -155,6 +157,7 @@ public class InvocationManagerImpl implements InvocationManager {
         } finally {
             // Push this invocation on the stack
             frames.addLast(invocation);
+            LOGGER.finest(() -> "Added invocation "+frames.size()+" on the stack:\n" + invocation);
 
             if (allTypesHandler != null) {
                 allTypesHandler.afterPreInvoke(type, prev, invocation);
@@ -170,6 +173,7 @@ public class InvocationManagerImpl implements InvocationManager {
         InvocationFrames frames = framesByThread.get();
         if (invocation.getInvocationType() == SERVICE_STARTUP) {
             frames.setState(UN_INITIALIZED);
+            LOGGER.finest(() -> "Skipping SERVICE_STARTUP invocation :" + invocation);
             return;
         }
 
@@ -198,7 +202,8 @@ public class InvocationManagerImpl implements InvocationManager {
             }
         } finally {
             // pop the stack
-            frames.removeLast();
+            ComponentInvocation removed = frames.removeLast();
+            LOGGER.finest(() -> "Removed\n"+removed+ "\nafter postInvoke of\n"+invocation);
 
             if (allTypesHandler != null) {
                 allTypesHandler.afterPostInvoke(type, prev, current);
@@ -216,7 +221,7 @@ public class InvocationManagerImpl implements InvocationManager {
         if (a.getClass() != b.getClass()) {
             return true;
         }
-        return a != b && !a.getClass().getSimpleName().equals("WebComponentInvocation"); // Effectively we ignore WebComponentInvocations for now
+        return a.getClass().getSimpleName().equals("WebComponentInvocation") ? a.instance != b.instance : a != b; // Effectively we ignore WebComponentInvocations for now
     }
 
     /**
@@ -262,13 +267,20 @@ public class InvocationManagerImpl implements InvocationManager {
 
     @Override
     public List<? extends ComponentInvocation> popAllInvocations() {
-        List<? extends ComponentInvocation> result = getAllInvocations();
-        framesByThread.set(null);
+        InvocationFrames frames = framesByThread.get();
+        if (frames == null) {
+            return Collections.emptyList();
+        }
+        frames.state = UN_INITIALIZED;
+        List<? extends ComponentInvocation> result = new ArrayList<>(frames);
+        frames.clear();
+        LOGGER.finest(() -> "Removed invocations of a thread: " + result);
         return result;
     }
 
     @Override
     public void putAllInvocations(List<? extends ComponentInvocation> invocations) {
+        LOGGER.fine(() -> "Forcefully set invocations of a thread to\n"+invocations);
         framesByThread.set(InvocationFrames.valueOf(invocations));
     }
 
@@ -311,7 +323,7 @@ public class InvocationManagerImpl implements InvocationManager {
                         parentFrame.getTransaction()));
             }
         }
-
+        LOGGER.finest(() -> "Computed new invocation stack for child thread: " + childFrames);
         return childFrames;
     }
 
