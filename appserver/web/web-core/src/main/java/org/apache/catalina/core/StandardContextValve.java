@@ -325,7 +325,8 @@ final class StandardContextValve
                     || (requestPath.toUpperCase().startsWith("/META-INF/", 0))
                     || (requestPath.equalsIgnoreCase("/META-INF"))
                     || (requestPath.toUpperCase().startsWith("/WEB-INF/", 0))
-                    || (requestPath.equalsIgnoreCase("/WEB-INF"))) {
+                    || (requestPath.equalsIgnoreCase("/WEB-INF"))
+                    || (requestPath.contains("WEB-INF"))) {
                 notFound((HttpServletResponse) response.getResponse());
                 return null;
             }
