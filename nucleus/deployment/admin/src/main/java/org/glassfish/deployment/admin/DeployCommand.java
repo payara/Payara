@@ -273,13 +273,25 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
 
             span.start(DeploymentTracing.AppStage.CREATE_DEPLOYMENT_CONTEXT, "Initial");
 
-            // create an initial  context
-            initialContext = new DeploymentContextImpl(report, archive, this, env);
+            Optional<ApplicationState> appState = hotDeployService.getApplicationState(path);
+            boolean hotswap = hotDeploy 
+                    && !metadataChanged 
+                    && appState.map(ApplicationState::isHotswap).orElse(false);
+            if (!hotswap) {
+                // create an initial  context
+                initialContext = new DeploymentContextImpl(report, archive, this, env);
+            } else {
+               initialContext = hotDeployService.getApplicationState(path)
+                        .map(ApplicationState::getDeploymentContext)
+                        .orElseThrow(() -> new RuntimeException());
+            }
             initialContext.setArchiveHandler(archiveHandler);
 
-            if (hotDeploy && !metadataChanged) {
-                hotDeployService.getApplicationState(path)
-                        .ifPresent(s -> s.start(initialContext, events));
+            if (hotDeploy && !metadataChanged && appState.isPresent()) {
+                if(!appState.get().start(this, initialContext, events)){
+                    appState.get().close();
+                    return false;
+                }
             } else {
                 hotDeployService.removeApplicationState(path);
             }
