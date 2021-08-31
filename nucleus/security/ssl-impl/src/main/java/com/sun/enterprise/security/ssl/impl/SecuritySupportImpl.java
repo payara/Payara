@@ -47,6 +47,7 @@ import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINEST;
 import static java.util.logging.Level.WARNING;
 
+import java.io.File;
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -409,10 +410,10 @@ public class SecuritySupportImpl extends SecuritySupport {
         String[] additionalKeyStoreFileNames = null;
         String[] additionalTrustStoreFileNames = null;
         if(additionalKeyStoreFileName != null){
-            additionalKeyStoreFileNames = additionalKeyStoreFileName.split(":");
+            additionalKeyStoreFileNames = additionalKeyStoreFileName.split(File.pathSeparator);
         }
         if(additionalTrustStoreFileName != null){
-            additionalTrustStoreFileNames = additionalTrustStoreFileName.split(":");
+            additionalTrustStoreFileNames = additionalTrustStoreFileName.split(File.pathSeparator);
         }
 
         initStores(keyStoreFileName, keyStorePass, trustStoreFileName, trustStorePass, additionalKeyStoreFileNames, additionalTrustStoreFileNames);

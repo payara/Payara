@@ -255,7 +255,7 @@ public abstract class JSSESocketFactory extends ServerSocketFactory {
         String keystoreFile = (String) attributes.get("keystore");
         String[] additionalKeyStoreFileNames = null;
         if(attributes.get(ADDITIONAL_KEY_STORES_ATTR) != null){
-            additionalKeyStoreFileNames = ((String) attributes.get(ADDITIONAL_KEY_STORES_ATTR)).split(":");
+            additionalKeyStoreFileNames = ((String) attributes.get(ADDITIONAL_KEY_STORES_ATTR)).split(File.pathSeparator);
         }
 
         if (logger.isLoggable(Level.FINE)) {
@@ -299,7 +299,7 @@ public abstract class JSSESocketFactory extends ServerSocketFactory {
 
         String[] additionalTrustStoreFileNames = null;
         if(attributes.get(ADDITIONAL_TRUST_STORES_ATTR) != null){
-            additionalTrustStoreFileNames = ((String) attributes.get(ADDITIONAL_TRUST_STORES_ATTR)).split(":");
+            additionalTrustStoreFileNames = ((String) attributes.get(ADDITIONAL_TRUST_STORES_ATTR)).split(File.pathSeparator);
         }
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, "Truststore file= {0}", truststore);

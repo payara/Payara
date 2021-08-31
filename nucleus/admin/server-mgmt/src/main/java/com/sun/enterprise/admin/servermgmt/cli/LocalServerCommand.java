@@ -685,12 +685,12 @@ public abstract class LocalServerCommand extends CLICommand {
             if (additionalTrustandKeyStores.containsKey("additionalKeyStores")) {
                 logger.log(Level.INFO,
                         "The passwords of additional KeyStores {0} have not been changed - please update these manually to continue using them.",
-                        Arrays.toString(additionalTrustandKeyStores.get("additionalKeyStores").split(":(?!\\\\)")));
+                        Arrays.toString(additionalTrustandKeyStores.get("additionalKeyStores").split(File.pathSeparator)));
             }
             if (additionalTrustandKeyStores.containsKey("additionalTrustStores")) {
                 logger.log(Level.INFO,
                         "The passwords of additional TrustStores {0} have not been changed - please update these manually to continue using them.",
-                        Arrays.toString(additionalTrustandKeyStores.get("additionalTrustStores").split(":(?!\\\\)")));
+                        Arrays.toString(additionalTrustandKeyStores.get("additionalTrustStores").split(File.pathSeparator)));
             }
         } catch (ParserConfigurationException | SAXException exception) {
             logger.warning(
