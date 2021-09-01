@@ -79,7 +79,7 @@ import org.glassfish.grizzly.utils.Charsets;
  * @author Craig R. McClanahan
  * @version $Revision: 1.19 $ $Date: 2007/05/05 05:31:54 $
  */
-
+// Portions Copyright [2021] [Payara Foundation and/or its affiliates]
 final class StandardContextValve
     extends ValveBase {
 
@@ -309,6 +309,11 @@ final class StandardContextValve
             rv = rv.substring(0, index2) + rv.substring(idx + 3);
         }
 
+        //if the path don't start with / then include it
+        if(!rv.startsWith("/")) {
+            rv = "/" + rv;
+        }
+
         // Return the normalized path that we have completed
         return rv;
     }
@@ -325,8 +330,7 @@ final class StandardContextValve
                     || (requestPath.toUpperCase().startsWith("/META-INF/", 0))
                     || (requestPath.equalsIgnoreCase("/META-INF"))
                     || (requestPath.toUpperCase().startsWith("/WEB-INF/", 0))
-                    || (requestPath.equalsIgnoreCase("/WEB-INF"))
-                    || (requestPath.contains("WEB-INF"))) {
+                    || (requestPath.equalsIgnoreCase("/WEB-INF"))) {
                 notFound((HttpServletResponse) response.getResponse());
                 return null;
             }
