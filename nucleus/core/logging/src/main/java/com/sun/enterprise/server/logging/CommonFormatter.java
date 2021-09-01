@@ -56,6 +56,11 @@ public abstract class CommonFormatter extends Formatter {
     private final ServiceLocator habitat;
     private String productId = "";
 
+    // Account for instances of (Formatter) Class.forName(formatter).newInstance();
+    protected CommonFormatter() {
+        this(null);
+    }
+
     protected CommonFormatter(String excludeFields) {
         super();
         habitat = Globals.getDefaultBaseServiceLocator();

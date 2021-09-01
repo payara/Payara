@@ -118,6 +118,11 @@ public class ODLLogFormatter extends AnsiColorFormatter implements LogEventBroad
 
     private static final String INDENT = "  ";
 
+    // Account for instances of (Formatter) Class.forName(formatter).newInstance();
+    public ODLLogFormatter() {
+        this(null);
+    }
+
     public ODLLogFormatter(String excludeFields) {
         super(excludeFields);
         loggerResourceBundleTable = new HashMap<String,ResourceBundle>();
