@@ -46,7 +46,6 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.io.IOException;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 
@@ -58,16 +57,20 @@ import java.security.cert.X509Certificate;
 public class MultipleKeystoresConfigurationTest {
 
     @Test
-    public void createAdditionalKeystore() throws IOException {
+    public void createAdditionalKeystore() {
         KeyPair clientKeyPair = SecurityUtils.generateRandomRSAKeys();
         X509Certificate clientCertificate = SecurityUtils.createSelfSignedCertificate(clientKeyPair);
         String path = SecurityUtils.createTempJKSKeyStore(clientKeyPair.getPrivate(), clientCertificate);
+
+        //Used so the path is correct when run in the cli command
+        path = path.replace("\\", "\\\\");
+        path = path.replace(":", "\\:");
 
         CliCommands.payaraGlassFish("create-jvm-options", "\"-Dfish.payara.ssl.additionalKeyStores="+path+"\"");
     }
 
     @Test
-    public void createNewNetworkListener(){
+    public void createNewNetworkListener() {
         CliCommands.payaraGlassFish("create-protocol", "--securityenabled=true", "--target=server-config", "wibbles-protocol");
         CliCommands.payaraGlassFish("create-http", "--defaultVirtualServer=server", "--target=server-config", "wibbles-protocol");
         CliCommands.payaraGlassFish("create-network-listener", "--address=0.0.0.0", "--listenerport=8282", "--protocol=wibbles-protocol", "wibbles");
