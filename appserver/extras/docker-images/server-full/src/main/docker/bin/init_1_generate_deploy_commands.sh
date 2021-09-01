@@ -57,7 +57,7 @@ deploy() {
     echo "post boot commands already deploys $1";
   else
     echo "Adding deployment target $1 to post boot commands";
-    echo $DEPLOY_STATEMENT >> $POSTBOOT_COMMANDS;
+    echo $DEPLOY_STATEMENT >> $POSTBOOT_COMMANDS_FINAL;
   fi
 }
 
