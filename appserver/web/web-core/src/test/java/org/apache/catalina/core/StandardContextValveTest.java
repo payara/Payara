@@ -84,11 +84,11 @@ public class StandardContextValveTest extends TestCase {
 
         int pipelineResult = standardContextValve.invoke(httpRequest, httpResponse);
 
-        verifyResults(pipelineResult, 1, httpRequest, httpResponse, httpServletResponse);
+        verifyThatResourceIsNotFound(pipelineResult, 1, httpRequest, httpResponse, httpServletResponse);
 
         pipelineResult = standardContextValve.invoke(httpRequest, httpResponse);
 
-        verifyResults(pipelineResult, 2, httpRequest, httpResponse, httpServletResponse);
+        verifyThatResourceIsNotFound(pipelineResult, 2, httpRequest, httpResponse, httpServletResponse);
     }
 
     @Test
@@ -105,7 +105,7 @@ public class StandardContextValveTest extends TestCase {
         assertEquals("/app/some/something/my.jsp", result);
     }
 
-    protected void verifyResults(int pipelineResult, int times, HttpRequest httpRequest, HttpResponse httpResponse,
+    protected void verifyThatResourceIsNotFound(int pipelineResult, int times, HttpRequest httpRequest, HttpResponse httpResponse,
                                  HttpServletResponse httpServletResponse) throws IOException {
         assertEquals(GlassFishValve.END_PIPELINE, pipelineResult);
         verify(httpRequest, times(times)).getCheckRestrictedResources();

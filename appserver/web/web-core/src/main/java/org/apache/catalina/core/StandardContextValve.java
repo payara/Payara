@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
 package org.apache.catalina.core;
 
@@ -79,7 +79,6 @@ import org.glassfish.grizzly.utils.Charsets;
  * @author Craig R. McClanahan
  * @version $Revision: 1.19 $ $Date: 2007/05/05 05:31:54 $
  */
-// Portions Copyright [2021] [Payara Foundation and/or its affiliates]
 final class StandardContextValve
     extends ValveBase {
 
