@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
 package org.apache.catalina.core;
 
@@ -79,7 +79,6 @@ import org.glassfish.grizzly.utils.Charsets;
  * @author Craig R. McClanahan
  * @version $Revision: 1.19 $ $Date: 2007/05/05 05:31:54 $
  */
-
 final class StandardContextValve
     extends ValveBase {
 
@@ -280,7 +279,7 @@ final class StandardContextValve
      * @param path to be normalized
      * @return normalized path or null
      */
-    private static String normalize(String path) {
+    protected String normalize(String path) {
         if (path == null) {
             return null;
         }
@@ -309,8 +308,34 @@ final class StandardContextValve
             rv = rv.substring(0, index2) + rv.substring(idx + 3);
         }
 
+        // Resolve occurrences of "/./" example if the path looks like /app/./some/./something/./my.jsp
+        //then after processing should look like /app/some/something/my.jsp
+        rv = evaluateNormalizedPathWithSinglePoint(rv);
+
+        //if the path don't start with / then include it
+        if(!rv.startsWith("/")) {
+            rv = "/" + rv;
+        }
+
         // Return the normalized path that we have completed
         return rv;
+    }
+
+    /**
+     * this method helps to evaluate the element "/./" on the path
+     * @param path to be normalized
+     * @return normalized path
+     */
+    private String evaluateNormalizedPathWithSinglePoint(String path) {
+        // Resolve occurrences of "/./" in the normalized path
+        while (true) {
+            int idx = path.indexOf("/./");
+            if (idx < 0) {
+                break;
+            }
+            path = path.substring(0, idx) + path.substring(idx + 2);
+        }
+        return path;
     }
 
     private Wrapper preInvoke(Request request, Response response) {
