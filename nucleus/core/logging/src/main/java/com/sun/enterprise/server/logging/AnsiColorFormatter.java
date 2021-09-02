@@ -52,7 +52,12 @@ public abstract class AnsiColorFormatter extends CommonFormatter {
     private boolean ansiColor;
     private HashMap<Level,AnsiColor> colors;
     private AnsiColor loggerColor;
-    
+
+    // Account for instances of (Formatter) Class.forName(formatter).newInstance();
+    public AnsiColorFormatter() {
+        this(null);
+    }
+
     public AnsiColorFormatter(String excludeFields) {
         super(excludeFields);
         LogManager manager = LogManager.getLogManager();
