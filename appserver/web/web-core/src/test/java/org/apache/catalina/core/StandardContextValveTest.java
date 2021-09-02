@@ -72,7 +72,7 @@ public class StandardContextValveTest extends TestCase {
     private StandardContextValve standardContextValve = new StandardContextValve();
 
     @Test
-    public void preventAccessToRestrictedDirectoryWithEmptyContextRoot() throws IOException, ServletException {
+    public void preventAccessToRestrictedDirectoryWithEmptyContextRootTest() throws IOException, ServletException {
         DataChunk dataChunkURL1 = DataChunk.newInstance();
         dataChunkURL1.setString("WEB-INF/web.xml");
         DataChunk dataChunkURL2 = DataChunk.newInstance();
@@ -89,6 +89,20 @@ public class StandardContextValveTest extends TestCase {
         pipelineResult = standardContextValve.invoke(httpRequest, httpResponse);
 
         verifyResults(pipelineResult, 2, httpRequest, httpResponse, httpServletResponse);
+    }
+
+    @Test
+    public void normalizeURLTest() {
+        String path1 = "/app/../some/../something/../my.jsp";
+        String path2 = "/app/./some/./something/./my.jsp";
+
+        String result = standardContextValve.normalize(path1);
+
+        assertEquals("/my.jsp", result);
+
+        result = standardContextValve.normalize(path2);
+
+        assertEquals("/app/some/something/my.jsp", result);
     }
 
     protected void verifyResults(int pipelineResult, int times, HttpRequest httpRequest, HttpResponse httpResponse,
