@@ -130,6 +130,11 @@ public class JSONLogFormatter extends CommonFormatter implements LogEventBroadca
     @Deprecated
     private static final String PAYARA_JSONLOGFORMATTER_UNDERSCORE="fish.payara.deprecated.jsonlogformatter.underscoreprefix";
 
+    // Account for instances of (Formatter) Class.forName(formatter).newInstance();
+    public JSONLogFormatter() {
+        this(null);
+    }
+
     public JSONLogFormatter(String excludeFields) {
         super(excludeFields);
         loggerResourceBundleTable = new HashMap<>();

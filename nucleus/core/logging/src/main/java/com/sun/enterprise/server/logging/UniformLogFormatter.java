@@ -131,6 +131,11 @@ public class UniformLogFormatter extends AnsiColorFormatter implements LogEventB
 
     private static final String INDENT = "  ";
 
+    // Account for instances of (Formatter) Class.forName(formatter).newInstance();
+    public UniformLogFormatter() {
+        this(null);
+    }
+
     public UniformLogFormatter(String excludeFields) {
         super(excludeFields);
         loggerResourceBundleTable = new HashMap();
