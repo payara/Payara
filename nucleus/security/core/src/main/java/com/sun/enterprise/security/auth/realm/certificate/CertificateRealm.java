@@ -204,7 +204,10 @@ public final class CertificateRealm extends BaseRealm {
         if (!validators.isEmpty()) {
             for (ClientCertificateValidator validator : validators) {
                 if (!validator.isValid(subject, principal, certificate)) {
+                    _logger.info(() -> String.format("Client Certificate validation failed for (subject=%s, principal=%s) by %s"
+                            , subject, principal, validator.getClass().getName()));
                     failed = true;
+                    break;
                 }
             }
         }
