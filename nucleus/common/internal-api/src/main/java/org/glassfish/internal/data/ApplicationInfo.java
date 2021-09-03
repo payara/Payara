@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.internal.data;
 
@@ -45,7 +45,6 @@ import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.config.serverbeans.Engine;
 import com.sun.enterprise.config.serverbeans.Module;
 import java.beans.PropertyVetoException;
-import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.logging.Logger;
@@ -62,7 +61,6 @@ import org.glassfish.hk2.api.ServiceLocatorFactory;
 import org.glassfish.hk2.bootstrap.DescriptorFileFinder;
 import org.glassfish.hk2.bootstrap.HK2Populator;
 import org.glassfish.hk2.bootstrap.PopulatorPostProcessor;
-import org.glassfish.hk2.classmodel.reflect.Types;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.deployment.DeploymentTracing;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
@@ -370,6 +368,24 @@ public class ApplicationInfo extends ModuleInfo {
             events.send(new Event<ApplicationInfo>(Deployment.APPLICATION_STARTED, this), false);
             innerSpan.close();
         }
+    }
+
+    public void reload(
+            ExtendedDeploymentContext context,
+            ProgressTracker tracker) throws Exception {
+
+        StructuredDeploymentTracing tracing = StructuredDeploymentTracing.load(context);
+        DeploymentSpan span = tracing.startSpan(DeploymentTracing.AppStage.RELOAD);
+
+        super.reload(context, tracker);
+        // registers all deployed items.
+        for (ModuleInfo module : getModuleInfos()) {
+            DeploymentSpan innerSpan = tracing.startSpan(TraceContext.Level.MODULE, module.getName(), DeploymentTracing.AppStage.RELOAD);
+
+            module.reload(getSubContext(module, context), tracker);
+            innerSpan.close();
+        }
+
     }
 
     public void initialize() {

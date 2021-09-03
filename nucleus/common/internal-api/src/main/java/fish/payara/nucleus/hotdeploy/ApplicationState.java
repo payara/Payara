@@ -40,6 +40,7 @@
 package fish.payara.nucleus.hotdeploy;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collection;
@@ -58,7 +59,9 @@ import java.util.logging.Logger;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 import org.glassfish.api.container.Sniffer;
+import org.glassfish.api.deployment.ApplicationMetaDataProvider;
 import org.glassfish.api.deployment.DeployCommandParameters;
+import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
 import org.glassfish.hk2.api.PreDestroy;
@@ -69,6 +72,9 @@ import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.api.deployment.ResourceEntry;
 import org.glassfish.api.deployment.ResourceClassLoader;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.Globals;
+import org.glassfish.internal.data.ProgressTracker;
 
 /**
  * The Application deployment state includes application descriptor metadata,
@@ -134,7 +140,7 @@ public class ApplicationState {
     private final static String HOTSWAP_VM_VALUE = "Dynamic Code Evolution";
 
     private static final Logger LOG = Logger.getLogger(ApplicationState.class.getName());
-
+    private static final ServiceLocator habitat = Globals.getDefaultHabitat();
     private Object hotswapManager = null;
 
     public ApplicationState(String name, File path, ExtendedDeploymentContext deploymentContext) {
@@ -265,7 +271,19 @@ public class ApplicationState {
                         );
                         reloadMap.put(clazz, e.getValue().binaryContent);
                     });
+            // Update application classloader
             hotswap(reloadMap);
+
+            newContext.setClassLoader(applicationClassLoader);
+            ProgressTracker tracker = newContext.getTransientAppMetaData(ExtendedDeploymentContext.TRACKER, ProgressTracker.class);
+            try {
+                // Reload application metadata
+                reloadApplicationMetaData(newContext);
+                // Reload application engines
+                applicationInfo.reload(newContext, tracker);
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
             return false;
         } else {
             if (this.applicationInfo != null) {
@@ -315,6 +333,15 @@ public class ApplicationState {
         return true;
     }
 
+    private void reloadApplicationMetaData(DeploymentContext dc) throws IOException {
+        Deployment deployment = habitat.getService(Deployment.class);
+        Map<Class, ApplicationMetaDataProvider> typeByProvider = deployment.getTypeByProvider();
+        for (Class requiredMetaDataClasse : this.requiredMetaDataClasses()) {
+            ApplicationMetaDataProvider metaDataProvider = typeByProvider.get(requiredMetaDataClasse);
+            metaDataProvider.load(dc);
+        }
+    }
+
     private Object getPluginManager() throws Exception {
         if (hotswapManager == null) {
             ClassLoader classLoader = ClassLoader.getSystemClassLoader();
@@ -330,7 +357,7 @@ public class ApplicationState {
             if (System.getProperty(HOTSWAP_VM_KEY).contains(HOTSWAP_VM_VALUE)) {
                 Class clazz = ClassLoader.getSystemClassLoader()
                         .loadClass(HOTSWAP_TRANSFORMER);
-                if(clazz == null) {
+                if (clazz == null) {
                     LOG.log(Level.INFO, "HotSwap Agent not enabled.");
                     return;
                 }

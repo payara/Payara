@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2020] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2021] Payara Foundation and/or affiliates
 
 package org.glassfish.deployment.common;
 
@@ -69,6 +69,8 @@ import org.glassfish.hk2.api.PreDestroy;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
+import fish.payara.nucleus.hotdeploy.ApplicationState;
+import fish.payara.nucleus.hotdeploy.HotDeployService;
 import java.io.Closeable;
 import java.util.logging.Level;
 import static java.util.logging.Level.FINE;
@@ -76,6 +78,7 @@ import static java.util.logging.Level.FINEST;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.hk2.classmodel.reflect.Parser;
 import org.glassfish.hk2.classmodel.reflect.Types;
+import org.glassfish.internal.api.Globals;
 
 import org.glassfish.logging.annotation.LoggerInfo;
 import org.glassfish.logging.annotation.LogMessagesResourceBundle;
@@ -329,17 +332,20 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
     /**
      * {@inheritDoc}
      */
+    @Override
     public File getSourceDir() {
 
         return new File(getSource().getURI());
     }
 
+    @Override
     public void addModuleMetaData(Object metaData) {
         if (metaData!=null) {
             modulesMetaData.put(metaData.getClass().getName(), metaData);
         }
     }
 
+    @Override
     public <T> T getModuleMetaData(Class<T> metadataType) {
         Object moduleMetaData = modulesMetaData.get(metadataType.getName());
         if (moduleMetaData != null) {
@@ -355,15 +361,16 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
         }
     }
 
+    @Override
     public Collection<Object> getModuleMetadata() {
-        List<Object> copy = new ArrayList<Object>();
+        List<Object> copy = new ArrayList<>();
         copy.addAll(modulesMetaData.values());
         return copy;
     }
 
     @Override
     public Map<String, Object> getTransientAppMetadata() {
-        HashMap<String, Object> copy = new HashMap<String, Object>();
+        HashMap<String, Object> copy = new HashMap<>();
         copy.putAll(transientAppMetaData);
         return copy;
     }
@@ -398,6 +405,7 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
      *
      * @return the application's properties.
      */
+    @Override
     public Properties getAppProps() {
         if (props==null) {
             props = new Properties();
@@ -413,6 +421,7 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
      * Module level properties are only visible to the current module.
      * @return the module's properties.
      */
+    @Override
     public Properties getModuleProps() {
         // for standalone case, it would return the same as application level 
         // properties
@@ -690,17 +699,23 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
         return rootScratchTenantDirForApp;
     }
 
+    @Override
     public String getTenant() {
         return tenant;
     }
 
+    @Override
     public File getTenantDir() {
         return tenantDir;
     }
 
     @Override
     public void postDeployClean(boolean isFinalClean) {
-        if (transientAppMetaData != null) {
+        HotDeployService deployService = Globals.getDefaultHabitat().getService(HotDeployService.class);
+        boolean hotSwap = deployService.getApplicationState(this)
+                .map(ApplicationState::isHotswap)
+                .orElse(false);
+        if (transientAppMetaData != null && !hotSwap) {
             if (isFinalClean) {
                 transientAppMetaData.clear();
             } else {
@@ -721,6 +736,7 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
      *
      * @throws java.io.IOException
      */
+    @Override
     public void prepareScratchDirs() throws IOException {
         prepareScratchDir(getScratchDir("ejb"));
         prepareScratchDir(getScratchDir("xml"));
