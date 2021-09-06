@@ -54,7 +54,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
@@ -128,19 +127,14 @@ public class ApplicationState {
     private static final String JAVA_EXT = ".java";
     private static final String WEB_INF_CLASSES = "WEB-INF/classes";
 
-    private final static String HOTSWAP_PLUGIN_MANAGER = "org.hotswap.agent.config.PluginManager";
-    private final static String HOTSWAP_VM_KEY = "java.vm.name";
-    private final static String HOTSWAP_VM_VALUE = "Dynamic Code Evolution";
-
     private static final Logger LOG = Logger.getLogger(ApplicationState.class.getName());
     private static final ServiceLocator habitat = Globals.getDefaultHabitat();
-    private Object hotswapManager = null;
 
     public ApplicationState(String name, File path, ExtendedDeploymentContext deploymentContext) {
         this.name = name;
         this.path = path;
         this.deploymentContext = deploymentContext;
-        hotswap = System.getProperty(HOTSWAP_VM_KEY).contains(HOTSWAP_VM_VALUE);
+        hotswap = HotSwapHelper.isHotswapEnabled();
     }
 
     public File getPath() {

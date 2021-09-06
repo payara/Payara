@@ -55,7 +55,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.glassfish.hk2.api.ServiceLocator;
 
 /**
  * Utility class used by bootstrap module.
@@ -879,7 +878,7 @@ public class MainHelper {
 
         public static void updateHotSwapClassLoaderConfig() {
             try {
-                if (System.getProperty(HOTSWAP_VM_KEY).contains(HOTSWAP_VM_VALUE)) {
+                if (isHotswapEnabled()) {
                     Class clazz = ClassLoader.getSystemClassLoader()
                             .loadClass(HOTSWAP_TRANSFORMER);
                     if (clazz == null) {
@@ -927,7 +926,7 @@ public class MainHelper {
          */
         public static void closeClassLoader(ClassLoader classLoader) {
             try {
-                if (System.getProperty(HOTSWAP_VM_KEY).contains(HOTSWAP_VM_VALUE)) {
+                if (isHotswapEnabled()) {
                     getPluginManager()
                             .getClass()
                             .getMethod("closeClassLoader", ClassLoader.class)
@@ -936,6 +935,10 @@ public class MainHelper {
             } catch (Exception ex) {
                 logger.log(Level.SEVERE, null, ex);
             }
+        }
+        
+        public static boolean isHotswapEnabled() {
+            return System.getProperty(HOTSWAP_VM_KEY).contains(HOTSWAP_VM_VALUE);
         }
 
         private static Object getPluginManager() throws Exception {
