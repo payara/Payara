@@ -64,6 +64,7 @@ import com.sun.appserv.ClassLoaderUtil;
 import com.sun.appserv.server.util.PreprocessorUtil;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.util.DOLUtils;
+import com.sun.enterprise.glassfish.bootstrap.MainHelper.HotSwapHelper;
 import com.sun.enterprise.security.integration.DDPermissionsLoader;
 import com.sun.enterprise.security.integration.PermsHolder;
 import com.sun.enterprise.util.JDK;
@@ -2049,6 +2050,8 @@ public class WebappClassLoader
             }
 
             DirContextURLStreamHandler.unbind(this);
+
+            HotSwapHelper.closeClassLoader(this);
         }
     }
 

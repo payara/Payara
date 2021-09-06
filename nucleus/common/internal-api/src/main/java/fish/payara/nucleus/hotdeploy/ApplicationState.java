@@ -39,9 +39,9 @@
  */
 package fish.payara.nucleus.hotdeploy;
 
+import com.sun.enterprise.glassfish.bootstrap.MainHelper.HotSwapHelper;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -98,10 +98,6 @@ public class ApplicationState {
     private Map<String, Object> descriptorMetadata = Collections.emptyMap();
     private Map<String, Object> modulesMetaData = Collections.emptyMap();
 
-    static {
-        updateHotSwapClassLoaderConfig();
-    }
-
     /**
      * {@code DeployCommandParameters.sourcesChanged} paths mapped to the
      * qualified class names.
@@ -132,9 +128,6 @@ public class ApplicationState {
     private static final String JAVA_EXT = ".java";
     private static final String WEB_INF_CLASSES = "WEB-INF/classes";
 
-    private final static String HOTSWAP_TRANSFORMER = "org.hotswap.agent.util.HotswapTransformer";
-    private final static String BUNDLE_CLASSLOADER = "org.apache.felix.framework.BundleWiringImpl$BundleClassLoader";
-    private final static String PROVIDER_GENERATOR_CLASSLOADER = "org.glassfish.flashlight.impl.core.ProviderSubClassImplGenerator$SubClassLoader";
     private final static String HOTSWAP_PLUGIN_MANAGER = "org.hotswap.agent.config.PluginManager";
     private final static String HOTSWAP_VM_KEY = "java.vm.name";
     private final static String HOTSWAP_VM_VALUE = "Dynamic Code Evolution";
@@ -272,14 +265,14 @@ public class ApplicationState {
                         reloadMap.put(clazz, e.getValue().binaryContent);
                     });
             // Update application classloader
-            hotswap(reloadMap);
+            HotSwapHelper.hotswap(reloadMap);
 
             newContext.setClassLoader(applicationClassLoader);
             ProgressTracker tracker = newContext.getTransientAppMetaData(ExtendedDeploymentContext.TRACKER, ProgressTracker.class);
             try {
-                // Reload application metadata
+               // Reload application metadata
                 reloadApplicationMetaData(newContext);
-                // Reload application engines
+               // Reload application engines
                 applicationInfo.reload(newContext, tracker);
             } catch (Exception ex) {
                 throw new RuntimeException(ex);
@@ -342,46 +335,7 @@ public class ApplicationState {
         }
     }
 
-    private Object getPluginManager() throws Exception {
-        if (hotswapManager == null) {
-            ClassLoader classLoader = ClassLoader.getSystemClassLoader();
-            hotswapManager = classLoader.loadClass(HOTSWAP_PLUGIN_MANAGER)
-                    .getMethod("getInstance")
-                    .invoke(null);
-        }
-        return hotswapManager;
-    }
 
-    private static void updateHotSwapClassLoaderConfig() {
-        try {
-            if (System.getProperty(HOTSWAP_VM_KEY).contains(HOTSWAP_VM_VALUE)) {
-                Class clazz = ClassLoader.getSystemClassLoader()
-                        .loadClass(HOTSWAP_TRANSFORMER);
-                if (clazz == null) {
-                    LOG.log(Level.INFO, "HotSwap Agent not enabled.");
-                    return;
-                }
-                Field fld = clazz.getDeclaredField("skippedClassLoaders");
-                fld.setAccessible(true);
-                Set<String> skippedClassLoaders = (Set<String>) fld.get(null);
-                skippedClassLoaders.add(BUNDLE_CLASSLOADER);
-                skippedClassLoaders.add(PROVIDER_GENERATOR_CLASSLOADER);
-            }
-        } catch (Exception ex) {
-            LOG.log(Level.SEVERE, null, ex);
-        }
-    }
-
-    private void hotswap(Map<Class<?>, byte[]> reloadMap) {
-        try {
-            getPluginManager()
-                    .getClass()
-                    .getMethod("hotswap", Map.class)
-                    .invoke(getPluginManager(), reloadMap);
-        } catch (Exception ex) {
-            LOG.log(Level.SEVERE, null, ex);
-        }
-    }
 
     public void setApplicationClassLoader(ClassLoader applicationClassLoader) {
         this.applicationClassLoader = applicationClassLoader;
