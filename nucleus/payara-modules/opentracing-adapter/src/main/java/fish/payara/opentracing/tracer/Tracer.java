@@ -44,15 +44,17 @@ import fish.payara.notification.requesttracing.RequestTraceSpan;
 import fish.payara.notification.requesttracing.RequestTraceSpan.SpanContextRelationshipType;
 import fish.payara.notification.requesttracing.RequestTraceSpanContext;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
-import fish.payara.opentracing.OpenTracingScope;
 import fish.payara.opentracing.ScopeManager;
-
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.propagation.Format;
 import io.opentracing.propagation.TextMap;
 import io.opentracing.tag.Tag;
+import org.glassfish.hk2.api.ServiceHandle;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.Globals;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -69,14 +71,9 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
-
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.glassfish.hk2.api.ServiceHandle;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.internal.api.Globals;
 
 /**
  * Implementation of the OpenTracing Tracer class.
@@ -86,7 +83,9 @@ import org.glassfish.internal.api.Globals;
 public class Tracer implements io.opentracing.Tracer {
 
     private final String applicationName;
-    private final io.opentracing.ScopeManager scopeManager;
+
+    // Global ScopeManager containing threadlocal activeScope used across all Tracer instances
+    private static final ScopeManager scopeManager = new fish.payara.opentracing.ScopeManager();
 
     private static final String TRACEID_KEY = "traceid";
     private static final String SPANID_KEY = "spanid";
@@ -97,18 +96,7 @@ public class Tracer implements io.opentracing.Tracer {
      * @param applicationName The application to register this tracer to
      */
     public Tracer(String applicationName) {
-        this(applicationName, new ScopeManager());
-    }
-
-    /**
-     * Constructor that registers this Tracer to an application.
-     *
-     * @param applicationName The application to register this tracer to
-     * @param scopeManager The {@link io.opentracing.ScopeManager} to use with this Tracer
-     */
-    public Tracer(String applicationName, io.opentracing.ScopeManager scopeManager) {
         this.applicationName = applicationName;
-        this.scopeManager = scopeManager;
     }
 
     @Override
