@@ -99,7 +99,7 @@ public class OpenTracingService implements EventListener {
         // registered to that application (if there is one)
         if (event.is(Deployment.APPLICATION_LOADED)) {
             ApplicationInfo info = (ApplicationInfo) event.hook();
-            createAndReturnTracer(info.getName());
+            createTracer(info.getName());
         }
 
         if (event.is(Deployment.APPLICATION_UNLOADED)) {
@@ -124,13 +124,13 @@ public class OpenTracingService implements EventListener {
 
         // If there isn't a tracer for the application, create one
         if (tracer == null) {
-            tracer = createAndReturnTracer(applicationName);
+            tracer = createTracer(applicationName);
         }
 
         return tracer;
     }
 
-    private synchronized Tracer createAndReturnTracer(String applicationName) {
+    private synchronized Tracer createTracer(String applicationName) {
         // Does this NEED to be synchronised? Tracers don't store state, and Scopes are ThreadLocal
 
         // Double-checked locking - potentially naughty
