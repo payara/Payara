@@ -110,7 +110,6 @@ public final class JDK {
     }
 
     public static class Version {
-        private final Optional<String> vendorOrVM;
         private final int major;
         private final Optional<Integer> minor;
         private final Optional<Integer> subminor;
@@ -124,10 +123,7 @@ public final class JDK {
 
             if (version.contains("-")) {
                 String[] versionSplit = version.split("-");
-                vendorOrVM = versionSplit.length > 0 ? Optional.of(versionSplit[0]) : Optional.empty();
                 version = versionSplit.length > 1 ? versionSplit[1] : "";
-            } else {
-                vendorOrVM = Optional.empty();
             }
             String[] split = version.split("[\\._u\\-]+");
 
@@ -138,7 +134,6 @@ public final class JDK {
         }
 
         private Version() {
-            vendorOrVM = Optional.of(JDK.vendor + JDK.vm);
             major = JDK.major;
             minor = Optional.of(JDK.minor);
             subminor = Optional.of(JDK.subminor);

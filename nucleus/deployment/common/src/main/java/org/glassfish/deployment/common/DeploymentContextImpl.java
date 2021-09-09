@@ -364,16 +364,12 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
 
     @Override
     public Collection<Object> getModuleMetadata() {
-        List<Object> copy = new ArrayList<>();
-        copy.addAll(modulesMetaData.values());
-        return copy;
+        return Collections.unmodifiableCollection(modulesMetaData.values());
     }
 
     @Override
     public Map<String, Object> getTransientAppMetadata() {
-        HashMap<String, Object> copy = new HashMap<>();
-        copy.putAll(transientAppMetaData);
-        return copy;
+        return Collections.unmodifiableMap(transientAppMetaData);
     }
 
     @Override

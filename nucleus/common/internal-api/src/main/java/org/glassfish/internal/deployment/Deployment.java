@@ -173,7 +173,7 @@ public interface Deployment {
     EventTypes<ApplicationInfo> DISABLE_START = EventTypes.create("Disable_Start", ApplicationInfo.class);
 
 
-    public interface DeploymentContextBuilder {
+    interface DeploymentContextBuilder {
 
         DeploymentContextBuilder source(File source);
         DeploymentContextBuilder source(ReadableArchive archive);
@@ -193,7 +193,7 @@ public interface Deployment {
 
     }
 
-    static class ApplicationDeployment {
+    class ApplicationDeployment {
         public ApplicationDeployment(ApplicationInfo appInfo, ExtendedDeploymentContext context) {
             this.appInfo = appInfo;
             this.context = context;

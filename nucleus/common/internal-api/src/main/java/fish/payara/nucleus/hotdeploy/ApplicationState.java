@@ -127,7 +127,6 @@ public class ApplicationState {
     private static final String JAVA_EXT = ".java";
     private static final String WEB_INF_CLASSES = "WEB-INF/classes";
 
-    private static final Logger LOG = Logger.getLogger(ApplicationState.class.getName());
     private static final ServiceLocator habitat = Globals.getDefaultHabitat();
 
     public ApplicationState(String name, File path, ExtendedDeploymentContext deploymentContext) {

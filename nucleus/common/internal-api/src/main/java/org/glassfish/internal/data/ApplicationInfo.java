@@ -352,21 +352,22 @@ public class ApplicationInfo extends ModuleInfo {
             ProgressTracker tracker) throws Exception {
 
         StructuredDeploymentTracing tracing = StructuredDeploymentTracing.load(context);
-        DeploymentSpan span = tracing.startSpan(DeploymentTracing.AppStage.START);
+        try ( DeploymentSpan span = tracing.startSpan(DeploymentTracing.AppStage.START)) {
 
-        super.start(context, tracker);
-        // registers all deployed items.
-        for (ModuleInfo module : getModuleInfos()) {
-            DeploymentSpan innerSpan = tracing.startSpan(TraceContext.Level.MODULE, module.getName(), DeploymentTracing.AppStage.START);
+            super.start(context, tracker);
+            // registers all deployed items.
+            for (ModuleInfo module : getModuleInfos()) {
+                try (DeploymentSpan innerSpan = tracing.startSpan(TraceContext.Level.MODULE, module.getName(), DeploymentTracing.AppStage.START)) {
+                    module.start(getSubContext(module, context), tracker);
+                }
+            }
 
-            module.start(getSubContext(module, context), tracker);
-            innerSpan.close();
-        }
+            if (events != null) {
+                try (DeploymentSpan innerSpan = tracing.startSpan(TraceContext.Level.APPLICATION, getName(), DeploymentTracing.AppStage.PROCESS_EVENTS, Deployment.APPLICATION_STARTED.type())) {
+                    events.send(new Event<>(Deployment.APPLICATION_STARTED, this), false);
+                }
+            }
 
-        if (events != null) {
-            DeploymentSpan innerSpan = tracing.startSpan(TraceContext.Level.APPLICATION, getName(), DeploymentTracing.AppStage.PROCESS_EVENTS, Deployment.APPLICATION_STARTED.type());
-            events.send(new Event<ApplicationInfo>(Deployment.APPLICATION_STARTED, this), false);
-            innerSpan.close();
         }
     }
 
@@ -375,17 +376,17 @@ public class ApplicationInfo extends ModuleInfo {
             ProgressTracker tracker) throws Exception {
 
         StructuredDeploymentTracing tracing = StructuredDeploymentTracing.load(context);
-        DeploymentSpan span = tracing.startSpan(DeploymentTracing.AppStage.RELOAD);
+        try ( DeploymentSpan span = tracing.startSpan(DeploymentTracing.AppStage.RELOAD)) {
 
-        super.reload(context, tracker);
-        // registers all deployed items.
-        for (ModuleInfo module : getModuleInfos()) {
-            DeploymentSpan innerSpan = tracing.startSpan(TraceContext.Level.MODULE, module.getName(), DeploymentTracing.AppStage.RELOAD);
+            super.reload(context, tracker);
+            // registers all deployed items.
+            for (ModuleInfo module : getModuleInfos()) {
+                try (DeploymentSpan innerSpan = tracing.startSpan(TraceContext.Level.MODULE, module.getName(), DeploymentTracing.AppStage.RELOAD)) {
+                    module.reload(getSubContext(module, context), tracker);
+                }
+            }
 
-            module.reload(getSubContext(module, context), tracker);
-            innerSpan.close();
         }
-
     }
 
     public void initialize() {
