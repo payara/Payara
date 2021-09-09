@@ -76,6 +76,7 @@ import java.util.logging.Level;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINEST;
 import org.glassfish.api.deployment.DeployCommandParameters;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.classmodel.reflect.Parser;
 import org.glassfish.hk2.classmodel.reflect.Types;
 import org.glassfish.internal.api.Globals;
@@ -711,10 +712,14 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
 
     @Override
     public void postDeployClean(boolean isFinalClean) {
-        HotDeployService deployService = Globals.getDefaultHabitat().getService(HotDeployService.class);
-        boolean hotSwap = deployService.getApplicationState(this)
-                .map(ApplicationState::isHotswap)
-                .orElse(false);
+        boolean hotSwap = false;
+        ServiceLocator serviceLocator = Globals.getDefaultHabitat();
+        if (serviceLocator != null) {
+            hotSwap = serviceLocator.getService(HotDeployService.class)
+                    .getApplicationState(this)
+                    .map(ApplicationState::isHotswap)
+                    .orElse(false);
+        }
         if (transientAppMetaData != null && !hotSwap) {
             if (isFinalClean) {
                 transientAppMetaData.clear();
