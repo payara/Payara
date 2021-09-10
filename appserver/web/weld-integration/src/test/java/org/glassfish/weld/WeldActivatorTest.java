@@ -56,6 +56,8 @@ public class WeldActivatorTest {
 
         Field instanceField = SingletonProvider.class.getDeclaredField("INSTANCE");
         instanceField.setAccessible(true);
+        //nullifyng the internal reference of the SingletonProvider to not broke the jenkins execution
+        instanceField.set(aclSingletonProvider, null);
         assertNull(instanceField.get(aclSingletonProvider));
 
         WeldActivator weldActivator = new WeldActivator();
