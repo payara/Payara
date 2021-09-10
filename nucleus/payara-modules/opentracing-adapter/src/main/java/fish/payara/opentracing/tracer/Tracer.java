@@ -90,13 +90,16 @@ public class Tracer implements io.opentracing.Tracer {
     private static final String TRACEID_KEY = "traceid";
     private static final String SPANID_KEY = "spanid";
 
+    private RequestTracingService requestTracingService;
+
     /**
      * Constructor that registers this Tracer to an application using a thread-local ScopeManager
      *
      * @param applicationName The application to register this tracer to
      */
-    public Tracer(String applicationName) {
+    public Tracer(String applicationName, RequestTracingService requestTracingService) {
         this.applicationName = applicationName;
+        this.requestTracingService = requestTracingService;
     }
 
     @Override
@@ -272,7 +275,6 @@ public class Tracer implements io.opentracing.Tracer {
         private boolean ignoreActiveSpan;
         private long microsecondsStartTime;
         private final fish.payara.opentracing.span.Span span;
-        private RequestTracingService requestTracing;
 
         /**
          * Constructor that gives the Span an operation name.
@@ -284,12 +286,14 @@ public class Tracer implements io.opentracing.Tracer {
             microsecondsStartTime = 0;
             span = new fish.payara.opentracing.span.Span(operationName, applicationName);
 
-            ServiceLocator serviceLocator = Globals.getDefaultBaseServiceLocator();
-            if (serviceLocator != null) {
-                ServiceHandle<RequestTracingService> serviceHandle = serviceLocator.getServiceHandle(
-                        RequestTracingService.class);
-                if (serviceHandle != null && serviceHandle.isActive()) {
-                    requestTracing = serviceHandle.getService();
+            if (requestTracingService == null) {
+                ServiceLocator serviceLocator = Globals.getDefaultBaseServiceLocator();
+                if (serviceLocator != null) {
+                    ServiceHandle<RequestTracingService> serviceHandle = serviceLocator.getServiceHandle(
+                            RequestTracingService.class);
+                    if (serviceHandle != null && serviceHandle.isActive()) {
+                        requestTracingService = serviceHandle.getService();
+                    }
                 }
             }
         }
@@ -367,7 +371,7 @@ public class Tracer implements io.opentracing.Tracer {
                 span.setStartTime(TimeUnit.MICROSECONDS.convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS));
             }
 
-            if (requestTracing != null && !requestTracing.isTraceInProgress()) {
+            if (requestTracingService != null && !requestTracingService.isTraceInProgress()) {
                 if (span.getSpanReferences().isEmpty()) {
                     span.setEventType(EventType.TRACE_START);
                 } else {
@@ -377,7 +381,7 @@ public class Tracer implements io.opentracing.Tracer {
                     span.setTraceId(span.getSpanReferences().get(0).getReferenceSpanContext().getTraceId());
                 }
 
-                requestTracing.startTrace(span);
+                requestTracingService.startTrace(span);
             }
 
             return span;

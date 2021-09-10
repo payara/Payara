@@ -80,6 +80,9 @@ public class OpenTracingService implements EventListener {
 
     private static final Logger logger = Logger.getLogger(OpenTracingService.class.getName());
 
+    // Initialised from ServiceHandle - use getRequestTracingService() rather than directly accessing this variable
+    private RequestTracingService requestTracingService;
+
     @PostConstruct
     void postConstruct() {
         // Listen for events
@@ -91,6 +94,8 @@ public class OpenTracingService implements EventListener {
             logger.log(Level.WARNING, "OpenTracing service not registered to Payara Events: "
                     + "The Tracer for an application won't be removed upon undeployment");
         }
+
+        getRequestTracingService();
     }
 
     @Override
@@ -151,7 +156,7 @@ public class OpenTracingService implements EventListener {
         }
 
         if (tracer == null) {
-            tracer = new fish.payara.opentracing.tracer.Tracer(applicationName);
+            tracer = new fish.payara.opentracing.tracer.Tracer(applicationName, getRequestTracingService());
         }
 
         // Register the tracer instance to the application
@@ -166,13 +171,18 @@ public class OpenTracingService implements EventListener {
      * @return True if the Request Tracing Service is enabled
      */
     public boolean isEnabled() {
-        RequestTracingService requestTracingService = getFromServiceHandle(Globals.getDefaultBaseServiceLocator(),
-                RequestTracingService.class);
-
-        if (requestTracingService != null) {
+        if (getRequestTracingService() != null) {
             return requestTracingService.isRequestTracingEnabled();
         }
         return false;
+    }
+
+    public RequestTracingService getRequestTracingService() {
+        if (requestTracingService == null) {
+            requestTracingService = getFromServiceHandle(Globals.getDefaultBaseServiceLocator(),
+                    RequestTracingService.class);
+        }
+        return requestTracingService;
     }
 
     /**
