@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates]
 package org.glassfish.ejb.mdb;
 
 import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
@@ -799,7 +799,11 @@ public final class MessageBeanContainer extends BaseContainer implements Message
 
             // Call ejbCreate OR @PostConstruct on the bean.
             intercept(POST_CONSTRUCT, context);
-
+            //sanitizing the null reference of ejbProbeNotifier and returning null
+            if(ejbProbeNotifier == null) {
+                _logger.severe("The reference for ejbProbeNotifier is not available, this is an un-sync state of the container");
+                return null;
+            }
             ejbProbeNotifier.ejbBeanCreatedEvent(getContainerId(),
                                 containerInfo.appName, containerInfo.modName,
                                 containerInfo.ejbName);

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld.services;
 
@@ -213,7 +213,12 @@ public class JCDIServiceImpl implements JCDIService {
 
         WeldBootstrap bootstrap = weldDeployer.getBootstrapForApp(ejb.getEjbBundleDescriptor().getApplication());
         WeldManager weldManager = bootstrap.getManager(bda);
-
+        //sanitizing the null reference of weldManager and returning null
+        //when calling _createJCDIInjectionContext
+        if(weldManager == null) {
+            logger.severe("The reference for weldManager is not available, this is an un-sync state of the container");
+            return null;
+        }
         org.jboss.weld.ejb.spi.EjbDescriptor<T> ejbDesc = weldManager.getEjbDescriptor(ejb.getName());
 
         // get or create the ejb's creational context
