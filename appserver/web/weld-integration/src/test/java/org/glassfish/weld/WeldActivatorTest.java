@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2021] [Payara Foundation and/or its affiliates]
 package org.glassfish.weld;
 
 import org.jboss.weld.bootstrap.api.SingletonProvider;
@@ -56,6 +56,8 @@ public class WeldActivatorTest {
 
         Field instanceField = SingletonProvider.class.getDeclaredField("INSTANCE");
         instanceField.setAccessible(true);
+        //nullifyng the internal reference of the SingletonProvider to not bleed across tests
+        instanceField.set(aclSingletonProvider, null);
         assertNull(instanceField.get(aclSingletonProvider));
 
         WeldActivator weldActivator = new WeldActivator();

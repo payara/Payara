@@ -799,7 +799,11 @@ public final class MessageBeanContainer extends BaseContainer implements Message
 
             // Call ejbCreate OR @PostConstruct on the bean.
             intercept(POST_CONSTRUCT, context);
-
+            //sanitizing the null reference of ejbProbeNotifier and returning null
+            if(ejbProbeNotifier == null) {
+                _logger.severe("The reference for ejbProbeNotifier is not available, this is an un-sync state of the container");
+                return null;
+            }
             ejbProbeNotifier.ejbBeanCreatedEvent(getContainerId(),
                                 containerInfo.appName, containerInfo.modName,
                                 containerInfo.ejbName);
