@@ -216,7 +216,7 @@ public class JCDIServiceImpl implements JCDIService {
         //sanitizing the null reference of weldManager and returning null
         //when calling _createJCDIInjectionContext
         if(weldManager == null) {
-            logger.severe("the reference for weldManager is not available, this is an un-sync state of the container");
+            logger.severe("The reference for weldManager is not available, this is an un-sync state of the container");
             return null;
         }
         org.jboss.weld.ejb.spi.EjbDescriptor<T> ejbDesc = weldManager.getEjbDescriptor(ejb.getName());

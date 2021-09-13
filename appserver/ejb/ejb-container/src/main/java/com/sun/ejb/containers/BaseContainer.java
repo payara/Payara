@@ -1787,7 +1787,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
         Object[] interceptorInstances;
         //sanitizing the null reference of interceptorManager
         if (interceptorManager == null) {
-            _logger.severe("the reference for interceptorManager is not available, this is an un-sync state of the container");
+            _logger.severe("The reference for interceptorManager is not available, this is an un-sync state of the container");
             return;
         }
 
@@ -2065,7 +2065,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
             throws Throwable {
         //sanitizing the null reference of interceptorManager
         if (interceptorManager == null) {
-            _logger.severe("the reference for interceptorManager is not available, this is an un-sync state of the container");
+            _logger.severe("The reference for interceptorManager is not available, this is an un-sync state of the container");
             return false;
         }
         return interceptorManager.intercept(eventType, ctx);
