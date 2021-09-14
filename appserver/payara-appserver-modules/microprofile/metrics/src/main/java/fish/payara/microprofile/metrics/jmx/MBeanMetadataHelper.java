@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -47,6 +47,7 @@ import static java.util.logging.Level.INFO;
 import static java.util.logging.Level.SEVERE;
 import static java.util.logging.Level.WARNING;
 import java.util.logging.Logger;
+import javax.inject.Inject;
 import javax.management.MBeanAttributeInfo;
 import javax.management.ObjectName;
 import javax.management.openmbean.CompositeDataSupport;
@@ -58,6 +59,7 @@ import org.eclipse.microprofile.metrics.MetricID;
 import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.eclipse.microprofile.metrics.MetricUnits;
 import org.eclipse.microprofile.metrics.Tag;
+import org.glassfish.api.admin.ServerEnvironment;
 import org.jvnet.hk2.annotations.Service;
 
 @Service
@@ -69,8 +71,12 @@ public class MBeanMetadataHelper {
     public static final String SUB_ATTRIBUTE = "${subattribute}";
     public static final String ATTRIBUTE_SEPARATOR = "/";
     public static final String SUB_ATTRIBUTE_SEPARATOR = "#";
+    public static final String INSTANCE = "${instance}";
 
     private static final Logger LOGGER = Logger.getLogger(MBeanMetadataHelper.class.getName());
+
+    @Inject
+    private ServerEnvironment serverEnv;
 
     /**
      * Registers metrics as MBeans
@@ -139,12 +145,18 @@ public class MBeanMetadataHelper {
             if (metadata.getMBean().contains(SPECIFIER)
                     || metadata.getMBean().contains(KEY)
                     || metadata.getMBean().contains(ATTRIBUTE)
-                    || metadata.getMBean().contains(SUB_ATTRIBUTE)) {
+                    || metadata.getMBean().contains(SUB_ATTRIBUTE)
+                    || metadata.getMBean().contains(INSTANCE)) {
                 try {
+                    String instanceName = serverEnv.getInstanceName();
+                    // set (optional) instance the query expression
+                    String queryExpression = metadata.getMBean()
+                            .replace(INSTANCE, instanceName);
+
                     if (metadata.getMBean().contains(SPECIFIER)
                             || metadata.getMBean().contains(KEY)) {
                         MBeanExpression mBeanExpression = new MBeanExpression(
-                                metadata.getMBean()
+                                queryExpression
                                         .replace(SPECIFIER, "*")
                                         .replace(KEY, "*")
                         );
@@ -159,11 +171,11 @@ public class MBeanMetadataHelper {
                         for (ObjectName objName : mBeanObjects) {
                             String dynamicValue = objName.getKeyPropertyList().get(dynamicKey);
                             resolvedMetadataList.addAll(
-                                    loadAttribute(objName, mBeanExpression, metadata, dynamicValue)
+                                    loadAttribute(objName, mBeanExpression, metadata, dynamicValue, instanceName)
                             );
                         }
                     } else {
-                        MBeanExpression mBeanExpression = new MBeanExpression(metadata.getMBean());
+                        MBeanExpression mBeanExpression = new MBeanExpression(queryExpression);
                         ObjectName objName = mBeanExpression.getObjectName();
                         if (objName == null) {
                             unresolvedMetadataList.add(metadata);
@@ -172,7 +184,7 @@ public class MBeanMetadataHelper {
                             unresolvedMetadataList.add(metadata);
                         }
                         resolvedMetadataList.addAll(
-                                loadAttribute(objName, mBeanExpression, metadata, null)
+                                loadAttribute(objName, mBeanExpression, metadata, null, instanceName)
                         );
                     }
                 } catch (IllegalArgumentException ex) {
@@ -192,7 +204,8 @@ public class MBeanMetadataHelper {
             ObjectName objName,
             MBeanExpression mBeanExpression,
             MBeanMetadata metadata,
-            String key) {
+            String key,
+            String instanceName) {
 
         List<MBeanMetadata> metadataList = new ArrayList<>();
         String attributeName;
@@ -208,6 +221,7 @@ public class MBeanMetadataHelper {
                                 metadata,
                                 key,
                                 attributeName,
+                                instanceName,
                                 true
                         )
                 );
@@ -221,6 +235,7 @@ public class MBeanMetadataHelper {
                             metadata,
                             key,
                             attributeName,
+                            instanceName,
                             false
                     )
             );
@@ -234,6 +249,7 @@ public class MBeanMetadataHelper {
             MBeanMetadata metadata,
             String key,
             String attribute,
+            String instanceName,
             boolean isDynamicAttribute) {
         List<MBeanMetadata> metadataList = new ArrayList<>();
         String exp = objName.getCanonicalName();
@@ -262,21 +278,21 @@ public class MBeanMetadataHelper {
                     }
                     MBeanMetadata newMbeanMetadata = new MBeanMetadata(newMetadataBuilder.build());
                     newMbeanMetadata.addTags(metadata.getTags());
-                    metadataList.add(createMetadata(newMbeanMetadata, exp, key, attribute, subAttribute));
+                    metadataList.add(createMetadata(newMbeanMetadata, exp, key, attribute, subAttribute, instanceName));
                 }
             } else if (isDynamicAttribute) {
                 Object obj = mBeanExpression.querySubAttributes(objName, attribute);
                 if (obj instanceof CompositeDataSupport) {
                     CompositeDataSupport compositeData = (CompositeDataSupport) obj;
                     if (compositeData.containsKey(subAttribute) && compositeData.get(subAttribute) instanceof Number) {
-                        metadataList.add(createMetadata(metadata, exp, key, attribute, subAttribute));
+                        metadataList.add(createMetadata(metadata, exp, key, attribute, subAttribute, instanceName));
                     }
                 }
             } else {
-                metadataList.add(createMetadata(metadata, exp, key, attribute, subAttribute));
+                metadataList.add(createMetadata(metadata, exp, key, attribute, subAttribute, instanceName));
             }
         } else {
-            metadataList.add(createMetadata(metadata, exp, key, attribute, subAttribute));
+            metadataList.add(createMetadata(metadata, exp, key, attribute, subAttribute, instanceName));
         }
         return metadataList;
     }
@@ -286,7 +302,8 @@ public class MBeanMetadataHelper {
             String exp,
             String key,
             String attribute,
-            String subAttribute) {
+            String subAttribute,
+            String instanceName) {
         StringBuilder builder = new StringBuilder();
         builder.append(exp);
         builder.append(ATTRIBUTE_SEPARATOR);
@@ -300,27 +317,30 @@ public class MBeanMetadataHelper {
                         metadata.getName(),
                         key,
                         attribute,
-                        subAttribute
+                        subAttribute,
+                        instanceName
                 ),
                 formatMetadata(
                         nonNull(metadata.getDisplayName()) ? metadata.getDisplayName() : metadata.getName(),
                         key,
                         attribute,
-                        subAttribute
+                        subAttribute,
+                         instanceName
                 ),
                 formatMetadata(
                         metadata.description().isPresent() ? metadata.getDescription() : metadata.getName(),
                         key,
                         attribute,
-                        subAttribute
+                        subAttribute,
+                        instanceName
                 ),
                 metadata.getTypeRaw(),
                 metadata.unit().orElse(null)
         );
         for (XmlTag oldTag: metadata.getTags()) {
             XmlTag newTag = new XmlTag();
-            newTag.setName(formatMetadata(oldTag.getName(), key, attribute, subAttribute));
-            newTag.setValue(formatMetadata(oldTag.getValue(), key, attribute, subAttribute));
+            newTag.setName(formatMetadata(oldTag.getName(), key, attribute, subAttribute, instanceName));
+            newTag.setValue(formatMetadata(oldTag.getValue(), key, attribute, subAttribute, instanceName));
             newMetaData.getTags().add(newTag);
         }
         return newMetaData;
@@ -330,7 +350,8 @@ public class MBeanMetadataHelper {
             String metadata,
             String dynamicValue,
             String attributeName,
-            String subAttributeName) {
+            String subAttributeName,
+            String instanceName) {
         if (dynamicValue != null && metadata.contains(SPECIFIER)) {
             metadata = metadata.replace(SPECIFIER, dynamicValue);
         }
@@ -342,6 +363,9 @@ public class MBeanMetadataHelper {
         }
         if (subAttributeName != null && metadata.contains(SUB_ATTRIBUTE)) {
             metadata = metadata.replace(SUB_ATTRIBUTE, subAttributeName);
+        }
+        if (metadata.contains(INSTANCE)) {
+            metadata = metadata.replace(INSTANCE, instanceName);
         }
         return metadata;
     }
