@@ -50,6 +50,8 @@ import org.omg.PortableInterceptor.ORBInitInfo;
 import org.omg.PortableInterceptor.ServerRequestInterceptor;
 
 import javax.inject.Singleton;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Factory for creating IIOP client and server interceptors that propagate OpenTracing SpanContext.
@@ -59,6 +61,8 @@ import javax.inject.Singleton;
 @Service(name = "OpenTracingIiopInterceptorFactory")
 @Singleton
 public class OpenTracingIiopInterceptorFactory implements IIOPInterceptorFactory {
+
+    private static final Logger logger = Logger.getLogger(OpenTracingIiopInterceptorFactory.class.getName());
 
     public static final int OPENTRACING_IIOP_ID = 3226428;
     public static final long OPENTRACING_IIOP_SERIAL_VERSION_UID = 20200731171822L;
@@ -74,7 +78,12 @@ public class OpenTracingIiopInterceptorFactory implements IIOPInterceptorFactory
     public ClientRequestInterceptor createClientRequestInterceptor(ORBInitInfo info, Codec codec) {
         if (clientRequestInterceptor == null) {
             if (attemptCreation()) {
-                clientRequestInterceptor = new OpenTracingIiopClientInterceptor(openTracingService);
+                try {
+                    clientRequestInterceptor = new OpenTracingIiopClientInterceptor(openTracingService);
+                } catch (NullPointerException nullPointerException) {
+                    logger.log(Level.WARNING, "Could not create OpenTracing IIOP Client Interceptor - Remote EJBs will not be traced");
+                    return null;
+                }
             }
         }
 

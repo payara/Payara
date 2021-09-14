@@ -44,7 +44,6 @@ import fish.payara.nucleus.requesttracing.store.strategy.LongestTraceStorageStra
 import fish.payara.nucleus.requesttracing.store.strategy.ReservoirTraceStorageStrategy;
 import fish.payara.nucleus.requesttracing.store.strategy.TraceStorageStrategy;
 import fish.payara.nucleus.store.ClusteredStore;
-import org.glassfish.api.event.Events;
 import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.internal.api.Globals;
 
@@ -68,7 +67,7 @@ public class RequestTraceStoreFactory {
      * @param historic whether the store is a historic store or not.
      * @return a request trace store.
      */
-    public static RequestTraceStoreInterface getStore(Events events, boolean reservoirSamplingEnabled, boolean historic) {
+    public static RequestTraceStoreInterface getStore(boolean reservoirSamplingEnabled, boolean historic) {
 
         // Get the hazelcast store name for if it's a clustered store.
         String storeName;
