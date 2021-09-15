@@ -1096,7 +1096,7 @@ public class GenericGrizzlyListener implements GrizzlyListener {
 
     protected Set<ContentEncoding> configureCompressionEncodings(Http http) {
         final String mode = http.getCompression();
-        final int compressionStrategy = getCompressionStrategyByInt(http.getCompressionStrategy());
+        final int compressionStrategy = getCompressionStrategyAsInt(http.getCompressionStrategy());
         final int compressionLevel = Integer.parseInt(http.getCompressionLevel());
         int compressionMinSize = Integer.parseInt(http.getCompressionMinSizeBytes());
         CompressionMode compressionMode;
@@ -1188,7 +1188,7 @@ public class GenericGrizzlyListener implements GrizzlyListener {
         return null;
     }
 
-    private int getCompressionStrategyByInt(String compressionStrategy) {
+    private int getCompressionStrategyAsInt(String compressionStrategy) {
         switch (compressionStrategy) {
             case "Default":
                 return 0;
