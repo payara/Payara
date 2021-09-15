@@ -139,28 +139,26 @@ public class OpenTracingService implements EventListener {
         // Does this NEED to be synchronised? Tracers don't store state, and Scopes are ThreadLocal
 
         // Double-checked locking - potentially naughty
-        Tracer tracer = tracers.get(applicationName);
-        if (tracer != null) {
-            return tracer;
-        }
+        Tracer tracer = tracers.computeIfAbsent(applicationName, (appName) -> {
+            Tracer newTracer = null;
 
-        // Check which type of Tracer to create
-        try {//See if an alternate implementation of Tracer is available in a library.
-            ServiceLoader<Tracer> tracerLoader = ServiceLoader.load(Tracer.class);
-            Iterator<Tracer> loadedTracer = tracerLoader.iterator();
-            if (loadedTracer.hasNext()) {
-                tracer = loadedTracer.next();
+            // Check which type of Tracer to create
+            try {//See if an alternate implementation of Tracer is available in a library.
+                ServiceLoader<Tracer> tracerLoader = ServiceLoader.load(Tracer.class);
+                Iterator<Tracer> loadedTracer = tracerLoader.iterator();
+                if (loadedTracer.hasNext()) {
+                    newTracer = loadedTracer.next();
+                }
+            } catch (NoClassDefFoundError ex) {
+                logger.log(Level.SEVERE, "Unable to find Tracer implementation", ex);
             }
-        } catch (NoClassDefFoundError ex) {
-            logger.log(Level.SEVERE, "Unable to find Tracer implementation", ex);
-        }
 
-        if (tracer == null) {
-            tracer = new fish.payara.opentracing.tracer.Tracer(applicationName, getRequestTracingService());
-        }
+            if (newTracer == null) {
+                newTracer = new fish.payara.opentracing.tracer.Tracer(appName, getRequestTracingService());
+            }
 
-        // Register the tracer instance to the application
-        tracers.put(applicationName, tracer);
+            return newTracer;
+        });
 
         return tracer;
     }
