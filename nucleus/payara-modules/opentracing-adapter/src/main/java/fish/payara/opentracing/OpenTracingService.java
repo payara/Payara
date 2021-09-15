@@ -177,7 +177,11 @@ public class OpenTracingService implements EventListener {
         return false;
     }
 
-    public RequestTracingService getRequestTracingService() {
+    /**
+     * Gets the {@link RequestTracingService}, looking up the active service from HK2 if necessary.
+     * @return The {@link RequestTracingService}, or null.
+     */
+    private RequestTracingService getRequestTracingService() {
         if (requestTracingService == null) {
             requestTracingService = getFromServiceHandle(Globals.getDefaultBaseServiceLocator(),
                     RequestTracingService.class);
