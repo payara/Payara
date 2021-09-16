@@ -67,6 +67,8 @@ public class ExcludeFieldsSupport {
             String[] fields = excludeFields.split(",");
             for (String field : fields) {
                 switch (field) {
+                    case "":
+                        break;
                     case "tid":
                         excludeSuppAttrsBits.set(SupplementalAttribute.TID.ordinal());
                         break;
