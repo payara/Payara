@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.glassfish.bootstrap;
 
@@ -69,16 +69,8 @@ public class MainHelper {
     /*protected*/
 
     static void checkJdkVersion() {
-        int major = JDK.getMajor();
-        int minor = JDK.getMinor();
-        //In case of JDK1 to JDK8 the major version would be 1 always.Starting from
-        //JDK9 the major verion would be the real major version e.g in case
-        // of JDK9 major version is 9.So in that case checking the major version only
-        if (major < 9) {
-          if (minor < 8) {
-            logger.log(Level.SEVERE, LogFacade.BOOTSTRAP_INCORRECT_JDKVERSION, new Object[]{8, minor});
-            System.exit(1);
-          }
+        if(!JDK.isRunningLTSJDK()) {
+            logger.warning("You are running the product on an unsupported JDK version and might see unexpected results or exceptions.");
         }
     }
 

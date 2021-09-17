@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.util;
 
@@ -76,6 +76,18 @@ public final class JDK {
             && updateVersion >= OPENJSSE_MINIMUM_UPDATE_VERSION
             && updateVersion <= OPENJSSE_MAXIMUM_UPDATE_VERSION
             && !OPENJSSE_KNOWN_NOT_TO_WORK_MINOR.contains(updateVersion);
+    }
+
+    /**
+     * See if the current JDK is an LTS version
+     * @return true if JDK is an LTS version (8, 11, 17, 21, 25, 29...)
+     */
+    public static boolean isRunningLTSJDK() {
+        int major = getMajor();
+        int minor = getMinor();
+        //Checks for LTS JDK versions following the 2 year LTS cadence after and including JDK 17
+        //JDK 1-8 always have a major version of 1.
+        return (major - 17) % 4 == 0 && major >= 17 || (major == 1 && minor == 8) || major == 11;
     }
 
     /**

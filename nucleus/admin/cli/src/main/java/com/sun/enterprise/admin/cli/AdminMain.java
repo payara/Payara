@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2021] Payara Foundation and/or affiliates
 package com.sun.enterprise.admin.cli;
 
 import com.sun.enterprise.admin.remote.reader.ProprietaryReaderFactory;
@@ -204,18 +204,6 @@ public class AdminMain {
     }
 
     protected int doMain(String[] args) {
-        int minor = JDK.getMinor();
-        int major = JDK.getMajor();
-        //In case of JDK1 to JDK8 the major version would be 1 always.Starting from
-        //JDK9 the major verion would be the real major version e.g in case
-        // of JDK9 major version is 9.So in that case checking the major version only.
-        if (major<9) {
-            if (minor < 6) {
-                System.err.println(strings.get( "OldJdk", "" + minor));
-                return ERROR;
-            }
-        }
-
         boolean trace = env.trace();
         boolean debug = env.debug();
 
