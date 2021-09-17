@@ -100,13 +100,16 @@ public class OpenTracingService implements EventListener {
 
     @Override
     public void event(Event<?> event) {
-        // Listen for application unloaded events (happens during undeployment), so that we remove the tracer instance
-        // registered to that application (if there is one)
+        // Eagerly create tracer if request tracing is enabled
         if (event.is(Deployment.APPLICATION_LOADED)) {
-            ApplicationInfo info = (ApplicationInfo) event.hook();
-            createTracer(info.getName());
+            if (getRequestTracingService() != null && requestTracingService.isRequestTracingEnabled()) {
+                ApplicationInfo info = (ApplicationInfo) event.hook();
+                createTracer(info.getName());
+            }
         }
 
+        // Listen for application unloaded events (happens during undeployment), so that we remove the tracer instance
+        // registered to that application (if there is one)
         if (event.is(Deployment.APPLICATION_UNLOADED)) {
             ApplicationInfo info = (ApplicationInfo) event.hook();
             tracers.remove(info.getName());
