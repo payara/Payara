@@ -155,7 +155,7 @@
         <gmbal.version>4.0.0</gmbal.version>
         <antlr.version>2.7.7</antlr.version>
 
-        <commons-io.version>2.7</commons-io.version>
+        <commons-io.version>2.11.0</commons-io.version>
 
         <mimepull.version>1.9.12</mimepull.version>
 
