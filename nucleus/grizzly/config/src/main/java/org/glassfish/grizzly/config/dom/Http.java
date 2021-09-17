@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  * 
- * Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates] 
+ * Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates]
  */
 
 
@@ -78,6 +78,7 @@ public interface Http extends ConfigBeanProxy, PropertyBag {
     boolean ALLOW_PAYLOAD_FOR_UNDEFINED_HTTP_METHODS = false;
 
     int COMPRESSION_MIN_SIZE = 2048;
+    int COMPRESSION_LEVEL = -1;
     int CONNECTION_UPLOAD_TIMEOUT = 300000;
     int HEADER_BUFFER_LENGTH = 8192;
     int KEEP_ALIVE_TIMEOUT = 30;
@@ -95,6 +96,8 @@ public interface Http extends ConfigBeanProxy, PropertyBag {
     String COMPRESSABLE_MIME_TYPE = "text/html,text/xml,text/plain";
     String COMPRESSION = "off";
     String COMPRESSION_PATTERN = "on|off|force|\\d+";
+    String COMPRESSION_STRATEGY = "Default";
+    String COMPRESSION_STRATEGY_PATTERN = "Filtered|Default|Huffman Only|\\d+";
     String DEFAULT_ADAPTER = "org.glassfish.grizzly.http.server.StaticHttpHandler";
     String URI_ENCODING = "UTF-8";
     String SCHEME_PATTERN = "http|https";
@@ -149,6 +152,17 @@ public interface Http extends ConfigBeanProxy, PropertyBag {
     String getCompression();
 
     void setCompression(String compression);
+
+    @Attribute(defaultValue = "" + COMPRESSION_LEVEL, dataType = Integer.class)
+    String getCompressionLevel();
+
+    void setCompressionLevel(String level);
+
+    @Attribute(defaultValue = COMPRESSION_STRATEGY, dataType = String.class)
+    @Pattern(regexp = COMPRESSION_STRATEGY_PATTERN)
+    String getCompressionStrategy();
+
+    void setCompressionStrategy(String compressionStrategy);
 
     @Attribute(defaultValue = "" + COMPRESSION_MIN_SIZE, dataType = Integer.class)
     String getCompressionMinSizeBytes();

@@ -1096,6 +1096,8 @@ public class GenericGrizzlyListener implements GrizzlyListener {
 
     protected Set<ContentEncoding> configureCompressionEncodings(Http http) {
         final String mode = http.getCompression();
+        final int compressionStrategy = getCompressionStrategyAsInt(http.getCompressionStrategy());
+        final int compressionLevel = Integer.parseInt(http.getCompressionLevel());
         int compressionMinSize = Integer.parseInt(http.getCompressionMinSizeBytes());
         CompressionMode compressionMode;
         try {
@@ -1123,6 +1125,8 @@ public class GenericGrizzlyListener implements GrizzlyListener {
         final ContentEncoding gzipContentEncoding = new GZipContentEncoding(
             GZipContentEncoding.DEFAULT_IN_BUFFER_SIZE,
             GZipContentEncoding.DEFAULT_OUT_BUFFER_SIZE,
+            compressionLevel,
+            compressionStrategy,
             new CompressionEncodingFilter(compressionMode, compressionMinSize,
                 compressableMimeTypes,
                 noCompressionUserAgents,
@@ -1182,5 +1186,19 @@ public class GenericGrizzlyListener implements GrizzlyListener {
             }
         }
         return null;
+    }
+
+    private int getCompressionStrategyAsInt(String compressionStrategy) {
+        switch (compressionStrategy) {
+            case "Default":
+                return 0;
+            case "Filtered":
+                return 1;
+            case "Huffman Only":
+                return 2;
+            default:
+                LOGGER.severe("Compression Strategy had an unexpected value.");
+                throw new IllegalStateException("Unexpected value: " + compressionStrategy);
+        }
     }
 }

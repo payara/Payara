@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.web.connector.coyote;
 
@@ -1108,6 +1108,8 @@ public class PECoyoteConnector extends Connector {
         setMaxSavePostSize(Integer.parseInt(http.getMaxSavePostSizeBytes()));
         setProperty("compression", http.getCompression());
         setProperty("compressableMimeType", http.getCompressableMimeType());
+        setProperty("compressionLevel", http.getCompressionLevel());
+        setProperty("compressionStrategy", http.getCompressionStrategy());
         if (http.getNoCompressionUserAgents() != null) {
             setProperty("noCompressionUserAgents", http.getNoCompressionUserAgents());
         }
