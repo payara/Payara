@@ -79,6 +79,18 @@ public final class JDK {
     }
 
     /**
+     * See if the current JDK is an LTS version
+     * @return true if JDK is an LTS version (8, 11, 17, 21, 25, 29...)
+     */
+    public static boolean isRunningLTSJDK() {
+        int major = getMajor();
+        int minor = getMinor();
+        //Checks for LTS JDK versions following the 2 year LTS cadence after and including JDK 17
+        //JDK 1-8 always have a major version of 1.
+        return (major - 17) % 4 == 0 && major >= 17 || (major == 1 && minor == 8) || major == 11;
+    }
+
+    /**
      * See if the current JDK is legal for running GlassFish
      * @return true if the JDK is >= 1.6.0
      */
