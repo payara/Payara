@@ -985,7 +985,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         }
     }
 
-    private Map<Class, ApplicationMetaDataProvider> getTypeByProvider() {
+    public Map<Class, ApplicationMetaDataProvider> getTypeByProvider() {
         // in reality, there is single implementation of ApplicationMetadataProvider at this point.
         final Map<Class, ApplicationMetaDataProvider> typeByProvider = new HashMap<>();
         final List<ApplicationMetaDataProvider> providers = habitat.<ApplicationMetaDataProvider>getAllServices(ApplicationMetaDataProvider.class);

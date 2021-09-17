@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.glassfish.bootstrap;
 
@@ -47,6 +47,7 @@ import com.sun.enterprise.module.bootstrap.StartupContext;
 import com.sun.enterprise.module.bootstrap.Which;
 import com.sun.enterprise.util.JDK;
 import java.io.*;
+import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
@@ -853,6 +854,103 @@ public class MainHelper {
         protected File getFrameworkConfigFile() {
             return null;  // no config file for this platform.
         }
+    }
+    
+    public static class HotSwapHelper {
+
+        private final static String HOTSWAP_TRANSFORMER = "org.hotswap.agent.util.HotswapTransformer";
+
+        private final static String BUNDLE_CLASSLOADER = "org.apache.felix.framework.BundleWiringImpl$BundleClassLoader";
+        private final static String PROVIDER_GENERATOR_CLASSLOADER = "org.glassfish.flashlight.impl.core.ProviderSubClassImplGenerator$SubClassLoader";
+        private final static String JDK_PLATFORM_CLASSLOADER = "jdk.internal.loader.ClassLoaders$PlatformClassLoader";
+        private final static String JDK_APP_CLASSLOADER = "jdk.internal.loader.ClassLoaders$AppClassLoader";
+        private final static String BOOTSTRAP_CLASSLOADER = "null";
+        private final static String METHODUTIL_CLASSLOADER = "sun.reflect.misc.MethodUtil";
+        private final static String HK2_DELEGATING_CLASSLOADER = "org.jvnet.hk2.internal.DelegatingClassLoader";
+        private final static String CURRENT_BEFORE_PARENT_CLASSLOADER = "com.sun.enterprise.loader.CurrentBeforeParentClassLoader";
+
+        private final static String HOTSWAP_VM_KEY = "java.vm.name";
+        private final static String HOTSWAP_VM_VALUE = "Dynamic Code Evolution";
+
+        private final static String HOTSWAP_PLUGIN_MANAGER = "org.hotswap.agent.config.PluginManager";
+
+        private static Object hotswapManager = null;
+
+        public static void updateHotSwapClassLoaderConfig() {
+            try {
+                if (isHotswapEnabled()) {
+                    Class clazz = ClassLoader.getSystemClassLoader()
+                            .loadClass(HOTSWAP_TRANSFORMER);
+                    if (clazz == null) {
+                        logger.log(Level.INFO, "HotSwap Agent not enabled.");
+                        return;
+                    }
+                    Field fld = clazz.getDeclaredField("skippedClassLoaders");
+                    fld.setAccessible(true);
+                    Set<String> skippedClassLoaders = (Set<String>) fld.get(null);
+                    skippedClassLoaders.add(BUNDLE_CLASSLOADER);
+                    skippedClassLoaders.add(PROVIDER_GENERATOR_CLASSLOADER);
+                    skippedClassLoaders.add(JDK_PLATFORM_CLASSLOADER);
+                    skippedClassLoaders.add(JDK_APP_CLASSLOADER);
+                    skippedClassLoaders.add(BOOTSTRAP_CLASSLOADER);
+                    skippedClassLoaders.add(METHODUTIL_CLASSLOADER);
+                    skippedClassLoaders.add(HK2_DELEGATING_CLASSLOADER);
+                    skippedClassLoaders.add(CURRENT_BEFORE_PARENT_CLASSLOADER);
+                }
+            } catch (Exception ex) {
+                logger.log(Level.SEVERE, null, ex);
+            }
+        }
+
+        /**
+         * Redefine the set of classes using the supplied bytecode.
+         *
+         * @param reloadMap class and bytecode pairs
+         */
+        public static void hotswap(Map<Class<?>, byte[]> reloadMap) {
+            try {
+                getPluginManager()
+                        .getClass()
+                        .getMethod("hotswap", Map.class)
+                        .invoke(getPluginManager(), reloadMap);
+            } catch (Exception ex) {
+                logger.log(Level.SEVERE, null, ex);
+            }
+        }
+
+        /**
+         * Free all ClassLoader references and close any associated plugin
+         * instance.
+         *
+         * @param classLoader to free
+         */
+        public static void closeClassLoader(ClassLoader classLoader) {
+            try {
+                if (isHotswapEnabled()) {
+                    getPluginManager()
+                            .getClass()
+                            .getMethod("closeClassLoader", ClassLoader.class)
+                            .invoke(getPluginManager(), classLoader);
+                }
+            } catch (Exception ex) {
+                logger.log(Level.SEVERE, null, ex);
+            }
+        }
+        
+        public static boolean isHotswapEnabled() {
+            return System.getProperty(HOTSWAP_VM_KEY).contains(HOTSWAP_VM_VALUE);
+        }
+
+        private static Object getPluginManager() throws Exception {
+            if (hotswapManager == null) {
+                ClassLoader classLoader = ClassLoader.getSystemClassLoader();
+                hotswapManager = classLoader.loadClass(HOTSWAP_PLUGIN_MANAGER)
+                        .getMethod("getInstance")
+                        .invoke(null);
+            }
+            return hotswapManager;
+        }
+ 
     }
 }
 
