@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.admin.launcher;
 
@@ -229,6 +229,7 @@ public abstract class GFLauncher {
         setCommandLine();
         setJvmOptions();
         logCommandLine();
+        checkJDKVersion();
         // if no <network-config> element, we need to upgrade this domain
         needsAutoUpgrade = !parser.hasNetworkConfig();
         needsManualUpgrade = !parser.hasDefaultConfig();
@@ -1056,6 +1057,12 @@ public abstract class GFLauncher {
                 sb.append(s);
             }
             GFLauncherLogger.info(GFLauncherLogger.COMMAND_LINE, sb.toString());
+        }
+    }
+
+    private void checkJDKVersion() {
+        if(!JDK.isRunningLTSJDK()) {
+            GFLauncherLogger.warning("You are running the product on an unsupported JDK version and might see unexpected results or exceptions.");
         }
     }
 
