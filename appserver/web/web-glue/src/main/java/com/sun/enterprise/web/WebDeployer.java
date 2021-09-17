@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.web;
 
@@ -45,7 +45,6 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.ServerTags;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.util.StringUtils;
-import fish.payara.nucleus.hotdeploy.HotDeployService;
 import org.glassfish.api.container.RequestDispatcher;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.DeploymentContext;
@@ -67,7 +66,6 @@ import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.glassfish.deployment.common.DeploymentProperties;
 
 /**
  * Web module deployer.
@@ -90,9 +88,6 @@ public class WebDeployer extends JavaEEDeployer<WebContainer, WebApplication>{
 
     @Inject
     RequestDispatcher dispatcher;
-
-    @Inject
-    private HotDeployService hotDeployService;
 
     /**
      * Constructor

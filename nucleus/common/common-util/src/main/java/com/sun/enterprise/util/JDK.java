@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.util;
 
@@ -105,8 +105,11 @@ public final class JDK {
         return vendor;
     }
 
+    public static String getVm() {
+        return vm;
+    }
+
     public static class Version {
-        private final Optional<String> vendor;
         private final int major;
         private final Optional<Integer> minor;
         private final Optional<Integer> subminor;
@@ -120,10 +123,7 @@ public final class JDK {
 
             if (version.contains("-")) {
                 String[] versionSplit = version.split("-");
-                vendor = versionSplit.length > 0 ? Optional.of(versionSplit[0]) : Optional.empty();
                 version = versionSplit.length > 1 ? versionSplit[1] : "";
-            } else {
-                vendor = Optional.empty();
             }
             String[] split = version.split("[\\._u\\-]+");
 
@@ -134,7 +134,6 @@ public final class JDK {
         }
 
         private Version() {
-            vendor = Optional.of(JDK.vendor);
             major = JDK.major;
             minor = Optional.of(JDK.minor);
             subminor = Optional.of(JDK.subminor);
@@ -291,17 +290,17 @@ public final class JDK {
      * Check if the reference version falls between the minVersion and maxVersion.
      *
      * @param reference The version to compare; falls back to the current JDK version if empty.
-     * @param vendor The inclusive JDK vendor.
+     * @param vendorOrVM The inclusive JDK vendor or VM name.
      * @param minVersion The inclusive minimum version.
      * @param maxVersion The inclusive maximum version.
      * @return true if within the version range, false otherwise
      */
-    public static boolean isCorrectJDK(Optional<Version> reference, Optional<String> vendor, Optional<Version> minVersion, Optional<Version> maxVersion) {
+    public static boolean isCorrectJDK(Optional<Version> reference, Optional<String> vendorOrVM, Optional<Version> minVersion, Optional<Version> maxVersion) {
         Version version = reference.orElse(JDK_VERSION);
         boolean correctJDK = true;
 
-        if (vendor.isPresent()) {
-            correctJDK = JDK.vendor.contains(vendor.get());
+        if (vendorOrVM.isPresent()) {
+            correctJDK = JDK.vendor.contains(vendorOrVM.get()) || JDK.vm.contains(vendorOrVM.get());
         }
 
         if (correctJDK && minVersion.isPresent()) {
@@ -337,6 +336,7 @@ public final class JDK {
     private static int subminor;
     private static int update;
     private static String vendor;
+    private static String vm;
     private static Version JDK_VERSION;
 
     // silently fall back to ridiculous defaults if something is crazily wrong...
@@ -346,6 +346,8 @@ public final class JDK {
         try {
             String javaVersion = System.getProperty("java.version");
             vendor = System.getProperty("java.vendor");
+            vm = System.getProperty("java.vm.name");
+
             /*In JEP 223 java.specification.version will be a single number versioning , not a dotted versioning . So if we get a single
             integer as versioning we know that the JDK is post JEP 223
             For JDK 8:
