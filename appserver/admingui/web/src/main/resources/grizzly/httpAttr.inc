@@ -40,7 +40,7 @@
 
 -->
 
-<!-- Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates.] -->
+<!-- Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates.] -->
 
 <!-- grizzly/httpAttr.inc -->
 
@@ -165,6 +165,14 @@
 
         <sun:property id="Compression"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.Compression}" helpText="$resource{i18n_web.http.CompressionHelp}">
             <sun:dropDown id="Compression" selected="#{pageSession.httpMap['compression']}" labels={"on","off","force"} />
+        </sun:property>
+
+        <sun:property id="CompressionLevel"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.CompressionLevel}" helpText="$resource{i18n_web.http.CompressionLevelHelp}">
+            <sun:dropDown id="CompressionLevel" selected="#{pageSession.httpMap['compressionLevel']}" labels={"-1","0","1","2","3","4","5","6","7","8","9"} />
+        </sun:property>
+
+        <sun:property id="CompressionStrategy"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.CompressionStrategy}" helpText="$resource{i18n_web.http.CompressionStrategyHelp}">
+            <sun:dropDown id="compressionStrategy" selected="#{pageSession.httpMap['compressionStrategy']}" labels={"Default","Filtered","Huffman Only"} />
         </sun:property>
 
         <sun:property id="CompressableMimeType"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.CompressableMimeType}" helpText="$resource{i18n_web.http.CompressableMimeTypeHelp}" >
