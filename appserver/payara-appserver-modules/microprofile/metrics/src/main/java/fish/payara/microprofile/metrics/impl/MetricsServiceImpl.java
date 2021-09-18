@@ -271,7 +271,7 @@ public class MetricsServiceImpl implements MetricsService, ConfigListener, Monit
                         }
                     }
                 } catch (Exception ex) {
-                    LOGGER.log(Level.SEVERE, "Failing retrieving metric: " + metricID, ex);;
+                    LOGGER.log(Level.SEVERE, "Failed to retrieve metric: " + metricID);;
                 }
             }
         }

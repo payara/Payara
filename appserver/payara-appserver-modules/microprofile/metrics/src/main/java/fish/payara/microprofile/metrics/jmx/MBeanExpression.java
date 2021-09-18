@@ -136,7 +136,7 @@ public class MBeanExpression {
                 CompositeData compositeData = (CompositeData) attribute;
                 return (Number) compositeData.get(getSubAttributeName());
             } else {
-                throw new IllegalArgumentException("The MBean expression is neither a number nor CompositeData: " + getMBean() + ", attribute " + attributeName + ", the value type is " + attribute.getClass());
+                throw new IllegalArgumentException("The MBean expression is neither a number nor CompositeData: " + getMBean() + ", attribute " + attributeName + ", type " + attribute.getClass());
             }
         } catch (InstanceNotFoundException ex) {
             throw new IllegalStateException("MBean instance not found: " + ex.getMessage(), ex);
