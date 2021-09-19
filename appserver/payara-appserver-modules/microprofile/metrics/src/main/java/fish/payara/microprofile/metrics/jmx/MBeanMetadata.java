@@ -98,21 +98,21 @@ public class MBeanMetadata implements Metadata {
 
 
     public MBeanMetadata() {
+        tags = new ArrayList<>();
     }
 
     public MBeanMetadata(Metadata metadata) {
         this(null, metadata.getName(), metadata.getDisplayName(), metadata.description().orElse(null), metadata.getTypeRaw(), metadata.unit().orElse(null));
-
     }
 
     public MBeanMetadata(String mBean, String name, String displayName, String description, MetricType typeRaw, String unit) {
+        this();
         this.mBean = mBean;
         this.name = name;
         this.displayName = displayName;
         this.description = description;
         this.type = typeRaw.toString();
         this.unit = unit;
-        tags = new ArrayList<>();
     }
 
     public String getMBean() {
@@ -139,9 +139,6 @@ public class MBeanMetadata implements Metadata {
     }
 
     List<XmlTag> getTags() {
-        if (tags == null) {
-            tags = new ArrayList<>();
-        }
         return tags;
     }
 
@@ -243,13 +240,13 @@ public class MBeanMetadata implements Metadata {
     }
 
     public void setTags(List<XmlTag> tags) {
+        if (tags == null) {
+            throw new IllegalArgumentException("tags must not be null");
+        }
         this.tags = tags;
     }
 
     public void addTags(List<XmlTag> tags) {
-        if (this.tags == null) {
-            this.tags = new ArrayList<>();
-        }
         this.tags.addAll(tags);
     }
 
