@@ -120,7 +120,7 @@ public class FaultToleranceServiceImpl
             asyncExecutorService = (ManagedExecutorService) context.lookup(config.getManagedExecutorService());
             delayExecutorService = (ManagedScheduledExecutorService) context.lookup(config.getManagedScheduledExecutorService());
         } catch (NamingException namingException) {
-            throw new RuntimeException("FaultToleranceServiceImpl InitialContext creation failure", namingException);
+            throw new RuntimeException("Error initialising Fault Tolerance Service: could not perform lookup for configured managed-executor-service or managed-scheduled-executor-service.", namingException);
         }
     }
 
@@ -150,14 +150,14 @@ public class FaultToleranceServiceImpl
     }
 
     private static void collectBulkheadSemaphores(MonitoringDataCollector collector,
-                                                  BlockingQueue<Thread> concurrentExecutions) {
+            BlockingQueue<Thread> concurrentExecutions) {
         collector
                 .collect("RemainingConcurrentExecutionsCapacity", concurrentExecutions.remainingCapacity())
                 .collect("ConcurrentExecutions", concurrentExecutions.size());
     }
 
     private static void collectBulkheadSemaphores(MonitoringDataCollector collector,
-                                                  BlockingQueue<Thread> concurrentExecutions, AtomicInteger queuingOrRunningPopulation) {
+            BlockingQueue<Thread> concurrentExecutions, AtomicInteger queuingOrRunningPopulation) {
         collector
                 .collect("WaitingQueuePopulation", queuingOrRunningPopulation.get() - concurrentExecutions.size());
     }
@@ -225,7 +225,7 @@ public class FaultToleranceServiceImpl
     }
 
     private void addGenericFaultToleranceRequestTracingDetails(RequestTraceSpan span,
-                                                               InvocationContext context) {
+            InvocationContext context) {
         ComponentInvocation currentInvocation = invocationManager.getCurrentInvocation();
         span.addSpanTag("App Name", currentInvocation.getAppName());
         span.addSpanTag("Component ID", currentInvocation.getComponentId());
@@ -236,13 +236,13 @@ public class FaultToleranceServiceImpl
 
     @Override
     public FaultToleranceMethodContext getMethodContext(InvocationContext context, FaultTolerancePolicy policy,
-                                                        RequestContextController requestContextController) {
+            RequestContextController requestContextController) {
         return contextByMethod.computeIfAbsent(new MethodKey(context),
                 methodKey -> createMethodContext(methodKey, context, requestContextController)).boundTo(context, policy);
     }
 
     private FaultToleranceMethodContextImpl createMethodContext(MethodKey methodKey, InvocationContext context,
-                                                                RequestContextController requestContextController) {
+            RequestContextController requestContextController) {
         MetricsService.MetricsContext metricsContext = getMetricsContext();
         MetricRegistry metricRegistry = metricsContext != null ? metricsContext.getBaseRegistry() : null;
         String appName = metricsContext != null ? metricsContext.getName() : "";
