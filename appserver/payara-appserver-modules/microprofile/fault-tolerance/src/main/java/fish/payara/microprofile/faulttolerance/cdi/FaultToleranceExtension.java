@@ -169,7 +169,7 @@ public class FaultToleranceExtension implements Extension {
 
             // If no priority annotation, assume APPLICATION
             int priorityAnnotationValue = priorityAnnotation != null ? priorityAnnotation.value() :
-                    javax.interceptor.Interceptor.Priority.APPLICATION;
+                    jakarta.interceptor.Interceptor.Priority.APPLICATION;
 
             // Check for a matching priority value, otherwise determine which way to move the search
             if (priorityAnnotationValue < priority) {
