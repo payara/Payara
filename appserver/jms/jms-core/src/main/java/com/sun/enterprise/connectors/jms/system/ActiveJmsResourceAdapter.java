@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.connectors.jms.system;
 
@@ -1166,19 +1166,20 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     /**
      * This method evaluate the current JDK and return true if the version is greater than 8 as an indicator
      * to include the start-args attribute for the broker configuration with the correct jrehome path
+     *
      * @return boolean indicator to create the start-args attribute for the jrehome
      */
     private boolean availableJDKForStartArgs() {
-        int major = JDK.getMajor();
-        if(major > 8) {
+        if (JDK.getMajor() > 8) {
             return true;
         }
         return false;
     }
 
     /**
-     * This method build the start args attribute with the value -jrehome to override the default value added
-     * on the configuration of the jms broker
+     * This method build the start-args attribute with the value -jrehome to override the default used when configuring
+     * the jms broker
+     *
      * @param javaHome String with the path to use for the -jrehome attribute
      * @return String with the formed start-args value for the jms broker configuration
      */
