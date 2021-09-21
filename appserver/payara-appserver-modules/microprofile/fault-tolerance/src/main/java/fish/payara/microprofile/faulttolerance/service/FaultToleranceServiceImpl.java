@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,11 +39,7 @@
  */
 package fish.payara.microprofile.faulttolerance.service;
 
-import fish.payara.microprofile.faulttolerance.FaultToleranceConfig;
-import fish.payara.microprofile.faulttolerance.FaultToleranceMethodContext;
-import fish.payara.microprofile.faulttolerance.FaultToleranceMetrics;
-import fish.payara.microprofile.faulttolerance.FaultToleranceService;
-import fish.payara.microprofile.faulttolerance.FaultToleranceServiceConfiguration;
+import fish.payara.microprofile.faulttolerance.*;
 import fish.payara.microprofile.faulttolerance.policy.FaultTolerancePolicy;
 import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState;
 import fish.payara.microprofile.metrics.MetricsService;
@@ -52,26 +48,6 @@ import fish.payara.monitoring.collect.MonitoringDataCollector;
 import fish.payara.monitoring.collect.MonitoringDataSource;
 import fish.payara.notification.requesttracing.RequestTraceSpan;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
-
-import java.util.Map.Entry;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.annotation.PostConstruct;
-import javax.enterprise.concurrent.ManagedExecutorService;
-import javax.enterprise.concurrent.ManagedScheduledExecutorService;
-import javax.enterprise.context.control.RequestContextController;
-import javax.inject.Inject;
-import javax.interceptor.InvocationContext;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-
 import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.event.EventListener;
@@ -84,6 +60,20 @@ import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.deployment.Deployment;
 import org.jvnet.hk2.annotations.ContractsProvided;
 import org.jvnet.hk2.annotations.Service;
+
+import javax.annotation.PostConstruct;
+import javax.enterprise.concurrent.ManagedExecutorService;
+import javax.enterprise.concurrent.ManagedScheduledExecutorService;
+import javax.enterprise.context.control.RequestContextController;
+import javax.inject.Inject;
+import javax.interceptor.InvocationContext;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import java.util.Map.Entry;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Base Service for MicroProfile Fault Tolerance.
@@ -120,14 +110,18 @@ public class FaultToleranceServiceImpl
     private ScheduledExecutorService delayExecutorService;
 
     @PostConstruct
-    public void postConstruct() throws NamingException {
-        events.register(this);
-        invocationManager = serviceLocator.getService(InvocationManager.class);
-        requestTracingService = serviceLocator.getService(RequestTracingService.class);
-        config = serviceLocator.getService(FaultToleranceServiceConfiguration.class);
-        InitialContext context = new InitialContext();
-        asyncExecutorService = (ManagedExecutorService) context.lookup(config.getManagedExecutorService());
-        delayExecutorService = (ManagedScheduledExecutorService) context.lookup(config.getManagedScheduledExecutorService());
+    public void postConstruct() {
+        try {
+            events.register(this);
+            invocationManager = serviceLocator.getService(InvocationManager.class);
+            requestTracingService = serviceLocator.getService(RequestTracingService.class);
+            config = serviceLocator.getService(FaultToleranceServiceConfiguration.class);
+            InitialContext context = new InitialContext();
+            asyncExecutorService = (ManagedExecutorService) context.lookup(config.getManagedExecutorService());
+            delayExecutorService = (ManagedScheduledExecutorService) context.lookup(config.getManagedScheduledExecutorService());
+        } catch (NamingException namingException) {
+            throw new RuntimeException("Error initialising Fault Tolerance Service: could not perform lookup for configured managed-executor-service or managed-scheduled-executor-service.", namingException);
+        }
     }
 
     @Override
@@ -143,29 +137,29 @@ public class FaultToleranceServiceImpl
     @MonitoringData(ns = "ft")
     public void collect(MonitoringDataCollector collector) {
         for (Entry<MethodKey, FaultToleranceMethodContextImpl> methodEntry : contextByMethod.entrySet()) {
-                MonitoringDataCollector methodCollector = collector.group(methodEntry.getKey().getMethodId())
-                        .tag("app", methodEntry.getValue().getAppName());
-                FaultToleranceMethodContext context = methodEntry.getValue();
-                BlockingQueue<Thread> concurrentExecutions = context.getConcurrentExecutions();
-                if (concurrentExecutions != null) {
-                    collectBulkheadSemaphores(methodCollector, concurrentExecutions);
-                    collectBulkheadSemaphores(methodCollector, concurrentExecutions, context.getQueuingOrRunningPopulation());
-                }
-                collectCircuitBreakerState(methodCollector, context.getState());
+            MonitoringDataCollector methodCollector = collector.group(methodEntry.getKey().getMethodId())
+                    .tag("app", methodEntry.getValue().getAppName());
+            FaultToleranceMethodContext context = methodEntry.getValue();
+            BlockingQueue<Thread> concurrentExecutions = context.getConcurrentExecutions();
+            if (concurrentExecutions != null) {
+                collectBulkheadSemaphores(methodCollector, concurrentExecutions);
+                collectBulkheadSemaphores(methodCollector, concurrentExecutions, context.getQueuingOrRunningPopulation());
+            }
+            collectCircuitBreakerState(methodCollector, context.getState());
         }
     }
 
     private static void collectBulkheadSemaphores(MonitoringDataCollector collector,
             BlockingQueue<Thread> concurrentExecutions) {
         collector
-            .collect("RemainingConcurrentExecutionsCapacity", concurrentExecutions.remainingCapacity())
-            .collect("ConcurrentExecutions", concurrentExecutions.size());
+                .collect("RemainingConcurrentExecutionsCapacity", concurrentExecutions.remainingCapacity())
+                .collect("ConcurrentExecutions", concurrentExecutions.size());
     }
 
     private static void collectBulkheadSemaphores(MonitoringDataCollector collector,
             BlockingQueue<Thread> concurrentExecutions, AtomicInteger queuingOrRunningPopulation) {
         collector
-            .collect("WaitingQueuePopulation", queuingOrRunningPopulation.get() - concurrentExecutions.size());
+                .collect("WaitingQueuePopulation", queuingOrRunningPopulation.get() - concurrentExecutions.size());
     }
 
     private static void collectCircuitBreakerState(MonitoringDataCollector collector, CircuitBreakerState state) {
@@ -173,8 +167,8 @@ public class FaultToleranceServiceImpl
             return;
         }
         collector
-            .collect("circuitBreakerHalfOpenSuccessful", state.getHalfOpenSuccessfulResultCounter())
-            .collect("circuitBreakerState", state.getCircuitState().name().charAt(0));
+                .collect("circuitBreakerHalfOpenSuccessful", state.getHalfOpenSuccessfulResultCounter())
+                .collect("circuitBreakerState", state.getCircuitState().name().charAt(0));
     }
 
     @Override
@@ -193,6 +187,7 @@ public class FaultToleranceServiceImpl
 
     /**
      * Removes an application from the enabled map, CircuitBreaker map, and bulkhead maps
+     *
      * @param appInfo The name of the application to remove
      */
     private void deregisterApplication(ApplicationInfo appInfo) {
@@ -204,6 +199,7 @@ public class FaultToleranceServiceImpl
     /**
      * Gets the application name from the invocation manager. Failing that, it will use the module name, component name,
      * or method signature (in that order).
+     *
      * @param context The context of the current invocation
      * @return The application name
      */
@@ -242,11 +238,11 @@ public class FaultToleranceServiceImpl
     public FaultToleranceMethodContext getMethodContext(InvocationContext context, FaultTolerancePolicy policy,
             RequestContextController requestContextController) {
         return contextByMethod.computeIfAbsent(new MethodKey(context),
-                        methodKey -> createMethodContext(methodKey, context, requestContextController)).boundTo(context, policy);
+                methodKey -> createMethodContext(methodKey, context, requestContextController)).boundTo(context, policy);
     }
 
     private FaultToleranceMethodContextImpl createMethodContext(MethodKey methodKey, InvocationContext context,
-                                                                RequestContextController requestContextController) {
+            RequestContextController requestContextController) {
         MetricsService.MetricsContext metricsContext = getMetricsContext();
         MetricRegistry metricRegistry = metricsContext != null ? metricsContext.getBaseRegistry() : null;
         String appName = metricsContext != null ? metricsContext.getName() : "";
