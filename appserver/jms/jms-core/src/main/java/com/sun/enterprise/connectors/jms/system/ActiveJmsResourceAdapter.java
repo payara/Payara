@@ -1164,10 +1164,10 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     }
 
     /**
-     * This method evaluate the current JDK and return true if the version is greater than 8 as an indicator
-     * to include the start-args attribute for the broker configuration with the correct jrehome path
+     * This method evaluate the current JDK and return true if the version is greater than 8. This indicator
+     * is used to include the start-args attribute for the broker configuration with the jrehome path attribute
      *
-     * @return boolean indicator to create the start-args attribute for the jrehome
+     * @return boolean indicator to create the start-args attribute for the broker
      */
     private boolean availableJDKForStartArgs() {
         if (JDK.getMajor() > 8) {
@@ -1177,11 +1177,10 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     }
 
     /**
-     * This method build the start-args attribute with the value -jrehome to override the default used when configuring
-     * the jms broker
+     * This method build the start-args attribute with the value -jrehome for the jms broker configuration
      *
      * @param javaHome String with the path to use for the -jrehome attribute
-     * @return String with the formed start-args value for the jms broker configuration
+     * @return String with the formed start-args attribute
      */
     private String buildStartArgsForJREHome(String javaHome) {
         StringBuilder buildStartArgs = new StringBuilder("-jrehome ");
