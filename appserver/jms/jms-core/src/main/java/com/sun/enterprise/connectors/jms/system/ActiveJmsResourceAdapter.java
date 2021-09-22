@@ -1048,8 +1048,8 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
 
             //condition to evaluate the JDK and if version greater than 8 then omit the jre folder
             //by adding the start-args for the broker configuration
-            if (availableJDKForStartArgs()) {
-                brokerArgs = buildStartArgsForJREHome(java_home);
+            if (!tmpString.contains("-jrehome") && availableJDKForStartArgs()) {
+                brokerArgs = brokerArgs + buildStartArgsForJREHome(java_home);
             }
 
             //XX: Extract the information from the optional properties.
@@ -1170,10 +1170,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
      * @return boolean indicator to create the start-args attribute for the broker
      */
     private boolean availableJDKForStartArgs() {
-        if (JDK.getMajor() > 8) {
-            return true;
-        }
-        return false;
+        return JDK.getMajor() > 8;
     }
 
     /**
@@ -1183,9 +1180,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
      * @return String with the formed start-args attribute
      */
     private String buildStartArgsForJREHome(String javaHome) {
-        StringBuilder buildStartArgs = new StringBuilder("-jrehome ");
-        buildStartArgs.append(javaHome);
-        return buildStartArgs.toString();
+        return " -jrehome "+javaHome;
     }
 
    private Properties listToProperties(List<Property> props){
