@@ -1180,7 +1180,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
      * @return String with the formed start-args attribute
      */
     private String buildStartArgsForJREHome(String javaHome) {
-        return " -jrehome "+javaHome;
+        return " -jrehome "+"\""+javaHome+"\"";
     }
 
    private Properties listToProperties(List<Property> props){
