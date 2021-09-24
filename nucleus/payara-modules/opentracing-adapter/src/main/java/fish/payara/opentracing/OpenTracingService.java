@@ -41,20 +41,6 @@ package fish.payara.opentracing;
 
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import io.opentracing.Tracer;
-import io.opentracing.mock.MockTracer;
-import io.opentracing.util.ThreadLocalScopeManager;
-
-import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.ServiceLoader;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.annotation.PostConstruct;
-import javax.interceptor.InvocationContext;
-
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
 import org.glassfish.api.invocation.ComponentInvocation;
@@ -67,6 +53,17 @@ import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.deployment.Deployment;
 import org.jvnet.hk2.annotations.Service;
 
+import javax.annotation.PostConstruct;
+import javax.interceptor.InvocationContext;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.ServiceLoader;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  * Service class for the OpenTracing integration.
  *
@@ -77,12 +74,14 @@ public class OpenTracingService implements EventListener {
 
     // The tracer instances
     private static final Map<String, Tracer> tracers = new ConcurrentHashMap<>();
-    private static final ScopeManager scopeManager = new fish.payara.opentracing.ScopeManager();
     
     // The name of the Corba RMI Tracer
     public static final String PAYARA_CORBA_RMI_TRACER_NAME = "__PAYARA_CORBA_RMI";
 
     private static final Logger logger = Logger.getLogger(OpenTracingService.class.getName());
+
+    // Initialised from ServiceHandle - use getRequestTracingService() rather than directly accessing this variable
+    private RequestTracingService requestTracingService;
 
     @PostConstruct
     void postConstruct() {
@@ -95,10 +94,20 @@ public class OpenTracingService implements EventListener {
             logger.log(Level.WARNING, "OpenTracing service not registered to Payara Events: "
                     + "The Tracer for an application won't be removed upon undeployment");
         }
+
+        getRequestTracingService();
     }
 
     @Override
     public void event(Event<?> event) {
+        // Eagerly create tracer if request tracing is enabled
+        if (event.is(Deployment.APPLICATION_LOADED)) {
+            if (getRequestTracingService() != null && requestTracingService.isRequestTracingEnabled()) {
+                ApplicationInfo info = (ApplicationInfo) event.hook();
+                createTracer(info.getName());
+            }
+        }
+
         // Listen for application unloaded events (happens during undeployment), so that we remove the tracer instance
         // registered to that application (if there is one)
         if (event.is(Deployment.APPLICATION_UNLOADED)) {
@@ -113,7 +122,7 @@ public class OpenTracingService implements EventListener {
      * @param applicationName The name of the application to get or create the Tracer for
      * @return The Tracer instance for the given application
      */
-    public synchronized Tracer getTracer(String applicationName) {
+    public Tracer getTracer(String applicationName) {
         if (applicationName == null) {
             return null;
         }
@@ -123,27 +132,36 @@ public class OpenTracingService implements EventListener {
 
         // If there isn't a tracer for the application, create one
         if (tracer == null) {
-            // Check which type of Tracer to create
+            tracer = createTracer(applicationName);
+        }
 
+        return tracer;
+    }
+
+    private synchronized Tracer createTracer(String applicationName) {
+        // Does this NEED to be synchronised? Tracers don't store state, and Scopes are ThreadLocal
+
+        // Double-checked locking - potentially naughty
+        Tracer tracer = tracers.computeIfAbsent(applicationName, (appName) -> {
+            Tracer newTracer = null;
+
+            // Check which type of Tracer to create
             try {//See if an alternate implementation of Tracer is available in a library.
                 ServiceLoader<Tracer> tracerLoader = ServiceLoader.load(Tracer.class);
                 Iterator<Tracer> loadedTracer = tracerLoader.iterator();
                 if (loadedTracer.hasNext()) {
-                    tracer = loadedTracer.next();
+                    newTracer = loadedTracer.next();
                 }
             } catch (NoClassDefFoundError ex) {
                 logger.log(Level.SEVERE, "Unable to find Tracer implementation", ex);
             }
 
-            if (Boolean.getBoolean("USE_OPENTRACING_MOCK_TRACER")) {
-                tracer = new MockTracer(new ThreadLocalScopeManager(), MockTracer.Propagator.TEXT_MAP);
-            } else if (tracer == null) {
-                tracer = new fish.payara.opentracing.tracer.Tracer(applicationName, scopeManager);
+            if (newTracer == null) {
+                newTracer = new fish.payara.opentracing.tracer.Tracer(appName, getRequestTracingService());
             }
 
-            // Register the tracer instance to the application
-            tracers.put(applicationName, tracer);
-        }
+            return newTracer;
+        });
 
         return tracer;
     }
@@ -154,13 +172,22 @@ public class OpenTracingService implements EventListener {
      * @return True if the Request Tracing Service is enabled
      */
     public boolean isEnabled() {
-        RequestTracingService requestTracingService = getFromServiceHandle(Globals.getDefaultBaseServiceLocator(),
-                RequestTracingService.class);
-
-        if (requestTracingService != null) {
+        if (getRequestTracingService() != null) {
             return requestTracingService.isRequestTracingEnabled();
         }
         return false;
+    }
+
+    /**
+     * Gets the {@link RequestTracingService}, looking up the active service from HK2 if necessary.
+     * @return The {@link RequestTracingService}, or null.
+     */
+    private RequestTracingService getRequestTracingService() {
+        if (requestTracingService == null) {
+            requestTracingService = getFromServiceHandle(Globals.getDefaultBaseServiceLocator(),
+                    RequestTracingService.class);
+        }
+        return requestTracingService;
     }
 
     /**
