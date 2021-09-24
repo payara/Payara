@@ -73,7 +73,8 @@ public class OpenTracingIiopServerInterceptor extends LocalObject implements Ser
     public OpenTracingIiopServerInterceptor(OpenTracingService openTracingService) {
         this.openTracingService = openTracingService;
 
-        if (openTracingService != null && openTracingService.isEnabled()) {
+        // Null check for opentracing should have been done by factory
+        if (openTracingService.isEnabled()) {
             this.tracer = openTracingService.getTracer(PAYARA_CORBA_RMI_TRACER_NAME);
         }
     }
@@ -154,9 +155,7 @@ public class OpenTracingIiopServerInterceptor extends LocalObject implements Ser
 
     private boolean tracerAvailable() {
         if (tracer == null) {
-            if (openTracingService == null) {
-                return false;
-            }
+            // Null check for opentracing should have been done by factory
             if (!openTracingService.isEnabled()) {
                 return false;
             }
