@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -95,6 +95,7 @@ public class ServerOperations {
         = "Check 'payara.containerType' system property configuration";
     private static final String CLIENT_CERTIFICATE_FILE = "payara-test-client.crt";
     private static final String CLIENT_CERTIFICATE_PATH = "certificates";
+    private static final String DEFAULT_ALIAS = "arquillianClientTestCert";
 
     public enum ServerType {
         SERVER, MICRO
@@ -212,6 +213,10 @@ public class ServerOperations {
     }
 
     static void addCertificateToContainerTrustStore(Certificate clientCertificate, KeyPair clientKeyPair) throws IOException {
+        addCertificateToContainerTrustStore(clientCertificate, clientKeyPair, DEFAULT_ALIAS);
+    }
+
+    static void addCertificateToContainerTrustStore(Certificate clientCertificate, KeyPair clientKeyPair, String alias) throws IOException {
         if (runtimeType != RuntimeType.SERVER) {
             throw new IllegalStateException(ERR_MESSAGE_UNSUPPORTED);
         }
@@ -224,12 +229,12 @@ public class ServerOperations {
 
         logger.info("*** Adding certificate to container trust store: " + cacertsPath.toAbsolutePath());
 
-        KeyStore keyStore = null;
+        KeyStore keyStore;
         try (InputStream in = new FileInputStream(cacertsPath.toAbsolutePath().toFile())) {
             keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
             keyStore.load(in, "changeit".toCharArray());
 
-            keyStore.setCertificateEntry("arquillianClientTestCert", clientCertificate);
+            keyStore.setCertificateEntry(alias, clientCertificate);
 
             keyStore.store(new FileOutputStream(cacertsPath.toAbsolutePath().toFile()), "changeit".toCharArray());
         } catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException e) {
@@ -431,12 +436,31 @@ public class ServerOperations {
     }
 
     public static String generateClientKeyStore(boolean addToContainer) throws IOException {
+        return generateClientKeyStore(addToContainer, false, DEFAULT_ALIAS);
+    }
+
+    /**
+     *
+     * @param addToContainer Adds the client certificate to the truststore
+     * @param expired if true will create an expired SSL certificate
+     * @param alias the alias of the keystore, useful to not cause conflict with the cert of another payara-sample
+     * @return path to the new keystore created
+     * @throws IOException
+     */
+    public static String generateClientKeyStore(boolean addToContainer, boolean expired, String alias) throws IOException {
         // ### Generate keys for the client, create a certificate, and add those to a new local key store
         // Generate a Private/Public key pair for the client
         KeyPair clientKeyPair = SecurityUtils.generateRandomRSAKeys();
 
         // Create a certificate containing the client public key and signed with the private key
-        X509Certificate clientCertificate = SecurityUtils.createSelfSignedCertificate(clientKeyPair);
+        X509Certificate clientCertificate;
+        if(expired) {
+            clientCertificate = SecurityUtils.createExpiredSelfSignedCertificate(clientKeyPair);
+        }
+        else {
+            clientCertificate = SecurityUtils.createSelfSignedCertificate(clientKeyPair);
+        }
+
 
         if (addToContainer) {
             if (runtimeType != RuntimeType.SERVER) {
@@ -446,7 +470,7 @@ public class ServerOperations {
             // Add the client certificate that we just generated to the trust store of the server.
             // That way the server will trust our certificate.
             // Set the actual domain used with -Dpayara.domain.name=[domain name]
-            addCertificateToContainerTrustStore(clientCertificate, clientKeyPair);
+            addCertificateToContainerTrustStore(clientCertificate, clientKeyPair, alias);
         }
 
         // Create a new local key store containing the client private key and the certificate

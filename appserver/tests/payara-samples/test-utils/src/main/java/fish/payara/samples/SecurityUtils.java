@@ -41,8 +41,7 @@
 package fish.payara.samples;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.security.KeyPair;
-import java.security.PrivateKey;
+import java.security.*;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Date;
@@ -57,8 +56,6 @@ import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.omnifaces.utils.security.Certificates;
 import static java.math.BigInteger.ONE;
-import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
 import static java.time.Instant.now;
 import static java.time.temporal.ChronoUnit.DAYS;
 
@@ -81,6 +78,27 @@ public class SecurityUtils {
                                     ONE,
                                     Date.from(now()),
                                     Date.from(now().plus(1, DAYS)),
+                                    new X500Name("CN=lfoo, OU=bar, O=kaz, L=zak, ST=lak, C=UK"),
+                                    SubjectPublicKeyInfo.getInstance(keys.getPublic().getEncoded()))
+                                    .build(
+                                            new JcaContentSignerBuilder("SHA256WithRSA")
+                                                    .setProvider(PROVIDER)
+                                                    .build(keys.getPrivate())));
+        } catch (CertificateException | OperatorCreationException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    public static X509Certificate createExpiredSelfSignedCertificate(KeyPair keys) {
+        try {
+            return new JcaX509CertificateConverter()
+                    .setProvider(PROVIDER)
+                    .getCertificate(
+                            new X509v3CertificateBuilder(
+                                    new X500Name("CN=lfoo, OU=bar, O=kaz, L=zak, ST=lak, C=UK"),
+                                    ONE,
+                                    Date.from(now().minus(2, DAYS)),
+                                    Date.from(now().minus(1, DAYS)),
                                     new X500Name("CN=lfoo, OU=bar, O=kaz, L=zak, ST=lak, C=UK"),
                                     SubjectPublicKeyInfo.getInstance(keys.getPublic().getEncoded()))
                                     .build(
