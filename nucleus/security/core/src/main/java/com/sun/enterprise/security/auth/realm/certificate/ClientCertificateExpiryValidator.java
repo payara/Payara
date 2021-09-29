@@ -44,21 +44,25 @@ import fish.payara.security.client.ClientCertificateValidator;
 
 import javax.security.auth.Subject;
 import javax.security.auth.x500.X500Principal;
+import java.security.cert.CertificateExpiredException;
+import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
-import java.time.Instant;
-import java.util.Date;
 
 public class ClientCertificateExpiryValidator implements ClientCertificateValidator {
-    private String validationCheck;
+    private boolean validationCheck;
 
     public ClientCertificateExpiryValidator(String validationCheck) {
-        this.validationCheck = validationCheck;
+        this.validationCheck = validationCheck.equalsIgnoreCase("true");
     }
 
     @Override
     public boolean isValid(Subject subject, X500Principal principal, X509Certificate certificate) {
-        if (validationCheck.equalsIgnoreCase("true")) {
-            if (Date.from(Instant.now()).after(certificate.getNotAfter())) {
+        if (validationCheck) {
+            try {
+                certificate.checkValidity();
+            } catch (CertificateExpiredException e) {
+                return false;
+            } catch (CertificateNotYetValidException e) {
                 return false;
             }
         }
