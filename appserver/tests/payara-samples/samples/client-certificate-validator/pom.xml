@@ -49,9 +49,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <packaging>war</packaging>
-    <groupId>fish.payara.samples.security</groupId>
-    <artifactId>security</artifactId>
-    <name>Payara-Samples - Payara - Security</name>
+    <groupId>fish.payara.samples.client-certificate-validator</groupId>
+    <artifactId>client-certificate-validator</artifactId>
+    <name>Payara-Samples - Payara - Client Certificate Validator</name>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>

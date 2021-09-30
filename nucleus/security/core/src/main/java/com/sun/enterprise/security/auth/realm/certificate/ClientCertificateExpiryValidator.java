@@ -52,7 +52,7 @@ public class ClientCertificateExpiryValidator implements ClientCertificateValida
     private boolean validationCheck;
 
     public ClientCertificateExpiryValidator(String validationCheck) {
-        this.validationCheck = validationCheck.equalsIgnoreCase("true");
+        this.validationCheck = "true".equalsIgnoreCase(validationCheck);
     }
 
     @Override
