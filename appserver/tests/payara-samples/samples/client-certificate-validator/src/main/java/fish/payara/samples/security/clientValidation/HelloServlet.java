@@ -38,7 +38,7 @@
  * holder.
  */
 
-package fish.payara.samples.security;
+package fish.payara.samples.security.clientValidation;
 
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
