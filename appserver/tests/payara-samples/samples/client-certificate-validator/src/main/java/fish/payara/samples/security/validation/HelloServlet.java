@@ -38,53 +38,24 @@
  * holder.
  */
 
-package fish.payara.samples.security.clientValidation;
+package fish.payara.samples.security.validation;
 
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
-import javax.net.ssl.X509ExtendedKeyManager;
-import java.net.Socket;
-import java.security.Principal;
-import java.security.PrivateKey;
-import java.security.cert.X509Certificate;
+/**
+ *
+ * @author James Hillyard
+ */
 
-public class MyKeyManager extends X509ExtendedKeyManager {
-
-    private final X509ExtendedKeyManager wrapped;
-
-    private final String certAlias;
-
-    public MyKeyManager(X509ExtendedKeyManager wrapped, String certAlias) {
-        this.wrapped = wrapped;
-        this.certAlias = certAlias;
-    }
+@WebServlet(value = "/secure/hello")
+public class HelloServlet extends HttpServlet {
 
     @Override
-    public String[] getClientAliases(String s, Principal[] principals) {
-        return wrapped.getClientAliases(s, principals);
-    }
-
-    @Override
-    public String chooseClientAlias(String[] strings, Principal[] principals, Socket socket) {
-        return certAlias;
-    }
-
-    @Override
-    public String[] getServerAliases(String s, Principal[] principals) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public String chooseServerAlias(String s, Principal[] principals, Socket socket) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public X509Certificate[] getCertificateChain(String s) {
-        return wrapped.getCertificateChain(s);
-    }
-
-    @Override
-    public PrivateKey getPrivateKey(String s) {
-        return wrapped.getPrivateKey(s);
+    public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        resp.getOutputStream().print("Hello " + req.getRemoteUser());
     }
 }

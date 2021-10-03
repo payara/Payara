@@ -38,7 +38,7 @@
  * holder.
  */
 
-package fish.payara.samples.security.clientValidation;
+package fish.payara.samples.security.validation;
 
 import fish.payara.samples.PayaraArquillianTestRunner;
 import fish.payara.samples.SecurityUtils;
