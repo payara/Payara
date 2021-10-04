@@ -37,7 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.cdi.jsr107.implementation;
+package fish.payara.appserver.micro.services.data;
+
+import fish.payara.cdi.jsr107.implementation.PayaraTCCLObjectInputStream;
+import org.glassfish.internal.api.Globals;
+import org.glassfish.internal.api.JavaEEContextUtil;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -46,10 +50,6 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
-import java.util.Optional;
-import org.glassfish.internal.api.Globals;
-import org.glassfish.internal.api.JavaEEContextUtil;
-import org.glassfish.internal.api.JavaEEContextUtil.Context;
 
 /**
  * Packages up an object into a Serializable value
@@ -79,12 +79,8 @@ public class PayaraValueHolder<T> implements Externalizable {
         String componentId = null;
         try (ByteArrayInputStream bais = new ByteArrayInputStream(data); PayaraTCCLObjectInputStream ois = new PayaraTCCLObjectInputStream(bais)) {
             componentId = (String)ois.readObject();
-            JavaEEContextUtil ctxUtil = Globals.getDefaultHabitat().getService(JavaEEContextUtil.class);
-            JavaEEContextUtil.Instance inst = Optional.ofNullable(componentId)
-                    .map(ctxUtil::fromComponentId).orElse(ctxUtil.empty());
-            try (Context ctx = inst.setApplicationClassLoader()) {
-                return (T) ois.readObject();
-            }
+            Object result = ois.readObject();
+            return (T)result;
         }
         catch (ClassNotFoundException ex) {
             String invocationComponentId = Globals.getDefaultHabitat().getService(JavaEEContextUtil.class).getInvocationComponentId();

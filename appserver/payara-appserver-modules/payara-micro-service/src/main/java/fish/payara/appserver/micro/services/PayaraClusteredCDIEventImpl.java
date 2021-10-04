@@ -41,7 +41,7 @@ package fish.payara.appserver.micro.services;
 
 import com.sun.enterprise.util.Utility;
 import fish.payara.micro.event.PayaraClusteredCDIEvent;
-import fish.payara.cdi.jsr107.implementation.PayaraValueHolder;
+import fish.payara.appserver.micro.services.data.PayaraValueHolder;
 import fish.payara.micro.data.InstanceDescriptor;
 import java.io.IOException;
 import java.io.Serializable;
@@ -172,7 +172,10 @@ public class PayaraClusteredCDIEventImpl implements PayaraClusteredCDIEvent {
                             // then create a proxy for the annotation type from the serialized Invocation Handler
                             result.add((Annotation) Proxy.newProxyInstance(Utility.getClassLoader(), new Class[]{annotationClazz}, qualifier));
                         } catch (Throwable ex) {
-                            Logger.getLogger(PayaraClusteredCDIEventImpl.class.getName()).log(Level.INFO, "Problem determining the qualifier type of an Event ignoring", ex);
+                            Logger.getLogger(PayaraClusteredCDIEventImpl.class.getName()).log(
+                                    ex instanceof IllegalArgumentException &&
+                                            ex.getMessage().contains("is not visible from class loader") ? Level.FINE : Level.INFO,
+                                    "Problem determining the qualifier type of an Event ignoring", ex);
                         }
                     }
                 }
