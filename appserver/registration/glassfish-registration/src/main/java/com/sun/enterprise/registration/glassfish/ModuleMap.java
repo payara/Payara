@@ -327,9 +327,9 @@ public class ModuleMap {
                 put("com.fasterxml.jackson.dataformat.xml", 268);
                 put("org.objectweb.asm", 269);
                 put("org.objectweb.asm.commons", 270);
-                put("org.objectweb.asm.tree", 271)
+                put("org.objectweb.asm.tree", 271);
                 put("org.objectweb.asm.tree.analysis", 272);
-                put("org.objectweb.asm.util", 273)
+                put("org.objectweb.asm.util", 273);
             }});
 
     public ModuleMap() {
