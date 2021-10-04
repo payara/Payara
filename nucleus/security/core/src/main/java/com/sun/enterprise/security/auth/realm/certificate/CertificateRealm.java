@@ -100,6 +100,7 @@ public final class CertificateRealm extends BaseRealm {
 
     private static final String COMMON_NAME_AS_PRINCIPAL_NAME = "common-name-as-principal-name";
     private static final String DN_PARTS_USED_FOR_GROUPS = "dn-parts-used-for-groups";
+    private static final String VALIDATION_CHECK_PROP = "certificate-validation";
 
     /** Descriptive string of the authentication type of this realm. */
     public static final String AUTH_TYPE = "certificate";
@@ -113,6 +114,9 @@ public final class CertificateRealm extends BaseRealm {
     @Override
     protected void init(Properties props) throws BadRealmException, NoSuchRealmException {
         super.init(props);
+
+        final String validationCheck = props.getProperty(VALIDATION_CHECK_PROP);
+        setProperty(VALIDATION_CHECK_PROP, validationCheck);
 
         final String jaasCtx = props.getProperty(JAAS_CONTEXT_PARAM);
         setProperty(JAAS_CONTEXT_PARAM, jaasCtx);
@@ -199,16 +203,14 @@ public final class CertificateRealm extends BaseRealm {
             _logger.log(Level.WARNING, "Exception while loading certificate validation class", exc);
             clientCertificateValidatorMap.remove(Utility.getClassLoader());
         }
-
+        validators.add(new ClientCertificateExpiryValidator(getProperty(VALIDATION_CHECK_PROP)));
         boolean failed = false;
-        if (!validators.isEmpty()) {
-            for (ClientCertificateValidator validator : validators) {
-                if (!validator.isValid(subject, principal, certificate)) {
-                    _logger.info(() -> String.format("Client Certificate validation failed for (subject=%s, principal=%s) by %s"
-                            , subject, principal, validator.getClass().getName()));
-                    failed = true;
-                    break;
-                }
+        for (ClientCertificateValidator validator : validators) {
+            if (!validator.isValid(subject, principal, certificate)) {
+                _logger.info(() -> String.format("Client Certificate validation failed for (subject=%s, principal=%s) by %s"
+                        , subject, principal, validator.getClass().getName()));
+                failed = true;
+                break;
             }
         }
         if (failed) {
