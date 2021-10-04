@@ -160,7 +160,7 @@
         <mimepull.version>1.9.12</mimepull.version>
 
         <!-- Apache Felix is an open source implementation of the OSGi Core Release 6 framework specification. -->
-        <org.apache.felix.main.version>6.0.2</org.apache.felix.main.version>
+        <org.apache.felix.main.version>7.0.1</org.apache.felix.main.version>
         <org.apache.felix.webconsole.version>4.3.8</org.apache.felix.webconsole.version>
         <org.apache.felix.eventadmin.version>1.5.0</org.apache.felix.eventadmin.version>
         <org.apache.felix.shell.version>1.4.3</org.apache.felix.shell.version>
