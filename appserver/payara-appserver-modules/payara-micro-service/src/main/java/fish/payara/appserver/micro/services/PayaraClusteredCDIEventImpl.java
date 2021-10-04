@@ -175,7 +175,7 @@ public class PayaraClusteredCDIEventImpl implements PayaraClusteredCDIEvent {
                             Logger.getLogger(PayaraClusteredCDIEventImpl.class.getName()).log(
                                     ex instanceof IllegalArgumentException &&
                                             ex.getMessage().contains("is not visible from class loader") ? Level.FINE : Level.INFO,
-                                    "Problem determining the qualifier type of an Event ignoring", ex);
+                                    "Problem determining the qualifier type of an Event, ignoring", ex);
                         }
                     }
                 }
