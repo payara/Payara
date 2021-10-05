@@ -159,18 +159,22 @@
 
         <mimepull.version>1.9.12</mimepull.version>
 
-        <!-- Apache Felix is an open source implementation of the OSGi Core Release 6 framework specification. -->
+        <!-- Apache Felix is an open source implementation of the OSGi Core Release 8 framework specification. -->
         <org.apache.felix.main.version>7.0.1</org.apache.felix.main.version>
-        <org.apache.felix.webconsole.version>4.3.8</org.apache.felix.webconsole.version>
-        <org.apache.felix.eventadmin.version>1.5.0</org.apache.felix.eventadmin.version>
+        <org.apache.felix.webconsole.version>4.6.2</org.apache.felix.webconsole.version>
+        <org.apache.felix.eventadmin.version>1.6.2</org.apache.felix.eventadmin.version>
         <org.apache.felix.shell.version>1.4.3</org.apache.felix.shell.version>
-        <org.apache.felix.gogo.runtime.version>1.1.2</org.apache.felix.gogo.runtime.version>
-        <org.apache.felix.gogo.shell.version>1.1.2</org.apache.felix.gogo.shell.version>
-        <org.apache.felix.gogo.command.version>1.1.0</org.apache.felix.gogo.command.version>
+        <org.apache.felix.gogo.runtime.version>1.1.4</org.apache.felix.gogo.runtime.version>
+        <org.apache.felix.gogo.shell.version>1.1.4</org.apache.felix.gogo.shell.version>
+        <org.apache.felix.gogo.command.version>1.1.2</org.apache.felix.gogo.command.version>
         <org.apache.felix.fileinstall.version>3.6.4.payara-p1</org.apache.felix.fileinstall.version>
-        <org.apache.felix.configadmin.version>1.9.14</org.apache.felix.configadmin.version>
-        <org.apache.felix.scr.version>2.1.14</org.apache.felix.scr.version>
+        <org.apache.felix.configadmin.version>1.9.22</org.apache.felix.configadmin.version>
+        <org.apache.felix.scr.version>2.1.28</org.apache.felix.scr.version>
         <org.apache.felix.bundlerepository.version>2.0.10</org.apache.felix.bundlerepository.version>
+
+        <!-- OSGi Promise and Function is required for Apache Felix scr -->
+        <org.osgi.util.promise.version>1.1.1</org.osgi.util.promise.version>
+        <org.osgi.util.function.version>1.1.0</org.osgi.util.function.version>
 
         <!-- Java Business Integration (JBI) is a specification for an approach to implementing a service-oriented architecture (SOA).  -->
         <glassfish-management-api.version>3.2.1-b002.payara-p1</glassfish-management-api.version>
@@ -786,6 +790,17 @@ Parent is ${project.parent}</echo>
                 <groupId>org.apache.felix</groupId> <!-- Bundle repository service. -->
                 <artifactId>org.apache.felix.bundlerepository</artifactId>
                 <version>${org.apache.felix.bundlerepository.version}</version>
+            </dependency>
+
+            <dependency> <!-- Required for org.apache.felix.scr-->
+                <groupId>org.osgi</groupId>
+                <artifactId>org.osgi.util.promise</artifactId>
+                <version>${org.osgi.util.promise.version}</version>
+            </dependency>
+            <dependency> <!-- Required for org.apache.felix.scr-->
+                <groupId>org.osgi</groupId>
+                <artifactId>org.osgi.util.function</artifactId>
+                <version>${org.osgi.util.function.version}</version>
             </dependency>
 
             <dependency>
