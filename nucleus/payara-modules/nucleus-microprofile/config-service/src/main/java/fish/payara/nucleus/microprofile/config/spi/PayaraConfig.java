@@ -83,7 +83,7 @@ public class PayaraConfig implements Config {
 
         CacheEntry(ConfigValueImpl value, long expires) {
             this.value = value;
-            this.expires = expires + currentTimeMillis();
+            this.expires = expires;
         }
     }
 
@@ -219,19 +219,28 @@ public class PayaraConfig implements Config {
             return searchConfigSources(propertyName, defaultValue);
         }
 
-        final String finalPropertyName = propertyName;
-        final String finalDefaultValue = defaultValue;
-        final String entryKey = cacheKey + (defaultValue != null ? ":" + defaultValue : "")  + ":" + (entryTTL / 1000) + "s";
+        final String entryKey = cacheKey + (defaultValue != null ? ":" + defaultValue : "") + ":" + (entryTTL / 1000) + "s";
         final long now = currentTimeMillis();
+        long expires = now + entryTTL;
 
+        CacheEntry cacheEntry = cachedValuesByProperty.get(entryKey);
+        // entry found and valid
+        if (cacheEntry != null && now < cacheEntry.expires) {
+            return cacheEntry.value;
+        }
+        // entry not found or expired
         boolean isExpansionEnabled = isExpansionEnabled(propertyName);
-
-        return cachedValuesByProperty.compute(entryKey, (key, entry) -> {
-            if (entry != null && now < entry.expires) {
+        // searchConfigSources can cause recursive call to getConfigValue when expansion is enabled
+        ConfigValueImpl newValue = searchConfigSources(propertyName, defaultValue, isExpansionEnabled);
+        CacheEntry newCacheEntry = new CacheEntry(newValue, expires);
+        // put the new cache entry, if there is not a newer value from other thread
+        cacheEntry = cachedValuesByProperty.compute(entryKey, (key, entry) -> {
+            if (entry != null && newCacheEntry.expires < entry.expires) {
                 return entry;
             }
-            return new CacheEntry(searchConfigSources(finalPropertyName, finalDefaultValue, isExpansionEnabled), entryTTL);
-        }).value;
+            return newCacheEntry;
+        });
+        return cacheEntry.value;
     }
 
     private <T> T convertValue(ConfigValue configValue, String defaultValue,
