@@ -172,9 +172,7 @@ public class PayaraClusteredCDIEventImpl implements PayaraClusteredCDIEvent {
                             // then create a proxy for the annotation type from the serialized Invocation Handler
                             result.add((Annotation) Proxy.newProxyInstance(Utility.getClassLoader(), new Class[]{annotationClazz}, qualifier));
                         } catch (Throwable ex) {
-                            Logger.getLogger(PayaraClusteredCDIEventImpl.class.getName()).log(
-                                    ex instanceof IllegalArgumentException &&
-                                            ex.getMessage().contains("is not visible from class loader") ? Level.FINE : Level.INFO,
+                            Logger.getLogger(PayaraClusteredCDIEventImpl.class.getName()).log(Level.INFO,
                                     "Problem determining the qualifier type of an Event, ignoring", ex);
                         }
                     }
