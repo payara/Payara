@@ -574,7 +574,7 @@
             <dependency>
                 <groupId>org.eclipse.persistence</groupId>
                 <artifactId>org.eclipse.persistence.asm</artifactId>
-                <version>${eclipselink.version}</version>
+                <version>${eclipselink.asm.verison}</version>
             </dependency>
             <!-- Annotation processor is best suited for provided scope -->
             <dependency>
