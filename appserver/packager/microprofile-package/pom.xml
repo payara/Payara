@@ -243,7 +243,8 @@
         <!-- OpenTracing -->
         <dependency>
             <groupId>org.eclipse.microprofile.opentracing</groupId>
-            <artifactId>microprofile-opentracing-api</artifactId>
+            <artifactId>microprofile-opentracing-api</artifactId>            
+            <classifier>ee9</classifier>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
