@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *  Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2019-2021] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -43,7 +43,6 @@ import com.sun.enterprise.config.serverbeans.AuthRealm;
 import com.sun.enterprise.config.serverbeans.SecurityService;
 import com.sun.enterprise.security.auth.realm.NoSuchRealmException;
 import com.sun.enterprise.security.auth.realm.Realm;
-import com.sun.enterprise.util.StringUtils;
 import fish.payara.security.annotations.CertificateAuthenticationMechanismDefinition;
 import fish.payara.security.annotations.CertificateIdentityStoreDefinition;
 import fish.payara.security.annotations.FileIdentityStoreDefinition;
@@ -311,7 +310,7 @@ public class RealmExtension implements Extension {
             authenticationMechanismBean = new CdiProducer<HttpAuthenticationMechanism>()
                     .scope(ApplicationScoped.class)
                     .beanClass(HttpAuthenticationMechanism.class)
-                    .types(Object.class, HttpAuthenticationMechanism.class)
+                    .types(Object.class, CertificateAuthenticationMechanism.class)
                     .addToId(CertificateAuthenticationMechanism.class)
                     .create(e -> CDI.current().select(CertificateAuthenticationMechanism.class).get());
         });
