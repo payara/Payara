@@ -1,7 +1,7 @@
 /*
  *    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2019-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2019-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *    The contents of this file are subject to the terms of either the GNU
  *    General Public License Version 2 only ("GPL") or the Common Development
@@ -56,8 +56,8 @@ public class JaxrsClientRegistrarProvider implements ClientTracingRegistrarProvi
 
     @Override
     public ClientBuilder configure(ClientBuilder clientBuilder) {
-        // tracing async client calls requires decoration
-        return JaxrsClientBuilderDecorator.wrap(clientBuilder);
+        // Add pre-invocation interceptor to Jersey client to attach expected propagation header and span context
+        return clientBuilder.register(OpenTracingPreInvocationInterceptor.class);
     }
 
     @Override
