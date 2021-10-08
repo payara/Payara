@@ -58,12 +58,17 @@ import java.security.Principal;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
+import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static fish.payara.microprofile.jaxrs.client.ssl.PayaraConstants.PAYARA_MP_CONFIG_CLIENT_CERTIFICATE_ALIAS;
+import static fish.payara.microprofile.jaxrs.client.ssl.PayaraConstants.PAYARA_REST_CLIENT_CERTIFICATE_ALIAS;
+
 /**
- * This class implements RestClientBuilder to evaluate the alias property to add the sslContext for the MicroProfile
- * rest client
+ * This class implements RestClientListener to evaluate the alias property and set a custom sslContext
+ * for the MicroProfile rest client
  */
 public class RestClientSslContextAliasListener implements RestClientListener {
 
@@ -71,27 +76,33 @@ public class RestClientSslContextAliasListener implements RestClientListener {
 
     @Override
     public void onNewClient(Class<?> serviceInterface, RestClientBuilder restClientBuilder) {
-        logger.info("Starting the evaluation of the alias property to set the sslContext");
+        logger.log(Level.INFO,"Evaluating state of the RestClientBuilder after calling build method");
 
         Object objectProperty = restClientBuilder.getConfiguration()
-                .getProperty(PayaraConstants.PAYARA_REST_CLIENT_CERTIFICATE_ALIAS);
+                .getProperty(PAYARA_REST_CLIENT_CERTIFICATE_ALIAS);
 
         if (objectProperty != null && objectProperty instanceof String) {
             String alias = (String) objectProperty;
-            logger.info("The alias is available from the RestClientBuilder configuration");
+            logger.log(Level.INFO,"The alias is available from the RestClientBuilder configuration");
             SSLContext customSSLContext = buildSSlContext(alias);
             if (customSSLContext != null) {
                 restClientBuilder.sslContext(customSSLContext);
             }
         } else {
             Config config = ConfigProvider.getConfig();
-            String alias = config.getValue("certificate.alias", String.class);
-            if (alias != null) {
-                logger.info("The alias is available from the MP Config");
-                SSLContext customSSLContext = buildSSlContext(alias);
-                if (customSSLContext != null) {
-                    restClientBuilder.sslContext(customSSLContext);
+            try {
+                String alias = config.getValue(PAYARA_MP_CONFIG_CLIENT_CERTIFICATE_ALIAS,
+                        String.class);
+                if (alias != null) {
+                    logger.log(Level.INFO,"The alias is available from the MP Config");
+                    SSLContext customSSLContext = buildSSlContext(alias);
+                    if (customSSLContext != null) {
+                        restClientBuilder.sslContext(customSSLContext);
+                    }
                 }
+            } catch(NoSuchElementException e) {
+                logger.log(Level.SEVERE, String.format("The MP config property %s was not set",
+                        PAYARA_MP_CONFIG_CLIENT_CERTIFICATE_ALIAS));
             }
         }
     }
@@ -104,7 +115,7 @@ public class RestClientSslContextAliasListener implements RestClientListener {
      */
     protected SSLContext buildSSlContext(String alias) {
         try {
-            logger.info("Building the SSLContext for the alias");
+            logger.log(Level.INFO,"Building the SSLContext for the alias");
             ServiceLocator habitat = Globals.getDefaultHabitat();
             SSLUtils sslUtils = habitat.getService(SSLUtils.class);
             KeyManager[] managers = sslUtils.getKeyManagers();
@@ -121,6 +132,7 @@ public class RestClientSslContextAliasListener implements RestClientListener {
 
             for (KeyStore ks : keyStores) {
                 if (ks.containsAlias(alias) && keyManager != null) {
+                    logger.log(Level.INFO,"The alias was found to configure the custom SSLContext");
                     X509KeyManager customKeyManager = new SingleCertificateKeyManager(alias, keyManager);
                     SSLContext customSSLContext = SSLContext.getInstance("TLS");
                     customSSLContext.init(new KeyManager[]{customKeyManager}, null, null);
@@ -129,17 +141,20 @@ public class RestClientSslContextAliasListener implements RestClientListener {
             }
             return null;
         } catch (IOException e) {
-            logger.severe("An IOException was thrown with the following message"+e.getMessage());
+            logger.log(Level.SEVERE,"While configuring custom SSLContext an IOException was thrown with the following message:"+
+                    e.getMessage());
         } catch (KeyStoreException e) {
-            logger.severe("A KeyStoreException was thrown with the following message"+e.getMessage());
+            logger.log(Level.SEVERE,"While configuring custom SSLContext a KeyStoreException was thrown with the following message:"+
+                    e.getMessage());
         } catch (Exception e) {
-            logger.severe("An Exception was thrown with the following message"+e.getMessage());
+            logger.log(Level.SEVERE,"While configuring custom SSLContext an Exception was thrown with the following message:"+
+                    e.getMessage());
         }
         return null;
     }
 
     /**
-     * This class is a custom implementation of rht X509KeyManager to set the custom certificate based on the
+     * This class is a custom implementation of X509KeyManager to set the custom certificate based on the
      * alias property
      */
     private class SingleCertificateKeyManager implements X509KeyManager {
