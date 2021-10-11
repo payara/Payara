@@ -42,6 +42,7 @@
         <module>microprofile-rc-ft</module>
         <module>multiple-keystores</module>
         <module>client-certificate-validator</module>
+        <module>corba-read-timeout</module>
     </modules>
 
     <dependencies>
