@@ -40,11 +40,17 @@
 package fish.payara.microprofile.jaxrs.client.ssl;
 
 /**
- * Class to maintain the constant used to evaluate the name of the property for certificate alias
+ * Class to maintain the constants used to evaluate the name of the property for certificate alias
  * on MicroProfile rest clients
  */
 public class PayaraConstants {
     public static final String PAYARA_REST_CLIENT_CERTIFICATE_ALIAS = "fish.payara.rest.client.certificate.alias";
 
     public static final String PAYARA_MP_CONFIG_CLIENT_CERTIFICATE_ALIAS = "certificate.alias";
+
+    public static final String PAYARA_USER_DIR_PROPERTY_NAME = "user.dir";
+
+    public static final String PAYARA_KEYSTORE_NAME = "/keystore.jks";
+
+    public static final String PAYARA_KEYSTORE_PASSWORD_PROPERTY_NAME = "javax.net.ssl.keyStorePassword";
 }
