@@ -45,6 +45,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -82,6 +83,7 @@ public class TimeoutTestClientIT {
                 System.out.println("Error occured at try number: " + tryNumber + " after " + (System.currentTimeMillis() - startTime) + " millis");
                 e.printStackTrace();
                 running = false;
+                Assert.fail();
             }
         }
     }
