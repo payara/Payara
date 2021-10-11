@@ -6,7 +6,7 @@ One of the key goals of Payara is to interact with our community of users and un
 [[questions]]
 == Questions and General Advice
 
-For questions regarding about using the platform, visit the http://www.payara.org/forum[Payara Forum] and create a topic to discuss your inquiries in detail. This includes advice on:
+For questions regarding about using the platform, visit the https://forum.payara.fish/[Payara Forum] and create a topic to discuss your inquiries in detail. This includes advice on:
 
 * Configuration of any Payara Platform distributions
 * Integration of the Payara Platform with other technologies
