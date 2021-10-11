@@ -58,7 +58,6 @@ public class RestClientTracingListener implements RestClientListener {
 
     @Override
     public void onNewClient(Class<?> aClass, RestClientBuilder restClientBuilder) {
-        // Rest client spec mandates early initialization of providers rather than on first request in its TCK
         restClientBuilder.register(new AsyncContextPropagator.Factory());
 
         // OpenTracing mandates respecting setting of @Traced annotation on the class
