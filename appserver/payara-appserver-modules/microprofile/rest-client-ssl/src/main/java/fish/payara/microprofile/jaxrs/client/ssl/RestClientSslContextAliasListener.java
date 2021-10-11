@@ -39,18 +39,16 @@
  */
 package fish.payara.microprofile.jaxrs.client.ssl;
 
-import com.sun.enterprise.security.ssl.SSLUtils;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.rest.client.RestClientBuilder;
 import org.eclipse.microprofile.rest.client.spi.RestClientListener;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.internal.api.Globals;
 
 import javax.net.ssl.KeyManager;
+import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509KeyManager;
-import java.io.IOException;
+import java.io.*;
 import java.net.Socket;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -63,8 +61,7 @@ import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static fish.payara.microprofile.jaxrs.client.ssl.PayaraConstants.PAYARA_MP_CONFIG_CLIENT_CERTIFICATE_ALIAS;
-import static fish.payara.microprofile.jaxrs.client.ssl.PayaraConstants.PAYARA_REST_CLIENT_CERTIFICATE_ALIAS;
+import static fish.payara.microprofile.jaxrs.client.ssl.PayaraConstants.*;
 
 /**
  * This class implements RestClientListener to evaluate the alias property and set a custom sslContext
@@ -109,46 +106,56 @@ public class RestClientSslContextAliasListener implements RestClientListener {
 
     /**
      * This method evaluate the alias on the global keystore and return the corresponding SSLContext based on the alias
-     * if not available the SSLContest should be the default that was set during the payara server configuration
+     * if not available the SSLContext should be the default that Jersey implementation set
+     *
      * @param alias name of the certificate
      * @return the SSLContext with the corresponding certificate and alias name
      */
     protected SSLContext buildSSlContext(String alias) {
-        try {
-            logger.log(Level.INFO,"Building the SSLContext for the alias");
-            ServiceLocator habitat = Globals.getDefaultHabitat();
-            SSLUtils sslUtils = habitat.getService(SSLUtils.class);
-            KeyManager[] managers = sslUtils.getKeyManagers();
-            Optional<X509KeyManager> optionalKeyManager = null;
-            X509KeyManager keyManager = null;
-            optionalKeyManager = Arrays.stream(managers).filter(m -> (m instanceof X509KeyManager))
-                    .map(m -> ((X509KeyManager)m)).findFirst();
+        logger.log(Level.INFO, "Building the SSLContext for the alias");
+        String configPath = System.getProperty(PAYARA_USER_DIR_PROPERTY_NAME);
+        if (configPath != null) {
+            File file = new File(configPath.concat(PAYARA_KEYSTORE_NAME));
+            try (InputStream is = new FileInputStream(file)) {
+                String password = System.getProperty(PAYARA_KEYSTORE_PASSWORD_PROPERTY_NAME);
+                KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
+                if (password != null) {
+                    ks.load(is, password.toCharArray());
+                    if (ks.containsAlias(alias)) {
+                        logger.log(Level.INFO, "The alias was found to configure the custom SSLContext");
+                        KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+                        kmf.init(ks, password.toCharArray());
+                        Optional<X509KeyManager> optionalKeyManager = null;
+                        X509KeyManager keyManager = null;
+                        optionalKeyManager = Arrays.stream(kmf.getKeyManagers()).filter(m -> (m instanceof X509KeyManager))
+                                .map(m -> ((X509KeyManager) m)).findFirst();
 
-            KeyStore[] keyStores = sslUtils.getKeyStores();
+                        if (optionalKeyManager.isPresent()) {
+                            keyManager = optionalKeyManager.get();
+                        }
 
-            if(optionalKeyManager.isPresent()) {
-                keyManager = optionalKeyManager.get();
-            }
-
-            for (KeyStore ks : keyStores) {
-                if (ks.containsAlias(alias) && keyManager != null) {
-                    logger.log(Level.INFO,"The alias was found to configure the custom SSLContext");
-                    X509KeyManager customKeyManager = new SingleCertificateKeyManager(alias, keyManager);
-                    SSLContext customSSLContext = SSLContext.getInstance("TLS");
-                    customSSLContext.init(new KeyManager[]{customKeyManager}, null, null);
-                    return customSSLContext;
+                        if (keyManager != null) {
+                            logger.log(Level.INFO, "Creating custom sslContext for alias "+alias);
+                            X509KeyManager customKeyManager = new SingleCertificateKeyManager(alias, keyManager);
+                            SSLContext customSSLContext = SSLContext.getInstance("TLS");
+                            customSSLContext.init(new KeyManager[]{customKeyManager}, null, null);
+                            return customSSLContext;
+                        }
+                    }
                 }
+            } catch (FileNotFoundException e) {
+                logger.log(Level.SEVERE, "While configuring custom SSLContext a FileNotFoundException was thrown with the following message" +
+                        e.getMessage());
+            } catch (IOException e) {
+                logger.log(Level.SEVERE, "While configuring custom SSLContext an IOException was thrown with the following message" +
+                        e.getMessage());
+            } catch (KeyStoreException e) {
+                logger.log(Level.SEVERE, "While configuring custom SSLContext a KeyStoreException was thrown with the following message" +
+                        e.getMessage());
+            } catch (Exception e) {
+                logger.log(Level.SEVERE, "While configuring custom SSLContext An Exception was thrown with the following message" +
+                        e.getMessage());
             }
-            return null;
-        } catch (IOException e) {
-            logger.log(Level.SEVERE,"While configuring custom SSLContext an IOException was thrown with the following message:"+
-                    e.getMessage());
-        } catch (KeyStoreException e) {
-            logger.log(Level.SEVERE,"While configuring custom SSLContext a KeyStoreException was thrown with the following message:"+
-                    e.getMessage());
-        } catch (Exception e) {
-            logger.log(Level.SEVERE,"While configuring custom SSLContext an Exception was thrown with the following message:"+
-                    e.getMessage());
         }
         return null;
     }
