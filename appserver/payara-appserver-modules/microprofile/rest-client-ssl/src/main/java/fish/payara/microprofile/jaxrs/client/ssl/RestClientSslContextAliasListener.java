@@ -113,9 +113,11 @@ public class RestClientSslContextAliasListener implements RestClientListener {
      */
     protected SSLContext buildSSlContext(String alias) {
         logger.log(Level.INFO, "Building the SSLContext for the alias");
-        String configPath = System.getProperty(PAYARA_USER_DIR_PROPERTY_NAME);
+        String configPath = System.getProperty(PAYARA_BASEDIR_PROPERTY_NAME);
+        logger.log(Level.INFO, "Basedir value:"+configPath);
         if (configPath != null) {
             File file = new File(configPath.concat(PAYARA_KEYSTORE_NAME));
+            logger.log(Level.INFO, file.getPath());
             try (InputStream is = new FileInputStream(file)) {
                 String password = System.getProperty(PAYARA_KEYSTORE_PASSWORD_PROPERTY_NAME);
                 KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());

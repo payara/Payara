@@ -49,12 +49,10 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import javax.net.ssl.SSLContext;
 import javax.ws.rs.core.Configuration;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.file.Paths;
 import java.util.logging.Logger;
 
-import static fish.payara.microprofile.jaxrs.client.ssl.PayaraConstants.*;
+import static fish.payara.microprofile.jaxrs.client.ssl.PayaraConstants.PAYARA_KEYSTORE_PASSWORD_PROPERTY_NAME;
+import static fish.payara.microprofile.jaxrs.client.ssl.PayaraConstants.PAYARA_REST_CLIENT_CERTIFICATE_ALIAS;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -76,7 +74,7 @@ public class RestClientSslContextAliasListenerTest {
 
     @Test
     public void restClientBuilderListenerSetAliasPropertyTest() {
-        initProperties();
+        System.setProperty(PAYARA_KEYSTORE_PASSWORD_PROPERTY_NAME, "changeit");
 
         when(restClientBuilder.getConfiguration()).thenReturn(configuration);
         when(configuration.getProperty(PAYARA_REST_CLIENT_CERTIFICATE_ALIAS)).thenReturn("myKey");
@@ -97,7 +95,7 @@ public class RestClientSslContextAliasListenerTest {
 
         try {
             restClientSslContextAliasListener.onNewClient(RestClientBuilder.class, restClientBuilder);
-        } catch(IllegalStateException e) {
+        } catch (IllegalStateException e) {
             logger.info("MicroProfile Config can't be achieved");
         }
 
@@ -106,22 +104,4 @@ public class RestClientSslContextAliasListenerTest {
 
     }
 
-    /**
-     * Method to set properties used during sslContext configuration with custom certificate
-     */
-    public void initProperties() {
-        URI uri = null;
-        try {
-            uri = this.getClass().getResource("/keystore.jks").toURI();
-        } catch (URISyntaxException e) {
-            logger.severe("Error when getting resource: "+e.getMessage());
-        }
-        String path = Paths.get(uri).toString();
-        int idx = path.lastIndexOf("\\");
-        if(idx > 0) {
-            String startPath = path.substring(0, idx);
-            System.setProperty(PAYARA_USER_DIR_PROPERTY_NAME, startPath);
-        }
-        System.setProperty(PAYARA_KEYSTORE_PASSWORD_PROPERTY_NAME, "changeit");
-    }
 }
