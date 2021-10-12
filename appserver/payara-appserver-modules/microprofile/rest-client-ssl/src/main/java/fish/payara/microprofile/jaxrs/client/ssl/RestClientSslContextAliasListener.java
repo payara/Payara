@@ -178,22 +178,22 @@ public class RestClientSslContextAliasListener implements RestClientListener {
 
         @Override
         public String[] getClientAliases(String s, Principal[] principals) {
-            return new String[]{alias};
+            return keyManager.getClientAliases(s, principals);
         }
 
         @Override
         public String chooseClientAlias(String[] strings, Principal[] principals, Socket socket) {
-            return null;
+            return alias;
         }
 
         @Override
         public String[] getServerAliases(String s, Principal[] principals) {
-            return new String[]{alias};
+            throw new UnsupportedOperationException();
         }
 
         @Override
         public String chooseServerAlias(String s, Principal[] principals, Socket socket) {
-            return null;
+            throw new UnsupportedOperationException();
         }
 
         @Override
