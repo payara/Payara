@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.connectors.jms.system;
 
@@ -77,7 +77,6 @@ import com.sun.enterprise.deployment.JMSDestinationDefinitionDescriptor;
 import com.sun.enterprise.deployment.MessageDestinationDescriptor;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.runtime.BeanPoolDescriptor;
-import com.sun.enterprise.util.JDK;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.Result;
 import com.sun.enterprise.util.SystemPropertyConstants;
@@ -1044,13 +1043,9 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
             if (tmpString == null) {
                 tmpString = "";
             }
+
             String brokerArgs = tmpString;
 
-            //condition to evaluate the JDK and if version greater than 8 then omit the jre folder
-            //by adding the start-args for the broker configuration
-            if (!tmpString.contains("-jrehome") && availableJDKForStartArgs()) {
-                brokerArgs = brokerArgs + buildStartArgsForJREHome(java_home);
-            }
 
             //XX: Extract the information from the optional properties.
        List jmsProperties =    getJmsService().getProperty();
@@ -1161,26 +1156,6 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
         }
         //Optional
         //BrokerBindAddress, RmiRegistryPort
-    }
-
-    /**
-     * This method evaluate the current JDK and return true if the version is greater than 8. This indicator
-     * is used to include the start-args attribute for the broker configuration with the jrehome path attribute
-     *
-     * @return boolean indicator to create the start-args attribute for the broker
-     */
-    private boolean availableJDKForStartArgs() {
-        return JDK.getMajor() > 8;
-    }
-
-    /**
-     * This method build the start-args attribute with the value -jrehome for the jms broker configuration
-     *
-     * @param javaHome String with the path to use for the -jrehome attribute
-     * @return String with the formed start-args attribute
-     */
-    private String buildStartArgsForJREHome(String javaHome) {
-        return " -jrehome "+"\""+javaHome+"\"";
     }
 
    private Properties listToProperties(List<Property> props){
