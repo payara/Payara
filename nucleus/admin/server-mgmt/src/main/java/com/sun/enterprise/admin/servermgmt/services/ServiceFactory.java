@@ -47,14 +47,18 @@ public final class ServiceFactory {
     public static final Service getService(ServerDirs dirs, AppserverServiceType type) {
 
         // the order matters!
-        if(LinuxService.apropos())
-            return new LinuxService(dirs, type);
-        if(SMFService.apropos())
+        if (LinuxSystemDService.apropos()) {
+            return new LinuxSystemDService(dirs, type);
+        }
+        if (LinuxSystemVService.apropos()) {
+            return new LinuxSystemVService(dirs, type);
+        }
+        if (SMFService.apropos()) {
             return new SMFService(dirs, type);
-        if(WindowsService.apropos())
+        }
+        if (WindowsService.apropos()) {
             return new WindowsService(dirs, type);
-        if(LinuxService.apropos())
-            return new LinuxService(dirs, type);
+        }
         throw new NotSupportedOSException(Strings.get("noSuitableServiceImplementation"));
     }
     
