@@ -47,10 +47,4 @@ public class PayaraConstants {
     public static final String PAYARA_REST_CLIENT_CERTIFICATE_ALIAS = "fish.payara.rest.client.certificate.alias";
 
     public static final String PAYARA_MP_CONFIG_CLIENT_CERTIFICATE_ALIAS = "certificate.alias";
-
-    public static final String PAYARA_BASEDIR_PROPERTY_NAME = "basedir";
-
-    public static final String PAYARA_KEYSTORE_NAME = "/target/test-classes/keystore.jks";
-
-    public static final String PAYARA_KEYSTORE_PASSWORD_PROPERTY_NAME = "javax.net.ssl.keyStorePassword";
 }
