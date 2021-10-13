@@ -86,9 +86,12 @@ public class RestClientSslContextAliasListener implements RestClientListener {
             SSLContext customSSLContext = buildSSlContext(alias);
             if (customSSLContext != null) {
                 restClientBuilder.sslContext(customSSLContext);
+            } else {
+                logger.log(Level.INFO,
+                        String.format("Although the alias: %s is configured, none keystore available for it", alias));
             }
         } else {
-            Config config = ConfigProvider.getConfig();
+            Config config = getConfig();
             try {
                 String alias = config.getValue(PAYARA_MP_CONFIG_CLIENT_CERTIFICATE_ALIAS,
                         String.class);
@@ -97,6 +100,9 @@ public class RestClientSslContextAliasListener implements RestClientListener {
                     SSLContext customSSLContext = buildSSlContext(alias);
                     if (customSSLContext != null) {
                         restClientBuilder.sslContext(customSSLContext);
+                    } else {
+                        logger.log(Level.INFO,
+                                String.format("Although the alias: %s is configured, none keystore available for it", alias));
                     }
                 }
             } catch (NoSuchElementException e) {
@@ -116,16 +122,15 @@ public class RestClientSslContextAliasListener implements RestClientListener {
     protected SSLContext buildSSlContext(String alias) {
         logger.log(Level.INFO, "Building the SSLContext for the alias");
         try {
-            SSLUtils sslUtils = Globals.get(SSLUtils.class);
-            KeyManager[] managers = sslUtils.getKeyManagers();
+            KeyManager[] managers = getKeyManagers();
             Optional<X509KeyManager> optionalKeyManager = null;
             X509KeyManager keyManager = null;
             optionalKeyManager = Arrays.stream(managers).filter(m -> (m instanceof X509KeyManager))
-                    .map(m -> ((X509KeyManager)m)).findFirst();
+                    .map(m -> ((X509KeyManager) m)).findFirst();
 
-            KeyStore[] keyStores = sslUtils.getKeyStores();
+            KeyStore[] keyStores = getKeyStores();
 
-            if(optionalKeyManager.isPresent()) {
+            if (optionalKeyManager.isPresent()) {
                 keyManager = optionalKeyManager.get();
             }
 
@@ -138,13 +143,41 @@ public class RestClientSslContextAliasListener implements RestClientListener {
                 }
             }
         } catch (IOException e) {
-            logger.severe("An IOException was thrown with the following message"+e.getMessage());
+            logger.severe("An IOException was thrown with the following message" + e.getMessage());
         } catch (KeyStoreException e) {
-            logger.severe("A KeyStoreException was thrown with the following message"+e.getMessage());
+            logger.severe("A KeyStoreException was thrown with the following message" + e.getMessage());
         } catch (Exception e) {
-            logger.severe("An Exception was thrown with the following message"+e.getMessage());
+            logger.severe("An Exception was thrown with the following message" + e.getMessage());
         }
         return null;
+    }
+
+    /**
+     * Method to get the config
+     * @return Config from MicroProfile
+     */
+    protected Config getConfig() {
+        return ConfigProvider.getConfig();
+    }
+
+    /**
+     * Method used to get KeyManagers
+     * @return an array of KeyManager
+     * @throws Exception
+     */
+    protected KeyManager[] getKeyManagers() throws Exception {
+        SSLUtils sslUtils = Globals.get(SSLUtils.class);
+        return sslUtils.getKeyManagers();
+    }
+
+    /**
+     * Method used to get KeyStores
+     * @return an array of KeyStore
+     * @throws IOException
+     */
+    protected KeyStore[] getKeyStores() throws IOException {
+        SSLUtils sslUtils = Globals.get(SSLUtils.class);
+        return sslUtils.getKeyStores();
     }
 
     /**
