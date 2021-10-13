@@ -127,16 +127,11 @@ public class RestClientSslContextAliasListener implements RestClientListener {
             X509KeyManager keyManager = null;
             optionalKeyManager = Arrays.stream(managers).filter(m -> (m instanceof X509KeyManager))
                     .map(m -> ((X509KeyManager) m)).findFirst();
-
             KeyStore[] keyStores = getKeyStores();
 
-            if (optionalKeyManager.isPresent()) {
-                keyManager = optionalKeyManager.get();
-            }
-
             for (KeyStore ks : keyStores) {
-                if (ks.containsAlias(alias) && keyManager != null) {
-                    X509KeyManager customKeyManager = new SingleCertificateKeyManager(alias, keyManager);
+                if (ks.containsAlias(alias) && optionalKeyManager.isPresent()) {
+                    X509KeyManager customKeyManager = new SingleCertificateKeyManager(alias, optionalKeyManager.get());
                     SSLContext customSSLContext = SSLContext.getInstance("TLS");
                     customSSLContext.init(new KeyManager[]{customKeyManager}, null, null);
                     return customSSLContext;
