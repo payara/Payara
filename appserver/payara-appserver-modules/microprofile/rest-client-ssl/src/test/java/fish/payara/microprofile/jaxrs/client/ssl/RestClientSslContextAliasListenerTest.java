@@ -45,7 +45,7 @@ public class RestClientSslContextAliasListenerTest {
     @Test
     public void restClientAliasPropertySslContextTest() throws Exception {
         KeyManager[] managers = getManagers();
-        KeyStore[] keyStores = new KeyStore[]{getKeyStores()};
+        KeyStore[] keyStores = new KeyStore[]{getKeyStore()};
 
         when(restClientBuilder.getConfiguration()).thenReturn(configuration);
         when(configuration.getProperty(PAYARA_REST_CLIENT_CERTIFICATE_ALIAS)).thenReturn("myKey");
@@ -63,7 +63,7 @@ public class RestClientSslContextAliasListenerTest {
     @Test
     public void restClientAliasPropertyFromMPConfigSslContextTest() throws Exception {
         KeyManager[] managers = getManagers();
-        KeyStore[] keyStores = new KeyStore[]{getKeyStores()};
+        KeyStore[] keyStores = new KeyStore[]{getKeyStore()};
 
         when(restClientBuilder.getConfiguration()).thenReturn(configuration);
         when(configuration.getProperty(PAYARA_REST_CLIENT_CERTIFICATE_ALIAS)).thenReturn(null);
@@ -80,7 +80,7 @@ public class RestClientSslContextAliasListenerTest {
         verify(restClientBuilder, times(1)).sslContext(any(SSLContext.class));
     }
 
-    public KeyStore getKeyStores() throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException, URISyntaxException {
+    public KeyStore getKeyStore() throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException, URISyntaxException {
         KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
         URL resource = getClass().getClassLoader().getResource("keystore.jks");
         FileInputStream keyStoreFile = new FileInputStream(new File(resource.toURI()));
@@ -89,10 +89,7 @@ public class RestClientSslContextAliasListenerTest {
     }
 
     public KeyManager[] getManagers() throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException, UnrecoverableKeyException, URISyntaxException {
-        KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
-        URL resource = getClass().getClassLoader().getResource("keystore.jks");
-        FileInputStream keyStoreFile = new FileInputStream(new File(resource.toURI()));
-        keyStore.load(keyStoreFile, "changeit".toCharArray());
+        KeyStore keyStore = getKeyStore();
         KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
         kmf.init(keyStore, "changeit".toCharArray());
         return kmf.getKeyManagers();
