@@ -8,6 +8,7 @@ SYNOPSIS
            create-service [--help] [--name service-name]
            [--serviceproperties service-properties]
            [--dry-run={false|true}] [--force={false|true}]
+           [--system-type system-type]
            [--serviceuser service-user]
            [--domaindir domain-dir]
            [--nodedir node-dir] [--node node]
@@ -169,6 +170,11 @@ OPTIONS
 
            false
                The service is not created (default).
+
+       --system-type system-type
+           If specified, system-type must be one of systemd, systemv, solaris
+           or windows, which determine the type of init scripts to create.
+           If not specified, the command performs autodetection of init system.
 
        --serviceuser
            (Linux systems only) The user that is to run the GlassFish Server
