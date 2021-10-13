@@ -120,7 +120,7 @@ public class RestClientSslContextAliasListener implements RestClientListener {
      * @return the SSLContext with the corresponding certificate and alias name
      */
     protected SSLContext buildSSlContext(String alias) {
-        logger.log(Level.INFO, "Building the SSLContext for the alias");
+        logger.log(Level.FINE, "Building the SSLContext for the alias");
         try {
             KeyManager[] managers = getKeyManagers();
             Optional<X509KeyManager> optionalKeyManager = null;
