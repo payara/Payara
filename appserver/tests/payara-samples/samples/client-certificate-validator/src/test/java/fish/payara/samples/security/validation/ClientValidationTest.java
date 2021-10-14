@@ -56,6 +56,7 @@ import javax.net.ssl.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -113,7 +114,12 @@ public class ClientValidationTest {
     }
 
     private static int callEndpoint(SSLSocketFactory sslSocketFactory) throws IOException {
+        //Domain1 has a hostname of localhost. Other domains use your hostname so that must be taken into account
         URL url = new URL(LOCALHOST_URL);
+        if (!ServerOperations.getDomainName().equals("domain1")) {
+            String hostname = InetAddress.getLocalHost().getHostName();
+            url = new URL("https://"+hostname+":8181/security/secure/hello");
+        }
         HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
         connection.setSSLSocketFactory(sslSocketFactory);
         return connection.getResponseCode();
