@@ -124,7 +124,6 @@ public class RestClientSslContextAliasListener implements RestClientListener {
         try {
             KeyManager[] managers = getKeyManagers();
             Optional<X509KeyManager> optionalKeyManager = null;
-            X509KeyManager keyManager = null;
             optionalKeyManager = Arrays.stream(managers).filter(m -> (m instanceof X509KeyManager))
                     .map(m -> ((X509KeyManager) m)).findFirst();
             KeyStore[] keyStores = getKeyStores();
