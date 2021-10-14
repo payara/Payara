@@ -6,25 +6,12 @@
     <parent>
         <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
         <artifactId>microprofile</artifactId>
-        <version>5.2021.8-SNAPSHOT</version>
+        <version>5.2021.9-SNAPSHOT</version>
     </parent>
-
 
     <artifactId>rest-client-ssl</artifactId>
     <packaging>glassfish-jar</packaging>
-    <name>Rest Client ssl context</name>
-
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.jboss.arquillian</groupId>
-                <artifactId>arquillian-bom</artifactId>
-                <version>1.7.0.Alpha9</version>
-                <scope>import</scope>
-                <type>pom</type>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
+    <name>Rest Client SSL Context</name>
 
     <dependencies>
         <dependency>
@@ -50,6 +37,11 @@
         <dependency>
             <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>internal-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.server.internal.security</groupId>
+            <artifactId>security</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
