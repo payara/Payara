@@ -54,6 +54,7 @@ import org.junit.runner.RunWith;
 import org.omnifaces.utils.security.Certificates;
 
 import javax.net.ssl.*;
+import javax.security.cert.X509Certificate;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -89,6 +90,7 @@ public class ClientValidationTest {
                 .addPackages(true, "com.gargoylesoftware")
                 .addPackages(true, "net.sourceforge.htmlunit")
                 .addPackages(true, "org.eclipse")
+                .addPackages(true, "org.omnifaces.utils")
                 .addPackages(true, PayaraArquillianTestRunner.class.getPackage())
                 .addClasses(ServerOperations.class, SecurityUtils.class, Certificates.class)
                 .addAsWebInfResource(new File("src/main/webapp", "WEB-INF/web.xml"))
@@ -114,12 +116,7 @@ public class ClientValidationTest {
     }
 
     private static int callEndpoint(SSLSocketFactory sslSocketFactory) throws IOException {
-        //Domain1 has a hostname of localhost. Other domains use your hostname so that must be taken into account
-        URL url = new URL(LOCALHOST_URL);
-        if (!ServerOperations.getDomainName().equals("domain1")) {
-            String hostname = NetUtils.getCanonicalHostName();
-            url = new URL("https://"+hostname+":8181/security/secure/hello");
-        }
+        URL url = ServerOperations.baseURLForServerHost(new URL(LOCALHOST_URL));
         HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
         connection.setSSLSocketFactory(sslSocketFactory);
         return connection.getResponseCode();
