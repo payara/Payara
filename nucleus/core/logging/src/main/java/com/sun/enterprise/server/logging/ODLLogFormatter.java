@@ -57,7 +57,7 @@ import java.util.logging.*;
  * Log Working Group in Oracle.
  * The specified format is
  * "[[timestamp] [organization ID] [Message Type/Level] [Message ID] [Logger
- * Name] [Thread ID] [User ID] [ECID] [Extra Attributes] [Message]]\n"
+ * Name] [Thread ID] [Extra Attributes] [Message]]\n"
  *
  * @author Naman Mehta
  */
@@ -74,10 +74,6 @@ public class ODLLogFormatter extends AnsiColorFormatter implements LogEventBroad
 
     private static boolean RECORD_NUMBER_IN_KEY_VALUE = false;
 
-    private static String userID = "";
-
-    private static String ecID = "";
-
     private FormatterDelegate _delegate = null;
 
     private static final String LINE_SEPARATOR = System.getProperty("line.separator");
@@ -93,10 +89,6 @@ public class ODLLogFormatter extends AnsiColorFormatter implements LogEventBroad
         if ((recordCount != null) && (recordCount.equals("true"))) {
             RECORD_NUMBER_IN_KEY_VALUE = true;
         }
-
-        userID = System.getProperty("com.sun.aas.logging.userID");
-
-        ecID = System.getProperty("com.sun.aas.logging.ecID");
     }
 
     private long recordNumber = 0;
@@ -253,30 +245,6 @@ public class ODLLogFormatter extends AnsiColorFormatter implements LogEventBroad
                 recordBuffer.append(" _ThreadName=");
                 logEvent.setThreadName(threadName);
                 recordBuffer.append(threadName);
-                recordBuffer.append(FIELD_END_MARKER);
-                recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
-            }
-
-            // Adding user ID
-            if (!isFieldExcluded(ExcludeFieldsSupport.SupplementalAttribute.USERID) &&
-                    userID != null && !("").equals(userID.trim()))
-            {
-                recordBuffer.append(FIELD_BEGIN_MARKER);
-                recordBuffer.append("userId: ");
-                logEvent.setUser(userID);
-                recordBuffer.append(userID);
-                recordBuffer.append(FIELD_END_MARKER);
-                recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
-            }
-
-            // Adding ec ID
-            if (!isFieldExcluded(ExcludeFieldsSupport.SupplementalAttribute.ECID) &&
-                    ecID != null && !("").equals(ecID.trim()))
-            {
-                recordBuffer.append(FIELD_BEGIN_MARKER);
-                recordBuffer.append("ecid: ");
-                logEvent.setECId(ecID);
-                recordBuffer.append(ecID);
                 recordBuffer.append(FIELD_END_MARKER);
                 recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
             }

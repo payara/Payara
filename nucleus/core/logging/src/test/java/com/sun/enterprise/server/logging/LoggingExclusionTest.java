@@ -66,8 +66,6 @@ import static org.junit.Assert.assertTrue;
 
 /**
  * Testing the ExcludeField support.
- * No testing for UserId and ECId as these are just System properties and not even
- * Documented with Glassfish. They will be removed.
  */
 @RunWith(MockitoJUnitRunner.class)
 public class LoggingExclusionTest {

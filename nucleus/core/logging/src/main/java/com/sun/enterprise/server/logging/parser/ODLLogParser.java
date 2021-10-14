@@ -72,8 +72,6 @@ final class ODLLogParser implements LogParser {
 
         {
             put("tid", ParsedLogRecord.THREAD_ID);
-            put(ParsedLogRecord.EC_ID, ParsedLogRecord.EC_ID);
-            put(ParsedLogRecord.USER_ID, ParsedLogRecord.USER_ID);
         }
     };
 

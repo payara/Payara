@@ -111,18 +111,6 @@ public interface LogEvent {
     public abstract String getThreadName();
 
     /**
-     * Current user Id executing this request during this log event.
-     * @return
-     */
-    public abstract String getUser();
-
-    /**
-     * ECId for the current request for this log event.
-     * @return
-     */
-    public abstract String getECId();
-
-    /**
      * Optional name-value pairs associated with this log event.
      * @return
      */

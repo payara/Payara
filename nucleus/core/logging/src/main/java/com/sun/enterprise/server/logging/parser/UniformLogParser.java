@@ -73,8 +73,6 @@ final class UniformLogParser implements LogParser {
             // put("_ThreadName", "threadName");
             put("_TimeMillis", ParsedLogRecord.TIME_MILLIS);
             put("_LevelValue", ParsedLogRecord.LOG_LEVEL_VALUE);
-            put("_UserID", ParsedLogRecord.USER_ID);
-            put("_ECID", ParsedLogRecord.EC_ID);
             put("_MessageID",ParsedLogRecord.MESSAGE_ID);
             // put("ClassName", "className");
             // put("MethodName", "methodName");

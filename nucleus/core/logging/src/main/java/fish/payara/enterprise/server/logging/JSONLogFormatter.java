@@ -110,8 +110,6 @@ public class JSONLogFormatter extends CommonFormatter implements LogEventBroadca
     // String values for thread excludable keys
     private String THREAD_ID_KEY = "ThreadID";
     private String THREAD_NAME_KEY = "ThreadName";
-    private String USER_ID_KEY = "UserId";
-    private String ECID_KEY = "ECId";
     private String LEVEL_VALUE_KEY = "LevelValue";
     private String TIME_MILLIS_KEY = "TimeMillis";
     private String MESSAGE_ID_KEY = "MessageID";
@@ -151,8 +149,6 @@ public class JSONLogFormatter extends CommonFormatter implements LogEventBroadca
             // String values for thread excludable keys
             THREAD_ID_KEY = "_" + THREAD_ID_KEY;
             THREAD_NAME_KEY = "_" + THREAD_NAME_KEY;
-            USER_ID_KEY = "_" + USER_ID_KEY;
-            ECID_KEY = "_" + ECID_KEY;
             LEVEL_VALUE_KEY = "_" + LEVEL_VALUE_KEY;
             TIME_MILLIS_KEY = "_" + TIME_MILLIS_KEY;
             MESSAGE_ID_KEY = "_" + MESSAGE_ID_KEY;
@@ -255,28 +251,6 @@ public class JSONLogFormatter extends CommonFormatter implements LogEventBroadca
 
                 logEvent.setThreadName(threadName);
                 eventObject.add(THREAD_NAME_KEY, threadName);
-            }
-
-            /*
-             * Get user id and append if not excluded and exists with value.
-             */
-            if (!isFieldExcluded(ExcludeFieldsSupport
-                    .SupplementalAttribute.USERID)) {
-                String userId = logEvent.getUser();
-                if (null != userId && !userId.isEmpty()) {
-                    eventObject.add(USER_ID_KEY, userId);
-                }
-            }
-
-            /*
-             * Get ec id and append if not excluded and exists with value.
-             */
-            if (!isFieldExcluded(ExcludeFieldsSupport
-                    .SupplementalAttribute.ECID)) {
-                String ecid = logEvent.getECId();
-                if (null != ecid && !ecid.isEmpty()) {
-                    eventObject.add(ECID_KEY, ecid);
-                }
             }
 
             /*
