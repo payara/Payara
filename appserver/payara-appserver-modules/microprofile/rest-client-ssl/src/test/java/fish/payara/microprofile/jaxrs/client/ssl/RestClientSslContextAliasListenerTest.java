@@ -39,6 +39,7 @@
  */
 package fish.payara.microprofile.jaxrs.client.ssl;
 
+import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.rest.client.RestClientBuilder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -47,22 +48,24 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.ws.rs.core.Configuration;
-import java.net.URI;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.net.URISyntaxException;
-import java.nio.file.Paths;
-import java.util.logging.Logger;
+import java.net.URL;
+import java.security.*;
+import java.security.cert.CertificateException;
 
-import static fish.payara.microprofile.jaxrs.client.ssl.PayaraConstants.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static fish.payara.microprofile.jaxrs.client.ssl.PayaraConstants.PAYARA_MP_CONFIG_CLIENT_CERTIFICATE_ALIAS;
+import static fish.payara.microprofile.jaxrs.client.ssl.PayaraConstants.PAYARA_REST_CLIENT_CERTIFICATE_ALIAS;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class RestClientSslContextAliasListenerTest {
-
-    private static final Logger logger = Logger.getLogger(RestClientSslContextAliasListenerTest.class.getName());
 
     @Mock
     private RestClientBuilder restClientBuilder;
@@ -70,58 +73,65 @@ public class RestClientSslContextAliasListenerTest {
     @Mock
     private Configuration configuration;
 
+    @Mock
+    private Config config;
+
     @InjectMocks
     @Spy
-    private RestClientSslContextAliasListener restClientSslContextAliasListener = new RestClientSslContextAliasListener();
+    private RestClientSslContextAliasListener restClientSslContextAliasListener =
+            new RestClientSslContextAliasListener();
 
     @Test
-    public void restClientBuilderListenerSetAliasPropertyTest() {
-        initProperties();
+    public void restClientAliasPropertySslContextTest() throws Exception {
+        KeyManager[] managers = getManagers();
+        KeyStore[] keyStores = new KeyStore[]{getKeyStore()};
 
         when(restClientBuilder.getConfiguration()).thenReturn(configuration);
         when(configuration.getProperty(PAYARA_REST_CLIENT_CERTIFICATE_ALIAS)).thenReturn("myKey");
+        doReturn(managers).when(restClientSslContextAliasListener).getKeyManagers();
+        doReturn(keyStores).when(restClientSslContextAliasListener).getKeyStores();
 
         restClientSslContextAliasListener.onNewClient(RestClientBuilder.class, restClientBuilder);
 
-        verify(restClientSslContextAliasListener, times(1))
-                .onNewClient(RestClientBuilder.class, restClientBuilder);
+        verify(restClientSslContextAliasListener, times(1)).buildSSlContext("myKey");
+        verify(restClientSslContextAliasListener, times(1)).getKeyManagers();
+        verify(restClientSslContextAliasListener, times(1)).getKeyStores();
         verify(restClientBuilder, times(1)).sslContext(any(SSLContext.class));
-        verify(restClientSslContextAliasListener, times(1))
-                .buildSSlContext(anyString());
     }
 
     @Test
-    public void restClientBuilderListenerWithoutAliasPropertyFromRestClientCallTest() {
+    public void restClientAliasPropertyFromMPConfigSslContextTest() throws Exception {
+        KeyManager[] managers = getManagers();
+        KeyStore[] keyStores = new KeyStore[]{getKeyStore()};
+
         when(restClientBuilder.getConfiguration()).thenReturn(configuration);
         when(configuration.getProperty(PAYARA_REST_CLIENT_CERTIFICATE_ALIAS)).thenReturn(null);
+        doReturn(managers).when(restClientSslContextAliasListener).getKeyManagers();
+        doReturn(keyStores).when(restClientSslContextAliasListener).getKeyStores();
+        doReturn(config).when(restClientSslContextAliasListener).getConfig();
+        when(config.getValue(PAYARA_MP_CONFIG_CLIENT_CERTIFICATE_ALIAS, String.class)).thenReturn("myKey");
 
-        try {
-            restClientSslContextAliasListener.onNewClient(RestClientBuilder.class, restClientBuilder);
-        } catch(IllegalStateException e) {
-            logger.info("MicroProfile Config can't be achieved");
-        }
+        restClientSslContextAliasListener.onNewClient(RestClientBuilder.class, restClientBuilder);
 
-        verify(restClientSslContextAliasListener, times(1))
-                .onNewClient(RestClientBuilder.class, restClientBuilder);
-
+        verify(restClientSslContextAliasListener, times(1)).buildSSlContext("myKey");
+        verify(restClientSslContextAliasListener, times(1)).getKeyManagers();
+        verify(restClientSslContextAliasListener, times(1)).getKeyStores();
+        verify(restClientBuilder, times(1)).sslContext(any(SSLContext.class));
     }
 
-    /**
-     * Method to set properties used during sslContext configuration with custom certificate
-     */
-    public void initProperties() {
-        URI uri = null;
-        try {
-            uri = this.getClass().getResource("/keystore.jks").toURI();
-        } catch (URISyntaxException e) {
-            logger.severe("Error when getting resource: "+e.getMessage());
-        }
-        String path = Paths.get(uri).toString();
-        int idx = path.lastIndexOf("\\");
-        if(idx > 0) {
-            String startPath = path.substring(0, idx);
-            System.setProperty(PAYARA_USER_DIR_PROPERTY_NAME, startPath);
-        }
-        System.setProperty(PAYARA_KEYSTORE_PASSWORD_PROPERTY_NAME, "changeit");
+    public KeyStore getKeyStore() throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException, URISyntaxException {
+        KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+        URL resource = getClass().getClassLoader().getResource("keystore.jks");
+        FileInputStream keyStoreFile = new FileInputStream(new File(resource.toURI()));
+        keyStore.load(keyStoreFile, "changeit".toCharArray());
+        return keyStore;
     }
+
+    public KeyManager[] getManagers() throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException, UnrecoverableKeyException, URISyntaxException {
+        KeyStore keyStore = getKeyStore();
+        KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+        kmf.init(keyStore, "changeit".toCharArray());
+        return kmf.getKeyManagers();
+    }
+
 }
