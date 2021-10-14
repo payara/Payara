@@ -44,6 +44,7 @@ import fish.payara.samples.PayaraArquillianTestRunner;
 import fish.payara.samples.SecurityUtils;
 import fish.payara.samples.ServerOperations;
 import fish.payara.samples.SincePayara;
+import com.sun.enterprise.util.net.NetUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -56,7 +57,6 @@ import javax.net.ssl.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -117,7 +117,7 @@ public class ClientValidationTest {
         //Domain1 has a hostname of localhost. Other domains use your hostname so that must be taken into account
         URL url = new URL(LOCALHOST_URL);
         if (!ServerOperations.getDomainName().equals("domain1")) {
-            String hostname = InetAddress.getLocalHost().getCanonicalHostName();
+            String hostname = NetUtils.getCanonicalHostName();
             url = new URL("https://"+hostname+":8181/security/secure/hello");
         }
         HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
