@@ -117,7 +117,7 @@ public class ClientValidationTest {
         //Domain1 has a hostname of localhost. Other domains use your hostname so that must be taken into account
         URL url = new URL(LOCALHOST_URL);
         if (!ServerOperations.getDomainName().equals("domain1")) {
-            String hostname = InetAddress.getLocalHost().getHostName();
+            String hostname = InetAddress.getLocalHost().getCanonicalHostName();
             url = new URL("https://"+hostname+":8181/security/secure/hello");
         }
         HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
