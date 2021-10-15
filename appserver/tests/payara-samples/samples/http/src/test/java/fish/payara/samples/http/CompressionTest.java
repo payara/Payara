@@ -50,6 +50,8 @@ import org.junit.runner.RunWith;
 
 import java.io.IOException;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -58,13 +60,15 @@ import static org.junit.Assert.assertTrue;
 
 @RunWith(PayaraArquillianTestRunner.class)
 public class CompressionTest {
+    private static final Logger log = Logger.getLogger(CompressionTest.class.getName());
+
     private static long uncompressedSize;
     private long compressionLevelNegativeOne;
     private long compressionLevelOne;
     private long compressionLevelNine;
 
     private static WebClient WEB_CLIENT;
-    private static final String URL = "http://localhost:8080";
+    private static final String URL = "http://localhost:8080/";
 
     private static final String CONFIG_COMPRESSION_STRATEGY =
             "configs.config.server-config.network-config.protocols.protocol.http-listener-1.http.compression-strategy=";
@@ -75,7 +79,9 @@ public class CompressionTest {
     public static void beforeClass() throws Exception {
         WEB_CLIENT = new WebClient();
         WEB_CLIENT.getOptions().setThrowExceptionOnFailingStatusCode(false);
+        WEB_CLIENT.getCache().setMaxSize(0); // disable cache
         uncompressedSize = WEB_CLIENT.getPage(URL).getWebResponse().getContentLength();
+        log.log(Level.FINE, "********* uncompressedSize = {0}", uncompressedSize);
 
         CliCommands.payaraGlassFish("set",
                 "configs.config.server-config.network-config.protocols.protocol.http-listener-1.http.http2-enabled=false");
@@ -129,11 +135,14 @@ public class CompressionTest {
     private void getCompressionLevelValues() throws IOException {
         CliCommands.payaraGlassFish("set", "'" + CONFIG_COMPRESSION_LEVEL + "1'");
         compressionLevelOne = WEB_CLIENT.getPage(URL).getWebResponse().getContentLength();
+        log.log(Level.FINE, "********* compressionLevelOne = {0}", compressionLevelOne);
 
         CliCommands.payaraGlassFish("set", "'" + CONFIG_COMPRESSION_LEVEL + "9'");
         compressionLevelNine = WEB_CLIENT.getPage(URL).getWebResponse().getContentLength();
+        log.log(Level.FINE, "********* compressionLevelNine = {0}", compressionLevelNine);
 
         CliCommands.payaraGlassFish("set", "'" + CONFIG_COMPRESSION_LEVEL + "-1'");
         compressionLevelNegativeOne = WEB_CLIENT.getPage(URL).getWebResponse().getContentLength();
+        log.log(Level.FINE, "********* compressionLevelNegativeOne = {0}", compressionLevelNegativeOne);
     }
 }
