@@ -127,6 +127,11 @@ public class RestClientSslContextAliasListenerTest {
         return keyStore;
     }
 
+    public KeyManager[] getManagers() throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException, UnrecoverableKeyException, URISyntaxException {
+        KeyStore keyStore = getKeyStore();
+        KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+        kmf.init(keyStore, "changeit".toCharArray());
+        return kmf.getKeyManagers();
     }
 
 }
