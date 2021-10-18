@@ -88,7 +88,7 @@ public class RestClientSslContextAliasListener implements RestClientListener {
                 restClientBuilder.sslContext(customSSLContext);
             } else {
                 logger.log(Level.INFO,
-                        String.format("Although the alias: %s is configured, none keystore available for it", alias));
+                        String.format("Although the alias: %s is configured, it could not be found in an available keystore", alias));
             }
         } else {
             Config config = getConfig();
@@ -102,11 +102,11 @@ public class RestClientSslContextAliasListener implements RestClientListener {
                         restClientBuilder.sslContext(customSSLContext);
                     } else {
                         logger.log(Level.INFO,
-                                String.format("Although the alias: %s is configured, none keystore available for it", alias));
+                                String.format("Although the alias: %s is configured, it could not be found in an available keystore", alias));
                     }
                 }
             } catch (NoSuchElementException e) {
-                logger.log(Level.SEVERE, String.format("The MP config property %s was not set",
+                logger.log(Level.WARNING, String.format("The MP config property %s was not set",
                         PAYARA_MP_CONFIG_CLIENT_CERTIFICATE_ALIAS));
             }
         }

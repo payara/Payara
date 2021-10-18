@@ -47,6 +47,6 @@ public class PayaraConstants {
 
     public static final String PAYARA_REST_CLIENT_CERTIFICATE_ALIAS = "fish.payara.rest.client.certificate.alias";
 
-    public static final String PAYARA_MP_CONFIG_CLIENT_CERTIFICATE_ALIAS = "certificate.alias";
+    public static final String PAYARA_MP_CONFIG_CLIENT_CERTIFICATE_ALIAS = "payara.certificate.alias";
 
 }
