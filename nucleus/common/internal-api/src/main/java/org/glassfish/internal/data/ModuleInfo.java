@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.internal.data;
 
@@ -58,6 +58,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.logging.Level;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.SEVERE;
 import static java.util.logging.Level.WARNING;
@@ -313,7 +314,7 @@ public class ModuleInfo {
             Thread.currentThread().setContextClassLoader(currentClassLoader);
         }
     }
-
+ 
     public synchronized void stop(ExtendedDeploymentContext context, Logger logger) {
 
         if (!started)
@@ -335,42 +336,6 @@ public class ModuleInfo {
             loaded = false;
             if (events!=null) {
                 events.send(new Event<ModuleInfo>(Deployment.MODULE_STOPPED, this), false);
-            }
-        } finally {
-            Thread.currentThread().setContextClassLoader(currentClassLoader);
-        }
-    }
-
-    public synchronized void reload(
-        DeploymentContext context,
-        ProgressTracker tracker) throws Exception {
-
-        Logger logger = context.getLogger();
-
-        ClassLoader currentClassLoader  = 
-            Thread.currentThread().getContextClassLoader();
-        StructuredDeploymentTracing tracing = StructuredDeploymentTracing.load(context);
-        try (DeploymentSpan span = tracing.startSpan(TraceContext.Level.MODULE, getName(), DeploymentTracing.AppStage.START)) {
-            Thread.currentThread().setContextClassLoader(context.getClassLoader());
-            for (EngineRef engine : _getEngineRefs()) {
-                if (logger.isLoggable(FINE)) {
-                    logger.log(FINE, "Reloading {0}", engine.getContainerInfo().getSniffer().getModuleType());
-                }
-
-                try (DeploymentSpan innerSpan = tracing.startSpan(TraceContext.Level.CONTAINER,  engine.getContainerInfo().getSniffer().getModuleType(), DeploymentTracing.AppStage.START)){
-                    if (!engine.reload( context, tracker)) {
-                        logger.log(SEVERE, "Module not reloaded {0}", engine.getApplicationContainer().toString());
-                        throw new Exception( "Module not reloaded " +  engine.getApplicationContainer().toString());
-                    }
-                } catch(Exception e) { 
-                    DeployCommandParameters dcp = context.getCommandParameters(DeployCommandParameters.class);
-                    if(dcp.isSkipDSFailure() && ExceptionUtil.isDSFailure(e)){
-                        logger.log(WARNING, "Resource communication failure exception skipped while invoking " + engine.getApplicationContainer().getClass() + " start method", e);
-                    } else {
-                        logger.log(SEVERE, "Exception while invoking " + engine.getApplicationContainer().getClass() + " reload method", e);
-                        throw e;
-                    }
-                }
             }
         } finally {
             Thread.currentThread().setContextClassLoader(currentClassLoader);

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2020-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2020] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -39,9 +39,7 @@
  */
 package fish.payara.nucleus.hotdeploy;
 
-import com.sun.enterprise.glassfish.bootstrap.MainHelper.HotSwapHelper;
 import java.io.File;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -54,13 +52,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
-import java.util.logging.Logger;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 import org.glassfish.api.container.Sniffer;
-import org.glassfish.api.deployment.ApplicationMetaDataProvider;
 import org.glassfish.api.deployment.DeployCommandParameters;
-import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
 import org.glassfish.hk2.api.PreDestroy;
@@ -71,9 +66,6 @@ import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.api.deployment.ResourceEntry;
 import org.glassfish.api.deployment.ResourceClassLoader;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.internal.api.Globals;
-import org.glassfish.internal.data.ProgressTracker;
 
 /**
  * The Application deployment state includes application descriptor metadata,
@@ -101,7 +93,7 @@ public class ApplicationState {
      * {@code DeployCommandParameters.sourcesChanged} paths mapped to the
      * qualified class names.
      */
-    private Map<String, String> classesChanged = Collections.emptyMap();
+    private Set<String> classesChanged = Collections.emptySet();
 
     /**
      * Stores AnnotationProcessor states respective to bundle descriptor.
@@ -117,7 +109,6 @@ public class ApplicationState {
      *
      */
     private boolean active;
-    private final boolean hotswap;
 
     private Set<ClassLoader> previousClassLoaders;
 
@@ -127,13 +118,10 @@ public class ApplicationState {
     private static final String JAVA_EXT = ".java";
     private static final String WEB_INF_CLASSES = "WEB-INF/classes";
 
-    private static final ServiceLocator habitat = Globals.getDefaultHabitat();
-
     public ApplicationState(String name, File path, ExtendedDeploymentContext deploymentContext) {
         this.name = name;
         this.path = path;
         this.deploymentContext = deploymentContext;
-        hotswap = HotSwapHelper.isHotswapEnabled();
     }
 
     public File getPath() {
@@ -196,10 +184,6 @@ public class ApplicationState {
         return !active;
     }
 
-    public boolean isHotswap() {
-        return hotswap;
-    }
-
     /**
      * Sets the sniffers, If previous sniffers differs from current deployment
      * sniffers then moduleInfo, and engineInfos cache staled.
@@ -222,113 +206,66 @@ public class ApplicationState {
      * Starts the Application state for new deployment by copying the cached
      * metadata and properties to the new {@code DeploymentContext} instance.
      *
-     * @param commandParams
      * @param newContext
      * @param events
-     * @return
      */
-    public boolean start(DeployCommandParameters commandParams,
-            ExtendedDeploymentContext newContext,
-            Events events) {
-
+    public void start(ExtendedDeploymentContext newContext, Events events) {
         validateInactiveState();
         this.active = true;
 
+        if (this.applicationInfo != null) {
+            this.previousClassLoaders = getClassLoaders(this.applicationInfo);
+        }
+
+        newContext.getAppProps().putAll(this.deploymentContext.getAppProps());
+        newContext.getModulePropsMap().putAll(this.deploymentContext.getModulePropsMap());
+
+        Set<Class> requiredMetaDataClasses = requiredMetaDataClasses();
+        this.modulesMetaData.values()
+                .stream()
+                .filter(md -> !requiredMetaDataClasses.contains(md.getClass()))
+                .forEach(newContext::addModuleMetaData);
+        this.getDescriptorMetadata()
+                .entrySet()
+                .forEach(e -> newContext.addTransientAppMetaData(e.getKey(), e.getValue()));
+        this.deploymentContext = newContext;
+
+        final DeployCommandParameters commandParams = newContext.getCommandParameters(DeployCommandParameters.class);
         if (commandParams.sourcesChanged != null) {
-            this.classesChanged = new HashMap<>();
+            this.classesChanged = new HashSet<>();
             for (String sourcePath : commandParams.sourcesChanged) {
                 String className = getClassName(sourcePath);
                 if (className != null) {
-                    this.classesChanged.put(className, sourcePath);
+                    this.classesChanged.add(className);
                 }
             }
         }
 
-        if (hotswap) {
-            final Map<Class<?>, byte[]> reloadMap = new HashMap<>();
+        if (applicationClassLoader != null
+                && applicationClassLoader instanceof ResourceClassLoader) {
+            ClassLoader newClassLoader = newContext.getArchiveHandler()
+                            .getClassLoader(applicationClassLoader.getParent(), newContext);
+            ResourceClassLoader newResourceClassLoader = ResourceClassLoader.class.cast(newClassLoader);
             ResourceClassLoader previousResourceClassLoader = ResourceClassLoader.class.cast(applicationClassLoader);
             ConcurrentHashMap<String, ResourceEntry> previousResourceEntries = previousResourceClassLoader.getResourceEntries();
             previousResourceEntries.entrySet()
                     .stream()
-                    .filter(e -> classesChanged.containsKey(e.getKey()))
-                    .forEach(e -> {
-                        Class clazz = previousResourceClassLoader.reloadResourceEntry(
-                                e.getKey(), classesChanged.get(e.getKey()), e.getValue()
-                        );
-                        reloadMap.put(clazz, e.getValue().binaryContent);
-                    });
-            // Update application classloader
-            HotSwapHelper.hotswap(reloadMap);
-
-            newContext.setClassLoader(applicationClassLoader);
-            ProgressTracker tracker = newContext.getTransientAppMetaData(ExtendedDeploymentContext.TRACKER, ProgressTracker.class);
-            try {
-               // Reload application metadata
-                reloadApplicationMetaData(newContext);
-               // Reload application engines
-                applicationInfo.reload(newContext, tracker);
-            } catch (Exception ex) {
-                throw new RuntimeException(ex);
-            }
-            return false;
-        } else {
-            if (this.applicationInfo != null) {
-                this.previousClassLoaders = getClassLoaders(this.applicationInfo);
-            }
-
-            newContext.getAppProps().putAll(this.deploymentContext.getAppProps());
-            newContext.getModulePropsMap().putAll(this.deploymentContext.getModulePropsMap());
-            this.deploymentContext = newContext;
-
-            Set<Class> requiredMetaDataClasses = requiredMetaDataClasses();
-            this.modulesMetaData.values()
-                    .stream()
-                    .filter(md -> !requiredMetaDataClasses.contains(md.getClass()))
-                    .forEach(newContext::addModuleMetaData);
-            this.getDescriptorMetadata()
-                    .entrySet()
-                    .forEach(e -> newContext.addTransientAppMetaData(e.getKey(), e.getValue()));
-
-            if (applicationClassLoader != null
-                    && applicationClassLoader instanceof ResourceClassLoader) {
-                ClassLoader newClassLoader = newContext.getArchiveHandler()
-                        .getClassLoader(applicationClassLoader.getParent(), newContext);
-                ResourceClassLoader newResourceClassLoader = ResourceClassLoader.class.cast(newClassLoader);
-                ResourceClassLoader previousResourceClassLoader = ResourceClassLoader.class.cast(applicationClassLoader);
-
-                ConcurrentHashMap<String, ResourceEntry> previousResourceEntries = previousResourceClassLoader.getResourceEntries();
-                previousResourceEntries.entrySet()
-                        .stream()
-                        .filter(e -> !classesChanged.containsKey(e.getKey()))
-                        .forEach(e -> newResourceClassLoader.addResourceEntry(e.getKey(), classesChanged.get(e.getKey()), e.getValue()));
-                newContext.setClassLoader(newClassLoader);
-
-                if (this.applicationInfo != null) {
-                    // unload previous app
-                    events.send(
-                            new EventListener.Event<>(
-                                    Deployment.APPLICATION_UNLOADED,
-                                    this.applicationInfo
-                            ),
-                            false
-                    );
-                }
-            }
+                    .filter(e -> !classesChanged.contains(e.getKey()))
+                    .forEach(e -> newResourceClassLoader.addResourceEntry(e.getKey(), e.getValue()));
+            newContext.setClassLoader(newClassLoader);
         }
 
-        return true;
-    }
-
-    private void reloadApplicationMetaData(DeploymentContext dc) throws IOException {
-        Deployment deployment = habitat.getService(Deployment.class);
-        Map<Class, ApplicationMetaDataProvider> typeByProvider = deployment.getTypeByProvider();
-        for (Class requiredMetaDataClasse : this.requiredMetaDataClasses()) {
-            ApplicationMetaDataProvider metaDataProvider = typeByProvider.get(requiredMetaDataClasse);
-            metaDataProvider.load(dc);
+        if (this.applicationInfo != null) {
+            // unload previous app
+            events.send(
+                    new EventListener.Event<ApplicationInfo>(
+                            Deployment.APPLICATION_UNLOADED,
+                            this.applicationInfo
+                    ),
+                    false
+            );
         }
     }
-
-
 
     public void setApplicationClassLoader(ClassLoader applicationClassLoader) {
         this.applicationClassLoader = applicationClassLoader;
@@ -363,15 +300,10 @@ public class ApplicationState {
      */
     public boolean isClassChanged(Class clazz) {
         validateActiveState();
-        return this.classesChanged.containsKey(clazz.getName());
+        return this.classesChanged.contains(clazz.getName());
     }
 
-    public boolean isClassChanged(String clazz) {
-        validateActiveState();
-        return this.classesChanged.containsKey(clazz);
-    }
-
-    public Map<String, String> getClassesChanged() {
+    public Set<String> getClassesChanged() {
         return classesChanged;
     }
 
@@ -414,7 +346,7 @@ public class ApplicationState {
         this.active = false;
         this.classesChanged.clear();
 
-        if (previousClassLoaders != null && !hotswap) {
+        if (previousClassLoaders != null) {
             for (ClassLoader cloader : previousClassLoaders) {
                 try {
                     PreDestroy.class.cast(cloader).preDestroy();

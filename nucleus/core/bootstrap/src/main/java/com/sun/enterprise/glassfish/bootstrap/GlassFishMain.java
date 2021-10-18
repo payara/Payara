@@ -84,14 +84,12 @@ public class GlassFishMain {
 
     public static void main(final String args[]) throws Exception {
         MainHelper.checkJdkVersion();
-        
+
         final Properties argsAsProps = argsToMap(args);
 
         String platform = MainHelper.whichPlatform();
 
         System.out.println("Launching Payara Server on " + platform + " platform");
-        
-        MainHelper.HotSwapHelper.updateHotSwapClassLoaderConfig();
 
         // Set the system property if downstream code wants to know about it
         System.setProperty(Constants.PLATFORM_PROPERTY_KEY, platform); // TODO(Sahoo): Why is this a system property?

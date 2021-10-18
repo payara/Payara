@@ -37,7 +37,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2021] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.web;
 
@@ -374,10 +373,75 @@ public class TomcatDeploymentConfig {
      */
     protected static void configureStandardContext(WebModule webModule,
                                                    WebBundleDescriptorImpl wmd) {
-
+        StandardWrapper wrapper;    
+        Enumeration enumeration;
+        SecurityRoleReference securityRoleReference;
+       
         for (WebComponentDescriptor webComponentDesc :
                 wmd.getWebComponentDescriptors()) {
-            addWebComponentDescriptor(webModule, webComponentDesc);
+
+            if (!webComponentDesc.isEnabled()) {
+                continue;
+            }
+
+            wrapper = (StandardWrapper)webModule.createWrapper();
+            wrapper.setName(webComponentDesc.getCanonicalName());
+
+            String impl = webComponentDesc.getWebComponentImplementation();
+            if (impl != null && !impl.isEmpty()) {
+                if (webComponentDesc.isServlet()){
+                    wrapper.setServletClassName(impl);
+                } else {
+                    wrapper.setJspFile(impl);
+                }
+            }
+
+            /*
+             * Add the wrapper only after we have set its 
+             * servletClassName, so we know whether we're dealing with
+             * a JSF app
+             */
+            webModule.addChild(wrapper);
+
+            enumeration = webComponentDesc.getInitializationParameters();
+            InitializationParameter initP = null;
+            while (enumeration.hasMoreElements()) {
+                initP = (InitializationParameter)enumeration.nextElement();
+                wrapper.addInitParameter(initP.getName(), initP.getValue());
+            }
+
+            if (webComponentDesc.getLoadOnStartUp() != null) {
+                wrapper.setLoadOnStartup(webComponentDesc.getLoadOnStartUp());
+            }
+            if (webComponentDesc.isAsyncSupported() != null) {
+                wrapper.setIsAsyncSupported(webComponentDesc.isAsyncSupported());
+            }
+
+            if (webComponentDesc.getRunAsIdentity() != null) {
+                wrapper.setRunAs(webComponentDesc.getRunAsIdentity().getRoleName());
+            }
+
+            for (String pattern : webComponentDesc.getUrlPatternsSet()) {
+                webModule.addServletMapping(pattern,
+                    webComponentDesc.getCanonicalName());
+            }
+
+            enumeration = webComponentDesc.getSecurityRoleReferences();
+            while (enumeration.hasMoreElements()){
+                securityRoleReference = (SecurityRoleReference)
+                    enumeration.nextElement();
+                wrapper.addSecurityReference(
+                    securityRoleReference.getRoleName(),
+                    securityRoleReference.getSecurityRoleLink().getName());
+            }
+
+            MultipartConfig mpConfig = webComponentDesc.getMultipartConfig();
+            if (mpConfig != null) {
+                wrapper.setMultipartLocation(mpConfig.getLocation());
+                wrapper.setMultipartMaxFileSize(mpConfig.getMaxFileSize());
+                wrapper.setMultipartMaxRequestSize(mpConfig.getMaxRequestSize());
+                wrapper.setMultipartFileSizeThreshold(mpConfig.getFileSizeThreshold());
+            }
         }
        
         SessionConfig sessionConfig = wmd.getSessionConfig();
@@ -450,7 +514,7 @@ public class TomcatDeploymentConfig {
             }
         }
 
-        Enumeration enumeration = wmd.getWelcomeFiles();
+        enumeration = wmd.getWelcomeFiles();
         while (enumeration.hasMoreElements()){
             webModule.addWelcomeFile((String)enumeration.nextElement());
         }
@@ -477,74 +541,7 @@ public class TomcatDeploymentConfig {
             Integer.parseInt(majorMinorVersions[1]));
     }
 
-    private static StandardWrapper addWebComponentDescriptor(
-            WebModule webModule,
-            WebComponentDescriptor webComponentDesc) {
-
-        if (!webComponentDesc.isEnabled()) {
-            return null;
-        }
-
-        StandardWrapper wrapper = (StandardWrapper) webModule.createWrapper();
-        wrapper.setName(webComponentDesc.getCanonicalName());
-
-        String impl = webComponentDesc.getWebComponentImplementation();
-        if (impl != null && !impl.isEmpty()) {
-            if (webComponentDesc.isServlet()) {
-                wrapper.setServletClassName(impl);
-            } else {
-                wrapper.setJspFile(impl);
-            }
-        }
-
-        /*
-             * Add the wrapper only after we have set its 
-             * servletClassName, so we know whether we're dealing with
-             * a JSF app
-         */
-        webModule.addChild(wrapper);
-
-        Enumeration enumeration = webComponentDesc.getInitializationParameters();
-        InitializationParameter initP = null;
-        while (enumeration.hasMoreElements()) {
-            initP = (InitializationParameter) enumeration.nextElement();
-            wrapper.addInitParameter(initP.getName(), initP.getValue());
-        }
-
-        if (webComponentDesc.getLoadOnStartUp() != null) {
-            wrapper.setLoadOnStartup(webComponentDesc.getLoadOnStartUp());
-        }
-        if (webComponentDesc.isAsyncSupported() != null) {
-            wrapper.setIsAsyncSupported(webComponentDesc.isAsyncSupported());
-        }
-
-        if (webComponentDesc.getRunAsIdentity() != null) {
-            wrapper.setRunAs(webComponentDesc.getRunAsIdentity().getRoleName());
-        }
-        
-        for (String pattern : webComponentDesc.getUrlPatternsSet()) {
-            webModule.addServletMapping(pattern,
-                    webComponentDesc.getCanonicalName());
-        }
-
-        enumeration = webComponentDesc.getSecurityRoleReferences();
-        while (enumeration.hasMoreElements()) {
-            SecurityRoleReference securityRoleReference = (SecurityRoleReference) enumeration.nextElement();
-            wrapper.addSecurityReference(
-                    securityRoleReference.getRoleName(),
-                    securityRoleReference.getSecurityRoleLink().getName());
-        }
-
-        MultipartConfig mpConfig = webComponentDesc.getMultipartConfig();
-        if (mpConfig != null) {
-            wrapper.setMultipartLocation(mpConfig.getLocation());
-            wrapper.setMultipartMaxFileSize(mpConfig.getMaxFileSize());
-            wrapper.setMultipartMaxRequestSize(mpConfig.getMaxRequestSize());
-            wrapper.setMultipartFileSizeThreshold(mpConfig.getFileSizeThreshold());
-        }
-        return wrapper;
-    }
-
+    
     /**
      * Configure security constraint element for a web application,
      * as represented by a <code>&lt;security-constraint&gt;</code> element in 

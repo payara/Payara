@@ -42,7 +42,7 @@
 
 -->
 
-<!-- Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2017-2020] [Payara Foundation and/or its affiliates] -->
 
 <domain log-root="${com.sun.aas.instanceRoot}/logs" application-root="${com.sun.aas.instanceRoot}/applications" version="10.0">
     <hazelcast-runtime-configuration start-port="%%%HAZELCAST_START_PORT%%%" das-port="%%%HAZELCAST_DAS_PORT%%%" auto-increment-port="%%%HAZELCAST_AUTO_INCREMENT%%%"></hazelcast-runtime-configuration>
@@ -275,9 +275,6 @@
                 <jvm-options>[Azul-1.8.0u222|1.8.0u260]-XX:+UseOpenJSSE</jvm-options>
                 <!-- allow asadmin command enable-monitoring for JDK 9+ -->
                 <jvm-options>[9|]-Djdk.attach.allowAttachSelf=true</jvm-options>
-                <!-- Hotswap Agent -->
-                <jvm-options>[Dynamic Code Evolution-11.0.10|]-XX:HotswapAgent=core</jvm-options>
-                <jvm-options>[Dynamic Code Evolution-11.0.10|]-Xlog:redefine+class*=info</jvm-options>
             </java-config>
             <availability-service>
                 <web-container-availability />
@@ -510,9 +507,6 @@
                 <jvm-options>[1.8.0u191|1.8.0u250]-Xbootclasspath/p:${com.sun.aas.installRoot}/lib/grizzly-npn-bootstrap-1.8.1.jar</jvm-options>
                 <jvm-options>[1.8.0u251|]-Xbootclasspath/a:${com.sun.aas.installRoot}/lib/grizzly-npn-api.jar</jvm-options>
                 <jvm-options>[Azul-1.8.0u222|1.8.0u260]-XX:+UseOpenJSSE</jvm-options>
-                <!-- Hotswap Agent -->
-                <jvm-options>[Dynamic Code Evolution-11.0.10|]-XX:HotswapAgent=core</jvm-options>
-                <jvm-options>[Dynamic Code Evolution-11.0.10|]-Xlog:redefine+class*=info</jvm-options>
             </java-config>
             <availability-service>
                 <web-container-availability />

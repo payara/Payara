@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2021] Payara Foundation and/or its affiliates
+// Portions Copyright [2019] Payara Foundation and/or its affiliates
 package org.glassfish.internal.deployment;
 
 import com.sun.enterprise.module.HK2Module;
@@ -184,12 +184,6 @@ public class DeploymentTracing {
          * Load the application code and prepare runtime structures.
          */
         LOAD,
-        
-        /**
-         *
-         * Reload the application code.
-         */
-        RELOAD,
     }
 
     public enum ModuleMark {

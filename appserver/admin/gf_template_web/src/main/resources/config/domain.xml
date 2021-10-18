@@ -3,7 +3,7 @@
 <!--
    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-   Copyright (c) [2017-2021] Payara Foundation and/or its affiliates. All rights reserved.
+   Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
 
    The contents of this file are subject to the terms of either the GNU
    General Public License Version 2 only ("GPL") or the Common Development
@@ -269,10 +269,7 @@
         <jvm-options>[1.8.0u251|]-Xbootclasspath/a:${com.sun.aas.installRoot}/lib/grizzly-npn-api.jar</jvm-options>
         <jvm-options>[Azul-1.8.0u222|1.8.0u260]-XX:+UseOpenJSSE</jvm-options>
         <!-- allow asadmin command enable-monitoring for JDK 9+ -->
-        <jvm-options>[9|]-Djdk.attach.allowAttachSelf=true</jvm-options>                
-        <!-- Hotswap Agent -->
-        <jvm-options>[Dynamic Code Evolution-11.0.10|]-XX:HotswapAgent=core</jvm-options>
-        <jvm-options>[Dynamic Code Evolution-11.0.10|]-Xlog:redefine+class*=info</jvm-options>
+        <jvm-options>[9|]-Djdk.attach.allowAttachSelf=true</jvm-options>
       </java-config>
       <availability-service>
         <web-container-availability />
@@ -501,9 +498,6 @@
         <jvm-options>[1.8.0u191|1.8.0u250]-Xbootclasspath/p:${com.sun.aas.installRoot}/lib/grizzly-npn-bootstrap-1.8.1.jar</jvm-options>
         <jvm-options>[1.8.0u251|]-Xbootclasspath/a:${com.sun.aas.installRoot}/lib/grizzly-npn-api.jar</jvm-options>
         <jvm-options>[Azul-1.8.0u222|1.8.0u260]-XX:+UseOpenJSSE</jvm-options>
-        <!-- Hotswap Agent -->
-        <jvm-options>[Dynamic Code Evolution-11.0.10|]-XX:HotswapAgent=core</jvm-options>
-        <jvm-options>[Dynamic Code Evolution-11.0.10|]-Xlog:redefine+class*=info</jvm-options>
       </java-config>
       <availability-service>
         <web-container-availability />

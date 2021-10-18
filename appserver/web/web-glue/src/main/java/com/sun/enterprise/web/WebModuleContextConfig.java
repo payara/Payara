@@ -37,7 +37,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2021] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.web;
 
@@ -223,7 +222,7 @@ public class WebModuleContextConfig extends ContextConfig {
 
                 // If .war contains EJBs, .war-defined dependencies have already been bound by
                 // EjbDeployer, so just add the dependencies from outside the .war
-                if( webBundleContainsEjbs && !((WebModule) context).getPaused()) {
+                if( webBundleContainsEjbs ) {
                     namingMgr.addToComponentNamespace(webBundleDescriptor, envProps, resRefs);
                 } else {
                     namingMgr.bindToComponentNamespace(webBundleDescriptor);

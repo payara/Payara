@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.api.deployment;
 
@@ -77,17 +77,6 @@ public interface ApplicationContainer<T> {
     public boolean start(ApplicationContext startupContext) throws Exception;
     
     /**
-     * Reloads an application container. 
-     * @param context the context 
-     * @return true if the container reload was successful.
-     *
-     * @throws Exception if this application container could not be reloaded
-     */
-    default boolean reload(ApplicationContext context) throws Exception {
-        return true;
-    }
-
-    /*
      * Stop the application container
      * @return true if stopping was successful.
      * @param stopContext

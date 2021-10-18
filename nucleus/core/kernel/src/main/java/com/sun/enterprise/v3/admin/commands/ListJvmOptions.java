@@ -129,8 +129,8 @@ public final class ListJvmOptions implements AdminCommand, AdminCommandSecurity.
                 }
                 option.minVersion.ifPresent(minVersion -> {
                     sb.append("min(");
-                    option.vendorOrVM.ifPresent(vendorOrVM -> {
-                        sb.append(vendorOrVM).append("-");
+                    option.vendor.ifPresent(vendor -> {
+                        sb.append(vendor).append("-");
                     });
                     sb.append(minVersion);
                     sb.append(")");
