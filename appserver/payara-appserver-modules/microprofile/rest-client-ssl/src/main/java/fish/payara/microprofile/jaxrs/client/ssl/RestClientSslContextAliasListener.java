@@ -106,7 +106,7 @@ public class RestClientSslContextAliasListener implements RestClientListener {
                     }
                 }
             } catch (NoSuchElementException e) {
-                logger.log(Level.WARNING, String.format("The MP config property %s was not set",
+                logger.log(Level.FINE, String.format("The MP config property %s was not set",
                         PAYARA_MP_CONFIG_CLIENT_CERTIFICATE_ALIAS));
             }
         }
