@@ -79,7 +79,7 @@ public class RestClientSslContextAliasListener implements RestClientListener {
         Object objectProperty = restClientBuilder.getConfiguration()
                 .getProperty(PAYARA_REST_CLIENT_CERTIFICATE_ALIAS);
 
-        if (objectProperty != null && objectProperty instanceof String) {
+        if (objectProperty instanceof String) {
             String alias = (String) objectProperty;
             logger.log(Level.INFO,
                     String.format("The alias: %s is available from the RestClientBuilder configuration", alias));
@@ -175,10 +175,10 @@ public class RestClientSslContextAliasListener implements RestClientListener {
     }
 
     /**
-     * This class is a custom implementation of X509KeyManager to set the custom certificate based on the
+     * This static class is a custom implementation of X509KeyManager to set the custom certificate based on the
      * alias property
      */
-    private class SingleCertificateKeyManager implements X509KeyManager {
+    private static class SingleCertificateKeyManager implements X509KeyManager {
 
         private String alias;
         private X509KeyManager keyManager;
