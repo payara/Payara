@@ -189,7 +189,7 @@
         <glassfishbuild.version>3.2.20.payara-p2</glassfishbuild.version>
         <source-annotation-processor.version>1.0</source-annotation-processor.version>
         <logging-annotation-processor.version>1.9</logging-annotation-processor.version>
-        <command-security-plugin.version>1.0.10.payara-p1</command-security-plugin.version>
+        <command-security-plugin.version>1.0.13</command-security-plugin.version>
         <command.security.maven.plugin.isFailureFatal>false</command.security.maven.plugin.isFailureFatal>
         <copyright-plugin.version>1.39</copyright-plugin.version>
         <nucleus.install.dir.name>nucleus</nucleus.install.dir.name>
