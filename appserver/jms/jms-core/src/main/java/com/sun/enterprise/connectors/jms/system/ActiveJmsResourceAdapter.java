@@ -1189,7 +1189,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
      */
     private String buildStartArgsForJREHome(String javaHome) {
         javaHome = evaluateWindowsPath(javaHome);
-        return " -jrehome "+"\""+javaHome.replace("\\", "\\\\")+"\"";
+        return " -jrehome "+"\""+javaHome+"\"";
     }
 
     /**
