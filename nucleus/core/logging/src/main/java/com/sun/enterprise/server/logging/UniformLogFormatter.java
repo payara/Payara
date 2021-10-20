@@ -292,24 +292,6 @@ public class UniformLogFormatter extends AnsiColorFormatter implements LogEventB
                 recordBuffer.append(NVPAIR_SEPARATOR);
             }
 
-            if (!isFieldExcluded(ExcludeFieldsSupport.SupplementalAttribute.USERID)) {
-                String user = logEvent.getUser();
-                if (user != null && !user.isEmpty()) {
-                    recordBuffer.append("_UserId").append(NV_SEPARATOR);
-                    recordBuffer.append(user);
-                    recordBuffer.append(NVPAIR_SEPARATOR);
-                }
-            }
-
-            if (!isFieldExcluded(ExcludeFieldsSupport.SupplementalAttribute.ECID)) {
-                String ecid = logEvent.getECId();
-                if (ecid != null && !ecid.isEmpty()) {
-                    recordBuffer.append("_ECId").append(NV_SEPARATOR);
-                    recordBuffer.append(ecid);
-                    recordBuffer.append(NVPAIR_SEPARATOR);
-                }
-            }
-
             // Include the raw long time stamp value in the log
             if (!isFieldExcluded(ExcludeFieldsSupport.SupplementalAttribute.TIME_MILLIS)) {
                 recordBuffer.append("_TimeMillis").append(NV_SEPARATOR);
