@@ -236,14 +236,21 @@
 <!--        <dependency>
             <groupId>org.glassfish.jersey.ext.microprofile</groupId>
             <artifactId>jersey-mp-rest-client</artifactId>
-             temporary add explicit version as bom artifact may be cached 
+             temporary add explicit version as bom artifact may be cached
             <version>${jersey.version}</version>
         </dependency>-->
-            
+
+        <!-- MicroProfile Rest Client ssl-->
+        <dependency>
+            <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
+            <artifactId>rest-client-ssl</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
         <!-- OpenTracing -->
         <dependency>
             <groupId>org.eclipse.microprofile.opentracing</groupId>
-            <artifactId>microprofile-opentracing-api</artifactId>            
+            <artifactId>microprofile-opentracing-api</artifactId>
             <classifier>ee9</classifier>
         </dependency>
         <dependency>
