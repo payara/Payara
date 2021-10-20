@@ -293,6 +293,14 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
 
     public static final String GRIZZLY_PROXY_PREFIX = "JMS_PROXY_";
 
+    private static final String WINDOWS_PATH_PROGRAM_FILES = "Program Files";
+
+    private static final String WINDOWS_PATH_PROGRAM_FILES_86 = "Program Files(86)";
+
+    private static final String WINDOWS_PATH_SHORT_FORMAT = "Progra~1";
+
+    private static final String WINDOWS_PATH_SHORT_FORMAT_86 = "Progra~2";
+
     private static enum ClusterMode {
       ENHANCED, CONVENTIONAL_WITH_MASTER_BROKER, CONVENTIONAL_OF_PEER_BROKERS;
     }
@@ -1180,7 +1188,21 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
      * @return String with the formed start-args attribute
      */
     private String buildStartArgsForJREHome(String javaHome) {
-        return " -jrehome "+"\""+javaHome+"\"";
+        javaHome = evaluateWindowsPath(javaHome);
+        return " -jrehome "+"\""+javaHome.replace("\\", "\\\\")+"\"";
+    }
+
+    /**
+     * This method evaluates the Program Files and replace to Progra~1 or
+     * Program Files(x86) and replace to Progra~2
+     * @return String with the new path
+     */
+    private String evaluateWindowsPath(String javaHome) {
+        return javaHome.contains(WINDOWS_PATH_PROGRAM_FILES) ?
+                javaHome.replace(WINDOWS_PATH_PROGRAM_FILES, WINDOWS_PATH_SHORT_FORMAT)
+                : (javaHome.contains(WINDOWS_PATH_PROGRAM_FILES_86) ?
+                    javaHome.replace(WINDOWS_PATH_PROGRAM_FILES_86, WINDOWS_PATH_SHORT_FORMAT_86)
+                    : javaHome);
     }
 
    private Properties listToProperties(List<Property> props){
