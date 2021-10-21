@@ -76,6 +76,9 @@ class Constants {
     static final String CREDENTIALS_STOP_TN = "CREDENTIALS_STOP";
     static final String SERVICEUSER_STOP_TN = "SERVICEUSER_STOP";
     static final String SERVICEUSER_START_TN = "SERVICEUSER_START";
+    static final String SERVICE_USER_TN = "SERVICE_USER";
+    static final String SERVICE_PROPERTIES_TN = "SERVICE_PROPERTIES";
+    static final String PID_FILE_TN = "PID_FILE";
     ///////////////////////////////////////////////////////////////////////////
     /////           Other Constants     ///////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////
@@ -89,6 +92,7 @@ class Constants {
     static final String SERVICE_NAME_PREFIX = "application/Payara/";
     static final String ETC = "/etc";
     static final String INITD = "/etc/init.d";
+    static final String SYSTEMD_CONFIG_DIR = "/etc/systemd/system";
     static final String REGEXP_PATTERN_BEGIN = "[KS][0-9][0-9]?";
 
 }

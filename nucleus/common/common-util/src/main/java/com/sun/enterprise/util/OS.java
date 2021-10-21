@@ -210,6 +210,13 @@ public class OS
     }
     
     ///////////////////////////////////////////////////////////////////////////
+
+    public static boolean isLinuxSystemDBased() {
+        File systemdRunDirectory = new File("/run/systemd/system");
+        return isLinux() && systemdRunDirectory.exists() && systemdRunDirectory.isDirectory();
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     
     private static boolean isArch(String name)
     {
