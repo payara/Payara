@@ -1,0 +1,83 @@
+_delete-service(1)        asadmin Utility Subcommands       _delete-service(1)
+
+NAME
+       _delete-service - delete init scripts created by create-script
+
+SYNOPSIS
+           _create-service [--help] [--name service-name]
+           [--system-type system-type]
+           [--nodedir node-dir] [--node node]
+           [domain-or-instance-name]
+
+DESCRIPTION
+       The _delete-service subcommand delete init scripts created by
+       the subcommand create-script.
+
+       If no operand is specified and the domains directory contains only one
+       domain, the subcommand deletes the script starting the DAS for the
+       default domain. If no operand is specified and the domains directory
+       contains multiple domains, an error occurs.
+
+       The subcommand contains internal logic to determine whether the
+       supplied operand is a DAS or an instance.
+
+       This subcommand is supported in local mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --name
+           (Windows and Oracle Solaris systems only) The name of the service
+           that you will use when administering the service through Oracle
+           Solaris SMF commands or the service management features of the
+           Windows operating system. The default is the name of the domain or
+           instance that is specified as the operand of this subcommand.
+
+       --system-type system-type
+           If specified, system-type must be one of systemd, systemv, solaris
+           or windows, which determine the type of init scripts to create.
+           If not specified, the command performs autodetection of init system.
+
+       --nodedir
+           Specifies the directory that contains the instance's node
+           directory. The instance's files are stored in the instance's node
+           directory. The default is as-install/nodes. If this option is
+           specified, the operand must specify an instance.
+
+       --node
+           Specifies the node on which the instance resides. This option may
+           be omitted only if the directory that the --nodedir option
+           specifies contains only one node directory. Otherwise, this option
+           is required. If this option is specified, the operand must specify
+           an instance.
+
+OPERANDS
+       domain-or-instance-name
+           The name of the domain or instance to configure. If no operand is
+           specified, the default domain is used.
+
+EXAMPLES
+       Deleting a Service on a Linux System using SystemD init
+           This example deletes a service for the default domain on a system
+           that is running Linux and SystemD. It is necessary to inform
+           SystemD about deleting the script by running systemctl daemon-reload.
+
+               asadmin> _delete-service
+               Command _delete-service executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       asadmin(1M)
+
+       "Managing Services (Overview)" in System Administration Guide: Basic
+       Administration, "Managing Services (Tasks)" in System Administration
+       Guide: Basic Administration
+
+Java EE 8                        13 Sep 2021                _delete-service(1)
