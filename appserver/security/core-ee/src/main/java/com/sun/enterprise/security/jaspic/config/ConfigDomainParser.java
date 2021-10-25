@@ -232,7 +232,7 @@ public class ConfigDomainParser implements ConfigParser {
 
     private String expand(String rawProperty) {
         Matcher propertyMatcher = PROPERTY_PATTERN.matcher(rawProperty);
-        StringBuilder propertyBuilder = new StringBuilder();
+        StringBuffer propertyBuilder = new StringBuffer();
         while (propertyMatcher.find()) {
             // Check if the ignore pattern matched
             if (propertyMatcher.group(1) != null) {
