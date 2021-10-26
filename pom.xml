@@ -137,7 +137,7 @@
         <!-- BOM-referenced versions -->
         <jakartaee.api.version>9.1.0</jakartaee.api.version>
         <servlet-api.version>5.0.0</servlet-api.version>
-        <grizzly.version>3.0.1</grizzly.version>
+        <grizzly.version>3.0.1.payara-p1</grizzly.version>
         <jax-rs-api.impl.version>3.0.0</jax-rs-api.impl.version>
         <jersey.version>3.0.3</jersey.version>
         <jakarta.validation.version>3.0.0</jakarta.validation.version>
@@ -153,7 +153,7 @@
         <stax-api.version>1.0-2</stax-api.version>
         <jackson.version>2.13.0</jackson.version>
         <snakeyaml.version>1.29</snakeyaml.version>
-        <hazelcast.version>5.0</hazelcast.version>
+        <hazelcast.version>4.2</hazelcast.version>
         <hazelcast.kubernetes.version>2.2.3</hazelcast.kubernetes.version>
         <jaxb-api.version>3.0.1</jaxb-api.version>
         <jaxb-impl.version>3.0.2</jaxb-impl.version>
@@ -212,7 +212,7 @@
         <microprofile-rest-client.version>2.0.payara-p1</microprofile-rest-client.version>
         <microprofile-openapi.version>2.0</microprofile-openapi.version>
         <payara-arquillian-container.version>3.0.alpha1</payara-arquillian-container.version>
-        <payara.security-connectors.version>2.1.0</payara.security-connectors.version>
+        <payara.security-connectors.version>3.0.alpha1</payara.security-connectors.version>
         <opentracing.version>0.33.0</opentracing.version>
         <h2db.version>1.4.196</h2db.version>
         <websocket-api.version>2.0.0</websocket-api.version>

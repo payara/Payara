@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2021] [Payara Foundation and/or its affiliates]
 package org.glassfish.admin.rest.adapter;
 
 import java.util.HashMap;
@@ -47,7 +48,7 @@ import java.util.ServiceConfigurationError;
 import org.glassfish.jersey.internal.ServiceFinder;
 import org.glassfish.jersey.internal.ServiceFinder.ServiceIteratorProvider;
 import org.glassfish.jersey.internal.spi.AutoDiscoverable;
-import org.glassfish.jersey.server.spi.ServerComponentProvider;
+//import org.glassfish.jersey.server.spi.ServerComponentProvider;
 
 /** Goal of this finder is to be fast and efficient.
  * It is hardcoded implementation.

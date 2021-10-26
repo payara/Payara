@@ -67,7 +67,7 @@
         <module>jaxrs-client-tracing</module>
         <module>yubikey-authentication</module>
         <module>microprofile</module>
-        <module>healthcheck-checker</module>
+        <!-- <module>healthcheck-checker</module> -->
         <module>healthcheck-metrics</module>
     </modules>
 </project>

@@ -79,6 +79,7 @@
             <groupId>org.eclipse.microprofile.opentracing</groupId>
             <artifactId>microprofile-opentracing-api</artifactId>
             <scope>provided</scope>
+            <classifier>ee9</classifier>
         </dependency>
     </dependencies>
 </project>
