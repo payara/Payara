@@ -40,7 +40,10 @@
 // Portions Copyright [2019-2021] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.jaspic.config;
 
+import static com.sun.logging.LogDomains.SECURITY_LOGGER;
+import static java.util.logging.Level.FINE;
 import static java.util.regex.Matcher.quoteReplacement;
+import static org.glassfish.api.admin.ServerEnvironment.DEFAULT_INSTANCE_NAME;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -73,15 +76,12 @@ import javax.security.auth.message.MessagePolicy;
  */
 public class ConfigDomainParser implements ConfigParser {
 
-    private static Logger _logger = null;
-    static {
-        _logger = LogDomains.getLogger(ConfigDomainParser.class, LogDomains.SECURITY_LOGGER);
-    }
+    private static final Logger _logger = LogDomains.getLogger(ConfigDomainParser.class, SECURITY_LOGGER);
 
     private static Pattern PROPERTY_PATTERN = Pattern.compile("\\$\\{\\{(.*?)}}|\\$\\{(.*?)}");
 
     // configuration info
-    private Map configMap = new HashMap();
+    private Map<String, GFServerConfigProvider.InterceptEntry> configMap = new HashMap<>();
     private Set<String> layersWithDefault = new HashSet<String>();
 
     public ConfigDomainParser() throws IOException {
@@ -89,7 +89,7 @@ public class ConfigDomainParser implements ConfigParser {
 
     public void initialize(Object service) throws IOException {
         if (service == null && Globals.getDefaultHabitat() != null) {
-            service = Globals.getDefaultHabitat().getService(SecurityService.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
+            service = Globals.getDefaultHabitat().getService(SecurityService.class, DEFAULT_INSTANCE_NAME);
         }
 
         if (service instanceof SecurityService) {
@@ -99,7 +99,7 @@ public class ConfigDomainParser implements ConfigParser {
          */
     }
 
-    private void processServerConfig(SecurityService service, Map newConfig) throws IOException {
+    private void processServerConfig(SecurityService service, Map<String, GFServerConfigProvider.InterceptEntry> newConfig) throws IOException {
 
         List<MessageSecurityConfig> configList = service.getMessageSecurityConfig();
 
@@ -132,7 +132,7 @@ public class ConfigDomainParser implements ConfigParser {
         }
     }
 
-    public Map getConfigMap() {
+    public Map<String, GFServerConfigProvider.InterceptEntry> getConfigMap() {
         return configMap;
     }
 
@@ -140,7 +140,7 @@ public class ConfigDomainParser implements ConfigParser {
         return layersWithDefault;
     }
 
-    private String parseInterceptEntry(MessageSecurityConfig msgConfig, Map newConfig) throws IOException {
+    private String parseInterceptEntry(MessageSecurityConfig msgConfig, Map<String, GFServerConfigProvider.InterceptEntry> newConfig) throws IOException {
 
         String intercept = null;
         String defaultServerID = null;
@@ -150,7 +150,7 @@ public class ConfigDomainParser implements ConfigParser {
         defaultServerID = msgConfig.getDefaultProvider();
         defaultClientID = msgConfig.getDefaultClientProvider();
 
-        if (_logger.isLoggable(Level.FINE)) {
+        if (_logger.isLoggable(FINE)) {
             _logger.fine("Intercept Entry: " + "\n    intercept: " + intercept + "\n    defaultServerID: " + defaultServerID
                     + "\n    defaultClientID:  " + defaultClientID);
         }
@@ -159,7 +159,7 @@ public class ConfigDomainParser implements ConfigParser {
             layersWithDefault.add(intercept);
         }
 
-        GFServerConfigProvider.InterceptEntry intEntry = (GFServerConfigProvider.InterceptEntry) newConfig.get(intercept);
+        GFServerConfigProvider.InterceptEntry intEntry = newConfig.get(intercept);
 
         if (intEntry != null) {
             throw new IOException("found multiple MessageSecurityConfig " + "entries with the same auth-layer");
@@ -171,7 +171,7 @@ public class ConfigDomainParser implements ConfigParser {
         return intercept;
     }
 
-    private void parseIDEntry(ProviderConfig pConfig, Map newConfig, String intercept) throws IOException {
+    private void parseIDEntry(ProviderConfig pConfig, Map<String, GFServerConfigProvider.InterceptEntry> newConfig, String intercept) throws IOException {
 
         String id = pConfig.getProviderId();
         String type = pConfig.getProviderType();
@@ -181,9 +181,7 @@ public class ConfigDomainParser implements ConfigParser {
 
         // get the module options
 
-        Map options = new HashMap();
-        String key;
-        String value;
+        Map<String, Object> options = new HashMap<>();
 
         List<Property> pList = pConfig.getProperty();
 
@@ -200,15 +198,15 @@ public class ConfigDomainParser implements ConfigParser {
                 } catch (IllegalStateException ee) {
                     // log warning and give the provider a chance to
                     // interpret value itself.
-                    if (_logger.isLoggable(Level.FINE)) {
-                        _logger.log(Level.FINE, "jmac.unexpandedproperty");
+                    if (_logger.isLoggable(FINE)) {
+                        _logger.log(FINE, "jmac.unexpandedproperty");
                     }
                     options.put(property.getName(), property.getValue());
                 }
             }
         }
 
-        if (_logger.isLoggable(Level.FINE)) {
+        if (_logger.isLoggable(FINE)) {
             _logger.fine("ID Entry: " + "\n    module class: " + moduleClass + "\n    id: " + id + "\n    type: " + type
                     + "\n    request policy: " + requestPolicy + "\n    response policy: " + responsePolicy + "\n    options: " + options);
         }
@@ -217,13 +215,13 @@ public class ConfigDomainParser implements ConfigParser {
         GFServerConfigProvider.IDEntry idEntry = new GFServerConfigProvider.IDEntry(type, moduleClass, requestPolicy, responsePolicy,
                 options);
 
-        GFServerConfigProvider.InterceptEntry intEntry = (GFServerConfigProvider.InterceptEntry) newConfig.get(intercept);
+        GFServerConfigProvider.InterceptEntry intEntry = newConfig.get(intercept);
         if (intEntry == null) {
             throw new IOException("intercept entry for " + intercept + " must be specified before ID entries");
         }
 
         if (intEntry.idMap == null) {
-            intEntry.idMap = new HashMap();
+            intEntry.idMap = new HashMap<>();
         }
 
         // map id to Intercept
