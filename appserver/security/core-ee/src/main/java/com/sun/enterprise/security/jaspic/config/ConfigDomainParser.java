@@ -199,7 +199,7 @@ public class ConfigDomainParser implements ConfigParser {
                     // log warning and give the provider a chance to
                     // interpret value itself.
                     if (_logger.isLoggable(FINE)) {
-                        _logger.log(FINE, "jmac.unexpandedproperty");
+                        _logger.log(FINE, "jaspic.unexpandedproperty");
                     }
                     options.put(property.getName(), property.getValue());
                 }
