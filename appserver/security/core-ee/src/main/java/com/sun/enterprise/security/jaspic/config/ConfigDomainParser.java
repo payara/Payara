@@ -94,9 +94,7 @@ public class ConfigDomainParser implements ConfigParser {
 
         if (service instanceof SecurityService) {
             processServerConfig((SecurityService) service, configMap);
-        } /*
-         * else { throw new IOException("invalid configBean type passed to parser"); }
-         */
+        }
     }
 
     private void processServerConfig(SecurityService service, Map<String, GFServerConfigProvider.InterceptEntry> newConfig) throws IOException {
