@@ -89,13 +89,12 @@
         <dependency>
             <!-- Needed to register URLStreamHandler -->
             <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.core</artifactId>
+            <artifactId>osgi.core</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.annotation</artifactId>
-            <version>6.0.0</version>
+            <artifactId>osgi.annotation</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
