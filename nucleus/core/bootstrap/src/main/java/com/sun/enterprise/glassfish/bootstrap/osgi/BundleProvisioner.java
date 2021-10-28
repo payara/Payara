@@ -754,8 +754,10 @@ public class BundleProvisioner {
         long t0 = System.currentTimeMillis();
 
         Framework framework = null;
+        Map<String, String> mm = new HashMap<>();
+        props.putAll(mm);
         for (FrameworkFactory frameworkFactory : ServiceLoader.load(FrameworkFactory.class)) {
-            framework = frameworkFactory.newFramework((Hashtable)props);
+            framework = frameworkFactory.newFramework(mm);
             System.out.println("framework = " + framework);
             break;
         }

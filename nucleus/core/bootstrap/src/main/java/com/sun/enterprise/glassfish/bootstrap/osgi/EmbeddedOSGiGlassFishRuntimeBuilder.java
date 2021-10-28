@@ -45,7 +45,9 @@ package com.sun.enterprise.glassfish.bootstrap.osgi;
 import static com.sun.enterprise.glassfish.bootstrap.Constants.BUILDER_NAME_PROPERTY;
 import static com.sun.enterprise.glassfish.bootstrap.Constants.PLATFORM_PROPERTY_KEY;
 
+import java.util.Dictionary;
 import java.util.Hashtable;
+import java.util.Properties;
 
 import org.glassfish.embeddable.BootstrapProperties;
 import org.glassfish.embeddable.GlassFishException;
@@ -81,11 +83,13 @@ public class EmbeddedOSGiGlassFishRuntimeBuilder implements RuntimeBuilder {
         provisionBundles(bootstrapProperties);
         
         GlassFishRuntime glassFishRuntime = new EmbeddedOSGiGlassFishRuntime(getBundleContext());
-        
-        getBundleContext().registerService(
-            GlassFishRuntime.class.getName(), 
-            glassFishRuntime, 
-            (Hashtable) bootstrapProperties.getProperties());
+
+        Properties props = bootstrapProperties.getProperties();
+        Dictionary properties = new Properties();
+        for (final String name: props.stringPropertyNames()) {
+            properties.put(name, props.getProperty(name));
+        }
+        getBundleContext().registerService(GlassFishRuntime.class.getName(), glassFishRuntime, properties);
         
         return glassFishRuntime;
     }

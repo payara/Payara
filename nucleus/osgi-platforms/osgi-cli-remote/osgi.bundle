@@ -43,4 +43,4 @@
 # shell packages resolved at runtime, whatever there is...
 DynamicImport-Package: \
     org.apache.felix.shell, \
-    org.apache.felix.service.command; status="provisional"
+    org.apache.felix.service.command;
