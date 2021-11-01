@@ -37,11 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2016-2019] [Payara Foundation and/or affiliates]
+//Portions Copyright [2016-2021] [Payara Foundation and/or affiliates]
 package org.glassfish.admin.rest.composite;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.admin.report.ActionReporter;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -84,6 +85,7 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+
 import org.glassfish.admin.rest.RestExtension;
 import org.glassfish.admin.rest.RestLogging;
 import org.glassfish.admin.rest.composite.metadata.AttributeReference;
@@ -106,7 +108,8 @@ import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.jersey.media.sse.EventOutput;
 
-import static org.glassfish.pfl.objectweb.asm.Opcodes.*;
+import static org.objectweb.asm.Opcodes.*;
+
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.MessageInterpolatorImpl;
 
