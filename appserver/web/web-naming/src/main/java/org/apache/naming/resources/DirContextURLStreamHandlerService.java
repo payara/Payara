@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates]
 
 package org.apache.naming.resources;
 
@@ -46,6 +46,7 @@ import static org.osgi.service.url.URLConstants.URL_HANDLER_PROTOCOL;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.Properties;
 
@@ -97,13 +98,13 @@ public class DirContextURLStreamHandlerService
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public void start(BundleContext context) throws Exception {
         
-        Properties properties = new Properties();
+        Dictionary properties = new Properties();
         properties.put(URL_HANDLER_PROTOCOL, new String[] { "jndi" });
         
         context.registerService(
                 URLStreamHandlerService.class.getName(),
                 this,
-                (Hashtable) properties);
+                properties);
     }
 
     public void stop(BundleContext context) throws Exception {
