@@ -215,12 +215,10 @@ public class MBeanMetadata implements Metadata {
                     validationResult = false;
                 } else if (metadata.getMBean().contains(keyword)) {
                     boolean tagSpecifier = false;
-                    if (tags != null) {
-                        for (XmlTag tag : tags) {
-                            if (tag.getValue() != null && tag.getValue().contains(keyword)) {
-                                tagSpecifier = true;
-                                break;
-                            }
+                    for (XmlTag tag : tags) {
+                        if (tag.getValue() != null && tag.getValue().contains(keyword)) {
+                            tagSpecifier = true;
+                            break;
                         }
                     }
                     if (!(metadata.getName().contains(keyword) || tagSpecifier)) {
