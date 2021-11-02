@@ -1,7 +1,7 @@
 <!--
   ~    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
   ~
-  ~    Copyright (c) [2019-2020] Payara Foundation and/or its affiliates. All rights reserved.
+  ~    Copyright (c) [2019-2021] Payara Foundation and/or its affiliates. All rights reserved.
   ~
   ~    The contents of this file are subject to the terms of either the GNU
   ~    General Public License Version 2 only ("GPL") or the Common Development
@@ -430,26 +430,32 @@
 
             <dependency>
                 <groupId>org.osgi</groupId>
-                <artifactId>org.osgi.compendium</artifactId>
-                <version>5.0.0</version>
+                <artifactId>osgi.cmpn</artifactId>
+                <version>${osgi.version}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.osgi</groupId>
-                <artifactId>org.osgi.core</artifactId>
-                <version>6.0.0</version>
+                <artifactId>osgi.core</artifactId>
+                <version>${osgi.version}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.osgi</groupId>
-                <artifactId>org.osgi.enterprise</artifactId>
-                <version>5.0.0</version>
+                <artifactId>osgi.enterprise</artifactId>
+                <version>${osgi.version}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
-                <groupId>org.osgi</groupId> <!-- OSGi Companion Code for org.osgi.dto Version 1.0.0. -->
+                <groupId>org.osgi</groupId>
+                <artifactId>osgi.annotation</artifactId>
+                <version>${osgi.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.osgi</groupId> <!-- OSGi Companion Code for org.osgi.dto Version 1.1.0. -->
                 <artifactId>org.osgi.dto</artifactId>
-                <version>1.1.0</version>
+                <version>${osgi.dto.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.codehaus.woodstox</groupId>
