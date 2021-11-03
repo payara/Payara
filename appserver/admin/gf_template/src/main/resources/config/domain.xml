@@ -319,6 +319,7 @@
                 <thread-pool name="http-thread-pool" max-queue-size="4096"></thread-pool>
                 <thread-pool name="thread-pool-1" max-thread-pool-size="200" />
             </thread-pools>
+            <system-property name="org.glassfish.gmbal.no.multipleUpperBoundsException" value="true"/>
         </config>
         <config name="default-config" dynamic-reconfiguration-enabled="true">
             <payara-executor-service-configuration />
@@ -585,6 +586,7 @@
             <system-property name="OSGI_SHELL_TELNET_PORT" value="26666" />
             <system-property name="JAVA_DEBUGGER_PORT" value="29009" />
             <system-property name="HZ_LISTENER_PORT" value="5900" />
+            <system-property name="org.glassfish.gmbal.no.multipleUpperBoundsException" value="true"/>
         </config>
     </configs>
     <property name="administrative.domain.name" value="%%%DOMAIN_NAME%%%" />
