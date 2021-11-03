@@ -169,7 +169,7 @@ public class PayaraConfig implements Config {
     @Override
     public <T> Optional<List<T>> getOptionalValues(String propertyName, Class<T> propertyType) {
         Optional<List<T>> valuesList =  Config.super.getOptionalValues(propertyName, propertyType);
-        if (valueList.isPresent() && valuesList.get().isEmpty()) {
+        if (valuesList.isPresent() && valuesList.get().isEmpty()) {
             return Optional.empty();
         } else {
             return valuesList;
