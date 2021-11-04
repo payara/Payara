@@ -168,12 +168,7 @@ public class PayaraConfig implements Config {
 
     @Override
     public <T> Optional<List<T>> getOptionalValues(String propertyName, Class<T> propertyType) {
-        Optional<List<T>> valuesList =  Config.super.getOptionalValues(propertyName, propertyType);
-        if (valuesList.isPresent() && valuesList.get().isEmpty()) {
-            return Optional.empty();
-        } else {
-            return valuesList;
-        }
+        return Config.super.getOptionalValues(propertyName, propertyType).filter(list -> !list.isEmpty());
     }
 
     @SuppressWarnings("unchecked")
