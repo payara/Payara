@@ -48,6 +48,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -70,6 +71,7 @@ import static org.junit.Assert.assertTrue;
  * @author James Hillyard
  */
 
+@Ignore
 @RunWith(PayaraArquillianTestRunner.class)
 @SincePayara("5.2021.8")
 public class ClientValidationTest {
@@ -114,6 +116,7 @@ public class ClientValidationTest {
         URL url = ServerOperations.baseURLForServerHost(new URL(LOCALHOST_URL));
         HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
         connection.setSSLSocketFactory(sslSocketFactory);
+        connection.setHostnameVerifier(new MyHostnameVerifier());
         return connection.getResponseCode();
     }
 
