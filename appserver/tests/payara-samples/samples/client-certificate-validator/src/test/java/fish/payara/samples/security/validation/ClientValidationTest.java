@@ -41,20 +41,17 @@
 package fish.payara.samples.security.validation;
 
 import fish.payara.samples.PayaraArquillianTestRunner;
-import fish.payara.samples.SecurityUtils;
 import fish.payara.samples.ServerOperations;
 import fish.payara.samples.SincePayara;
-import com.sun.enterprise.util.net.NetUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.omnifaces.utils.security.Certificates;
 
 import javax.net.ssl.*;
-import javax.security.cert.X509Certificate;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -87,12 +84,9 @@ public class ClientValidationTest {
         return ShrinkWrap.create(WebArchive.class, "security.war")
                 .addPackage(ClientValidationTest.class.getPackage())
                 .addPackages(true, "org.bouncycastle")
-                .addPackages(true, "com.gargoylesoftware")
-                .addPackages(true, "net.sourceforge.htmlunit")
-                .addPackages(true, "org.eclipse")
-                .addPackages(true, "org.omnifaces.utils")
+                .addPackages(true, "org.omnifaces")
                 .addPackages(true, PayaraArquillianTestRunner.class.getPackage())
-                .addClasses(ServerOperations.class, SecurityUtils.class, Certificates.class)
+                .addClasses(ServerOperations.class)
                 .addAsWebInfResource(new File("src/main/webapp", "WEB-INF/web.xml"))
                 .addAsWebInfResource(new File("src/main/webapp", "WEB-INF/beans.xml"));
     }
@@ -115,10 +109,12 @@ public class ClientValidationTest {
 
     }
 
+    @RunAsClient
     private static int callEndpoint(SSLSocketFactory sslSocketFactory) throws IOException {
         URL url = ServerOperations.baseURLForServerHost(new URL(LOCALHOST_URL));
         HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
         connection.setSSLSocketFactory(sslSocketFactory);
+        connection.setHostnameVerifier(new MyHostnameVerifier());
         return connection.getResponseCode();
     }
 
