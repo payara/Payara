@@ -60,7 +60,7 @@ import static com.sun.enterprise.admin.servermgmt.services.Constants.*;
  *
  * @author Byron Nevins
  */
-public class LinuxService extends NonSMFServiceAdapter {
+public class LinuxSystemVService extends NonSMFServiceAdapter {
 
     private String targetName;
     File target;
@@ -76,7 +76,7 @@ public class LinuxService extends NonSMFServiceAdapter {
         return OS.isLinux();
     }
 
-    LinuxService(ServerDirs dirs, AppserverServiceType type) {
+    LinuxSystemVService(ServerDirs dirs, AppserverServiceType type) {
         super(dirs, type);
         if (!apropos()) {
             // programmer error
@@ -148,7 +148,7 @@ public class LinuxService extends NonSMFServiceAdapter {
                 info.serviceName,
                 info.type.toString(),
                 target,
-                getFinalUser(),
+                getServiceUser(),
                 target.getName());
     }
 
@@ -417,15 +417,8 @@ public class LinuxService extends NonSMFServiceAdapter {
         return "";
     }
 
-    private String getFinalUser() {
-        if (StringUtils.ok(info.serviceUser))
-            return info.serviceUser;
-        else
-            return info.osUser;
-    }
-
     private String getFinalUserButNotRoot() {
-        String u = getFinalUser();
+        String u = getServiceUser();
 
         if ("root".equals(u))
             return null;

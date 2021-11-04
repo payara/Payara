@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2021 Payara Foundation and/or its affiliates.
 package com.sun.enterprise.server.logging;
 
 import java.util.HashMap;
@@ -50,7 +51,6 @@ import java.util.logging.LogRecord;
 public class LogEventImpl implements LogEvent {
 
     private String componentId = "";
-    private String ecId = "";
     private String level = "";
     private int levelValue = 0;
     private String logger = "";
@@ -61,7 +61,6 @@ public class LogEventImpl implements LogEvent {
     private String threadName = "";
     private long timeMillis = 0L;
     private String timestamp = "";
-    private String user = "";
 
     public LogEventImpl() {}
     
@@ -77,11 +76,6 @@ public class LogEventImpl implements LogEvent {
     @Override
     public String getComponentId() {
         return componentId;
-    }
-
-    @Override
-    public String getECId() {
-        return ecId;
     }
 
     @Override
@@ -134,23 +128,11 @@ public class LogEventImpl implements LogEvent {
         return timestamp;
     }
 
-    @Override
-    public String getUser() {
-        return user;
-    }
-
     /**
      * @param componentId the componentId to set
      */
     public void setComponentId(String componentId) {
         this.componentId = componentId;
-    }
-
-    /**
-     * @param ecId the ecId to set
-     */
-    public void setECId(String ecId) {
-        this.ecId = ecId;
     }
 
     /**
@@ -214,13 +196,6 @@ public class LogEventImpl implements LogEvent {
      */
     public void setTimestamp(String timestamp) {
         this.timestamp = timestamp;
-    }
-
-    /**
-     * @param user the user to set
-     */
-    public void setUser(String user) {
-        this.user = user;
     }
 
 }

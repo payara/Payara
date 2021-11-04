@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2021] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.server.logging.parser;
 
@@ -58,8 +58,6 @@ public final class ParsedLogRecord implements LogEvent {
     public static final String LOGGER_NAME = "logger";
     public static final String THREAD_ID = "threadId";
     public static final String THREAD_NAME = "threadName";
-    public static final String USER_ID = "user";
-    public static final String EC_ID = "ecid";
     public static final String TIME_MILLIS = "timeMillis";
     public static final String LOG_LEVEL_VALUE = "levelValue";
     public static final String LOG_MESSAGE = "message";
@@ -77,8 +75,6 @@ public final class ParsedLogRecord implements LogEvent {
            add(LOGGER_NAME);
            add(THREAD_ID);
            add(THREAD_NAME);
-           add(USER_ID);
-           add(EC_ID);
            add(TIME_MILLIS);
            add(LOG_LEVEL_VALUE);
            add(SUPP_ATTRS);
@@ -148,14 +144,6 @@ public final class ParsedLogRecord implements LogEvent {
 
     public String getThreadName() {
         return (String) fields.get(THREAD_NAME);
-    }
-
-    public String getUser() {
-        return (String) fields.get(USER_ID);
-    }
-
-    public String getECId() {
-        return (String) fields.get(EC_ID);
     }
 
     public Map<String,Object> getSupplementalAttributes() {

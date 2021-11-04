@@ -116,6 +116,8 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
 
     public static final String APPLICATIONS_STORE_NAME = "payara.micro.applications.store";
 
+    private static final String APP_UNIQUE_ID_PROP = "org.glassfish.ejb.container.application_unique_id";
+
     private static final Logger logger = Logger.getLogger(PayaraInstanceImpl.class.getName());
 
     @Inject
@@ -277,8 +279,10 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
                     Long appID = (Long) cluster.getClusteredStore().get(APPLICATIONS_STORE_NAME, app.getName());
                     if (appID != null) {
                         app.setUniqueId(appID);
+                        deploymentContext.getAppProps().setProperty(APP_UNIQUE_ID_PROP, String.valueOf(appID));
                     } else {
                         cluster.getClusteredStore().set(APPLICATIONS_STORE_NAME, app.getName(), app.getUniqueId());
+                        deploymentContext.getAppProps().setProperty(APP_UNIQUE_ID_PROP, String.valueOf(app.getUniqueId()));
                     }
                 }
             }

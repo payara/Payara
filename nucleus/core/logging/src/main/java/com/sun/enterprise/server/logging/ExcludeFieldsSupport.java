@@ -53,7 +53,7 @@ public class ExcludeFieldsSupport {
 
     private static final Logger LOG = LogFacade.LOGGING_LOGGER;
 
-    public enum SupplementalAttribute {TID, USERID, ECID, TIME_MILLIS, LEVEL_VALUE, VERSION}
+    public enum SupplementalAttribute {TID, TIME_MILLIS, LEVEL_VALUE, VERSION}
 
     private final BitSet excludeSuppAttrsBits = new BitSet();
 
@@ -71,12 +71,6 @@ public class ExcludeFieldsSupport {
                         break;
                     case "tid":
                         excludeSuppAttrsBits.set(SupplementalAttribute.TID.ordinal());
-                        break;
-                    case "userId":
-                        excludeSuppAttrsBits.set(SupplementalAttribute.USERID.ordinal());
-                        break;
-                    case "ecid":
-                        excludeSuppAttrsBits.set(SupplementalAttribute.ECID.ordinal());
                         break;
                     case "timeMillis":
                         excludeSuppAttrsBits.set(SupplementalAttribute.TIME_MILLIS.ordinal());

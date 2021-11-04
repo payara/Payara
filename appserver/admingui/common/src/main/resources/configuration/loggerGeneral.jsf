@@ -39,7 +39,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates] -->
 
 <!-- common/configuration/loggerGeneral.jsf -->
 
@@ -150,7 +150,7 @@
                 labels="#{pageSession.excludeFieldsOptions}" selected="#{pageSession.excludeFields}" >
                 <!beforeCreate
                     getListBoxOptions(
-                        availableList={ "tid", "userId", "ecid", "timeMillis", "levelValue", "version" },
+                        availableList={ "tid", "timeMillis", "levelValue", "version" },
                         selectedCommaString="#{pageSession.logAttributes['com.sun.enterprise.server.logging.GFFileHandler.excludeFields']}",
                         availableListResult="#{pageSession.excludeFieldsOptions}",
                         selectedOptions="#{pageSession.excludeFields}"
