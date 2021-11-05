@@ -200,6 +200,9 @@
     
     <target name="finalClean">
         <delete dir="${runtimedir}/${install.dir.name}"/>
+        <delete file="${libdir}/.gitkeep"/>
+        <delete file="${deploydir}/.gitkeep"/>
+        <delete file="${classesdir}/.gitkeep"/>
     </target>   
      
     <target name="buildFinalJar">
