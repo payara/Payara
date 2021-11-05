@@ -93,7 +93,7 @@ public class MBeanMetadata implements Metadata {
     private Boolean valid;
 
     @XmlElementWrapper(name = "tags", nillable = true)
-    @XmlElement(name="tag")
+    @XmlElement(name = "tag")
     private List<XmlTag> tags;
 
 
@@ -215,9 +215,10 @@ public class MBeanMetadata implements Metadata {
                     validationResult = false;
                 } else if (metadata.getMBean().contains(keyword)) {
                     boolean tagSpecifier = false;
-                    for (XmlTag tag: tags) {
-                        if (tag.getValue().contains(keyword)) {
+                    for (XmlTag tag : tags) {
+                        if (tag.getValue() != null && tag.getValue().contains(keyword)) {
                             tagSpecifier = true;
+                            break;
                         }
                     }
                     if (!(metadata.getName().contains(keyword) || tagSpecifier)) {
