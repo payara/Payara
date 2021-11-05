@@ -212,6 +212,7 @@
         <jvm-options>[9|]--add-opens=java.logging/java.util.logging=ALL-UNNAMED</jvm-options>
         <jvm-options>[17|]--add-exports=java.base/sun.net.www=ALL-UNNAMED</jvm-options>
         <jvm-options>[17|]--add-exports=java.base/sun.security.util=ALL-UNNAMED</jvm-options>
+        <jvm-options>[17|]--add-opens=java.base/java.lang.invoke=ALL-UNNAMED</jvm-options>
         <jvm-options>-Xmx512m</jvm-options>
         <jvm-options>-XX:NewRatio=2</jvm-options>
         <jvm-options>-XX:+UnlockDiagnosticVMOptions</jvm-options>
@@ -449,6 +450,7 @@
         <jvm-options>[9|]--add-opens=java.logging/java.util.logging=ALL-UNNAMED</jvm-options>
         <jvm-options>[17|]--add-exports=java.base/sun.net.www=ALL-UNNAMED</jvm-options>
         <jvm-options>[17|]--add-exports=java.base/sun.security.util=ALL-UNNAMED</jvm-options>
+        <jvm-options>[17|]--add-opens=java.base/java.lang.invoke=ALL-UNNAMED</jvm-options>
         <jvm-options>-Xmx512m</jvm-options>
         <jvm-options>-XX:NewRatio=2</jvm-options>
         <jvm-options>-XX:+UnlockDiagnosticVMOptions</jvm-options>
