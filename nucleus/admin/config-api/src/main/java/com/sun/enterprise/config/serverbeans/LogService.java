@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -202,6 +202,22 @@ public interface LogService extends ConfigBeanProxy  {
      * @throws PropertyVetoException
      */
     public void setLogToFile(String value) throws PropertyVetoException;
+
+    /**
+     * Gets the value of the fastLogging property.
+     *
+     * @return possible object is {@link String }
+     */
+    @Attribute(defaultValue = "false", dataType = Boolean.class)
+    public String getFastLogging();
+
+    /**
+     * Sets the value of the fastLogging property.
+     *
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
+     */
+    public void setFastLogging(String value) throws PropertyVetoException;
     
      /**
      * Gets the value of the  Payara Notification logToFile property.

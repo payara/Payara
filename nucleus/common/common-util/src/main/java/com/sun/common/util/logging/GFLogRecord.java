@@ -38,10 +38,12 @@
  * holder.
  */
 
-// Portions Copyright [2016-2021] [Payara Foundation]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
 package com.sun.common.util.logging;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.logging.LogRecord;
 import java.util.logging.Level;
 
@@ -116,12 +118,19 @@ public class GFLogRecord extends LogRecord {
      * Append the original parameters at the end, as they are used for by some logging formatters,
      * such as JSON logging formatter for context
      *
+     * FISH-5703
+     * Add the option to skip the toString() method as it can have force a JPA entity to result
+     * in database access, causing a performance impact.
+     *
      * @param params
      * @return parameter array
      */
     private static Object[] transformParameters(Object[] params) {
         if (params == null) {
             return null;
+        }
+        if (fastLoggingEnabled()) {
+            return params;
         }
         Object[] result = new Object[params.length * 2];
         System.arraycopy(params, 0, result, params.length, params.length);
@@ -134,5 +143,20 @@ public class GFLogRecord extends LogRecord {
             }
         }
         return result;
+    }
+
+    /**
+     * Reads the logging.properties file for fastLogging property dynamically so server restart is not needed
+     * @return true if fast logging is enabled
+     */
+    private static boolean fastLoggingEnabled() {
+        try {
+            //Gets the config directory of the Payara install. Using pathname "config" results in "config\config"
+            File configDir = new File("").getAbsoluteFile();
+            LoggingConfigImpl loggingConfig = new LoggingConfigImpl(configDir, configDir);
+            return Boolean.parseBoolean(loggingConfig.getLoggingProperty("com.sun.enterprise.server.logging.GFFileHandler.fastLogging"));
+        } catch (IOException ioException) {
+            return false;
+        }
     }
 }
