@@ -113,29 +113,29 @@ public class RWLockDataStructure implements DataStructure {
      * {@inheritDoc}
      */
     public ResourceHandle getResource() {
+        ResourceHandle result = null;
         readLock.lock();
-        for(int i=0; i<resources.size(); i++){
-            ResourceHandle h = resources.get(i);
-            if (!h.isBusy()) {
-                readLock.unlock();
-                writeLock.lock();
-                try {
-                    if (!h.isBusy()) {
-                        h.setBusy(true);
-                        return h;
-                    } else {
+        try {
+            for(int i = 0; result == null && i < resources.size(); i++){
+                ResourceHandle h = resources.get(i);
+                if (!h.isBusy()) {
+                    readLock.unlock();
+                    writeLock.lock();
+                    try {
+                        if (!h.isBusy()) {
+                            h.setBusy(true);
+                            result = h;
+                        }
                         readLock.lock();
-                        continue;
+                    } finally {
+                        writeLock.unlock();
                     }
-                }finally {
-                    writeLock.unlock();
                 }
-            } else {
-                continue;
             }
+        } finally {
+            readLock.unlock();
         }
-        readLock.unlock();
-        return null;
+        return result;
     }
 
     /**
