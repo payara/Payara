@@ -193,15 +193,14 @@ public class RWLockDataStructure implements DataStructure {
     public void removeAll() {
         writeLock.lock();
         try {
-            Iterator it = resources.iterator();
+            Iterator<ResourceHandle> it = resources.iterator();
             while (it.hasNext()) {
-                handler.deleteResource((ResourceHandle) it.next());
+                handler.deleteResource(it.next());
                 it.remove();
             }
         } finally {
             writeLock.unlock();
         }
-        resources.clear();
     }
 
     /**
@@ -212,9 +211,9 @@ public class RWLockDataStructure implements DataStructure {
     }
 
     /**
-     * Set maxSize based on the new max pool size set on the connection pool 
-     * during a reconfiguration. 
-     * 
+     * Set maxSize based on the new max pool size set on the connection pool
+     * during a reconfiguration.
+     *
      * @param maxSize
      */
     public void setMaxSize(int maxSize) {
