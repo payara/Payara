@@ -97,12 +97,12 @@ public class RWLockDataStructure implements DataStructure {
                         resources.add(handle);
                         numResAdded++;
                     }
-                    readLock.lock();
                 } catch (Exception e) {
                     PoolingException pe = new PoolingException(e.getMessage());
                     pe.initCause(e);
                     throw pe;
                 } finally {
+                    readLock.lock();
                     writeLock.unlock();
                 }
             }
@@ -129,8 +129,8 @@ public class RWLockDataStructure implements DataStructure {
                             h.setBusy(true);
                             result = h;
                         }
-                        readLock.lock();
                     } finally {
+                        readLock.lock();
                         writeLock.unlock();
                     }
                 }
