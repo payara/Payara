@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation]
+// Portions Copyright [2016-2021] [Payara Foundation]
 //----------------------------------------------------------------------------
 //
 // Module:      RecoveryManager.java
@@ -692,8 +692,9 @@ public class RecoveryManager {
 
         // Post the resync in progress event semaphore.
 
-        if (resyncInProgress != null) {
-            resyncInProgress.post();
+        EventSemaphore tempResyncInProgress = resyncInProgress;
+        if (tempResyncInProgress != null) {
+            tempResyncInProgress.post();
             resyncInProgress = null;
         }
     }
@@ -763,9 +764,10 @@ public class RecoveryManager {
 
             // Otherwise ensure that resync has completed.
 
-            if (resyncInProgress != null) {
+            EventSemaphore tempResyncInProgress = resyncInProgress;
+            if (tempResyncInProgress != null) {
                 try {
-                    resyncInProgress.waitEvent();
+                    tempResyncInProgress.waitEvent();
                     if (resyncThread != null) {
                         resyncThread.join();
                     }
@@ -1455,14 +1457,15 @@ public class RecoveryManager {
      */
     public static void waitForResync() {
 
-        if (resyncInProgress != null) {
+        EventSemaphore tempResyncInProgress = resyncInProgress;
+        if (tempResyncInProgress != null) {
             try {
 
                 //
                 if (recoveryResynchTimeout == 0) {
-                    resyncInProgress.waitEvent();
+                    tempResyncInProgress.waitEvent();
                 } else {
-                    resyncInProgress.waitTimeoutEvent(recoveryResynchTimeout);
+                    tempResyncInProgress.waitTimeoutEvent(recoveryResynchTimeout);
                 }
             } catch (InterruptedException exc) {
 		_logger.log(Level.SEVERE,"jts.wait_for_resync_complete_interrupted");
@@ -1485,9 +1488,10 @@ public class RecoveryManager {
 
     public static void waitForResync(int cmtTimeOut) {
 
-        if (resyncInProgress != null) {
+        EventSemaphore tempResyncInProgress = resyncInProgress;
+        if (tempResyncInProgress != null) {
             try {
-                resyncInProgress.waitTimeoutEvent(cmtTimeOut);
+                tempResyncInProgress.waitTimeoutEvent(cmtTimeOut);
             } catch (InterruptedException exc) {
 		_logger.log(Level.SEVERE,"jts.wait_for_resync_complete_interrupted");
 		 String msg = LogFormatter.getLocalizedMessage(_logger,
