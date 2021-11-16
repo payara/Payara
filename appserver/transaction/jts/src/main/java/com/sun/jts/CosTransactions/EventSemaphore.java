@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation] 
+// Portions Copyright [2016-2021] [Payara Foundation] 
 //----------------------------------------------------------------------------
 //
 // Module:      EventSemaphore.java
@@ -96,18 +96,6 @@ public class EventSemaphore {
     EventSemaphore() {
     }
 
-    /**Creates the event semaphore in the given posted state.
-     *
-     * @param posted  Indicates whether the semaphore should be posted.
-     *
-     * @return
-     *
-     * @see
-     */
-    EventSemaphore( boolean posted ) {
-        this.posted = posted;
-    }
-
     /**
      * @return true if semaphore has already been posted.
      */
@@ -133,7 +121,7 @@ public class EventSemaphore {
             wait();
     }
     
-   /*Waits for the event to be posted. Release the thread waiting after the CMT
+   /**Waits for the event to be posted. Release the thread waiting after the CMT
      * Timeout period if no event has been posted during this timeout interval.
      * <p>
      * If the event has already been posted, then the operation returns immediately.
@@ -146,7 +134,6 @@ public class EventSemaphore {
      *
      * @see
      */
-    
     synchronized public void waitTimeoutEvent(int cmtTimeout)
             throws InterruptedException {
 
@@ -172,17 +159,5 @@ public class EventSemaphore {
         if( !posted )
             notifyAll();
         posted = true;
-    }
-
-    /**Clears a posted event semaphore.
-     *
-     * @param
-     *
-     * @return
-     *
-     * @see
-     */
-    synchronized void clear() {
-        posted = false;
     }
 }
