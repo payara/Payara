@@ -61,7 +61,7 @@
     <properties>
         <jakarta.faces-spec.version>2.3.1</jakarta.faces-spec.version>
         <jsftemplating.version>2.1.4</jsftemplating.version>
-        <jboss.classfilewriter.version>1.2.4.Final</jboss.classfilewriter.version>
+        <jboss.classfilewriter.version>1.2.5.Final</jboss.classfilewriter.version>
         <apache.bcel.version>6.2</apache.bcel.version>
         <!-- Java EE Security API -->
         <javax.security.enterprise-spec.version>1.0</javax.security.enterprise-spec.version>
