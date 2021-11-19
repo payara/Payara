@@ -84,32 +84,35 @@ public class RWLockDataStructure implements DataStructure {
     /**
      * {@inheritDoc}
      */
-    public int addResource(ResourceAllocator allocator, int count) throws PoolingException {
+    public int addResource(final ResourceAllocator allocator, int count) throws PoolingException {
         int numResAdded = 0;
-        readLock.lock();
-        try {
-            for (int i = 0; i < count && resources.size() < maxSize; i++) {
-                readLock.unlock();
-                writeLock.lock();
-                try {
-                    if (resources.size() < maxSize) {
-                        ResourceHandle handle = handler.createResource(allocator);
-                        resources.add(handle);
-                        numResAdded++;
-                    }
-                } catch (Exception e) {
-                    PoolingException pe = new PoolingException(e.getMessage());
-                    pe.initCause(e);
-                    throw pe;
-                } finally {
-                    readLock.lock();
-                    writeLock.unlock();
+        for (int i = 0; i < count && isNotFull(); i++) {
+            try {
+                final ResourceHandle handle = handler.createResource(allocator);
+                boolean added = addResourceInternal(handle);
+                if (added) {
+                    numResAdded++;
+                } else {
+                    handler.deleteResource(handle);
                 }
+            } catch (Exception e) {
+                throw new PoolingException(e.getMessage(), e);
             }
-        } finally {
-            readLock.unlock();
         }
         return numResAdded;
+    }
+
+    private boolean isNotFull() {
+        return doLockSecured(() -> resources.size() < maxSize, readLock);
+    }
+
+    private boolean addResourceInternal(final ResourceHandle handle) {
+        return doLockSecured(() -> {
+            if (resources.size() < maxSize) {
+                return resources.add(handle);
+            }
+            return false;
+        }, writeLock);
     }
 
     /**
@@ -146,7 +149,7 @@ public class RWLockDataStructure implements DataStructure {
      */
     public void removeResource(ResourceHandle resource) {
         boolean removed = doLockSecured(() -> resources.remove(resource), writeLock);
-        if(removed) {
+        if (removed) {
             handler.deleteResource(resource);
         }
     }
