@@ -41,6 +41,7 @@
 
 package com.sun.enterprise.server.logging;
 
+import com.sun.common.util.logging.GFLogRecord;
 import com.sun.common.util.logging.LoggingConfig;
 import com.sun.common.util.logging.LoggingConfigFactory;
 import com.sun.common.util.logging.LoggingXMLNames;
@@ -726,6 +727,11 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                                                 break;
                                             }
                                         }
+                                    }
+                                } else if (a.equals(FAST_LOGGER_PROPERTY)) {
+                                    if (!val.equals(fastLoggingDetail)) {
+                                        fastLoggingDetail = val;
+                                        GFLogRecord.fastLogging = Boolean.parseBoolean(fastLoggingDetail);
                                     }
                                 } else if (a.equals(COMPRESS_ON_ROTATION_PROPERTY)) {
                                     if (!val.equals(compressOnRotationDetail)) {

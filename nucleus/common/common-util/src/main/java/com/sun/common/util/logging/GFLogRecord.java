@@ -42,16 +42,18 @@
 
 package com.sun.common.util.logging;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.logging.LogRecord;
 import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.LogRecord;
 
 /**
  * This class provides additional attributes not supported by JUL LogRecord
  * @author rinamdar
  */
 public class GFLogRecord extends LogRecord {
+
+    private static final String FAST_LOGGER_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.fastLogging";
+    public static Boolean fastLogging = Boolean.parseBoolean(LogManager.getLogManager().getProperty(FAST_LOGGER_PROPERTY));
 
     /**
      * SVUID for serialization compatibility
@@ -129,7 +131,7 @@ public class GFLogRecord extends LogRecord {
         if (params == null) {
             return null;
         }
-        if (fastLoggingEnabled()) {
+        if (fastLogging) {
             return params;
         }
         Object[] result = new Object[params.length * 2];
@@ -143,20 +145,5 @@ public class GFLogRecord extends LogRecord {
             }
         }
         return result;
-    }
-
-    /**
-     * Reads the logging.properties file for fastLogging property dynamically so server restart is not needed
-     * @return true if fast logging is enabled
-     */
-    private static boolean fastLoggingEnabled() {
-        try {
-            //Gets the config directory of the Payara install. Using pathname "config" results in "config\config"
-            File configDir = new File("").getAbsoluteFile();
-            LoggingConfigImpl loggingConfig = new LoggingConfigImpl(configDir, configDir);
-            return Boolean.parseBoolean(loggingConfig.getLoggingProperty("com.sun.enterprise.server.logging.GFFileHandler.fastLogging"));
-        } catch (IOException ioException) {
-            return false;
-        }
     }
 }
