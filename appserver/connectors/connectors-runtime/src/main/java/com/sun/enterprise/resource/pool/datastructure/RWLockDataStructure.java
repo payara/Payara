@@ -172,13 +172,9 @@ public class RWLockDataStructure implements DataStructure {
     public void removeAll() {
         final List<ResourceHandle> removedResources = new ArrayList<>();
         doLockSecured(() -> {
-            Iterator<ResourceHandle> it = allResources.iterator();
-            while (it.hasNext()) {
-                final ResourceHandle resource = it.next();
-                it.remove();
-                removedResources.add(resource);
-                freeResources.remove(resource);
-            }
+            removedResources.addAll(allResources);
+            allResources.clear();
+            freeResources.clear();
         }, writeLock);
         for(ResourceHandle resourceHandle : removedResources) {
             handler.deleteResource(resourceHandle);
