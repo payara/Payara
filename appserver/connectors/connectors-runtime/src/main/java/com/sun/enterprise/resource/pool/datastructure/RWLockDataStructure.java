@@ -47,9 +47,7 @@ import com.sun.enterprise.resource.allocator.ResourceAllocator;
 import com.sun.enterprise.resource.pool.ResourceHandler;
 import com.sun.logging.LogDomains;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Supplier;
@@ -65,7 +63,9 @@ public class RWLockDataStructure implements DataStructure {
     private final ResourceHandler handler;
     private int maxSize;
 
-    private final List<ResourceHandle> resources;
+    private final List<ResourceHandle> allResources;
+    private final Deque<ResourceHandle> freeResources;
+
     private final ReentrantReadWriteLock reentrantLock = new ReentrantReadWriteLock();
     private final ReentrantReadWriteLock.ReadLock readLock = reentrantLock.readLock();
     private final ReentrantReadWriteLock.WriteLock writeLock = reentrantLock.writeLock();
@@ -73,7 +73,8 @@ public class RWLockDataStructure implements DataStructure {
     protected static final Logger _logger = LogDomains.getLogger(RWLockDataStructure.class,LogDomains.RSR_LOGGER);
 
     public RWLockDataStructure(int maxSize, ResourceHandler handler) {
-        resources = new ArrayList<>(Math.min(maxSize, 1000));
+        allResources = new ArrayList<>(Math.min(maxSize, 1000));
+        freeResources = new ArrayDeque<>(Math.min(maxSize, 1000));
         this.maxSize = maxSize;
         this.handler = handler;
         if(_logger.isLoggable(Level.FINEST)) {
@@ -103,13 +104,17 @@ public class RWLockDataStructure implements DataStructure {
     }
 
     private boolean isNotFull() {
-        return doLockSecured(() -> resources.size() < maxSize, readLock);
+        return doLockSecured(() -> allResources.size() < maxSize, readLock);
     }
 
     private boolean addResourceInternal(final ResourceHandle handle) {
         return doLockSecured(() -> {
-            if (resources.size() < maxSize) {
-                return resources.add(handle);
+            if (allResources.size() < maxSize) {
+                boolean added = allResources.add(handle);
+                if (added) {
+                    freeResources.offerLast(handle);
+                }
+                return added;
             }
             return false;
         }, writeLock);
@@ -119,36 +124,26 @@ public class RWLockDataStructure implements DataStructure {
      * {@inheritDoc}
      */
     public ResourceHandle getResource() {
-        ResourceHandle result = null;
-        readLock.lock();
-        try {
-            for(int i = 0; result == null && i < resources.size(); i++){
-                ResourceHandle h = resources.get(i);
-                if (!h.isBusy()) {
-                    readLock.unlock();
-                    writeLock.lock();
-                    try {
-                        if (!h.isBusy()) {
-                            h.setBusy(true);
-                            result = h;
-                        }
-                    } finally {
-                        readLock.lock();
-                        writeLock.unlock();
-                    }
-                }
+        return doLockSecured(() -> {
+            final ResourceHandle resourceHandle = freeResources.pollFirst();
+            if (resourceHandle != null) {
+                resourceHandle.setBusy(true);
             }
-        } finally {
-            readLock.unlock();
-        }
-        return result;
+            return resourceHandle;
+        }, writeLock);
     }
 
     /**
      * {@inheritDoc}
      */
     public void removeResource(ResourceHandle resource) {
-        boolean removed = doLockSecured(() -> resources.remove(resource), writeLock);
+        boolean removed = doLockSecured(() -> {
+            final boolean removedResource = allResources.remove(resource);
+            if (removedResource) {
+                freeResources.remove(resource);
+            }
+            return removedResource;
+        }, writeLock);
         if (removed) {
             handler.deleteResource(resource);
         }
@@ -157,39 +152,44 @@ public class RWLockDataStructure implements DataStructure {
     /**
      * {@inheritDoc}
      */
-    public void returnResource(ResourceHandle resource) {
-        doLockSecured(() -> resource.setBusy(false), writeLock);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public int getFreeListSize() {
-        //inefficient implementation.
-        return doLockSecured(
-                () -> (int)resources.stream().filter(resourceHandle -> !resourceHandle.isBusy()).count(),
-                readLock
-        );
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public void removeAll() {
+    public void returnResource(final ResourceHandle resource) {
         doLockSecured(() -> {
-            Iterator<ResourceHandle> it = resources.iterator();
-            while (it.hasNext()) {
-                handler.deleteResource(it.next());
-                it.remove();
-            }
+            resource.setBusy(false);
+            freeResources.offerFirst(resource);
         }, writeLock);
     }
 
     /**
      * {@inheritDoc}
      */
+    public int getFreeListSize() {
+        return doLockSecured(freeResources::size, readLock);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void removeAll() {
+        final List<ResourceHandle> removedResources = new ArrayList<>();
+        doLockSecured(() -> {
+            Iterator<ResourceHandle> it = allResources.iterator();
+            while (it.hasNext()) {
+                final ResourceHandle resource = it.next();
+                it.remove();
+                removedResources.add(resource);
+                freeResources.remove(resource);
+            }
+        }, writeLock);
+        for(ResourceHandle resourceHandle : removedResources) {
+            handler.deleteResource(resourceHandle);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public int getResourcesSize() {
-        return resources.size();
+        return doLockSecured(allResources::size, readLock);
     }
 
     /**
