@@ -51,6 +51,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Supplier;
@@ -73,6 +74,8 @@ public class RWLockDataStructure implements DataStructure {
     private final ReentrantReadWriteLock.ReadLock readLock = reentrantLock.readLock();
     private final ReentrantReadWriteLock.WriteLock writeLock = reentrantLock.writeLock();
 
+    private final AtomicInteger inflightCreates = new AtomicInteger(0);
+
     protected static final Logger _logger = LogDomains.getLogger(RWLockDataStructure.class,LogDomains.RSR_LOGGER);
 
     public RWLockDataStructure(int maxSize, ResourceHandler handler) {
@@ -90,37 +93,29 @@ public class RWLockDataStructure implements DataStructure {
      */
     public int addResource(final ResourceAllocator allocator, int count) throws PoolingException {
         int numResAdded = 0;
-        for (int i = 0; i < count && isNotFull(); i++) {
-            try {
-                final ResourceHandle handle = handler.createResource(allocator);
-                boolean added = addResourceInternal(handle);
-                if (added) {
-                    numResAdded++;
-                } else {
-                    handler.deleteResource(handle);
+        try {
+            inflightCreates.incrementAndGet();
+            for (int i = 0; i < count && canGrow(); i++) {
+                try {
+                    final ResourceHandle handle = handler.createResource(allocator);
+                    // inflightCreates makes a "reservation" for our thread to add another resource
+                    // therefore further checking is not necessary
+                    doLockSecured(() -> {
+                        allResources.add(handle);
+                        freeResources.offerLast(handle);
+                    }, writeLock);
+                } catch (Exception e) {
+                    throw new PoolingException(e.getMessage(), e);
                 }
-            } catch (Exception e) {
-                throw new PoolingException(e.getMessage(), e);
             }
+        } finally {
+            inflightCreates.decrementAndGet();
         }
         return numResAdded;
     }
 
-    private boolean isNotFull() {
-        return doLockSecured(() -> allResources.size() < maxSize, readLock);
-    }
-
-    private boolean addResourceInternal(final ResourceHandle handle) {
-        return doLockSecured(() -> {
-            if (allResources.size() < maxSize) {
-                boolean added = allResources.add(handle);
-                if (added) {
-                    freeResources.offerLast(handle);
-                }
-                return added;
-            }
-            return false;
-        }, writeLock);
+    private boolean canGrow() {
+        return doLockSecured(() -> allResources.size() + inflightCreates.get() < maxSize, readLock);
     }
 
     /**
