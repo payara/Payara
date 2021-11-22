@@ -51,6 +51,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -74,7 +75,7 @@ public class RWLockDataStructure implements DataStructure {
     private final ReentrantReadWriteLock.ReadLock readLock = reentrantLock.readLock();
     private final ReentrantReadWriteLock.WriteLock writeLock = reentrantLock.writeLock();
 
-    private final AtomicInteger inflightCreates = new AtomicInteger(0);
+    private Semaphore growPermit;
 
     protected static final Logger _logger = LogDomains.getLogger(RWLockDataStructure.class,LogDomains.RSR_LOGGER);
 
@@ -83,6 +84,7 @@ public class RWLockDataStructure implements DataStructure {
         freeResources = new ArrayDeque<>(Math.min(maxSize, 1000));
         this.maxSize = maxSize;
         this.handler = handler;
+        this.growPermit = new Semaphore(maxSize);
         if(_logger.isLoggable(Level.FINEST)) {
             _logger.log(Level.FINEST, "pool.datastructure.rwlockds.init");
         }
@@ -93,29 +95,23 @@ public class RWLockDataStructure implements DataStructure {
      */
     public int addResource(final ResourceAllocator allocator, int count) throws PoolingException {
         int numResAdded = 0;
-        try {
-            inflightCreates.incrementAndGet();
-            for (int i = 0; i < count && canGrow(); i++) {
-                try {
-                    final ResourceHandle handle = handler.createResource(allocator);
-                    // inflightCreates makes a "reservation" for our thread to add another resource
-                    // therefore further checking is not necessary
-                    doLockSecured(() -> {
-                        allResources.add(handle);
-                        freeResources.offerLast(handle);
-                    }, writeLock);
-                } catch (Exception e) {
-                    throw new PoolingException(e.getMessage(), e);
-                }
+        for (int i = 0; i < count && canGrow(); i++) {
+            try {
+                final ResourceHandle handle = handler.createResource(allocator);
+                doLockSecured(() -> {
+                    allResources.add(handle);
+                    freeResources.offerLast(handle);
+                }, writeLock);
+            } catch (Exception e) {
+                growPermit.release();
+                throw new PoolingException(e.getMessage(), e);
             }
-        } finally {
-            inflightCreates.decrementAndGet();
         }
         return numResAdded;
     }
 
     private boolean canGrow() {
-        return doLockSecured(() -> allResources.size() + inflightCreates.get() < maxSize, readLock);
+        return growPermit.tryAcquire();
     }
 
     /**
@@ -139,6 +135,7 @@ public class RWLockDataStructure implements DataStructure {
             final boolean removedResource = allResources.remove(resource);
             if (removedResource) {
                 freeResources.remove(resource);
+                growPermit.release();
             }
             return removedResource;
         }, writeLock);
@@ -173,6 +170,7 @@ public class RWLockDataStructure implements DataStructure {
             removedResources.addAll(allResources);
             allResources.clear();
             freeResources.clear();
+            growPermit = new Semaphore(maxSize);
         }, writeLock);
         for(ResourceHandle resourceHandle : removedResources) {
             handler.deleteResource(resourceHandle);
