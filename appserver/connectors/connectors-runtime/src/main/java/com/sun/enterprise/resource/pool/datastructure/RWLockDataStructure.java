@@ -75,7 +75,7 @@ public class RWLockDataStructure implements DataStructure {
     private final ReentrantReadWriteLock.ReadLock readLock = reentrantLock.readLock();
     private final ReentrantReadWriteLock.WriteLock writeLock = reentrantLock.writeLock();
 
-    private Semaphore growPermit;
+    private final AtomicInteger remainingCapacity;
 
     protected static final Logger _logger = LogDomains.getLogger(RWLockDataStructure.class,LogDomains.RSR_LOGGER);
 
@@ -84,7 +84,7 @@ public class RWLockDataStructure implements DataStructure {
         freeResources = new ArrayDeque<>(Math.min(maxSize, 1000));
         this.maxSize = maxSize;
         this.handler = handler;
-        this.growPermit = new Semaphore(maxSize);
+        this.remainingCapacity = new AtomicInteger(maxSize);
         if(_logger.isLoggable(Level.FINEST)) {
             _logger.log(Level.FINEST, "pool.datastructure.rwlockds.init");
         }
@@ -102,8 +102,9 @@ public class RWLockDataStructure implements DataStructure {
                     allResources.add(handle);
                     freeResources.offerLast(handle);
                 }, writeLock);
+                numResAdded++;
             } catch (Exception e) {
-                growPermit.release();
+                increaseRemainingCapacity();
                 throw new PoolingException(e.getMessage(), e);
             }
         }
@@ -111,7 +112,12 @@ public class RWLockDataStructure implements DataStructure {
     }
 
     private boolean canGrow() {
-        return growPermit.tryAcquire();
+        int capacity = remainingCapacity.getAndUpdate((x) -> x > 0 ? x - 1 : 0);
+        return capacity > 0;
+    }
+
+    private void increaseRemainingCapacity() {
+        remainingCapacity.incrementAndGet();
     }
 
     /**
@@ -135,7 +141,7 @@ public class RWLockDataStructure implements DataStructure {
             final boolean removedResource = allResources.remove(resource);
             if (removedResource) {
                 freeResources.remove(resource);
-                growPermit.release();
+                increaseRemainingCapacity();
             }
             return removedResource;
         }, writeLock);
@@ -170,7 +176,7 @@ public class RWLockDataStructure implements DataStructure {
             removedResources.addAll(allResources);
             allResources.clear();
             freeResources.clear();
-            growPermit = new Semaphore(maxSize);
+            remainingCapacity.set(maxSize);
         }, writeLock);
         for(ResourceHandle resourceHandle : removedResources) {
             handler.deleteResource(resourceHandle);
@@ -191,7 +197,13 @@ public class RWLockDataStructure implements DataStructure {
      * @param maxSize
      */
     public void setMaxSize(int maxSize) {
-        this.maxSize = maxSize;
+        doLockSecured(() -> {
+            int delta = maxSize - this.maxSize;
+            remainingCapacity.getAndUpdate(x -> x + delta);
+            // remaining capacity might be negative after this, but its up to ConnectionPool to remove some of the resources
+            // before asking for new ones
+            this.maxSize = maxSize;
+        }, writeLock);
     }
 
     @Override
