@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.admin.amx.impl.mbean;
 
@@ -233,6 +233,7 @@ public final class LoggingImpl extends AMXImplBase //implements /*Logging,*/ Log
             attributes.put(gfHandler + ".logtoConsole", props.get(gfHandler + ".logtoConsole"));
             attributes.put(gfHandler + ".flushFrequency", props.get(gfHandler + ".flushFrequency"));
             attributes.put(gfHandler + ".logStandardStreams", props.get(gfHandler + ".logStandardStreams"));
+            attributes.put(gfHandler + ".fastLogging", props.get(gfHandler + ".fastLogging"));
             attributes.put("handlers", props.get("handlers"));
             attributes.put(sysHandler + ".useSystemLogging", props.get(sysHandler + ".useSystemLogging"));
             return attributes;
