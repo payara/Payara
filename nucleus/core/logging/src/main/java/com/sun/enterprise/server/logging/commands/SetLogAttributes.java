@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.server.logging.commands;
 
 import com.sun.common.util.logging.LoggingConfigFactory;
@@ -140,6 +140,7 @@ public class SetLogAttributes implements AdminCommand {
         "com.sun.enterprise.server.logging.GFFileHandler.multiLineMode",
         "com.sun.enterprise.server.logging.GFFileHandler.compressOnRotation",
         "com.sun.enterprise.server.logging.GFFileHandler.logStandardStreams",
+        "com.sun.enterprise.server.logging.GFFileHandler.fastLogging",
         "com.sun.enterprise.server.logging.UniformLogFormatter.ansiColor",
         "com.sun.enterprise.server.logging.UniformLogFormatter.infoColor",
         "com.sun.enterprise.server.logging.UniformLogFormatter.warnColor",

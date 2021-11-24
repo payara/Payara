@@ -38,18 +38,22 @@
  * holder.
  */
 
-// Portions Copyright [2016-2021] [Payara Foundation]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
 package com.sun.common.util.logging;
 
-import java.util.logging.LogRecord;
 import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.LogRecord;
 
 /**
  * This class provides additional attributes not supported by JUL LogRecord
  * @author rinamdar
  */
 public class GFLogRecord extends LogRecord {
+
+    private static final String FAST_LOGGER_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.fastLogging";
+    public static Boolean fastLogging = Boolean.parseBoolean(LogManager.getLogManager().getProperty(FAST_LOGGER_PROPERTY));
 
     /**
      * SVUID for serialization compatibility
@@ -116,12 +120,19 @@ public class GFLogRecord extends LogRecord {
      * Append the original parameters at the end, as they are used for by some logging formatters,
      * such as JSON logging formatter for context
      *
+     * FISH-5703
+     * Add the option to skip the toString() method as it can have force a JPA entity to result
+     * in database access, causing a performance impact.
+     *
      * @param params
      * @return parameter array
      */
     private static Object[] transformParameters(Object[] params) {
         if (params == null) {
             return null;
+        }
+        if (fastLogging) {
+            return params;
         }
         Object[] result = new Object[params.length * 2];
         System.arraycopy(params, 0, result, params.length, params.length);
