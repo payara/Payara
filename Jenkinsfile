@@ -109,7 +109,7 @@ pipeline {
                 sh """mvn -B -V -ff -e clean verify --strict-checksums \
                 -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
                 -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
-                -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="./appserver/distributions/payara/target/stage/payara5/" \
+                -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/appserver/distributions/payara/target/stage/payara5" \
                 -Ppayara-server-remote"""
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
