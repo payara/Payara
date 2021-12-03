@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *  Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2019-2021] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -41,12 +41,14 @@ package fish.payara.security.realm;
 
 import fish.payara.security.api.CertificateCredential;
 import java.security.cert.X509Certificate;
+import javax.security.auth.x500.X500Principal;
 import javax.security.enterprise.CallerPrincipal;
 import javax.security.enterprise.credential.AbstractClearableCredential;
 
 /**
  *
  * @author Gaurav Gupta
+ * @author Ondro Mihalyi
  */
 public class CertificateCredentialImpl extends AbstractClearableCredential implements CertificateCredential {
 
@@ -66,7 +68,7 @@ public class CertificateCredentialImpl extends AbstractClearableCredential imple
 
     @Override
     public CallerPrincipal getPrincipal() {
-        return new CallerPrincipal(certificates[0].getIssuerDN().getName());
+        return new CallerPrincipal(certificates[0].getIssuerX500Principal().getName(X500Principal.RFC2253));
     }
 
     @Override
