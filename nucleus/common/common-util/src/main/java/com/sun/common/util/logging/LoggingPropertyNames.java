@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 
 package com.sun.common.util.logging;
 
@@ -79,6 +79,8 @@ public class LoggingPropertyNames {
     public static final String payaraNotificationLogToFile  = PYFileHandler + "logtoFile";
 
     public static final String logToConsole = GFFileHandler + "logtoConsole";
+
+    public static final String fastLogging = GFFileHandler + "fastLogging";
 
     public static final String alarms = GFFileHandler + "alarms";
 
