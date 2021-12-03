@@ -5858,6 +5858,9 @@ public class StandardContext
                         iniInstance.onStartup(initializerList.get(initializer), ctxt);
                     } else {
                         // Don't try to initialise MicroProfile Rest Client interfaces as servlets
+                        // TODO Ideally we wouldn't have a hard dependency like this.
+                        //  Possibly rewrite with a new blacklist/whitelist serviceloader or equivalent extension
+                        //  pattern to cull the initialisers we want to skip
                         iniInstance.onStartup(initializerList.get(initializer).stream()
                                 .filter(clazz -> !clazz.isAnnotationPresent(RegisterRestClient.class))
                                 .collect(Collectors.toSet()),
