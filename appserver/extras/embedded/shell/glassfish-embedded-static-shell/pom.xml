@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.extras</groupId>
         <artifactId>extras</artifactId>
-        <version>5.2021.10</version>
+        <version>5.2021.11-SNAPSHOT</version>
         <relativePath>../../../pom.xml</relativePath>
     </parent>
 
