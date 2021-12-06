@@ -47,7 +47,9 @@ import java.util.Set;
 /**
  * Service Loader interface extension point for filtering out
  * {@link ServletContainerInitializer ServletContainerInitializers} that would otherwise be picked up and loaded by
- * the blanket interest list.
+ * the blanket interest list. Allows us to omit initializers based on criteria without having to pull in extra
+ * dependencies into core server (e.g. MicroProfile).
+ *
  */
 public interface ServletContainerInitializerBlacklist {
 

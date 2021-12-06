@@ -568,8 +568,6 @@ public class ServletContainerInitializerUtil {
 
     private static Map<Class<? extends ServletContainerInitializer>, Set<Class<?>>> checkAgainstBlacklist(
             Map<Class<? extends ServletContainerInitializer>, Set<Class<?>>> initializersList) {
-
-
         Iterable<ServletContainerInitializerBlacklist> blacklistServices = ServiceLoader.load(
                 ServletContainerInitializerBlacklist.class);
 

@@ -48,6 +48,17 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * Extension point that omits {@link ServletContainerInitializer ServletContainerInitializers} annotated with
+ * {@link RegisterRestClient}. If we try and initialise these interfaces Jersey will fail them on validation (correctly)
+ * since you will end up with a duplicate mapping (the interface itself against the actual endpoint implementation).
+ *
+ * Using an extension mechanism rather than having this check directly in
+ * {@link org.glassfish.web.loader.ServletContainerInitializerUtil} allows us to avoid pulling MicroProfile APIs into
+ * the core server as a dependency.
+ *
+ * @author Andrew Pielage
+ */
 public class RestClientServletContainerInitializerBlacklist implements ServletContainerInitializerBlacklist {
 
     @Override
