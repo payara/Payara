@@ -208,9 +208,6 @@ import org.glassfish.web.valve.GlassFishValve;
  * @author Remy Maucherat
  * @version $Revision: 1.48 $ $Date: 2007/07/25 00:52:04 $
  */
-
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
-
 public class StandardContext
     extends ContainerBase
     implements Context, ServletContext
