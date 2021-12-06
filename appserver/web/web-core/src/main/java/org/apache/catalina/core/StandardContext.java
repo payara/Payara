@@ -98,7 +98,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
-import java.util.stream.Collectors;
 
 import javax.management.MBeanRegistrationException;
 import javax.management.MalformedObjectNameException;
@@ -190,7 +189,6 @@ import org.apache.naming.resources.ProxyDirContext;
 import org.apache.naming.resources.Resource;
 import org.apache.naming.resources.WARDirContext;
 import org.apache.naming.resources.WebDirContext;
-import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 import org.glassfish.grizzly.http.server.util.AlternateDocBase;
 import org.glassfish.grizzly.http.server.util.Mapper;
 import org.glassfish.grizzly.http.server.util.MappingData;
@@ -5854,18 +5852,7 @@ public class StandardContext
 
                     fireContainerEvent(BEFORE_CONTEXT_INITIALIZER_ON_STARTUP, iniInstance);
 
-                    if (e.getValue() == null) {
-                        iniInstance.onStartup(initializerList.get(initializer), ctxt);
-                    } else {
-                        // Don't try to initialise MicroProfile Rest Client interfaces as servlets
-                        // TODO Ideally we wouldn't have a hard dependency like this.
-                        //  Possibly rewrite with a new blacklist/whitelist serviceloader or equivalent extension
-                        //  pattern to cull the initialisers we want to skip
-                        iniInstance.onStartup(initializerList.get(initializer).stream()
-                                .filter(clazz -> !clazz.isAnnotationPresent(RegisterRestClient.class))
-                                .collect(Collectors.toSet()),
-                                ctxt);
-                    }
+                    iniInstance.onStartup(initializerList.get(initializer), ctxt);
 
                     fireContainerEvent(AFTER_CONTEXT_INITIALIZER_ON_STARTUP, iniInstance);
                 } catch (Throwable t) {

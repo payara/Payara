@@ -240,7 +240,12 @@
             <version>${jersey.version}</version>
         </dependency>
 
-        <!-- MicroProfile Rest Client ssl-->
+        <!-- MicroProfile Rest Client Extensions-->
+        <dependency>
+            <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
+            <artifactId>microprofile-rest-client</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
             <artifactId>rest-client-ssl</artifactId>

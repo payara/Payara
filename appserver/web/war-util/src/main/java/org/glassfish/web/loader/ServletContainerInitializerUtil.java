@@ -37,10 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2021 Payara Foundation and/or its affiliates
 
 package org.glassfish.web.loader;
 
+import fish.payara.web.loader.ServletContainerInitializerBlacklist;
 import org.glassfish.deployment.common.ClassDependencyBuilder;
 import org.glassfish.hk2.classmodel.reflect.*;
 
@@ -365,6 +366,9 @@ public class ServletContainerInitializerUtil {
             }
         }
 
+        // Remove initializers we aren't interested in
+        initializerList = checkAgainstBlacklist(initializerList);
+
         return initializerList;
     }
 
@@ -560,6 +564,19 @@ public class ServletContainerInitializerUtil {
             }
         }
         return initializerList;
+    }
+
+    private static Map<Class<? extends ServletContainerInitializer>, Set<Class<?>>> checkAgainstBlacklist(
+            Map<Class<? extends ServletContainerInitializer>, Set<Class<?>>> initializersList) {
+
+
+        Iterable<ServletContainerInitializerBlacklist> blacklistServices = ServiceLoader.load(
+                ServletContainerInitializerBlacklist.class);
+
+        blacklistServices.forEach(blacklistService -> blacklistService.removeServletContainerInitializers(
+                initializersList));
+
+        return initializersList;
     }
 
     
