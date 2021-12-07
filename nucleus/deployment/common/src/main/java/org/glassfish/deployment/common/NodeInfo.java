@@ -88,7 +88,7 @@ class NodeInfo extends ClassVisitor {
     private static final Set<NodeInfo> EMPTY_NODEINFO_SET = new HashSet<NodeInfo>();
 
     NodeInfo(byte[] classData) {
-        super(Opcodes.ASM5);
+        super(Opcodes.ASM9);
         ClassReader cr = new ClassReader(classData);
 
         cr.accept(this, ClassReader.SKIP_CODE);
@@ -136,7 +136,7 @@ class NodeInfo extends ClassVisitor {
     }
 
     NodeInfo(String className) {
-        super(Opcodes.ASM5);
+        super(Opcodes.ASM9);
         this.className = className;
     }
 

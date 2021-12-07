@@ -54,7 +54,7 @@ public class DocClassVisitor extends ClassVisitor {
     private boolean showDeprecated;
 
     public DocClassVisitor(final boolean showDep) {
-        super(Opcodes.ASM5);
+        super(Opcodes.ASM9);
         showDeprecated = showDep;
     }
 
