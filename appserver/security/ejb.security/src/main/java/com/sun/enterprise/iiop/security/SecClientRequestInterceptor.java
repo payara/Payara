@@ -240,12 +240,17 @@ public class SecClientRequestInterceptor extends org.omg.CORBA.LocalObject imple
             /* IdentityToken with CDR encoded GSSUPName */
             idtok.principal_name(codec.encode_value(any));
         } else if (DistinguishedPrincipalCredential.class.isAssignableFrom(cls)) {
+            // If authenticated via OIDC rather than any of the above we'll have a DistinguishedPrincipalCredential
             _logger.log(Level.FINE,
                     "Constructing a GSS Exported Name Identity Token from DistinguishedPrincipalCredential");
             DistinguishedPrincipalCredential distinguishedPrincipalCredential = (DistinguishedPrincipalCredential) cred;
+
+            // Create a DER encoding of the principal name as a GSSUPName - realm is not currently factored into the
+            // parsing of the principal name from the IdentityToken so is left blank.
             GSSUPName gssupName = new GSSUPName(distinguishedPrincipalCredential.getPrincipal().getName(), "");
             byte[] expname = gssupName.getExportedName();
             GSS_NT_ExportedNameHelper.insert(any, expname);
+
             idtok.principal_name(codec.encode_value(any));
         }
         
