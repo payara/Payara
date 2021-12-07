@@ -44,15 +44,15 @@ package fish.payara.security.client;
  * @author Kalin Chan
  * @since 5.2022.1
  */
-public final class CertificateAlias {
+public final class PayaraConstants {
 
     /**
      * Specifies the JAX-RS property name
      */
-    public static final String JAX_RS_CLIENT = "fish.payara.jaxrs.client.certificate.alias";
+    public static final String JAXRS_CLIENT_CERTIFICATE_ALIAS = "fish.payara.jaxrs.client.certificate.alias";
 
     /**
      * Specifies the Rest Client property name.
      */
-    public static final String REST_CLIENT = "fish.payara.rest.client.certificate.alias";
+    public static final String REST_CLIENT_CERTIFICATE_ALIAS = "fish.payara.rest.client.certificate.alias";
 }
