@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright (c) 2017-2021 Payara Foundation and/or its affiliates. All rights reserved.
+Copyright (c) 2021 Payara Foundation and/or its affiliates. All rights reserved.
 
 The contents of this file are subject to the terms of either the GNU
 General Public License Version 2 only ("GPL") or the Common Development
@@ -38,33 +38,30 @@ and therefore, elected the GPL Version 2 license, then the option applies
 only if the new code is made subject to such option by the copyright
 holder.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"> <modelVersion>4.0.0</modelVersion>
-    
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
-        <artifactId>payara-appserver-modules</artifactId>
+        <artifactId>microprofile</artifactId>
         <version>5.2021.10-SNAPSHOT</version>
     </parent>
-    
-    <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
-    <artifactId>microprofile</artifactId>
-    <description>Parent POM for all Microprofile related modules</description>
-    <packaging>pom</packaging>
-    
-    <modules>
-        <module>config</module>
-        <module>config-extensions</module>
-        <module>fault-tolerance</module>
-        <module>healthcheck</module>
-        <module>jwt-auth</module>
-        <module>metrics</module>
-        <module>openapi</module>
-        <module>opentracing</module>
-        <!-- Extension of opentracing for Jax-ws, split out due to web distribution not having Jax-ws -->
-        <module>opentracing-jaxws</module>
-        <module>microprofile-common</module>
-        <module>microprofile-connector</module>
-        <module>rest-client-ssl</module>
-        <module>rest-client</module>
-    </modules>
+
+    <artifactId>microprofile-rest-client</artifactId>
+    <packaging>glassfish-jar</packaging>
+    <name>MicroProfile Rest Client</name>
+    <description>Module containing additional integrations for Rest Client into Payara Platform</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.eclipse.microprofile.rest.client</groupId>
+            <artifactId>microprofile-rest-client-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.server.internal.web</groupId>
+            <artifactId>war-util</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
 </project>
