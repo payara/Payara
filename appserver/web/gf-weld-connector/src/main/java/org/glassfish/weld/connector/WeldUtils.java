@@ -348,7 +348,7 @@ public class WeldUtils {
                                                    Set<String>    exclusions) {
 
         final String annotationTypeName = annotationType.getName();
-        if (cdiEnablingAnnotations.contains(annotationTypeName) && !exclusions.contains(annotationTypeName)) {
+        if (cdiEnablingAnnotations.contains(annotationTypeName)) {
             return true;
         } else if (exclusions.add(annotationTypeName)) {
             // If the annotation type itself is not an excluded type, then check its annotation
