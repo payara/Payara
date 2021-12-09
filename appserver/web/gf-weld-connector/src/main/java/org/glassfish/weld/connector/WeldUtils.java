@@ -291,6 +291,7 @@ public class WeldUtils {
                         final AnnotationType at = am.getType();
                         if (cdiEnablingAnnotations.contains(at.getName())) {
                             result.add(type.getName());
+                            break;
                         }
                     }
                 }
