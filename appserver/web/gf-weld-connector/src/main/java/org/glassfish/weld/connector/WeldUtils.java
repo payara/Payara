@@ -332,7 +332,7 @@ public class WeldUtils {
      * @return true, if the specified annotation type qualifies as a CDI enabler; Otherwise, false
      */
     private static boolean isCDIEnablingAnnotation(AnnotationType annotationType) {
-        return isCDIEnablingAnnotation(annotationType, null);
+        return isCDIEnablingAnnotation(annotationType, new HashSet<>());
     }
 
 
@@ -340,35 +340,27 @@ public class WeldUtils {
      * Determine if the specified annotation type is a CDI-enabling annotation
      *
      * @param annotationType    The annotation type to check
-     * @param excludedTypeNames The Set of annotation type names that should be excluded from the analysis
+     * @param exclusions The Set of annotation type names that should be excluded from the analysis
      *
      * @return true, if the specified annotation type qualifies as a CDI enabler; Otherwise, false
      */
     private static boolean isCDIEnablingAnnotation(AnnotationType annotationType,
-                                                   Set<String>    excludedTypeNames) {
-        boolean result = false;
+                                                   Set<String>    exclusions) {
 
-        Set<String> exclusions = new HashSet<String>();
-        if (excludedTypeNames != null) {
-            exclusions.addAll(excludedTypeNames);
-        }
-
-        String annotationTypeName = annotationType.getName();
+        final String annotationTypeName = annotationType.getName();
         if (cdiEnablingAnnotations.contains(annotationTypeName) && !exclusions.contains(annotationTypeName)) {
-            result = true;
-        } else if (!exclusions.contains(annotationTypeName)) {
-            // If the annotation type itself is not an excluded type, then check it's annotation
-            // types, less itself (to avoid infinite recursion)
-            exclusions.add(annotationTypeName);
+            return true;
+        } else if (exclusions.add(annotationTypeName)) {
+            // If the annotation type itself is not an excluded type, then check its annotation
+            // types, exclude itself to avoid infinite recursion
             for (AnnotationModel parent : annotationType.getAnnotations()) {
                 if (isCDIEnablingAnnotation(parent.getType(), exclusions)) {
-                    result = true;
-                    break;
+                    return true;
                 }
             }
         }
 
-        return result;
+        return false;
     }
 
 
