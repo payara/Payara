@@ -69,7 +69,7 @@
         <module>microprofile</module>
         <module>security-oauth2</module>
         <module>security-openid</module>
-        <!--<module>healthcheck-checker</module>-->
+        <module>healthcheck-checker</module>
         <module>healthcheck-metrics</module>
     </modules>
 </project>

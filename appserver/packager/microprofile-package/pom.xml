@@ -209,7 +209,7 @@
         </dependency>
         
         <!-- Healthcheck -->
-<!--        <dependency>
+        <dependency>
             <groupId>org.eclipse.microprofile.health</groupId>
             <artifactId>microprofile-health-api</artifactId>
         </dependency>
@@ -222,7 +222,7 @@
             <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
             <artifactId>healthcheck-checker</artifactId>
             <version>${project.version}</version>
-        </dependency>-->
+        </dependency>
 
         <!-- REST Client -->
         <dependency>
