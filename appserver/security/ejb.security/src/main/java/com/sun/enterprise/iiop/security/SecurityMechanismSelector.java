@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2021 Payara Foundation and/or its affiliates
 package com.sun.enterprise.iiop.security;
 
 import com.sun.corba.ee.org.omg.CSI.ITTAnonymous;
@@ -55,6 +55,7 @@ import com.sun.enterprise.common.iiop.security.SecurityContext;
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.EjbIORConfigurationDescriptor;
 import com.sun.enterprise.security.SecurityServicesUtil;
+import com.sun.enterprise.security.auth.login.DistinguishedPrincipalCredential;
 import com.sun.enterprise.security.auth.login.LoginContextDriver;
 import com.sun.enterprise.security.auth.login.common.LoginException;
 import com.sun.enterprise.security.auth.login.common.PasswordCredential;
@@ -771,6 +772,8 @@ public final class SecurityMechanismSelector implements PostConstruct {
                     ctx.identcls = GSSUPName.class;
                 } else if (o instanceof X500Principal) {
                     ctx.identcls = X500Principal.class;
+                } else if (o instanceof DistinguishedPrincipalCredential) {
+                    ctx.identcls = DistinguishedPrincipalCredential.class;
                 } else {
                     ctx.identcls = X509CertificateCredential.class;
                 }
