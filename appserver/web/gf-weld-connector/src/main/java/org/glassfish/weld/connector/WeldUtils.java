@@ -279,22 +279,17 @@ public class WeldUtils {
      * @return A collection of class names; The collection could be empty if none are found.
      */
     public static Collection<String> getCDIAnnotatedClassNames(DeploymentContext context) {
-        Set<String> result = new HashSet<String>();
+        final Set<String> result = new HashSet<>();
 
-        Types types = getTypes(context);
+        final Types types = getTypes(context);
         if (types != null) {
-            Iterator<Type> typesIter = types.getAllTypes().iterator();
-            while (typesIter.hasNext()) {
-                Type type = typesIter.next();
+            final Set<String> exclusions = new HashSet<>();
+            for (final Type type : types.getAllTypes()) {
                 if (!(type instanceof AnnotationType)) {
-                    Iterator<AnnotationModel> annotations = type.getAnnotations().iterator();
-                    while (annotations.hasNext()) {
-                        AnnotationModel am = annotations.next();
-                        AnnotationType at = am.getType();
-                        if (isCDIEnablingAnnotation(at)) {
-                            if (!result.contains(at.getName())) {
-                                result.add(type.getName());
-                            }
+                    for (final AnnotationModel am : type.getAnnotations()) {
+                        final AnnotationType at = am.getType();
+                        if (isCDIEnablingAnnotation(at, exclusions)) {
+                            result.add(type.getName());
                         }
                     }
                 }
