@@ -55,7 +55,7 @@ holder.
         <module>config</module>
         <module>config-extensions</module>
         <module>fault-tolerance</module>
-        <!--<module>healthcheck</module>-->
+        <module>healthcheck</module>
         <module>jwt-auth</module>
         <module>metrics</module>
         <module>openapi</module>
