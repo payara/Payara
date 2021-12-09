@@ -63,15 +63,15 @@ public class RestClientServletContainerInitializerBlacklist implements ServletCo
 
     @Override
     public void removeServletContainerInitializers(Map<Class<? extends ServletContainerInitializer>,
-            Set<Class<?>>> initializerList) {
+            Set<Class<?>>> initializerMap) {
 
-        for (Map.Entry<Class<? extends ServletContainerInitializer>, Set<Class<?>>> e : initializerList.entrySet()) {
+        for (Map.Entry<Class<? extends ServletContainerInitializer>, Set<Class<?>>> e : initializerMap.entrySet()) {
             Class<? extends ServletContainerInitializer> initializer = e.getKey();
 
             if (e.getValue() != null) {
                 // Don't try to initialise MicroProfile Rest Client interfaces as servlets
-                initializerList.put(initializer,
-                        initializerList.get(initializer).stream()
+                initializerMap.put(initializer,
+                        initializerMap.get(initializer).stream()
                                 .filter(clazz -> !clazz.isAnnotationPresent(RegisterRestClient.class))
                                 .collect(Collectors.toSet()));
             }
