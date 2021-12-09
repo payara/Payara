@@ -53,8 +53,8 @@ import java.lang.annotation.Target;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import javax.decorator.Decorator;
@@ -280,15 +280,16 @@ public class WeldUtils {
      */
     public static Collection<String> getCDIAnnotatedClassNames(DeploymentContext context) {
         final Set<String> result = new HashSet<>();
+        final Set<String> cdiEnablingAnnotations = new HashSet<>();
+        Collections.addAll(cdiEnablingAnnotations, getCDIEnablingAnnotations(context));
 
         final Types types = getTypes(context);
         if (types != null) {
             for (final Type type : types.getAllTypes()) {
                 if (!(type instanceof AnnotationType)) {
-                    final Set<String> exclusions = new HashSet<>();
                     for (final AnnotationModel am : type.getAnnotations()) {
                         final AnnotationType at = am.getType();
-                        if (isCDIEnablingAnnotation(at, exclusions)) {
+                        if (cdiEnablingAnnotations.contains(at.getName())) {
                             result.add(type.getName());
                         }
                     }
