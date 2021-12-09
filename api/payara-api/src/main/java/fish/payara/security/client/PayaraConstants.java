@@ -40,7 +40,7 @@
 package fish.payara.security.client;
 
 /**
- * Holds the constants for JAX-RS Client and MP Client Certificate Alias (FISH-230)
+ * Holds the constants for JAX-RS Client and MP Client Certificate Alias
  * @author Kalin Chan
  * @since 5.2022.1
  */
@@ -55,4 +55,9 @@ public final class PayaraConstants {
      * Specifies the Rest Client property name.
      */
     public static final String REST_CLIENT_CERTIFICATE_ALIAS = "fish.payara.rest.client.certificate.alias";
+
+    /**
+     * Specifies the MP Client property name
+     */
+    public static final String MP_CONFIG_CLIENT_CERTIFICATE_ALIAS = "payara.certificate.alias";
 }
