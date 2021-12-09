@@ -221,29 +221,22 @@ public class WeldUtils {
      * @return true, if there is at least one bean annotated with a qualified annotation in the specified paths
      */
     public static boolean hasCDIEnablingAnnotations(DeploymentContext context, Collection<URI> paths) {
-        List<String> result = new ArrayList<String>();
-
-        Types types = getTypes(context);
+        final Types types = getTypes(context);
         if (types != null) {
-            Iterator<Type> typesIter = types.getAllTypes().iterator();
-            while (typesIter.hasNext()) {
-                Type type = typesIter.next();
+            final Set<String> exclusions = new HashSet<>();
+            for (final Type type : types.getAllTypes()) {
                 if (!(type instanceof AnnotationType)) {
-                    Iterator<AnnotationModel> annotations = type.getAnnotations().iterator();
-                    while (annotations.hasNext()) {
-                        AnnotationModel am = annotations.next();
-                        AnnotationType at = am.getType();
-                        if (isCDIEnablingAnnotation(at) && type.wasDefinedIn(paths)) {
-                            if (!result.contains(at.getName())) {
-                                result.add(at.getName());
-                            }
+                    for (final AnnotationModel am : type.getAnnotations()) {
+                        final AnnotationType at = am.getType();
+                        if (isCDIEnablingAnnotation(at, exclusions) && type.wasDefinedIn(paths)) {
+                            return true;
                         }
                     }
                 }
             }
         }
 
-        return !(result.isEmpty());
+        return false;
     }
 
 
