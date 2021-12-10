@@ -62,8 +62,8 @@ import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static fish.payara.microprofile.jaxrs.client.ssl.PayaraConstants.PAYARA_MP_CONFIG_CLIENT_CERTIFICATE_ALIAS;
-import static fish.payara.microprofile.jaxrs.client.ssl.PayaraConstants.PAYARA_REST_CLIENT_CERTIFICATE_ALIAS;
+import static fish.payara.security.client.PayaraConstants.MP_CONFIG_CLIENT_CERTIFICATE_ALIAS;
+import static fish.payara.security.client.PayaraConstants.REST_CLIENT_CERTIFICATE_ALIAS;
 
 /**
  * This class implements RestClientListener to evaluate the alias property and set a custom sslContext
@@ -77,7 +77,7 @@ public class RestClientSslContextAliasListener implements RestClientListener {
     public void onNewClient(Class<?> serviceInterface, RestClientBuilder restClientBuilder) {
         logger.log(Level.FINE, "Evaluating state of the RestClientBuilder after calling build method");
         Object objectProperty = restClientBuilder.getConfiguration()
-                .getProperty(PAYARA_REST_CLIENT_CERTIFICATE_ALIAS);
+                .getProperty(REST_CLIENT_CERTIFICATE_ALIAS);
 
         if (objectProperty instanceof String) {
             String alias = (String) objectProperty;
@@ -93,7 +93,7 @@ public class RestClientSslContextAliasListener implements RestClientListener {
         } else {
             Config config = getConfig();
             try {
-                String alias = config.getValue(PAYARA_MP_CONFIG_CLIENT_CERTIFICATE_ALIAS,
+                String alias = config.getValue(MP_CONFIG_CLIENT_CERTIFICATE_ALIAS,
                         String.class);
                 if (alias != null) {
                     logger.log(Level.INFO, String.format("The alias: %s is available from the MP Config", alias));
@@ -107,7 +107,7 @@ public class RestClientSslContextAliasListener implements RestClientListener {
                 }
             } catch (NoSuchElementException e) {
                 logger.log(Level.FINE, String.format("The MP config property %s was not set",
-                        PAYARA_MP_CONFIG_CLIENT_CERTIFICATE_ALIAS));
+                        MP_CONFIG_CLIENT_CERTIFICATE_ALIAS));
             }
         }
     }

@@ -60,8 +60,8 @@ import java.net.URL;
 import java.security.*;
 import java.security.cert.CertificateException;
 
-import static fish.payara.microprofile.jaxrs.client.ssl.PayaraConstants.PAYARA_MP_CONFIG_CLIENT_CERTIFICATE_ALIAS;
-import static fish.payara.microprofile.jaxrs.client.ssl.PayaraConstants.PAYARA_REST_CLIENT_CERTIFICATE_ALIAS;
+import static fish.payara.security.client.PayaraConstants.MP_CONFIG_CLIENT_CERTIFICATE_ALIAS;
+import static fish.payara.security.client.PayaraConstants.REST_CLIENT_CERTIFICATE_ALIAS;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -87,7 +87,7 @@ public class RestClientSslContextAliasListenerTest {
         KeyStore[] keyStores = new KeyStore[]{getKeyStore()};
 
         when(restClientBuilder.getConfiguration()).thenReturn(configuration);
-        when(configuration.getProperty(PAYARA_REST_CLIENT_CERTIFICATE_ALIAS)).thenReturn("myKey");
+        when(configuration.getProperty(REST_CLIENT_CERTIFICATE_ALIAS)).thenReturn("myKey");
         doReturn(managers).when(restClientSslContextAliasListener).getKeyManagers();
         doReturn(keyStores).when(restClientSslContextAliasListener).getKeyStores();
 
@@ -105,11 +105,11 @@ public class RestClientSslContextAliasListenerTest {
         KeyStore[] keyStores = new KeyStore[]{getKeyStore()};
 
         when(restClientBuilder.getConfiguration()).thenReturn(configuration);
-        when(configuration.getProperty(PAYARA_REST_CLIENT_CERTIFICATE_ALIAS)).thenReturn(null);
+        when(configuration.getProperty(REST_CLIENT_CERTIFICATE_ALIAS)).thenReturn(null);
         doReturn(managers).when(restClientSslContextAliasListener).getKeyManagers();
         doReturn(keyStores).when(restClientSslContextAliasListener).getKeyStores();
         doReturn(config).when(restClientSslContextAliasListener).getConfig();
-        when(config.getValue(PAYARA_MP_CONFIG_CLIENT_CERTIFICATE_ALIAS, String.class)).thenReturn("myKey");
+        when(config.getValue(MP_CONFIG_CLIENT_CERTIFICATE_ALIAS, String.class)).thenReturn("myKey");
 
         restClientSslContextAliasListener.onNewClient(RestClientBuilder.class, restClientBuilder);
 
