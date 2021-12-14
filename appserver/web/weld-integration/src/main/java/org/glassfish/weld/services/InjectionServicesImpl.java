@@ -66,8 +66,10 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceUnit;
 import javax.xml.ws.WebServiceRef;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+
 import org.glassfish.api.invocation.ComponentInvocation;
 
 /**
@@ -95,8 +97,7 @@ public class InjectionServicesImpl implements InjectionServices {
      * @return 
      */
     private boolean isInterceptor( Class beanClass ) {
-      HashSet<String> annos = new HashSet<>();
-      annos.add( javax.interceptor.Interceptor.class.getName() );
+      final Set<String> annos = Collections.singleton(javax.interceptor.Interceptor.class.getName());
       boolean res = false;
       while ( !res && beanClass != Object.class ) {
         res = WeldUtils.hasValidAnnotation( beanClass, annos, null );

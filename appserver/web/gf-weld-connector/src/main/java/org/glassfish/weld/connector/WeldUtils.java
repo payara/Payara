@@ -51,6 +51,7 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import javax.decorator.Decorator;
 import javax.ejb.MessageDriven;
@@ -367,20 +368,29 @@ public class WeldUtils {
     public static boolean hasValidAnnotation(Class              annotatedClass,
                                              Collection<String> validScopes,
                                              Collection<String> excludedScopes) {
-        boolean result = false;
+
+        final Set<String> copyOfExcludedScopes = copyCollectionToSet(excludedScopes);
+        final Set<String> copyOfValidScopes = copyCollectionToSet(validScopes);
 
         // Check all the annotations on the specified Class to determine if the class is annotated
         // with a supported CDI scope
-        for (Annotation annotation : annotatedClass.getAnnotations()) {
-            if (WeldUtils.isValidAnnotation(annotation.annotationType(),
-                                            validScopes,
-                                            excludedScopes)) {
-                result =true;
-                break;
+        for (final Annotation annotation : annotatedClass.getAnnotations()) {
+            if (isValidAnnotation(annotation.annotationType(), copyOfValidScopes, copyOfExcludedScopes)) {
+               return true;
             }
         }
 
-        return result;
+        return false;
+    }
+
+    private static Set<String> copyCollectionToSet(final Collection<String> toBeCopied) {
+        final Set<String> copy;
+        if (toBeCopied == null) {
+            copy = new HashSet<>();
+        } else {
+            copy = new HashSet<>(toBeCopied);
+        }
+        return copy;
     }
 
     /**
@@ -394,35 +404,30 @@ public class WeldUtils {
      *
      * @return true, if the specified type is in the valid list and not in the excluded list; Otherwise, false.
      */
-    protected static boolean isValidAnnotation(Class<? extends Annotation> annotationType,
+    private static boolean isValidAnnotation(Class<? extends Annotation> annotationType,
                                                Collection<String>          validTypeNames,
                                                Collection<String>          excludedTypeNames) {
-        boolean result = false;
+        Objects.requireNonNull(validTypeNames);
+        Objects.requireNonNull(excludedTypeNames);
 
-        if (validTypeNames != null && !validTypeNames.isEmpty()) {
+        if (validTypeNames.isEmpty()) {
+            return false;
+        }
 
-            HashSet<String> excludedScopes = new HashSet<String>();
-            if (excludedTypeNames != null) {
-                excludedScopes.addAll(excludedTypeNames);
-            }
-
-            String annotationTypeName = annotationType.getName();
-            if (validTypeNames.contains(annotationTypeName) && !excludedScopes.contains(annotationTypeName)) {
-                result = true;
-            } else if (!excludedScopes.contains(annotationTypeName)){
-                // If the annotation type itself is not an excluded type, then check it's annotation
-                // types, less itself (to avoid infinite recursion)
-                excludedScopes.add(annotationTypeName);
-                for (Annotation parent : annotationType.getAnnotations()) {
-                    if (isValidAnnotation(parent.annotationType(), validTypeNames, excludedScopes)) {
-                        result = true;
-                        break;
-                    }
+        final String annotationTypeName = annotationType.getName();
+        if (validTypeNames.contains(annotationTypeName) && !excludedTypeNames.contains(annotationTypeName)) {
+            return true;
+        } else if (excludedTypeNames.add(annotationTypeName)){
+            // If the annotation type itself is not an excluded type, then check its annotation
+            // types, exclude itself (to avoid infinite recursion)
+            for (Annotation parent : annotationType.getAnnotations()) {
+                if (isValidAnnotation(parent.annotationType(), validTypeNames, excludedTypeNames)) {
+                    return true;
                 }
             }
         }
 
-        return result;
+        return false;
     }
 
 
