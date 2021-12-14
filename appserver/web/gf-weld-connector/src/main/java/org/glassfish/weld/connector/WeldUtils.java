@@ -402,8 +402,8 @@ public class WeldUtils {
      * @return true, if the specified type is in the valid list and not in the excluded list; Otherwise, false.
      */
     private static boolean isValidAnnotation(Class<? extends Annotation> annotationType,
-                                               Collection<String>          validTypeNames,
-                                               Collection<String>          excludedTypeNames) {
+                                               Set<String>          validTypeNames,
+                                               Set<String>          excludedTypeNames) {
         Objects.requireNonNull(validTypeNames);
         Objects.requireNonNull(excludedTypeNames);
 
