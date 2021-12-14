@@ -213,10 +213,10 @@ public class WeldUtils {
         if (types != null) {
             final Set<String> exclusions = new HashSet<>();
             for (final Type type : types.getAllTypes()) {
-                if (!(type instanceof AnnotationType)) {
+                if (!(type instanceof AnnotationType) && type.wasDefinedIn(paths)) {
                     for (final AnnotationModel am : type.getAnnotations()) {
                         final AnnotationType at = am.getType();
-                        if (isCDIEnablingAnnotation(at, exclusions) && type.wasDefinedIn(paths)) {
+                        if (isCDIEnablingAnnotation(at, exclusions)) {
                             return true;
                         }
                     }
