@@ -51,11 +51,9 @@ import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import javax.decorator.Decorator;
 import javax.ejb.MessageDriven;
@@ -114,41 +112,43 @@ public class WeldUtils {
      * <p>
      * Can be WAR, JAR, RAR or UNKNOWN.
      */
-    public static enum BDAType { WAR, JAR, RAR, UNKNOWN };
+    public enum BDAType { WAR, JAR, RAR, UNKNOWN };
 
-    protected static final List<String> cdiScopeAnnotations;
+    protected static final Set<String> cdiScopeAnnotations;
     static {
-        cdiScopeAnnotations = new ArrayList<String>();
-        cdiScopeAnnotations.add(Scope.class.getName());
-        cdiScopeAnnotations.add(NormalScope.class.getName());
-        cdiScopeAnnotations.add("javax.faces.view.ViewScoped");
-        cdiScopeAnnotations.add("javax.faces.flow.FlowScoped");
-        cdiScopeAnnotations.add(ConversationScoped.class.getName());
-        cdiScopeAnnotations.add(ApplicationScoped.class.getName());
-        cdiScopeAnnotations.add(SessionScoped.class.getName());
-        cdiScopeAnnotations.add(RequestScoped.class.getName());
-        cdiScopeAnnotations.add(Dependent.class.getName());
-        cdiScopeAnnotations.add(Singleton.class.getName());
-        cdiScopeAnnotations.add(Model.class.getName());
+        final HashSet<String> cdi = new HashSet<>();
+        cdi.add(Scope.class.getName());
+        cdi.add(NormalScope.class.getName());
+        cdi.add("javax.faces.view.ViewScoped");
+        cdi.add("javax.faces.flow.FlowScoped");
+        cdi.add(ConversationScoped.class.getName());
+        cdi.add(ApplicationScoped.class.getName());
+        cdi.add(SessionScoped.class.getName());
+        cdi.add(RequestScoped.class.getName());
+        cdi.add(Dependent.class.getName());
+        cdi.add(Singleton.class.getName());
+        cdi.add(Model.class.getName());
+
+        cdiScopeAnnotations = Collections.unmodifiableSet(cdi);
     }
 
-    protected static final List<String> cdiEnablingAnnotations;
+    protected static final Set<String> cdiEnablingAnnotations;
     static {
-        cdiEnablingAnnotations = new ArrayList<String>();
-
         // CDI scopes
-        cdiEnablingAnnotations.addAll(cdiScopeAnnotations);
+        final HashSet<String> cdi = new HashSet<>(cdiScopeAnnotations);
 
         // 1.2 updates
-       cdiEnablingAnnotations.add(Decorator.class.getName());
-       cdiEnablingAnnotations.add(Interceptor.class.getName());
-       cdiEnablingAnnotations.add(Stereotype.class.getName());
+        cdi.add(Decorator.class.getName());
+        cdi.add(Interceptor.class.getName());
+        cdi.add(Stereotype.class.getName());
 
         // EJB annotations
-        cdiEnablingAnnotations.add(MessageDriven.class.getName());
-        cdiEnablingAnnotations.add(Stateful.class.getName());
-        cdiEnablingAnnotations.add(Stateless.class.getName());
-        cdiEnablingAnnotations.add(javax.ejb.Singleton.class.getName());
+        cdi.add(MessageDriven.class.getName());
+        cdi.add(Stateful.class.getName());
+        cdi.add(Stateless.class.getName());
+        cdi.add(javax.ejb.Singleton.class.getName());
+
+        cdiEnablingAnnotations = Collections.unmodifiableSet(cdi);
     }
 
     protected static final List<String> excludedAnnotationTypes = new ArrayList<String>();
