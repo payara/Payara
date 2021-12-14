@@ -364,16 +364,15 @@ public class WeldUtils {
      *         validScopes, and none of the annotations specified in excludedScopes; Otherwise, false.
      */
     public static boolean hasValidAnnotation(Class              annotatedClass,
-                                             Collection<String> validScopes,
+                                             Set<String> validScopes,
                                              Collection<String> excludedScopes) {
 
         final Set<String> copyOfExcludedScopes = copyCollectionToSet(excludedScopes);
-        final Set<String> copyOfValidScopes = copyCollectionToSet(validScopes);
 
         // Check all the annotations on the specified Class to determine if the class is annotated
         // with a supported CDI scope
         for (final Annotation annotation : annotatedClass.getAnnotations()) {
-            if (isValidAnnotation(annotation.annotationType(), copyOfValidScopes, copyOfExcludedScopes)) {
+            if (isValidAnnotation(annotation.annotationType(), validScopes, copyOfExcludedScopes)) {
                return true;
             }
         }
