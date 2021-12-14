@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2021] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,16 +37,30 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.microprofile.jaxrs.client.ssl;
+
+package fish.payara.web.loader;
+
+import javax.servlet.ServletContainerInitializer;
+import java.util.Map;
+import java.util.Set;
 
 /**
- * Class to maintain the constants used to evaluate the name of the property for certificate alias
- * on MicroProfile rest clients
+ * Service Loader interface extension point for filtering out
+ * {@link ServletContainerInitializer ServletContainerInitializers} that would otherwise be picked up and loaded by
+ * the blanket interest list. Allows us to omit initializers based on criteria without having to pull in extra
+ * dependencies into core server (e.g. MicroProfile).
+ *
  */
-public class PayaraConstants {
+public interface ServletContainerInitializerBlacklist {
 
-    public static final String PAYARA_REST_CLIENT_CERTIFICATE_ALIAS = "fish.payara.rest.client.certificate.alias";
-
-    public static final String PAYARA_MP_CONFIG_CLIENT_CERTIFICATE_ALIAS = "payara.certificate.alias";
+    /**
+     * Removes {@link ServletContainerInitializer ServletContainerInitializers} from the list of initializers to be
+     * invoked.
+     *
+     * @param initializerList The list of {@link ServletContainerInitializer} to remove the initializers we don't want
+     *                        to be run from
+     */
+    void removeServletContainerInitializers(Map<Class<? extends ServletContainerInitializer>,
+            Set<Class<?>>> initializerList);
 
 }
