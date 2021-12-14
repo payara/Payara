@@ -47,9 +47,6 @@ import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
-import java.lang.annotation.Documented;
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
@@ -149,16 +146,6 @@ public class WeldUtils {
         cdi.add(javax.ejb.Singleton.class.getName());
 
         cdiEnablingAnnotations = Collections.unmodifiableSet(cdi);
-    }
-
-    protected static final List<String> excludedAnnotationTypes = new ArrayList<String>();
-    static {
-        // These are excluded because they are not scope annotations, and they cause the recursive
-        // analysis of parent annotations to continue infinitely because they reference each other,
-        // and in some cases, they reference themselves.
-        excludedAnnotationTypes.add(Documented.class.getName());
-        excludedAnnotationTypes.add(Retention.class.getName());
-        excludedAnnotationTypes.add(Target.class.getName());
     }
 
 
