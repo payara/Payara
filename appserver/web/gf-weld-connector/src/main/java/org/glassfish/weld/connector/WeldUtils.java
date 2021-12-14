@@ -193,9 +193,7 @@ public class WeldUtils {
      * @return true, if there is at least one bean annotated with a qualified annotation in the specified path
      */
     public static boolean hasCDIEnablingAnnotations(DeploymentContext context, URI path) {
-        Set<URI> paths = new HashSet<URI>();
-        paths.add(path);
-        return hasCDIEnablingAnnotations(context, paths);
+        return hasCDIEnablingAnnotations(context, Collections.singleton(path));
     }
 
 
