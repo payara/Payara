@@ -293,7 +293,7 @@
             <dependency>
                 <groupId>org.glassfish.jersey.ext.microprofile</groupId>
                 <artifactId>jersey-mp-rest-client</artifactId>
-                <version>2.33</version>
+                <version>${jersey.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
