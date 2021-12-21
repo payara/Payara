@@ -669,7 +669,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             property.setType(ModelUtils.getSchemaType(typeName, context));
         }
 
-        SchemaImpl.merge(schema, property, true, context);
+        SchemaImpl.merge(schema, property, false, context);
     }
 
     private static void visitSchemaParameter(AnnotationModel schemaAnnotation, org.glassfish.hk2.classmodel.reflect.Parameter parameter, ApiContext context) {
