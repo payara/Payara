@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiiates
+// Portions Copyright [2018-2021] Payara Foundation and/or affiiates
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -333,7 +333,9 @@ public interface Node extends ConfigBeanProxy, Named, ReferenceContainer, RefCon
                 return false;
             }
             // Although the Docker container may be local to this machine, it's not truly "local"
-            if (node.getType().equals("DOCKER")) {
+            // TEMP is a docker container as well.
+            if (node.getType().equals("DOCKER")
+                    || node.getType().equals("TEMP")) {
                 return false;
             }
             return NetUtils.isThisHostLocal(nodeHost);

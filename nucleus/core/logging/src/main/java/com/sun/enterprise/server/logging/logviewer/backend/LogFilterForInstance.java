@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017-2018] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2021] Payara Foundation and/or affiliates
  */
 
 package com.sun.enterprise.server.logging.logviewer.backend;
@@ -53,11 +53,17 @@ import com.trilead.ssh2.SCPClient;
 import com.trilead.ssh2.SFTPv3DirectoryEntry;
 import com.trilead.ssh2.SFTPv3FileAttributes;
 
+import fish.payara.enterprise.server.logging.TrivialTarInputStream;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -178,14 +184,60 @@ public class LogFilterForInstance {
 
                 wrf.copyTo(instanceLogFile);
             } catch (WindowsException ex) {
-                throw new IOException("Unable to download instance log file from DCOM Instance Node");
+                throw new IOException("Unable to download instance log file from DCOM Instance Node", ex);
             }
 
+        } else if (node.getType().equals("DOCKER") || node.getType().equals("TEMP")) {
+            String dockerContainerId = targetServer.getDockerContainerId();
+            String nodeHost = node.getNodeHost();
+            int nodeDockerPort = Integer.valueOf(node.getDockerPort());
+            try {
+                if (dockerContainerId == null && node.getType().equals("TEMP")) {
+                    // FIXME: it would be easies, if the TEMP server had docker container id set!
+                    // temporary docker node, we need to access the original node, cut the added generated name
+                    String originalInstanceName = instanceName.substring(0, instanceName.lastIndexOf('-'));
+                    Server originalInstance = domain.getServerNamed(originalInstanceName);
+                    dockerContainerId = originalInstance.getDockerContainerId();
+                    String originalNodeName = originalInstance.getNodeRef();
+                    Node originalNode = nodes.getNode(originalNodeName);
+                    nodeHost = originalNode.getNodeHost();
+                    nodeDockerPort = Integer.valueOf(originalNode.getDockerPort());
+                    logFileName = "server.log";
+                }
+                File logFileDirectoryOnServer = makingDirectory(domainRoot + File.separator + "logs"
+                        + File.separator + instanceName);
+
+                String loggingDir = getLoggingDirectoryForNode(instanceLogFileName, node, sNode, instanceName);
+
+                if (logFileName == null || logFileName.equals("")) {
+                    logFileName = "server.log";
+                }
+                //"/opt/payara/appserver/glassfish/nodes/Hilarious-Angelfish/docker-instance-LovelyChar/logs/server.log"
+                String remotePath = loggingDir + "/" + logFileName;
+
+                String prefix = "http" + (Boolean.valueOf(node.getUseTls()) ? "s" : "");
+
+                // store the log file to the given path
+                URL logUrl = new URL(prefix, nodeHost, nodeDockerPort, "/containers/"
+                        + dockerContainerId
+                        + "/archive?path="
+                        + remotePath);
+                BufferedInputStream downloadFile = new BufferedInputStream(logUrl.openStream());
+//                ArchiveInputStream tarStream = new ArchiveStreamFactory().createArchiveInputStream(downloadFile);
+                TrivialTarInputStream tarStream = new TrivialTarInputStream(downloadFile);
+                Path instanceLogPath = Paths.get(logFileDirectoryOnServer.getAbsolutePath(), logFileName);
+                //Path instanceLogPathTar = Paths.get(logFileDirectoryOnServer.getAbsolutePath() + ".tar", logFileName);
+                Files.copy(tarStream, instanceLogPath, StandardCopyOption.REPLACE_EXISTING);
+//                Files.copy(downloadFile, instanceLogPath, StandardCopyOption.REPLACE_EXISTING);
+                instanceLogFile = instanceLogPath.toFile();
+            } catch (IOException ex) {
+//            } catch (IOException | ArchiveException ex) {
+                throw new IOException("Unable to download file from docker node at " + nodeHost + ":" + nodeDockerPort + ", instance " + instanceName + ", container " + dockerContainerId, ex);
+            }
 
         }
 
         return instanceLogFile;
-
     }
 
     public void downloadAllInstanceLogFiles(ServiceLocator habitat, Server targetServer, Domain domain, Logger logger,
@@ -402,7 +454,7 @@ public class LogFilterForInstance {
             }
 
         }
-        created = targetDir.mkdir();
+        created = targetDir.mkdirs();
         if (!created) {
             return null;
         } else {
