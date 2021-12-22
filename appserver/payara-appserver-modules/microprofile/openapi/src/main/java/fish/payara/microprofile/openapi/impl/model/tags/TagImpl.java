@@ -159,6 +159,13 @@ public class TagImpl extends ExtensibleImpl<Tag> implements Tag {
         return hash;
     }
 
+    /**
+     * Two tags are equal, if they have the same non-null name.
+     *
+     * @param obj the reference tag with which to compare.
+     * @return {@code true} if this tag has the same non-null name,
+     * {@code false} otherwise.
+     */
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
@@ -171,7 +178,7 @@ public class TagImpl extends ExtensibleImpl<Tag> implements Tag {
             return false;
         }
         final TagImpl other = (TagImpl) obj;
-        return Objects.equals(this.name, other.name);
+        return this.name != null && Objects.equals(this.name, other.name);
     }
 
     @Override
