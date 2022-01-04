@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2022] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.v3.admin.cluster;
 
@@ -314,13 +314,21 @@ public class StopInstanceCommand extends StopServer implements AdminCommand, Pos
 
         String nodeName = instance.getNodeRef();
         Node node = nodes.getNode(nodeName);
+        String nodeDir = node.getNodeDirUnixStyle();
         NodeUtils nodeUtils = new NodeUtils(habitat, logger);
 
         // asadmin command to run on instances node
         ArrayList<String> command = new ArrayList<String>();
         command.add("stop-local-instance");
         command.add("--kill");
+        if (nodeDir != null) {
+            command.add("--nodedir");
+            command.add(nodeDir);
+        }
+        command.add("--node");
+        command.add(nodeName);
         command.add(instanceName);
+
         String humanCommand = makeCommandHuman(command);
         String firstErrorMessage = Strings.get("stop.local.instance.kill",
                 instanceName, nodeName, humanCommand);
