@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2021 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2022 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Private License Version 2 only ("GPL") or the Common Development
@@ -37,7 +37,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package fish.payara.microprofile.jwtauth.eesecurity;
 
 import java.math.BigInteger;
@@ -49,9 +48,9 @@ import java.time.Duration;
 import java.util.Base64;
 import java.util.Optional;
 import java.util.function.Supplier;
-import javax.enterprise.inject.spi.DeploymentException;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
+import jakarta.enterprise.inject.spi.DeploymentException;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 import static org.eclipse.microprofile.jwt.config.Names.DECRYPTOR_KEY_LOCATION;
