@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2021 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2022 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,13 +39,7 @@
  */
 package fish.payara.microprofile.jwtauth.cdi;
 
-import fish.payara.microprofile.jwtauth.eesecurity.JWTAuthenticationMechanism;
-import fish.payara.microprofile.jwtauth.eesecurity.SignedJWTIdentityStore;
-import fish.payara.microprofile.jwtauth.jwt.ClaimAnnotationLiteral;
-import fish.payara.microprofile.jwtauth.jwt.ClaimValueImpl;
-import fish.payara.microprofile.jwtauth.jwt.JWTInjectableType;
-import fish.payara.microprofile.jwtauth.jwt.JsonWebTokenImpl;
-
+import com.sun.enterprise.security.web.integration.WebPrincipal;
 import java.lang.annotation.Annotation;
 
 import java.util.Arrays;
@@ -54,7 +48,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
 
 import static java.util.stream.Collectors.toSet;
 
@@ -71,32 +64,15 @@ import jakarta.json.JsonNumber;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonString;
 import jakarta.json.JsonStructure;
+import jakarta.json.JsonValue;
 import jakarta.security.enterprise.SecurityContext;
 import jakarta.security.enterprise.authentication.mechanism.http.HttpAuthenticationMechanism;
 import jakarta.security.enterprise.identitystore.IdentityStore;
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.context.Dependent;
-import javax.enterprise.context.RequestScoped;
-import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.inject.spi.AfterBeanDiscovery;
-import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.InjectionPoint;
-import javax.json.JsonArray;
-import javax.json.JsonNumber;
-import javax.json.JsonObject;
-import javax.json.JsonString;
-import javax.json.JsonStructure;
-import javax.json.JsonValue;
-import javax.security.enterprise.SecurityContext;
-import javax.security.enterprise.authentication.mechanism.http.HttpAuthenticationMechanism;
-import javax.security.enterprise.identitystore.IdentityStore;
 
 import org.eclipse.microprofile.auth.LoginConfig;
 import org.eclipse.microprofile.jwt.Claim;
 import org.eclipse.microprofile.jwt.ClaimValue;
 import org.eclipse.microprofile.jwt.JsonWebToken;
-import org.glassfish.soteria.cdi.CdiProducer;
 import org.glassfish.soteria.cdi.CdiUtils;
 
 import fish.payara.microprofile.jwtauth.eesecurity.JWTAuthenticationMechanism;
@@ -105,7 +81,7 @@ import fish.payara.microprofile.jwtauth.jwt.ClaimAnnotationLiteral;
 import fish.payara.microprofile.jwtauth.jwt.ClaimValueImpl;
 import fish.payara.microprofile.jwtauth.jwt.JWTInjectableType;
 import fish.payara.microprofile.jwtauth.jwt.JsonWebTokenImpl;
-import java.lang.reflect.Type;
+import java.security.Principal;
 import java.util.function.Function;
 import org.glassfish.common.util.PayaraCdiProducer;
 
@@ -122,14 +98,14 @@ public class CdiInitEventHandler {
 
     public static void installAuthenticationMechanism(AfterBeanDiscovery afterBeanDiscovery) {
 
-        afterBeanDiscovery.addBean(new CdiProducer<IdentityStore>()
+        afterBeanDiscovery.addBean(new PayaraCdiProducer<IdentityStore>()
                 .scope(ApplicationScoped.class)
                 .beanClass(IdentityStore.class)
                 .types(Object.class, IdentityStore.class, SignedJWTIdentityStore.class)
                 .addToId("store " + LoginConfig.class)
                 .create(e -> new SignedJWTIdentityStore()));
 
-        afterBeanDiscovery.addBean(new CdiProducer<HttpAuthenticationMechanism>()
+        afterBeanDiscovery.addBean(new PayaraCdiProducer<HttpAuthenticationMechanism>()
                 .scope(ApplicationScoped.class)
                 .beanClass(HttpAuthenticationMechanism.class)
                 .types(Object.class, HttpAuthenticationMechanism.class, JWTAuthenticationMechanism.class)
@@ -137,7 +113,7 @@ public class CdiInitEventHandler {
                 .create(e -> new JWTAuthenticationMechanism()));
 
         // MP-JWT 1.0 7.1.1. Injection of JsonWebToken
-        afterBeanDiscovery.addBean(new CdiProducer<JsonWebToken>()
+        afterBeanDiscovery.addBean(new PayaraCdiProducer<JsonWebToken>()
                 .scope(RequestScoped.class)
                 .beanClass(JsonWebToken.class)
                 .types(Object.class, JsonWebToken.class)
@@ -148,7 +124,7 @@ public class CdiInitEventHandler {
         for (JWTInjectableType injectableType : computeTypes()) {
 
             // Add a new Bean<T>/Dynamic producer for each type that 7.1.2 asks us to support.
-            afterBeanDiscovery.addBean(new CdiProducer<Object>()
+            afterBeanDiscovery.addBean(new PayaraCdiProducer<Object>()
                     .scope(Dependent.class)
                     .beanClass(CdiInitEventHandler.class)
                     .types(injectableType.getFullType())
@@ -160,7 +136,7 @@ public class CdiInitEventHandler {
                         Claim claim = getQualifier(
                                 getCurrentInjectionPoint(
                                         CdiUtils.getBeanManager(),
-                                        creationalContext), Claim.class);
+                                        (CreationalContext) creationalContext), Claim.class);
 
                         String claimName = getClaimName(claim);
 
@@ -264,12 +240,17 @@ public class CdiInitEventHandler {
     }
 
     public static JsonWebTokenImpl getJsonWebToken() {
-        JsonWebTokenImpl jsonWebToken = (JsonWebTokenImpl) CdiUtils.getBeanReference(SecurityContext.class).getCallerPrincipal();
-        if (jsonWebToken == null) {
-            jsonWebToken = emptyJsonWebToken;
+        SecurityContext context = CdiUtils.getBeanReference(SecurityContext.class);
+        Principal principal = context.getCallerPrincipal();
+        if (principal instanceof JsonWebTokenImpl) {
+            return (JsonWebTokenImpl) principal;
+        } else {
+            Set<JsonWebTokenImpl> principals = context.getPrincipalsByType(JsonWebTokenImpl.class);
+            if (!principals.isEmpty()) {
+                return principals.iterator().next();
+            }
         }
-
-        return jsonWebToken;
+        return emptyJsonWebToken;
     }
 
     public static String getClaimName(Claim claim) {
