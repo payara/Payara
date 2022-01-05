@@ -39,6 +39,8 @@
         <module>ejb-http-remoting</module>
         <module>remote-ejb-tracing</module>
         <module>rolesallowed-unprotected-methods</module>
+        <module>client-certificate-validator</module>
+        <module>microprofile-rc-ft</module>
     </modules>
 
     <dependencies>

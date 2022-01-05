@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2019-2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -108,7 +108,24 @@ public abstract class Policy implements Serializable {
     }
 
     protected static String describe(Method annotatedMethod, Class<? extends Annotation> annotationType, String attribute) {
-        return "Method \"" + annotatedMethod.getName() + "\" in " + annotatedMethod.getDeclaringClass().getName()
+        /**
+         * Prepend the message with FaultToleranceDefinitionException so that we can find it later.
+         *
+         * The Fault Tolerance TCK requires and checks that specifically a {@link FaultToleranceDefinitionException}
+         * gets thrown rather than any other kind of deployment exception. This gets complicated by the fact that the
+         * {@link FaultToleranceDefinitionException} being constructed here gets wrapped by Weld as a CDI Definition
+         * exception (with this exception as its cause), with this Weld exception then getting rethrown as a
+         * {@link org.glassfish.deployment.common.DeploymentException}, at which point everything but the message is
+         * lost (something to do with serialisation means blindly using
+         * {@link RuntimeException#RuntimeException(Throwable)} can lead to issues).
+         * Since Exceptions/Throwables aren't attached to the
+         * {@link org.glassfish.admin.rest.utils.xml.RestActionReporter} used by the deploy command and thus cannot be
+         * accessed from Arquillian, the current workaround is to simply read the type of exception from the error
+         * message and rethrow it as that.
+         */
+        return "org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceDefinitionException: Method \""
+                + annotatedMethod.getName() + "\" in "
+                + annotatedMethod.getDeclaringClass().getName()
                 + " annotated with " + annotationType.getSimpleName()
                 + (attribute.isEmpty() ? " " : " has a " + attribute(attribute));
     }
