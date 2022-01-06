@@ -37,36 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.microprofile.jwtauth.jwt;
+package fish.payara.samples.microprofile.restclient.faulttolerance;
 
-import java.util.function.Function;
-import org.eclipse.microprofile.jwt.ClaimValue;
+import javax.ws.rs.ApplicationPath;
+import javax.ws.rs.core.Application;
 
-/**
- * A default implementation of {@link ClaimValue}
- * 
- * @author Arjan Tijms
- *
- * @param <T> the expected type of the claim
- */
-public class ClaimValueImpl<T> implements ClaimValue<T> {
-    
-    private final String name;
-    private final Function<String, T> valueFunction;
-    
-    public ClaimValueImpl(String name, Function<String, T> valueFunction) {
-        this.name = name;
-        this.valueFunction = valueFunction;
-    }
-
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public T getValue() {
-        return valueFunction.apply(name);
-    }
-
+@ApplicationPath("/api")
+public class TestApplication extends Application {
 }

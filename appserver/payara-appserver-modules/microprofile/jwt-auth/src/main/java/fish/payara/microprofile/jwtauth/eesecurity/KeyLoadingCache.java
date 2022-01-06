@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2019-2021 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,35 +37,43 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.microprofile.faulttolerance.cdi;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+package fish.payara.microprofile.jwtauth.eesecurity;
 
-import jakarta.interceptor.InterceptorBinding;
+import java.time.Duration;
+import java.util.Optional;
+import java.util.function.Supplier;
 
-import org.eclipse.microprofile.faulttolerance.Fallback;
+public class KeyLoadingCache {
 
-/**
- * Added to methods at runtime in case they are affected by one of the FT annotations.
- * This means a FT annotation is either present directly on the method or on the class declaring the method.
- * 
- * This indirection is needed for two reasons:
- * 
- * 1) Allow to process all FT annotations with a single interceptor
- * 
- * 2) Allow to process {@link Fallback} even though it cannot be annotated on type level what would be needed to bind it
- *    to an interceptor directly.
- * 
- * @author Jan Bernitt
- */
-@Inherited
-@InterceptorBinding
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.METHOD, ElementType.TYPE })
-public @interface FaultTolerance {
-    //marker
+    private final Supplier<CacheableString> keySupplier;
+    private Duration ttl;
+    private long lastUpdated;
+    private Optional<String> key;
+
+
+    public KeyLoadingCache(Supplier<CacheableString> keySupplier) {
+        this.ttl = Duration.ZERO;
+        this.keySupplier = keySupplier;
+    }
+
+    public Optional<String> get() {
+        long now = System.currentTimeMillis();
+        if (now - lastUpdated > ttl.toMillis()) {
+            refresh();
+        }
+
+        return key;
+    }
+
+    private synchronized void refresh() {
+        long now = System.currentTimeMillis();
+        if (now - lastUpdated > ttl.toMillis()) {
+            CacheableString result = keySupplier.get();
+            key = result.getValue();
+            ttl = result.getCacheTTL();
+            lastUpdated = now;
+        }
+    }
+
 }

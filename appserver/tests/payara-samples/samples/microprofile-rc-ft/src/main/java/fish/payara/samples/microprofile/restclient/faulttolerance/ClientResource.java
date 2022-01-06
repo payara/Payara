@@ -37,36 +37,31 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.microprofile.jwtauth.jwt;
 
-import java.util.function.Function;
-import org.eclipse.microprofile.jwt.ClaimValue;
+package fish.payara.samples.microprofile.restclient.faulttolerance;
 
-/**
- * A default implementation of {@link ClaimValue}
- * 
- * @author Arjan Tijms
- *
- * @param <T> the expected type of the claim
- */
-public class ClaimValueImpl<T> implements ClaimValue<T> {
-    
-    private final String name;
-    private final Function<String, T> valueFunction;
-    
-    public ClaimValueImpl(String name, Function<String, T> valueFunction) {
-        this.name = name;
-        this.valueFunction = valueFunction;
-    }
+import org.eclipse.microprofile.rest.client.inject.RestClient;
 
-    @Override
-    public String getName() {
-        return name;
-    }
+import javax.enterprise.context.RequestScoped;
+import javax.inject.Inject;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 
-    @Override
-    public T getValue() {
-        return valueFunction.apply(name);
+@Path("client")
+@RequestScoped
+public class ClientResource {
+    @Inject
+    @RestClient
+    private HelloService helloService;
+
+
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    public String helloWorld() {
+        // this method relies on the retry of the MP REST Client
+        return helloService.hello("World");
     }
 
 }

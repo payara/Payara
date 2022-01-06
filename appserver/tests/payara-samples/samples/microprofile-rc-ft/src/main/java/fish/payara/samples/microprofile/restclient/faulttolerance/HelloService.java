@@ -37,36 +37,27 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.microprofile.jwtauth.jwt;
+package fish.payara.samples.microprofile.restclient.faulttolerance;
 
-import java.util.function.Function;
-import org.eclipse.microprofile.jwt.ClaimValue;
+import org.eclipse.microprofile.faulttolerance.Retry;
+import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 
-/**
- * A default implementation of {@link ClaimValue}
- * 
- * @author Arjan Tijms
- *
- * @param <T> the expected type of the claim
- */
-public class ClaimValueImpl<T> implements ClaimValue<T> {
-    
-    private final String name;
-    private final Function<String, T> valueFunction;
-    
-    public ClaimValueImpl(String name, Function<String, T> valueFunction) {
-        this.name = name;
-        this.valueFunction = valueFunction;
-    }
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 
-    @Override
-    public String getName() {
-        return name;
-    }
+@Produces(MediaType.TEXT_PLAIN)
+@Consumes(MediaType.TEXT_PLAIN)
+@RegisterRestClient(baseUri = "http://localhost:8080/microprofile-rc-ft/api/hello")
+public interface HelloService {
 
-    @Override
-    public T getValue() {
-        return valueFunction.apply(name);
-    }
-
+    @Path("{name}")
+    @GET
+    @Retry
+        // this does not work but should according to the 1.2 spec
+        // https://github.com/eclipse/microprofile-rest-client/blob/1.2.0/spec/src/main/asciidoc/integration.asciidoc
+    String hello(@PathParam("name") String name);
 }

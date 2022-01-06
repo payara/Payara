@@ -37,36 +37,35 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.microprofile.jwtauth.jwt;
+package fish.payara.samples.microprofile.restclient.faulttolerance;
 
-import java.util.function.Function;
-import org.eclipse.microprofile.jwt.ClaimValue;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import java.util.logging.Logger;
 
-/**
- * A default implementation of {@link ClaimValue}
- * 
- * @author Arjan Tijms
- *
- * @param <T> the expected type of the claim
- */
-public class ClaimValueImpl<T> implements ClaimValue<T> {
-    
-    private final String name;
-    private final Function<String, T> valueFunction;
-    
-    public ClaimValueImpl(String name, Function<String, T> valueFunction) {
-        this.name = name;
-        this.valueFunction = valueFunction;
+@Path("/hello")
+@Produces(MediaType.TEXT_PLAIN)
+@Consumes(MediaType.TEXT_PLAIN)
+public class HelloRemoteResource {
+
+    private static int counter = 0;
+    private static final Logger LOGGER = Logger.getLogger(HelloRemoteResource.class.getName());
+
+    @Path("{name}")
+    @GET
+    public String hello(@PathParam("name") String name) {
+        // check if we're down
+        LOGGER.info(() -> String.format("Counter value: %s", counter));
+        if (isDown()) {
+            LOGGER.warning(() -> String.format("Service unavailable, name: %s", name));
+            throw new ServiceUnavailableException();
+        }
+        LOGGER.info(() -> String.format("Service available, name: %s", name));
+        return "Hello " + name + "!";
     }
 
-    @Override
-    public String getName() {
-        return name;
-    }
+    private boolean isDown() {
 
-    @Override
-    public T getValue() {
-        return valueFunction.apply(name);
+        return counter++ % 2 == 1;
     }
-
 }

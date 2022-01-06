@@ -37,36 +37,50 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.microprofile.jwtauth.jwt;
 
-import java.util.function.Function;
-import org.eclipse.microprofile.jwt.ClaimValue;
+package fish.payara.samples.microprofile.restclient.faulttolerance;
 
-/**
- * A default implementation of {@link ClaimValue}
- * 
- * @author Arjan Tijms
- *
- * @param <T> the expected type of the claim
- */
-public class ClaimValueImpl<T> implements ClaimValue<T> {
-    
-    private final String name;
-    private final Function<String, T> valueFunction;
-    
-    public ClaimValueImpl(String name, Function<String, T> valueFunction) {
-        this.name = name;
-        this.valueFunction = valueFunction;
+import com.gargoylesoftware.htmlunit.Page;
+import com.gargoylesoftware.htmlunit.WebClient;
+import fish.payara.samples.NotMicroCompatible;
+import fish.payara.samples.PayaraArquillianTestRunner;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import javax.servlet.http.HttpServletResponse;
+import java.net.URL;
+
+@RunWith(PayaraArquillianTestRunner.class)
+@NotMicroCompatible
+public class MicroProfileRestClientFaultToleranceIT {
+
+    @ArquillianResource
+    private URL base;
+
+    private WebClient webClient;
+
+    @Deployment(testable = false)
+    public static WebArchive createDeployment() {
+        return ShrinkWrap.create(WebArchive.class, "microprofile-rc-ft.war")
+                .addPackage(TestApplication.class.getPackage())
+                .addAsManifestResource(TestApplication.class.getResource("/META-INF/beans.xml"), "beans.xml");
     }
 
-    @Override
-    public String getName() {
-        return name;
+    @Before
+    public void setup() {
+        webClient = new WebClient();
     }
 
-    @Override
-    public T getValue() {
-        return valueFunction.apply(name);
+    @Test
+    public void testRetry() throws Exception {
+        Page page = webClient.getPage(base + "/api/client");
+        Assert.assertEquals(HttpServletResponse.SC_OK, page.getWebResponse().getStatusCode());
     }
 
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,33 +37,43 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.microprofile.jwtauth.tck;
 
-import java.security.PublicKey;
-import org.eclipse.microprofile.jwt.JsonWebToken;
-import fish.payara.microprofile.jwtauth.jwt.JwtTokenParser;
+package fish.payara.microprofile.faulttolerance.cdi;
+
+import org.junit.Assert;
+import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- *
- *  * This implements the artefact mandated by the MP-JWT TCK for offline
- * (outside container) testing
- * of the token parser.
- *
- * @author Arjan Tijms
- *
+ * Tests for the {@link FaultToleranceExtension#determineInterceptorIndex(List, int)} method.
  */
-public class MockTokenParser {
+public class DetermineInterceptorIndexTest {
 
-    private final JwtTokenParser jwtTokenParser = new JwtTokenParser();
+    @Test
+    public void determineInterceptorIndex() {
+        List<Class<?>> interceptors = new ArrayList<>();
+        interceptors.add(DummyInterceptor1k.class);
+        interceptors.add(DummyInterceptor2k.class);
+        interceptors.add(DummyInterceptor3k.class);
+        interceptors.add(DummyInterceptor4k.class);
+        interceptors.add(DummyInterceptor5k.class);
 
-    public JsonWebToken parse(String bearerToken, String issuer, PublicKey signedBy) throws Exception {
-        try {
-            jwtTokenParser.parse(bearerToken);
-            return jwtTokenParser.verify(issuer, signedBy);
-        } catch (Exception e) {
-            throw new IllegalStateException("", e);
-        }
+        int index = FaultToleranceExtension.determineInterceptorIndex(interceptors, 3700);
+        Assert.assertTrue(index == 3);
+
+        index = FaultToleranceExtension.determineInterceptorIndex(interceptors, 6000);
+        Assert.assertTrue(index == 4);
+
+        index = FaultToleranceExtension.determineInterceptorIndex(interceptors, 5000);
+        Assert.assertTrue(index == 4);
+
+        index = FaultToleranceExtension.determineInterceptorIndex(interceptors, 2000);
+        Assert.assertTrue(index == 1);
+
+        index = FaultToleranceExtension.determineInterceptorIndex(interceptors, 500);
+        Assert.assertTrue(index == 0);
     }
 
 }
-
