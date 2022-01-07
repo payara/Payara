@@ -450,7 +450,7 @@ public class DeploymentImpl implements CDI11Deployment {
             }
             beanDeploymentArchives.add(newBda);
 
-            // Make the extension BDA visible to all previously found extensions
+            // Make all previously found extension BDAs visible to this extension BDA
             newBda.getBeanDeploymentArchives().addAll(extensionBDAMap.values());
 
             idToBeanDeploymentArchive.put(newBda.getId(), newBda);
