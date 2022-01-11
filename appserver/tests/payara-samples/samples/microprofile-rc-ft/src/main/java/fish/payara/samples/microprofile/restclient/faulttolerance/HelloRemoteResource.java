@@ -39,8 +39,8 @@
  */
 package fish.payara.samples.microprofile.restclient.faulttolerance;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
 import java.util.logging.Logger;
 
 @Path("/hello")

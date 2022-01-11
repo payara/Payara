@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2019-2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2022 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -111,7 +111,7 @@ public class CustomLoginModuleRealmTest {
         cmd.add("--classname");
         cmd.add("fish.payara.samples.loginmodule.realm.custom.CustomRealm");
         cmd.add("--property");
-        cmd.add("jaas-context=customRealm:realmJarPath=" + serverPathToRealm.toAbsolutePath().normalize());
+        cmd.add("jaas-context=customRealm:realmJarPath='" + serverPathToRealm.toAbsolutePath().normalize()+"'");
         cmd.add("custom");
         CliCommands.payaraGlassFish(cmd);
     }
