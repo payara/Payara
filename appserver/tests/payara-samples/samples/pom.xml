@@ -39,7 +39,6 @@
         <module>ejb-http-remoting</module>
         <module>remote-ejb-tracing</module>
         <module>rolesallowed-unprotected-methods</module>
-        <module>client-certificate-validator</module>
         <module>microprofile-rc-ft</module>
     </modules>
 
@@ -49,6 +48,10 @@
             <artifactId>ejb-invoker-secure-endpoint</artifactId>
             <version>${project.version}</version>
             <type>pom</type>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.platform</groupId>
+            <artifactId>jakarta.jakartaee-api</artifactId>
         </dependency>
     </dependencies>
 
