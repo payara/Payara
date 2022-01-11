@@ -80,11 +80,6 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.security</groupId>
-            <artifactId>jacc.provider.file</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
             <groupId>jakarta.authentication</groupId>
             <artifactId>jakarta.authentication-api</artifactId>
         </dependency>
