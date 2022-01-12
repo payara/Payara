@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2016-2019] [Payara Foundation and/or affiliates]
+//Portions Copyright [2016-2022] [Payara Foundation and/or affiliates]
 
 package com.sun.enterprise.admin.cli.schemadoc;
 
@@ -54,7 +54,7 @@ public class DocClassVisitor extends ClassVisitor {
     private boolean showDeprecated;
 
     public DocClassVisitor(final boolean showDep) {
-        super(Opcodes.ASM5);
+        super(Opcodes.ASM9);
         showDeprecated = showDep;
     }
 

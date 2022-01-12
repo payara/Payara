@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2016-2019] [Payara Foundation and/or affiliates]
+//Portions Copyright [2016-2022] [Payara Foundation and/or affiliates]
 package org.glassfish.flashlight.impl.client;
 
 import com.sun.enterprise.util.SystemPropertyConstants;
@@ -253,7 +253,7 @@ public class ProbeProviderClassFileTransformer implements ClassFileTransformer {
             extends ClassVisitor {
 
         ProbeProviderClassVisitor(ClassVisitor cv) {
-            super(Opcodes.ASM5, cv);
+            super(Opcodes.ASM9, cv);
             if (Log.getLogger().isLoggable(Level.FINER)) {
                 for (String methodDesc : probes.keySet()) {
                     Log.finer("visit" + methodDesc);
@@ -282,7 +282,7 @@ public class ProbeProviderClassFileTransformer implements ClassFileTransformer {
         private Label startFinally;
 
         ProbeProviderMethodVisitor(MethodVisitor mv, int access, String name, String desc, FlashlightProbe probe) {
-            super(Opcodes.ASM5, mv, access, name, desc);
+            super(Opcodes.ASM9, mv, access, name, desc);
             this.probe = probe;
         }
 
