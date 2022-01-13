@@ -122,14 +122,6 @@ public final class ServletAdapterBuilder extends ServerBuilder<ServletAdapterBui
     return internalServer.serverListener.transportCreated(serverTransport);
   }
 
-  /**protected List<? extends InternalServer> buildTransportServers(
-      List<? extends Factory> streamTracerFactories) {
-    checkNotNull(streamTracerFactories, "streamTracerFactories");
-    this.streamTracerFactories = streamTracerFactories;
-    internalServer = new InternalServerImpl();
-    return Arrays.asList(internalServer);
-  }**/
-
   protected ServerBuilder<?> getServerBuilder() {
     if (serverBuilder == null) {
       serverBuilder = new ServerImplBuilder(new ServerImplBuilder.ClientTransportServersBuilder() {
