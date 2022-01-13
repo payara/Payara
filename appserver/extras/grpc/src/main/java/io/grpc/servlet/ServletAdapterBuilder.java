@@ -22,10 +22,10 @@ import static io.grpc.servlet.Preconditions.checkState;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.logging.Logger;
 
 import javax.annotation.concurrent.NotThreadSafe;
 
@@ -38,12 +38,7 @@ import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.ServerServiceDefinition;
 import io.grpc.ServerStreamTracer;
-import io.grpc.ServerStreamTracer.Factory;
-import io.grpc.internal.AbstractServerImplBuilder;
-import io.grpc.internal.GrpcUtil;
-import io.grpc.internal.InternalServer;
-import io.grpc.internal.ServerTransportListener;
-import io.grpc.internal.SharedResourceHolder;
+import io.grpc.internal.*;
 
 /**
  * Builder to build a gRPC server that can run as a servlet. This is for advanced custom settings.
@@ -59,13 +54,15 @@ public final class ServletAdapterBuilder extends ServerBuilder<ServletAdapterBui
 
   @SuppressWarnings("rawtypes")
   private AbstractServerImplBuilder delegate = new AbstractServerImplBuilder() {
-    @SuppressWarnings("unchecked")
-    protected List<? extends InternalServer> buildTransportServers(List streamTracerFactories) {
-        return ServletAdapterBuilder.this.buildTransportServers(streamTracerFactories);
-    }
+
     @Override
     public AbstractServerImplBuilder<?> useTransportSecurity(File certChain, File privateKey) {
       throw new UnsupportedOperationException("TLS should be configured by the servlet container");
+    }
+
+    @Override
+    protected ServerBuilder<?> delegate() {
+     return ServletAdapterBuilder.this.getServerBuilder();
     }
   };
 
@@ -76,6 +73,7 @@ public final class ServletAdapterBuilder extends ServerBuilder<ServletAdapterBui
   private boolean internalCaller;
   private boolean usingCustomScheduler;
   private InternalServerImpl internalServer;
+  private ServerBuilder<?> serverBuilder;
 
   /**
    * Builds a gRPC server that can run as a servlet.
@@ -124,12 +122,28 @@ public final class ServletAdapterBuilder extends ServerBuilder<ServletAdapterBui
     return internalServer.serverListener.transportCreated(serverTransport);
   }
 
-  protected List<? extends InternalServer> buildTransportServers(
+  /**protected List<? extends InternalServer> buildTransportServers(
       List<? extends Factory> streamTracerFactories) {
     checkNotNull(streamTracerFactories, "streamTracerFactories");
     this.streamTracerFactories = streamTracerFactories;
     internalServer = new InternalServerImpl();
     return Arrays.asList(internalServer);
+  }**/
+
+  protected ServerBuilder<?> getServerBuilder() {
+    if (serverBuilder == null) {
+      serverBuilder = new ServerImplBuilder(new ServerImplBuilder.ClientTransportServersBuilder() {
+        @Override
+        public InternalServer buildClientTransportServers(
+                List<? extends ServerStreamTracer.Factory> streamTracerFact) {
+          checkNotNull(streamTracerFact, "streamTracerFactories");
+          streamTracerFactories = streamTracerFact;
+          internalServer = new InternalServerImpl();
+          return internalServer;
+        }
+      });
+    }
+    return serverBuilder;
   }
 
   /**

@@ -252,6 +252,8 @@ final class ServletServerStream extends AbstractServerStream {
             new Object[]{logId, frame == null ? 0 : frame.readableBytes(), flush, numMessages});
       }
 
+      transportState.runOnTransportThread(
+              () -> transportState.requestMessagesFromDeframerForTesting(numMessages));
       try {
         if (frame != null) {
           int numBytes = frame.readableBytes();
@@ -293,11 +295,6 @@ final class ServletServerStream extends AbstractServerStream {
       writer.complete();
     }
 
-    @Override
-    public void request(int numMessages) {
-      transportState.runOnTransportThread(
-          () -> transportState.requestMessagesFromDeframer(numMessages));
-    }
 
     @Override
     public void cancel(Status status) {
