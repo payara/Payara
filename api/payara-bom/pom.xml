@@ -167,7 +167,6 @@
             <dependency>
                 <groupId>org.eclipse.microprofile.opentracing</groupId>
                 <artifactId>microprofile-opentracing-api</artifactId>
-                <classifier>ee9</classifier>
                 <version>${microprofile-opentracing.version}</version>
             </dependency>
 

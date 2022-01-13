@@ -71,8 +71,7 @@ holder.
         </dependency>
         <dependency>
             <groupId>org.eclipse.microprofile.opentracing</groupId>
-            <artifactId>microprofile-opentracing-api</artifactId>            
-            <classifier>ee9</classifier>
+            <artifactId>microprofile-opentracing-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.eclipse.microprofile.config</groupId>
