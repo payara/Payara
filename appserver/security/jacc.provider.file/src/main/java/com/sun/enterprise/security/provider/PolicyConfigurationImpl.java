@@ -92,6 +92,7 @@ import com.sun.enterprise.security.provider.PolicyParser.PermissionEntry;
 import com.sun.enterprise.security.provider.PolicyParser.PrincipalEntry;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 
+import java.security.AccessController;
 import sun.security.provider.PolicyFile;
 
 /**
@@ -972,8 +973,13 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
         boolean inState = _stateIs(stateValue);
         
         if (stateValue == INSERVICE_STATE && !inState) {
-            if (fileArrived(true) || fileArrived(false)) {
-
+            Boolean fileArrived = AccessController.doPrivileged(new PrivilegedAction<Boolean>() {
+                @Override
+                public Boolean run() {
+                    return fileArrived(true) || fileArrived(false);
+                }
+            });
+            if (fileArrived) {
                 if (logger.isLoggable(Level.FINE)) {
                     logger.fine("JACC Policy Provider: file arrived transition to inService: " + " state: "
                             + (this.state == OPEN_STATE ? "open " : "deleted ") + CONTEXT_ID);
