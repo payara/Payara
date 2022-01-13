@@ -48,7 +48,6 @@
         <artifactId>orb</artifactId>
         <version>6.2021.1.Alpha2-SNAPSHOT</version>
     </parent>
-    
     <artifactId>orb-iiop</artifactId>
     <packaging>glassfish-jar</packaging>
 
