@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2022] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.provider;
 
 import static com.sun.enterprise.security.provider.PolicyParser.PrincipalEntry.WILDCARD_CLASS;
@@ -974,7 +974,7 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
         
         if (stateValue == INSERVICE_STATE && !inState) {
             Boolean fileArrived = AccessController.doPrivileged(
-                    (PrivilegedAction< Boolean>) () -> fileArrived(true) || fileArrived(false)
+                    (PrivilegedAction<Boolean>) () -> fileArrived(true) || fileArrived(false)
             );
             if (fileArrived) {
                 if (logger.isLoggable(Level.FINE)) {
