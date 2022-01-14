@@ -34,7 +34,6 @@ import io.grpc.internal.ReadableBuffers;
 import io.grpc.internal.ServerTransportListener;
 import io.grpc.internal.StatsTraceContext;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -269,15 +268,22 @@ public final class ServletAdapter {
     @Override
     public void onDataAvailable() throws IOException {
       logger.log(FINEST, "[{0}] onDataAvailable: ENTRY", logId);
-      if (input.isReady()) {
-        try (BufferedInputStream buffInput = new BufferedInputStream(input)) {
-          int length;
-          while ((length = buffInput.read(buffer)) != -1) {
-            byte[] copy = Arrays.copyOf(buffer, length);
-            stream.transportState().runOnTransportThread(
-                    () -> stream.transportState().inboundDataReceived(ReadableBuffers.wrap(copy), false));
-          }
+      while (input.isReady()) {
+        int length = input.read(buffer);
+        if (length == -1) {
+          logger.log(FINEST, "[{0}] inbound data: read end of stream", logId);
+          return;
         }
+
+        if (logger.isLoggable(FINEST)) {
+          logger.log(
+                  FINEST,
+                  "[{0}] inbound data: length = {1}, bytes = {2}",
+                  new Object[]{logId, length, ServletServerStream.toHexString(buffer, length)});
+        }
+        byte[] copy = Arrays.copyOf(buffer, length);
+        stream.transportState().runOnTransportThread(
+                () -> stream.transportState().inboundDataReceived(ReadableBuffers.wrap(copy), false));
       }
       logger.log(FINEST, "[{0}] onDataAvailable: EXIT", logId);
     }

@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.logging.Logger;
 
 import javax.annotation.concurrent.NotThreadSafe;
 
