@@ -973,12 +973,9 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
         boolean inState = _stateIs(stateValue);
         
         if (stateValue == INSERVICE_STATE && !inState) {
-            Boolean fileArrived = AccessController.doPrivileged(new PrivilegedAction<Boolean>() {
-                @Override
-                public Boolean run() {
-                    return fileArrived(true) || fileArrived(false);
-                }
-            });
+            Boolean fileArrived = AccessController.doPrivileged(
+                    (PrivilegedAction< Boolean>) () -> fileArrived(true) || fileArrived(false)
+            );
             if (fileArrived) {
                 if (logger.isLoggable(Level.FINE)) {
                     logger.fine("JACC Policy Provider: file arrived transition to inService: " + " state: "
