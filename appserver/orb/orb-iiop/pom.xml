@@ -50,7 +50,7 @@
     </parent>
     <artifactId>orb-iiop</artifactId>
     <packaging>glassfish-jar</packaging>
-    
+
     <name>GlassFish ORB interface layer implementation</name>
     <developers>
         <developer>

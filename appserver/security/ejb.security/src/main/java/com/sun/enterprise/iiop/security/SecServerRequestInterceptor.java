@@ -37,40 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2022 Payara Foundation and/or its affiliates
+// Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license
 
 package com.sun.enterprise.iiop.security;
 
-import static com.sun.enterprise.iiop.security.GSSUtils.GSSUP_MECH_OID;
-import static com.sun.enterprise.iiop.security.GSSUtils.verifyMechOID;
-import static com.sun.enterprise.iiop.security.SecurityContextUtil.STATUS_FAILED;
-import static java.security.AccessController.doPrivileged;
-import static java.util.logging.Level.FINE;
-import static java.util.logging.Level.SEVERE;
-
-import java.net.Socket;
-import java.security.PrivilegedAction;
-import java.security.cert.X509Certificate;
-import java.util.Hashtable;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.security.auth.Subject;
-
-import com.sun.enterprise.security.auth.realm.certificate.OID;
-
-import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
-import org.omg.CORBA.Any;
-import org.omg.CORBA.BAD_PARAM;
-import org.omg.CORBA.NO_PERMISSION;
-import org.omg.CORBA.ORB;
-import org.omg.IOP.Codec;
-import org.omg.IOP.ServiceContext;
-import org.omg.PortableInterceptor.ForwardRequest;
-import org.omg.PortableInterceptor.ServerRequestInfo;
-import org.omg.PortableInterceptor.ServerRequestInterceptor;
-
-/* Import classes generated from CSIV2 idl files */
 import com.sun.corba.ee.org.omg.CSI.CompleteEstablishContext;
 import com.sun.corba.ee.org.omg.CSI.ContextError;
 import com.sun.corba.ee.org.omg.CSI.EstablishContext;
@@ -91,26 +62,42 @@ import com.sun.corba.ee.spi.legacy.connection.Connection;
 import com.sun.corba.ee.spi.legacy.interceptor.RequestInfoExt;
 import com.sun.enterprise.common.iiop.security.AnonCredential;
 import com.sun.enterprise.common.iiop.security.GSSUPName;
-
-/**
- * This class is a server side request interceptor for CSIV2.
- * It is used to send and receive the service context in a
- * a service context element in the service context list in
- * an IIOP header.
- *
- * @author: Nithya Subramanian
- */
-
 import com.sun.enterprise.common.iiop.security.SecurityContext;
 import com.sun.enterprise.security.auth.login.common.PasswordCredential;
 import com.sun.enterprise.security.auth.login.common.X509CertificateCredential;
+import com.sun.enterprise.security.auth.realm.certificate.OID;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.logging.LogDomains;
+import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
+import org.omg.CORBA.Any;
+import org.omg.CORBA.BAD_PARAM;
+import org.omg.CORBA.NO_PERMISSION;
+import org.omg.CORBA.ORB;
+import org.omg.IOP.Codec;
+import org.omg.IOP.ServiceContext;
+import org.omg.PortableInterceptor.ForwardRequest;
+import org.omg.PortableInterceptor.ServerRequestInfo;
+import org.omg.PortableInterceptor.ServerRequestInterceptor;
 
-import sun.security.util.DerInputStream;
-import sun.security.util.DerValue;
+import javax.security.auth.Subject;
 import javax.security.auth.x500.X500Principal;
-import sun.security.x509.X509CertImpl;
+import java.io.ByteArrayInputStream;
+import java.net.Socket;
+import java.security.PrivilegedAction;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static com.sun.enterprise.iiop.security.GSSUtils.GSSUP_MECH_OID;
+import static com.sun.enterprise.iiop.security.GSSUtils.verifyMechOID;
+import static com.sun.enterprise.iiop.security.SecurityContextUtil.STATUS_FAILED;
+import static java.security.AccessController.doPrivileged;
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.SEVERE;
 
 /**
  * Security server request interceptor
@@ -326,23 +313,18 @@ public class SecServerRequestInterceptor extends org.omg.CORBA.LocalObject imple
                 // Extract DER encoding
                 derEncoding = X509CertificateChainHelper.extract(any);
             }
+            
+            List<? extends Certificate> certificates = CertificateFactory.getInstance("X.509")
+                    .generateCertPath(new ByteArrayInputStream(derEncoding))
+                    .getCertificates();
 
-            DerInputStream din = new DerInputStream(derEncoding);
+            X509Certificate[] certchain = new X509Certificate[certificates.size()];
 
-            /**
-             * Size specified for getSequence() is 1 and is just used as a guess by the method getSequence().
-             */
-            DerValue[] derval = din.getSequence(1);
-            X509Certificate[] certchain = new X509CertImpl[derval.length];
-            /**
-             * X509Certificate does not have a constructor which can be used to instantiate objects from DER
-             * encodings. So use X509CertImpl extends X509Cerificate and also implements DerEncoder interface.
-             */
             if (logger.isLoggable(Level.FINE)) {
                 logger.log(Level.FINE, "Content of X509 Certificate chain:");
             }
             for (int i = 0; i < certchain.length; i++) {
-                certchain[i] = new X509CertImpl(derval[i]);
+                certchain[i] = (X509Certificate) certificates.get(i);
                 if (logger.isLoggable(FINE)) {
                     logger.log(FINE, "    " + certchain[i].getSubjectX500Principal()
                             .getName(X500Principal.RFC2253, OID.getOIDMap()));

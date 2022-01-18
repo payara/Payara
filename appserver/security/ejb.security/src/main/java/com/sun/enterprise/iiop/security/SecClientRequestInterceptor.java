@@ -37,33 +37,52 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2022 Payara Foundation and/or its affiliates
+// Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license
 package com.sun.enterprise.iiop.security;
 
+import com.sun.corba.ee.org.omg.CSI.AuthorizationElement;
+import com.sun.corba.ee.org.omg.CSI.EstablishContext;
+import com.sun.corba.ee.org.omg.CSI.GSS_NT_ExportedNameHelper;
+import com.sun.corba.ee.org.omg.CSI.IdentityToken;
+import com.sun.corba.ee.org.omg.CSI.MTCompleteEstablishContext;
+import com.sun.corba.ee.org.omg.CSI.MTContextError;
+import com.sun.corba.ee.org.omg.CSI.SASContextBody;
+import com.sun.corba.ee.org.omg.CSI.SASContextBodyHelper;
+import com.sun.corba.ee.org.omg.CSI.X501DistinguishedNameHelper;
+import com.sun.corba.ee.org.omg.CSI.X509CertificateChainHelper;
+import com.sun.corba.ee.org.omg.CSIIOP.CompoundSecMech;
 import com.sun.enterprise.common.iiop.security.AnonCredential;
 import com.sun.enterprise.common.iiop.security.GSSUPName;
 import com.sun.enterprise.common.iiop.security.SecurityContext;
-
-import com.sun.corba.ee.org.omg.CSI.*;
-import com.sun.corba.ee.org.omg.CSIIOP.CompoundSecMech;
 import com.sun.enterprise.security.auth.login.common.PasswordCredential;
 import com.sun.enterprise.security.auth.login.common.X509CertificateCredential;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.logging.LogDomains;
+import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
+import org.omg.CORBA.Any;
+import org.omg.CORBA.ORB;
+import org.omg.IOP.Codec;
+import org.omg.IOP.ServiceContext;
+import org.omg.PortableInterceptor.ClientRequestInfo;
+import org.omg.PortableInterceptor.ClientRequestInterceptor;
+import org.omg.PortableInterceptor.ForwardRequest;
+import org.omg.PortableInterceptor.LOCATION_FORWARD;
+import org.omg.PortableInterceptor.SUCCESSFUL;
+import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
+import org.omg.PortableInterceptor.TRANSPORT_RETRY;
+import org.omg.PortableInterceptor.USER_EXCEPTION;
 
-import java.util.*;
-import java.util.logging.Level;
+import javax.security.auth.x500.X500Principal;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.logging.Level;
 
-import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
-import org.omg.CORBA.*;
-import org.omg.PortableInterceptor.*;
-import org.omg.IOP.*;
-import sun.security.util.DerOutputStream;
-import sun.security.util.DerValue;
-import javax.security.auth.x500.X500Principal;
+import static java.util.Arrays.asList;
 
 /**
  * This class implements a client side security request interceptor for CSIV2. It is used to send
@@ -177,9 +196,7 @@ public class SecClientRequestInterceptor extends org.omg.CORBA.LocalObject imple
     private IdentityToken createIdToken(java.lang.Object cred, Class cls, ORB orb) throws Exception {
 
         IdentityToken idtok = null;
-
-        DerOutputStream dos = new DerOutputStream();
-        DerValue[] derval = null; // DER encoding buffer
+        
         // byte[] cdrval ; // CDR encoding buffer
         Any any = orb.create_any();
         idtok = new IdentityToken();
@@ -189,19 +206,21 @@ public class SecClientRequestInterceptor extends org.omg.CORBA.LocalObject imple
             X500Principal credname = (X500Principal) cred;
             X501DistinguishedNameHelper.insert(any, credname.getEncoded());
 
-            /* IdentityToken with CDR encoded X501 name */
+            /* IdentityToken with CDR encoded X500 principal */
             idtok.dn(codec.encode_value(any));
         } else if (X509CertificateCredential.class.isAssignableFrom(cls)) {
             _logger.log(Level.FINE, "Constructing an X509 Certificate Chain Identity Token");
+            
             /* create a DER encoding */
             X509CertificateCredential certcred = (X509CertificateCredential) cred;
             X509Certificate[] certchain = certcred.getX509CertificateChain();
             _logger.log(Level.FINE, "Certchain length = " + certchain.length);
-            derval = new DerValue[certchain.length];
-            for (int i = 0; i < certchain.length; i++)
-                derval[i] = new DerValue(certchain[i].getEncoded());
-            dos.putSequence(derval);
-            X509CertificateChainHelper.insert(any, dos.toByteArray());
+            
+            byte[] certBytes = CertificateFactory.getInstance("X.509")
+                    .generateCertPath(asList(certchain))
+                    .getEncoded();
+            
+            X509CertificateChainHelper.insert(any, certBytes);
 
             /* IdentityToken with CDR encoded certificate chain */
             idtok.certificate_chain(codec.encode_value(any));
@@ -221,6 +240,7 @@ public class SecClientRequestInterceptor extends org.omg.CORBA.LocalObject imple
             /* IdentityToken with CDR encoded GSSUPName */
             idtok.principal_name(codec.encode_value(any));
         }
+        
         return (idtok);
     }
 
