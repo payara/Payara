@@ -40,6 +40,7 @@
     holder.
 
 -->
+<!-- Portions Copyright 2022 Payara Foundation and/or its affiliates -->
 
 <!DOCTYPE resources PUBLIC "-//Sun Microsystems Inc.//DTD Application Server 9.0 Domain//EN" "*<install directory>/lib/dtds/sun-resources_1_3.dtd*">
 
@@ -56,16 +57,16 @@
     ===========================================================================================
     |  res-type                             datasource-classname                              |
     ===========================================================================================
-    |  javax.sql.DataSource                 com.sybase.jdbc3.jdbc.SybDataSource               |
-    |  javax.sql.ConnectionPoolDataSource   com.sybase.jdbc3.jdbc.SybConnectionPoolDataSource |
-    |  javax.sql.XADataSource               com.sybase.jdbc3.jdbc.SybXADataSource             |
+    |  javax.sql.DataSource                 com.sybase.jdbc4.jdbc.SybDataSource               |
+    |  javax.sql.ConnectionPoolDataSource   com.sybase.jdbc4.jdbc.SybConnectionPoolDataSource |
+    |  javax.sql.XADataSource               com.sybase.jdbc4.jdbc.SybXADataSource             |
     ===========================================================================================
 -->
 
 <resources>
     <jdbc-connection-pool
         name="sybase_jconn_pool"
-        datasource-classname="com.sybase.jdbc3.jdbc.SybDataSource"
+        datasource-classname="com.sybase.jdbc4.jdbc.SybDataSource"
         res-type="javax.sql.DataSource">
         <property name="user" value="DB_USER"/>
         <property name="password" value="DB_PASSWORD"/>

@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2020-2021] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright 2020-2022 Payara Foundation and/or its affiliates -->
 
 <connector xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
            xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/connector_1_5.xsd"
@@ -234,20 +234,10 @@
 
                 <connectionfactory-interface>javax.sql.DataSource</connectionfactory-interface>
 
-                <!-- Since 9.1 supports both JDBC 3.0 and JDBC 4.0,
-                ConnectionFactory will be
-                com.sun.gjc.spi.jdbc30.DataSource (JDK 1.5) or
-                com.sun.gjc.spi.jdbc40.DataSource (JDK 1.6)
-                -->
                 <connectionfactory-impl-class>com.sun.gjc.spi.DataSource</connectionfactory-impl-class>
 
                 <connection-interface>java.sql.Connection</connection-interface>
 
-                <!-- Since 9.1 supports both JDBC 3.0 and JDBC 4.0,
-                Connection will be
-                com.sun.gjc.spi.jdbc30.ConnectionHolder30 (JDK 1.5) or
-                com.sun.gjc.spi.jdbc40.ConnectionHolder40 (JDK 1.6)
-                -->
                 <connection-impl-class>com.sun.gjc.spi.ConnectionHolder</connection-impl-class>
 
             </connection-definition>

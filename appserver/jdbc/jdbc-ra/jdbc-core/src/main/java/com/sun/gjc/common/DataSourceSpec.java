@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2022 Payara Foundation and/or its affiliates
 
 package com.sun.gjc.common;
 
@@ -94,7 +94,6 @@ public class DataSourceSpec implements java.io.Serializable {
     public static final int STATEMENTTIMEOUT = 30;
     public static final int STATEMENTWRAPPING = 31;
 
-    public static final int JDBC30DATASOURCE = 32;
     public static final int ESCAPECHARACTER = 33;
     public static final int STATEMENTCACHESIZE = 34;
     public static final int STATEMENTCACHETYPE = 35;
