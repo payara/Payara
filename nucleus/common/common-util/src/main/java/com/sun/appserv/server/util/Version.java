@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016-2019] [Payara Foundation and/or affiliates]
+// Portions Copyright [2016-2022] [Payara Foundation and/or affiliates]
 
 package com.sun.appserv.server.util;
 
@@ -77,6 +77,7 @@ public class Version {
     private static final String DEFAULT_DOMAIN_TEMPLATE_JAR = "nucleus-domain.jar";
     private static final String ADMIN_CLIENT_COMMAND_NAME_KEY = "admin_client_command_name";
     private static final String INITIAL_ADMIN_GROUPS_KEY = "initial_admin_user_groups";
+    private static final String DISTRIBUTION_KEY = "distribution";
     private static final List<Properties> VERSION_PROPS = new ArrayList<Properties>();
     private static final Map<String,Properties> VERSION_PROPS_MAP = new HashMap<String,Properties>();
     private static final Properties versionProp = getVersionProp();
@@ -282,6 +283,8 @@ public class Version {
     public static String getInitialAdminGroups() {
         return getProperty(INITIAL_ADMIN_GROUPS_KEY, "asadmin");
     }
+
+    public static String getDistributionKey(){ return getProperty(DISTRIBUTION_KEY, "");}
     
     /*
      * Fetch the value for the property identified by key
