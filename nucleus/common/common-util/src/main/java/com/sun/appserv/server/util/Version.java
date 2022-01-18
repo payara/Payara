@@ -46,22 +46,14 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 /**
- *
  * This class provides static methods to make accessible the version as well as
  * the individual parts that make up the version
- * 
-*/
+ */
 public class Version {
-    
+
     private static final String INSTALL_ROOT_PROP_NAME = "com.sun.aas.installRoot";
     private static final String PRODUCT_NAME_KEY = "product_name";
     private static final String BRIEF_PRODUCT_NAME_KEY = "brief_product_name";
@@ -79,7 +71,7 @@ public class Version {
     private static final String INITIAL_ADMIN_GROUPS_KEY = "initial_admin_user_groups";
     private static final String DISTRIBUTION_KEY = "distribution";
     private static final List<Properties> VERSION_PROPS = new ArrayList<Properties>();
-    private static final Map<String,Properties> VERSION_PROPS_MAP = new HashMap<String,Properties>();
+    private static final Map<String, Properties> VERSION_PROPS_MAP = new HashMap<String, Properties>();
     private static final Properties versionProp = getVersionProp();
 
     private static Properties getVersionProp() {
@@ -186,7 +178,7 @@ public class Version {
         }
         return v;
     }
-    
+
     /**
      * Returns full version including build id
      */
@@ -212,7 +204,7 @@ public class Version {
      * Returns Minor version
      */
     public static String getMinorVersion() {
-        return getProperty(MINOR_VERSION_KEY, "0").replace("-SNAPSHOT","");
+        return getProperty(MINOR_VERSION_KEY, "0").replace("-SNAPSHOT", "");
     }
 
     /**
@@ -221,7 +213,7 @@ public class Version {
     public static String getUpdateVersion() {
         return getProperty(UPDATE_VERSION_KEY, "0");
     }
-    
+
     /**
      * Returns Build version
      */
@@ -242,7 +234,7 @@ public class Version {
     public static String getVersionSuffix() {
         return getProperty(VERSION_SUFFIX_KEY, "");
     }
-    
+
     /**
      * Returns Proper Product Name
      */
@@ -284,8 +276,10 @@ public class Version {
         return getProperty(INITIAL_ADMIN_GROUPS_KEY, "asadmin");
     }
 
-    public static String getDistributionKey(){ return getProperty(DISTRIBUTION_KEY, "");}
-    
+    public static String getDistributionKey() {
+        return getProperty(DISTRIBUTION_KEY, "");
+    }
+
     /*
      * Fetch the value for the property identified by key
      * from the first Properties object in the list. If it doesn't exist

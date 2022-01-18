@@ -70,7 +70,7 @@
                 <artifactId>maven-antrun-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>ant-magic</id>
+                        <id>subtitute-distribution-property</id>
                         <phase>prepare-package</phase>
                         <goals>
                             <goal>run</goal>
