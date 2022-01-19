@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2021] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.security.admin.cli;
 
@@ -79,7 +80,7 @@ public class SecureAdminConfigMonitor implements ConfigListener {
     @Inject
     private Domain domain;
 
-    private Logger logger = SecurityLoggerInfo.getLogger();
+    private static final Logger LOGGER = SecurityLoggerInfo.getLogger();
 
     
     @Override
@@ -96,7 +97,7 @@ public class SecureAdminConfigMonitor implements ConfigListener {
                     }
                     return null;
                 }
-            }, logger);
+            }, LOGGER);
     }
 
     private NotProcessed processDomain(final TYPE type, final Domain d,

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2020] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2020-2021] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -56,7 +56,9 @@ public interface ResourceClassLoader {
 
     ConcurrentHashMap<String, ResourceEntry> getResourceEntries();
 
-    Class addResourceEntry(String name, ResourceEntry entry);
+    Class addResourceEntry(String name, String path, ResourceEntry entry);
+    
+    Class reloadResourceEntry(String name, String path, ResourceEntry entry);
 
     Class addGeneratedResourceEntry(
             String mainClass,

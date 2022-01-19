@@ -1,7 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
+<<<<<<< HEAD
  * Copyright (c) 2017-2022 Payara Foundation and/or its affiliates. All rights reserved.
+=======
+ * Copyright (c) 2017-2021 Payara Foundation and/or its affiliates. All rights reserved.
+>>>>>>> 651050622861338b82514aaba7a4f6084abef514
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development

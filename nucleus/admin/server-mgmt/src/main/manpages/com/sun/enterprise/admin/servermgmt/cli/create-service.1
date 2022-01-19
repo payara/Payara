@@ -8,6 +8,7 @@ SYNOPSIS
            create-service [--help] [--name service-name]
            [--serviceproperties service-properties]
            [--dry-run={false|true}] [--force={false|true}]
+           [--system-type system-type]
            [--serviceuser service-user]
            [--domaindir domain-dir]
            [--nodedir node-dir] [--node node]
@@ -15,7 +16,7 @@ SYNOPSIS
 
 DESCRIPTION
        The create-service subcommand configures the starting of a domain
-       administration server (DAS) or a GlassFish Server instance on an
+       administration server (DAS) or a Payara Server instance on an
        unattended boot on Windows, Linux, and Oracle Solaris systems.
 
        If no operand is specified and the domains directory contains only one
@@ -59,15 +60,22 @@ DESCRIPTION
        (http://www.microsoft.com/net/) . Otherwise, the subcommand fails.
 
    Behavior of create-service on Linux Systems
-       On Linux systems, the create-service subcommand creates a
-       System-V-style initialization script
-       /etc/init.d/GlassFish_domain-or-instance-name and installs a link to
-       this script in the /etc/rc?.d directories. After this subcommand
-       creates the script, you must use this script to start, stop, or restart
-       the domain or instance.
+       On Linux systems, the create-service subcommand first detects System-V
+       or SystemD init systems.
+
+       On systems using System-V, it creates an
+       initialization script /etc/init.d/GlassFish_domain-or-instance-name
+       and installs a link to this script in the /etc/rc?.d directories. After
+       this subcommand creates the script, you must use this script to start,
+       stop, or restart the domain or instance.
+
+       On systems using SystemD, the subcommand creates a configuration file
+       payara_domainname.service in /etc/systemd/system. It is recommended to
+       specify non-root user to run payara (parameter --serviceuser). It
+       is possible to further configure the service via --serviceproperties.
 
        On Linux systems, this subcommand must be run as the OS-level root
-       user.
+       user, because it writes to system directories.
 
    Behavior of create-service on Oracle Solaris Systems
        On Oracle Solaris systems, the create-service subcommand creates a
@@ -142,6 +150,10 @@ OPTIONS
            (<1024) on the platform. You can bind to ports< 1024 only if the
            owner of the service is superuser, otherwise, this is not allowed.
 
+           On Linux systems using SystemD these properties are stored as
+           Environment entries, accessible via Microprofile property in the
+           applications.
+
        --dry-run, -n
            Previews your attempt to create a service. Indicates issues and the
            outcome that will occur if you run the command without using the
@@ -159,11 +171,16 @@ OPTIONS
            false
                The service is not created (default).
 
+       --system-type system-type
+           If specified, system-type must be one of systemd, systemv, solaris
+           or windows, which determine the type of init scripts to create.
+           If not specified, the command performs autodetection of init system.
+
        --serviceuser
            (Linux systems only) The user that is to run the GlassFish Server
            software when the service is started. The default is the user that
-           is running the subcommand. Specify this option if the GlassFish
-           Server software is to be run by a user other than the root user.
+           is running the subcommand. Specify this option if the Payara
+           Server is to be run by a user other than the root user.
 
        --domaindir
            The absolute path of the directory on the disk that contains the
@@ -215,9 +232,32 @@ EXAMPLES
                root directory
                Command create-service executed successfully.
 
-       Example 2, Creating a Service on a Linux System
+       Example 2, Creating a Service on a Linux System using SystemD init
            This example creates a service for the default domain on a system
-           that is running Linux.
+           that is running Linux and SystemD. It is necessary to inform SystemD about the new script
+           by running systemctl daemon-reload. Then it is possible to start the service.
+
+               asadmin> create-service --service-user payaraadmin
+               The SystemD Service was created successfully. Here are the details:
+               Name of the service:domain1
+               Type of the service:Domain
+               Configuration location of the service:/etc/systemd/system/payara_domain1.service
+               User account that will run the service: payaraadmin
+               You have created the service but you need to start it yourself.  Here are the most
+               typical Linux commands of interest:
+
+               * systemctl daemon-reload
+               * systemctl start payara_domain1.service
+               * systemctl stop payara_domain1.service
+               * systemctl restart payara_domain1.service
+
+               For your convenience this message has also been saved to this file:
+               /opt/payara/glassfish/domains/domain1/PlatformServices.log
+               Command create-service executed successfully.
+
+       Example 3, Creating a Service on a Linux System using SystemV init
+           This example creates a service for the default domain on a system
+           that is running Linux and SystemV.
 
                asadmin> create-service
                Found the Linux Service and successfully uninstalled it.
@@ -237,7 +277,7 @@ EXAMPLES
                /export/glassfish3/glassfish/domains/domain1/PlatformServices.log
                Command create-service executed successfully.
 
-       Example 3, Creating a Service on an Oracle Solaris System
+       Example 4, Creating a Service on an Oracle Solaris System
            This example creates a service for the default domain on a system
            that is running Oracle Solaris.
 

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2020-2021] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.web;
 
@@ -61,7 +61,6 @@ import org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl;
 import org.glassfish.web.deployment.runtime.SessionManager;
 import org.glassfish.web.deployment.runtime.SunWebAppImpl;
 
-import java.lang.String;
 import java.lang.reflect.Method;
 import java.text.MessageFormat;
 import java.util.*;
@@ -76,7 +75,7 @@ public class WebApplication implements ApplicationContainer<WebBundleDescriptorI
 
     private final WebContainer container;
     private final WebModuleConfig wmInfo;
-    private Set<WebModule> webModules = new HashSet<WebModule>();
+    private final Set<WebModule> webModules = new HashSet<WebModule>();
     private final org.glassfish.web.config.serverbeans.WebModuleConfig appConfigCustomizations;
 
     public WebApplication(WebContainer container, WebModuleConfig config, 
@@ -171,6 +170,12 @@ public class WebApplication implements ApplicationContainer<WebBundleDescriptorI
 
         stopCoherenceWeb();
 
+        return true;
+    }
+
+    @Override
+    public boolean reload(ApplicationContext context) throws Exception {
+        webModules.forEach(WebModule::reload);
         return true;
     }
 

@@ -40,8 +40,7 @@
 package fish.payara.microprofile.openapi.impl.rest.init;
 
 import fish.payara.microprofile.openapi.impl.admin.OpenApiServiceConfiguration;
-import fish.payara.microprofile.openapi.impl.rest.app.OpenApiApplication;
-import static fish.payara.microprofile.openapi.impl.rest.app.OpenApiApplication.OPEN_API_APPLICATION_PATH;
+import fish.payara.microprofile.openapi.rest.app.OpenApiApplication;
 import static java.util.Arrays.asList;
 import java.util.HashSet;
 import java.util.Map;
@@ -55,6 +54,7 @@ import jakarta.servlet.ServletSecurityElement;
 import static jakarta.servlet.annotation.ServletSecurity.TransportGuarantee.CONFIDENTIAL;
 import static org.glassfish.common.util.StringHelper.isEmpty;
 import org.glassfish.internal.api.Globals;
+import org.glassfish.jersey.servlet.ServletContainer;
 import org.glassfish.jersey.servlet.init.JerseyServletContainerInitializer;
 
 /**
@@ -70,16 +70,16 @@ public class OpenApiServletContainerInitializer implements ServletContainerIniti
         if (!"".equals(ctx.getContextPath())) {
             return;
         }
+        OpenApiServiceConfiguration configuration = Globals.getDefaultHabitat().getService(OpenApiServiceConfiguration.class);
 
         // Check if there is already an endpoint for OpenAPI
         Map<String, ? extends ServletRegistration> registrations = ctx.getServletRegistrations();
         for (ServletRegistration reg : registrations.values()) {
-            if (reg.getMappings().contains(OPEN_API_APPLICATION_PATH)) {
+            if (reg.getMappings().contains(configuration.getEndpoint())) {
                 return;
             }
         }
 
-        OpenApiServiceConfiguration configuration = Globals.getDefaultHabitat().getService(OpenApiServiceConfiguration.class);
         String virtualServers = configuration.getVirtualServers();
         if (!isEmpty(virtualServers)
                 && !asList(virtualServers.split(",")).contains(ctx.getVirtualServerName())) {
@@ -87,9 +87,10 @@ public class OpenApiServletContainerInitializer implements ServletContainerIniti
         }
 
         // Start the OpenAPI application
-        new JerseyServletContainerInitializer().onStartup(new HashSet<>(asList(OpenApiApplication.class)), ctx);
-
-        ServletRegistration.Dynamic reg = (ServletRegistration.Dynamic) ctx.getServletRegistrations().get(OpenApiApplication.class.getName());
+        ServletContainer servletContainer = new ServletContainer(new OpenApiApplication());
+        ServletRegistration.Dynamic reg = ctx.addServlet("microprofile-openapi-servlet", servletContainer);
+        reg.setLoadOnStartup(1);
+        reg.addMapping("/" + configuration.getEndpoint()  + "/*");
         if (Boolean.parseBoolean(configuration.getSecurityEnabled())) {
             String[] roles = configuration.getRoles().split(",");
             reg.setServletSecurity(new ServletSecurityElement(new HttpConstraintElement(CONFIDENTIAL, roles)));

@@ -40,6 +40,13 @@
 package fish.payara.microprofile.jwtauth.cdi;
 
 import com.sun.enterprise.security.web.integration.WebPrincipal;
+import fish.payara.microprofile.jwtauth.eesecurity.JWTAuthenticationMechanism;
+import fish.payara.microprofile.jwtauth.eesecurity.SignedJWTIdentityStore;
+import fish.payara.microprofile.jwtauth.jwt.ClaimAnnotationLiteral;
+import fish.payara.microprofile.jwtauth.jwt.ClaimValueImpl;
+import fish.payara.microprofile.jwtauth.jwt.JWTInjectableType;
+import fish.payara.microprofile.jwtauth.jwt.JsonWebTokenImpl;
+
 import java.lang.annotation.Annotation;
 
 import java.util.Arrays;
@@ -48,6 +55,10 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.Arrays;
+import java.util.function.Function;
+
+import static java.util.stream.Collectors.toSet;
 
 import static java.util.stream.Collectors.toSet;
 
@@ -68,6 +79,7 @@ import jakarta.json.JsonValue;
 import jakarta.security.enterprise.SecurityContext;
 import jakarta.security.enterprise.authentication.mechanism.http.HttpAuthenticationMechanism;
 import jakarta.security.enterprise.identitystore.IdentityStore;
+
 
 import org.eclipse.microprofile.auth.LoginConfig;
 import org.eclipse.microprofile.jwt.Claim;
@@ -124,7 +136,8 @@ public class CdiInitEventHandler {
         for (JWTInjectableType injectableType : computeTypes()) {
 
             // Add a new Bean<T>/Dynamic producer for each type that 7.1.2 asks us to support.
-            afterBeanDiscovery.addBean(new PayaraCdiProducer<Object>()
+
+            afterBeanDiscovery.addBean(new PayaraCdiProducer<>()
                     .scope(Dependent.class)
                     .beanClass(CdiInitEventHandler.class)
                     .types(injectableType.getFullType())

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2021 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,42 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.iiop.security;
-
-import static com.sun.enterprise.deployment.EjbIORConfigurationDescriptor.NONE;
-import static com.sun.enterprise.deployment.EjbIORConfigurationDescriptor.REQUIRED;
-import static com.sun.enterprise.deployment.EjbIORConfigurationDescriptor.SUPPORTED;
-import static com.sun.enterprise.iiop.security.GSSUtils.GSSUP_MECH_OID;
-import static com.sun.enterprise.util.Utility.getLocalAddress;
-import static com.sun.enterprise.util.Utility.intToShort;
-import static com.sun.logging.LogDomains.SECURITY_LOGGER;
-import static java.util.logging.Level.FINE;
-import static java.util.logging.Level.SEVERE;
-
-import java.io.IOException;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import com.sun.enterprise.deployment.MethodPermission;
-import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
-import org.glassfish.enterprise.iiop.impl.CSIv2Policy;
-import org.glassfish.internal.api.ORBLocator;
-import org.glassfish.pfl.basic.func.UnaryFunction;
-import org.glassfish.security.common.Role;
-import org.omg.CORBA.INV_POLICY;
-import org.omg.CORBA.ORB;
-import org.omg.PortableInterceptor.IORInfo;
 
 import com.sun.corba.ee.impl.encoding.CDRInputObject;
 import com.sun.corba.ee.impl.encoding.CDROutputObject;
 import com.sun.corba.ee.impl.encoding.EncapsInputStream;
 import com.sun.corba.ee.org.omg.CSIIOP.AS_ContextSec;
-// The following classes are generated from CSIIOP.idl
 import com.sun.corba.ee.org.omg.CSIIOP.CompoundSecMech;
 import com.sun.corba.ee.org.omg.CSIIOP.CompoundSecMechList;
 import com.sun.corba.ee.org.omg.CSIIOP.CompoundSecMechListHelper;
@@ -96,7 +67,34 @@ import com.sun.corba.ee.spi.ior.iiop.IIOPProfile;
 import com.sun.corba.ee.spi.ior.iiop.IIOPProfileTemplate;
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.EjbIORConfigurationDescriptor;
+import com.sun.enterprise.deployment.MethodPermission;
 import com.sun.logging.LogDomains;
+import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
+import org.glassfish.enterprise.iiop.impl.CSIv2Policy;
+import org.glassfish.internal.api.ORBLocator;
+import org.glassfish.pfl.basic.func.UnaryFunction;
+import org.glassfish.security.common.Role;
+import org.ietf.jgss.GSSException;
+import org.omg.CORBA.INV_POLICY;
+import org.omg.CORBA.ORB;
+import org.omg.PortableInterceptor.IORInfo;
+
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static com.sun.enterprise.deployment.EjbIORConfigurationDescriptor.NONE;
+import static com.sun.enterprise.deployment.EjbIORConfigurationDescriptor.REQUIRED;
+import static com.sun.enterprise.deployment.EjbIORConfigurationDescriptor.SUPPORTED;
+import static com.sun.enterprise.iiop.security.GSSUtils.GSSUP_MECH_OID;
+import static com.sun.enterprise.util.Utility.getLocalAddress;
+import static com.sun.enterprise.util.Utility.intToShort;
+import static com.sun.logging.LogDomains.SECURITY_LOGGER;
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.SEVERE;
 
 /**
  * This is the class that manages the CSIV2 tagged component information in the IORs. Note: For
@@ -322,7 +320,7 @@ public final class CSIV2TaggedComponentInfo {
      * CompoundSecMech here will cause getSecurityMechanisms to fail, as it supports only one
      * CompoundSecMech.
      */
-    private CompoundSecMech[] createCompoundSecMechs(DescriptorMaker maker, EjbDescriptor ejbDescriptor) throws IOException {
+    private CompoundSecMech[] createCompoundSecMechs(DescriptorMaker maker, EjbDescriptor ejbDescriptor) throws GSSException {
 
         if (logger.isLoggable(FINE)) {
             logger.log(FINE, "IIOP: Creating CompoundSecMech");
@@ -377,8 +375,8 @@ public final class CSIV2TaggedComponentInfo {
         return mechList;
     }
 
-    private CompoundSecMech[] createCompoundSecMechs(List<SocketInfo> socketInfos, EjbDescriptor ejbDescriptor)
-            throws IOException {
+    private CompoundSecMech[] createCompoundSecMechs(final List<SocketInfo> socketInfos, EjbDescriptor ejbDescriptor)
+            throws GSSException {
 
         DescriptorMaker maker = new DescriptorMaker() {
             @Override
@@ -390,7 +388,7 @@ public final class CSIV2TaggedComponentInfo {
         return createCompoundSecMechs(maker, ejbDescriptor);
     }
 
-    private CompoundSecMech[] createCompoundSecMechs(int sslPort, EjbDescriptor ejbDescriptor) throws IOException {
+    private CompoundSecMech[] createCompoundSecMechs(final int sslPort, final EjbDescriptor ejbDescriptor) throws GSSException {
 
         DescriptorMaker maker = new DescriptorMaker() {
             @Override
@@ -405,7 +403,7 @@ public final class CSIV2TaggedComponentInfo {
     /**
      * Create the AS layer context within a compound mechanism definition.
      */
-    public AS_ContextSec createASContextSec(EjbIORConfigurationDescriptor iorDescriptor, String realmName) throws IOException {
+    public AS_ContextSec createASContextSec(EjbIORConfigurationDescriptor iorDescriptor, String realmName) throws GSSException {
         int targetSupports = 0;
         int targetRequires = 0;
         byte[] clientAuthenticationMmechanism = {};
@@ -462,7 +460,7 @@ public final class CSIV2TaggedComponentInfo {
     /**
      * Create the SAS layer context within a compound mechanism definition.
      */
-    public SAS_ContextSec createSASContextSec(EjbIORConfigurationDescriptor iorDescriptor) throws IOException {
+    public SAS_ContextSec createSASContextSec(EjbIORConfigurationDescriptor iorDescriptor) throws GSSException {
         int targetSupports = 0; // target_supports = 0 means that target supports ITTAbsent
         int targetRequires = 0;
         ServiceConfiguration[] privilegeAuthorities = new ServiceConfiguration[0];

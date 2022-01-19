@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2021 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,14 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2021 Payara Foundation and/or its affiliates.
 
 package com.sun.enterprise.common.iiop.security;
 
-import java.io.IOException;
-
+import org.ietf.jgss.GSSException;
+import org.ietf.jgss.Oid;
 import org.jvnet.hk2.annotations.Contract;
-
-import sun.security.util.ObjectIdentifier;
 
 /**
  *
@@ -55,10 +54,10 @@ public interface GSSUtilsContract {
 
     String dumpHex(byte[] octets);
 
-    byte[] importName(ObjectIdentifier oid, byte[] externalName) throws IOException;
+    byte[] importName(Oid oid, byte[] externalName) throws GSSException;
 
-    byte[] createExportedName(ObjectIdentifier oid, byte[] extName) throws IOException;
+    byte[] createExportedName(Oid oid, byte[] extName) throws GSSException;
 
-    ObjectIdentifier GSSUP_MECH_OID();
+    Oid GSSUP_MECH_OID();
 
 }

@@ -1785,6 +1785,11 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
     private void createEjbInterceptors(EJBContextImpl context,
         JCDIService.JCDIInjectionContext<?> ejbInterceptorsJCDIInjectionContext) throws Exception {
         Object[] interceptorInstances;
+        //sanitizing the null reference of interceptorManager
+        if (interceptorManager == null) {
+            _logger.severe("The reference for interceptorManager is not available, this is an un-sync state of the container");
+            return;
+        }
 
         if (isJCDIEnabled()) {
             Class[] interceptorClasses = interceptorManager.getInterceptorClasses();
@@ -2058,7 +2063,11 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
 
     public boolean intercept(CallbackType eventType, EJBContextImpl ctx)
             throws Throwable {
-
+        //sanitizing the null reference of interceptorManager
+        if (interceptorManager == null) {
+            _logger.severe("The reference for interceptorManager is not available, this is an un-sync state of the container");
+            return false;
+        }
         return interceptorManager.intercept(eventType, ctx);
     }
 

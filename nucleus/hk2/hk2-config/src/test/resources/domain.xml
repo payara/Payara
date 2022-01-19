@@ -39,6 +39,7 @@
     holder.
 
 -->
+<!-- Portions Copyright [2021] Payara Foundation and/or affiliates -->
 
 <simple-connector>
     <ejb-container-availability/>
@@ -47,6 +48,7 @@
         <generic-config name="test1">
           <generic-config name="test">
             <generic-config name="test"/>
+                <foo>bar</foo>
           </generic-config>
         </generic-config>
         <generic-config name="test2">

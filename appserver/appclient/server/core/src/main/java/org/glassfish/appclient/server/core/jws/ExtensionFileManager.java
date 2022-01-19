@@ -280,16 +280,11 @@ public class ExtensionFileManager implements PostConstruct {
                 continue;
             }
 
-            try {
-                JarFile nextJarFile = new JarFile(absNextFile);
-                try {
-                    Attributes attrs = getMainAttrs(nextJarFile);
-                    Set<Extension> newExtensions = getReferencedExtensions(attrs);
-                    result.addAll(newExtensions);
-                    filesToProcess.addAll(extensionsToFiles(newExtensions));
-                } finally {
-                    nextJarFile.close();
-                }
+            try (JarFile nextJarFile = new JarFile(absNextFile)) {
+                Attributes attrs = getMainAttrs(nextJarFile);
+                Set<Extension> newExtensions = getReferencedExtensions(attrs);
+                result.addAll(newExtensions);
+                filesToProcess.addAll(extensionsToFiles(newExtensions));
             } catch (Exception e) {
                 invalidLibPaths.append(nextFile.getPath()).append(" ");
             }

@@ -95,6 +95,7 @@ import fish.payara.microprofile.metrics.jmx.MBeanMetadataHelper;
 import fish.payara.monitoring.collect.MonitoringDataCollector;
 import fish.payara.monitoring.collect.MonitoringDataSource;
 import fish.payara.nucleus.executorservice.PayaraExecutorService;
+import java.util.logging.Level;
 
 @Service(name = "microprofile-metrics-service")
 @RunLevel(StartupRunLevel.VAL)
@@ -251,22 +252,26 @@ public class MetricsServiceImpl implements MetricsService, ConfigListener, Monit
             for (Entry<MetricID, Metric> entry : ((MetricRegistryImpl) registry).getMetrics(name).entrySet()) {
                 MetricID metricID = entry.getKey();
                 Metric metric = entry.getValue();
-                MonitoringDataCollector metricCollector = tagCollector(contextName, metricID, collector);
-                if (metric instanceof Counting) {
-                    metricCollector.collect(toName(metricID, "Count"), ((Counting) metric).getCount());
-                }
-                if (metric instanceof SimpleTimer) {
-                    metricCollector.collect(toName(metricID, "Duration"), ((SimpleTimer) metric).getElapsedTime().toMillis());
-                }
-                if (metric instanceof Timer) {
-                    metricCollector.collect(toName(metricID, "MaxDuration"), ((Timer) metric).getSnapshot().getMax());
-                }
-                if (metric instanceof Gauge) {
-                    Object value = ((Gauge<?>) metric).getValue();
-                    if (value instanceof Number) {
-                        metricCollector.collect(toName(metricID,
-                                getMetricUnitSuffix(registry.getMetadata(name).unit())), ((Number) value));
+                try {
+                    MonitoringDataCollector metricCollector = tagCollector(contextName, metricID, collector);
+                    if (metric instanceof Counting) {
+                        metricCollector.collect(toName(metricID, "Count"), ((Counting) metric).getCount());
                     }
+                    if (metric instanceof SimpleTimer) {
+                        metricCollector.collect(toName(metricID, "Duration"), ((SimpleTimer) metric).getElapsedTime().toMillis());
+                    }
+                    if (metric instanceof Timer) {
+                        metricCollector.collect(toName(metricID, "MaxDuration"), ((Timer) metric).getSnapshot().getMax());
+                    }
+                    if (metric instanceof Gauge) {
+                        Object value = ((Gauge<?>) metric).getValue();
+                        if (value instanceof Number) {
+                            metricCollector.collect(toName(metricID,
+                                    getMetricUnitSuffix(registry.getMetadata(name).unit())), ((Number) value));
+                        }
+                    }
+                } catch (Exception ex) {
+                    LOGGER.log(Level.SEVERE, "Failed to retrieve metric: " + metricID);;
                 }
             }
         }

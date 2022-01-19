@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2021 Payara Foundation and/or its affiliates.
 package com.sun.enterprise.server.logging;
 
 import java.util.Map;
@@ -109,18 +110,6 @@ public interface LogEvent {
      * @return
      */
     public abstract String getThreadName();
-
-    /**
-     * Current user Id executing this request during this log event.
-     * @return
-     */
-    public abstract String getUser();
-
-    /**
-     * ECId for the current request for this log event.
-     * @return
-     */
-    public abstract String getECId();
 
     /**
      * Optional name-value pairs associated with this log event.

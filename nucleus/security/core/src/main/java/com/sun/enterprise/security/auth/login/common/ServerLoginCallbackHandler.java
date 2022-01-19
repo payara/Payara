@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.security.auth.login.common;
 
 import java.io.IOException;
@@ -100,6 +101,7 @@ public class ServerLoginCallbackHandler implements CallbackHandler {
      * 
      * @param the callback object instances supported by the login module.
      */
+    @Override
     public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
         for (Callback callback : callbacks) {
             if (callback instanceof NameCallback) {

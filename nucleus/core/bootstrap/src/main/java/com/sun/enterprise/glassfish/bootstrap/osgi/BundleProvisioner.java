@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.glassfish.bootstrap.osgi;
 
@@ -754,8 +754,10 @@ public class BundleProvisioner {
         long t0 = System.currentTimeMillis();
 
         Framework framework = null;
+        Map<String, String> mm = new HashMap<>();
+        props.putAll(mm);
         for (FrameworkFactory frameworkFactory : ServiceLoader.load(FrameworkFactory.class)) {
-            framework = frameworkFactory.newFramework((Hashtable)props);
+            framework = frameworkFactory.newFramework(mm);
             System.out.println("framework = " + framework);
             break;
         }

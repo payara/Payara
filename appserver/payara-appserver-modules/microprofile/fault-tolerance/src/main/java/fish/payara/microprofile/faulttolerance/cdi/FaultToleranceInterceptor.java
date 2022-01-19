@@ -39,7 +39,6 @@
  */
 package fish.payara.microprofile.faulttolerance.cdi;
 
-
 import fish.payara.microprofile.faulttolerance.FaultToleranceConfig;
 import fish.payara.microprofile.faulttolerance.FaultToleranceService;
 import fish.payara.microprofile.faulttolerance.policy.FaultTolerancePolicy;

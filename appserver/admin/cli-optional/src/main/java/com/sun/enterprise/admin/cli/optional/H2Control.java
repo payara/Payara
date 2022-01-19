@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -90,14 +90,14 @@ public final class H2Control extends DBControl {
     private void invokeServer() {
         try {
             Class serverClass = Class.forName("org.h2.tools.Server");
-            String dbPassword = getDbPassword() == null ? "" : getDbPassword();
+            String dbPassword = getDbPassword() == null ? "changeit" : getDbPassword();
             String url = "tcp://localhost:" + getDbPort();
             if (null != getDbCommand()) 
                 switch (getDbCommand()) {
                     case "start": {
                         Method createTcpServer = serverClass.getDeclaredMethod("createTcpServer", 
                                 new Class[]{String[].class});
-                        Object[] paramObj = new Object[]{new String[]{"-tcpPort", getDbPort(), "-tcpPassword", dbPassword, "-tcpAllowOthers"}};
+                        Object[] paramObj = new Object[]{new String[]{"-tcpPort", getDbPort(), "-tcpPassword", dbPassword, "-ifNotExists"}};
                         Object server = createTcpServer.invoke(serverClass, paramObj);
                         serverClass.getDeclaredMethod("start").invoke(server);
                         System.out.println(serverClass.getDeclaredMethod("getStatus").invoke(server));

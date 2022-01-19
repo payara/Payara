@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2021] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt.cli;
 
@@ -84,6 +84,9 @@ public final class DeleteServiceCommand extends CLICommand {
     private String userSpecifiedNodeDir;           // nodeDirRoot
     @Param(name = "node", optional = true, alias = "nodeagent")
     private String userSpecifiedNode;
+    @Param(name = "system-type", optional = true)
+    private String systemType;
+
     private static final LocalStringsImpl STRINGS = new LocalStringsImpl(DeleteServiceCommand.class);
     private ServerDirs dirs;
     private ServerDirsSelector selector = null;
@@ -103,6 +106,7 @@ public final class DeleteServiceCommand extends CLICommand {
                     userSpecifiedNode);
             dirs = selector.dirs();
 
+            validateSystemType();
             validateServiceName();
         }
         catch (CommandException e) {
@@ -117,33 +121,34 @@ public final class DeleteServiceCommand extends CLICommand {
     @Override
     protected int executeCommand() throws CommandException {
         try {
-            final Service service = ServiceFactory.getService(dirs, getType());
+            final Service service = ServiceFactory.getService(dirs, getType(), systemType);
             PlatformServicesInfo info = service.getInfo();
             info.setTrace(logger.isLoggable(Level.FINER));
 
-            if (ok(serviceName))
+            if (ok(serviceName)) {
                 info.setServiceName(serviceName);
+            }
 
-            if (programOpts.getPasswordFile() != null)
+            if (programOpts.getPasswordFile() != null) {
                 info.setPasswordFile(SmartFile.sanitize(
                         new File(programOpts.getPasswordFile())));
+            }
 
             service.deleteService();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             // We only want to wrap the string -- not the Exception.
             // Otherwise the message that is printed out to the user will be like this:
             // java.lang.IllegalArgumentException: The passwordfile blah blah blah
             // What we want is:
             // The passwordfile blah blah blah
             // IT 8882
-
             String msg = e.getMessage();
 
-            if (ok(msg))
+            if (ok(msg)) {
                 throw new CommandException(msg);
-            else
+            } else {
                 throw new CommandException(e);
+            }
         }
         return 0;
     }
@@ -158,6 +163,17 @@ public final class DeleteServiceCommand extends CLICommand {
         }
 
         logger.log(Level.FINER, "service name = {0}", serviceName);
+    }
+
+    private void validateSystemType() throws CommandException {
+        if (ok(systemType)
+                && !(CreateServiceCommand.SYSTEM_TYPE_SOLARIS.equals(systemType)
+                || CreateServiceCommand.SYSTEM_TYPE_SYSTEMD.equals(systemType)
+                || CreateServiceCommand.SYSTEM_TYPE_SYSTEMV.equals(systemType)
+                || CreateServiceCommand.SYSTEM_TYPE_WINDOWS.equals(systemType))) {
+            throw new CommandException(
+                    STRINGS.get("create.service.invalidSystemType", systemType));
+        }
     }
 
     private AppserverServiceType getType() {

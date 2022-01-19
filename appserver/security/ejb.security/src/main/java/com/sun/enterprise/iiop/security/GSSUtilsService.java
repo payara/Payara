@@ -41,11 +41,10 @@
 package com.sun.enterprise.iiop.security;
 
 import com.sun.enterprise.common.iiop.security.GSSUtilsContract;
-import java.io.IOException;
-
+import org.ietf.jgss.GSSException;
+import org.ietf.jgss.Oid;
 import org.jvnet.hk2.annotations.Service;
 import jakarta.inject.Singleton;
-import sun.security.util.ObjectIdentifier;
 
 /**
  *
@@ -61,25 +60,17 @@ public class GSSUtilsService implements GSSUtilsContract {
     }
 
     @Override
-    public byte[] importName(ObjectIdentifier oid, byte[] externalName) throws IOException {
+    public byte[] importName(Oid oid, byte[] externalName) throws GSSException {
         return GSSUtils.importName(oid, externalName);
     }
 
     @Override
-    public byte[] createExportedName(ObjectIdentifier oid, byte[] extName) throws IOException {
+    public byte[] createExportedName(Oid oid, byte[] extName) throws GSSException {
         return GSSUtils.createExportedName(oid, extName);
     }
 
     @Override
-    public ObjectIdentifier GSSUP_MECH_OID() {
+    public Oid GSSUP_MECH_OID() {
         return GSSUtils.GSSUP_MECH_OID;
     }
-    /**
-     * TODO:V3 temporarily putting it inside this contract
-     * 
-     * @return the ORB public Object getORB() {
-     * 
-     * }
-     */
-
 }

@@ -141,7 +141,7 @@ public class SetConfigOrdinal implements AdminCommand {
                                 break;
                             }
                             case JNDI: {
-                                config.setJNDIOrdinality(Integer.toString(ordinal));
+                                config.setJndiOrdinality(Integer.toString(ordinal));
                                 break;
                             }
                             case SECRETS: {

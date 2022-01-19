@@ -16,7 +16,9 @@
 #   - $ADMIN_USER - the username to use for the asadmin utility.
 #   - $PASSWORD_FILE - the password file to use for the asadmin utility.
 #   - $PREBOOT_COMMANDS - the pre boot command file.
+#   - $PREBOOT_COMMANDS_FINAL - copy of the pre boot command file.
 #   - $POSTBOOT_COMMANDS - the post boot command file.
+#   - $POSTBOOT_COMMANDS_FINAL - copy of the post boot command file.
 #   - $DOMAIN_NAME - the name of the domain to start.
 #   - $JVM_ARGS - extra JVM options to pass to the Payara Server instance.
 #   - $AS_ADMIN_MASTERPASSWORD - the master password for the Payara Server instance.
@@ -29,7 +31,9 @@
 if [ -z $ADMIN_USER ]; then echo "Variable ADMIN_USER is not set."; exit 1; fi
 if [ -z $PASSWORD_FILE ]; then echo "Variable PASSWORD_FILE is not set."; exit 1; fi
 if [ -z $PREBOOT_COMMANDS ]; then echo "Variable PREBOOT_COMMANDS is not set."; exit 1; fi
+if [ -z $PREBOOT_COMMANDS_FINAL ]; then echo "Variable PREBOOT_COMMANDS_FINAL is not set."; exit 1; fi
 if [ -z $POSTBOOT_COMMANDS ]; then echo "Variable POSTBOOT_COMMANDS is not set."; exit 1; fi
+if [ -z $POSTBOOT_COMMANDS_FINAL ]; then echo "Variable POSTBOOT_COMMANDS_FINAL is not set."; exit 1; fi
 if [ -z $DOMAIN_NAME ]; then echo "Variable DOMAIN_NAME is not set."; exit 1; fi
 
 # The following command gets the command line to be executed by start-domain
@@ -39,10 +43,10 @@ if [ -z $DOMAIN_NAME ]; then echo "Variable DOMAIN_NAME is not set."; exit 1; fi
 # - remove lines before and after the command line and squash commands on a single line
 
 # Create pre and post boot command files if they don't exist
-touch $POSTBOOT_COMMANDS
-touch $PREBOOT_COMMANDS
+touch $PREBOOT_COMMANDS_FINAL
+touch $POSTBOOT_COMMANDS_FINAL
 
-OUTPUT=`${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} start-domain --dry-run --prebootcommandfile=${PREBOOT_COMMANDS} --postbootcommandfile=${POSTBOOT_COMMANDS} $@ $DOMAIN_NAME`
+OUTPUT=`${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} start-domain --dry-run --prebootcommandfile=${PREBOOT_COMMANDS_FINAL} --postbootcommandfile=${POSTBOOT_COMMANDS_FINAL} $@ $DOMAIN_NAME`
 STATUS=$?
 if [ "$STATUS" -ne 0 ]
   then

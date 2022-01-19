@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2021] [Payara Foundation and/or affiliates]
 
 package org.glassfish.grizzly.config.ssl;
 
@@ -170,19 +170,28 @@ public class JSSE14SocketFactory extends JSSESocketFactory {
     protected KeyManager[] getKeyManagers(String algorithm,
         String keyAlias)
         throws Exception {
-        KeyManager[] kms;
-        String keystorePass = getKeystorePassword();
-        KeyStore ks = getKeystore(keystorePass);
-        if (keyAlias != null && !ks.isKeyEntry(keyAlias)) {
-            throw new IOException(sm.getString("jsse.alias_no_key_entry", keyAlias));
-        }
+        KeyManager[] kms = null;
         KeyManagerFactory kmf = KeyManagerFactory.getInstance(algorithm);
-        kmf.init(ks, keystorePass.toCharArray());
-        kms = kmf.getKeyManagers();
+        String keystorePass = getKeystorePassword();
+        ArrayList<KeyStore> ks = getKeystore(keystorePass);
         if (keyAlias != null) {
-            for (int i = 0; i < kms.length; i++) {
-                kms[i] = new JSSEKeyManager((X509KeyManager) kms[i], keyAlias);
+            boolean keyEntryMatch = false;
+            for (KeyStore keystore : ks) {
+                if (keystore.isKeyEntry(keyAlias)) {
+                    kmf.init(keystore, keystorePass.toCharArray());
+                    kms = kmf.getKeyManagers();
+                    kms[0] = new JSSEKeyManager((X509KeyManager) kms[0], keyAlias);
+
+                    keyEntryMatch = true;
+                    break;
+                }
             }
+            if(!keyEntryMatch){
+                throw new IOException(sm.getString("jsse.alias_no_key_entry", keyAlias));
+            }
+        } else{
+            kmf.init(ks.get(0), keystorePass.toCharArray());
+            kms = kmf.getKeyManagers();
         }
         return kms;
     }
@@ -193,19 +202,21 @@ public class JSSE14SocketFactory extends JSSESocketFactory {
     protected TrustManager[] getTrustManagers(String algorithm) throws Exception {
         String crlFile = (String) attributes.get("crlFile");
         TrustManager[] tms = null;
-        KeyStore trustStore = getTrustStore();
-        if (trustStore != null) {
+        KeyStore[] trustStores = getTrustStore();
+        if (trustStores != null) {
+            TrustManagerFactory tmf = TrustManagerFactory.getInstance(algorithm);
             if (crlFile == null) {
-                TrustManagerFactory tmf = TrustManagerFactory.getInstance(algorithm);
-                tmf.init(trustStore);
-                tms = tmf.getTrustManagers();
+                for(KeyStore trustStore : trustStores){
+                    tmf.init(trustStore);
+                }
             } else {
-                TrustManagerFactory tmf = TrustManagerFactory.getInstance(algorithm);
-                CertPathParameters params = getParameters(algorithm, crlFile, trustStore);
-                ManagerFactoryParameters mfp = new CertPathTrustManagerParameters(params);
-                tmf.init(mfp);
-                tms = tmf.getTrustManagers();
+                for(KeyStore trustStore : trustStores){
+                    CertPathParameters params = getParameters(algorithm, crlFile, trustStore);
+                    ManagerFactoryParameters mfp = new CertPathTrustManagerParameters(params);
+                    tmf.init(mfp);
+                }
             }
+            tms = tmf.getTrustManagers();
         }
         return tms;
     }
