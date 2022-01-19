@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 The gRPC Authors
+ * Copyright 2018-2022 The gRPC Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,6 @@ import io.grpc.internal.TransportTracer;
 import io.grpc.internal.WritableBuffer;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -53,7 +52,6 @@ import javax.annotation.Nullable;
 import javax.servlet.AsyncContext;
 import javax.servlet.WriteListener;
 import javax.servlet.http.HttpServletResponse;
-import javax.xml.bind.DatatypeConverter;
 
 final class ServletServerStream extends AbstractServerStream {
 
@@ -171,7 +169,7 @@ final class ServletServerStream extends AbstractServerStream {
     private int index;
 
     ByteArrayWritableBuffer(int capacityHint) {
-      this.bytes = new byte[min(1024 * 1024,  max(4096, capacityHint))];
+      this.bytes = new byte[min(1024 * 1024,  max(8192, capacityHint))];
       this.capacity = bytes.length;
     }
 
@@ -293,11 +291,6 @@ final class ServletServerStream extends AbstractServerStream {
       writer.complete();
     }
 
-    @Override
-    public void request(int numMessages) {
-      transportState.runOnTransportThread(
-          () -> transportState.requestMessagesFromDeframer(numMessages));
-    }
 
     @Override
     public void cancel(Status status) {

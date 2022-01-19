@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 The gRPC Authors
+ * Copyright 2018-2022 The gRPC Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,16 @@
 package io.grpc.servlet;
 
 import java.net.SocketAddress;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import io.grpc.InternalChannelz.SocketStats;
 import io.grpc.InternalInstrumented;
 import io.grpc.internal.InternalServer;
 import io.grpc.internal.ServerListener;
+
+import javax.annotation.Nullable;
 
 final class InternalServerImpl implements InternalServer {
 
@@ -57,5 +62,16 @@ final class InternalServerImpl implements InternalServer {
     public InternalInstrumented<SocketStats> getListenSocketStats() {
         // sockets are managed by the servlet container, grpc is ignorant of that
         return null;
+    }
+
+    @Nullable
+    @Override
+    public List<InternalInstrumented<SocketStats>> getListenSocketStatsList() {
+        return null;
+    }
+
+    @Override
+    public List<? extends SocketAddress> getListenSocketAddresses() {
+        return Collections.unmodifiableList(Arrays.asList(this.getListenSocketAddress()));
     }
 }

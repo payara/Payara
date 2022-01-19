@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 The gRPC Authors
+ * Copyright 2018-2022 The gRPC Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import io.grpc.internal.GrpcUtil;
 import io.grpc.internal.ReadableBuffers;
 import io.grpc.internal.ServerTransportListener;
 import io.grpc.internal.StatsTraceContext;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -262,31 +263,28 @@ public final class ServletAdapter {
       this.logId = logId;
     }
 
-    final byte[] buffer = new byte[4 * 1024];
+    final byte[] buffer = new byte[8 * 1024];
 
     @Override
     public void onDataAvailable() throws IOException {
       logger.log(FINEST, "[{0}] onDataAvailable: ENTRY", logId);
-
       while (input.isReady()) {
         int length = input.read(buffer);
         if (length == -1) {
           logger.log(FINEST, "[{0}] inbound data: read end of stream", logId);
           return;
-        } else {
-          if (logger.isLoggable(FINEST)) {
-            logger.log(
-                FINEST,
-                "[{0}] inbound data: length = {1}, bytes = {2}",
-                new Object[] {logId, length, ServletServerStream.toHexString(buffer, length)});
-          }
-
-          byte[] copy = Arrays.copyOf(buffer, length);
-          stream.transportState().runOnTransportThread(
-              () -> stream.transportState().inboundDataReceived(ReadableBuffers.wrap(copy), false));
         }
-      }
 
+        if (logger.isLoggable(FINEST)) {
+          logger.log(
+                  FINEST,
+                  "[{0}] inbound data: length = {1}, bytes = {2}",
+                  new Object[]{logId, length, ServletServerStream.toHexString(buffer, length)});
+        }
+        byte[] copy = Arrays.copyOf(buffer, length);
+        stream.transportState().runOnTransportThread(
+                () -> stream.transportState().inboundDataReceived(ReadableBuffers.wrap(copy), false));
+      }
       logger.log(FINEST, "[{0}] onDataAvailable: EXIT", logId);
     }
 
@@ -304,7 +302,7 @@ public final class ServletAdapter {
       }
       // If the resp is not committed, cancel() to avoid being redirected to an error page.
       // Else, the container will send RST_STREAM at the end.
-      if (!asyncCtx.getResponse().isCommitted()) {
+      if (asyncCtx.getResponse() != null && !asyncCtx.getResponse().isCommitted()) {
         stream.cancel(Status.fromThrowable(t));
       } else {
         stream.transportState().runOnTransportThread(
