@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2017-2022 Payara Foundation and/or its affiliates
 
 package com.sun.gjc.spi;
 
@@ -971,14 +971,6 @@ public abstract class ManagedConnectionFactoryImpl implements jakarta.resource.s
      */
     public String getPortNumber() {
         return spec.getDetail(DataSourceSpec.PORTNUMBER);
-    }
-
-    public void setJdbc30DataSource(String booleanValue) {
-        spec.setDetail(DataSourceSpec.JDBC30DATASOURCE, booleanValue);
-    }
-
-    public String getJdbc30DataSource() {
-        return spec.getDetail(DataSourceSpec.JDBC30DATASOURCE);
     }
 
     /**

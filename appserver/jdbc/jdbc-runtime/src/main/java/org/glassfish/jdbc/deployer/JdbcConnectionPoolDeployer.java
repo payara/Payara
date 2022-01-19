@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or affiliates]
+// Portions Copyright 2016-2022 Payara Foundation and/or affiliates
 
 package org.glassfish.jdbc.deployer;
 
@@ -517,11 +517,6 @@ public class JdbcConnectionPoolDeployer implements ResourceDeployer {
 
                     propList.add(new ConnectorConfigProperty("Password",
                             TranslatedConfigView.expandValue(rp.getValue()), "Password", "java.lang.String"));
-
-                } else if ("JDBC30DATASOURCE".equals(name.toUpperCase(locale))) {
-
-                    propList.add(new ConnectorConfigProperty("JDBC30DataSource",
-                            rp.getValue(), "JDBC30DataSource", "java.lang.String"));
 
                 } else if ("PREFER-VALIDATE-OVER-RECREATE".equals(name.toUpperCase(Locale.getDefault()))) {
                     String value = rp.getValue();
