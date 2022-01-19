@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2022 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,7 +38,7 @@
  * holder.
  */
 package com.sun.jdo.api.persistence.enhancer;
-import com.sun.enterprise.util.JDK;
+
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -53,7 +53,7 @@ import java.util.jar.Manifest;
  */
 public class URLClassPath {
 
-    private static final String URL_CLASSPATH_CLASS_NAME = JDK.getMajor() > 8 ? "jdk.internal.loader.URLClassPath" : "sun.misc.URLClassPath";
+    private static final String URL_CLASSPATH_CLASS_NAME = "jdk.internal.loader.URLClassPath";
     private static Constructor constructor;
     private static final String GET_RESOURCE_METHOD_NAME = "getResource";
     private static Method getResource;

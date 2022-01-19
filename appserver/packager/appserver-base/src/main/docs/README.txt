@@ -8,11 +8,9 @@ Here are a few short steps to get you started...
 
 Payara Server currently supports the following Java Virtual Machines:
 
-* Oracle JDK8 (u162+), Oracle JDK 11 (11.0.5+)
-* Azul Zulu JDK8 (u162+), Azul Zulu JDK 11 (11.0.5u10+)
-* OpenJDK JDK8 (u162+), OpenJDK 11 (11.0.5+)
-
-TLS 1.3 is supported on JDK 8 with Azul Zulu 1.8.222+ only and all JDK 11 versions.
+* Oracle JDK 11 (11.0.5+)
+* Azul Zulu JDK 11 (11.0.5u10+)
+* OpenJDK 11 (11.0.5+)
 
 1. Installing Payara Server
 ===========================

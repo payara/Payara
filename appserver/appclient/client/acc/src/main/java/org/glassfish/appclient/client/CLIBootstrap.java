@@ -37,28 +37,27 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
+// Portions Copyright 2018-2022 Payara Foundation and/or affiliates
 
 package org.glassfish.appclient.client;
 
 import com.sun.enterprise.util.LocalStringManager;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.OS;
+import org.glassfish.appclient.client.acc.UserError;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import static java.util.Objects.nonNull;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import static java.util.stream.Collectors.joining;
 import java.util.stream.Stream;
-import org.glassfish.appclient.client.acc.UserError;
 
-import com.sun.enterprise.util.JDK;
-import com.sun.enterprise.util.OS;
-import java.util.Arrays;
+import static java.util.Objects.nonNull;
+import static java.util.stream.Collectors.joining;
 
 /**
  *
@@ -268,7 +267,7 @@ public class CLIBootstrap {
          * Add the elements in this order so the regex patterns will match the correct elements. In this arrangement, the
          * patterns are from most specific to most general.
          */
-        elementsInScanOrder = new CommandLineElement[] {
+        elementsInScanOrder = new CommandLineElement[]{
                 extDirs,
                 endorsedDirs,
                 accValuedOptions,
@@ -282,32 +281,15 @@ public class CLIBootstrap {
         /*
          * Add the elements in this order so they appear in the generated java command in the correct positions.
          */
-        //In JDK 9 and later ext and endorsed directory removed.
-        int major = JDK.getMajor();
-        if (major >= 9) {
-            elementsInOutputOrder = new CommandLineElement[]{
-                    jvmValuedOptions,
-                    jvmPropertySettings,
-                    otherJVMOptions,
-                    accUnvaluedOptions,
-                    accValuedOptions,
-                    jvmMainSetting,
-                    arguments
-            };
-        } else {
-            elementsInOutputOrder = new CommandLineElement[]{
-                    jvmValuedOptions,
-                    jvmPropertySettings,
-                    otherJVMOptions,
-                    extDirs,
-                    endorsedDirs,
-                    accUnvaluedOptions,
-                    accValuedOptions,
-                    jvmMainSetting,
-                    arguments
-            };
-        }
-        
+        elementsInOutputOrder = new CommandLineElement[]{
+                jvmValuedOptions,
+                jvmPropertySettings,
+                otherJVMOptions,
+                accUnvaluedOptions,
+                accValuedOptions,
+                jvmMainSetting,
+                arguments
+        };
     }
 
     /**

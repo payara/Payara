@@ -42,27 +42,31 @@
 
 package com.sun.ejb.codegen;
 
-import java.io.*;
-import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
+import com.sun.enterprise.config.serverbeans.JavaConfig;
+import com.sun.enterprise.deployment.Application;
+import com.sun.enterprise.deployment.EjbBundleDescriptor;
+import com.sun.enterprise.deployment.EjbDescriptor;
+import com.sun.enterprise.deployment.util.TypeUtil;
+import com.sun.enterprise.util.OS;
+import com.sun.enterprise.util.i18n.StringManager;
+import com.sun.logging.LogDomains;
+import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.deployment.common.ClientArtifactsManager;
 import org.glassfish.ejb.spi.CMPDeployer;
 import org.glassfish.hk2.api.ServiceLocator;
 
-import com.sun.enterprise.util.i18n.StringManager;
-import com.sun.logging.LogDomains;
-
-import com.sun.enterprise.config.serverbeans.JavaConfig;
-import com.sun.enterprise.deployment.Application;
-import com.sun.enterprise.deployment.EjbDescriptor;
-import com.sun.enterprise.deployment.EjbBundleDescriptor;
-import com.sun.enterprise.deployment.util.TypeUtil;
-import com.sun.enterprise.util.JDK;
-import com.sun.enterprise.util.OS;
-import org.glassfish.api.admin.ServerEnvironment;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * This class is used to generate the RMI-IIOP version of a 
@@ -78,17 +82,15 @@ public class StaticRmiStubGenerator {
 
      private static final String ORG_OMG_STUB_PREFIX  = "org.omg.stub.";
 
-     private final String toolsJarPath;
-
      private List<String> rmicOptionsList;
 
     /**
      * This class is only instantiated internally.
      */
     public StaticRmiStubGenerator(ServiceLocator services) {
-        // Find java path and tools.jar
+        // Find java path
 
-        //Try this jre's parent
+        // Try this jre's parent
         String jreHome = System.getProperty("java.home");
         File jdkDir = null;
         if(jreHome != null) {
@@ -125,14 +127,6 @@ public class StaticRmiStubGenerator {
 
         if(jdkDir == null) {
             _logger.warning("Cannot identify JDK location.");
-            toolsJarPath = null;
-        } else {
-            File toolsJar = new File(jdkDir + "/lib/tools.jar" );
-            if (toolsJar != null && toolsJar.exists()) {
-                toolsJarPath = toolsJar.getPath();
-            } else {
-                toolsJarPath = null;
-            }
         }
 
         JavaConfig jc = services.getService(JavaConfig.class,
@@ -269,11 +263,6 @@ public class StaticRmiStubGenerator {
             return;
         }
 
-        if (toolsJarPath == null && !OS.isDarwin() && JDK.getMajor() < 9) {
-            _logger.log(Level.INFO, "[RMIC] tools.jar location was not found");
-            return;
-        }
-
         progress(localStrings.getStringWithDefault(
                                          "generator.compiling_rmi_iiop",
                                          "Compiling RMI-IIOP code."));
@@ -283,9 +272,6 @@ public class StaticRmiStubGenerator {
         cmds.add("-classpath");
 
         StringBuilder sb = new StringBuilder().append(System.getProperty("java.class.path"));
-        if (toolsJarPath != null) {
-             sb.append(File.pathSeparator).append(toolsJarPath);
-        }
         sb.append(File.pathSeparator).append(explodedDir)
           .append(File.pathSeparator).append(repository)
           .append(File.pathSeparator).append(classPath);

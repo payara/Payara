@@ -35,7 +35,7 @@ git remote add origin https://github.com/<YourUsername>/Payara
 You are now free to start working on Payara issues, adding new features, or tinkering with the codebase.
 
 ## Building Payara
-Payara uses maven to build the server, you can use either JDK 7 or JDK 8 to build Payara Server, we distribute Payara built with JDK 8.
+Payara uses maven to build the server, you can use JDK 11 to build Payara Server, we distribute Payara built with JDK 11.
 To build Payara from the root of the cloned source code tree execute;
 ```
 mvn -DskipTests clean package

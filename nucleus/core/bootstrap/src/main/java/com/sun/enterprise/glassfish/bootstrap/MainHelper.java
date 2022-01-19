@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2017-2022 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.glassfish.bootstrap;
 
@@ -70,15 +70,9 @@ public class MainHelper {
 
     static void checkJdkVersion() {
         int major = JDK.getMajor();
-        int minor = JDK.getMinor();
-        //In case of JDK1 to JDK8 the major version would be 1 always.Starting from
-        //JDK9 the major verion would be the real major version e.g in case
-        // of JDK9 major version is 9.So in that case checking the major version only
-        if (major < 9) {
-          if (minor < 8) {
-            logger.log(Level.SEVERE, LogFacade.BOOTSTRAP_INCORRECT_JDKVERSION, new Object[]{8, minor});
+        if (major < 11) {
+            logger.log(Level.SEVERE, LogFacade.BOOTSTRAP_INCORRECT_JDKVERSION, new Object[]{11, major});
             System.exit(1);
-          }
         }
     }
 
@@ -519,12 +513,10 @@ public class MainHelper {
      * the following classes/jars in its search path:
      *  - OSGi framework classes,
      *  - GlassFish bootstrap apis (simple-glassfish-api.jar)
-     *  - jdk tools.jar classpath.
      * OSGi framework classes are there because we want to launch the framework.
      * simple-glassfish-api.jar is needed, because we need those classes higher up in the class loader chain otherwise
      * {@link com.sun.enterprise.glassfish.bootstrap.GlassFishMain.Launcher} won't be able to see the same copy that's
      * used by rest of the system.
-     * tools.jar is needed because its packages, which are exported via system bundle, are consumed by EJBC.
      * This class loader is configured to be the delegate for all bundle class loaders by setting
      * org.osgi.framework.bundle.parent=framework in OSGi configuration. Since this is the delegate for all bundle
      * class loaders, one should be very careful about adding stuff here, as it not only affects performance, it also
@@ -537,9 +529,6 @@ public class MainHelper {
             ClassLoaderBuilder clb = new ClassLoaderBuilder(ctx, delegate);
             clb.addFrameworkJars();
             clb.addBootstrapApiJar(); // simple-glassfish-api.jar
-            if (JDK.getMajor() < 9) {
-                clb.addJDKToolsJar();
-            }
             return clb.build();
         } catch (IOException e) {
             throw new Error(e);
@@ -602,21 +591,6 @@ public class MainHelper {
 
         void addFrameworkJars() throws IOException {
             PlatformHelper.getPlatformHelper(ctx).addFrameworkJars(cpb);
-        }
-
-        /**
-         * Adds JDK tools.jar to classpath.
-         */
-        void addJDKToolsJar() {
-            File jdkToolsJar = Util.getJDKToolsJar();
-            try {
-                cpb.addJar(jdkToolsJar);
-            } catch (IOException ioe) {
-                // on the mac, it happens all the time
-                if (logger.isLoggable(Level.FINE)) {
-                    logger.fine("JDK tools.jar does not exist at " + jdkToolsJar);
-                }
-            }
         }
 
         public ClassLoader build() {
