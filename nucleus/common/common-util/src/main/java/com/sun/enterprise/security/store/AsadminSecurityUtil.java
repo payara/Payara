@@ -256,9 +256,12 @@ public class AsadminSecurityUtil {
         try {
             asadminTruststore = openTruststore(passwordToUse);
         } catch (IOException e) {
+            //If we're using the default trust store try to recreate it, otherwise just throw the exception
             if (System.getProperty(SystemPropertyConstants.CLIENT_TRUSTSTORE_PROPERTY) == null) {
                 logger.log(Level.WARNING, String.format("Error when reading truststore, exception:%s. Now recreating file", e));
                 recreateDefaultTrustStore(passwordToUse);
+            } else {
+                throw e;
             }
         }
     }
