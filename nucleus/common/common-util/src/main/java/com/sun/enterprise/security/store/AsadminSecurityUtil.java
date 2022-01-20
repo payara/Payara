@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2022] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.security.store;
 
@@ -45,6 +45,7 @@ import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.util.CULoggerInfo;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import java.io.*;
+import java.nio.file.Files;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -186,7 +187,7 @@ public class AsadminSecurityUtil {
         } catch (IOException ioe) {
             logger.log(Level.WARNING, "Error reading input", ioe);
         } catch (UserInterruptException | EndOfFileException e) {
-                // Ignore           
+                // Ignore
         }finally {
             if (lineReader != null && lineReader.getTerminal() != null) {
                 try {
@@ -252,7 +253,37 @@ public class AsadminSecurityUtil {
          * The keystore has been opened successfully, using passwordToUse.
          * Open the truststore with that password.
          */
-        asadminTruststore = openTruststore(passwordToUse);
+        try {
+            asadminTruststore = openTruststore(passwordToUse);
+        } catch (IOException e) {
+            //If we're using the default trust store try to recreate it, otherwise just throw the exception
+            if (System.getProperty(SystemPropertyConstants.CLIENT_TRUSTSTORE_PROPERTY) == null) {
+                logger.log(Level.WARNING, String.format("Error when reading truststore, exception:%s. Now recreating file", e));
+                recreateDefaultTrustStore(passwordToUse);
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    /**
+     * Method to recreate the default truststore file from the .gfclient folder
+     *
+     * @param passwordToUse password to use
+     * @throws IOException
+     */
+    protected void recreateDefaultTrustStore(char[] passwordToUse) throws IOException {
+        File trustStoreFile = new File(AsadminSecurityUtil.getDefaultClientDir(), "truststore");
+        logger.log(Level.INFO, String.format("Recreating default truststore file: %s", trustStoreFile.getPath()));
+        try {
+            Files.deleteIfExists(trustStoreFile.toPath());
+            asadminTruststore = openTruststore(passwordToUse);
+        } catch (IOException | KeyStoreException | NoSuchAlgorithmException | CertificateException e) {
+            logger.log(Level.WARNING,
+                    String.format("Error when processing truststore with path:%s and exception:%s",
+                            trustStoreFile.getPath(), e));
+            throw new RuntimeException(e);
+        }
     }
 
     private AsadminTruststore openTruststore(final char[] password)
