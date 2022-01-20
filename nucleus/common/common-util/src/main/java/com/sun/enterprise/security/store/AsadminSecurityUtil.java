@@ -256,8 +256,10 @@ public class AsadminSecurityUtil {
         try {
             asadminTruststore = openTruststore(passwordToUse);
         } catch (IOException e) {
-            logger.log(Level.WARNING, String.format("Error when reading truststore, exception:%s. Now recreating file", e));
-            recreateDefaultTrustStore(passwordToUse);
+            if (System.getProperty(SystemPropertyConstants.CLIENT_TRUSTSTORE_PROPERTY) == null) {
+                logger.log(Level.WARNING, String.format("Error when reading truststore, exception:%s. Now recreating file", e));
+                recreateDefaultTrustStore(passwordToUse);
+            }
         }
     }
 
@@ -268,18 +270,16 @@ public class AsadminSecurityUtil {
      * @throws IOException
      */
     protected void recreateDefaultTrustStore(char[] passwordToUse) throws IOException {
-        if (System.getProperty(SystemPropertyConstants.CLIENT_TRUSTSTORE_PROPERTY) == null) {
-            File trustStoreFile = new File(AsadminSecurityUtil.getDefaultClientDir(), "truststore");
-            logger.log(Level.INFO, String.format("Recreating default truststore file: %s", trustStoreFile.getPath()));
-            try {
-                Files.deleteIfExists(trustStoreFile.toPath());
-                asadminTruststore = openTruststore(passwordToUse);
-            } catch (IOException | KeyStoreException | NoSuchAlgorithmException | CertificateException e) {
-                logger.log(Level.WARNING,
-                        String.format("Error when processing truststore with path:%s and exception:%s",
-                                trustStoreFile.getPath(), e));
-                throw new RuntimeException(e);
-            }
+        File trustStoreFile = new File(AsadminSecurityUtil.getDefaultClientDir(), "truststore");
+        logger.log(Level.INFO, String.format("Recreating default truststore file: %s", trustStoreFile.getPath()));
+        try {
+            Files.deleteIfExists(trustStoreFile.toPath());
+            asadminTruststore = openTruststore(passwordToUse);
+        } catch (IOException | KeyStoreException | NoSuchAlgorithmException | CertificateException e) {
+            logger.log(Level.WARNING,
+                    String.format("Error when processing truststore with path:%s and exception:%s",
+                            trustStoreFile.getPath(), e));
+            throw new RuntimeException(e);
         }
     }
 
