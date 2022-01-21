@@ -37,12 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2022 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.util;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -55,35 +53,12 @@ import java.util.Optional;
  */
 public final class JDK {
 
-    private static final int TLS13_MINIMUM_MINOR_VERSION = 8;
-    private static final int TLS13_MINIMUM_UPDATE_VERSION = 261;
-
-    private static final String OPENJSSE_VENDOR = "Azul";
-    private static final int OPENJSSE_MINIMUM_UPDATE_VERSION = 222;
-    private static final int OPENJSSE_MAXIMUM_UPDATE_VERSION = 260;
-    private static final List<Integer> OPENJSSE_KNOWN_NOT_TO_WORK_MINOR = Arrays.asList(252);
-
-    public static boolean isTls13Supported() {
-        return getMinor() >= TLS13_MINIMUM_MINOR_VERSION
-            && getUpdate() >= TLS13_MINIMUM_UPDATE_VERSION;
-    }
-
-    public static boolean isOpenJSSEFlagRequired() {
-        final String vendor = getVendor();
-        final int updateVersion = getUpdate();
-        return vendor != null
-            && vendor.contains(OPENJSSE_VENDOR)
-            && updateVersion >= OPENJSSE_MINIMUM_UPDATE_VERSION
-            && updateVersion <= OPENJSSE_MAXIMUM_UPDATE_VERSION
-            && !OPENJSSE_KNOWN_NOT_TO_WORK_MINOR.contains(updateVersion);
-    }
-
     /**
      * See if the current JDK is legal for running GlassFish
-     * @return true if the JDK is >= 1.6.0
+     * @return true if the JDK is >= 11
      */
     public static boolean ok() {
-        return major == 1 && minor >= 6;
+        return major >= 11;
     }
 
     public static int getMajor() {

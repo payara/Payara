@@ -37,13 +37,39 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2022 Payara Foundation and/or its affiliates
 
 package org.glassfish.appclient.server.core.jws;
 
 import com.sun.enterprise.deployment.ApplicationClientDescriptor;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
-import com.sun.enterprise.util.JDK;
+import jakarta.inject.Inject;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.container.EndpointRegistrationException;
+import org.glassfish.api.deployment.DeploymentContext;
+import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.appclient.server.core.AppClientDeployerHelper;
+import org.glassfish.appclient.server.core.AppClientServerApplication;
+import org.glassfish.appclient.server.core.jws.servedcontent.ASJarSigner;
+import org.glassfish.appclient.server.core.jws.servedcontent.AutoSignedContent;
+import org.glassfish.appclient.server.core.jws.servedcontent.Content;
+import org.glassfish.appclient.server.core.jws.servedcontent.DynamicContent;
+import org.glassfish.appclient.server.core.jws.servedcontent.FixedContent;
+import org.glassfish.appclient.server.core.jws.servedcontent.SimpleDynamicContentImpl;
+import org.glassfish.appclient.server.core.jws.servedcontent.StaticContent;
+import org.glassfish.appclient.server.core.jws.servedcontent.StreamedAutoSignedStaticContent;
+import org.glassfish.appclient.server.core.jws.servedcontent.TokenHelper;
+import org.glassfish.deployment.common.DeploymentUtils;
+import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LogMessagesResourceBundle;
+import org.glassfish.logging.annotation.LoggerInfo;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.ConfigListener;
+import org.jvnet.hk2.config.UnprocessedChangeEvent;
+import org.jvnet.hk2.config.UnprocessedChangeEvents;
+import org.jvnet.hk2.config.types.Property;
+
 import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -64,33 +90,6 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import jakarta.inject.Inject;
-import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.api.container.EndpointRegistrationException;
-import org.glassfish.api.deployment.DeploymentContext;
-import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.glassfish.appclient.server.core.AppClientDeployerHelper;
-import org.glassfish.appclient.server.core.AppClientServerApplication;
-import org.glassfish.appclient.server.core.jws.servedcontent.ASJarSigner;
-import org.glassfish.appclient.server.core.jws.servedcontent.AutoSignedContent;
-import org.glassfish.appclient.server.core.jws.servedcontent.Content;
-import org.glassfish.appclient.server.core.jws.servedcontent.DynamicContent;
-import org.glassfish.appclient.server.core.jws.servedcontent.FixedContent;
-import org.glassfish.appclient.server.core.jws.servedcontent.SimpleDynamicContentImpl;
-import org.glassfish.appclient.server.core.jws.servedcontent.StaticContent;
-import org.glassfish.appclient.server.core.jws.servedcontent.StreamedAutoSignedStaticContent;
-import org.glassfish.appclient.server.core.jws.servedcontent.TokenHelper;
-import org.glassfish.deployment.common.DeploymentUtils;
-
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.logging.annotation.LogMessagesResourceBundle;
-import org.glassfish.logging.annotation.LoggerInfo;
-import org.jvnet.hk2.config.ConfigListener;
-import org.jvnet.hk2.config.UnprocessedChangeEvent;
-import org.jvnet.hk2.config.UnprocessedChangeEvents;
-import org.jvnet.hk2.config.types.Property;
 
 /**
  * Encapsulates information related to Java Web Start support for a single
@@ -551,14 +550,6 @@ public class JavaWebStartInfo implements ConfigListener {
                     helper.groupFacadeUserURI(dc),
                     GROUP_FACADE_PATH_PROPERTY_NAME,
                     acServerApp.getDescriptor().getName());
-        }
-
-        if (JDK.getMajor() < 9) {
-            /*
-         * Add static content representing any extension libraries this client
-         * (or the JARs it depends on) uses.
-             */
-            processExtensionReferences();
         }
 
         /*
