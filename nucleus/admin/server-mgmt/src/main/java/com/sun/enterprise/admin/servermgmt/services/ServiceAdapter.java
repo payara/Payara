@@ -120,6 +120,7 @@ public abstract class ServiceAdapter implements Service {
         getTokenMap().put(STOP_COMMAND_TN, info.type.stopCommand());
         getTokenMap().put(FQSN_TN, info.fqsn);
         getTokenMap().put(OS_USER_TN, info.osUser);
+        getTokenMap().put(SERVICE_USER_TN, getServiceUser());
 
         if (OS.isWindowsForSure()) {
             // Windows doesn't respond well to slashes in the name!!
@@ -246,5 +247,12 @@ public abstract class ServiceAdapter implements Service {
         }
     }
     
-    
+    protected String getServiceUser() {
+        if (StringUtils.ok(info.serviceUser)) {
+            return info.serviceUser;
+        } else {
+            return info.osUser;
+        }
+    }
+
 }

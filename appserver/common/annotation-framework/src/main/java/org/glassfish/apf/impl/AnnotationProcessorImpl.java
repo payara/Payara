@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2020] [Payara Foundation and/or affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or affiliates]
 
 package org.glassfish.apf.impl;
 
@@ -57,7 +57,6 @@ import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Member;
 import java.util.Optional;
 import java.util.logging.Logger;
 
@@ -73,10 +72,6 @@ import org.glassfish.apf.HandlerProcessingResult;
 import org.glassfish.apf.ProcessingResult;
 import org.glassfish.apf.Scanner;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import org.glassfish.api.deployment.DeployCommandParameters;
-import org.glassfish.hk2.classmodel.reflect.Type;
-
 
 /**
  *
@@ -160,7 +155,7 @@ public class AnnotationProcessorImpl implements AnnotationProcessor {
             processorState.ifPresent(s -> s.setProcessingResult(result));
         } else {
             result = processorState.get().getProcessingResult(ProcessingResultImpl.class);
-            for (Class modifiedClass : scanner.getElements(state.getClassesChanged())) {
+            for (Class modifiedClass : scanner.getElements(state.getClassesChanged().keySet())) {
                 result.add(process(ctx, modifiedClass));
             }
         }

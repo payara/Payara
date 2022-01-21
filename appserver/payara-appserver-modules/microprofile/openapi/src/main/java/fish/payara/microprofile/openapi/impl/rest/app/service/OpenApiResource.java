@@ -44,7 +44,7 @@ import fish.payara.microprofile.openapi.impl.OpenApiService;
 import fish.payara.microprofile.openapi.impl.model.OpenAPIImpl;
 import fish.payara.microprofile.openapi.impl.processor.BaseProcessor;
 
-import static fish.payara.microprofile.openapi.impl.rest.app.OpenApiApplication.APPLICATION_YAML;
+import static fish.payara.microprofile.openapi.rest.app.OpenApiApplication.APPLICATION_YAML;
 import java.io.IOException;
 import static java.util.logging.Level.WARNING;
 

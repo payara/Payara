@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2021] Payara Foundation and/or affiliates
+
 package com.sun.enterprise.security;
 
 import com.sun.enterprise.security.ssl.SSLUtils;
@@ -50,7 +52,6 @@ import java.util.logging.*;
 import javax.security.auth.callback.*;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.logging.*;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
 import org.glassfish.internal.api.Globals;
@@ -63,11 +64,8 @@ import org.glassfish.internal.api.Globals;
  */
 public final class TextLoginDialog implements LoginDialog {
 
-    private static Logger _logger = null;
+    private static Logger LOGGER = SecurityLoggerInfo.getLogger();
 
-    static {
-        _logger = SecurityLoggerInfo.getLogger();
-    }
     private String username = null;
     private char[] password = null;
     private static LocalStringManagerImpl localStrings =
@@ -75,25 +73,23 @@ public final class TextLoginDialog implements LoginDialog {
 
     public TextLoginDialog(Callback[] callbacks) {
         try {
-            for (int i = 0; i < callbacks.length; i++) {
-                if (callbacks[i] instanceof NameCallback) {
-                    NameCallback nc = (NameCallback) callbacks[i];
+            for (Callback callback : callbacks) {
+                if (callback instanceof NameCallback) {
+                    NameCallback nc = (NameCallback) callback;
                     System.err.print(nc.getPrompt());
                     if (nc.getDefaultName() != null) {
                         System.err.print("[" + nc.getDefaultName() + "]: ");
                     } else {
                         System.err.print(": ");
                     }
-
                     System.err.flush();
                     username = (new BufferedReader(new InputStreamReader(System.in))).readLine();
                     if ((nc.getDefaultName() != null) && ((username == null) || (username.trim().length() == 0))) {
                         username = nc.getDefaultName();
                     }
                     nc.setName(username);
-
-                } else if (callbacks[i] instanceof PasswordCallback) {
-                    PasswordCallback pc = (PasswordCallback) callbacks[i];
+                } else if (callback instanceof PasswordCallback) {
+                    PasswordCallback pc = (PasswordCallback) callback;
                     char[] passwd = null;
                     Object consoleObj = null;
                     Method readPasswordMethod = null;
@@ -102,11 +98,10 @@ public final class TextLoginDialog implements LoginDialog {
                         consoleObj = consoleMethod.invoke(null);
                         readPasswordMethod =
                                 consoleObj.getClass().getMethod(
-                                "readPassword", String.class,
-                                Array.newInstance(Object.class, 1).getClass());
+                                        "readPassword", String.class,
+                                        Array.newInstance(Object.class, 1).getClass());
                     } catch (Exception ex) {
                     }
-
                     if (consoleObj != null && readPasswordMethod != null) {
                         passwd = (char[]) readPasswordMethod.invoke(
                                 consoleObj, "%s",
@@ -120,11 +115,11 @@ public final class TextLoginDialog implements LoginDialog {
                         pc.setPassword(passwd);
                         Arrays.fill(passwd, ' ');
                     }
-                } else if (callbacks[i] instanceof ChoiceCallback) {
-                    ChoiceCallback cc = (ChoiceCallback) callbacks[i];
+                } else if (callback instanceof ChoiceCallback) {
+                    ChoiceCallback cc = (ChoiceCallback) callback;
                     /* Get the keystore password to see if the user is
-                     * authorized to see the list of certificates
-                     */
+                    * authorized to see the list of certificates
+                    */
                     String lbl = (localStrings.getLocalString("enterprise.security.keystore",
                             "Enter the KeyStore Password "));
                     SSLUtils sslUtils = Globals.get(SSLUtils.class);
@@ -134,8 +129,8 @@ public final class TextLoginDialog implements LoginDialog {
                     for (cnt = 0; cnt < 3; cnt++) {
                         // Let the user try putting password thrice
                         System.out.println(lbl + " : ");
-			String s = (new BufferedReader(new InputStreamReader(System.in))).readLine();
-			if (s != null) {
+                        String s = (new BufferedReader(new InputStreamReader(System.in))).readLine();
+                        if (s != null) {
                             char[] kp = s.toCharArray();
                             if (sslUtils.verifyMasterPassword(kp)) {
                                 break;
@@ -144,7 +139,7 @@ public final class TextLoginDialog implements LoginDialog {
                                 System.err.println(errmessage);
                             }
                             Arrays.fill(kp, ' ');
-			}
+                        }
                     }
                     if (cnt >= 3) {
                         cc.setSelectedIndex(-1);
@@ -158,16 +153,16 @@ public final class TextLoginDialog implements LoginDialog {
                         }
                         String line =
                                 (new BufferedReader(new InputStreamReader(System.in))).readLine();
-
-			if (line != null) {
+                        
+                        if (line != null) {
                             int sel = Integer.parseInt(line);
                             cc.setSelectedIndex(sel);
-			}
+                        }
                     }
                 }
             }
         } catch (Exception e) {
-            _logger.log(Level.SEVERE,
+            LOGGER.log(Level.SEVERE,
                     SecurityLoggerInfo.usernamePasswordEnteringSecurityError, e);
         }
 
@@ -176,6 +171,7 @@ public final class TextLoginDialog implements LoginDialog {
     /**
      * @return The username of the user.
      */
+    @Override
     public String getUserName() {
         return username;
     }
@@ -183,6 +179,7 @@ public final class TextLoginDialog implements LoginDialog {
     /**
      *@return The password of the user in plain text...
      */
+    @Override
     public final char[] getPassword() {
         return (password == null) ? null : Arrays.copyOf(password, password.length);
     }

@@ -64,6 +64,7 @@ import com.sun.appserv.ClassLoaderUtil;
 import com.sun.appserv.server.util.PreprocessorUtil;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.util.DOLUtils;
+import com.sun.enterprise.glassfish.bootstrap.MainHelper.HotSwapHelper;
 import com.sun.enterprise.security.integration.DDPermissionsLoader;
 import com.sun.enterprise.security.integration.PermsHolder;
 import com.sun.enterprise.util.JDK;
@@ -599,7 +600,7 @@ public class WebappClassLoader
     }
 
     @Override
-    public Class addResourceEntry(String name, ResourceEntry entry) {
+    public Class addResourceEntry(String name, String path, ResourceEntry entry) {
         Class clazz = null;
         if (!this.resourceEntries.containsKey(name)) {
             definePackage(name, entry);
@@ -617,6 +618,37 @@ public class WebappClassLoader
             }
         }
         return clazz;
+    }
+
+    @Override
+    public Class reloadResourceEntry(String name, String path, ResourceEntry entry) {
+        try {
+            InputStream binaryStream = null;
+            Resource resource = null;
+            Object lookupResult = resources.lookup(path);
+            if (lookupResult instanceof Resource) {
+                resource = (Resource) lookupResult;
+            }
+
+            ResourceAttributes attributes
+                    = (ResourceAttributes) resources.getAttributes(path);
+            int contentLength = (int) attributes.getContentLength();
+            entry.lastModified = attributes.getLastModified();
+
+            if (resource != null) {
+                try {
+                    binaryStream = resource.streamContent();
+                } catch (IOException e) {
+                    return null;
+                }
+            }
+            readEntryData(entry, name, binaryStream, contentLength, null);
+
+            return loadClass(name);
+        } catch (NamingException | ClassNotFoundException ex) {
+            logger.log(Level.SEVERE, null, ex);
+        }
+        return null;
     }
 
     @Override
@@ -2019,6 +2051,8 @@ public class WebappClassLoader
             }
 
             DirContextURLStreamHandler.unbind(this);
+
+            HotSwapHelper.closeClassLoader(this);
         }
     }
 

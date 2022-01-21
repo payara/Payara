@@ -39,7 +39,7 @@
  */
 package fish.payara.microprofile.openapi.impl.rest.app.provider;
 
-import static fish.payara.microprofile.openapi.impl.rest.app.OpenApiApplication.APPLICATION_YAML;
+import static fish.payara.microprofile.openapi.rest.app.OpenApiApplication.APPLICATION_YAML;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;

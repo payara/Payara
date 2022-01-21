@@ -69,13 +69,11 @@ public class JwtPublicKeyStore {
     private static final Logger LOGGER = Logger.getLogger(JwtPublicKeyStore.class.getName());
     private static final String RSA_ALGORITHM = "RSA";
     private static final String EC_ALGORITHM = "EC";
-    
         
     private final Config config;
     private final Supplier<Optional<String>> cacheSupplier;
     private final Duration defaultCacheTTL;
     private String keyLocation = "/publicKey.pem";
-    
     /**
      * @param defaultCacheTTL Public key cache TTL 
      */

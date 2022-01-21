@@ -164,7 +164,7 @@ public class LoggingConfigImpl implements LoggingConfig {
             throw new IOException();
         }
         try (OutputStream os = new BufferedOutputStream(new FileOutputStream(file))) {
-            props.store(os, "GlassFish logging.properties list");
+            new SortedLoggingProperties(props).store(os, "GlassFish logging.properties list");
             os.flush();
             fileMonitoring.fileModified(file);
         }

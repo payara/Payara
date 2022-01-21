@@ -53,7 +53,6 @@ import java.lang.reflect.Array;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -84,7 +83,7 @@ public class PayaraConfig implements Config {
 
         CacheEntry(ConfigValueImpl value, long expires) {
             this.value = value;
-            this.expires = expires + currentTimeMillis();
+            this.expires = expires;
         }
     }
 
@@ -168,12 +167,7 @@ public class PayaraConfig implements Config {
 
     @Override
     public <T> Optional<List<T>> getOptionalValues(String propertyName, Class<T> propertyType) {
-        Optional<List<T>> valuesList =  Config.super.getOptionalValues(propertyName, propertyType);
-        if (valuesList.get().isEmpty()) {
-            return Optional.empty();
-        } else {
-            return valuesList;
-        }
+        return Config.super.getOptionalValues(propertyName, propertyType).filter(list -> !list.isEmpty());
     }
 
     @SuppressWarnings("unchecked")
@@ -192,7 +186,7 @@ public class PayaraConfig implements Config {
     public Iterable<String> getPropertyNames() {
         List<String> result = new ArrayList<>();
         for (ConfigSource configSource : sources) {
-            result.addAll(configSource.getProperties().keySet());
+            result.addAll(configSource.getPropertyNames());
         }
         return result;
     }
@@ -220,17 +214,28 @@ public class PayaraConfig implements Config {
             return searchConfigSources(propertyName, defaultValue);
         }
 
-        final String finalPropertyName = propertyName;
-        final String finalDefaultValue = defaultValue;
-        final String entryKey = cacheKey + (defaultValue != null ? ":" + defaultValue : "")  + ":" + (entryTTL / 1000) + "s";
+        final String entryKey = cacheKey + (defaultValue != null ? ":" + defaultValue : "") + ":" + (entryTTL / 1000) + "s";
         final long now = currentTimeMillis();
+        long expires = now + entryTTL;
 
-        return cachedValuesByProperty.compute(entryKey, (key, entry) -> {
-            if (entry != null && now < entry.expires) {
+        CacheEntry cacheEntry = cachedValuesByProperty.get(entryKey);
+        // entry found and valid
+        if (cacheEntry != null && now < cacheEntry.expires) {
+            return cacheEntry.value;
+        }
+        // entry not found or expired
+        boolean isExpansionEnabled = isExpansionEnabled(propertyName);
+        // searchConfigSources can cause recursive call to getConfigValue when expansion is enabled
+        ConfigValueImpl newValue = searchConfigSources(propertyName, defaultValue, isExpansionEnabled);
+        CacheEntry newCacheEntry = new CacheEntry(newValue, expires);
+        // put the new cache entry, if there is not a newer value from other thread
+        cacheEntry = cachedValuesByProperty.compute(entryKey, (key, entry) -> {
+            if (entry != null && newCacheEntry.expires < entry.expires) {
                 return entry;
             }
-            return new CacheEntry(searchConfigSources(finalPropertyName, finalDefaultValue), entryTTL);
-        }).value;
+            return newCacheEntry;
+        });
+        return cacheEntry.value;
     }
 
     private <T> T convertValue(ConfigValue configValue, String defaultValue,
@@ -296,13 +301,23 @@ public class PayaraConfig implements Config {
         return Optional.of(new ArrayConverter<>(elementType, getConverter(elementType).get()));
     }
 
+    /**
+     * Do not call this method during compute as it may modify the cachedValuesByProperty map.
+     */
     private ConfigValueImpl searchConfigSources(String propertyName, String defaultValue) {
+        boolean expansionEnabled = isExpansionEnabled(propertyName);
+        return searchConfigSources(propertyName, defaultValue, expansionEnabled);
+    }
 
+    private boolean isExpansionEnabled(String propertyName) {
         final boolean expansionEnabled = !MP_CONFIG_CACHE_DURATION.equals(propertyName)
-            && !MP_CONFIG_EXPANSION_ENABLED_STRING.equals(propertyName)
-            && getOptionalValue(MP_CONFIG_EXPANSION_ENABLED_STRING, Boolean.class)
-                    .orElse(true);
+                && !MP_CONFIG_EXPANSION_ENABLED_STRING.equals(propertyName)
+                && getOptionalValue(MP_CONFIG_EXPANSION_ENABLED_STRING, Boolean.class)
+                        .orElse(true);
+        return expansionEnabled;
+    }
 
+    private ConfigValueImpl searchConfigSources(String propertyName, String defaultValue, boolean expansionEnabled) {
         return new ConfigExpressionResolver(sources, expansionEnabled, profile)
                 .resolve(propertyName, defaultValue);
     }

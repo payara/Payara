@@ -106,29 +106,29 @@ public class OpenApiService {
         this.withCorsHeaders = withCorsHeaders;
     }
 
-	public void registerApp(String applicationId, DeploymentContext ctx) {
+    public void registerApp(String applicationId, DeploymentContext ctx) {
         final WebBundleDescriptorImpl descriptor = ctx.getModuleMetaData(WebBundleDescriptorImpl.class);
         final String contextRoot = descriptor.getContextRoot();
         final ReadableArchive archive = ctx.getSource();
         final ClassLoader classLoader = ctx.getClassLoader();
         documents.put(applicationId, new OpenAPISupplier(applicationId, contextRoot, archive, classLoader));
         cachedResult = null;
-	}
+    }
 
-	public void deregisterApp(String applicationId) {
+    public void deregisterApp(String applicationId) {
         documents.remove(applicationId);
         cachedResult = null;
-	}
+    }
 
-	public void resumeApp(String applicationId) {
+    public void resumeApp(String applicationId) {
         documents.get(applicationId).setEnabled(true);
         cachedResult = null;
-	}
+    }
 
-	public void suspendApp(String applicationId) {
+    public void suspendApp(String applicationId) {
         documents.get(applicationId).setEnabled(false);
         cachedResult = null;
-	}
+    }
 
     /**
      * @return the document If multiple application deployed then merge all the

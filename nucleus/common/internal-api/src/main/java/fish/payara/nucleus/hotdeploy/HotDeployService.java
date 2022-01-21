@@ -44,6 +44,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.WeakHashMap;
 import jakarta.inject.Singleton;
+import org.glassfish.api.deployment.ApplicationContext;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.jvnet.hk2.annotations.Service;
@@ -74,7 +75,15 @@ public class HotDeployService {
             return Optional.empty();
         }
     }
-    
+
+    public Optional<ApplicationState> getApplicationState(ApplicationContext context) {
+        if (context instanceof DeploymentContext) {
+            return getApplicationState((DeploymentContext) context);
+        } else {
+            return Optional.empty();
+        }
+    }
+
     public Optional<ApplicationState> getApplicationState(DeploymentContext context) {
         DeployCommandParameters commandParams = context.getCommandParameters(DeployCommandParameters.class);
         boolean hotDeploy = commandParams != null? commandParams.hotDeploy : false;

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2021] Payara Foundation and/or affiliates
 
 package org.glassfish.appclient.client;
 
@@ -72,6 +73,7 @@ import java.util.Map;
 import java.util.Properties;
 import jakarta.xml.bind.*;
 import jakarta.xml.bind.util.ValidationEventCollector;
+import java.util.logging.Logger;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -121,6 +123,8 @@ public class AppClientFacade {
     private static AppClientContainer acc = null;
 
     private static boolean isJWS = false;
+
+    private static final Logger logger = Logger.getLogger(AppClientFacade.class.getName());
 
 
     /**
@@ -185,16 +189,8 @@ public class AppClientFacade {
     }
 
     public static void prepareACC(String agentArgsText, Instrumentation inst) throws UserError, MalformedURLException, URISyntaxException, JAXBException, FileNotFoundException, ParserConfigurationException, SAXException, IOException, Exception {
-        int minor = JDK.getMinor();
-        int major = JDK.getMajor();
-        if (major<9) {
-            if (minor < 6) {
-            throw new UserError(localStrings.getLocalString(
-                    stringsAnchor,
-                    "main.badVersion",
-                    "Current Java version {0} is too low; {1} or later required",
-                    new Object[] {System.getProperty("java.version"), "1.6"}));
-            }
+        if (!JDK.isRunningLTSJDK()) {
+            logger.warning("You are running the product on an unsupported JDK version and might see unexpected results or exceptions.");
         }
 
         /*

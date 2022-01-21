@@ -39,8 +39,6 @@
  */
 package fish.payara.microprofile.openapi.impl.processor;
 
-import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.isVoid;
-
 import fish.payara.microprofile.openapi.api.processor.OASProcessor;
 import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.api.visitor.ApiVisitor;
@@ -63,6 +61,7 @@ import fish.payara.microprofile.openapi.impl.model.security.SecuritySchemeImpl;
 import fish.payara.microprofile.openapi.impl.model.servers.ServerImpl;
 import fish.payara.microprofile.openapi.impl.model.tags.TagImpl;
 import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.isVoid;
 import fish.payara.microprofile.openapi.impl.visitor.OpenApiWalker;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -70,14 +69,12 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import java.util.Map.Entry;
-
+import java.util.Set;
+import java.util.logging.Level;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.SEVERE;
 import static java.util.logging.Level.WARNING;
-
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import jakarta.ws.rs.DefaultValue;
@@ -88,17 +85,16 @@ import jakarta.ws.rs.core.Response.Status;
 import org.eclipse.microprofile.openapi.models.Components;
 import org.eclipse.microprofile.openapi.models.ExternalDocumentation;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
+import org.eclipse.microprofile.openapi.models.Operation;
 import org.eclipse.microprofile.openapi.models.PathItem;
 import org.eclipse.microprofile.openapi.models.Reference;
 import org.eclipse.microprofile.openapi.models.callbacks.Callback;
 import org.eclipse.microprofile.openapi.models.media.MediaType;
 import org.eclipse.microprofile.openapi.models.media.Schema;
+import org.eclipse.microprofile.openapi.models.media.Schema.SchemaType;
 import org.eclipse.microprofile.openapi.models.parameters.Parameter;
 import org.eclipse.microprofile.openapi.models.parameters.Parameter.In;
-import org.eclipse.microprofile.openapi.models.parameters.Parameter.Style;
 import org.eclipse.microprofile.openapi.models.parameters.RequestBody;
-import org.eclipse.microprofile.openapi.models.Operation;
-import org.eclipse.microprofile.openapi.models.media.Schema.SchemaType;
 import org.eclipse.microprofile.openapi.models.responses.APIResponse;
 import org.eclipse.microprofile.openapi.models.responses.APIResponses;
 import org.eclipse.microprofile.openapi.models.security.SecurityRequirement;
@@ -113,9 +109,9 @@ import org.glassfish.hk2.classmodel.reflect.ExtensibleType;
 import org.glassfish.hk2.classmodel.reflect.FieldModel;
 import org.glassfish.hk2.classmodel.reflect.MethodModel;
 import org.glassfish.hk2.classmodel.reflect.ParameterizedInterfaceModel;
+import org.glassfish.hk2.classmodel.reflect.ParameterizedType;
 import org.glassfish.hk2.classmodel.reflect.Type;
 import org.glassfish.hk2.classmodel.reflect.Types;
-import org.glassfish.hk2.classmodel.reflect.ParameterizedType;
 
 /**
  * A processor to parse the application for annotations, to add to the OpenAPI
@@ -432,10 +428,18 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     }
 
     private static void addParameter(AnnotatedElement element, ApiContext context, String name, In in, Boolean required) {
+        Boolean hidden = false;
+        AnnotationModel paramAnnotation = element.getAnnotation(org.eclipse.microprofile.openapi.annotations.parameters.Parameter.class.getName());
+        if (paramAnnotation != null) {
+            hidden = paramAnnotation.getValue("hidden", Boolean.class);
+        }
+        if (hidden != null && hidden) {
+            return;
+        }
+
         Parameter newParameter = new ParameterImpl();
         newParameter.setName(name);
         newParameter.setIn(in);
-        newParameter.setStyle(Style.SIMPLE);
         newParameter.setRequired(required);
         SchemaImpl schema = new SchemaImpl();
         String defaultValue = getDefaultValueIfPresent(element);
@@ -573,7 +577,16 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
         for (FieldModel field : clazz.getFields()) {
             final String fieldName = field.getName();
-            if (!field.isTransient() && !fieldName.startsWith("this$")) {
+            Boolean hidden = false;
+            AnnotationModel fieldSchemaAnnotation = field
+                    .getAnnotation(org.eclipse.microprofile.openapi.annotations.media.Schema.class.getName());
+            if (fieldSchemaAnnotation != null) {
+                hidden = fieldSchemaAnnotation.getValue("hidden", Boolean.class);
+            }
+            
+            if (!Boolean.TRUE.equals(hidden)
+                    && !field.isTransient()
+                    && !fieldName.startsWith("this$")) {
                 final Schema existingProperty = schema.getProperties().get(fieldName);
                 final Schema newProperty = createSchema(null, context, field, clazz, parameterizedInterfaces);
                 if (existingProperty != null) {
@@ -635,41 +648,43 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         visitSchemaFieldOrMethod(schemaAnnotation, field, declaringType, typeName, context);
     }
 
-    public void visitSchemaFieldOrMethod(AnnotationModel schemaAnnotation, AnnotatedElement fieldOrMethod,
+    private void visitSchemaFieldOrMethod(AnnotationModel schemaAnnotation, AnnotatedElement fieldOrMethod,
             ExtensibleType<?> declaringType, String typeName, ApiContext context) {
         assert (fieldOrMethod instanceof FieldModel) || (fieldOrMethod instanceof MethodModel);
+        Boolean hidden = schemaAnnotation.getValue("hidden", Boolean.class);
+        if (hidden == null || !hidden) {
+            // Get the schema object name
+            String schemaName = ModelUtils.getSchemaName(context, fieldOrMethod);
+            SchemaImpl schema = SchemaImpl.createInstance(schemaAnnotation, context);
 
-        // Get the schema object name
-        String schemaName = ModelUtils.getSchemaName(context, fieldOrMethod);
-        SchemaImpl schema = SchemaImpl.createInstance(schemaAnnotation, context);
+            // Get the parent schema object name
+            String parentName = null;
+            AnnotationModel classSchemaAnnotation = context.getAnnotationInfo(declaringType)
+                    .getAnnotation(org.eclipse.microprofile.openapi.annotations.media.Schema.class);
+            if (classSchemaAnnotation != null) {
+                parentName = classSchemaAnnotation.getValue("name", String.class);
+            }
+            if (parentName == null || parentName.isEmpty()) {
+                parentName = declaringType.getSimpleName();
+            }
 
-        // Get the parent schema object name
-        String parentName = null;
-        AnnotationModel classSchemaAnnotation = context.getAnnotationInfo(declaringType)
-                .getAnnotation(org.eclipse.microprofile.openapi.annotations.media.Schema.class);
-        if (classSchemaAnnotation != null) {
-            parentName = classSchemaAnnotation.getValue("name", String.class);
+            // Get or create the parent schema object
+            final Components components = context.getApi().getComponents();
+            Schema parentSchema = components.getSchemas().getOrDefault(parentName, new SchemaImpl());
+            components.addSchema(parentName, parentSchema);
+
+            Schema property = parentSchema.getProperties().getOrDefault(schemaName, new SchemaImpl());
+            parentSchema.addProperty(schemaName, property);
+            if (schema.isRequired()) {
+                parentSchema.addRequired(schemaName);
+            }
+
+            if (property.getRef() == null) {
+                property.setType(ModelUtils.getSchemaType(typeName, context));
+            }
+
+            SchemaImpl.merge(schema, property, false, context);
         }
-        if (parentName == null || parentName.isEmpty()) {
-            parentName = declaringType.getSimpleName();
-        }
-
-        // Get or create the parent schema object
-        final Components components = context.getApi().getComponents();
-        Schema parentSchema = components.getSchemas().getOrDefault(parentName, new SchemaImpl());
-        components.addSchema(parentName, parentSchema);
-
-        Schema property = parentSchema.getProperties().getOrDefault(schemaName, new SchemaImpl());
-        parentSchema.addProperty(schemaName, property);
-        if (schema.isRequired()) {
-            parentSchema.addRequired(schemaName);
-        }
-
-        if (property.getRef() == null) {
-            property.setType(ModelUtils.getSchemaType(typeName, context));
-        }
-
-        SchemaImpl.merge(schema, property, false, context);
     }
 
     private static void visitSchemaParameter(AnnotationModel schemaAnnotation, org.glassfish.hk2.classmodel.reflect.Parameter parameter, ApiContext context) {
@@ -944,6 +959,10 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     @Override
     public void visitParameter(AnnotationModel annotation, AnnotatedElement element, ApiContext context) {
         Parameter matchedParam = null;
+        Boolean hidden = annotation.getValue("hidden", Boolean.class);
+        if (hidden != null && hidden) {
+            return;
+        }
         Parameter parameter = ParameterImpl.createInstance(annotation, context);
 
         if (element instanceof org.glassfish.hk2.classmodel.reflect.Parameter) {
@@ -1250,6 +1269,14 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             if (insertObjectReference(context, schema, type.getType(), typeName)) {
                 schema.setType(null);
                 schema.setItems(null);
+            }
+        }
+        if (type instanceof AnnotatedElement) {
+            AnnotatedElement element = (AnnotatedElement) type;
+            final AnnotationModel schemaAnnotation = element
+                    .getAnnotation(org.eclipse.microprofile.openapi.annotations.media.Schema.class.getName());
+            if (schemaAnnotation != null) {
+                SchemaImpl.merge(SchemaImpl.createInstance(schemaAnnotation, context), schema, false, context);
             }
         }
 

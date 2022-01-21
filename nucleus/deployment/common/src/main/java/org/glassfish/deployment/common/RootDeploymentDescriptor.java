@@ -333,11 +333,13 @@ public abstract class RootDeploymentDescriptor extends Descriptor {
         if (extensions.containsKey(type)) {
             values = extensions.get(type);
         } else {
-            values = new ArrayList<RootDeploymentDescriptor>();
+            values = new ArrayList<>();
             extensions.put(type, values);
         }
         ((RootDeploymentDescriptor)instance).index = index;
-        values.add(instance);
+        if (!values.contains(instance)) {
+            values.add(instance);
+        }
 
     }
 

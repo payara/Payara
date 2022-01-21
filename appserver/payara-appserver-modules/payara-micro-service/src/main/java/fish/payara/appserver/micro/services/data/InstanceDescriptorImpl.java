@@ -19,6 +19,10 @@ package fish.payara.appserver.micro.services.data;
 
 import static java.lang.Boolean.TRUE;
 import static jakarta.json.stream.JsonGenerator.PRETTY_PRINTING;
+import fish.payara.micro.data.ApplicationDescriptor;
+import fish.payara.micro.data.InstanceDescriptor;
+import fish.payara.micro.data.ModuleDescriptor;
+import org.glassfish.internal.data.ApplicationInfo;
 
 import java.io.StringWriter;
 import java.net.InetAddress;
@@ -29,7 +33,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -41,11 +46,6 @@ import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonWriter;
 
-import org.glassfish.internal.data.ApplicationInfo;
-
-import fish.payara.micro.data.ApplicationDescriptor;
-import fish.payara.micro.data.InstanceDescriptor;
-import fish.payara.micro.data.ModuleDescriptor;
 import java.util.UUID;
 
 /**
@@ -79,7 +79,7 @@ public class InstanceDescriptorImpl implements InstanceDescriptor {
 
     public void addApplication(ApplicationInfo info) {
         if (deployedApplications == null) {
-            deployedApplications = new HashMap<>(3);
+            deployedApplications = new LinkedHashMap<>();
         }
 
         ApplicationDescriptorImpl ad = new ApplicationDescriptorImpl(info);
@@ -88,7 +88,7 @@ public class InstanceDescriptorImpl implements InstanceDescriptor {
 
     public void addApplication(ApplicationDescriptor descriptor) {
         if (deployedApplications == null) {
-            deployedApplications = new HashMap<>(3);
+            deployedApplications = new LinkedHashMap<>();
         }
 
         deployedApplications.put(descriptor.getName(), descriptor);
@@ -147,7 +147,7 @@ public class InstanceDescriptorImpl implements InstanceDescriptor {
     @Override
     public Collection<ApplicationDescriptor> getDeployedApplications() {
         if (deployedApplications == null) {
-            return new HashSet<>();
+            return new LinkedHashSet<>();
         }
         return deployedApplications.values();
     }
@@ -169,7 +169,7 @@ public class InstanceDescriptorImpl implements InstanceDescriptor {
 
     public void removeApplication(ApplicationDescriptor applicationInfo) {
         if (deployedApplications == null) {
-            deployedApplications = new HashMap<>(3);
+            deployedApplications = new LinkedHashMap<>();
         }
 
         deployedApplications.remove(applicationInfo.getName());
@@ -186,7 +186,7 @@ public class InstanceDescriptorImpl implements InstanceDescriptor {
     /**
      * Overrides hashcode based purely on the UUID hashcode
      *
-     * @return
+     * @return The UUID-based hash code.
      */
     @Override
     public int hashCode() {
@@ -337,12 +337,10 @@ public class InstanceDescriptorImpl implements InstanceDescriptor {
                 // List the module mappings if verbose is specified
                 if (verbose) {
                     JsonObjectBuilder servletMappings = Json.createObjectBuilder();
-                    module.getServletMappings().forEach((key, value) -> {
-                        servletMappings.add(key, value);
-                    });
+                    module.getServletMappings().forEach(servletMappings::add);
                     appBuilder.add("Mappings", servletMappings.build());
                 }
-            
+
             // If there's more modules, print info for each module
             } else {
                 JsonArrayBuilder modules = Json.createArrayBuilder();
@@ -359,9 +357,7 @@ public class InstanceDescriptorImpl implements InstanceDescriptor {
                     // Create an object of mappings if verbose is specified
                     if (verbose) {
                         JsonObjectBuilder servletMappings = Json.createObjectBuilder();
-                        module.getServletMappings().forEach((key, value) -> {
-                            servletMappings.add(key, value);
-                        });
+                        module.getServletMappings().forEach(servletMappings::add);
                         moduleBuilder.add("Mappings", servletMappings.build());
                     }
 
@@ -398,7 +394,7 @@ public class InstanceDescriptorImpl implements InstanceDescriptor {
         if (memberUUID != null) {
             sb.append("Hazelcast Member UUID ").append(this.memberUUID).append('\n');
         }
-        
+
         for (ApplicationDescriptor applicationDescriptor : getDeployedApplications()) {
             sb.append("Deployed: ");
             sb.append(applicationDescriptor.getName()).append(" ( ");
@@ -409,7 +405,7 @@ public class InstanceDescriptorImpl implements InstanceDescriptor {
                 } else {
                     sb.append("***");
                 }
-                
+
                 sb.append(" [ ");
                 for (Entry<String, String> servletMapping : moduleDescriptor.getServletMappings().entrySet()) {
                     sb.append("< ")
@@ -419,7 +415,7 @@ public class InstanceDescriptorImpl implements InstanceDescriptor {
                 sb.append(" ] ");
             }
             sb.append(")\n");
-            
+
             String libraries = applicationDescriptor.getLibraries();
             if (libraries != null) {
                 sb.append(' ').append(applicationDescriptor.getLibraries());
@@ -457,7 +453,7 @@ public class InstanceDescriptorImpl implements InstanceDescriptor {
         }
         return result;
     }
-    
+
     /**
      * Gets the instance group name
      * @return The instance group name
@@ -465,7 +461,7 @@ public class InstanceDescriptorImpl implements InstanceDescriptor {
     public String getInstanceGroup() {
         return instanceGroup;
     }
-    
+
     /**
      * Sets the instance group name
      * @param instanceGroup The instance group name
@@ -473,7 +469,7 @@ public class InstanceDescriptorImpl implements InstanceDescriptor {
     public void setInstanceGroup(String instanceGroup) {
         this.instanceGroup = instanceGroup;
     }
-    
+
     public void setLastHeartBeat(long val) {
         heartBeatTS = val;
     }

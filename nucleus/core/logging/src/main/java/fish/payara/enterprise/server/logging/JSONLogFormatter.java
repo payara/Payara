@@ -40,18 +40,14 @@
 package fish.payara.enterprise.server.logging;
 
 import com.sun.common.util.logging.GFLogRecord;
-import com.sun.enterprise.server.logging.ExcludeFieldsSupport;
-import com.sun.enterprise.server.logging.FormatterDelegate;
-import com.sun.enterprise.server.logging.LogEvent;
-import com.sun.enterprise.server.logging.LogEventBroadcaster;
-import com.sun.enterprise.server.logging.LogEventImpl;
+import com.sun.enterprise.server.logging.*;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.ErrorManager;
-import java.util.logging.Formatter;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
@@ -70,16 +66,12 @@ import org.jvnet.hk2.annotations.Service;
  * @since 4.1.1.164
  * @author savage
  */
-@Service()
-@ContractsProvided({JSONLogFormatter.class, Formatter.class})
-@PerLookup
-public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
+// Removed HK2 service annotations as never used as such, only plain Java instantiation.
+public class JSONLogFormatter extends CommonFormatter implements LogEventBroadcaster {
 
     private static final String RECORD_NUMBER = "RecordNumber";
     private static final String METHOD_NAME = "MethodName";
     private static final String CLASS_NAME = "ClassName";
-
-    private final ServiceLocator habitat = Globals.getDefaultBaseServiceLocator();
 
     private Map<String, ResourceBundle> loggerResourceBundleTable;
     private LogManager logManager;
@@ -125,8 +117,6 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
     // String values for thread excludable keys
     private String THREAD_ID_KEY = "ThreadID";
     private String THREAD_NAME_KEY = "ThreadName";
-    private String USER_ID_KEY = "UserId";
-    private String ECID_KEY = "ECId";
     private String LEVEL_VALUE_KEY = "LevelValue";
     private String TIME_MILLIS_KEY = "TimeMillis";
     private String MESSAGE_ID_KEY = "MessageID";
@@ -136,9 +126,7 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
     private static final String RFC3339_DATE_FORMAT =
             "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
 
-    private final ExcludeFieldsSupport excludeFieldsSupport = new ExcludeFieldsSupport();
     private LogEventBroadcaster logEventBroadcasterDelegate;
-    private String productId = "";
 
     /**
      * For backwards compatibility with log format for pre-182
@@ -147,8 +135,13 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
     @Deprecated
     private static final String PAYARA_JSONLOGFORMATTER_UNDERSCORE="fish.payara.deprecated.jsonlogformatter.underscoreprefix";
 
+    // Account for instances of (Formatter) Class.forName(formatter).newInstance();
     public JSONLogFormatter() {
-        super();
+        this(null);
+    }
+
+    public JSONLogFormatter(String excludeFields) {
+        super(excludeFields);
         loggerResourceBundleTable = new HashMap<>();
         logManager = LogManager.getLogManager();
 
@@ -163,8 +156,6 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
             // String values for thread excludable keys
             THREAD_ID_KEY = "_" + THREAD_ID_KEY;
             THREAD_NAME_KEY = "_" + THREAD_NAME_KEY;
-            USER_ID_KEY = "_" + USER_ID_KEY;
-            ECID_KEY = "_" + ECID_KEY;
             LEVEL_VALUE_KEY = "_" + LEVEL_VALUE_KEY;
             TIME_MILLIS_KEY = "_" + TIME_MILLIS_KEY;
             MESSAGE_ID_KEY = "_" + MESSAGE_ID_KEY;
@@ -173,8 +164,8 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
         }
     }
 
-    public JSONLogFormatter(FormatterDelegate delegate) {
-        this();
+    public JSONLogFormatter(FormatterDelegate delegate, String excludeFields) {
+        this(excludeFields);
         _delegate = delegate;
     }
 
@@ -190,29 +181,6 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
     @Override
     public String formatMessage(LogRecord record) {
         return jsonLogFormat(record);
-    }
-
-    /**
-     * Payara can override this to specify product version.
-     * @return The string value of the product id.
-     */
-    protected String getProductId() {
-        if (habitat != null) {
-            VersionInfo version = habitat.getService(VersionInfo.class);
-            if (productId.isEmpty() && version != null) {
-                StringBuilder builder = new StringBuilder();
-                builder.append(version.getAbbreviatedProductName());
-                builder.append(' ');
-                builder.append(version.getVersionPrefix());
-                builder.append(version.getMajorVersion());
-                builder.append('.');
-                builder.append(version.getMinorVersion());
-                builder.append('.');
-                builder.append(version.getUpdateVersion());
-                productId = builder.toString();
-            }
-        }
-        return productId;
     }
 
     /**
@@ -250,10 +218,13 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
             /*
              * Get the product id and append to object.
              */
-            productId = getProductId();
-            logEvent.setComponentId(productId);
-            eventObject.add(PRODUCT_ID_KEY, productId);
+            if (!isFieldExcluded(ExcludeFieldsSupport
+                    .SupplementalAttribute.VERSION)) {
 
+                String productId = getProductId();
+                logEvent.setComponentId(productId);
+                eventObject.add(PRODUCT_ID_KEY, productId);
+            }
             /*
              * Get the logger name and append to object.
              */
@@ -269,7 +240,7 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
             /*
              * Get thread information and append to object if not excluded.
              */
-            if (!excludeFieldsSupport.isSet(ExcludeFieldsSupport
+            if (!isFieldExcluded(ExcludeFieldsSupport
                     .SupplementalAttribute.TID)) {
                 // Thread ID
                 int threadId = record.getThreadID();
@@ -290,31 +261,9 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
             }
 
             /*
-             * Get user id and append if not excluded and exists with value.
-             */
-            if (!excludeFieldsSupport.isSet(ExcludeFieldsSupport
-                    .SupplementalAttribute.USERID)) {
-                String userId = logEvent.getUser();
-                if (null != userId && !userId.isEmpty()) {
-                    eventObject.add(USER_ID_KEY, userId);
-                }
-            }
-
-            /*
-             * Get ec id and append if not excluded and exists with value.
-             */
-            if (!excludeFieldsSupport.isSet(ExcludeFieldsSupport
-                    .SupplementalAttribute.ECID)) {
-                String ecid = logEvent.getECId();
-                if (null != ecid && !ecid.isEmpty()) {
-                    eventObject.add(ECID_KEY, ecid);
-                }
-            }
-
-            /*
              * Get millis time for log entry timestamp
              */
-            if (!excludeFieldsSupport.isSet(ExcludeFieldsSupport
+            if (!isFieldExcluded(ExcludeFieldsSupport
                     .SupplementalAttribute.TIME_MILLIS)) {
                 long timestamp = record.getMillis();
                 logEvent.setTimeMillis(timestamp);
@@ -325,7 +274,7 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
              * Include the integer value for log level
              */
             Level level = record.getLevel();
-            if (!excludeFieldsSupport.isSet(ExcludeFieldsSupport
+            if (!isFieldExcluded(ExcludeFieldsSupport
                     .SupplementalAttribute.LEVEL_VALUE)) {
                 int levelValue = level.intValue();
                 logEvent.setLevelValue(levelValue);
@@ -560,10 +509,4 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
         }
     }
 
-    /**
-     * @param excludeFields Fields to exclude.
-     */
-    public void setExcludeFields(String excludeFields) {
-        this.excludeFieldsSupport.setExcludeFields(excludeFields);
-    }
 }

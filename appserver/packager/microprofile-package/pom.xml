@@ -240,6 +240,14 @@
             <version>${jersey.version}</version>
         </dependency>
             
+
+        <!-- MicroProfile Rest Client ssl-->
+        <dependency>
+            <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
+            <artifactId>rest-client-ssl</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
         <!-- OpenTracing -->
         <dependency>
             <groupId>org.eclipse.microprofile.opentracing</groupId>

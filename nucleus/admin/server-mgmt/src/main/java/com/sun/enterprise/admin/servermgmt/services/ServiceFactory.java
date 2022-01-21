@@ -37,24 +37,35 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2021] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt.services;
 
+import com.sun.enterprise.admin.servermgmt.cli.CreateServiceCommand;
 import com.sun.enterprise.util.io.ServerDirs;
 
 public final class ServiceFactory {
     
-    public static final Service getService(ServerDirs dirs, AppserverServiceType type) {
+    public static final Service getService(ServerDirs dirs, AppserverServiceType type, String systemType) {
+        boolean autodetect = systemType == null;
 
         // the order matters!
-        if(LinuxService.apropos())
-            return new LinuxService(dirs, type);
-        if(SMFService.apropos())
+        if (CreateServiceCommand.SYSTEM_TYPE_SYSTEMD.equals(systemType)
+                || (autodetect && LinuxSystemDService.apropos())) {
+            return new LinuxSystemDService(dirs, type);
+        }
+        if (CreateServiceCommand.SYSTEM_TYPE_SYSTEMV.equals(systemType)
+                || (autodetect && LinuxSystemVService.apropos())) {
+            return new LinuxSystemVService(dirs, type);
+        }
+        if (CreateServiceCommand.SYSTEM_TYPE_SOLARIS.equals(systemType)
+                || (autodetect && SMFService.apropos())) {
             return new SMFService(dirs, type);
-        if(WindowsService.apropos())
+        }
+        if (CreateServiceCommand.SYSTEM_TYPE_WINDOWS.equals(systemType)
+                || (autodetect && WindowsService.apropos())) {
             return new WindowsService(dirs, type);
-        if(LinuxService.apropos())
-            return new LinuxService(dirs, type);
+        }
         throw new NotSupportedOSException(Strings.get("noSuitableServiceImplementation"));
     }
     
@@ -64,7 +75,4 @@ public final class ServiceFactory {
             super(message);
         }
     }
-
-
-
 }

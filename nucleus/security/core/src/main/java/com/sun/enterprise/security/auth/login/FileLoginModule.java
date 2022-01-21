@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth.login;
 
 import static java.util.logging.Level.FINE;
@@ -72,8 +72,8 @@ public class FileLoginModule extends BasePasswordLoginModule {
             throw new LoginException(sm.getString("filelm.faillogin", _username));
         }
 
-        if (_logger.isLoggable(FINE)) {
-            _logger.log(FINE, "File login succeeded for: " + _username);
+        if (LOGGER.isLoggable(FINE)) {
+            LOGGER.log(FINE, "File login succeeded for: {0}", _username);
         }
 
         commitUserAuthentication(groups);

@@ -64,5 +64,6 @@ holder.
         <module>opentracing-jaxws</module>
         <module>microprofile-common</module>
         <module>microprofile-connector</module>
+        <module>rest-client-ssl</module>
     </modules>
 </project>

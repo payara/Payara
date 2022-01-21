@@ -190,12 +190,6 @@ public class JdbcConnectionPoolValidatorTest {
 
         updateMock(pool, p -> {
             expect(p.getWrapJdbcObjects()).andStubReturn("false");
-            expect(p.getSqlTraceListeners()).andStubReturn(SQLTraceListener.class.getName());
-        });
-        assertFalse("wrapping disabled, but trace listeners enabled", this.validator.isValid(pool, null));
-
-        updateMock(pool, p -> {
-            expect(p.getWrapJdbcObjects()).andStubReturn("false");
             expect(p.getSqlTraceListeners()).andStubReturn(null);
             expect(p.getStatementCacheSize()).andStubReturn("200");
         });

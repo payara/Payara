@@ -13,7 +13,7 @@ ENV PAYARA_DIR=${HOME_DIR}/appserver \
     MEM_XSS="512k"
 ENV PATH="${PATH}:${PAYARA_DIR}/bin"
 
-ARG TINI_VERSION=v0.18.0
+ARG TINI_VERSION=v0.19.0
 
 # Download tini
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini \

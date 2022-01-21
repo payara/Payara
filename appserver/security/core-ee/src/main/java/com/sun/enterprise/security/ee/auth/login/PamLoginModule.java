@@ -73,8 +73,8 @@ public class PamLoginModule extends AppservPasswordLoginModule {
         if (user == null) { // JAAS behavior
             throw new LoginException("Failed Pam Login for " + _username);
         }
-        if (_logger.isLoggable(Level.FINE)) {
-            _logger.log(Level.FINE, "PAM login succeeded for: " + _username);
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "PAM login succeeded for: " + _username);
         }
 
         /*
@@ -117,7 +117,7 @@ public class PamLoginModule extends AppservPasswordLoginModule {
             user = new PAM(pamService).authenticate(username, password);
 
         } catch (PAMException e) {
-            _logger.log(SEVERE, "pam_exception_authenticate", e);
+            LOGGER.log(SEVERE, "pam_exception_authenticate", e);
         }
         
         return user;

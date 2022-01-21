@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2021] Payara Foundation and/or affiliates
 
 package test;
 import org.testng.annotations.*;
@@ -44,7 +45,6 @@ import org.testng.Assert;
 
 import java.io.*;
 import java.net.*;
-import java.util.*;
 
 /**
  * Simple TestNG client for basic WAR containing one JSP,one Servlet and one static
@@ -55,7 +55,7 @@ public class CmpRosterTestNG {
 
     private static final String TEST_NAME = "Roster";
    
-    private String strContextRoot="roster";
+    private final String strContextRoot="roster";
 
     static String result = "";
     String host=System.getProperty("http.host");
@@ -68,42 +68,41 @@ public class CmpRosterTestNG {
      */
 
 
-    @Test(groups ={ "pulse"} ) // test method
-    public void test() throws Exception{
-        
-        try{
+    @Test(groups = {"pulse"}) // test method
+    public void test() throws Exception {
 
-          String testurl = "http://" + host  + ":" + port + "/"+ 
-	    strContextRoot + "/" + TEST_NAME;
+        try {
 
-	  URL url = new URL(testurl);
-	  //echo("Connecting to: " + url.toString());
-	  HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-	  conn.connect();
-	  int responseCode = conn.getResponseCode();
+            String testurl = "http://" + host + ":" + port + "/" + strContextRoot + "/" + TEST_NAME;
 
-	  InputStream is = conn.getInputStream();
-	  BufferedReader input = new BufferedReader(new InputStreamReader(is));
+            URL url = new URL(testurl);
+            //echo("Connecting to: " + url.toString());
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.connect();
+            int responseCode = conn.getResponseCode();
 
-	  String line = null;
-	  boolean result=false;
-	  String testLine = null;        
-	  String EXPECTED_RESPONSE ="ROSTER-FINISHED-OK";
-	  while ((line = input.readLine()) != null) {
-	    // echo(line);
-            if(line.indexOf(EXPECTED_RESPONSE)!=-1){
-	      testLine = line;
-	      //echo(testLine);
-	      result=true;
-	      break;
+            InputStream is = conn.getInputStream();
+            BufferedReader input = new BufferedReader(new InputStreamReader(is));
+
+            String line = null;
+            boolean result = false;
+            String testLine = null;
+            String EXPECTED_RESPONSE = "ROSTER-FINISHED-OK";
+            while ((line = input.readLine()) != null) {
+                // echo(line);
+                if (line.contains(EXPECTED_RESPONSE)) {
+                    testLine = line;
+                    //echo(testLine);
+                    result = true;
+                    break;
+                }
             }
-	  }        
-                
-	  Assert.assertEquals(result, true,"Unexpected Results");
-        
-        }catch(Exception e){
-	  e.printStackTrace();
-	  throw new Exception(e);
+
+            Assert.assertEquals(result, true, "Unexpected Results");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new Exception(e);
         }
 
     }

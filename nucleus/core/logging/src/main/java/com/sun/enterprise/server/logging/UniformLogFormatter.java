@@ -43,12 +43,6 @@
 package com.sun.enterprise.server.logging;
 
 import com.sun.common.util.logging.GFLogRecord;
-import org.glassfish.api.VersionInfo;
-import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.internal.api.Globals;
-import org.jvnet.hk2.annotations.ContractsProvided;
-import org.jvnet.hk2.annotations.Service;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -77,16 +71,12 @@ import java.util.logging.*;
  *         4. If there is a Map as the last element, need to scan the message to
  *         distinguish key values with the message argument.
  */
-@Service()
-@ContractsProvided({UniformLogFormatter.class, Formatter.class})
-@PerLookup
+// Removed HK2 service annotations as never used as such, only plain Java instantiation.
 public class UniformLogFormatter extends AnsiColorFormatter implements LogEventBroadcaster {
 
     private static final String RECORD_NUMBER = "RecordNumber";
     private static final String METHOD_NAME = "MethodName";
     private static final String CLASS_NAME = "ClassName";
-
-    private ServiceLocator habitat = Globals.getDefaultBaseServiceLocator();
 
     // loggerResourceBundleTable caches references to all the ResourceBundle
     // and can be searched using the LoggerName as the key
@@ -141,18 +131,19 @@ public class UniformLogFormatter extends AnsiColorFormatter implements LogEventB
 
     private static final String INDENT = "  ";
 
-    private ExcludeFieldsSupport excludeFieldsSupport = new ExcludeFieldsSupport();
-
-    private String productId = "";
-
+    // Account for instances of (Formatter) Class.forName(formatter).newInstance();
     public UniformLogFormatter() {
-        super();
+        this(null);
+    }
+
+    public UniformLogFormatter(String excludeFields) {
+        super(excludeFields);
         loggerResourceBundleTable = new HashMap();
         logManager = LogManager.getLogManager();
     }
 
-    public UniformLogFormatter(FormatterDelegate delegate) {
-        this();
+    public UniformLogFormatter(FormatterDelegate delegate, String excludeFields) {
+        this(excludeFields);
         _delegate = delegate;
     }
 
@@ -178,28 +169,6 @@ public class UniformLogFormatter extends AnsiColorFormatter implements LogEventB
         return uniformLogFormat(record);
     }
 
-
-    /**
-     * GlassFish can override to specify their product version
-     */
-    protected String getProductId() {
-        if (habitat != null) {
-            VersionInfo versionInfo = habitat.getService(VersionInfo.class);
-            if (productId.isEmpty() && versionInfo != null) {
-                StringBuilder sb = new StringBuilder();
-                sb.append(versionInfo.getAbbreviatedProductName());
-                sb.append(' ');
-                sb.append(versionInfo.getVersionPrefix());
-                sb.append(versionInfo.getMajorVersion());
-                sb.append('.');
-                sb.append(versionInfo.getMinorVersion());
-                sb.append('.');
-                sb.append(versionInfo.getUpdateVersion());
-                productId = sb.toString();
-            }
-        }
-        return productId;
-    }
 
     /**
      * Sun One Appserver SE/EE? can override to specify their product specific
@@ -290,9 +259,12 @@ public class UniformLogFormatter extends AnsiColorFormatter implements LogEventB
             if (color()) {
                 recordBuffer.append(getReset());
             }
-            String compId = getProductId();
-            logEvent.setComponentId(compId);
-            recordBuffer.append(compId).append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
+
+            if (!isFieldExcluded(ExcludeFieldsSupport.SupplementalAttribute.VERSION)) {
+                String compId = getProductId();
+                logEvent.setComponentId(compId);
+                recordBuffer.append(compId).append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
+            }
 
             String loggerName = record.getLoggerName();
             loggerName = (loggerName == null) ? "" : loggerName;
@@ -304,7 +276,7 @@ public class UniformLogFormatter extends AnsiColorFormatter implements LogEventB
             if (color()) {
                 recordBuffer.append(getReset());
             }
-            if (!excludeFieldsSupport.isSet(ExcludeFieldsSupport.SupplementalAttribute.TID)) {
+            if (!isFieldExcluded(ExcludeFieldsSupport.SupplementalAttribute.TID)) {
                 recordBuffer.append("_ThreadID").append(NV_SEPARATOR);
                 logEvent.setThreadId(record.getThreadID());
                 recordBuffer.append(record.getThreadID()).append(NVPAIR_SEPARATOR);
@@ -320,26 +292,8 @@ public class UniformLogFormatter extends AnsiColorFormatter implements LogEventB
                 recordBuffer.append(NVPAIR_SEPARATOR);
             }
 
-            if (!excludeFieldsSupport.isSet(ExcludeFieldsSupport.SupplementalAttribute.USERID)) {
-                String user = logEvent.getUser();
-                if (user != null && !user.isEmpty()) {
-                    recordBuffer.append("_UserId").append(NV_SEPARATOR);
-                    recordBuffer.append(user);
-                    recordBuffer.append(NVPAIR_SEPARATOR);
-                }
-            }
-
-            if (!excludeFieldsSupport.isSet(ExcludeFieldsSupport.SupplementalAttribute.ECID)) {
-                String ecid = logEvent.getECId();
-                if (ecid != null && !ecid.isEmpty()) {
-                    recordBuffer.append("_ECId").append(NV_SEPARATOR);
-                    recordBuffer.append(ecid);
-                    recordBuffer.append(NVPAIR_SEPARATOR);
-                }
-            }
-
             // Include the raw long time stamp value in the log
-            if (!excludeFieldsSupport.isSet(ExcludeFieldsSupport.SupplementalAttribute.TIME_MILLIS)) {
+            if (!isFieldExcluded(ExcludeFieldsSupport.SupplementalAttribute.TIME_MILLIS)) {
                 recordBuffer.append("_TimeMillis").append(NV_SEPARATOR);
                 logEvent.setTimeMillis(record.getMillis());
                 recordBuffer.append(record.getMillis()).append(NVPAIR_SEPARATOR);
@@ -347,7 +301,7 @@ public class UniformLogFormatter extends AnsiColorFormatter implements LogEventB
 
             // Include the integer level value in the log
             Level level = record.getLevel();
-            if (!excludeFieldsSupport.isSet(ExcludeFieldsSupport.SupplementalAttribute.LEVEL_VALUE)) {
+            if (!isFieldExcluded(ExcludeFieldsSupport.SupplementalAttribute.LEVEL_VALUE)) {
                 recordBuffer.append("_LevelValue").append(NV_SEPARATOR);
                 int levelValue = level.intValue();
                 logEvent.setLevelValue(levelValue);
@@ -566,16 +520,10 @@ public class UniformLogFormatter extends AnsiColorFormatter implements LogEventB
     }
 
     /**
-     * @param multiLineMode the multiLineMode to set
+     * @param value if the multiLineMode has to be set
      */
     void setMultiLineMode(boolean value) {
         multiLineMode = value;
     }
 
-    /**
-     * @param excludeFields the excludeFields to set
-     */
-    void setExcludeFields(String excludeFields) {
-        this.excludeFieldsSupport.setExcludeFields(excludeFields);
-    }
 }

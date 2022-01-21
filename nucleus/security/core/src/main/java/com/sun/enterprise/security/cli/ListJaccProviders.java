@@ -71,7 +71,6 @@ import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.JaccProvider;
 import com.sun.enterprise.config.serverbeans.SecurityService;
-import com.sun.enterprise.util.SystemPropertyConstants;
 
 /**
  *Usage: list-jacc-providers

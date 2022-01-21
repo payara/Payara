@@ -55,11 +55,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2021] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.web.connector;
 
 import javax.management.*;
-import java.lang.String;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import java.util.concurrent.ConcurrentHashMap;
@@ -220,6 +220,7 @@ public class MapperListener implements NotificationListener, NotificationFilter{
      * @return true if the notification needs to be sent to this
      * MapperListener, false otherwise.
      */
+    @Override
     public boolean isNotificationEnabled(Notification notification) {
 
         if (notification instanceof MBeanServerNotification) {
@@ -245,6 +246,7 @@ public class MapperListener implements NotificationListener, NotificationFilter{
     // ------------------------------------------- NotificationListener Methods
 
 
+    @Override
     public void handleNotification(Notification notification,
                                    java.lang.Object handback) {
 
@@ -290,10 +292,9 @@ public class MapperListener implements NotificationListener, NotificationFilter{
                 }
             } else if (container instanceof StandardWrapper) {
                 ObjectName objectName = container.getJmxName();
-                if (Boolean.parseBoolean(objectName.getKeyProperty("osgi")) &&
-                        objectName.getKeyProperty("j2eeType").equals("Servlet")) {
+                if (objectName.getKeyProperty("j2eeType").equals("Servlet")) {
                     try {
-                        unregisterOSGiWrapper(objectName);
+                        unregisterWrapper(objectName, (StandardWrapper)container);
                      } catch (Throwable t) {
                         throw new RuntimeException(
                                 "Error unregistering osgi wrapper " + objectName, t);
@@ -394,8 +395,8 @@ public class MapperListener implements NotificationListener, NotificationFilter{
 
         String name = objectName.getKeyProperty("name");
 
-        String hostName = null;
-        String contextName = null;
+        String hostName;
+        String contextName;
         if (name.startsWith("//")) {
             name = name.substring(2);
         }
@@ -485,8 +486,8 @@ public class MapperListener implements NotificationListener, NotificationFilter{
         String wrapperName = objectName.getKeyProperty("name");
         String name = objectName.getKeyProperty("WebModule");
 
-        String hostName = null;
-        String contextName = null;
+        String hostName;
+        String contextName;
         if (name.startsWith("//")) {
             name = name.substring(2);
         }
@@ -522,7 +523,7 @@ public class MapperListener implements NotificationListener, NotificationFilter{
     /**
      * Unregister wrapper.
      */
-    private void unregisterOSGiWrapper(ObjectName objectName)
+    private void unregisterWrapper(ObjectName objectName, StandardWrapper wrapper)
         throws Exception {
 
         // If the domain is the same with ours or the engine 
@@ -534,8 +535,8 @@ public class MapperListener implements NotificationListener, NotificationFilter{
 
         String name = objectName.getKeyProperty("WebModule");
 
-        String hostName = null;
-        String contextName = null;
+        String hostName;
+        String contextName;
         if (name.startsWith("//")) {
             name = name.substring(2);
         }
@@ -551,13 +552,18 @@ public class MapperListener implements NotificationListener, NotificationFilter{
         if (contextName.equals("/")) {
             contextName = "";
         }
-
-        String mapping = objectName.getKeyProperty("name");
-        if ("/".equals(mapping)) {
-            mapping = "/*";
-        } else {
-            mapping += "/*";
+        
+        for (String mapping : wrapper.findMappings()) {
+            mapper.removeWrapper(hostName, contextName, mapping);
         }
-        mapper.removeWrapper(hostName, contextName, mapping);
+        
+        String wrapperName = objectName.getKeyProperty("name");
+        if ("/".equals(wrapperName)) {
+            wrapperName = "/*";
+        } else {
+            wrapperName += "/*";
+        }
+        mapper.removeWrapper(hostName, contextName, wrapperName);
+        
     }
 }

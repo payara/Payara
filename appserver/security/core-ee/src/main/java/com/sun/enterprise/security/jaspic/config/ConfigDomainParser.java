@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2021 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,6 +42,7 @@ package com.sun.enterprise.security.jaspic.config;
 
 import static com.sun.logging.LogDomains.SECURITY_LOGGER;
 import static java.util.logging.Level.FINE;
+import static java.util.regex.Matcher.quoteReplacement;
 import static org.glassfish.api.admin.ServerEnvironment.DEFAULT_INSTANCE_NAME;
 
 import java.io.IOException;
@@ -53,7 +54,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import org.glassfish.api.admin.ServerEnvironment;
 import jakarta.security.auth.message.MessagePolicy;
 
 import org.glassfish.internal.api.Globals;
@@ -67,15 +71,14 @@ import com.sun.enterprise.config.serverbeans.SecurityService;
 import com.sun.enterprise.security.jaspic.AuthMessagePolicy;
 import com.sun.logging.LogDomains;
 
-import sun.security.util.PropertyExpander;
-import sun.security.util.PropertyExpander.ExpandException;
-
 /**
  * Parser for message-security-config in domain.xml
  */
 public class ConfigDomainParser implements ConfigParser {
 
     private static final Logger _logger = LogDomains.getLogger(ConfigDomainParser.class, SECURITY_LOGGER);
+
+    private static Pattern PROPERTY_PATTERN = Pattern.compile("\\$\\{\\{(.*?)}}|\\$\\{(.*?)}");
 
     // configuration info
     private Map<String, GFServerConfigProvider.InterceptEntry> configMap = new HashMap<>();
@@ -189,12 +192,12 @@ public class ConfigDomainParser implements ConfigParser {
                 Property property = pit.next();
 
                 try {
-                    options.put(property.getName(), PropertyExpander.expand(property.getValue(), false));
-                } catch (ExpandException ee) {
+                    options.put(property.getName(), expand(property.getValue()));
+                } catch (IllegalStateException ee) {
                     // log warning and give the provider a chance to
                     // interpret value itself.
-                    if (_logger.isLoggable(Level.FINE)) {
-                        _logger.log(Level.FINE, "jaspic.unexpandedproperty");
+                    if (_logger.isLoggable(FINE)) {
+                        _logger.log(FINE, "jaspic.unexpandedproperty");
                     }
                     options.put(property.getName(), property.getValue());
                 }
@@ -207,9 +210,8 @@ public class ConfigDomainParser implements ConfigParser {
         }
 
         // create ID entry
-        GFServerConfigProvider.IDEntry idEntry = 
-                new GFServerConfigProvider.IDEntry(
-                        type, moduleClass, requestPolicy, responsePolicy, options);
+        GFServerConfigProvider.IDEntry idEntry = new GFServerConfigProvider.IDEntry(type, moduleClass, requestPolicy, responsePolicy,
+                options);
 
         GFServerConfigProvider.InterceptEntry intEntry = newConfig.get(intercept);
         if (intEntry == null) {
@@ -222,6 +224,30 @@ public class ConfigDomainParser implements ConfigParser {
 
         // map id to Intercept
         intEntry.idMap.put(id, idEntry);
+    }
+
+    private String expand(String rawProperty) {
+        Matcher propertyMatcher = PROPERTY_PATTERN.matcher(rawProperty);
+        StringBuffer propertyBuilder = new StringBuffer();
+        while (propertyMatcher.find()) {
+            // Check if the ignore pattern matched
+            if (propertyMatcher.group(1) != null) {
+                // Ignore ${{...}} matched, so just append everything
+                propertyMatcher.appendReplacement(propertyBuilder, quoteReplacement(propertyMatcher.group()));
+            } else {
+
+                String replacement = System.getProperty(propertyMatcher.group(2));
+                if (replacement == null) {
+                    throw new IllegalStateException("No system property for " + propertyMatcher.group(2));
+                }
+
+                // The replacement pattern matched
+                propertyMatcher.appendReplacement(propertyBuilder, quoteReplacement(replacement));
+            }
+        }
+        propertyMatcher.appendTail(propertyBuilder);
+
+        return propertyBuilder.toString();
     }
 
     private MessagePolicy parsePolicy(RequestPolicy policy) {
@@ -245,4 +271,5 @@ public class ConfigDomainParser implements ConfigParser {
         String authRecipient = policy.getAuthRecipient();
         return AuthMessagePolicy.getMessagePolicy(authSource, authRecipient);
     }
+
 }
