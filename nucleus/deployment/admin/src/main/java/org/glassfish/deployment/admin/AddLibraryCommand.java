@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017-2021] Payara Foundation and/or affiliates
+ * Portions Copyright 2017-2022 Payara Foundation and/or affiliates
  */
 
 package org.glassfish.deployment.admin;
@@ -96,7 +96,7 @@ public class AddLibraryCommand implements AdminCommand {
     @Param(primary=true, multiple=true)
     File[] files = null;
 
-    @Param(optional=true, acceptableValues="common, ext, app")
+    @Param(optional=true, acceptableValues="common, app")
     String type = "common";
 
     @Inject
@@ -121,9 +121,7 @@ public class AddLibraryCommand implements AdminCommand {
 
         File libDir = env.getLibPath();
 
-        if (type.equals("ext")) {
-            libDir = new File(libDir, "ext");
-        } else if (type.equals("app")) {
+        if (type.equals("app")) {
             libDir = new File(libDir, "applibs");
         }
 
