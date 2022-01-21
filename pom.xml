@@ -188,7 +188,7 @@
         <com.ibm.jbatch.spi.version>2.0.0</com.ibm.jbatch.spi.version>
         <jaxws-api.version>3.0.0</jaxws-api.version>
         <jakarta.jws-api.version>3.0.0</jakarta.jws-api.version>
-        <webservices.version>3.0.2</webservices.version>
+        <webservices.version>3.0.3</webservices.version>
         <woodstox.version>6.2.7</woodstox.version>
         <woodstock-jsf.version>5.0.0</woodstock-jsf.version>
         <stax2-api.version>4.2.1</stax2-api.version>
