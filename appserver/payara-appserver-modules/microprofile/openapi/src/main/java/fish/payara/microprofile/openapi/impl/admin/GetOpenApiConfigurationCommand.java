@@ -76,7 +76,7 @@ import org.jvnet.hk2.annotations.Service;
 })
 public class GetOpenApiConfigurationCommand implements AdminCommand {
 
-    private final String[] OUTPUT_HEADERS = {"Enabled", "VirtualServers", "CorsHeaders", "Security Enabled", "Roles"};
+    private final String[] OUTPUT_HEADERS = {"Enabled", "EndPoint", "VirtualServers", "CorsHeaders", "Security Enabled", "Roles"};
 
     @Inject
     private Target targetUtil;
@@ -101,6 +101,7 @@ public class GetOpenApiConfigurationCommand implements AdminCommand {
         ColumnFormatter columnFormatter = new ColumnFormatter(OUTPUT_HEADERS);
         Object[] outputValues = {
             openApiConfig.getEnabled(),
+            openApiConfig.getEndpoint(),
             openApiConfig.getVirtualServers(),
             openApiConfig.getCorsHeaders(),
             openApiConfig.getSecurityEnabled(),
@@ -112,6 +113,7 @@ public class GetOpenApiConfigurationCommand implements AdminCommand {
 
         Map<String, Object> extraPropertiesMap = new HashMap<>();
         extraPropertiesMap.put("enabled", openApiConfig.getEnabled());
+        extraPropertiesMap.put("endpoint", openApiConfig.getEndpoint());
         extraPropertiesMap.put("virtualServers", openApiConfig.getVirtualServers());
         extraPropertiesMap.put("corsHeaders", openApiConfig.getCorsHeaders());
         extraPropertiesMap.put("securityenabled", openApiConfig.getSecurityEnabled());

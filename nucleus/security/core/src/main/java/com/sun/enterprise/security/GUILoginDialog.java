@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2021] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.security;
 
@@ -50,7 +51,6 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 
 import java.util.logging.*;
 
-import com.sun.logging.*;
 import java.util.Arrays;
 import org.glassfish.internal.api.Globals;
 
@@ -99,6 +99,7 @@ public final class GUILoginDialog implements LoginDialog  {
     /**
      * @return The username of the user.
      */
+    @Override
     public String getUserName() {
 	return passphraseDialog.username;
     }
@@ -106,6 +107,7 @@ public final class GUILoginDialog implements LoginDialog  {
     /**
      *@return The password of the user in plain text...
      */
+    @Override
     public final char[] getPassword() {
         char[] temp = passphraseDialog.passphrase;
         return (temp == null) ? null : Arrays.copyOf(temp, temp.length);
@@ -138,7 +140,7 @@ class PassphraseDialog extends JDialog
 
     private JPasswordField keystorePassword;
     private JLabel lbl;
-    // parent panel for keystore password
+    /** parent panel for keystore password */
     private JPanel pnl = new JPanel (new GridLayout (2, 0));
     // panel for buttons for keystore password
     private JPanel bpanel = new JPanel (new FlowLayout ());
@@ -166,24 +168,22 @@ class PassphraseDialog extends JDialog
      * @param frame The parent frame.
      * @param title The dialog box title.
      */
-    protected PassphraseDialog (JFrame frame,
-				String title,
-				Callback[] callbacks) {
-
+    protected PassphraseDialog(JFrame frame, String title, Callback[] callbacks) {
         super(frame, title, true);
-	this.frame = frame;
+        
+        this.frame = frame;
         super.dialogInit();
 
-	for(int i = 0; i < callbacks.length; i++) {
-	    if(callbacks[i] instanceof NameCallback) {
-		nameCallback = (NameCallback) callbacks[i];
-	    } else if(callbacks[i] instanceof PasswordCallback) {
-		passwordCallback = (PasswordCallback) callbacks[i];
-	    } else if(callbacks[i] instanceof ChoiceCallback) {
-		choiceCallback = (ChoiceCallback) callbacks[i];
-	    }
-	}
-	initbox();
+        for (Callback callback : callbacks) {
+            if (callback instanceof NameCallback) {
+                nameCallback = (NameCallback) callback;
+            } else if (callback instanceof PasswordCallback) {
+                passwordCallback = (PasswordCallback) callback;
+            } else if (callback instanceof ChoiceCallback) {
+                choiceCallback = (ChoiceCallback) callback;
+            }
+        }
+        initbox();
     }
   
     private void initbox() {

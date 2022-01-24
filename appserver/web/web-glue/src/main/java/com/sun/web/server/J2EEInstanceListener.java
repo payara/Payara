@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2021] [Payara Foundation and/or its affiliates]
 package com.sun.web.server;
 
 import com.sun.enterprise.container.common.spi.util.InjectionException;
@@ -314,11 +314,14 @@ public final class J2EEInstanceListener implements InstanceListener {
 
         ComponentInvocation inv = new WebComponentInvocation(wm, instance);
         try {
-            im.postInvoke(inv);
+            // if postinvoke failed in this event the invocation stack would get corrupted by double-remove
+            if (event.getException() == null || !(event.getException() instanceof PostInvokeHandlingException)) {
+                im.postInvoke(inv);
+            }
         } catch (Exception ex) {
             String msg = _rb.getString(LogFacade.EXCEPTION_DURING_HANDLE_EVENT);
             msg = MessageFormat.format(msg, new Object[] { eventType, wm });
-            RuntimeException rethrown = new RuntimeException(msg, ex);
+            PostInvokeHandlingException rethrown = new PostInvokeHandlingException(msg, ex);
             if (event.getException() != null) {
                 rethrown.addSuppressed(event.getException());
             }
@@ -383,5 +386,11 @@ public final class J2EEInstanceListener implements InstanceListener {
         }
 
         return tm;
+    }
+
+    static class PostInvokeHandlingException extends RuntimeException {
+        public PostInvokeHandlingException(String message, Throwable cause) {
+            super(message, cause);
+        }
     }
 }

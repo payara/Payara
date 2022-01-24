@@ -328,10 +328,9 @@ public class EjbDeployer extends JavaEEDeployer<EjbContainerStarter, EjbApplicat
                 cmpDeployer.clean(dc);
             }
 
-            Properties appProps = dc.getAppProps();
-            String uniqueAppId = appProps.getProperty(APP_UNIQUE_ID_PROP);
+            long uniqueAppId = getApplicationFromApplicationInfo(params.name()).getUniqueId();
             try {
-                if (getTimeoutStatusFromApplicationInfo(params.name()) && uniqueAppId != null) {
+                if (getTimeoutStatusFromApplicationInfo(params.name())) {
                     EJBTimerService persistentTimerService = null;
                     EJBTimerService nonPersistentTimerService = null;
                     boolean tsInitialized = false;
@@ -360,7 +359,7 @@ public class EjbDeployer extends JavaEEDeployer<EjbContainerStarter, EjbApplicat
                             if (getKeepStateFromApplicationInfo(params.name())) {
                                 _logger.log(Level.INFO, "Persistent Timers will not be destroyed since keepstate is true for application {0}", params.name());
                             } else {
-                                persistentTimerService.destroyAllTimers(Long.parseLong(uniqueAppId));
+                                persistentTimerService.destroyAllTimers(uniqueAppId);
                             }
                         }
                         if (nonPersistentTimerService == null) {
@@ -368,7 +367,7 @@ public class EjbDeployer extends JavaEEDeployer<EjbContainerStarter, EjbApplicat
                                     "EJB Non-Persistent Timer Service is not available. Non-Persistent Timers for application with id {0} will not be deleted",
                                     uniqueAppId);
                         } else {
-                            nonPersistentTimerService.destroyAllTimers(Long.parseLong(uniqueAppId));
+                            nonPersistentTimerService.destroyAllTimers(uniqueAppId);
                         }
                     }
                 }

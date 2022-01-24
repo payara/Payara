@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth.login;
 
 import static java.util.logging.Level.FINEST;
@@ -79,8 +79,8 @@ public class SolarisLoginModule extends BasePasswordLoginModule {
             throw new LoginException(sm.getString("solarislm.loginfail", _username));
         }
 
-        if (_logger.isLoggable(FINEST)) {
-            _logger.finest("Solaris login succeeded for: " + _username);
+        if (LOGGER.isLoggable(FINEST)) {
+            LOGGER.log(FINEST, "Solaris login succeeded for: {0}", _username);
         }
 
         commitUserAuthentication(groups);

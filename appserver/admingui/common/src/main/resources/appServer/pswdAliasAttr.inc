@@ -38,6 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+    Portions Copyright [2021] [Payara Foundation and/or affiliates]
 -->
 
     <sun:propertySheet id="propertySheet" requiredFields="true">
@@ -48,7 +49,7 @@
             </sun:property> 
 
             <sun:property id="aliasNameNew"  rendered="#{!edit}" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.pswdAlias.aliasName}"  helpText="$resource{i18nc.pswdAlias.aliasNameHelp}">
-                <sun:textField id="aliasNameNew" styleClass="required" required="#{true}" text="#{pageSession.valueMap['aliasname']}" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.common.Name']}" />
+                <sun:textField id="aliasNameNew" styleClass="required" required="#{true}" text="#{pageSession.valueMap['id']}" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.common.Name']}" />
             </sun:property>
 
             <sun:property id="newPasswordProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.pswdAlias.password}"  helpText="$resource{i18nc.pswdAlias.passwordHelp}">

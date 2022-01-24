@@ -105,7 +105,7 @@ public abstract class Archivist<T extends BundleDescriptor> {
 
     // attributes of this archive
     protected Manifest manifest;
-    
+
     // standard DD file associated with this archivist
     protected DeploymentDescriptorFile<T> standardDD;
 
@@ -120,9 +120,9 @@ public abstract class Archivist<T extends BundleDescriptor> {
     private ConfigurationDeploymentDescriptorFile confDD;
 
     // resources...
-    private static final LocalStringManagerImpl localStrings =
-	    new LocalStringManagerImpl(Archivist.class);    
-    
+    private static final LocalStringManagerImpl localStrings
+            = new LocalStringManagerImpl(Archivist.class);
+
     // class loader to use when validating the DOL
     protected ClassLoader classLoader = null;
 
@@ -144,7 +144,6 @@ public abstract class Archivist<T extends BundleDescriptor> {
     private static final String WSDL = ".wsdl";
     private static final String XML = ".xml";
     private static final String XSD = ".xsd";
-
 
     protected static final String APPLICATION_EXTENSION = ".ear";
     protected static final String APPCLIENT_EXTENSION = ".jar";
@@ -185,9 +184,9 @@ public abstract class Archivist<T extends BundleDescriptor> {
     }
 
     /**
-     * initializes this instance from another archivist, this is used
-     * to transfer contextual information between archivists, for
-     * example whether we should handle runtime information and such
+     * initializes this instance from another archivist, this is used to
+     * transfer contextual information between archivists, for example whether
+     * we should handle runtime information and such
      */
     protected void initializeContext(Archivist other) {
         handleRuntimeInfo = other.isHandlingRuntimeInfo();
@@ -198,7 +197,6 @@ public abstract class Archivist<T extends BundleDescriptor> {
         annotationErrorHandler = other.annotationErrorHandler;
     }
 
-    
     /**
      * Set the applicable extension archivists for this archivist
      *
@@ -213,9 +211,9 @@ public abstract class Archivist<T extends BundleDescriptor> {
     }
 
     /**
-     * Archivist read XML deployment descriptors and keep the
-     * parsed result in the DOL descriptor instances. Sets the descriptor
-     * for a particular Archivist type
+     * Archivist read XML deployment descriptors and keep the parsed result in
+     * the DOL descriptor instances. Sets the descriptor for a particular
+     * Archivist type
      *
      * @param descriptor for this archivist instnace
      */
@@ -231,7 +229,8 @@ public abstract class Archivist<T extends BundleDescriptor> {
     }
 
     /**
-     * Open a new archive file, read the deployment descriptors and annotations      *  and set the constructed DOL descriptor instance
+     * Open a new archive file, read the deployment descriptors and annotations
+     * and set the constructed DOL descriptor instance
      *
      * @param archive the archive file path
      * @return the deployment descriptor for this archive
@@ -245,20 +244,21 @@ public abstract class Archivist<T extends BundleDescriptor> {
             final ReadableArchive contentArchive) throws IOException, SAXParseException {
         return open(descriptorArchive, contentArchive, null);
     }
+
     /**
      * Creates the DOL object graph for an app for which the descriptor(s)
      * reside in one archive and the content resides in another.
      * <p>
-     * This allows the app client container to use both the generated JAR
-     * which contains the descriptors that are filled in during deployment and
-     * also the developer's original JAR which contains the classes that
-     * might be subject to annotation processing.
+     * This allows the app client container to use both the generated JAR which
+     * contains the descriptors that are filled in during deployment and also
+     * the developer's original JAR which contains the classes that might be
+     * subject to annotation processing.
      *
      * @param descriptorArchive archive containing the descriptor(s)
      * @param contentArchive archive containing the classes, etc.
      * @param app owning DOL application (if any)
      * @return DOL object graph for the application
-     * 
+     *
      * @throws IOException
      * @throws SAXParseException
      */
@@ -289,7 +289,7 @@ public abstract class Archivist<T extends BundleDescriptor> {
 
         // application archivist will override this method
         if (app.isVirtual()) {
-            T descriptor = readRestDeploymentDescriptors((T)app.getStandaloneBundleDescriptor(), archive, archive, app);
+            T descriptor = readRestDeploymentDescriptors((T) app.getStandaloneBundleDescriptor(), archive, archive, app);
             if (descriptor != null) {
                 postOpen(descriptor, archive);
                 descriptor.setApplication(app);
@@ -298,9 +298,8 @@ public abstract class Archivist<T extends BundleDescriptor> {
         return app;
     }
 
-
     /**
-     * Open a new archive file, read the XML descriptor and set the  constructed
+     * Open a new archive file, read the XML descriptor and set the constructed
      * DOL descriptor instance
      *
      * @param path the archive file path
@@ -333,7 +332,7 @@ public abstract class Archivist<T extends BundleDescriptor> {
         // attempt validation
         validate(null);
 
-        return descriptor;    
+        return descriptor;
     }
 
     /**
@@ -344,8 +343,8 @@ public abstract class Archivist<T extends BundleDescriptor> {
      * @param extensions map of extension archivists
      */
     protected void postStandardDDsRead(T descriptor, ReadableArchive archive,
-                Map<ExtensionsArchivist, RootDeploymentDescriptor> extensions)
-                throws IOException {
+            Map<ExtensionsArchivist, RootDeploymentDescriptor> extensions)
+            throws IOException {
     }
 
     /**
@@ -365,7 +364,7 @@ public abstract class Archivist<T extends BundleDescriptor> {
      * @param archive the module archive
      */
     public void postRuntimeDDsRead(T descriptor,
-                                      ReadableArchive archive) throws IOException {
+            ReadableArchive archive) throws IOException {
     }
 
     /**
@@ -396,13 +395,13 @@ public abstract class Archivist<T extends BundleDescriptor> {
         return readRestDeploymentDescriptors(descriptor, descriptorArchive, contentArchive, app);
     }
 
-    private T readRestDeploymentDescriptors (T descriptor,
-        ReadableArchive descriptorArchive, ReadableArchive contentArchive, 
-        Application app) throws IOException, SAXParseException {
+    private T readRestDeploymentDescriptors(T descriptor,
+            ReadableArchive descriptorArchive, ReadableArchive contentArchive,
+            Application app) throws IOException, SAXParseException {
 
         ApplicationState state = descriptorArchive.getExtraData(ApplicationState.class);
         Map<ExtensionsArchivist, RootDeploymentDescriptor> extensions = new HashMap<>();
-        if (extensionsArchivists!=null) {
+        if (extensionsArchivists != null) {
             for (ExtensionsArchivist extension : extensionsArchivists) {
                 Object extDescriptor = null;
                 if (state != null && state.isActive()
@@ -429,8 +428,10 @@ public abstract class Archivist<T extends BundleDescriptor> {
 
         readAnnotations(contentArchive, descriptor, extensions);
         postStandardDDsRead(descriptor, contentArchive, extensions);
-        postAnnotationProcess(descriptor, contentArchive);
-
+        ApplicationState appState = contentArchive.getExtraData(ApplicationState.class);
+        if (appState == null || !appState.isHotswap()) {
+            postAnnotationProcess(descriptor, contentArchive);
+        }
         // now read the runtime deployment descriptors
         readRuntimeDeploymentDescriptor(descriptorArchive, descriptor);
 
@@ -452,20 +453,20 @@ public abstract class Archivist<T extends BundleDescriptor> {
      * Read all Java EE annotations
      */
     protected void readAnnotations(ReadableArchive archive, T descriptor,
-                                 Map<ExtensionsArchivist, RootDeploymentDescriptor> extensions)
+            Map<ExtensionsArchivist, RootDeploymentDescriptor> extensions)
             throws IOException {
 
         readAnnotations(archive, descriptor, extensions, null);
     }
 
     protected void readAnnotations(ReadableArchive archive, T descriptor,
-                                 Map<ExtensionsArchivist, RootDeploymentDescriptor> extensions,
-                                 ModuleScanner scanner)
+            Map<ExtensionsArchivist, RootDeploymentDescriptor> extensions,
+            ModuleScanner scanner)
             throws IOException {
-        
+
         try {
             boolean processAnnotationForMainDescriptor = isProcessAnnotation(descriptor);
-            ProcessingResult result = null; 
+            ProcessingResult result = null;
 
             if (processAnnotationForMainDescriptor) {
                 if (scanner == null) {
@@ -483,7 +484,7 @@ public abstract class Archivist<T extends BundleDescriptor> {
                         // whether to process annotations
                         if (processAnnotationForMainDescriptor) {
                             RootDeploymentDescriptor o = extension.getKey().getDefaultDescriptor();
-                            if( o != null ) {
+                            if (o != null) {
                                 o.setModuleDescriptor(descriptor.getModuleDescriptor());
                                 // for the case of extension descriptor not 
                                 // present, set the metadata-complete attribute 
@@ -491,36 +492,36 @@ public abstract class Archivist<T extends BundleDescriptor> {
                                 // metadata-complete value of main descriptor
                                 if (o instanceof BundleDescriptor) {
                                     boolean isFullMain = descriptor.isFullAttribute();
-                                    ((BundleDescriptor)o).setFullAttribute(String.valueOf(isFullMain));
+                                    ((BundleDescriptor) o).setFullAttribute(String.valueOf(isFullMain));
                                 }
                             }
                             processAnnotations(o, extension.getKey().getScanner(), archive);
-                            if (o!=null && !o.isEmpty()) {
+                            if (o != null && !o.isEmpty()) {
                                 extension.getKey().addExtension(descriptor, o);
                                 extensions.put(extension.getKey(), (RootDeploymentDescriptor) o);
                             }
                         }
-                    } else{
+                    } else {
                         // extension deployment descriptor is present
                         // use the extension descriptor information to decide
                         // whether to process annotations
                         BundleDescriptor extBundle;
                         if (extension.getValue() instanceof BundleDescriptor) {
-                            extBundle = (BundleDescriptor)extension.getValue();
+                            extBundle = (BundleDescriptor) extension.getValue();
                             if (isProcessAnnotation(extBundle)) {
                                 processAnnotations(extBundle, extension.getKey().getScanner(), archive);
                             }
                         }
                     }
-                 } catch (AnnotationProcessorException ex) {
+                } catch (AnnotationProcessorException ex) {
                     DOLUtils.getDefaultLogger().severe(ex.getMessage());
                     DOLUtils.getDefaultLogger().log(Level.FINE, ex.getMessage(), ex);
                     throw new IllegalStateException(ex);
                 }
             }
 
-            if (result != null &&
-                    ResultType.FAILED.equals(result.getOverallResult())) {
+            if (result != null
+                    && ResultType.FAILED.equals(result.getOverallResult())) {
                 DOLUtils.getDefaultLogger().severe(localStrings.getLocalString(
                         "enterprise.deployment.archivist.annotationprocessingfailed",
                         "Annotations processing failed for {0}",
@@ -529,8 +530,11 @@ public abstract class Archivist<T extends BundleDescriptor> {
             //XXX for backward compatible in case of having cci impl in EJB
         } catch (NoClassDefFoundError err) {
             if (DOLUtils.getDefaultLogger().isLoggable(Level.WARNING)) {
-                DOLUtils.getDefaultLogger().warning(
-                        "Error in annotation processing: " + err);
+                DOLUtils.getDefaultLogger().log(
+                        Level.WARNING,
+                        "Error in annotation processing: {0}",
+                        err
+                );
             }
         } catch (AnnotationProcessorException ex) {
             DOLUtils.getDefaultLogger().severe(ex.getMessage());
@@ -540,45 +544,45 @@ public abstract class Archivist<T extends BundleDescriptor> {
     }
 
     /**
-     * Returns the scanner for this archivist, usually it is the scanner regitered
-     * with the same module type as this archivist, but subclasses can return a
-     * different version
+     * Returns the scanner for this archivist, usually it is the scanner
+     * registered with the same module type as this archivist, but subclasses can
+     * return a different version
      *
      */
     public ModuleScanner getScanner() {
-        
+
         Scanner scanner = null;
         try {
             scanner = habitat.getService(Scanner.class, getModuleType().toString());
-            if (scanner==null || !(scanner instanceof ModuleScanner)) {
+            if (scanner == null || !(scanner instanceof ModuleScanner)) {
                 logger.log(Level.SEVERE, "Cannot find module scanner for " + this.getManifest());
             }
         } catch (MultiException e) {
             // XXX To do
             logger.log(Level.SEVERE, "Cannot find scanner for " + this.getModuleType(), e);
         }
-        return (ModuleScanner)scanner;
+        return (ModuleScanner) scanner;
     }
 
     /**
-     * Process annotations in a bundle descriptor, the annoation processing
-     * is dependent on the type of descriptor being passed.
+     * Process annotations in a bundle descriptor, the annotation processing is
+     * dependent on the type of descriptor being passed.
      */
     public ProcessingResult processAnnotations(T bundleDesc,
-                                               ReadableArchive archive)
+            ReadableArchive archive)
             throws AnnotationProcessorException, IOException {
-        
+
         return processAnnotations(bundleDesc, getScanner(), archive);
 
     }
-    
+
     /**
-     * Process annotations in a bundle descriptor, the annotation processing
-     * is dependent on the type of descriptor being passed.
+     * Process annotations in a bundle descriptor, the annotation processing is
+     * dependent on the type of descriptor being passed.
      */
     protected ProcessingResult processAnnotations(RootDeploymentDescriptor bundleDesc,
-                                               ModuleScanner scanner,
-                                               ReadableArchive archive)
+            ModuleScanner scanner,
+            ReadableArchive archive)
             throws AnnotationProcessorException, IOException {
 
         if (scanner == null) {
@@ -603,7 +607,7 @@ public abstract class Archivist<T extends BundleDescriptor> {
         scanner.process(archive, bundleDesc, classLoader, parser);
 
         if (!scanner.getElements().isEmpty()) {
-            if (((BundleDescriptor)bundleDesc).isDDWithNoAnnotationAllowed()) {
+            if (((BundleDescriptor) bundleDesc).isDDWithNoAnnotationAllowed()) {
                 // if we come into this block, it means an old version
                 // of deployment descriptor has annotation which is not correct
                 // throw exception in this case
@@ -621,7 +625,7 @@ public abstract class Archivist<T extends BundleDescriptor> {
             }
             boolean isFullAttribute = false;
             if (bundleDesc instanceof BundleDescriptor) {
-                isFullAttribute = ((BundleDescriptor)bundleDesc).isFullAttribute();
+                isFullAttribute = ((BundleDescriptor) bundleDesc).isFullAttribute();
             }
 
             AnnotationProcessor ap = annotationFactory.getAnnotationProcessor(isFullAttribute);
@@ -678,10 +682,10 @@ public abstract class Archivist<T extends BundleDescriptor> {
     }
 
     /**
-     * Read the standard deployment descriptors (can contained in one or
-     * many file) and return the corresponding initialized descriptor instance.
-     * By default, the standard deployment descriptors are all contained in
-     * the xml file characterized with the path returned by
+     * Read the standard deployment descriptors (can contained in one or many
+     * file) and return the corresponding initialized descriptor instance. By
+     * default, the standard deployment descriptors are all contained in the xml
+     * file characterized with the path returned by
      *
      * @return the initialized descriptor
      * @link getDeploymentDescriptorPath
@@ -694,9 +698,9 @@ public abstract class Archivist<T extends BundleDescriptor> {
         try {
             getStandardDDFile().setArchiveType(getModuleType());
             File altDDFile = archive.getArchiveMetaData(
-                DeploymentProperties.ALT_DD, File.class);
+                    DeploymentProperties.ALT_DD, File.class);
             if (altDDFile != null && altDDFile.exists() && altDDFile.isFile()) {
-                is = new FileInputStream(altDDFile); 
+                is = new FileInputStream(altDDFile);
             } else {
                 is = archive.getEntry(standardDD.getDeploymentDescriptorPath());
             }
@@ -707,7 +711,7 @@ public abstract class Archivist<T extends BundleDescriptor> {
                     standardDD.setErrorReportingString(archive.getURI().getSchemeSpecificPart());
                 }
                 T result = standardDD.read(is);
-                ((RootDeploymentDescriptor)result).setClassLoader(classLoader);
+                ((RootDeploymentDescriptor) result).setClassLoader(classLoader);
                 return result;
             } else {
                 /*
@@ -725,10 +729,10 @@ public abstract class Archivist<T extends BundleDescriptor> {
     }
 
     /**
-     * Read the runtime deployment descriptors (can contained in one or
-     * many file) set the corresponding information in the passed descriptor.
-     * By default, the runtime deployment descriptors are all contained in
-     * the xml file characterized with the path returned by
+     * Read the runtime deployment descriptors (can contained in one or many
+     * file) set the corresponding information in the passed descriptor. By
+     * default, the runtime deployment descriptors are all contained in the xml
+     * file characterized with the path returned by
      *
      * @param archive the archive
      * @param descriptor the initialized deployment descriptor
@@ -740,14 +744,15 @@ public abstract class Archivist<T extends BundleDescriptor> {
     }
 
     /**
-     * Read the runtime deployment descriptors (can contained in one or
-     * many file) set the corresponding information in the passed descriptor.
-     * By default, the runtime deployment descriptors are all contained in
-     * the xml file characterized with the path returned by
+     * Read the runtime deployment descriptors (can contained in one or many
+     * file) set the corresponding information in the passed descriptor. By
+     * default, the runtime deployment descriptors are all contained in the xml
+     * file characterized with the path returned by
      *
      * @param archive the archive
      * @param descriptor the initialized deployment descriptor
-     * @param warnIfMultipleDDs whether to log warnings if both the GlassFish and the legacy Sun descriptors are present
+     * @param warnIfMultipleDDs whether to log warnings if both the GlassFish
+     * and the legacy Sun descriptors are present
      * @link getRuntimeDeploymentDescriptorPath
      */
     public void readRuntimeDeploymentDescriptor(ReadableArchive archive, T descriptor,
@@ -801,9 +806,9 @@ public abstract class Archivist<T extends BundleDescriptor> {
         WritableArchive out = null;
         BufferedOutputStream bos = null;
         try {
-            File outputFile=null;
-            if (oldArchive != null && oldArchive.exists() &&
-                    !(oldArchive instanceof WritableArchive)) {
+            File outputFile = null;
+            if (oldArchive != null && oldArchive.exists()
+                    && !(oldArchive instanceof WritableArchive)) {
                 // this is a rewrite, get a temp file name...
                 // I am creating a tmp file just to get a name
                 outputFile = getTempFile(outPath);
@@ -857,7 +862,6 @@ public abstract class Archivist<T extends BundleDescriptor> {
         in.close();
     }
 
-
     /**
      * writes the content of an archive to another archive
      *
@@ -869,11 +873,10 @@ public abstract class Archivist<T extends BundleDescriptor> {
         writeContents(in, out, null);
     }
 
-
     /**
      * writes the content of an archive to a JarFile
      *
-     * @param in input  archive
+     * @param in  input archive
      * @param out archive output stream to write to
      * @param entriesToSkip files to not write from the original archive
      */
@@ -902,8 +905,8 @@ public abstract class Archivist<T extends BundleDescriptor> {
     }
 
     /**
-     * writes the deployment descriptors (standard and runtime)
-     * to a JarFile using the right deployment descriptor path
+     * writes the deployment descriptors (standard and runtime) to a JarFile
+     * using the right deployment descriptor path
      *
      * @param in the input archive
      * @param out the abstract archive file to write to
@@ -949,14 +952,14 @@ public abstract class Archivist<T extends BundleDescriptor> {
         // files out (revisit this to see what is the desired behavior 
         // here, write out all, or write out the highest precedence one, 
         // or not write out)
-        List<ConfigurationDeploymentDescriptorFile> confDDFilesToWrite = getSortedConfigurationDDFiles(in); 
+        List<ConfigurationDeploymentDescriptorFile> confDDFilesToWrite = getSortedConfigurationDDFiles(in);
         if (confDDFilesToWrite.isEmpty()) {
             confDDFilesToWrite = getConfigurationDDFiles();
         }
         for (ConfigurationDeploymentDescriptorFile ddFile : confDDFilesToWrite) {
             ddFile.setArchiveType(getModuleType());
             OutputStream os = out.putNextEntry(
-                ddFile.getDeploymentDescriptorPath());
+                    ddFile.getDeploymentDescriptorPath());
             ddFile.write(desc, os);
             out.closeEntry();
         }
@@ -964,6 +967,7 @@ public abstract class Archivist<T extends BundleDescriptor> {
 
     /**
      * Write extension descriptors
+     *
      * @param in the input archive
      * @param out the output archive
      */
@@ -990,16 +994,16 @@ public abstract class Archivist<T extends BundleDescriptor> {
     }
 
     /**
-     * @return the location of the DeploymentDescriptor file for a
-     *         particular type of J2EE Archive
+     * @return the location of the DeploymentDescriptor file for a particular
+     * type of J2EE Archive
      */
     public String getDeploymentDescriptorPath() {
         return getStandardDDFile().getDeploymentDescriptorPath();
     }
 
     /**
-     * @return the location of the runtime deployment descriptor file
-     *         for a particular type of J2EE Archive
+     * @return the location of the runtime deployment descriptor file for a
+     * particular type of J2EE Archive
      */
     public String getRuntimeDeploymentDescriptorPath(ReadableArchive archive) throws IOException {
         DeploymentDescriptorFile ddFile = getConfigurationDDFile(archive);
@@ -1011,9 +1015,8 @@ public abstract class Archivist<T extends BundleDescriptor> {
     }
 
     /**
-     * Archivists can be associated with a module descriptor once the
-     * XML deployment descriptors have been read and the DOL tree
-     * is initialized.
+     * Archivists can be associated with a module descriptor once the XML
+     * deployment descriptors have been read and the DOL tree is initialized.
      */
     public void setModuleDescriptor(ModuleDescriptor<T> module) {
         setDescriptor(module.getDescriptor());
@@ -1034,18 +1037,13 @@ public abstract class Archivist<T extends BundleDescriptor> {
         Vector<String> libs = getLibraries(archive);
         if (libs != null) {
             for (String libUri : libs) {
-                JarInputStream jis = null;
-                try {
-                    jis = new JarInputStream(archive.getEntry(libUri));
+                try (JarInputStream jis = new JarInputStream(archive.getEntry(libUri))) {
                     m = jis.getManifest();
                     if (m != null) {
                         if (!InstalledLibrariesResolver.resolveDependencies(m, libUri)) {
                             dependenciesSatisfied = false;
                         }
                     }
-                } finally {
-                    if (jis != null)
-                        jis.close();
                 }
             }
         }
@@ -1053,32 +1051,32 @@ public abstract class Archivist<T extends BundleDescriptor> {
     }
 
     /**
-     * @return the  module type handled by this archivist
-     *         as defined in the application DTD/Schema
-     */              
+     * @return the module type handled by this archivist as defined in the
+     * application DTD/Schema
+     */
     public abstract ArchiveType getModuleType();
 
     /**
-     * @return the DeploymentDescriptorFile responsible for handling
-     *         standard deployment descriptor
+     * @return the DeploymentDescriptorFile responsible for handling standard
+     * deployment descriptor
      */
     public abstract DeploymentDescriptorFile<T> getStandardDDFile();
 
     /**
-     * @return the list of the DeploymentDescriptorFile responsible for
-     *         handling the configuration deployment descriptors
+     * @return the list of the DeploymentDescriptorFile responsible for handling
+     * the configuration deployment descriptors
      */
     public abstract List<ConfigurationDeploymentDescriptorFile> getConfigurationDDFiles();
 
     /**
-     * @return if exists the DeploymentDescriptorFile responsible for
-     *         handling the configuration deployment descriptors
+     * @return if exists the DeploymentDescriptorFile responsible for handling
+     * the configuration deployment descriptors
      */
     private ConfigurationDeploymentDescriptorFile getConfigurationDDFile(ReadableArchive archive) throws IOException {
         if (confDD == null) {
             getSortedConfigurationDDFiles(archive);
             if (sortedConfDDFiles != null && !sortedConfDDFiles.isEmpty()) {
-               confDD = sortedConfDDFiles.get(0);
+                confDD = sortedConfDDFiles.get(0);
             }
         }
         return confDD;
@@ -1096,7 +1094,8 @@ public abstract class Archivist<T extends BundleDescriptor> {
 
     /**
      * Returns true if this archivist is capable of handling the archive type
-     *  Here we check for the existence of the deployment descriptors
+     * Here we check for the existence of the deployment descriptors
+     *
      * @return true if the archivist is handling the provided archive
      */
     protected abstract boolean postHandles(ReadableArchive archive) throws IOException;
@@ -1115,7 +1114,7 @@ public abstract class Archivist<T extends BundleDescriptor> {
             throws IOException {
 
         //check null: since .par archive does not have runtime dds
-        getConfigurationDDFile(archive); 
+        getConfigurationDDFile(archive);
 
         if (confDD != null) {
             return true;
@@ -1134,8 +1133,8 @@ public abstract class Archivist<T extends BundleDescriptor> {
     public boolean handles(ReadableArchive archive) {
         try {
             //first, check the existence of any deployment descriptors
-            if (hasStandardDeploymentDescriptor(archive) ||
-                    hasRuntimeDeploymentDescriptor(archive)) {
+            if (hasStandardDeploymentDescriptor(archive)
+                    || hasRuntimeDeploymentDescriptor(archive)) {
                 return true;
             }
 
@@ -1171,7 +1170,6 @@ public abstract class Archivist<T extends BundleDescriptor> {
         setDescriptor(descriptor);
         return newModule;
     }
-
 
     /**
      * print the current descriptor associated with this archivist
@@ -1265,8 +1263,7 @@ public abstract class Archivist<T extends BundleDescriptor> {
     }
 
     /**
-     * @return the class-path as set in the manifest associated
-     *         with the archive
+     * @return the class-path as set in the manifest associated with the archive
      */
     public String getClassPath() {
 
@@ -1284,8 +1281,9 @@ public abstract class Archivist<T extends BundleDescriptor> {
     public Vector getLibraries(Archive archive) {
 
         Enumeration<String> entries = archive.entries();
-        if (entries == null)
+        if (entries == null) {
             return null;
+        }
 
         Vector libs = new Vector();
         while (entries.hasMoreElements()) {
@@ -1302,7 +1300,8 @@ public abstract class Archivist<T extends BundleDescriptor> {
     }
 
     /**
-     * @returns an entry name unique amongst names in this archive based on the triel name.
+     * @returns an entry name unique amongst names in this archive based on the
+     * trial name.
      */
     protected String getUniqueEntryFilenameFor(Archive archive, String trialName) throws IOException {
         Vector entriesNames = new Vector();
@@ -1314,11 +1313,11 @@ public abstract class Archivist<T extends BundleDescriptor> {
     }
 
     /**
-     * utility method to get a tmp file in the current user directory of the provided
-     * directory
+     * utility method to get a tmp file in the current user directory of the
+     * provided directory
      *
-     * @param fileOrDirPath path to a file or directory to use as temp location (use parent directory
-     *             if a file is provided)
+     * @param fileOrDirPath path to a file or directory to use as temp location
+     * (use parent directory if a file is provided)
      */
     protected static File getTempFile(String fileOrDirPath) throws IOException {
         if (fileOrDirPath != null) {
@@ -1330,7 +1329,7 @@ public abstract class Archivist<T extends BundleDescriptor> {
 
     /**
      * @return the list of files that should not be copied from the old archive
-     *         when a save is performed.
+     * when a save is performed.
      */
     public Vector getListOfFilesToSkip(ReadableArchive archive) throws IOException {
 
@@ -1352,15 +1351,15 @@ public abstract class Archivist<T extends BundleDescriptor> {
     }
 
     /**
-     * utility method to get a tmp file in the current user directory of the provided
-     * directory
+     * Utility method to get a tmp file in the current user directory of the
+     * provided directory
      *
-     * @param fileOrDir file or directory to use as temp location (use parent directory
-     *             if a file is provided)
+     * @param fileOrDir file or directory to use as temp location (use parent
+     * directory if a file is provided)
      */
     protected static File getTempFile(File fileOrDir) throws IOException {
 
-        File dir = null;
+        File dir;
         if (fileOrDir == null) {
             dir = new File(System.getProperty("user.dir"));
         } else {
@@ -1382,20 +1381,22 @@ public abstract class Archivist<T extends BundleDescriptor> {
      * @param archive abstraction to use when adding the file
      * @param filePath to the file to add
      * @param entryName the entry name in the archive
+     * @throws java.io.IOException
      */
     protected static void addFileToArchive(WritableArchive archive, String filePath, String entryName)
             throws IOException {
 
         FileInputStream is = null;
         try {
-            is =  new FileInputStream(new File(filePath));
+            is = new FileInputStream(new File(filePath));
             OutputStream os = archive.putNextEntry(entryName);
             ArchivistUtils.copyWithoutClose(is, os);
         } finally {
             try {
-                if (is!=null)
+                if (is != null) {
                     is.close();
-            } catch(IOException e) {
+                }
+            } catch (IOException e) {
                 archive.closeEntry();
                 throw e;
             }
@@ -1404,8 +1405,8 @@ public abstract class Archivist<T extends BundleDescriptor> {
     }
 
     /**
-     * copy all contents of a jar file to a new jar file except
-     * for all the deployment descriptors files
+     * copy all contents of a jar file to a new jar file except for all the
+     * deployment descriptors files
      *
      * @param in  jar file
      * @param out jar file
@@ -1421,9 +1422,9 @@ public abstract class Archivist<T extends BundleDescriptor> {
                 if (ignoreList == null || !ignoreList.contains(anEntry)) {
                     InputStream is = in.getEntry(anEntry);
                     if (is != null) {
-                      OutputStream os = out.putNextEntry(anEntry);
-                      ArchivistUtils.copyWithoutClose(is, os);
-                      is.close();
+                        OutputStream os = out.putNextEntry(anEntry);
+                        ArchivistUtils.copyWithoutClose(is, os);
+                        is.close();
                     }
                     out.closeEntry();
                 }
@@ -1482,8 +1483,8 @@ public abstract class Archivist<T extends BundleDescriptor> {
     }
 
     /**
-     * Turn on or off the XML Validation for all standard deployment
-     * descriptors loading
+     * Turn on or off the XML Validation for all standard deployment descriptors
+     * loading
      *
      * @param validate set to true to turn on XML validation
      */
@@ -1492,8 +1493,8 @@ public abstract class Archivist<T extends BundleDescriptor> {
     }
 
     /**
-     * @return true if the Deployment Descriptors XML will be validated
-     *         while reading.
+     * @return true if the Deployment Descriptors XML will be validated while
+     * reading.
      */
     public boolean getXMLValidation() {
         return isValidatingXML;
@@ -1510,8 +1511,7 @@ public abstract class Archivist<T extends BundleDescriptor> {
     }
 
     /**
-     * @return true if the runtime XML will be validated
-     *         while reading.
+     * @return true if the runtime XML will be validated while reading.
      */
     public boolean getRuntimeXMLValidation() {
         return isValidatingRuntimeXML;
@@ -1569,11 +1569,11 @@ public abstract class Archivist<T extends BundleDescriptor> {
         bundleDesc.visit(postVisitor);
     }
 
-
     /**
      * Copy this archivist to a new abstract archive
      *
      * @param target the new archive to use to copy our contents into
+     * @throws java.io.IOException
      */
     public void copyInto(WritableArchive target) throws IOException {
         ReadableArchive source = archiveFactory.openArchive(new File(path));
@@ -1581,9 +1581,9 @@ public abstract class Archivist<T extends BundleDescriptor> {
     }
 
     /**
-     * Copy source archivist to a target abstract archive.  By default,
-     * every entry in source archive will be copied to the target archive,
-     * including the manifest of the source archive.
+     * Copy source archivist to a target abstract archive. By default, every
+     * entry in source archive will be copied to the target archive, including
+     * the manifest of the source archive.
      *
      * @param source        the source archive to copy from
      * @param target        the target archive to copy to
@@ -1606,12 +1606,13 @@ public abstract class Archivist<T extends BundleDescriptor> {
     }
 
     /**
-     * Copy source archivist to a target abstract archive.  By default, the manifest
-     * in source archive overwrites the one in target archive.
+     * Copy source archivist to a target abstract archive. By default, the
+     * manifest in source archive overwrites the one in target archive.
      *
      * @param source        the source archive to copy from
      * @param target        the target archive to copy to
      * @param entriesToSkip the entries that will be skipped by target archive
+     * @throws              java.io.IOException
      */
     public void copyInto(ReadableArchive source, WritableArchive target, Vector entriesToSkip)
             throws IOException {
@@ -1626,9 +1627,10 @@ public abstract class Archivist<T extends BundleDescriptor> {
      * @param entriesToSkip     the entries that will be skipped by target archive
      * @param overwriteManifest if true, the manifest in source archive
      *                          overwrites the one in target archive
+     * @throws                  java.io.IOException
      */
     public void copyInto(ReadableArchive source, WritableArchive target,
-                         Vector entriesToSkip, boolean overwriteManifest)
+            Vector entriesToSkip, boolean overwriteManifest)
             throws IOException {
 
         copyJarElements(source, target, entriesToSkip);
@@ -1644,8 +1646,8 @@ public abstract class Archivist<T extends BundleDescriptor> {
 
     // only copy the entry if the destination archive does not have this entry
     public void copyAnEntry(ReadableArchive in,
-                                   WritableArchive out, String entryName) 
-        throws IOException {
+            WritableArchive out, String entryName)
+            throws IOException {
         InputStream is = null;
         InputStream is2 = null;
         ReadableArchive in2 = archiveFactory.openArchive(out.getURI());
@@ -1672,14 +1674,14 @@ public abstract class Archivist<T extends BundleDescriptor> {
     }
 
     public void copyStandardDeploymentDescriptors(ReadableArchive in,
-                                                  WritableArchive out) throws IOException {
+            WritableArchive out) throws IOException {
         String entryName = getDeploymentDescriptorPath();
         copyAnEntry(in, out, entryName);
     }
 
     // copy wsdl and mapping files etc 
     public void copyExtraElements(ReadableArchive in,
-                                         WritableArchive out) throws IOException {
+            WritableArchive out) throws IOException {
         Enumeration entries = in.entries();
         if (entries != null) {
             for (; entries.hasMoreElements();) {
@@ -1691,9 +1693,9 @@ public abstract class Archivist<T extends BundleDescriptor> {
                     // see Integration Notice #80587
                     continue;
                 }
-                if (anEntry.indexOf(WSDL) != -1 ||
-                        anEntry.indexOf(XML) != -1 ||
-                        anEntry.indexOf(XSD) != -1) {
+                if (anEntry.contains(WSDL)
+                        || anEntry.contains(XML)
+                        || anEntry.contains(XSD)) {
                     copyAnEntry(in, out, anEntry);
                 }
             }

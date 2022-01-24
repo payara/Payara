@@ -42,6 +42,7 @@ package org.glassfish.admin.rest.composite;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.admin.report.ActionReporter;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -107,6 +108,7 @@ import org.glassfish.internal.api.Globals;
 import org.glassfish.jersey.media.sse.EventOutput;
 
 import static org.objectweb.asm.Opcodes.*;
+
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.MessageInterpolatorImpl;
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2021 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2022 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,16 +39,28 @@
  */
 package fish.payara.microprofile.jwtauth.cdi;
 
-import static java.util.Arrays.asList;
-import static java.util.Collections.emptyMap;
-import static java.util.stream.Collectors.toSet;
-import static org.glassfish.soteria.cdi.CdiUtils.getBeanReference;
+import com.sun.enterprise.security.web.integration.WebPrincipal;
+import fish.payara.microprofile.jwtauth.eesecurity.JWTAuthenticationMechanism;
+import fish.payara.microprofile.jwtauth.eesecurity.SignedJWTIdentityStore;
+import fish.payara.microprofile.jwtauth.jwt.ClaimAnnotationLiteral;
+import fish.payara.microprofile.jwtauth.jwt.ClaimValueImpl;
+import fish.payara.microprofile.jwtauth.jwt.JWTInjectableType;
+import fish.payara.microprofile.jwtauth.jwt.JsonWebTokenImpl;
 
 import java.lang.annotation.Annotation;
+
+import java.util.Arrays;
 import java.util.Collections;
+
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.Arrays;
+import java.util.function.Function;
+
+import static java.util.stream.Collectors.toSet;
+
+import static java.util.stream.Collectors.toSet;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.context.Dependent;
@@ -63,15 +75,16 @@ import jakarta.json.JsonNumber;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonString;
 import jakarta.json.JsonStructure;
+import jakarta.json.JsonValue;
 import jakarta.security.enterprise.SecurityContext;
 import jakarta.security.enterprise.authentication.mechanism.http.HttpAuthenticationMechanism;
 import jakarta.security.enterprise.identitystore.IdentityStore;
+
 
 import org.eclipse.microprofile.auth.LoginConfig;
 import org.eclipse.microprofile.jwt.Claim;
 import org.eclipse.microprofile.jwt.ClaimValue;
 import org.eclipse.microprofile.jwt.JsonWebToken;
-import org.glassfish.soteria.cdi.CdiProducer;
 import org.glassfish.soteria.cdi.CdiUtils;
 
 import fish.payara.microprofile.jwtauth.eesecurity.JWTAuthenticationMechanism;
@@ -80,7 +93,7 @@ import fish.payara.microprofile.jwtauth.jwt.ClaimAnnotationLiteral;
 import fish.payara.microprofile.jwtauth.jwt.ClaimValueImpl;
 import fish.payara.microprofile.jwtauth.jwt.JWTInjectableType;
 import fish.payara.microprofile.jwtauth.jwt.JsonWebTokenImpl;
-import java.lang.reflect.Type;
+import java.security.Principal;
 import java.util.function.Function;
 import org.glassfish.common.util.PayaraCdiProducer;
 
@@ -93,7 +106,7 @@ import org.glassfish.common.util.PayaraCdiProducer;
  */
 public class CdiInitEventHandler {
 
-    private final static JsonWebTokenImpl emptyJsonWebToken = new JsonWebTokenImpl(null, emptyMap());
+    private final static JsonWebTokenImpl emptyJsonWebToken = new JsonWebTokenImpl(null, Collections.emptyMap());
 
     public static void installAuthenticationMechanism(AfterBeanDiscovery afterBeanDiscovery) {
 
@@ -122,8 +135,8 @@ public class CdiInitEventHandler {
         // MP-JWT 1.0 7.1.2
         for (JWTInjectableType injectableType : computeTypes()) {
 
-            // Add a new Bean<T>/Dynamic producer for each type that 7.1.2 asks
-            // us to support.
+            // Add a new Bean<T>/Dynamic producer for each type that 7.1.2 asks us to support.
+
             afterBeanDiscovery.addBean(new PayaraCdiProducer<>()
                     .scope(Dependent.class)
                     .beanClass(CdiInitEventHandler.class)
@@ -136,36 +149,46 @@ public class CdiInitEventHandler {
                         Claim claim = getQualifier(
                                 getCurrentInjectionPoint(
                                         CdiUtils.getBeanManager(),
-                                        (CreationalContext)creationalContext), Claim.class);
+                                        (CreationalContext) creationalContext), Claim.class);
 
                         String claimName = getClaimName(claim);
 
-                        // Obtain the raw named value from the request scoped JsonWebToken's embedded claims and convert
-                        // it according to the target type for which this Bean<T> was created.
-                        Object claimObj = injectableType.convert(
-                                getJsonWebToken().getClaims()
-                                        .get(claimName));
+                        Function<String, Object> claimValueSupplier = (String claimNameParam) -> {
+                            return loadClaimObject(injectableType, claimNameParam);
+                        };
 
-                        // If the target type has an Optional in it, wrap the converted value
-                        // into an Optional. I.e. Optional<Long> or ClaimValue<Optional<Long>>
-                        if (injectableType.isOptional()) {
-                            claimObj = Optional.ofNullable(claimObj);
-                        }
-
-                        // If the target type has a ClaimValue in it, wrap the converted value
-                        // into a ClaimValue, e.g. ClaimValue<Long> or ClaimValue<Optional<Long>>
+                        Object claimObj;
                         if (injectableType.isClaimValue()) {
-                            claimObj = new ClaimValueImpl<Object>(claimName, claimObj);
+                            // If the target type has a ClaimValue in it, wrap the converted value
+                            // into a ClaimValue, e.g. ClaimValue<Long> or ClaimValue<Optional<Long>>
+                            claimObj = new ClaimValueImpl<>(claimName, claimValueSupplier);
+                        } else {
+                            // otherwise simply return the value
+                            claimObj = claimValueSupplier.apply(claimName);
                         }
 
                         return claimObj;
-
                     }));
         }
     }
 
+    private static Object loadClaimObject(JWTInjectableType injectableType, String claimNameParam) {
+        // Obtain the raw named value from the request scoped JsonWebToken's embedded claims and
+        // convert it according to the target type for which this Bean<T> was created.
+        Object claimObj = injectableType.convert(
+                getJsonWebToken().getClaims()
+                        .get(claimNameParam));
+
+        // If the target type has an Optional in it, wrap the converted value
+        // into an Optional. I.e. Optional<Long> or ClaimValue<Optional<Long>>
+        if (injectableType.isOptional()) {
+            claimObj = Optional.ofNullable(claimObj);
+        }
+        return claimObj;
+    }
+
     private static Set<JWTInjectableType> computeTypes() {
-        Set<JWTInjectableType> baseTypes = new HashSet<>(asList(
+        Set<JWTInjectableType> baseTypes = new HashSet<>(Arrays.asList(
                 new JWTInjectableType(String.class),
                 new JWTInjectableType(new ParameterizedTypeImpl(Set.class, String.class), Set.class),
                 new JWTInjectableType(Long.class),
@@ -174,7 +197,8 @@ public class CdiInitEventHandler {
                 new JWTInjectableType(JsonNumber.class),
                 new JWTInjectableType(JsonStructure.class),
                 new JWTInjectableType(JsonArray.class),
-                new JWTInjectableType(JsonObject.class)));
+                new JWTInjectableType(JsonObject.class),
+                new JWTInjectableType(JsonValue.class)));
 
         Set<JWTInjectableType> optionalTypes = new HashSet<>(baseTypes);
         optionalTypes.addAll(
@@ -229,12 +253,17 @@ public class CdiInitEventHandler {
     }
 
     public static JsonWebTokenImpl getJsonWebToken() {
-        JsonWebTokenImpl jsonWebToken = (JsonWebTokenImpl) getBeanReference(SecurityContext.class).getCallerPrincipal();
-        if (jsonWebToken == null) {
-            jsonWebToken = emptyJsonWebToken;
+        SecurityContext context = CdiUtils.getBeanReference(SecurityContext.class);
+        Principal principal = context.getCallerPrincipal();
+        if (principal instanceof JsonWebTokenImpl) {
+            return (JsonWebTokenImpl) principal;
+        } else {
+            Set<JsonWebTokenImpl> principals = context.getPrincipalsByType(JsonWebTokenImpl.class);
+            if (!principals.isEmpty()) {
+                return principals.iterator().next();
+            }
         }
-
-        return jsonWebToken;
+        return emptyJsonWebToken;
     }
 
     public static String getClaimName(Claim claim) {

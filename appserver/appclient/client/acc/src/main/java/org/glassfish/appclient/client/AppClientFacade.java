@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2022 Payara Foundation and/or its affiliates
+// Portions Copyright 2021-2022 Payara Foundation and/or its affiliates
 
 package org.glassfish.appclient.client;
 
@@ -100,6 +100,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.logging.Logger;
 
 /**
  *
@@ -124,6 +125,8 @@ public class AppClientFacade {
     private static AppClientContainer acc = null;
 
     private static boolean isJWS = false;
+
+    private static final Logger logger = Logger.getLogger(AppClientFacade.class.getName());
 
 
     /**
@@ -188,13 +191,8 @@ public class AppClientFacade {
     }
 
     public static void prepareACC(String agentArgsText, Instrumentation inst) throws UserError, Exception {
-        int major = JDK.getMajor();
-        if (major < 11) {
-            throw new UserError(localStrings.getLocalString(
-                    stringsAnchor,
-                    "main.badVersion",
-                    "Current Java version {0} is too low; {1} or later required",
-                    new Object[]{System.getProperty("java.version"), "11"}));
+        if (!JDK.isRunningLTSJDK()) {
+            logger.warning("You are running the product on an unsupported JDK version and might see unexpected results or exceptions.");
         }
 
         /*

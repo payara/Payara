@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2021] Payara Foudation and/or affiliates
 
 package com.sun.enterprise.security;
 
@@ -88,6 +89,7 @@ public class SecurityUpgradeService implements ConfigurationUpgrade, PostConstru
     private static final Logger _logger = SecurityLoggerInfo.getLogger();
 
     
+    @Override
     public void postConstruct()  {
         for (Config config : configs.getConfig()) {
             SecurityService service = config.getSecurityService();

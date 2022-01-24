@@ -1108,6 +1108,8 @@ public class PECoyoteConnector extends Connector {
         setMaxSavePostSize(Integer.parseInt(http.getMaxSavePostSizeBytes()));
         setProperty("compression", http.getCompression());
         setProperty("compressableMimeType", http.getCompressableMimeType());
+        setProperty("compressionLevel", http.getCompressionLevel());
+        setProperty("compressionStrategy", http.getCompressionStrategy());
         if (http.getNoCompressionUserAgents() != null) {
             setProperty("noCompressionUserAgents", http.getNoCompressionUserAgents());
         }

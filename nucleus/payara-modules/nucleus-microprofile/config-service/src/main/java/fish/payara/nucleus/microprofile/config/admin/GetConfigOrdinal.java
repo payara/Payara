@@ -131,7 +131,7 @@ public class GetConfigOrdinal implements AdminCommand {
                     break;
                 }
                 case JNDI: {
-                    result = Integer.parseInt(serviceConfig.getJNDIOrdinality());
+                    result = Integer.parseInt(serviceConfig.getJndiOrdinality());
                     break;
                 }
                 case SECRETS: {

@@ -262,8 +262,8 @@ public abstract class CollectionLeafResource extends AbstractResource {
     
     private Map<String, String> optionToMap(JvmOption option){
         Map<String, String> baseMap = new HashMap<>();        
-        if (option.vendor.isPresent()) {
-            baseMap.put(MIN_VERSION, option.vendor.get() + "-" + option.minVersion.map(JDK.Version::toString).orElse(""));
+        if (option.vendorOrVM.isPresent()) {
+            baseMap.put(MIN_VERSION, option.vendorOrVM.get() + "-" + option.minVersion.map(JDK.Version::toString).orElse(""));
         } else {
             baseMap.put(MIN_VERSION, option.minVersion.map(JDK.Version::toString).orElse(""));
         }

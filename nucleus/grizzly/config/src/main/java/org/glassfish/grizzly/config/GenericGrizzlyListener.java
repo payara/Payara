@@ -38,7 +38,7 @@
  * holder.
  * 
  * 
- * Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates] 
+ * Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates] 
  */
 package org.glassfish.grizzly.config;
 
@@ -505,7 +505,6 @@ public class GenericGrizzlyListener implements GrizzlyListener {
                         final Filter addedSSLFilter = configureSsl(
                                 habitat, getSsl(subProtocol),
                                 subProtocolFilterChainBuilder);
-                        
                         subProtocolFilterChainBuilder.add(extraSslPUFilter);
                         final FilterChainBuilder extraSslPUFilterChainBuilder =
                             extraSslPUFilter.getPUFilterChainBuilder();
@@ -768,6 +767,7 @@ public class GenericGrizzlyListener implements GrizzlyListener {
 //        fileCache.getMonitoringConfig().addProbes(
 //                serverConfig.getMonitoringConfig().getFileCacheConfig().getProbes());
         filterChainBuilder.add(fileCacheFilter);
+        configureHSTSSupport(habitat, http.getParent().getSsl(), filterChainBuilder);
         final HttpServerFilter webServerFilter = new HttpServerFilter(
                 getHttpServerFilterConfiguration(http),
                 obtainDelayedExecutor());
@@ -787,6 +787,8 @@ public class GenericGrizzlyListener implements GrizzlyListener {
         configureWebSocketSupport(habitat, networkListener, http, filterChainBuilder);
 
         configureAjpSupport(habitat, networkListener, http, filterChainBuilder);
+        
+        
     }
 
     private int getTimeoutSeconds(final Http http) {
@@ -905,6 +907,16 @@ public class GenericGrizzlyListener implements GrizzlyListener {
                 isAjpEnabled = true;
             }
         }
+    }
+    
+    protected Filter configureHSTSSupport(ServiceLocator habitat, Ssl ssl, FilterChainBuilder filterChainBuilder) {
+        if (ssl != null && Boolean.parseBoolean(ssl.getHstsEnabled())) {
+            HSTSFilter hstsFilter = new HSTSFilter();
+            hstsFilter.configure(habitat, null, ssl);
+            filterChainBuilder.add(hstsFilter);
+            return hstsFilter;
+        }
+        return null;
     }
 
     
@@ -1084,6 +1096,8 @@ public class GenericGrizzlyListener implements GrizzlyListener {
 
     protected Set<ContentEncoding> configureCompressionEncodings(Http http) {
         final String mode = http.getCompression();
+        final int compressionStrategy = getCompressionStrategyAsInt(http.getCompressionStrategy());
+        final int compressionLevel = Integer.parseInt(http.getCompressionLevel());
         int compressionMinSize = Integer.parseInt(http.getCompressionMinSizeBytes());
         CompressionMode compressionMode;
         try {
@@ -1111,6 +1125,8 @@ public class GenericGrizzlyListener implements GrizzlyListener {
         final ContentEncoding gzipContentEncoding = new GZipContentEncoding(
             GZipContentEncoding.DEFAULT_IN_BUFFER_SIZE,
             GZipContentEncoding.DEFAULT_OUT_BUFFER_SIZE,
+            compressionLevel,
+            compressionStrategy,
             new CompressionEncodingFilter(compressionMode, compressionMinSize,
                 compressableMimeTypes,
                 noCompressionUserAgents,
@@ -1170,5 +1186,19 @@ public class GenericGrizzlyListener implements GrizzlyListener {
             }
         }
         return null;
+    }
+
+    private int getCompressionStrategyAsInt(String compressionStrategy) {
+        switch (compressionStrategy) {
+            case "Default":
+                return 0;
+            case "Filtered":
+                return 1;
+            case "Huffman Only":
+                return 2;
+            default:
+                LOGGER.severe("Compression Strategy had an unexpected value.");
+                throw new IllegalStateException("Unexpected value: " + compressionStrategy);
+        }
     }
 }

@@ -49,7 +49,6 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.module.bootstrap.EarlyLogHandler;
 import com.sun.enterprise.util.EarlyLogger;
-import com.sun.enterprise.util.PropertyPlaceholderHelper;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.v3.logging.AgentFormatterDelegate;
 import fish.payara.enterprise.server.logging.JSONLogFormatter;
@@ -58,7 +57,6 @@ import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -70,7 +68,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Properties;
 import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -82,8 +79,10 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import java.util.Arrays;
 import jakarta.inject.Inject;
 import jakarta.validation.ValidationException;
+//import fish.payara.logging.LoggingUtil;
 import org.glassfish.api.admin.FileMonitoring;
 import org.glassfish.common.util.Constants;
 import org.glassfish.hk2.api.PostConstruct;
@@ -234,7 +233,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     private String excludeFields;
 
     private boolean multiLineMode = false;
-    
+
     private  GFFileHandler gfFileHandler = null;
     
     private  PayaraNotificationFileHandler pyFileHandler = null;
@@ -399,18 +398,8 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                 FileUtils.copy(src, dest);
                 loggingPropertiesFile = new File(env.getConfigDirPath(), ServerEnvironmentImpl.kLoggingPropertiesFileName);
             }
-            
-            logMgr.readConfiguration();
 
-            // replace placehoders with values from system environment variables
-            try {
-                final Field propsLogManagerField = logMgr.getClass().getDeclaredField("props");
-                propsLogManagerField.setAccessible(true);
-                Properties props = (Properties) propsLogManagerField.get(logMgr);
-                propsLogManagerField.set(logMgr, new PropertyPlaceholderHelper(System.getenv(), PropertyPlaceholderHelper.ENV_REGEX).replacePropertiesPlaceholder(props));
-            } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException ex) {
-                LOGGER.log(Level.SEVERE, LogFacade.ERROR_PLACEHOLDERS_REPLACEMENT, ex);
-            }
+            logMgr.readConfiguration();
 
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, LogFacade.ERROR_READING_CONF_FILE, e);
@@ -502,7 +491,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
             }
         }
     }
-  
+
     public void listenToChangesOnloggingPropsFile(File loggingPropertiesFile, LogManager logMgr){
              if (loggingPropertiesFile != null) {
             fileMonitoring.monitors(loggingPropertiesFile, new FileMonitoring.FileChangeListener() {
@@ -901,7 +890,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
         multiLineMode = Boolean.parseBoolean(props.get(MULTI_LINE_MODE_PROPERTY));
         if (formatterClassName.equals(UniformLogFormatter.class.getName())) {
             // used to support UFL formatter in GF.
-            UniformLogFormatter formatter = new UniformLogFormatter();
+            UniformLogFormatter formatter = new UniformLogFormatter(excludeFields);
             String cname = "com.sun.enterprise.server.logging.GFFileHandler";
             recordBeginMarker = props.get(cname + ".logFormatBeginMarker");
             if (recordBeginMarker == null || ("").equals(recordBeginMarker)) {
@@ -939,7 +928,6 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
             formatter.setRecordEndMarker(recordEndMarker);
             formatter.setRecordDateFormat(recordDateFormat);
             formatter.setRecordFieldSeparator(recordFieldSeparator);
-            formatter.setExcludeFields(excludeFields);
             formatter.setMultiLineMode(multiLineMode);
             for (Handler handler : logMgr.getLogger("").getHandlers()) {
                 // only get the ConsoleHandler
@@ -950,8 +938,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
             }
         } else if (formatterClassName.equals(ODLLogFormatter.class.getName())) {
             // used to support ODL formatter in GF.
-            ODLLogFormatter formatter = new ODLLogFormatter();
-            formatter.setExcludeFields(excludeFields);
+            ODLLogFormatter formatter = new ODLLogFormatter(excludeFields);
             formatter.setMultiLineMode(multiLineMode);
             for (Handler handler : logMgr.getLogger("").getHandlers()) {
                 // only get the ConsoleHandler
@@ -961,8 +948,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                 }
             }
         } else if (formatterClassName.equals(JSONLogFormatter.class.getName())) {
-            JSONLogFormatter formatter = new JSONLogFormatter();
-            formatter.setExcludeFields(excludeFields);
+            JSONLogFormatter formatter = new JSONLogFormatter(excludeFields);
             for (Handler handler : logMgr.getLogger("").getHandlers()) {
                 // only get the ConsoleHandler
                 if (handler.getClass().equals(ConsoleHandler.class)) {

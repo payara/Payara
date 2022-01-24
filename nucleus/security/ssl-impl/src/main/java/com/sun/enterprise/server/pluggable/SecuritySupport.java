@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.server.pluggable;
 
 import com.sun.enterprise.security.ssl.impl.SecuritySupportImpl;
@@ -72,7 +72,9 @@ public abstract class SecuritySupport {
     public static final String KEYSTORE_TYPE_PROP = "javax.net.ssl.keyStoreType";
     public static final String TRUSTSTORE_TYPE_PROP = "javax.net.ssl.trustStoreType";
     public static final String keyStoreProp = "javax.net.ssl.keyStore";
+    public static final String additionalKeyStoreProp = "fish.payara.ssl.additionalKeyStores";
     public static final String trustStoreProp = "javax.net.ssl.trustStore";
+    public static final String additionalTrustStoreProp = "fish.payara.ssl.additionalTrustStores";
 
     private static volatile SecuritySupport defaultInstance = null;
 

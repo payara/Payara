@@ -119,7 +119,7 @@
         <dependency>
             <!-- Needed to have a bundle activator to set up a different serialization policy-->
             <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.enterprise</artifactId>
+            <artifactId>osgi.enterprise</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>

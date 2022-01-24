@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2021 Payara Foundation and/or its affiliates
 
 package org.glassfish.appclient.server.core;
 
@@ -45,12 +46,26 @@ import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.ApplicationClientDescriptor;
 import com.sun.enterprise.deployment.archivist.AppClientArchivist;
 import com.sun.enterprise.deployment.deploy.shared.OutputJarArchive;
-import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.util.shared.ArchivistUtils;
-import com.sun.logging.LogDomains;
-import java.io.BufferedInputStream;
+import org.glassfish.api.admin.ProcessEnvironment;
+import org.glassfish.api.deployment.DeployCommandParameters;
+import org.glassfish.api.deployment.DeploymentContext;
+import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.api.deployment.archive.WritableArchive;
+import org.glassfish.appclient.server.core.jws.JavaWebStartInfo;
+import org.glassfish.appclient.server.core.jws.servedcontent.ASJarSigner;
+import org.glassfish.appclient.server.core.jws.servedcontent.DynamicContent;
+import org.glassfish.appclient.server.core.jws.servedcontent.FixedContent;
+import org.glassfish.appclient.server.core.jws.servedcontent.StaticContent;
+import org.glassfish.appclient.server.core.jws.servedcontent.TokenHelper;
+import org.glassfish.deployment.common.Artifacts;
+import org.glassfish.deployment.common.DeploymentUtils;
+import org.glassfish.deployment.versioning.VersioningSyntaxException;
+import org.glassfish.deployment.versioning.VersioningUtils;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.ServerContext;
+
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;

@@ -73,19 +73,16 @@ public class OpenTracingIiopClientInterceptor extends LocalObject implements Cli
         this.openTracingService = openTracingService;
         // Register global tracer if it hasn't been already
         this.tracer = GlobalTracer.get();
-        if (!GlobalTracer.isRegistered()) {
-            registerTracer();
-        }
+        // Null check for opentracing should have been done by factory
+        GlobalTracer.registerIfAbsent(() -> openTracingService.getTracer(PAYARA_CORBA_RMI_TRACER_NAME));
     }
 
     @Override
     public void send_request(ClientRequestInfo clientRequestInfo) throws ForwardRequest {
         // Double check we have a tracer and try and get one again if we don't
+        GlobalTracer.registerIfAbsent(() -> openTracingService.getTracer(PAYARA_CORBA_RMI_TRACER_NAME));
         if (!GlobalTracer.isRegistered()) {
-            registerTracer();
-            if (!GlobalTracer.isRegistered()) {
-                return;
-            }
+            return;
         }
 
         // Check if there's an active span
@@ -109,18 +106,6 @@ public class OpenTracingIiopClientInterceptor extends LocalObject implements Cli
         } catch (IOException ex) {
             Logger.getLogger(OpenTracingIiopClientInterceptor.class.getName()).log(Level.SEVERE,
                     "Exception caught propagating span context");
-        }
-    }
-
-    private void registerTracer() {
-        if (openTracingService == null) {
-            return;
-        }
-        Tracer tracerImpl = openTracingService.getTracer(PAYARA_CORBA_RMI_TRACER_NAME);
-        if (tracerImpl == null) {
-            return;
-        } else {
-            GlobalTracer.register(tracerImpl);
         }
     }
 

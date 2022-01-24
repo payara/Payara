@@ -41,9 +41,16 @@
 // Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license
 package com.sun.enterprise.security.jaspic.config;
 
-import static com.sun.logging.LogDomains.SECURITY_LOGGER;
-import static java.util.logging.Level.FINE;
-import static org.glassfish.api.admin.ServerEnvironment.DEFAULT_INSTANCE_NAME;
+import com.sun.enterprise.config.serverbeans.MessageSecurityConfig;
+import com.sun.enterprise.config.serverbeans.ProviderConfig;
+import com.sun.enterprise.config.serverbeans.RequestPolicy;
+import com.sun.enterprise.config.serverbeans.ResponsePolicy;
+import com.sun.enterprise.config.serverbeans.SecurityService;
+import com.sun.enterprise.security.jaspic.AuthMessagePolicy;
+import com.sun.logging.LogDomains;
+import jakarta.security.auth.message.MessagePolicy;
+import org.glassfish.internal.api.Globals;
+import org.jvnet.hk2.config.types.Property;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -57,18 +64,9 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import jakarta.security.auth.message.MessagePolicy;
-
-import org.glassfish.internal.api.Globals;
-import org.jvnet.hk2.config.types.Property;
-
-import com.sun.enterprise.config.serverbeans.MessageSecurityConfig;
-import com.sun.enterprise.config.serverbeans.ProviderConfig;
-import com.sun.enterprise.config.serverbeans.RequestPolicy;
-import com.sun.enterprise.config.serverbeans.ResponsePolicy;
-import com.sun.enterprise.config.serverbeans.SecurityService;
-import com.sun.enterprise.security.jaspic.AuthMessagePolicy;
-import com.sun.logging.LogDomains;
+import static com.sun.logging.LogDomains.SECURITY_LOGGER;
+import static java.util.logging.Level.FINE;
+import static org.glassfish.api.admin.ServerEnvironment.DEFAULT_INSTANCE_NAME;
 
 /**
  * Parser for message-security-config in domain.xml
@@ -196,9 +194,8 @@ public class ConfigDomainParser implements ConfigParser {
         }
 
         // create ID entry
-        GFServerConfigProvider.IDEntry idEntry = 
-                new GFServerConfigProvider.IDEntry(
-                        type, moduleClass, requestPolicy, responsePolicy, options);
+        GFServerConfigProvider.IDEntry idEntry = new GFServerConfigProvider.IDEntry(type, moduleClass, requestPolicy, responsePolicy,
+                options);
 
         GFServerConfigProvider.InterceptEntry intEntry = newConfig.get(intercept);
         if (intEntry == null) {

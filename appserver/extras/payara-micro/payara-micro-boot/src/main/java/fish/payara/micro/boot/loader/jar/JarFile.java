@@ -337,22 +337,16 @@ public class JarFile extends java.util.jar.JarFile {
 	void setupEntryCertificates(JarEntry entry) {
 		// Fallback to JarInputStream to obtain certificates, not fast but hopefully not
 		// happening that often.
-		try {
-			JarInputStream inputStream = new JarInputStream(
-					getData().getInputStream(ResourceAccess.ONCE));
-			try {
-				java.util.jar.JarEntry certEntry = inputStream.getNextJarEntry();
-				while (certEntry != null) {
-					inputStream.closeEntry();
-					if (entry.getName().equals(certEntry.getName())) {
-						setCertificates(entry, certEntry);
-					}
-					setCertificates(getJarEntry(certEntry.getName()), certEntry);
-					certEntry = inputStream.getNextJarEntry();
+		try (JarInputStream inputStream = new JarInputStream(
+					getData().getInputStream(ResourceAccess.ONCE))) {
+			java.util.jar.JarEntry certEntry = inputStream.getNextJarEntry();
+			while (certEntry != null) {
+				inputStream.closeEntry();
+				if (entry.getName().equals(certEntry.getName())) {
+					setCertificates(entry, certEntry);
 				}
-			}
-			finally {
-				inputStream.close();
+				setCertificates(getJarEntry(certEntry.getName()), certEntry);
+				certEntry = inputStream.getNextJarEntry();
 			}
 		}
 		catch (IOException ex) {

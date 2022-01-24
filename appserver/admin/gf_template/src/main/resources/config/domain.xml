@@ -144,8 +144,10 @@
                     <property value="${com.sun.aas.instanceRoot}/config/keyfile" name="file" />
                     <property value="fileRealm" name="jaas-context" />
                 </auth-realm>
-                <auth-realm classname="com.sun.enterprise.security.auth.realm.certificate.CertificateRealm" name="certificate" />
-                <jacc-provider policy-configuration-factory-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyConfigurationFactory" policy-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyProvider" name="default">
+                <auth-realm classname="com.sun.enterprise.security.auth.realm.certificate.CertificateRealm" name="certificate">
+                    <property value="true" name="certificate-validation"/>
+                </auth-realm>
+                <jacc-provider policy-configuration-factory-provider="com.sun.enterprise.security.provider.PolicyConfigurationFactoryImpl" policy-provider="com.sun.enterprise.security.provider.PolicyWrapper" name="default">
                     <property value="${com.sun.aas.instanceRoot}/generated/policy" name="repository" />
                 </jacc-provider>
                 <jacc-provider policy-configuration-factory-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyConfigurationFactory" policy-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyProvider" name="simple" />
@@ -213,6 +215,9 @@
                 <jvm-options>--add-opens=java.naming/javax.naming.spi=ALL-UNNAMED</jvm-options>
                 <jvm-options>--add-opens=java.rmi/sun.rmi.transport=ALL-UNNAMED</jvm-options>
                 <jvm-options>--add-opens=java.logging/java.util.logging=ALL-UNNAMED</jvm-options>
+                <jvm-options>[17|]--add-exports=java.base/sun.net.www=ALL-UNNAMED</jvm-options>
+                <jvm-options>[17|]--add-exports=java.base/sun.security.util=ALL-UNNAMED</jvm-options>
+                <jvm-options>[17|]--add-opens=java.base/java.lang.invoke=ALL-UNNAMED</jvm-options>
                 <jvm-options>-Xmx512m</jvm-options>
                 <jvm-options>-XX:NewRatio=2</jvm-options>
                 <jvm-options>-XX:+UnlockDiagnosticVMOptions</jvm-options>
@@ -264,6 +269,11 @@
                 <jvm-options>-Dorg.jboss.weld.serialization.beanIdentifierIndexOptimization=false</jvm-options>
                 <!-- Grizzly NPN Bootstrap compatible with used JDK version -->
                 <jvm-options>-Xbootclasspath/a:${com.sun.aas.installRoot}/lib/grizzly-npn-api.jar</jvm-options>
+                <!-- allow asadmin command enable-monitoring -->
+                <jvm-options>-Djdk.attach.allowAttachSelf=true</jvm-options>
+                <!-- Hotswap Agent -->
+                <jvm-options>[Dynamic Code Evolution-11.0.10|]-XX:HotswapAgent=core</jvm-options>
+                <jvm-options>[Dynamic Code Evolution-11.0.10|]-Xlog:redefine+class*=info</jvm-options>
             </java-config>
             <availability-service>
                 <web-container-availability />
@@ -303,6 +313,7 @@
                 <thread-pool name="http-thread-pool" max-queue-size="4096"></thread-pool>
                 <thread-pool name="thread-pool-1" max-thread-pool-size="200" />
             </thread-pools>
+            <system-property name="org.glassfish.gmbal.no.multipleUpperBoundsException" value="true"/>
         </config>
         <config name="default-config" dynamic-reconfiguration-enabled="true">
             <payara-executor-service-configuration />
@@ -358,8 +369,10 @@
                     <property name="file" value="${com.sun.aas.instanceRoot}/config/keyfile" />
                     <property name="jaas-context" value="fileRealm" />
                 </auth-realm>
-                <auth-realm classname="com.sun.enterprise.security.auth.realm.certificate.CertificateRealm" name="certificate" />
-                <jacc-provider policy-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyProvider" name="default" policy-configuration-factory-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyConfigurationFactory">
+                <auth-realm classname="com.sun.enterprise.security.auth.realm.certificate.CertificateRealm" name="certificate">
+                    <property name="certificate-validation" value="true" />
+                </auth-realm>
+                <jacc-provider policy-provider="com.sun.enterprise.security.provider.PolicyWrapper" name="default" policy-configuration-factory-provider="com.sun.enterprise.security.provider.PolicyConfigurationFactoryImpl">
                     <property name="repository" value="${com.sun.aas.instanceRoot}/generated/policy" />
                 </jacc-provider>
                 <jacc-provider policy-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyProvider" name="simple" policy-configuration-factory-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyConfigurationFactory" />
@@ -437,6 +450,9 @@
                 <jvm-options>--add-opens=java.naming/javax.naming.spi=ALL-UNNAMED</jvm-options>
                 <jvm-options>--add-opens=java.rmi/sun.rmi.transport=ALL-UNNAMED</jvm-options>
                 <jvm-options>--add-opens=java.logging/java.util.logging=ALL-UNNAMED</jvm-options>
+                <jvm-options>[17|]--add-exports=java.base/sun.net.www=ALL-UNNAMED</jvm-options>
+                <jvm-options>[17|]--add-exports=java.base/sun.security.util=ALL-UNNAMED</jvm-options>
+                <jvm-options>[17|]--add-opens=java.base/java.lang.invoke=ALL-UNNAMED</jvm-options>
                 <jvm-options>-Xmx512m</jvm-options>
                 <jvm-options>-XX:NewRatio=2</jvm-options>
                 <jvm-options>-XX:+UnlockDiagnosticVMOptions</jvm-options>
@@ -487,6 +503,9 @@
                 <jvm-options>-Dorg.jboss.weld.serialization.beanIdentifierIndexOptimization=false</jvm-options>
                 <!-- Grizzly NPN Bootstrap compatible with used JDK version -->
                 <jvm-options>-Xbootclasspath/a:${com.sun.aas.installRoot}/lib/grizzly-npn-api.jar</jvm-options>
+                <!-- Hotswap Agent -->
+                <jvm-options>[Dynamic Code Evolution-11.0.10|]-XX:HotswapAgent=core</jvm-options>
+                <jvm-options>[Dynamic Code Evolution-11.0.10|]-Xlog:redefine+class*=info</jvm-options>
             </java-config>
             <availability-service>
                 <web-container-availability />
@@ -555,6 +574,7 @@
             <system-property name="OSGI_SHELL_TELNET_PORT" value="26666" />
             <system-property name="JAVA_DEBUGGER_PORT" value="29009" />
             <system-property name="HZ_LISTENER_PORT" value="5900" />
+            <system-property name="org.glassfish.gmbal.no.multipleUpperBoundsException" value="true"/>
         </config>
     </configs>
     <property name="administrative.domain.name" value="%%%DOMAIN_NAME%%%" />

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -110,7 +110,10 @@ public class HeaderImpl extends ExtensibleImpl<Header> implements Header {
         from.setExplode(annotation.getValue("explode", Boolean.class));
         AnnotationModel schemaAnnotation = annotation.getValue("schema", AnnotationModel.class);
         if (schemaAnnotation != null) {
-            from.setSchema(SchemaImpl.createInstance(schemaAnnotation, context));
+            Boolean hidden = schemaAnnotation.getValue("hidden", Boolean.class);
+            if (hidden == null || !hidden) {
+                from.setSchema(SchemaImpl.createInstance(schemaAnnotation, context));
+            }
         }
         extractAnnotations(annotation, context, "examples", "name", ExampleImpl::createInstance, from::addExample);
         from.setExample(annotation.getValue("example", Object.class));

@@ -39,7 +39,7 @@
  */
 package fish.payara.microprofile.openapi.impl.rest.app.provider.writer;
 
-import static fish.payara.microprofile.openapi.impl.rest.app.OpenApiApplication.APPLICATION_YAML;
+import static fish.payara.microprofile.openapi.rest.app.OpenApiApplication.APPLICATION_YAML;
 import fish.payara.microprofile.openapi.impl.rest.app.provider.ObjectMapperFactory;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.ext.Provider;

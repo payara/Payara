@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2021] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt.cli;
 
@@ -66,6 +67,11 @@ import com.sun.enterprise.util.io.ServerDirs;
 @org.jvnet.hk2.annotations.Service(name = "create-service")
 @PerLookup
 public final class CreateServiceCommand extends CLICommand {
+    public static final String SYSTEM_TYPE_SOLARIS = "solaris";
+    public static final String SYSTEM_TYPE_SYSTEMD = "systemd";
+    public static final String SYSTEM_TYPE_SYSTEMV = "systemv";
+    public static final String SYSTEM_TYPE_WINDOWS = "windows";
+
     @Param(name = "name", optional = true)
     private String serviceName;
     @Param(name = "serviceproperties", optional = true)
@@ -79,6 +85,8 @@ public final class CreateServiceCommand extends CLICommand {
     private File userSpecifiedDomainDirParent;
     @Param(name = "serviceuser", optional = true)
     private String serviceUser;
+    @Param(name = "system-type", optional = true)
+    private String systemType;
 
     /*
      * The following parameters allow an unattended start-up any number of
@@ -117,6 +125,7 @@ public final class CreateServiceCommand extends CLICommand {
             dirs = selector.dirs();
 
             validateServiceName();
+            validateSystemType();
             validateAsadmin();
         }
         catch (CommandException e) {
@@ -131,21 +140,24 @@ public final class CreateServiceCommand extends CLICommand {
     @Override
     protected int executeCommand() throws CommandException {
         try {
-            final Service service = ServiceFactory.getService(dirs, getType());
+            final Service service = ServiceFactory.getService(dirs, getType(), systemType);
             PlatformServicesInfo info = service.getInfo();
             info.setTrace(logger.isLoggable(Level.FINER));
             info.setDryRun(dry_run);
             info.setForce(force);
             info.setAppServerUser(getProgramOptions().getUser());
-            if (ok(serviceName))
+            if (ok(serviceName)) {
                 info.setServiceName(serviceName);
+            }
 
-            if (ok(serviceUser))
+            if (ok(serviceUser)) {
                 info.setServiceUser(serviceUser);
+            }
 
-            if (programOpts.getPasswordFile() != null)
+            if (programOpts.getPasswordFile() != null) {
                 info.setPasswordFile(SmartFile.sanitize(
                         new File(programOpts.getPasswordFile())));
+            }
 
             service.setServiceProperties(serviceProperties);
             service.createService();
@@ -157,22 +169,20 @@ public final class CreateServiceCommand extends CLICommand {
                     new File(dirs.getServerDir(), "PlatformServices.log"));
             logger.info(tellUserAboutHelp);
             service.writeReadmeFile(help);
-
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             // We only want to wrap the string -- not the Exception.
             // Otherwise the message that is printed out to the user will be like this:
             // java.lang.IllegalArgumentException: The passwordfile blah blah blah
             // What we want is:
             // The passwordfile blah blah blah
             // IT 8882
-
             String msg = e.getMessage();
 
-            if (ok(msg))
+            if (ok(msg)) {
                 throw new CommandException(msg);
-            else
+            } else {
                 throw new CommandException(e);
+            }
         }
         return 0;
     }
@@ -203,6 +213,17 @@ public final class CreateServiceCommand extends CLICommand {
         if (!asadminScript.isFile()) {
             throw new CommandException(
                     strings.get("create.service.noAsadminScript", asadminScript));
+        }
+    }
+
+    private void validateSystemType() throws CommandException {
+        if (ok(systemType)
+                && !(SYSTEM_TYPE_SOLARIS.equals(systemType)
+                || SYSTEM_TYPE_SYSTEMD.equals(systemType)
+                || SYSTEM_TYPE_SYSTEMV.equals(systemType)
+                || SYSTEM_TYPE_WINDOWS.equals(systemType))) {
+            throw new CommandException(
+                    strings.get("create.service.invalidSystemType", systemType));
         }
     }
 

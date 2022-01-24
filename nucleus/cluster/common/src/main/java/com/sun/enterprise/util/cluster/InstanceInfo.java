@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
 
-    Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+    Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 
 
  */
@@ -282,6 +282,8 @@ public final class InstanceInfo {
             InstanceRestCommandExecutor ice =
                     new InstanceRestCommandExecutor(habitat, "__locations", FailurePolicy.Error, FailurePolicy.Error,
                     svr, host, port, logger, map, aReport, aResult);
+            ice.setConnectTimeout(timeoutInMsec);
+            ice.setReadTimeout(timeoutInMsec);
             return stateService.submitJob(svr, ice, aResult);
             /*
             String ret = rac.executeCommand(map).trim();

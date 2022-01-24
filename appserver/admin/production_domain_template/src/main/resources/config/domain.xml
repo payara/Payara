@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
 <!--
- * Copyright (c) [2016-2022] Payara Foundation. All rights reserved.
+ * Copyright (c) 2016-2022 Payara Foundation. All rights reserved.
  *
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
@@ -191,6 +191,9 @@
         <jvm-options>--add-opens=java.naming/javax.naming.spi=ALL-UNNAMED</jvm-options>
         <jvm-options>--add-opens=java.rmi/sun.rmi.transport=ALL-UNNAMED</jvm-options>
         <jvm-options>--add-opens=java.logging/java.util.logging=ALL-UNNAMED</jvm-options>
+        <jvm-options>[17|]--add-exports=java.base/sun.net.www=ALL-UNNAMED</jvm-options>
+        <jvm-options>[17|]--add-exports=java.base/sun.security.util=ALL-UNNAMED</jvm-options>
+        <jvm-options>[17|]--add-opens=java.base/java.lang.invoke=ALL-UNNAMED</jvm-options>
         <jvm-options>-Xmx2g</jvm-options>
         <jvm-options>-Xms2g</jvm-options>
         <jvm-options>-XX:+UseG1GC</jvm-options>
@@ -215,6 +218,8 @@
         <jvm-options>-Dorg.jboss.weld.serialization.beanIdentifierIndexOptimization=false</jvm-options>
         <!-- Grizzly NPN Bootstrap compatible with used JDK version -->
         <jvm-options>-Xbootclasspath/a:${com.sun.aas.installRoot}/lib/grizzly-npn-api.jar</jvm-options>
+        <!-- allow asadmin command enable-monitoring -->
+        <jvm-options>-Djdk.attach.allowAttachSelf=true</jvm-options>
       </java-config>
       <availability-service>
         <web-container-availability />
@@ -260,6 +265,7 @@
       <system-property name="jersey.config.client.connectTimeout" value="300000" />
       <system-property name="org.jboss.weld.clustering.rollingUpgradesIdDelimiter" value=".." />
       <system-property name="org.jboss.weld.probe.allowRemoteAddress" value="127.0.0.1|::1|::1%.+|0:0:0:0:0:0:0:1|0:0:0:0:0:0:0:1%.+" />
+      <system-property name="org.glassfish.gmbal.no.multipleUpperBoundsException" value="true"/>
     </config>
 
     <config name="default-config" dynamic-reconfiguration-enabled="true">
@@ -398,6 +404,9 @@
         <jvm-options>--add-opens=java.naming/javax.naming.spi=ALL-UNNAMED</jvm-options>
         <jvm-options>--add-opens=java.rmi/sun.rmi.transport=ALL-UNNAMED</jvm-options>
         <jvm-options>--add-opens=java.logging/java.util.logging=ALL-UNNAMED</jvm-options>
+        <jvm-options>[17|]--add-exports=java.base/sun.net.www=ALL-UNNAMED</jvm-options>
+        <jvm-options>[17|]--add-exports=java.base/sun.security.util=ALL-UNNAMED</jvm-options>
+        <jvm-options>[17|]--add-opens=java.base/java.lang.invoke=ALL-UNNAMED</jvm-options>
         <jvm-options>-Xmx2g</jvm-options>
         <jvm-options>-Xms2g</jvm-options>
         <jvm-options>-XX:+UseG1GC</jvm-options>
@@ -491,6 +500,7 @@
       <system-property name="HZ_LISTENER_PORT" value="5900" />
       <system-property name="fish.payara.classloading.delegate" value="false" />
       <system-property name="org.jboss.weld.clustering.rollingUpgradesIdDelimiter" value=".." />
+      <system-property name="org.glassfish.gmbal.no.multipleUpperBoundsException" value="true"/>
     </config>
   </configs>
 

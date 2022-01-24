@@ -39,30 +39,30 @@
  */
 package fish.payara.microprofile.jwtauth.eesecurity;
 
-import static java.lang.Thread.currentThread;
-import static java.util.logging.Level.INFO;
-import static jakarta.security.enterprise.identitystore.CredentialValidationResult.INVALID_RESULT;
-import static org.eclipse.microprofile.jwt.config.Names.ISSUER;
+import fish.payara.microprofile.jwtauth.jwt.JsonWebTokenImpl;
+import fish.payara.microprofile.jwtauth.jwt.JwtTokenParser;
+import jakarta.security.enterprise.identitystore.CredentialValidationResult;
+import jakarta.security.enterprise.identitystore.IdentityStore;
+import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.ConfigProvider;
+import org.eclipse.microprofile.jwt.config.Names;
 
 import java.io.IOException;
 import java.net.URL;
-import java.security.PublicKey;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import jakarta.security.enterprise.identitystore.CredentialValidationResult;
-import jakarta.security.enterprise.identitystore.IdentityStore;
-
-import org.eclipse.microprofile.config.Config;
-import org.eclipse.microprofile.config.ConfigProvider;
-
-import fish.payara.microprofile.jwtauth.jwt.JsonWebTokenImpl;
-import fish.payara.microprofile.jwtauth.jwt.JwtTokenParser;
+import static jakarta.security.enterprise.identitystore.CredentialValidationResult.INVALID_RESULT;
+import static java.lang.Thread.currentThread;
+import static java.util.logging.Level.INFO;
+import static org.eclipse.microprofile.jwt.config.Names.ISSUER;
 
 /**
  * Identity store capable of asserting that a signed JWT token is valid
@@ -75,12 +75,16 @@ public class SignedJWTIdentityStore implements IdentityStore {
     private static final Logger LOGGER = Logger.getLogger(SignedJWTIdentityStore.class.getName());
 
     private final String acceptedIssuer;
+    private final Optional<List<String>> allowedAudience;
     private final Optional<Boolean> enabledNamespace;
     private final Optional<String> customNamespace;
     private final Optional<Boolean> disableTypeVerification;
 
     private final Config config;
     private final JwtPublicKeyStore publicKeyStore;
+    private final JwtPrivateKeyStore privateKeyStore;
+
+    private final boolean isEncryptionRequired;
 
     public SignedJWTIdentityStore() {
         config = ConfigProvider.getConfig();
@@ -89,23 +93,40 @@ public class SignedJWTIdentityStore implements IdentityStore {
         acceptedIssuer = readVendorIssuer(properties)
                 .orElseGet(() -> config.getOptionalValue(ISSUER, String.class)
                 .orElseThrow(() -> new IllegalStateException("No issuer found")));
+        Optional<String> allowedAudienceOpt = readAudience(properties);
+        if (!allowedAudienceOpt.isPresent()) {
+            allowedAudienceOpt = config.getOptionalValue(Names.AUDIENCES, String.class);
+        }
+        allowedAudience = allowedAudienceOpt.map(str -> Arrays.asList(str.split(",")));
 
         enabledNamespace = readEnabledNamespace(properties);
         customNamespace = readCustomNamespace(properties);
         disableTypeVerification = readDisableTypeVerification(properties);
-        publicKeyStore = new JwtPublicKeyStore(readPublicKeyCacheTTL(properties));
+        Optional<String> publicKeyLocation = readConfigOptional(Names.VERIFIER_PUBLIC_KEY_LOCATION, properties, config); //mp.jwt.verifyAndParseEncryptedJWT.publickey.location
+        Optional<String> publicKey = readConfigOptional(Names.VERIFIER_PUBLIC_KEY, properties, config); //mp.jwt.verifyAndParseEncryptedJWT.publickey
+        Optional<String> decryptKeyLocation = readConfigOptional(Names.DECRYPTOR_KEY_LOCATION, properties, config); //mp.jwt.decrypt.key.location
+        publicKeyStore = new JwtPublicKeyStore(readPublicKeyCacheTTL(properties), publicKeyLocation);
+        privateKeyStore = new JwtPrivateKeyStore(readPublicKeyCacheTTL(properties), decryptKeyLocation);
+
+        // Signing is required by default, it doesn't parse if not signed
+        isEncryptionRequired = decryptKeyLocation.isPresent();
     }
 
     public CredentialValidationResult validate(SignedJWTCredential signedJWTCredential) {
         final JwtTokenParser jwtTokenParser = new JwtTokenParser(enabledNamespace, customNamespace, disableTypeVerification);
         try {
-            jwtTokenParser.parse(signedJWTCredential.getSignedJWT());
-            String keyID = jwtTokenParser.getKeyID();
+            JsonWebTokenImpl jsonWebToken = jwtTokenParser.parse(signedJWTCredential.getSignedJWT(),
+                    isEncryptionRequired, publicKeyStore, acceptedIssuer, privateKeyStore);
 
-            PublicKey publicKey = publicKeyStore.getPublicKey(keyID);
-
-            JsonWebTokenImpl jsonWebToken
-                    = jwtTokenParser.verify(acceptedIssuer, publicKey);
+            // verifyAndParseEncryptedJWT audience
+            final Set<String> recipientsOfThisJWT = jsonWebToken.getAudience();
+            // find if any recipient is in the allowed audience
+            Boolean recipientInAudience = allowedAudience
+                    .map(recipient -> recipient.stream().anyMatch(a -> recipientsOfThisJWT != null && recipientsOfThisJWT.contains(a)))
+                    .orElse(true);
+            if (!recipientInAudience) {
+                throw new Exception("The intended audience " + recipientsOfThisJWT + " is not a part of allowed audience.");
+            }
 
             Set<String> groups = new HashSet<>();
             Collection<String> groupClaims = jsonWebToken.getClaim("groups");
@@ -122,7 +143,7 @@ public class SignedJWTIdentityStore implements IdentityStore {
         return INVALID_RESULT;
     }
 
-    private Optional<Properties> readVendorProperties() {
+    public static Optional<Properties> readVendorProperties() {
         URL mpJwtResource = currentThread().getContextClassLoader().getResource("/payara-mp-jwt.properties");
         Properties properties = null;
         if (mpJwtResource != null) {
@@ -160,5 +181,23 @@ public class SignedJWTIdentityStore implements IdentityStore {
         		.orElseGet( () -> Duration.ofMinutes(5));
     }
 
-    
+    private Optional<String> readAudience(Optional<Properties> properties) {
+        return properties.isPresent() ? Optional.ofNullable(properties.get().getProperty(Names.AUDIENCES)) : Optional.empty();
+    }
+
+    /**
+     * Read configuration from Vendor or server or return default value.
+     */
+    public static String readConfig(String key, Optional<Properties> properties, Config config, String defaultValue) {
+        Optional<String> valueOpt = readConfigOptional(key, properties, config);
+        return valueOpt.orElse(defaultValue);
+    }
+
+    public static Optional<String> readConfigOptional(String key, Optional<Properties> properties, Config config) {
+        Optional<String> valueOpt = properties.map(props -> props.getProperty(key));
+        if (!valueOpt.isPresent()) {
+            valueOpt = config.getOptionalValue(key, String.class);
+        }
+        return valueOpt;
+    }
 }

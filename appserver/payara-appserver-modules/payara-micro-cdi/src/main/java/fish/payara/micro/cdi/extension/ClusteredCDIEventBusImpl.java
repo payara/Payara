@@ -170,7 +170,7 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
                     bm.fireEvent(eventPayload,annotations);
                 } catch (IOException | ClassNotFoundException ex) {
                     Logger.getLogger(ClusteredCDIEventBusImpl.class.getName())
-                            .log(ex.getCause() instanceof IllegalStateException? Level.FINE : Level.INFO,
+                            .log(ex.getCause() instanceof IllegalStateException ? Level.FINE : Level.INFO,
                                     "Received Event but could not process it", ex);
                 }
             });

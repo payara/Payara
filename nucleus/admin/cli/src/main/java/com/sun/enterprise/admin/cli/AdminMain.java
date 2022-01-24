@@ -204,12 +204,6 @@ public class AdminMain {
     }
 
     protected int doMain(String[] args) {
-        int major = JDK.getMajor();
-        if (major < 11) {
-            System.err.println(strings.get( "OldJdk", major));
-            return ERROR;
-        }
-
         boolean trace = env.trace();
         boolean debug = env.debug();
 

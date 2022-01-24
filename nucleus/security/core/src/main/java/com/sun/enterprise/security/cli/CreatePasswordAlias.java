@@ -83,7 +83,7 @@ import jakarta.inject.Inject;
 @Service(name="create-password-alias")
 @PerLookup
 @I18n("create.password.alias")
-@ExecuteOn(RuntimeType.DAS)
+@ExecuteOn(RuntimeType.ALL)
 @TargetType({CommandTarget.DAS,CommandTarget.DOMAIN})
 @RestEndpoints({
     @RestEndpoint(configBean=Domain.class,
@@ -112,6 +112,7 @@ public class CreatePasswordAlias implements AdminCommand {
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
         

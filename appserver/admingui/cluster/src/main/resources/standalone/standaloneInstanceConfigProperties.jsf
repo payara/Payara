@@ -39,6 +39,7 @@
     holder.
 
 -->
+<!-- Portions Copyright [2021] [Payara Foundation and/or its affiliates] -->
 
 <!-- standalone/standaloneInstanceConfigProperties.jsf -->
 
@@ -77,6 +78,7 @@
         </sun:title>
 #include "/common/shared/alertMsg_1.inc"
 #include "/common/shared/nameSection.inc"
+            <sun:staticText style="display:block; padding-bottom:8px;" text="$resource{i18ncs.standalone.asadminListenerPortWarning}"/>
 #include "/common/configuration/systemProperties.jsf"
 
         <sun:title>

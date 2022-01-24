@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2021] [Payara Foundation and/or affiliates]
 
 package com.sun.enterprise.security.ssl;
 
@@ -95,7 +96,7 @@ public class GlassfishServerSocketFactory extends JSSE14SocketFactory {
     }
 
     @Override
-    protected KeyStore getTrustStore() throws IOException {
+    protected KeyStore[] getTrustStore() throws IOException {
         if (sslUtils == null) {
             initSSLUtils();
         }
