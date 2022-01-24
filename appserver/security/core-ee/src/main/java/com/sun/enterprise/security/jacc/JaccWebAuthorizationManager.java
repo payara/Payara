@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.security.jacc;
 
@@ -102,7 +102,7 @@ import static com.sun.enterprise.security.common.AppservAccessController.privile
 import java.util.HashSet;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.SEVERE;
-import javax.security.enterprise.CallerPrincipal;
+import jakarta.security.enterprise.CallerPrincipal;
 import static org.glassfish.api.web.Constants.ADMIN_VS;
 
 /**
