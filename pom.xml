@@ -212,7 +212,7 @@
         <microprofile-rest-client.version>3.0</microprofile-rest-client.version>
         <microprofile-openapi.version>3.0</microprofile-openapi.version>
         <payara-arquillian-container.version>3.0.alpha2</payara-arquillian-container.version>
-        <payara.security-connectors.version>3.0.alpha1</payara.security-connectors.version>
+        <payara.security-connectors.version>3.0.alpha2</payara.security-connectors.version>
         <opentracing.version>0.33.0</opentracing.version>
         <h2db.version>1.4.200</h2db.version>
         <websocket-api.version>2.0.0</websocket-api.version>
