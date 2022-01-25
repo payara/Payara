@@ -51,7 +51,7 @@ public final class LogFacade {
     private static final String EJB_LOGGER_NAME = "javax.enterprise.ejb.container";
 
     @LogMessagesResourceBundle
-    private static final String EJB_LOGGER_RB = "org.glassfish.ejb.LogMessages";
+    private static final String EJB_LOGGER_RB = "com.sun.logging.enterprise.system.container.ejb.LogMessages";
 
     private static final Logger LOGGER = Logger.getLogger(EJB_LOGGER_NAME, EJB_LOGGER_RB);
 
