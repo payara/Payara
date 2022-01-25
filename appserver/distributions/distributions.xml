@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2016-2019] [Payara Foundation and/or affiliates] -->
+<!-- Portions Copyright [2016-2022] [Payara Foundation and/or affiliates] -->
 
 <project name="GlassFish Distributions (IPS) Creation" basedir=".">
     <property name="image.root" value="target/local_image"/>
@@ -334,6 +334,12 @@
   <!-- Glassfish domain creation -->
 
     <target name="create-glassfish-domain" depends="init-glassfish-home, create-glassfish-domain-on-windows, create-glassfish-domain-on-unix"/>
+
+    <target name="set-distribution">
+        <echo message="Setting distribution in ${basedir}/target/stage/payara5/glassfish/config/branding/glassfish-version.properties"/>
+        <replace file="${basedir}/target/stage/payara5/glassfish/config/branding/glassfish-version.properties" token="@@@DISTRIBUTION@@@" value="${distribution}"/>
+    </target>
+
     <!--<target name="create-domain-ml" depends="init-glassfish-home-ml, create-domain-on-windows, create-domain-on-unix"/>-->
     <target name="init-glassfish-home">
         <property name="glassfish.home" value="${basedir}/${glassfish.image.dir}/${install.dir.name}/glassfish" />
