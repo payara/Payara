@@ -112,5 +112,28 @@
             <artifactId>security-connector-oidc-client</artifactId>
         </dependency>
     </dependencies>
+    
+    <build>
+        <plugins>
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-war-plugin</artifactId>
+              <executions>
+                  <execution>
+                      <id>build-server-app</id>
+                      <phase>package</phase>
+                      <goals>
+                          <goal>war</goal>
+                      </goals>
+                      <configuration>
+                          <primaryArtifact>false</primaryArtifact>
+                          <outputDirectory>${project.build.directory}/server</outputDirectory>
+                          <packagingExcludes>WEB-INF/classes/fish/payara/security/oidc/client/defaulttests/*</packagingExcludes>
+                      </configuration>
+                  </execution>
+              </executions>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>

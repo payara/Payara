@@ -237,6 +237,11 @@
             <groupId>jakarta.authorization</groupId>
             <artifactId>jakarta.authorization-api</artifactId>
         </dependency>
+        <dependency>
+            <groupId>jakarta.security.enterprise</groupId>
+            <artifactId>jakarta.security.enterprise-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
          <dependency>
             <groupId>fish.payara.server.internal.security</groupId>
             <artifactId>jaspic.provider.framework</artifactId>

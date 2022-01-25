@@ -202,6 +202,22 @@ public interface LogService extends ConfigBeanProxy  {
      * @throws PropertyVetoException
      */
     public void setLogToFile(String value) throws PropertyVetoException;
+
+    /**
+     * Gets the value of the fastLogging property.
+     *
+     * @return possible object is {@link String }
+     */
+    @Attribute(defaultValue = "false", dataType = Boolean.class)
+    public String getFastLogging();
+
+    /**
+     * Sets the value of the fastLogging property.
+     *
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
+     */
+    public void setFastLogging(String value) throws PropertyVetoException;
     
      /**
      * Gets the value of the  Payara Notification logToFile property.

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2021 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2022 Payara Foundation and/or its affiliates
+// Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license
 package com.sun.enterprise.iiop.security;
 
 import com.sun.corba.ee.org.omg.CSI.AuthorizationElement;
@@ -54,6 +55,7 @@ import com.sun.corba.ee.org.omg.CSIIOP.CompoundSecMech;
 import com.sun.enterprise.common.iiop.security.AnonCredential;
 import com.sun.enterprise.common.iiop.security.GSSUPName;
 import com.sun.enterprise.common.iiop.security.SecurityContext;
+import com.sun.enterprise.security.auth.login.DistinguishedPrincipalCredential;
 import com.sun.enterprise.security.auth.login.common.PasswordCredential;
 import com.sun.enterprise.security.auth.login.common.X509CertificateCredential;
 import com.sun.enterprise.util.LocalStringManagerImpl;
@@ -237,6 +239,19 @@ public class SecClientRequestInterceptor extends org.omg.CORBA.LocalObject imple
             GSS_NT_ExportedNameHelper.insert(any, expname);
 
             /* IdentityToken with CDR encoded GSSUPName */
+            idtok.principal_name(codec.encode_value(any));
+        } else if (DistinguishedPrincipalCredential.class.isAssignableFrom(cls)) {
+            // If authenticated via OIDC rather than any of the above we'll have a DistinguishedPrincipalCredential
+            _logger.log(Level.FINE,
+                    "Constructing a GSS Exported Name Identity Token from DistinguishedPrincipalCredential");
+            DistinguishedPrincipalCredential distinguishedPrincipalCredential = (DistinguishedPrincipalCredential) cred;
+
+            // Create a DER encoding of the principal name as a GSSUPName - realm is not currently factored into the
+            // parsing of the principal name from the IdentityToken so is left blank.
+            GSSUPName gssupName = new GSSUPName(distinguishedPrincipalCredential.getPrincipal().getName(), "");
+            byte[] expname = gssupName.getExportedName();
+            GSS_NT_ExportedNameHelper.insert(any, expname);
+
             idtok.principal_name(codec.encode_value(any));
         }
         

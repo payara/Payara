@@ -209,6 +209,7 @@ public class LoggingHandlers {
                         key.equals("com.sun.enterprise.server.logging.GFFileHandler.rotationOnDateChange") ||
                         key.equals("com.sun.enterprise.server.logging.GFFileHandler.compressOnRotation") ||
                         key.equals("com.sun.enterprise.server.logging.GFFileHandler.logStandardStreams") ||
+                        key.equals("com.sun.enterprise.server.logging.GFFileHandler.fastLogging") ||
                         key.equals("fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.logtoFile") ||
                         key.equals("fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.rotationOnDateChange") ||
                         key.equals("fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.compressOnRotation"))
