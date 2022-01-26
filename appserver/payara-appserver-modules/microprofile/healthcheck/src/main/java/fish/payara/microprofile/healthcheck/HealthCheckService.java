@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2017-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2017-2022] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -425,7 +425,12 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
                 try {
                     healthCheckResponses.add(healthCheck.call());
                 } catch (IllegalStateException ise) {
-                    healthCheckResponses.add(performHealthCheckInApplicationContext(healthChecksEntry.getKey(), healthCheck));
+                    // If WebComponentInvocation is not present, the app is not ready eg. mid-deployment and the
+                    // HealthCheck call should not be made.
+                    ApplicationInfo appInfo = applicationRegistry.get(healthChecksEntry.getKey());
+                    if (createWebComponentInvocation(appInfo).isPresent()) {
+                        healthCheckResponses.add(performHealthCheckInApplicationContext(healthChecksEntry.getKey(), healthCheck));
+                    }
                 } catch (Exception ex) {
                     LOG.log(WARNING, "Exception executing HealthCheck : " + healthCheck.getClass().getCanonicalName(), ex);
                     // If there's any issue, set the response to an error
