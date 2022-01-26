@@ -43,10 +43,12 @@ import fish.payara.security.api.CertificateCredential;
 import java.security.cert.X509Certificate;
 import jakarta.security.enterprise.CallerPrincipal;
 import jakarta.security.enterprise.credential.AbstractClearableCredential;
+import javax.security.auth.x500.X500Principal;
 
 /**
  *
  * @author Gaurav Gupta
+ * @author Ondro Mihalyi
  */
 public class CertificateCredentialImpl extends AbstractClearableCredential implements CertificateCredential {
 
@@ -66,7 +68,7 @@ public class CertificateCredentialImpl extends AbstractClearableCredential imple
 
     @Override
     public CallerPrincipal getPrincipal() {
-        return new CallerPrincipal(certificates[0].getIssuerDN().getName());
+        return new CallerPrincipal(certificates[0].getIssuerX500Principal().getName(X500Principal.RFC2253));
     }
 
     @Override

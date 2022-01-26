@@ -48,7 +48,7 @@
     <parent>
         <groupId>fish.payara.server.internal.security</groupId>
         <artifactId>securitymodule</artifactId>
-        <version>6.2021.1.Alpha2-SNAPSHOT</version>
+        <version>6.2022.1.Alpha2-SNAPSHOT</version>
     </parent>
     <artifactId>security-ee</artifactId>
     <packaging>glassfish-jar</packaging>
@@ -236,6 +236,11 @@
         <dependency>
             <groupId>jakarta.authorization</groupId>
             <artifactId>jakarta.authorization-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.security.enterprise</groupId>
+            <artifactId>jakarta.security.enterprise-api</artifactId>
+            <scope>provided</scope>
         </dependency>
          <dependency>
             <groupId>fish.payara.server.internal.security</groupId>

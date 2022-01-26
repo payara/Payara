@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2016-2019] [Payara Foundation and/or affiliates]
+//Portions Copyright [2016-2022] [Payara Foundation and/or affiliates]
 package org.glassfish.deployment.common;
 
 import org.objectweb.asm.*;
@@ -70,7 +70,7 @@ public class AnnotationScanner extends ClassVisitor {
     private static final String FAILED_ANNOTATION_SCAN = "NCLS-DEPLOYMENT-00003";
 
     public AnnotationScanner() {
-        super(Opcodes.ASM5);
+        super(Opcodes.ASM9);
     }
 
     public void visit(int version,

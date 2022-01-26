@@ -96,6 +96,7 @@ public class LoggingConfigImpl implements LoggingConfig {
         DEFAULT_LOG_PROPERTIES.put(PY_FILE_HANDLER + ".compressOnRotation", "false");
         DEFAULT_LOG_PROPERTIES.put(GF_FILE_HANDLER + ".logStandardStreams", "true");
         DEFAULT_LOG_PROPERTIES.put(PY_FILE_HANDLER + ".formatter", "com.sun.enterprise.server.logging.ODLLogFormatter");
+        DEFAULT_LOG_PROPERTIES.put(GF_FILE_HANDLER + ".fastLogging", "false");
     }
 
     @Inject

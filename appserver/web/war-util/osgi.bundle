@@ -37,11 +37,13 @@
 # only if the new code is made subject to such option by the copyright
 # holder.
 #
+# Portions Copyright 2021 Payara Foundation and/or its affiliates
 
 -exportcontents: \
                         com.sun.enterprise.glassfish.web; \
                         org.glassfish.web.loader; \
                         org.glassfish.web.util; \
+                        fish.payara.web.loader; \
                         com.sun.logging.enterprise.system.container.web; version=${project.osgi.version}
 
 # Normally Import-Package is not required, as the default value of *

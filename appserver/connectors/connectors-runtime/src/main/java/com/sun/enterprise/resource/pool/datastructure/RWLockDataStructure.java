@@ -37,19 +37,25 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2021] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.resource.pool.datastructure;
 
-import com.sun.enterprise.resource.allocator.ResourceAllocator;
-import com.sun.enterprise.resource.ResourceHandle;
-import com.sun.enterprise.resource.pool.ResourceHandler;
-import com.sun.enterprise.resource.pool.datastructure.strategy.ResourceSelectionStrategy;
 import com.sun.appserv.connectors.internal.api.PoolingException;
+import com.sun.enterprise.resource.ResourceHandle;
+import com.sun.enterprise.resource.allocator.ResourceAllocator;
+import com.sun.enterprise.resource.pool.ResourceHandler;
 import com.sun.logging.LogDomains;
 
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.Iterator;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
+import java.util.List;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -59,97 +65,87 @@ import java.util.logging.Logger;
  */
 public class RWLockDataStructure implements DataStructure {
 
-    private ResourceHandler handler;
-    private ResourceSelectionStrategy strategy;
+    private final ResourceHandler handler;
     private int maxSize;
 
-    private final ArrayList<ResourceHandle> resources;
-    private ReentrantReadWriteLock reentrantLock = new ReentrantReadWriteLock();
-    private ReentrantReadWriteLock.ReadLock readLock = reentrantLock.readLock();
-    private ReentrantReadWriteLock.WriteLock writeLock = reentrantLock.writeLock();
+    private final List<ResourceHandle> allResources;
+    private final Deque<ResourceHandle> freeResources;
 
-    protected final static Logger _logger =
-            LogDomains.getLogger(RWLockDataStructure.class,LogDomains.RSR_LOGGER);
+    private final ReentrantReadWriteLock reentrantLock = new ReentrantReadWriteLock();
+    private final ReentrantReadWriteLock.ReadLock readLock = reentrantLock.readLock();
+    private final ReentrantReadWriteLock.WriteLock writeLock = reentrantLock.writeLock();
 
-    public RWLockDataStructure(String parameters, int maxSize,
-                                              ResourceHandler handler, String strategyClass) {
-        resources = new ArrayList<ResourceHandle>((maxSize > 1000) ? 1000 : maxSize);
+    private final AtomicInteger remainingCapacity;
+
+    protected static final Logger _logger = LogDomains.getLogger(RWLockDataStructure.class,LogDomains.RSR_LOGGER);
+
+    public RWLockDataStructure(int maxSize, ResourceHandler handler) {
+        allResources = new ArrayList<>(Math.min(maxSize, 1000));
+        freeResources = new ArrayDeque<>(Math.min(maxSize, 1000));
         this.maxSize = maxSize;
         this.handler = handler;
-        initializeStrategy(strategyClass);
+        this.remainingCapacity = new AtomicInteger(maxSize);
         if(_logger.isLoggable(Level.FINEST)) {
             _logger.log(Level.FINEST, "pool.datastructure.rwlockds.init");
         }
     }
 
-    private void initializeStrategy(String strategyClass) {
-        //TODO
-    }
-
     /**
      * {@inheritDoc}
      */
-    public int addResource(ResourceAllocator allocator, int count) throws PoolingException {
+    public int addResource(final ResourceAllocator allocator, int count) throws PoolingException {
         int numResAdded = 0;
-        writeLock.lock();
-        //for now, coarser lock. finer lock needs "resources.size() < maxSize()" once more.
-        try {
-            for (int i = 0; i < count && resources.size() < maxSize; i++) {
-                ResourceHandle handle = handler.createResource(allocator);
-                resources.add(handle);
+        for (int i = 0; i < count && canGrow(); i++) {
+            try {
+                final ResourceHandle handle = handler.createResource(allocator);
+                doLockSecured(() -> {
+                    allResources.add(handle);
+                    freeResources.offerLast(handle);
+                }, writeLock);
                 numResAdded++;
+            } catch (Exception e) {
+                increaseRemainingCapacity();
+                throw new PoolingException(e.getMessage(), e);
             }
-        } catch (Exception e) {
-            PoolingException pe = new PoolingException(e.getMessage());
-            pe.initCause(e);
-            throw pe;
-        } finally {
-            writeLock.unlock();
         }
         return numResAdded;
+    }
+
+    private boolean canGrow() {
+        int capacity = remainingCapacity.getAndUpdate((x) -> x > 0 ? x - 1 : 0);
+        return capacity > 0;
+    }
+
+    private void increaseRemainingCapacity() {
+        remainingCapacity.incrementAndGet();
     }
 
     /**
      * {@inheritDoc}
      */
     public ResourceHandle getResource() {
-        readLock.lock();
-        for(int i=0; i<resources.size(); i++){
-            ResourceHandle h = resources.get(i);
-            if (!h.isBusy()) {
-                readLock.unlock();
-                writeLock.lock();
-                try {
-                    if (!h.isBusy()) {
-                        h.setBusy(true);
-                        return h;
-                    } else {
-                        readLock.lock();
-                        continue;
-                    }
-                }finally {
-                    writeLock.unlock();
-                }
-            } else {
-                continue;
+        return doLockSecured(() -> {
+            final ResourceHandle resourceHandle = freeResources.pollFirst();
+            if (resourceHandle != null) {
+                resourceHandle.setBusy(true);
             }
-        }
-        readLock.unlock();
-        return null;
+            return resourceHandle;
+        }, writeLock);
     }
 
     /**
      * {@inheritDoc}
      */
     public void removeResource(ResourceHandle resource) {
-        boolean removed = false;
-        writeLock.lock();
-        try {
-            removed = resources.remove(resource);
-        } finally {
-            writeLock.unlock();
-        }
-        if(removed) {
+        boolean removed = doLockSecured(() -> {
+            final boolean removedResource = allResources.remove(resource);
+            if (removedResource) {
+                freeResources.remove(resource);
+                increaseRemainingCapacity();
+            }
+            return removedResource;
+        }, writeLock);
+        if (removed) {
             handler.deleteResource(resource);
         }
     }
@@ -157,72 +153,80 @@ public class RWLockDataStructure implements DataStructure {
     /**
      * {@inheritDoc}
      */
-    public void returnResource(ResourceHandle resource) {
-        writeLock.lock();
-        try{
+    public void returnResource(final ResourceHandle resource) {
+        doLockSecured(() -> {
             resource.setBusy(false);
-        }finally{
-            writeLock.unlock();
-        }
+            freeResources.offerFirst(resource);
+        }, writeLock);
     }
 
     /**
      * {@inheritDoc}
      */
     public int getFreeListSize() {
-        //inefficient implementation.
-        int free = 0;
-        readLock.lock();
-        try{
-            Iterator it = resources.iterator();
-            while (it.hasNext()) {
-                ResourceHandle rh = (ResourceHandle)it.next();
-                if(!rh.isBusy()){
-                    free++;
-                }
-            }
-        }finally{
-            readLock.unlock();
-        }
-        return free;
+        return doLockSecured(freeResources::size, readLock);
     }
 
     /**
      * {@inheritDoc}
      */
     public void removeAll() {
-        writeLock.lock();
-        try {
-            Iterator it = resources.iterator();
-            while (it.hasNext()) {
-                handler.deleteResource((ResourceHandle) it.next());
-                it.remove();
-            }
-        } finally {
-            writeLock.unlock();
+        final List<ResourceHandle> removedResources = new ArrayList<>();
+        doLockSecured(() -> {
+            removedResources.addAll(allResources);
+            allResources.clear();
+            freeResources.clear();
+            remainingCapacity.set(maxSize);
+        }, writeLock);
+        for(ResourceHandle resourceHandle : removedResources) {
+            handler.deleteResource(resourceHandle);
         }
-        resources.clear();
     }
 
     /**
      * {@inheritDoc}
      */
     public int getResourcesSize() {
-        return resources.size();
+        return doLockSecured(allResources::size, readLock);
     }
 
     /**
-     * Set maxSize based on the new max pool size set on the connection pool 
-     * during a reconfiguration. 
-     * 
+     * Set maxSize based on the new max pool size set on the connection pool
+     * during a reconfiguration.
+     *
      * @param maxSize
      */
     public void setMaxSize(int maxSize) {
-        this.maxSize = maxSize;
+        doLockSecured(() -> {
+            int delta = maxSize - this.maxSize;
+            remainingCapacity.getAndUpdate(x -> x + delta);
+            // remaining capacity might be negative after this, but its up to ConnectionPool to remove some of the resources
+            // before asking for new ones
+            this.maxSize = maxSize;
+        }, writeLock);
     }
 
     @Override
     public ArrayList<ResourceHandle> getAllResources() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
+
+    private void doLockSecured(Runnable lockSecuredProc, Lock lock) {
+        lock.lock();
+        try {
+            lockSecuredProc.run();
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    private <T> T doLockSecured(Supplier<T> lockSecuredFunc, Lock lock) {
+        lock.lock();
+        try {
+            return lockSecuredFunc.get();
+        } finally {
+            lock.unlock();
+        }
+    }
+
 }

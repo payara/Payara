@@ -1,4 +1,4 @@
-Thank you for downloading Payara Server 5.2021.3!
+Thank you for downloading Payara Server 6.2022.1.Alpha2!
 
 Here are a few short steps to get you started...
 
@@ -54,7 +54,7 @@ Make sure to also check the Payara Server 5.2021.3 Release Notes as they contain
 5. Documentation
 ================
 
-Payara Server 5.2021.3 Release Notes: https://docs.payara.fish/docs/5.2021.3/release-notes/release-notes-2020-7.html
+Payara Server 6.2022.1.Alpha2 Release Notes: https://docs.payara.fish/docs/6.2022.1.Alpha2/release-notes/release-notes-2022-1-alpha2.html
 
 Payara Server Documentation: https://docs.payara.fish/
 

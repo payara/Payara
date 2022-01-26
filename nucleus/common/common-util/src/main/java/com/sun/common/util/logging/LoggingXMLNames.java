@@ -72,6 +72,8 @@ public class LoggingXMLNames {
     public static final String logFilter = "log-filter";
     
     public static final String logToFile = "log-to-file";
+
+    public static final String fastLogging = "fast-logging";
     
     public static final String payaraNotificationLogToFile = "payara-notification-log-to-file";
 
@@ -137,6 +139,7 @@ public class LoggingXMLNames {
                 put(logToFile, LoggingPropertyNames.logToFile);
                 put(payaraNotificationLogToFile, LoggingPropertyNames.payaraNotificationLogToFile);
                 put(logToConsole, LoggingPropertyNames.logToConsole);
+                put(fastLogging, LoggingPropertyNames.fastLogging);
                 put(alarms, LoggingPropertyNames.alarms);
                 put(root, LogDomains.DOMAIN_ROOT + LEVEL);
                 put(server, LogDomains.SERVER_LOGGER + LEVEL);

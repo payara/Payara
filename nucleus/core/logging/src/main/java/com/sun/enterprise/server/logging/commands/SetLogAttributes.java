@@ -140,6 +140,7 @@ public class SetLogAttributes implements AdminCommand {
         "com.sun.enterprise.server.logging.GFFileHandler.multiLineMode",
         "com.sun.enterprise.server.logging.GFFileHandler.compressOnRotation",
         "com.sun.enterprise.server.logging.GFFileHandler.logStandardStreams",
+        "com.sun.enterprise.server.logging.GFFileHandler.fastLogging",
         "com.sun.enterprise.server.logging.UniformLogFormatter.ansiColor",
         "com.sun.enterprise.server.logging.UniformLogFormatter.infoColor",
         "com.sun.enterprise.server.logging.UniformLogFormatter.warnColor",
