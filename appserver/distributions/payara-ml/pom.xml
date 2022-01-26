@@ -40,13 +40,13 @@
     holder.
 
 -->
-<!-- Portions Copyright [2016-2020] [Payara Foundation] -->
+<!-- Portions Copyright [2016-2022] [Payara Foundation] -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>fish.payara.distributions</groupId>
         <artifactId>distributions</artifactId>
-        <version>6.2021.1.Alpha2-SNAPSHOT</version>
+        <version>6.2022.1.Alpha2-SNAPSHOT</version>
     </parent>
     <artifactId>payara-ml</artifactId>
     <name>Payara Multi-Language Distribution</name>
@@ -61,6 +61,26 @@
                 <executions>
                     <execution>
                         <id>clean-domain</id>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>subtitute-distribution-property</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <tasks>
+                                <property name="distribution"
+                                          value="payara-ml"/>
+                                <ant antfile="../distributions.xml"
+                                     target="set-distribution"/>
+                            </tasks>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

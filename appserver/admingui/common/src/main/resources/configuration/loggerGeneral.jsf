@@ -129,6 +129,10 @@
                 <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.logAttributes['com.sun.enterprise.server.logging.GFFileHandler.multiLineMode']}"  selectedValue="true" />
            </sun:property>
 
+          <sun:property id="fastLogging"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.fastLogging}" helpText="$resource{i18nc.log.fastLoggingHelp}">
+              <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.logAttributes['com.sun.enterprise.server.logging.GFFileHandler.fastLogging']}"  selectedValue="true" />
+          </sun:property>
+
            <sun:property id="consoleFormat"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.ConsoleLogFormat}" helpText="$resource{i18nc.log.ConsoleLogFormatHelp}">
                 <sun:dropDown id="consoleFormat" selected="#{pageSession.logAttributes['java.util.logging.ConsoleHandler.formatter']}"
                     labels={ "ULF","ODL","JSON"}

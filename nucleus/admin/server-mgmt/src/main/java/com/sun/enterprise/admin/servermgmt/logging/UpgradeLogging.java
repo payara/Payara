@@ -134,6 +134,7 @@ public class UpgradeLogging implements ConfigurationUpgrade, PostConstruct {
             logLevels.put("payara-notification-log-to-file", logService.getPayaraNotificationLogToFile());
             logLevels.put("log-to-console", logService.getLogToConsole());
             logLevels.put("log-rotation-limit-in-bytes", logService.getLogRotationLimitInBytes());
+            logLevels.put("fast-logging", logService.getFastLogging());
             logLevels.put("payara-notification-log-rotation-limit-in-bytes", logService.getPayaraNotificationLogRotationLimitInBytes());
             logLevels.put("log-rotation-timelimit-in-minutes", logService.getLogRotationTimelimitInMinutes());
             logLevels.put("payara-notification-log-rotation-timelimit-in-minutes", logService.getPayaraNotificationLogRotationTimelimitInMinutes());

@@ -39,6 +39,9 @@
  */
 package fish.payara.microprofile.healthcheck;
 
+import com.sun.enterprise.web.WebApplication;
+import com.sun.enterprise.web.WebComponentInvocation;
+import com.sun.enterprise.web.WebContainer;
 import static fish.payara.microprofile.healthcheck.HealthCheckType.LIVENESS;
 import static fish.payara.microprofile.healthcheck.HealthCheckType.READINESS;
 import static fish.payara.microprofile.healthcheck.HealthCheckType.STARTUP;
@@ -99,6 +102,10 @@ import fish.payara.monitoring.collect.MonitoringWatchCollector;
 import fish.payara.monitoring.collect.MonitoringWatchSource;
 import fish.payara.nucleus.healthcheck.configuration.Checker;
 import fish.payara.nucleus.healthcheck.events.PayaraHealthCheckServiceEvents;
+import java.util.Optional;
+import org.glassfish.api.invocation.InvocationException;
+import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.internal.data.ApplicationInfo;
 
 /**
  * Service that handles the registration, execution, and response of MicroProfile HealthChecks.
@@ -114,6 +121,9 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
 
     @Inject
     private ApplicationRegistry applicationRegistry;
+
+    @Inject
+    private InvocationManager invocationManager;
 
     @Inject
     private MicroprofileHealthCheckConfiguration configuration;
@@ -445,12 +455,26 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
             String appName, HealthCheck healthCheck) {
         Thread currentThread = Thread.currentThread();
         ClassLoader originalClassLoader = currentThread.getContextClassLoader();
+        Optional<WebComponentInvocation> wciOpt = Optional.empty();
         try {
-            currentThread.setContextClassLoader(applicationRegistry.get(appName).getAppClassLoader());
+            ApplicationInfo appInfo = applicationRegistry.get(appName);
+            currentThread.setContextClassLoader(appInfo.getAppClassLoader());
+            wciOpt = createWebComponentInvocation(appInfo);
+            wciOpt.ifPresent(wci -> invocationManager.preInvoke(wci));
             return healthCheck.call();
         } finally {
+            wciOpt.ifPresent(wci -> invocationManager.postInvoke(wci));
             currentThread.setContextClassLoader(originalClassLoader);
         }
+    }
+
+    private Optional<WebComponentInvocation> createWebComponentInvocation(ApplicationInfo appInfo) throws InvocationException {
+        return appInfo.getModuleInfos().stream()
+                .map(mi -> mi.getEngineRefForContainer(WebContainer.class))
+                .filter(engineRef -> engineRef != null)
+                .flatMap(engineRef -> ((WebApplication) engineRef.getApplicationContainer()).getWebModules().stream())
+                .findFirst()
+                .map(wm -> new WebComponentInvocation(wm));
     }
 
     private void constructResponse(HttpServletResponse httpResponse,
