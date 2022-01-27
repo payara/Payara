@@ -40,7 +40,8 @@
     holder.
 
 -->
-<!--"Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]" -->
+<!-- Portions Copyright 2016-2022 Payara Foundation and/or its affiliates -->
+
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -108,7 +109,7 @@
     <properties>
         <!-- on Hudson and RE, ${build.number} gets replaced by real build ID -->
         <build.id>${build.number}</build.id>
-        <jdk.version>1.8.0</jdk.version>
+        <jdk.version>11</jdk.version>
         <javadoc.skip>false</javadoc.skip>
 
         <maven.site.plugin.version>3.7.1</maven.site.plugin.version>
@@ -470,7 +471,7 @@
                             <rules>
                                 <requireJavaVersion>
                                     <version>[${jdk.version},18.9)</version>
-                                    <message>You need JDK8 (${jdk.version}) or JDK11</message>
+                                    <message>You need at least JDK11</message>
                                 </requireJavaVersion>
                                 <requireMavenVersion>
                                     <version>[3.0.3,3.2.1],[3.2.3,)</version>
@@ -832,6 +833,11 @@ Parent is ${project.parent}</echo>
                 <artifactId>glassfish-corba-internal-api</artifactId>
                 <version>${glassfish-corba.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.glassfish.corba</groupId>
+                <artifactId>rmic</artifactId>
+                <version>${glassfish-corba.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>org.glassfish.pfl</groupId>
@@ -982,43 +988,6 @@ Parent is ${project.parent}</echo>
             <modules>
                 <module>tests</module>
             </modules>
-        </profile>
-
-
-        <profile>
-            <id>default</id>
-            <activation>
-                <file>
-                    <exists>${java.home}/../lib/tools.jar</exists>
-                </file>
-            </activation>
-            <dependencies>
-                <dependency>
-                    <groupId>com.sun</groupId>
-                    <artifactId>tools-jar</artifactId>
-                    <version>1</version>
-                    <scope>system</scope>
-                    <systemPath>${java.home}/../lib/tools.jar</systemPath>
-                </dependency>
-            </dependencies>
-        </profile>
-
-        <profile>
-            <id>mac</id>
-            <activation>
-                <file>
-                    <exists>${java.home}/../Classes/classes.jar</exists>
-                </file>
-            </activation>
-            <dependencies>
-                <dependency>
-                    <groupId>com.sun</groupId>
-                    <artifactId>tools-jar</artifactId>
-                    <version>1</version>
-                    <scope>system</scope>
-                    <systemPath>${java.home}/../Classes/classes.jar</systemPath>
-                </dependency>
-            </dependencies>
         </profile>
 
         <profile>

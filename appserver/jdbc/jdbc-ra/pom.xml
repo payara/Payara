@@ -97,7 +97,6 @@
 
   <modules>
     <module>jdbc-core</module>
-    <module>jdbc30</module>
     <module>jdbc40</module>
     <module>jdbc-ra-distribution</module>
     <module>jdbc-core-l10n</module>

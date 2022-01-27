@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2022 Payara Foundation and/or its affiliates
 /*
  * WebServiceTesterServlet.java
  *
@@ -47,25 +47,29 @@
 package org.glassfish.webservices.monitoring;
 
 import com.sun.enterprise.deployment.WebServiceEndpoint;
-import com.sun.enterprise.util.JDK;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.tools.ws.spi.WSToolsObjectFactory;
-import org.glassfish.jaxb.runtime.api.JAXBRIContext;
-import org.glassfish.webservices.LogUtils;
-
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.xml.ws.Service;
+import jakarta.xml.ws.WebEndpoint;
+import org.glassfish.jaxb.runtime.api.JAXBRIContext;
+import org.glassfish.webservices.LogUtils;
+
 import javax.xml.namespace.QName;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
-import jakarta.xml.ws.Service;
-import jakarta.xml.ws.WebEndpoint;
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -534,10 +538,7 @@ public class WebServiceTesterServlet extends HttpServlet {
             logger.log(Level.SEVERE, LogUtils.CREATE_DIR_FAILED, classesDir);
         }
 
-        String[] wsimportArgs = new String[8];
-        if (JDK.getMajor() >= 9) {
-            wsimportArgs = new String[14];
-        }
+        String[] wsimportArgs = new String[14];
         wsimportArgs[0] = "-d";
         wsimportArgs[1] = classesDir.getAbsolutePath();
         wsimportArgs[2] = "-keep";
@@ -546,15 +547,12 @@ public class WebServiceTesterServlet extends HttpServlet {
         wsimportArgs[5] = "-target";
         wsimportArgs[6] = "2.1";
         wsimportArgs[7] = "-extension";
-        // If JDK version is 9 or higher, we need to add the JWS and related JARs
-        if (JDK.getMajor() >= 9) {
-            String modulesDir = System.getProperty("com.sun.aas.installRoot") + File.separator + "modules" + File.separator;
-            wsimportArgs[8] = modulesDir + "jakarta.jws-api.jar";
-            wsimportArgs[10] = modulesDir + "webservices-osgi.jar";
-            wsimportArgs[11] = modulesDir + "jaxb-osgi.jar";
-            wsimportArgs[12] = modulesDir + "jakarta.xml.ws-api.jar";
-            wsimportArgs[13] = modulesDir + "jakarta.activation-api.jar";
-        }
+        String modulesDir = System.getProperty("com.sun.aas.installRoot") + File.separator + "modules" + File.separator;
+        wsimportArgs[8] = modulesDir + "jakarta.jws-api.jar";
+        wsimportArgs[10] = modulesDir + "webservices-osgi.jar";
+        wsimportArgs[11] = modulesDir + "jaxb-osgi.jar";
+        wsimportArgs[12] = modulesDir + "jakarta.xml.ws-api.jar";
+        wsimportArgs[13] = modulesDir + "jakarta.activation-api.jar";
         WSToolsObjectFactory tools = WSToolsObjectFactory.newInstance();
         logger.log(Level.INFO, LogUtils.WSIMPORT_INVOKE, wsdlLocation);
         boolean success = tools.wsimport(System.out, wsimportArgs);

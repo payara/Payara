@@ -37,28 +37,26 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
+// Portions Copyright 2018-2022 Payara Foundation and/or affiliates
 
 package org.glassfish.appclient.client;
 
 import com.sun.enterprise.util.LocalStringManager;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.OS;
+import org.glassfish.appclient.client.acc.UserError;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
-import static java.util.Objects.nonNull;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import static java.util.stream.Collectors.joining;
 import java.util.stream.Stream;
-import org.glassfish.appclient.client.acc.UserError;
 
-import com.sun.enterprise.util.JDK;
-import com.sun.enterprise.util.OS;
-import java.util.Arrays;
+import static java.util.Objects.nonNull;
+import static java.util.stream.Collectors.joining;
 
 /**
  *
@@ -115,9 +113,6 @@ public class CLIBootstrap {
 
     private final static String[] ENV_VARS = { "_AS_INSTALL", "APPCPATH", "VMARGS" };
 
-    private final static String EXT_DIRS_INTRODUCER = "-Djava.ext.dirs";
-    private final static String ENDORSED_DIRS_INTRODUCER = "-Djava.endorsed.dirs";
-
     private static final LocalStringManager localStrings = new LocalStringManagerImpl(CLIBootstrap.class);
 
     private JavaInfo java;
@@ -128,8 +123,7 @@ public class CLIBootstrap {
      * set up during init with various subtypes of command line elements
      */
     private CommandLineElement
-            extDirs, endorsedDirs, accValuedOptions, accUnvaluedOptions,
-            jvmPropertySettings, jvmValuedOptions, otherJVMOptions, arguments;
+            accValuedOptions, accUnvaluedOptions, jvmPropertySettings, jvmValuedOptions, otherJVMOptions, arguments;
 
     /** arguments passed to the ACC Java agent */
     private final AgentArgs agentArgs = new AgentArgs();
@@ -239,16 +233,6 @@ public class CLIBootstrap {
          * Assign the various command line element matchers.  See the
          * descriptions of each subtype for what each is used for.
          */
-        extDirs = new OverridableDefaultedPathBasedOption(
-                EXT_DIRS_INTRODUCER,
-                userVMArgs.evExtDirs,
-                java.ext().getAbsolutePath(),
-                gfInfo.extPaths());
-        endorsedDirs = new OverridableDefaultedPathBasedOption(
-                ENDORSED_DIRS_INTRODUCER,
-                userVMArgs.evEndorsedDirs,
-                java.endorsed().getAbsolutePath(),
-                gfInfo.endorsedPaths());
         accValuedOptions = new ACCValuedOption(ACC_VALUED_OPTIONS_PATTERN);
         accUnvaluedOptions = new ACCUnvaluedOption(ACC_UNVALUED_OPTIONS_PATTERN);
         jvmPropertySettings = new JVMOption("-D.*", userVMArgs.evJVMPropertySettings);
@@ -268,9 +252,7 @@ public class CLIBootstrap {
          * Add the elements in this order so the regex patterns will match the correct elements. In this arrangement, the
          * patterns are from most specific to most general.
          */
-        elementsInScanOrder = new CommandLineElement[] {
-                extDirs,
-                endorsedDirs,
+        elementsInScanOrder = new CommandLineElement[]{
                 accValuedOptions,
                 accUnvaluedOptions,
                 jvmValuedOptions,
@@ -282,32 +264,15 @@ public class CLIBootstrap {
         /*
          * Add the elements in this order so they appear in the generated java command in the correct positions.
          */
-        //In JDK 9 and later ext and endorsed directory removed.
-        int major = JDK.getMajor();
-        if (major >= 9) {
-            elementsInOutputOrder = new CommandLineElement[]{
-                    jvmValuedOptions,
-                    jvmPropertySettings,
-                    otherJVMOptions,
-                    accUnvaluedOptions,
-                    accValuedOptions,
-                    jvmMainSetting,
-                    arguments
-            };
-        } else {
-            elementsInOutputOrder = new CommandLineElement[]{
-                    jvmValuedOptions,
-                    jvmPropertySettings,
-                    otherJVMOptions,
-                    extDirs,
-                    endorsedDirs,
-                    accUnvaluedOptions,
-                    accValuedOptions,
-                    jvmMainSetting,
-                    arguments
-            };
-        }
-        
+        elementsInOutputOrder = new CommandLineElement[]{
+                jvmValuedOptions,
+                jvmPropertySettings,
+                otherJVMOptions,
+                accUnvaluedOptions,
+                accValuedOptions,
+                jvmMainSetting,
+                arguments
+        };
     }
 
     /**
@@ -807,88 +772,6 @@ public class CLIBootstrap {
     }
 
     /**
-     * A JVM option that uses values from the GlassFish installation plus default value(s) from the Java installation. If
-     * the user specifies one of these options on the command line then we discard the Java installation values and append
-     * the GlassFish values to the user's values.
-     * <p>
-     * This is used for handling java.ext.dirs and java.endorsed.dirs property
-     * settings. If the user does not specify the property then the user would
-     * expect the Java-provided directories to be used. We need to
-     * specify the GlassFish ones, so that means we need combine the GlassFish
-     * ones and the default JVM ones explicitly.
-     * <p>
-     * On the other hand, if the user specifies the property then the JVM defaults are out of play. We still need the
-     * GlassFish directories to be used though.
-     */
-    private class OverridableDefaultedPathBasedOption extends JVMOption {
-
-        private final String defaultValue;
-        private final List<String> gfValues;
-        private final String introducer;
-        private boolean hasCommandLineValueAppeared;
-
-        OverridableDefaultedPathBasedOption(String introducer, CommandLineElement settingsFromEnvVar, String defaultValue, String... gfValues) {
-            super(introducer + "=.*", null);
-            
-            /*
-             * Preload the values for this option from the ones the user provides in the environment variable, if any. These values
-             * will be overwritten if the user also provides values on the command line.
-             */
-            if (settingsFromEnvVar != null) {
-                values.addAll(settingsFromEnvVar.values);
-            }
-            this.introducer = introducer;
-            this.defaultValue = defaultValue;
-            this.gfValues = Arrays.asList(gfValues);
-        }
-
-        @Override
-        int processValue(String[] args, int slot) throws UserError {
-            /*
-             * Once we see a user-provided value on the command line itself for the first time, clear out any pre-loaded values from
-             * the environment variable.
-             */
-            if (!hasCommandLineValueAppeared) {
-                values.clear();
-                hasCommandLineValueAppeared = true;
-            }
-            values.addAll(Arrays.asList(args[slot++].substring(introducer.length() + 1).split(java.pathSeparator())));
-            return slot;
-        }
-
-        @Override
-        boolean format(StringBuilder commandLine) {
-            List<String> combinedValues = new ArrayList<String>();
-            
-            if (values.isEmpty()) {
-                // The user did not specify this property, so we use the GlassFish value(s) plus the JVM default.
-                
-                combinedValues.addAll(gfValues);
-                combinedValues.add(defaultValue);
-            } else {
-                // The user did specify this property, so we use the user's value plus the GlassFish value(s).
-                
-                combinedValues.addAll(values);
-                combinedValues.addAll(gfValues);
-            }
-            
-            commandLine.append(introducer).append("=");
-            
-            boolean needSep = false;
-            
-            for (String value : combinedValues) {
-                if (needSep) {
-                    commandLine.append(java.pathSeparator());
-                }
-                commandLine.append(quoteSuppressTokenSubst(value));
-                needSep = true;
-            }
-            
-            return true;
-        }
-    }
-
-    /**
      * Processes the user-provided command-line elements and creates the resulting output string.
      *
      * @param args
@@ -1077,16 +960,6 @@ public class CLIBootstrap {
             return configXMLFile;
         }
 
-        String[] endorsedPaths() {
-            return new String[] {
-                    new File(lib, "endorsed").getAbsolutePath(),
-                    new File(modules, "endorsed").getAbsolutePath()};
-        }
-
-        String extPaths() {
-            return new File(lib, "ext").getAbsolutePath();
-        }
-
         String agentJarPath() {
             return new File(lib, "gf-client.jar").getAbsolutePath();
         }
@@ -1140,14 +1013,6 @@ public class CLIBootstrap {
             return System.getenv(ACCJava_ENV_VAR_NAME);
         }
 
-        File ext() {
-            return new File(lib(), "ext");
-        }
-
-        File endorsed() {
-            return new File(lib(), "endorsed");
-        }
-
         File lib() {
             return new File(jreHome, "lib");
         }
@@ -1168,8 +1033,6 @@ public class CLIBootstrap {
      */
     class UserVMArgs {
 
-        private CommandLineElement evExtDirs;
-        private CommandLineElement evEndorsedDirs;
         private CommandLineElement evJVMPropertySettings;
         private CommandLineElement evJVMValuedOptions;
         private CommandLineElement evOtherJVMOptions;
@@ -1181,18 +1044,6 @@ public class CLIBootstrap {
             if (isDebug) {
                 System.err.println("VMARGS = " + (vmargs == null ? "null" : vmargs));
             }
-
-            evExtDirs = new OverridableDefaultedPathBasedOption(
-                    EXT_DIRS_INTRODUCER,
-                    null,
-                    java.ext().getAbsolutePath(),
-                    gfInfo.extPaths());
-
-            evEndorsedDirs = new OverridableDefaultedPathBasedOption(
-                    ENDORSED_DIRS_INTRODUCER,
-                    null,
-                    java.endorsed().getAbsolutePath(),
-                    gfInfo.endorsedPaths());
           
             evJVMPropertySettings = new JVMOption("-D.*", null);
             evJVMValuedOptions = new JVMValuedOption(JVM_VALUED_OPTIONS_PATTERN, null);
@@ -1208,8 +1059,6 @@ public class CLIBootstrap {
         }
 
         private void initEVCommandLineElements() {
-            evElements.add(evExtDirs);
-            evElements.add(evEndorsedDirs);
             evElements.add(evJVMPropertySettings);
             evElements.add(evJVMValuedOptions);
             evElements.add(evOtherJVMOptions);

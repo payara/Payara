@@ -40,14 +40,13 @@
     holder.
 
 -->
+<!-- Portions Copyright 2022 Payara Foundation and/or its affiliates -->
 
 <!DOCTYPE resources PUBLIC "-//Sun Microsystems Inc.//DTD Application Server 9.0 Domain//EN" "*<install directory>/lib/dtds/sun-resources_1_3.dtd*">
 
 <!--
     PostgreSQL JDBC Driver
 
-    The JAR file for the PostgreSQL driver is postgresql-version.jdbc3.jar, 
-    for example, postgresql-8.1-405.jdbc3.jar
     For more information, see http://jdbc.postgresql.org
 
     To learn more on JDBC resources, pl. refer to JDBC resources chapter of admin guide.

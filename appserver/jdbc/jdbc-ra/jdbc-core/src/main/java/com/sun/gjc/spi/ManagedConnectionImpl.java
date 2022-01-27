@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates.]
+// Portions Copyright 2016-2022 Payara Foundation and/or its affiliates.
 
 package com.sun.gjc.spi;
 
@@ -320,7 +320,7 @@ public class ManagedConnectionImpl implements jakarta.resource.spi.ManagedConnec
      * Used by the container to change the association of an application-level
      * connection handle with a <code>ManagedConnectionImpl</code> instance.
      *
-     * @param connection <code>ConnectionHolder30</code> to be associated with
+     * @param connection <code>ConnectionHolder</code> to be associated with
      *                   this <code>ManagedConnectionImpl</code> instance
      * @throws ResourceException if the physical connection is no more
      *                           valid or the connection handle passed is null
@@ -851,21 +851,20 @@ public class ManagedConnectionImpl implements jakarta.resource.spi.ManagedConnec
     }
 
     /**
-     * This method is called by the <code>ConnectionHolder30</code> when its close method is
+     * This method is called by the <code>ConnectionHolder</code> when its close method is
      * called. This <code>ManagedConnection</code> instance  invalidates the connection handle
      * and sends a CONNECTION_CLOSED event to all the registered event listeners.
      *
      * @param e                  Exception that may have occured while closing the connection handle
-     * @param connHolder30Object <code>ConnectionHolder30</code> that has been closed
+     * @param connHolderObject <code>ConnectionHolder</code> that has been closed
      * @throws SQLException in case closing the sql connection got out of
      *                      <code>getConnection</code> on the underlying
      *                      <code>PooledConnection</code> throws an exception
      */
-    public void connectionClosed(Exception e, ConnectionHolder connHolder30Object) throws SQLException {
-
-        connHolder30Object.invalidate();
+    public void connectionClosed(Exception e, ConnectionHolder connHolderObject) throws SQLException {
+        connHolderObject.invalidate();
         decrementCount();
-        ce.setConnectionHandle(connHolder30Object);
+        ce.setConnectionHandle(connHolderObject);
 
         if (markedForRemoval && !transactionInProgress) {
             com.sun.appserv.connectors.internal.spi.BadConnectionEventListener bcel = (BadConnectionEventListener) listener;
@@ -878,7 +877,7 @@ public class ManagedConnectionImpl implements jakarta.resource.spi.ManagedConnec
     }
 
     /**
-     * This method is called by the <code>ConnectionHolder30</code> when it detects a connecion
+     * This method is called by the <code>ConnectionHolder</code> when it detects a connecion
      * related error.
      *
      * @param e                Exception that has occurred during an operation on the physical connection
@@ -935,7 +934,7 @@ public class ManagedConnectionImpl implements jakarta.resource.spi.ManagedConnec
      * Connection Handle object to this object if the active Connection
      * Handle is null.
      *
-     * @param ch <code>ConnectionHolder30</code> that requests this
+     * @param ch <code>ConnectionHolder</code> that requests this
      *           <code>ManagedConnection</code> instance whether
      *           it can be active or not
      * @throws SQLException in case the physical is not valid or

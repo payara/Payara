@@ -276,12 +276,12 @@ public class GSSUtils {
             _logger.log(Level.FINE, "Returning OID in DER format");
             _logger.log(Level.FINE, "    OID = " + id.toString());
         }
-
+        
         byte[] oid = id.getDER();
         if (_logger.isLoggable(Level.FINE)) {
             _logger.log(Level.FINE, "    DER OID: " + dumpHex(oid));
         }
-
+        
         return oid;
     }
 
@@ -327,7 +327,7 @@ public class GSSUtils {
             _logger.log(Level.FINE, "Mechanism independent token created: ");
             _logger.log(Level.FINE, dumpHex(token));
         }
-
+        
         return token;
     }
 
@@ -368,7 +368,7 @@ public class GSSUtils {
     private static int verifyTokenHeader(Oid oid, byte[] token) throws GSSException {
         int index = 0;
         _logger.log(Level.FINE, "Attempting to verify tokenheader in the mechanism independent token.");
-
+        
         // verify header
         if (token[index++] != 0x60)
             throw new GSSException(GSSException.DEFECTIVE_TOKEN);
@@ -387,7 +387,7 @@ public class GSSUtils {
             throw new GSSException(GSSException.DEFECTIVE_TOKEN);
 
         // add first two bytes to the MECH_OID_LEN
-        int oidlen = token[index+1] + 2;
+        int oidlen = token[index + 1] + 2;
         byte[] buf = new byte[oidlen];
 
         System.arraycopy(token, index, buf, 0, oidlen);

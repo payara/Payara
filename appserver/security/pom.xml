@@ -65,7 +65,6 @@
         <module>security-all</module>
         <module>jaspic-provider-framework</module>
         <module>jacc.provider.inmemory</module>
-        <module>jacc.provider.file</module>
         <module>webservices.security</module>
         <module>ejb.security</module>
         <module>appclient.security</module>

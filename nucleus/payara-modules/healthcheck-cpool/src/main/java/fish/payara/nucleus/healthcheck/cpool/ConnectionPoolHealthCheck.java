@@ -40,6 +40,7 @@
 package fish.payara.nucleus.healthcheck.cpool;
 
 import com.sun.enterprise.config.serverbeans.*;
+import com.sun.enterprise.config.serverbeans.Module;
 import com.sun.enterprise.connectors.util.ResourcesUtil;
 import com.sun.enterprise.resource.pool.PoolManager;
 import com.sun.enterprise.resource.pool.PoolStatus;

@@ -41,7 +41,7 @@
 
 -->
 
-<!--"Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]" -->
+<!-- Portions Copyright 2018-2022 Payara Foundation and/or its affiliates -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"> <modelVersion>4.0.0</modelVersion>
 
@@ -267,34 +267,6 @@
             <properties>
                 <test.gd>true</test.gd>
             </properties>
-        </profile>
-
-         <profile>
-            <id>tools_jar</id>
-            <activation>
-                <file>
-                    <exists>${java.home}/../lib/tools.jar</exists>
-                </file>
-            </activation>
-            <build>
-                <pluginManagement>
-                    <plugins>
-                        <plugin>
-                            <groupId>org.apache.maven.plugins</groupId>
-                            <artifactId>maven-antrun-plugin</artifactId>
-                            <dependencies>
-                                <dependency>
-                                    <groupId>com.sun</groupId>
-                                    <artifactId>tools-jar</artifactId>
-                                    <version>1</version>
-                                    <scope>system</scope>
-                                    <systemPath>${java.home}/../lib/tools.jar</systemPath>
-                                </dependency>
-                            </dependencies>
-                        </plugin>
-                    </plugins>
-                </pluginManagement>
-            </build>
         </profile>
 
         <profile>

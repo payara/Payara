@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2022 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,13 +39,12 @@
  */
 package com.sun.enterprise.admin.launcher;
 
-import com.sun.enterprise.universal.xml.MiniXmlParserException;
-import com.sun.enterprise.util.JDK;
+import org.junit.Assert;
+import org.junit.Test;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.junit.Assert;
-import org.junit.Test;
 
 /**
  *
@@ -70,10 +69,6 @@ public class JavaConfigTest {
         config.put("debug-options", DEBUG_CONFIG);
         JavaConfig javaConfig = new JavaConfig(config);
         List<String> debugOptions = javaConfig.getDebugOptions();
-        if (JDK.getMajor() >= 9) {
-            Assert.assertEquals("-agentlib:jdwp=transport=dt_socket,address=*:9009,server=y,suspend=n", debugOptions.get(0));
-        } else {
-            Assert.assertEquals(DEBUG_CONFIG, debugOptions.get(0));
-        }
+        Assert.assertEquals("-agentlib:jdwp=transport=dt_socket,address=*:9009,server=y,suspend=n", debugOptions.get(0));
     }
 }
