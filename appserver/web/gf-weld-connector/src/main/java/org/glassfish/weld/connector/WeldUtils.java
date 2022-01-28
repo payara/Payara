@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld.connector;
 
@@ -47,15 +47,11 @@ import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
-import java.lang.annotation.Documented;
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import javax.decorator.Decorator;
 import javax.ejb.MessageDriven;
@@ -114,51 +110,43 @@ public class WeldUtils {
      * <p>
      * Can be WAR, JAR, RAR or UNKNOWN.
      */
-    public static enum BDAType { WAR, JAR, RAR, UNKNOWN };
+    public enum BDAType { WAR, JAR, RAR, UNKNOWN };
 
-    protected static final List<String> cdiScopeAnnotations;
+    protected static final Set<String> cdiScopeAnnotations;
     static {
-        cdiScopeAnnotations = new ArrayList<String>();
-        cdiScopeAnnotations.add(Scope.class.getName());
-        cdiScopeAnnotations.add(NormalScope.class.getName());
-        cdiScopeAnnotations.add("javax.faces.view.ViewScoped");
-        cdiScopeAnnotations.add("javax.faces.flow.FlowScoped");
-        cdiScopeAnnotations.add(ConversationScoped.class.getName());
-        cdiScopeAnnotations.add(ApplicationScoped.class.getName());
-        cdiScopeAnnotations.add(SessionScoped.class.getName());
-        cdiScopeAnnotations.add(RequestScoped.class.getName());
-        cdiScopeAnnotations.add(Dependent.class.getName());
-        cdiScopeAnnotations.add(Singleton.class.getName());
-        cdiScopeAnnotations.add(Model.class.getName());
+        final HashSet<String> cdi = new HashSet<>();
+        cdi.add(Scope.class.getName());
+        cdi.add(NormalScope.class.getName());
+        cdi.add("javax.faces.view.ViewScoped");
+        cdi.add("javax.faces.flow.FlowScoped");
+        cdi.add(ConversationScoped.class.getName());
+        cdi.add(ApplicationScoped.class.getName());
+        cdi.add(SessionScoped.class.getName());
+        cdi.add(RequestScoped.class.getName());
+        cdi.add(Dependent.class.getName());
+        cdi.add(Singleton.class.getName());
+        cdi.add(Model.class.getName());
+
+        cdiScopeAnnotations = Collections.unmodifiableSet(cdi);
     }
 
-    protected static final List<String> cdiEnablingAnnotations;
+    protected static final Set<String> cdiEnablingAnnotations;
     static {
-        cdiEnablingAnnotations = new ArrayList<String>();
-
         // CDI scopes
-        cdiEnablingAnnotations.addAll(cdiScopeAnnotations);
+        final HashSet<String> cdi = new HashSet<>(cdiScopeAnnotations);
 
         // 1.2 updates
-       cdiEnablingAnnotations.add(Decorator.class.getName());
-       cdiEnablingAnnotations.add(Interceptor.class.getName());
-       cdiEnablingAnnotations.add(Stereotype.class.getName());
+        cdi.add(Decorator.class.getName());
+        cdi.add(Interceptor.class.getName());
+        cdi.add(Stereotype.class.getName());
 
         // EJB annotations
-        cdiEnablingAnnotations.add(MessageDriven.class.getName());
-        cdiEnablingAnnotations.add(Stateful.class.getName());
-        cdiEnablingAnnotations.add(Stateless.class.getName());
-        cdiEnablingAnnotations.add(javax.ejb.Singleton.class.getName());
-    }
+        cdi.add(MessageDriven.class.getName());
+        cdi.add(Stateful.class.getName());
+        cdi.add(Stateless.class.getName());
+        cdi.add(javax.ejb.Singleton.class.getName());
 
-    protected static final List<String> excludedAnnotationTypes = new ArrayList<String>();
-    static {
-        // These are excluded because they are not scope annotations, and they cause the recursive
-        // analysis of parent annotations to continue infinitely because they reference each other,
-        // and in some cases, they reference themselves.
-        excludedAnnotationTypes.add(Documented.class.getName());
-        excludedAnnotationTypes.add(Retention.class.getName());
-        excludedAnnotationTypes.add(Target.class.getName());
+        cdiEnablingAnnotations = Collections.unmodifiableSet(cdi);
     }
 
 
@@ -205,9 +193,7 @@ public class WeldUtils {
      * @return true, if there is at least one bean annotated with a qualified annotation in the specified path
      */
     public static boolean hasCDIEnablingAnnotations(DeploymentContext context, URI path) {
-        Set<URI> paths = new HashSet<URI>();
-        paths.add(path);
-        return hasCDIEnablingAnnotations(context, paths);
+        return hasCDIEnablingAnnotations(context, Collections.singleton(path));
     }
 
 
@@ -221,29 +207,22 @@ public class WeldUtils {
      * @return true, if there is at least one bean annotated with a qualified annotation in the specified paths
      */
     public static boolean hasCDIEnablingAnnotations(DeploymentContext context, Collection<URI> paths) {
-        List<String> result = new ArrayList<String>();
-
-        Types types = getTypes(context);
+        final Types types = getTypes(context);
         if (types != null) {
-            Iterator<Type> typesIter = types.getAllTypes().iterator();
-            while (typesIter.hasNext()) {
-                Type type = typesIter.next();
-                if (!(type instanceof AnnotationType)) {
-                    Iterator<AnnotationModel> annotations = type.getAnnotations().iterator();
-                    while (annotations.hasNext()) {
-                        AnnotationModel am = annotations.next();
-                        AnnotationType at = am.getType();
-                        if (isCDIEnablingAnnotation(at) && type.wasDefinedIn(paths)) {
-                            if (!result.contains(at.getName())) {
-                                result.add(at.getName());
-                            }
+            final Set<String> exclusions = new HashSet<>();
+            for (final Type type : types.getAllTypes()) {
+                if (!(type instanceof AnnotationType) && type.wasDefinedIn(paths)) {
+                    for (final AnnotationModel am : type.getAnnotations()) {
+                        final AnnotationType at = am.getType();
+                        if (isCDIEnablingAnnotation(at, exclusions)) {
+                            return true;
                         }
                     }
                 }
             }
         }
 
-        return !(result.isEmpty());
+        return false;
     }
 
 
@@ -256,29 +235,24 @@ public class WeldUtils {
      * @return An array of annotation type names; The array could be empty if none are found.
      */
     public static String[] getCDIEnablingAnnotations(DeploymentContext context) {
-        List<String> result = new ArrayList<String>();
+        final Set<String> result = new HashSet<>();
 
-        Types types = getTypes(context);
+        final Types types = getTypes(context);
         if (types != null) {
-            Iterator<Type> typesIter = types.getAllTypes().iterator();
-            while (typesIter.hasNext()) {
-                Type type = typesIter.next();
+            final Set<String> exclusions = new HashSet<>();
+            for (final Type type : types.getAllTypes()) {
                 if (!(type instanceof AnnotationType)) {
-                    Iterator<AnnotationModel> annotations = type.getAnnotations().iterator();
-                    while (annotations.hasNext()) {
-                        AnnotationModel am = annotations.next();
-                        AnnotationType at = am.getType();
-                        if (isCDIEnablingAnnotation(at)) {
-                            if (!result.contains(at.getName())) {
-                                result.add(at.getName());
-                            }
+                    for (final AnnotationModel am : type.getAnnotations()) {
+                        final AnnotationType at = am.getType();
+                        if (isCDIEnablingAnnotation(at, exclusions)) {
+                            result.add(at.getName());
                         }
                     }
                 }
             }
         }
 
-        return result.toArray(new String[result.size()]);
+        return result.toArray(new String[0]);
     }
 
 
@@ -291,22 +265,19 @@ public class WeldUtils {
      * @return A collection of class names; The collection could be empty if none are found.
      */
     public static Collection<String> getCDIAnnotatedClassNames(DeploymentContext context) {
-        Set<String> result = new HashSet<String>();
+        final Set<String> result = new HashSet<>();
+        final Set<String> cdiEnablingAnnotations = new HashSet<>();
+        Collections.addAll(cdiEnablingAnnotations, getCDIEnablingAnnotations(context));
 
-        Types types = getTypes(context);
+        final Types types = getTypes(context);
         if (types != null) {
-            Iterator<Type> typesIter = types.getAllTypes().iterator();
-            while (typesIter.hasNext()) {
-                Type type = typesIter.next();
+            for (final Type type : types.getAllTypes()) {
                 if (!(type instanceof AnnotationType)) {
-                    Iterator<AnnotationModel> annotations = type.getAnnotations().iterator();
-                    while (annotations.hasNext()) {
-                        AnnotationModel am = annotations.next();
-                        AnnotationType at = am.getType();
-                        if (isCDIEnablingAnnotation(at)) {
-                            if (!result.contains(at.getName())) {
-                                result.add(type.getName());
-                            }
+                    for (final AnnotationModel am : type.getAnnotations()) {
+                        final AnnotationType at = am.getType();
+                        if (cdiEnablingAnnotations.contains(at.getName())) {
+                            result.add(type.getName());
+                            break;
                         }
                     }
                 }
@@ -349,7 +320,7 @@ public class WeldUtils {
      * @return true, if the specified annotation type qualifies as a CDI enabler; Otherwise, false
      */
     private static boolean isCDIEnablingAnnotation(AnnotationType annotationType) {
-        return isCDIEnablingAnnotation(annotationType, null);
+        return isCDIEnablingAnnotation(annotationType, new HashSet<>());
     }
 
 
@@ -357,35 +328,27 @@ public class WeldUtils {
      * Determine if the specified annotation type is a CDI-enabling annotation
      *
      * @param annotationType    The annotation type to check
-     * @param excludedTypeNames The Set of annotation type names that should be excluded from the analysis
+     * @param exclusions The Set of annotation type names that should be excluded from the analysis
      *
      * @return true, if the specified annotation type qualifies as a CDI enabler; Otherwise, false
      */
     private static boolean isCDIEnablingAnnotation(AnnotationType annotationType,
-                                                   Set<String>    excludedTypeNames) {
-        boolean result = false;
+                                                   Set<String>    exclusions) {
 
-        Set<String> exclusions = new HashSet<String>();
-        if (excludedTypeNames != null) {
-            exclusions.addAll(excludedTypeNames);
-        }
-
-        String annotationTypeName = annotationType.getName();
-        if (cdiEnablingAnnotations.contains(annotationTypeName) && !exclusions.contains(annotationTypeName)) {
-            result = true;
-        } else if (!exclusions.contains(annotationTypeName)) {
-            // If the annotation type itself is not an excluded type, then check it's annotation
-            // types, less itself (to avoid infinite recursion)
-            exclusions.add(annotationTypeName);
+        final String annotationTypeName = annotationType.getName();
+        if (cdiEnablingAnnotations.contains(annotationTypeName)) {
+            return true;
+        } else if (exclusions.add(annotationTypeName)) {
+            // If the annotation type itself is not an excluded type, then check its annotation
+            // types, exclude itself to avoid infinite recursion
             for (AnnotationModel parent : annotationType.getAnnotations()) {
                 if (isCDIEnablingAnnotation(parent.getType(), exclusions)) {
-                    result = true;
-                    break;
+                    return true;
                 }
             }
         }
 
-        return result;
+        return false;
     }
 
 
@@ -401,22 +364,30 @@ public class WeldUtils {
      *         validScopes, and none of the annotations specified in excludedScopes; Otherwise, false.
      */
     public static boolean hasValidAnnotation(Class              annotatedClass,
-                                             Collection<String> validScopes,
+                                             Set<String> validScopes,
                                              Collection<String> excludedScopes) {
-        boolean result = false;
+
+        final Set<String> copyOfExcludedScopes = copyCollectionToSet(excludedScopes);
 
         // Check all the annotations on the specified Class to determine if the class is annotated
         // with a supported CDI scope
-        for (Annotation annotation : annotatedClass.getAnnotations()) {
-            if (WeldUtils.isValidAnnotation(annotation.annotationType(),
-                                            validScopes,
-                                            excludedScopes)) {
-                result =true;
-                break;
+        for (final Annotation annotation : annotatedClass.getAnnotations()) {
+            if (isValidAnnotation(annotation.annotationType(), validScopes, copyOfExcludedScopes)) {
+               return true;
             }
         }
 
-        return result;
+        return false;
+    }
+
+    private static Set<String> copyCollectionToSet(final Collection<String> toBeCopied) {
+        final Set<String> copy;
+        if (toBeCopied == null) {
+            copy = new HashSet<>();
+        } else {
+            copy = new HashSet<>(toBeCopied);
+        }
+        return copy;
     }
 
     /**
@@ -430,35 +401,30 @@ public class WeldUtils {
      *
      * @return true, if the specified type is in the valid list and not in the excluded list; Otherwise, false.
      */
-    protected static boolean isValidAnnotation(Class<? extends Annotation> annotationType,
-                                               Collection<String>          validTypeNames,
-                                               Collection<String>          excludedTypeNames) {
-        boolean result = false;
+    private static boolean isValidAnnotation(Class<? extends Annotation> annotationType,
+                                               Set<String>          validTypeNames,
+                                               Set<String>          excludedTypeNames) {
+        Objects.requireNonNull(validTypeNames);
+        Objects.requireNonNull(excludedTypeNames);
 
-        if (validTypeNames != null && !validTypeNames.isEmpty()) {
+        if (validTypeNames.isEmpty()) {
+            return false;
+        }
 
-            HashSet<String> excludedScopes = new HashSet<String>();
-            if (excludedTypeNames != null) {
-                excludedScopes.addAll(excludedTypeNames);
-            }
-
-            String annotationTypeName = annotationType.getName();
-            if (validTypeNames.contains(annotationTypeName) && !excludedScopes.contains(annotationTypeName)) {
-                result = true;
-            } else if (!excludedScopes.contains(annotationTypeName)){
-                // If the annotation type itself is not an excluded type, then check it's annotation
-                // types, less itself (to avoid infinite recursion)
-                excludedScopes.add(annotationTypeName);
-                for (Annotation parent : annotationType.getAnnotations()) {
-                    if (isValidAnnotation(parent.annotationType(), validTypeNames, excludedScopes)) {
-                        result = true;
-                        break;
-                    }
+        final String annotationTypeName = annotationType.getName();
+        if (validTypeNames.contains(annotationTypeName) && !excludedTypeNames.contains(annotationTypeName)) {
+            return true;
+        } else if (excludedTypeNames.add(annotationTypeName)){
+            // If the annotation type itself is not an excluded type, then check its annotation
+            // types, exclude itself (to avoid infinite recursion)
+            for (Annotation parent : annotationType.getAnnotations()) {
+                if (isValidAnnotation(parent.annotationType(), validTypeNames, excludedTypeNames)) {
+                    return true;
                 }
             }
         }
 
-        return result;
+        return false;
     }
 
 
