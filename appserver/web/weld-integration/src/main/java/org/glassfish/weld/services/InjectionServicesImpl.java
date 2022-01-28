@@ -55,19 +55,21 @@ import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
 import com.sun.enterprise.container.common.spi.util.InjectionException;
 import com.sun.enterprise.container.common.spi.util.InjectionManager;
 
-import jakarta.annotation.Resource;
-import jakarta.ejb.EJB;
-import jakarta.enterprise.inject.Produces;
-import jakarta.enterprise.inject.spi.*;
-import jakarta.enterprise.inject.spi.InjectionTarget;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.PersistenceUnit;
-import jakarta.xml.ws.WebServiceRef;
+import javax.annotation.Resource;
+import javax.ejb.EJB;
+import javax.enterprise.inject.Produces;
+import javax.enterprise.inject.spi.*;
+import javax.enterprise.inject.spi.InjectionTarget;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceUnit;
+import javax.xml.ws.WebServiceRef;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+
 import org.glassfish.api.invocation.ComponentInvocation;
 
 /**
@@ -95,8 +97,7 @@ public class InjectionServicesImpl implements InjectionServices {
      * @return 
      */
     private boolean isInterceptor( Class beanClass ) {
-      HashSet<String> annos = new HashSet<>();
-      annos.add( jakarta.interceptor.Interceptor.class.getName() );
+      final Set<String> annos = Collections.singleton(javax.interceptor.Interceptor.class.getName());
       boolean res = false;
       while ( !res && beanClass != Object.class ) {
         res = WeldUtils.hasValidAnnotation( beanClass, annos, null );
