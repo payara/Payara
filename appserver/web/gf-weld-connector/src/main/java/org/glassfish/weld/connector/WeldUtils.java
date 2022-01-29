@@ -117,8 +117,8 @@ public class WeldUtils {
         final HashSet<String> cdi = new HashSet<>();
         cdi.add(Scope.class.getName());
         cdi.add(NormalScope.class.getName());
-        cdi.add("javax.faces.view.ViewScoped");
-        cdi.add("javax.faces.flow.FlowScoped");
+        cdi.add("jakarta.faces.view.ViewScoped");
+        cdi.add("jakarta.faces.flow.FlowScoped");
         cdi.add(ConversationScoped.class.getName());
         cdi.add(ApplicationScoped.class.getName());
         cdi.add(SessionScoped.class.getName());
@@ -144,7 +144,7 @@ public class WeldUtils {
         cdi.add(MessageDriven.class.getName());
         cdi.add(Stateful.class.getName());
         cdi.add(Stateless.class.getName());
-        cdi.add(javax.ejb.Singleton.class.getName());
+        cdi.add(jakarta.ejb.Singleton.class.getName());
 
         cdiEnablingAnnotations = Collections.unmodifiableSet(cdi);
     }
