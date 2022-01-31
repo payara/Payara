@@ -66,12 +66,17 @@ public class BootCommands {
 
     /**
      * Command flag pattern include 3 groups to parse the command-line flag
-     * [^\"']\\S+=[\"'].+?[\"']\\S* e.g --description="results in error"
+     * Double and Single Quotes can be included in properties if they are escaped.
+     * This is achieved by the following flag pattern: (?:(?:(?!(?<!\\)["']).)*)
+     *
+     * [^"']\S+=["'](?:(?:(?!(?<!\\)["']).)*)["'] e.g --description="results \"in\" error"
      * [^\"']\\S+ e.g --enabled=true, --enabled true
-     * [\"'].+?[\"']\\S* e.g --description "results in error"
+     * [^"']\S+=["'](?:(?:(?!(?<!\\)["']).)*)["'] e.g --description "results \"in\" error"
      *
      */
-    private static final Pattern COMMAND_FLAG_PATTERN = Pattern.compile("([^\"']\\S+=[\"'].+?[\"']\\S*|[^\"']\\S*|[\"'].+?[\"']\\S*)\\s*");
+    private static final Pattern COMMAND_FLAG_PATTERN = Pattern.compile("([^\"']\\S+=[\"'](?:(?:(?!(?<!\\\\)[\"']).)*)[\"']|" +
+                                                                        "[^\"']\\S*|" +
+                                                                        "[\"'](?:(?:(?!(?<!\\\\)\").)*)[\"'])\\s*");
     private final List<BootCommand> commands;
 
     private static final Logger LOGGER = Logger.getLogger(BootCommands.class.getName());

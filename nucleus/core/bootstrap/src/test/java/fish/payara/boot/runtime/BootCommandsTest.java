@@ -56,7 +56,7 @@ public class BootCommandsTest {
     @Test
     public void parseCommand() throws IOException {
         BootCommands bootCommands = new BootCommands();
-        String commandText = "create-custom-resource --restype java.lang.String -s v --name='custom-res' --description=\"results in \"error\"\" --property value=\"${ENV=ini_ws_uri}\" vfp/vfp-menu/ini.ws.uri";
+        String commandText = "create-custom-resource --restype java.lang.String -s v --name='custom-res' --description=\"results \\\"in\\\" error\" --property value=\"${ENV=ini_ws_uri}\" vfp/vfp-menu/ini.ws.uri";
         try (Reader reader = new StringReader(commandText)){
             bootCommands.parseCommandScript(reader);
         }
@@ -69,7 +69,7 @@ public class BootCommandsTest {
         assertEquals(command.getArguments()[2], "-s");
         assertEquals(command.getArguments()[3], "v");
         assertEquals(command.getArguments()[4], "--name='custom-res'");
-        assertEquals(command.getArguments()[5], "--description=\"results in \"error\"\"");
+        assertEquals(command.getArguments()[5], "--description=\"results \\\"in\\\" error\"");
         assertEquals(command.getArguments()[6], "--property");
         assertEquals(command.getArguments()[7], "value=\"${ENV=ini_ws_uri}\"");
         assertEquals(command.getArguments()[8], "vfp/vfp-menu/ini.ws.uri");
