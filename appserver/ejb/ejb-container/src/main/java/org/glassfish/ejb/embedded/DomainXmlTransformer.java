@@ -74,7 +74,7 @@ public class DomainXmlTransformer {
     private final XMLOutputFactory xof = XMLOutputFactory.newInstance();
 
     private Logger _logger = Logger.getAnonymousLogger(
-            "com.sun.logging.enterprise.system.container.ejb.LogStrings");
+            "com.sun.logging.enterprise.system.container.ejb.LogMessages");
 
     private static final String VIRTUAL_SERVER = "virtual-server"; // should not skip
     private static final String NETWORK_LISTENERS = "network-listeners";
