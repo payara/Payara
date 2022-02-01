@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -45,6 +45,7 @@ import com.hazelcast.nio.serialization.DataSerializable;
 import com.hazelcast.spi.tenantcontrol.DestroyEventContext;
 import com.hazelcast.spi.tenantcontrol.TenantControl;
 import com.hazelcast.spi.tenantcontrol.Tenantable;
+import static fish.payara.nucleus.hazelcast.PayaraHazelcastTenantFactory.blockingDisabled;
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -60,7 +61,6 @@ import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.deployment.versioning.VersioningUtils;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.JavaEEContextUtil;
-import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ModuleInfo;
 import org.glassfish.internal.deployment.Deployment;
 
@@ -120,18 +120,18 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
     @Override
     public void writeData(ObjectDataOutput out) throws IOException {
         out.writeObject(contextInstance);
-        out.writeUTF(moduleName);
+        out.writeString(moduleName);
     }
 
     @Override
     public void readData(ObjectDataInput in) throws IOException {
         contextInstance = in.readObject();
-        moduleName = in.readUTF();
+        moduleName = in.readString();
     }
 
     @Override
     public boolean isAvailable(Tenantable tenantable) {
-        if (contextInstance.isLoaded()) {
+        if (blockingDisabled || contextInstance.isLoaded()) {
             return true;
         }
         if (!tenantable.requiresTenantContext() || tenantNotRequired(tenantable)) {
@@ -196,8 +196,7 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
         @Override
         public void event(EventListener.Event<?> payaraEvent) {
             if (payaraEvent.is(Deployment.MODULE_STARTED)) {
-                ModuleInfo hook = (ModuleInfo) payaraEvent.hook();
-                if (!(hook instanceof ApplicationInfo) && VersioningUtils.getUntaggedName(hook.getName()).equals(moduleName)) {
+                if (ctxUtil.moduleMatches((ModuleInfo)payaraEvent.hook(), moduleName)) {
                     lock.lock();
                     try {
                         condition.signalAll();
@@ -206,8 +205,7 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
                     }
                 }
             } else if (payaraEvent.is(Deployment.MODULE_STOPPED)) {
-                ModuleInfo hook = (ModuleInfo) payaraEvent.hook();
-                if (!(hook instanceof ApplicationInfo) && VersioningUtils.getUntaggedName(hook.getName()).equals(moduleName)) {
+                if (ctxUtil.moduleMatches((ModuleInfo)payaraEvent.hook(), moduleName)) {
                     // decouple the tenant classes from the event
                     tenantUnavailable();
                     destroyEvent.tenantUnavailable();

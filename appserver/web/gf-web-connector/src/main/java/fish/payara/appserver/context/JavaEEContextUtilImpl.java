@@ -46,7 +46,6 @@ import com.sun.enterprise.deployment.JndiNameEnvironment;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.util.Utility;
 import java.io.Serializable;
-import java.lang.reflect.Proxy;
 import java.util.Collection;
 import org.glassfish.internal.api.JavaEEContextUtil;
 import java.util.HashMap;
@@ -54,6 +53,7 @@ import jakarta.enterprise.inject.spi.CDI;
 import jakarta.inject.Inject;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.deployment.versioning.VersioningUtils;
 import org.glassfish.grizzly.utils.Holder;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.data.ApplicationInfo;
@@ -119,6 +119,11 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil, Serializable {
         return inv != null ? isLoaded(inv.getComponentId(), inv) : false;
     }
 
+    @Override
+    public boolean moduleMatches(ModuleInfo moduleInfo, String modulNameToMatch) {
+        return VersioningUtils.getUntaggedName(moduleInfo.getName()).equals(modulNameToMatch);
+    }
+
     private static ClassLoader getClassLoaderForEnvironment(JndiNameEnvironment componentEnv) {
         if (componentEnv instanceof BundleDescriptor) {
             BundleDescriptor bd = (BundleDescriptor) componentEnv;
@@ -140,21 +145,24 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil, Serializable {
 
     private boolean isLoaded(String componentId, ComponentInvocation invocation) {
         if (componentId == null) {
-            // empty component are always loaded
+            // empty components are always loaded
             return true;
         }
         JndiNameEnvironment env = invocation != null ? ((JndiNameEnvironment) invocation.getJNDIEnvironment())
                 : compEnvMgr.getJndiNameEnvironment(componentId);
         if (env != null) {
-            ApplicationInfo appInfo = appRegistry.get(DOLUtils.getApplicationFromEnv(env).getRegistrationName());
-            if (appInfo != null) {
-                // Check if deployed vs. Payara internal application
-                Collection<ModuleInfo> modules = appInfo.getModuleInfos();
-                String moduleName = DOLUtils.getModuleName(env);
-                if (modules.stream().filter(mod -> mod.getName().equals(moduleName))
-                        .anyMatch(moduleInfo -> !moduleInfo.isLoaded())) {
-                    return false;
-                }
+            ApplicationInfo appInfo = null;
+            try {
+                appInfo = appRegistry.get(DOLUtils.getApplicationFromEnv(env).getRegistrationName());
+            } catch (IllegalArgumentException e) {
+                // empty environment, not associated with any app
+            }
+            if (appInfo != null && appInfo.getModuleInfos().stream()
+                    .filter(mod -> DOLUtils.isEarApplication(env) ? true
+                    // Check if deployed vs. Payara internal application
+                    : mod.getName().equals(DOLUtils.getModuleName(env)))
+                    .anyMatch(moduleInfo -> !moduleInfo.isLoaded())) {
+                return false;
             }
         }
         return env != null;
@@ -202,9 +210,11 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil, Serializable {
         private InstanceImpl(ComponentInvocation currentInvocation) {
             boolean isApplicationComponent = false;
             if (currentInvocation.getComponentId() != null) {
-                componentId = currentInvocation.getComponentId();
+                componentId = VersioningUtils.getUntaggedName(currentInvocation.getComponentId());
             } else if (currentInvocation.getJNDIEnvironment() instanceof JndiNameEnvironment) {
-                componentId = DOLUtils.getApplicationName((JndiNameEnvironment)currentInvocation.jndiEnvironment);
+                componentId = DOLUtils.toEarComponentId(
+                        DOLUtils.getApplicationName((JndiNameEnvironment)
+                                currentInvocation.jndiEnvironment));
                 isApplicationComponent = true;
             } else {
                 // checkState() later should error out due to this condition
@@ -229,7 +239,7 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil, Serializable {
         @Override
         public Context pushContext() {
             if (isEmpty()) {
-                return pushEmptyContext();
+                return new ContextImpl.EmptyContext(invocationManager);
             }
             if (!isValidAndNotEmpty()) {
                 // same as invocation, or app not running
@@ -239,14 +249,6 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil, Serializable {
             invocationManager.preInvoke(newInvocation);
             return new ContextImpl.Context(newInvocation, invocationManager, compEnvMgr,
                     Utility.setContextClassLoader(getInvocationClassLoader()));
-        }
-
-        private Context pushEmptyContext() {
-            JndiNameEnvironment env = (JndiNameEnvironment)Proxy.newProxyInstance(Utility.getClassLoader(),
-                    new Class[] { JndiNameEnvironment.class }, (proxy, method, args) -> null);
-            ComponentInvocation newInvocation = createInvocation(env, "___EMPTY___");
-            invocationManager.preInvoke(newInvocation);
-            return new ContextImpl.Context(newInvocation, invocationManager, compEnvMgr, Utility.getClassLoader());
         }
 
         @Override
