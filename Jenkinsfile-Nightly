@@ -11,7 +11,7 @@ pipeline {
         MP_METRICS_TAGS='tier=integration'
     }
     tools {
-        jdk "zulu-8"
+        jdk "zulu-11"
     }
     stages {
         stage('Report') {

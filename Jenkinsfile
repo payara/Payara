@@ -10,7 +10,7 @@ pipeline {
         MP_CONFIG_CACHE_DURATION=0
     }
     tools {
-        jdk "zulu-8"
+        jdk "zulu-11"
     }
     stages {
         stage('Report') {
