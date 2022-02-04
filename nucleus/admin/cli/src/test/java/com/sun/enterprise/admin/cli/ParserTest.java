@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019-2022] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.cli;
 
@@ -62,7 +63,7 @@ public class ParserTest {
         String[] args = new String[]{
             "create-custom-resource", "--restype", "java.lang.String",
             "--enabled=true", "--name", "'custom-res'",
-            "--description", "\"results in error\"",
+            "--description", "\"results \'in\' error\"",
             "--property", "value=\"${ENV=ini_ws_uri}\"",
             "vfp/vfp-menu/ini.ws.uri"
         };
@@ -73,7 +74,7 @@ public class ParserTest {
         assertThat(parse.getOptions().size(), is(5));
 
         assertEquals(parse.getOperands().get(0), "create-custom-resource");
-        assertEquals(parse.getOptions().getOne("description"), "results in error");
+        assertEquals(parse.getOptions().getOne("description"), "results 'in' error");
         assertEquals(parse.getOptions().getOne("name"), "custom-res");
     }
 
