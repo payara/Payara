@@ -147,7 +147,6 @@
                 <dependency>
                     <groupId>fish.payara.security.connectors</groupId>
                     <artifactId>security-connector-oidc-client</artifactId>
-                    <scope>provided</scope>
                 </dependency>
                 <dependency>
                     <groupId>fish.payara.server.internal.security</groupId>
