@@ -88,12 +88,17 @@ import jakarta.annotation.security.RunAs;
 import jakarta.security.jacc.PolicyConfigurationFactory;
 import jakarta.security.jacc.PolicyContextException;
 import jakarta.servlet.Filter;
+import jakarta.servlet.FilterRegistration;
 import jakarta.servlet.HttpMethodConstraintElement;
+import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.Servlet;
 import jakarta.servlet.ServletContainerInitializer;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletContextListener;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRegistration;
 import jakarta.servlet.ServletSecurityElement;
+import jakarta.servlet.SessionTrackingMode;
 import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.ServletSecurity;
 import jakarta.servlet.http.HttpSession;
@@ -2242,6 +2247,226 @@ public class WebModule extends PwcWebModule implements Context {
     }
 
     @Override
+    public String getContextPath() {
+        return getServletContext().getContextPath();
+    }
+
+    @Override
+    public ServletContext getContext(String uriPath) {
+        return getServletContext().getContext(uriPath);
+    }
+
+    @Override
+    public int getMajorVersion() {
+        return getServletContext().getMajorVersion();
+    }
+
+    @Override
+    public int getMinorVersion() {
+        return getServletContext().getMinorVersion();
+    }
+
+    @Override
+    public String getMimeType(String file) {
+        return getServletContext().getMimeType(file);
+    }
+
+    @Override
+    public Set<String> getResourcePaths(String path) {
+        return getServletContext().getResourcePaths(path);
+    }
+
+    @Override
+    public URL getResource(String path) throws MalformedURLException {
+        return getServletContext().getResource(path);
+    }
+
+    @Override
+    public InputStream getResourceAsStream(String path) {
+        return getServletContext().getResourceAsStream(path);
+    }
+
+    @Override
+    public RequestDispatcher getRequestDispatcher(String path) {
+        return getServletContext().getRequestDispatcher(path);
+    }
+
+    @Override
+    public RequestDispatcher getNamedDispatcher(String name) {
+        return getServletContext().getNamedDispatcher(name);
+    }
+
+    @Override
+    public Servlet getServlet(String name) throws ServletException {
+        return getServletContext().getServlet(name);
+    }
+
+    @Override
+    public Enumeration<Servlet> getServlets() {
+        return getServletContext().getServlets();
+    }
+
+    @Override
+    public Enumeration<String> getServletNames() {
+        return getServletContext().getServletNames();
+    }
+
+    @Override
+    public void log(String message) {
+        getServletContext().log(message);
+    }
+
+    @Override
+    public void log(Exception exception, String message) {
+        getServletContext().log(exception, message);
+    }
+
+    @Override
+    public void log(String message, Throwable throwable) {
+        getServletContext().log(message, throwable);
+    }
+
+    @Override
+    public String getServerInfo() {
+        return getServletContext().getServerInfo();
+    }
+
+    @Override
+    public String getInitParameter(String name) {
+        return getServletContext().getInitParameter(name);
+    }
+
+    @Override
+    public Enumeration<String> getInitParameterNames() {
+        return getServletContext().getInitParameterNames();
+    }
+
+    @Override
+    public boolean setInitParameter(String name, String value) {
+        return getServletContext().setInitParameter(name, value);
+    }
+
+    @Override
+    public Object getAttribute(String name) {
+        return getServletContext().getAttribute(name);
+    }
+
+    @Override
+    public Enumeration<String> getAttributeNames() {
+        return getServletContext().getAttributeNames();
+    }
+
+    @Override
+    public void setAttribute(String name, Object value) {
+        getServletContext().setAttribute(name, value);
+    }
+
+    @Override
+    public void removeAttribute(String name) {
+        getServletContext().removeAttribute(name);
+    }
+
+    @Override
+    public String getServletContextName() {
+        return getServletContext().getServletContextName();
+    }
+
+    @Override
+    public ServletRegistration.Dynamic addServlet(String servletName, String className) {
+        return getServletContext().addServlet(servletName, className);
+    }
+
+    @Override
+    public ServletRegistration.Dynamic addServlet(String servletName, Servlet servlet) {
+        return getServletContext().addServlet(servletName, servlet);
+    }
+
+    @Override
+    public ServletRegistration.Dynamic addServlet(String servletName, Class<? extends Servlet> servletClass) {
+        return getServletContext().addServlet(servletName, servletClass);
+    }
+
+    @Override
+    public ServletRegistration.Dynamic addJspFile(String jspName, String jspFile) {
+        return getServletContext().addJspFile(jspName, jspFile);
+    }
+
+    @Override
+    public <T extends Servlet> T createServlet(Class<T> servletClass) throws ServletException {
+        return getServletContext().createServlet(servletClass);
+    }
+
+    @Override
+    public ServletRegistration getServletRegistration(String servletName) {
+        return getServletContext().getServletRegistration(servletName);
+    }
+
+    @Override
+    public Map<String, ? extends ServletRegistration> getServletRegistrations() {
+        return getServletContext().getServletRegistrations();
+    }
+
+    @Override
+    public FilterRegistration.Dynamic addFilter(String filterName, String className) {
+        return getServletContext().addFilter(filterName, className);
+    }
+
+    @Override
+    public FilterRegistration.Dynamic addFilter(String filterName, Filter filter) {
+        return getServletContext().addFilter(filterName, filter);
+    }
+
+    @Override
+    public FilterRegistration.Dynamic addFilter(String filterName, Class<? extends Filter> filterClass) {
+        return getServletContext().addFilter(filterName, filterClass);
+    }
+
+    @Override
+    public <T extends Filter> T createFilter(Class<T> filterClass) throws ServletException {
+        return getServletContext().createFilter(filterClass);
+    }
+
+    @Override
+    public FilterRegistration getFilterRegistration(String filterName) {
+        return getServletContext().getFilterRegistration(filterName);
+    }
+
+    @Override
+    public Map<String, ? extends FilterRegistration> getFilterRegistrations() {
+        return getServletContext().getFilterRegistrations();
+    }
+
+    @Override
+    public void setSessionTrackingModes(Set<SessionTrackingMode> sessionTrackingModes) {
+        getServletContext().setSessionTrackingModes(sessionTrackingModes);
+    }
+
+    @Override
+    public Set<SessionTrackingMode> getDefaultSessionTrackingModes() {
+        return getServletContext().getDefaultSessionTrackingModes();
+    }
+
+    @Override
+    public Set<SessionTrackingMode> getEffectiveSessionTrackingModes() {
+        return getServletContext().getEffectiveSessionTrackingModes();
+    }
+
+    @Override
+    public void addListener(String className) {
+        getServletContext().addListener(className);
+    }
+
+    @Override
+    public <T extends EventListener> T createListener(Class<T> listenerClass) throws ServletException {
+        return getServletContext().createListener(listenerClass);
+    }
+
+    @Override
+    public ClassLoader getClassLoader() {
+        return getServletContext().getClassLoader();
+    }
+
+    @Override
     public void declareRoles(String... roleNames) {
         super.declareRoles(roleNames);
         WebBundleDescriptor bundleDescriptor = getWebBundleDescriptor();
@@ -2251,6 +2476,11 @@ public class WebModule extends PwcWebModule implements Context {
         }
 
         bundleDescriptor.setPolicyModified(true);
+    }
+
+    @Override
+    public String getVirtualServerName() {
+        return getServletContext().getVirtualServerName();
     }
 
 
@@ -2305,6 +2535,26 @@ public class WebModule extends PwcWebModule implements Context {
     @Override
     public SecurityConfig getSecurityConfig() {
         return config;
+    }
+
+    @Override
+    public <T extends EventListener> void addListener(T t) {
+
+    }
+
+    @Override
+    public void addListener(Class<? extends EventListener> c) {
+
+    }
+
+    @Override
+    public void setDirectoryListing(boolean directoryListing) {
+
+    }
+
+    @Override
+    public boolean isDirectoryListing() {
+        return false;
     }
 
     @Override

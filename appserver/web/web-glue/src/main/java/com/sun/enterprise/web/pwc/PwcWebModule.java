@@ -42,7 +42,6 @@ package com.sun.enterprise.web.pwc;
 
 import com.sun.enterprise.web.session.SessionCookieConfig;
 import com.sun.enterprise.web.session.WebSessionCookieConfig;
-import org.apache.catalina.Globals;
 import org.apache.catalina.Wrapper;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.core.StandardWrapper;

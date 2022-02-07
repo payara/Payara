@@ -53,8 +53,9 @@ import jakarta.inject.Singleton;
 import com.sun.web.server.WebContainerListener;
 import org.apache.catalina.*;
 import org.apache.catalina.core.StandardEngine;
+import org.apache.catalina.startup.Bootstrap;
+import org.apache.catalina.startup.Catalina;
 import org.apache.catalina.startup.ContextConfig;
-import org.apache.catalina.startup.Embedded;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.api.naming.NamedNamingObjectProxy;
 import org.glassfish.hk2.api.PostConstruct;
@@ -64,14 +65,13 @@ import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.ServiceLocator;
 
 
-
 /**
  * Represents an embedded Catalina web container within the Application Server.
  */
 
 @Service(name="com.sun.enterprise.web.EmbeddedWebContainer")
 @Singleton
-public final class EmbeddedWebContainer extends Embedded implements PostConstruct {
+public final class EmbeddedWebContainer extends Catalina implements PostConstruct {
 
     public static final Logger logger = LogFacade.getLogger();
 
@@ -181,9 +181,9 @@ public final class EmbeddedWebContainer extends Embedded implements PostConstruc
         File configFile = null;
         // check contextPath.xml and /META-INF/context.xml if not found
         if (ctxPath.equals("")) {
-            configFile = new File(getCatalinaHome() + "/config", "ROOT.xml");
+            configFile = new File(Bootstrap.getCatalinaHome() + "/config", "ROOT.xml");
         } else {
-            configFile = new File(getCatalinaHome() + "/config", ctxPath + ".xml");
+            configFile = new File(Bootstrap.getCatalinaHome() + "/config", ctxPath + ".xml");
         }
         if (!configFile.exists()) {
             configFile = new File(location, Constants.WEB_CONTEXT_XML);
@@ -192,14 +192,12 @@ public final class EmbeddedWebContainer extends Embedded implements PostConstruc
         WebModule context = new WebModule(services);
         context.setID(id);
         context.setWebContainer(webContainer);
-        context.setDebug(debug);
         context.setPath(ctxPath);
         context.setDocBase(location.getAbsolutePath());
         context.setCrossContext(true);
         context.setUseNaming(isUseNaming());
         context.setHasWebXml(wmInfo.getDescriptor() != null);
         context.setWebBundleDescriptor(wmInfo.getDescriptor());
-        context.setManagerChecksFrequency(1);
         context.setServerContext(serverContext);
         context.setWebModuleConfig(wmInfo);
         context.setDefaultWebXml(defaultWebXmlLocation);

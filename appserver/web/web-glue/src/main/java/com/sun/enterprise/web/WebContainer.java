@@ -211,7 +211,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
 
     // -------------------------------------------------- Constants
 
-    public static final String DISPATCHER_MAX_DEPTH = "dispatcher-max-depth";
     public static final String JWS_APPCLIENT_EAR_NAME = "__JWSappclients";
     public static final String JWS_APPCLIENT_WAR_NAME = "sys";
 
@@ -452,27 +451,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
 
             configureDynamicReloadingSettings();
             setDebugLevel();
-
-            String maxDepth = null;
-            org.glassfish.web.config.serverbeans.WebContainer configWC = serverConfig
-                    .getExtensionByType(org.glassfish.web.config.serverbeans.WebContainer.class);
-
-            if (configWC != null) {
-                maxDepth = configWC.getPropertyValue(DISPATCHER_MAX_DEPTH);
-            }
-
-            if (maxDepth != null) {
-                int depth = -1;
-                try {
-                    depth = Integer.parseInt(maxDepth);
-                } catch (NumberFormatException e) {
-                }
-
-                if (depth > 0) {
-                    Request.setMaxDispatchDepth(depth);
-                    logger.log(FINE, MAX_DISPATCH_DEPTH_SET, maxDepth);
-                }
-            }
 
             File currentLogFile = loggingRuntime.getCurrentLogFile();
             if (currentLogFile != null) {
