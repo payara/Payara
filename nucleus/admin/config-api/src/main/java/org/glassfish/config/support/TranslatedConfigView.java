@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.config.support;
 
@@ -52,13 +52,8 @@ import org.jvnet.hk2.config.ConfigView;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.security.AccessController;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.PrivilegedAction;
-import java.security.UnrecoverableKeyException;
+import java.security.*;
 import java.security.cert.CertificateException;
-import java.util.Optional;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -149,13 +144,12 @@ public class TranslatedConfigView implements ConfigView {
                 Config config = configResolver().getConfig();
                 ConfigValue configValue = config.getConfigValue(matchValue);
                 String newValue = configValue.getValue();
-                if (newValue != null && !newValue.isEmpty()) {
-                    stringValue = m3.replaceFirst(Matcher.quoteReplacement(m3.group(1) + newValue + m3.group(3)));
+                if (newValue != null && !newValue.isEmpty() || defaultValue != null) {
+                    stringValue = m3.replaceFirst(Matcher.quoteReplacement(m3.group(1) + (newValue == null ? defaultValue : newValue) + m3.group(3)));
                     m3.reset(stringValue);
-                    Logger.getAnonymousLogger().fine("Found property '" + matchValue + "' in source '" + configValue.getSourceName() + "' with ordinal '" + configValue.getSourceOrdinal() + "'");
-                } else if (defaultValue != null) {
-                    stringValue = defaultValue;
-                    break;
+                    if (newValue != null && !newValue.isEmpty()) {
+                        Logger.getAnonymousLogger().fine("Found property '" + matchValue + "' in source '" + configValue.getSourceName() + "' with ordinal '" + configValue.getSourceOrdinal() + "'");
+                    }
                 } else {
                     Logger.getAnonymousLogger().warning("MicroProfile Config: property '" + matchValue + "': no value found, no default given.");
                 }
@@ -167,18 +161,14 @@ public class TranslatedConfigView implements ConfigView {
 
             i = 0;            // Perform Environment variable substitution
             Matcher m2 = envP.matcher(stringValue);
-
             while (m2.find() && i < MAX_SUBSTITUTION_DEPTH) {
                 String[] envValue = splitForTranslatedDefaultValue(m2.group(2).trim());
                 String matchValue = envValue[0];
                 String defaultValue = envValue.length > 1 ? envValue[1] : null;
                 String newValue = System.getenv(matchValue);
-                if (newValue != null) {
-                    stringValue = m2.replaceFirst(Matcher.quoteReplacement(m2.group(1) + newValue + m2.group(3)));
+                if (newValue != null || defaultValue != null) {
+                    stringValue = m2.replaceFirst(Matcher.quoteReplacement(m2.group(1) + (newValue == null ? defaultValue : newValue) + m2.group(3)));
                     m2.reset(stringValue);
-                } else if (defaultValue != null) {
-                    stringValue = defaultValue;
-                    break;
                 }
                 i++;
             }
