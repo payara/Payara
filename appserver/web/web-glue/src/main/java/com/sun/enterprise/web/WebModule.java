@@ -279,8 +279,6 @@ public class WebModule extends PwcWebModule implements Context {
 
         this.adHocPipeline = new StandardPipeline(this);
         this.adHocPipeline.setBasic(new AdHocContextValve(this));
-
-        notifyContainerListeners = false;
     }
 
 
@@ -475,60 +473,6 @@ public class WebModule extends PwcWebModule implements Context {
     }
 
     /**
-     * Creates an ObjectInputStream that provides special deserialization
-     * logic for classes that are normally not serializable (such as
-     * javax.naming.Context).
-     */
-    @Override
-    public ObjectInputStream createObjectInputStream(InputStream is)
-            throws IOException {
-
-        ObjectInputStream ois = null;
-
-        Loader loader = getLoader();
-        if (loader != null) {
-            ClassLoader classLoader = loader.getClassLoader();
-            if (classLoader != null) {
-                try {
-                    ois = javaEEIOUtils.createObjectInputStream(
-                        is, true, classLoader, getUniqueId());
-                } catch (Exception e) {
-                    logger.log(Level.SEVERE,
-                            LogFacade.CREATE_CUSTOM_OBJECT_INTPUT_STREAM_ERROR, e);
-                }
-            }
-        }
-
-        if (ois == null) {
-            ois = new ObjectInputStream(is);
-        }
-
-        return ois;
-    }
-
-    /**
-     * Creates an ObjectOutputStream that provides special serialization
-     * logic for classes that are normally not serializable (such as
-     * javax.naming.Context).
-     */
-    @Override
-    public ObjectOutputStream createObjectOutputStream(OutputStream os)
-            throws IOException {
-
-        ObjectOutputStream oos = null;
-
-        try {
-            oos = javaEEIOUtils.createObjectOutputStream(os, true);
-        } catch (IOException ioe) {
-            logger.log(Level.SEVERE,
-                    LogFacade.CREATE_CUSTOM_BOJECT_OUTPUT_STREAM_ERROR, ioe);
-            oos = new ObjectOutputStream(os);
-        }
-
-        return oos;
-    }
-
-    /**
      * Set to <code>true</code> when the default-web.xml has been read for
      * this module.
      */
@@ -577,7 +521,7 @@ public class WebModule extends PwcWebModule implements Context {
      * Starts this web module.
      */
     @Override
-    public synchronized void start() throws LifecycleException {
+    public synchronized void startInternal() throws LifecycleException {
         // Get interestList of ServletContainerInitializers present, if any.
         List<Object> orderingList = null;
         boolean hasOthers = false;
@@ -2539,17 +2483,17 @@ public class WebModule extends PwcWebModule implements Context {
 
     @Override
     public <T extends EventListener> void addListener(T t) {
-
+        getServletContext().addListener(t);
     }
 
     @Override
-    public void addListener(Class<? extends EventListener> c) {
-
+    public void addListener(Class<? extends EventListener> listenerClass) {
+        getServletContext().addListener(listenerClass);
     }
 
     @Override
     public void setDirectoryListing(boolean directoryListing) {
-
+        getServletContext().
     }
 
     @Override
