@@ -88,7 +88,7 @@ public class TranslatedValueTest {
 
     @Test
     public void envTranslationRequiredWithDefaultMultiple(){
-        System.out.println("envTranslationRequired");
+        System.out.println("envTranslationRequiredWithDefaultMultiple");
         assertEquals("jdbc:postgresql://localhost:5432/test", TranslatedConfigView.expandValue("jdbc:postgresql://${ENV=db.host:localhost}:${ENV=db.port:5432}/${ENV=DB_NAME:test}"));
     }
 }
