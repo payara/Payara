@@ -145,7 +145,7 @@ public class TranslatedConfigView implements ConfigView {
                 ConfigValue configValue = config.getConfigValue(matchValue);
                 String newValue = configValue.getValue();
                 if (newValue != null && !newValue.isEmpty() || defaultValue != null) {
-                    stringValue = m3.replaceFirst(Matcher.quoteReplacement(m3.group(1) + (newValue == null ? defaultValue : newValue) + m3.group(3)));
+                    stringValue = m3.replaceFirst(Matcher.quoteReplacement(m3.group(1) + ((newValue != null && !newValue.isEmpty()) ? newValue : defaultValue) + m3.group(3)));
                     m3.reset(stringValue);
                     if (newValue != null && !newValue.isEmpty()) {
                         Logger.getAnonymousLogger().fine("Found property '" + matchValue + "' in source '" + configValue.getSourceName() + "' with ordinal '" + configValue.getSourceOrdinal() + "'");
