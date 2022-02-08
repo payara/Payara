@@ -39,7 +39,7 @@
  */
 package fish.payara.security.oidc.client.ear;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 
 @Stateless
 public class SomeEJB {

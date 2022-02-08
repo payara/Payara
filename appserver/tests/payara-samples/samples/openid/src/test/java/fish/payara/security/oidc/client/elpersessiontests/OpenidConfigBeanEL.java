@@ -39,9 +39,9 @@
  */
 package fish.payara.security.oidc.client.elpersessiontests;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.servlet.http.HttpServletRequest;
 import org.eclipse.microprofile.config.Config;
 
 @Named
