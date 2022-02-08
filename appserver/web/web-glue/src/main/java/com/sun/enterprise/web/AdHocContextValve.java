@@ -40,11 +40,11 @@
 
 package com.sun.enterprise.web;
 
-import org.apache.catalina.Request;
-import org.apache.catalina.Response;
+import org.apache.catalina.connector.Request;
+import org.apache.catalina.connector.Response;
+import org.apache.catalina.Valve;
 import org.apache.catalina.Wrapper;
 import org.glassfish.web.LogFacade;
-import org.glassfish.web.valve.GlassFishValve;
 
 import jakarta.servlet.Servlet;
 import jakarta.servlet.ServletException;
@@ -68,7 +68,7 @@ import java.util.logging.Logger;
  *
  * @author Jan Luehe
  */
-public class AdHocContextValve implements GlassFishValve {
+public class AdHocContextValve implements Valve {
 
     private static final Logger logger = LogFacade.getLogger();
 
@@ -97,19 +97,34 @@ public class AdHocContextValve implements GlassFishValve {
     }
 
 
+    @Override
+    public Valve getNext() {
+        return null;
+    }
+
+    @Override
+    public void setNext(Valve valve) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void backgroundProcess() {
+        throw new UnsupportedOperationException();
+    }
+
     /**
      * Processes the given request by passing it to the ad-hoc servlet
      * associated with the request path (which has been determined, by the
      * associated web module, to be an ad-hoc path).
-     *
      * @param request The request to process
      * @param response The response to return
      */
-    public int invoke(Request request, Response response)
+    @Override
+    public void invoke(Request request, Response response)
             throws IOException, ServletException {
 
-        HttpServletRequest hreq = (HttpServletRequest) request.getRequest();
-        HttpServletResponse hres = (HttpServletResponse) response.getResponse();
+        HttpServletRequest hreq = request.getRequest();
+        HttpServletResponse hres = response.getResponse();
 
         String adHocServletName =
             context.getAdHocServletName(hreq.getServletPath());
@@ -126,11 +141,10 @@ public class AdHocContextValve implements GlassFishValve {
                 msg = MessageFormat.format(
                             msg,
                             new Object[] { hreq.getServletPath() });
-                response.setDetailMessage(msg);
                 if (logger.isLoggable(Level.FINE)) {
                     logger.log(Level.FINE, msg, t);
                 }
-                return END_PIPELINE;
+                return;
             } finally {
                 if (adHocServlet != null) {
                     adHocWrapper.deallocate(adHocServlet);
@@ -138,21 +152,15 @@ public class AdHocContextValve implements GlassFishValve {
             }
         } else {
             hres.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            String msg = rb.getString(LogFacade.NO_ADHOC_SERVLET);
-            msg = MessageFormat.format(
-                            msg,
-                            new Object[] { hreq.getServletPath() });
-            response.setDetailMessage(msg);
-            return END_PIPELINE;
+            return;
         }
 
-        return END_PIPELINE;
+        return;
     }
 
-
-    public void postInvoke(Request request, Response response)
-            throws IOException, ServletException {
-        // Do nothing
+    @Override
+    public boolean isAsyncSupported() {
+        return false;
     }
 
 }
