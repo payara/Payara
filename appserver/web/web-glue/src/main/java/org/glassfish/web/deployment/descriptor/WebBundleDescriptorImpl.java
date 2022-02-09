@@ -135,8 +135,6 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
     private List<String> orderedLibs = new ArrayList<String>();
 
-    private boolean showArchivedRealPathEnabled = true;
-
     private int servletReloadCheckSecs = 1;
 
     private Set<String> conflictedMimeMappingExtensions = null;
