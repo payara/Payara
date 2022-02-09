@@ -265,6 +265,8 @@ public class WebModule extends PwcWebModule implements Context {
 
     private final ServiceLocator services;
 
+    protected boolean directoryDeployed = false;
+
     /**
      * Constructor.
      */
@@ -615,6 +617,15 @@ public class WebModule extends PwcWebModule implements Context {
         }
 
         return interestSet;
+    }
+
+    @Override
+    public String getRealPath(String path) {
+        if (!directoryDeployed) {
+            return null;
+        }
+
+        return super.getRealPath(path);
     }
 
     /**
