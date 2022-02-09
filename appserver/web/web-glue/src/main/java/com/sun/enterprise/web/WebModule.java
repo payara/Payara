@@ -547,6 +547,9 @@ public class WebModule extends PwcWebModule implements Context {
                 wmInfo.getAppClassLoader(), servletInitializersEnabled);
 
         for (ServletContainerInitializer initializer : allInitializers) {
+            // Check if getInterestList is required here - config of servletContainerInitializers interest list
+            // is also done in ContextConfig#processServletContainerInitializers which gets called in response to
+            // LifeCycle.CONFIGURE_START_EVENT which gets fired during super.startInternal
             addServletContainerInitializer(initializer, getInterestList(initializer));
         }
 
