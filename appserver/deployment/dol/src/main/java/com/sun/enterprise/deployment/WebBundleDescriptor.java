@@ -409,10 +409,6 @@ public abstract class WebBundleDescriptor extends CommonResourceBundleDescriptor
 
     public abstract void moveAppListenerDescriptor(AppListenerDescriptor ref, int relPos);
 
-    public abstract int getServletReloadCheckSecs();
-
-    public abstract void setServletReloadCheckSecs(int secs);
-
     @Override
     public abstract boolean hasWebServiceClients();
 

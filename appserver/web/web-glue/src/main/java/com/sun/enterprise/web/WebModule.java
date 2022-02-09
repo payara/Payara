@@ -561,7 +561,6 @@ public class WebModule extends PwcWebModule implements Context {
                     Boolean.valueOf(dc.getAppProps().getProperty(ServerTags.DIRECTORY_DEPLOYED));
         }
         if (webBundleDescriptor != null) {
-            servletReloadCheckSecs = webBundleDescriptor.getServletReloadCheckSecs();
             	String reqEncoding = webBundleDescriptor.getRequestCharacterEncoding();
 			if (reqEncoding != null) {
 				setRequestCharacterEncoding(reqEncoding);
