@@ -99,6 +99,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRegistration;
 import jakarta.servlet.ServletSecurityElement;
 import jakarta.servlet.SessionTrackingMode;
+import jakarta.servlet.annotation.HandlesTypes;
 import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.ServletSecurity;
 import jakarta.servlet.http.HttpSession;
@@ -544,7 +545,10 @@ public class WebModule extends PwcWebModule implements Context {
             ServletContainerInitializerUtil.getServletContainerInitializers(
                 webFragmentMap, orderingList, hasOthers,
                 wmInfo.getAppClassLoader(), servletInitializersEnabled);
-        setServletContainerInitializerInterestList(allInitializers);
+
+        for (ServletContainerInitializer initializer : allInitializers) {
+            addServletContainerInitializer(initializer, getInterestList(initializer));
+        }
 
         DeploymentContext dc = getWebModuleConfig().getDeploymentContext();
         if (dc != null) {
@@ -565,7 +569,7 @@ public class WebModule extends PwcWebModule implements Context {
         }
 
         // Start and register Tomcat mbeans
-        super.start();
+        super.startInternal();
 
         // Configure catalina listeners and valves. This can only happen
         // after this web module has been started, in order to be able to
@@ -578,6 +582,36 @@ public class WebModule extends PwcWebModule implements Context {
         }
 
         hasStarted = true;
+    }
+
+    /**
+     * Creates a Set of the classes that a given {@link ServletContainerInitializer} has expressed interest in via
+     * {@link HandlesTypes}
+     *
+     * @param initializer The {@link ServletContainerInitializer} to scan
+     *
+     * @return A {@link Set} of classes that the given {@link ServletContainerInitializer} has expressed interest in
+     * via {@link HandlesTypes}
+     */
+    public static Set<Class<?>> getInterestList(ServletContainerInitializer initializer) {
+        Class<? extends ServletContainerInitializer> sciClass = initializer.getClass();
+        HandlesTypes ann = sciClass.getAnnotation(HandlesTypes.class);
+
+        if (ann == null) {
+            return null;
+        }
+
+        Class[] interestedClasses = ann.value();
+        if (interestedClasses == null || interestedClasses.length == 0) {
+            return null;
+        }
+
+        Set<Class<?>> interestSet = new HashSet<>();
+        for (Class interestedClass : interestedClasses) {
+            interestSet.add(interestedClass);
+        }
+
+        return interestSet;
     }
 
     /**
