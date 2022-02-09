@@ -2172,20 +2172,6 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     }
 
     @Override
-    public boolean isShowArchivedRealPathEnabled() {
-        return showArchivedRealPathEnabled;
-    }
-
-    /**
-     *
-     * @param enabled
-     */
-    @Override
-    public void setShowArchivedRealPathEnabled(boolean enabled) {
-        showArchivedRealPathEnabled = enabled;
-    }
-
-    @Override
     public int getServletReloadCheckSecs() {
         return servletReloadCheckSecs;
     }

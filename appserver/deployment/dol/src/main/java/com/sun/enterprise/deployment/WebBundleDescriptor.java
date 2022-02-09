@@ -409,10 +409,6 @@ public abstract class WebBundleDescriptor extends CommonResourceBundleDescriptor
 
     public abstract void moveAppListenerDescriptor(AppListenerDescriptor ref, int relPos);
 
-    public abstract boolean isShowArchivedRealPathEnabled();
-
-    public abstract void setShowArchivedRealPathEnabled(boolean enabled);
-
     public abstract int getServletReloadCheckSecs();
 
     public abstract void setServletReloadCheckSecs(int secs);
