@@ -41,14 +41,14 @@
 package org.glassfish.config.support;
 
 import org.glassfish.hk2.api.ServiceLocator;
-import org.junit.*;
-
 import org.glassfish.tests.utils.Utils;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
- *
  * @author cfiguera
  */
 public class TranslatedValueTest {
@@ -87,8 +87,14 @@ public class TranslatedValueTest {
     }
 
     @Test
-    public void envTranslationRequiredWithDefaultMultiple(){
+    public void envTranslationRequiredWithDefaultMultiple() {
         System.out.println("envTranslationRequiredWithDefaultMultiple");
         assertEquals("jdbc:postgresql://localhost:5432/test", TranslatedConfigView.expandValue("jdbc:postgresql://${ENV=db.host:localhost}:${ENV=db.port:5432}/${ENV=DB_NAME:test}"));
+    }
+
+    @Test
+    public void envTranslationOneRequired() {
+        System.out.println("envTranslationOneRequired");
+        assertEquals("${ENV=NOT_EXISTING_VARIABLE}_defaultVariable", TranslatedConfigView.expandValue("${ENV=NOT_EXISTING_VARIABLE}_${ENV=NOT_EXISTING_VARIABLE_2:defaultVariable}"));
     }
 }
