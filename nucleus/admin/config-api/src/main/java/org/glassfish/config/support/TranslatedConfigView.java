@@ -54,6 +54,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.security.*;
 import java.security.cert.CertificateException;
+import java.util.Optional;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -61,24 +62,14 @@ import java.util.regex.Pattern;
 /**
  * View that translate configured attributes containing properties like ${foo.bar}
  * into system properties values.
- *
+ * <p>
  * Also support translation of Password Aliases
- *
+ * <p>
  * Also support translation of Environment Variables
  *
  * @author Jerome Dochez
  */
 public class TranslatedConfigView implements ConfigView {
-
-    static final Pattern p = Pattern.compile("([^\\$]*)\\$\\{([^\\}]*)\\}([^\\$]*)");
-    static final Pattern envP = Pattern.compile("([^\\$]*)\\$\\{ENV=([^\\}]*)\\}([^\\$]*)");
-    static final Pattern mpConfigP = Pattern.compile("([^\\$]*)\\$\\{MPCONFIG=([^\\}]*)\\}([^\\$]*)");
-
-    private static final String ALIAS_TOKEN = "ALIAS";
-    private static final String DEFAULT_SEPARATOR = ":";
-    private static final int MAX_SUBSTITUTION_DEPTH = 100;
-
-    private static final boolean SUBSTITUTION_DISABLED = Boolean.valueOf(System.getProperty("fish.payara.substitution.disable", "false"));
 
     public static final ThreadLocal<Boolean> doSubstitution = new ThreadLocal<Boolean>() {
         @Override
@@ -87,10 +78,26 @@ public class TranslatedConfigView implements ConfigView {
         }
     };
 
+    static final Pattern p = Pattern.compile("([^\\$]*)\\$\\{([^\\}]*)\\}([^\\$]*)");
+    static final Pattern envP = Pattern.compile("([^\\$]*)\\$\\{ENV=([^\\}]*)\\}([^\\$]*)");
+    static final Pattern mpConfigP = Pattern.compile("([^\\$]*)\\$\\{MPCONFIG=([^\\}]*)\\}([^\\$]*)");
+    private static final String ALIAS_TOKEN = "ALIAS";
+    private static final String DEFAULT_SEPARATOR = ":";
+    private static final int MAX_SUBSTITUTION_DEPTH = 100;
+    private static final boolean SUBSTITUTION_DISABLED = Boolean.valueOf(System.getProperty("fish.payara.substitution.disable", "false"));
+    static ServiceLocator habitat;
+    private static DomainScopedPasswordAliasStore domainPasswordAliasStore = null;
+    final ConfigView masterView;
+
+    TranslatedConfigView(ConfigView master) {
+        this.masterView = master;
+    }
+
     /**
      * Expand variables in string value (non-config usage).
      * This expansion can be disabled by system property {@code fish.payara.substitution.disable}, and should be used by any code that handles
      * deployment descriptors, where this constitutes a non-standard behavior.
+     *
      * @param value value to be expanded
      * @return expanded value or {@code null} when value is null. Original value when substitution is disabled.
      */
@@ -104,6 +111,7 @@ public class TranslatedConfigView implements ConfigView {
     /**
      * Expand variables in string value (config usage).
      * This method should be called when expanding values from config, where substitution is necessary at all times.
+     *
      * @param value value to be expanded
      * @return expanded value or {@code null} when value is null.
      */
@@ -112,12 +120,12 @@ public class TranslatedConfigView implements ConfigView {
     }
 
     private static Object getTranslatedValue(Object value) {
-        if (value!=null && value instanceof String) {
+        if (value != null && value instanceof String) {
             String stringValue = value.toString();
-            if (stringValue.indexOf('$')==-1) {
+            if (stringValue.indexOf('$') == -1) {
                 return value;
             }
-            if(!doSubstitution.get()) {
+            if (!doSubstitution.get()) {
                 return value;
             }
 
@@ -131,94 +139,155 @@ public class TranslatedConfigView implements ConfigView {
                     }
                 }
             }
-
-            String origValue = stringValue;
-
-            int i = 0;            // Perform Environment variable substitution
-            Matcher m3 = mpConfigP.matcher(stringValue);
-
-            while (m3.find() && i < MAX_SUBSTITUTION_DEPTH) {
-                String[] envValue = splitForTranslatedDefaultValue(m3.group(2).trim());
-                String matchValue = envValue[0];
-                String defaultValue = envValue.length > 1 ? envValue[1] : null;
-                Config config = configResolver().getConfig();
-                ConfigValue configValue = config.getConfigValue(matchValue);
-                String newValue = configValue.getValue();
-                if (newValue != null && !newValue.isEmpty() || defaultValue != null) {
-                    stringValue = m3.replaceFirst(Matcher.quoteReplacement(m3.group(1) + ((newValue != null && !newValue.isEmpty()) ? newValue : defaultValue) + m3.group(3)));
-                    m3.reset(stringValue);
-                    if (newValue != null && !newValue.isEmpty()) {
-                        Logger.getAnonymousLogger().fine("Found property '" + matchValue + "' in source '" + configValue.getSourceName() + "' with ordinal '" + configValue.getSourceOrdinal() + "'");
-                    }
-                } else {
-                    Logger.getAnonymousLogger().warning("MicroProfile Config: property '" + matchValue + "': no value found, no default given.");
-                }
-                i++;
-            }
-            if (i >= MAX_SUBSTITUTION_DEPTH) {
-                Logger.getAnonymousLogger().severe(Strings.get("TranslatedConfigView.badprop", i, origValue));
-            }
-
-            i = 0;            // Perform Environment variable substitution
-            Matcher m2 = envP.matcher(stringValue);
-            while (m2.find() && i < MAX_SUBSTITUTION_DEPTH) {
-                String[] envValue = splitForTranslatedDefaultValue(m2.group(2).trim());
-                String matchValue = envValue[0];
-                String defaultValue = envValue.length > 1 ? envValue[1] : null;
-                String newValue = System.getenv(matchValue);
-                if (newValue != null || defaultValue != null) {
-                    stringValue = m2.replaceFirst(Matcher.quoteReplacement(m2.group(1) + (newValue == null ? defaultValue : newValue) + m2.group(3)));
-                    m2.reset(stringValue);
-                }
-                i++;
-            }
-            if (i >= MAX_SUBSTITUTION_DEPTH) {
-                Logger.getAnonymousLogger().severe(Strings.get("TranslatedConfigView.badprop", i, origValue));
-            }
-
-            // Perform system property substitution in the value
-            // The loop limit is imposed to prevent infinite looping to values
-            // such as a=${a} or a=foo ${b} and b=bar {$a}
-            Matcher m = p.matcher(stringValue);
-            i = 0;
-            while (m.find() && i < MAX_SUBSTITUTION_DEPTH) {
-                String matchValue = m.group(2).trim();
-                String newValue = System.getProperty(matchValue);
-                if (newValue != null) {
-                    stringValue = m.replaceFirst(
-                            Matcher.quoteReplacement(m.group(1) + newValue + m.group(3)));
-                    m.reset(stringValue);
-                }
-                i++;
-            }
-            if (i >= MAX_SUBSTITUTION_DEPTH) {
-                Logger.getAnonymousLogger().severe(Strings.get("TranslatedConfigView.badprop", i, origValue));
-            }
-
+            stringValue = performSubstitution(stringValue, SubstitutionType.MPCONFIG);
+            stringValue = performSubstitution(stringValue, SubstitutionType.ENVIRONMENT);
+            stringValue = performSubstitution(stringValue, SubstitutionType.SYSTEM);
             return stringValue;
 
         }
         return value;
     }
 
+    private static String performSubstitution(String stringValue, SubstitutionType type) {
+        String origValue = stringValue;
+        int i = 0;
+        Matcher matcher;
+        switch (type) {
+            case MPCONFIG:
+                matcher = mpConfigP.matcher(stringValue);
+                break;
+            case ENVIRONMENT:
+                matcher = envP.matcher(stringValue);
+                break;
+            case SYSTEM:
+                matcher = p.matcher(stringValue);
+                break;
+            default:
+                return stringValue;
+        }
+        StringBuffer stringBuffer = new StringBuffer();
+        while (matcher.find() && i < MAX_SUBSTITUTION_DEPTH) {
+            String[] envValue = splitForTranslatedDefaultValue(matcher.group(2).trim());
+            String matchValue = envValue[0];
+            String defaultValue = envValue.length > 1 ? envValue[1] : null;
+            Optional<String> newValue = getReplacedValue(type, matchValue, defaultValue);
+            if (newValue.isPresent()) {
+                matcher.appendReplacement(stringBuffer, Matcher.quoteReplacement(matcher.group(1) + newValue.get() + matcher.group(3)));
+            }
+            i++;
+        }
+        matcher.appendTail(stringBuffer);
+        if (i >= MAX_SUBSTITUTION_DEPTH) {
+            Logger.getAnonymousLogger().severe(Strings.get("TranslatedConfigView.badprop", i, origValue));
+        }
+        return stringBuffer.toString();
+    }
+
+    private static Optional<String> getReplacedValue(SubstitutionType type, String matchValue, String defaultValue) {
+        switch (type) {
+            case MPCONFIG: {
+                Config config = configResolver().getConfig();
+                ConfigValue configValue = config.getConfigValue(matchValue);
+                String newValue = configValue.getValue();
+                if (newValue != null && !newValue.isEmpty()) {
+                    Logger.getAnonymousLogger().fine("Found property '" + matchValue + "' in source '" + configValue.getSourceName() + "' with ordinal '" + configValue.getSourceOrdinal() + "'");
+                    return Optional.of(newValue);
+                } else if (defaultValue != null) {
+                    return Optional.of(defaultValue);
+                }
+                Logger.getAnonymousLogger().warning("MicroProfile Config: property '" + matchValue + "': no value found, no default given.");
+                break;
+            }
+            case SYSTEM: {
+                String newValue = System.getProperty(matchValue);
+                if (newValue != null) {
+                    return Optional.of(newValue);
+                }
+                break;
+            }
+            case ENVIRONMENT: {
+                String newValue = System.getenv(matchValue);
+                if (newValue != null) {
+                    return Optional.of(newValue);
+                } else if (defaultValue != null) {
+                    return Optional.of(defaultValue);
+                }
+                break;
+            }
+        }
+        return Optional.empty();
+    }
+
     private static String[] splitForTranslatedDefaultValue(String matchValue) {
         return (matchValue == null) ? null : matchValue.split(DEFAULT_SEPARATOR, 2);
     }
 
+    public static void setHabitat(ServiceLocator h) {
+        habitat = h;
+    }
 
-    final ConfigView masterView;
+    private static DomainScopedPasswordAliasStore domainPasswordAliasStore() {
+        if (habitat != null) {
+            domainPasswordAliasStore = AccessController.doPrivileged(new PrivilegedAction<DomainScopedPasswordAliasStore>() {
+                @Override
+                public DomainScopedPasswordAliasStore run() {
+                    return habitat.getService(DomainScopedPasswordAliasStore.class);
+                }
+            });
+        }
+        return domainPasswordAliasStore;
+    }
 
+    private static ConfigProviderResolver configResolver() {
+        if (habitat != null) {
+            return AccessController.doPrivileged((PrivilegedAction<ConfigProviderResolver>) () -> habitat.getService(ConfigProviderResolver.class));
+        } else {
+            throw new IllegalStateException("Trying to access MP Config before Service Locator started");
+        }
+    }
 
-    TranslatedConfigView(ConfigView master ) {
-        this.masterView = master;
+    /**
+     * check if a given property name matches AS alias pattern ${ALIAS=aliasname}.
+     * if so, return the aliasname, otherwise return null.
+     *
+     * @param propName The property name to resolve. ex. ${ALIAS=aliasname}.
+     * @return The aliasname or null.
+     */
+    public static String getAlias(String propName) {
+        String aliasName = null;
+        String starter = "${" + ALIAS_TOKEN + "="; //no space is allowed in starter
+        String ender = "}";
 
+        propName = propName.trim();
+        if (propName.startsWith(starter) && propName.endsWith(ender)) {
+            propName = propName.substring(starter.length());
+            int lastIdx = propName.length() - 1;
+            if (lastIdx > 1) {
+                propName = propName.substring(0, lastIdx);
+                if (propName != null) {
+                    aliasName = propName.trim();
+                }
+            }
+        }
+        return aliasName;
+    }
+
+    public static String getRealPasswordFromAlias(final String at) throws KeyStoreException, CertificateException, IOException, NoSuchAlgorithmException, UnrecoverableKeyException {
+
+        final String an = getAlias(at);
+        final boolean exists = domainPasswordAliasStore.containsKey(an);
+        if (!exists) {
+
+            final String msg = String.format("Alias  %s does not exist", an);
+            throw new IllegalArgumentException(msg);
+        }
+        return new String(domainPasswordAliasStore.get(an));
     }
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         return getTranslatedValue(masterView.invoke(proxy, method, args));
     }
-
 
     @Override
     public ConfigView getMasterView() {
@@ -239,71 +308,8 @@ public class TranslatedConfigView implements ConfigView {
     public <T extends ConfigBeanProxy> T getProxy(Class<T> proxyType) {
         return proxyType.cast(Proxy.newProxyInstance(proxyType.getClassLoader(), new Class[]{proxyType}, this));
     }
-    static ServiceLocator habitat;
-    public static void setHabitat(ServiceLocator h) {
-         habitat = h;
-    }
 
-    private static DomainScopedPasswordAliasStore domainPasswordAliasStore = null;
-    private static DomainScopedPasswordAliasStore domainPasswordAliasStore() {
-        if (habitat != null) {
-            domainPasswordAliasStore = AccessController.doPrivileged(
-                    new PrivilegedAction<DomainScopedPasswordAliasStore>() {
-                        @Override
-                        public DomainScopedPasswordAliasStore run() {
-                            return habitat.getService(DomainScopedPasswordAliasStore.class);
-                        }
-                    }
-            );
-        }
-        return domainPasswordAliasStore;
-    }
-
-    private static ConfigProviderResolver configResolver() {
-        if (habitat != null) {
-            return AccessController.doPrivileged((PrivilegedAction<ConfigProviderResolver>)
-                    () -> habitat.getService(ConfigProviderResolver.class));
-        } else {
-            throw new IllegalStateException("Trying to access MP Config before Service Locator started");
-        }
-    }
-
-    /**
-     * check if a given property name matches AS alias pattern ${ALIAS=aliasname}.
-     * if so, return the aliasname, otherwise return null.
-     * @param propName The property name to resolve. ex. ${ALIAS=aliasname}.
-     * @return The aliasname or null.
-     */
-    public static String getAlias(String propName)
-    {
-       String aliasName = null;
-       String starter = "${" + ALIAS_TOKEN + "="; //no space is allowed in starter
-       String ender   = "}";
-
-       propName = propName.trim();
-       if (propName.startsWith(starter) && propName.endsWith(ender) ) {
-           propName = propName.substring(starter.length() );
-           int lastIdx = propName.length() - 1;
-           if (lastIdx > 1) {
-              propName = propName.substring(0,lastIdx);
-              if (propName!=null) {
-                 aliasName = propName.trim();
-              }
-           }
-       }
-       return aliasName;
-    }
-
-    public static String getRealPasswordFromAlias(final String at) throws
-            KeyStoreException, CertificateException, IOException, NoSuchAlgorithmException, UnrecoverableKeyException {
-
-        final String an = getAlias(at);
-        final boolean exists = domainPasswordAliasStore.containsKey(an);
-        if (!exists) {
-
-            final String msg = String.format("Alias  %s does not exist", an);
-            throw new IllegalArgumentException(msg);
-        }
-        return new String(domainPasswordAliasStore.get(an));
+    public enum SubstitutionType {
+        MPCONFIG, ENVIRONMENT, SYSTEM
     }
 }
