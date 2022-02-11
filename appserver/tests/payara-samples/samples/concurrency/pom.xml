@@ -49,7 +49,7 @@
     </parent>
 
     <artifactId>concurrency</artifactId>
-    <name>Concurrency Examples</name>
+    <name>Payara Samples - Payara - Concurrency</name>
     <packaging>war</packaging>
 
     <properties>
