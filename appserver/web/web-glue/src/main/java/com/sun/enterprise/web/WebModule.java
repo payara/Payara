@@ -627,7 +627,7 @@ public class WebModule extends PwcWebModule implements Context {
      * Stops this web module.
      */
     @Override
-    public void stop() throws LifecycleException {
+    public void stopInternal() throws LifecycleException {
         // Unregister monitoring mbeans only if this web module was
         // successfully started, because if stop() is called during an
         // aborted start(), no monitoring mbeans will have been registered
@@ -637,7 +637,7 @@ public class WebModule extends PwcWebModule implements Context {
         }
 
         // Stop and unregister Tomcat mbeans
-        super.stop(getWebContainer().isShutdown());
+        super.stopInternal();
     }
 
     @Override
