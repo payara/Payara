@@ -909,7 +909,7 @@ public class FileDirContext extends BaseDirContext {
             }
 
             // Check to see if going outside of the web application root
-            if ((!allowLinking) && (!canPath.startsWith(absoluteBase))) {
+            if ((!allowLinking) && (!canPath.startsWith(super.getDocBase()))) {
                 if (logger.isLoggable(Level.FINE)) {
                     logger.log(Level.FINE, LogFacade.FILE_RESOURCES_NOT_ALLOWED, new Object[]{allowLinking,canPath,absoluteBase});
                 }
