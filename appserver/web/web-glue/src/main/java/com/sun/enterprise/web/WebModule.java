@@ -641,12 +641,13 @@ public class WebModule extends PwcWebModule implements Context {
     }
 
     @Override
-    protected void contextListenerStart() {
+    public boolean listenerStart() {
         logger.finest("contextListenerStart()");
         ServletContext servletContext = getServletContext();
         WebBundleDescriptor bundleDescriptor = getWebBundleDescriptor();
         JaccConfigurationFactory jaccConfigurationFactory = getJaccConfigurationFactory();
 
+        boolean ok = false;
         try {
             // For JSF injection
             servletContext.setAttribute(
@@ -670,18 +671,16 @@ public class WebModule extends PwcWebModule implements Context {
                     ENABLE_HA_ATTRIBUTE,
                     webContainer.getServerConfigLookup().calculateWebAvailabilityEnabledFromConfig(this));
 
-            super.contextListenerStart();
+            ok = super.listenerStart();
         } finally {
             servletContext.removeAttribute(DEPLOYMENT_CONTEXT_ATTRIBUTE);
             servletContext.removeAttribute(IS_DISTRIBUTABLE_ATTRIBUTE);
             servletContext.removeAttribute(ENABLE_HA_ATTRIBUTE);
         }
 
-        servletRegisMap.values()
-                       .stream()
-                       .filter(DynamicWebServletRegistrationImpl.class::isInstance)
-                       .map(DynamicWebServletRegistrationImpl.class::cast)
-                       .forEach(DynamicWebServletRegistrationImpl::postProcessAnnotations);
+        if (!ok) {
+            return ok;
+        }
 
         if (jaccConfigurationFactory != null && bundleDescriptor != null) {
             if (jaccConfigurationFactory.getContextProviderByPolicyContextId(getContextID(bundleDescriptor)) != null) {
@@ -690,6 +689,8 @@ public class WebModule extends PwcWebModule implements Context {
         }
 
         webContainer.afterServletContextInitializedEvent(bundleDescriptor);
+
+        return ok;
     }
 
     private String getAppContextId(ServletContext servletContext) {
