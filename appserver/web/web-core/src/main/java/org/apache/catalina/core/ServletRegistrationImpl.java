@@ -92,15 +92,7 @@ public class ServletRegistrationImpl implements ServletRegistration {
 
     @Override
     public String getClassName() {
-        return wrapper.getServletClassName();
-    }
-
-    /**
-     * Return the context-relative URI of the JSP file for this servlet.
-     * @return null if this is not a JSP Servlet
-     */
-    public String getJspFile() {
-        return wrapper.getJspFile();
+        return wrapper.getServletClass();
     }
 
     @Override
