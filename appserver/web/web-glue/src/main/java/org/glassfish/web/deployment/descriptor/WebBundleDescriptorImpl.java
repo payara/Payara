@@ -137,6 +137,8 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
     private boolean showArchivedRealPathEnabled = true;
 
+    private int servletReloadCheckSecs = 1;
+
     private Set<String> conflictedMimeMappingExtensions = null;
     private boolean servletInitializersEnabled = true;
     private boolean jaxrsRolesAllowedEnabled = true;
@@ -2182,7 +2184,16 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     public void setShowArchivedRealPathEnabled(boolean enabled) {
         showArchivedRealPathEnabled = enabled;
     }
-    
+
+    public int getServletReloadCheckSecs() {
+        return servletReloadCheckSecs;
+    }
+
+    @Override
+    public void setServletReloadCheckSecs(int secs) {
+        servletReloadCheckSecs = secs;
+    }
+
     /**
      * @return true if this bundle descriptor defines web service clients
      */

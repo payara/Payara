@@ -413,6 +413,10 @@ public abstract class WebBundleDescriptor extends CommonResourceBundleDescriptor
 
     public abstract void setShowArchivedRealPathEnabled(boolean enabled);
 
+    public abstract int getServletReloadCheckSecs();
+
+    public abstract void setServletReloadCheckSecs(int secs);
+
     @Override
     public abstract boolean hasWebServiceClients();
 
