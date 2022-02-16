@@ -2167,6 +2167,20 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
         this.denyUncoveredHttpMethods = denyUncoveredHttpMethods;
     }
 
+    @Override
+    public boolean isShowArchivedRealPathEnabled() {
+        return showArchivedRealPathEnabled;
+    }
+
+    /**
+     *
+     * @param enabled
+     */
+    @Override
+    public void setShowArchivedRealPathEnabled(boolean enabled) {
+        showArchivedRealPathEnabled = enabled;
+    }
+    
     /**
      * @return true if this bundle descriptor defines web service clients
      */
