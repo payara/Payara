@@ -266,6 +266,7 @@ public class WebModule extends PwcWebModule implements Context {
     private final ServiceLocator services;
 
     protected boolean directoryDeployed = false;
+    protected boolean showArchivedRealPathEnabled = true;
 
     /**
      * Constructor.
@@ -617,7 +618,7 @@ public class WebModule extends PwcWebModule implements Context {
 
     @Override
     public String getRealPath(String path) {
-        if (!directoryDeployed) {
+        if (!(showArchivedRealPathEnabled || directoryDeployed)) {
             return null;
         }
 
