@@ -105,6 +105,7 @@ public class ForkJoinWorkerThreadRestIT {
         String message = target.request().accept(MediaType.TEXT_PLAIN).get(String.class);
         logger.log(Level.INFO, "Returned message {0}", new Object[]{message});
         assertTrue(message.contains("Counting numbers total"));
+        assertTrue(message.contains("500000500000"));
     }
 
 }
