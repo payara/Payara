@@ -585,9 +585,6 @@ public class WebModule extends PwcWebModule implements Context {
         configureValves();
         configureCatalinaProperties();
         webModuleStartedEvent();
-        if (directoryListing) {
-            setDirectoryListing(directoryListing);
-        }
 
         hasStarted = true;
     }
@@ -2533,12 +2530,12 @@ public class WebModule extends PwcWebModule implements Context {
 
     @Override
     public void setDirectoryListing(boolean directoryListing) {
-        getServletContext().
+        throw new UnsupportedOperationException("No longer supported - unused within Payara");
     }
 
     @Override
     public boolean isDirectoryListing() {
-        return false;
+        throw new UnsupportedOperationException("No longer supported - unused within Payara");
     }
 
     @Override
