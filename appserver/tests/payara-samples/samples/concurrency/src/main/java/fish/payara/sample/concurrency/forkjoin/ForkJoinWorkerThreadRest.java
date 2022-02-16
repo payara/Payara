@@ -76,7 +76,6 @@ public class ForkJoinWorkerThreadRest {
     public String forkJoinWorkerThreadExecution() throws InterruptedException, ExecutionException {
         logger.log(Level.INFO, String.format("Processing schedule thread factory executor: %s", managedThreadFactory));
         final long[] numbers = LongStream.rangeClosed(1, 1_000_000).toArray();
-        //MyThreadFactory myThreadFactory = new MyThreadFactory(managedThreadFactory);
         logger.log(Level.INFO, String.format("Available processors: %s", Runtime.getRuntime().availableProcessors()));
         ForkJoinPool pool = new ForkJoinPool(Runtime.getRuntime().availableProcessors(), managedThreadFactory, null, false);
         ForkJoinTask<Long> task = new ForkJoinSum(numbers);
@@ -86,24 +85,9 @@ public class ForkJoinWorkerThreadRest {
         return "Counting numbers total:" + t;
     }
 
-    static class MyThreadFactory implements ForkJoinWorkerThreadFactory {
-        static final Logger log = Logger.getLogger(MyThreadFactory.class.getName());
-        ManagedThreadFactory managedT;
-
-        MyThreadFactory(ManagedThreadFactory managedThreadFactory) {
-            managedT = managedThreadFactory;
-        }
-
-        @Override
-        public ForkJoinWorkerThread newThread(ForkJoinPool pool) {
-            log.log(Level.INFO, String.format("Pool Size %d",pool.getPoolSize()));
-            return managedT.newThread(pool);
-        }
-    }
-
     static class ForkJoinSum  extends RecursiveTask<Long> {
 
-        public static final long THRESHOLD = 500_000;
+        public static final long THRESHOLD = 10_000;
 
         private final long[] numbers;
         private final int start;
