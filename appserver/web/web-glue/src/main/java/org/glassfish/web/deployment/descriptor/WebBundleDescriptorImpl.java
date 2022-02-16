@@ -2186,12 +2186,12 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     }
 
     public int getServletReloadCheckSecs() {
-        return servletReloadCheckSecs;
+        throw new UnsupportedOperationException("No longer supported - unused within Payara");
     }
 
     @Override
     public void setServletReloadCheckSecs(int secs) {
-        servletReloadCheckSecs = secs;
+        throw new UnsupportedOperationException("No longer supported - unused within Payara");
     }
 
     /**

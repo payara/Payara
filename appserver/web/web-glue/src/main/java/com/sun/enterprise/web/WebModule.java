@@ -566,7 +566,6 @@ public class WebModule extends PwcWebModule implements Context {
         }
         if (webBundleDescriptor != null) {
             showArchivedRealPathEnabled = webBundleDescriptor.isShowArchivedRealPathEnabled();
-            servletReloadCheckSecs = webBundleDescriptor.getServletReloadCheckSecs();
             String reqEncoding = webBundleDescriptor.getRequestCharacterEncoding();
 			if (reqEncoding != null) {
 				setRequestCharacterEncoding(reqEncoding);
