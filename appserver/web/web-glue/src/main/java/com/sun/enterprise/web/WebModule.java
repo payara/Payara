@@ -1950,12 +1950,6 @@ public class WebModule extends PwcWebModule implements Context {
     }
 
     @Override
-    protected ServletRegistrationImpl createServletRegistrationImpl(
-            StandardWrapper wrapper) {
-        return new WebServletRegistrationImpl(wrapper, this);
-    }
-
-    @Override
     protected void removePatternFromServlet(Wrapper wrapper, String pattern) {
         super.removePatternFromServlet(wrapper, pattern);
         WebBundleDescriptor wbd = getWebBundleDescriptor();
@@ -2678,48 +2672,5 @@ class V3WebappLoader extends WebappLoader {
         // Do nothing. The nested (Webapp)ClassLoader is stopped in
         // WebApplication.stop()
     }
-}
-
-/**
- * Implementation of jakarta.servlet.ServletRegistration whose addMapping also
- * updates the WebBundleDescriptor from the deployment backend.
- */
-class WebServletRegistrationImpl extends ServletRegistrationImpl {
-
-    public WebServletRegistrationImpl(StandardWrapper wrapper,
-                                      StandardContext context) {
-        super(wrapper, context);
-    }
-
-    @Override
-    public Set<String> addMapping(String... urlPatterns) {
-        Set<String> conflicts = super.addMapping(urlPatterns);
-        if (conflicts.isEmpty() && urlPatterns != null &&
-                urlPatterns.length > 0) {
-            /*
-             * Propagate the new mappings to the underlying
-             * WebBundleDescriptor provided by the deployment backend,
-             * so that corresponding security constraints may be calculated
-             * by the security subsystem, which uses the
-             * WebBundleDescriptor as its input
-             */
-            WebBundleDescriptor wbd = ((WebModule) getContext()).getWebBundleDescriptor();
-            if (wbd == null) {
-                throw new IllegalStateException(
-                    "Missing WebBundleDescriptor for " + getContext().getName());
-            }
-            WebComponentDescriptor wcd =
-                wbd.getWebComponentByCanonicalName(getName());
-            if (wcd == null) {
-                throw new IllegalStateException(
-                    "Missing WebComponentDescriptor for " + getName());
-            }
-            for (String urlPattern : urlPatterns) {
-                wcd.addUrlPattern(urlPattern);
-            }
-        }
-        return conflicts;
-    }
-}
 
 }
