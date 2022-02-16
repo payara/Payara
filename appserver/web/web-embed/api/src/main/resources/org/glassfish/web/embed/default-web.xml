@@ -70,7 +70,7 @@
   <!-- ================== Built In Servlet Definitions ==================== -->
 
 
-  <!-- The DefaultServlet, which is responsible for serving static          -->
+  <!-- The DefaultDervlet, which is responsible for serving static          -->
   <!-- resources.                                                           -->
   <!-- This servlet processes any requests that are not mapped to other     -->
   <!-- servlets with servlet mappings (defined either here or in your own   -->

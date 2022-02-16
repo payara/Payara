@@ -201,6 +201,9 @@ public final class EmbeddedWebContainer extends Catalina implements PostConstruc
         context.setServerContext(serverContext);
         context.setWebModuleConfig(wmInfo);
         context.setDefaultWebXml(defaultWebXmlLocation);
+        if (embeddedDirectoryListing) {
+            context.setDirectoryListing(embeddedDirectoryListing);
+        }
 
         if (configFile.exists()) {
             context.setConfigFile(configFile.getAbsolutePath());

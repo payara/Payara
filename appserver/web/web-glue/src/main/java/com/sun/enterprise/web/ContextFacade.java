@@ -603,6 +603,17 @@ public class ContextFacade extends WebModule {
     // --------------------------------------------------------- embedded Methods
 
     /**
+     * Enables or disables directory listings on this <tt>Context</tt>.
+     */
+    public void setDirectoryListing(boolean directoryListing) {
+        context.setDirectoryListing(directoryListing);
+    }
+
+    public boolean isDirectoryListing() {
+        return context.isDirectoryListing();
+    }
+
+    /**
      * Set the security related configuration for this context
      */
     public void setSecurityConfig(SecurityConfig config) {

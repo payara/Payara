@@ -73,6 +73,7 @@ public class WebContainerConfig {
     private File docRoot;
     private String hostNames = "${com.sun.aas.hostName}";
     private String  listenerName = "embedded-listener";
+    private boolean listings = false;
     private int port = 8080;    
     private String virtualServerId = "server";
 
@@ -147,6 +148,23 @@ public class WebContainerConfig {
      */
     public String getListenerName() {
         return listenerName;
+    }
+
+    /**
+     * Enables or disables directory listings
+     *
+     * @param directoryListing true if directory listings are to be
+     * enabled, false otherwise
+     */
+    public void setListings(boolean directoryListing) {
+        listings = directoryListing;
+    }
+
+    /**
+     * Return if directory listings is enabled
+     */
+    public boolean getListings() {
+        return listings;
     }
 
     /**

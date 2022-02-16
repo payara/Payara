@@ -495,6 +495,8 @@ public class WebContainerImpl implements WebContainer {
             EmbeddedWebArchivist archivist = habitat.<EmbeddedWebArchivist>getService(EmbeddedWebArchivist.class);
             archivist.setDefaultWebXml(config.getDefaultWebXml());
 
+            embedded.setDirectoryListing(config.getListings());
+
             WebListener listener = getWebListener(config.getListenerName());
             if (listener == null) {
                 listener = getWebListener(config.getPort());

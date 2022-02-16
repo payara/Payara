@@ -585,6 +585,9 @@ public class WebModule extends PwcWebModule implements Context {
         configureValves();
         configureCatalinaProperties();
         webModuleStartedEvent();
+        if (directoryListing) {
+            setDirectoryListing(directoryListing);
+        }
 
         hasStarted = true;
     }
@@ -2538,6 +2541,16 @@ public class WebModule extends PwcWebModule implements Context {
     @Override
     public void addListener(Class<? extends EventListener> listenerClass) {
         getServletContext().addListener(listenerClass);
+    }
+
+    @Override
+    public void setDirectoryListing(boolean directoryListing) {
+        getServletContext().
+    }
+
+    @Override
+    public boolean isDirectoryListing() {
+        return false;
     }
 
     @Override
