@@ -606,11 +606,11 @@ public class ContextFacade extends WebModule {
      * Enables or disables directory listings on this <tt>Context</tt>.
      */
     public void setDirectoryListing(boolean directoryListing) {
-        context.setDirectoryListing(directoryListing);
+        throw new UnsupportedOperationException("No longer supported - unused within Payara");
     }
 
     public boolean isDirectoryListing() {
-        return context.isDirectoryListing();
+        throw new UnsupportedOperationException("No longer supported - unused within Payara");
     }
 
     /**
