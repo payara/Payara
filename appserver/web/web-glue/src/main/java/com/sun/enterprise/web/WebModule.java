@@ -265,7 +265,10 @@ public class WebModule extends PwcWebModule implements Context {
 
     private final ServiceLocator services;
 
+    // Originally from forked StandardContext
     protected boolean directoryDeployed = false;
+
+    // Originally from forked StandardContext, refers to option in weblogic.xml
     protected boolean showArchivedRealPathEnabled = true;
 
     /**
