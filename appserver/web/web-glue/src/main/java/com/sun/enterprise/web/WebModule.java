@@ -962,8 +962,7 @@ public class WebModule extends PwcWebModule implements Context {
     void setStandalone(boolean isStandalone) {
         this.isStandalone = isStandalone;
     }
-
-    @Override
+    
     protected boolean isStandalone() {
         return isStandalone;
     }
