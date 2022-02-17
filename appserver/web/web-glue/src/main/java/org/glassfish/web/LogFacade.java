@@ -324,16 +324,6 @@ public class LogFacade {
     public static final String INVALID_ACCESS_LOG_PATTERN_COMPONENT = PREFIX + "00049";
 
     @LogMessageInfo(
-            message = "Error processing request received on ad-hoc path {0}",
-            level = "WARNING")
-    public static final String ADHOC_SERVLET_SERVICE_ERROR = PREFIX + "00050";
-
-    @LogMessageInfo(
-            message = "No ad-hoc servlet configured to process ad-hoc path {0}",
-            level = "WARNING")
-    public static final String NO_ADHOC_SERVLET = PREFIX + "00051";
-
-    @LogMessageInfo(
             message = "mgr reapInterval set = {0}",
             level = "FINEST")
     public static final String MANAGER_REAP_INTERVAL_SET = PREFIX + "00052";

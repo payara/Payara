@@ -41,14 +41,13 @@
 package com.sun.enterprise.web;
 
 import org.apache.catalina.Container;
-import org.apache.catalina.Request;
-import org.apache.catalina.Response;
+import org.apache.catalina.connector.Request;
+import org.apache.catalina.connector.Response;
 import org.apache.catalina.core.StandardPipeline;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import com.sun.web.security.RealmAdapter;
 import org.apache.catalina.Realm;
 
 /**
@@ -87,10 +86,7 @@ public class WebPipeline extends StandardPipeline {
             throws IOException, ServletException {
 
         HttpServletRequest hreq = (HttpServletRequest) request.getRequest();
-        if (webModule != null &&
-                webModule.getAdHocServletName(hreq.getServletPath()) != null) {
-            webModule.getAdHocPipeline().invoke(request, response);
-        } else if (webModule != null) {
+        if (webModule != null) {
             final Realm realm = webModule.getRealm();
             if (realm != null &&
                     realm.isSecurityExtensionEnabled(hreq.getServletContext())){

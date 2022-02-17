@@ -107,16 +107,13 @@ import jakarta.servlet.http.HttpUpgradeHandler;
 import jakarta.servlet.jsp.JspFactory;
 import jakarta.servlet.jsp.tagext.JspTag;
 
-import org.apache.catalina.Connector;
 import org.apache.catalina.Container;
 import org.apache.catalina.Context;
-import org.apache.catalina.Deployer;
 import org.apache.catalina.Engine;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.Loader;
 import org.apache.catalina.Realm;
-import org.apache.catalina.connector.Request;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.core.StandardEngine;
 import org.apache.catalina.startup.ContextConfig;
@@ -162,7 +159,6 @@ import org.glassfish.web.deployment.archivist.WebArchivist;
 import org.glassfish.web.deployment.runtime.SunWebAppImpl;
 import org.glassfish.web.deployment.util.WebValidatorWithoutCL;
 import org.glassfish.web.loader.WebappClassLoader;
-import org.glassfish.web.valve.GlassFishValve;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.ObservableBean;
@@ -1692,24 +1688,10 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
             docBase = webModuleConfig.getLocation();
         }
 
-        Map<String, AdHocServletInfo> adHocPaths = null;
-        Map<String, AdHocServletInfo> adHocSubtrees = null;
         WebModule webModule = (WebModule) virtualServer.findChild(webModuleContextPath);
         if (webModule != null) {
             Optional<ApplicationState> appState = hotDeployService.getApplicationState(dc);
-            if (webModule instanceof AdHocWebModule) {
-                /*
-                 * Found ad-hoc web module which has been created by web container in order to store mappings for ad-hoc paths and
-                 * subtrees. All these mappings must be propagated to the context that is being deployed.
-                 */
-                if (webModule.hasAdHocPaths()) {
-                    adHocPaths = webModule.getAdHocPaths();
-                }
-                if (webModule.hasAdHocSubtrees()) {
-                    adHocSubtrees = webModule.getAdHocSubtrees();
-                }
-                virtualServer.removeChild(webModule);
-            } else if (DEFAULT_WEB_MODULE_NAME.equals(webModule.getModuleName())) {
+            if (DEFAULT_WEB_MODULE_NAME.equals(webModule.getModuleName())) {
                 /*
                  * Dummy context that was created just off of a docroot, (see VirtualServer.createSystemDefaultWebModuleIfNecessary()).
                  * Unload it so it can be replaced with the web module to be loaded
@@ -1762,13 +1744,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         webModule.setJ2EEApplication(j2eeApplication);
         webModule.setCacheControls(virtualServer.getCacheControls());
         webModule.setBean(webModuleConfig.getBean());
-
-        if (adHocPaths != null) {
-            webModule.addAdHocPaths(adHocPaths);
-        }
-        if (adHocSubtrees != null) {
-            webModule.addAdHocSubtrees(adHocSubtrees);
-        }
 
         final WebBundleDescriptor webBundleDescriptor = webModuleConfig.getDescriptor();
         if (webBundleDescriptor == null) {
@@ -2073,15 +2048,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
                     }
                     hasBeenUndeployed = true;
                     host.fireContainerEvent(Deployer.REMOVE_EVENT, context);
-                    /*
-                     * If the web module that has been unloaded contained any mappings for ad-hoc paths, those mappings must be preserved by
-                     * registering an ad-hoc web module at the same context root
-                     */
-                    if (context.hasAdHocPaths() || context.hasAdHocSubtrees()) {
-                        WebModule wm = createAdHocWebModule(context.getID(), host, contextRoot, context.getJ2EEApplication());
-                        wm.addAdHocPaths(context.getAdHocPaths());
-                        wm.addAdHocSubtrees(context.getAdHocSubtrees());
-                    }
+
                     // START GlassFish 141
                     if (!dummy && !isShutdown) {
                         WebModuleConfig wmInfo = host.createSystemDefaultWebModuleIfNecessary(serviceLocator.<WebArchivist>getService(WebArchivist.class));
@@ -2261,146 +2228,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
 
     public HttpService getHttpService() {
         return serverConfig.getHttpService();
-    }
-
-    /**
-     * Registers the given ad-hoc path at the given context root.
-     *
-     * @param path The ad-hoc path to register
-     * @param ctxtRoot The context root at which to register
-     * @param appName The name of the application with which the ad-hoc path is associated
-     * @param servletInfo Info about the ad-hoc servlet that will service requests on the given path
-     */
-    public void registerAdHocPath(String path, String ctxtRoot, String appName, AdHocServletInfo servletInfo) {
-        registerAdHocPathAndSubtree(path, null, ctxtRoot, appName, servletInfo);
-    }
-
-    /**
-     * Registers the given ad-hoc path and subtree at the given context root.
-     *
-     * @param path The ad-hoc path to register
-     * @param subtree The ad-hoc subtree path to register
-     * @param ctxtRoot The context root at which to register
-     * @param appName The name of the application with which the ad-hoc path and subtree are associated
-     * @param servletInfo Info about the ad-hoc servlet that will service requests on the given ad-hoc path and subtree
-     */
-    public void registerAdHocPathAndSubtree(String path, String subtree, String ctxtRoot, String appName, AdHocServletInfo servletInfo) {
-        for (Container container : getEngine().findChildren()) {
-            VirtualServer virtualServer = (VirtualServer) container;
-            if (virtualServer.getName().equalsIgnoreCase(ADMIN_VS)) {
-                // Do not deploy on admin vs
-                continue;
-            }
-
-            WebModule webModule = (WebModule) virtualServer.findChild(ctxtRoot);
-            if (webModule == null) {
-                webModule = createAdHocWebModule(virtualServer, ctxtRoot, appName);
-            }
-
-            webModule.addAdHocPathAndSubtree(path, subtree, servletInfo);
-        }
-    }
-
-    /**
-     * Unregisters the given ad-hoc path from the given context root.
-     *
-     * @param path The ad-hoc path to unregister
-     * @param ctxtRoot The context root from which to unregister
-     */
-    public void unregisterAdHocPath(String path, String ctxtRoot) {
-        unregisterAdHocPathAndSubtree(path, null, ctxtRoot);
-    }
-
-    /**
-     * Unregisters the given ad-hoc path and subtree from the given context root.
-     *
-     * @param path The ad-hoc path to unregister
-     * @param subtree The ad-hoc subtree to unregister
-     * @param ctxtRoot The context root from which to unregister
-     */
-    public void unregisterAdHocPathAndSubtree(String path, String subtree, String ctxtRoot) {
-        for (Container container : getEngine().findChildren()) {
-            VirtualServer virtualServer = (VirtualServer) container;
-
-            if (virtualServer.getName().equalsIgnoreCase(ADMIN_VS)) {
-                // Do not undeploy from admin vs, because we never deployed onto it
-                continue;
-            }
-
-            WebModule webModule = (WebModule) virtualServer.findChild(ctxtRoot);
-            if (webModule == null) {
-                continue;
-            }
-
-            /*
-             * If the web module was created by the container for the sole purpose of mapping ad-hoc paths and subtrees, and does no
-             * longer contain any ad-hoc paths or subtrees, remove the web module.
-             */
-            webModule.removeAdHocPath(path);
-            webModule.removeAdHocSubtree(subtree);
-
-            if (webModule instanceof AdHocWebModule && !webModule.hasAdHocPaths() && !webModule.hasAdHocSubtrees()) {
-                virtualServer.removeChild(webModule);
-                try {
-                    webModule.destroy();
-                } catch (Exception ex) {
-                    logger.log(WARNING, format(rb.getString(EXCEPTION_DURING_DESTROY), webModule.getPath(), virtualServer.getName()), ex);
-                }
-            }
-        }
-    }
-
-    /*
-     * Creates an ad-hoc web module and registers it on the given virtual server at the given context root.
-     *
-     * @param vs The virtual server on which to add the ad-hoc web module
-     * @param ctxtRoot The context root at which to register the ad-hoc web module
-     * @param appName The name of the application to which the ad-hoc module being generated belongs
-     *
-     * @return The newly created ad-hoc web module
-     */
-    private WebModule createAdHocWebModule(VirtualServer vs, String ctxtRoot, String appName) {
-        return createAdHocWebModule(appName, vs, ctxtRoot, appName);
-    }
-
-    /*
-     * Creates an ad-hoc web module and registers it on the given virtual server at the given context root.
-     *
-     * @param id the id of the ad-hoc web module
-     * @param vs The virtual server on which to add the ad-hoc web module
-     * @param ctxtRoot The context root at which to register the ad-hoc web module
-     * @param appName The name of the application to which the ad-hoc module being generated belongs
-     *
-     * @return The newly created ad-hoc web module
-     */
-    private WebModule createAdHocWebModule(String id, VirtualServer vs, String ctxtRoot, String j2eeApplication) {
-
-        AdHocWebModule adHocWebModule = new AdHocWebModule();
-        adHocWebModule.setID(id);
-        adHocWebModule.setWebContainer(this);
-
-        adHocWebModule.restrictedSetPipeline(new WebPipeline(adHocWebModule));
-
-        // The Parent ClassLoader of the AdhocWebModule was null
-        // [System ClassLoader]. With the new hierarchy, the thread context
-        // classloader needs to be set.
-        adHocWebModule.setParentClassLoader(Thread.currentThread().getContextClassLoader());
-        adHocWebModule.setContextRoot(ctxtRoot);
-        adHocWebModule.setJ2EEApplication(j2eeApplication);
-        adHocWebModule.setName(ctxtRoot);
-        adHocWebModule.setDocBase(vs.getAppBase());
-        adHocWebModule.setEngineName(vs.getParent().getName());
-
-        String domain = _serverContext.getDefaultDomainName();
-        adHocWebModule.setDomain(domain);
-
-        String j2eeServer = _serverContext.getInstanceName();
-        adHocWebModule.setJ2EEServer(j2eeServer);
-        adHocWebModule.setCrossContext(true);
-
-        vs.addChild(adHocWebModule);
-
-        return adHocWebModule;
     }
 
     /**

@@ -88,9 +88,7 @@ import org.apache.catalina.Pipeline;
 import org.apache.catalina.Realm;
 import org.apache.catalina.Valve;
 import org.apache.catalina.Wrapper;
-import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.core.StandardPipeline;
-import org.apache.catalina.core.StandardWrapper;
 import org.apache.catalina.loader.WebappLoader;
 import org.apache.catalina.servlets.DefaultServlet;
 import org.apache.catalina.session.StandardManager;
@@ -142,12 +140,10 @@ import java.util.Base64;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.EventListener;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.Set;
@@ -201,14 +197,6 @@ public class WebModule extends PwcWebModule implements Context {
 
     private WebContainer webContainer;
 
-    private final Map<String,AdHocServletInfo> adHocPaths;
-    private boolean hasAdHocPaths;
-
-    private final Map<String,AdHocServletInfo> adHocSubtrees;
-    private boolean hasAdHocSubtrees;
-
-    private final StandardPipeline adHocPipeline;
-
     // File encoding of static resources
     private String fileEncoding;
 
@@ -260,11 +248,6 @@ public class WebModule extends PwcWebModule implements Context {
     public WebModule(ServiceLocator services) {
         super();
         this.services = services;
-        this.adHocPaths = new HashMap<>();
-        this.adHocSubtrees = new HashMap<>();
-
-        this.adHocPipeline = new StandardPipeline(this);
-        this.adHocPipeline.setBasic(new AdHocContextValve(this));
     }
 
 
@@ -723,241 +706,6 @@ public class WebModule extends PwcWebModule implements Context {
     }
 
     /**
-     * Indicates whether this web module contains any ad-hoc paths.
-     *
-     * An ad-hoc path is a servlet path that is mapped to a servlet
-     * not declared in the web module's deployment descriptor.
-     *
-     * A web module all of whose mappings are for ad-hoc paths is called an
-     * ad-hoc web module.
-     *
-     * @return true if this web module contains any ad-hoc paths, false
-     * otherwise
-     */
-    @Override
-    public boolean hasAdHocPaths() {
-        return this.hasAdHocPaths;
-    }
-
-    /**
-     * Indicates whether this web module contains any ad-hoc subtrees.
-     *
-     * @return true if this web module contains any ad-hoc subtrees, false
-     * otherwise
-     */
-    public boolean hasAdHocSubtrees() {
-        return this.hasAdHocSubtrees;
-    }
-
-    /*
-     * Adds the given ad-hoc path and subtree, along with information about
-     * the servlet that will be responsible for servicing it, to this web
-     * module.
-     *
-     * @param path The ad-hoc path to add
-     * @param subtree The ad-hoc subtree path to add
-     * @param servletInfo Information about the servlet that is responsible
-     * for servicing the given ad-hoc path
-     */
-    void addAdHocPathAndSubtree(String path,
-                                String subtree,
-                                AdHocServletInfo servletInfo) {
-
-        if (path == null && subtree == null) {
-            return;
-        }
-
-        Wrapper adHocWrapper = (Wrapper)
-            findChild(servletInfo.getServletName());
-        if (adHocWrapper == null) {
-            adHocWrapper = createAdHocWrapper(servletInfo);
-            addChild(adHocWrapper);
-        }
-
-        if (path != null) {
-            adHocPaths.put(path, servletInfo);
-            hasAdHocPaths = true;
-        }
-
-        if (subtree != null) {
-            adHocSubtrees.put(subtree, servletInfo);
-            hasAdHocSubtrees = true;
-        }
-    }
-
-    /*
-     * Adds the given ad-hoc path to servlet mappings to this web module.
-     *
-     * @param newPaths Mappings of ad-hoc paths to the servlets responsible
-     * for servicing them
-     */
-    void addAdHocPaths(Map<String, AdHocServletInfo> newPaths) {
-
-        if (newPaths == null || newPaths.isEmpty()) {
-            return;
-        }
-        for (Map.Entry<String, AdHocServletInfo> entry : newPaths.entrySet()) {
-            AdHocServletInfo servletInfo = entry.getValue();
-            Wrapper adHocWrapper = (Wrapper)
-                findChild(servletInfo.getServletName());
-            if(adHocWrapper == null) {
-                adHocWrapper = createAdHocWrapper(servletInfo);
-                addChild(adHocWrapper);
-            }
-            adHocPaths.put(entry.getKey(), servletInfo);
-        }
-
-        hasAdHocPaths = true;
-    }
-
-    /*
-     * Adds the given ad-hoc subtree path to servlet mappings to this web
-     * module.
-     *
-     * @param newSubtrees Mappings of ad-hoc subtree paths to the servlets
-     * responsible for servicing them
-     */
-    void addAdHocSubtrees(Map<String, AdHocServletInfo> newSubtrees) {
-
-        if (newSubtrees == null || newSubtrees.isEmpty()) {
-            return;
-        }
-        for (Map.Entry<String, AdHocServletInfo> entry : newSubtrees.entrySet()) {
-            AdHocServletInfo servletInfo = entry.getValue();
-            Wrapper adHocWrapper = (Wrapper)findChild(servletInfo.getServletName());
-            if(adHocWrapper == null) {
-                adHocWrapper = createAdHocWrapper(servletInfo);
-                addChild(adHocWrapper);
-            }
-            adHocSubtrees.put(entry.getKey(), servletInfo);
-        }
-
-        hasAdHocSubtrees = true;
-    }
-
-    /*
-     * Gets the ad-hoc path to servlet mappings managed by this web module.
-     *
-     * @return The ad-hoc path to servlet mappings managed by this web
-     * module.
-     */
-    Map<String, AdHocServletInfo> getAdHocPaths() {
-        return adHocPaths;
-    }
-
-    /*
-     * Gets the ad-hoc subtree path to servlet mappings managed by this
-     * web module.
-     *
-     * @return The ad-hoc subtree path to servlet mappings managed by
-     * this web module.
-     */
-    Map<String, AdHocServletInfo> getAdHocSubtrees() {
-        return adHocSubtrees;
-    }
-
-    /**
-     * Returns the name of the ad-hoc servlet responsible for servicing the
-     * given path.
-     *
-     * @param path The path whose associated ad-hoc servlet is needed
-     *
-     * @return The name of the ad-hoc servlet responsible for servicing the
-     * given path, or null if the given path does not represent an ad-hoc
-     * path
-     */
-    @Override
-    public String getAdHocServletName(String path) {
-
-        if (!hasAdHocPaths() && !hasAdHocSubtrees()) {
-            return null;
-        }
-
-        AdHocServletInfo servletInfo = null;
-
-        // Check if given path matches any of the ad-hoc paths (exact match)
-        if (path == null) {
-            servletInfo = adHocPaths.get("");
-        } else {
-            servletInfo = adHocPaths.get(path);
-        }
-
-        // Check if given path starts with any of the ad-hoc subtree paths
-        if (servletInfo == null && path != null && hasAdHocSubtrees()) {
-            for (Entry<String,AdHocServletInfo> entry : adHocSubtrees.entrySet()) {
-                String adHocSubtree = entry.getKey();
-                if(path.startsWith(adHocSubtree)) {
-                    servletInfo = entry.getValue();
-                    break;
-                }
-            }
-        }
-
-        if (servletInfo != null) {
-            return servletInfo.getServletName();
-        } else {
-            return null;
-        }
-    }
-
-    /*
-     * Removes the given ad-hoc path from this web module.
-     *
-     * @param path The ad-hoc path to remove
-     */
-    void removeAdHocPath(String path) {
-        if (path == null) {
-            return;
-        }
-        adHocPaths.remove(path);
-        if (adHocPaths.isEmpty()) {
-            this.hasAdHocPaths = false;
-        }
-    }
-
-    /*
-     * Removes the given ad-hoc path from this web module.
-     *
-     * @param subtree The ad-hoc subtree to remove
-     */
-    void removeAdHocSubtree(String subtree) {
-        if (subtree == null) {
-            return;
-        }
-        adHocSubtrees.remove(subtree);
-        if (adHocSubtrees.isEmpty()) {
-            this.hasAdHocSubtrees = false;
-        }
-    }
-
-    /**
-     * Adds the given valve to this web module's ad-hoc pipeline.
-     *
-     * @param valve The valve to add
-     */
-    public void addAdHocValve(GlassFishValve valve) {
-        adHocPipeline.addValve(valve);
-    }
-
-    /**
-     * Removes the given valve from this web module's ad-hoc pipeline.
-     *
-     * @param valve The valve to remove
-     */
-    public void removeAdHocValve(GlassFishValve valve) {
-        adHocPipeline.removeValve(valve);
-    }
-
-    /**
-     * Gets this web module's ad-hoc pipeline.
-     *
-     * @return This web module's ad-hoc pipeline
-     */
-    public Pipeline getAdHocPipeline() {
-        return adHocPipeline;
-    }
-
-    /**
      * Sets the file encoding of all static resources of this web module.
      *
      * @param enc The file encoding of static resources of this web module
@@ -1004,30 +752,6 @@ public class WebModule extends PwcWebModule implements Context {
         }
 
         addFilterMaps(filterMaps);
-    }
-
-    /**
-     * Creates an ad-hoc servlet wrapper from the given ad-hoc servlet info.
-     *
-     * @param servletInfo Ad-hoc servlet info from which to generate
-     * ad-hoc servlet wrapper
-     *
-     * @return The generated ad-hoc servlet wrapper
-     */
-    private Wrapper createAdHocWrapper(AdHocServletInfo servletInfo) {
-
-        Wrapper adHocWrapper = new StandardWrapper();
-        adHocWrapper.setServletClassName(
-            servletInfo.getServletClass().getName());
-        adHocWrapper.setName(servletInfo.getServletName());
-        Map<String,String> initParams = servletInfo.getServletInitParams();
-        if (initParams != null && !initParams.isEmpty()) {
-            for(Map.Entry<String,String> entry : initParams.entrySet()) {
-                adHocWrapper.addInitParameter(entry.getKey(), entry.getValue());
-            }
-        }
-
-        return adHocWrapper;
     }
 
     /**
