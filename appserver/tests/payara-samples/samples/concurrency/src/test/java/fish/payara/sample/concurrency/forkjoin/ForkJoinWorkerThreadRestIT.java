@@ -97,11 +97,35 @@ public class ForkJoinWorkerThreadRestIT {
     }
 
     @Test
-    @DisplayName("testing CronTrigger execution")
+    @DisplayName("testing ForkJoin execution")
     @RunAsClient
     public void testForkJoin() throws MalformedURLException {
-        logger.log(Level.INFO, "Consuming service to submit CronTrigger execution {0}", new Object[]{client});
+        logger.log(Level.INFO, "Consuming service to submit ForkJoin execution {0}", new Object[]{client});
         WebTarget target = this.client.target(new URL(this.base, "concurrency/forkjoin").toExternalForm());
+        String message = target.request().accept(MediaType.TEXT_PLAIN).get(String.class);
+        logger.log(Level.INFO, "Returned message {0}", new Object[]{message});
+        assertTrue(message.contains("Counting numbers total"));
+        assertTrue(message.contains("500000500000"));
+    }
+
+    @Test
+    @DisplayName("testing ForkJoin with transaction execution")
+    @RunAsClient
+    public void testForkJoinWithTransaction() throws MalformedURLException {
+        logger.log(Level.INFO, "Consuming service to submit ForkJoin with transaction execution {0}", new Object[]{client});
+        WebTarget target = this.client.target(new URL(this.base, "concurrency/forkjointransaction").toExternalForm());
+        String message = target.request().accept(MediaType.TEXT_PLAIN).get(String.class);
+        logger.log(Level.INFO, "Returned message {0}", new Object[]{message});
+        assertTrue(message.contains("Counting numbers total"));
+        assertTrue(message.contains("500000500000"));
+    }
+
+    @Test
+    @DisplayName("testing parallel stream execution")
+    @RunAsClient
+    public void testParallelStream() throws MalformedURLException {
+        logger.log(Level.INFO, "Consuming service to submit parallel stream execution {0}", new Object[]{client});
+        WebTarget target = this.client.target(new URL(this.base, "concurrency/parallelstream").toExternalForm());
         String message = target.request().accept(MediaType.TEXT_PLAIN).get(String.class);
         logger.log(Level.INFO, "Returned message {0}", new Object[]{message});
         assertTrue(message.contains("Counting numbers total"));
