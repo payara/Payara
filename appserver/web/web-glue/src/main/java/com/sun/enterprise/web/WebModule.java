@@ -72,7 +72,6 @@ import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.Servlet;
 import jakarta.servlet.ServletContainerInitializer;
 import jakarta.servlet.ServletContext;
-import jakarta.servlet.ServletContextListener;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRegistration;
 import jakarta.servlet.ServletSecurityElement;
@@ -103,7 +102,6 @@ import org.glassfish.embeddable.web.config.LoginConfig;
 import org.glassfish.embeddable.web.config.SecurityConfig;
 import org.glassfish.embeddable.web.config.TransportGuarantee;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.hk2.classmodel.reflect.Types;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.security.common.Role;
 import org.glassfish.web.LogFacade;
@@ -140,7 +138,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -696,60 +693,6 @@ public class WebModule extends PwcWebModule implements Context {
         }
 
         return null;
-    }
-
-    @Override
-    protected Types getTypes() {
-        if (wmInfo.getDeploymentContext()!=null) {
-            return wmInfo.getDeploymentContext().getTransientAppMetaData(Types.class.getName(), Types.class);
-        } else {
-            return null;
-        }
-    }
-
-    @Override
-    protected void callServletContainerInitializers()
-            throws LifecycleException {
-        WebComponentInvocation inv = new WebComponentInvocation(this);
-        try {
-            webContainer.getInvocationManager().preInvoke(inv);
-            super.callServletContainerInitializers();
-        }
-        finally {
-            webContainer.getInvocationManager().postInvoke(inv);
-        }
-        if (!isJsfApplication() && !contextListeners.isEmpty()) {
-            /*
-             * Remove any JSF related ServletContextListeners from
-             * non-JSF apps.
-             * This can be done reliably only after all
-             * ServletContainerInitializers have been invoked, because
-             * system-wide ServletContainerInitializers may be invoked in
-             * any order, and it is only after JSF's FacesInitializer has
-             * been invoked that isJsfApplication(), which checks for the
-             * existence of a mapping to the FacesServlet in the app, may
-             * be used reliably because such mapping would have been added
-             * by JSF's FacesInitializer. See also IT 10223
-             */
-            ArrayList<ServletContextListener> listeners =
-                new ArrayList<>(contextListeners);
-            String listenerClassName = null;
-            for (ServletContextListener listener : listeners) {
-                if (listener instanceof
-                        StandardContext.RestrictedServletContextListener) {
-                    listenerClassName = ((StandardContext.RestrictedServletContextListener) listener).getNestedListener().getClass().getName();
-                } else {
-                    listenerClassName = listener.getClass().getName();
-                }
-                /*
-                 * TBD: Retrieve listener class name from JSF's TldProvider
-                 */
-                if ("com.sun.faces.config.ConfigureListener".equals(
-                        listenerClassName)) {
-                    contextListeners.remove(listener);
-                }
-            }
-        }
     }
 
     /**
