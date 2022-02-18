@@ -125,6 +125,7 @@ import org.apache.catalina.util.ServerInfo;
 import org.apache.jasper.runtime.JspFactoryImpl;
 import org.apache.jasper.xmlparser.ParserUtils;
 import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
@@ -146,6 +147,7 @@ import org.glassfish.internal.api.ClassLoaderHierarchy;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
+import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.grizzly.ContextMapper;
 import org.glassfish.web.LogFacade;
 import org.glassfish.web.admin.monitor.HttpServiceStatsProviderBootstrap;
@@ -618,6 +620,19 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
             loadDefaultWebModulesAfterAllAppsProcessed();
         } else if (event.is(PREPARE_SHUTDOWN)) {
             isShutdown = true;
+        } else if (event.is(Deployment.DEPLOYMENT_SUCCESS)) {
+            ApplicationInfo applicationInfo = (ApplicationInfo) event.hook();
+            if (applicationInfo.getSource().getArchiveMetaData("commandparams", DeployCommandParameters.class).isRedeploy()) {
+                for (VirtualServer vs : getVirtualServers()) {
+                    if (vs.getDefaultWebModuleID().equals(applicationInfo.getName())) {
+                        try {
+                            updateHost(vs.getBean());
+                        } catch (LifecycleException e) {
+                            logger.log(Level.SEVERE, LogFacade.EXCEPTION_WEB_CONFIG, e);
+                        }
+                    }
+                }
+            }
         } else if (event.is(DEPLOYMENT_FAILURE) || event.is(UNDEPLOYMENT_FAILURE)) {
             DeploymentContext deploymentContext = (DeploymentContext) event.hook();
             try {
