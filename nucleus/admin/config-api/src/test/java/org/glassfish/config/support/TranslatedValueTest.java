@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2020-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2020-2022] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,14 +41,14 @@
 package org.glassfish.config.support;
 
 import org.glassfish.hk2.api.ServiceLocator;
-import org.junit.*;
-
 import org.glassfish.tests.utils.Utils;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
- *
  * @author cfiguera
  */
 public class TranslatedValueTest {
@@ -84,5 +84,17 @@ public class TranslatedValueTest {
         assertEquals("", TranslatedConfigView.expandConfigValue("${ENV=NOT_EXISTING_VARIABLE:}"));
         assertEquals("defaultVariable", TranslatedConfigView.expandConfigValue("${ENV=NOT_EXISTING_VARIABLE:defaultVariable}"));
         assertEquals("default:variable", TranslatedConfigView.expandConfigValue("${ENV=NOT_EXISTING_VARIABLE:default:variable}"));
+    }
+
+    @Test
+    public void envTranslationRequiredWithDefaultMultiple() {
+        System.out.println("envTranslationRequiredWithDefaultMultiple");
+        assertEquals("jdbc:postgresql://localhost:5432/test", TranslatedConfigView.expandValue("jdbc:postgresql://${ENV=db.host:localhost}:${ENV=db.port:5432}/${ENV=DB_NAME:test}"));
+    }
+
+    @Test
+    public void envTranslationOneRequired() {
+        System.out.println("envTranslationOneRequired");
+        assertEquals("${ENV=NOT_EXISTING_VARIABLE}_defaultVariable", TranslatedConfigView.expandValue("${ENV=NOT_EXISTING_VARIABLE}_${ENV=NOT_EXISTING_VARIABLE_2:defaultVariable}"));
     }
 }
