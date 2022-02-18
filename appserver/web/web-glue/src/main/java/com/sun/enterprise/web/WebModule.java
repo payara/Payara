@@ -1389,31 +1389,6 @@ public class WebModule extends PwcWebModule implements Context {
     }
 
     /**
-     * Loads and instantiates the listener with the specified classname.
-     *
-     * @param loader the classloader to use
-     * @param listenerClassName the fully qualified classname to instantiate
-     *
-     * @return the instantiated listener
-     *
-     * @throws Exception if the specified classname fails to be loaded or
-     * instantiated
-     */
-    @Override
-    protected EventListener loadListener(ClassLoader loader,
-                                         String listenerClassName)
-            throws Exception {
-        try {
-            return super.loadListener(loader, listenerClassName);
-        } catch (Exception e) {
-            if (WS_SERVLET_CONTEXT_LISTENER.equals(listenerClassName)) {
-                logger.log(Level.WARNING, LogFacade.MISSING_METRO, e);
-            }
-            throw e;
-        }
-    }
-
-    /**
      * Create and configure the session manager for this web application
      * according to the persistence type specified.
      *
