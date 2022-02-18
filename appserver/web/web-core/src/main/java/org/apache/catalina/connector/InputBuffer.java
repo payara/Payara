@@ -63,7 +63,6 @@ import fish.payara.nucleus.healthcheck.stuck.StuckThreadsStore;
 import static java.util.logging.Level.FINEST;
 import static org.apache.catalina.ContainerEvent.AFTER_READ_LISTENER_ON_ERROR;
 import static org.apache.catalina.ContainerEvent.BEFORE_READ_LISTENER_ON_ERROR;
-import static org.apache.catalina.Globals.IS_SECURITY_ENABLED;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -71,6 +70,8 @@ import java.nio.channels.InterruptedByTimeoutException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ResourceBundle;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -385,6 +386,9 @@ public class InputBuffer extends Reader implements ByteInputChannel, CharChunk.C
     class ReadHandlerImpl implements ReadHandler {
         private ReadListener readListener = null;
         private volatile boolean disable = false;
+        private AtomicBoolean dataAvailable = new AtomicBoolean();
+        private AtomicBoolean allDataRead = new AtomicBoolean();
+        private AtomicReference<Throwable> error = new AtomicReference<>(null);
 
         private ReadHandlerImpl(ReadListener listener) {
             readListener = listener;
@@ -395,19 +399,38 @@ public class InputBuffer extends Reader implements ByteInputChannel, CharChunk.C
             if (disable) {
                 return;
             }
+            dataAvailable.set(true);
+            scheduleCallbacks();
+        }
+
+        @Override
+        public void onAllDataRead() {
+            if (disable) {
+                return;
+            }
+            allDataRead.set(true);
+            scheduleCallbacks();
+        }
+
+        @Override
+        public void onError(final Throwable t) {
+            if (disable) {
+                return;
+            }
+            disable = true;
+            error.set(t);
+            scheduleCallbacks();
+        }
+
+        void scheduleCallbacks() {
             if (!Boolean.TRUE.equals(IS_READY_SCOPE.get())) {
-                processDataAvailable();
+                processCallbacks();
             } else {
-                AsyncContextImpl.getExecutorService().execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        processDataAvailable();
-                    }
-                });
+                AsyncContextImpl.getExecutorService().execute(this::processCallbacks);
             }
         }
 
-        private void processDataAvailable() {
+        private void processCallbacks() {
             ClassLoader oldCL;
             if (Globals.IS_SECURITY_ENABLED) {
                 PrivilegedAction<ClassLoader> pa = new PrivilegedGetTccl();
@@ -428,23 +451,59 @@ public class InputBuffer extends Reader implements ByteInputChannel, CharChunk.C
 
                 synchronized (this) {
                     prevIsReady = true;
-                    try {
-                        context.fireContainerEvent(ContainerEvent.BEFORE_READ_LISTENER_ON_DATA_AVAILABLE, readListener);
-                        // if it's a Tyrus websocket conn.
-                        if (isWebSocketRequest()) {
-                            requestTracing.startTrace("processWebsocketRequest");
-                            stuckThreadsStore.registerThread(Thread.currentThread().getId());
+                    // dispatch data available
+                    if (dataAvailable.compareAndSet(true, false)) {
+                        try {
+                            context.fireContainerEvent(ContainerEvent.BEFORE_READ_LISTENER_ON_DATA_AVAILABLE, readListener);
+                            // if it's a Tyrus websocket conn.
+                            if (isWebSocketRequest()) {
+                                requestTracing.startTrace("processWebsocketRequest");
+                                stuckThreadsStore.registerThread(Thread.currentThread().getId());
+                            }
+                            readListener.onDataAvailable();
+                        } catch (Throwable t) {
+                            disable = true;
+                            readListener.onError(t);
+                        } finally {
+                            if (isWebSocketRequest()) {
+                                requestTracing.endTrace();
+                                stuckThreadsStore.deregisterThread(Thread.currentThread().getId());
+                            }
+                            context.fireContainerEvent(ContainerEvent.AFTER_READ_LISTENER_ON_DATA_AVAILABLE, readListener);
                         }
-                        readListener.onDataAvailable();
+                    }
+                }
+                // dispatch onAllDataReceived
+                if (allDataRead.compareAndSet(true, false)) {
+                    try {
+                        context.fireContainerEvent(ContainerEvent.BEFORE_READ_LISTENER_ON_ALL_DATA_READ, readListener);
+                        readListener.onAllDataRead();
                     } catch (Throwable t) {
                         disable = true;
                         readListener.onError(t);
                     } finally {
-                        if (isWebSocketRequest()) {
-                            requestTracing.endTrace();
-                            stuckThreadsStore.deregisterThread(Thread.currentThread().getId());
+                        context.fireContainerEvent(ContainerEvent.AFTER_READ_LISTENER_ON_ALL_DATA_READ, readListener);
+                    }
+                }
+                // dispatch on error
+                Throwable errorCause = error.getAndSet(null);
+                if (errorCause != null) {
+                    // Get isUpgrade and WebConnection before calling onError
+                    // Just in case onError will complete the async processing.
+                    final boolean isUpgrade = request.isUpgrade();
+                    final WebConnection wc = request.getWebConnection();
+
+                    try {
+                        context.fireContainerEvent(BEFORE_READ_LISTENER_ON_ERROR, readListener);
+                        readListener.onError(errorCause);
+                    } finally {
+                        if (isUpgrade && wc != null) {
+                            try {
+                                wc.close();
+                            } catch (Exception ignored) {
+                            }
                         }
-                        context.fireContainerEvent(ContainerEvent.AFTER_READ_LISTENER_ON_DATA_AVAILABLE, readListener);
+                        context.fireContainerEvent(AFTER_READ_LISTENER_ON_ERROR, readListener);
                     }
                 }
             } finally {
@@ -461,130 +520,6 @@ public class InputBuffer extends Reader implements ByteInputChannel, CharChunk.C
             return readListener != null && readListener instanceof TyrusHttpUpgradeHandler && requestTracing.isRequestTracingEnabled();
         }
 
-        @Override
-        public void onAllDataRead() {
-            if (disable) {
-                return;
-            }
-            if (!Boolean.TRUE.equals(IS_READY_SCOPE.get())) {
-                processAllDataRead();
-            } else {
-                AsyncContextImpl.getExecutorService().execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        processAllDataRead();
-                    }
-                });
-            }
-        }
-
-        private void processAllDataRead() {
-            ClassLoader oldCL;
-            if (Globals.IS_SECURITY_ENABLED) {
-                PrivilegedAction<ClassLoader> pa = new PrivilegedGetTccl();
-                oldCL = AccessController.doPrivileged(pa);
-            } else {
-                oldCL = Thread.currentThread().getContextClassLoader();
-            }
-
-            try {
-                Context context = request.getContext();
-                ClassLoader newCL = context.getLoader().getClassLoader();
-                if (Globals.IS_SECURITY_ENABLED) {
-                    PrivilegedAction<Void> pa = new PrivilegedSetTccl(newCL);
-                    AccessController.doPrivileged(pa);
-                } else {
-                    Thread.currentThread().setContextClassLoader(newCL);
-                }
-
-                synchronized (this) {
-                    prevIsReady = true;
-                    try {
-                        context.fireContainerEvent(ContainerEvent.BEFORE_READ_LISTENER_ON_ALL_DATA_READ, readListener);
-                        readListener.onAllDataRead();
-                    } catch (Throwable t) {
-                        disable = true;
-                        readListener.onError(t);
-                    } finally {
-                        context.fireContainerEvent(ContainerEvent.AFTER_READ_LISTENER_ON_ALL_DATA_READ, readListener);
-                    }
-                }
-            } finally {
-                if (Globals.IS_SECURITY_ENABLED) {
-                    PrivilegedAction<Void> pa = new PrivilegedSetTccl(oldCL);
-                    AccessController.doPrivileged(pa);
-                } else {
-                    Thread.currentThread().setContextClassLoader(oldCL);
-                }
-            }
-        }
-
-        @Override
-        public void onError(final Throwable t) {
-            if (disable) {
-                return;
-            }
-            disable = true;
-
-            if (!Boolean.TRUE.equals(IS_READY_SCOPE.get())) {
-                processError(t);
-            } else {
-                AsyncContextImpl.getExecutorService().execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        processError(t);
-                    }
-                });
-            }
-        }
-
-        private void processError(final Throwable t) {
-            ClassLoader oldCL;
-            if (Globals.IS_SECURITY_ENABLED) {
-                PrivilegedAction<ClassLoader> pa = new PrivilegedGetTccl();
-                oldCL = AccessController.doPrivileged(pa);
-            } else {
-                oldCL = Thread.currentThread().getContextClassLoader();
-            }
-
-            try {
-                Context context = request.getContext();
-                ClassLoader newCL = context.getLoader().getClassLoader();
-                if (Globals.IS_SECURITY_ENABLED) {
-                    PrivilegedAction<Void> pa = new PrivilegedSetTccl(newCL);
-                    AccessController.doPrivileged(pa);
-                } else {
-                    Thread.currentThread().setContextClassLoader(newCL);
-                }
-
-                synchronized (this) {
-                    // Get isUpgrade and WebConnection before calling onError
-                    // Just in case onError will complete the async processing.
-                    final boolean isUpgrade = request.isUpgrade();
-                    final WebConnection wc = request.getWebConnection();
-
-                    try {
-                        context.fireContainerEvent(BEFORE_READ_LISTENER_ON_ERROR, readListener);
-                        readListener.onError(t);
-                    } finally {
-                        if (isUpgrade && wc != null) {
-                            try {
-                                wc.close();
-                            } catch (Exception ignored) {
-                            }
-                        }
-                        context.fireContainerEvent(AFTER_READ_LISTENER_ON_ERROR, readListener);
-
-                    }
-                }
-            } finally {
-                if (IS_SECURITY_ENABLED) {
-                    AccessController.doPrivileged(new PrivilegedSetTccl(oldCL));
-                } else {
-                    Thread.currentThread().setContextClassLoader(oldCL);
-                }
-            }
-        }
     }
 
     private static class PrivilegedSetTccl implements PrivilegedAction<Void> {

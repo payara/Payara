@@ -66,6 +66,8 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.WriteListener;
@@ -732,6 +734,8 @@ public class OutputBuffer extends Writer
     class WriteHandlerImpl implements WriteHandler {
         private WriteListener writeListener = null;
         private volatile boolean disable = false;
+        private AtomicBoolean writePossible = new AtomicBoolean();
+        private AtomicReference<Throwable> error = new AtomicReference<>();
 
         private WriteHandlerImpl(WriteListener listener) {
             writeListener = listener;
@@ -742,19 +746,19 @@ public class OutputBuffer extends Writer
             if (disable) {
                 return;
             }
+            writePossible.set(true);
+            scheduleCallbacks();
+        }
+
+        private void scheduleCallbacks() {
             if (!Boolean.TRUE.equals(CAN_WRITE_SCOPE.get())) {
-                processWritePossible();
+                processCallbacks();
             } else {
-                AsyncContextImpl.getExecutorService().execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        processWritePossible();
-                    }
-                });
+                AsyncContextImpl.getExecutorService().execute(this::processCallbacks);
             }
         }
 
-        private void processWritePossible() {
+        private void processCallbacks() {
             ClassLoader oldCL;
             if (Globals.IS_SECURITY_ENABLED) {
                 PrivilegedAction<ClassLoader> pa = new PrivilegedGetTccl();
@@ -775,16 +779,29 @@ public class OutputBuffer extends Writer
 
                 synchronized(this) {
                     prevIsReady = true;
-                    try {
-                        context.fireContainerEvent(
-                            ContainerEvent.BEFORE_WRITE_LISTENER_ON_WRITE_POSSIBLE, writeListener);
-                        writeListener.onWritePossible();
-                    } catch(Throwable t) {
-                        disable = true;
-                        writeListener.onError(t);
-                    } finally {
-                        context.fireContainerEvent(
-                            ContainerEvent.AFTER_WRITE_LISTENER_ON_WRITE_POSSIBLE, writeListener);
+                    if (writePossible.compareAndSet(true, false)) {
+                        try {
+                            context.fireContainerEvent(
+                                    ContainerEvent.BEFORE_WRITE_LISTENER_ON_WRITE_POSSIBLE, writeListener);
+                            writeListener.onWritePossible();
+                        } catch (Throwable t) {
+                            disable = true;
+                            writeListener.onError(t);
+                        } finally {
+                            context.fireContainerEvent(
+                                    ContainerEvent.AFTER_WRITE_LISTENER_ON_WRITE_POSSIBLE, writeListener);
+                        }
+                    }
+                    Throwable cause = error.getAndSet(null);
+                    if (cause != null) {
+                        try {
+                            context.fireContainerEvent(
+                                    ContainerEvent.BEFORE_WRITE_LISTENER_ON_ERROR, writeListener);
+                            writeListener.onError(cause);
+                        } finally {
+                            context.fireContainerEvent(
+                                    ContainerEvent.AFTER_WRITE_LISTENER_ON_ERROR, writeListener);
+                        }
                     }
                 }
             } finally {
@@ -803,56 +820,8 @@ public class OutputBuffer extends Writer
                 return;
             }
             disable = true;
-
-            if (!Boolean.TRUE.equals(CAN_WRITE_SCOPE.get())) {
-                processError(t);
-            } else {
-                AsyncContextImpl.getExecutorService().execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        processError(t);
-                    }
-                });
-            }
-        }
-
-        private void processError(final Throwable t) {
-            ClassLoader oldCL;
-            if (Globals.IS_SECURITY_ENABLED) {
-                PrivilegedAction<ClassLoader> pa = new PrivilegedGetTccl();
-                oldCL = AccessController.doPrivileged(pa);
-            } else {
-                oldCL = Thread.currentThread().getContextClassLoader();
-            }
-
-            try {
-                Context context = response.getContext();
-                ClassLoader newCL = context.getLoader().getClassLoader();
-                if (Globals.IS_SECURITY_ENABLED) {
-                    PrivilegedAction<Void> pa = new PrivilegedSetTccl(newCL);
-                    AccessController.doPrivileged(pa);
-                } else {
-                    Thread.currentThread().setContextClassLoader(newCL);
-                }
-
-                synchronized(this) {
-                    try {
-                        context.fireContainerEvent(
-                            ContainerEvent.BEFORE_WRITE_LISTENER_ON_ERROR, writeListener);
-                        writeListener.onError(t);
-                    } finally {
-                        context.fireContainerEvent(
-                            ContainerEvent.AFTER_WRITE_LISTENER_ON_ERROR, writeListener);
-                    }
-                }
-            } finally {
-                if (Globals.IS_SECURITY_ENABLED) {
-                    PrivilegedAction<Void> pa = new PrivilegedSetTccl(oldCL);
-                    AccessController.doPrivileged(pa);
-                } else {
-                    Thread.currentThread().setContextClassLoader(oldCL);
-                }
-            }
+            error.set(t);
+            scheduleCallbacks();
         }
     }
 
