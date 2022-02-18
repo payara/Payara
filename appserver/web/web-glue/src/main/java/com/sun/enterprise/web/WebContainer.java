@@ -624,6 +624,10 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
             ApplicationInfo applicationInfo = (ApplicationInfo) event.hook();
             if (applicationInfo.getSource().getArchiveMetaData("commandparams", DeployCommandParameters.class).isRedeploy()) {
                 for (VirtualServer vs : getVirtualServers()) {
+                    if (ADMIN_VS.equals(vs.getName())) {
+                        continue;
+                    }
+
                     if (vs.getDefaultWebModuleID().equals(applicationInfo.getName())) {
                         try {
                             updateHost(vs.getBean());
