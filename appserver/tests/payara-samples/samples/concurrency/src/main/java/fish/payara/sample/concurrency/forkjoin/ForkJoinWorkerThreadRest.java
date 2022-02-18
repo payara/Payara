@@ -87,14 +87,14 @@ public class ForkJoinWorkerThreadRest {
     public String forkJoinWorkerThreadExecution() throws InterruptedException, ExecutionException {
         logger.log(Level.INFO, String.format("Processing ManagedThreadFactory executor: %s", managedThreadFactory));
         final long[] numbers = LongStream.rangeClosed(1, 1_000_000).toArray();
-        logger.log(Level.INFO, String.format("Available processors: %s", Runtime.getRuntime().availableProcessors()));
         ForkJoinPool pool = new ForkJoinPool(Runtime.getRuntime().availableProcessors(), managedThreadFactory, null, false);
         ForkJoinTask<Long> task = new ForkJoinSum(numbers);
         ForkJoinTask<Long> total = pool.submit(task);
         Long t = total.get();
-        logger.log(Level.INFO, String.format("Total Execution: %d", t));
+        String message = String.format("Counting numbers total:%d", t);
+        logger.log(Level.INFO, message);
         pool.shutdown();
-        return "Counting numbers total:" + t;
+        return  message;
     }
 
     @GET
@@ -104,16 +104,16 @@ public class ForkJoinWorkerThreadRest {
             NotSupportedException, RollbackException, SystemException, HeuristicMixedException, HeuristicRollbackException {
         logger.log(Level.INFO, String.format("Processing ManagedThreadFactory executor: %s", managedThreadFactory));
         final long[] numbers = LongStream.rangeClosed(1, 1_000_000).toArray();
-        logger.log(Level.INFO, String.format("Available processors: %s", Runtime.getRuntime().availableProcessors()));
         userTransaction.begin();
         ForkJoinPool pool = new ForkJoinPool(Runtime.getRuntime().availableProcessors(), managedThreadFactory, null, false);
         ForkJoinTask<Long> task = new ForkJoinSum(numbers);
         ForkJoinTask<Long> total = pool.submit(task);
         Long t = total.get();
-        logger.log(Level.INFO, String.format("Total Execution: %d", t));
+        String message = String.format("Counting numbers total:%d", t);
+        logger.log(Level.INFO, message);
         userTransaction.commit();
         pool.shutdown();
-        return "Counting numbers total:" + t;
+        return message;
     }
 
     @GET
@@ -122,10 +122,10 @@ public class ForkJoinWorkerThreadRest {
     public String forkJoinParallelThreadExecution() throws InterruptedException, ExecutionException {
         logger.log(Level.INFO, String.format("Processing ManagedThreadFactory executor: %s", managedThreadFactory));
         final long[] numbers = LongStream.rangeClosed(1, 1_000_000).toArray();
-        logger.log(Level.INFO, String.format("Available processors: %s", Runtime.getRuntime().availableProcessors()));
         ForkJoinPool pool = new ForkJoinPool(Runtime.getRuntime().availableProcessors(), managedThreadFactory, null, false);
         ForkJoinTask<Long> totals = pool.submit(() -> Arrays.stream(numbers).parallel().reduce(0L, Long::sum));
-        String message = String.format("Counting numbers total: %d",totals.join());
+        Long t = totals.join();
+        String message = String.format("Counting numbers total:%d", t);
         logger.log(Level.INFO, message);
         pool.shutdown();
         return message;
