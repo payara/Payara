@@ -1569,23 +1569,6 @@ public class WebModule extends PwcWebModule implements Context {
             webContainer.getServerConfigLookup());
     }
 
-    @Override
-    protected void removePatternFromServlet(Wrapper wrapper, String pattern) {
-        super.removePatternFromServlet(wrapper, pattern);
-        WebBundleDescriptor wbd = getWebBundleDescriptor();
-        if (wbd == null) {
-            throw new IllegalStateException(
-                "Missing WebBundleDescriptor for " + getName());
-        }
-        WebComponentDescriptor wcd =
-            wbd.getWebComponentByCanonicalName(wrapper.getName());
-        if (wcd == null) {
-            throw new IllegalStateException(
-                "Missing WebComponentDescriptor for " + wrapper.getName());
-        }
-        wcd.removeUrlPattern(pattern);
-    }
-
     /**
      * Configure the properties of the session, such as the timeout,
      * whether to force URL rewriting etc.
