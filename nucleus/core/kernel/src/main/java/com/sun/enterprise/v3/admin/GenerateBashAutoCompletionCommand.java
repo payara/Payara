@@ -94,16 +94,22 @@ public class GenerateBashAutoCompletionCommand implements AdminCommand {
     private static final String DEFAULT_FILE = File.separator + "bin" + File.separator + "bash_autocomplete";
     private final static LocalStringsImpl strings = new LocalStringsImpl(GenerateBashAutoCompletionCommand.class);
     private final Logger LOGGER = Logger.getLogger(GenerateBashAutoCompletionCommand.class.getName());
+
     @Param(optional = true, primary = true, name = "file")
     String filePath;
+
     @Param(optional = true, defaultValue = "false")
     Boolean force;
+
     @Param(optional = true, defaultValue = "false")
     Boolean localCommands;
+
     @Inject
     ServiceLocator habitat;
+
     @Inject
     ServerContext serverContext;
+
     private CLIContainer cliContainer;
     private File file;
 
@@ -119,6 +125,7 @@ public class GenerateBashAutoCompletionCommand implements AdminCommand {
 
         List<String> commandNames = new ArrayList<>();
         List<ServiceHandle<AdminCommand>> allCommandHandles = habitat.getAllServiceHandles(AdminCommand.class, new Annotation[0]);
+
         for (ServiceHandle<AdminCommand> commandHandler : allCommandHandles) {
             AdminCommand trueCommand = commandHandler.getService();
             CommandModel model = new CommandModelImpl(trueCommand.getClass());
@@ -131,7 +138,6 @@ public class GenerateBashAutoCompletionCommand implements AdminCommand {
         if (localCommands) {
             ClassLoader classLoader = GenerateBashAutoCompletionCommand.class.getClassLoader();
             cliContainer = new CLIContainer(classLoader, getExtensions(), LOGGER);
-            CLIUtil.getLocalCommands(cliContainer);
             Arrays.stream(CLIUtil.getLocalCommands(cliContainer)).forEach((commandName) -> {
                 if (commandName == null || commandName.startsWith("_")) {
                     return;
@@ -139,6 +145,7 @@ public class GenerateBashAutoCompletionCommand implements AdminCommand {
                 commandNames.add(commandName);
             });
         }
+
         if (writeCommands(commandNames)) {
             report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
             report.setMessage("Written bash autocomplete file to " + filePath);
