@@ -48,14 +48,18 @@ import jakarta.enterprise.inject.spi.BeforeBeanDiscovery;
 import jakarta.enterprise.inject.spi.Extension;
 import jakarta.enterprise.inject.spi.ProcessAnnotatedType;
 import jakarta.enterprise.inject.spi.WithAnnotations;
+import jakarta.transaction.Transactional;
+import java.lang.reflect.Method;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.logging.Logger;
 import org.glassfish.enterprise.concurrent.AsynchronousInterceptor;
 
 /**
  * CDI Extension for Jakarta Concurrent implementation in Payara.
  *
- * @author Petr Aubrecht <petr@aubrecht.net>
+ * @author Petr Aubrecht <aubrecht@asoftware.cz>
  */
 public class ConcurrentCDIExtension implements Extension {
 
@@ -78,9 +82,25 @@ public class ConcurrentCDIExtension implements Extension {
         // Validate the Fault Tolerance annotations for each annotated method
         Set<AnnotatedMethod<? super T>> annotatedMethods = annotatedType.getMethods();
         for (AnnotatedMethod<?> annotatedMethod : annotatedMethods) {
-            // TODO: check, if the method is annodated by Transactional, other than TxType.REQUIRES_NEW or TxType.NOT_SUPPORTED must result in java.lang.UnsupportedOperationException UnsupportedOperationException
-//            throw new XYDefinitionException("Method \"" + annotatedMethod.getJavaMember().getName() + "\""
-//                    + " annotated with " + Asynchronous.class.getCanonicalName() + " does not return a Future.");
+            Method method = annotatedMethod.getJavaMember();
+            if (method.getDeclaringClass().equals(AsynchronousInterceptor.class)) {
+                continue;
+            }
+            Class<?> returnType = method.getReturnType();
+            boolean validReturnType = returnType.equals(Void.TYPE)
+                    || returnType.equals(CompletableFuture.class)
+                    || returnType.equals(CompletionStage.class);
+            if (!validReturnType) {
+                throw new UnsupportedOperationException("Method \"" + method.getName() + "\""
+                        + " annotated with " + Asynchronous.class.getCanonicalName() + " does not return a CompletableFuture, CompletableFuture or void.");
+            }
+            Transactional transactionalAnnotation = annotatedMethod.getAnnotation(Transactional.class);
+            if (transactionalAnnotation != null
+                    && transactionalAnnotation.value() != Transactional.TxType.REQUIRES_NEW
+                    && transactionalAnnotation.value() != Transactional.TxType.NOT_SUPPORTED) {
+                throw new UnsupportedOperationException("Method \"" + method.getName() + "\""
+                        + " annotated with " + Asynchronous.class.getCanonicalName() + " is annotated with @Transactional, but not one of the allowed types: REQUIRES_NEW or NOT_SUPPORTED.");
+            }
         }
     }
 }
