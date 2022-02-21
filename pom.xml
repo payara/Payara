@@ -140,7 +140,8 @@
         <deploy.skip>true</deploy.skip>
 
         <!-- BOM-referenced versions -->
-        <jakartaee.api.version>10.0.0-SNAPSHOT</jakartaee.api.version>
+        <!--<jakartaee.api.version>10.0.0-RC1</jakartaee.api.version> Currently fails with CDIEventbusNotifierService -->
+        <jakartaee.api.version>9.1.0</jakartaee.api.version>
         <servlet-api.version>5.0.0</servlet-api.version>
         <grizzly.version>3.0.1.payara-p1</grizzly.version>
         <jax-rs-api.impl.version>3.0.0</jax-rs-api.impl.version>
