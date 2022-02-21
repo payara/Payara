@@ -621,6 +621,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         } else if (event.is(PREPARE_SHUTDOWN)) {
             isShutdown = true;
         } else if (event.is(Deployment.DEPLOYMENT_COMMAND_FINISH)) {
+            // If this application is the default web module of a virtual server, reload the virtual server
             ApplicationInfo applicationInfo = (ApplicationInfo) event.hook();
             if (applicationInfo.getSource().getArchiveMetaData("commandparams", DeployCommandParameters.class).isRedeploy()) {
                 for (VirtualServer vs : getVirtualServers()) {
