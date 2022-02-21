@@ -1679,24 +1679,6 @@ public class WebModule extends PwcWebModule implements Context {
     }
 
     /**
-     * Instantiates the given Servlet class.
-     *
-     * @return the new Servlet instance
-     */
-    @Override
-    protected <T extends Servlet> T createServletInstance(Class<T> clazz)
-            throws Exception {
-        if (DefaultServlet.class.equals(clazz) ||
-                JspServlet.class.equals(clazz) ||
-                webContainer == null) {
-            // Container-provided servlets, skip injection
-            return super.createServletInstance(clazz);
-        } else {
-            return webContainer.createServletInstance(this, clazz);
-        }
-    }
-
-    /**
      * Instantiates the given Filter class.
      *
      * @return the new Filter instance
@@ -1980,7 +1962,27 @@ public class WebModule extends PwcWebModule implements Context {
 
     @Override
     public <T extends Servlet> T createServlet(Class<T> servletClass) throws ServletException {
-        return getServletContext().createServlet(servletClass);
+        if (DefaultServlet.class.equals(servletClass) || JspServlet.class.equals(servletClass) ||
+                webContainer == null) {
+            // Container-provided servlets, skip injection
+            return getServletContext().createServlet(servletClass);
+        }
+
+        try {
+            T servletInstance = webContainer.createServletInstance(this, servletClass);
+            // Despite the method name getInstanceManager().newInstance(Object o) shouldn't actually create a
+            // new instance - it is expected to call through to the DefaultInstanceManager implementation which
+            // expects to be passed an instantiated object to perform annotation processing
+            getInstanceManager().newInstance(servletInstance);
+            return servletInstance;
+        } catch (ServletException servletException) {
+            // Throw without further processing
+            throw servletException;
+        } catch (Exception exception) {
+            // Log and rethrow as ServletException
+            logger.log(Level.SEVERE, LogFacade.EXCEPTION_CREATING_SERVLET_INSTANCE);
+            throw new ServletException(exception);
+        }
     }
 
     @Override

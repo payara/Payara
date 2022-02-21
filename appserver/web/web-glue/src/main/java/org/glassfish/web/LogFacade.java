@@ -1562,4 +1562,9 @@ public class LogFacade {
         message = "Exception getting Validator Factory from JNDI: {0}",
         level = "WARNING")
     public static final String EXCEPTION_GETTING_VALIDATOR_FACTORY = PREFIX + "00285";
+
+    @LogMessageInfo(
+            message = "Exception creating Servlet Instance: {0}",
+            level = "SEVERE")
+    public static final String EXCEPTION_CREATING_SERVLET_INSTANCE = PREFIX + "00286";
 }
