@@ -82,6 +82,7 @@ import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ArchiveHandler;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.event.EventListener;
+import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
@@ -623,11 +624,15 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
 
                         // register application information in domain.xml
                         deployment.registerAppInDomainXML(appInfo, deploymentContext, tx);
+
                     }
                     if (retrieve != null) {
                         retrieveArtifacts(context, downloadableArtifacts.getArtifacts(), retrieve, false, name);
                     }
                     suppInfo.setDeploymentContext(deploymentContext);
+                    // send new event to notify the deployment process is finish
+                    events.send(new Event<ApplicationInfo>(Deployment.DEPLOYMENT_COMMAND_FINISH, appInfo), false);
+
                     //Fix for issue 14442
                     //We want to report the worst subreport value.
                     ActionReport.ExitCode worstExitCode = ExitCode.SUCCESS;

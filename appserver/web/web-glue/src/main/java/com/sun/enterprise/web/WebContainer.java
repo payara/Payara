@@ -620,7 +620,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
             loadDefaultWebModulesAfterAllAppsProcessed();
         } else if (event.is(PREPARE_SHUTDOWN)) {
             isShutdown = true;
-        } else if (event.is(Deployment.DEPLOYMENT_SUCCESS)) {
+        } else if (event.is(Deployment.DEPLOYMENT_COMMAND_FINISH)) {
             ApplicationInfo applicationInfo = (ApplicationInfo) event.hook();
             if (applicationInfo.getSource().getArchiveMetaData("commandparams", DeployCommandParameters.class).isRedeploy()) {
                 for (VirtualServer vs : getVirtualServers()) {
@@ -630,13 +630,9 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
 
                     if (vs.getDefaultWebModuleID().equals(applicationInfo.getName())) {
                         try {
-                            // since this event is asynchronous, wait application module fully loaded,
-                            Thread.sleep(500);
                             updateHost(vs.getBean());
                         } catch (LifecycleException e) {
                             logger.log(Level.SEVERE, LogFacade.EXCEPTION_WEB_CONFIG, e);
-                        } catch (InterruptedException e) {
-                            // ignore
                         }
                     }
                 }
