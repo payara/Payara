@@ -1567,4 +1567,9 @@ public class LogFacade {
             message = "Exception creating Servlet Instance: {0}",
             level = "SEVERE")
     public static final String EXCEPTION_CREATING_SERVLET_INSTANCE = PREFIX + "00286";
+
+    @LogMessageInfo(
+            message = "Exception creating Filter Instance: {0}",
+            level = "SEVERE")
+    public static final String EXCEPTION_CREATING_FILTER_INSTANCE = PREFIX + "00287";
 }

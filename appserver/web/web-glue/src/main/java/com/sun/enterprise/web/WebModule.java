@@ -1679,21 +1679,6 @@ public class WebModule extends PwcWebModule implements Context {
     }
 
     /**
-     * Instantiates the given Filter class.
-     *
-     * @return the new Filter instance
-     */
-    @Override
-    protected <T extends Filter> T createFilterInstance(Class<T> clazz)
-            throws Exception {
-        if (webContainer != null) {
-            return webContainer.createFilterInstance(this, clazz);
-        } else {
-            return super.createFilterInstance(clazz);
-        }
-    }
-
-    /**
      * Instantiates the given EventListener class.
      *
      * @return the new EventListener instance
@@ -2012,7 +1997,25 @@ public class WebModule extends PwcWebModule implements Context {
 
     @Override
     public <T extends Filter> T createFilter(Class<T> filterClass) throws ServletException {
-        return getServletContext().createFilter(filterClass);
+        if (webContainer == null) {
+            return getServletContext().createFilter(filterClass);
+        }
+
+        try {
+            T filterInstance = webContainer.createFilterInstance(this, filterClass);
+            // Despite the method name getInstanceManager().newInstance(Object o) shouldn't actually create a
+            // new instance - it is expected to call through to the DefaultInstanceManager implementation which
+            // expects to be passed an instantiated object to perform annotation processing
+            getInstanceManager().newInstance(filterInstance);
+            return filterInstance;
+        } catch (ServletException servletException) {
+            // Throw without further processing
+            throw servletException;
+        } catch (Exception exception) {
+            // Log and rethrow as ServletException
+            logger.log(Level.SEVERE, LogFacade.EXCEPTION_CREATING_SERVLET_INSTANCE);
+            throw new ServletException(exception);
+        }
     }
 
     @Override
