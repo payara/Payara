@@ -1679,21 +1679,6 @@ public class WebModule extends PwcWebModule implements Context {
     }
 
     /**
-     * Instantiates the given EventListener class.
-     *
-     * @return the new EventListener instance
-     */
-    @Override
-    public <T extends EventListener> T createListenerInstance(
-                Class<T> clazz) throws Exception {
-        if (webContainer != null) {
-            return webContainer.createListenerInstance(this, clazz);
-        } else {
-            return super.createListenerInstance(clazz);
-        }
-    }
-
-    /**
      * Create an instance of a given class.
      *
      * @param clazz
@@ -2013,7 +1998,7 @@ public class WebModule extends PwcWebModule implements Context {
             throw servletException;
         } catch (Exception exception) {
             // Log and rethrow as ServletException
-            logger.log(Level.SEVERE, LogFacade.EXCEPTION_CREATING_SERVLET_INSTANCE);
+            logger.log(Level.SEVERE, LogFacade.EXCEPTION_CREATING_FILTER_INSTANCE);
             throw new ServletException(exception);
         }
     }
@@ -2050,7 +2035,25 @@ public class WebModule extends PwcWebModule implements Context {
 
     @Override
     public <T extends EventListener> T createListener(Class<T> listenerClass) throws ServletException {
-        return getServletContext().createListener(listenerClass);
+        if (webContainer == null) {
+            return getServletContext().createListener(listenerClass);
+        }
+
+        try {
+            T listenerInstance = webContainer.createListenerInstance(this, listenerClass);
+            // Despite the method name getInstanceManager().newInstance(Object o) shouldn't actually create a
+            // new instance - it is expected to call through to the DefaultInstanceManager implementation which
+            // expects to be passed an instantiated object to perform annotation processing
+            getInstanceManager().newInstance(listenerInstance);
+            return listenerInstance;
+        } catch (ServletException servletException) {
+            // Throw without further processing
+            throw servletException;
+        } catch (Exception exception) {
+            // Log and rethrow as ServletException
+            logger.log(Level.SEVERE, LogFacade.EXCEPTION_CREATING_LISTENER_INSTANCE);
+            throw new ServletException(exception);
+        }
     }
 
     @Override

@@ -1572,4 +1572,9 @@ public class LogFacade {
             message = "Exception creating Filter Instance: {0}",
             level = "SEVERE")
     public static final String EXCEPTION_CREATING_FILTER_INSTANCE = PREFIX + "00287";
+
+    @LogMessageInfo(
+            message = "Exception creating Listener Instance: {0}",
+            level = "SEVERE")
+    public static final String EXCEPTION_CREATING_LISTENER_INSTANCE = PREFIX + "00288";
 }
