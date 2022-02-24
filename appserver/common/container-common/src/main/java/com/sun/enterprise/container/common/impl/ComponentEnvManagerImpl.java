@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2022 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -316,6 +316,7 @@ public class ComponentEnvManagerImpl
         Set<ResourceDescriptor> jmscfdds = env.getResourceDescriptors(JavaEEResourceType.JMSCFDD);
         Set<ResourceDescriptor> msds =env.getResourceDescriptors(JavaEEResourceType.MSD);
         Set<ResourceDescriptor> jmsddds = env.getResourceDescriptors(JavaEEResourceType.JMSDD);
+        Set<ResourceDescriptor> cdd = env.getResourceDescriptors(JavaEEResourceType.CDD);
         if(!(env instanceof ApplicationClientDescriptor)) {
             Set<ResourceDescriptor> cfdds = env.getResourceDescriptors(JavaEEResourceType.CFD);
             allDescriptors.addAll(cfdds);
@@ -332,6 +333,7 @@ public class ComponentEnvManagerImpl
         allDescriptors.addAll(jmscfdds);
         allDescriptors.addAll(msds);
         allDescriptors.addAll(jmsddds);
+        allDescriptors.addAll(cdd);
 
         for (ResourceDescriptor descriptor : allDescriptors) {
 

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2022] Payara Foundation and/or affiliates
 
 package com.sun.appserv.connectors.internal.api;
 
@@ -604,6 +604,10 @@ public class ConnectorsUtil {
                 case AODD:
                     prefixPart1 = ConnectorConstants.RESOURCE_JNDINAME_PREFIX;
                     prefixPart2 = ConnectorConstants.ADMINISTERED_OBJECT_DEFINITION_JNDINAME_PREFIX;
+                    break;
+                case CDD:
+                    prefixPart1 = ConnectorConstants.CONCURRENT_JNDINAME_PREFIX;
+                    prefixPart2 = ConnectorConstants.CONCURRENT_MANAGEDEXECUTOR_DEFINTION_JNDINAME_PREFIX;
                     break;
             }
         }

@@ -39,6 +39,9 @@
  */
 package org.glassfish.concurrent.runtime.deployment.annotation.handlers;
 
+import com.sun.enterprise.deployment.ConcurrentDefinitionDescriptor;
+import com.sun.enterprise.deployment.MetadataSource;
+import com.sun.enterprise.deployment.ResourceDescriptor;
 import com.sun.enterprise.deployment.annotation.context.ResourceContainerContext;
 import com.sun.enterprise.deployment.annotation.handlers.AbstractResourceHandler;
 import jakarta.enterprise.concurrent.ManagedExecutorDefinition;
@@ -49,6 +52,8 @@ import org.glassfish.apf.HandlerProcessingResult;
 import org.glassfish.concurrent.config.ManagedExecutorService;
 import org.glassfish.concurrent.runtime.ConcurrentRuntime;
 import org.glassfish.concurrent.runtime.deployer.ManagedExecutorServiceConfig;
+import org.glassfish.config.support.TranslatedConfigView;
+import org.glassfish.deployment.common.JavaEEResourceType;
 import org.glassfish.enterprise.concurrent.ManagedExecutorServiceImpl;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigBeanProxy;
@@ -57,6 +62,7 @@ import org.jvnet.hk2.config.types.Property;
 
 import java.beans.PropertyVetoException;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -72,10 +78,11 @@ public class ManagedExecutorDefinitionHandler extends AbstractResourceHandler {
             throws AnnotationProcessorException {
         logger.log(Level.INFO, "Processing annotation for ManagedExecutorDefinition");
         ManagedExecutorDefinition managedExecutorDefinition = (ManagedExecutorDefinition) annotationInfo.getAnnotation();
-        return processAnnotation(managedExecutorDefinition);
+        return processAnnotation(managedExecutorDefinition, resourceContainerContexts);
     }
 
-    protected HandlerProcessingResult processAnnotation(ManagedExecutorDefinition managedExecutorDefinition) {
+    protected HandlerProcessingResult processAnnotation(ManagedExecutorDefinition managedExecutorDefinition,
+                                                        ResourceContainerContext[] contexts) {
         logger.log(Level.INFO, "Registering ManagedExecutorService from annotation config");
         ManagedExecutorServiceConfig managedExecutorServiceConfig =
                 new ManagedExecutorServiceConfig(new ManagedExecutorService() {
@@ -296,6 +303,21 @@ public class ManagedExecutorDefinitionHandler extends AbstractResourceHandler {
         ConcurrentRuntime concurrentRuntime = ConcurrentRuntime.getRuntime();
         ManagedExecutorServiceImpl managedExecutorServiceImpl = concurrentRuntime
                 .getManagedExecutorService(null, managedExecutorServiceConfig);
+        for(ResourceContainerContext context : contexts){
+            Set<ResourceDescriptor> cdd = context.getResourceDescriptors(JavaEEResourceType.CDD);
+            ConcurrentDefinitionDescriptor cddes = createDescriptor(managedExecutorDefinition);
+            cdd.add(cddes);
+        }
         return getDefaultProcessedResult();
+    }
+
+    public ConcurrentDefinitionDescriptor createDescriptor(ManagedExecutorDefinition managedExecutorDefinition) {
+        ConcurrentDefinitionDescriptor cdd = new ConcurrentDefinitionDescriptor();
+        cdd.setName(TranslatedConfigView.expandValue(managedExecutorDefinition.name()));
+        cdd.setContextInfo(TranslatedConfigView.expandValue(managedExecutorDefinition.context()));
+        cdd.setHungAfterSeconds(managedExecutorDefinition.hungTaskThreshold());
+        cdd.setMaximumPoolSize(managedExecutorDefinition.maxAsync());
+        cdd.setMetadataSource(MetadataSource.ANNOTATION);
+        return cdd;
     }
 }
