@@ -84,6 +84,12 @@ public class ConcurrentCDIExtension implements Extension {
         for (AnnotatedMethod<?> annotatedMethod : annotatedMethods) {
             Method method = annotatedMethod.getJavaMember();
             if (method.getDeclaringClass().equals(AsynchronousInterceptor.class)) {
+                // skip interceptor
+                continue;
+            }
+            Asynchronous annotation = method.getAnnotation(Asynchronous.class);
+            if (annotation == null) {
+                // method in the class, which is NOT annotated @Asynchronous
                 continue;
             }
             Class<?> returnType = method.getReturnType();
