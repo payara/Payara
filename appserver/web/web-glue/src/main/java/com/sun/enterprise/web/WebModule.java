@@ -1725,65 +1725,61 @@ public class WebModule extends PwcWebModule implements Context {
      * HTTP session related probe events
      */
 
-    @Override
-    public void sessionCreatedEvent(HttpSession session) {
-        sessionProbeProvider.sessionCreatedEvent(session.getId(),
-            monitoringNodeName, vsId);
-    }
+    /**
+     * Commented out for now - This monitoring was reliant on direct instrumentation of Catalina, which if we're
+     *      not patching in needs completely reworking using {@link org.apache.catalina.SessionListener}
 
-    @Override
-    public void sessionDestroyedEvent(HttpSession session) {
-        sessionProbeProvider.sessionDestroyedEvent(session.getId(),
-            monitoringNodeName, vsId);
-    }
-
-    @Override
-    public void sessionRejectedEvent(int maxSessions) {
-        sessionProbeProvider.sessionRejectedEvent(maxSessions,
-            monitoringNodeName, vsId);
-    }
-
-    @Override
-    public void sessionExpiredEvent(HttpSession session) {
-        sessionProbeProvider.sessionExpiredEvent(session.getId(),
-            monitoringNodeName, vsId);
-    }
-
-    @Override
-    public void sessionPersistedStartEvent(HttpSession session) {
-        sessionProbeProvider.sessionPersistedStartEvent(session.getId(),
-            monitoringNodeName, vsId);
-    }
-
-    @Override
-    public void sessionPersistedEndEvent(HttpSession session) {
-        sessionProbeProvider.sessionPersistedEndEvent(session.getId(),
-            monitoringNodeName, vsId);
-    }
-
-    @Override
-    public void sessionActivatedStartEvent(HttpSession session) {
-        sessionProbeProvider.sessionActivatedStartEvent(session.getId(),
-            monitoringNodeName, vsId);
-    }
-
-    @Override
-    public void sessionActivatedEndEvent(HttpSession session) {
-        sessionProbeProvider.sessionActivatedEndEvent(session.getId(),
-            monitoringNodeName, vsId);
-    }
-
-    @Override
-    public void sessionPassivatedStartEvent(HttpSession session) {
-        sessionProbeProvider.sessionPassivatedStartEvent(session.getId(),
-            monitoringNodeName, vsId);
-    }
-
-    @Override
-    public void sessionPassivatedEndEvent(HttpSession session) {
-        sessionProbeProvider.sessionPassivatedEndEvent(session.getId(),
-            monitoringNodeName, vsId);
-    }
+//    public void sessionCreatedEvent(HttpSession session) {
+//        sessionProbeProvider.sessionCreatedEvent(session.getId(),
+//            monitoringNodeName, vsId);
+//    }
+//
+//    public void sessionDestroyedEvent(HttpSession session) {
+//        sessionProbeProvider.sessionDestroyedEvent(session.getId(),
+//            monitoringNodeName, vsId);
+//    }
+//
+//    public void sessionRejectedEvent(int maxSessions) {
+//        sessionProbeProvider.sessionRejectedEvent(maxSessions,
+//            monitoringNodeName, vsId);
+//    }
+//
+//    public void sessionExpiredEvent(HttpSession session) {
+//        sessionProbeProvider.sessionExpiredEvent(session.getId(),
+//            monitoringNodeName, vsId);
+//    }
+//
+//    public void sessionPersistedStartEvent(HttpSession session) {
+//        sessionProbeProvider.sessionPersistedStartEvent(session.getId(),
+//            monitoringNodeName, vsId);
+//    }
+//
+//    public void sessionPersistedEndEvent(HttpSession session) {
+//        sessionProbeProvider.sessionPersistedEndEvent(session.getId(),
+//            monitoringNodeName, vsId);
+//    }
+//
+//    public void sessionActivatedStartEvent(HttpSession session) {
+//        sessionProbeProvider.sessionActivatedStartEvent(session.getId(),
+//            monitoringNodeName, vsId);
+//    }
+//
+//    public void sessionActivatedEndEvent(HttpSession session) {
+//        sessionProbeProvider.sessionActivatedEndEvent(session.getId(),
+//            monitoringNodeName, vsId);
+//    }
+//
+//    public void sessionPassivatedStartEvent(HttpSession session) {
+//        sessionProbeProvider.sessionPassivatedStartEvent(session.getId(),
+//            monitoringNodeName, vsId);
+//    }
+//
+//    public void sessionPassivatedEndEvent(HttpSession session) {
+//        sessionProbeProvider.sessionPassivatedEndEvent(session.getId(),
+//            monitoringNodeName, vsId);
+//    }
+     *
+     */
 
     @Override
     public String getContextPath() {
