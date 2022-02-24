@@ -1678,22 +1678,31 @@ public class WebModule extends PwcWebModule implements Context {
         }
     }
 
-    /**
-     * Create an instance of a given class.
+    /*
+     * Commented out for now.
+     * This method previously overrode a helper method in StandardContext, which has now been moved to Application and
+     * utilises private / protected methods in DefaultInstanceManager.
      *
-     * @param clazz
+     * If we want to maintain our own CDI integration, we may need to reimplement our own InstanceManager.
      *
-     * @return an instance of the given class
-     * @throws Exception
      */
-    @Override
-    public <T extends HttpUpgradeHandler> T createHttpUpgradeHandlerInstance(Class<T> clazz) throws Exception {
-        if (webContainer != null) {
-            return webContainer.createHttpUpgradeHandlerInstance(this, clazz);
-        } else {
-            return super.createHttpUpgradeHandlerInstance(clazz);
-        }
-    }
+
+//    /**
+//     * Create an instance of a given class.
+//     *
+//     * @param clazz
+//     *
+//     * @return an instance of the given class
+//     * @throws Exception
+//     */
+//    @Override
+//    public <T extends HttpUpgradeHandler> T createHttpUpgradeHandlerInstance(Class<T> clazz) throws Exception {
+//        if (webContainer != null) {
+//            return webContainer.createHttpUpgradeHandlerInstance(this, clazz);
+//        } else {
+//            return super.createHttpUpgradeHandlerInstance(clazz);
+//        }
+//    }
 
 
     /*
