@@ -80,14 +80,20 @@ public class ContextServiceDefinitionHandler extends AbstractResourceHandler {
         logger.log(Level.INFO, "Entering ContextServiceDefinitionHandler.processAnnotation");
         ContextServiceDefinition contextServiceDefinition = (ContextServiceDefinition) annotationInfo.getAnnotation();
 
-//        AnnotatedElement annotatedElement = annotationInfo.getAnnotatedElement();
-//        logger.log(Level.INFO, "Trying to create custom context service by annotation");
+        processSingleAnnotation(contextServiceDefinition, resourceContainerContexts);
+
+        return getDefaultProcessedResult();
+    }
+
+    public void processSingleAnnotation(ContextServiceDefinition contextServiceDefinition, ResourceContainerContext[] resourceContainerContexts) {
+        //        AnnotatedElement annotatedElement = annotationInfo.getAnnotatedElement();
+        //        logger.log(Level.INFO, "Trying to create custom context service by annotation");
         ContextServiceConfig contextServiceConfig = new ContextServiceConfig(contextServiceDefinition.name(),
                 "???",
                 "true");
         ConcurrentRuntime concurrentRuntime = ConcurrentRuntime.getRuntime();
         // create a context service
-//        ContextServiceImpl managedExecutorServiceImpl =
+        //        ContextServiceImpl managedExecutorServiceImpl =
         concurrentRuntime.getContextService(null, contextServiceConfig);
 
         // add to contexts
@@ -96,8 +102,6 @@ public class ContextServiceDefinitionHandler extends AbstractResourceHandler {
             Set<ResourceDescriptor> csddes = context.getResourceDescriptors(JavaEEResourceType.CSDD);
             csddes.add(cdd);
         }
-
-        return getDefaultProcessedResult();
     }
 
     public ContextServiceDefinitionDescriptor createDescriptor(ContextServiceDefinition contectServiceDefinition) {
