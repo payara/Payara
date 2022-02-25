@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2022] Payara Foundation and/or affiliates
 
 package org.glassfish.api.deployment;
 
@@ -119,6 +120,12 @@ public interface DeploymentContext extends ApplicationContext, ExecutionContext 
      * @param metaData the meta data itself
      */
     void addModuleMetaData(Object metaData);
+
+    /**
+     * Reset the meta data associated with a module type.
+     *
+     */
+    void resetModuleMetaData();
 
     /**
      * Returns the meta data associated with a module type.
