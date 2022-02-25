@@ -523,7 +523,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
 
                 deploymentContext.setSource((FileArchive)archiveFactory.createArchive(output));
                 
-                // reset transient and module of older archive data
+                // reset transient and module data of orignal deployed archive
                 deploymentContext.removeTransientAppMetaData(Types.class.getName());
                 deploymentContext.removeTransientAppMetaData(Parser.class.getName());
                 deploymentContext.resetModuleMetaData();
