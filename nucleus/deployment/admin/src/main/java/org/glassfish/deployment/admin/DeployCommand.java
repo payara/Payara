@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.deployment.admin;
 
@@ -522,8 +522,12 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                 }
 
                 deploymentContext.setSource((FileArchive)archiveFactory.createArchive(output));
+                
+                // reset transient and module of older archive data
                 deploymentContext.removeTransientAppMetaData(Types.class.getName());
                 deploymentContext.removeTransientAppMetaData(Parser.class.getName());
+                deploymentContext.resetModuleMetaData();
+                structuredTracing.register(deploymentContext);
             }
             // reset the properties (might be null) set by the deployers when undeploying.
             if (undeployProps != null) {
