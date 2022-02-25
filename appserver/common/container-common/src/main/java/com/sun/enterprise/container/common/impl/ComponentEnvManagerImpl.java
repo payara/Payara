@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2022] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.container.common.impl;
 
@@ -58,9 +59,7 @@ import org.glassfish.api.naming.JNDIBinding;
 import org.glassfish.api.naming.NamingObjectProxy;
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.deployment.common.JavaEEResourceType;
-import org.glassfish.hk2.api.ActiveDescriptor;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.javaee.services.CommonResourceProxy;
 import org.glassfish.javaee.services.JMSCFResourcePMProxy;
 import org.glassfish.resourcebase.resources.api.ResourceDeployer;
@@ -317,6 +316,7 @@ public class ComponentEnvManagerImpl
         Set<ResourceDescriptor> msds =env.getResourceDescriptors(JavaEEResourceType.MSD);
         Set<ResourceDescriptor> jmsddds = env.getResourceDescriptors(JavaEEResourceType.JMSDD);
         Set<ResourceDescriptor> cdd = env.getResourceDescriptors(JavaEEResourceType.CDD);
+        Set<ResourceDescriptor> csdd = env.getResourceDescriptors(JavaEEResourceType.CSDD);
         if(!(env instanceof ApplicationClientDescriptor)) {
             Set<ResourceDescriptor> cfdds = env.getResourceDescriptors(JavaEEResourceType.CFD);
             allDescriptors.addAll(cfdds);
@@ -334,6 +334,7 @@ public class ComponentEnvManagerImpl
         allDescriptors.addAll(msds);
         allDescriptors.addAll(jmsddds);
         allDescriptors.addAll(cdd);
+        allDescriptors.addAll(csdd);
 
         for (ResourceDescriptor descriptor : allDescriptors) {
 

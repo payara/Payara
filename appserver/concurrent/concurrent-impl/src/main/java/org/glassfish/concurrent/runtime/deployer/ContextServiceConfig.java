@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2022] Payara Fondation and/or affiliates
 
 package org.glassfish.concurrent.runtime.deployer;
 
@@ -49,6 +50,10 @@ public class ContextServiceConfig extends BaseConfig {
 
     public ContextServiceConfig(ContextService config) {
         super(config.getJndiName(), config.getContextInfo(), config.getContextInfoEnabled());
+    }
+
+    public ContextServiceConfig(String jndiName, String contextInfo, String contextInfoEnabled) {
+        super(jndiName, contextInfo, contextInfoEnabled);
     }
 
     public TYPE getType() {

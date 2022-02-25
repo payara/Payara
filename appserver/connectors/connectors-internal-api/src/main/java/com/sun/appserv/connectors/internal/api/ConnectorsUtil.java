@@ -572,7 +572,7 @@ public class ConnectorsUtil {
                 case DSD :
                     prefixPart1 = ConnectorConstants.RESOURCE_JNDINAME_PREFIX;
                     prefixPart2 = ConnectorConstants.DATASOURCE_DEFINITION_JNDINAME_PREFIX;
-                break;
+                    break;
                 case MSD :
                     prefixPart1 = ConnectorConstants.RESOURCE_JNDINAME_PREFIX;
                     prefixPart2 = ConnectorConstants.MAILSESSION_DEFINITION_JNDINAME_PREFIX;
@@ -608,6 +608,10 @@ public class ConnectorsUtil {
                 case CDD:
                     prefixPart1 = ConnectorConstants.CONCURRENT_JNDINAME_PREFIX;
                     prefixPart2 = "";
+                    break;
+                case CSDD:
+                    prefixPart1 = ConnectorConstants.CONCURRENT_JNDINAME_PREFIX;
+                    prefixPart2 = ConnectorConstants.CONCURRENT_CONTEXT_SERVICE_DEFINITION_JNDINAME_PREFIX;
                     break;
             }
         }
