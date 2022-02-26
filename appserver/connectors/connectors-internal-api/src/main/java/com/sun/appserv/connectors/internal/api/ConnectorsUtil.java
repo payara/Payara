@@ -607,7 +607,7 @@ public class ConnectorsUtil {
                     break;
                 case CDD:
                     prefixPart1 = ConnectorConstants.CONCURRENT_JNDINAME_PREFIX;
-                    prefixPart2 = ConnectorConstants.CONCURRENT_MANAGEDEXECUTOR_DEFINTION_JNDINAME_PREFIX;
+                    prefixPart2 = "";
                     break;
             }
         }
