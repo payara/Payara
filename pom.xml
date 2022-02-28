@@ -183,9 +183,9 @@
         <jakarta.security.auth.message-api.version>2.0.0</jakarta.security.auth.message-api.version>
         <jms-api.version>3.0.0</jms-api.version>
         <mq.version>6.1.0.payara-p2</mq.version>
-        <jakarta.batch-api.version>2.0.0</jakarta.batch-api.version>
-        <com.ibm.jbatch.container.version>2.0.0</com.ibm.jbatch.container.version>
-        <com.ibm.jbatch.spi.version>2.0.0</com.ibm.jbatch.spi.version>
+        <jakarta.batch-api.version>2.1.0-M1</jakarta.batch-api.version>
+        <com.ibm.jbatch.container.version>2.1.0-M1</com.ibm.jbatch.container.version>
+        <com.ibm.jbatch.spi.version>2.1.0-M1</com.ibm.jbatch.spi.version>
         <jaxws-api.version>3.0.0</jaxws-api.version>
         <jakarta.jws-api.version>3.0.0</jakarta.jws-api.version>
         <webservices.version>3.0.3</webservices.version>
@@ -223,7 +223,7 @@
         <monitoring-console-process.version>2.0.1</monitoring-console-process.version>
         <monitoring-console-webapp.version>2.0.1</monitoring-console-webapp.version>
         <validation.xml.root>${project.build.outputDirectory}</validation.xml.root>
-        <payara.transformer>0.2.6</payara.transformer>
+        <payara.transformer>0.2.7</payara.transformer>
         <osgi.version>7.0.0</osgi.version>
         <osgi.dto.version>1.1.1</osgi.dto.version>
     </properties>

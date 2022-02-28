@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2021] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2022] Payara Foundation and/or affiliates
 
 package org.glassfish.deployment.common;
 
@@ -344,6 +344,11 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
         if (metaData!=null) {
             modulesMetaData.put(metaData.getClass().getName(), metaData);
         }
+    }
+
+    @Override
+    public void resetModuleMetaData() {
+        modulesMetaData.clear();
     }
 
     @Override
