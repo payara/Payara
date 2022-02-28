@@ -154,7 +154,7 @@
         <jackson.version>2.13.0</jackson.version>
         <snakeyaml.version>1.29</snakeyaml.version>
         <hazelcast.version>4.2</hazelcast.version>
-        <hazelcast.kubernetes.version>2.2.3</hazelcast.kubernetes.version>
+        <hazelcast.kubernetes.version>2.2.3.payara-p1</hazelcast.kubernetes.version>
         <jaxb-api.version>3.0.1</jaxb-api.version>
         <jaxb-impl.version>3.0.2</jaxb-impl.version>
         <jakarta.ejb-api.version>4.0.0</jakarta.ejb-api.version>
@@ -182,7 +182,7 @@
         <jakarta.security.jacc-api.version>2.0.0</jakarta.security.jacc-api.version>
         <jakarta.security.auth.message-api.version>2.0.0</jakarta.security.auth.message-api.version>
         <jms-api.version>3.0.0</jms-api.version>
-        <mq.version>6.1.0.payara-p1</mq.version>
+        <mq.version>6.1.0.payara-p2</mq.version>
         <jakarta.batch-api.version>2.1.0-M1</jakarta.batch-api.version>
         <com.ibm.jbatch.container.version>2.1.0-M1</com.ibm.jbatch.container.version>
         <com.ibm.jbatch.spi.version>2.1.0-M1</com.ibm.jbatch.spi.version>
