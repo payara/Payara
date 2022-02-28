@@ -39,57 +39,37 @@
  */
 package org.glassfish.concurrent.runtime.deployment.annotation.handlers;
 
-import com.sun.enterprise.deployment.ConcurrentDefinitionDescriptor;
-import com.sun.enterprise.deployment.MetadataSource;
-import com.sun.enterprise.deployment.ResourceDescriptor;
 import com.sun.enterprise.deployment.annotation.context.ResourceContainerContext;
 import com.sun.enterprise.deployment.annotation.handlers.AbstractResourceHandler;
 import jakarta.enterprise.concurrent.ManagedExecutorDefinition;
-import org.glassfish.apf.AnnotationHandlerFor;
-import org.glassfish.apf.AnnotationInfo;
-import org.glassfish.apf.AnnotationProcessorException;
-import org.glassfish.apf.HandlerProcessingResult;
-import org.glassfish.config.support.TranslatedConfigView;
-import org.glassfish.deployment.common.JavaEEResourceType;
+import org.glassfish.apf.*;
 import org.jvnet.hk2.annotations.Service;
 
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Service
-@AnnotationHandlerFor(ManagedExecutorDefinition.class)
-public class ManagedExecutorDefinitionHandler extends AbstractResourceHandler {
+@AnnotationHandlerFor(ManagedExecutorDefinition.List.class)
+public class ManagedExecutorDefinitionListHandler extends AbstractResourceHandler {
 
-    private static final Logger logger = Logger.getLogger(ManagedExecutorDefinitionHandler.class.getName());
+    public static final Logger logger = Logger.getLogger(ManagedExecutorDefinition.class.getName());
 
     @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo annotationInfo,
                                                         ResourceContainerContext[] resourceContainerContexts)
             throws AnnotationProcessorException {
-        logger.log(Level.INFO, "Entering ManagedExecutorDefinitionHandler.processAnnotation");
-        ManagedExecutorDefinition managedExecutorDefinition = (ManagedExecutorDefinition) annotationInfo.getAnnotation();
-        return processAnnotation(managedExecutorDefinition, resourceContainerContexts);
-    }
+        logger.log(Level.INFO, "Entering ManagedExecutorDefinitionListHandler.processAnnotation");
+        AnnotatedElementHandler annotatedElementHandler = annotationInfo.getProcessingContext().getHandler();
+        ManagedExecutorDefinition.List managedExecutorDefinition =
+                (ManagedExecutorDefinition.List) annotationInfo.getAnnotation();
 
-    protected HandlerProcessingResult processAnnotation(ManagedExecutorDefinition managedExecutorDefinition,
-                                                        ResourceContainerContext[] contexts) {
-        logger.log(Level.INFO, "Registering ManagedExecutorService from annotation config");
-        for (ResourceContainerContext context : contexts) {
-            Set<ResourceDescriptor> cdd = context.getResourceDescriptors(JavaEEResourceType.CDD);
-            ConcurrentDefinitionDescriptor cddes = createDescriptor(managedExecutorDefinition);
-            cdd.add(cddes);
+        ManagedExecutorDefinition[] definitions = managedExecutorDefinition.value();
+        if(definitions != null) {
+            for (ManagedExecutorDefinition definition : definitions) {
+                ManagedExecutorDefinitionHandler handler = new ManagedExecutorDefinitionHandler();
+                handler.processAnnotation(definition, resourceContainerContexts);
+            }
         }
         return getDefaultProcessedResult();
-    }
-
-    public ConcurrentDefinitionDescriptor createDescriptor(ManagedExecutorDefinition managedExecutorDefinition) {
-        ConcurrentDefinitionDescriptor cdd = new ConcurrentDefinitionDescriptor();
-        cdd.setName(TranslatedConfigView.expandValue(managedExecutorDefinition.name()));
-        cdd.setContextInfo(TranslatedConfigView.expandValue(managedExecutorDefinition.context()));
-        cdd.setHungAfterSeconds(managedExecutorDefinition.hungTaskThreshold());
-        cdd.setMaximumPoolSize(managedExecutorDefinition.maxAsync());
-        cdd.setMetadataSource(MetadataSource.ANNOTATION);
-        return cdd;
     }
 }
