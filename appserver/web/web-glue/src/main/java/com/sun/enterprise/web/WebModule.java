@@ -93,6 +93,7 @@ import org.apache.catalina.loader.WebappLoader;
 import org.apache.catalina.servlets.DefaultServlet;
 import org.apache.catalina.session.StandardManager;
 import org.apache.jasper.servlet.JspServlet;
+import org.apache.tomcat.util.descriptor.web.FilterMap;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.embeddable.web.Context;
 import org.glassfish.embeddable.web.config.FormLoginConfig;
@@ -732,26 +733,13 @@ public class WebModule extends PwcWebModule implements Context {
      */
     @SuppressWarnings({"unchecked"})
     void addFilterMap(ServletFilterMapping sfm) {
+        FilterMap filterMap = new FilterMap();
+        filterMap.setFilterName(sfm.getName());
 
-        FilterMaps filterMaps = new FilterMaps();
-        filterMaps.setFilterName(sfm.getName());
-        filterMaps.setDispatcherTypes(sfm.getDispatchers());
-
-        List<String> servletNames = sfm.getServletNames();
-        if (servletNames != null) {
-            for(String servletName : servletNames) {
-                filterMaps.addServletName(servletName);
-            }
-        }
-
-        List<String> urlPatterns = sfm.getUrlPatterns();
-        if (urlPatterns != null) {
-            for(String urlPattern : urlPatterns) {
-                filterMaps.addURLPattern(urlPattern);
-            }
-        }
-
-        addFilterMaps(filterMaps);
+        sfm.getServletNames().forEach(servletName -> filterMap.addServletName(servletName));
+        sfm.getUrlPatterns().forEach(urlPattern -> filterMap.addURLPattern(urlPattern));
+        sfm.getDispatchers().forEach(dispatcherType -> filterMap.setDispatcher(dispatcherType.name()));
+        addFilterMap(filterMap);
     }
 
     /**
