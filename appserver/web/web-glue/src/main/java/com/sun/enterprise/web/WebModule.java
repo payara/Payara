@@ -813,8 +813,6 @@ public class WebModule extends PwcWebModule implements Context {
         Object valve = loadInstance(className);
         if (valve instanceof Valve) {
             super.addValve((Valve) valve);
-        } else if (valve instanceof GlassFishValve) {
-            super.addValve((GlassFishValve) valve);
         } else {
             logger.log(Level.WARNING, LogFacade.VALVE_CLASS_NAME_NO_VALVE,
                        className);
@@ -846,8 +844,7 @@ public class WebModule extends PwcWebModule implements Context {
         if (valve == null) {
             return;
         }
-        if (!(valve instanceof GlassFishValve) &&
-                !(valve instanceof Valve)) {
+        if (!(valve instanceof Valve)) {
             logger.log(Level.WARNING, LogFacade.VALVE_CLASS_NAME_NO_VALVE,
                        className);
             return;
@@ -885,8 +882,6 @@ public class WebModule extends PwcWebModule implements Context {
         }
         if (valve instanceof Valve) {
             super.addValve((Valve) valve);
-        } else if (valve instanceof GlassFishValve) {
-            super.addValve((GlassFishValve) valve);
         }
     }
 
