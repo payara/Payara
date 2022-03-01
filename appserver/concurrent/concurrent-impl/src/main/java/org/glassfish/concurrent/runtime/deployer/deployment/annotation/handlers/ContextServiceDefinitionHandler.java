@@ -88,8 +88,12 @@ public class ContextServiceDefinitionHandler extends AbstractResourceHandler {
     public void processSingleAnnotation(ContextServiceDefinition contextServiceDefinition, ResourceContainerContext[] resourceContainerContexts) {
         //        AnnotatedElement annotatedElement = annotationInfo.getAnnotatedElement();
         //        logger.log(Level.INFO, "Trying to create custom context service by annotation");
+//        String allContexts = Stream.of(ConcurrentRuntime.CONTEXT_INFO_CLASSLOADER,
+//                ConcurrentRuntime.CONTEXT_INFO_JNDI, ConcurrentRuntime.CONTEXT_INFO_SECURITY,
+//                ConcurrentRuntime.CONTEXT_INFO_WORKAREA).collect(Collectors.joining(", "));
+        String allContexts = null;
         ContextServiceConfig contextServiceConfig = new ContextServiceConfig(contextServiceDefinition.name(),
-                "???",
+                allContexts,
                 "true");
         ConcurrentRuntime concurrentRuntime = ConcurrentRuntime.getRuntime();
         // create a context service
