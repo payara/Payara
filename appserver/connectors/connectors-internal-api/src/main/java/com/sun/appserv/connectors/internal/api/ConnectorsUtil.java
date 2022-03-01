@@ -611,7 +611,7 @@ public class ConnectorsUtil {
                     break;
                 case CSDD:
                     prefixPart1 = ConnectorConstants.CONCURRENT_JNDINAME_PREFIX;
-                    prefixPart2 = ConnectorConstants.CONCURRENT_CONTEXT_SERVICE_DEFINITION_JNDINAME_PREFIX;
+                    prefixPart2 = ""; //ConnectorConstants.CONCURRENT_CONTEXT_SERVICE_DEFINITION_JNDINAME_PREFIX;
                     break;
             }
         }

@@ -318,7 +318,8 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
                         compEnvMgr,
                         applicationRegistry,
                         applications,
-                        cleanupTransaction ? transactionManager : null, contextTypes
+                        cleanupTransaction ? transactionManager : null,
+                        contextTypes
                 );
 
         ContextServiceImpl contextService
@@ -353,6 +354,10 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
                     contextTypeArray.add(ContextSetupProviderImpl.CONTEXT_TYPE.SECURITY);
                 } else if (CONTEXT_INFO_WORKAREA.equalsIgnoreCase(token)) {
                     contextTypeArray.add(ContextSetupProviderImpl.CONTEXT_TYPE.WORKAREA);
+                } else {
+                    logger.log(Level.SEVERE, "Unrecognized context info: ''{0}'', must be one of {1}, {2}, {3} or {4}",
+                            new Object[]{token, CONTEXT_INFO_CLASSLOADER, CONTEXT_INFO_JNDI,
+                                CONTEXT_INFO_SECURITY, CONTEXT_INFO_WORKAREA});
                 }
             }
         }

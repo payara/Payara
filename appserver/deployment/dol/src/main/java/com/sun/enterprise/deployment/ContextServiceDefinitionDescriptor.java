@@ -12,7 +12,7 @@
  * See the License for the specific
  * language governing permissions and limitations under the License.
  *
- * When distributing the software, include this License Header Notice in each
+* When distributing the software, include this License Header Notice in each
  * file and include the License file at glassfish/legal/LICENSE.txt.
  *
  * GPL Classpath Exception:
@@ -42,6 +42,7 @@ package com.sun.enterprise.deployment;
 import org.glassfish.deployment.common.JavaEEResourceType;
 
 /**
+ * Deployment information for context service.
  *
  * @author Petr Aubrecht <petr@aubrecht.net>
  */
