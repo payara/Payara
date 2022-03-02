@@ -53,7 +53,6 @@
 
     <properties>
         <grpc.client.version>1.43.1</grpc.client.version>
-        <payara.grpc.version>1.0.0</payara.grpc.version>
         <protobuf.version>3.19.4</protobuf.version>
     </properties>
 
@@ -84,11 +83,6 @@
             <groupId>io.grpc</groupId>
             <artifactId>grpc-stub</artifactId>
             <version>${grpc.client.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.extensions.grpc</groupId>
-            <artifactId>grpc-support</artifactId>
-            <version>${payara.grpc.version}</version>
         </dependency>
 
         <!-- Resolve dependencies in Shrinkwrap -->

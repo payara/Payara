@@ -71,12 +71,6 @@ public class GrpcTest {
     @Deployment(testable = false)
     public static Archive<?> deploy() {
 
-        final File[] singleDependencies = Maven.resolver()
-                .loadPomFromFile("pom.xml")
-                .resolve("fish.payara.extensions.grpc:grpc-support")
-                .withoutTransitivity()
-                .asFile();
-
         final Archive<?> archive = PayaraTestShrinkWrap.getWebArchive() //
                 // Add protobuf classes
                 .addPackage(PayaraProto.class.getPackage()) //
@@ -85,9 +79,7 @@ public class GrpcTest {
                 // Add test classes
                 .addClasses(GrpcTest.class, GrpcClient.class)
                 // Make sure context root and classloading is configured by GF descriptor
-                .addAsWebInfResource("glassfish-web.xml")
-                // Add libraries
-                .addAsLibraries(singleDependencies);
+                .addAsWebInfResource("glassfish-web.xml");
 
         return archive;
     }
