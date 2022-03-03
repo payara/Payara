@@ -901,8 +901,6 @@ public class WebModule extends PwcWebModule implements Context {
             addContainerListener((ContainerListener)listener);
         } else if (listener instanceof LifecycleListener ){
             addLifecycleListener((LifecycleListener)listener);
-        } else if (listener instanceof InstanceListener){
-            addInstanceListener(listenerName);
         } else {
             logger.log(Level.SEVERE, LogFacade.INVALID_LISTENER,
                 new Object[] {listenerName, getName()});
