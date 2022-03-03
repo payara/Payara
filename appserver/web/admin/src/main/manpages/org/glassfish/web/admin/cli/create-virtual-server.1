@@ -172,49 +172,6 @@ OPTIONS
                definitions in context.xml are supported in the GlassFish
                Server.
 
-           alternatedocroot_n
-               Specifies an alternate document root (docroot), where n is a
-               positive integer that allows specification of more than one.
-               Alternate docroots allow web applications to serve requests for
-               certain resources from outside their own docroot, based on
-               whether those requests match one (or more) of the URI patterns
-               of the web application's alternate docroots.
-
-               If a request matches an alternate docroot's URI pattern, it is
-               mapped to the alternate docroot by appending the request URI
-               (minus the web application's context root) to the alternate
-               docroot's physical location (directory). If a request matches
-               multiple URI patterns, the alternate docroot is determined
-               according to the following precedence order:
-
-               *   Exact match
-
-               *   Longest path match
-
-               *   Extension match
-
-               For example, the following properties specify three alternate
-               docroots. The URI pattern of the first alternate docroot uses
-               an exact match, whereas the URI patterns of the second and
-               third alternate docroots use extension and longest path prefix
-               matches, respectively.
-
-                   <property name="alternatedocroot_1"
-                      value="from=/my.jpg dir=/srv/images/jpg"/>
-                   <property name="alternatedocroot_2"
-                      value="from=*.jpg dir=/srv/images/jpg"/>
-                   <property name="alternatedocroot_3"
-                      value="from=/jpg/* dir=/src/images"/>
-               The value of each alternate docroot has two components: The
-               first component, from, specifies the alternate docroot's URI
-               pattern, and the second component, dir, specifies the alternate
-               docroot's physical location (directory). Spaces are allowed in
-               the dir component.
-
-               You can set this property for a specific web application. For
-               details, see "glassfish-web-app" in Oracle GlassFish Server
-               Application Deployment Guide.
-
            send-error_n
                Specifies custom error page mappings for the virtual server,
                which are inherited by all web applications deployed on the

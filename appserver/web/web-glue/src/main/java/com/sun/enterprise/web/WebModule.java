@@ -992,76 +992,6 @@ public class WebModule extends PwcWebModule implements Context {
         this.serverContext = serverContext;
     }
 
-    /**
-     * Sets the alternate docroots of this web module from the given
-     * "alternatedocroot_" properties.
-     */
-    void setAlternateDocBases(List <Property> props) {
-
-        if (props == null) {
-            return;
-        }
-
-        for (Property prop : props) {
-            parseAlternateDocBase(prop.getName(), prop.getValue());
-        }
-    }
-
-    void parseAlternateDocBase(String propName, String propValue) {
-
-        if (propName == null || propValue == null) {
-            logger.log(Level.WARNING, LogFacade.ALTERNATE_DOC_BASE_NULL_PROPERTY_NAME_VALVE);
-            return;
-        }
-
-        if (!propName.startsWith("alternatedocroot_")) {
-            return;
-        }
-
-        /*
-         * Validate the prop value
-         */
-        String urlPattern = null;
-        String docBase = null;
-
-        int fromIndex = propValue.indexOf(ALTERNATE_FROM);
-        int dirIndex = propValue.indexOf(ALTERNATE_DOCBASE);
-
-        if (fromIndex < 0 || dirIndex < 0) {
-            logger.log(
-                Level.WARNING,
-                LogFacade.ALTERNATE_DOC_BASE_MISSING_PATH_OR_URL_PATTERN,
-                propValue);
-            return;
-        }
-
-        if (fromIndex > dirIndex) {
-            urlPattern = propValue.substring(
-                fromIndex + ALTERNATE_FROM.length());
-            docBase = propValue.substring(
-                dirIndex + ALTERNATE_DOCBASE.length(),
-                fromIndex);
-        } else {
-            urlPattern = propValue.substring(
-                fromIndex + ALTERNATE_FROM.length(),
-                dirIndex);
-            docBase = propValue.substring(
-                dirIndex + ALTERNATE_DOCBASE.length());
-        }
-
-        urlPattern = urlPattern.trim();
-        if (!validateURLPattern(urlPattern)) {
-            logger.log(Level.WARNING,
-                       LogFacade.ALTERNATE_DOC_BASE_ILLEGAL_URL_PATTERN,
-                       urlPattern);
-            return;
-        }
-
-        docBase = docBase.trim();
-
-        addAlternateDocBase(urlPattern, docBase);
-    }
-
     List<URI> getDeployAppLibs() {
         List<URI> uris = null;
         if (wmInfo.getDeploymentContext() != null) {
@@ -1175,8 +1105,6 @@ public class WebModule extends PwcWebModule implements Context {
             setUseMyFaces(ConfigBeansUtilities.toBoolean(value));
         } else if("default-role-mapping".equalsIgnoreCase(name)) {
             wmInfo.getDescriptor().setDefaultGroupPrincipalMapping(ConfigBeansUtilities.toBoolean(value));
-        } else if(name.startsWith("alternatedocroot_")) {
-            parseAlternateDocBase(name, value);
         } else if(name.startsWith("valve_") ||
                 name.startsWith("listener_")) {
             // do nothing; these properties are dealt with

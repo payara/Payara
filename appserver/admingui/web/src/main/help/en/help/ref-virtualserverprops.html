@@ -92,33 +92,6 @@
 <p>Individual web applications may override this setting by using the <code>sun-web-app</code> element of the <code>sun-web.xml</code> file.</p>
 <p>The default value is <code>true</code>.</p>
 </dd>
-<dt><code>alternatedocroot_</code><i>n</i></dt>
-<dd>
-<p>Specifies an alternate document root (docroot), where <i>n</i> is a positive integer that allows specification of more than one. Alternate docroots allow web applications to serve requests for certain resources from outside their own docroot, based on whether those requests match one (or more) of the URI patterns of the web application's alternate docroots.</p>
-<p>If a request matches an alternate docroot's URI pattern, it is mapped to the alternate docroot by appending the request URI (minus the web application's context root) to the alternate docroot's physical location (directory). If a request matches multiple URI patterns, the alternate docroot is determined according to the following precedence order:</p>
-<ul>
-<li>
-<p>Exact match</p>
-</li>
-<li>
-<p>Longest path match</p>
-</li>
-<li>
-<p>Extension match</p>
-</li>
-</ul>
-<p>For example, the following properties specify three alternate docroots. The URI pattern of the first alternate docroot uses an exact match, whereas the URI patterns of the second and third alternate docroots use extension and longest path prefix matches, respectively.</p>
-<pre>
-&lt;property name="alternatedocroot_1" 
-   value="from=/my.jpg dir=/srv/images/jpg"/&gt;
-&lt;property name="alternatedocroot_2" 
-   value="from=*.jpg dir=/srv/images/jpg"/&gt;
-&lt;property name="alternatedocroot_3" 
-   value="from=/jpg/* dir=/src/images"/&gt;
-</pre>
-<p>The <code>value</code> of each alternate docroot has two components: The first component, <code>from</code>, specifies the alternate docroot's URI pattern, and the second component, <code>dir</code>, specifies the alternate docroot's physical location (directory). Spaces are allowed in the <code>dir</code> component.</p>
-<p>Individual web applications may override this setting by using the <code>sun-web-app</code> element of the <code>sun-web.xml</code> file.</p>
-</dd>
 <dt><code>contextXmlDefault</code></dt>
 <dd>
 <p>Specifies the location, relative to <i>domain-dir</i>, of the <code>context.xml</code> file for this virtual server, if one is used.xml</code> file, see The Context Container (<code><a href="http://tomcat.apache.org/tomcat-5.5-doc/config/context.html">http://tomcat.apache.org/tomcat-5.5-doc/config/context.html</a></code>).</p>

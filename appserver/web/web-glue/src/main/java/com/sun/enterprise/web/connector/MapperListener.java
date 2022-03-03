@@ -420,8 +420,7 @@ public class MapperListener implements NotificationListener, NotificationFilter{
         String[] welcomeFiles = context.getWelcomeFiles();
 
         mapper.addContext(hostName, contextName, context, 
-                          welcomeFiles, ContextsAdapterUtility.wrap(resources),
-                          context.getAlternateDocBases());
+                          welcomeFiles, ContextsAdapterUtility.wrap(resources));
     }
 
 

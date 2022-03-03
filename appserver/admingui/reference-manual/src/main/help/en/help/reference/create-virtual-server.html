@@ -296,68 +296,6 @@ Application Development Guide and The Context Container
 Context parameters, environment entries, and resource definitions in
 <code>context.xml</code> are supported in the \{product---name}.</p>
 </dd>
-<dt class="hdlist1"><code>alternatedocroot_n</code></dt>
-<dd>
-<p>Specifies an alternate document root (docroot), where n is a
-positive integer that allows specification of more than one.
-Alternate docroots allow web applications to serve requests for
-certain resources from outside their own docroot, based on whether
-those requests match one (or more) of the URI patterns of the web
-application&#8217;s alternate docroots.<br>
-If a request matches an alternate docroot&#8217;s URI pattern, it is
-mapped to the alternate docroot by appending the request URI (minus
-the web application&#8217;s context root) to the alternate docroot&#8217;s
-physical location (directory). If a request matches multiple URI
-patterns, the alternate docroot is determined according to the
-following precedence order:<br></p>
-<div class="ulist">
-<ul>
-<li>
-<p>Exact match</p>
-</li>
-<li>
-<p>Longest path match</p>
-</li>
-<li>
-<p>Extension match<br>
-For example, the following properties specify three alternate
-docroots. The URI pattern of the first alternate docroot uses an
-exact match, whereas the URI patterns of the second and third
-alternate docroots use extension and longest path prefix matches,
-respectively.<br></p>
-</li>
-</ul>
-</div>
-</dd>
-</dl>
-</div>
-</dd>
-</dl>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">&lt;property name="alternatedocroot_1"
-   value="from=/my.jpg dir=/srv/images/jpg"/&gt;
-&lt;property name="alternatedocroot_2"
-   value="from=*.jpg dir=/srv/images/jpg"/&gt;
-&lt;property name="alternatedocroot_3"
-   value="from=/jpg/* dir=/src/images"/&gt;</code></pre>
-</div>
-</div>
-<div class="dlist">
-<dl>
-<dt class="hdlist1"></dt>
-<dd>
-<p>The <code>value</code> of each alternate docroot has two components: The first
-component, <code>from</code>, specifies the alternate docroot&#8217;s URI pattern,
-and the second component, <code>dir</code>, specifies the alternate docroot&#8217;s
-physical location (directory). Spaces are allowed in the <code>dir</code>
-component.<br>
-You can set this property for a specific web application. For
-details, see "<a href="../application-deployment-guide/dd-elements.html#GSDPG00161">glassfish-web-app</a>" in GlassFish
-Server Open Source Edition Application Deployment Guide.</p>
-<div class="dlist">
-<dl>
 <dt class="hdlist1"><code>send-error_n</code></dt>
 <dd>
 <p>Specifies custom error page mappings for the virtual server, which

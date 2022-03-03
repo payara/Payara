@@ -1849,11 +1849,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         // Configure SingleThreadedServletPools, work/tmp directory etc
         webModule.configureMiscSettings(virtualServer, displayContextPath);
 
-        // Configure alternate docroots if dummy web module
-        if (webModule.getID().startsWith(DEFAULT_WEB_MODULE_NAME)) {
-            webModule.setAlternateDocBases(virtualServer.getProperties());
-        }
-
         // Configure the session manager and other related settings
         webModule.configureSessionSettings(webBundleDescriptor, webModuleConfig);
     }
@@ -2550,9 +2545,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
             return;
         }
 
-        if (name.startsWith("alternatedocroot_")) {
-            updateAlternateDocroot(virtualServer);
-        } else if ("setCacheControl".equals(name)) {
+        if ("setCacheControl".equals(name)) {
             virtualServer.configureCacheControl(value);
         } else if (ACCESS_LOGGING_ENABLED.equals(name)) {
             virtualServer.reconfigureAccessLog(globalAccessLogBufferSize, globalAccessLogWriteInterval, serviceLocator, domain, globalAccessLoggingEnabled, globalAccessLogPrefix);
@@ -2840,14 +2833,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
 
         validateDocroot(docroot, vsBean.getId(), vsBean.getDefaultWebModule());
         vs.setAppBase(docroot);
-        removeDummyModule(vs);
-        WebModuleConfig wmInfo = vs.createSystemDefaultWebModuleIfNecessary(serviceLocator.<WebArchivist>getService(WebArchivist.class));
-        if (wmInfo != null) {
-            loadStandaloneWebModule(vs, wmInfo);
-        }
-    }
-
-    private void updateAlternateDocroot(VirtualServer vs) {
         removeDummyModule(vs);
         WebModuleConfig wmInfo = vs.createSystemDefaultWebModuleIfNecessary(serviceLocator.<WebArchivist>getService(WebArchivist.class));
         if (wmInfo != null) {
