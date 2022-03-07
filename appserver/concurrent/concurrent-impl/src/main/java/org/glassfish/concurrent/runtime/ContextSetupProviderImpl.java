@@ -432,7 +432,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         try {
             this.stuckThreads = Globals.getDefaultHabitat().getService(StuckThreadsStore.class);
         } catch (NullPointerException ex) {
-            logger.log(Level.INFO, "Error retrieving Stuck Threads Sore Healthcheck service "
+            logger.log(Level.INFO, "Error retrieving Stuck Threads Store Healthcheck service "
                     + "during initialisation of Concurrent Context - NullPointerException", ex);
         }
         try {
