@@ -89,222 +89,7 @@ public class ConcurrentDescriptorDeployer implements ResourceDeployer {
     public void deployResource(Object resource) throws Exception {
         ConcurrentDefinitionDescriptor concurrentDefinitionDescriptor = (ConcurrentDefinitionDescriptor) resource;
         ManagedExecutorServiceConfig managedExecutorServiceConfig =
-                new ManagedExecutorServiceConfig(new ManagedExecutorService() {
-                    @Override
-                    public String getMaximumPoolSize() {
-                        return String.valueOf(concurrentDefinitionDescriptor.getMaximumPoolSize());
-                    }
-
-                    @Override
-                    public void setMaximumPoolSize(String value) throws PropertyVetoException {
-
-                    }
-
-                    @Override
-                    public String getTaskQueueCapacity() {
-                        return "" + Integer.MAX_VALUE;
-                    }
-
-                    @Override
-                    public void setTaskQueueCapacity(String value) throws PropertyVetoException {
-
-                    }
-
-                    @Override
-                    public String getIdentity() {
-                        return null;
-                    }
-
-                    @Override
-                    public String getThreadPriority() {
-                        return "" + Thread.NORM_PRIORITY;
-                    }
-
-                    @Override
-                    public void setThreadPriority(String value) throws PropertyVetoException {
-
-                    }
-
-                    @Override
-                    public String getLongRunningTasks() {
-                        return "false";
-                    }
-
-                    @Override
-                    public void setLongRunningTasks(String value) throws PropertyVetoException {
-
-                    }
-
-                    @Override
-                    public String getHungAfterSeconds() {
-                        return "" + concurrentDefinitionDescriptor.getHungAfterSeconds();
-                    }
-
-                    @Override
-                    public void setHungAfterSeconds(String value) throws PropertyVetoException {
-
-                    }
-
-                    @Override
-                    public String getCorePoolSize() {
-                        return "0";
-                    }
-
-                    @Override
-                    public void setCorePoolSize(String value) throws PropertyVetoException {
-
-                    }
-
-                    @Override
-                    public String getKeepAliveSeconds() {
-                        return "60";
-                    }
-
-                    @Override
-                    public void setKeepAliveSeconds(String value) throws PropertyVetoException {
-
-                    }
-
-                    @Override
-                    public String getThreadLifetimeSeconds() {
-                        return "0";
-                    }
-
-                    @Override
-                    public void setThreadLifetimeSeconds(String value) throws PropertyVetoException {
-
-                    }
-
-                    @Override
-                    public String getJndiName() {
-                        return concurrentDefinitionDescriptor.getName();
-                    }
-
-                    @Override
-                    public void setJndiName(String value) throws PropertyVetoException {
-
-                    }
-
-                    @Override
-                    public String getEnabled() {
-                        return "true";
-                    }
-
-                    @Override
-                    public void setEnabled(String value) throws PropertyVetoException {
-
-                    }
-
-                    @Override
-                    public String getObjectType() {
-                        return "user";
-                    }
-
-                    @Override
-                    public void setObjectType(String value) throws PropertyVetoException {
-
-                    }
-
-                    @Override
-                    public String getDeploymentOrder() {
-                        return "100";
-                    }
-
-                    @Override
-                    public void setDeploymentOrder(String value) throws PropertyVetoException {
-
-                    }
-
-                    @Override
-                    public String getContextInfoEnabled() {
-                        return "true";
-                    }
-
-                    @Override
-                    public void setContextInfoEnabled(String value) throws PropertyVetoException {
-
-                    }
-
-                    @Override
-                    public String getContextInfo() {
-                        return concurrentDefinitionDescriptor.getContextInfo();
-                    }
-
-                    @Override
-                    public void setContextInfo(String value) throws PropertyVetoException {
-
-                    }
-
-                    @Override
-                    public String getDescription() {
-                        return "Managed Executor Definition";
-                    }
-
-                    @Override
-                    public void setDescription(String value) throws PropertyVetoException {
-
-                    }
-
-                    @Override
-                    public List<Property> getProperty() {
-                        return null;
-                    }
-
-                    @Override
-                    public ConfigBeanProxy getParent() {
-                        return null;
-                    }
-
-                    @Override
-                    public <T extends ConfigBeanProxy> T getParent(Class<T> type) {
-                        return null;
-                    }
-
-                    @Override
-                    public <T extends ConfigBeanProxy> T createChild(Class<T> type) throws TransactionFailure {
-                        return null;
-                    }
-
-                    @Override
-                    public ConfigBeanProxy deepCopy(ConfigBeanProxy parent) throws TransactionFailure {
-                        return null;
-                    }
-
-                    @Override
-                    public Property addProperty(Property property) {
-                        return null;
-                    }
-
-                    @Override
-                    public Property lookupProperty(String name) {
-                        return null;
-                    }
-
-                    @Override
-                    public Property removeProperty(String name) {
-                        return null;
-                    }
-
-                    @Override
-                    public Property removeProperty(Property removeMe) {
-                        return null;
-                    }
-
-                    @Override
-                    public Property getProperty(String name) {
-                        return null;
-                    }
-
-                    @Override
-                    public String getPropertyValue(String name) {
-                        return null;
-                    }
-
-                    @Override
-                    public String getPropertyValue(String name, String defaultValue) {
-                        return null;
-                    }
-                });
+                new ManagedExecutorServiceConfig(new CustomManagedExecutorServiceImpl(concurrentDefinitionDescriptor));
         String applicationName = invocationManager.getCurrentInvocation().getAppName();
         String customNameOfResource = ConnectorsUtil.deriveResourceName
                 (concurrentDefinitionDescriptor.getResourceId(), concurrentDefinitionDescriptor.getName(), concurrentDefinitionDescriptor.getResourceType());
@@ -375,5 +160,228 @@ public class ConcurrentDescriptorDeployer implements ResourceDeployer {
     @Override
     public void validatePreservedResource(Application oldApp, Application newApp, Resource resource, Resources allResources) throws ResourceConflictException {
 
+    }
+
+    class CustomManagedExecutorServiceImpl implements ManagedExecutorService {
+
+        private ConcurrentDefinitionDescriptor concurrentDefinitionDescriptor;
+
+        public CustomManagedExecutorServiceImpl(ConcurrentDefinitionDescriptor concurrentDefinitionDescriptor) {
+            this.concurrentDefinitionDescriptor = concurrentDefinitionDescriptor;
+        }
+        @Override
+        public String getMaximumPoolSize() {
+            return String.valueOf(concurrentDefinitionDescriptor.getMaximumPoolSize());
+        }
+
+        @Override
+        public void setMaximumPoolSize(String value) throws PropertyVetoException {
+
+        }
+
+        @Override
+        public String getTaskQueueCapacity() {
+            return "" + Integer.MAX_VALUE;
+        }
+
+        @Override
+        public void setTaskQueueCapacity(String value) throws PropertyVetoException {
+
+        }
+
+        @Override
+        public String getIdentity() {
+            return null;
+        }
+
+        @Override
+        public String getThreadPriority() {
+            return "" + Thread.NORM_PRIORITY;
+        }
+
+        @Override
+        public void setThreadPriority(String value) throws PropertyVetoException {
+
+        }
+
+        @Override
+        public String getLongRunningTasks() {
+            return "false";
+        }
+
+        @Override
+        public void setLongRunningTasks(String value) throws PropertyVetoException {
+
+        }
+
+        @Override
+        public String getHungAfterSeconds() {
+            return "" + concurrentDefinitionDescriptor.getHungAfterSeconds();
+        }
+
+        @Override
+        public void setHungAfterSeconds(String value) throws PropertyVetoException {
+
+        }
+
+        @Override
+        public String getCorePoolSize() {
+            return "0";
+        }
+
+        @Override
+        public void setCorePoolSize(String value) throws PropertyVetoException {
+
+        }
+
+        @Override
+        public String getKeepAliveSeconds() {
+            return "60";
+        }
+
+        @Override
+        public void setKeepAliveSeconds(String value) throws PropertyVetoException {
+
+        }
+
+        @Override
+        public String getThreadLifetimeSeconds() {
+            return "0";
+        }
+
+        @Override
+        public void setThreadLifetimeSeconds(String value) throws PropertyVetoException {
+
+        }
+
+        @Override
+        public String getJndiName() {
+            return concurrentDefinitionDescriptor.getName();
+        }
+
+        @Override
+        public void setJndiName(String value) throws PropertyVetoException {
+
+        }
+
+        @Override
+        public String getEnabled() {
+            return "true";
+        }
+
+        @Override
+        public void setEnabled(String value) throws PropertyVetoException {
+
+        }
+
+        @Override
+        public String getObjectType() {
+            return "user";
+        }
+
+        @Override
+        public void setObjectType(String value) throws PropertyVetoException {
+
+        }
+
+        @Override
+        public String getDeploymentOrder() {
+            return "100";
+        }
+
+        @Override
+        public void setDeploymentOrder(String value) throws PropertyVetoException {
+
+        }
+
+        @Override
+        public String getContextInfoEnabled() {
+            return "true";
+        }
+
+        @Override
+        public void setContextInfoEnabled(String value) throws PropertyVetoException {
+
+        }
+
+        @Override
+        public String getContextInfo() {
+            return concurrentDefinitionDescriptor.getContextInfo();
+        }
+
+        @Override
+        public void setContextInfo(String value) throws PropertyVetoException {
+
+        }
+
+        @Override
+        public String getDescription() {
+            return "Managed Executor Definition";
+        }
+
+        @Override
+        public void setDescription(String value) throws PropertyVetoException {
+
+        }
+
+        @Override
+        public List<Property> getProperty() {
+            return null;
+        }
+
+        @Override
+        public ConfigBeanProxy getParent() {
+            return null;
+        }
+
+        @Override
+        public <T extends ConfigBeanProxy> T getParent(Class<T> type) {
+            return null;
+        }
+
+        @Override
+        public <T extends ConfigBeanProxy> T createChild(Class<T> type) throws TransactionFailure {
+            return null;
+        }
+
+        @Override
+        public ConfigBeanProxy deepCopy(ConfigBeanProxy parent) throws TransactionFailure {
+            return null;
+        }
+
+        @Override
+        public Property addProperty(Property property) {
+            return null;
+        }
+
+        @Override
+        public Property lookupProperty(String name) {
+            return null;
+        }
+
+        @Override
+        public Property removeProperty(String name) {
+            return null;
+        }
+
+        @Override
+        public Property removeProperty(Property removeMe) {
+            return null;
+        }
+
+        @Override
+        public Property getProperty(String name) {
+            return null;
+        }
+
+        @Override
+        public String getPropertyValue(String name) {
+            return null;
+        }
+
+        @Override
+        public String getPropertyValue(String name, String defaultValue) {
+            return null;
+        }
     }
 }
