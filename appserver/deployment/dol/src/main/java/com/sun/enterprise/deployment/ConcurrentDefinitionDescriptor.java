@@ -1,23 +1,23 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012-2022 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) [2022] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/master/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at glassfish/legal/LICENSE.txt.
  *
  * GPL Classpath Exception:
- * Oracle designates this particular file as subject to the "Classpath"
- * exception as provided by Oracle in the GPL Version 2 section of the License
+ * The Payara Foundation designates this particular file as subject to the "Classpath"
+ * exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  * file that accompanied this code.
  *
  * Modifications:
@@ -37,56 +37,52 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+package com.sun.enterprise.deployment;
 
-package org.glassfish.deployment.common;
+import static org.glassfish.deployment.common.JavaEEResourceType.*;
 
-/**
- * Enum for all inbuilt resource definition types
- * @since 4.0
- * @author naman
- * Date: 5/9/12
- * Time: 2:33 PM
- * 
- */
-public enum JavaEEResourceType {
-    /**
-     * MSD: MailSessionDescriptor
-     */
-    MSD,
-    /**
-     * DSD: DataSourceDefinitionDescriptor
-     */
-    DSD,
-    /**
-     * DSDPOOL: DataSourceDefinitionDescriptor Pool
-     */
-    DSDPOOL,
-    /**
-     * CFD: ConnectionFactoryDefinitionDescriptor
-     */
-    CFD,
-    /**
-     * CFDPOOL: ConnectionFactoryDefinitionDescriptor Pool
-     */
-    CFDPOOL,
-    /**
-     * JMSCFDD: JMSConnectionFactoryDefinitionDescriptor
-     */
-    JMSCFDD,
-    /**
-     * JMSCFDDPOOL: JMSConnectionFactoryDefinitionDescriptor Pool
-     */
-    JMSCFDDPOOL,
-    /**
-     * JMSDD: JMSDestinationDefinitionDescriptor
-     */
-    JMSDD,
-    /**
-     * AODD: AdministeredObjectDefinitionDescriptor
-     */
-    AODD,
-    /**
-     * CDD: ConcurrentDefinitionDescriptor
-     */
-    CDD;
+public class ConcurrentDefinitionDescriptor extends ResourceDescriptor {
+
+    private String name;
+    private long maximumPoolSize;
+    private long hungAfterSeconds;
+    private String contextInfo;
+
+    public ConcurrentDefinitionDescriptor() {
+        super.setResourceType(CDD);
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public long getMaximumPoolSize() {
+        return maximumPoolSize;
+    }
+
+    public void setMaximumPoolSize(long maximumPoolSize) {
+        this.maximumPoolSize = maximumPoolSize;
+    }
+
+    public long getHungAfterSeconds() {
+        return hungAfterSeconds;
+    }
+
+    public void setHungAfterSeconds(long hungAfterSeconds) {
+        this.hungAfterSeconds = hungAfterSeconds;
+    }
+
+    public String getContextInfo() {
+        return contextInfo;
+    }
+
+    public void setContextInfo(String contextInfo) {
+        this.contextInfo = contextInfo;
+    }
 }

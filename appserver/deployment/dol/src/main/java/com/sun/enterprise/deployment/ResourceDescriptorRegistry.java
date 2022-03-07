@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2020] Payara Fondation and/or affiliates
+// Portions Copyright [2022] Payara Fondation and/or affiliates
 
 package com.sun.enterprise.deployment;
 
@@ -71,7 +71,7 @@ public class ResourceDescriptorRegistry implements Serializable {
         invalidResourceTypeScopes.put(JavaEEResourceType.JMSDD,new HashSet<>());
         invalidResourceTypeScopes.put(JavaEEResourceType.CFD,new HashSet<>(Arrays.asList(new Class[]{ApplicationClientDescriptor.class})));
         invalidResourceTypeScopes.put(JavaEEResourceType.AODD,new HashSet<>(Arrays.asList(new Class[]{ApplicationClientDescriptor.class})));
-
+        invalidResourceTypeScopes.put(JavaEEResourceType.CDD,new HashSet<>());
     }
 
     private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ResourceDescriptorRegistry.class);
@@ -90,6 +90,7 @@ public class ResourceDescriptorRegistry implements Serializable {
         allResourceDescriptors.addAll(this.getResourceDescriptors(JavaEEResourceType.AODD));
         allResourceDescriptors.addAll(this.getResourceDescriptors(JavaEEResourceType.JMSCFDD));
         allResourceDescriptors.addAll(this.getResourceDescriptors(JavaEEResourceType.JMSDD));
+        allResourceDescriptors.addAll(this.getResourceDescriptors(JavaEEResourceType.CDD));
         return allResourceDescriptors;
     }
 
