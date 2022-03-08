@@ -44,11 +44,13 @@ import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.Future;
 import java.util.concurrent.ExecutionException;
+
 import jakarta.enterprise.concurrent.ManagedExecutorDefinition;
 import jakarta.enterprise.concurrent.ManagedExecutorService;
 
@@ -77,6 +79,9 @@ public class ManagedExecutorDefinitionRest {
     @Resource(lookup = "java:module/managedexecutor/CustomManagedExecutorC")
     ManagedExecutorService managedExecutorServiceC;
 
+    @Resource(lookup = "java:app/managedexecutor/XMLManagedExector")
+    ManagedExecutorService xmlManagedExecutorService;
+
     @GET
     @Path("managedexecutor")
     @Produces(MediaType.TEXT_PLAIN)
@@ -88,7 +93,7 @@ public class ManagedExecutorDefinitionRest {
             System.out.println("Job running");
         });
         future.get();
-        return "Executor submitted:"+numberExecution.get();
+        return "Executor submitted:" + numberExecution.get();
     }
 
     @GET
@@ -118,7 +123,20 @@ public class ManagedExecutorDefinitionRest {
         future1.get();
         future2.get();
         future3.get();
-        return "Executor submitted:"+(numberExecutionA.get()+numberExecutionB.get()+numberExecutionC.get());
+        return "Executor submitted:" + (numberExecutionA.get() + numberExecutionB.get() + numberExecutionC.get());
     }
 
+    @GET
+    @Path("xmlmanagedexecutor")
+    @Produces(MediaType.TEXT_PLAIN)
+    public String xmlManagedExecutor() throws InterruptedException, ExecutionException {
+        logger.log(Level.INFO, String.format("XML ManagedExecutor:%s", xmlManagedExecutorService));
+        AtomicInteger numberExecution = new AtomicInteger(0);
+        Future future = xmlManagedExecutorService.submit(() -> {
+            numberExecution.incrementAndGet();
+            System.out.println("Job running");
+        });
+        future.get();
+        return "Executor submitted:" + numberExecution.get();
+    }
 }
