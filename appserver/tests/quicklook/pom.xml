@@ -213,7 +213,7 @@
                         <classifier>jdk15</classifier>
                     </dependency>
                     <dependency>
-                        <groupId>org.glassfish.jsftemplating</groupId>
+                        <groupId>com.sun.jsftemplating</groupId>
                         <artifactId>jsftemplating-dynafaces</artifactId>
                         <version>0.1</version>
                     </dependency>
