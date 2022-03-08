@@ -1,23 +1,23 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) [2022] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/master/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
- * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+* When distributing the software, include this License Header Notice in each
+ * file and include the License file at glassfish/legal/LICENSE.txt.
  *
  * GPL Classpath Exception:
- * Oracle designates this particular file as subject to the "Classpath"
- * exception as provided by Oracle in the GPL Version 2 section of the License
+ * The Payara Foundation designates this particular file as subject to the "Classpath"
+ * exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  * file that accompanied this code.
  *
  * Modifications:
@@ -37,26 +37,19 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2022] Payara Fondation and/or affiliates
+package com.sun.enterprise.deployment;
 
-package org.glassfish.concurrent.runtime.deployer;
-
-import org.glassfish.concurrent.config.ContextService;
+import org.glassfish.deployment.common.JavaEEResourceType;
 
 /**
- * Contains configuration information for a ContextService object
+ * Deployment information for context service.
+ *
+ * @author Petr Aubrecht <petr@aubrecht.net>
  */
-public class ContextServiceConfig extends BaseConfig {
-
-    public ContextServiceConfig(ContextService config) {
-        super(config.getJndiName(), config.getContextInfo(), config.getContextInfoEnabled());
+public class ContextServiceDefinitionDescriptor extends ResourceDescriptor {
+    public ContextServiceDefinitionDescriptor() {
+        super.setResourceType(JavaEEResourceType.CSDD);
     }
 
-    public ContextServiceConfig(String jndiName, String contextInfo, String contextInfoEnabled) {
-        super(jndiName, contextInfo, contextInfoEnabled);
-    }
-
-    public TYPE getType() {
-        return TYPE.CONTEXT_SERVICE;
-    }
+    // TODO: add parameters
 }

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2022] Payara Foundation and/or affiliates
 
 package com.sun.appserv.connectors.internal.api;
 
@@ -212,7 +213,8 @@ public interface ConnectorConstants extends ResourceConstants {
     /**
      * Reserved sub-context where concurrent objects are bound with generated names.
      */
-    public static String CONCURRENT_JNDINAME_PREFIX="concurrent/";
+//    public static String CONCURRENT_JNDINAME_PREFIX = RESERVE_PREFIX + "/concurrent/";
+    public static String CONCURRENT_JNDINAME_PREFIX = "concurrent/";
 
     /**
      *  Reserved sub-context where connector resource objects are bound with 
@@ -246,7 +248,7 @@ public interface ConnectorConstants extends ResourceConstants {
           false : true;
     
     public static final int DEFAULT_RESOURCE_ADAPTER_SHUTDOWN_TIMEOUT = 30;
-    
+
     public String JAVAX_SQL_DATASOURCE = "javax.sql.DataSource";
     
     public String JAVAX_SQL_CONNECTION_POOL_DATASOURCE = "javax.sql.ConnectionPoolDataSource";
