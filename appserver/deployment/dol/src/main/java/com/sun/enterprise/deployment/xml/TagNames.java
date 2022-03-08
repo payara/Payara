@@ -163,6 +163,12 @@ public interface TagNames {
     public static final String JMS_DESTINATION_PROPERTY_NAME = "name";
     public static final String JMS_DESTINATION_PROPERTY_VALUE = "value";
 
+    public static final String MANAGED_EXECUTOR = "managed-executor";
+    public static final String MANAGED_EXECUTOR_NAME = "name";
+    public static final String MANAGED_EXECUTOR_MAX_POOL_SIZE = "max-async";
+    public static final String MANAGED_EXECUTOR_HUNG_AFTER_SECONDS = "hung-task-threshold";
+    public static final String MANAGED_EXECUTOR_CONTEXT_INFO = "context-service-ref";
+
     public static final String PERSISTENCE_CONTEXT_REF = "persistence-context-ref";
     public static final String PERSISTENCE_CONTEXT_REF_NAME = "persistence-context-ref-name";
 

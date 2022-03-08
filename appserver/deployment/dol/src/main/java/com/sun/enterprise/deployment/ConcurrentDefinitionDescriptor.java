@@ -39,14 +39,20 @@
  */
 package com.sun.enterprise.deployment;
 
+import java.util.Properties;
+
 import static org.glassfish.deployment.common.JavaEEResourceType.*;
 
 public class ConcurrentDefinitionDescriptor extends ResourceDescriptor {
 
+    private static final String JAVA_URL = "java:";
+    private static final String JAVA_COMP_URL = "java:comp/";
+
     private String name;
-    private long maximumPoolSize;
-    private long hungAfterSeconds;
+    private int maximumPoolSize = -1;
+    private long hungAfterSeconds = -1;
     private String contextInfo;
+    private Properties properties = new Properties();
 
     public ConcurrentDefinitionDescriptor() {
         super.setResourceType(CDD);
@@ -66,7 +72,7 @@ public class ConcurrentDefinitionDescriptor extends ResourceDescriptor {
         return maximumPoolSize;
     }
 
-    public void setMaximumPoolSize(long maximumPoolSize) {
+    public void setMaximumPoolSize(int maximumPoolSize) {
         this.maximumPoolSize = maximumPoolSize;
     }
 
@@ -84,5 +90,37 @@ public class ConcurrentDefinitionDescriptor extends ResourceDescriptor {
 
     public void setContextInfo(String contextInfo) {
         this.contextInfo = contextInfo;
+    }
+
+    public void addProperty(String key, String value) {
+        properties.put(key, value);
+    }
+
+    public String getProperty(String key) {
+        return (String) properties.get(key);
+    }
+
+    public Properties getProperties() {
+        return properties;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof ConcurrentDefinitionDescriptor) {
+            ConcurrentDefinitionDescriptor ref = (ConcurrentDefinitionDescriptor) obj;
+            return this.getName().equals(getURLName(ref.getName()));
+        }
+        return false;
+    }
+
+    public static String getURLName(String thisName) {
+        if (!thisName.contains(JAVA_URL)) {
+            thisName = JAVA_COMP_URL + thisName;
+        }
+        return thisName;
+    }
+
+    public void addManagedExecutorPropertyDescriptor(ResourcePropertyDescriptor propertyDescriptor) {
+        properties.put(propertyDescriptor.getName(), propertyDescriptor.getValue());
     }
 }

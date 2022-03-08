@@ -76,7 +76,7 @@ public class ManagedExecutorRestIT {
     public static WebArchive createDeployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class)
                 .addClasses(ManagedExecutorDefinitionApplication.class, ManagedExecutorDefinitionRest.class)
-                .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+                .addAsWebInfResource("web.xml").addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
         System.out.println(war.toString(true));
         return war;
     }
@@ -90,7 +90,7 @@ public class ManagedExecutorRestIT {
     @AfterEach
     public void clean() {
         logger.info("close client");
-        if(this.client != null) {
+        if (this.client != null) {
             this.client.close();
         }
     }
@@ -105,9 +105,9 @@ public class ManagedExecutorRestIT {
         String message = target.request().accept(MediaType.TEXT_PLAIN).get(String.class);
         logger.log(Level.INFO, "Returned message {0}", new Object[]{message});
         String[] data = message.split(":");
-        if(data[1] != null) {
+        if (data[1] != null) {
             int numberOfExecutions = Integer.parseInt(data[1]);
-            assertTrue( numberOfExecutions == 1);
+            assertTrue(numberOfExecutions == 1);
         }
         assertTrue(message.contains("Executor submitted"));
     }
@@ -122,9 +122,26 @@ public class ManagedExecutorRestIT {
         String message = target.request().accept(MediaType.TEXT_PLAIN).get(String.class);
         logger.log(Level.INFO, "Returned message {0}", new Object[]{message});
         String[] data = message.split(":");
-        if(data[1] != null) {
+        if (data[1] != null) {
             int numberOfExecutions = Integer.parseInt(data[1]);
-            assertTrue( numberOfExecutions == 3);
+            assertTrue(numberOfExecutions == 3);
+        }
+        assertTrue(message.contains("Executor submitted"));
+    }
+
+    @Test
+    @DisplayName("testing XML ManagedExecutorDefinition")
+    @RunAsClient
+    public void testXMLManagedExecutorDefinition() throws MalformedURLException {
+        logger.log(Level.INFO, "Consuming service to test XML ManagedExecutorDefinition {0}",
+                new Object[]{client});
+        WebTarget target = this.client.target(new URL(this.base, "annotation/xmlmanagedexecutor").toExternalForm());
+        String message = target.request().accept(MediaType.TEXT_PLAIN).get(String.class);
+        logger.log(Level.INFO, "Returned message {0}", new Object[]{message});
+        String[] data = message.split(":");
+        if (data[1] != null) {
+            int numberOfExecutions = Integer.parseInt(data[1]);
+            assertTrue(numberOfExecutions == 1);
         }
         assertTrue(message.contains("Executor submitted"));
     }

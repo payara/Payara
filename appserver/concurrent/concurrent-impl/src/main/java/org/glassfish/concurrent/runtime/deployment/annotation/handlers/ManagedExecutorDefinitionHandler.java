@@ -53,6 +53,7 @@ import org.glassfish.config.support.TranslatedConfigView;
 import org.glassfish.deployment.common.JavaEEResourceType;
 import org.jvnet.hk2.annotations.Service;
 
+import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -78,7 +79,11 @@ public class ManagedExecutorDefinitionHandler extends AbstractResourceHandler {
         for (ResourceContainerContext context : contexts) {
             Set<ResourceDescriptor> cdd = context.getResourceDescriptors(JavaEEResourceType.CDD);
             ConcurrentDefinitionDescriptor cddes = createDescriptor(managedExecutorDefinition);
-            cdd.add(cddes);
+            if (descriptorAlreadyPresent(cdd, cddes)) {
+                merge(cdd, managedExecutorDefinition);
+            } else {
+                cdd.add(cddes);
+            }
         }
         return getDefaultProcessedResult();
     }
@@ -91,5 +96,30 @@ public class ManagedExecutorDefinitionHandler extends AbstractResourceHandler {
         cdd.setMaximumPoolSize(managedExecutorDefinition.maxAsync());
         cdd.setMetadataSource(MetadataSource.ANNOTATION);
         return cdd;
+    }
+
+    private boolean descriptorAlreadyPresent(final Set<ResourceDescriptor> cdd, final ConcurrentDefinitionDescriptor cddes) {
+        Optional<ResourceDescriptor> optResourceDescriptor = cdd.stream().filter(d -> d.equals(cddes)).findAny();
+        return optResourceDescriptor.isPresent();
+    }
+
+    private void merge(Set<ResourceDescriptor> cdd, ManagedExecutorDefinition cddes) {
+        for (ResourceDescriptor descriptor : cdd) {
+            ConcurrentDefinitionDescriptor concurrentDefinitionDescriptor = (ConcurrentDefinitionDescriptor) descriptor;
+            if (concurrentDefinitionDescriptor.getName().equals(cddes.name())) {
+
+                if (concurrentDefinitionDescriptor.getHungAfterSeconds() == -1 && cddes.hungTaskThreshold() != -1) {
+                    concurrentDefinitionDescriptor.setHungAfterSeconds(cddes.hungTaskThreshold());
+                }
+
+                if (concurrentDefinitionDescriptor.getMaximumPoolSize() == -1 && cddes.maxAsync() != -1) {
+                    concurrentDefinitionDescriptor.setMaximumPoolSize(cddes.maxAsync());
+                }
+
+                if (concurrentDefinitionDescriptor.getContextInfo() == null && cddes.context() != null && !cddes.context().isBlank()) {
+                    concurrentDefinitionDescriptor.setContextInfo(TranslatedConfigView.expandValue(cddes.context()));
+                }
+            }
+        }
     }
 }

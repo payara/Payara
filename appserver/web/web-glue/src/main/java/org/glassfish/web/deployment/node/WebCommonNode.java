@@ -125,6 +125,7 @@ public abstract class WebCommonNode<T extends WebBundleDescriptorImpl> extends A
         registerElementHandler(new XMLElement(TagNames.JMS_DESTINATION), JMSDestinationDefinitionNode.class, "addResourceDescriptor");
         registerElementHandler(new XMLElement(TagNames.MAIL_SESSION), MailSessionNode.class, "addResourceDescriptor");
         registerElementHandler(new XMLElement(TagNames.ADMINISTERED_OBJECT), AdministeredObjectDefinitionNode.class, "addResourceDescriptor");
+        registerElementHandler(new XMLElement(TagNames.MANAGED_EXECUTOR), ManagedExecutorDefinitionNode.class, "addResourceDescriptor");
     }
     
     /**
