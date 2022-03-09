@@ -46,7 +46,7 @@ import java.util.logging.LogManager;
 import org.glassfish.config.support.TranslatedConfigView;
 
 /**
- * Service class that is created and initialised by @{code fish.payara.nucleus.notification.log.LogNotifierService}
+ * Service class that is created and initialised by @{code fish.payara.nucleus.notification.log.LogNotifier}
  * The lifecycle of the bean is not managed by HK2 in order to prevent notification.log file creation upon domain start.
  *
  * @author mertcaliskan

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
 package org.glassfish.admin.rest.resources.custom;
 
 import com.sun.enterprise.server.logging.logviewer.backend.LogFilter;
@@ -220,7 +220,7 @@ public class NotificationLogViewer extends LogViewerResource {
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String sCurrentLine;
             while ((sCurrentLine = br.readLine()) != null) {
-                if (sCurrentLine.contains("LogNotifierService") || sCurrentLine.contains("RequestEvent")
+                if (sCurrentLine.contains("LogNotifier") || sCurrentLine.contains("RequestEvent")
                         || sCurrentLine.contains("ServletRequestEvent") || sCurrentLine.contains("conversationId")
                         || sCurrentLine.contains("elapsedTime") || sCurrentLine.contains("user-agent")
                         || sCurrentLine.contains("requestTracing") || sCurrentLine.contains("alarmType")) {
