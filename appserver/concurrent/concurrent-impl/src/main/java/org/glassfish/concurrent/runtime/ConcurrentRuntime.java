@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.concurrent.runtime;
 
@@ -191,7 +191,10 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
                 config.getJndiName() + "-managedThreadFactory",
                 null,
                 config.getThreadPriority());
-
+        String contextServiceJndiName = config.getJndiName() + "-contextservice"; // default context
+        if (config.getContext() != null) {
+            contextServiceJndiName = config.getContext();
+        }
         ManagedExecutorServiceImpl mes = new ManagedExecutorServiceImpl(config.getJndiName(),
                 managedThreadFactory,
                 config.getHungAfterSeconds() * 1000L, // in millseconds
@@ -201,7 +204,7 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
                 config.getKeepAliveSeconds(), TimeUnit.SECONDS,
                 config.getThreadLifeTimeSeconds(),
                 config.getTaskQueueCapacity(),
-                createContextService(config.getJndiName() + "-contextservice",
+                createContextService(contextServiceJndiName,
                         config.getContextInfo(), config.getContextInfoEnabled(), true),
                 AbstractManagedExecutorService.RejectPolicy.ABORT);
 

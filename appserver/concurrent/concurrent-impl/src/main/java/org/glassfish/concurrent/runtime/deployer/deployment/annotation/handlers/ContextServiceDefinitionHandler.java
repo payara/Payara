@@ -46,6 +46,7 @@ import com.sun.enterprise.deployment.annotation.context.ResourceContainerContext
 import com.sun.enterprise.deployment.annotation.handlers.AbstractResourceHandler;
 import jakarta.enterprise.concurrent.ContextServiceDefinition;
 import jakarta.inject.Inject;
+import java.util.Arrays;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -86,8 +87,7 @@ public class ContextServiceDefinitionHandler extends AbstractResourceHandler {
     }
 
     public void processSingleAnnotation(ContextServiceDefinition contextServiceDefinition, ResourceContainerContext[] resourceContainerContexts) {
-        //        AnnotatedElement annotatedElement = annotationInfo.getAnnotatedElement();
-        //        logger.log(Level.INFO, "Trying to create custom context service by annotation");
+        logger.log(Level.INFO, "Creating custom context service by annotation");
 //        String allContexts = Stream.of(ConcurrentRuntime.CONTEXT_INFO_CLASSLOADER,
 //                ConcurrentRuntime.CONTEXT_INFO_JNDI, ConcurrentRuntime.CONTEXT_INFO_SECURITY,
 //                ConcurrentRuntime.CONTEXT_INFO_WORKAREA).collect(Collectors.joining(", "));
@@ -112,9 +112,9 @@ public class ContextServiceDefinitionHandler extends AbstractResourceHandler {
         ContextServiceDefinitionDescriptor csdd = new ContextServiceDefinitionDescriptor();
         csdd.setDescription("Context Service Definition");
         csdd.setName(TranslatedConfigView.expandValue(contectServiceDefinition.name()));
-//        csdd.setPropagated(Stream.of(contectServiceDefinition.propagated()).map(x -> TranslatedConfigView.expandValue(x)).toArray(String[]::new));
-//        csdd.setCleared(Stream.of(contectServiceDefinition.cleared()).map(x -> TranslatedConfigView.expandValue(x)).toArray(String[]::new));
-//        csdd.setUnchanged(Stream.of(contectServiceDefinition.unchanged()).map(x -> TranslatedConfigView.expandValue(x)).toArray(String[]::new));
+        csdd.setPropagated(Arrays.copyOf(contectServiceDefinition.propagated(), contectServiceDefinition.propagated().length));
+        csdd.setCleared(Arrays.copyOf(contectServiceDefinition.cleared(), contectServiceDefinition.cleared().length));
+        csdd.setUnchanged(Arrays.copyOf(contectServiceDefinition.unchanged(), contectServiceDefinition.unchanged().length));
         return csdd;
     }
 }
