@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2022 [Payara Foundation and/or its affiliates]
 package fish.payara.enterprise.server.logging;
 
 import com.sun.enterprise.server.logging.GFFileHandler;
@@ -46,7 +47,7 @@ import java.util.logging.LogManager;
 import org.glassfish.config.support.TranslatedConfigView;
 
 /**
- * Service class that is created and initialised by @{code fish.payara.nucleus.notification.log.LogNotifierService}
+ * Service class that is created and initialised by @{code fish.payara.nucleus.notification.log.LogNotifier}
  * The lifecycle of the bean is not managed by HK2 in order to prevent notification.log file creation upon domain start.
  *
  * @author mertcaliskan
