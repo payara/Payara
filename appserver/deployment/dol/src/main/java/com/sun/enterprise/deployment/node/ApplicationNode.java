@@ -93,8 +93,9 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
     public final static String SCHEMA_ID_16 = "application_6.xsd";
     public final static String SCHEMA_ID_17 = "application_7.xsd";
     public final static String SCHEMA_ID_18 = "application_8.xsd";
-    public final static String SCHEMA_ID = "application_9.xsd";
-    public final static String SPEC_VERSION = "9";
+    public final static String SCHEMA_ID_19 = "application_9.xsd";
+    public final static String SCHEMA_ID = "application_10.xsd";
+    public final static String SPEC_VERSION = "10";
     private final static List<String> systemIDs = initSystemIDs();
      
     // The XML tag associated with this Node
@@ -108,6 +109,7 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
         systemIDs.add(SCHEMA_ID_16);
         systemIDs.add(SCHEMA_ID_17);
         systemIDs.add(SCHEMA_ID_18);
+        systemIDs.add(SCHEMA_ID_19);
         return Collections.unmodifiableList(systemIDs);
     }
     
@@ -184,6 +186,7 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
         registerElementHandler(new XMLElement(TagNames.ADMINISTERED_OBJECT), AdministeredObjectDefinitionNode.class, "addResourceDescriptor");
         registerElementHandler(new XMLElement(TagNames.JMS_CONNECTION_FACTORY), JMSConnectionFactoryDefinitionNode.class, "addResourceDescriptor");
         registerElementHandler(new XMLElement(TagNames.JMS_DESTINATION), JMSDestinationDefinitionNode.class, "addResourceDescriptor");
+        registerElementHandler(new XMLElement(TagNames.MANAGED_EXECUTOR), ManagedExecutorDefinitionNode.class, "addResourceDescriptor");
 
         SaxParserHandler.registerBundleNode(this, ApplicationTagNames.APPLICATION);
     }
