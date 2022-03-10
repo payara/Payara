@@ -41,7 +41,7 @@
 
 -->
 
-<!-- Portions Copyright [2018-2020] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2018-2022] [Payara Foundation and/or its affiliates] -->
 
 <project name="db-targets" default="all" basedir=".">
 
