@@ -43,7 +43,8 @@
 
 <!-- Portions Copyright 2018-2022 Payara Foundation and/or its affiliates -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"> <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"> 
+    <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>fish.payara.server.internal.tests</groupId>
@@ -213,7 +214,7 @@
                         <classifier>jdk15</classifier>
                     </dependency>
                     <dependency>
-                        <groupId>org.glassfish.jsftemplating</groupId>
+                        <groupId>com.sun.jsftemplating</groupId>
                         <artifactId>jsftemplating-dynafaces</artifactId>
                         <version>0.1</version>
                     </dependency>
@@ -223,15 +224,25 @@
                         <version>3.1</version>
                     </dependency>
                     <dependency>
-                        <groupId>org.apache.ant</groupId>
-                        <artifactId>ant-apache-regexp</artifactId>
-                        <version>1.8.1</version>
-                        <scope>runtime</scope>
-                    </dependency>
-                    <dependency>
                         <groupId>jakarta-regexp</groupId>
                         <artifactId>jakarta-regexp</artifactId>
                         <version>1.4</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.apache.ant</groupId>
+                        <artifactId>ant</artifactId>
+                        <version>1.10.12</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.apache.ant</groupId>
+                        <artifactId>ant-junit</artifactId>
+                        <version>1.10.12</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.apache.ant</groupId>
+                        <artifactId>ant-apache-regexp</artifactId>
+                        <version>1.10.12</version>
+                        <scope>runtime</scope>
                     </dependency>
                     <dependency>
                         <groupId>ant-contrib</groupId>
@@ -246,15 +257,14 @@
                     </dependency>
                     <dependency>
                         <groupId>org.apache.ant</groupId>
-                        <artifactId>ant-junit</artifactId>
-                        <version>1.8.1</version>
-                        <scope>runtime</scope>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.apache.ant</groupId>
                         <artifactId>ant-nodeps</artifactId>
                         <version>1.8.1</version>
                         <scope>runtime</scope>
+                    </dependency>
+ <dependency>
+                        <groupId>com.beust</groupId>
+                        <artifactId>jcommander</artifactId>
+                        <version>1.72</version>
                     </dependency>
                 </dependencies>
             </plugin>

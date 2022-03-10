@@ -41,12 +41,12 @@
 
 -->
 
-<bindings 
+<bindings
     xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-    xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+    xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
     xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
     wsdlLocation="http://localhost:8080/JaxwsFromWsdl/addnumbers?wsdl"
-    xmlns="http://java.sun.com/xml/ns/jaxws">    
+    xmlns="https://jakarta.ee/xml/ns/jaxws">
     <bindings node="ns1:definitions" xmlns:ns1="http://schemas.xmlsoap.org/wsdl/">
         <package name="jaxwsfromwsdl.client"/>
     </bindings>

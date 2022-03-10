@@ -146,10 +146,5 @@
       <class name="test.admin.OsgiAsadminTest"/> 
     </classes>
   </test>
-  <test name="osgi_test">
-    <classes>
-        <class name="test.osgi.hello.HelloOSGITestNG" />
-    </classes>
-  </test>
 </suite>
 

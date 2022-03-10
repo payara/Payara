@@ -41,7 +41,13 @@
 
 -->
 
-<web-app version="2.4" mlns="http://java.sun.com/xml/ns/j2ee">
+
+<web-app
+    xmlns="https://jakarta.ee/xml/ns/jakartaee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_5_0.xsd"
+    version="5.0"
+>
   <display-name>JaxwsFromWsdl</display-name>
   <description>JaxwsFromWsdl</description>
   <listener>
@@ -49,8 +55,6 @@
   </listener>
   <servlet>
     <servlet-name>JaxwsFromWsdl</servlet-name>
-    <display-name>JaxwsFromWsdl</display-name>
-    <description>JAX-WS endpoint - jaxwsfromwsdl</description>
     <servlet-class>com.sun.xml.ws.transport.http.servlet.WSServlet</servlet-class>
     <load-on-startup>1</load-on-startup>
   </servlet>

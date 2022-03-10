@@ -184,11 +184,6 @@
       <class name="test.admin.OsgiAsadminTest"/>
     </classes>
   </test>
-   <test name="osgi_test">
-    <classes>
-        <class name="test.osgi.hello.HelloOSGITestNG" />
-    </classes>
-  </test>
   <!--test name="wsit_jaxws_tests">
     <classes>
       <class name="jaxwsfromwsdl.client.JaxwsFromWsdlTestNG"/>

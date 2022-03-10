@@ -74,6 +74,10 @@
             <include name="**/amx-core.jar"/>
             <include name="**/amx-javaee.jar"/>
             <include name="**/gf-client.jar"/>
+            <include name="**/jakarta.xml.ws-api.jar"/>
+            <include name="**/webservices-api-osgi.jar"/>
+            <include name="**/webservices-osgi.jar"/>
+            <include name="**/ha-api.jar"/>
         </fileset>
         <pathelement location="${class.output}"/>
         <pathelement location="${test.class.output}"/>

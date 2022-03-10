@@ -102,8 +102,6 @@
 		</antcall>
 		<antcall target="undeploy"/>
 		<antcall target="quicklook-summary"/>
-		<!--<antcall target="stop-server"/>-->
-		<!--<antcall target="stop-derby"/>-->
 		<copy file="test-output/emailable-report.html" tofile="test-output/QL-WP-report.html"/>
 		<antcall target="check-logged-messages"/>
 		<antcall target="testng-summary"/>
@@ -222,8 +220,6 @@
 		<antcall target="undeploy" />
 		<antcall target="undeploy-gd" />
 		<antcall target="quicklook-summary" />
-		<!--<antcall target="stop-server"/>-->
-		<!--<antcall target="stop-derby"/>-->
 		<copy file="test-output/emailable-report.html" tofile="test-output/QL-GP-report.html" failonerror="false" />
 		<antcall target="check-logged-messages"/>
 		<antcall target="testng-summary"/>
@@ -252,8 +248,6 @@
 		<antcall target="quicklook-summary"/>
 		<antcall target="remove-quicklook-policy-grants" />
 		<antcall target="disable-security-manager"/>
-		<!--<antcall target="stop-server"/>-->
-		<!--<antcall target="stop-derby"/>-->
 		<copy file="test-output/emailable-report.html" tofile="test-output/QL-GP-report.html" failonerror="false"/>
 		<antcall target="check-logged-messages"/>
 		<antcall target="testng-summary"/>
@@ -270,7 +264,6 @@
 			<param name="testng.xml" value="testng/testng_debug.xml"/>
 		</antcall>
 		<antcall target="undeploy"/>
-		<!-- <antcall target="stop-derby"/> -->
 		<antcall target="check-logged-messages"/>
 		<antcall target="testng-summary"/>
 		<record name="${basedir}/allrun.output" action="stop"/>
@@ -284,7 +277,6 @@
 		<ant dir="admincli" target="build"/>
 		<ant dir="adminconsole" target="build"/>
 		<ant dir="rest" target="build"/>
-		<ant dir="osgitest/basicosgi" target="build"/>
 		<ant dir="web/helloworld" target="build-deploy"/>
 		<ant dir="web/jsfastrologer" target="build-deploy"/>
 		<!--<ant dir="web/jsfinjection" target="build-deploy"/> -->
@@ -314,7 +306,7 @@
              for the test to pass. We are waiting for RE to release a newer version.
         <ant dir="web/jruby" target="build-deploy"/>
         -->
-		<!--<ant dir="wsit/JaxwsFromWsdl" target="build-deploy"/>-->
+		<ant dir="wsit/JaxwsFromWsdl" target="build-deploy"/>
 		<ant dir="wsit/jsr109tester" target="build-deploy"/>
 		<ant dir="security/appperms" target="build-deploy"/>
 	</target>
