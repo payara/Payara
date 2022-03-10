@@ -187,14 +187,16 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
             return managedExecutorServiceMap.get(jndiName);
         }
 
-        ManagedThreadFactoryImpl managedThreadFactory = new ThreadFactoryWrapper(
-                config.getJndiName() + "-managedThreadFactory",
-                null,
-                config.getThreadPriority());
         String contextServiceJndiName = config.getJndiName() + "-contextservice"; // default context
         if (config.getContext() != null) {
             contextServiceJndiName = config.getContext();
         }
+        ContextServiceImpl contextService = createContextService(contextServiceJndiName,
+                config.getContextInfo(), config.getContextInfoEnabled(), true);
+        ManagedThreadFactoryImpl managedThreadFactory = new ThreadFactoryWrapper(
+                config.getJndiName() + "-managedThreadFactory",
+                contextService,
+                config.getThreadPriority());
         ManagedExecutorServiceImpl mes = new ManagedExecutorServiceImpl(config.getJndiName(),
                 managedThreadFactory,
                 config.getHungAfterSeconds() * 1000L, // in millseconds
@@ -203,9 +205,8 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
                 config.getMaximumPoolSize(),
                 config.getKeepAliveSeconds(), TimeUnit.SECONDS,
                 config.getThreadLifeTimeSeconds(),
-                config.getTaskQueueCapacity(),
-                createContextService(contextServiceJndiName,
-                        config.getContextInfo(), config.getContextInfoEnabled(), true),
+                config.getTaskQueueCapacity(), 
+                contextService,
                 AbstractManagedExecutorService.RejectPolicy.ABORT);
 
         if (managedExecutorServiceMap == null) {
