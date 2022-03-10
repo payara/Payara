@@ -2,7 +2,7 @@
 <!--
  *    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2016-2022] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *    The contents of this file are subject to the terms of either the GNU
  *    General Public License Version 2 only ("GPL") or the Common Development
@@ -121,4 +121,27 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <!-- This is required for remote EJB clients on JDK17+ to prevent IllegalReflectiveAccess caused by org.glassfish.pfl.basic.reflection.Bridge -->
+    <profiles>
+        <profile>
+            <id>failsafe-jdk17</id>
+            <activation>
+                <jdk>[17,)</jdk>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <version>${maven.failsafe.plugin.version}</version>
+                        <configuration>
+                            <argLine>--add-opens=java.base/java.lang=ALL-UNNAMED</argLine>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
 </project>
