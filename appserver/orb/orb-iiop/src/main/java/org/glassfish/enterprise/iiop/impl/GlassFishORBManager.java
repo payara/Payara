@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.enterprise.iiop.impl;
 
@@ -596,6 +596,10 @@ public final class GlassFishORBManager {
             }
 
             // Can't run with GlassFishORBManager.class.getClassLoader() as the context ClassLoader
+
+            // For ORB compatibility with JDK11+ JDKs see https://github.com/eclipse-ee4j/orb-gmbal/issues/22
+            System.setProperty("org.glassfish.gmbal.no.multipleUpperBoundsException", "true");
+
             orb = ORBFactory.create() ;
             prevCL = Utility.getClassLoader();
             try {
