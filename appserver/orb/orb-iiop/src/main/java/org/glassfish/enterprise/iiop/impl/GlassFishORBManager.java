@@ -49,8 +49,8 @@ import com.sun.corba.ee.impl.orb.ORBSingleton;
 import com.sun.corba.ee.spi.oa.rfm.ReferenceFactoryManager;
 import com.sun.corba.ee.spi.osgi.ORBFactory;
 import com.sun.corba.ee.spi.misc.ORBConstants;
-import com.sun.corba.ee.spi.orb.ORB ;
-import com.sun.corba.ee.impl.folb.InitialGroupInfoService ;
+import com.sun.corba.ee.spi.orb.ORB;
+import com.sun.corba.ee.impl.folb.InitialGroupInfoService;
 
 import com.sun.logging.LogDomains;
 
@@ -91,17 +91,17 @@ import org.jvnet.hk2.config.types.Property;
 
 public final class GlassFishORBManager {
     static final Logger logger = LogDomains.getLogger(
-        GlassFishORBManager.class, LogDomains.CORBA_LOGGER, false);
+            GlassFishORBManager.class, LogDomains.CORBA_LOGGER, false);
 
-    private static void fineLog( String fmt, Object... args ) {
+    private static void fineLog(String fmt, Object... args) {
         if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, fmt, args ) ;
+            logger.log(Level.FINE, fmt, args);
         }
     }
 
-    private static void finestLog( String fmt, Object... args ) {
+    private static void finestLog(String fmt, Object... args) {
         if (logger.isLoggable(Level.FINEST)) {
-            logger.log(Level.FINEST, fmt, args ) ;
+            logger.log(Level.FINEST, fmt, args);
         }
     }
 
@@ -110,9 +110,9 @@ public final class GlassFishORBManager {
     // Various pluggable classes defined in the app server that are used
     // by the ORB.
     private static final String ORB_CLASS =
-            ORBImpl.class.getName() ;
+            ORBImpl.class.getName();
     private static final String ORB_SINGLETON_CLASS =
-            ORBSingleton.class.getName() ;
+            ORBSingleton.class.getName();
 
     private static final String ORB_EE_CLASS =
             "com.sun.corba.ee.impl.orb.ORBImpl";
@@ -120,15 +120,15 @@ public final class GlassFishORBManager {
             "com.sun.corba.ee.impl.orb.ORBSingleton";
 
     private static final String PEORB_CONFIG_CLASS =
-            PEORBConfigurator.class.getName() ;
+            PEORBConfigurator.class.getName();
     private static final String IIOP_SSL_SOCKET_FACTORY_CLASS =
-            IIOPSSLSocketFactory.class.getName() ;
+            IIOPSSLSocketFactory.class.getName();
     private static final String RMI_UTIL_CLASS =
-            Util.class.getName() ;
+            Util.class.getName();
     private static final String RMI_STUB_CLASS =
-            StubDelegateImpl.class.getName() ;
+            StubDelegateImpl.class.getName();
     private static final String RMI_PRO_CLASS =
-            PortableRemoteObject.class.getName() ;
+            PortableRemoteObject.class.getName();
 
     // JNDI constants
     public static final String JNDI_PROVIDER_URL_PROPERTY =
@@ -158,11 +158,11 @@ public final class GlassFishORBManager {
     private static final String DEFAULT_SERVER_ID = "100";
     private static final String ACC_DEFAULT_SERVER_ID = "101";
     private static final String USER_DEFINED_ORB_SERVER_ID_PROPERTY =
-        "org.glassfish.orb.iiop.orbserverid";
+            "org.glassfish.orb.iiop.orbserverid";
 
     private static final String DEFAULT_MAX_CONNECTIONS = "1024";
     private static final String GLASSFISH_INITIALIZER =
-            GlassFishORBInitializer.class.getName() ;
+            GlassFishORBInitializer.class.getName();
 
     private static final String SUN_GIOP_DEFAULT_FRAGMENT_SIZE = "1024";
     private static final String SUN_GIOP_DEFAULT_BUFFER_SIZE = "1024";
@@ -182,7 +182,7 @@ public final class GlassFishORBManager {
     private static final String ORB_SSL_STANDALONE_CLIENT_REQUIRED =
             "com.sun.CSIV2.ssl.standalone.client.required";
 
-     // We need this to get the ORB monitoring set up correctly
+    // We need this to get the ORB monitoring set up correctly
     public static final String S1AS_ORB_ID = "S1AS-ORB";
 
     private static final String DISABLE_SSL_CHECK = "fish.payara.orb.disable-ssl-check";
@@ -207,7 +207,7 @@ public final class GlassFishORBManager {
 
     private ProcessType processType;
 
-    private IiopFolbGmsClient gmsClient ;
+    private IiopFolbGmsClient gmsClient;
     private static boolean disableSSLCheck;
 
     /**
@@ -215,15 +215,15 @@ public final class GlassFishORBManager {
      * move all public statics or change them to package private.
      * All external orb/iiop access should go through orb-connector module
      */
-    GlassFishORBManager(ServiceLocator h ) {
-        fineLog( "GlassFishORBManager: Constructing GlassFishORBManager: h {0}",
-            h ) ;
+    GlassFishORBManager(ServiceLocator h) {
+        fineLog("GlassFishORBManager: Constructing GlassFishORBManager: h {0}",
+                h);
         services = h;
 
         iiopUtils = services.getService(IIOPUtils.class);
 
         ProcessEnvironment processEnv = services.getService(
-            ProcessEnvironment.class);
+                ProcessEnvironment.class);
 
         processType = processEnv.getProcessType();
 
@@ -233,6 +233,7 @@ public final class GlassFishORBManager {
     /**
      * Returns whether an adapterName (from ServerRequestInfo.adapter_name)
      * represents an EJB or not.
+     *
      * @param adapterName The adapter name
      * @return whether this adapter is an EJB or not
      */
@@ -244,9 +245,9 @@ public final class GlassFishORBManager {
 
         return result;
     }
-    
+
     public boolean isClusterActive() {
-    	return gmsClient != null && gmsClient.isGMSAvailable();
+        return gmsClient != null && gmsClient.isGMSAvailable();
     }
 
     /**
@@ -266,16 +267,16 @@ public final class GlassFishORBManager {
     synchronized ORB getORB(Properties props) {
 
         try {
-            finestLog( "GlassFishORBManager.getORB->: {0}", orb);
+            finestLog("GlassFishORBManager.getORB->: {0}", orb);
 
             if (orb == null) {
-                
-                initORB(props);                
+
+                initORB(props);
             }
 
             return orb;
         } finally {
-            finestLog( "GlassFishORBManager.getORB<-: {0}", orb);
+            finestLog("GlassFishORBManager.getORB<-: {0}", orb);
         }
     }
 
@@ -297,8 +298,8 @@ public final class GlassFishORBManager {
     }
 
     private void initProperties() {
-        fineLog( "GlassFishORBManager: initProperties: processType {0}",
-            processType ) ;
+        fineLog("GlassFishORBManager: initProperties: processType {0}",
+                processType);
 
         if (processType != ProcessType.ACC) {
             String sslClientRequired = System.getProperty(
@@ -312,7 +313,7 @@ public final class GlassFishORBManager {
 
         disableSSLCheck = Boolean.getBoolean(DISABLE_SSL_CHECK);
 
-        if(!processType.isServer()) {
+        if (!processType.isServer()) {
             // No access to domain.xml.  Just init properties.
             // In this case iiopListener beans will be null.
             checkORBInitialPort(EMPTY_PROPERTIES);
@@ -320,8 +321,8 @@ public final class GlassFishORBManager {
 
         } else {
             iiopService = iiopUtils.getIiopService();
-            iiopListeners = iiopService.getIiopListener() ;
-            assert iiopListeners != null ;
+            iiopListeners = iiopService.getIiopListener();
+            assert iiopListeners != null;
 
             // checkORBInitialPort looks at iiopListenerBeans, if present
             checkORBInitialPort(EMPTY_PROPERTIES);
@@ -332,21 +333,21 @@ public final class GlassFishORBManager {
             // Initialize IOR security config for non-EJB CORBA objects
             //iiopServiceBean.isClientAuthenticationRequired()));
             csiv2Props.put(GlassFishORBHelper.ORB_CLIENT_AUTH_REQUIRED,
-                String.valueOf(
-                    iiopService.getClientAuthenticationRequired()));
+                    String.valueOf(
+                            iiopService.getClientAuthenticationRequired()));
 
             // If there is at least one non-SSL listener, then it means
             // SSL is not required for CORBA objects.
             boolean corbaSSLRequired = true;
             for (IiopListener bean : iiopListeners) {
                 if (bean.getSsl() == null) {
-                    corbaSSLRequired = false ;
-                    break ;
+                    corbaSSLRequired = false;
+                    break;
                 }
             }
 
-            csiv2Props.put(GlassFishORBHelper.ORB_SSL_SERVER_REQUIRED, 
-                String.valueOf( corbaSSLRequired));
+            csiv2Props.put(GlassFishORBHelper.ORB_SSL_SERVER_REQUIRED,
+                    String.valueOf(corbaSSLRequired));
         }
 
     }
@@ -361,50 +362,50 @@ public final class GlassFishORBManager {
      */
     private void setORBSystemProperties() {
         java.security.AccessController.doPrivileged(
-            new java.security.PrivilegedAction<Object>() {
-                @Override
-                public java.lang.Object run() {
-                    if (System.getProperty(OMG_ORB_CLASS_PROPERTY) == null) {
-                        // set ORB based on JVM vendor
-                        if (System.getProperty("java.vendor").contains(
-                            "Sun Microsystems Inc.")) {
-                            System.setProperty(OMG_ORB_CLASS_PROPERTY,
-                                ORB_EE_CLASS);
-                        } else {
-                            // if not Sun, then set to EE class
-                            System.setProperty(OMG_ORB_CLASS_PROPERTY,
-                                ORB_CLASS);
+                new java.security.PrivilegedAction<Object>() {
+                    @Override
+                    public java.lang.Object run() {
+                        if (System.getProperty(OMG_ORB_CLASS_PROPERTY) == null) {
+                            // set ORB based on JVM vendor
+                            if (System.getProperty("java.vendor").contains(
+                                    "Sun Microsystems Inc.")) {
+                                System.setProperty(OMG_ORB_CLASS_PROPERTY,
+                                        ORB_EE_CLASS);
+                            } else {
+                                // if not Sun, then set to EE class
+                                System.setProperty(OMG_ORB_CLASS_PROPERTY,
+                                        ORB_CLASS);
+                            }
                         }
-                    }
 
-                    if (System.getProperty(
-                        OMG_ORB_SINGLETON_CLASS_PROPERTY) == null) {
-                        // set ORBSingleton based on JVM vendor
-                        if (System.getProperty("java.vendor").equals(
-                            "Sun Microsystems Inc.")) {
-                            System.setProperty(
-                                OMG_ORB_SINGLETON_CLASS_PROPERTY,
-                                ORB_EE_SINGLETON_CLASS);
-                        } else {
-                            // if not Sun, then set to EE class
-                            System.setProperty(
-                                OMG_ORB_SINGLETON_CLASS_PROPERTY,
-                                ORB_SINGLETON_CLASS);
+                        if (System.getProperty(
+                                OMG_ORB_SINGLETON_CLASS_PROPERTY) == null) {
+                            // set ORBSingleton based on JVM vendor
+                            if (System.getProperty("java.vendor").equals(
+                                    "Sun Microsystems Inc.")) {
+                                System.setProperty(
+                                        OMG_ORB_SINGLETON_CLASS_PROPERTY,
+                                        ORB_EE_SINGLETON_CLASS);
+                            } else {
+                                // if not Sun, then set to EE class
+                                System.setProperty(
+                                        OMG_ORB_SINGLETON_CLASS_PROPERTY,
+                                        ORB_SINGLETON_CLASS);
+                            }
                         }
+
+                        System.setProperty(ORB_UTIL_CLASS_PROPERTY,
+                                RMI_UTIL_CLASS);
+
+                        System.setProperty(RMIIIOP_STUB_DELEGATE_CLASS_PROPERTY,
+                                RMI_STUB_CLASS);
+
+                        System.setProperty(RMIIIOP_PRO_DELEGATE_CLASS_PROPERTY,
+                                RMI_PRO_CLASS);
+
+                        return null;
                     }
-
-                    System.setProperty(ORB_UTIL_CLASS_PROPERTY,
-                            RMI_UTIL_CLASS);
-
-                    System.setProperty(RMIIIOP_STUB_DELEGATE_CLASS_PROPERTY,
-                            RMI_STUB_CLASS);
-
-                    System.setProperty(RMIIIOP_PRO_DELEGATE_CLASS_PROPERTY,
-                            RMI_PRO_CLASS);
-
-                    return null;
                 }
-            }
         );
     }
 
@@ -424,21 +425,21 @@ public final class GlassFishORBManager {
         //   IIOPPrimaryToContactInfo
         //   IORToSocketInfo
         orbInitProperties.setProperty(
-            ORBConstants.USER_CONFIGURATOR_PREFIX
-                + "com.sun.corba.ee.impl.folb.ClientGroupManager",
-            "dummy");
-         
+                ORBConstants.USER_CONFIGURATOR_PREFIX
+                        + "com.sun.corba.ee.impl.folb.ClientGroupManager",
+                "dummy");
+
         // This configurator registers the CSIv2SSLTaggedComponentHandler
         orbInitProperties.setProperty(
-            ORBConstants.USER_CONFIGURATOR_PREFIX
-                + CSIv2SSLTaggedComponentHandlerImpl.class.getName(),"dummy");
-       
+                ORBConstants.USER_CONFIGURATOR_PREFIX
+                        + CSIv2SSLTaggedComponentHandlerImpl.class.getName(), "dummy");
+
 
         if (processType.isServer()) {
-            gmsClient = new IiopFolbGmsClient( services ) ;
+            gmsClient = new IiopFolbGmsClient(services);
 
             if (gmsClient.isGMSAvailable()) {
-                fineLog( "GMS available and enabled - doing EE initialization");
+                fineLog("GMS available and enabled - doing EE initialization");
 
                 // Register ServerGroupManager.
                 // Causes it to register itself as an ORBInitializer
@@ -449,7 +450,7 @@ public final class GlassFishORBManager {
                                 + "com.sun.corba.ee.impl.folb.ServerGroupManager",
                         "dummy");
 
-                fineLog( "Did EE property initialization");
+                fineLog("Did EE property initialization");
             }
         }
     }
@@ -476,25 +477,25 @@ public final class GlassFishORBManager {
             // Standard OMG Properties.
             String orbDefaultServerId = DEFAULT_SERVER_ID;
             if (!processType.isServer()) {
-                orbDefaultServerId = ACC_DEFAULT_SERVER_ID;               
+                orbDefaultServerId = ACC_DEFAULT_SERVER_ID;
             }
 
             orbDefaultServerId = System.getProperty(
-                USER_DEFINED_ORB_SERVER_ID_PROPERTY, orbDefaultServerId);
+                    USER_DEFINED_ORB_SERVER_ID_PROPERTY, orbDefaultServerId);
 
             orbInitProperties.put(ORBConstants.ORB_SERVER_ID_PROPERTY,
                     orbDefaultServerId);
 
             orbInitProperties.put(OMG_ORB_CLASS_PROPERTY, ORB_CLASS);
 
-            orbInitProperties.put( ORBConstants.PI_ORB_INITIALIZER_CLASS_PREFIX
-                + GLASSFISH_INITIALIZER, "");
+            orbInitProperties.put(ORBConstants.PI_ORB_INITIALIZER_CLASS_PREFIX
+                    + GLASSFISH_INITIALIZER, "");
 
             orbInitProperties.put(ORBConstants.ALLOW_LOCAL_OPTIMIZATION,
                     "true");
 
             orbInitProperties.put(
-                ORBConstants.GET_SERVICE_CONTEXT_RETURNS_NULL, "true");
+                    ORBConstants.GET_SERVICE_CONTEXT_RETURNS_NULL, "true");
 
             orbInitProperties.put(ORBConstants.ORB_ID_PROPERTY, S1AS_ORB_ID);
             orbInitProperties.put(ORBConstants.SHOW_INFO_MESSAGES, "true");
@@ -508,7 +509,7 @@ public final class GlassFishORBManager {
             if (System.getProperty(IIOP_ENDPOINTS_PROPERTY) != null &&
                     !System.getProperty(IIOP_ENDPOINTS_PROPERTY).isEmpty()) {
                 orbInitRefArgs = getORBInitRef(
-                    System.getProperty(IIOP_ENDPOINTS_PROPERTY));
+                        System.getProperty(IIOP_ENDPOINTS_PROPERTY));
             } else {
                 // Add -ORBInitRef for INS to work
                 orbInitRefArgs = getORBInitRef(orbInitialHost, initialPort);
@@ -563,7 +564,7 @@ public final class GlassFishORBManager {
              * results in a nested ORB.init call because of the call to getORB
              * in the IORInterceptor.i
              */
-                
+
             // TODO Right now we need to explicitly set useOSGI flag.  If it's set to
             // OSGI mode and we're not in OSGI mode, orb initialization fails.  
             boolean useOSGI = false;
@@ -572,21 +573,21 @@ public final class GlassFishORBManager {
             try {
                 Utility.setContextClassLoader(GlassFishORBManager.class.getClassLoader());
 
-                if( processType.isServer()) {
+                if (processType.isServer()) {
 
                     HK2Module corbaOrbModule = null;
 
                     // start glassfish-corba-orb bundle
                     ModulesRegistry modulesRegistry = services.getService(ModulesRegistry.class);
 
-                    for(HK2Module m : modulesRegistry.getModules()) {
-                        if( m.getName().equals("org.glassfish.corba.glassfish-corba-orb") ) {
+                    for (HK2Module m : modulesRegistry.getModules()) {
+                        if (m.getName().equals("org.glassfish.corba.glassfish-corba-orb")) {
                             corbaOrbModule = m;
                             break;
                         }
                     }
 
-                    if( corbaOrbModule != null) {
+                    if (corbaOrbModule != null) {
                         useOSGI = true;
                         corbaOrbModule.start();
                     }
@@ -600,13 +601,13 @@ public final class GlassFishORBManager {
             // For ORB compatibility with JDK11+ JDKs see https://github.com/eclipse-ee4j/orb-gmbal/issues/22
             System.setProperty("org.glassfish.gmbal.no.multipleUpperBoundsException", "true");
 
-            orb = ORBFactory.create() ;
+            orb = ORBFactory.create();
             prevCL = Utility.getClassLoader();
             try {
-              if (processType != processType.Other && !prevCL.getClass().getName().contains("OSGi")) {
-                  Utility.setContextClassLoader(prevCL.getParent());
-               }
-               ORBFactory.initialize( orb, args, orbInitProperties, useOSGI);
+                if (processType != processType.Other && !prevCL.getClass().getName().contains("OSGi")) {
+                    Utility.setContextClassLoader(prevCL.getParent());
+                }
+                ORBFactory.initialize(orb, args, orbInitProperties, useOSGI);
             } finally {
                 Utility.setContextClassLoader(prevCL);
             }
@@ -623,7 +624,7 @@ public final class GlassFishORBManager {
                 // This MUST happen before new InitialGroupInfoService,
                 // or the ServerGroupManager will get initialized before the
                 // GIS is available.
-                gmsClient.setORB(orb) ;
+                gmsClient.setORB(orb);
 
                 // J2EEServer's persistent server port is same as ORBInitialPort.
                 orbInitialPort = getORBInitialPort();
@@ -637,11 +638,11 @@ public final class GlassFishORBManager {
 
                 rfm = (ReferenceFactoryManager) orb.resolve_initial_references(
                         ORBConstants.REFERENCE_FACTORY_MANAGER);
-                
+
                 // ensure we don't inherit any Context Class Loaders when bootstrapping
                 ClassLoader cl = Thread.currentThread().getContextClassLoader();
                 Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
-                new InitialGroupInfoService( orb ) ;
+                new InitialGroupInfoService(orb);
                 Thread.currentThread().setContextClassLoader(cl);
 
                 iiopUtils.setORB(orb);
@@ -669,7 +670,7 @@ public final class GlassFishORBManager {
                 return localAddress;
             } catch (java.net.UnknownHostException uhe) {
                 logger.log(Level.WARNING,
-                    "Unknown host exception - Setting host to localhost");
+                        "Unknown host exception - Setting host to localhost");
                 return DEFAULT_ORB_INIT_HOST;
             }
         } else {
@@ -682,29 +683,29 @@ public final class GlassFishORBManager {
     // endpoints of the same type, or no clear text endpoint at all in the 
     // configuration.
     private IiopListener getClearTextIiopListener() {
-        if (iiopListeners != null)  {
+        if (iiopListeners != null) {
             for (IiopListener il : iiopListeners) {
                 if (il.getSsl() == null) {
-                    return il ;
+                    return il;
                 }
             }
         }
 
-        return null ;
+        return null;
     }
 
     private String checkORBInitialHost(Properties props) {
         // Host setting in system properties always takes precedence.
         String initialHost = System.getProperty(
-            ORBConstants.INITIAL_HOST_PROPERTY);
+                ORBConstants.INITIAL_HOST_PROPERTY);
 
         if (initialHost == null) {
             initialHost = props.getProperty(
-                ORBConstants.INITIAL_HOST_PROPERTY );
+                    ORBConstants.INITIAL_HOST_PROPERTY);
         }
 
         if (initialHost == null) {
-            IiopListener il = getClearTextIiopListener() ;
+            IiopListener il = getClearTextIiopListener();
             if (il != null) {
                 initialHost = il.getAddress();
             }
@@ -720,7 +721,7 @@ public final class GlassFishORBManager {
 
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, "Setting orb initial host to {0}",
-                initialHost);
+                    initialHost);
         }
 
         return initialHost;
@@ -729,15 +730,15 @@ public final class GlassFishORBManager {
     private String checkORBInitialPort(Properties props) {
         // Port setting in system properties always takes precedence.
         String initialPort = System.getProperty(
-            ORBConstants.INITIAL_PORT_PROPERTY );
+                ORBConstants.INITIAL_PORT_PROPERTY);
 
         if (initialPort == null) {
             initialPort = props.getProperty(
-                ORBConstants.INITIAL_PORT_PROPERTY);
+                    ORBConstants.INITIAL_PORT_PROPERTY);
         }
 
         if (initialPort == null) {
-            IiopListener il = getClearTextIiopListener() ;
+            IiopListener il = getClearTextIiopListener();
             if (il != null) {
                 initialPort = il.getPort();
             }
@@ -761,8 +762,8 @@ public final class GlassFishORBManager {
             props.setProperty(ORBConstants.PERSISTENT_SERVER_PORT_PROPERTY,
                     initialPort);
         }
-       
-        fineLog( "Setting orb initial port to {0}", initialPort);
+
+        fineLog("Setting orb initial port to {0}", initialPort);
 
         orbInitialPort = Integer.parseInt(initialPort);
 
@@ -778,12 +779,12 @@ public final class GlassFishORBManager {
         String serverHost = System.getProperty(ORBConstants.SERVER_HOST_PROPERTY);
 
         if (serverHost == null) {
-            serverHost = props.getProperty(ORBConstants.SERVER_HOST_PROPERTY );
+            serverHost = props.getProperty(ORBConstants.SERVER_HOST_PROPERTY);
         }
 
 
         if (serverHost == null) {
-            IiopListener il = getClearTextIiopListener() ;
+            IiopListener il = getClearTextIiopListener();
             if (il != null) {
                 // For this case, use same value as ORBInitialHost,
                 serverHost = il.getAddress();
@@ -804,18 +805,18 @@ public final class GlassFishORBManager {
 
     private void validateIiopListeners() {
         if (iiopListeners != null) {
-            int lazyCount = 0 ;
+            int lazyCount = 0;
             for (IiopListener ilb : iiopListeners) {
-                boolean securityEnabled = Boolean.valueOf( ilb.getSecurityEnabled() ) ;
-                boolean isLazy = Boolean.valueOf( ilb.getLazyInit() ) ;
-                if( isLazy ) {
+                boolean securityEnabled = Boolean.valueOf(ilb.getSecurityEnabled());
+                boolean isLazy = Boolean.valueOf(ilb.getLazyInit());
+                if (isLazy) {
                     lazyCount++;
                 }
 
                 if (lazyCount > 1) {
                     throw new IllegalStateException(
-                        "Invalid iiop-listener " + ilb.getId() +
-                        ". Only one iiop-listener can be configured with lazy-init=true");
+                            "Invalid iiop-listener " + ilb.getId() +
+                                    ". Only one iiop-listener can be configured with lazy-init=true");
                 }
 
                 if (securityEnabled || ilb.getSsl() == null) {
@@ -826,8 +827,8 @@ public final class GlassFishORBManager {
                                 ". Lazy-init not supported for SSL iiop-listeners");
                     }
 
-                    Ssl sslBean = ilb.getSsl() ;
-                    assert sslBean != null ;
+                    Ssl sslBean = ilb.getSsl();
+                    assert sslBean != null;
                 }
             }
         }
@@ -845,14 +846,14 @@ public final class GlassFishORBManager {
             } catch (NumberFormatException nfe) {
                 if (logger.isLoggable(Level.WARNING)) {
                     logger.log(Level.WARNING,
-                        "UTIL6031:Number Format Exception, Using default value(s).", nfe);
+                            "UTIL6031:Number Format Exception, Using default value(s).", nfe);
                 }
 
                 maxConnections = DEFAULT_MAX_CONNECTIONS;
             }
 
             props.setProperty(ORBConstants.HIGH_WATER_MARK_PROPERTY,
-                maxConnections);
+                    maxConnections);
         }
         return;
     }
@@ -864,8 +865,8 @@ public final class GlassFishORBManager {
                 int fsize = ((Integer.parseInt(orbBean.getMessageFragmentSize().trim())) / 8) * 8;
                 if (fsize < 32) {
                     fragmentSize = "32";
-                    logger.log(Level.INFO, 
-                        "Setting ORB Message Fragment size to {0}",
+                    logger.log(Level.INFO,
+                            "Setting ORB Message Fragment size to {0}",
                             fragmentSize);
                 } else {
                     fragmentSize = String.valueOf(fsize);
@@ -874,24 +875,24 @@ public final class GlassFishORBManager {
             } catch (NumberFormatException nfe) {
                 // Print stack trace and use default values
                 logger.log(Level.WARNING,
-                    "UTIL6035: Exception converting to integer", nfe);
+                        "UTIL6035: Exception converting to integer", nfe);
                 logger.log(Level.INFO,
-                    "Setting ORB Message Fragment size to Default " +
-                    SUN_GIOP_DEFAULT_FRAGMENT_SIZE);
+                        "Setting ORB Message Fragment size to Default " +
+                                SUN_GIOP_DEFAULT_FRAGMENT_SIZE);
                 fragmentSize = SUN_GIOP_DEFAULT_FRAGMENT_SIZE;
                 bufferSize = SUN_GIOP_DEFAULT_BUFFER_SIZE;
             }
             props.setProperty(ORBConstants.GIOP_FRAGMENT_SIZE,
-                fragmentSize);
+                    fragmentSize);
             props.setProperty(ORBConstants.GIOP_BUFFER_SIZE,
-                bufferSize);
+                    bufferSize);
         }
     }
 
     private void checkServerSSLOutboundSettings(Properties props) {
         if (iiopService != null) {
             SslClientConfig sslClientConfigBean =
-                iiopService.getSslClientConfig();
+                    iiopService.getSslClientConfig();
             if (sslClientConfigBean != null) {
                 Ssl ssl = sslClientConfigBean.getSsl();
                 assert (ssl != null);
@@ -905,14 +906,14 @@ public final class GlassFishORBManager {
             if (orbBeanProps != null) {
                 for (int i = 0; i < orbBeanProps.size(); i++) {
                     props.setProperty(orbBeanProps.get(i).getName(),
-                    orbBeanProps.get(i).getValue());
+                            orbBeanProps.get(i).getValue());
                 }
             }
         }
     }
 
     private String[] getORBInitRef(String orbInitialHost,
-                                          String initialPort) {
+                                   String initialPort) {
         // Add -ORBInitRef NameService=....
         // This ensures that INS will be used to talk with the NameService.
         String[] newArgs = new String[]{
@@ -930,7 +931,7 @@ public final class GlassFishORBManager {
         String[] list = endpoints.split(",");
         String corbalocURL = getCorbalocURL(list);
         logger.log(Level.FINE, "GlassFishORBManager.getORBInitRef = {0}",
-            corbalocURL);
+                corbalocURL);
 
         // Add -ORBInitRef NameService=....
         // This ensures that INS will be used to talk with the NameService.
@@ -967,6 +968,6 @@ public final class GlassFishORBManager {
     }
 
     String getIIOPEndpoints() {
-        return gmsClient.getIIOPEndpoints() ;
+        return gmsClient.getIIOPEndpoints();
     }
 }
