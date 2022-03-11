@@ -1058,15 +1058,6 @@ public class WebModule extends PwcWebModule implements Context {
         } else if("crossContextAllowed".equalsIgnoreCase(name)) {
             final boolean crossContext = Boolean.parseBoolean(value);
             setCrossContext(crossContext);
-        } else if("reuseSessionID".equalsIgnoreCase(name)) {
-            final boolean reuse = ConfigBeansUtilities.toBoolean(value);
-            setReuseSessionID(reuse);
-            if (reuse) {
-                String msg = rb.getString(LogFacade.SESSION_IDS_REUSED);
-                msg = MessageFormat.format(msg, contextPath, vs.getID());
-                logger.log(Level.WARNING, msg);
-            }
-            // END S1AS8PE 4817642
         } else if("useResponseCTForHeaders".equalsIgnoreCase(name)) {
             if("true".equalsIgnoreCase(value)) {
                 setResponseCTForHeaders();
