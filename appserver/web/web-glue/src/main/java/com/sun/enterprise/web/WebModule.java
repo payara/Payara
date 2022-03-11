@@ -1068,7 +1068,7 @@ public class WebModule extends PwcWebModule implements Context {
             // START RIMOD 4642650
         } else if("relativeRedirectAllowed".equalsIgnoreCase(name)) {
             final boolean relativeRedirect = ConfigBeansUtilities.toBoolean(value);
-            setAllowRelativeRedirect(relativeRedirect);
+            setUseRelativeRedirects(relativeRedirect);
             // END RIMOD 4642650
         } else if("fileEncoding".equalsIgnoreCase(name)) {
             setFileEncoding(value);
