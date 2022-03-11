@@ -77,18 +77,13 @@ import jakarta.servlet.ServletRegistration;
 import jakarta.servlet.ServletSecurityElement;
 import jakarta.servlet.SessionTrackingMode;
 import jakarta.servlet.annotation.HandlesTypes;
-import jakarta.servlet.http.HttpSession;
-import jakarta.servlet.http.HttpUpgradeHandler;
 import org.apache.catalina.Container;
 import org.apache.catalina.ContainerListener;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.Loader;
-import org.apache.catalina.Pipeline;
 import org.apache.catalina.Realm;
 import org.apache.catalina.Valve;
-import org.apache.catalina.Wrapper;
-import org.apache.catalina.core.StandardPipeline;
 import org.apache.catalina.loader.WebappLoader;
 import org.apache.catalina.servlets.DefaultServlet;
 import org.apache.catalina.session.StandardManager;
@@ -1063,10 +1058,6 @@ public class WebModule extends PwcWebModule implements Context {
         } else if("crossContextAllowed".equalsIgnoreCase(name)) {
             final boolean crossContext = Boolean.parseBoolean(value);
             setCrossContext(crossContext);
-        } else if("allowLinking".equalsIgnoreCase(name)) {
-            final boolean allowLinking = ConfigBeansUtilities.toBoolean(value);
-            setAllowLinking(allowLinking);
-            // START S1AS8PE 4817642
         } else if("reuseSessionID".equalsIgnoreCase(name)) {
             final boolean reuse = ConfigBeansUtilities.toBoolean(value);
             setReuseSessionID(reuse);
