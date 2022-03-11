@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2022 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -46,7 +46,7 @@ import java.util.logging.LogManager;
 import org.glassfish.config.support.TranslatedConfigView;
 
 /**
- * Service class that is created and initialised by @{code fish.payara.nucleus.notification.log.LogNotifierService}
+ * Service class that is created and initialised by @{code fish.payara.nucleus.notification.log.LogNotifier}
  * The lifecycle of the bean is not managed by HK2 in order to prevent notification.log file creation upon domain start.
  *
  * @author mertcaliskan
