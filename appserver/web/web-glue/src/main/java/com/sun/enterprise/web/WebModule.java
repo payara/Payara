@@ -1065,11 +1065,9 @@ public class WebModule extends PwcWebModule implements Context {
         } else if("encodeCookies".equalsIgnoreCase(name)) {
             final boolean flag = ConfigBeansUtilities.toBoolean(value);
             setEncodeCookies(flag);
-            // START RIMOD 4642650
         } else if("relativeRedirectAllowed".equalsIgnoreCase(name)) {
             final boolean relativeRedirect = ConfigBeansUtilities.toBoolean(value);
             setUseRelativeRedirects(relativeRedirect);
-            // END RIMOD 4642650
         } else if("fileEncoding".equalsIgnoreCase(name)) {
             setFileEncoding(value);
         } else if("enableTldValidation".equalsIgnoreCase(name)
