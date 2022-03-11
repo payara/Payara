@@ -1084,9 +1084,6 @@ public class WebModule extends PwcWebModule implements Context {
         } else if("enableTldValidation".equalsIgnoreCase(name)
             && ConfigBeansUtilities.toBoolean(value)) {
             setTldValidation(true);
-        } else if("enableTldNamespaceAware".equalsIgnoreCase(name)
-            && ConfigBeansUtilities.toBoolean(value)) {
-            setTldNamespaceAware(true);
         } else if("securePagesWithPragma".equalsIgnoreCase(name)) {
             final boolean securePagesWithPragma = ConfigBeansUtilities.toBoolean(value);
             setSecurePagesWithPragma(securePagesWithPragma);
