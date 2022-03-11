@@ -1168,8 +1168,6 @@ public class WebModule extends PwcWebModule implements Context {
 
         WebappLoader loader = new V3WebappLoader(wmInfo.getAppClassLoader());
 
-        loader.setUseMyFaces(isUseMyFaces());
-
         if (bean != null) {
             clBean = ((SunWebAppImpl)bean).getClassLoader();
         }
