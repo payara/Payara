@@ -70,14 +70,14 @@ public class ConfigServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
-            updateEnv("Dibbles", "${Dabbles}");
+            updateEnv("Dabbles", "Dobbles");
             updateEnv("Bibbly", "Bibbles");
         } catch (ReflectiveOperationException ex) {
             throw new ServletException(ex);
         }
         Config config = ConfigProvider.getConfig();
         System.setProperty("fish.payara.examples.config.sources", "Tiddles!");
-        System.setProperty("Dabbles", "Dobbles");
+        System.setProperty("Dibbles", "${Dabbles}");
         System.setProperty("Bobbly", "Bobbles");
 
         response.getWriter().println("Normal Notation: " + config.getOptionalValue("wibbles", String.class).orElse(null) +
