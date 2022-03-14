@@ -1159,59 +1159,6 @@ public class WebModule extends PwcWebModule implements Context {
     }
 
     /**
-     * Configure the class loader for the web module based on the
-     * settings in sun-web.xml's class-loader element (if any).
-     */
-    Loader configureLoader(SunWebApp bean) {
-
-        org.glassfish.web.deployment.runtime.ClassLoader clBean = null;
-
-        WebappLoader loader = new V3WebappLoader(wmInfo.getAppClassLoader());
-
-        if (bean != null) {
-            clBean = ((SunWebAppImpl)bean).getClassLoader();
-        }
-        if (clBean != null) {
-            configureLoaderAttributes(loader, clBean);
-            configureLoaderProperties(loader, clBean);
-        } else {
-            loader.setDelegate(true);
-        }
-
-        // START S1AS 6178005
-        String stubPath = wmInfo.getStubPath();
-        if (stubPath != null && stubPath.length() > 0) {
-            if (stubPath.charAt(0) != '/') {
-                stubPath = "/" + stubPath;
-            }
-            loader.addRepository("file:" + stubPath + File.separator);
-        }
-        // END S1AS 6178005
-
-        // START PE 4985680
-        /**
-         * Adds the given package name to the list of packages that may
-         * always be overriden, regardless of whether they belong to a
-         * protected namespace
-         */
-        String packagesName =
-                System.getProperty("com.sun.enterprise.overrideablejavaxpackages");
-
-        if (packagesName != null) {
-            List<String> overridablePackages =
-                    StringUtils.parseStringList(packagesName, " ,");
-            for(String overridablePackage : overridablePackages) {
-                loader.addOverridablePackage(overridablePackage);
-            }
-        }
-        // END PE 4985680
-
-        setLoader(loader);
-
-        return loader;
-    }
-
-    /**
      * Saves all active sessions to the given deployment context, so they
      * can be restored following a redeployment.
      *

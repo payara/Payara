@@ -1713,7 +1713,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
                             useDOLforDeployment, webModuleConfig);
                     processWebBundleDescriptor(virtualServer, webModule, webModuleConfig, displayContextPath);
                 }
-                processWebAppClassLoader(webModule, webModuleConfig);
                 webModule.start();
                 return webModule;
             } else {
@@ -1775,7 +1774,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         webModule.setParentClassLoader(parentLoader);
 
        processWebBundleDescriptor(virtualServer, webModule, webModuleConfig, displayContextPath);
-       processWebAppClassLoader(webModule, webModuleConfig);
 
         // set i18n info from locale-charset-info tag in sun-web.xml
         webModule.setI18nInfo();
@@ -1851,24 +1849,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
 
         // Configure the session manager and other related settings
         webModule.configureSessionSettings(webBundleDescriptor, webModuleConfig);
-    }
-
-    private void processWebAppClassLoader(WebModule webModule, WebModuleConfig webModuleConfig) {
-        WebBundleDescriptor webBundleDescriptor = webModuleConfig.getDescriptor();
-
-        // Configure the class loader delegation model, classpath etc
-        Loader loader = webModule.configureLoader(webModule.getIasWebAppConfigBean());
-
-        // Set the class loader on the DOL object
-        if (webBundleDescriptor != null && webBundleDescriptor.hasWebServices()) {
-            webBundleDescriptor.addExtraAttribute("WEBLOADER", loader);
-        }
-
-        for (LifecycleListener listener : webModule.findLifecycleListeners()) {
-            if (listener instanceof ContextConfig) {
-                ((ContextConfig) listener).setClassLoader(webModuleConfig.getAppClassLoader());
-            }
-        }
     }
 
     private List<String> getServletNames(WebBundleDescriptor webBundleDescriptor) {
