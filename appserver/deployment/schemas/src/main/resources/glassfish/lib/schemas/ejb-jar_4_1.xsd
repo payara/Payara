@@ -1567,6 +1567,9 @@
                          type="jakartaee:queryType"
                          minOccurs="0"
                          maxOccurs="unbounded"/>
+            <xsd:element name="managed-executor"
+                         type="jakartaee:managed-executorType"
+                         minOccurs="0" maxOccurs="unbounded"/>
         </xsd:sequence>
         <xsd:attribute name="id"
                        type="xsd:ID"/>
@@ -2079,6 +2082,9 @@
             <xsd:element name="security-identity"
                          type="jakartaee:security-identityType"
                          minOccurs="0"/>
+            <xsd:element name="managed-executor"
+                         type="jakartaee:managed-executorType"
+                         minOccurs="0" maxOccurs="unbounded"/>
         </xsd:sequence>
         <xsd:attribute name="id"
                        type="xsd:ID"/>
