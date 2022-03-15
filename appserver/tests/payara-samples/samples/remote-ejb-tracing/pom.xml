@@ -64,6 +64,12 @@
 
         <!-- Make sure all dependencies are marked as optional so nothing is transitively pulled into the client test -->
         <dependency>
+            <groupId>org.glassfish.jersey.inject</groupId>
+            <artifactId>jersey-hk2</artifactId>
+            <scope>test</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
             <groupId>io.opentracing</groupId>
             <artifactId>opentracing-api</artifactId>
             <scope>provided</scope>
@@ -92,7 +98,7 @@
                     <artifactId>ldapbp-repackaged</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId> fish.payara.server.internal.packager</groupId>
+                    <groupId>fish.payara.server.internal.packager</groupId>
                     <artifactId>libpam4j-repackaged</artifactId>
                 </exclusion>
                 <exclusion>
