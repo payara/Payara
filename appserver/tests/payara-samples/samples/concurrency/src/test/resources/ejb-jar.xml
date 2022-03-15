@@ -38,13 +38,19 @@
   only if the new code is made subject to such option by the copyright
   holder.
   -->
-<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+<ejb-jar xmlns="https://jakarta.ee/xml/ns/jakartaee"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_6.0.xsd"
-         version="6.0">
-    <managed-executor>
-        <name>java:app/managedexecutor/XMLManagedExector</name>
-        <hung-task-threshold>120000</hung-task-threshold>
-        <max-async>5</max-async>
-    </managed-executor>
-</web-app>
+         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee ejb-jar_4_1.xsd"
+         version="4.1">
+    <enterprise-beans>
+        <session>
+            <ejb-name>ManagedExecutorDefinitionEJBFromConfig</ejb-name>
+            <ejb-class>fish.payara.sample.concurrency.annotations.managedexecutor.ManagedExecutorDefinitionEJBFromConfig</ejb-class>
+            <managed-executor>
+                <name>java:app/jakartaee/EJBExecutor</name>
+                <max-async>2</max-async>
+                <hung-task-threshold>120000</hung-task-threshold>
+            </managed-executor>
+        </session>
+    </enterprise-beans>
+</ejb-jar>

@@ -38,13 +38,23 @@
   only if the new code is made subject to such option by the copyright
   holder.
   -->
-<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_6.0.xsd"
-         version="6.0">
+<application xmlns="https://jakarta.ee/xml/ns/jakartaee"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee application_10.xsd"
+             version="10">
+    <description>This is the EAR</description>
+    <display-name>ear</display-name>
+    <module>
+        <ejb>ejb-jar.jar</ejb>
+    </module>
+    <module>
+        <web>
+            <web-uri>test.war</web-uri>
+            <context-root>/</context-root>
+        </web>
+    </module>
     <managed-executor>
-        <name>java:app/managedexecutor/XMLManagedExector</name>
-        <hung-task-threshold>120000</hung-task-threshold>
-        <max-async>5</max-async>
+        <name>java:app/jakartaee/Executor</name>
+        <max-async>20</max-async>
     </managed-executor>
-</web-app>
+</application>

@@ -66,6 +66,7 @@ import com.sun.enterprise.deployment.node.ResourceEnvRefNode;
 import com.sun.enterprise.deployment.node.ResourceRefNode;
 import com.sun.enterprise.deployment.node.SecurityRoleRefNode;
 import com.sun.enterprise.deployment.node.XMLElement;
+import com.sun.enterprise.deployment.node.ManagedExecutorDefinitionNode;
 import com.sun.enterprise.deployment.types.EjbReference;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.xml.TagNames;
@@ -114,6 +115,8 @@ public abstract class EjbNode<S extends EjbDescriptor> extends DisplayableCompon
 
         // Use special method for overrides because more than one schedule can be specified on a single method
         registerElementHandler(new XMLElement(EjbTagNames.TIMER), ScheduledTimerNode.class, "addScheduledTimerDescriptorFromDD");
+        //adding support for the managed-executor tag
+        registerElementHandler(new XMLElement(TagNames.MANAGED_EXECUTOR), ManagedExecutorDefinitionNode.class, "addResourceDescriptor");
     }
 
     @Override
