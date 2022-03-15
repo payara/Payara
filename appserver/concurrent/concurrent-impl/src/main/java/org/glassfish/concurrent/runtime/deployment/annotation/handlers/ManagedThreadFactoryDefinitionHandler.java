@@ -40,11 +40,13 @@
 package org.glassfish.concurrent.runtime.deployment.annotation.handlers;
 
 import com.sun.enterprise.deployment.ManagedExecutorDefinitionDescriptor;
+import com.sun.enterprise.deployment.ManagedThreadFactoryDefinitionDescriptor;
 import com.sun.enterprise.deployment.MetadataSource;
 import com.sun.enterprise.deployment.ResourceDescriptor;
 import com.sun.enterprise.deployment.annotation.context.ResourceContainerContext;
 import com.sun.enterprise.deployment.annotation.handlers.AbstractResourceHandler;
 import jakarta.enterprise.concurrent.ManagedExecutorDefinition;
+import jakarta.enterprise.concurrent.ManagedThreadFactoryDefinition;
 import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
@@ -59,66 +61,65 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Service
-@AnnotationHandlerFor(ManagedExecutorDefinition.class)
-public class ManagedExecutorDefinitionHandler extends AbstractResourceHandler {
+@AnnotationHandlerFor(ManagedThreadFactoryDefinition.class)
+public class ManagedThreadFactoryDefinitionHandler extends AbstractResourceHandler {
 
-    private static final Logger logger = Logger.getLogger(ManagedExecutorDefinitionHandler.class.getName());
+    private static final Logger logger = Logger.getLogger(ManagedThreadFactoryDefinitionHandler.class.getName());
 
     @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo annotationInfo,
                                                         ResourceContainerContext[] resourceContainerContexts)
             throws AnnotationProcessorException {
-        logger.log(Level.INFO, "Entering ManagedExecutorDefinitionHandler.processAnnotation");
-        ManagedExecutorDefinition managedExecutorDefinition = (ManagedExecutorDefinition) annotationInfo.getAnnotation();
-        return processAnnotation(managedExecutorDefinition, resourceContainerContexts);
+        logger.log(Level.INFO, "Entering ManagedThreadFactoryDefinitionHandler.processAnnotation");
+        ManagedThreadFactoryDefinition managedThreadFactoryDefinition =
+                (ManagedThreadFactoryDefinition) annotationInfo.getAnnotation();
+
+        return processAnnotation(managedThreadFactoryDefinition, resourceContainerContexts);
     }
 
-    protected HandlerProcessingResult processAnnotation(ManagedExecutorDefinition managedExecutorDefinition,
+    protected HandlerProcessingResult processAnnotation(ManagedThreadFactoryDefinition managedThreadFactoryDefinition,
                                                         ResourceContainerContext[] contexts) {
-        logger.log(Level.INFO, "Registering ManagedExecutorService from annotation config");
+        logger.log(Level.INFO, "Registering ManagedThreadFactory from annotation config");
         for (ResourceContainerContext context : contexts) {
-            Set<ResourceDescriptor> resourceDescriptors = context.getResourceDescriptors(JavaEEResourceType.MEDD);
-            ManagedExecutorDefinitionDescriptor medes = createDescriptor(managedExecutorDefinition);
-            if (descriptorAlreadyPresent(resourceDescriptors, medes)) {
-                merge(resourceDescriptors, managedExecutorDefinition);
+            Set<ResourceDescriptor> resourceDescriptors = context.getResourceDescriptors(JavaEEResourceType.MTFDD);
+            ManagedThreadFactoryDefinitionDescriptor mtfdd =
+                    createDescriptor(managedThreadFactoryDefinition);
+            if (descriptorAlreadyPresent(resourceDescriptors, mtfdd)) {
+                merge(resourceDescriptors, managedThreadFactoryDefinition);
             } else {
-                resourceDescriptors.add(medes);
+                resourceDescriptors.add(mtfdd);
             }
         }
         return getDefaultProcessedResult();
     }
 
-    public ManagedExecutorDefinitionDescriptor createDescriptor(ManagedExecutorDefinition managedExecutorDefinition) {
-        ManagedExecutorDefinitionDescriptor cdd = new ManagedExecutorDefinitionDescriptor();
-        cdd.setName(TranslatedConfigView.expandValue(managedExecutorDefinition.name()));
-        cdd.setContextInfo(TranslatedConfigView.expandValue(managedExecutorDefinition.context()));
-        cdd.setHungAfterSeconds(managedExecutorDefinition.hungTaskThreshold());
-        cdd.setMaximumPoolSize(managedExecutorDefinition.maxAsync());
-        cdd.setMetadataSource(MetadataSource.ANNOTATION);
-        return cdd;
+    public ManagedThreadFactoryDefinitionDescriptor createDescriptor(ManagedThreadFactoryDefinition managedThreadFactoryDefinition) {
+        ManagedThreadFactoryDefinitionDescriptor mtfdd = new ManagedThreadFactoryDefinitionDescriptor();
+        mtfdd.setMetadataSource(MetadataSource.ANNOTATION);
+        mtfdd.setName(TranslatedConfigView.expandValue(managedThreadFactoryDefinition.name()));
+        mtfdd.setContext(TranslatedConfigView.expandValue(managedThreadFactoryDefinition.context()));
+        mtfdd.setPriority(managedThreadFactoryDefinition.priority());
+        return mtfdd;
     }
 
     private boolean descriptorAlreadyPresent(final Set<ResourceDescriptor> resourceDescriptors,
-                                             final ManagedExecutorDefinitionDescriptor medd) {
-        Optional<ResourceDescriptor> optResourceDescriptor = resourceDescriptors.stream().filter(d -> d.equals(medd)).findAny();
+                                             final ManagedThreadFactoryDefinitionDescriptor mtfdd) {
+        Optional<ResourceDescriptor> optResourceDescriptor = resourceDescriptors
+                .stream().filter(d -> d.equals(mtfdd)).findAny();
         return optResourceDescriptor.isPresent();
     }
 
-    private void merge(Set<ResourceDescriptor> resourceDescriptors, ManagedExecutorDefinition med) {
+    private void merge(Set<ResourceDescriptor> resourceDescriptors, ManagedThreadFactoryDefinition mtfdd) {
         for (ResourceDescriptor resource : resourceDescriptors) {
-            ManagedExecutorDefinitionDescriptor descriptor = (ManagedExecutorDefinitionDescriptor) resource;
-            if (descriptor.getName().equals(med.name())) {
+            ManagedThreadFactoryDefinitionDescriptor descriptor = (ManagedThreadFactoryDefinitionDescriptor) resource;
+            if (descriptor.getName().equals(mtfdd.name())) {
 
-                if (descriptor.getHungAfterSeconds() == -1 && med.hungTaskThreshold() != -1) {
-                    descriptor.setHungAfterSeconds(med.hungTaskThreshold());
+                if (descriptor.getPriority() == -1 && mtfdd.priority() != -1) {
+                    descriptor.setPriority(mtfdd.priority());
                 }
 
-                if (descriptor.getMaximumPoolSize() == -1 && med.maxAsync() != -1) {
-                    descriptor.setMaximumPoolSize(med.maxAsync());
-                }
-
-                if (descriptor.getContextInfo() == null && med.context() != null && !med.context().isBlank()) {
-                    descriptor.setContextInfo(TranslatedConfigView.expandValue(med.context()));
+                if (descriptor.getContext() == null && mtfdd.context() != null && !mtfdd.context().isBlank()) {
+                    descriptor.setContext(TranslatedConfigView.expandValue(mtfdd.context()));
                 }
             }
         }
