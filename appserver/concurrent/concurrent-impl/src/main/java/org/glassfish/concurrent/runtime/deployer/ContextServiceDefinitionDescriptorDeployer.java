@@ -91,10 +91,13 @@ public class ContextServiceDefinitionDescriptorDeployer implements ResourceDeplo
 
     @Override
     public void deployResource(Object resource, String applicationName, String moduleName) throws Exception {
-        ContextServiceDefinitionDescriptor concurrentDefinitionDescriptor = (ContextServiceDefinitionDescriptor) resource;
-        ContextServiceConfig contextServiceConfig
-                = new ContextServiceConfig(concurrentDefinitionDescriptor.getName(), null, "true");
-        String customNameOfResource = ConnectorsUtil.deriveResourceName(concurrentDefinitionDescriptor.getResourceId(), concurrentDefinitionDescriptor.getName(), concurrentDefinitionDescriptor.getResourceType());
+        ContextServiceDefinitionDescriptor descriptor = (ContextServiceDefinitionDescriptor) resource;
+        ContextServiceConfig contextServiceConfig = new ContextServiceConfig(
+                descriptor.getName(), null, "true",
+                descriptor.getPropagated(),
+                descriptor.getUnchanged(),
+                descriptor.getCleared());
+        String customNameOfResource = ConnectorsUtil.deriveResourceName(descriptor.getResourceId(), descriptor.getName(), descriptor.getResourceType());
         ResourceInfo resourceInfo = new ResourceInfo(customNameOfResource, applicationName, moduleName);
         javax.naming.Reference ref = new javax.naming.Reference(
                 jakarta.enterprise.concurrent.ContextServiceDefinition.class.getName(),

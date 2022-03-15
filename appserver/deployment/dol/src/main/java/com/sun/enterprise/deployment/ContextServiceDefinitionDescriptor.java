@@ -40,6 +40,7 @@
 package com.sun.enterprise.deployment;
 
 import java.util.Objects;
+import java.util.Set;
 import org.glassfish.deployment.common.JavaEEResourceType;
 
 /**
@@ -50,9 +51,9 @@ import org.glassfish.deployment.common.JavaEEResourceType;
 public class ContextServiceDefinitionDescriptor extends ResourceDescriptor {
 
     private String name;
-    private String[] cleared;
-    private String[] propagated;
-    private String[] unchanged;
+    private Set<String> cleared;
+    private Set<String> propagated;
+    private Set<String> unchanged;
 
     public ContextServiceDefinitionDescriptor() {
         super.setResourceType(JavaEEResourceType.CSDD);
@@ -90,27 +91,27 @@ public class ContextServiceDefinitionDescriptor extends ResourceDescriptor {
         this.name = name;
     }
 
-    public String[] getCleared() {
+    public Set<String> getCleared() {
         return cleared;
     }
 
-    public void setCleared(String[] cleared) {
+    public void setCleared(Set<String> cleared) {
         this.cleared = cleared;
     }
 
-    public String[] getPropagated() {
+    public Set<String> getPropagated() {
         return propagated;
     }
 
-    public void setPropagated(String[] propagated) {
+    public void setPropagated(Set<String> propagated) {
         this.propagated = propagated;
     }
 
-    public String[] getUnchanged() {
+    public Set<String> getUnchanged() {
         return unchanged;
     }
 
-    public void setUnchanged(String[] unchanged) {
+    public void setUnchanged(Set<String> unchanged) {
         this.unchanged = unchanged;
     }
 

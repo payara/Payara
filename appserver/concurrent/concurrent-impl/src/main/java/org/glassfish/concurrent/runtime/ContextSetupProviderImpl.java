@@ -73,6 +73,8 @@ import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.Tracer.SpanBuilder;
 import io.opentracing.propagation.Format;
+import java.util.HashSet;
+import java.util.Set;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.data.ApplicationRegistry;
 
@@ -90,21 +92,31 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
 
     static final long serialVersionUID = -1095988075917755802L;
 
-    static enum CONTEXT_TYPE {CLASSLOADING, SECURITY, NAMING, WORKAREA}
+    // Predefined handlers for context propagation
+    public static final String CONTEXT_TYPE_CLASSLOADING = "CLASSLOADING";
+    public static final String CONTEXT_TYPE_SECURITY = "SECURITY";
+    public static final String CONTEXT_TYPE_NAMING = "NAMING";
+    public static final String CONTEXT_TYPE_WORKAREA = "WORKAREA";
 
+    // TODO: do we need these booleans if we have sets?
     private boolean classloading, security, naming, workArea;
+    private Set<String> contextPropagate;
+    private Set<String> contextClear;
+    private Set<String> contextUnchanged;
 
     private transient RequestTracingService requestTracing;
     private transient OpenTracingService openTracing;
     private transient StuckThreadsStore stuckThreads;
 
     public ContextSetupProviderImpl(InvocationManager invocationManager,
-                                    Deployment deployment,
-                                    ComponentEnvManager compEnvMgr,
-                                    ApplicationRegistry applicationRegistry,
-                                    Applications applications,
-                                    JavaEETransactionManager transactionManager,
-                                    CONTEXT_TYPE... contextTypes) {
+            Deployment deployment,
+            ComponentEnvManager compEnvMgr,
+            ApplicationRegistry applicationRegistry,
+            Applications applications,
+            JavaEETransactionManager transactionManager,
+            Set<String> propagated,
+            Set<String> cleared,
+            Set<String> unchanged) {
         this.invocationManager = invocationManager;
         this.deployment = deployment;
         this.compEnvMgr = compEnvMgr;
@@ -112,20 +124,24 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         this.applications = applications;
         this.transactionManager = transactionManager;
 
+        contextPropagate = new HashSet<>(propagated);
+        contextClear = new HashSet<>(cleared);
+        contextUnchanged = new HashSet<>(unchanged);
+
         initialiseServices();
 
-        for (CONTEXT_TYPE contextType: contextTypes) {
-            switch(contextType) {
-                case CLASSLOADING:
+        for (String contextType : propagated) {
+            switch (contextType) {
+                case CONTEXT_TYPE_CLASSLOADING:
                     classloading = true;
                     break;
-                case SECURITY:
+                case CONTEXT_TYPE_SECURITY:
                     security = true;
                     break;
-                case NAMING:
+                case CONTEXT_TYPE_NAMING:
                     naming = true;
                     break;
-                case WORKAREA:;
+                case CONTEXT_TYPE_WORKAREA:;
                     workArea = true;
                     break;
             }
@@ -199,8 +215,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         SecurityContext resetSecurityContext = null;
         if (handle.getContextClassLoader() != null) {
             resetClassLoader = Utility.setContextClassLoader(handle.getContextClassLoader());
-        }
-        else if(backupClassLoader != null) {
+        } else if (backupClassLoader != null) {
             resetClassLoader = Utility.setContextClassLoader(backupClassLoader);
         }
 
@@ -215,7 +230,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
             invocationManager.preInvoke(invocation);
         }
         // Ensure that there is no existing transaction in the current thread
-        if (transactionManager != null) {
+        if (contextClear.contains(CONTEXT_TYPE_WORKAREA) && transactionManager != null) {
             transactionManager.clearThreadTx();
         }
 
@@ -285,7 +300,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         if (handle.getInvocation() != null && !handle.isUseTransactionOfExecutionThread()) {
             invocationManager.postInvoke(((InvocationContext)contextHandle).getInvocation());
         }
-        if (transactionManager != null) {
+        if (contextClear.contains(CONTEXT_TYPE_WORKAREA) && transactionManager != null) {
             // clean up after user if a transaction is still active
             // This is not required by the Concurrency spec
             Transaction transaction = transactionManager.getCurrentTransaction();
