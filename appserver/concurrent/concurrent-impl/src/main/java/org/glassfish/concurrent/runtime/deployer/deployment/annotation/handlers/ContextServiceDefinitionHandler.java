@@ -56,6 +56,7 @@ import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
 import org.glassfish.concurrent.runtime.ConcurrentRuntime;
+import org.glassfish.concurrent.runtime.ContextSetupProviderImpl;
 import org.glassfish.concurrent.runtime.deployer.ContextServiceConfig;
 import org.glassfish.config.support.TranslatedConfigView;
 import org.glassfish.deployment.common.JavaEEResourceType;
@@ -129,16 +130,16 @@ public class ContextServiceDefinitionHandler extends AbstractResourceHandler {
         Set<String> contexts = new HashSet<>();
         Set<String> unusedDefinitions = new HashSet<>(definitions);
         if (unusedDefinitions.contains(ContextServiceDefinition.TRANSACTION)) {
-            contexts.add(ConcurrentRuntime.CONTEXT_INFO_WORKAREA);
+            contexts.add(ContextSetupProviderImpl.CONTEXT_TYPE_WORKAREA);
             unusedDefinitions.remove(ContextServiceDefinition.TRANSACTION);
         }
         if (unusedDefinitions.contains(ContextServiceDefinition.SECURITY)) {
-            contexts.add(ConcurrentRuntime.CONTEXT_INFO_SECURITY);
+            contexts.add(ContextSetupProviderImpl.CONTEXT_TYPE_SECURITY);
             unusedDefinitions.remove(ContextServiceDefinition.SECURITY);
         }
         if (unusedDefinitions.contains(ContextServiceDefinition.APPLICATION)) {
-            contexts.add(ConcurrentRuntime.CONTEXT_INFO_CLASSLOADER);
-            contexts.add(ConcurrentRuntime.CONTEXT_INFO_JNDI);
+            contexts.add(ContextSetupProviderImpl.CONTEXT_TYPE_CLASSLOADING);
+            contexts.add(ContextSetupProviderImpl.CONTEXT_TYPE_NAMING);
             unusedDefinitions.remove(ContextServiceDefinition.APPLICATION);
         }
         // add all the remaining, custom definitions

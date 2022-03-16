@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.concurrent.runtime;
 
@@ -59,7 +59,11 @@ import org.glassfish.internal.deployment.Deployment;
 
 import jakarta.enterprise.concurrent.ContextService;
 import jakarta.enterprise.concurrent.ManagedTask;
-import jakarta.transaction.*;
+import jakarta.enterprise.concurrent.spi.ThreadContextProvider;
+import jakarta.enterprise.concurrent.spi.ThreadContextRestorer;
+import jakarta.enterprise.concurrent.spi.ThreadContextSnapshot;
+import jakarta.transaction.Status;
+import jakarta.transaction.Transaction;
 import java.io.IOException;
 import java.util.Map;
 import java.util.logging.Level;
@@ -73,8 +77,15 @@ import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.Tracer.SpanBuilder;
 import io.opentracing.propagation.Format;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.data.ApplicationRegistry;
 
@@ -93,6 +104,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
     static final long serialVersionUID = -1095988075917755802L;
 
     // Predefined handlers for context propagation
+    // TODO: replace with ConcurrentRuntime.CONTEXT_INFO_* ?
     public static final String CONTEXT_TYPE_CLASSLOADING = "CLASSLOADING";
     public static final String CONTEXT_TYPE_SECURITY = "SECURITY";
     public static final String CONTEXT_TYPE_NAMING = "NAMING";
@@ -100,9 +112,10 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
 
     // TODO: do we need these booleans if we have sets?
     private boolean classloading, security, naming, workArea;
-    private Set<String> contextPropagate;
-    private Set<String> contextClear;
-    private Set<String> contextUnchanged;
+    private final Set<String> contextPropagate;
+    private final Set<String> contextClear;
+    private final Set<String> contextUnchanged;
+    private Map<String, ThreadContextProvider> allThreadContextProviders = null;
 
     private transient RequestTracingService requestTracing;
     private transient OpenTracingService openTracing;
@@ -170,8 +183,42 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
             savedInvocation = createComponentInvocation(currentInvocation);
         }
         boolean useTransactionOfExecutionThread = transactionManager == null && useTransactionOfExecutionThread(contextObjectProperties);
+
+        // TODO: put initialization of providers to better place
+        if (allThreadContextProviders == null) {
+            synchronized (this) {
+                if (allThreadContextProviders == null) {
+                    allThreadContextProviders = new HashMap<>();
+                    for (ThreadContextProvider service : ServiceLoader.load(jakarta.enterprise.concurrent.spi.ThreadContextProvider.class, Utility.getClassLoader())) {
+                        String serviceName = service.getThreadContextType();
+                        if (contextPropagate.contains(serviceName) || contextClear.contains(serviceName) || contextUnchanged.contains(serviceName)) {
+                            allThreadContextProviders.put(serviceName, service);
+                        }
+                    }
+                    // check, if there is no unexpected provider name
+                    verifyProviders(contextPropagate);
+                    verifyProviders(contextClear);
+                    verifyProviders(contextUnchanged);
+                }
+            }
+        }
+
+        // store the snapshots of the current state
+        List<ThreadContextSnapshot> threadContextSnapshots = new ArrayList<>();
+        contextPropagate.stream()
+                .map((provider) -> allThreadContextProviders.get(provider))
+                .filter(snapshot -> snapshot != null) // ignore standard providers like CONTEXT_TYPE_CLASSLOADING
+                .map(snapshot -> snapshot.currentContext(null)) //contextObjectProperties???
+                .forEach(snapshot -> threadContextSnapshots.add(snapshot));
+        contextClear.stream()
+                .map((provider) -> allThreadContextProviders.get(provider))
+                .filter(snapshot -> snapshot != null)
+                .map(snapshot -> snapshot.clearedContext(null)) //contextObjectProperties???
+                .forEach(snapshot -> threadContextSnapshots.add(snapshot));
+
         // TODO - support workarea propagation
-        return new InvocationContext(savedInvocation, contextClassloader, currentSecurityContext, useTransactionOfExecutionThread);
+        return new InvocationContext(savedInvocation, contextClassloader, currentSecurityContext, useTransactionOfExecutionThread,
+                threadContextSnapshots, Collections.EMPTY_LIST);
     }
 
     @Override
@@ -242,7 +289,13 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
             stuckThreads.registerThread(Thread.currentThread().getId());
         }
 
-        return new InvocationContext(invocation, resetClassLoader, resetSecurityContext, handle.isUseTransactionOfExecutionThread());
+        // execute thread contexts snapshots to begin
+        List<ThreadContextRestorer> restorers = handle.getThreadContextSnapshots().stream()
+                .map((ThreadContextSnapshot snapshot) -> snapshot.begin())
+                .collect(Collectors.toList());
+
+        return new InvocationContext(invocation, resetClassLoader, resetSecurityContext, handle.isUseTransactionOfExecutionThread(),
+                Collections.EMPTY_LIST, restorers);
     }
 
     private void startConcurrentContextSpan(ComponentInvocation invocation, InvocationContext handle) {
@@ -291,6 +344,12 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
             return;
         }
         InvocationContext handle = (InvocationContext) contextHandle;
+
+        // execute thread contexts restorers to end
+        for (ThreadContextRestorer restorer : handle.getThreadContextRestorers()) {
+            restorer.endContext();
+        }
+
         if (handle.getContextClassLoader() != null) {
             Utility.setContextClassLoader(handle.getContextClassLoader());
         }
@@ -367,6 +426,27 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
             return executionProperties.get(ManagedTask.TRANSACTION);
         }
         return ManagedTask.SUSPEND;
+    }
+
+    private void verifyProviders(Set<String> providers) {
+        Iterator<String> providerIter = providers.iterator();
+        while (providerIter.hasNext()) {
+            String provider = providerIter.next();
+            switch (provider) {
+                case CONTEXT_TYPE_CLASSLOADING:
+                case CONTEXT_TYPE_SECURITY:
+                case CONTEXT_TYPE_NAMING:
+                case CONTEXT_TYPE_WORKAREA:
+                    // OK, they are known
+                    break;
+                default:
+                    if (!allThreadContextProviders.containsKey(provider)) {
+                        logger.severe("Thread context provider '" + provider + "' is not registered in WEB-APP/services/jakarta.enterprise.concurrent.spi.ThreadContextProvider and will be ignored!");
+                        providerIter.remove();
+                    }
+                    break;
+            }
+        }
     }
 
     private void writeObject(java.io.ObjectOutputStream out) throws IOException {
