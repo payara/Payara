@@ -290,9 +290,12 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         }
 
         // execute thread contexts snapshots to begin
-        List<ThreadContextRestorer> restorers = handle.getThreadContextSnapshots().stream()
-                .map((ThreadContextSnapshot snapshot) -> snapshot.begin())
-                .collect(Collectors.toList());
+        List<ThreadContextRestorer> restorers = Collections.EMPTY_LIST;
+        if (handle.getThreadContextSnapshots() != null) {
+            restorers = handle.getThreadContextSnapshots().stream()
+                    .map((ThreadContextSnapshot snapshot) -> snapshot.begin())
+                    .collect(Collectors.toList());
+        }
 
         return new InvocationContext(invocation, resetClassLoader, resetSecurityContext, handle.isUseTransactionOfExecutionThread(),
                 Collections.EMPTY_LIST, restorers);

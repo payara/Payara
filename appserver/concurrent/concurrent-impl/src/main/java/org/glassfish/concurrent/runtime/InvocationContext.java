@@ -78,8 +78,8 @@ public class InvocationContext implements ContextHandle {
     private transient Map spanContextMap;
     private boolean useTransactionOfExecutionThread;
 
-    private final List<ThreadContextSnapshot> threadContextSnapshots;
-    private final List<ThreadContextRestorer> threadContextRestorers;
+    private List<ThreadContextSnapshot> threadContextSnapshots;
+    private List<ThreadContextRestorer> threadContextRestorers;
 
     public InvocationContext(ComponentInvocation invocation, ClassLoader contextClassLoader, SecurityContext securityContext,
             boolean useTransactionOfExecutionThread, List<ThreadContextSnapshot> threadContextSnapshots,
@@ -205,6 +205,8 @@ public class InvocationContext implements ContextHandle {
         out.writeObject(principalName);
         out.writeBoolean(defaultSecurityContext);
         out.writeObject(subject);
+        out.writeObject(threadContextSnapshots);
+        out.writeObject(threadContextRestorers);
     }
 
     private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
@@ -234,6 +236,8 @@ public class InvocationContext implements ContextHandle {
                 contextClassLoader = applicationInfo.getAppClassLoader();
             }
         }
+        threadContextSnapshots = (List<ThreadContextSnapshot>) in.readObject();
+        threadContextRestorers = (List<ThreadContextRestorer>) in.readObject();
     }
 
     private ComponentInvocation createComponentInvocation(String componentId, String appName, String moduleName) {
