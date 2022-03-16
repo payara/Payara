@@ -43,7 +43,7 @@ import java.util.Properties;
 
 import static org.glassfish.deployment.common.JavaEEResourceType.*;
 
-public class ConcurrentDefinitionDescriptor extends ResourceDescriptor {
+public class ManagedExecutorDefinitionDescriptor extends ResourceDescriptor {
 
     private static final String JAVA_URL = "java:";
     private static final String JAVA_COMP_URL = "java:comp/";
@@ -54,8 +54,8 @@ public class ConcurrentDefinitionDescriptor extends ResourceDescriptor {
     private String contextInfo;
     private Properties properties = new Properties();
 
-    public ConcurrentDefinitionDescriptor() {
-        super.setResourceType(CDD);
+    public ManagedExecutorDefinitionDescriptor() {
+        super.setResourceType(MEDD);
     }
 
     @Override
@@ -106,8 +106,8 @@ public class ConcurrentDefinitionDescriptor extends ResourceDescriptor {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof ConcurrentDefinitionDescriptor) {
-            ConcurrentDefinitionDescriptor ref = (ConcurrentDefinitionDescriptor) obj;
+        if (obj instanceof ManagedExecutorDefinitionDescriptor) {
+            ManagedExecutorDefinitionDescriptor ref = (ManagedExecutorDefinitionDescriptor) obj;
             return this.getName().equals(getURLName(ref.getName()));
         }
         return false;

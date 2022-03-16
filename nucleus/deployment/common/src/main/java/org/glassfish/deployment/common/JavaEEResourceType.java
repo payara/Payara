@@ -87,9 +87,13 @@ public enum JavaEEResourceType {
      */
     AODD,
     /**
-     * CDD: ConcurrentDefinitionDescriptor
+     * MEDD: ManagedExecutorDefinitionDescriptor
      */
-    CDD,
+    MEDD,
+    /**
+     * MTFDD:ManagedThreadFactoryDefinitionDescriptor
+     */
+    MTFDD,
     /**
      * CSDD: ContextServiceDefinitionDescriptor
      */

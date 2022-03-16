@@ -39,17 +39,17 @@
  */
 package com.sun.enterprise.deployment.node;
 
-import com.sun.enterprise.deployment.ConcurrentDefinitionDescriptor;
+import com.sun.enterprise.deployment.ManagedExecutorDefinitionDescriptor;
 import com.sun.enterprise.deployment.xml.TagNames;
 import org.w3c.dom.Node;
 
 import java.util.Map;
 
-public class ManagedExecutorDefinitionNode extends DeploymentDescriptorNode<ConcurrentDefinitionDescriptor> {
+public class ManagedExecutorDefinitionNode extends DeploymentDescriptorNode<ManagedExecutorDefinitionDescriptor> {
 
     public final static XMLElement tag = new XMLElement(TagNames.MANAGED_EXECUTOR);
 
-    ConcurrentDefinitionDescriptor descriptor = null;
+    ManagedExecutorDefinitionDescriptor descriptor = null;
 
     public ManagedExecutorDefinitionNode() {
         registerElementHandler(new XMLElement(TagNames.RESOURCE_PROPERTY), ResourcePropertyNode.class,
@@ -65,20 +65,20 @@ public class ManagedExecutorDefinitionNode extends DeploymentDescriptorNode<Conc
         return table;
     }
 
-    public Node writeDescriptor(Node parent, String nodeName, ConcurrentDefinitionDescriptor concurrentDefinitionDescriptor) {
+    public Node writeDescriptor(Node parent, String nodeName, ManagedExecutorDefinitionDescriptor managedExecutorDefinitionDescriptor) {
         Node node = appendChild(parent, nodeName);
-        appendTextChild(node, TagNames.MANAGED_EXECUTOR_NAME, concurrentDefinitionDescriptor.getName());
-        appendTextChild(node, TagNames.MANAGED_EXECUTOR_MAX_POOL_SIZE, String.valueOf(concurrentDefinitionDescriptor.getMaximumPoolSize()));
-        appendTextChild(node, TagNames.MANAGED_EXECUTOR_HUNG_AFTER_SECONDS, String.valueOf(concurrentDefinitionDescriptor.getHungAfterSeconds()));
-        appendTextChild(node, TagNames.MANAGED_EXECUTOR_CONTEXT_INFO, concurrentDefinitionDescriptor.getContextInfo());
+        appendTextChild(node, TagNames.MANAGED_EXECUTOR_NAME, managedExecutorDefinitionDescriptor.getName());
+        appendTextChild(node, TagNames.MANAGED_EXECUTOR_MAX_POOL_SIZE, String.valueOf(managedExecutorDefinitionDescriptor.getMaximumPoolSize()));
+        appendTextChild(node, TagNames.MANAGED_EXECUTOR_HUNG_AFTER_SECONDS, String.valueOf(managedExecutorDefinitionDescriptor.getHungAfterSeconds()));
+        appendTextChild(node, TagNames.MANAGED_EXECUTOR_CONTEXT_INFO, managedExecutorDefinitionDescriptor.getContextInfo());
         ResourcePropertyNode propertyNode = new ResourcePropertyNode();
-        propertyNode.writeDescriptor(node, concurrentDefinitionDescriptor);
+        propertyNode.writeDescriptor(node, managedExecutorDefinitionDescriptor);
         return node;
     }
 
-    public ConcurrentDefinitionDescriptor getDescriptor() {
+    public ManagedExecutorDefinitionDescriptor getDescriptor() {
         if (descriptor == null) {
-            descriptor = new ConcurrentDefinitionDescriptor();
+            descriptor = new ManagedExecutorDefinitionDescriptor();
         }
         return descriptor;
     }

@@ -43,7 +43,7 @@ import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.config.serverbeans.Resource;
 import com.sun.enterprise.config.serverbeans.Resources;
-import com.sun.enterprise.deployment.ConcurrentDefinitionDescriptor;
+import com.sun.enterprise.deployment.ManagedExecutorDefinitionDescriptor;
 import jakarta.inject.Inject;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.api.logging.LogHelper;
@@ -69,10 +69,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Service
-@ResourceDeployerInfo(ConcurrentDefinitionDescriptor.class)
-public class ConcurrentDescriptorDeployer implements ResourceDeployer {
+@ResourceDeployerInfo(ManagedExecutorDefinitionDescriptor.class)
+public class ManagedExecutorDescriptorDeployer implements ResourceDeployer {
 
-    private static final Logger logger = Logger.getLogger(ConcurrentDescriptorDeployer.class.getName());
+    private static final Logger logger = Logger.getLogger(ManagedExecutorDescriptorDeployer.class.getName());
 
     @Inject
     private ResourceNamingService namingService;
@@ -87,12 +87,12 @@ public class ConcurrentDescriptorDeployer implements ResourceDeployer {
 
     @Override
     public void deployResource(Object resource) throws Exception {
-        ConcurrentDefinitionDescriptor concurrentDefinitionDescriptor = (ConcurrentDefinitionDescriptor) resource;
+        ManagedExecutorDefinitionDescriptor managedExecutorDefinitionDescriptor = (ManagedExecutorDefinitionDescriptor) resource;
         ManagedExecutorServiceConfig managedExecutorServiceConfig =
-                new ManagedExecutorServiceConfig(new CustomManagedExecutorServiceImpl(concurrentDefinitionDescriptor));
+                new ManagedExecutorServiceConfig(new CustomManagedExecutorServiceImpl(managedExecutorDefinitionDescriptor));
         String applicationName = invocationManager.getCurrentInvocation().getAppName();
         String customNameOfResource = ConnectorsUtil.deriveResourceName
-                (concurrentDefinitionDescriptor.getResourceId(), concurrentDefinitionDescriptor.getName(), concurrentDefinitionDescriptor.getResourceType());
+                (managedExecutorDefinitionDescriptor.getResourceId(), managedExecutorDefinitionDescriptor.getName(), managedExecutorDefinitionDescriptor.getResourceType());
         ResourceInfo resourceInfo = new ResourceInfo(customNameOfResource, applicationName, null);
         javax.naming.Reference ref = new javax.naming.Reference(
                 jakarta.enterprise.concurrent.ManagedExecutorService.class.getName(),
@@ -164,14 +164,14 @@ public class ConcurrentDescriptorDeployer implements ResourceDeployer {
 
     class CustomManagedExecutorServiceImpl implements ManagedExecutorService {
 
-        private ConcurrentDefinitionDescriptor concurrentDefinitionDescriptor;
+        private ManagedExecutorDefinitionDescriptor managedExecutorDefinitionDescriptor;
 
-        public CustomManagedExecutorServiceImpl(ConcurrentDefinitionDescriptor concurrentDefinitionDescriptor) {
-            this.concurrentDefinitionDescriptor = concurrentDefinitionDescriptor;
+        public CustomManagedExecutorServiceImpl(ManagedExecutorDefinitionDescriptor managedExecutorDefinitionDescriptor) {
+            this.managedExecutorDefinitionDescriptor = managedExecutorDefinitionDescriptor;
         }
         @Override
         public String getMaximumPoolSize() {
-            return String.valueOf(concurrentDefinitionDescriptor.getMaximumPoolSize());
+            return String.valueOf(managedExecutorDefinitionDescriptor.getMaximumPoolSize());
         }
 
         @Override
@@ -216,7 +216,7 @@ public class ConcurrentDescriptorDeployer implements ResourceDeployer {
 
         @Override
         public String getHungAfterSeconds() {
-            return "" + concurrentDefinitionDescriptor.getHungAfterSeconds();
+            return "" + managedExecutorDefinitionDescriptor.getHungAfterSeconds();
         }
 
         @Override
@@ -256,7 +256,7 @@ public class ConcurrentDescriptorDeployer implements ResourceDeployer {
 
         @Override
         public String getJndiName() {
-            return concurrentDefinitionDescriptor.getName();
+            return managedExecutorDefinitionDescriptor.getName();
         }
 
         @Override
@@ -306,7 +306,7 @@ public class ConcurrentDescriptorDeployer implements ResourceDeployer {
 
         @Override
         public String getContextInfo() {
-            return concurrentDefinitionDescriptor.getContextInfo();
+            return managedExecutorDefinitionDescriptor.getContextInfo();
         }
 
         @Override

@@ -315,7 +315,8 @@ public class ComponentEnvManagerImpl
         Set<ResourceDescriptor> jmscfdds = env.getResourceDescriptors(JavaEEResourceType.JMSCFDD);
         Set<ResourceDescriptor> msds =env.getResourceDescriptors(JavaEEResourceType.MSD);
         Set<ResourceDescriptor> jmsddds = env.getResourceDescriptors(JavaEEResourceType.JMSDD);
-        Set<ResourceDescriptor> cdd = env.getResourceDescriptors(JavaEEResourceType.CDD);
+        Set<ResourceDescriptor> medd = env.getResourceDescriptors(JavaEEResourceType.MEDD);
+        Set<ResourceDescriptor> mtfdd = env.getResourceDescriptors(JavaEEResourceType.MTFDD);
         Set<ResourceDescriptor> csdd = env.getResourceDescriptors(JavaEEResourceType.CSDD);
         if(!(env instanceof ApplicationClientDescriptor)) {
             Set<ResourceDescriptor> cfdds = env.getResourceDescriptors(JavaEEResourceType.CFD);
@@ -333,7 +334,8 @@ public class ComponentEnvManagerImpl
         allDescriptors.addAll(jmscfdds);
         allDescriptors.addAll(msds);
         allDescriptors.addAll(jmsddds);
-        allDescriptors.addAll(cdd);
+        allDescriptors.addAll(medd);
+        allDescriptors.addAll(mtfdd);
         allDescriptors.addAll(csdd);
 
         for (ResourceDescriptor descriptor : allDescriptors) {

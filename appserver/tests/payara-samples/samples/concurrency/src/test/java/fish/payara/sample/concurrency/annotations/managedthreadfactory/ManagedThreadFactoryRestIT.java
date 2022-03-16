@@ -37,43 +37,36 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.sample.concurrency.annotations.managedexecutor;
-
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
+package fish.payara.sample.concurrency.annotations.managedthreadfactory;
 
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.WebTarget;
 import jakarta.ws.rs.core.MediaType;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
-
-import java.net.MalformedURLException;
-import java.net.URL;
-
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 @ExtendWith(ArquillianExtension.class)
-public class ManagedExecutorApplicationIT {
+public class ManagedThreadFactoryRestIT {
 
-    private final static Logger logger = Logger.getLogger(ManagedExecutorApplicationIT.class.getName());
+    private final static Logger logger = Logger.getLogger(ManagedThreadFactoryRestIT.class.getName());
 
     @ArquillianResource
     private URL base;
@@ -81,23 +74,12 @@ public class ManagedExecutorApplicationIT {
     private Client client;
 
     @Deployment
-    public static Archive<?> createDeployment() {
-        //Creating Jar ejb module
-        JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "ejb-jar.jar")
-                .addClasses(ManagedExecutorDefinitionEJB.class, ManagedExecutorDefinitionEJBFromConfig.class)
-                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml")
-                .addAsResource("ejb-jar.xml", "META-INF/ejb-jar.xml");
-        System.out.println(ejbJar.toString(true));
-        //Creating web module
-        WebArchive webWar = ShrinkWrap.create(WebArchive.class, "test.war")
-                .addClasses(ManagedExecutorDefinitionApplication.class, ManagedExecutorDefinitionEJBRest.class);
-        System.out.println(webWar.toString(true));
-        //Creating EAR
-        EnterpriseArchive ear = ShrinkWrap
-                .create(EnterpriseArchive.class, "test-app.ear").setApplicationXML("application.xml")
-                .addAsModule(ejbJar).addAsModule(webWar);
-        System.out.println(ear.toString(true));
-        return ear;
+    public static WebArchive createDeployment() {
+        WebArchive war = ShrinkWrap.create(WebArchive.class)
+                .addClasses(ManagedThreadFactoryApplication.class, ManagedThreadFactoryRest.class)
+                .addAsWebInfResource("web.xml").addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+        System.out.println(war.toString(true));
+        return war;
     }
 
     @BeforeEach
@@ -109,43 +91,46 @@ public class ManagedExecutorApplicationIT {
     @AfterEach
     public void clean() {
         logger.info("close client");
-        if (this.client != null) {
+        if(this.client != null) {
             this.client.close();
         }
     }
 
     @Test
-    @DisplayName("testing ManagedExecutor tag from Application EAR")
+    @DisplayName("Testing Single ManagedThreadFactoryDefinition")
     @RunAsClient
-    public void testManagedExecutorDefinitionFromApplicationConfig() throws MalformedURLException {
-        logger.log(Level.INFO, "Consuming service to test ManagedExecutorDefinition application xml configuration {0}",
-                new Object[]{client});
-        WebTarget target = this.client.target(new URL(this.base, "xml/application").toExternalForm());
+    public void testForkJoin() throws MalformedURLException {
+        logger.log(Level.INFO, "Consuming service to submit single ForkJoin execution {0}", new Object[]{client});
+        WebTarget target = this.client.target(new URL(this.base, "annotation/managedthreadfactory").toExternalForm());
         String message = target.request().accept(MediaType.TEXT_PLAIN).get(String.class);
         logger.log(Level.INFO, "Returned message {0}", new Object[]{message});
-        String[] data = message.split(":");
-        if (data[1] != null) {
-            int numberOfExecutions = Integer.parseInt(data[1]);
-            assertTrue(numberOfExecutions == 1);
-        }
-        assertTrue(message.contains("Executor submitted"));
+        assertTrue(message.contains("Counting numbers total"));
+        assertTrue(message.contains("125000250000"));
+    }
+
+
+    @Test
+    @DisplayName("Testing Multiple ManagedThreadFactoryDefinition")
+    @RunAsClient
+    public void testMultipleForkJoin() throws MalformedURLException {
+        logger.log(Level.INFO, "Consuming service to submit multiple ForkJoin execution {0}", new Object[]{client});
+        WebTarget target = this.client.target(new URL(this.base, "annotation/multiplemanagedthreadfactory").toExternalForm());
+        String message = target.request().accept(MediaType.TEXT_PLAIN).get(String.class);
+        logger.log(Level.INFO, "Returned message {0}", new Object[]{message});
+        assertTrue(message.contains("Counting numbers total"));
+        assertTrue(message.contains("250000500000"));
     }
 
     @Test
-    @DisplayName("testing ManagedExecutor tag from EJB config")
+    @DisplayName("Testing XML config for ManagedThreadFactory")
     @RunAsClient
-    public void testManagedExecutorDefinitionFromEJBConfig() throws MalformedURLException {
-        logger.log(Level.INFO, "Consuming service to test ManagedExecutorDefinition ejb xml configuration {0}",
-                new Object[]{client});
-        WebTarget target = this.client.target(new URL(this.base, "xml/ejbconfig").toExternalForm());
+    public void testXMLManagedThreadFactory() throws MalformedURLException {
+        logger.log(Level.INFO, "Consuming service to submit xml config ManagedThreadFactory {0}", new Object[]{client});
+        WebTarget target = this.client.target(new URL(this.base, "annotation/webxmlconfig").toExternalForm());
         String message = target.request().accept(MediaType.TEXT_PLAIN).get(String.class);
         logger.log(Level.INFO, "Returned message {0}", new Object[]{message});
-        String[] data = message.split(":");
-        if (data[1] != null) {
-            int numberOfExecutions = Integer.parseInt(data[1]);
-            assertTrue(numberOfExecutions == 1);
-        }
-        assertTrue(message.contains("Executor submitted"));
+        assertTrue(message.contains("Counting numbers total"));
+        assertTrue(message.contains("125000250000"));
     }
 
 }

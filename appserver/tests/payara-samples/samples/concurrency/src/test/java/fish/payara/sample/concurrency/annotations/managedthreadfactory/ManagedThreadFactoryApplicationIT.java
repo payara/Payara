@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.sample.concurrency.annotations.managedexecutor;
+package fish.payara.sample.concurrency.annotations.managedthreadfactory;
 
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -71,9 +71,8 @@ import java.util.logging.Logger;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(ArquillianExtension.class)
-public class ManagedExecutorApplicationIT {
-
-    private final static Logger logger = Logger.getLogger(ManagedExecutorApplicationIT.class.getName());
+public class ManagedThreadFactoryApplicationIT {
+    private final static Logger logger = Logger.getLogger(ManagedThreadFactoryApplicationIT.class.getName());
 
     @ArquillianResource
     private URL base;
@@ -84,13 +83,13 @@ public class ManagedExecutorApplicationIT {
     public static Archive<?> createDeployment() {
         //Creating Jar ejb module
         JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "ejb-jar.jar")
-                .addClasses(ManagedExecutorDefinitionEJB.class, ManagedExecutorDefinitionEJBFromConfig.class)
+                .addClasses(ManagedThreadFactoryEJB.class, ManagedThreadFactoryEJBFromConfig.class)
                 .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml")
-                .addAsResource("ejb-jar.xml", "META-INF/ejb-jar.xml");
+                .addAsResource("ejb-jar2.xml", "META-INF/ejb-jar.xml");
         System.out.println(ejbJar.toString(true));
         //Creating web module
         WebArchive webWar = ShrinkWrap.create(WebArchive.class, "test.war")
-                .addClasses(ManagedExecutorDefinitionApplication.class, ManagedExecutorDefinitionEJBRest.class);
+                .addClasses(ManagedThreadFactoryApplication.class, ManagedThreadFactoryEJBRest.class);
         System.out.println(webWar.toString(true));
         //Creating EAR
         EnterpriseArchive ear = ShrinkWrap
@@ -115,37 +114,27 @@ public class ManagedExecutorApplicationIT {
     }
 
     @Test
-    @DisplayName("testing ManagedExecutor tag from Application EAR")
+    @DisplayName("testing ManagedThreadFactory tag from Application EAR")
     @RunAsClient
-    public void testManagedExecutorDefinitionFromApplicationConfig() throws MalformedURLException {
-        logger.log(Level.INFO, "Consuming service to test ManagedExecutorDefinition application xml configuration {0}",
-                new Object[]{client});
+    public void testManagedThreadFactoryFromApplicationConfig() throws MalformedURLException {
+        logger.log(Level.INFO, "Consuming service to submit xml config ManagedThreadFactory {0}", new Object[]{client});
         WebTarget target = this.client.target(new URL(this.base, "xml/application").toExternalForm());
         String message = target.request().accept(MediaType.TEXT_PLAIN).get(String.class);
         logger.log(Level.INFO, "Returned message {0}", new Object[]{message});
-        String[] data = message.split(":");
-        if (data[1] != null) {
-            int numberOfExecutions = Integer.parseInt(data[1]);
-            assertTrue(numberOfExecutions == 1);
-        }
-        assertTrue(message.contains("Executor submitted"));
+        assertTrue(message.contains("Counting numbers total"));
+        assertTrue(message.contains("125000250000"));
     }
 
     @Test
-    @DisplayName("testing ManagedExecutor tag from EJB config")
+    @DisplayName("testing ManagedThreadFactory tag from EJB config")
     @RunAsClient
-    public void testManagedExecutorDefinitionFromEJBConfig() throws MalformedURLException {
-        logger.log(Level.INFO, "Consuming service to test ManagedExecutorDefinition ejb xml configuration {0}",
-                new Object[]{client});
+    public void testManagedThreadFactoryFromEJBConfig() throws MalformedURLException {
+        logger.log(Level.INFO, "Consuming service to submit xml config ManagedThreadFactory {0}", new Object[]{client});
         WebTarget target = this.client.target(new URL(this.base, "xml/ejbconfig").toExternalForm());
         String message = target.request().accept(MediaType.TEXT_PLAIN).get(String.class);
         logger.log(Level.INFO, "Returned message {0}", new Object[]{message});
-        String[] data = message.split(":");
-        if (data[1] != null) {
-            int numberOfExecutions = Integer.parseInt(data[1]);
-            assertTrue(numberOfExecutions == 1);
-        }
-        assertTrue(message.contains("Executor submitted"));
+        assertTrue(message.contains("Counting numbers total"));
+        assertTrue(message.contains("125000250000"));
     }
 
 }

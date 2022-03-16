@@ -605,7 +605,11 @@ public class ConnectorsUtil {
                     prefixPart1 = ConnectorConstants.RESOURCE_JNDINAME_PREFIX;
                     prefixPart2 = ConnectorConstants.ADMINISTERED_OBJECT_DEFINITION_JNDINAME_PREFIX;
                     break;
-                case CDD:
+                case MEDD:
+                    prefixPart1 = ConnectorConstants.CONCURRENT_JNDINAME_PREFIX;
+                    prefixPart2 = "";
+                    break;
+                case MTFDD:
                     prefixPart1 = ConnectorConstants.CONCURRENT_JNDINAME_PREFIX;
                     prefixPart2 = "";
                     break;
