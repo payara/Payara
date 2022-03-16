@@ -81,18 +81,19 @@ public class ManagedExecutorDescriptorDeployer implements ResourceDeployer {
     private InvocationManager invocationManager;
 
     @Override
-    public void deployResource(Object resource, String applicationName, String moduleName) throws Exception {
-        //not implemented
+    public void deployResource(Object resource) throws Exception {
+        String applicationName = invocationManager.getCurrentInvocation().getAppName();
+        String moduleName = invocationManager.getCurrentInvocation().getModuleName();
+        deployResource(resource, applicationName, moduleName);
     }
 
     @Override
-    public void deployResource(Object resource) throws Exception {
+    public void deployResource(Object resource, String applicationName, String moduleName) throws Exception {
         ManagedExecutorDefinitionDescriptor managedExecutorDefinitionDescriptor = (ManagedExecutorDefinitionDescriptor) resource;
         ManagedExecutorServiceConfig managedExecutorServiceConfig =
                 new ManagedExecutorServiceConfig(new CustomManagedExecutorServiceImpl(managedExecutorDefinitionDescriptor));
-        String applicationName = invocationManager.getCurrentInvocation().getAppName();
-        String customNameOfResource = ConnectorsUtil.deriveResourceName
-                (managedExecutorDefinitionDescriptor.getResourceId(), managedExecutorDefinitionDescriptor.getName(), managedExecutorDefinitionDescriptor.getResourceType());
+        String customNameOfResource = ConnectorsUtil.deriveResourceName(
+                managedExecutorDefinitionDescriptor.getResourceId(), managedExecutorDefinitionDescriptor.getName(), managedExecutorDefinitionDescriptor.getResourceType());
         ResourceInfo resourceInfo = new ResourceInfo(customNameOfResource, applicationName, null);
         javax.naming.Reference ref = new javax.naming.Reference(
                 jakarta.enterprise.concurrent.ManagedExecutorService.class.getName(),
@@ -114,31 +115,32 @@ public class ManagedExecutorDescriptorDeployer implements ResourceDeployer {
 
     @Override
     public void undeployResource(Object resource) throws Exception {
-
+        // FIXME: implement
     }
 
     @Override
     public void undeployResource(Object resource, String applicationName, String moduleName) throws Exception {
-
+        // FIXME: implement
     }
 
     @Override
     public void redeployResource(Object resource) throws Exception {
-
+        // FIXME: implement
     }
 
     @Override
     public void enableResource(Object resource) throws Exception {
-
+        // FIXME: implement
     }
 
     @Override
     public void disableResource(Object resource) throws Exception {
-
+        // FIXME: implement
     }
 
     @Override
     public boolean handles(Object resource) {
+        // FIXME: implement
         return false;
     }
 
@@ -149,11 +151,13 @@ public class ManagedExecutorDescriptorDeployer implements ResourceDeployer {
 
     @Override
     public Class[] getProxyClassesForDynamicReconfiguration() {
+        // FIXME: implement
         return new Class[0];
     }
 
     @Override
     public boolean canDeploy(boolean postApplicationDeployment, Collection<Resource> allResources, Resource resource) {
+        // FIXME: implement
         return false;
     }
 
@@ -382,6 +386,15 @@ public class ManagedExecutorDescriptorDeployer implements ResourceDeployer {
         @Override
         public String getPropertyValue(String name, String defaultValue) {
             return null;
+        }
+
+        @Override
+        public String getContext() {
+            return managedExecutorDefinitionDescriptor.getContext();
+        }
+
+        @Override
+        public void setContext(String value) throws PropertyVetoException {
         }
     }
 }

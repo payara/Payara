@@ -46,14 +46,17 @@ import com.sun.enterprise.deployment.annotation.context.ResourceContainerContext
 import com.sun.enterprise.deployment.annotation.handlers.AbstractResourceHandler;
 import jakarta.enterprise.concurrent.ContextServiceDefinition;
 import jakarta.inject.Inject;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
 import org.glassfish.concurrent.runtime.ConcurrentRuntime;
+import org.glassfish.concurrent.runtime.ContextSetupProviderImpl;
 import org.glassfish.concurrent.runtime.deployer.ContextServiceConfig;
 import org.glassfish.config.support.TranslatedConfigView;
 import org.glassfish.deployment.common.JavaEEResourceType;
@@ -86,35 +89,61 @@ public class ContextServiceDefinitionHandler extends AbstractResourceHandler {
     }
 
     public void processSingleAnnotation(ContextServiceDefinition contextServiceDefinition, ResourceContainerContext[] resourceContainerContexts) {
-        //        AnnotatedElement annotatedElement = annotationInfo.getAnnotatedElement();
-        //        logger.log(Level.INFO, "Trying to create custom context service by annotation");
+        logger.log(Level.INFO, "Creating custom context service by annotation");
 //        String allContexts = Stream.of(ConcurrentRuntime.CONTEXT_INFO_CLASSLOADER,
 //                ConcurrentRuntime.CONTEXT_INFO_JNDI, ConcurrentRuntime.CONTEXT_INFO_SECURITY,
 //                ConcurrentRuntime.CONTEXT_INFO_WORKAREA).collect(Collectors.joining(", "));
-        String allContexts = null;
+        ContextServiceDefinitionDescriptor csdd = createDescriptor(contextServiceDefinition);
+        String propageContexts = collectContextsToPropagate(csdd.getPropagated())
+                .stream().collect(Collectors.joining(", "));
         ContextServiceConfig contextServiceConfig = new ContextServiceConfig(contextServiceDefinition.name(),
-                allContexts,
-                "true");
+                propageContexts,
+                "true",
+                collectContextsToPropagate(csdd.getPropagated()),
+                collectContextsToPropagate(csdd.getCleared()),
+                collectContextsToPropagate(csdd.getUnchanged()));
+        // FIXME: check, if context names are not in multiple lists
         ConcurrentRuntime concurrentRuntime = ConcurrentRuntime.getRuntime();
         // create a context service
         //        ContextServiceImpl managedExecutorServiceImpl =
         concurrentRuntime.getContextService(null, contextServiceConfig);
 
         // add to contexts
-        ContextServiceDefinitionDescriptor cdd = createDescriptor(contextServiceDefinition);
         for (ResourceContainerContext context : resourceContainerContexts) {
             Set<ResourceDescriptor> csddes = context.getResourceDescriptors(JavaEEResourceType.CSDD);
-            csddes.add(cdd);
+            csddes.add(csdd);
         }
     }
 
     public ContextServiceDefinitionDescriptor createDescriptor(ContextServiceDefinition contectServiceDefinition) {
+        // FIXME: solve multiple values, ALLREMAINING
         ContextServiceDefinitionDescriptor csdd = new ContextServiceDefinitionDescriptor();
         csdd.setDescription("Context Service Definition");
         csdd.setName(TranslatedConfigView.expandValue(contectServiceDefinition.name()));
-//        csdd.setPropagated(Stream.of(contectServiceDefinition.propagated()).map(x -> TranslatedConfigView.expandValue(x)).toArray(String[]::new));
-//        csdd.setCleared(Stream.of(contectServiceDefinition.cleared()).map(x -> TranslatedConfigView.expandValue(x)).toArray(String[]::new));
-//        csdd.setUnchanged(Stream.of(contectServiceDefinition.unchanged()).map(x -> TranslatedConfigView.expandValue(x)).toArray(String[]::new));
+        csdd.setPropagated(Set.of(contectServiceDefinition.propagated()));
+        csdd.setCleared(Set.of(contectServiceDefinition.cleared()));
+        csdd.setUnchanged(Set.of(contectServiceDefinition.unchanged()));
         return csdd;
+    }
+
+    private Set<String> collectContextsToPropagate(Set<String> definitions) {
+        Set<String> contexts = new HashSet<>();
+        Set<String> unusedDefinitions = new HashSet<>(definitions);
+        if (unusedDefinitions.contains(ContextServiceDefinition.TRANSACTION)) {
+            contexts.add(ContextSetupProviderImpl.CONTEXT_TYPE_WORKAREA);
+            unusedDefinitions.remove(ContextServiceDefinition.TRANSACTION);
+        }
+        if (unusedDefinitions.contains(ContextServiceDefinition.SECURITY)) {
+            contexts.add(ContextSetupProviderImpl.CONTEXT_TYPE_SECURITY);
+            unusedDefinitions.remove(ContextServiceDefinition.SECURITY);
+        }
+        if (unusedDefinitions.contains(ContextServiceDefinition.APPLICATION)) {
+            contexts.add(ContextSetupProviderImpl.CONTEXT_TYPE_CLASSLOADING);
+            contexts.add(ContextSetupProviderImpl.CONTEXT_TYPE_NAMING);
+            unusedDefinitions.remove(ContextServiceDefinition.APPLICATION);
+        }
+        // add all the remaining, custom definitions
+        contexts.addAll(unusedDefinitions);
+        return contexts;
     }
 }

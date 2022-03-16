@@ -51,6 +51,7 @@ public class ManagedExecutorDefinitionDescriptor extends ResourceDescriptor {
     private String name;
     private int maximumPoolSize = -1;
     private long hungAfterSeconds = -1;
+    private String context;
     private String contextInfo;
     private Properties properties = new Properties();
 
@@ -82,6 +83,14 @@ public class ManagedExecutorDefinitionDescriptor extends ResourceDescriptor {
 
     public void setHungAfterSeconds(long hungAfterSeconds) {
         this.hungAfterSeconds = hungAfterSeconds;
+    }
+
+    public String getContext() {
+        return context;
+    }
+
+    public void setContext(String context) {
+        this.context = context;
     }
 
     public String getContextInfo() {

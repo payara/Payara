@@ -83,18 +83,22 @@ public class ContextServiceDefinitionDescriptorDeployer implements ResourceDeplo
     ConcurrentRuntime concurrentRuntime;
 
     @Override
-    public void deployResource(Object resource, String applicationName, String moduleName) throws Exception {
-        //not implemented
+    public void deployResource(Object resource) throws Exception {
+        String applicationName = invocationManager.getCurrentInvocation().getAppName();
+        String moduleName = invocationManager.getCurrentInvocation().getModuleName();
+        deployResource(resource, applicationName, moduleName);
     }
 
     @Override
-    public void deployResource(Object resource) throws Exception {
-        ContextServiceDefinitionDescriptor concurrentDefinitionDescriptor = (ContextServiceDefinitionDescriptor) resource;
-        ContextServiceConfig contextServiceConfig
-                = new ContextServiceConfig(concurrentDefinitionDescriptor.getName(), null, "true");
-        String applicationName = invocationManager.getCurrentInvocation().getAppName();
-        String customNameOfResource = ConnectorsUtil.deriveResourceName(concurrentDefinitionDescriptor.getResourceId(), concurrentDefinitionDescriptor.getName(), concurrentDefinitionDescriptor.getResourceType());
-        ResourceInfo resourceInfo = new ResourceInfo(customNameOfResource, applicationName, null);
+    public void deployResource(Object resource, String applicationName, String moduleName) throws Exception {
+        ContextServiceDefinitionDescriptor descriptor = (ContextServiceDefinitionDescriptor) resource;
+        ContextServiceConfig contextServiceConfig = new ContextServiceConfig(
+                descriptor.getName(), null, "true",
+                descriptor.getPropagated(),
+                descriptor.getUnchanged(),
+                descriptor.getCleared());
+        String customNameOfResource = ConnectorsUtil.deriveResourceName(descriptor.getResourceId(), descriptor.getName(), descriptor.getResourceType());
+        ResourceInfo resourceInfo = new ResourceInfo(customNameOfResource, applicationName, moduleName);
         javax.naming.Reference ref = new javax.naming.Reference(
                 jakarta.enterprise.concurrent.ContextServiceDefinition.class.getName(),
                 "org.glassfish.concurrent.runtime.deployer.ConcurrentObjectFactory",
@@ -115,10 +119,10 @@ public class ContextServiceDefinitionDescriptorDeployer implements ResourceDeplo
 
     @Override
     public void undeployResource(Object resource) throws Exception {
+        String applicationName = invocationManager.getCurrentInvocation().getAppName();
+        String moduleName = invocationManager.getCurrentInvocation().getModuleName();
         ContextServiceDefinitionDescriptor concurrentDefinitionDescriptor = (ContextServiceDefinitionDescriptor) resource;
-        throw new UnsupportedOperationException("undeployResource not supported yet.");
-//        ResourceInfo resourceInfo = ResourceUtil.getResourceInfo(concurrentDefinitionDescriptor);
-//        undeployResource(resource, resourceInfo.getApplicationName(), resourceInfo.getModuleName());
+        undeployResource(resource, applicationName, moduleName);
     }
 
     @Override

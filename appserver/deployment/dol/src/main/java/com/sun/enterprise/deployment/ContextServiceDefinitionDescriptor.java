@@ -39,17 +39,80 @@
  */
 package com.sun.enterprise.deployment;
 
+import java.util.Objects;
+import java.util.Set;
 import org.glassfish.deployment.common.JavaEEResourceType;
 
 /**
  * Deployment information for context service.
  *
- * @author Petr Aubrecht <petr@aubrecht.net>
+ * @author Petr Aubrecht <aubrecht@asoftware.cz>
  */
 public class ContextServiceDefinitionDescriptor extends ResourceDescriptor {
+
+    private String name;
+    private Set<String> cleared;
+    private Set<String> propagated;
+    private Set<String> unchanged;
+
     public ContextServiceDefinitionDescriptor() {
         super.setResourceType(JavaEEResourceType.CSDD);
     }
 
-    // TODO: add parameters
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 73 * hash + Objects.hashCode(this.name);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+        final ContextServiceDefinitionDescriptor other = (ContextServiceDefinitionDescriptor) obj;
+        return Objects.equals(this.name, other.name);
+    }
+
+    @Override
+    public String toString() {
+        return "ContextServiceDefinitionDescriptor{" + "name=" + name + ", cleared=" + cleared + ", propagated=" + propagated + ", unchanged=" + unchanged + '}';
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Set<String> getCleared() {
+        return cleared;
+    }
+
+    public void setCleared(Set<String> cleared) {
+        this.cleared = cleared;
+    }
+
+    public Set<String> getPropagated() {
+        return propagated;
+    }
+
+    public void setPropagated(Set<String> propagated) {
+        this.propagated = propagated;
+    }
+
+    public Set<String> getUnchanged() {
+        return unchanged;
+    }
+
+    public void setUnchanged(Set<String> unchanged) {
+        this.unchanged = unchanged;
+    }
+
 }

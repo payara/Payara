@@ -41,6 +41,8 @@
 
 package org.glassfish.concurrent.runtime.deployer;
 
+import java.util.HashSet;
+import java.util.Set;
 import org.glassfish.concurrent.config.ContextService;
 
 /**
@@ -48,15 +50,39 @@ import org.glassfish.concurrent.config.ContextService;
  */
 public class ContextServiceConfig extends BaseConfig {
 
+    private Set<String> propagatedContexts = new HashSet<>();
+    private Set<String> clearedContexts = new HashSet<>();
+    private Set<String> uchangedContexts = new HashSet<>();
+
+    public ContextServiceConfig(String jndiName) {
+        super(jndiName, null, "true");
+    }
+
     public ContextServiceConfig(ContextService config) {
         super(config.getJndiName(), config.getContextInfo(), config.getContextInfoEnabled());
     }
 
-    public ContextServiceConfig(String jndiName, String contextInfo, String contextInfoEnabled) {
+    public ContextServiceConfig(String jndiName, String contextInfo, String contextInfoEnabled, Set<String> propagatedContexts, Set<String> clearedContexts, Set<String> uchangedContexts) {
         super(jndiName, contextInfo, contextInfoEnabled);
+        this.propagatedContexts = propagatedContexts;
+        this.clearedContexts = clearedContexts;
+        this.uchangedContexts = uchangedContexts;
     }
 
     public TYPE getType() {
         return TYPE.CONTEXT_SERVICE;
     }
+
+    public Set<String> getPropagatedContexts() {
+        return propagatedContexts;
+    }
+
+    public Set<String> getClearedContexts() {
+        return clearedContexts;
+    }
+
+    public Set<String> getUchangedContexts() {
+        return uchangedContexts;
+    }
+
 }
