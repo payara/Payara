@@ -1710,7 +1710,7 @@ public class WebModule extends PwcWebModule implements Context {
 
     @Override
     public void declareRoles(String... roleNames) {
-        super.declareRoles(roleNames);
+        getServletContext().declareRoles(roleNames);
         WebBundleDescriptor bundleDescriptor = getWebBundleDescriptor();
 
         for (String roleName : roleNames) {
