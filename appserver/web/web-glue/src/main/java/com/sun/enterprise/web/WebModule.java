@@ -1909,27 +1909,3 @@ public class WebModule extends PwcWebModule implements Context {
         return app != null? app.getUniqueId() : 0L;
     }
 }
-
-class V3WebappLoader extends WebappLoader {
-
-    final ClassLoader cl;
-
-    V3WebappLoader(ClassLoader cl) {
-        this.cl = cl;
-    }
-
-    @Override
-    protected ClassLoader createClassLoader() throws Exception {
-        return cl;
-    }
-
-    /**
-     * Stops the nested classloader
-     */
-    @Override
-    public void stopNestedClassLoader() {
-        // Do nothing. The nested (Webapp)ClassLoader is stopped in
-        // WebApplication.stop()
-    }
-
-}
