@@ -1258,14 +1258,14 @@ public class WebModule extends PwcWebModule implements Context {
         //web.xml setting has precedence if it exists
         //ignore if the value is the 30 min default
         if (webXmlTimeoutSeconds != -1 && webXmlTimeoutSeconds != 1800) {
-            getManager().setMaxInactiveIntervalSeconds(webXmlTimeoutSeconds);
+            setSessionTimeout(webXmlTimeoutSeconds);
         } else {
             /*
              * Do not override Tomcat default, unless 'timeoutSeconds' was
              * specified in sun-web.xml
              */
             if (timeoutConfigured) {
-                getManager().setMaxInactiveIntervalSeconds(timeoutSeconds);
+                setSessionTimeout(webXmlTimeoutSeconds);
             }
         }
     }
