@@ -41,8 +41,10 @@
 package com.sun.enterprise.web.deploy;
 
 import com.sun.enterprise.deployment.web.LoginConfiguration;
-import org.apache.catalina.deploy.LoginConfig;
-import org.apache.catalina.util.RequestUtil;
+import org.apache.tomcat.util.buf.UDecoder;
+import org.apache.tomcat.util.descriptor.web.LoginConfig;
+
+import java.nio.charset.StandardCharsets;
 
 /**
  * Decorator of class <code>org.apache.catalina.deploy.LoginConfig</code>
@@ -64,13 +66,13 @@ public class LoginConfigDecorator extends LoginConfig {
     public LoginConfigDecorator(LoginConfiguration decoree){
         this.decoree = decoree;
         
-        String errorPage = RequestUtil.urlDecode(decoree.getFormErrorPage());
+        String errorPage = UDecoder.URLDecode(decoree.getFormErrorPage(), StandardCharsets.UTF_8);
         if (!errorPage.startsWith("/")){
             errorPage = "/" + errorPage;
         }
         setErrorPage(errorPage);
         
-        String loginPage = RequestUtil.urlDecode(decoree.getFormLoginPage());
+        String loginPage = UDecoder.URLDecode(decoree.getFormLoginPage(), StandardCharsets.UTF_8);
         if (!loginPage.startsWith("/")){
             loginPage = "/" + loginPage;
         }     
