@@ -1242,8 +1242,6 @@ public class WebModule extends PwcWebModule implements Context {
                     }
                 } else if("enableCookies".equalsIgnoreCase(name)) {
                     setCookies(ConfigBeansUtilities.toBoolean(value));
-                } else if("enableURLRewriting".equalsIgnoreCase(name)) {
-                    setEnableURLRewriting(ConfigBeansUtilities.toBoolean(value));
                 } else {
                     if (logger.isLoggable(Level.INFO)) {
                         logger.log(Level.INFO, LogFacade.PROP_NOT_YET_SUPPORTED, name);
