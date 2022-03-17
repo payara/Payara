@@ -56,7 +56,6 @@ import com.sun.enterprise.deployment.web.ServletFilterMapping;
 import com.sun.enterprise.deployment.web.UserDataConstraint;
 import com.sun.enterprise.deployment.web.WebResourceCollection;
 import com.sun.enterprise.security.integration.RealmInitializer;
-import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.web.deploy.LoginConfigDecorator;
 import com.sun.enterprise.web.pwc.PwcWebModule;
 import com.sun.enterprise.web.session.PersistenceType;
@@ -81,12 +80,10 @@ import org.apache.catalina.Container;
 import org.apache.catalina.ContainerListener;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleListener;
-import org.apache.catalina.Loader;
 import org.apache.catalina.Realm;
 import org.apache.catalina.Valve;
 import org.apache.catalina.loader.WebappLoader;
 import org.apache.catalina.servlets.DefaultServlet;
-import org.apache.catalina.session.StandardManager;
 import org.apache.jasper.servlet.JspServlet;
 import org.apache.tomcat.util.descriptor.web.FilterMap;
 import org.glassfish.api.deployment.DeploymentContext;
@@ -122,9 +119,6 @@ import org.glassfish.web.deployment.runtime.WebPropertyContainer;
 import org.glassfish.web.loader.ServletContainerInitializerUtil;
 import org.jvnet.hk2.config.types.Property;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
@@ -140,7 +134,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.Vector;
@@ -151,11 +144,6 @@ import static com.sun.enterprise.security.ee.SecurityUtil.getContextID;
 import static com.sun.enterprise.web.Constants.DEPLOYMENT_CONTEXT_ATTRIBUTE;
 import static com.sun.enterprise.web.Constants.ENABLE_HA_ATTRIBUTE;
 import static com.sun.enterprise.web.Constants.IS_DISTRIBUTABLE_ATTRIBUTE;
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.text.MessageFormat.format;
-import static java.util.logging.Level.WARNING;
-import static org.glassfish.web.LogFacade.UNABLE_TO_RESTORE_SESSIONS_DURING_REDEPLOY;
-import static org.glassfish.web.LogFacade.UNABLE_TO_SAVE_SESSIONS_DURING_REDEPLOY;
 
 /**
  * Class representing a web module for use by the Application Server.
@@ -1155,60 +1143,6 @@ public class WebModule extends PwcWebModule implements Context {
 
         } else {
             setHasWebServices(false);
-        }
-    }
-
-    /**
-     * Saves all active sessions to the given deployment context, so they
-     * can be restored following a redeployment.
-     *
-     * @param props the deployment context properties to which to save the
-     * sessions
-     */
-    void saveSessions(Properties props) {
-        if (props == null) {
-            return;
-        }
-
-        StandardManager manager = (StandardManager) getManager();
-        if (manager == null) {
-            return;
-        }
-
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try {
-            manager.writeSessions(baos, false);
-            props.setProperty(getObjectName(), new String(encoder.encode(baos.toByteArray()), UTF_8));
-        } catch (Exception ex) {
-            logger.log(WARNING, format(rb.getString(UNABLE_TO_SAVE_SESSIONS_DURING_REDEPLOY), getName()), ex);
-        }
-    }
-
-    /**
-     * Loads any sessions that were stored in the given deployment context
-     * prior to a redeployment of this web module.
-     *
-     * @param deploymentProperties the deployment context properties from
-     * which to load the sessions
-     */
-    void loadSessions(Properties deploymentProperties) {
-        if (deploymentProperties == null) {
-            return;
-        }
-
-        StandardManager manager = (StandardManager) getManager();
-        if (manager == null) {
-            return;
-        }
-
-        String sessions = deploymentProperties.getProperty(getObjectName());
-        if (sessions != null) {
-            try {
-                manager.readSessions(new ByteArrayInputStream(decoder.decode(sessions)));
-            } catch (Exception ex) {
-                logger.log(WARNING, format(rb.getString(UNABLE_TO_RESTORE_SESSIONS_DURING_REDEPLOY), getName()), ex);
-            }
-            deploymentProperties.remove(getObjectName());
         }
     }
 

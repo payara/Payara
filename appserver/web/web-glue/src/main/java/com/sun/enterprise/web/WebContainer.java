@@ -1821,8 +1821,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
 
         virtualServer.addChild(webModule);
 
-        webModule.loadSessions(deploymentProperties);
-
         return webModule;
     }
 
@@ -1999,7 +1997,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
             if (unloadFromAll || hostList.contains(host.getName()) || verifyAlias(hostList, host)) {
                 context = (WebModule) host.findChild(contextRoot);
                 if (context != null && context.getWebBundleDescriptor().getApplication().getRegistrationName().equals(appName)) {
-                    context.saveSessions(props);
                     host.removeChild(context);
 
                     webStatsProviderBootstrap.unregisterApplicationStatsProviders(context.getMonitoringNodeName(), host.getName());
