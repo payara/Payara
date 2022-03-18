@@ -39,7 +39,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright [2017-2021] Payara Foundation and/or affiliates
+    Portions Copyright [2017-2022] Payara Foundation and/or affiliates
 -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
@@ -128,6 +128,7 @@
         <maven.javadoc.plugin.version>3.1.1</maven.javadoc.plugin.version>
         <maven.install.plugin.version>3.0.0-M1</maven.install.plugin.version>
         <maven.bundle.plugin.version>4.1.0</maven.bundle.plugin.version>
+        <maven.failsafe.plugin.version>3.0.0-M5</maven.failsafe.plugin.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
