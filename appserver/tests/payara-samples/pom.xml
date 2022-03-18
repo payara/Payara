@@ -531,7 +531,7 @@
                 </plugin>
                 <plugin>
                     <artifactId>maven-failsafe-plugin</artifactId>
-                    <version>3.0.0-M5</version>
+                    <version>${maven.failsafe.plugin.version}</version>
                     <executions>
                         <execution>
                             <goals>
