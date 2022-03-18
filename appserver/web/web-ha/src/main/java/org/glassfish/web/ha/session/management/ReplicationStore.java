@@ -50,6 +50,7 @@ package org.glassfish.web.ha.session.management;
 
 import com.sun.appserv.util.cache.BaseCache;
 import com.sun.enterprise.container.common.spi.util.JavaEEIOUtils;
+import com.sun.enterprise.web.WebModule;
 import org.apache.catalina.Container;
 import org.apache.catalina.Session;
 import org.apache.catalina.LifecycleException;
@@ -513,8 +514,8 @@ public class ReplicationStore extends HAStoreBase {
     protected long getUniqueId() {
         long uniqueId = 0L;
         Container container = this.manager.getContainer();
-        if (container instanceof StandardContext) {
-            StandardContext ctx = (StandardContext) container;
+        if (container instanceof WebModule) {
+            WebModule ctx = (WebModule) container;
             uniqueId = ctx.getUniqueId();
         }
         return uniqueId;
