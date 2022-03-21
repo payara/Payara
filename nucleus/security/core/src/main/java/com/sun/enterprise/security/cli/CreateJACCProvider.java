@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  * 
- * Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+ * Portions Copyright [2018-2022] [Payara Foundation and/or its affiliates]
  */
 
 package com.sun.enterprise.security.cli;
@@ -85,7 +85,6 @@ import org.jvnet.hk2.config.types.Property;
  *
  * domain.xml element example
  *   <jacc-provider policy-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyProvider" name="default" policy-configuration-factory-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyConfigurationFactory">
- *         <property name="repository" value="${com.sun.aas.instanceRoot}/generated/policy" />
  *   </jacc-provider>
  *
  */

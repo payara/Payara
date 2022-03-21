@@ -41,7 +41,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2019-2021] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2019-2022] [Payara Foundation and/or its affiliates] -->
 
 <!-- Generated from default-domain.xml.template -->
 <!-- Avoid manual edits of this file. Run "asadmin verify-domain-xml" otherwise.-->
@@ -172,9 +172,7 @@
         </auth-realm>
         <auth-realm classname="com.sun.enterprise.security.auth.realm.certificate.CertificateRealm" name="certificate">
     </auth-realm>
-        <jacc-provider name="default" policy-configuration-factory-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyConfigurationFactory" policy-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyProvider">
-          <property name="repository" value="${com.sun.aas.instanceRoot}/generated/policy"/>
-        </jacc-provider>
+        <jacc-provider name="default" policy-configuration-factory-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyConfigurationFactory" policy-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyProvider"></jacc-provider>
         <audit-module classname="com.sun.enterprise.security.ee.Audit" name="default">
           <property name="auditOn" value="false"/>
         </audit-module>

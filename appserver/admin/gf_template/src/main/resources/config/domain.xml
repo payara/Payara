@@ -147,10 +147,7 @@
                 <auth-realm classname="com.sun.enterprise.security.auth.realm.certificate.CertificateRealm" name="certificate">
                     <property value="true" name="certificate-validation"/>
                 </auth-realm>
-                <jacc-provider policy-configuration-factory-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyConfigurationFactory" policy-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyProvider" name="default">
-                    <property value="${com.sun.aas.instanceRoot}/generated/policy" name="repository" />
-                </jacc-provider>
-                <jacc-provider policy-configuration-factory-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyConfigurationFactory" policy-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyProvider" name="simple" />
+                <jacc-provider policy-configuration-factory-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyConfigurationFactory" policy-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyProvider" name="default"></jacc-provider>
                 <audit-module classname="com.sun.enterprise.security.ee.Audit" name="default">
                     <property value="false" name="auditOn" />
                 </audit-module>
@@ -373,10 +370,7 @@
                 <auth-realm classname="com.sun.enterprise.security.auth.realm.certificate.CertificateRealm" name="certificate">
                     <property name="certificate-validation" value="true" />
                 </auth-realm>
-                <jacc-provider policy-configuration-factory-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyConfigurationFactory" policy-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyProvider" name="default">
-                    <property name="repository" value="${com.sun.aas.instanceRoot}/generated/policy" />
-                </jacc-provider>
-                <jacc-provider policy-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyProvider" name="simple" policy-configuration-factory-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyConfigurationFactory" />
+                <jacc-provider policy-configuration-factory-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyConfigurationFactory" policy-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyProvider" name="default"></jacc-provider>
                 <audit-module classname="com.sun.enterprise.security.ee.Audit" name="default">
                     <property value="false" name="auditOn" />
                 </audit-module>
