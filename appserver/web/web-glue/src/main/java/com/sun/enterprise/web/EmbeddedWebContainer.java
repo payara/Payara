@@ -267,7 +267,7 @@ public final class EmbeddedWebContainer extends Tomcat implements PostConstruct 
             config = new ContextConfig();
         }
 
-        config.setDefaultContextXml(defaultContextXmlLocation);
+        context.setDefaultContextXml(defaultContextXmlLocation);
         config.setDefaultWebXml(defaultWebXmlLocation);
         context.addLifecycleListener(config);
 
