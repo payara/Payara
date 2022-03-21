@@ -1577,4 +1577,11 @@ public class LogFacade {
             message = "Exception creating Listener Instance: {0}",
             level = "SEVERE")
     public static final String EXCEPTION_CREATING_LISTENER_INSTANCE = PREFIX + "00288";
+
+    @LogMessageInfo(
+            message = "Unable to create absolute URL of Catalina config file {0}",
+            level = "WARNING",
+            cause = "An exception occurred during creation of absolute URL of Catalina config file {0}",
+            action = "Check the Exception for error")
+    public static final String EXCEPTION_CREATING_CATALINA_CONFIG_FILE_ABSOLUTE_URL = PREFIX + "00289";
 }

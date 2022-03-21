@@ -45,6 +45,7 @@ import com.sun.enterprise.container.common.spi.util.InjectionManager;
 import com.sun.enterprise.web.logger.FileLoggerHandlerFactory;
 import com.sun.enterprise.web.pluggable.WebContainerFeatureFactory;
 import java.io.File;
+import java.net.MalformedURLException;
 import java.text.MessageFormat;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -54,8 +55,8 @@ import com.sun.web.server.WebContainerListener;
 import org.apache.catalina.*;
 import org.apache.catalina.core.StandardEngine;
 import org.apache.catalina.startup.Bootstrap;
-import org.apache.catalina.startup.Catalina;
 import org.apache.catalina.startup.ContextConfig;
+import org.apache.catalina.startup.Tomcat;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.api.naming.NamedNamingObjectProxy;
 import org.glassfish.hk2.api.PostConstruct;
@@ -71,7 +72,7 @@ import org.glassfish.hk2.api.ServiceLocator;
 
 @Service(name="com.sun.enterprise.web.EmbeddedWebContainer")
 @Singleton
-public final class EmbeddedWebContainer extends Catalina implements PostConstruct {
+public final class EmbeddedWebContainer extends Tomcat implements PostConstruct {
 
     public static final Logger logger = LogFacade.getLogger();
 
@@ -195,7 +196,7 @@ public final class EmbeddedWebContainer extends Catalina implements PostConstruc
         context.setPath(ctxPath);
         context.setDocBase(location.getAbsolutePath());
         context.setCrossContext(true);
-        context.setUseNaming(isUseNaming());
+        context.setUseNaming(false);
         context.setHasWebXml(wmInfo.getDescriptor() != null);
         context.setWebBundleDescriptor(wmInfo.getDescriptor());
         context.setServerContext(serverContext);
@@ -203,7 +204,14 @@ public final class EmbeddedWebContainer extends Catalina implements PostConstruc
         context.setDefaultWebXml(defaultWebXmlLocation);
 
         if (configFile.exists()) {
-            context.setConfigFile(configFile.getAbsolutePath());
+            try {
+                context.setConfigFile(configFile.getAbsoluteFile().toURI().toURL());
+            } catch (MalformedURLException malformedURLException) {
+                String msg = logger.getResourceBundle().getString(
+                        LogFacade.EXCEPTION_CREATING_CATALINA_CONFIG_FILE_ABSOLUTE_URL);
+                msg = MessageFormat.format(msg, configFile);
+                logger.log(Level.WARNING, msg);
+            }
         }
 
         addLifecycleListeners(context, defaultContextXmlLocation, defaultWebXmlLocation, useDOLforDeployment, wmInfo);
