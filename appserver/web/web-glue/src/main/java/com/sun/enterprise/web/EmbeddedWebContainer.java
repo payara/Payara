@@ -54,6 +54,7 @@ import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import com.sun.web.server.WebContainerListener;
 import org.apache.catalina.*;
+import org.apache.catalina.connector.Connector;
 import org.apache.catalina.core.StandardEngine;
 import org.apache.catalina.startup.Bootstrap;
 import org.apache.catalina.startup.ContextConfig;
@@ -291,15 +292,6 @@ public final class EmbeddedWebContainer extends Tomcat implements PostConstruct 
         }
         return null;
     }
-    
-   
-    /**
-     * Return the list of engines created (from Embedded API)
-     */
-    @Override
-    public Engine[] getEngines() {
-        return engines;
-    }
 
     /**
      * Returns the list of Connector objects associated with this 
@@ -309,7 +301,7 @@ public final class EmbeddedWebContainer extends Tomcat implements PostConstruct 
      * EmbeddedWebContainer
      */
     public Connector[] getConnectors() {
-        return connectors;
+        return getService().findConnectors();
     }
 
 
