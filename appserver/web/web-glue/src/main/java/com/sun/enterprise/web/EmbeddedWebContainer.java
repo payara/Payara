@@ -47,6 +47,7 @@ import com.sun.enterprise.web.pluggable.WebContainerFeatureFactory;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jakarta.inject.Inject;
@@ -246,7 +247,8 @@ public final class EmbeddedWebContainer extends Tomcat implements PostConstruct 
 
         context.setWebModuleConfig(wmInfo);
         context.setWebBundleDescriptor(wmInfo.getDescriptor());
-        context.removeLifecycleListeners();
+        Arrays.stream(context.findLifecycleListeners()).forEach(
+                lifecycleListener -> context.removeLifecycleListener(lifecycleListener));
         addLifecycleListeners(context, defaultContextXmlLocation, defaultWebXmlLocation, useDOLforDeployment, wmInfo);
     }
 
