@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2019-2022] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.appclient;
 
 import com.sun.enterprise.security.ee.J2EESecurityManager;
@@ -197,7 +197,6 @@ public class AppClientSecurityInfoImpl implements AppClientSecurityInfo {
         appSSL.setSsl2Enabled(ssl.isSsl2Enabled());
         appSSL.setSsl3Enabled(ssl.isSsl3Enabled());
         appSSL.setSsl3TlsCiphers(ssl.getSsl3TlsCiphers());
-        appSSL.setTlsEnabled(ssl.isTlsEnabled());
         appSSL.setTlsRollbackEnabled(ssl.isTlsRollbackEnabled());
         
         return appSSL;

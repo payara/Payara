@@ -37,35 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
 package org.glassfish.grizzly.config;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import jakarta.inject.Provider;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLServerSocketFactory;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.grizzly.config.dom.Protocol;
 import org.glassfish.grizzly.config.dom.Ssl;
-import static org.glassfish.grizzly.config.dom.Ssl.SSL2;
-import static org.glassfish.grizzly.config.dom.Ssl.SSL2_HELLO;
-import static org.glassfish.grizzly.config.dom.Ssl.SSL3;
-import static org.glassfish.grizzly.config.dom.Ssl.TLS1;
-import static org.glassfish.grizzly.config.dom.Ssl.TLS11;
-import static org.glassfish.grizzly.config.dom.Ssl.TLS12;
-import static org.glassfish.grizzly.config.dom.Ssl.TLS13;
 import org.glassfish.grizzly.config.ssl.SSLImplementation;
 import org.glassfish.grizzly.config.ssl.ServerSocketFactory;
 import org.glassfish.grizzly.localization.LogMessages;
@@ -73,6 +51,17 @@ import org.glassfish.grizzly.ssl.SSLContextConfigurator;
 import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
 import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLServerSocketFactory;
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static org.glassfish.grizzly.config.dom.Ssl.*;
 
 /**
  * @author oleksiys
@@ -191,20 +180,13 @@ public class SSLConfigurator extends SSLEngineConfigurator {
                 if (Boolean.parseBoolean(ssl.getSsl3Enabled())) {
                     tmpSSLArtifactsList.add(SSL3);
                 }
-                if (Boolean.parseBoolean(ssl.getTlsEnabled())) {
-                    tmpSSLArtifactsList.add(TLS1);
-                }
-                if (Boolean.parseBoolean(ssl.getTls11Enabled())) {
-                    tmpSSLArtifactsList.add(TLS11);
-                }
                 if (Boolean.parseBoolean(ssl.getTls12Enabled())) {
                     tmpSSLArtifactsList.add(TLS12);
                 }
                 if (Boolean.parseBoolean(ssl.getTls13Enabled())) {
                     tmpSSLArtifactsList.add(TLS13);
                 }
-                if (Boolean.parseBoolean(ssl.getSsl3Enabled())
-                        || Boolean.parseBoolean(ssl.getTlsEnabled())) {
+                if (Boolean.parseBoolean(ssl.getSsl3Enabled())) {
                     tmpSSLArtifactsList.add(SSL2_HELLO);
                 }
                 if (tmpSSLArtifactsList.isEmpty()) {

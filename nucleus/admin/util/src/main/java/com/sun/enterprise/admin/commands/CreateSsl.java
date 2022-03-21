@@ -37,11 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara FOundatin and/or affiliates
+// Portions Copyright [2018-2022] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.commands;
-
-import java.beans.PropertyVetoException;
 
 import com.sun.enterprise.config.serverbeans.AdminService;
 import com.sun.enterprise.config.serverbeans.Config;
@@ -49,28 +47,24 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.JmxConnector;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
-import org.glassfish.grizzly.config.dom.NetworkConfig;
-import org.glassfish.grizzly.config.dom.Protocol;
-import org.glassfish.grizzly.config.dom.Protocols;
-import org.glassfish.grizzly.config.dom.Ssl;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
-import org.glassfish.grizzly.config.dom.NetworkListener;
-import org.glassfish.internal.api.Target;
-
-import org.jvnet.hk2.annotations.Service;
+import org.glassfish.grizzly.config.dom.*;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.Target;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 
-import jakarta.inject.Inject;
-import jakarta.inject.Named;
+import java.beans.PropertyVetoException;
 
 /**
  * Create Ssl Command
@@ -131,8 +125,6 @@ public class CreateSsl implements AdminCommand {
     Boolean ssl3Enabled;
     @Param(name = "ssl3TlsCiphers", optional = true)
     String ssl3tlsciphers;
-    @Param(name = "tlsEnabled", optional = true, defaultValue = Ssl.TLS_ENABLED + "")
-    Boolean tlsenabled;
     @Param(name = "tlsRollbackEnabled", optional = true, defaultValue = Ssl.TLS_ROLLBACK_ENABLED + "")
     Boolean tlsrollbackenabled;
     @Param(name = "clientAuthEnabled", optional = true, defaultValue = Ssl.CLIENT_AUTH_ENABLED + "")
@@ -197,7 +189,6 @@ public class CreateSsl implements AdminCommand {
         newSsl.setSsl3Enabled(ssl3Enabled.toString());
         newSsl.setSsl3TlsCiphers(ssl3tlsciphers);
         newSsl.setClassname(GF_SSL_IMPL_NAME);
-        newSsl.setTlsEnabled(tlsenabled.toString());
         newSsl.setTlsRollbackEnabled(tlsrollbackenabled.toString());
     }
 

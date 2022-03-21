@@ -38,7 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright [2017-2018] Payara Foundation and/or affiliates
+    Portions Copyright [2017-2022] Payara Foundation and/or affiliates
 -->
 
 <!-- sslPrepare.inc  -->
@@ -61,8 +61,6 @@ if (! #{requestScope.exist}){
       -->
     createMap(result="#{pageSession.valueMap}");
     mapPut(map="#{pageSession.valueMap}" key="ssl3Enabled" value="false");
-    mapPut(map="#{pageSession.valueMap}" key="tlsEnabled" value="true");
-    mapPut(map="#{pageSession.valueMap}" key="tls11Enabled" value="true");
     mapPut(map="#{pageSession.valueMap}" key="tls12Enabled" value="true");
     mapPut(map="#{pageSession.valueMap}" key="tls13Enabled" value="true");
     mapPut(map="#{pageSession.valueMap}" key="trustMaxCertLength" value="5");
@@ -75,7 +73,7 @@ if (! #{requestScope.exist}){
 }
 
 //set the following for including buttons.inc
-setPageSessionAttribute(key="convertToFalseList" value={"ssl3Enabled" "tlsEnabled" "tls11Enabled" "tls12Enabled" "tls13Enabled" "clientAuthEnabled" "sniEnabled"})
+setPageSessionAttribute(key="convertToFalseList" value={"ssl3Enabled" "tls12Enabled" "tls13Enabled" "clientAuthEnabled" "sniEnabled"})
 setPageSessionAttribute(key="skipAttrsList", value={"sslInactivityTimeout"});
 setPageSessionAttribute(key="showDefaultButton" value="#{false}" )
 setPageSessionAttribute(key="hasPropertySheet" value="#{true}" )

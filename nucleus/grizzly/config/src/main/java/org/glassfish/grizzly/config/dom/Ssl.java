@@ -42,7 +42,6 @@
 package org.glassfish.grizzly.config.dom;
 
 import jakarta.validation.constraints.Pattern;
-
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
@@ -57,8 +56,6 @@ public interface Ssl extends ConfigBeanProxy, PropertyBag {
     boolean CLIENT_AUTH_ENABLED = false;
     boolean SSL2_ENABLED = false;
     boolean SSL3_ENABLED = false;
-    boolean TLS_ENABLED = true;
-    boolean TLS11_ENABLED = false;
     boolean TLS12_ENABLED = true;
     boolean TLS13_ENABLED = true;
     boolean TLS_ROLLBACK_ENABLED = true;
@@ -198,22 +195,6 @@ public interface Ssl extends ConfigBeanProxy, PropertyBag {
     String getSsl3TlsCiphers();
 
     void setSsl3TlsCiphers(String value);
-
-    /**
-     * Determines whether TLS is enabled.
-     */
-    @Attribute(defaultValue = "" + TLS_ENABLED, dataType = Boolean.class)
-    String getTlsEnabled();
-
-    void setTlsEnabled(String value);
-
-    /**
-     * Determines whether TLS 1.1 is enabled.
-     */
-    @Attribute(defaultValue = "" + TLS11_ENABLED, dataType = Boolean.class)
-    String getTls11Enabled();
-
-    void setTls11Enabled(String value);
 
     /**
      * Determines whether TLS 1.2 is enabled.
