@@ -59,11 +59,10 @@ public class ManagedExecutorDefinitionListHandler extends AbstractResourceHandle
                                                         ResourceContainerContext[] resourceContainerContexts)
             throws AnnotationProcessorException {
         logger.log(Level.INFO, "Entering ManagedExecutorDefinitionListHandler.processAnnotation");
-        AnnotatedElementHandler annotatedElementHandler = annotationInfo.getProcessingContext().getHandler();
-        ManagedExecutorDefinition.List managedExecutorDefinition =
+        ManagedExecutorDefinition.List managedExecutorDefinitionList =
                 (ManagedExecutorDefinition.List) annotationInfo.getAnnotation();
 
-        ManagedExecutorDefinition[] definitions = managedExecutorDefinition.value();
+        ManagedExecutorDefinition[] definitions = managedExecutorDefinitionList.value();
         if(definitions != null) {
             for (ManagedExecutorDefinition definition : definitions) {
                 ManagedExecutorDefinitionHandler handler = new ManagedExecutorDefinitionHandler();

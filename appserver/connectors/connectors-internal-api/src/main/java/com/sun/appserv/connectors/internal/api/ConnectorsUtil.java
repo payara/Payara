@@ -606,10 +606,8 @@ public class ConnectorsUtil {
                     prefixPart2 = ConnectorConstants.ADMINISTERED_OBJECT_DEFINITION_JNDINAME_PREFIX;
                     break;
                 case MEDD:
-                    prefixPart1 = ConnectorConstants.CONCURRENT_JNDINAME_PREFIX;
-                    prefixPart2 = "";
-                    break;
                 case MTFDD:
+                case MSEDD:
                     prefixPart1 = ConnectorConstants.CONCURRENT_JNDINAME_PREFIX;
                     prefixPart2 = "";
                     break;

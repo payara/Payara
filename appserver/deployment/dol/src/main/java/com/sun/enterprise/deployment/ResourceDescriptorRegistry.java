@@ -73,6 +73,7 @@ public class ResourceDescriptorRegistry implements Serializable {
         invalidResourceTypeScopes.put(JavaEEResourceType.AODD,new HashSet<>(Arrays.asList(new Class[]{ApplicationClientDescriptor.class})));
         invalidResourceTypeScopes.put(JavaEEResourceType.MEDD,new HashSet<>());
         invalidResourceTypeScopes.put(JavaEEResourceType.MTFDD,new HashSet<>());
+        invalidResourceTypeScopes.put(JavaEEResourceType.MSEDD,new HashSet<>());
         invalidResourceTypeScopes.put(JavaEEResourceType.CSDD, new HashSet<>());
     }
 
@@ -94,6 +95,7 @@ public class ResourceDescriptorRegistry implements Serializable {
         allResourceDescriptors.addAll(this.getResourceDescriptors(JavaEEResourceType.JMSDD));
         allResourceDescriptors.addAll(this.getResourceDescriptors(JavaEEResourceType.MEDD));
         allResourceDescriptors.addAll(this.getResourceDescriptors(JavaEEResourceType.MTFDD));
+        allResourceDescriptors.addAll(this.getResourceDescriptors(JavaEEResourceType.MSEDD));
         allResourceDescriptors.addAll(this.getResourceDescriptors(JavaEEResourceType.CSDD));
         return allResourceDescriptors;
     }

@@ -39,12 +39,12 @@
  */
 package org.glassfish.concurrent.runtime.deployment.annotation.handlers;
 
-import com.sun.enterprise.deployment.ManagedExecutorDefinitionDescriptor;
+import com.sun.enterprise.deployment.ManagedScheduledExecutorDefinitionDescriptor;
 import com.sun.enterprise.deployment.MetadataSource;
 import com.sun.enterprise.deployment.ResourceDescriptor;
 import com.sun.enterprise.deployment.annotation.context.ResourceContainerContext;
 import com.sun.enterprise.deployment.annotation.handlers.AbstractResourceHandler;
-import jakarta.enterprise.concurrent.ManagedExecutorDefinition;
+import jakarta.enterprise.concurrent.ManagedScheduledExecutorDefinition;
 import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
@@ -59,67 +59,68 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Service
-@AnnotationHandlerFor(ManagedExecutorDefinition.class)
-public class ManagedExecutorDefinitionHandler extends AbstractResourceHandler {
+@AnnotationHandlerFor(ManagedScheduledExecutorDefinition.class)
+public class ManagedScheduledExecutorDefinitionHandler extends AbstractResourceHandler {
 
-    private static final Logger logger = Logger.getLogger(ManagedExecutorDefinitionHandler.class.getName());
+    private static final Logger logger = Logger.getLogger(ManagedScheduledExecutorDefinitionHandler.class.getName());
 
     @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo annotationInfo,
                                                         ResourceContainerContext[] resourceContainerContexts)
             throws AnnotationProcessorException {
-        logger.log(Level.INFO, "Entering ManagedExecutorDefinitionHandler.processAnnotation");
-        ManagedExecutorDefinition managedExecutorDefinition = (ManagedExecutorDefinition) annotationInfo.getAnnotation();
-        return processAnnotation(managedExecutorDefinition, resourceContainerContexts);
+        logger.log(Level.INFO, "Entering ManagedScheduledExecutorDefinitionHandler.processAnnotation");
+        ManagedScheduledExecutorDefinition managedScheduledExecutorDefinition =
+                (ManagedScheduledExecutorDefinition) annotationInfo.getAnnotation();
+        return processAnnotation(managedScheduledExecutorDefinition, resourceContainerContexts);
     }
 
-    protected HandlerProcessingResult processAnnotation(ManagedExecutorDefinition managedExecutorDefinition,
+    protected HandlerProcessingResult processAnnotation(ManagedScheduledExecutorDefinition managedScheduledExecutorDefinition,
                                                         ResourceContainerContext[] contexts) {
-        logger.log(Level.INFO, "Registering ManagedExecutorService from annotation config");
+        logger.log(Level.INFO, "Registering ManagedScheduledExecutorDefinitionHandler from annotation config");
         for (ResourceContainerContext context : contexts) {
-            Set<ResourceDescriptor> resourceDescriptors = context.getResourceDescriptors(JavaEEResourceType.MEDD);
-            ManagedExecutorDefinitionDescriptor medes = createDescriptor(managedExecutorDefinition);
-            if (descriptorAlreadyPresent(resourceDescriptors, medes)) {
-                merge(resourceDescriptors, managedExecutorDefinition);
+            Set<ResourceDescriptor> resourceDescriptors = context.getResourceDescriptors(JavaEEResourceType.MSEDD);
+            ManagedScheduledExecutorDefinitionDescriptor msedd = createDescriptor(managedScheduledExecutorDefinition);
+            if (descriptorAlreadyPresent(resourceDescriptors, msedd)) {
+                merge(resourceDescriptors, managedScheduledExecutorDefinition);
             } else {
-                resourceDescriptors.add(medes);
+                resourceDescriptors.add(msedd);
             }
         }
         return getDefaultProcessedResult();
     }
 
-    public ManagedExecutorDefinitionDescriptor createDescriptor(ManagedExecutorDefinition managedExecutorDefinition) {
-        ManagedExecutorDefinitionDescriptor medd = new ManagedExecutorDefinitionDescriptor();
-        medd.setName(TranslatedConfigView.expandValue(managedExecutorDefinition.name()));
-        medd.setContext(TranslatedConfigView.expandValue(managedExecutorDefinition.context()));
-        // FIXME: cdd.setContextInfo(??? Load from existing ContextServiceDefinition!);
-        medd.setHungAfterSeconds(managedExecutorDefinition.hungTaskThreshold());
-        medd.setMaximumPoolSize(managedExecutorDefinition.maxAsync());
-        medd.setMetadataSource(MetadataSource.ANNOTATION);
-        return medd;
+    public ManagedScheduledExecutorDefinitionDescriptor createDescriptor(ManagedScheduledExecutorDefinition managedScheduledExecutorDefinition) {
+        ManagedScheduledExecutorDefinitionDescriptor msedd =
+                new ManagedScheduledExecutorDefinitionDescriptor();
+        msedd.setName(TranslatedConfigView.expandValue(managedScheduledExecutorDefinition.name()));
+        msedd.setContext(TranslatedConfigView.expandValue(managedScheduledExecutorDefinition.context()));
+        msedd.setHungTaskThreshold(managedScheduledExecutorDefinition.hungTaskThreshold());
+        msedd.setMaxAsync(managedScheduledExecutorDefinition.maxAsync());
+        msedd.setMetadataSource(MetadataSource.ANNOTATION);
+        return msedd;
     }
 
-    private boolean descriptorAlreadyPresent(final Set<ResourceDescriptor> resourceDescriptors,
-                                             final ManagedExecutorDefinitionDescriptor medd) {
-        Optional<ResourceDescriptor> optResourceDescriptor = resourceDescriptors.stream().filter(d -> d.equals(medd)).findAny();
+    private boolean descriptorAlreadyPresent(Set<ResourceDescriptor> resourceDescriptors, ManagedScheduledExecutorDefinitionDescriptor msedd) {
+        Optional<ResourceDescriptor> optResourceDescriptor = resourceDescriptors.stream().filter(d -> d.equals(msedd)).findAny();
         return optResourceDescriptor.isPresent();
     }
 
-    private void merge(Set<ResourceDescriptor> resourceDescriptors, ManagedExecutorDefinition med) {
+    private void merge(Set<ResourceDescriptor> resourceDescriptors,
+                       ManagedScheduledExecutorDefinition msed) {
         for (ResourceDescriptor resource : resourceDescriptors) {
-            ManagedExecutorDefinitionDescriptor descriptor = (ManagedExecutorDefinitionDescriptor) resource;
-            if (descriptor.getName().equals(med.name())) {
+            ManagedScheduledExecutorDefinitionDescriptor descriptor = (ManagedScheduledExecutorDefinitionDescriptor) resource;
+            if (descriptor.getName().equals(msed.name())) {
 
-                if (descriptor.getHungAfterSeconds() == -1 && med.hungTaskThreshold() != -1) {
-                    descriptor.setHungAfterSeconds(med.hungTaskThreshold());
+                if (descriptor.getHungTaskThreshold() == -1 && msed.hungTaskThreshold() != -1) {
+                    descriptor.setHungTaskThreshold(msed.hungTaskThreshold());
                 }
 
-                if (descriptor.getMaximumPoolSize() == -1 && med.maxAsync() != -1) {
-                    descriptor.setMaximumPoolSize(med.maxAsync());
+                if (descriptor.getMaxAsync() == -1) {
+                    descriptor.setMaxAsync(msed.maxAsync());
                 }
 
-                if (descriptor.getContext() == null && med.context() != null && !med.context().isBlank()) {
-                    descriptor.setContext(TranslatedConfigView.expandValue(med.context()));
+                if (descriptor.getContext() == null && msed.context() != null && !msed.context().isBlank()) {
+                    descriptor.setContext(TranslatedConfigView.expandValue(msed.context()));
                 }
             }
         }

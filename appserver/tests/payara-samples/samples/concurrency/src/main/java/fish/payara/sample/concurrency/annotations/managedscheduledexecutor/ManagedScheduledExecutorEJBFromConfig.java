@@ -37,37 +37,43 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.concurrent.runtime.deployment.annotation.handlers;
+package fish.payara.sample.concurrency.annotations.managedscheduledexecutor;
 
-import com.sun.enterprise.deployment.annotation.context.ResourceContainerContext;
-import com.sun.enterprise.deployment.annotation.handlers.AbstractResourceHandler;
-import jakarta.enterprise.concurrent.ManagedThreadFactoryDefinition;
-import org.glassfish.apf.*;
-import org.jvnet.hk2.annotations.Service;
-
+import jakarta.annotation.Resource;
+import jakarta.ejb.Stateless;
+import jakarta.enterprise.concurrent.ManagedScheduledExecutorService;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-@Service
-@AnnotationHandlerFor(ManagedThreadFactoryDefinition.List.class)
-public class ManagedThreadFactoryDefinitionListHandler extends AbstractResourceHandler {
+import jakarta.enterprise.concurrent.Trigger;
+import jakarta.enterprise.concurrent.CronTrigger;
+import java.time.ZoneId;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.atomic.AtomicInteger;
 
-    public static final Logger logger = Logger.getLogger(ManagedThreadFactoryDefinitionListHandler.class.getName());
 
-    @Override
-    protected HandlerProcessingResult processAnnotation(AnnotationInfo annotationInfo,
-                                                        ResourceContainerContext[] resourceContainerContexts)
-            throws AnnotationProcessorException {
-        logger.log(Level.INFO, "Entering ManagedThreadFactoryDefinitionListHandler.processAnnotation");
-        ManagedThreadFactoryDefinition.List managedThreadFactoryDList =
-                (ManagedThreadFactoryDefinition.List) annotationInfo.getAnnotation();
-        ManagedThreadFactoryDefinition[] definitions = managedThreadFactoryDList.value();
-        if (definitions != null) {
-            for (ManagedThreadFactoryDefinition definition : definitions) {
-                ManagedThreadFactoryDefinitionHandler mtfdh = new ManagedThreadFactoryDefinitionHandler();
-                mtfdh.processAnnotation(definition, resourceContainerContexts);
-            }
-        }
-        return null;
+@Stateless
+public class ManagedScheduledExecutorEJBFromConfig {
+
+    public static final Logger logger = Logger.getLogger(ManagedScheduledExecutorEJBFromConfig.class.getName());
+
+    @Resource(lookup = "java:app/jakartaee/CustomManagedScheduledExecutorE")
+    ManagedScheduledExecutorService customManagedScheduleExecutorE;
+
+    public String processCustomManagedScheduled() throws InterruptedException, ExecutionException {
+        logger.log(Level.INFO, String.format("Processing schedule executor: %s", customManagedScheduleExecutorE));
+        AtomicInteger numberExecution = new AtomicInteger();
+        ZoneId mexico = ZoneId.of("America/Mexico_City");
+        Trigger trigger = new CronTrigger("* * * * * *", mexico);
+        ScheduledFuture feature = customManagedScheduleExecutorE.schedule(() -> {
+            numberExecution.getAndIncrement();
+            System.out.println("Cron Trigger running");
+        }, trigger);
+        Thread.sleep(1500);
+        feature.cancel(true);
+        return "CronTrigger Submitted:"+numberExecution.get();
     }
 }

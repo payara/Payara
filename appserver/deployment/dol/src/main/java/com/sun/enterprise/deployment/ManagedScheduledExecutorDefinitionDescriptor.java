@@ -41,21 +41,22 @@ package com.sun.enterprise.deployment;
 
 import java.util.Properties;
 
-import static org.glassfish.deployment.common.JavaEEResourceType.*;
+import static org.glassfish.deployment.common.JavaEEResourceType.MSEDD;
 
-public class ManagedExecutorDefinitionDescriptor extends ResourceDescriptor {
+public class ManagedScheduledExecutorDefinitionDescriptor extends ResourceDescriptor {
 
     private static final String JAVA_URL = "java:";
     private static final String JAVA_COMP_URL = "java:comp/";
 
     private String name;
-    private int maximumPoolSize = -1;
-    private long hungAfterSeconds = -1;
     private String context;
+    private long hungTaskThreshold = -1;
+    private int maxAsync = -1;
+
     private Properties properties = new Properties();
 
-    public ManagedExecutorDefinitionDescriptor() {
-        super.setResourceType(MEDD);
+    public ManagedScheduledExecutorDefinitionDescriptor() {
+        super.setResourceType(MSEDD);
     }
 
     @Override
@@ -68,22 +69,6 @@ public class ManagedExecutorDefinitionDescriptor extends ResourceDescriptor {
         this.name = name;
     }
 
-    public long getMaximumPoolSize() {
-        return maximumPoolSize;
-    }
-
-    public void setMaximumPoolSize(int maximumPoolSize) {
-        this.maximumPoolSize = maximumPoolSize;
-    }
-
-    public long getHungAfterSeconds() {
-        return hungAfterSeconds;
-    }
-
-    public void setHungAfterSeconds(long hungAfterSeconds) {
-        this.hungAfterSeconds = hungAfterSeconds;
-    }
-
     public String getContext() {
         return context;
     }
@@ -92,25 +77,28 @@ public class ManagedExecutorDefinitionDescriptor extends ResourceDescriptor {
         this.context = context;
     }
 
-    public void addProperty(String key, String value) {
-        properties.put(key, value);
+    public long getHungTaskThreshold() {
+        return hungTaskThreshold;
     }
 
-    public String getProperty(String key) {
-        return (String) properties.get(key);
+    public void setHungTaskThreshold(long hungTaskThreshold) {
+        this.hungTaskThreshold = hungTaskThreshold;
+    }
+
+    public int getMaxAsync() {
+        return maxAsync;
+    }
+
+    public void setMaxAsync(int maxAsync) {
+        this.maxAsync = maxAsync;
     }
 
     public Properties getProperties() {
         return properties;
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (obj instanceof ManagedExecutorDefinitionDescriptor) {
-            ManagedExecutorDefinitionDescriptor ref = (ManagedExecutorDefinitionDescriptor) obj;
-            return this.getName().equals(getURLName(ref.getName()));
-        }
-        return false;
+    public void setProperties(Properties properties) {
+        this.properties = properties;
     }
 
     public static String getURLName(String thisName) {
@@ -120,7 +108,17 @@ public class ManagedExecutorDefinitionDescriptor extends ResourceDescriptor {
         return thisName;
     }
 
-    public void addManagedExecutorPropertyDescriptor(ResourcePropertyDescriptor propertyDescriptor) {
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof ManagedScheduledExecutorDefinitionDescriptor) {
+            ManagedScheduledExecutorDefinitionDescriptor ref =
+                    (ManagedScheduledExecutorDefinitionDescriptor) obj;
+            return this.getName().equals(getURLName(ref.getName()));
+        }
+        return false;
+    }
+
+    public void addManagedScheduledExecutorDefinitionDescriptor(ResourcePropertyDescriptor propertyDescriptor) {
         properties.put(propertyDescriptor.getName(), propertyDescriptor.getValue());
     }
 }

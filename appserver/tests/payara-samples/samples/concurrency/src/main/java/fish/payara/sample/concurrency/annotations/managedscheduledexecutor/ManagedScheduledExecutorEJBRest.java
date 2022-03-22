@@ -37,37 +37,46 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.concurrent.runtime.deployment.annotation.handlers;
+package fish.payara.sample.concurrency.annotations.managedscheduledexecutor;
 
-import com.sun.enterprise.deployment.annotation.context.ResourceContainerContext;
-import com.sun.enterprise.deployment.annotation.handlers.AbstractResourceHandler;
-import jakarta.enterprise.concurrent.ManagedThreadFactoryDefinition;
-import org.glassfish.apf.*;
-import org.jvnet.hk2.annotations.Service;
+import jakarta.annotation.Resource;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ejb.EJB;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.Future;
+import java.util.concurrent.ExecutionException;
 
-@Service
-@AnnotationHandlerFor(ManagedThreadFactoryDefinition.List.class)
-public class ManagedThreadFactoryDefinitionListHandler extends AbstractResourceHandler {
+@Path("xml")
+public class ManagedScheduledExecutorEJBRest {
 
-    public static final Logger logger = Logger.getLogger(ManagedThreadFactoryDefinitionListHandler.class.getName());
+    private static final Logger logger = Logger.getLogger(ManagedScheduledExecutorEJBRest.class.getName());
 
-    @Override
-    protected HandlerProcessingResult processAnnotation(AnnotationInfo annotationInfo,
-                                                        ResourceContainerContext[] resourceContainerContexts)
-            throws AnnotationProcessorException {
-        logger.log(Level.INFO, "Entering ManagedThreadFactoryDefinitionListHandler.processAnnotation");
-        ManagedThreadFactoryDefinition.List managedThreadFactoryDList =
-                (ManagedThreadFactoryDefinition.List) annotationInfo.getAnnotation();
-        ManagedThreadFactoryDefinition[] definitions = managedThreadFactoryDList.value();
-        if (definitions != null) {
-            for (ManagedThreadFactoryDefinition definition : definitions) {
-                ManagedThreadFactoryDefinitionHandler mtfdh = new ManagedThreadFactoryDefinitionHandler();
-                mtfdh.processAnnotation(definition, resourceContainerContexts);
-            }
-        }
-        return null;
+    @EJB
+    ManagedScheduledExecutorEJB managedScheduledExecutorEJB;
+
+    @EJB
+    ManagedScheduledExecutorEJBFromConfig managedScheduledExecutorEJBFromConfig;
+
+    @GET
+    @Path("application")
+    @Produces(MediaType.TEXT_PLAIN)
+    public String processManagedScheduledExecutor() throws InterruptedException, ExecutionException {
+        logger.log(Level.INFO, "Processing xml tag from ear application config");
+        return managedScheduledExecutorEJB.processCustomManagedScheduled();
     }
+
+    @GET
+    @Path("ejbconfig")
+    @Produces(MediaType.TEXT_PLAIN)
+    public String processManagedScheduledExecutorFromEJBConfig() throws InterruptedException, ExecutionException {
+        logger.log(Level.INFO, "Processing xml tag from ejb config");
+        return managedScheduledExecutorEJBFromConfig.processCustomManagedScheduled();
+    }
+
 }
