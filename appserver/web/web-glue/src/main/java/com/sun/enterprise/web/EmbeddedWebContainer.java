@@ -314,7 +314,6 @@ public final class EmbeddedWebContainer extends Tomcat implements PostConstruct 
      * @param port Port number to listen to
      * @param protocol the http protocol to use.
      */
-    @Override
     public Connector createConnector(String address, int port,
 				     String protocol) {
 
@@ -335,26 +334,18 @@ public final class EmbeddedWebContainer extends Tomcat implements PostConstruct 
         }
 
         WebConnector connector = new WebConnector(webContainer);
-
         if (address != null) {
-            connector.setAddress(address);
+            connector.setProperty("address", address);
         }
 
         connector.setPort(port);
 
-        if (protocol.equals("ajp")) {
-            connector.setProtocolHandlerClassName(
-                 "org.apache.jk.server.JkCoyoteHandler");
-        } else if (protocol.equals("memory")) {
-            connector.setProtocolHandlerClassName(
-                 "org.apache.coyote.memory.MemoryProtocolHandler");
-        } else if (protocol.equals("https")) {
+        if (protocol.equals("https")) {
             connector.setScheme("https");
             connector.setSecure(true);
         }
 
         return (connector);
-
     }
     
 

@@ -913,7 +913,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
              */
         }
 
-        connector = (WebConnector) _embedded.createConnector(address, port, isSecure);
+        connector = (WebConnector) _embedded.createConnector(address, port, isSecure ? "https" : "http");
 
         connector.setMapper(mapper);
         connector.setJvmRoute(engine.getJvmRoute());
@@ -925,7 +925,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         connector.setInstanceName(instanceName);
         connector.configure(listener, isSecure, httpService);
 
-        _embedded.addConnector(connector);
+        _embedded.setConnector(connector);
 
         connectorMap.put(listener.getName(), connector);
 
@@ -942,86 +942,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         httpListenerBean.addListener(configListener);
 
         return connector;
-    }
-
-    /**
-     * Starts the AJP connector that will listen to call from Apache using mod_jk, mod_jk2 or mod_ajp.
-     *
-     * @param listener
-     * @param httpService
-     * @return
-     */
-    protected WebConnector createJKConnector(NetworkListener listener, HttpService httpService) {
-        int port = 8009;
-        boolean isSecure = false;
-        String address = null;
-
-        if (listener == null) {
-            String portString = System.getProperty("com.sun.enterprise.web.connector.enableJK");
-            if (portString == null) {
-                // do not create JK Connector if property is not set
-                return null;
-            } else {
-                try {
-                    port = Integer.parseInt(portString);
-                } catch (NumberFormatException ex) {
-                    // use default port 8009
-                    port = 8009;
-                }
-            }
-        } else {
-            port = Integer.parseInt(listener.getPort());
-            isSecure = Boolean.valueOf(listener.findHttpProtocol().getSecurityEnabled());
-            address = listener.getAddress();
-        }
-
-        if (isSecure && defaultRedirectPort == -1) {
-            defaultRedirectPort = port;
-        }
-
-        if ("any".equals(address) || "ANY".equals(address) || "INADDR_ANY".equals(address)) {
-            address = null;
-            /*
-             * Setting 'address' to NULL will cause Tomcat to pass a NULL InetAddress argument to the java.net.ServerSocket
-             * constructor, meaning that the server socket will accept connections on any/all local addresses.
-             */
-        }
-
-        jkConnector = (WebConnector) _embedded.createConnector(address, port, "ajp");
-        jkConnector.configureJKProperties(listener);
-        jkConnector.setDomain(_serverContext.getDefaultDomainName());
-        jkConnector.setInstanceName(instanceName);
-
-        String defaultHost = "server";
-        String jkConnectorName = "jk-connector";
-
-        if (listener != null) {
-            defaultHost = listener.findHttpProtocol().getHttp().getDefaultVirtualServer();
-            jkConnectorName = listener.getName();
-            jkConnector.configure(listener, isSecure, httpService);
-            connectorMap.put(listener.getName(), jkConnector);
-
-            if (logger.isLoggable(INFO)) {
-                logger.log(INFO, JK_LISTENER_CREATED, new Object[] { listener.getName(), listener.getAddress(), listener.getPort() });
-            }
-
-            for (Mapper mapper : serviceLocator.getAllServices(Mapper.class)) {
-                if (mapper.getPort() == port && mapper instanceof ContextMapper) {
-                    ContextMapper contextMapper = (ContextMapper) mapper;
-                    if (listener.getName().equals(contextMapper.getId())) {
-                        jkConnector.setMapper(mapper);
-                        break;
-                    }
-                }
-            }
-        }
-
-        jkConnector.setDefaultHost(defaultHost);
-        jkConnector.setName(jkConnectorName);
-
-        _embedded.addConnector(jkConnector);
-
-        return jkConnector;
     }
 
     /**
