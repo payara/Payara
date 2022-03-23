@@ -181,10 +181,10 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
         }
     }
 
-    private ContextServiceImpl prepareContextService(String configuredJndiName, String createJndiName, boolean contextInfoEnabled, boolean cleanupTransaction) {
+    private ContextServiceImpl prepareContextService(String configuredContextJndiName, String createJndiName, String contextInfo, boolean contextInfoEnabled, boolean cleanupTransaction) {
         String contextServiceJndiName = createJndiName; // default context
-        if (configuredJndiName != null) {
-            contextServiceJndiName = configuredJndiName;
+        if (configuredContextJndiName != null) {
+            contextServiceJndiName = configuredContextJndiName;
         }
         ContextServiceImpl contextService = contextServiceMap.get(contextServiceJndiName);
         if (contextService == null) {
@@ -194,7 +194,8 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
                 // pass the cleanup transaction in list of cleared handlers
                 cleared = Set.of(ContextSetupProviderImpl.CONTEXT_TYPE_WORKAREA);
             }
-            contextService = createContextService(contextServiceJndiName, contextInfoEnabled, Collections.EMPTY_SET, cleared, Collections.EMPTY_SET, true);
+            Set<String> propagated = parseContextInfo(contextInfo, contextInfoEnabled);
+            contextService = createContextService(contextServiceJndiName, contextInfoEnabled, propagated, cleared, Collections.EMPTY_SET, true);
             contextServiceMap.put(contextServiceJndiName, contextService);
         }
         return contextService;
@@ -208,7 +209,8 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
         }
 
         ContextServiceImpl contextService = prepareContextService(config.getContext(),
-                config.getJndiName() + "-contextservice", config.isContextInfoEnabledBoolean(), true);
+                config.getJndiName() + "-contextservice", config.getContextInfo(),
+                config.isContextInfoEnabledBoolean(), true);
         ManagedThreadFactoryImpl managedThreadFactory = new ThreadFactoryWrapper(
                 config.getJndiName() + "-managedThreadFactory",
                 null, //contextService,
@@ -256,7 +258,8 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
         if (managedScheduledExecutorServiceMap != null && managedScheduledExecutorServiceMap.containsKey(jndiName)) {
             return managedScheduledExecutorServiceMap.get(jndiName);
         }
-        ContextServiceImpl contextService = prepareContextService(config.getContext(), config.getJndiName() + "-contextservice", config.isContextInfoEnabledBoolean(), true);
+        ContextServiceImpl contextService = prepareContextService(config.getContext(), config.getJndiName() + "-contextservice",
+                config.getContextInfo(), config.isContextInfoEnabledBoolean(), true);
         ManagedThreadFactoryImpl managedThreadFactory = new ThreadFactoryWrapper(
                 config.getJndiName() + "-managedThreadFactory",
                 null,
@@ -297,7 +300,8 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
         if (managedThreadFactoryMap != null && managedThreadFactoryMap.containsKey(jndiName)) {
             return managedThreadFactoryMap.get(jndiName);
         }
-        ContextServiceImpl contextService = prepareContextService(config.getJndiName() + "-contextservice",
+        String context = null; // FIXME: it must be taken from ManagedThreadFactoryConfig!
+        ContextServiceImpl contextService = prepareContextService(context, config.getJndiName() + "-contextservice",
                 config.getContextInfo(), config.isContextInfoEnabledBoolean(), true);
         ManagedThreadFactoryImpl managedThreadFactory = new ThreadFactoryWrapper(config.getJndiName(), contextService,
                 config.getThreadPriority());
@@ -343,9 +347,8 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
         return contextService;
     }
 
-    // FIXME: if contextInfo string is no more used, remove this method
-    private List<String> parseContextInfo(String contextInfo, boolean isContextInfoEnabled) {
-        List<String> contextTypeArray = new ArrayList<>();
+    private Set<String> parseContextInfo(String contextInfo, boolean isContextInfoEnabled) {
+        Set<String> contextTypeArray = new HashSet<>();
         if (contextInfo == null) {
             // by default, if no context info is passed, we propagate all context types
             contextTypeArray.add(ContextSetupProviderImpl.CONTEXT_TYPE_CLASSLOADING);
@@ -386,7 +389,7 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
                     1,
                     60, TimeUnit.SECONDS,
                     0L,
-                    prepareContextService(name + "-contextservice",
+                    prepareContextService(null, name + "-contextservice",
                             CONTEXT_INFO_CLASSLOADER, true, false),
                     AbstractManagedExecutorService.RejectPolicy.ABORT);
             internalScheduler.scheduleAtFixedRate(new HungTasksLogger(), 1L, 1L, TimeUnit.MINUTES);
