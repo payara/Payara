@@ -211,7 +211,7 @@
         <microprofile-metrics.version>4.0</microprofile-metrics.version>
         <microprofile-rest-client.version>3.0</microprofile-rest-client.version>
         <microprofile-openapi.version>3.0</microprofile-openapi.version>
-        <payara-arquillian-container.version>3.0.alpha2</payara-arquillian-container.version>
+        <payara-arquillian-container.version>3.0.alpha4</payara-arquillian-container.version>
         <payara.security-connectors.version>3.0.alpha4</payara.security-connectors.version>
         <opentracing.version>0.33.0</opentracing.version>
         <h2db.version>1.4.200</h2db.version>
