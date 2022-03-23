@@ -208,7 +208,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         contextPropagate.stream()
                 .map((provider) -> allThreadContextProviders.get(provider))
                 .filter(snapshot -> snapshot != null) // ignore standard providers like CONTEXT_TYPE_CLASSLOADING
-                .map(snapshot -> snapshot.currentContext(null)) //contextObjectProperties???
+                .map(snapshot -> snapshot.currentContext(contextObjectProperties))
                 .forEach(snapshot -> threadContextSnapshots.add(snapshot));
         contextClear.stream()
                 .map((provider) -> allThreadContextProviders.get(provider))
