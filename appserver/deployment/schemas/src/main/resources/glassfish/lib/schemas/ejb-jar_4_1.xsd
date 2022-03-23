@@ -1573,6 +1573,9 @@
             <xsd:element name="managed-thread-factory"
                          type="jakartaee:managed-thread-factoryType"
                          minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element name="managed-scheduled-executor"
+                         type="jakartaee:managed-scheduled-executorType"
+                         minOccurs="0" maxOccurs="unbounded"/>
         </xsd:sequence>
         <xsd:attribute name="id"
                        type="xsd:ID"/>
@@ -2090,6 +2093,9 @@
                          minOccurs="0" maxOccurs="unbounded"/>
             <xsd:element name="managed-thread-factory"
                          type="jakartaee:managed-thread-factoryType"
+                         minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element name="managed-scheduled-executor"
+                         type="jakartaee:managed-scheduled-executorType"
                          minOccurs="0" maxOccurs="unbounded"/>
         </xsd:sequence>
         <xsd:attribute name="id"
@@ -3108,6 +3114,9 @@
                          minOccurs="0" maxOccurs="unbounded"/>
             <xsd:element name="managed-thread-factory"
                          type="jakartaee:managed-thread-factoryType"
+                         minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element name="managed-scheduled-executor"
+                         type="jakartaee:managed-scheduled-executorType"
                          minOccurs="0" maxOccurs="unbounded"/>
         </xsd:sequence>
         <xsd:attribute name="id"

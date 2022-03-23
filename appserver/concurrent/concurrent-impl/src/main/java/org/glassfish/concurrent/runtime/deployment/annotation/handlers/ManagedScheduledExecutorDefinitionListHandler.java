@@ -41,33 +41,37 @@ package org.glassfish.concurrent.runtime.deployment.annotation.handlers;
 
 import com.sun.enterprise.deployment.annotation.context.ResourceContainerContext;
 import com.sun.enterprise.deployment.annotation.handlers.AbstractResourceHandler;
-import jakarta.enterprise.concurrent.ManagedThreadFactoryDefinition;
-import org.glassfish.apf.*;
+import jakarta.enterprise.concurrent.ManagedScheduledExecutorDefinition;
+import org.glassfish.apf.AnnotationHandlerFor;
+import org.glassfish.apf.AnnotationInfo;
+import org.glassfish.apf.AnnotationProcessorException;
+import org.glassfish.apf.HandlerProcessingResult;
 import org.jvnet.hk2.annotations.Service;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Service
-@AnnotationHandlerFor(ManagedThreadFactoryDefinition.List.class)
-public class ManagedThreadFactoryDefinitionListHandler extends AbstractResourceHandler {
+@AnnotationHandlerFor(ManagedScheduledExecutorDefinition.List.class)
+public class ManagedScheduledExecutorDefinitionListHandler extends AbstractResourceHandler {
 
-    public static final Logger logger = Logger.getLogger(ManagedThreadFactoryDefinitionListHandler.class.getName());
+    public static final Logger logger = Logger.getLogger(ManagedScheduledExecutorDefinitionListHandler.class.getName());
 
     @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo annotationInfo,
                                                         ResourceContainerContext[] resourceContainerContexts)
             throws AnnotationProcessorException {
-        logger.log(Level.INFO, "Entering ManagedThreadFactoryDefinitionListHandler.processAnnotation");
-        ManagedThreadFactoryDefinition.List managedThreadFactoryDList =
-                (ManagedThreadFactoryDefinition.List) annotationInfo.getAnnotation();
-        ManagedThreadFactoryDefinition[] definitions = managedThreadFactoryDList.value();
+        logger.log(Level.INFO, "Entering ManagedScheduledExecutorDefinitionListHandler.processAnnotation");
+        ManagedScheduledExecutorDefinition.List managedScheduleExecutorDefinitionList =
+                (ManagedScheduledExecutorDefinition.List) annotationInfo.getAnnotation();
+        ManagedScheduledExecutorDefinition[] definitions =
+                managedScheduleExecutorDefinitionList.value();
         if (definitions != null) {
-            for (ManagedThreadFactoryDefinition definition : definitions) {
-                ManagedThreadFactoryDefinitionHandler mtfdh = new ManagedThreadFactoryDefinitionHandler();
-                mtfdh.processAnnotation(definition, resourceContainerContexts);
+            for (ManagedScheduledExecutorDefinition definition : definitions) {
+                ManagedScheduledExecutorDefinitionHandler handler = new ManagedScheduledExecutorDefinitionHandler();
+                handler.processAnnotation(definition, resourceContainerContexts);
             }
         }
-        return null;
+        return getDefaultProcessedResult();
     }
 }

@@ -39,48 +39,52 @@
  */
 package com.sun.enterprise.deployment.node;
 
-import com.sun.enterprise.deployment.ManagedExecutorDefinitionDescriptor;
+import com.sun.enterprise.deployment.ManagedScheduledExecutorDefinitionDescriptor;
 import com.sun.enterprise.deployment.xml.TagNames;
 import org.w3c.dom.Node;
 
 import java.util.Map;
 
-public class ManagedExecutorDefinitionNode extends DeploymentDescriptorNode<ManagedExecutorDefinitionDescriptor> {
+public class ManagedScheduledExecutorDefinitionNode extends DeploymentDescriptorNode<ManagedScheduledExecutorDefinitionDescriptor> {
 
-    public final static XMLElement tag = new XMLElement(TagNames.MANAGED_EXECUTOR);
+    public final static XMLElement tag = new XMLElement(TagNames.MANAGED_SCHEDULED_EXECUTOR);
 
-    ManagedExecutorDefinitionDescriptor descriptor = null;
+    ManagedScheduledExecutorDefinitionDescriptor descriptor = null;
 
-    public ManagedExecutorDefinitionNode() {
+    public ManagedScheduledExecutorDefinitionNode() {
         registerElementHandler(new XMLElement(TagNames.RESOURCE_PROPERTY), ResourcePropertyNode.class,
-                "addManagedExecutorPropertyDescriptor");
+                "addManagedScheduledExecutorDefinitionDescriptor");
     }
 
     protected Map getDispatchTable() {
         Map table = super.getDispatchTable();
-        table.put(TagNames.MANAGED_EXECUTOR_NAME, "setName");
-        table.put(TagNames.MANAGED_EXECUTOR_MAX_ASYNC, "setMaximumPoolSize");
-        table.put(TagNames.MANAGED_EXECUTOR_HUNG_TASK_THRESHOLD, "setHungAfterSeconds");
-        table.put(TagNames.MANAGED_EXECUTOR_CONTEXT_SERVICE_REF, "setContextInfo");
+        table.put(TagNames.MANAGED_SCHEDULED_EXECUTOR_NAME, "setName");
+        table.put(TagNames.MANAGED_SCHEDULED_EXECUTOR_MAX_ASYNC, "setMaxAsync");
+        table.put(TagNames.MANAGED_SCHEDULED_EXECUTOR_CONTEXT_SERVICE_REF, "setContext");
+        table.put(TagNames.MANAGED_SCHEDULED_EXECUTOR_HUNG_TASK_THRESHOLD, "setHungTaskThreshold");
         return table;
     }
 
-    public Node writeDescriptor(Node parent, String nodeName, ManagedExecutorDefinitionDescriptor managedExecutorDefinitionDescriptor) {
+    public Node writeDescriptor(Node parent, String nodeName,
+                                ManagedScheduledExecutorDefinitionDescriptor managedScheduledExecutorDefinitionDescriptor) {
         Node node = appendChild(parent, nodeName);
-        appendTextChild(node, TagNames.MANAGED_EXECUTOR_NAME, managedExecutorDefinitionDescriptor.getName());
-        appendTextChild(node, TagNames.MANAGED_EXECUTOR_MAX_ASYNC, String.valueOf(managedExecutorDefinitionDescriptor.getMaximumPoolSize()));
-        appendTextChild(node, TagNames.MANAGED_EXECUTOR_HUNG_TASK_THRESHOLD, String.valueOf(managedExecutorDefinitionDescriptor.getHungAfterSeconds()));
-        appendTextChild(node, TagNames.MANAGED_EXECUTOR_CONTEXT_SERVICE_REF, managedExecutorDefinitionDescriptor.getContext());
+        appendTextChild(node, TagNames.MANAGED_SCHEDULED_EXECUTOR_NAME,
+                managedScheduledExecutorDefinitionDescriptor.getName());
+        appendTextChild(node, TagNames.MANAGED_SCHEDULED_EXECUTOR_MAX_ASYNC,
+                managedScheduledExecutorDefinitionDescriptor.getMaxAsync());
+        appendTextChild(node, TagNames.MANAGED_SCHEDULED_EXECUTOR_CONTEXT_SERVICE_REF,
+                managedScheduledExecutorDefinitionDescriptor.getContext());
+        appendTextChild(node, TagNames.MANAGED_SCHEDULED_EXECUTOR_HUNG_TASK_THRESHOLD,
+                String.valueOf(managedScheduledExecutorDefinitionDescriptor.getHungTaskThreshold()));
         ResourcePropertyNode propertyNode = new ResourcePropertyNode();
-        propertyNode.writeDescriptor(node, managedExecutorDefinitionDescriptor);
+        propertyNode.writeDescriptor(node, managedScheduledExecutorDefinitionDescriptor);
         return node;
     }
 
-    public ManagedExecutorDefinitionDescriptor getDescriptor() {
+    public ManagedScheduledExecutorDefinitionDescriptor getDescriptor() {
         if (descriptor == null) {
-            descriptor = new ManagedExecutorDefinitionDescriptor();
+            descriptor = new ManagedScheduledExecutorDefinitionDescriptor();
         }
         return descriptor;
     }
-
 }

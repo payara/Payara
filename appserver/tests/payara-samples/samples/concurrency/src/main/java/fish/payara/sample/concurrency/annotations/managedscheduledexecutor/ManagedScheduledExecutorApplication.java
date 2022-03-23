@@ -37,37 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.concurrent.runtime.deployment.annotation.handlers;
+package fish.payara.sample.concurrency.annotations.managedscheduledexecutor;
 
-import com.sun.enterprise.deployment.annotation.context.ResourceContainerContext;
-import com.sun.enterprise.deployment.annotation.handlers.AbstractResourceHandler;
-import jakarta.enterprise.concurrent.ManagedThreadFactoryDefinition;
-import org.glassfish.apf.*;
-import org.jvnet.hk2.annotations.Service;
+import jakarta.ws.rs.ApplicationPath;
+import jakarta.ws.rs.core.Application;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+@ApplicationPath("/")
+public class ManagedScheduledExecutorApplication extends Application {
 
-@Service
-@AnnotationHandlerFor(ManagedThreadFactoryDefinition.List.class)
-public class ManagedThreadFactoryDefinitionListHandler extends AbstractResourceHandler {
-
-    public static final Logger logger = Logger.getLogger(ManagedThreadFactoryDefinitionListHandler.class.getName());
-
-    @Override
-    protected HandlerProcessingResult processAnnotation(AnnotationInfo annotationInfo,
-                                                        ResourceContainerContext[] resourceContainerContexts)
-            throws AnnotationProcessorException {
-        logger.log(Level.INFO, "Entering ManagedThreadFactoryDefinitionListHandler.processAnnotation");
-        ManagedThreadFactoryDefinition.List managedThreadFactoryDList =
-                (ManagedThreadFactoryDefinition.List) annotationInfo.getAnnotation();
-        ManagedThreadFactoryDefinition[] definitions = managedThreadFactoryDList.value();
-        if (definitions != null) {
-            for (ManagedThreadFactoryDefinition definition : definitions) {
-                ManagedThreadFactoryDefinitionHandler mtfdh = new ManagedThreadFactoryDefinitionHandler();
-                mtfdh.processAnnotation(definition, resourceContainerContexts);
-            }
-        }
-        return null;
-    }
 }

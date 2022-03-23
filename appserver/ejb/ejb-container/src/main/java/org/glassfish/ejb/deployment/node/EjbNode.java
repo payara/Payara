@@ -68,6 +68,7 @@ import com.sun.enterprise.deployment.node.SecurityRoleRefNode;
 import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.node.ManagedExecutorDefinitionNode;
 import com.sun.enterprise.deployment.node.ManagedThreadFactoryDefinitionNode;
+import com.sun.enterprise.deployment.node.ManagedScheduledExecutorDefinitionNode;
 import com.sun.enterprise.deployment.types.EjbReference;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.xml.TagNames;
@@ -120,6 +121,8 @@ public abstract class EjbNode<S extends EjbDescriptor> extends DisplayableCompon
         registerElementHandler(new XMLElement(TagNames.MANAGED_EXECUTOR), ManagedExecutorDefinitionNode.class, "addResourceDescriptor");
         //adding support for the managed-thread-factory tag
         registerElementHandler(new XMLElement(TagNames.MANAGED_THREAD_FACTORY), ManagedThreadFactoryDefinitionNode.class, "addResourceDescriptor");
+        //adding support for the managed-scheduled-executor tag
+        registerElementHandler(new XMLElement(TagNames.MANAGED_SCHEDULED_EXECUTOR), ManagedScheduledExecutorDefinitionNode.class, "addResourceDescriptor");
     }
 
     @Override

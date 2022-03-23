@@ -43,12 +43,12 @@ import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.config.serverbeans.Resource;
 import com.sun.enterprise.config.serverbeans.Resources;
-import com.sun.enterprise.deployment.ManagedExecutorDefinitionDescriptor;
+import com.sun.enterprise.deployment.ManagedScheduledExecutorDefinitionDescriptor;
 import jakarta.inject.Inject;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.api.logging.LogHelper;
 import org.glassfish.concurrent.LogFacade;
-import org.glassfish.concurrent.config.ManagedExecutorService;
+import org.glassfish.concurrent.config.ManagedScheduledExecutorService;
 import org.glassfish.resourcebase.resources.api.ResourceConflictException;
 import org.glassfish.resourcebase.resources.api.ResourceDeployer;
 import org.glassfish.resourcebase.resources.api.ResourceDeployerInfo;
@@ -69,10 +69,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Service
-@ResourceDeployerInfo(ManagedExecutorDefinitionDescriptor.class)
-public class ManagedExecutorDescriptorDeployer implements ResourceDeployer {
+@ResourceDeployerInfo(ManagedScheduledExecutorDefinitionDescriptor.class)
+public class ManagedScheduledExecutorDefinitionDeployer implements ResourceDeployer  {
 
-    private static final Logger logger = Logger.getLogger(ManagedExecutorDescriptorDeployer.class.getName());
+    private static final Logger logger = Logger.getLogger(ManagedScheduledExecutorDefinitionDeployer.class.getName());
 
     @Inject
     private ResourceNamingService namingService;
@@ -81,25 +81,24 @@ public class ManagedExecutorDescriptorDeployer implements ResourceDeployer {
     private InvocationManager invocationManager;
 
     @Override
-    public void deployResource(Object resource) throws Exception {
-        String applicationName = invocationManager.getCurrentInvocation().getAppName();
-        String moduleName = invocationManager.getCurrentInvocation().getModuleName();
-        deployResource(resource, applicationName, moduleName);
+    public void deployResource(Object resource, String applicationName, String moduleName) throws Exception {
+
     }
 
     @Override
-    public void deployResource(Object resource, String applicationName, String moduleName) throws Exception {
-        ManagedExecutorDefinitionDescriptor managedExecutorDefinitionDescriptor = (ManagedExecutorDefinitionDescriptor) resource;
-        ManagedExecutorServiceConfig managedExecutorServiceConfig =
-                new ManagedExecutorServiceConfig(new CustomManagedExecutorServiceImpl(managedExecutorDefinitionDescriptor));
-        String customNameOfResource = ConnectorsUtil.deriveResourceName(
-                managedExecutorDefinitionDescriptor.getResourceId(), managedExecutorDefinitionDescriptor.getName(), managedExecutorDefinitionDescriptor.getResourceType());
+    public void deployResource(Object resource) throws Exception {
+        ManagedScheduledExecutorDefinitionDescriptor descriptor = (ManagedScheduledExecutorDefinitionDescriptor) resource;
+        ManagedScheduledExecutorServiceConfig config =
+                new ManagedScheduledExecutorServiceConfig(new CustomManagedScheduledExecutorDefinitionImpl(descriptor));
+        String applicationName = invocationManager.getCurrentInvocation().getAppName();
+        String customNameOfResource = ConnectorsUtil.deriveResourceName(descriptor.getResourceId(),
+                descriptor.getName(), descriptor.getResourceType());
         ResourceInfo resourceInfo = new ResourceInfo(customNameOfResource, applicationName, null);
         javax.naming.Reference ref = new javax.naming.Reference(
-                jakarta.enterprise.concurrent.ManagedExecutorService.class.getName(),
+                jakarta.enterprise.concurrent.ManagedScheduledExecutorService.class.getName(),
                 "org.glassfish.concurrent.runtime.deployer.ConcurrentObjectFactory",
                 null);
-        RefAddr addr = new SerializableObjectRefAddr(ManagedExecutorServiceConfig.class.getName(), managedExecutorServiceConfig);
+        RefAddr addr = new SerializableObjectRefAddr(ManagedScheduledExecutorServiceConfig.class.getName(), config);
         ref.add(addr);
         RefAddr resAddr = new SerializableObjectRefAddr(ResourceInfo.class.getName(), resourceInfo);
         ref.add(resAddr);
@@ -109,38 +108,37 @@ public class ManagedExecutorDescriptorDeployer implements ResourceDeployer {
             namingService.publishObject(resourceInfo, ref, true);
         } catch (NamingException ex) {
             LogHelper.log(logger, Level.SEVERE, LogFacade.UNABLE_TO_BIND_OBJECT, ex,
-                    "ManagedExecutorService", managedExecutorServiceConfig.getJndiName());
+                    "ManagedScheduledExecutorService", config.getJndiName());
         }
     }
 
     @Override
     public void undeployResource(Object resource) throws Exception {
-        // FIXME: implement
+
     }
 
     @Override
     public void undeployResource(Object resource, String applicationName, String moduleName) throws Exception {
-        // FIXME: implement
+
     }
 
     @Override
     public void redeployResource(Object resource) throws Exception {
-        // FIXME: implement
+
     }
 
     @Override
     public void enableResource(Object resource) throws Exception {
-        // FIXME: implement
+
     }
 
     @Override
     public void disableResource(Object resource) throws Exception {
-        // FIXME: implement
+
     }
 
     @Override
     public boolean handles(Object resource) {
-        // FIXME: implement
         return false;
     }
 
@@ -151,13 +149,11 @@ public class ManagedExecutorDescriptorDeployer implements ResourceDeployer {
 
     @Override
     public Class[] getProxyClassesForDynamicReconfiguration() {
-        // FIXME: implement
         return new Class[0];
     }
 
     @Override
     public boolean canDeploy(boolean postApplicationDeployment, Collection<Resource> allResources, Resource resource) {
-        // FIXME: implement
         return false;
     }
 
@@ -166,141 +162,17 @@ public class ManagedExecutorDescriptorDeployer implements ResourceDeployer {
 
     }
 
-    class CustomManagedExecutorServiceImpl implements ManagedExecutorService {
+    class CustomManagedScheduledExecutorDefinitionImpl implements ManagedScheduledExecutorService {
 
-        private ManagedExecutorDefinitionDescriptor managedExecutorDefinitionDescriptor;
+        ManagedScheduledExecutorDefinitionDescriptor descriptor;
 
-        public CustomManagedExecutorServiceImpl(ManagedExecutorDefinitionDescriptor managedExecutorDefinitionDescriptor) {
-            this.managedExecutorDefinitionDescriptor = managedExecutorDefinitionDescriptor;
-        }
-        @Override
-        public String getMaximumPoolSize() {
-            return String.valueOf(managedExecutorDefinitionDescriptor.getMaximumPoolSize());
-        }
-
-        @Override
-        public void setMaximumPoolSize(String value) throws PropertyVetoException {
-
-        }
-
-        @Override
-        public String getTaskQueueCapacity() {
-            return "" + Integer.MAX_VALUE;
-        }
-
-        @Override
-        public void setTaskQueueCapacity(String value) throws PropertyVetoException {
-
-        }
-
-        @Override
-        public String getIdentity() {
-            return null;
-        }
-
-        @Override
-        public String getThreadPriority() {
-            return "" + Thread.NORM_PRIORITY;
-        }
-
-        @Override
-        public void setThreadPriority(String value) throws PropertyVetoException {
-
-        }
-
-        @Override
-        public String getLongRunningTasks() {
-            return "false";
-        }
-
-        @Override
-        public void setLongRunningTasks(String value) throws PropertyVetoException {
-
-        }
-
-        @Override
-        public String getHungAfterSeconds() {
-            return "" + managedExecutorDefinitionDescriptor.getHungAfterSeconds();
-        }
-
-        @Override
-        public void setHungAfterSeconds(String value) throws PropertyVetoException {
-
-        }
-
-        @Override
-        public String getCorePoolSize() {
-            return "0";
-        }
-
-        @Override
-        public void setCorePoolSize(String value) throws PropertyVetoException {
-
-        }
-
-        @Override
-        public String getKeepAliveSeconds() {
-            return "60";
-        }
-
-        @Override
-        public void setKeepAliveSeconds(String value) throws PropertyVetoException {
-
-        }
-
-        @Override
-        public String getThreadLifetimeSeconds() {
-            return "0";
-        }
-
-        @Override
-        public void setThreadLifetimeSeconds(String value) throws PropertyVetoException {
-
-        }
-
-        @Override
-        public String getJndiName() {
-            return managedExecutorDefinitionDescriptor.getName();
-        }
-
-        @Override
-        public void setJndiName(String value) throws PropertyVetoException {
-
-        }
-
-        @Override
-        public String getEnabled() {
-            return "true";
-        }
-
-        @Override
-        public void setEnabled(String value) throws PropertyVetoException {
-
-        }
-
-        @Override
-        public String getObjectType() {
-            return "user";
-        }
-
-        @Override
-        public void setObjectType(String value) throws PropertyVetoException {
-
-        }
-
-        @Override
-        public String getDeploymentOrder() {
-            return "100";
-        }
-
-        @Override
-        public void setDeploymentOrder(String value) throws PropertyVetoException {
-
+        public CustomManagedScheduledExecutorDefinitionImpl(ManagedScheduledExecutorDefinitionDescriptor descriptor) {
+            this.descriptor = descriptor;
         }
 
         @Override
         public String getContextInfoEnabled() {
-            return "true";
+            return null;
         }
 
         @Override
@@ -310,7 +182,7 @@ public class ManagedExecutorDescriptorDeployer implements ResourceDeployer {
 
         @Override
         public String getContextInfo() {
-            return managedExecutorDefinitionDescriptor.getContext();
+            return null;
         }
 
         @Override
@@ -320,7 +192,7 @@ public class ManagedExecutorDescriptorDeployer implements ResourceDeployer {
 
         @Override
         public String getDescription() {
-            return "Managed Executor Definition";
+            return null;
         }
 
         @Override
@@ -330,26 +202,6 @@ public class ManagedExecutorDescriptorDeployer implements ResourceDeployer {
 
         @Override
         public List<Property> getProperty() {
-            return null;
-        }
-
-        @Override
-        public ConfigBeanProxy getParent() {
-            return null;
-        }
-
-        @Override
-        public <T extends ConfigBeanProxy> T getParent(Class<T> type) {
-            return null;
-        }
-
-        @Override
-        public <T extends ConfigBeanProxy> T createChild(Class<T> type) throws TransactionFailure {
-            return null;
-        }
-
-        @Override
-        public ConfigBeanProxy deepCopy(ConfigBeanProxy parent) throws TransactionFailure {
             return null;
         }
 
@@ -389,12 +241,138 @@ public class ManagedExecutorDescriptorDeployer implements ResourceDeployer {
         }
 
         @Override
+        public String getThreadPriority() {
+            return null;
+        }
+
+        @Override
+        public void setThreadPriority(String value) throws PropertyVetoException {
+
+        }
+
+        @Override
+        public String getLongRunningTasks() {
+            return null;
+        }
+
+        @Override
+        public void setLongRunningTasks(String value) throws PropertyVetoException {
+
+        }
+
+        @Override
+        public String getHungAfterSeconds() {
+            return String.valueOf(descriptor.getHungTaskThreshold());
+        }
+
+        @Override
+        public void setHungAfterSeconds(String value) throws PropertyVetoException {
+
+        }
+
+        @Override
+        public String getCorePoolSize() {
+            return String.valueOf(descriptor.getMaxAsync());
+        }
+
+        @Override
+        public void setCorePoolSize(String value) throws PropertyVetoException {
+
+        }
+
+        @Override
+        public String getKeepAliveSeconds() {
+            return null;
+        }
+
+        @Override
+        public void setKeepAliveSeconds(String value) throws PropertyVetoException {
+
+        }
+
+        @Override
+        public String getThreadLifetimeSeconds() {
+            return null;
+        }
+
+        @Override
+        public void setThreadLifetimeSeconds(String value) throws PropertyVetoException {
+
+        }
+
+        @Override
         public String getContext() {
-            return managedExecutorDefinitionDescriptor.getContext();
+            return descriptor.getContext();
         }
 
         @Override
         public void setContext(String value) throws PropertyVetoException {
+
+        }
+
+        @Override
+        public String getJndiName() {
+            return descriptor.getName();
+        }
+
+        @Override
+        public void setJndiName(String value) throws PropertyVetoException {
+
+        }
+
+        @Override
+        public String getEnabled() {
+            return null;
+        }
+
+        @Override
+        public void setEnabled(String value) throws PropertyVetoException {
+
+        }
+
+        @Override
+        public String getObjectType() {
+            return null;
+        }
+
+        @Override
+        public void setObjectType(String value) throws PropertyVetoException {
+
+        }
+
+        @Override
+        public String getDeploymentOrder() {
+            return null;
+        }
+
+        @Override
+        public void setDeploymentOrder(String value) throws PropertyVetoException {
+
+        }
+
+        @Override
+        public String getIdentity() {
+            return null;
+        }
+
+        @Override
+        public ConfigBeanProxy getParent() {
+            return null;
+        }
+
+        @Override
+        public <T extends ConfigBeanProxy> T getParent(Class<T> type) {
+            return null;
+        }
+
+        @Override
+        public <T extends ConfigBeanProxy> T createChild(Class<T> type) throws TransactionFailure {
+            return null;
+        }
+
+        @Override
+        public ConfigBeanProxy deepCopy(ConfigBeanProxy parent) throws TransactionFailure {
+            return null;
         }
     }
 }

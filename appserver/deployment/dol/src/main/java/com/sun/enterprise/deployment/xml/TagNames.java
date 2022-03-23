@@ -165,14 +165,20 @@ public interface TagNames {
 
     public static final String MANAGED_EXECUTOR = "managed-executor";
     public static final String MANAGED_EXECUTOR_NAME = "name";
-    public static final String MANAGED_EXECUTOR_MAX_POOL_SIZE = "max-async";
-    public static final String MANAGED_EXECUTOR_HUNG_AFTER_SECONDS = "hung-task-threshold";
-    public static final String MANAGED_EXECUTOR_CONTEXT_INFO = "context-service-ref";
+    public static final String MANAGED_EXECUTOR_MAX_ASYNC = "max-async";
+    public static final String MANAGED_EXECUTOR_HUNG_TASK_THRESHOLD = "hung-task-threshold";
+    public static final String MANAGED_EXECUTOR_CONTEXT_SERVICE_REF = "context-service-ref";
 
     public static final String MANAGED_THREAD_FACTORY = "managed-thread-factory";
     public static final String MANAGED_THREAD_FACTORY_NAME = "name";
-    public static final String MANAGED_THREAD_FACTORY_CONTEXT_INFO = "context-service-ref";
+    public static final String MANAGED_THREAD_FACTORY_CONTEXT_SERVICE_REF = "context-service-ref";
     public static final String MANAGED_THREAD_FACTORY_PRIORITY = "priority";
+
+    public static final String MANAGED_SCHEDULED_EXECUTOR = "managed-scheduled-executor";
+    public static final String MANAGED_SCHEDULED_EXECUTOR_NAME = "name";
+    public static final String MANAGED_SCHEDULED_EXECUTOR_CONTEXT_SERVICE_REF = "context-service-ref";
+    public static final String MANAGED_SCHEDULED_EXECUTOR_MAX_ASYNC = "max-async";
+    public static final String MANAGED_SCHEDULED_EXECUTOR_HUNG_TASK_THRESHOLD = "hung-task-threshold";
 
     public static final String PERSISTENCE_CONTEXT_REF = "persistence-context-ref";
     public static final String PERSISTENCE_CONTEXT_REF_NAME = "persistence-context-ref-name";
