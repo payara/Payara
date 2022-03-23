@@ -364,54 +364,5 @@ public final class EmbeddedWebContainer extends Tomcat implements PostConstruct 
 
         return engine;
     }
-
-
-    /*
-    static class WebEngine extends StandardEngine {
-
-        private WebContainer webContainer;
-
-        public WebEngine(WebContainer webContainer) {
-            this.webContainer = webContainer;
-        }
-
-        @Override
-        public Realm getRealm(){
-            return null;
-        }
-
-        /**
-         * Starts the children (virtual servers) of this StandardEngine
-         * concurrently.
-         *
-        protected void startChildren() {
-
-            
-            new File(webContainer.getAppsWorkRoot()).mkdirs();
-            new File(webContainer.getModulesWorkRoot()).mkdirs();
-            
-            ArrayList<LifecycleStarter> starters
-                = new ArrayList<LifecycleStarter>();
-
-            Container children[] = findChildren();
-            for (int i = 0; i < children.length; i++) {
-                if (children[i] instanceof Lifecycle) {
-                    LifecycleStarter starter =
-                        new LifecycleStarter(((Lifecycle) children[i]));
-                    starters.add(starter);
-                    starter.submit();
-                }
-            }
-
-            for (LifecycleStarter starter : starters) {
-                Throwable t = starter.waitDone(); 
-                if (t != null) {
-                    Lifecycle container = starter.getContainer();
-                    String msg = rb.getString("embedded.startVirtualServerError");
-                    msg = MessageFormat.format(msg, new Object[] { container });
-                    _logger.log(Level.SEVERE, msg, t);
-                }
-            }
-        }
-    }*/
+    
 }
