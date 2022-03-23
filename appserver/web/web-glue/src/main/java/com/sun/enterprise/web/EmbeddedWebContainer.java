@@ -357,23 +357,12 @@ public final class EmbeddedWebContainer extends Tomcat implements PostConstruct 
      * Do not create the JAAS default realm since all children will
      * have their own.
      */
-    @Override
     public Engine createEngine() {
-
         StandardEngine engine = new StandardEngine();
 
-        engine.setDebug(debug);
-        // Default host will be set to the first host added
-        engine.setLogger(super.getLogger());       // Inherited by all children
         engine.setRealm(null);         // Inherited by all children
-        
-        //ContainerListener listener = loadListener
-        //    ("com.sun.enterprise.admin.monitor.callflow.WebContainerListener");
-        //if ( listener != null ) {
-        //    engine.addContainerListener(listener);
-        //}
-        return (engine);
 
+        return engine;
     }
 
 
