@@ -37,34 +37,37 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2022] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.v3.admin.cluster;
 
 import com.sun.enterprise.admin.remote.RemoteRestAdminCommand;
 import com.sun.enterprise.admin.remote.ServerRemoteRestAdminCommand;
-import com.sun.enterprise.admin.util.*;
-import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.Node;
-import com.sun.enterprise.config.serverbeans.Nodes;
-import com.sun.enterprise.config.serverbeans.Server;
+import com.sun.enterprise.admin.util.InstanceStateService;
+import com.sun.enterprise.admin.util.RemoteInstanceCommandHelper;
+import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.util.OS;
 import com.sun.enterprise.util.ObjectAnalyzer;
 import com.sun.enterprise.util.StringUtils;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Logger;
-import java.util.logging.Level;
-import org.glassfish.api.*;
+import fish.payara.nucleus.executorservice.PayaraExecutorService;
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.I18n;
+import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
-
-import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.validation.constraints.Min;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -106,6 +109,9 @@ public class RestartInstanceCommand implements AdminCommand {
     @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     Config dasConfig;
 
+    @Inject
+    private PayaraExecutorService executor;
+
     @Param(optional = false, primary = true)
     private String instanceName;
 
@@ -115,9 +121,13 @@ public class RestartInstanceCommand implements AdminCommand {
 
     @Param(name = "sync", optional = true, defaultValue = "normal", acceptableValues = "none, normal, full")
     private String sync;
-    
-    @Param(name="delay", optional = true, defaultValue = "0")
+
+    @Param(name = "delay", optional = true, defaultValue = "0")
     private int delay;
+
+    @Min(message = "Timeout must be at least 1 second long.", value = 1)
+    @Param(optional = true, defaultValue = "600")
+    private int timeout;
 
     private Logger logger;
 
@@ -134,11 +144,26 @@ public class RestartInstanceCommand implements AdminCommand {
     private String oldPid;
 
     private AdminCommandContext context;
-    
-    private static final long WAIT_TIME_MS = 600000; // 10 minutes
-    
+
     @Override
     public void execute(AdminCommandContext ctx) {
+        CountDownLatch commandTimeout = new CountDownLatch(1);
+        ScheduledFuture<?> commandFuture = executor.schedule(() -> {
+            restartInstance(ctx);
+            commandTimeout.countDown();
+        }, 500, TimeUnit.MILLISECONDS);
+        try {
+            if (!commandTimeout.await(timeout, TimeUnit.SECONDS)) {
+                setError(Strings.get("restart.instance.timeout", instanceName));
+            }
+        } catch (InterruptedException e) {
+        } finally {
+            commandFuture.cancel(true);
+        }
+
+    }
+
+    private void restartInstance(AdminCommandContext ctx) {
         try {
             context = ctx;
             helper = new RemoteInstanceCommandHelper(habitat);
@@ -158,7 +183,7 @@ public class RestartInstanceCommand implements AdminCommand {
             if (logger.isLoggable(Level.FINE))
                 logger.log(Level.FINE, "Restart-instance old-pid = {0}", oldPid);
             callInstance();
-            waitForRestart();
+            checkForRestart();
 
             if (!isError()) {
                 String msg = Strings.get("restart.instance.success", instanceName);
@@ -189,6 +214,7 @@ public class RestartInstanceCommand implements AdminCommand {
             command.add(instanceName);
         }
 
+        // Convert the command into a string representing the command a human should run.
         // Convert the command into a string representing the command a human should run.
         humanCommand = makeCommandHuman(command);
 
@@ -315,35 +341,31 @@ public class RestartInstanceCommand implements AdminCommand {
         String val = rac.findPropertyInReport("restartable");
         if (val != null && val.equals("false")) {
             return false;
-    }
+        }
         return true;
     }
 
-    private void waitForRestart() {
-        if (isError())
+    private void checkForRestart() {
+        if (isError()) {
             return;
-
-        long deadline = System.currentTimeMillis() + WAIT_TIME_MS;
-
-        while (System.currentTimeMillis() < deadline) {
-            try {
-                String newpid = getPid();
-                // when the next statement is true -- the server has restarted.
-                if (StringUtils.ok(newpid) && !newpid.equals(oldPid)) {
-                    if (logger.isLoggable(Level.FINE))
-                        logger.fine("Restarted instance pid = " + newpid);
-                    try {
-                        Thread.sleep(delay);
-                    } catch(InterruptedException ie) {}
-                    return;
-                }
-                Thread.sleep(100);// don't busy wait
-            }
-            catch (Exception e) {
-                // ignore.  This is normal!
-            }
         }
-        setError(Strings.get("restart.instance.timeout", instanceName));
+        try {
+            String newpid = getPid();
+            // when the next statement is true -- the server has restarted.
+            if (StringUtils.ok(newpid) && !newpid.equals(oldPid)) {
+                if (logger.isLoggable(Level.FINE)) {
+                    logger.fine("Restarted instance pid = " + newpid);
+                }
+                try {
+                    Thread.sleep(delay);
+                } catch (InterruptedException ie) {
+                }
+                return;
+            }
+        } catch (Exception e) {
+            // ignore.  This is normal!
+        }
+        setError(Strings.get("restart.instance.racError", instanceName, "instance pid is the same"));
     }
 
     private RemoteRestAdminCommand createRac(String cmdName) throws CommandException {

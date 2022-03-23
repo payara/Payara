@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2022] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.v3.admin.cluster;
 
@@ -92,6 +92,7 @@ public class ClusterCommandHelper {
     private final CommandRunner runner;
 
     private ProgressStatus progress;
+    private long adminTimeout;
 
     /**
      * Construct a ClusterCommandHelper
@@ -102,6 +103,7 @@ public class ClusterCommandHelper {
     public ClusterCommandHelper(Domain domain, CommandRunner runner) {
         this.domain = domain;
         this.runner = runner;
+        this.adminTimeout = RemoteRestAdminCommand.getReadTimeout() - 3000;
     }
 
     /**
@@ -237,14 +239,6 @@ public class ClusterCommandHelper {
 
         if (logger.isLoggable(FINE)) {
             logger.fine(String.format("%s commands queued, waiting for responses", command));
-        }
-
-        // Make sure we don't wait longer than the admin read timeout. Set
-        // our limit to be 3 seconds less.
-        long adminTimeout = RemoteRestAdminCommand.getReadTimeout() - 3000;
-        if (adminTimeout <= 0) {
-            // This should never be the case
-            adminTimeout = 57 * 1000;
         }
         
         if (logger.isLoggable(FINE)) {
@@ -435,5 +429,9 @@ public class ClusterCommandHelper {
     public static class ReportResult {
         public final List<String> succeededServerNames = new ArrayList<>();
         public final List<String> failedServerNames = new ArrayList<>();
+    }
+
+    public void setAdminTimeout(long adminTimeout) {
+        this.adminTimeout = adminTimeout;
     }
 }

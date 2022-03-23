@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016-2021] [Payara Foundation and/or affiliates]
+// Portions Copyright [2016-2022] [Payara Foundation and/or affiliates]
 
 package com.sun.enterprise.admin.servermgmt.cli;
 
@@ -409,23 +409,27 @@ public abstract class LocalServerCommand extends CLICommand {
         }
     }
 
-    /**
-     * Byron Nevins Says: We have quite a historical assortment of ways to determine
-     * if a server has restarted. There are little teeny timing issues with all of
-     * them. I'm confident that this new technique will clear them all up. Here we
-     * are just monitoring the PID of the new server and comparing it to the pid of
-     * the old server. The oldServerPid is guaranteed to be either the PID of the
-     * "old" server or -1 if we couldn't get it -- or it isn't running. If it is -1
-     * then we make the assumption that once we DO get a valid pid that the server
-     * has started. If the old pid is valid we simply poll until we get a different
-     * pid. Notice that we will never get a valid pid back unless the server is
-     * officially up and running and "STARTED" Created April 2013
-     *
-     * @param oldServerPid The pid of the server which is being restarted.
-     * @throws CommandException if we time out.
-     */
     protected final void waitForRestart(final int oldServerPid) throws CommandException {
-        long end = getEndTime();
+        waitForRestart(oldServerPid, CLIConstants.WAIT_FOR_DAS_TIME_MS);
+    }
+
+        /**
+         * Byron Nevins Says: We have quite a historical assortment of ways to determine
+         * if a server has restarted. There are little teeny timing issues with all of
+         * them. I'm confident that this new technique will clear them all up. Here we
+         * are just monitoring the PID of the new server and comparing it to the pid of
+         * the old server. The oldServerPid is guaranteed to be either the PID of the
+         * "old" server or -1 if we couldn't get it -- or it isn't running. If it is -1
+         * then we make the assumption that once we DO get a valid pid that the server
+         * has started. If the old pid is valid we simply poll until we get a different
+         * pid. Notice that we will never get a valid pid back unless the server is
+         * officially up and running and "STARTED" Created April 2013
+         *
+         * @param oldServerPid The pid of the server which is being restarted.
+         * @throws CommandException if we time out.
+         */
+    protected final void waitForRestart(final int oldServerPid, long timeout) throws CommandException {
+        long end = getEndTime(timeout);
 
         while (now() < end) {
             try {
@@ -608,10 +612,10 @@ public abstract class LocalServerCommand extends CLICommand {
         return System.currentTimeMillis();
     }
 
-    private long getEndTime() {
+    private long getEndTime(long timeout) {
         // it's a method in case we someday allow configuring this VERY long
         // timeout at runtime.
-        return CLIConstants.WAIT_FOR_DAS_TIME_MS + now();
+        return timeout + now();
     }
 
     protected boolean dataGridEncryptionEnabled() throws IOException, XMLStreamException {

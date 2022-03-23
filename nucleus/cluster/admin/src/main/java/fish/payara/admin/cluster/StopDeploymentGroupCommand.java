@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2022 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,32 +43,25 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.v3.admin.cluster.ClusterCommandHelper;
 import com.sun.enterprise.v3.admin.cluster.Strings;
 import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
-import java.util.logging.Logger;
-import javax.inject.Inject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.CommandException;
-import org.glassfish.api.admin.CommandRunner;
-import org.glassfish.api.admin.ParameterMap;
-import org.glassfish.api.admin.Progress;
-import org.glassfish.api.admin.RestEndpoint;
-import org.glassfish.api.admin.RestEndpoints;
-import org.glassfish.api.admin.RestParam;
-import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.admin.*;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
+import javax.validation.constraints.Min;
+import java.util.logging.Logger;
+
 /**
  * Stops all instances in a deployment group
- * 
- * @since 5.0
+ *
  * @author Steve Millidge (Payara Services Limited)
+ * @since 5.0
  */
 @I18n("stop.dg.command")
-@Service(name="stop-deployment-group")
+@Service(name = "stop-deployment-group")
 @PerLookup
 @RestEndpoints({
     @RestEndpoint(configBean=DeploymentGroup.class,
@@ -99,7 +92,15 @@ public class StopDeploymentGroupCommand implements AdminCommand{
 
     @Param(optional = true, defaultValue = "false")
     private boolean verbose;
-    
+
+    @Min(message = "Timeout must be at least 1 second long.", value = 1)
+    @Param(optional = true, defaultValue = "600")
+    private int instanceTimeout;
+
+    @Min(message = "Timeout must be at least 1 second long.", value = 1)
+    @Param(optional = true, defaultValue = "600")
+    private int timeout;
+
     @Override
     public void execute(AdminCommandContext context) {
 
@@ -109,7 +110,7 @@ public class StopDeploymentGroupCommand implements AdminCommand{
         logger.info(Strings.get("stop.dg", deploymentGroup));
 
         // Require that we be a DAS
-        if(!env.isDas()) {
+        if (!env.isDas()) {
             String msg = Strings.get("cluster.command.notDas");
             logger.warning(msg);
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
@@ -120,14 +121,15 @@ public class StopDeploymentGroupCommand implements AdminCommand{
         ClusterCommandHelper clusterHelper = new ClusterCommandHelper(domain,
                 runner);
 
-        ParameterMap map = null;
+        ParameterMap map = new ParameterMap();
         if (kill) {
-            map = new ParameterMap();
             map.add("kill", "true");
         }
+        map.add("timeout", String.valueOf(instanceTimeout));
         try {
             // Run start-instance against each instance in the cluster
             String commandName = "stop-instance";
+            clusterHelper.setAdminTimeout(timeout * 1000);
             clusterHelper.runCommand(commandName, map, deploymentGroup, context,
                     verbose);
         } catch (CommandException e) {
@@ -136,5 +138,5 @@ public class StopDeploymentGroupCommand implements AdminCommand{
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setMessage(msg);
         }
-    }    
+    }
 }

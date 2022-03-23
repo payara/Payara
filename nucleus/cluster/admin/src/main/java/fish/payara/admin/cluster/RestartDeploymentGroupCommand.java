@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2022 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,34 +44,29 @@ import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.v3.admin.cluster.ClusterCommandHelper;
 import com.sun.enterprise.v3.admin.cluster.Strings;
 import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
-import java.util.List;
-import java.util.logging.Logger;
-import javax.inject.Inject;
+import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.CommandException;
-import org.glassfish.api.admin.CommandLock;
-import org.glassfish.api.admin.CommandRunner;
-import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.ParameterMap;
-import org.glassfish.api.admin.RestEndpoint;
-import org.glassfish.api.admin.RestEndpoints;
-import org.glassfish.api.admin.RestParam;
-import org.glassfish.api.admin.RuntimeType;
-import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.admin.*;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
+import javax.validation.constraints.Min;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
+
 /**
  * Restarts all instances in a deployment group
- * 
- * @since 5.0
+ *
  * @author Steve Millidge (Payara Services Limited)
+ * @since 5.0
  */
 @Service(name = "restart-deployment-group")
-@ExecuteOn(value={RuntimeType.DAS})
+@ExecuteOn(value = {RuntimeType.DAS})
 @CommandLock(CommandLock.LockType.NONE) // don't prevent _synchronize-files
 @PerLookup
 @RestEndpoints({
@@ -86,7 +81,7 @@ import org.jvnet.hk2.annotations.Service;
 public class RestartDeploymentGroupCommand implements AdminCommand {
     
     private static final String NL = System.lineSeparator();
-    
+
     @Inject
     private ServerEnvironment env;
 
@@ -96,6 +91,9 @@ public class RestartDeploymentGroupCommand implements AdminCommand {
     @Inject
     private CommandRunner runner;
 
+    @Inject
+    private PayaraExecutorService executor;
+
     @Param(optional = false, primary = true)
     private String deploymentGroup;
 
@@ -104,9 +102,19 @@ public class RestartDeploymentGroupCommand implements AdminCommand {
 
     @Param(optional = true, defaultValue = "true")
     private boolean rolling;
-    
+
     @Param(optional = true, defaultValue = "5000")
     private String delay;
+
+    @Min(message = "Timeout must be at least 1 second long.", value = 1)
+    @Param(optional = true, defaultValue = "600")
+    private int instanceTimeout;
+
+    @Min(message = "Timeout must be at least 1 second long.", value = 1)
+    @Param(optional = true, defaultValue = "600")
+    private int timeout;
+
+    private ActionReport report;
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -123,9 +131,26 @@ public class RestartDeploymentGroupCommand implements AdminCommand {
             report.setMessage(msg);
             return;
         }
-        
+
         if (rolling) {
-            doRolling(context);
+            CountDownLatch commandTimeout = new CountDownLatch(1);
+            ScheduledFuture<?> commandFuture = executor.schedule(() -> {
+                doRolling(context);
+                commandTimeout.countDown();
+            }, 500, TimeUnit.MILLISECONDS);
+            try {
+                if (!commandTimeout.await(timeout, TimeUnit.SECONDS)) {
+                    String msg = Strings.get("restart.dg.timeout", deploymentGroup);
+
+                    report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                    report.setMessage(msg);
+                    return;
+                }
+            } catch (InterruptedException e) {
+                return;
+            } finally {
+                commandFuture.cancel(true);
+            }
         } else {
 
             ClusterCommandHelper clusterHelper = new ClusterCommandHelper(domain,
@@ -133,36 +158,38 @@ public class RestartDeploymentGroupCommand implements AdminCommand {
 
             ParameterMap pm = new ParameterMap();
             pm.add("delay", delay);
+            pm.add("timeout", String.valueOf(instanceTimeout));
             try {
                 // Run restart-instance against each instance in the Deployment Group
                 String commandName = "restart-instance";
+                clusterHelper.setAdminTimeout(timeout * 1000);
                 clusterHelper.runCommand(commandName, pm, deploymentGroup, context,
                         verbose, rolling);
-            }
-            catch (CommandException e) {
+            } catch (CommandException e) {
                 String msg = e.getLocalizedMessage();
                 logger.warning(msg);
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            report.setMessage(msg);
+                report.setMessage(msg);
             }
         }
     }
 
     private void doRolling(AdminCommandContext context) {
         List<Server> servers = domain.getServersInTarget(deploymentGroup);
-         StringBuilder output = new StringBuilder();
+        StringBuilder output = new StringBuilder();
         Logger logger = context.getLogger();
-        
+
         for (Server server : servers) {
             ParameterMap instanceParameterMap = new ParameterMap();
             // Set the instance name as the operand for the commnd
             instanceParameterMap.set("DEFAULT", server.getName());
+            instanceParameterMap.add("timeout", String.valueOf(instanceTimeout));
 
             ActionReport instanceReport = runner.getActionReport("plain");
             instanceReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
             CommandRunner.CommandInvocation invocation = runner.getCommandInvocation(
                         "stop-instance", instanceReport, context.getSubject());
-            invocation.parameters(instanceParameterMap);           
+            invocation.parameters(instanceParameterMap);
 
             String msg = "stop-instance" + " " + server.getName();
             logger.info(msg);
@@ -177,6 +204,7 @@ public class RestartDeploymentGroupCommand implements AdminCommand {
             instanceParameterMap = new ParameterMap();
             // Set the instance name as the operand for the commnd
             instanceParameterMap.set("DEFAULT", server.getName());
+            instanceParameterMap.add("timeout", String.valueOf(instanceTimeout));
             instanceReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
             invocation = runner.getCommandInvocation(
                         "start-instance", instanceReport, context.getSubject());

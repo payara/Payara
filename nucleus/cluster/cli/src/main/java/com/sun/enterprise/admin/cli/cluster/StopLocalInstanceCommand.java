@@ -37,27 +37,29 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2022] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.cli.cluster;
 
-import java.util.logging.Level;
-import com.sun.enterprise.admin.cli.*;
 import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
 import com.sun.enterprise.universal.process.ProcessUtils;
 import com.sun.enterprise.util.HostAndPort;
 import com.sun.enterprise.util.io.FileUtils;
-import java.io.*;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.*;
+import org.glassfish.api.admin.CommandException;
+import org.glassfish.api.admin.CommandValidationException;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
+import javax.validation.constraints.Min;
+import java.io.File;
+import java.util.logging.Level;
+
 /**
  * Stop a local server instance.
+ *
  * @author Bill Shannon
  * @author Byron Nevins
- *
  */
 @Service(name = "stop-local-instance")
 @PerLookup
@@ -65,15 +67,25 @@ public class StopLocalInstanceCommand extends LocalInstanceCommand {
 
     @Param(optional = true, defaultValue = "true")
     private Boolean force;
+
     @Param(name = "instance_name", primary = true, optional = true)
     private String userArgInstanceName;
+
     @Param(optional = true, defaultValue = "false")
     Boolean kill;
+
+    @Min(message = "Timeout must be at least 1 second long.", value = 1)
+    @Param(optional = true, defaultValue = "600")
+    private int timeout;
 
     @Override
     protected void validate() throws CommandException, CommandValidationException {
         instanceName = userArgInstanceName;
         super.validate();
+
+        if (timeout < 1) {
+            throw new CommandException("Timeout must be at least 1 second long.");
+        }
     }
 
     @Override
@@ -260,12 +272,12 @@ public class StopLocalInstanceCommand extends LocalInstanceCommand {
         }
 
         if (alive) {
-            throw new CommandException(Strings.get("StopInstance.instanceNotDead", (CLIConstants.DEATH_TIMEOUT_MS / 1000)));
+            throw new CommandException(Strings.get("StopInstance.instanceNotDead", timeout));
         }
     }
 
     private boolean timedOut(long startTime) {
-        return (System.currentTimeMillis() - startTime) > CLIConstants.DEATH_TIMEOUT_MS;
+        return (System.currentTimeMillis() - startTime) > (timeout * 1000);
     }
 
     private int kill() throws CommandException {

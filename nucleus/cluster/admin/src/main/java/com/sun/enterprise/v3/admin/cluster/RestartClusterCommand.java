@@ -37,26 +37,24 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates] 
+ * Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
  *
  */
 
 package com.sun.enterprise.v3.admin.cluster;
 
 import com.sun.enterprise.config.serverbeans.Cluster;
-import java.util.logging.Logger;
-
-import org.glassfish.api.admin.*;
-import javax.inject.Inject;
-
-
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.api.Param;
+import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.ExitCode;
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.*;
 import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.Service;
 
-import com.sun.enterprise.config.serverbeans.Domain;
+import javax.inject.Inject;
+import javax.validation.constraints.Min;
+import java.util.logging.Logger;
 
 @Service(name = "restart-cluster")
 @ExecuteOn(value={RuntimeType.DAS})
@@ -88,12 +86,20 @@ public class RestartClusterCommand implements AdminCommand {
 
     @Param(optional = true, defaultValue = "false")
     private boolean verbose;
-    
+
     @Param(optional = true, defaultValue = "true")
     private boolean rolling;
-    
+
     @Param(optional = true, defaultValue = "0")
     private String delay;
+
+    @Min(message = "Timeout must be at least 1 second long.", value = 1)
+    @Param(optional = true, defaultValue = "600")
+    private int instanceTimeout;
+
+    @Min(message = "Timeout must be at least 1 second long.", value = 1)
+    @Param(optional = true, defaultValue = "600")
+    private int timeout;
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -120,6 +126,8 @@ public class RestartClusterCommand implements AdminCommand {
             String commandName = "restart-instance";
             ParameterMap pm = new ParameterMap();
             pm.add("delay", delay);
+            pm.add("timeout", String.valueOf(instanceTimeout));
+            clusterHelper.setAdminTimeout(timeout * 1000);
             clusterHelper.runCommand(commandName, pm, clusterName, context,
                     verbose, rolling);
         }

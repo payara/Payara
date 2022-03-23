@@ -38,23 +38,26 @@
  * holder.
  */
 
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2022] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.v3.admin.cluster;
 
 import com.sun.enterprise.config.serverbeans.Cluster;
-import java.util.logging.Logger;
-import javax.inject.Inject;
-
-
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.api.I18n;
-import org.glassfish.api.Param;
+import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.ExitCode;
-import com.sun.enterprise.config.serverbeans.Domain;
+import org.glassfish.api.I18n;
+import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.Service;
+
+import javax.inject.Inject;
+import javax.validation.constraints.Min;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 
 @I18n("stop.cluster.command")
 @Service(name="stop-cluster")
@@ -89,6 +92,14 @@ public class StopClusterCommand implements AdminCommand {
     @Param(optional = true, defaultValue = "false")
     private boolean verbose;
 
+    @Min(message = "Timeout must be at least 1 second long.", value = 1)
+    @Param(optional = true, defaultValue = "600")
+    private int instanceTimeout;
+
+    @Min(message = "Timeout must be at least 1 second long.", value = 1)
+    @Param(optional = true, defaultValue = "600")
+    private int timeout;
+
     @Override
     public void execute(AdminCommandContext context) {
 
@@ -98,7 +109,7 @@ public class StopClusterCommand implements AdminCommand {
         logger.info(Strings.get("stop.cluster", clusterName));
 
         // Require that we be a DAS
-        if(!env.isDas()) {
+        if (!env.isDas()) {
             String msg = Strings.get("cluster.command.notDas");
             logger.warning(msg);
             report.setActionExitCode(ExitCode.FAILURE);
@@ -109,14 +120,15 @@ public class StopClusterCommand implements AdminCommand {
         ClusterCommandHelper clusterHelper = new ClusterCommandHelper(domain,
                 runner);
 
-        ParameterMap map = null;
+        ParameterMap map = new ParameterMap();
         if (kill) {
-            map = new ParameterMap();
             map.add("kill", "true");
         }
+        map.add("timeout", String.valueOf(instanceTimeout));
         try {
             // Run start-instance against each instance in the cluster
             String commandName = "stop-instance";
+            clusterHelper.setAdminTimeout(timeout * 1000);
             clusterHelper.runCommand(commandName, map, clusterName, context,
                     verbose);
         } catch (CommandException e) {

@@ -37,24 +37,22 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2022] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.v3.admin.cluster;
 
 import com.sun.enterprise.config.serverbeans.Cluster;
-import java.util.logging.Logger;
-
-import org.glassfish.api.admin.*;
-import javax.inject.Inject;
-
-
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.api.I18n;
-import org.glassfish.api.Param;
+import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.ExitCode;
+import org.glassfish.api.I18n;
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.*;
 import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.Service;
 
-import com.sun.enterprise.config.serverbeans.Domain;
+import javax.inject.Inject;
+import javax.validation.constraints.Min;
+import java.util.logging.Logger;
 
 @I18n("start.cluster.command")
 @Service(name = "start-cluster")
@@ -87,10 +85,18 @@ public class StartClusterCommand implements AdminCommand {
 
     @Param(optional = true, defaultValue = "false")
     private boolean verbose;
-   
+
+    @Min(message = "Timeout must be at least 1 second long.", value = 1)
+    @Param(optional = true, defaultValue = "600")
+    private int instanceTimeout;
+
+    @Min(message = "Timeout must be at least 1 second long.", value = 1)
+    @Param(optional = true, defaultValue = "600")
+    private int timeout;
+
     @Override
     public void execute(AdminCommandContext context) {
-     
+
         ActionReport report = context.getActionReport();
         Logger logger = context.getLogger();
 
@@ -107,12 +113,15 @@ public class StartClusterCommand implements AdminCommand {
 
         ClusterCommandHelper clusterHelper = new ClusterCommandHelper(domain,
                 runner);
-       
+
         try {
             // Run start-instance against each instance in the cluster
-            String commandName = "start-instance";          
-            clusterHelper.runCommand(commandName, null, clusterName, context,
-                    verbose);           
+            String commandName = "start-instance";
+            ParameterMap map = new ParameterMap();
+            map.add("timeout", String.valueOf(instanceTimeout));
+            clusterHelper.setAdminTimeout(timeout * 1000);
+            clusterHelper.runCommand(commandName, map, clusterName, context,
+                    verbose);
         }
         catch (CommandException e) {
             String msg = e.getLocalizedMessage();
