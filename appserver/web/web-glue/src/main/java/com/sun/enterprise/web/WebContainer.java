@@ -321,13 +321,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
     protected ServerEnvironment instance = null;
 
     /**
-     * Controls the verbosity of the web container subsystem's debug messages.
-     * <p/>
-     * This value is non-zero only when the iAS level is one of FINE, FINER or FINEST.
-     */
-    protected int _debug = 0;
-
-    /**
      * Absolute path for location where all the deployed standalone modules are stored for this Server Instance.
      */
     protected File _modulesRoot;
@@ -466,39 +459,17 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
             _embedded.setFileLoggerHandlerFactory(fileLoggerHandlerFactory);
             _embedded.setWebContainerFeatureFactory(webContainerFeatureFactory);
 
-            _embedded.setCatalinaHome(instance.getInstanceRoot().getAbsolutePath());
-            _embedded.setCatalinaBase(instance.getInstanceRoot().getAbsolutePath());
-            _embedded.setUseNaming(false);
-            if (_debug > 1) {
-                _embedded.setDebug(_debug);
-            }
+            _embedded.getServer().setCatalinaHome(instance.getInstanceRoot().getAbsoluteFile());
+            _embedded.getServer().setCatalinaBase(instance.getInstanceRoot().getAbsoluteFile());
 
-            _embedded.setLogger(new IASLogger(logger));
             engine = _embedded.createEngine();
             engine.setParentClassLoader(EmbeddedWebContainer.class.getClassLoader());
-            engine.setService(_embedded);
-            _embedded.addEngine(engine);
+            engine.setService(_embedded.getService());
+            _embedded.getService().setContainer(engine);
             ((StandardEngine) engine).setDomain(_serverContext.getDefaultDomainName());
             engine.setName(_serverContext.getDefaultDomainName());
 
-            /*
-             * Set the server info. By default, the server info is taken from Version#getVersion. However, customers may override it
-             * via the product.name system property. Some customers prefer not to disclose the server info for security reasons, in
-             * which case they would set the value of the product.name system property to the empty string. In this case, the server
-             * name will not be publicly disclosed via the "Server" HTTP response header (which will be suppressed) or any container
-             * generated error pages. However, it will still appear in the server logs (see IT 6900).
-             */
-            String serverInfo = System.getProperty("product.name");
-            if (serverInfo == null) {
-                ServerInfo.setServerInfo(Version.getVersion());
-                ServerInfo.setPublicServerInfo(Version.getVersion());
-            } else if (serverInfo.isEmpty()) {
-                ServerInfo.setServerInfo(Version.getVersion());
-                ServerInfo.setPublicServerInfo(serverInfo);
-            } else {
-                ServerInfo.setServerInfo(serverInfo);
-                ServerInfo.setPublicServerInfo(serverInfo);
-            }
+            String[] catalinaArguments = new String[]{"-nonaming"};
 
             initInstanceSessionProperties();
 
@@ -575,6 +546,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
                  * onwards. See IT 11110
                  */
                 ImageIO.getCacheDirectory();
+                _embedded.init(null, catalinaArguments);
                 _embedded.start();
             } catch (LifecycleException le) {
                 logger.log(SEVERE, UNABLE_TO_START_WEB_CONTAINER, le);
