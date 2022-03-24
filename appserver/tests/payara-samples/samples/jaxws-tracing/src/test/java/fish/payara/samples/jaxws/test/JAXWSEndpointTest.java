@@ -47,7 +47,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import jakarta.inject.Inject;
-import javax.xml.ws.Service;
+import jakarta.xml.ws.Service;
 
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;

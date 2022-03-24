@@ -37,19 +37,19 @@
  *    only if the new code is made subject to such option by the copyright
  *    holder.
  */
-package fish.payara.samples.jaxws.security.servlet;
+package fish.payara.samples.jaxws.security.ejb;
 
-import fish.payara.cdi.auth.roles.RolesPermitted;
-import jakarta.enterprise.context.Dependent;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.ejb.Stateless;
 import jakarta.jws.WebMethod;
 import jakarta.jws.WebService;
 
 @WebService(serviceName="CalculatorService")
-@Dependent
-public class CalculatorService {
+@Stateless
+public class CalculatorServiceEjb {
 
     @WebMethod(operationName = "helloRestricted")
-    @RolesPermitted("hello")
+    @RolesAllowed("hello")
     public String helloRestricted() {
         return "Hello, world!";
     }

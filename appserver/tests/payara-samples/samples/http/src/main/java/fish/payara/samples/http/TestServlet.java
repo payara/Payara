@@ -39,7 +39,6 @@
  */
 package fish.payara.samples.http;
 
-import com.sun.enterprise.util.JDK;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -49,10 +48,6 @@ import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import java.io.IOException;
-import java.lang.management.ManagementFactory;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import java.util.List;
 import javax.net.ssl.SSLContext;
 
 @WebServlet(value = "/hello")
@@ -68,23 +63,8 @@ public class TestServlet extends HttpServlet {
         resp.getOutputStream().print("\n"+response.getStatus());
     }
 
-    static boolean hasTLS13Support() {
-        List<String> jvmOptions = ManagementFactory.getRuntimeMXBean().getInputArguments();
-        boolean openJSSEOption = jvmOptions.contains("-XX:+UseOpenJSSE");
-        return JDK.isTls13Supported() || openJSSEOption && JDK.isOpenJSSEFlagRequired();
-    }
-
     static ClientBuilder newClientBuilder() {
         SSLContext sslContext = null;
-        try {
-            if (!hasTLS13Support()) {
-                sslContext = SSLContext.getInstance("TLSv1.2");
-                sslContext.init(null, null, null);
-            }
-        } catch (NoSuchAlgorithmException | KeyManagementException ex) {
-            throw new IllegalStateException(ex);
-        }
-
         ClientBuilder builder = ClientBuilder.newBuilder();
         if (sslContext != null) {
             builder.sslContext(sslContext);
