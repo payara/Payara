@@ -82,6 +82,18 @@ public class PwcCoyoteRequest extends Request {
     private int formDataLen = 0;
     // END SJSAS 6346738
 
+    /**
+     * Create a new Request object associated with the given Connector.
+     *
+     * @param connector The Connector with which this Request object will always
+     *                  be associated. In normal usage this must be non-null. In
+     *                  some test scenarios, it may be possible to use a null
+     *                  Connector without triggering an NPE.
+     */
+    public PwcCoyoteRequest(Connector connector) {
+        super(connector);
+    }
+
     @Override
     public void setContext(Context ctx) {
         if (ctx == null) {

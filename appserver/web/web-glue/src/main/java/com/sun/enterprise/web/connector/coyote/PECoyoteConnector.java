@@ -274,9 +274,7 @@ public class PECoyoteConnector extends Connector {
      */
     @Override
     public Request createRequest() {
-        PwcCoyoteRequest request = new PwcCoyoteRequest();
-        request.setConnector(this);
-        return request;
+        return new PwcCoyoteRequest(this);
     }
 
 
