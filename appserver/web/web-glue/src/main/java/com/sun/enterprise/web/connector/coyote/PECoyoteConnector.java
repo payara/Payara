@@ -51,6 +51,7 @@ import com.sun.enterprise.web.connector.extension.GrizzlyConfig;
 import com.sun.enterprise.web.connector.grizzly.DummyConnectorLauncher;
 import com.sun.enterprise.web.pwc.connector.coyote.PwcCoyoteRequest;
 import org.glassfish.grizzly.config.dom.*;
+import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.util.Mapper;
 import org.glassfish.web.util.IntrospectionUtils;
 import org.apache.catalina.*;
@@ -251,6 +252,8 @@ public class PECoyoteConnector extends Connector {
     private WebContainer webContainer;
 
     private RequestProbeProvider requestProbeProvider;
+
+    private HttpHandler handler = null;
 
 
     /**
@@ -1477,6 +1480,20 @@ public class PECoyoteConnector extends Connector {
      */
     public void setMapper(Mapper mapper){
         this.mapper = mapper;
+    }
+
+    /**
+     * Set the <code>Adapter</code> used by this connector.
+     */
+    public void setHandler(HttpHandler handler){
+        this.handler = handler;
+    }
+
+    /**
+     * Get the <code>Adapter</code> used by this connector.
+     */
+    public HttpHandler getHandler(){
+        return handler;
     }
 }
 
