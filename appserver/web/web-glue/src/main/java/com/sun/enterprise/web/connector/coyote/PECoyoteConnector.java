@@ -262,9 +262,9 @@ public class PECoyoteConnector extends Connector {
      * Constructor
      */
     public PECoyoteConnector(WebContainer webContainer) {
+        super(DUMMY_CONNECTOR_LAUNCHER);
         this.webContainer = webContainer;
         requestProbeProvider = webContainer.getRequestProbeProvider();
-        setProtocolHandlerClassName(DUMMY_CONNECTOR_LAUNCHER);
     }
 
 
