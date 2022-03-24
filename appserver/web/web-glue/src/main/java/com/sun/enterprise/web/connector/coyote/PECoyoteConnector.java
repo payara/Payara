@@ -50,6 +50,8 @@ import com.sun.enterprise.web.connector.MapperListener;
 import com.sun.enterprise.web.connector.extension.GrizzlyConfig;
 import com.sun.enterprise.web.connector.grizzly.DummyConnectorLauncher;
 import com.sun.enterprise.web.pwc.connector.coyote.PwcCoyoteRequest;
+import org.apache.catalina.connector.Request;
+import org.apache.catalina.connector.Response;
 import org.glassfish.grizzly.config.dom.*;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.util.Mapper;
