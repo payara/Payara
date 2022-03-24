@@ -634,10 +634,10 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
     @Override
     public void preDestroy() {
         try {
-            for (Connector connector : _embedded.findConnectors()) {
+            for (Connector connector : _embedded.getConnectors()) {
                 deleteConnector((WebConnector) connector);
             }
-            _embedded.removeEngine(getEngine());
+            _embedded.getService().setContainer(null);
             _embedded.destroy();
         } catch (LifecycleException le) {
             logger.log(SEVERE, UNABLE_TO_STOP_WEB_CONTAINER, le);
