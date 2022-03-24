@@ -285,10 +285,7 @@ public class PECoyoteConnector extends Connector {
      */
     @Override
     public Response createResponse() {
-        PECoyoteResponse response = new PECoyoteResponse();
-        response.setConnector(this);
-        return response;
-
+        return new PECoyoteResponse();
     }
 
 
