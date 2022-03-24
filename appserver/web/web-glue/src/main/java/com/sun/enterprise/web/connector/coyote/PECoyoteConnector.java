@@ -51,6 +51,7 @@ import com.sun.enterprise.web.connector.extension.GrizzlyConfig;
 import com.sun.enterprise.web.connector.grizzly.DummyConnectorLauncher;
 import com.sun.enterprise.web.pwc.connector.coyote.PwcCoyoteRequest;
 import org.glassfish.grizzly.config.dom.*;
+import org.glassfish.grizzly.http.server.util.Mapper;
 import org.glassfish.web.util.IntrospectionUtils;
 import org.apache.catalina.*;
 import org.apache.catalina.connector.Connector;
@@ -185,6 +186,8 @@ public class PECoyoteConnector extends Connector {
      * Mapper listener.
      */
     protected MapperListener mapperListener;
+
+    protected Mapper mapper;
 
 
     // --------------------------------------------- FileCache support --//
@@ -1458,6 +1461,22 @@ public class PECoyoteConnector extends Connector {
         }
 
         return jsseCipher;
+    }
+
+
+    /**
+     * Return the mapper.
+     */
+    public Mapper getMapper() {
+        return mapper;
+    }
+
+    /**
+     * Set the {@link Mapper}.
+     * @param mapper
+     */
+    public void setMapper(Mapper mapper){
+        this.mapper = mapper;
     }
 }
 
