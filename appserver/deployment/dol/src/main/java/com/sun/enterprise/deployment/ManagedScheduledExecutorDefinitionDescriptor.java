@@ -50,8 +50,8 @@ public class ManagedScheduledExecutorDefinitionDescriptor extends ResourceDescri
 
     private String name;
     private String context;
-    private long hungTaskThreshold = -1;
-    private int maxAsync = -1;
+    private long hungTaskThreshold = 0;
+    private int maxAsync = Integer.MAX_VALUE;
 
     private Properties properties = new Properties();
 
