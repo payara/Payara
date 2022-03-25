@@ -47,7 +47,7 @@ package com.sun.enterprise.security.integration;
  */
 public class AppClientSSL {
     private boolean tlsEnabled = true;
-    private boolean tlsEnabled11 = true;
+    private boolean tlsEnabled11 = false;
     private boolean tlsEnabled12 = true;
     private boolean tlsEnabled13 = true;
     private boolean tlsRollbackEnabled = true;

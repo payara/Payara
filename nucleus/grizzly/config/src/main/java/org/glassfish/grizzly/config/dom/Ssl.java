@@ -58,9 +58,9 @@ public interface Ssl extends ConfigBeanProxy, PropertyBag {
     boolean SSL2_ENABLED = false;
     boolean SSL3_ENABLED = false;
     boolean TLS_ENABLED = true;
-    boolean TLS11_ENABLED = true;
+    boolean TLS11_ENABLED = false;
     boolean TLS12_ENABLED = true;
-    boolean TLS13_ENABLED = false;
+    boolean TLS13_ENABLED = true;
     boolean TLS_ROLLBACK_ENABLED = true;
     boolean HSTS_ENABLED = false;
     boolean HSTS_SUBDOMAINS = false;
