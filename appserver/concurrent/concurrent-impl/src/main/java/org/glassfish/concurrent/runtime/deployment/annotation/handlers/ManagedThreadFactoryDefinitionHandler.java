@@ -39,13 +39,11 @@
  */
 package org.glassfish.concurrent.runtime.deployment.annotation.handlers;
 
-import com.sun.enterprise.deployment.ManagedExecutorDefinitionDescriptor;
 import com.sun.enterprise.deployment.ManagedThreadFactoryDefinitionDescriptor;
 import com.sun.enterprise.deployment.MetadataSource;
 import com.sun.enterprise.deployment.ResourceDescriptor;
 import com.sun.enterprise.deployment.annotation.context.ResourceContainerContext;
 import com.sun.enterprise.deployment.annotation.handlers.AbstractResourceHandler;
-import jakarta.enterprise.concurrent.ManagedExecutorDefinition;
 import jakarta.enterprise.concurrent.ManagedThreadFactoryDefinition;
 import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
@@ -98,7 +96,9 @@ public class ManagedThreadFactoryDefinitionHandler extends AbstractResourceHandl
         mtfdd.setMetadataSource(MetadataSource.ANNOTATION);
         mtfdd.setName(TranslatedConfigView.expandValue(managedThreadFactoryDefinition.name()));
         mtfdd.setContext(TranslatedConfigView.expandValue(managedThreadFactoryDefinition.context()));
-        mtfdd.setPriority(managedThreadFactoryDefinition.priority());
+        if(managedThreadFactoryDefinition.priority() < 0) {
+            mtfdd.setPriority(Thread.NORM_PRIORITY);
+        }
         return mtfdd;
     }
 

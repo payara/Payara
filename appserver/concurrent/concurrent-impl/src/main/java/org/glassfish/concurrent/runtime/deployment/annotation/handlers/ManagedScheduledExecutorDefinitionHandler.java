@@ -94,8 +94,15 @@ public class ManagedScheduledExecutorDefinitionHandler extends AbstractResourceH
                 new ManagedScheduledExecutorDefinitionDescriptor();
         msedd.setName(TranslatedConfigView.expandValue(managedScheduledExecutorDefinition.name()));
         msedd.setContext(TranslatedConfigView.expandValue(managedScheduledExecutorDefinition.context()));
-        msedd.setHungTaskThreshold(managedScheduledExecutorDefinition.hungTaskThreshold());
-        msedd.setMaxAsync(managedScheduledExecutorDefinition.maxAsync());
+
+        if(managedScheduledExecutorDefinition.hungTaskThreshold() < 0) {
+            msedd.setHungTaskThreshold(0);
+        }
+
+        if(managedScheduledExecutorDefinition.maxAsync() < 0) {
+            msedd.setMaxAsync(Integer.MAX_VALUE);
+        }
+
         msedd.setMetadataSource(MetadataSource.ANNOTATION);
         return msedd;
     }

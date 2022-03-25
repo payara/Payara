@@ -50,7 +50,7 @@ public class ManagedThreadFactoryDefinitionDescriptor extends ResourceDescriptor
 
     private String name;
     private String context;
-    private int priority = -1;
+    private int priority = Thread.NORM_PRIORITY;
     private Properties properties = new Properties();
 
     public ManagedThreadFactoryDefinitionDescriptor() {

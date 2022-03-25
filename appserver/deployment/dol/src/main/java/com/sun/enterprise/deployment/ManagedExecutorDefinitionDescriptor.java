@@ -49,8 +49,8 @@ public class ManagedExecutorDefinitionDescriptor extends ResourceDescriptor {
     private static final String JAVA_COMP_URL = "java:comp/";
 
     private String name;
-    private int maximumPoolSize = -1;
-    private long hungAfterSeconds = -1;
+    private int maximumPoolSize = Integer.MAX_VALUE;
+    private long hungAfterSeconds = 0;
     private String context;
     private Properties properties = new Properties();
 
