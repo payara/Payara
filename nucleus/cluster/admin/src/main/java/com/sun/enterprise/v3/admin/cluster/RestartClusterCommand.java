@@ -93,12 +93,10 @@ public class RestartClusterCommand implements AdminCommand {
     @Param(optional = true, defaultValue = "0")
     private String delay;
 
-    @Min(message = "Timeout must be at least 1 second long.", value = 1)
-    @Param(optional = true, defaultValue = "600")
+    @Param(optional = true)
     private int instanceTimeout;
 
-    @Min(message = "Timeout must be at least 1 second long.", value = 1)
-    @Param(optional = true, defaultValue = "600")
+    @Param(optional = true)
     private int timeout;
 
     @Override
@@ -126,8 +124,12 @@ public class RestartClusterCommand implements AdminCommand {
             String commandName = "restart-instance";
             ParameterMap pm = new ParameterMap();
             pm.add("delay", delay);
-            pm.add("timeout", String.valueOf(instanceTimeout));
-            clusterHelper.setAdminTimeout(timeout * 1000);
+            if (instanceTimeout > 0) {
+                pm.add("timeout", String.valueOf(instanceTimeout));
+            }
+            if (timeout > 0) {
+                clusterHelper.setAdminTimeout(timeout * 1000);
+            }
             clusterHelper.runCommand(commandName, pm, clusterName, context,
                     verbose, rolling);
         }

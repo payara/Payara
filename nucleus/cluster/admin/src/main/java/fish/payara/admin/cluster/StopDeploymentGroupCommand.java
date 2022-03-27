@@ -93,12 +93,10 @@ public class StopDeploymentGroupCommand implements AdminCommand{
     @Param(optional = true, defaultValue = "false")
     private boolean verbose;
 
-    @Min(message = "Timeout must be at least 1 second long.", value = 1)
-    @Param(optional = true, defaultValue = "600")
+    @Param(optional = true)
     private int instanceTimeout;
 
-    @Min(message = "Timeout must be at least 1 second long.", value = 1)
-    @Param(optional = true, defaultValue = "600")
+    @Param(optional = true)
     private int timeout;
 
     @Override
@@ -125,11 +123,15 @@ public class StopDeploymentGroupCommand implements AdminCommand{
         if (kill) {
             map.add("kill", "true");
         }
-        map.add("timeout", String.valueOf(instanceTimeout));
+        if (instanceTimeout > 0) {
+            map.add("timeout", String.valueOf(instanceTimeout));
+        }
         try {
             // Run start-instance against each instance in the cluster
             String commandName = "stop-instance";
-            clusterHelper.setAdminTimeout(timeout * 1000);
+            if (timeout > 0) {
+                clusterHelper.setAdminTimeout(timeout * 1000);
+            }
             clusterHelper.runCommand(commandName, map, deploymentGroup, context,
                     verbose);
         } catch (CommandException e) {

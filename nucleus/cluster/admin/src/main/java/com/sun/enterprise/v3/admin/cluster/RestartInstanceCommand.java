@@ -60,12 +60,8 @@ import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.validation.constraints.Min;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -125,8 +121,7 @@ public class RestartInstanceCommand implements AdminCommand {
     @Param(name = "delay", optional = true, defaultValue = "0")
     private int delay;
 
-    @Min(message = "Timeout must be at least 1 second long.", value = 1)
-    @Param(optional = true, defaultValue = "600")
+    @Param(optional = true)
     private int timeout;
 
     private Logger logger;
@@ -147,23 +142,6 @@ public class RestartInstanceCommand implements AdminCommand {
 
     @Override
     public void execute(AdminCommandContext ctx) {
-        CountDownLatch commandTimeout = new CountDownLatch(1);
-        ScheduledFuture<?> commandFuture = executor.schedule(() -> {
-            restartInstance(ctx);
-            commandTimeout.countDown();
-        }, 500, TimeUnit.MILLISECONDS);
-        try {
-            if (!commandTimeout.await(timeout, TimeUnit.SECONDS)) {
-                setError(Strings.get("restart.instance.timeout", instanceName));
-            }
-        } catch (InterruptedException e) {
-        } finally {
-            commandFuture.cancel(true);
-        }
-
-    }
-
-    private void restartInstance(AdminCommandContext ctx) {
         try {
             context = ctx;
             helper = new RemoteInstanceCommandHelper(habitat);
@@ -315,8 +293,12 @@ public class RestartInstanceCommand implements AdminCommand {
         // notice how we do NOT send in the instance's name as an operand!!
         ParameterMap map = new ParameterMap();
 
-        if (debug != null)
+        if (debug != null) {
             map.add("debug", debug);
+        }
+        if (timeout > 0) {
+            rac.setReadTimeout(timeout * 1000);
+        }
 
         rac.executeCommand(map);
     }

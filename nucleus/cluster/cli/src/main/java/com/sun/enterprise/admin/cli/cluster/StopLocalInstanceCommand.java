@@ -41,6 +41,7 @@
 
 package com.sun.enterprise.admin.cli.cluster;
 
+import com.sun.enterprise.admin.cli.CLIConstants;
 import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
 import com.sun.enterprise.universal.process.ProcessUtils;
 import com.sun.enterprise.util.HostAndPort;
@@ -74,18 +75,13 @@ public class StopLocalInstanceCommand extends LocalInstanceCommand {
     @Param(optional = true, defaultValue = "false")
     Boolean kill;
 
-    @Min(message = "Timeout must be at least 1 second long.", value = 1)
-    @Param(optional = true, defaultValue = "600")
+    @Param(optional = true)
     private int timeout;
 
     @Override
     protected void validate() throws CommandException, CommandValidationException {
         instanceName = userArgInstanceName;
         super.validate();
-
-        if (timeout < 1) {
-            throw new CommandException("Timeout must be at least 1 second long.");
-        }
     }
 
     @Override
@@ -110,6 +106,10 @@ public class StopLocalInstanceCommand extends LocalInstanceCommand {
      */
     @Override
     protected int executeCommand() throws CommandException, CommandValidationException {
+        if(timeout <= 0){
+            timeout = (int) (CLIConstants.DEATH_TIMEOUT_MS / 1000);
+        }
+
         // if the local password isn't available, the instance isn't running
         // (localPassword is set by initInstance)
         File serverDir = getServerDirs().getServerDir();

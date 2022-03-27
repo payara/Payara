@@ -39,6 +39,7 @@
  */
 package fish.payara.admin.cluster;
 
+import com.sun.enterprise.admin.remote.RemoteRestAdminCommand;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.v3.admin.cluster.ClusterCommandHelper;
@@ -106,12 +107,10 @@ public class RestartDeploymentGroupCommand implements AdminCommand {
     @Param(optional = true, defaultValue = "5000")
     private String delay;
 
-    @Min(message = "Timeout must be at least 1 second long.", value = 1)
-    @Param(optional = true, defaultValue = "600")
+    @Param(optional = true)
     private int instanceTimeout;
 
-    @Min(message = "Timeout must be at least 1 second long.", value = 1)
-    @Param(optional = true, defaultValue = "600")
+    @Param(optional = true)
     private int timeout;
 
     private ActionReport report;
@@ -139,7 +138,7 @@ public class RestartDeploymentGroupCommand implements AdminCommand {
                 commandTimeout.countDown();
             }, 500, TimeUnit.MILLISECONDS);
             try {
-                if (!commandTimeout.await(timeout, TimeUnit.SECONDS)) {
+                if (!commandTimeout.await(timeout <= 0 ? RemoteRestAdminCommand.getReadTimeout() : timeout, TimeUnit.SECONDS)) {
                     String msg = Strings.get("restart.dg.timeout", deploymentGroup);
 
                     report.setActionExitCode(ActionReport.ExitCode.FAILURE);
@@ -158,11 +157,15 @@ public class RestartDeploymentGroupCommand implements AdminCommand {
 
             ParameterMap pm = new ParameterMap();
             pm.add("delay", delay);
-            pm.add("timeout", String.valueOf(instanceTimeout));
+            if (instanceTimeout != 0) {
+                pm.add("timeout", String.valueOf(instanceTimeout));
+            }
             try {
                 // Run restart-instance against each instance in the Deployment Group
                 String commandName = "restart-instance";
-                clusterHelper.setAdminTimeout(timeout * 1000);
+                if (timeout != 0) {
+                    clusterHelper.setAdminTimeout(timeout * 1000);
+                }
                 clusterHelper.runCommand(commandName, pm, deploymentGroup, context,
                         verbose, rolling);
             } catch (CommandException e) {
@@ -183,7 +186,9 @@ public class RestartDeploymentGroupCommand implements AdminCommand {
             ParameterMap instanceParameterMap = new ParameterMap();
             // Set the instance name as the operand for the commnd
             instanceParameterMap.set("DEFAULT", server.getName());
-            instanceParameterMap.add("timeout", String.valueOf(instanceTimeout));
+            if(instanceTimeout != 0){
+                instanceParameterMap.add("timeout", String.valueOf(instanceTimeout));
+            }
 
             ActionReport instanceReport = runner.getActionReport("plain");
             instanceReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);

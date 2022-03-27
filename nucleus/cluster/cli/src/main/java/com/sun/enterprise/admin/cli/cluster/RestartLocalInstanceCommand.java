@@ -71,7 +71,6 @@ public class RestartLocalInstanceCommand extends SynchronizeInstanceCommand {
     @Param(optional = true, shortName = "d", defaultValue = "false")
     private Boolean debug;
 
-    @Min(message = "Timeout must be at least 1 second long.", value = 1)
     @Param(optional = true, defaultValue = "600")
     private int timeout;
 
@@ -139,8 +138,11 @@ public class RestartLocalInstanceCommand extends SynchronizeInstanceCommand {
         } else {
             cmd.executeAndReturnOutput("_restart-instance");
         }
-
-        waitForRestart(oldServerPid, (timeout * 1000));
+        if (timeout > 0) {
+            waitForRestart(oldServerPid, (timeout * 1000));
+        } else {
+            waitForRestart(oldServerPid);
+        }
         return 0;
     }
 
@@ -200,10 +202,6 @@ public class RestartLocalInstanceCommand extends SynchronizeInstanceCommand {
 
         if (!dir.isDirectory()) {
             throw new CommandException(Strings.get("Instance.noSuchInstance"));
-        }
-
-        if (timeout < 1) {
-            throw new CommandException("Timeout must be at least 1 second long.");
         }
     }
 

@@ -431,6 +431,10 @@ public class ClusterCommandHelper {
         public final List<String> failedServerNames = new ArrayList<>();
     }
 
+    /**
+     * Set the timeout for ClusterCommandHelper
+     * @param adminTimeout in milliseconds
+     */
     public void setAdminTimeout(long adminTimeout) {
         this.adminTimeout = adminTimeout;
     }
