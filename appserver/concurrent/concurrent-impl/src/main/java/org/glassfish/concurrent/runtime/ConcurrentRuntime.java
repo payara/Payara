@@ -165,7 +165,7 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
         }
         ContextServiceImpl contextService = createContextService(config.getJndiName(),
                 config.isContextInfoEnabledBoolean(), config.getPropagatedContexts(),
-                config.getClearedContexts(), config.getUchangedContexts(), false);
+                config.getClearedContexts(), config.getUchangedContexts());
         if (contextServiceMap == null) {
             contextServiceMap = new HashMap();
         }
@@ -189,13 +189,13 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
         ContextServiceImpl contextService = contextServiceMap.get(contextServiceJndiName);
         if (contextService == null) {
             // if the context service is not known, create it
+            Set<String> propagated = parseContextInfo(contextInfo, contextInfoEnabled);
             Set<String> cleared = Collections.EMPTY_SET;
-            if (cleanupTransaction) {
+            if (cleanupTransaction && !propagated.contains(ContextSetupProviderImpl.CONTEXT_TYPE_WORKAREA)) {
                 // pass the cleanup transaction in list of cleared handlers
                 cleared = Set.of(ContextSetupProviderImpl.CONTEXT_TYPE_WORKAREA);
             }
-            Set<String> propagated = parseContextInfo(contextInfo, contextInfoEnabled);
-            contextService = createContextService(contextServiceJndiName, contextInfoEnabled, propagated, cleared, Collections.EMPTY_SET, true);
+            contextService = createContextService(contextServiceJndiName, contextInfoEnabled, propagated, cleared, Collections.EMPTY_SET);
             contextServiceMap.put(contextServiceJndiName, contextService);
         }
         return contextService;
@@ -324,7 +324,7 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
         }
     }
 
-    private ContextServiceImpl createContextService(String jndiName, boolean isContextInfoEnabled, Set<String> propagated, Set<String> cleared, Set<String> unchanged, boolean cleanupTransaction) {
+    private ContextServiceImpl createContextService(String jndiName, boolean isContextInfoEnabled, Set<String> propagated, Set<String> cleared, Set<String> unchanged) {
         ContextSetupProviderImpl contextSetupProvider
                 = new ContextSetupProviderImpl(
                         invocationManager,
@@ -332,7 +332,7 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
                         compEnvMgr,
                         applicationRegistry,
                         applications,
-                        cleanupTransaction ? transactionManager : null,
+                        transactionManager,
                         propagated,
                         cleared,
                         unchanged

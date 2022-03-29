@@ -178,11 +178,6 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         if (security) {
             currentSecurityContext = SecurityContext.getCurrent();
         }
-        ComponentInvocation currentInvocation = invocationManager.getCurrentInvocation();
-        if (currentInvocation != null) {
-            savedInvocation = createComponentInvocation(currentInvocation);
-        }
-        boolean useTransactionOfExecutionThread = transactionManager == null && useTransactionOfExecutionThread(contextObjectProperties);
 
         // TODO: put initialization of providers to better place
         if (allThreadContextProviders == null) {
@@ -202,6 +197,13 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
                 }
             }
         }
+
+        ComponentInvocation currentInvocation = invocationManager.getCurrentInvocation();
+        if (currentInvocation != null) {
+            savedInvocation = createComponentInvocation(currentInvocation);
+        }
+        boolean useTransactionOfExecutionThread = (transactionManager == null && useTransactionOfExecutionThread(contextObjectProperties))
+                || contextUnchanged.contains(CONTEXT_TYPE_WORKAREA);
 
         // store the snapshots of the current state
         List<ThreadContextSnapshot> threadContextSnapshots = new ArrayList<>();
@@ -378,7 +380,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
                     Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, ex.toString());
                 }
             }
-          transactionManager.clearThreadTx();
+            transactionManager.clearThreadTx();
         }
 
         if (requestTracing != null && requestTracing.isRequestTracingEnabled()) {
