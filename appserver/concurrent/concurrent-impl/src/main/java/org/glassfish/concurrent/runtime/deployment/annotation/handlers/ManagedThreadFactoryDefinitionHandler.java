@@ -96,8 +96,10 @@ public class ManagedThreadFactoryDefinitionHandler extends AbstractResourceHandl
         mtfdd.setMetadataSource(MetadataSource.ANNOTATION);
         mtfdd.setName(TranslatedConfigView.expandValue(managedThreadFactoryDefinition.name()));
         mtfdd.setContext(TranslatedConfigView.expandValue(managedThreadFactoryDefinition.context()));
-        if(managedThreadFactoryDefinition.priority() < 0) {
-            mtfdd.setPriority(Thread.MIN_PRIORITY);
+        if(managedThreadFactoryDefinition.priority() <= 0) {
+            mtfdd.setPriority(Thread.NORM_PRIORITY);
+        } else {
+            mtfdd.setPriority(managedThreadFactoryDefinition.priority());
         }
         return mtfdd;
     }
