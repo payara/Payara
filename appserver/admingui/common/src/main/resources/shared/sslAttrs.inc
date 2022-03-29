@@ -83,7 +83,7 @@
      <sun:property id="TLSProp12"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.ssl.tlsLabel12}" >
         <sun:checkbox id="TLS12" label="$resource{i18n.desc.Enabled}" selected="#{pageSession.valueMap['tls12Enabled']}" selectedValue="true"/>
      </sun:property>
-     <sun:property id="TLSProp13"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.ssl.tlsLabel13}" >
+     <sun:property id="TLSProp13"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.ssl.tlsLabel13}" helpText="$resource{i18n.ssl.tlsLabel13Help}" >
         <sun:checkbox id="TLS13" label="$resource{i18n.desc.Enabled}" selected="#{pageSession.valueMap['tls13Enabled']}" selectedValue="true"/>
      </sun:property>
      
