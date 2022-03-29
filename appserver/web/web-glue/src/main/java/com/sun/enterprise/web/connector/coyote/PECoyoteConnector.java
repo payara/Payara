@@ -554,8 +554,8 @@ public class PECoyoteConnector extends Connector {
     }
 
     @Override
-    public void stop() throws LifecycleException {
-        super.stop();
+    public void stopInternal() throws LifecycleException {
+        super.stopInternal();
         if ( grizzlyMonitor != null ) {
             grizzlyMonitor.destroy();
             grizzlyMonitor=null;
