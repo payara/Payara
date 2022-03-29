@@ -57,6 +57,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static com.sun.enterprise.util.Utility.getClassLoader;
+
 /**
  * @author Sanjeeb.Sahoo@Sun.COM
  */
@@ -122,6 +124,9 @@ public class OSGiObjectInputOutputStreamFactoryImpl
             throws IOException
     {
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        if (loader == null) {
+            loader = getClassLoader();
+        }
         return new OSGiObjectInputStream(in, loader);
     }
 
