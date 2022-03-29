@@ -721,11 +721,11 @@ public class PECoyoteConnector extends Connector {
      * Initialize this connector.
      */
     @Override
-    public void initialize() throws LifecycleException {
-        super.initialize();
+    public void initInternal() throws LifecycleException {
+        super.initInternal();
         mapperListener = new MapperListener(mapper, webContainer);
         // Set the monitoring.
-        grizzlyMonitor = new GrizzlyConfig(webContainer, domain, getPort());
+        grizzlyMonitor = new GrizzlyConfig(webContainer, getDomainInternal(), getPort());
     }
 
 
