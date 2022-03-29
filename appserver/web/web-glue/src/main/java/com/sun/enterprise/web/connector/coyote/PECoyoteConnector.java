@@ -192,7 +192,6 @@ public class PECoyoteConnector extends Connector {
 
     protected Mapper mapper;
 
-
     // --------------------------------------------- FileCache support --//
 
     /**
@@ -256,6 +255,12 @@ public class PECoyoteConnector extends Connector {
     private RequestProbeProvider requestProbeProvider;
 
     private HttpHandler handler = null;
+
+    private String name;
+
+    private String defaultHost;
+
+    private String instanceName;
 
 
     /**
@@ -524,10 +529,11 @@ public class PECoyoteConnector extends Connector {
     }
 
     @Override
-    public void start() throws LifecycleException {
-        super.start();
+    public void startInternal() throws LifecycleException {
+        super.startInternal();
 
-        if( this.domain != null ) {
+        String domain = getDomainInternal();
+        if (domain != null) {
             if (!"admin-listener".equals(getName())) {
                 // See IT 8255
                 mapper.removeContext(getDefaultHost(), "");
@@ -538,13 +544,8 @@ public class PECoyoteConnector extends Connector {
             mapperListener.setNetworkListenerName(this.getName());
             mapperListener.setDefaultHost(getDefaultHost());
             // END S1AS 5000999
-            //mapperListener.setEngine( service.getContainer().getName() );
             mapperListener.setInstanceName(getInstanceName());
             mapperListener.init();
-            getService().getBroadcaster().addNotificationListener(mapperListener, mapperListener, null);
-            Notification notification =
-                    new Notification("chloe", this.getObjectName(), 0);
-            getService().getBroadcaster().sendNotification(notification);
         }
         if ( grizzlyMonitor != null ) {
             grizzlyMonitor.initConfig();
@@ -1491,6 +1492,45 @@ public class PECoyoteConnector extends Connector {
      */
     public HttpHandler getHandler(){
         return handler;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    /**
+     * Gets the default host of this Connector.
+     *
+     * @return The default host of this Connector
+     */
+    public String getDefaultHost() {
+        return defaultHost;
+    }
+
+    /**
+     * Sets the default host for this Connector.
+     *
+     * @param defaultHost The default host for this Connector
+     */
+    public void setDefaultHost(String defaultHost) {
+        this.defaultHost = defaultHost;
+    }
+
+    /**
+     * Sets the instance name for this Connector.
+     *
+     * @param instanceName the instance name
+     */
+    public void setInstanceName(String instanceName) {
+        this.instanceName = instanceName;
+    }
+
+    public String getInstanceName() {
+        return instanceName;
     }
 }
 
