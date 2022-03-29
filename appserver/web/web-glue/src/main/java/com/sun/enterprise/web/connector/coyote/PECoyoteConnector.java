@@ -745,7 +745,7 @@ public class PECoyoteConnector extends Connector {
      * @return The truststore location
      */
     public String getTruststore() {
-        return getProperty("truststore");
+        return (String) getProperty("truststore");
     }
 
 
@@ -765,7 +765,7 @@ public class PECoyoteConnector extends Connector {
      * @return The truststore type
      */
     public String getTruststoreType() {
-        return getProperty("truststoreType");
+        return (String) getProperty("truststoreType");
     }
 
 
@@ -785,7 +785,7 @@ public class PECoyoteConnector extends Connector {
      * @return The keystore type
      */
     public String getKeystoreType() {
-        return getProperty("keystoreType");
+        return (String) getProperty("keystoreType");
     }
 
 
