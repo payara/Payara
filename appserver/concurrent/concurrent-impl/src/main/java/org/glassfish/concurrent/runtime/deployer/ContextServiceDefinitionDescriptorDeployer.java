@@ -199,9 +199,7 @@ public class ContextServiceDefinitionDescriptorDeployer implements ResourceDeplo
         }
 
         if(descriptor.getUnchanged() == null){
-            HashSet<String> defaultSetUnchanged = new HashSet<>();
-            defaultSetUnchanged.add("");
-            descriptor.setUnchanged(defaultSetUnchanged);
+            descriptor.setUnchanged(new HashSet<>());
         }
     }
 }

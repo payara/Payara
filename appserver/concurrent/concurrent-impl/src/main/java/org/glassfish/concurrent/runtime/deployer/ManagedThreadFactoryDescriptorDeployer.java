@@ -97,7 +97,7 @@ public class ManagedThreadFactoryDescriptorDeployer implements ResourceDeployer 
                 jakarta.enterprise.concurrent.ManagedThreadFactory.class.getName(),
                 "org.glassfish.concurrent.runtime.deployer.ConcurrentObjectFactory",
                 null);
-        RefAddr addr = new SerializableObjectRefAddr(ManagedExecutorServiceConfig.class.getName(), config);
+        RefAddr addr = new SerializableObjectRefAddr(ManagedThreadFactoryConfig.class.getName(), config);
         ref.add(addr);
         RefAddr resAddr = new SerializableObjectRefAddr(ResourceInfo.class.getName(), resourceInfo);
         ref.add(resAddr);
@@ -181,7 +181,7 @@ public class ManagedThreadFactoryDescriptorDeployer implements ResourceDeployer 
 
         @Override
         public String getContextInfo() {
-            return descriptor.getContext();
+            return null;
         }
 
         @Override
@@ -250,6 +250,16 @@ public class ManagedThreadFactoryDescriptorDeployer implements ResourceDeployer 
         }
 
         @Override
+        public String getContext() {
+            return descriptor.getContext();
+        }
+
+        @Override
+        public void setContext(String value) throws java.beans.PropertyVetoException {
+
+        }
+
+        @Override
         public String getJndiName() {
             return descriptor.getName();
         }
@@ -313,5 +323,7 @@ public class ManagedThreadFactoryDescriptorDeployer implements ResourceDeployer 
         public ConfigBeanProxy deepCopy(ConfigBeanProxy parent) throws TransactionFailure {
             return null;
         }
+
+
     }
 }

@@ -300,7 +300,7 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
         if (managedThreadFactoryMap != null && managedThreadFactoryMap.containsKey(jndiName)) {
             return managedThreadFactoryMap.get(jndiName);
         }
-        String context = null; // FIXME: it must be taken from ManagedThreadFactoryConfig!
+        String context = config.getContext();
         ContextServiceImpl contextService = prepareContextService(context, config.getJndiName() + "-contextservice",
                 config.getContextInfo(), config.isContextInfoEnabledBoolean(), true);
         ManagedThreadFactoryImpl managedThreadFactory = new ThreadFactoryWrapper(config.getJndiName(), contextService,
