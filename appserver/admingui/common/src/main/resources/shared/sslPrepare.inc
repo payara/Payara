@@ -60,7 +60,6 @@ if (! #{requestScope.exist}){
          TODO: REST need to provide an endpoint to get the default value.
       -->
     createMap(result="#{pageSession.valueMap}");
-    mapPut(map="#{pageSession.valueMap}" key="ssl3Enabled" value="false");
     mapPut(map="#{pageSession.valueMap}" key="tls12Enabled" value="true");
     mapPut(map="#{pageSession.valueMap}" key="tls13Enabled" value="true");
     mapPut(map="#{pageSession.valueMap}" key="trustMaxCertLength" value="5");
@@ -73,7 +72,7 @@ if (! #{requestScope.exist}){
 }
 
 //set the following for including buttons.inc
-setPageSessionAttribute(key="convertToFalseList" value={"ssl3Enabled" "tls12Enabled" "tls13Enabled" "clientAuthEnabled" "sniEnabled"})
+setPageSessionAttribute(key="convertToFalseList" value={"tls12Enabled" "tls13Enabled" "clientAuthEnabled" "sniEnabled"})
 setPageSessionAttribute(key="skipAttrsList", value={"sslInactivityTimeout"});
 setPageSessionAttribute(key="showDefaultButton" value="#{false}" )
 setPageSessionAttribute(key="hasPropertySheet" value="#{true}" )

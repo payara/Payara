@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-/*Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+/*Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
 */
 package com.sun.enterprise.security.admin.cli;
 
@@ -273,7 +273,6 @@ public abstract class SecureAdminCommand implements AdminCommand {
          */
         private static Ssl initSsl(final Ssl ssl_w, final String certNickname) {
             ssl_w.setClientAuth(CLIENT_AUTH_VALUE);
-            ssl_w.setSsl3Enabled(SSL3_ENABLED_VALUE);
             ssl_w.setClassname(CLASSNAME_VALUE);
             ssl_w.setCertNickname(certNickname);
             ssl_w.setRenegotiateOnClientAuthWant(true);

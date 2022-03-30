@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2021] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2022] Payara Foundation and/or affiliates
 
 package org.glassfish.web.embed.impl;
 
@@ -310,12 +310,6 @@ public class WebContainerImpl implements WebContainer {
 
             if (sslConfig.getAlgorithms() != null) {
                 for (SslType sslType : sslConfig.getAlgorithms()) {
-                    if (sslType.equals(SslType.SSLv2)) {
-                        newSsl.setSsl2Enabled("true");
-                    }
-                    if (sslType.equals(SslType.SSLv3)) {
-                        newSsl.setSsl3Enabled("true");
-                    }
                     if (sslType.equals(SslType.TLS)) {
                         newSsl.setSsl3TlsCiphers("true");
                     }

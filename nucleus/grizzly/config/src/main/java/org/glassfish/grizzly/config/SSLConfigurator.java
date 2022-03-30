@@ -174,20 +174,11 @@ public class SSLConfigurator extends SSLEngineConfigurator {
 //                    needClientAuth = true;
 //                }
                 // ssl protocol variants
-                if (Boolean.parseBoolean(ssl.getSsl2Enabled())) {
-                    tmpSSLArtifactsList.add(SSL2);
-                }
-                if (Boolean.parseBoolean(ssl.getSsl3Enabled())) {
-                    tmpSSLArtifactsList.add(SSL3);
-                }
                 if (Boolean.parseBoolean(ssl.getTls12Enabled())) {
                     tmpSSLArtifactsList.add(TLS12);
                 }
                 if (Boolean.parseBoolean(ssl.getTls13Enabled())) {
                     tmpSSLArtifactsList.add(TLS13);
-                }
-                if (Boolean.parseBoolean(ssl.getSsl3Enabled())) {
-                    tmpSSLArtifactsList.add(SSL2_HELLO);
                 }
                 if (tmpSSLArtifactsList.isEmpty()) {
                     logEmptyWarning(ssl, "WEB0307: All SSL protocol variants disabled for network-listener {0},"
@@ -211,14 +202,6 @@ public class SSLConfigurator extends SSLEngineConfigurator {
                 if (ssl3Ciphers != null && ssl3Ciphers.length() > 0) {
                     final String[] ssl3CiphersArray = ssl3Ciphers.split(",");
                     for (final String cipher : ssl3CiphersArray) {
-                        tmpSSLArtifactsList.add(cipher.trim());
-                    }
-                }
-                // ssl2-tls-ciphers
-                final String ssl2Ciphers = ssl.getSsl2Ciphers();
-                if (ssl2Ciphers != null && ssl2Ciphers.length() > 0) {
-                    final String[] ssl2CiphersArray = ssl2Ciphers.split(",");
-                    for (final String cipher : ssl2CiphersArray) {
                         tmpSSLArtifactsList.add(cipher.trim());
                     }
                 }

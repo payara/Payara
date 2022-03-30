@@ -156,36 +156,6 @@ public interface Ssl extends ConfigBeanProxy, PropertyBag {
     void setClassname(String value);
 
     /**
-     * A comma-separated list of the SSL2 ciphers used, with the prefix + to enable or - to disable, for example +rc4.
-     * Allowed values are rc4, rc4export, rc2, rc2export, idea, des, desede3. If no value is specified, all supported
-     * ciphers are assumed to be enabled. NOT Used in PE
-     */
-    @Attribute
-    @Pattern(regexp = SSL2_CIPHERS_PATTERN)
-    String getSsl2Ciphers();
-
-    void setSsl2Ciphers(String value);
-
-    /**
-     * Determines whether SSL2 is enabled. NOT Used in PE. SSL2 is not supported by either iiop or web-services. When
-     * this element is used as a child of the iiop-listener element then the only allowed value for this attribute is
-     * "false".
-     */
-    @Attribute(defaultValue = "" + SSL2_ENABLED, dataType = Boolean.class)
-    String getSsl2Enabled();
-
-    void setSsl2Enabled(String value);
-
-    /**
-     * Determines whether SSL3 is enabled. If both SSL2 and SSL3 are enabled for a virtual server, the server tries SSL3
-     * encryption first. If that fails, the server tries SSL2 encryption.
-     */
-    @Attribute(defaultValue = "" + SSL3_ENABLED, dataType = Boolean.class)
-    String getSsl3Enabled();
-
-    void setSsl3Enabled(String value);
-
-    /**
      * A comma-separated list of the SSL3 ciphers used, with the prefix + to enable or - to disable, for example
      * +SSL_RSA_WITH_RC4_128_MD5. Allowed SSL3/TLS values are those that are supported by the JVM for the given security
      * provider and security service configuration. If no value is specified, all supported ciphers are assumed to be

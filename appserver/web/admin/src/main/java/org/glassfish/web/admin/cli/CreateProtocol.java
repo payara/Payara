@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation]
+// Portions Copyright [2016-2022] [Payara Foundation]
 package org.glassfish.web.admin.cli;
 
 import com.sun.enterprise.config.serverbeans.Config;
@@ -163,8 +163,6 @@ public class CreateProtocol implements AdminCommand {
                 if (securityEnabled) {
                     Ssl ssl = newProtocol.createChild(Ssl.class);
                     ssl.setCertNickname("s1as");
-                    ssl.setSsl2Enabled("false");
-                    ssl.setSsl3Enabled("false");
                     newProtocol.setSsl(ssl);
                 }
                 return newProtocol;

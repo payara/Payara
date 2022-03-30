@@ -184,9 +184,6 @@ public class CreateSsl implements AdminCommand {
     public void populateSslElement(Ssl newSsl) {
         newSsl.setCertNickname(certName);
         newSsl.setClientAuthEnabled(clientauthenabled.toString());
-        newSsl.setSsl2Ciphers(ssl2ciphers);
-        newSsl.setSsl2Enabled(ssl2Enabled.toString());
-        newSsl.setSsl3Enabled(ssl3Enabled.toString());
         newSsl.setSsl3TlsCiphers(ssl3tlsciphers);
         newSsl.setClassname(GF_SSL_IMPL_NAME);
         newSsl.setTlsRollbackEnabled(tlsrollbackenabled.toString());

@@ -1246,21 +1246,12 @@ public class PECoyoteConnector extends Connector {
 
         // ssl protocol variants
         List<String> sslProtocolsBuf = new ArrayList<>();
-        if (Boolean.valueOf(sslConfig.getSsl2Enabled())) {
-            sslProtocolsBuf.add(SSL2);
-        }
-        if (Boolean.valueOf(sslConfig.getSsl3Enabled())) {
-            sslProtocolsBuf.add(SSL3);
-        }
 
         if (Boolean.valueOf(sslConfig.getTls12Enabled())) {
             sslProtocolsBuf.add(TLS12);
         }
         if (Boolean.valueOf(sslConfig.getTls13Enabled())) {
             sslProtocolsBuf.add(TLS13);
-        }
-        if (Boolean.valueOf(sslConfig.getSsl3Enabled())) {
-            sslProtocolsBuf.add(SSL2_HELLO);
         }
 
         if (sslProtocolsBuf.isEmpty()) {

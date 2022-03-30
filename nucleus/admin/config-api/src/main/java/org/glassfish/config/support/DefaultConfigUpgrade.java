@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2022] Payara Foundation and/or affiliates
 
 package org.glassfish.config.support;
 
@@ -1139,9 +1139,6 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                             String val = parser.getAttributeValue(i);
                             if (attr.equals("classname")) {
                                 ssl.setClassname(val);
-                            }
-                            if (attr.equals("ssl3-enabled")) {
-                                ssl.setSsl3Enabled(val);
                             }
                             if (attr.equals("cert-nickname")) {
                                 ssl.setCertNickname(val);

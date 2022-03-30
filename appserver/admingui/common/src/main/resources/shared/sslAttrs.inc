@@ -65,15 +65,7 @@
      <!afterCreate
         getClientId(component="$this{component}" clientId=>$page{sheetId});
      />
-     
-     <sun:property id="SSL3Prop"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.ssl.ssl3Label}" >
-        <sun:checkbox id="SSL3" label="$resource{i18n.desc.Enabled}" selected="#{pageSession.valueMap['ssl3Enabled']}" selectedValue="true" />
-     </sun:property>
-     <!--
-     <sun:property id="SSL2Prop"  rendered="#{ssl2}"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.ssl.ssl2Label}" >
-        <sun:checkbox id="SSL2" label="$resource{i18n.desc.Enabled}" selected="#{pageSession.valueMap['ssl2Enabled']}" selectedValue="true" />
-     </sun:property>
-     -->
+
      <sun:property id="TLSProp12"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.ssl.tlsLabel12}" >
         <sun:checkbox id="TLS12" label="$resource{i18n.desc.Enabled}" selected="#{pageSession.valueMap['tls12Enabled']}" selectedValue="true"/>
      </sun:property>
