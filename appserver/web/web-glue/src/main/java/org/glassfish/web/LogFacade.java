@@ -448,20 +448,6 @@ public class LogFacade {
     public static final String INVALID_THREAD_POOL_ATTRIBUTE = PREFIX + "00075";
 
     @LogMessageInfo(
-            message = "Unable to load ProxyHandler implementation class {0}",
-            level = "SEVERE",
-            cause = "An exception occurred during creating a new instance ",
-            action = "Check the exception for the error")
-    public static final String PROXY_HANDLER_CLASS_LOAD_ERROR = PREFIX + "00076";
-
-    @LogMessageInfo(
-            message = "{0} not an instance of com.sun.appserv.ProxyHandler",
-            level = "SEVERE",
-            cause = "Invalid proxy handler",
-            action = "Check to see if the proxy handler is an instance of com.sun.appserv.ProxyHandler")
-    public static final String PROXY_HANDLER_CLASS_INVALID = PREFIX + "00077";
-
-    @LogMessageInfo(
             message = "All SSL protocol variants disabled for network-listener {0}, using SSL implementation specific defaults",
             level = "WARNING")
     public static final String ALL_SSL_PROTOCOLS_DISABLED = PREFIX + "00078";

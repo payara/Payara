@@ -41,7 +41,6 @@
 
 package com.sun.enterprise.web.connector.coyote;
 
-import com.sun.appserv.ProxyHandler;
 import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
 import com.sun.enterprise.config.serverbeans.HttpService;
 import com.sun.enterprise.web.WebContainer;
@@ -1084,19 +1083,6 @@ public class PECoyoteConnector extends Connector {
         }
     }
 
-    /**
-     * Configure http-listener property.
-     * return true if the property exists and has been set.
-     */
-    public boolean configureHttpListenerProperty(String propName, String propValue)
-        throws NumberFormatException {
-        if ("proxyHandler".equals(propName)) {
-            setProxyHandler(propValue);
-            return true;
-        }
-        return false;
-    }
-
     public void configHttpProperties(Http http, Transport transport, Ssl ssl) {
         setAllowTrace(ConfigBeansUtilities.toBoolean(http.getTraceEnabled()));
         setProperty("maxKeepAliveRequests", http.getMaxConnections());
@@ -1137,35 +1123,6 @@ public class PECoyoteConnector extends Connector {
             }
             if (ssl.getTrustMaxCertLength() != null) {
                 setTrustMaxCertLength(ssl.getTrustMaxCertLength());
-            }
-        }
-    }
-
-    /*
-     * Loads and instantiates the ProxyHandler implementation
-     * class with the specified name, and sets the instantiated
-     * ProxyHandler on this connector.
-     *
-     * @param className The ProxyHandler implementation class name
-     */
-    public void setProxyHandler(String className) {
-
-        Object handler = null;
-        try {
-            Class handlerClass = webContainer.loadCommonClass(className);
-            handler = handlerClass.newInstance();
-        } catch (Exception e) {
-            String msg = MessageFormat.format(_rb.getString(LogFacade.PROXY_HANDLER_CLASS_LOAD_ERROR), className);
-            _logger.log(Level.SEVERE, msg, e);
-        }
-        if (handler != null) {
-            if (!(handler instanceof ProxyHandler)) {
-                _logger.log(
-                    Level.SEVERE,
-                    LogFacade.PROXY_HANDLER_CLASS_INVALID,
-                    className);
-            } else {
-                setProxyHandler((ProxyHandler) handler);
             }
         }
     }

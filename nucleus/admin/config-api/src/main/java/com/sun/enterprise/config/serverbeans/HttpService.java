@@ -231,36 +231,7 @@ public interface HttpService extends ConfigBeanProxy, PropertyBag, ConfigExtensi
     @PropertyDesc(name="use-nio-direct-bytebuffer", defaultValue="true", dataType=Boolean.class,
         description="Controls whether the NIO direct ByteBuffer is used. In a limited resource environment, " +
             "it might be faster to use non-direct Java's ByteBuffer by setting a value of false"),
-        
-    @PropertyDesc(name="authPassthroughEnabled", defaultValue="false", dataType=Boolean.class,
-        description="Indicates that the http-listeners receive traffic from an SSL-terminating proxy server, " +
-            "which is responsible for forwarding any information about the original client request (such as client " +
-            "IP address, SSL keysize, and authenticated client certificate chain) to the HTTP listeners using custom request headers. " +
-            "Each  subelement can override this setting for itself"),
-    /**
-    Specifies the fully qualified class name of a custom implementation of the 
-    com.sun.appserv.ProxyHandler abstract class, which allows a back-end 
-    application server instance to retrieve information about the original client 
-    request that was intercepted by an SSL-terminating proxy server (for 
-    example, a load balancer). An implementation of this abstract class inspects 
-    a given request for the custom request headers through which the proxy 
-    server communicates the information about the original client request to 
-    the Enterprise Server instance, and returns that information to its caller. 
-    The default implementation reads the client IP address from an HTTP 
-    request header named Proxy-ip, the SSL keysize from an HTTP request 
-    header named Proxy-keysize, and the SSL client certificate chain from an 
-    HTTP request header named Proxy-auth-cert. The Proxy-auth-cert 
-    value must contain the BASE-64 encoded client certificate chain without 
-    the BEGIN CERTIFICATE and END CERTIFICATE boundaries and with \n 
-    replaced with % d% a. 
-    Only used if authPassthroughEnabled is set to true. Each “http-listener” 
-    on page 37 subelement can override the setting for itself. 
-    */
 
-    @PropertyDesc(name="proxyHandler", defaultValue="com.sun.enterprise.web.web.ProxyHandlerImpl",
-        description="Specifies the fully qualified class name of a custom implementation of com.sun.appserv.ProxyHandler. " +
-        "Only used if authPassthroughEnabled is set to true. Each http-listener can override the setting for itself"),
-        
     @PropertyDesc(name="bufferSize", defaultValue="4096", dataType=NonNegativeInteger.class,
         description="Size in bytes of the buffer to be provided for input streams created by HTTP listeners"),
 

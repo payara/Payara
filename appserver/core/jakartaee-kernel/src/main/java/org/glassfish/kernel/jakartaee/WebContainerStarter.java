@@ -132,11 +132,6 @@ public class WebContainerStarter
             level = "SEVERE")
     public static final String mUnableStartContainer = LOGMSG_PREFIX + "-0004";
 
-    private static final String AUTH_PASSTHROUGH_ENABLED_PROP =
-        "authPassthroughEnabled";
-
-    private static final String PROXY_HANDLER_PROP = "proxyHandler";
-
     private static final String TRACE_ENABLED_PROP = "traceEnabled";
 
     @Inject
@@ -275,13 +270,7 @@ public class WebContainerStarter
             for (Property prop : props) {
                 String propName = prop.getName();
                 String propValue = prop.getValue();
-                if (AUTH_PASSTHROUGH_ENABLED_PROP.equals(propName)) {
-                    if (ConfigBeansUtilities.toBoolean(propValue)) {
-                        return true;
-                    }
-                } else if (PROXY_HANDLER_PROP.equals(propName)) {
-                    return true;
-                } else if (TRACE_ENABLED_PROP.equals(propName)) {
+                if (TRACE_ENABLED_PROP.equals(propName)) {
                     if (!ConfigBeansUtilities.toBoolean(propValue)) {
                         return true;
                     }

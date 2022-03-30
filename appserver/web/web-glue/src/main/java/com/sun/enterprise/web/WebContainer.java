@@ -951,10 +951,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         // Configure Connector with <http-service> properties
         List<Property> httpServiceProps = httpService.getProperty();
 
-        // Set default ProxyHandler impl, may be overriden by
-        // proxyHandler property
-        connector.setProxyHandler(new ProxyHandlerImpl());
-
         globalSSOEnabled = ConfigBeansUtilities.toBoolean(httpService.getSsoEnabled());
         globalAccessLoggingEnabled = ConfigBeansUtilities.toBoolean(httpService.getAccessLoggingEnabled());
         globalAccessLogWriteInterval = httpService.getAccessLog().getWriteIntervalSeconds();
@@ -964,10 +960,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
             for (Property httpServiceProp : httpServiceProps) {
                 String propName = httpServiceProp.getName();
                 String propValue = httpServiceProp.getValue();
-
-                if (connector.configureHttpListenerProperty(propName, propValue)) {
-                    continue;
-                }
 
                 if ("connectionTimeout".equals(propName)) {
                     connector.setConnectionTimeout(Integer.parseInt(propValue));
@@ -981,8 +973,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
                     connector.setSsl3SessionTimeout(propValue);
                 } else if ("ssl-cache-entries".equals(propName)) {
                     connector.setSslSessionCacheSize(propValue);
-                } else if ("proxyHandler".equals(propName)) {
-                    connector.setProxyHandler(propValue);
                 } else {
                     String msg = rb.getString(LogFacade.INVALID_HTTP_SERVICE_PROPERTY);
                     logger.log(Level.WARNING, MessageFormat.format(msg, httpServiceProp.getName()));

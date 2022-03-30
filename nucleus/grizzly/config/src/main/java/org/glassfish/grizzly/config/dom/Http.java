@@ -119,14 +119,6 @@ public interface Http extends ConfigBeanProxy, PropertyBag {
 
     void setAdapter(String adapter);
 
-    /**
-     * Enable pass through of authentication from any front-end server
-     */
-    @Attribute(defaultValue = "" + AUTH_PASS_THROUGH_ENABLED, dataType = Boolean.class)
-    String getAuthPassThroughEnabled();
-
-    void setAuthPassThroughEnabled(String bool);
-
     @Attribute(defaultValue = "" + CHUNKING_ENABLED, dataType = Boolean.class)
     String getChunkingEnabled();
 
