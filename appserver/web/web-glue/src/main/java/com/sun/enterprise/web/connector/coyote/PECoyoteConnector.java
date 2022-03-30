@@ -1063,15 +1063,13 @@ public class PECoyoteConnector extends Connector {
     public void configureThreadPool(ThreadPool pool){
         if (pool != null) {
             try {
-                setMaxProcessors(Integer.parseInt(
-                    pool.getMaxThreadPoolSize()));
+                setProperty("maxThreads", pool.getMaxThreadPoolSize());
             } catch (NumberFormatException ex) {
                 String msg = MessageFormat.format(_rb.getString(LogFacade.INVALID_THREAD_POOL_ATTRIBUTE), "max-thread-pool-size");
                 _logger.log(Level.WARNING, msg, ex);
             }
             try {
-                setMinProcessors(Integer.parseInt(
-                    pool.getMinThreadPoolSize()));
+                setProperty("minSpareThreads", pool.getMinThreadPoolSize());
             } catch (NumberFormatException ex) {
                 String msg = MessageFormat.format(_rb.getString(LogFacade.INVALID_THREAD_POOL_ATTRIBUTE), "min-thread-pool-size");
                 _logger.log(Level.WARNING, msg, ex);
