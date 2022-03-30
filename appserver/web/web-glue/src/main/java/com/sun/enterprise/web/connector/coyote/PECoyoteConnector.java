@@ -1127,66 +1127,6 @@ public class PECoyoteConnector extends Connector {
         }
     }
 
-
-    /*
-     * Request/response related probe events
-     */
-
-    /**
-     * Fires probe event related to the fact that the given request has
-     * been entered the web container.
-     *
-     * @param request the request object
-     * @param host the virtual server to which the request was mapped
-     * @param context the Context to which the request was mapped
-     */
-    public void requestStartEvent(HttpServletRequest request, Host host,
-            Context context) {
-        if (requestProbeProvider != null) {
-            String appName = null;
-            if (context instanceof WebModule) {
-                appName = ((WebModule) context).getMonitoringNodeName();
-            }
-            String hostName = null;
-            if (host != null) {
-                hostName = host.getName();
-            }
-            requestProbeProvider.requestStartEvent(
-                appName, hostName,
-                request.getServerName(), request.getServerPort(),
-                request.getContextPath(), request.getServletPath());
-        }
-    };
-
-    /**
-     * Fires probe event related to the fact that the given request is about
-     * to exit from the web container.
-     *
-     * @param request the request object
-     * @param host the virtual server to which the request was mapped
-     * @param context the Context to which the request was mapped
-     * @param statusCode the response status code
-     */
-    public void requestEndEvent(HttpServletRequest request, Host host,
-            Context context, int statusCode) {
-        if (requestProbeProvider != null) {
-            String appName = null;
-            if (context instanceof WebModule) {
-                appName = ((WebModule) context).getMonitoringNodeName();
-            }
-            String hostName = null;
-            if (host != null) {
-                hostName = host.getName();
-            }
-            requestProbeProvider.requestEndEvent(
-                appName, hostName,
-                request.getServerName(), request.getServerPort(),
-                request.getContextPath(), request.getServletPath(),
-                statusCode, request.getMethod(), request.getRequestURI());
-        }
-    };
-
-
     /*
      * Configures the SSL properties on this PECoyoteConnector from the
      * SSL config of the given HTTP listener.
