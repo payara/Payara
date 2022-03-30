@@ -1140,7 +1140,6 @@ public class PECoyoteConnector extends Connector {
      * @param host the virtual server to which the request was mapped
      * @param context the Context to which the request was mapped
      */
-    @Override
     public void requestStartEvent(HttpServletRequest request, Host host,
             Context context) {
         if (requestProbeProvider != null) {
@@ -1168,7 +1167,6 @@ public class PECoyoteConnector extends Connector {
      * @param context the Context to which the request was mapped
      * @param statusCode the response status code
      */
-    @Override
     public void requestEndEvent(HttpServletRequest request, Host host,
             Context context, int statusCode) {
         if (requestProbeProvider != null) {
