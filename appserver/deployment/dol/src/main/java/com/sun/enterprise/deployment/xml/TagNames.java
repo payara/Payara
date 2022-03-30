@@ -180,6 +180,12 @@ public interface TagNames {
     public static final String MANAGED_SCHEDULED_EXECUTOR_MAX_ASYNC = "max-async";
     public static final String MANAGED_SCHEDULED_EXECUTOR_HUNG_TASK_THRESHOLD = "hung-task-threshold";
 
+    public static final String CONTEXT_SERVICE = "context-service";
+    public static final String CONTEXT_SERVICE_NAME = "name";
+    public static final String CONTEXT_SERVICE_CLEARED = "cleared";
+    public static final String CONTEXT_SERVICE_PROPAGATED = "propagated";
+    public static final String CONTEXT_SERVICE_UNCHANGED = "unchanged";
+
     public static final String PERSISTENCE_CONTEXT_REF = "persistence-context-ref";
     public static final String PERSISTENCE_CONTEXT_REF_NAME = "persistence-context-ref-name";
 
