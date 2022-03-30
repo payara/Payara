@@ -180,9 +180,9 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         }
 
         // TODO: put initialization of providers to better place
-        if (allThreadContextProviders == null) {
-            synchronized (this) {
-                if (allThreadContextProviders == null) {
+//        if (allThreadContextProviders == null) {
+//            synchronized (this) {
+//                if (allThreadContextProviders == null) {
                     allThreadContextProviders = new HashMap<>();
                     for (ThreadContextProvider service : ServiceLoader.load(jakarta.enterprise.concurrent.spi.ThreadContextProvider.class, Utility.getClassLoader())) {
                         String serviceName = service.getThreadContextType();
@@ -194,9 +194,9 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
                     verifyProviders(contextPropagate);
                     verifyProviders(contextClear);
                     verifyProviders(contextUnchanged);
-                }
-            }
-        }
+//                }
+//            }
+//        }
 
         ComponentInvocation currentInvocation = invocationManager.getCurrentInvocation();
         if (currentInvocation != null) {

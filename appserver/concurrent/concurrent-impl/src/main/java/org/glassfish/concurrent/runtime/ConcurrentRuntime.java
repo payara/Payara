@@ -189,7 +189,7 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
         ContextServiceImpl contextService = contextServiceMap.get(contextServiceJndiName);
         if (contextService == null) {
             // if the context service is not known, create it
-            Set<String> propagated = parseContextInfo(contextInfo, contextInfoEnabled);
+            Set<String> propagated = ContextServiceConfig.parseContextInfo(contextInfo, contextInfoEnabled);
             Set<String> cleared = Collections.EMPTY_SET;
             if (cleanupTransaction && !propagated.contains(ContextSetupProviderImpl.CONTEXT_TYPE_WORKAREA)) {
                 // pass the cleanup transaction in list of cleared handlers
@@ -345,34 +345,6 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
                         new TransactionSetupProviderImpl(transactionManager)
                 );
         return contextService;
-    }
-
-    private Set<String> parseContextInfo(String contextInfo, boolean isContextInfoEnabled) {
-        Set<String> contextTypeArray = new HashSet<>();
-        if (contextInfo == null) {
-            // by default, if no context info is passed, we propagate all context types
-            contextTypeArray.add(ContextSetupProviderImpl.CONTEXT_TYPE_CLASSLOADING);
-            contextTypeArray.add(ContextSetupProviderImpl.CONTEXT_TYPE_NAMING);
-            contextTypeArray.add(ContextSetupProviderImpl.CONTEXT_TYPE_SECURITY);
-            contextTypeArray.add(ContextSetupProviderImpl.CONTEXT_TYPE_WORKAREA);
-        } else if (isContextInfoEnabled) {
-            StringTokenizer st = new StringTokenizer(contextInfo, ",", false);
-            while(st.hasMoreTokens()) {
-                String token = st.nextToken().trim();
-                if (CONTEXT_INFO_CLASSLOADER.equalsIgnoreCase(token)) {
-                    contextTypeArray.add(ContextSetupProviderImpl.CONTEXT_TYPE_CLASSLOADING);
-                } else if (CONTEXT_INFO_JNDI.equalsIgnoreCase(token)) {
-                    contextTypeArray.add(ContextSetupProviderImpl.CONTEXT_TYPE_NAMING);
-                } else if (CONTEXT_INFO_SECURITY.equalsIgnoreCase(token)) {
-                    contextTypeArray.add(ContextSetupProviderImpl.CONTEXT_TYPE_SECURITY);
-                } else if (CONTEXT_INFO_WORKAREA.equalsIgnoreCase(token)) {
-                    contextTypeArray.add(ContextSetupProviderImpl.CONTEXT_TYPE_WORKAREA);
-                } else {
-                    contextTypeArray.add(token); // custom context
-                }
-            }
-        }
-        return contextTypeArray;
     }
 
     private void scheduleInternalTimer() {
