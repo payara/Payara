@@ -1099,9 +1099,8 @@ public class PECoyoteConnector extends Connector {
 
     public void configHttpProperties(Http http, Transport transport, Ssl ssl) {
         setAllowTrace(ConfigBeansUtilities.toBoolean(http.getTraceEnabled()));
-        setMaxKeepAliveRequests(Integer.parseInt(http.getMaxConnections()));
+        setProperty("maxKeepAliveRequests", http.getMaxConnections());
         setKeepAliveTimeoutInSeconds(Integer.parseInt(http.getTimeoutSeconds()));
-        setAuthPassthroughEnabled(ConfigBeansUtilities.toBoolean(http.getAuthPassThroughEnabled()));
         setMaxPostSize(Integer.parseInt(http.getMaxPostSizeBytes()));
         setMaxSavePostSize(Integer.parseInt(http.getMaxSavePostSizeBytes()));
         setProperty("compression", http.getCompression());
@@ -1119,8 +1118,11 @@ public class PECoyoteConnector extends Connector {
                 Boolean.valueOf(ConfigBeansUtilities.toBoolean(http.getCometSupportEnabled())).toString());
         setProperty("rcmSupport",
                 Boolean.valueOf(ConfigBeansUtilities.toBoolean(http.getRcmSupportEnabled())).toString());
-        setConnectionUploadTimeout(Integer.parseInt(http.getConnectionUploadTimeoutMillis()));
-        setDisableUploadTimeout(!ConfigBeansUtilities.toBoolean(http.getUploadTimeoutEnabled()));
+        setProperty("connectionUploadTimeout", http.getConnectionUploadTimeoutMillis());
+        // Get property as a boolean to convert "" to false, then reverse value due to enabled vs. disabled difference,
+        // and finally convert back to String
+        setProperty("disableUploadTimeout", Boolean.toString(
+                !ConfigBeansUtilities.toBoolean(http.getUploadTimeoutEnabled())));
         setURIEncoding(http.getUriEncoding());
         configSslOptions(ssl);
     }
