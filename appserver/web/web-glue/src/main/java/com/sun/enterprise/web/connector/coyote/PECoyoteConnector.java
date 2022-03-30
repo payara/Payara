@@ -904,7 +904,7 @@ public class PECoyoteConnector extends Connector {
         final Http http = listener.findHttpProtocol().getHttp();
 
         configureFileCache(http.getFileCache());
-        setMaxHttpHeaderSize(Integer.parseInt(http.getSendBufferSizeBytes()));
+        setProperty("maxHttpHeaderSize", http.getSendBufferSizeBytes());
         setDefaultHost(http.getDefaultVirtualServer());
         setEnableLookups(ConfigBeansUtilities.toBoolean(http.getDnsLookupEnabled()));
 
