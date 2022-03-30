@@ -965,12 +965,8 @@ public class PECoyoteConnector extends Connector {
                 setSelectorReadThreadsCount(Integer.parseInt(
                     acceptorThreads));
             } catch (NumberFormatException nfe) {
-                _logger.log(Level.WARNING,
-                    LogFacade.INVALID_ACCEPTOR_THREADS,
-                    new Object[] {
-                        acceptorThreads,
-                        listener.getName(),
-                        Integer.toString(getMaxProcessors()) });
+                _logger.log(Level.WARNING, LogFacade.INVALID_ACCEPTOR_THREADS, new Object[] {acceptorThreads,
+                        listener.getName(), getProperty("maxThreads")});
             }
         }
 
