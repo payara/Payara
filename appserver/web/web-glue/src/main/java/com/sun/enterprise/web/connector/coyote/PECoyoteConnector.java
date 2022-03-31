@@ -72,6 +72,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import static org.glassfish.grizzly.config.dom.Ssl.SSL2;
@@ -253,8 +254,6 @@ public class PECoyoteConnector extends Connector {
 
     private WebContainer webContainer;
 
-    private RequestProbeProvider requestProbeProvider;
-
     private HttpHandler handler = null;
 
     private String name;
@@ -270,7 +269,6 @@ public class PECoyoteConnector extends Connector {
     public PECoyoteConnector(WebContainer webContainer) {
         super(DUMMY_CONNECTOR_LAUNCHER);
         this.webContainer = webContainer;
-        requestProbeProvider = webContainer.getRequestProbeProvider();
     }
 
 
@@ -731,66 +729,6 @@ public class PECoyoteConnector extends Connector {
 
 
     /**
-     * Sets the truststore location of this connector.
-     *
-     * @param truststore The truststore location
-     */
-    public void setTruststore(String truststore) {
-        setProperty("truststore", truststore);
-    }
-
-
-    /**
-     * Gets the truststore location of this connector.
-     *
-     * @return The truststore location
-     */
-    public String getTruststore() {
-        return (String) getProperty("truststore");
-    }
-
-
-    /**
-     * Sets the truststore type of this connector.
-     *
-     * @param type The truststore type
-     */
-    public void setTruststoreType(String type) {
-        setProperty("truststoreType", type);
-    }
-
-
-    /**
-     * Gets the truststore type of this connector.
-     *
-     * @return The truststore type
-     */
-    public String getTruststoreType() {
-        return (String) getProperty("truststoreType");
-    }
-
-
-    /**
-     * Sets the keystore type of this connector.
-     *
-     * @param type The keystore type
-     */
-    public void setKeystoreType(String type) {
-        setProperty("keystoreType", type);
-    }
-
-
-    /**
-     * Gets the keystore type of this connector.
-     *
-     * @return The keystore type
-     */
-    public String getKeystoreType() {
-        return (String) getProperty("keystoreType");
-    }
-
-
-    /**
      * Gets the location of the CRL file
      *
      * @return The location of the CRL file
@@ -1211,50 +1149,38 @@ public class PECoyoteConnector extends Connector {
      */
     private void configureKeysAndCerts() {
 
-        /*
-         * Keystore
-         */
+        // Keystore
         String prop = System.getProperty("javax.net.ssl.keyStore");
-        String keyStoreType = System.getProperty("javax.net.ssl.keyStoreType",DEFAULT_KEYSTORE_TYPE);
+        String keyStoreType = System.getProperty("javax.net.ssl.keyStoreType", DEFAULT_KEYSTORE_TYPE);
+
         if (prop != null) {
-            // PE
-            setKeystoreFile(prop);
-            setKeystoreType(keyStoreType);
-        }
+            // For each SSLHostConfig, set the Certificate.certificateKeystoreFile and
+            // Certificate.certificateKeystoreType properties - these properties are set on the sslHostConfig itself,
+            // not on the SSLHostConfigCertificate object.
+            // Certificate.certificateKeystoreFile property used instead of the
+            // SSLHostConfigCertificate#setCertificateKeyStore method since that's specific to each individual
+            // SSLHostConfigCertificate
+            for (SSLHostConfig sslHostConfig : findSslHostConfigs()) {
+                Set<SSLHostConfigCertificate> sslHostConfigCertificates = sslHostConfig.getCertificates();
+                // Since the Certificate.certificateKeystoreFile and Certificate.certificateKeystoreType properties is
+                // set on the sslHostConfig itself, we can just grab the first certificate rather than iterating over
+                // all of them (setProperty on SSLHostConfig is not a public method)
+                if (!sslHostConfigCertificates.isEmpty()) {
+                    SSLHostConfigCertificate sslHostConfigCertificate = sslHostConfigCertificates.iterator().next();
+                    sslHostConfigCertificate.setCertificateKeystoreFile(prop);
+                    sslHostConfigCertificate.setCertificateKeystoreType(keyStoreType);
 
-        /*
-         * Get keystore password from password.conf file.
-         * Notice that JSSE, the underlying SSL implementation in PE,
-         * currently does not support individual key entry passwords
-         * that are different from the keystore password.
-         *
-        String ksPasswd = null;
-        try {
-            ksPasswd = PasswordConfReader.getKeyStorePassword();
-        } catch (IOException ioe) {
-            // Ignore
-        }
-        if (ksPasswd == null) {
-            ksPasswd = System.getProperty("javax.net.ssl.keyStorePassword");
-        }
-        if (ksPasswd != null) {
-            try {
-                connector.setKeystorePass(ksPasswd);
-            } catch (Exception e) {
-                _logger.log(Level.SEVERE,
-                    "pewebcontainer.http_listener_keystore_password_exception",
-                    e);
+                }
             }
-        }*/
+        }
 
-        /*
-	 * Truststore
-         */
+	    // Truststore
         prop = System.getProperty("javax.net.ssl.trustStore");
         if (prop != null) {
-            // PE
-            setTruststore(prop);
-            setTruststoreType(DEFAULT_TRUSTSTORE_TYPE);
+            for (SSLHostConfig sslHostConfig : findSslHostConfigs()) {
+                sslHostConfig.setTruststoreFile(prop);
+                sslHostConfig.setTruststoreType(DEFAULT_TRUSTSTORE_TYPE);
+            }
         }
     }
 

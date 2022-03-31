@@ -61,7 +61,7 @@ package com.sun.enterprise.web.connector.grizzly;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.catalina.connector.ProtocolHandler;
+import org.apache.coyote.ProtocolHandler;
 import org.glassfish.grizzly.config.ssl.ServerSocketFactory;
 import org.glassfish.grizzly.http.server.HttpHandler;
 
