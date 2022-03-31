@@ -77,6 +77,7 @@ pipeline {
                 sh """mvn -V -B -ff clean install --strict-checksums -Ppayara-server-managed \
                 -Dpayara.version=${pom.version} \
                 -Dglassfish.home=\"${pwd()}/appserver/distributions/payara/target/stage/payara6/glassfish\" \
+                -Dcom.sun.aas.productRoot=\"${pwd()}/appserver/distributions/payara/target/stage/payara6/glassfish\" \
                 -Dpayara_domain=${DOMAIN_NAME} \
                 -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
                 -Djavax.xml.accessExternalSchema=all \
