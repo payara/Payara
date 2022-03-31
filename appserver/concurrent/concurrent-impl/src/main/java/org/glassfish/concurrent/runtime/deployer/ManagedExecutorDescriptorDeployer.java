@@ -300,7 +300,7 @@ public class ManagedExecutorDescriptorDeployer implements ResourceDeployer {
 
         @Override
         public String getContextInfoEnabled() {
-            return "true";
+            return null;
         }
 
         @Override
@@ -310,7 +310,7 @@ public class ManagedExecutorDescriptorDeployer implements ResourceDeployer {
 
         @Override
         public String getContextInfo() {
-            return managedExecutorDefinitionDescriptor.getContext();
+            return null;
         }
 
         @Override

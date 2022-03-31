@@ -54,6 +54,7 @@ public class ContextServiceDefinitionDescriptor extends ResourceDescriptor {
     private Set<String> cleared;
     private Set<String> propagated;
     private Set<String> unchanged;
+    private java.util.Properties properties = new java.util.Properties();
 
     public ContextServiceDefinitionDescriptor() {
         super.setResourceType(JavaEEResourceType.CSDD);
@@ -115,4 +116,15 @@ public class ContextServiceDefinitionDescriptor extends ResourceDescriptor {
         this.unchanged = unchanged;
     }
 
+    public java.util.Properties getProperties() {
+        return properties;
+    }
+
+    public void setProperties(java.util.Properties properties) {
+        this.properties = properties;
+    }
+
+    public void addContextServiceExecutorDescriptor(ResourcePropertyDescriptor propertyDescriptor) {
+        properties.put(propertyDescriptor.getName(), propertyDescriptor.getValue());
+    }
 }

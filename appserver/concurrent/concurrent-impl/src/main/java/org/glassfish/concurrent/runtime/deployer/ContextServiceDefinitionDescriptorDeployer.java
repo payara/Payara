@@ -44,12 +44,14 @@ import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.config.serverbeans.Resource;
 import com.sun.enterprise.config.serverbeans.Resources;
 import com.sun.enterprise.deployment.ContextServiceDefinitionDescriptor;
+import jakarta.enterprise.concurrent.ContextServiceDefinition;
 import jakarta.inject.Inject;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.naming.NamingException;
 import javax.naming.RefAddr;
+import java.util.HashSet;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.api.logging.LogHelper;
 import org.glassfish.concurrent.LogFacade;
@@ -92,6 +94,7 @@ public class ContextServiceDefinitionDescriptorDeployer implements ResourceDeplo
     @Override
     public void deployResource(Object resource, String applicationName, String moduleName) throws Exception {
         ContextServiceDefinitionDescriptor descriptor = (ContextServiceDefinitionDescriptor) resource;
+        validateContextServiceDescriptor(descriptor);
         ContextServiceConfig contextServiceConfig = new ContextServiceConfig(
                 descriptor.getName(), null, "true",
                 descriptor.getPropagated(),
@@ -179,5 +182,24 @@ public class ContextServiceDefinitionDescriptorDeployer implements ResourceDeplo
     @Override
     public void validatePreservedResource(Application oldApp, Application newApp, Resource resource, Resources allResources) throws ResourceConflictException {
 
+    }
+
+    private void validateContextServiceDescriptor(ContextServiceDefinitionDescriptor descriptor) {
+
+        if(descriptor.getCleared() == null) {
+            HashSet<String> defaultSetCleared = new HashSet<>();
+            defaultSetCleared.add(ContextServiceDefinition.TRANSACTION);
+            descriptor.setCleared(defaultSetCleared);
+        }
+
+        if(descriptor.getPropagated() == null) {
+            HashSet<String> defaultSetPropagated = new HashSet<>();
+            defaultSetPropagated.add(ContextServiceDefinition.ALL_REMAINING);
+            descriptor.setPropagated(defaultSetPropagated);
+        }
+
+        if(descriptor.getUnchanged() == null){
+            descriptor.setUnchanged(new HashSet<>());
+        }
     }
 }

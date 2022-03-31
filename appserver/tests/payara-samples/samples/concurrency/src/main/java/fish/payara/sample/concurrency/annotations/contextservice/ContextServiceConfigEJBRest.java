@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.sample.concurrency.annotations.managedexecutor;
+package fish.payara.sample.concurrency.annotations.contextservice;
 
 import jakarta.annotation.Resource;
 import jakarta.ws.rs.GET;
@@ -51,30 +51,25 @@ import java.util.logging.Logger;
 import java.util.concurrent.ExecutionException;
 
 @Path("xml")
-public class ManagedExecutorDefinitionEJBRest {
-
-    private static final Logger logger = Logger.getLogger(ManagedExecutorDefinitionEJBRest.class.getName());
-
-    @EJB
-    ManagedExecutorDefinitionEJB managedExecutorDefinitionEJB;
+public class ContextServiceConfigEJBRest {
+    private static final Logger logger = Logger.getLogger(ContextServiceConfigEJBRest.class.getName());
 
     @EJB
-    ManagedExecutorDefinitionEJBFromConfig managedExecutorDefinitionEJBFromConfig;
+    ContextServiceEJBFromConfig contextServiceEJBFromConfig;
 
     @GET
     @Path("application")
     @Produces(MediaType.TEXT_PLAIN)
-    public String processManagedExecutor() throws InterruptedException, ExecutionException {
+    public String processContextServiceFromApplicationConfig() throws InterruptedException, ExecutionException {
         logger.log(Level.INFO, "Processing xml tag from ear application config");
-        return managedExecutorDefinitionEJB.submitApplicationExecutor();
+        return contextServiceEJBFromConfig.processContextServiceFromApplicationConfig();
     }
 
     @GET
-    @Path("ejbconfig")
+    @Path("ejb")
     @Produces(MediaType.TEXT_PLAIN)
-    public String processEJBManagedExecutor() throws InterruptedException, ExecutionException {
+    public String processContextServiceFromEJBConfig() throws InterruptedException, ExecutionException {
         logger.log(Level.INFO, "Processing xml tag from ejb config");
-        return managedExecutorDefinitionEJBFromConfig.submitEJBExecutor();
+        return contextServiceEJBFromConfig.processContextServiceFromEJBConfig();
     }
-
 }

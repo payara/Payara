@@ -38,39 +38,21 @@
   only if the new code is made subject to such option by the copyright
   holder.
   -->
-<application xmlns="https://jakarta.ee/xml/ns/jakartaee"
-             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-             xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee application_10.xsd"
-             version="10">
-    <description>This is the EAR</description>
-    <display-name>ear</display-name>
-    <module>
-        <ejb>ejb-jar.jar</ejb>
-    </module>
-    <module>
-        <web>
-            <web-uri>test.war</web-uri>
-            <context-root>/</context-root>
-        </web>
-    </module>
-    <context-service>
-        <name>java:global/concurrent/ContextD</name>
-        <cleared>IntContext</cleared>
-        <propagated>Application</propagated>
-        <propagated>IntContextProvider</propagated>
-        <unchanged>Transaction</unchanged>
-    </context-service>
-    <managed-executor>
-        <name>java:app/jakartaee/Executor</name>
-        <max-async>20</max-async>
-    </managed-executor>
-    <managed-scheduled-executor>
-        <name>java:app/jakartaee/CustomManagedScheduledExecutorD</name>
-        <max-async>20</max-async>
-        <hung-task-threshold>120000</hung-task-threshold>
-    </managed-scheduled-executor>
-    <managed-thread-factory>
-        <name>java:app/jakartaee/ManagedThreadFactoryD</name>
-        <priority>4</priority>
-    </managed-thread-factory>
-</application>
+<ejb-jar xmlns="https://jakarta.ee/xml/ns/jakartaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee ejb-jar_4_1.xsd"
+         version="4.1">
+    <enterprise-beans>
+        <session>
+            <ejb-name>ContextServiceEJBFromConfig</ejb-name>
+            <ejb-class>fish.payara.sample.concurrency.annotations.contextservice.ContextServiceEJBFromConfig</ejb-class>
+            <context-service>
+                <name>java:global/concurrent/ContextE</name>
+                <cleared>IntContext</cleared>
+                <propagated>Application</propagated>
+                <propagated>IntContextProvider</propagated>
+                <unchanged>Transaction</unchanged>
+            </context-service>
+        </session>
+    </enterprise-beans>
+</ejb-jar>

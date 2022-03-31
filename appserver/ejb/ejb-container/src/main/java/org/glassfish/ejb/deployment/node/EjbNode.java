@@ -123,6 +123,8 @@ public abstract class EjbNode<S extends EjbDescriptor> extends DisplayableCompon
         registerElementHandler(new XMLElement(TagNames.MANAGED_THREAD_FACTORY), ManagedThreadFactoryDefinitionNode.class, "addResourceDescriptor");
         //adding support for the managed-scheduled-executor tag
         registerElementHandler(new XMLElement(TagNames.MANAGED_SCHEDULED_EXECUTOR), ManagedScheduledExecutorDefinitionNode.class, "addResourceDescriptor");
+        //adding support for the context-service tag
+        registerElementHandler(new XMLElement(TagNames.CONTEXT_SERVICE), com.sun.enterprise.deployment.node.ContextServiceDefinitionNode.class, "addResourceDescriptor");
     }
 
     @Override

@@ -189,6 +189,7 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
         registerElementHandler(new XMLElement(TagNames.MANAGED_EXECUTOR), ManagedExecutorDefinitionNode.class, "addResourceDescriptor");
         registerElementHandler(new XMLElement(TagNames.MANAGED_THREAD_FACTORY), ManagedThreadFactoryDefinitionNode.class, "addResourceDescriptor");
         registerElementHandler(new XMLElement(TagNames.MANAGED_SCHEDULED_EXECUTOR), ManagedScheduledExecutorDefinitionNode.class, "addResourceDescriptor");
+        registerElementHandler(new XMLElement(TagNames.CONTEXT_SERVICE), ContextServiceDefinitionNode.class, "addResourceDescriptor");
 
         SaxParserHandler.registerBundleNode(this, ApplicationTagNames.APPLICATION);
     }
