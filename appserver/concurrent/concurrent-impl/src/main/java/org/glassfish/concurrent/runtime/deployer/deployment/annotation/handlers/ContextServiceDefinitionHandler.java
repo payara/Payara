@@ -46,7 +46,9 @@ import com.sun.enterprise.deployment.annotation.context.ResourceContainerContext
 import com.sun.enterprise.deployment.annotation.handlers.AbstractResourceHandler;
 import jakarta.enterprise.concurrent.ContextServiceDefinition;
 import jakarta.inject.Inject;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -90,22 +92,17 @@ public class ContextServiceDefinitionHandler extends AbstractResourceHandler {
 
     public void processSingleAnnotation(ContextServiceDefinition contextServiceDefinition, ResourceContainerContext[] resourceContainerContexts) {
         logger.log(Level.INFO, "Creating custom context service by annotation");
-//        String allContexts = Stream.of(ConcurrentRuntime.CONTEXT_INFO_CLASSLOADER,
-//                ConcurrentRuntime.CONTEXT_INFO_JNDI, ConcurrentRuntime.CONTEXT_INFO_SECURITY,
-//                ConcurrentRuntime.CONTEXT_INFO_WORKAREA).collect(Collectors.joining(", "));
         ContextServiceDefinitionDescriptor csdd = createDescriptor(contextServiceDefinition);
-        String propageContexts = collectContextsToPropagate(csdd.getPropagated())
-                .stream().collect(Collectors.joining(", "));
+        String propageContexts = renameBuiltinContexts(csdd.getPropagated()).stream()
+                .collect(Collectors.joining(", "));
         ContextServiceConfig contextServiceConfig = new ContextServiceConfig(contextServiceDefinition.name(),
                 propageContexts,
                 "true",
-                collectContextsToPropagate(csdd.getPropagated()),
-                collectContextsToPropagate(csdd.getCleared()),
-                collectContextsToPropagate(csdd.getUnchanged()));
-        // FIXME: check, if context names are not in multiple lists
+                renameBuiltinContexts(csdd.getPropagated()),
+                renameBuiltinContexts(csdd.getCleared()),
+                renameBuiltinContexts(csdd.getUnchanged()));
         ConcurrentRuntime concurrentRuntime = ConcurrentRuntime.getRuntime();
         // create a context service
-        //        ContextServiceImpl managedExecutorServiceImpl =
         concurrentRuntime.getContextService(null, contextServiceConfig);
 
         // add to contexts
@@ -116,17 +113,56 @@ public class ContextServiceDefinitionHandler extends AbstractResourceHandler {
     }
 
     public ContextServiceDefinitionDescriptor createDescriptor(ContextServiceDefinition contectServiceDefinition) {
-        // FIXME: solve multiple values, ALLREMAINING
+        Set<String> unusedContexts = collectUnusedContexts(contectServiceDefinition);
+
         ContextServiceDefinitionDescriptor csdd = new ContextServiceDefinitionDescriptor();
         csdd.setDescription("Context Service Definition");
         csdd.setName(TranslatedConfigView.expandValue(contectServiceDefinition.name()));
-        csdd.setPropagated(Set.of(contectServiceDefinition.propagated()));
-        csdd.setCleared(Set.of(contectServiceDefinition.cleared()));
-        csdd.setUnchanged(Set.of(contectServiceDefinition.unchanged()));
+        csdd.setPropagated(evaluateContexts(contectServiceDefinition.propagated(), unusedContexts));
+        csdd.setCleared(evaluateContexts(contectServiceDefinition.cleared(), unusedContexts));
+        csdd.setUnchanged(evaluateContexts(contectServiceDefinition.unchanged(), unusedContexts));
         return csdd;
     }
 
-    private Set<String> collectContextsToPropagate(Set<String> definitions) {
+    private Set<String> evaluateContexts(String[] sourceContexts, Set<String> unusedContexts) {
+        Set<String> contexts = new HashSet<>();
+        for (String context : sourceContexts) {
+            if (ContextServiceDefinition.ALL_REMAINING.equals(context)) {
+                contexts.addAll(unusedContexts);
+            } else {
+                contexts.add(context);
+            }
+        }
+        return contexts;
+    }
+
+    private Set<String> collectUnusedContexts(ContextServiceDefinition csdd) {
+        Map<String, String> usedContexts = new HashMap<>();
+        for (String context : csdd.propagated()) {
+            usedContexts.put(context, "propagated");
+        }
+        for (String context : csdd.cleared()) {
+            String previous = usedContexts.put(context, "cleared");
+            if (previous != null) {
+                throw new RuntimeException("Duplicate context " + context + " in " + previous + " and cleared context attributes in ContextServiceDefinition annotation!");
+            }
+        }
+        for (String context : csdd.unchanged()) {
+            String previous = usedContexts.put(context, "unchanged");
+            if (previous != null) {
+                throw new RuntimeException("Duplicate context " + context + " in " + previous + " and unchanged context attributes in ContextServiceDefinition annotation!");
+            }
+        }
+        Set<String> allStandardContexts = new HashSet(Set.of(
+                ContextServiceDefinition.APPLICATION,
+                ContextServiceDefinition.SECURITY,
+                ContextServiceDefinition.TRANSACTION));
+        allStandardContexts.removeAll(usedContexts.keySet());
+        return allStandardContexts;
+    }
+
+
+    private Set<String> renameBuiltinContexts(Set<String> definitions) {
         Set<String> contexts = new HashSet<>();
         Set<String> unusedDefinitions = new HashSet<>(definitions);
         if (unusedDefinitions.contains(ContextServiceDefinition.TRANSACTION)) {
