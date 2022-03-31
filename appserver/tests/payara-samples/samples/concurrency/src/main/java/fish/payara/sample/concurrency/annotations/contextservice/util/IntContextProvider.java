@@ -37,44 +37,37 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.sample.concurrency.annotations.managedexecutor;
+package fish.payara.sample.concurrency.annotations.contextservice.util;
 
-import jakarta.annotation.Resource;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ejb.EJB;
+import java.util.Map;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.concurrent.ExecutionException;
+import jakarta.enterprise.concurrent.spi.ThreadContextProvider;
+import jakarta.enterprise.concurrent.spi.ThreadContextSnapshot;
 
-@Path("xml")
-public class ManagedExecutorDefinitionEJBRest {
+public class IntContextProvider implements ThreadContextProvider {
 
-    private static final Logger logger = Logger.getLogger(ManagedExecutorDefinitionEJBRest.class.getName());
+    private static final ThreadLocal<Integer> local = ThreadLocal.withInitial(() -> 0);
 
-    @EJB
-    ManagedExecutorDefinitionEJB managedExecutorDefinitionEJB;
-
-    @EJB
-    ManagedExecutorDefinitionEJBFromConfig managedExecutorDefinitionEJBFromConfig;
-
-    @GET
-    @Path("application")
-    @Produces(MediaType.TEXT_PLAIN)
-    public String processManagedExecutor() throws InterruptedException, ExecutionException {
-        logger.log(Level.INFO, "Processing xml tag from ear application config");
-        return managedExecutorDefinitionEJB.submitApplicationExecutor();
+    @Override
+    public ThreadContextSnapshot currentContext(final Map<String, String> props) {
+        return new IntContextSnapshot(local.get());
     }
 
-    @GET
-    @Path("ejbconfig")
-    @Produces(MediaType.TEXT_PLAIN)
-    public String processEJBManagedExecutor() throws InterruptedException, ExecutionException {
-        logger.log(Level.INFO, "Processing xml tag from ejb config");
-        return managedExecutorDefinitionEJBFromConfig.submitEJBExecutor();
+    @Override
+    public ThreadContextSnapshot clearedContext(final Map<String, String> props) {
+        return new IntContextSnapshot(0);
     }
 
+    @Override
+    public String getThreadContextType() {
+        return "IntContextProvider";
+    }
+
+    public static void setValue(int value) {
+        local.set(value);
+    }
+
+    public static int getValue() {
+        return local.get();
+    }
 }

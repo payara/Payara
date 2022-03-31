@@ -37,44 +37,27 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.sample.concurrency.annotations.managedexecutor;
+package fish.payara.sample.concurrency.annotations.contextservice.util;
 
-import jakarta.annotation.Resource;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ejb.EJB;
+import jakarta.enterprise.concurrent.spi.ThreadContextRestorer;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.concurrent.ExecutionException;
+public class IntContextRestorer implements ThreadContextRestorer {
+    private final int contextToRestore;
+    private boolean restored;
 
-@Path("xml")
-public class ManagedExecutorDefinitionEJBRest {
-
-    private static final Logger logger = Logger.getLogger(ManagedExecutorDefinitionEJBRest.class.getName());
-
-    @EJB
-    ManagedExecutorDefinitionEJB managedExecutorDefinitionEJB;
-
-    @EJB
-    ManagedExecutorDefinitionEJBFromConfig managedExecutorDefinitionEJBFromConfig;
-
-    @GET
-    @Path("application")
-    @Produces(MediaType.TEXT_PLAIN)
-    public String processManagedExecutor() throws InterruptedException, ExecutionException {
-        logger.log(Level.INFO, "Processing xml tag from ear application config");
-        return managedExecutorDefinitionEJB.submitApplicationExecutor();
+    IntContextRestorer() {
+        contextToRestore = IntContextProvider.getValue();
     }
 
-    @GET
-    @Path("ejbconfig")
-    @Produces(MediaType.TEXT_PLAIN)
-    public String processEJBManagedExecutor() throws InterruptedException, ExecutionException {
-        logger.log(Level.INFO, "Processing xml tag from ejb config");
-        return managedExecutorDefinitionEJBFromConfig.submitEJBExecutor();
+    public void endContext() throws IllegalStateException  {
+        if (restored) {
+            throw new IllegalStateException("already restored");
+        }
+        IntContextProvider.setValue(contextToRestore);
+        restored = true;
     }
 
+    public String toString() {
+        return "IntContextRestorer(" + contextToRestore + ")";
+    }
 }

@@ -37,44 +37,57 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.sample.concurrency.annotations.managedexecutor;
+package fish.payara.sample.concurrency.annotations.contextservice;
 
 import jakarta.annotation.Resource;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ejb.EJB;
-
+import jakarta.enterprise.concurrent.ManagedExecutorDefinition;
+import jakarta.enterprise.concurrent.ManagedExecutorService;
+import fish.payara.sample.concurrency.annotations.contextservice.util.IntContextProvider;
+import jakarta.ejb.Stateless;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
-@Path("xml")
-public class ManagedExecutorDefinitionEJBRest {
+@ManagedExecutorDefinition(name = "java:app/concurrent/MES2",
+        maxAsync = 3,
+        context = "java:global/concurrent/ContextD")
+@ManagedExecutorDefinition(name = "java:app/concurrent/MES3",
+        maxAsync = 3,
+        context = "java:global/concurrent/ContextE")
+@Stateless
+public class ContextServiceEJBFromConfig {
 
-    private static final Logger logger = Logger.getLogger(ManagedExecutorDefinitionEJBRest.class.getName());
+    public static final Logger logger = Logger.getLogger(ContextServiceEJBFromConfig.class.getName());
 
-    @EJB
-    ManagedExecutorDefinitionEJB managedExecutorDefinitionEJB;
+    @Resource(lookup = "java:app/concurrent/MES2")
+    ManagedExecutorService mes2;
 
-    @EJB
-    ManagedExecutorDefinitionEJBFromConfig managedExecutorDefinitionEJBFromConfig;
+    @Resource(lookup = "java:app/concurrent/MES3")
+    ManagedExecutorService mes3;
 
-    @GET
-    @Path("application")
-    @Produces(MediaType.TEXT_PLAIN)
-    public String processManagedExecutor() throws InterruptedException, ExecutionException {
-        logger.log(Level.INFO, "Processing xml tag from ear application config");
-        return managedExecutorDefinitionEJB.submitApplicationExecutor();
+    public String processContextServiceFromApplicationConfig() throws InterruptedException, ExecutionException {
+        IntContextProvider.setValue(10);
+        Future<String> future = mes2.submit(() -> {
+            String msg = "Called in MES thread " + Thread.currentThread().getName() + ", value:" + IntContextProvider.getValue();
+            System.out.println(msg);
+            return msg;
+        });
+        IntContextProvider.setValue(5);
+        String message = future.get();
+        return message;
     }
 
-    @GET
-    @Path("ejbconfig")
-    @Produces(MediaType.TEXT_PLAIN)
-    public String processEJBManagedExecutor() throws InterruptedException, ExecutionException {
-        logger.log(Level.INFO, "Processing xml tag from ejb config");
-        return managedExecutorDefinitionEJBFromConfig.submitEJBExecutor();
+    public String processContextServiceFromEJBConfig() throws InterruptedException, ExecutionException {
+        IntContextProvider.setValue(10);
+        Future<String> future = mes3.submit(() -> {
+            String msg = "Called in MES thread " + Thread.currentThread().getName() + ", value:" + IntContextProvider.getValue();
+            System.out.println(msg);
+            return msg;
+        });
+        IntContextProvider.setValue(5);
+        String message = future.get();
+        return message;
     }
 
 }

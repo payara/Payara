@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.sample.concurrency.annotations.managedexecutor;
+package fish.payara.sample.concurrency.annotations.contextservice;
 
 import jakarta.annotation.Resource;
 import jakarta.ws.rs.GET;
@@ -50,31 +50,37 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.concurrent.ExecutionException;
 
-@Path("xml")
-public class ManagedExecutorDefinitionEJBRest {
+@Path("annotation")
+public class ContextServiceRest {
 
-    private static final Logger logger = Logger.getLogger(ManagedExecutorDefinitionEJBRest.class.getName());
-
-    @EJB
-    ManagedExecutorDefinitionEJB managedExecutorDefinitionEJB;
+    private static final Logger logger = Logger.getLogger(ContextServiceRest.class.getName());
 
     @EJB
-    ManagedExecutorDefinitionEJBFromConfig managedExecutorDefinitionEJBFromConfig;
+    ContextServiceEJB contextServiceEJB;
 
     @GET
-    @Path("application")
+    @Path("annotationconfig")
     @Produces(MediaType.TEXT_PLAIN)
-    public String processManagedExecutor() throws InterruptedException, ExecutionException {
-        logger.log(Level.INFO, "Processing xml tag from ear application config");
-        return managedExecutorDefinitionEJB.submitApplicationExecutor();
+    public String processContextServiceFromAnnotation() throws InterruptedException, ExecutionException {
+        logger.log(Level.INFO, "Processing contextservice from annotation");
+        return contextServiceEJB.processContextServiceFromAnnotation();
     }
 
     @GET
-    @Path("ejbconfig")
+    @Path("multipleannotation")
     @Produces(MediaType.TEXT_PLAIN)
-    public String processEJBManagedExecutor() throws InterruptedException, ExecutionException {
-        logger.log(Level.INFO, "Processing xml tag from ejb config");
-        return managedExecutorDefinitionEJBFromConfig.submitEJBExecutor();
+    public String processContextServiceMultipleAnnotation() throws InterruptedException, ExecutionException {
+        logger.log(Level.INFO, "Processing contextservice from multiple annotation");
+        return contextServiceEJB.processContextServiceMultipleAnnotation();
     }
+
+    @GET
+    @Path("xmlconfig")
+    @Produces(MediaType.TEXT_PLAIN)
+    public String processContextServiceFromWebXml() throws InterruptedException, ExecutionException {
+        logger.log(Level.INFO, "Processing contextservice from xml config");
+        return contextServiceEJB.processContextServiceFromWebXml();
+    }
+
 
 }
