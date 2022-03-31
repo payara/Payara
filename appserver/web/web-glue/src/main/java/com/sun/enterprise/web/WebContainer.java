@@ -888,7 +888,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         connector = (WebConnector) _embedded.createConnector(address, port, isSecure ? "https" : "http");
 
         connector.setMapper(mapper);
-        connector.setJvmRoute(engine.getJvmRoute());
 
         logger.log(INFO, HTTP_LISTENER_CREATED, new Object[] { listener.getName(), listener.getAddress(), Integer.toString(port) });
 
