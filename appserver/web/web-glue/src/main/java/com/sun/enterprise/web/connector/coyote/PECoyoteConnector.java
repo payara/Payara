@@ -51,6 +51,8 @@ import com.sun.enterprise.web.connector.grizzly.DummyConnectorLauncher;
 import com.sun.enterprise.web.pwc.connector.coyote.PwcCoyoteRequest;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
+import org.apache.tomcat.util.net.SSLHostConfig;
+import org.apache.tomcat.util.net.SSLHostConfigCertificate;
 import org.glassfish.grizzly.config.dom.*;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.util.Mapper;
@@ -1140,9 +1142,11 @@ public class PECoyoteConnector extends Connector {
             return;
         }
 
+        SSLHostConfig sslHostConfig = new SSLHostConfig();
+
         // client-auth
         if (Boolean.valueOf(sslConfig.getClientAuthEnabled())) {
-            setClientAuth(true);
+            sslHostConfig.setCertificateVerification("required");
         }
 
         // ssl protocol variants
@@ -1173,13 +1177,16 @@ public class PECoyoteConnector extends Connector {
         if (sslProtocolsBuf.isEmpty()) {
             _logger.log(Level.WARNING, LogFacade.ALL_SSL_PROTOCOLS_DISABLED, listener.getName());
         } else {
-            setSslProtocols(String.join(", ", sslProtocolsBuf));
+            sslHostConfig.setEnabledProtocols(sslProtocolsBuf.toArray(new String[0]));
         }
 
         // cert-nickname
         String certNickname = sslConfig.getCertNickname();
         if (certNickname != null && certNickname.length() > 0) {
-            setKeyAlias(sslConfig.getCertNickname());
+            SSLHostConfigCertificate sslHostConfigCertificate = new SSLHostConfigCertificate(
+                    sslHostConfig, SSLHostConfigCertificate.Type.UNDEFINED);
+            sslHostConfigCertificate.setCertificateKeyAlias(sslConfig.getCertNickname());
+            sslHostConfig.addCertificate(sslHostConfigCertificate);
         }
 
         // ssl3-tls-ciphers
@@ -1191,9 +1198,11 @@ public class PECoyoteConnector extends Connector {
                     _logger.log(Level.FINE, LogFacade.ALL_CIPHERS_DISABLED, listener.getName());
                 }
             } else {
-                setCiphers(jsseCiphers);
+                sslHostConfig.setCiphers(jsseCiphers);
             }
         }
+
+        addSslHostConfig(sslHostConfig);
     }
 
 
