@@ -81,9 +81,6 @@ public class SSLParams {
     private String clientAuthEnabled;
     private String clientAuth;
     private String crlFile;
-    private String ssl2Ciphers;
-    private Boolean ssl2Enabled = false;
-    private Boolean ssl3Enabled = true;
     private String ssl3TlsCiphers;
     private Boolean tlsEnabled=true;
     private Boolean tlsRollBackEnabled=false;
@@ -260,46 +257,6 @@ public class SSLParams {
         keyStore = new File(location);
     }
 
-
-    /**
-     * A comma-separated list of the SSL2 ciphers used, with the prefix + to enable or - to disable, for example +rc4.
-     * Allowed values are rc4, rc4export, rc2, rc2export, idea, des, desede3. If no value is specified, all supported
-     * ciphers are assumed to be enabled. NOT Used in PE
-     */
-
-    public String getSsl2Ciphers() {
-        return ssl2Ciphers;
-    }
-
-    public void setSsl2Ciphers(String ssl2Ciphers) {
-        this.ssl2Ciphers = ssl2Ciphers;
-    }
-
-    /**
-     * Determines whether SSL2 is enabled. NOT Used in PE. SSL2 is not supported by either iiop or web-services. When
-     * this element is used as a child of the iiop-listener element then the only allowed value for this attribute is
-     * "false".
-     */
-    public Boolean getSsl2Enabled() {
-        return ssl2Enabled;
-    }
-
-    public void setSsl2Enabled(String ssl2Enabled) {
-        this.ssl2Enabled = Boolean.parseBoolean(ssl2Enabled);
-    }
-
-    /**
-     * Determines whether SSL3 is enabled. If both SSL2 and SSL3 are enabled for a virtual server, the server tries SSL3
-     * encryption first. If that fails, the server tries SSL2 encryption.
-     */
-    public Boolean getSsl3Enabled() {
-        return ssl3Enabled;
-    }
-
-    public void setSsl3Enabled(String ssl3Enabled) {
-        this.ssl3Enabled = Boolean.parseBoolean(ssl3Enabled);
-    }
-
     /**
      * A comma-separated list of the SSL3 ciphers used, with the prefix + to enable or - to disable, for example
      * +SSL_RSA_WITH_RC4_128_MD5. Allowed SSL3/TLS values are those that are supported by the JVM for the given security
@@ -312,18 +269,6 @@ public class SSLParams {
 
     public void setSsl3TlsCiphers(String ssl3TlsCiphers) {
         this.ssl3TlsCiphers  = ssl3TlsCiphers;
-    }
-
-    /**
-     * Determines whether TLS is enabled.
-     */
-
-    public Boolean getTlsEnabled() {
-        return tlsEnabled;
-    }
-
-    public void setTlsEnabled(String tlsEnabled) {
-        this.tlsEnabled = Boolean.parseBoolean(tlsEnabled);
     }
 
 

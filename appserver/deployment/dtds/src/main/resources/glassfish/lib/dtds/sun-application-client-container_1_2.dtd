@@ -96,18 +96,6 @@
                    tokenname:nickname. Including the tokenname: part of the name 
                    in this attribute is optional. 
 
-     ssl2-enabled  (optional) Determines whether SSL2 is enabled. 
-
-     ssl3-enabled  (optional) Determines whether SSL3 is enabled. 
-
-                   If both SSL2 and SSL3 are enabled for a virtual server, the server 
-                   tries SSL3 encryption first. If that fails, the server tries SSL2
-                   encryption. 
-
-    ssl2ciphers    (optional) A space-separated list of the SSL2 ciphers used, with 
-                   the prefix + to enable or - to disable, for example +rc4. Allowed 
-                   values are rc4, rc4export, rc2, rc2export, idea, des, desede3. 
-
     ssl3-tls-ciphers (optional) A space-separated list of the SSL3 ciphers used, with 
                      the prefix + to enable or - to disable, for example 
                      +SSL_RSA_WITH_RC4_128_MD5.
@@ -129,9 +117,6 @@
 --> 
 <!ELEMENT ssl EMPTY>
 <!ATTLIST ssl cert-nickname        CDATA    #IMPLIED
-              ssl2-enabled         CDATA    "false"
-              ssl2-ciphers         CDATA    #IMPLIED
-              ssl3-enabled         CDATA    "true"
               ssl3-tls-ciphers     CDATA    #IMPLIED
               tls-enabled          CDATA    "true"
               tls-rollback-enabled CDATA    "true">

@@ -61,7 +61,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static org.glassfish.grizzly.config.dom.Ssl.*;
+import static org.glassfish.grizzly.config.dom.Ssl.TLS12;
+import static org.glassfish.grizzly.config.dom.Ssl.TLS13;
 
 /**
  * @author oleksiys
@@ -546,9 +547,6 @@ public class SSLConfigurator extends SSLEngineConfigurator {
      * CipherInfo.
      */
     private static final class CipherInfo {
-
-        private static final short SSL2 = 0x1;
-        private static final short SSL3 = 0x2;
         private static final short TLS = 0x4;
         // The old names mapped to the standard names as existed
         private static final String[][] OLD_CIPHER_MAPPING = {
@@ -580,7 +578,7 @@ public class SSLConfigurator extends SSLEngineConfigurator {
                 String nonStdName = OLD_CIPHER_MAPPING[i][0];
                 String stdName = OLD_CIPHER_MAPPING[i][1];
                 ciphers.put(nonStdName,
-                        new CipherInfo(nonStdName, stdName, (short) (SSL3 | TLS)));
+                        new CipherInfo(nonStdName, stdName, TLS));
             }
         }
 
@@ -605,7 +603,7 @@ public class SSLConfigurator extends SSLEngineConfigurator {
             try {
                 for (int i = 0, len = supportedCiphers.length; i < len; i++) {
                     String s = supportedCiphers[i];
-                    ciphers.put(s, new CipherInfo(s, s, (short) (SSL3 | TLS)));
+                    ciphers.put(s, new CipherInfo(s, s, TLS));
                 }
             } finally {
                 ciphersLock.writeLock().unlock();
@@ -627,16 +625,6 @@ public class SSLConfigurator extends SSLEngineConfigurator {
 
         public String getCipherName() {
             return cipherName;
-        }
-
-        @SuppressWarnings({"UnusedDeclaration"})
-        public boolean isSSL2() {
-            return (protocolVersion & SSL2) == SSL2;
-        }
-
-        @SuppressWarnings({"UnusedDeclaration"})
-        public boolean isSSL3() {
-            return (protocolVersion & SSL3) == SSL3;
         }
 
         @SuppressWarnings({"UnusedDeclaration"})

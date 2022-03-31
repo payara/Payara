@@ -552,21 +552,11 @@ public class IIOPSSLSocketFactory implements ORBSocketFactory {
             for (int i = 0; i < eSize; i++) {
                 String cipher = enableCiphers[i];
                 CipherInfo cInfo = CipherInfo.getCipherInfo(cipher);
-                if (cInfo != null && (cInfo.isTLS() || cInfo.isSSL3())) {
+                if (cInfo != null && cInfo.isTLS()) {
                     cList.add(cipher);
                 }
             }
         }
-
-
-        for (int i = 0; i < eSize; i++) {
-            String cipher = enableCiphers[i];
-            CipherInfo cInfo = CipherInfo.getCipherInfo(cipher);
-            if (cInfo != null && cInfo.isSSL2()) {
-                cList.add(cipher);
-            }
-        }
-
 
         if (_logger.isLoggable(Level.FINE)) {
             _logger.log(Level.FINE, "Merged socket ciphers: " + cList);

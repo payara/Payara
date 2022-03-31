@@ -69,12 +69,12 @@ import java.beans.PropertyVetoException;
 /**
  * Create Ssl Command
  *
- * Usage: create-ssl --type [http-listener|iiop-listener|iiop-service|protocol] --certname cert_name [--ssl2enabled=false]
- * [--ssl2ciphers ssl2ciphers] [--ssl3enabled=true] [--ssl3tlsciphers ssl3tlsciphers] [--tlsenabled=true]
+ * Usage: create-ssl --type [http-listener|iiop-listener|iiop-service|protocol] --certname cert_name
+ * [--ssl3tlsciphers ssl3tlsciphers] [--tlsenabled=true]
  * [--tlsrollbackenabled=true] [--clientauthenabled=false] [--target target(Default server)] [listener_id|protocol_id]
  *
- * domain.xml element example &lt;ssl cert-nickname="s1as" client-auth-enabled="false" ssl2-enabled="false"
- * ssl3-enabled="true" tls-enabled="true" tls-rollback-enabled="true"/&gt;
+ * domain.xml element example &lt;ssl cert-nickname="s1as" client-auth-enabled="false"
+ * tls-enabled="true" tls-rollback-enabled="true"/&gt;
  *
  * @author Nandini Ektare
  */
@@ -117,12 +117,7 @@ public class CreateSsl implements AdminCommand {
     String certName;
     @Param(name = "type", acceptableValues = "network-listener, http-listener, iiop-listener, iiop-service, jmx-connector, protocol")
     String type;
-    @Param(name = "ssl2Enabled", optional = true, defaultValue = Ssl.SSL2_ENABLED + "")
-    Boolean ssl2Enabled;
-    @Param(name = "ssl2Ciphers", optional = true)
-    String ssl2ciphers;
-    @Param(name = "ssl3Enabled", optional = true, defaultValue = Ssl.SSL3_ENABLED + "")
-    Boolean ssl3Enabled;
+
     @Param(name = "ssl3TlsCiphers", optional = true)
     String ssl3tlsciphers;
     @Param(name = "tlsRollbackEnabled", optional = true, defaultValue = Ssl.TLS_ROLLBACK_ENABLED + "")

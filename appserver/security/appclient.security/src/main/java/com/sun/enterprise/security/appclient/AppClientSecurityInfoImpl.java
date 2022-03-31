@@ -193,7 +193,6 @@ public class AppClientSecurityInfoImpl implements AppClientSecurityInfo {
     private AppClientSSL convert(Ssl ssl) {
         AppClientSSL appSSL = new AppClientSSL();
         appSSL.setCertNickname(ssl.getCertNickname());
-        appSSL.setSsl2Ciphers(ssl.getSsl2Ciphers());
         appSSL.setSsl3TlsCiphers(ssl.getSsl3TlsCiphers());
         appSSL.setTlsRollbackEnabled(ssl.isTlsRollbackEnabled());
         

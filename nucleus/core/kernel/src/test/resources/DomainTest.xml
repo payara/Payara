@@ -140,7 +140,6 @@
             <http header-buffer-length="8192" forced-response-type="text/plain; charset=iso-8859-1" default-virtual-server="server" max-connections="250" server-name="" default-response-type="text/plain; charset=iso-8859-1">
               <file-cache enabled="false"></file-cache>
             </http>
-            <ssl ssl2-enabled="true" cert-nickname="s1as" client-auth-enabled="true"></ssl>
           </protocol>
           <protocol name="admin-listener">
             <http header-buffer-length="8192" forced-response-type="text/plain; charset=iso-8859-1" default-virtual-server="__asadmin" max-connections="250" server-name="" default-response-type="text/plain; charset=iso-8859-1">

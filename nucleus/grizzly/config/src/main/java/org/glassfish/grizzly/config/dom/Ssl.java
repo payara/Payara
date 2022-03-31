@@ -54,8 +54,6 @@ import org.jvnet.hk2.config.types.PropertyBag;
 public interface Ssl extends ConfigBeanProxy, PropertyBag {
     boolean ALLOW_LAZY_INIT = true;
     boolean CLIENT_AUTH_ENABLED = false;
-    boolean SSL2_ENABLED = false;
-    boolean SSL3_ENABLED = false;
     boolean TLS12_ENABLED = true;
     boolean TLS13_ENABLED = true;
     boolean TLS_ROLLBACK_ENABLED = true;
@@ -68,8 +66,6 @@ public interface Ssl extends ConfigBeanProxy, PropertyBag {
     String CLIENT_AUTH_PATTERN = "(|need|want)";
     String STORE_TYPE_PATTERN = "(JKS|NSS)";
     String PASSWORD_PROVIDER = "plain";
-    String SSL2_CIPHERS_PATTERN =
-            "((\\+|\\-)(rc2|rc2export|rc4|rc4export|idea|des|desede3)(\\s*,\\s*(\\+|\\-)(rc2|rc2export|rc4|rc4export|idea|des|desede3))*)*";
     long HANDSHAKE_TIMEOUT_MILLIS = -1;
 
     String TLS13 = "TLSv1.3";
@@ -77,10 +73,7 @@ public interface Ssl extends ConfigBeanProxy, PropertyBag {
     String TLS11 = "TLSv1.1";
     String TLS1 = "TLSv1";
     String TLS = "TLS";
-    String SSL3 = "SSLv3";
-    String SSL2 = "SSLv2";
     String SSL = "SSL";
-    String SSL2_HELLO = "SSLv2Hello";
 
     /**
      * Nickname of the server certificate in the certificate database or the PKCS#11 token. In the certificate, the name

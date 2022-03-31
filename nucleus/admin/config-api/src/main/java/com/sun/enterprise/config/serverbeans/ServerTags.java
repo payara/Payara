@@ -177,9 +177,6 @@ public class ServerTags  {
     /** Tags for Element ssl */
     public static final String SSL = "ssl";
     public static final String CERT_NICKNAME = "cert-nickname";
-    public static final String SSL2_ENABLED = "ssl2-enabled";
-    public static final String SSL2_CIPHERS = "ssl2-ciphers";
-    public static final String SSL3_ENABLED = "ssl3-enabled";
     public static final String SSL3_TLS_CIPHERS = "ssl3-tls-ciphers";
     public static final String TLS_ENABLED = "tls-enabled";
     public static final String TLS_ROLLBACK_ENABLED = "tls-rollback-enabled";

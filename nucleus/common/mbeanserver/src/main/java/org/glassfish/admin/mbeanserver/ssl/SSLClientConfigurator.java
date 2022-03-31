@@ -41,6 +41,10 @@
 
 package org.glassfish.admin.mbeanserver.ssl;
 
+import org.glassfish.admin.mbeanserver.Util;
+import org.glassfish.logging.annotation.LogMessageInfo;
+
+import javax.net.ssl.*;
 import java.io.*;
 import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
@@ -50,13 +54,6 @@ import java.text.MessageFormat;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.net.ssl.*;
-import org.glassfish.admin.mbeanserver.Util;
-import static org.glassfish.grizzly.config.dom.Ssl.SSL2;
-import static org.glassfish.grizzly.config.dom.Ssl.SSL2_HELLO;
-import static org.glassfish.grizzly.config.dom.Ssl.SSL3;
-import static org.glassfish.grizzly.config.dom.Ssl.TLS1;
-import org.glassfish.logging.annotation.LogMessageInfo;
 
 /**
  * This class is a utility class that would configure a client socket factory using
@@ -422,19 +419,6 @@ public class SSLClientConfigurator {
         List<String> tmpSSLArtifactsList = new LinkedList<>();
         // first configure the protocols
         System.out.println("SSLParams ="+ sslParams);
-        if (sslParams.getSsl2Enabled()) {
-            tmpSSLArtifactsList.add(SSL2);
-        }
-        if (sslParams.getSsl3Enabled()) {
-            tmpSSLArtifactsList.add(SSL3);
-        }
-        if (sslParams.getTlsEnabled()) {
-            tmpSSLArtifactsList.add(TLS1);
-        }
-        if (sslParams.getSsl3Enabled() || sslParams.getTlsEnabled()) {
-            tmpSSLArtifactsList.add(SSL2_HELLO);
-        }
-        
         if (tmpSSLArtifactsList.isEmpty()) {
             _logger.log(Level.WARNING, allVariantsDisabled);
         } else {
@@ -450,14 +434,6 @@ public class SSLClientConfigurator {
         if (ssl3Ciphers != null && ssl3Ciphers.length() > 0) {
             final String[] ssl3CiphersArray = ssl3Ciphers.split(",");
             for (final String cipher : ssl3CiphersArray) {
-                tmpSSLArtifactsList.add(cipher.trim());
-            }
-        }
-        // ssl2-tls-ciphers
-        final String ssl2Ciphers = sslParams.getSsl2Ciphers();
-        if (ssl2Ciphers != null && ssl2Ciphers.length() > 0) {
-            final String[] ssl2CiphersArray = ssl2Ciphers.split(",");
-            for (final String cipher : ssl2CiphersArray) {
                 tmpSSLArtifactsList.add(cipher.trim());
             }
         }
@@ -540,8 +516,6 @@ public class SSLClientConfigurator {
      * It also maintains a Map from configName to CipherInfo.
      */
     private static final class CipherInfo {
-        private static final short SSL2 = 0x1;
-        private static final short SSL3 = 0x2;
         private static final short TLS = 0x4;
 
         // The old names mapped to the standard names as existed
@@ -573,7 +547,7 @@ public class SSLClientConfigurator {
                 String nonStdName = OLD_CIPHER_MAPPING[i][0];
                 String stdName = OLD_CIPHER_MAPPING[i][1];
                 ciphers.put(nonStdName,
-                        new CipherInfo(stdName, (short) (SSL3 | TLS)));
+                        new CipherInfo(stdName, TLS));
             }
         }
 
@@ -592,7 +566,7 @@ public class SSLClientConfigurator {
             String[] supportedCiphers = factory.getDefaultCipherSuites();
             for (int i = 0, len = supportedCiphers.length; i < len; i++) {
                 String s = supportedCiphers[i];
-                ciphers.put(s, new CipherInfo(s, (short) (SSL3 | TLS)));
+                ciphers.put(s, new CipherInfo(s, TLS));
             }
         }
         public static CipherInfo getCipherInfo(final String configName) {
@@ -603,15 +577,6 @@ public class SSLClientConfigurator {
             return cipherName;
         }
 
-        @SuppressWarnings({"UnusedDeclaration"})
-        public boolean isSSL2() {
-            return (protocolVersion & SSL2) == SSL2;
-        }
-
-        @SuppressWarnings({"UnusedDeclaration"})
-        public boolean isSSL3() {
-            return (protocolVersion & SSL3) == SSL3;
-        }
 
         @SuppressWarnings({"UnusedDeclaration"})
         public boolean isTLS() {

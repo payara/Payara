@@ -136,21 +136,7 @@
      cert-nickname nickname of the server certificate in the certificate database 
                    or the PKCS#11 token. In the certificate, the name format is
                    tokenname:nickname. Including the tokenname: part of the name 
-                   in this attribute is optional. 
-
-     ssl2-enabled  (optional) Determines whether SSL2 is enabled. 
-
-     ssl3-enabled  (optional) Determines whether SSL3 is enabled. 
-
-                   If both SSL2 and SSL3 are enabled for a virtual server, the server 
-                   tries SSL3 encryption first. If that fails, the server tries SSL2
-                   encryption. 
-
-     ssl2-ciphers  (optional) A comma-separated list of the SSL2 ciphers used, with 
-                   the prefix + to enable or - to disable, for example +rc4. Allowed 
-                   values are rc4, rc4export, rc2, rc2export, idea, des, desede3. 
-                   If no value is specified, all supported ciphers are assumed to 
-                   be enabled.
+                   in this attribute is optional.
 
      ssl3-tls-ciphers (optional) A comma-separated list of the SSL3 ciphers used, with 
                       the prefix + to enable or - to disable, for example +rsa_des_sha.
@@ -171,9 +157,6 @@
 --> 
 <!ELEMENT ssl EMPTY>
 <!ATTLIST ssl cert-nickname        CDATA     #REQUIRED
-              ssl2-enabled         %boolean; "false"
-              ssl2-ciphers         CDATA     #IMPLIED
-              ssl3-enabled         %boolean; "true"
               ssl3-tls-ciphers     CDATA     #IMPLIED
               tls-enabled          %boolean; "true"
               tls-rollback-enabled %boolean; "true"
