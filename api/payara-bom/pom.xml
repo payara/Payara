@@ -449,7 +449,7 @@
             <dependency>
                 <groupId>jakarta.json</groupId>
                 <artifactId>jakarta.json-api</artifactId>
-                <version>${jsonp.version}</version>
+                <version>${jsonp-api.version}</version>
             </dependency>
             <dependency>
                 <groupId>jakarta.xml.ws</groupId>
@@ -695,15 +695,15 @@
                 <version>${yasson.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.glassfish</groupId>
+                <groupId>org.eclipse.parsson</groupId>
                 <artifactId>jakarta.json</artifactId>
-                <version>${jsonp.version}</version>
+                <version>${parsson.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.glassfish</groupId>
                 <artifactId>jsonp-jaxrs</artifactId>
-                <version>${jsonp.version}</version>
+                <version>${jsonp-jaxrs.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.ibm.jbatch</groupId>
