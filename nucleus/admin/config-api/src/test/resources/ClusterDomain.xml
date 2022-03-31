@@ -155,7 +155,7 @@
             <http max-connections="250" default-virtual-server="server" server-name="">
               <file-cache enabled="false" />
             </http>
-            <ssl ssl3-enabled="false" cert-nickname="s1as" />
+            <ssl cert-nickname="s1as" />
           </protocol>
           <protocol name="admin-listener">
             <http max-connections="250" default-virtual-server="__asadmin" server-name="">
@@ -279,7 +279,7 @@
             <http default-virtual-server="server" max-connections="250" server-name="">
               <file-cache enabled="false" />
             </http>
-            <ssl ssl3-enabled="false" cert-nickname="s1as" />
+            <ssl cert-nickname="s1as" />
           </protocol>
           <protocol name="admin-listener">
             <http default-virtual-server="__asadmin" max-connections="250" server-name="">
@@ -403,7 +403,7 @@
             <http default-virtual-server="server" max-connections="250" server-name="">
               <file-cache enabled="false" />
             </http>
-            <ssl ssl3-enabled="false" cert-nickname="s1as" />
+            <ssl cert-nickname="s1as" />
           </protocol>
           <protocol name="admin-listener">
             <http default-virtual-server="__asadmin" max-connections="250" server-name="">

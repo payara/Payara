@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2021] Payara Foundation and/or affiliates
+// Portions Copyright [2021-2022] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.mbeanserver.ssl;
 
@@ -50,7 +50,6 @@ import java.io.File;
  * keystore type = JKS
  * truststore type = JKS
  * protocol = TLS
- * ssl3 Enabled = true
  * tls Enabled= true
  * It also picks up the value of keystore, keystore password, truststore , trustore password from
  * system properties.
@@ -81,7 +80,6 @@ public class SSLParams {
     private String clientAuthEnabled;
     private String clientAuth;
     private String crlFile;
-    private String ssl3TlsCiphers;
     private Boolean tlsEnabled=true;
     private Boolean tlsRollBackEnabled=false;
     private Boolean hstsEnabled = false;
@@ -256,21 +254,6 @@ public class SSLParams {
     public void setKeyStore(String location) {
         keyStore = new File(location);
     }
-
-    /**
-     * A comma-separated list of the SSL3 ciphers used, with the prefix + to enable or - to disable, for example
-     * +SSL_RSA_WITH_RC4_128_MD5. Allowed SSL3/TLS values are those that are supported by the JVM for the given security
-     * provider and security service configuration. If no value is specified, all supported ciphers are assumed to be
-     * enabled.
-     */
-    public String getSsl3TlsCiphers() {
-        return ssl3TlsCiphers;
-    }
-
-    public void setSsl3TlsCiphers(String ssl3TlsCiphers) {
-        this.ssl3TlsCiphers  = ssl3TlsCiphers;
-    }
-
 
     /**
      * Determines whether TLS rollback is enabled. TLS rollback should be enabled for Microsoft Internet Explorer 5.0

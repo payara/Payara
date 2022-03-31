@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2022] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.mbeanserver.ssl;
 
@@ -429,14 +429,6 @@ public class SSLClientConfigurator {
 
         tmpSSLArtifactsList.clear();
 
-        // ssl3-tls-ciphers
-        final String ssl3Ciphers = sslParams.getSsl3TlsCiphers();
-        if (ssl3Ciphers != null && ssl3Ciphers.length() > 0) {
-            final String[] ssl3CiphersArray = ssl3Ciphers.split(",");
-            for (final String cipher : ssl3CiphersArray) {
-                tmpSSLArtifactsList.add(cipher.trim());
-            }
-        }
 
         final String[] ciphers = getJSSECiphers(tmpSSLArtifactsList);
         if (ciphers == null || ciphers.length == 0) {

@@ -198,14 +198,6 @@ public class SSLConfigurator extends SSLEngineConfigurator {
 //                    }
 //                }
                 tmpSSLArtifactsList.clear();
-                // ssl3-tls-ciphers
-                final String ssl3Ciphers = ssl.getSsl3TlsCiphers();
-                if (ssl3Ciphers != null && ssl3Ciphers.length() > 0) {
-                    final String[] ssl3CiphersArray = ssl3Ciphers.split(",");
-                    for (final String cipher : ssl3CiphersArray) {
-                        tmpSSLArtifactsList.add(cipher.trim());
-                    }
-                }
                 final String[] ciphers = getJSSECiphers(tmpSSLArtifactsList);
                 if (ciphers == null || ciphers.length == 0) {
                     logEmptyWarning(ssl, "WEB0308: All SSL cipher suites disabled for network-listener(s) {0}."

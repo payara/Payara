@@ -42,15 +42,8 @@
 package com.sun.enterprise.web;
 
 import com.sun.appserv.server.util.Version;
-import com.sun.enterprise.config.serverbeans.Applications;
-import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
-import com.sun.enterprise.config.serverbeans.DasConfig;
-import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.HttpService;
-import com.sun.enterprise.config.serverbeans.SecurityService;
 import com.sun.enterprise.config.serverbeans.Server;
-import com.sun.enterprise.config.serverbeans.SystemProperty;
+import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.container.common.spi.JCDIService;
 import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
 import com.sun.enterprise.container.common.spi.util.InjectionManager;
@@ -71,51 +64,19 @@ import com.sun.enterprise.web.logger.FileLoggerHandlerFactory;
 import com.sun.enterprise.web.logger.IASLogger;
 import com.sun.enterprise.web.pluggable.WebContainerFeatureFactory;
 import com.sun.enterprise.web.reconfig.WebConfigListener;
-
 import fish.payara.nucleus.hotdeploy.ApplicationState;
 import fish.payara.nucleus.hotdeploy.HotDeployService;
-
-import java.io.File;
-import java.net.BindException;
-import java.net.MalformedURLException;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.ResourceBundle;
-import java.util.Set;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.imageio.ImageIO;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
-import javax.naming.NamingException;
 import jakarta.servlet.Filter;
 import jakarta.servlet.Servlet;
 import jakarta.servlet.http.HttpUpgradeHandler;
 import jakarta.servlet.jsp.JspFactory;
 import jakarta.servlet.jsp.tagext.JspTag;
-
-import org.apache.catalina.Connector;
-import org.apache.catalina.Container;
 import org.apache.catalina.Context;
-import org.apache.catalina.Deployer;
 import org.apache.catalina.Engine;
-import org.apache.catalina.LifecycleException;
-import org.apache.catalina.LifecycleListener;
-import org.apache.catalina.Loader;
-import org.apache.catalina.Realm;
+import org.apache.catalina.*;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.core.StandardEngine;
@@ -138,11 +99,7 @@ import org.glassfish.grizzly.config.dom.NetworkListeners;
 import org.glassfish.grizzly.http.server.util.Mapper;
 import org.glassfish.grizzly.http.server.util.MappingData;
 import org.glassfish.grizzly.http.util.DataChunk;
-import org.glassfish.hk2.api.DynamicConfiguration;
-import org.glassfish.hk2.api.DynamicConfigurationService;
-import org.glassfish.hk2.api.PostConstruct;
-import org.glassfish.hk2.api.PreDestroy;
-import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.api.*;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.internal.data.ApplicationInfo;
@@ -150,13 +107,7 @@ import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.grizzly.ContextMapper;
 import org.glassfish.web.LogFacade;
-import org.glassfish.web.admin.monitor.HttpServiceStatsProviderBootstrap;
-import org.glassfish.web.admin.monitor.JspProbeProvider;
-import org.glassfish.web.admin.monitor.RequestProbeProvider;
-import org.glassfish.web.admin.monitor.ServletProbeProvider;
-import org.glassfish.web.admin.monitor.SessionProbeProvider;
-import org.glassfish.web.admin.monitor.WebModuleProbeProvider;
-import org.glassfish.web.admin.monitor.WebStatsProviderBootstrap;
+import org.glassfish.web.admin.monitor.*;
 import org.glassfish.web.config.serverbeans.SessionProperties;
 import org.glassfish.web.deployment.archivist.WebArchivist;
 import org.glassfish.web.deployment.runtime.SunWebAppImpl;
@@ -170,32 +121,29 @@ import org.jvnet.hk2.config.Transactions;
 import org.jvnet.hk2.config.types.Property;
 import org.xml.sax.EntityResolver;
 
+import javax.imageio.ImageIO;
+import javax.naming.NamingException;
+import java.io.File;
+import java.net.BindException;
+import java.net.MalformedURLException;
+import java.text.MessageFormat;
+import java.util.*;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import static com.sun.enterprise.deployment.WebBundleDescriptor.AFTER_SERVLET_CONTEXT_INITIALIZED_EVENT;
 import static com.sun.enterprise.util.StringUtils.parseStringList;
 import static com.sun.enterprise.util.io.FileUtils.makeFriendlyFilename;
-import static com.sun.enterprise.web.Constants.ACCESS_LOGGING_ENABLED;
-import static com.sun.enterprise.web.Constants.ACCESS_LOG_BUFFER_SIZE_PROPERTY;
-import static com.sun.enterprise.web.Constants.ACCESS_LOG_PREFIX;
-import static com.sun.enterprise.web.Constants.ACCESS_LOG_PROPERTY;
-import static com.sun.enterprise.web.Constants.ACCESS_LOG_WRITE_INTERVAL_PROPERTY;
-import static com.sun.enterprise.web.Constants.DEFAULT_WEB_MODULE_NAME;
-import static com.sun.enterprise.web.Constants.ERROR_REPORT_VALVE;
-import static com.sun.enterprise.web.Constants.SSO_ENABLED;
+import static com.sun.enterprise.web.Constants.*;
 import static java.text.MessageFormat.format;
 import static java.util.Arrays.stream;
-import static java.util.logging.Level.FINE;
-import static java.util.logging.Level.FINEST;
-import static java.util.logging.Level.INFO;
-import static java.util.logging.Level.SEVERE;
-import static java.util.logging.Level.WARNING;
+import static java.util.logging.Level.*;
 import static java.util.stream.Collectors.toList;
 import static org.glassfish.api.admin.ServerEnvironment.DEFAULT_INSTANCE_NAME;
 import static org.glassfish.api.event.EventTypes.PREPARE_SHUTDOWN;
 import static org.glassfish.api.web.Constants.ADMIN_VS;
-import static org.glassfish.internal.deployment.Deployment.ALL_APPLICATIONS_PROCESSED;
-import static org.glassfish.internal.deployment.Deployment.DEPLOYMENT_FAILURE;
-import static org.glassfish.internal.deployment.Deployment.DISABLE_START;
-import static org.glassfish.internal.deployment.Deployment.UNDEPLOYMENT_FAILURE;
+import static org.glassfish.internal.deployment.Deployment.*;
 import static org.glassfish.web.LogFacade.*;
 
 /**
@@ -1108,12 +1056,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
                     connector.setTcpNoDelay(ConfigBeansUtilities.toBoolean(propValue));
                 } else if ("traceEnabled".equals(propName)) {
                     connector.setAllowTrace(ConfigBeansUtilities.toBoolean(propValue));
-                } else if ("ssl-session-timeout".equals(propName)) {
-                    connector.setSslSessionTimeout(propValue);
-                } else if ("ssl3-session-timeout".equals(propName)) {
-                    connector.setSsl3SessionTimeout(propValue);
-                } else if ("ssl-cache-entries".equals(propName)) {
-                    connector.setSslSessionCacheSize(propValue);
                 } else if ("proxyHandler".equals(propName)) {
                     connector.setProxyHandler(propValue);
                 } else {

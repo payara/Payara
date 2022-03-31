@@ -33,6 +33,7 @@
  only if the new code is made subject to such option by the copyright
  holder.
 -->
+<!--  Portions Copyright [2022] Payara Foundation and/or affiliates -->
 
 
 <!ENTITY % boolean "(yes | no | on | off | 1 | 0 | true | false)">
@@ -94,16 +95,7 @@
      cert-nickname nickname of the server certificate in the certificate database 
                    or the PKCS#11 token. In the certificate, the name format is
                    tokenname:nickname. Including the tokenname: part of the name 
-                   in this attribute is optional. 
-
-    ssl3-tls-ciphers (optional) A space-separated list of the SSL3 ciphers used, with 
-                     the prefix + to enable or - to disable, for example 
-                     +SSL_RSA_WITH_RC4_128_MD5.
-                     Allowed SSL3/TLS values are SSL_RSA_WITH_RC4_128_MD5, 
-                     SSL_RSA_WITH_3DES_EDE_CBC_SHA, SSL_RSA_WITH_DES_CBC_SHA,
-                     SSL_RSA_EXPORT_WITH_RC4_40_MD5, SSL_RSA_WITH_NULL_MD5,
-                     SSL_RSA_WITH_RC4_128_SHA,SSL_RSA_WITH_NULL_SHA
-
+                   in this attribute is optional.
 
     tls-enabled     (optional) Determines whether TLS is enabled. 
 
@@ -117,7 +109,6 @@
 --> 
 <!ELEMENT ssl EMPTY>
 <!ATTLIST ssl cert-nickname        CDATA    #IMPLIED
-              ssl3-tls-ciphers     CDATA    #IMPLIED
               tls-enabled          CDATA    "true"
               tls-rollback-enabled CDATA    "true">
 

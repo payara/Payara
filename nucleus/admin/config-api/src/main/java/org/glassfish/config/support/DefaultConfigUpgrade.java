@@ -1006,7 +1006,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
      *      <http default-virtual-server="server">
      *      <file-cache/>
      *      </http>
-     *      <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" ssl3-enabled="false" cert-nickname="s1as"/>
+     *      <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" cert-nickname="s1as"/>
      *  </protocol>
      *  <protocol name="admin-listener">
      *      <http default-virtual-server="__asadmin" max-connections="250">
@@ -1127,7 +1127,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
         }
     }
 
-    /* <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" ssl3-enabled="false" cert-nickname="s1as"/> */
+    /* <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" cert-nickname="s1as"/> */
     private void createSsl(Protocol p) throws PropertyVetoException {
         while (!(parser.getEventType() == END_ELEMENT && parser.getLocalName().equals("protocol"))) {
             try {

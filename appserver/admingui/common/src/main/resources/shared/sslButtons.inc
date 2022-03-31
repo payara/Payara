@@ -38,7 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright [2017] Payara Foundation and/or affiliates
+    Portions Copyright [2017-2022] Payara Foundation and/or affiliates
 -->
 
 <!-- sslButtons.inc -->
@@ -49,8 +49,6 @@
         <sun:button id="saveButton" rendered="#{not empty pageSession.valueMap['certNickname']}" text="$resource{i18n.button.Save}"
                  onClick="if (checkSSLRequiredElements() && guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) {submitAndDisable(this, '$resource{i18n.button.Processing}');}; return false;" >
             <!command
-                convertCiphersItemsToStr(common="#{pageSession.selectedCommon}" ephemeral="#{pageSession.selectedEphemeral}" other="#{pageSession.selectedOther}" ecc="#{pageSession.selectedEcc}" ciphers="#{requestScope.ciphers}")
-                mapPut(map="#{pageSession.valueMap}" key="ssl3TlsCiphers" value="#{requestScope.ciphers}")
                 gf.createEntity(endpoint="#{pageSession.selfUrl}"
                             attrs="#{pageSession.valueMap}"
                             skipAttrs="#{pageSession.skipAttrsList}"
@@ -67,8 +65,6 @@
         <sun:button id="newButton" rendered="#{empty pageSession.valueMap['certNickname']}" text="$resource{i18n.button.OK}"
                     onClick="if (checkSSLRequiredElements()  && guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}') ) {submitAndDisable(this, '$resource{i18n.button.Processing}');}; return false;" >
             <!command
-                convertCiphersItemsToStr(common="#{pageSession.selectedCommon}" ephemeral="#{pageSession.selectedEphemeral}" other="#{pageSession.selectedOther}" ecc="#{pageSession.selectedEcc}" ciphers="#{requestScope.ciphers}")
-                mapPut(map="#{pageSession.valueMap}" key="ssl3TlsCiphers" value="#{requestScope.ciphers}")
 
                 <!-- since create-ssl doesn't take all the options, we create it first just with cert name, and then edit it with all the attributes -->
                 mapPut(map="#{pageSession.createMap}", key="certNickname",  value="#{pageSession.valueMap['certNickname']}")

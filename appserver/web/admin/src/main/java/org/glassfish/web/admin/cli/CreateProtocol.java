@@ -80,7 +80,7 @@ import org.glassfish.grizzly.config.dom.Ssl;
  * domain.xml element example
  *
  * <protocol name="http-listener-1"> <http max-connections="250" default-virtual-server="server" server-name="">
- * <file-cache enabled="false" /> </http> <ssl ssl3-enabled="false" cert-nickname="s1as" /> </protocol>
+ * <file-cache enabled="false" /> </http> <ssl cert-nickname="s1as" /> </protocol>
  *
  * @author Nandini Ektare
  */

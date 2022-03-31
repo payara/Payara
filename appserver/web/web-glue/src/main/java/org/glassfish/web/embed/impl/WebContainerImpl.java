@@ -46,6 +46,8 @@ import com.sun.enterprise.web.ContextFacade;
 import com.sun.enterprise.web.EmbeddedWebContainer;
 import com.sun.enterprise.web.VirtualServerFacade;
 import com.sun.enterprise.web.WebConnector;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import org.apache.catalina.Container;
 import org.apache.catalina.Engine;
 import org.apache.catalina.core.StandardHost;
@@ -54,7 +56,6 @@ import org.glassfish.api.container.Sniffer;
 import org.glassfish.embeddable.GlassFishException;
 import org.glassfish.embeddable.web.*;
 import org.glassfish.embeddable.web.config.SslConfig;
-import org.glassfish.embeddable.web.config.SslType;
 import org.glassfish.embeddable.web.config.WebContainerConfig;
 import org.glassfish.grizzly.config.dom.*;
 import org.glassfish.hk2.api.ActiveDescriptor;
@@ -69,8 +70,6 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;
 
-import jakarta.inject.Inject;
-import jakarta.inject.Named;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.util.ArrayList;
@@ -306,14 +305,6 @@ public class WebContainerImpl implements WebContainer {
             }
             if (sslConfig.getTrustPassword() != null) {
                 newSsl.setTrustStorePassword(new String(sslConfig.getTrustPassword()));
-            }
-
-            if (sslConfig.getAlgorithms() != null) {
-                for (SslType sslType : sslConfig.getAlgorithms()) {
-                    if (sslType.equals(SslType.TLS)) {
-                        newSsl.setSsl3TlsCiphers("true");
-                    }
-                }
             }
             if (sslConfig.getHandshakeTimeout() > 0) {
                 newSsl.setSSLInactivityTimeout(sslConfig.getHandshakeTimeout());
