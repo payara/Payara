@@ -179,7 +179,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
             currentSecurityContext = SecurityContext.getCurrent();
         }
 
-        // TODO: put initialization of providers to better place
+        // TODO: put initialization of providers to better place; caching is a problem due to different classloaders
 //        if (allThreadContextProviders == null) {
 //            synchronized (this) {
 //                if (allThreadContextProviders == null) {
