@@ -37,34 +37,32 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2022] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.v3.admin.cluster;
 
 import com.sun.enterprise.admin.remote.RemoteRestAdminCommand;
 import com.sun.enterprise.admin.remote.ServerRemoteRestAdminCommand;
-import com.sun.enterprise.admin.util.*;
-import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.Node;
-import com.sun.enterprise.config.serverbeans.Nodes;
-import com.sun.enterprise.config.serverbeans.Server;
+import com.sun.enterprise.admin.util.InstanceStateService;
+import com.sun.enterprise.admin.util.RemoteInstanceCommandHelper;
+import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.util.OS;
 import com.sun.enterprise.util.ObjectAnalyzer;
 import com.sun.enterprise.util.StringUtils;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Logger;
-import java.util.logging.Level;
-import org.glassfish.api.*;
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.I18n;
+import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
-
-import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -179,12 +177,20 @@ public class RestartInstanceCommand implements AdminCommand {
         NodeUtils nodeUtils = new NodeUtils(habitat, logger);
         ArrayList<String> command = new ArrayList<>();
         String humanCommand;
-
+        String noderef = instance.getNodeRef();
+        Node node = nodes.getNode(noderef);
+        String nodeDir = node.getNodeDirUnixStyle();
         command.add("_synchronize-instance");
         if (sync != null) {
             command.add("--sync");
             command.add(sync);
         }
+        if (nodeDir != null) {
+            command.add("--nodedir");
+            command.add(nodeDir);
+        }
+        command.add("--node");
+        command.add(noderef);
         if (instanceName != null) {
             command.add(instanceName);
         }
@@ -192,11 +198,11 @@ public class RestartInstanceCommand implements AdminCommand {
         // Convert the command into a string representing the command a human should run.
         humanCommand = makeCommandHuman(command);
 
-        String noderef = instance.getNodeRef();
+
         String msg;
         String nodeHost;
 
-        Node node = nodes.getNode(noderef);
+
         if (node != null) {
             nodeHost = node.getNodeHost();
         } else {
