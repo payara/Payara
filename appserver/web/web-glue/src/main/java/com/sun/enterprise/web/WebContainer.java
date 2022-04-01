@@ -961,17 +961,17 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
                 String propValue = httpServiceProp.getValue();
 
                 if ("connectionTimeout".equals(propName)) {
-                    connector.setConnectionTimeout(Integer.parseInt(propValue));
+                    connector.setProperty("connectionTimeout", propValue);
                 } else if ("tcpNoDelay".equals(propName)) {
-                    connector.setTcpNoDelay(ConfigBeansUtilities.toBoolean(propValue));
+                    connector.setProperty("tcpNoDelay", Boolean.toString(ConfigBeansUtilities.toBoolean(propValue)));
                 } else if ("traceEnabled".equals(propName)) {
-                    connector.setAllowTrace(ConfigBeansUtilities.toBoolean(propValue));
+                    connector.setProperty("allowTrace", Boolean.toString(ConfigBeansUtilities.toBoolean(propValue)));
                 } else if ("ssl-session-timeout".equals(propName)) {
-                    connector.setSslSessionTimeout(propValue);
+                    connector.setProperty("sessionTimeout", propValue);
                 } else if ("ssl3-session-timeout".equals(propName)) {
-                    connector.setSsl3SessionTimeout(propValue);
+                    connector.setProperty("sessionTimeout", propValue);
                 } else if ("ssl-cache-entries".equals(propName)) {
-                    connector.setSslSessionCacheSize(propValue);
+                    connector.setProperty("sessionCacheSize", propValue);
                 } else {
                     String msg = rb.getString(LogFacade.INVALID_HTTP_SERVICE_PROPERTY);
                     logger.log(Level.WARNING, MessageFormat.format(msg, httpServiceProp.getName()));
