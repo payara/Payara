@@ -77,6 +77,7 @@ import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.Tracer.SpanBuilder;
 import io.opentracing.propagation.Format;
+import jakarta.enterprise.concurrent.ContextServiceDefinition;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -188,6 +189,17 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
                         String serviceName = service.getThreadContextType();
                         if (contextPropagate.contains(serviceName) || contextClear.contains(serviceName) || contextUnchanged.contains(serviceName)) {
                             allThreadContextProviders.put(serviceName, service);
+                        } else {
+                            if (contextPropagate.contains(ContextServiceDefinition.ALL_REMAINING)) {
+                                contextPropagate.add(serviceName);
+                                allThreadContextProviders.put(serviceName, service);
+                            } else if (contextClear.contains(ContextServiceDefinition.ALL_REMAINING)) {
+                                contextClear.add(serviceName);
+                                allThreadContextProviders.put(serviceName, service);
+                            } else if (contextUnchanged.contains(ContextServiceDefinition.ALL_REMAINING)) {
+                                contextUnchanged.add(serviceName);
+                                allThreadContextProviders.put(serviceName, service);
+                            }
                         }
                     }
                     // check, if there is no unexpected provider name
@@ -442,6 +454,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
                 case CONTEXT_TYPE_SECURITY:
                 case CONTEXT_TYPE_NAMING:
                 case CONTEXT_TYPE_WORKAREA:
+                case ContextServiceDefinition.ALL_REMAINING:
                     // OK, they are known
                     break;
                 default:

@@ -129,6 +129,7 @@ public class ContextServiceDefinitionHandler extends AbstractResourceHandler {
         for (String context : sourceContexts) {
             if (ContextServiceDefinition.ALL_REMAINING.equals(context)) {
                 contexts.addAll(unusedContexts);
+                contexts.add(ContextServiceDefinition.ALL_REMAINING); // keep remaining for custom context providers
             } else {
                 contexts.add(context);
             }
