@@ -581,10 +581,12 @@ public class WebappClassLoader
 
 
     /**
+     * Unused. Always returns {@code null}.
      * Get associated resources.
      */
+    @Deprecated
     public DirContext getResources() {
-        return this.resources;
+        return null;
     }
 
 
