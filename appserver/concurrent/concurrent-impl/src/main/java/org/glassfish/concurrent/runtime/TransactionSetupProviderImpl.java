@@ -57,16 +57,25 @@ public class TransactionSetupProviderImpl implements TransactionSetupProvider {
 
     static final long serialVersionUID = -856400645253308289L;
     private final boolean keepTransactionUnchanged;
+    private final boolean clearTransaction;
 
-    public TransactionSetupProviderImpl(JavaEETransactionManager transactionManager, boolean keepTransactionUnchanged) {
+    public TransactionSetupProviderImpl(JavaEETransactionManager transactionManager, boolean keepTransactionUnchanged, boolean clearTransaction) {
         this.transactionManager = transactionManager;
         this.keepTransactionUnchanged = keepTransactionUnchanged;
+        this.clearTransaction = clearTransaction;
     }
 
     @Override
     public TransactionHandle beforeProxyMethod(String transactionExecutionProperty) {
         // suspend current transaction if not using transaction of execution thread
-        if ((!keepTransactionUnchanged) && !ManagedTask.USE_TRANSACTION_OF_EXECUTION_THREAD.equals(transactionExecutionProperty)) {
+        boolean doSuspend = !ManagedTask.USE_TRANSACTION_OF_EXECUTION_THREAD.equals(transactionExecutionProperty);
+        if (keepTransactionUnchanged) {
+            doSuspend = false;
+        }
+        if (clearTransaction) {
+            doSuspend = true;
+        }
+        if (doSuspend) {
             try {
                 Transaction suspendedTxn = transactionManager.suspend();
                 return new TransactionHandleImpl(suspendedTxn);
