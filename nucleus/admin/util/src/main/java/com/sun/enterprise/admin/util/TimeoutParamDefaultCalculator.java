@@ -50,7 +50,6 @@ import org.glassfish.api.ParamDefaultCalculator;
  *
  * @author Kalin Chan
  */
-
 public class TimeoutParamDefaultCalculator extends ParamDefaultCalculator {
 
     public TimeoutParamDefaultCalculator() {

@@ -70,6 +70,8 @@ import org.glassfish.common.util.admin.ManPageFinder;
 import org.glassfish.hk2.api.ActiveDescriptor;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.BuilderHelper;
+import org.jline.reader.EndOfFileException;
+import org.jline.reader.UserInterruptException;
 import org.jvnet.hk2.component.MultiMap;
 
 import java.io.*;
@@ -79,8 +81,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jline.reader.EndOfFileException;
-import org.jline.reader.UserInterruptException;
 
 /**
  * A remote command handled by the asadmin CLI.
@@ -934,7 +934,7 @@ public class RemoteCLICommand extends CLICommand {
                     programOpts.getPassword(), logger, programOpts.getAuthToken(),programOpts.isNotifyCommand());
             rac.setFileOutputDirectory(outputDir);
             rac.setInteractive(programOpts.isInteractive());
-            if(readTimeout > 0){
+            if (readTimeout > 0) {
                 rac.setReadTimeout(readTimeout);
             }
             for (String key : listeners.keySet()) {

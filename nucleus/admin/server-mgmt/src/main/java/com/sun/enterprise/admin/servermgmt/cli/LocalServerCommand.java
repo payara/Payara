@@ -42,19 +42,6 @@
 
 package com.sun.enterprise.admin.servermgmt.cli;
 
-import static com.sun.enterprise.admin.servermgmt.domain.DomainConstants.MASTERPASSWORD_FILE;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.net.Socket;
-import java.security.KeyStore;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.Arrays;
-
 import com.sun.enterprise.admin.cli.CLICommand;
 import com.sun.enterprise.admin.cli.CLIConstants;
 import com.sun.enterprise.admin.cli.ProgramOptions;
@@ -71,15 +58,9 @@ import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.util.io.ServerDirs;
-
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.CommandException;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
@@ -92,6 +73,19 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.XMLEvent;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.security.KeyStore;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.logging.Level;
+
+import static com.sun.enterprise.admin.servermgmt.domain.DomainConstants.MASTERPASSWORD_FILE;
 
 /**
  * A class that's supposed to capture all the behavior common to operation on a
@@ -613,8 +607,6 @@ public abstract class LocalServerCommand extends CLICommand {
     }
 
     private long getEndTime(long timeout) {
-        // it's a method in case we someday allow configuring this VERY long
-        // timeout at runtime.
         return timeout + now();
     }
 

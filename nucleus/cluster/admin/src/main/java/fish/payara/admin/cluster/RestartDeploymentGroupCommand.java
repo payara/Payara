@@ -120,8 +120,16 @@ public class RestartDeploymentGroupCommand implements AdminCommand {
         ActionReport report = context.getActionReport();
         Logger logger = context.getLogger();
 
-        if (timeout <= 0 || instanceTimeout <= 0) {
+        if (timeout <= 0) {
             String msg = "Timeout must be at least 1 second long.";
+            logger.warning(msg);
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setMessage(msg);
+            return;
+        }
+
+        if (instanceTimeout <= 0) {
+            String msg = "Instance Timeout must be at least 1 second long.";
             logger.warning(msg);
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setMessage(msg);
