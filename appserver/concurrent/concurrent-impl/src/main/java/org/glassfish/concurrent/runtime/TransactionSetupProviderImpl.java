@@ -41,7 +41,6 @@
 package org.glassfish.concurrent.runtime;
 
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
-import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.enterprise.concurrent.spi.TransactionHandle;
 import org.glassfish.enterprise.concurrent.spi.TransactionSetupProvider;
 
@@ -57,15 +56,17 @@ public class TransactionSetupProviderImpl implements TransactionSetupProvider {
     private transient JavaEETransactionManager transactionManager;
 
     static final long serialVersionUID = -856400645253308289L;
+    private final boolean keepTransactionUnchanged;
 
-    public TransactionSetupProviderImpl(JavaEETransactionManager transactionManager) {
+    public TransactionSetupProviderImpl(JavaEETransactionManager transactionManager, boolean keepTransactionUnchanged) {
         this.transactionManager = transactionManager;
+        this.keepTransactionUnchanged = keepTransactionUnchanged;
     }
 
     @Override
     public TransactionHandle beforeProxyMethod(String transactionExecutionProperty) {
         // suspend current transaction if not using transaction of execution thread
-        if (! ManagedTask.USE_TRANSACTION_OF_EXECUTION_THREAD.equals(transactionExecutionProperty)) {
+        if ((!keepTransactionUnchanged) && !ManagedTask.USE_TRANSACTION_OF_EXECUTION_THREAD.equals(transactionExecutionProperty)) {
             try {
                 Transaction suspendedTxn = transactionManager.suspend();
                 return new TransactionHandleImpl(suspendedTxn);
