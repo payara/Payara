@@ -45,11 +45,11 @@ import com.sun.enterprise.admin.remote.RemoteRestAdminCommand;
 import com.sun.enterprise.admin.remote.ServerRemoteRestAdminCommand;
 import com.sun.enterprise.admin.util.InstanceStateService;
 import com.sun.enterprise.admin.util.RemoteInstanceCommandHelper;
+import com.sun.enterprise.admin.util.TimeoutParamDefaultCalculator;
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.util.OS;
 import com.sun.enterprise.util.ObjectAnalyzer;
 import com.sun.enterprise.util.StringUtils;
-import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -105,9 +105,6 @@ public class RestartInstanceCommand implements AdminCommand {
     @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     Config dasConfig;
 
-    @Inject
-    private PayaraExecutorService executor;
-
     @Param(optional = false, primary = true)
     private String instanceName;
 
@@ -121,7 +118,7 @@ public class RestartInstanceCommand implements AdminCommand {
     @Param(name = "delay", optional = true, defaultValue = "0")
     private int delay;
 
-    @Param(optional = true)
+    @Param(optional = true, defaultCalculator = TimeoutParamDefaultCalculator.class)
     private int timeout;
 
     private Logger logger;
@@ -147,6 +144,15 @@ public class RestartInstanceCommand implements AdminCommand {
             helper = new RemoteInstanceCommandHelper(habitat);
             report = context.getActionReport();
             logger = context.getLogger();
+
+            if (timeout <= 0) {
+                String msg = "Timeout must be at least 1 second long.";
+                logger.warning(msg);
+                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                report.setMessage(msg);
+                return;
+            }
+
             report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
 
             // Each of the methods below immediately returns if there has been an error
@@ -296,10 +302,7 @@ public class RestartInstanceCommand implements AdminCommand {
         if (debug != null) {
             map.add("debug", debug);
         }
-        if (timeout > 0) {
-            rac.setReadTimeout(timeout * 1000);
-        }
-
+        rac.setReadTimeout(timeout * 1000);
         rac.executeCommand(map);
     }
 

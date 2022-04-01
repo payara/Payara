@@ -41,8 +41,8 @@
 
 package com.sun.enterprise.admin.cli.cluster;
 
-import com.sun.enterprise.admin.cli.CLIConstants;
 import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
+import com.sun.enterprise.admin.util.TimeoutParamDefaultCalculator;
 import com.sun.enterprise.universal.process.ProcessUtils;
 import com.sun.enterprise.util.HostAndPort;
 import com.sun.enterprise.util.io.FileUtils;
@@ -52,7 +52,6 @@ import org.glassfish.api.admin.CommandValidationException;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.validation.constraints.Min;
 import java.io.File;
 import java.util.logging.Level;
 
@@ -75,11 +74,14 @@ public class StopLocalInstanceCommand extends LocalInstanceCommand {
     @Param(optional = true, defaultValue = "false")
     Boolean kill;
 
-    @Param(optional = true)
+    @Param(optional = true, defaultCalculator = TimeoutParamDefaultCalculator.class)
     private int timeout;
 
     @Override
     protected void validate() throws CommandException, CommandValidationException {
+        if (timeout <= 0) {
+            throw new CommandException("Timeout must be at least 1 second long.");
+        }
         instanceName = userArgInstanceName;
         super.validate();
     }
@@ -106,10 +108,6 @@ public class StopLocalInstanceCommand extends LocalInstanceCommand {
      */
     @Override
     protected int executeCommand() throws CommandException, CommandValidationException {
-        if(timeout <= 0){
-            timeout = (int) (CLIConstants.DEATH_TIMEOUT_MS / 1000);
-        }
-
         // if the local password isn't available, the instance isn't running
         // (localPassword is set by initInstance)
         File serverDir = getServerDirs().getServerDir();
@@ -225,6 +223,7 @@ public class StopLocalInstanceCommand extends LocalInstanceCommand {
         // 2 catch blocks just to make things crystal clear.
         try {
             RemoteCLICommand cmd = new RemoteCLICommand("_stop-instance", programOpts, env);
+            cmd.setReadTimeout(timeout * 1000);
             cmd.executeAndReturnOutput("_stop-instance", "--force", force.toString());
             return null;
         } catch (CommandException e) {

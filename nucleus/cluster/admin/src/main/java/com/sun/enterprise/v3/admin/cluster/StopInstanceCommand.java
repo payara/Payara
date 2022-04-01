@@ -44,6 +44,7 @@ package com.sun.enterprise.v3.admin.cluster;
 import com.sun.enterprise.admin.remote.RemoteRestAdminCommand;
 import com.sun.enterprise.admin.remote.ServerRemoteRestAdminCommand;
 import com.sun.enterprise.admin.util.RemoteInstanceCommandHelper;
+import com.sun.enterprise.admin.util.TimeoutParamDefaultCalculator;
 import com.sun.enterprise.config.serverbeans.Node;
 import com.sun.enterprise.config.serverbeans.Nodes;
 import com.sun.enterprise.config.serverbeans.Server;
@@ -52,7 +53,6 @@ import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.cluster.windows.io.WindowsRemoteFile;
 import com.sun.enterprise.util.cluster.windows.process.WindowsException;
 import com.sun.enterprise.v3.admin.StopServer;
-import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -68,7 +68,6 @@ import org.glassfish.internal.api.ServerContext;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
-import javax.validation.constraints.Min;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -119,9 +118,6 @@ public class StopInstanceCommand extends StopServer implements AdminCommand, Pos
     @Inject
     private ModulesRegistry registry;
 
-    @Inject
-    private PayaraExecutorService executor;
-
     @Param(optional = true, defaultValue = "true")
     private Boolean force = true;
 
@@ -131,8 +127,7 @@ public class StopInstanceCommand extends StopServer implements AdminCommand, Pos
     @Param(optional = false, primary = true)
     private String instanceName;
 
-    @Min(message = "Timeout must be at least 1 second long.", value = 1)
-    @Param(optional = true, defaultValue = "120")
+    @Param(optional = true, defaultCalculator = TimeoutParamDefaultCalculator.class)
     private int timeout;
 
     private Logger logger;
@@ -149,6 +144,14 @@ public class StopInstanceCommand extends StopServer implements AdminCommand, Pos
     public void execute(AdminCommandContext context) {
         report = context.getActionReport();
         logger = context.getLogger();
+
+        if (timeout <= 0) {
+            String msg = "Timeout must be at least 1 second long.";
+            logger.warning(msg);
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setMessage(msg);
+            return;
+        }
         SSHLauncher launcher;
 
         if (env.isDas()) {
@@ -157,7 +160,7 @@ public class StopInstanceCommand extends StopServer implements AdminCommand, Pos
             } else {
                 errorMessage = callInstance();
             }
-        }  else {
+        } else {
             errorMessage = Strings.get("stop.instance.notDas",
                     env.getRuntimeType().toString());
         }

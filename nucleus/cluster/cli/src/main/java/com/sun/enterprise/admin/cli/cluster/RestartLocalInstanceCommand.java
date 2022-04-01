@@ -43,6 +43,7 @@ package com.sun.enterprise.admin.cli.cluster;
 
 import com.sun.enterprise.admin.cli.CLICommand;
 import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
+import com.sun.enterprise.admin.util.TimeoutParamDefaultCalculator;
 import com.sun.enterprise.util.HostAndPort;
 import com.sun.enterprise.util.ObjectAnalyzer;
 import org.glassfish.api.Param;
@@ -54,7 +55,6 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
-import javax.validation.constraints.Min;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -71,7 +71,7 @@ public class RestartLocalInstanceCommand extends SynchronizeInstanceCommand {
     @Param(optional = true, shortName = "d", defaultValue = "false")
     private Boolean debug;
 
-    @Param(optional = true, defaultValue = "600")
+    @Param(optional = true, defaultCalculator = TimeoutParamDefaultCalculator.class)
     private int timeout;
 
     @Inject
@@ -138,11 +138,9 @@ public class RestartLocalInstanceCommand extends SynchronizeInstanceCommand {
         } else {
             cmd.executeAndReturnOutput("_restart-instance");
         }
-        if (timeout > 0) {
-            waitForRestart(oldServerPid, (timeout * 1000));
-        } else {
-            waitForRestart(oldServerPid);
-        }
+
+        waitForRestart(oldServerPid, (timeout * 1000));
+
         return 0;
     }
 
@@ -197,6 +195,10 @@ public class RestartLocalInstanceCommand extends SynchronizeInstanceCommand {
     @Override
     protected void validate() throws CommandException {
         super.validate();
+
+        if (timeout <= 0) {
+            throw new CommandException("Timeout must be at least 1 second long.");
+        }
 
         File dir = getServerDirs().getServerDir();
 

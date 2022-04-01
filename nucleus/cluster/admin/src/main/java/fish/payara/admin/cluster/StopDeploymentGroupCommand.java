@@ -39,6 +39,7 @@
  */
 package fish.payara.admin.cluster;
 
+import com.sun.enterprise.admin.util.TimeoutParamDefaultCalculator;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.v3.admin.cluster.ClusterCommandHelper;
 import com.sun.enterprise.v3.admin.cluster.Strings;
@@ -51,7 +52,6 @@ import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
-import javax.validation.constraints.Min;
 import java.util.logging.Logger;
 
 /**
@@ -93,17 +93,24 @@ public class StopDeploymentGroupCommand implements AdminCommand{
     @Param(optional = true, defaultValue = "false")
     private boolean verbose;
 
-    @Param(optional = true)
+    @Param(optional = true, defaultCalculator = TimeoutParamDefaultCalculator.class)
     private int instanceTimeout;
 
-    @Param(optional = true)
+    @Param(optional = true, defaultCalculator = TimeoutParamDefaultCalculator.class)
     private int timeout;
 
     @Override
     public void execute(AdminCommandContext context) {
-
         ActionReport report = context.getActionReport();
         Logger logger = context.getLogger();
+
+        if (timeout <= 0 || instanceTimeout <= 0) {
+            String msg = "Timeout must be at least 1 second long.";
+            logger.warning(msg);
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setMessage(msg);
+            return;
+        }
 
         logger.info(Strings.get("stop.dg", deploymentGroup));
 
@@ -123,15 +130,12 @@ public class StopDeploymentGroupCommand implements AdminCommand{
         if (kill) {
             map.add("kill", "true");
         }
-        if (instanceTimeout > 0) {
-            map.add("timeout", String.valueOf(instanceTimeout));
-        }
+        map.add("timeout", String.valueOf(instanceTimeout));
+
         try {
             // Run start-instance against each instance in the cluster
             String commandName = "stop-instance";
-            if (timeout > 0) {
-                clusterHelper.setAdminTimeout(timeout * 1000);
-            }
+            clusterHelper.setAdminTimeout(Integer.valueOf(timeout) * 1000);
             clusterHelper.runCommand(commandName, map, deploymentGroup, context,
                     verbose);
         } catch (CommandException e) {

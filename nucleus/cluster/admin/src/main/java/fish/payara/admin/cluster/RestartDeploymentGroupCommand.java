@@ -40,6 +40,7 @@
 package fish.payara.admin.cluster;
 
 import com.sun.enterprise.admin.remote.RemoteRestAdminCommand;
+import com.sun.enterprise.admin.util.TimeoutParamDefaultCalculator;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.v3.admin.cluster.ClusterCommandHelper;
@@ -53,7 +54,6 @@ import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
-import javax.validation.constraints.Min;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ScheduledFuture;
@@ -107,10 +107,10 @@ public class RestartDeploymentGroupCommand implements AdminCommand {
     @Param(optional = true, defaultValue = "5000")
     private String delay;
 
-    @Param(optional = true)
+    @Param(optional = true, defaultCalculator = TimeoutParamDefaultCalculator.class)
     private int instanceTimeout;
 
-    @Param(optional = true)
+    @Param(optional = true, defaultCalculator = TimeoutParamDefaultCalculator.class)
     private int timeout;
 
     private ActionReport report;
@@ -119,6 +119,14 @@ public class RestartDeploymentGroupCommand implements AdminCommand {
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
         Logger logger = context.getLogger();
+
+        if (timeout <= 0 || instanceTimeout <= 0) {
+            String msg = "Timeout must be at least 1 second long.";
+            logger.warning(msg);
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setMessage(msg);
+            return;
+        }
 
         logger.info(Strings.get("restart.dg", deploymentGroup));
 
@@ -157,15 +165,13 @@ public class RestartDeploymentGroupCommand implements AdminCommand {
 
             ParameterMap pm = new ParameterMap();
             pm.add("delay", delay);
-            if (instanceTimeout != 0) {
-                pm.add("timeout", String.valueOf(instanceTimeout));
-            }
+
+            pm.add("timeout", String.valueOf(instanceTimeout));
+
             try {
                 // Run restart-instance against each instance in the Deployment Group
                 String commandName = "restart-instance";
-                if (timeout != 0) {
-                    clusterHelper.setAdminTimeout(timeout * 1000);
-                }
+                clusterHelper.setAdminTimeout(timeout * 1000);
                 clusterHelper.runCommand(commandName, pm, deploymentGroup, context,
                         verbose, rolling);
             } catch (CommandException e) {
@@ -186,14 +192,12 @@ public class RestartDeploymentGroupCommand implements AdminCommand {
             ParameterMap instanceParameterMap = new ParameterMap();
             // Set the instance name as the operand for the commnd
             instanceParameterMap.set("DEFAULT", server.getName());
-            if(instanceTimeout != 0){
-                instanceParameterMap.add("timeout", String.valueOf(instanceTimeout));
-            }
+            instanceParameterMap.add("timeout", String.valueOf(instanceTimeout));
 
             ActionReport instanceReport = runner.getActionReport("plain");
             instanceReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
             CommandRunner.CommandInvocation invocation = runner.getCommandInvocation(
-                        "stop-instance", instanceReport, context.getSubject());
+                    "stop-instance", instanceReport, context.getSubject());
             invocation.parameters(instanceParameterMap);
 
             String msg = "stop-instance" + " " + server.getName();
@@ -212,8 +216,8 @@ public class RestartDeploymentGroupCommand implements AdminCommand {
             instanceParameterMap.add("timeout", String.valueOf(instanceTimeout));
             instanceReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
             invocation = runner.getCommandInvocation(
-                        "start-instance", instanceReport, context.getSubject());
-            invocation.parameters(instanceParameterMap); 
+                    "start-instance", instanceReport, context.getSubject());
+            invocation.parameters(instanceParameterMap);
             msg = "start-instance" + " " + server.getName();
             logger.info(msg);
             if (verbose) {
