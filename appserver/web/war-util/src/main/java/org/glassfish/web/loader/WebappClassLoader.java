@@ -559,7 +559,7 @@ public class WebappClassLoader
 
 
     /**
-     * Unused. Always returns {@code null}.
+     * Unused. Always returns {@code null} - See CVE-2022-22965
      * Get associated resources.
      */
     @Deprecated
