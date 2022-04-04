@@ -462,7 +462,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
      * Adds the given valve to the currently active pipeline, keeping the pipeline that is not currently active in sync.
      */
     @Override
-    public synchronized void addValve(GlassFishValve valve) {
+    public synchronized void addValve(Valve valve) {
         super.addValve(valve);
         if (pipeline == vsPipeline) {
             origPipeline.addValve(valve);
@@ -491,7 +491,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
      * Removes the given valve from the currently active pipeline, keeping the valve that is not currently active in sync.
      */
     @Override
-    public synchronized void removeValve(GlassFishValve valve) {
+    public synchronized void removeValve(Valve valve) {
         super.removeValve(valve);
         if (pipeline == vsPipeline) {
             origPipeline.removeValve(valve);
