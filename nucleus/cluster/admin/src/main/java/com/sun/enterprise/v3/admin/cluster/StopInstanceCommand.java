@@ -42,44 +42,38 @@
 package com.sun.enterprise.v3.admin.cluster;
 
 import com.sun.enterprise.admin.remote.RemoteRestAdminCommand;
-import com.sun.enterprise.util.cluster.windows.process.WindowsException;
-import java.util.logging.Logger;
-import java.util.logging.Level;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 import com.sun.enterprise.admin.remote.ServerRemoteRestAdminCommand;
 import com.sun.enterprise.admin.util.RemoteInstanceCommandHelper;
-import com.sun.enterprise.config.serverbeans.*;
+import com.sun.enterprise.admin.util.TimeoutParamDefaultCalculator;
+import com.sun.enterprise.config.serverbeans.Node;
+import com.sun.enterprise.config.serverbeans.Nodes;
+import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.util.StringUtils;
+import com.sun.enterprise.util.cluster.windows.io.WindowsRemoteFile;
+import com.sun.enterprise.util.cluster.windows.process.WindowsException;
 import com.sun.enterprise.v3.admin.StopServer;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.CommandLock;
-import org.glassfish.api.admin.ParameterMap;
-import org.glassfish.api.admin.RuntimeType;
-import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.hk2.api.IterableProvider;
-import org.glassfish.internal.api.ServerContext;
-
-import com.sun.enterprise.util.cluster.windows.io.WindowsRemoteFile;
 import org.glassfish.api.admin.*;
-import javax.inject.Inject;
-
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.PostConstruct;
-import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.cluster.ssh.launcher.SSHLauncher;
 import org.glassfish.cluster.ssh.sftp.SFTPClient;
 import org.glassfish.cluster.ssh.util.DcomInfo;
+import org.glassfish.hk2.api.IterableProvider;
+import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.ServerContext;
+import org.jvnet.hk2.annotations.Service;
+
+import javax.inject.Inject;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * AdminCommand to stop the instance
@@ -108,22 +102,34 @@ public class StopInstanceCommand extends StopServer implements AdminCommand, Pos
 
     @Inject
     private ServiceLocator habitat;
+
     @Inject
     private ServerContext serverContext;
+
     @Inject
     private Nodes nodes;
+
     @Inject
     private ServerEnvironment env;
+
     @Inject
     IterableProvider<Node> nodeList;
+
     @Inject
     private ModulesRegistry registry;
+
     @Param(optional = true, defaultValue = "true")
     private Boolean force = true;
+
     @Param(optional = true, defaultValue = "false")
     private Boolean kill = false;
+
     @Param(optional = false, primary = true)
     private String instanceName;
+
+    @Param(optional = true, defaultCalculator = TimeoutParamDefaultCalculator.class)
+    private int timeout;
+
     private Logger logger;
     private RemoteInstanceCommandHelper helper;
     private ActionReport report;
@@ -131,13 +137,21 @@ public class StopInstanceCommand extends StopServer implements AdminCommand, Pos
     private String cmdName = "stop-instance";
     private Server instance;
     File pidFile = null;
-    SFTPClient ftpClient=null;
+    SFTPClient ftpClient = null;
     private WindowsRemoteFile wrf;
 
     @Override
     public void execute(AdminCommandContext context) {
         report = context.getActionReport();
         logger = context.getLogger();
+
+        if (timeout <= 0) {
+            String msg = "Timeout must be at least 1 second long.";
+            logger.warning(msg);
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setMessage(msg);
+            return;
+        }
         SSHLauncher launcher;
 
         if (env.isDas()) {
@@ -146,7 +160,7 @@ public class StopInstanceCommand extends StopServer implements AdminCommand, Pos
             } else {
                 errorMessage = callInstance();
             }
-        }  else {
+        } else {
             errorMessage = Strings.get("stop.instance.notDas",
                     env.getRuntimeType().toString());
         }
@@ -349,50 +363,45 @@ public class StopInstanceCommand extends StopServer implements AdminCommand, Pos
 
     // return null means A-OK
     private String pollForDeath() {
-        int counter = 0;  // 120 seconds
+        long deadline = System.currentTimeMillis() + (timeout * 1000);
 
-        while (++counter < 240) {
+        while (System.currentTimeMillis() < deadline) {
             if (!instance.isRunning())
                 return null;
 
             try {
                 Thread.sleep(500);
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 // ignore
             }
         }
         return Strings.get("stop.instance.timeout", instanceName);
     }
 
-    private String pollForRealDeath(String mode){
-        int counter = 0;  // 30 seconds
+    private String pollForRealDeath(String mode) {
+        long deadline = System.currentTimeMillis() + (timeout * 1000);
 
-        // 24 * 5 = 120 seconds
-        while (++counter < 24) {
+        while (System.currentTimeMillis() < deadline) {
             try {
-                if (mode.equals("local")){
-                    if(!pidFile.exists()){
+                if (mode.equals("local")) {
+                    if (!pidFile.exists()) {
                         return null;
                     }
-                }else if (mode.equals("SSH")){
+                } else if (mode.equals("SSH")) {
                     if (!ftpClient.exists(pidFile.toString()))
                         return null;
-                }else if (mode.equals("DCOM")){
+                } else if (mode.equals("DCOM")) {
                     if (wrf == null || !wrf.exists())
                         return null;
                 }
-
                 // Fairly long interval between tries because checking over
                 // SSH is expensive.
                 Thread.sleep(5000);
             } catch (Exception e) {
                 // ignore
             }
-
         }
         return Strings.get("stop.instance.timeout.completely", instanceName);
-
     }
 
     private String makeCommandHuman(List<String> command) {
