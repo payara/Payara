@@ -8,7 +8,8 @@ SYNOPSIS
            [--verbose={false|true}]
            [--kill={false|true}]
            [--autohadboverride={true|false}]
-           cluster-name
+           [--timeout timeout]
+           [--instancetimeout timeout] cluster-name
 
 DESCRIPTION
        The stop-cluster subcommand stops a GlassFish Server cluster by
@@ -56,6 +57,14 @@ OPTIONS
            syntax error does not occur. Instead, the subcommand runs
            successfully and displays a warning message that the option is
            ignored.
+
+       --timeout
+           Specifies the amount of time in seconds the command will run for before timing
+           out.
+
+       --instancetimeout
+           Specifies the amount of time in seconds each instance will attempt to shutdown
+           before timing out.
 
 OPERANDS
        cluster-name
