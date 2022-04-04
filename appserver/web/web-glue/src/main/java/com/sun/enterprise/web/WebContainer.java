@@ -1085,7 +1085,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
                 globalAccessLogWriteInterval, globalAccessLogPrefix);
 
         if (startAccessLog && virtualServer.isAccessLoggingEnabled(globalAccessLoggingEnabled)) {
-            virtualServer.addValve((GlassFishValve) accessLogValve);
+            virtualServer.addValve(accessLogValve);
         }
 
         logger.log(FINEST, VIRTUAL_SERVER_CREATED, virtualServerId);

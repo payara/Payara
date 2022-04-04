@@ -141,7 +141,6 @@ import org.glassfish.web.admin.monitor.RequestProbeProvider;
 import org.glassfish.web.deployment.archivist.WebArchivist;
 import org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl;
 import org.glassfish.web.loader.WebappClassLoader;
-import org.glassfish.web.valve.GlassFishValve;
 import org.jvnet.hk2.config.Transaction;
 import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.types.Property;
@@ -1104,8 +1103,6 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
         Object valve = safeLoadInstance(valveName);
         if (valve instanceof Valve) {
             addValve((Valve) valve);
-        } else if (valve instanceof GlassFishValve) {
-            addValve((GlassFishValve) valve);
         } else {
             _logger.log(WARNING, NOT_A_VALVE, valveName);
         }
@@ -1331,7 +1328,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
 
             boolean hasExistingSSO = false;
             // Remove existing SSO valve (if any)
-            GlassFishValve[] valves = getValves();
+            Valve[] valves = getValves();
             for (int i = 0; valves != null && i < valves.length; i++) {
                 if (valves[i] instanceof SingleSignOn) {
                     removeValve(valves[i]);
@@ -1355,7 +1352,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
             GlassFishSingleSignOn sso = null;
 
             // find existing SSO (if any), in case of a reconfig
-            GlassFishValve[] valves = getValves();
+            Valve[] valves = getValves();
             for (int i = 0; valves != null && i < valves.length; i++) {
                 if (valves[i] instanceof GlassFishSingleSignOn) {
                     sso = (GlassFishSingleSignOn) valves[i];
@@ -1374,7 +1371,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
                 sso = ssoFactory.createSingleSignOnValve(getName());
                 this.ssoFailoverEnabled = ssoFailoverEnabled;
                 setSingleSignOnForChildren(sso);
-                addValve((GlassFishValve) sso);
+                addValve(sso);
             }
 
             // set max idle time if given
@@ -1467,14 +1464,14 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
 
         if (remoteAddrValve != null) {
             // Remove existing RemoteAddrValve (if any), in case of a reconfig
-            GlassFishValve[] valves = getValves();
+            Valve[] valves = getValves();
             for (int i = 0; valves != null && i < valves.length; i++) {
                 if (valves[i] instanceof RemoteAddrValve) {
                     removeValve(valves[i]);
                     break;
                 }
             }
-            addValve((GlassFishValve) remoteAddrValve);
+            addValve(remoteAddrValve);
         }
     }
 
@@ -1518,14 +1515,14 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
         }
         if (remoteHostValve != null) {
             // Remove existing RemoteHostValve (if any), in case of a reconfig
-            GlassFishValve[] valves = getValves();
+            Valve[] valves = getValves();
             for (int i = 0; valves != null && i < valves.length; i++) {
                 if (valves[i] instanceof RemoteHostValve) {
                     removeValve(valves[i]);
                     break;
                 }
             }
-            addValve((GlassFishValve) remoteHostValve);
+            addValve(remoteHostValve);
         }
     }
 
@@ -1646,7 +1643,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
      */
     void enableAccessLogging() {
         if (!isAccessLogValveActivated()) {
-            addValve((GlassFishValve) accessLogValve);
+            addValve(accessLogValve);
         } else {
             try {
                 if (accessLogValve.isStarted()) {
@@ -1679,9 +1676,9 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
     private boolean isAccessLogValveActivated() {
         Pipeline p = getPipeline();
         if (p != null) {
-            GlassFishValve[] valves = p.getValves();
+            Valve[] valves = p.getValves();
             if (valves != null) {
-                for (GlassFishValve valve : valves) {
+                for (Valve valve : valves) {
                     if (valve instanceof PEAccessLogValve) {
                         return true;
                     }
@@ -1721,7 +1718,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
         for (Container container : findChildren()) {
             if (container instanceof StandardContext) {
                 StandardContext context = (StandardContext) container;
-                for (GlassFishValve valve : context.getValves()) {
+                for (Valve valve : context.getValves()) {
                     if (valve instanceof AuthenticatorBase) {
                         ((AuthenticatorBase) valve).setSingleSignOn(sso);
                         break;
