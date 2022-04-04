@@ -39,7 +39,7 @@
 # only if the new code is made subject to such option by the copyright
 # holder.
 #
-# Portions Copyright [2019-2020] Payara Foundation and/or affiliates
+# Portions Copyright [2019-2022] Payara Foundation and/or affiliates
 
 AS_INSTALL=`dirname "$0"`/..
 
@@ -59,4 +59,4 @@ fi
 . $(dirname "$0")/jdkcheck
 checkEndorsedAvailable
 
-exec "$JAVA" $WSIMPORT_OPTS -cp "$AS_INSTALL_LIB/webservices-osgi.jar:$AS_INSTALL_LIB/jaxb-osgi.jar:$AS_INSTALL_LIB/jakarta.xml.bind-api.jar:$AS_INSTALL_LIB/jakarta.jws-api.jar:$AS_INSTALL_LIB/webservices-api-osgi.jar:$AS_INSTALL_LIB/jakarta.activation-api.jar:$AS_INSTALL_LIB/jakarta.activation.jar:$AS_INSTALL_LIB/jakarta.xml.ws-api.jar" com.sun.tools.xjc.Driver "$@"
+exec "$JAVA" $WSIMPORT_OPTS -cp "$AS_INSTALL_LIB/webservices-osgi.jar:$AS_INSTALL_LIB/jaxb-osgi.jar:$AS_INSTALL_LIB/jakarta.xml.bind-api.jar:$AS_INSTALL_LIB/jakarta.jws-api.jar:$AS_INSTALL_LIB/webservices-api-osgi.jar:$AS_INSTALL_LIB/jakarta.activation-api.jar:$AS_INSTALL_LIB/angus-activation.jar:$AS_INSTALL_LIB/jakarta.xml.ws-api.jar" com.sun.tools.xjc.Driver "$@"
