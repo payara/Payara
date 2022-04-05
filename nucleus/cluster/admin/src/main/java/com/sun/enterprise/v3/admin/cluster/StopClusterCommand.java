@@ -38,43 +38,43 @@
  * holder.
  */
 
-// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2022] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.v3.admin.cluster;
 
+import com.sun.enterprise.admin.util.TimeoutParamDefaultCalculator;
 import com.sun.enterprise.config.serverbeans.Cluster;
-import java.util.logging.Logger;
+import com.sun.enterprise.config.serverbeans.Domain;
 import jakarta.inject.Inject;
-
-
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.api.I18n;
-import org.glassfish.api.Param;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.ExitCode;
-import com.sun.enterprise.config.serverbeans.Domain;
+import org.glassfish.api.I18n;
+import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.Service;
+
+import java.util.logging.Logger;
 
 @I18n("stop.cluster.command")
-@Service(name="stop-cluster")
+@Service(name = "stop-cluster")
 @PerLookup
 @RestEndpoints({
-    @RestEndpoint(configBean=Cluster.class,
-        opType=RestEndpoint.OpType.POST, 
-        path="stop-cluster", 
-        description="Stop Cluster",
-        params={
-            @RestParam(name="id", value="$parent")
-        })
+        @RestEndpoint(configBean = Cluster.class,
+                opType = RestEndpoint.OpType.POST,
+                path = "stop-cluster",
+                description = "Stop Cluster",
+                params = {
+                        @RestParam(name = "id", value = "$parent")
+                })
 })
 @Progress
 public class StopClusterCommand implements AdminCommand {
 
-    @Param(optional=false, primary=true)
+    @Param(optional = false, primary = true)
     private String clusterName;
 
-    @Param(optional=true, defaultValue="false")
+    @Param(optional = true, defaultValue = "false")
     private boolean kill = false;
 
     @Inject
@@ -89,16 +89,38 @@ public class StopClusterCommand implements AdminCommand {
     @Param(optional = true, defaultValue = "false")
     private boolean verbose;
 
+    @Param(optional = true, defaultCalculator = TimeoutParamDefaultCalculator.class)
+    private int instanceTimeout;
+
+    @Param(optional = true, defaultCalculator = TimeoutParamDefaultCalculator.class)
+    private int timeout;
+
     @Override
     public void execute(AdminCommandContext context) {
 
         ActionReport report = context.getActionReport();
         Logger logger = context.getLogger();
 
+        if (timeout <= 0) {
+            String msg = "Timeout must be at least 1 second long.";
+            logger.warning(msg);
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setMessage(msg);
+            return;
+        }
+
+        if (instanceTimeout <= 0) {
+            String msg = "Instance Timeout must be at least 1 second long.";
+            logger.warning(msg);
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setMessage(msg);
+            return;
+        }
+
         logger.info(Strings.get("stop.cluster", clusterName));
 
         // Require that we be a DAS
-        if(!env.isDas()) {
+        if (!env.isDas()) {
             String msg = Strings.get("cluster.command.notDas");
             logger.warning(msg);
             report.setActionExitCode(ExitCode.FAILURE);
@@ -109,14 +131,15 @@ public class StopClusterCommand implements AdminCommand {
         ClusterCommandHelper clusterHelper = new ClusterCommandHelper(domain,
                 runner);
 
-        ParameterMap map = null;
+        ParameterMap map = new ParameterMap();
         if (kill) {
-            map = new ParameterMap();
             map.add("kill", "true");
         }
+        map.add("timeout", String.valueOf(instanceTimeout));
         try {
             // Run start-instance against each instance in the cluster
             String commandName = "stop-instance";
+            clusterHelper.setAdminTimeout(timeout * 1000);
             clusterHelper.runCommand(commandName, map, clusterName, context,
                     verbose);
         } catch (CommandException e) {
