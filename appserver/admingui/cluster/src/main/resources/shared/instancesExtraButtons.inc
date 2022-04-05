@@ -38,6 +38,8 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+    Portions Copyright [2022] [Payara Foundation and/or its affiliates]
+
 -->
 
 <!-- cluster/shared/instancesExtraButtons.inc -->
@@ -62,7 +64,7 @@
         <!command
             getUIComponent(clientId="$pageSession{tableRowGroupId}", component="#{requestScope.tableRowGroup}");
             getSelectedSingleMapRows(TableRowGroup="${tableRowGroup}" selectedRows="#{requestScope.selectedRows}");
-            gf.instanceAction(rows="#{requestScope.selectedRows}", action="start-instance");
+            gf.instanceAction(rows="#{requestScope.selectedRows}", action="start-instance", extraInfo="#{pageSession.instanceMap}");
             gf.redirect(page="#{pageSession.listLink}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
         />
     </sun:button>
@@ -79,6 +81,20 @@
             gf.redirect(page="#{pageSession.listLink}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
          />
     </sun:button>
+</define>
+
+<!define name="commandTimeoutDropDown">
+    <sun:dropDown id="timeoutdropdown" rendered="true" submitForm="#{true}"  disabled="#{false}" toolTip="$resource{i18n.common.commandTimeoutDropDown}"
+            labels={ "$resource{i18n.common.commandTimeoutDropDown}"
+                    "10" "30" "60" "120" "300" "600"
+                 }
+            values={"" "10" "30" "60" "120" "300" "600"}>
+            <!command
+                setAttribute(key="click" value="$this{component}");
+                setAttribute(key="actionValue" value="#{click.selected}");
+                mapPut(map="#{pageSession.instanceMap}" key="timeout" value="${actionValue}");
+            />
+    </sun:dropDown>
 </define>
 
 <!define name="extraDropDown">
