@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2022] [Payara Foundation and/or its affiliates]
 
 /**
  * @author anilam
@@ -56,11 +56,7 @@ import org.glassfish.admingui.common.util.TargetUtil;
 import org.glassfish.api.admin.InstanceState;
 
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Level;
 
 public class ClusterHandler {
@@ -261,7 +257,9 @@ public class ClusterHandler {
         List<Map<String, Object>> rows = (List<Map<String, Object>>) handlerCtx.getInputValue("rows");
         String errorMsg = null;
         String prefix = GuiUtil.getSessionValue("REST_URL") + "/deployment-groups/deployment-group/";
-
+        Map<String, Object> dgInstanceMap = (Map<String, Object>) handlerCtx.getInputValue("extraInfo");
+        String timeout = (String) dgInstanceMap.get("timeout");
+        String instanceTimeout = (String) dgInstanceMap.get("instancetimeout");
         for (Map<String, Object> oneRow : rows) {
             String dgName = (String) oneRow.get("name");
             String endpoint = prefix + dgName + "/" + action;
@@ -272,7 +270,14 @@ public class ClusterHandler {
             }
             try {
                 GuiUtil.getLogger().info(endpoint);
-                RestUtil.restRequest(endpoint, null, method, null, false);
+                Map<String, Object> attrs = new HashMap<>();
+                if (timeout != null) {
+                    attrs.put("timeout", timeout);
+                }
+                if (instanceTimeout != null) {
+                    attrs.put("instancetimeout", instanceTimeout);
+                }
+                RestUtil.restRequest(endpoint, attrs, method, null, false);
             } catch (Exception ex) {
                 GuiUtil.prepareAlert("error", GuiUtil.getMessage("msg.Error"), ex.getMessage());
                 return;
@@ -324,12 +329,14 @@ public class ClusterHandler {
     @Handler(id = "gf.instanceAction",
         input = {
             @HandlerInput(name = "rows", type = List.class, required = true),
-            @HandlerInput(name = "action", type = String.class, required = true)})
+            @HandlerInput(name = "action", type = String.class, required = true),
+            @HandlerInput(name = "extraInfo", type = Object.class)})
     public static void instanceAction(HandlerContext handlerCtx) {
         String action = (String) handlerCtx.getInputValue("action");
         List<Map<String, Object>> rows = (List<Map<String, Object>>) handlerCtx.getInputValue("rows");
         String prefix = GuiUtil.getSessionValue("REST_URL") + "/servers/server/";
-
+        Map<String, Object> instanceMap = (Map<String, Object>) handlerCtx.getInputValue("extraInfo");
+        String timeout = (String) instanceMap.get("timeout");
         for (Map<String, Object> oneRow : rows) {
             String instanceName = (String) oneRow.get("name");
             if (action.equals("delete-instance")) {
@@ -342,7 +349,11 @@ public class ClusterHandler {
                 try {
                     String endpoint = prefix + instanceName + "/" + action;
                     GuiUtil.getLogger().info(endpoint);
-                    RestUtil.restRequest(endpoint, null, "post", null, false);
+                    Map<String, Object> attrs = new HashMap<>();
+                    if (timeout != null) {
+                        attrs.put("timeout", timeout);
+                    }
+                    RestUtil.restRequest(endpoint, attrs, "post", null, false);
                 } catch (Exception ex) {
                     String endpoint = prefix + instanceName + "/" + action;
                     GuiUtil.getLogger().severe(

@@ -38,10 +38,9 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+    Portions Copyright [2018-2022] [Payara Foundation and/or its affiliates]
 
 -->
-
 <!initPage
     setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings")
     setResourceBundle(key="i18ncs" bundle="org.glassfish.cluster.admingui.Strings")
@@ -71,7 +70,7 @@
             getUIComponent(clientId="$pageSession{tableRowGroupId}", component="#{requestScope.tableRowGroup}");
             getSelectedSingleMapRows(TableRowGroup="${tableRowGroup}" selectedRows="#{requestScope.selectedRows}");
             println("Starting Deployment Group ....");
-            gf.dgAction(rows="#{requestScope.selectedRows}", action="start-deployment-group");
+            gf.dgAction(rows="#{requestScope.selectedRows}", action="start-deployment-group" extraInfo="#{pageSession.dgInstanceMap}");
             gf.redirect(page="#{pageSession.listLink}?alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
         />
     </sun:button>
@@ -90,7 +89,32 @@
          />
     </sun:button>
 </define>
-
+<!define name="commandTimeoutDropDown">
+    <sun:dropDown id="timeoutdropdown" rendered="true" submitForm="#{true}"  disabled="#{false}" toolTip="$resource{i18n.common.commandTimeoutDropDown}"
+            labels={ "$resource{i18n.common.commandTimeoutDropDown}"
+                    "10" "30" "60" "120" "300" "600"
+                 }
+            values={"" "10" "30" "60" "120" "300" "600"}>
+            <!command
+                setAttribute(key="click" value="$this{component}");
+                setAttribute(key="actionValue" value="#{click.selected}");
+                mapPut(map="#{pageSession.dgInstanceMap}" key="timeout" value="${actionValue}");
+            />
+    </sun:dropDown>
+</define>
+<!define name="instanceTimeoutDropDown">
+    <sun:dropDown id="itimeoutdropdown" rendered="true" submitForm="#{true}"  disabled="#{false}" toolTip="$resource{i18n.common.instanceTimeoutdropdown}"
+            labels={ "$resource{i18n.common.instanceTimeoutdropdown}"
+                    "10" "30" "60" "120" "300" "600"
+                 }
+            values={"" "10" "30" "60" "120" "300" "600"}>
+            <!command
+                setAttribute(key="click" value="$this{component}");
+                setAttribute(key="actionValue" value="#{click.selected}");
+                mapPut(map="#{pageSession.dgInstanceMap}" key="instancetimeout" value="${actionValue}");
+            />
+    </sun:dropDown>
+</define>
 <!define name="extraDropDown">
     <sun:dropDown id="dropdown1" rendered="true" submitForm="#{true}"  disabled="#{false}" toolTip="$resource{i18n.common.moreActionDropDown}"
             labels={ "$resource{i18n.common.moreActionDropDown}"
@@ -107,7 +131,7 @@
 
                 if( ${actionValue}=restartDG){
                     println("Restarting Deployment Group ....");
-                    gf.dgAction(rows="#{requestScope.selectedRows}", action="restart-deployment-group");
+                    gf.dgAction(rows="#{requestScope.selectedRows}", action="restart-deployment-group", extraInfo="#{pageSession.dgInstanceMap}");
                     gf.redirect(page="#{pageSession.listLink}?alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
                 }
             />
