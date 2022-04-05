@@ -70,7 +70,7 @@
             getUIComponent(clientId="$pageSession{tableRowGroupId}", component="#{requestScope.tableRowGroup}");
             getSelectedSingleMapRows(TableRowGroup="${tableRowGroup}" selectedRows="#{requestScope.selectedRows}");
             println("Starting Deployment Group ....");
-            gf.dgAction(rows="#{requestScope.selectedRows}", action="start-deployment-group" extraInfo="#{pageSession.dgInstanceMap}");
+            gf.dgAction(rows="#{requestScope.selectedRows}", action="start-deployment-group", extraInfo="#{pageSession.dgInstanceMap}");
             gf.redirect(page="#{pageSession.listLink}?alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
         />
     </sun:button>
