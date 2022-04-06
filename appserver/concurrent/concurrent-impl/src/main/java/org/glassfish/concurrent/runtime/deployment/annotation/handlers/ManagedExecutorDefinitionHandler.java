@@ -92,13 +92,17 @@ public class ManagedExecutorDefinitionHandler extends AbstractResourceHandler {
         ManagedExecutorDefinitionDescriptor medd = new ManagedExecutorDefinitionDescriptor();
         medd.setName(TranslatedConfigView.expandValue(managedExecutorDefinition.name()));
         medd.setContext(TranslatedConfigView.expandValue(managedExecutorDefinition.context()));
-        // FIXME: cdd.setContextInfo(??? Load from existing ContextServiceDefinition!);
+
         if(managedExecutorDefinition.hungTaskThreshold() < 0) {
             medd.setHungAfterSeconds(0);
+        } else {
+            medd.setHungAfterSeconds(managedExecutorDefinition.hungTaskThreshold());
         }
 
         if(managedExecutorDefinition.maxAsync() < 0) {
             medd.setMaximumPoolSize(Integer.MAX_VALUE);
+        } else {
+            medd.setMaximumPoolSize(managedExecutorDefinition.maxAsync());
         }
 
         medd.setMetadataSource(MetadataSource.ANNOTATION);

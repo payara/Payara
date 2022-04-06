@@ -97,10 +97,14 @@ public class ManagedScheduledExecutorDefinitionHandler extends AbstractResourceH
 
         if(managedScheduledExecutorDefinition.hungTaskThreshold() < 0) {
             msedd.setHungTaskThreshold(0);
+        } else {
+            msedd.setHungTaskThreshold(managedScheduledExecutorDefinition.hungTaskThreshold());
         }
 
         if(managedScheduledExecutorDefinition.maxAsync() < 0) {
             msedd.setMaxAsync(Integer.MAX_VALUE);
+        } else {
+            msedd.setMaxAsync(managedScheduledExecutorDefinition.maxAsync());
         }
 
         msedd.setMetadataSource(MetadataSource.ANNOTATION);
