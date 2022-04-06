@@ -70,8 +70,6 @@ public interface Ssl extends ConfigBeanProxy, PropertyBag {
 
     String TLS13 = "TLSv1.3";
     String TLS12 = "TLSv1.2";
-    String TLS11 = "TLSv1.1";
-    String TLS1 = "TLSv1";
     String TLS = "TLS";
     String SSL = "SSL";
 
@@ -85,7 +83,7 @@ public interface Ssl extends ConfigBeanProxy, PropertyBag {
     void setCertNickname(String value);
 
     /**
-     * Determines whether SSL3 client authentication is performed on every request, independent of ACL-based access
+     * Determines whether client authentication is performed on every request, independent of ACL-based access
      * control.
      */
     @Attribute(defaultValue = "" + CLIENT_AUTH_ENABLED, dataType = Boolean.class)

@@ -180,7 +180,7 @@ public class SSLParams {
     }
 
     /**
-     * Determines whether SSL3 client authentication is performed on every request, independent of ACL-based access
+     * Determines whether client authentication is performed on every request, independent of ACL-based access
      * control.
      */
 

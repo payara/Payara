@@ -101,7 +101,7 @@
                           rollback should be enabled for Microsoft Internet Explorer 
                           5.0 and 5.5. 
 
-    client-auth-enabled   (optional) Determines whether SSL3 client authentication is 
+    client-auth-enabled   (optional) Determines whether client authentication is
                           performed on every request, independent of ACL-based access 
                           control.
 --> 

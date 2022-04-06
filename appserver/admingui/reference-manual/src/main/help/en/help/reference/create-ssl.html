@@ -91,7 +91,6 @@ IIOP listener, or IIOP service</p>
 --type listener_or_service_type
 --certname cert_name
 [--tlsenabled={true|false}]
-[--ssl3tlsciphers ssl3tlsciphers]
 [--tlsrollbackenabled={true|false}]
 [--clientauthenabled={false|true}]
 [listener_id]</code></pre>
@@ -197,39 +196,6 @@ tokenname:nickname. For this property, the tokenname: is optional.</p>
 <code>true</code> It is good practice to enable TLS, which is a more secure
 version of SSL.</p>
 </dd>
-<dt class="hdlist1"><code>--ssl3tlsciphers</code></dt>
-<dd>
-<p>A comma-separated list of the SSL3 and/or TLS ciphers to be used.
-Ciphers not explicitly listed will be disabled for the target, even if
-those ciphers are available in the particular cipher suite you are
-using. If this option is not used, all supported ciphers are assumed
-to be enabled. Allowed values are:<br></p>
-<div class="ulist">
-<ul>
-<li>
-<p><code>SSL_RSA_WITH_RC4_128_MD5</code></p>
-</li>
-<li>
-<p><code>SSL_RSA_WITH_3DES_EDE_CBC_SHA</code></p>
-</li>
-<li>
-<p><code>SSL_RSA_WITH_DES_CBC_SHA</code></p>
-</li>
-<li>
-<p><code>SSL_RSA_EXPORT_WITH_RC4_40_MD5</code></p>
-</li>
-<li>
-<p><code>SSL_RSA_WITH_NULL_MD5</code></p>
-</li>
-<li>
-<p><code>SSL_RSA_WITH_RC4_128_SHA</code></p>
-</li>
-<li>
-<p><code>SSL_RSA_WITH_NULL_SHA</code></p>
-</li>
-</ul>
-</div>
-</dd>
 <dt class="hdlist1"><code>--tlsrollbackenabled</code></dt>
 <dd>
 <p>Set to <code>true</code> (default) to enable TLS rollback. TLS rollback should be
@@ -238,7 +204,7 @@ only valid when <code>-tlsenabled</code>=<code>true</code>.</p>
 </dd>
 <dt class="hdlist1"><code>--clientauthenabled</code></dt>
 <dd>
-<p>Set to <code>true</code> if you want SSL3 client authentication performed on
+<p>Set to <code>true</code> if you want client authentication performed on
 every request independent of ACL-based access control. Default value
 is <code>false</code>.</p>
 </dd>
