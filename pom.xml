@@ -187,7 +187,7 @@
         <jakarta.security.enterprise.version>2.0.1</jakarta.security.enterprise.version>
         <jakarta.security.jacc-api.version>2.0.0</jakarta.security.jacc-api.version>
         <jakarta.security.auth.message-api.version>2.0.0</jakarta.security.auth.message-api.version>
-        <jms-api.version>3.0.0</jms-api.version>
+        <jms-api.version>3.1.0</jms-api.version>
         <mq.version>6.1.0.payara-p2</mq.version>
         <jakarta.batch-api.version>2.1.0-M1</jakarta.batch-api.version>
         <com.ibm.jbatch.container.version>2.1.0-M1</com.ibm.jbatch.container.version>
@@ -217,7 +217,7 @@
         <microprofile-metrics.version>4.0</microprofile-metrics.version>
         <microprofile-rest-client.version>3.0</microprofile-rest-client.version>
         <microprofile-openapi.version>3.0</microprofile-openapi.version>
-        <payara-arquillian-container.version>3.0.alpha2</payara-arquillian-container.version>
+        <payara-arquillian-container.version>3.0.alpha4</payara-arquillian-container.version>
         <payara.security-connectors.version>3.0.alpha4</payara.security-connectors.version>
         <opentracing.version>0.33.0</opentracing.version>
         <h2db.version>1.4.200</h2db.version>

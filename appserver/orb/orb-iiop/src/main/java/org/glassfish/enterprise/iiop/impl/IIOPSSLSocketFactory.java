@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016-2020] [Payara Foundation]
+// Portions Copyright [2016-2022] [Payara Foundation]
 
 package org.glassfish.enterprise.iiop.impl;
 
@@ -231,7 +231,7 @@ public class IIOPSSLSocketFactory implements ORBSocketFactory {
      * Return a default SSLInfo object.
      */
     private SSLInfo getDefaultSslInfo() throws Exception {
-       return init(null, false, null, true, null, true, true, true, false);
+       return init(null, false, null, true, null, true, false, true, true);
     }
 
     /**

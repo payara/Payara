@@ -39,10 +39,8 @@
  */
 package fish.payara.samples.http;
 
-import static fish.payara.samples.http.TestServlet.hasTLS13Support;
 import static fish.payara.samples.http.TestServlet.newClientBuilder;
 import org.junit.Assert;
-import org.junit.Assume;
 import org.junit.Test;
 
 import javax.net.SocketFactory;
@@ -61,11 +59,10 @@ import static org.junit.Assert.assertNotEquals;
  * @author Alan Roth
  */
 public class TLSSupportTest {
-    private final List<String> SUPPORTED_SSL_PROTOCOLS = Arrays.asList("TLSv1", "TLSv1.1", "TLSv1.2", "TLSv1.3");
+    private final List<String> SUPPORTED_SSL_PROTOCOLS = Arrays.asList("TLSv1.2", "TLSv1.3");
 
     @Test
     public void when_socket_ssl_protocols_returned_expect_supported_tls_versions() throws IOException {
-        Assume.assumeTrue(hasTLS13Support());
         SocketFactory factory = SSLSocketFactory.getDefault();
         SSLSocket socket = (SSLSocket) factory.createSocket();
         socket.setEnabledProtocols(SUPPORTED_SSL_PROTOCOLS.stream().toArray(String[]::new));

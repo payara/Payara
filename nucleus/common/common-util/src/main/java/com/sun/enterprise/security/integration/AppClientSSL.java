@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2022] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.security.integration;
 
@@ -47,7 +47,7 @@ package com.sun.enterprise.security.integration;
  */
 public class AppClientSSL {
     private boolean tlsEnabled = true;
-    private boolean tlsEnabled11 = true;
+    private boolean tlsEnabled11 = false;
     private boolean tlsEnabled12 = true;
     private boolean tlsEnabled13 = true;
     private boolean tlsRollbackEnabled = true;
