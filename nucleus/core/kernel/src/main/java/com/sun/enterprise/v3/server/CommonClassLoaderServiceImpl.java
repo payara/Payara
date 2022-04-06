@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
- // Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+ // Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.v3.server;
 
@@ -145,6 +145,11 @@ public class CommonClassLoaderServiceImpl implements PostConstruct {
         if (domainLib.isDirectory()) {
             Collections.addAll(cpElements,
                     domainLib.listFiles(new JarFileFilter()));
+        }
+        final File domainLibExt = new File(domainDir, "lib/ext/"); // NOI18N
+        if (domainLibExt.isDirectory()) {
+            Collections.addAll(cpElements,
+                    domainLibExt.listFiles(new JarFileFilter()));
         }
         cpElements.addAll(findH2Client());
         List<URL> urls = new ArrayList<>();
