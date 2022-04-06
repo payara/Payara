@@ -198,7 +198,7 @@
                             </artifact>
                             <nonFinal>false</nonFinal>
                             <jarType>impl</jarType>
-                            <specVersion>${parsson.version}</specVersion>
+                            <specVersion>${jsonp-api.version}</specVersion>
                             <implVersion>${parsson.version}</implVersion>
                             <apiPackage>jakarta.json</apiPackage>
                             <implNamespace>org.eclipse</implNamespace>

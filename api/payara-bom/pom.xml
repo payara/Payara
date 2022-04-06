@@ -703,7 +703,7 @@
             <dependency>
                 <groupId>org.glassfish</groupId>
                 <artifactId>jsonp-jaxrs</artifactId>
-                <version>${jsonp-jaxrs.version}</version>
+                <version>${transitional.jsonp-jaxrs.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.ibm.jbatch</groupId>
