@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
@@ -192,16 +192,16 @@
                         <!-- JSON-P -->
                         <spec>
                             <artifact>
-                                <groupId>org.glassfish</groupId>
+                                <groupId>org.eclipse.parsson</groupId>
                                 <artifactId>jakarta.json</artifactId>
-                                <version>${jsonp.version}</version>
+                                <version>${parsson.version}</version>
                             </artifact>
                             <nonFinal>false</nonFinal>
                             <jarType>impl</jarType>
-                            <specVersion>${jsonp.version}</specVersion>
-                            <implVersion>${jsonp.version}</implVersion>
+                            <specVersion>${jsonp-api.version}</specVersion>
+                            <implVersion>${parsson.version}</implVersion>
                             <apiPackage>jakarta.json</apiPackage>
-                            <implNamespace>org.glassfish</implNamespace>
+                            <implNamespace>org.eclipse</implNamespace>
                         </spec>
 
                         <!-- JSF -->
