@@ -174,8 +174,8 @@
         <jaxb-extra-osgi.version>2.3.0</jaxb-extra-osgi.version>
         <json.bind-api.version>2.0.0</json.bind-api.version>
         <yasson.version>2.0.2</yasson.version>
-        <jakarta-persistence-api.version>3.0.0</jakarta-persistence-api.version>
-        <eclipselink.version>3.0.2</eclipselink.version>
+        <jakarta-persistence-api.version>3.1.0-RC2</jakarta-persistence-api.version>
+        <eclipselink.version>3.1.0-M1.payara-p1</eclipselink.version>
         <eclipselink.asm.verison>9.1.1</eclipselink.asm.verison>
         <jakarta.transaction-api.version>2.0.0</jakarta.transaction-api.version>
         <jakarta.interceptor-api.version>2.0.0</jakarta.interceptor-api.version>
@@ -205,7 +205,9 @@
         <istack-commons-runtime.version>4.0.1</istack-commons-runtime.version>
         <jline.version>3.20.0</jline.version>
         <wsdl4j.version>1.6.3</wsdl4j.version>
-        <jsonp.version>2.0.1</jsonp.version>
+        <transitional.jsonp-jaxrs.version>2.0.1</transitional.jsonp-jaxrs.version>
+        <parsson.version>1.1.0</parsson.version>
+        <jsonp-api.version>2.1.0</jsonp-api.version>
         <jbi.version>1.0</jbi.version>
         <jakarta-platform.version>9.1.0</jakarta-platform.version>
         <microprofile-release.version>5.0</microprofile-release.version>

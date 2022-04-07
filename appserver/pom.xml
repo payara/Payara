@@ -204,16 +204,16 @@
                         <!-- JSON-P -->
                         <spec>
                             <artifact>
-                                <groupId>org.glassfish</groupId>
+                                <groupId>org.eclipse.parsson</groupId>
                                 <artifactId>jakarta.json</artifactId>
-                                <version>${jsonp.version}</version>
+                                <version>${parsson.version}</version>
                             </artifact>
                             <nonFinal>false</nonFinal>
                             <jarType>impl</jarType>
-                            <specVersion>${jsonp.version}</specVersion>
-                            <implVersion>${jsonp.version}</implVersion>
+                            <specVersion>${jsonp-api.version}</specVersion>
+                            <implVersion>${parsson.version}</implVersion>
                             <apiPackage>jakarta.json</apiPackage>
-                            <implNamespace>org.glassfish</implNamespace>
+                            <implNamespace>org.eclipse</implNamespace>
                         </spec>
 
                         <!-- JSF -->

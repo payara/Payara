@@ -40,7 +40,7 @@ pipeline {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Building SRC  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 withCredentials([usernameColonPassword(credentialsId: 'JenkinsNexusUser', variable: 'NEXUS_USER')]) {
                   sh """mvn -B -V -ff -e clean install --strict-checksums \
-                  -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
+                  -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
                   -Djavax.xml.accessExternalSchema=all -Dbuild.number=${payaraBuildNumber}\
                   -PBuildExtras"""
                 }
@@ -57,7 +57,7 @@ pipeline {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 sh """mvn -B -V -ff -e clean test -Pall --strict-checksums \
                 -Dglassfish.home=\"${pwd()}/appserver/distributions/payara/target/stage/payara6/glassfish\" \
-                -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
+                -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
                 -Djavax.xml.accessExternalSchema=all \
                 -f appserver/tests/quicklook/pom.xml"""
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
@@ -111,7 +111,7 @@ pipeline {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                   sh "mvn -B -V -ff -e clean install --strict-checksums \
-                  -Dsurefire.useFile=false -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
+                  -Dsurefire.useFile=false -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
                   -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
                   -Dsurefire.rerunFailingTestsCount=2 -Ppayara-server-remote"
                 }
@@ -138,7 +138,7 @@ pipeline {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                     sh """mvn -B -V -ff -e clean install --strict-checksums -Dsurefire.useFile=false \
-                    -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
+                    -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
                     -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
                     -Dsurefire.rerunFailingTestsCount=2 -Ppayara-server-embedded,payara6"""
                 }
@@ -169,7 +169,7 @@ pipeline {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                     sh """mvn -B -V -ff -e clean install --strict-checksums -Dsurefire.useFile=false \
-                    -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
+                    -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
                     -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
                     -Dpayara_domain=${DOMAIN_NAME} \
                     -Dsurefire.rerunFailingTestsCount=2 -Ppayara-server-remote,stable,payara6"""

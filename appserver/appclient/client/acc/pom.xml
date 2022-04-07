@@ -451,9 +451,9 @@
 
       <!-- As of EE 7, JSON needs to be available to clients -->
       <dependency>
-        <scope>runtime</scope>
-        <groupId>org.glassfish</groupId>
-        <artifactId>jakarta.json</artifactId>
+          <scope>runtime</scope>
+          <groupId>org.eclipse.parsson</groupId>
+          <artifactId>jakarta.json</artifactId>
       </dependency>
 
       <!-- CDI support -->
