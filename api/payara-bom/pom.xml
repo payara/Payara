@@ -361,6 +361,11 @@
                 <version>${jakarta.security.jacc-api.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.glassfish.exousia</groupId>
+                <artifactId>exousia</artifactId>
+                <version>${exousia.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>jakarta.authentication</groupId>
                 <artifactId>jakarta.authentication-api</artifactId>
                 <version>${jakarta.security.auth.message-api.version}</version>

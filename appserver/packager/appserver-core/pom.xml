@@ -213,11 +213,6 @@
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.security</groupId>
-            <artifactId>jacc.provider.inmemory</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.security</groupId>
             <artifactId>jaspic.provider.framework</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -247,6 +242,10 @@
         <dependency>
             <groupId>jakarta.authorization</groupId>
             <artifactId>jakarta.authorization-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.exousia</groupId>
+            <artifactId>exousia</artifactId>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.transaction</groupId>
