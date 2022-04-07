@@ -218,11 +218,6 @@
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.web</groupId>
-            <artifactId>web-naming</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.web</groupId>
             <artifactId>web-sse</artifactId>
             <version>${project.version}</version>
         </dependency>

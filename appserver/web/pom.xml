@@ -53,7 +53,6 @@
     <packaging>pom</packaging>
     <name>GlassFish Web container related modules</name>  
     <modules>
-        <module>web-naming</module>
         <module>web-core</module>
         <module>war-util</module>
         <module>jstl-connector</module>
