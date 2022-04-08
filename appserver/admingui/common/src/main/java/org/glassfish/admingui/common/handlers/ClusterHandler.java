@@ -258,8 +258,12 @@ public class ClusterHandler {
         String errorMsg = null;
         String prefix = GuiUtil.getSessionValue("REST_URL") + "/deployment-groups/deployment-group/";
         Map<String, Object> dgInstanceMap = (Map<String, Object>) handlerCtx.getInputValue("extraInfo");
-        String timeout = (String) dgInstanceMap.get("timeout");
-        String instanceTimeout = (String) dgInstanceMap.get("instancetimeout");
+        String timeout = null;
+        String instanceTimeout = null;
+        if (dgInstanceMap != null) {
+            timeout = (String) dgInstanceMap.get("timeout");
+            instanceTimeout = (String) dgInstanceMap.get("instancetimeout");
+        }
         for (Map<String, Object> oneRow : rows) {
             String dgName = (String) oneRow.get("name");
             String endpoint = prefix + dgName + "/" + action;
@@ -295,6 +299,13 @@ public class ClusterHandler {
         List<Map<String, Object>> rows = (List<Map<String, Object>>) handlerCtx.getInputValue("rows");
         String errorMsg = null;
         String prefix = GuiUtil.getSessionValue("REST_URL") + "/clusters/cluster/";
+        Map<String, Object> clusterInstanceMap = (Map<String, Object>) handlerCtx.getInputValue("extraInfo");
+        String timeout = null;
+        String instanceTimeout = null;
+        if (action.equals("start-cluster") && clusterInstanceMap != null) {
+            timeout = (String) clusterInstanceMap.get("timeout");
+            instanceTimeout = (String) clusterInstanceMap.get("instancetimeout");
+        }
 
         for (Map<String, Object> oneRow : rows) {
             String clusterName = (String) oneRow.get("name");
@@ -302,8 +313,6 @@ public class ClusterHandler {
             String method = "post";
             if (action.equals("delete-cluster")) {
                 //need to delete the clustered instance first
-                Map<String, Object> clusterInstanceMap =
-                    (Map<String, Object>) handlerCtx.getInputValue("extraInfo");
                 List<String> instanceNameList = (List<String>) clusterInstanceMap.get(clusterName);
                 for (String instanceName : instanceNameList) {
                     errorMsg = deleteInstance(instanceName);
@@ -317,7 +326,14 @@ public class ClusterHandler {
             }
             try {
                 GuiUtil.getLogger().info(endpoint);
-                RestUtil.restRequest(endpoint, null, method, null, false);
+                Map<String, Object> attrs = new HashMap<>();
+                if (timeout != null) {
+                    attrs.put("timeout", timeout);
+                }
+                if (instanceTimeout != null) {
+                    attrs.put("instancetimeout", instanceTimeout);
+                }
+                RestUtil.restRequest(endpoint, attrs, method, null, false);
             } catch (Exception ex) {
                 GuiUtil.prepareAlert("error", GuiUtil.getMessage("msg.Error"), ex.getMessage());
                 return;
@@ -336,7 +352,10 @@ public class ClusterHandler {
         List<Map<String, Object>> rows = (List<Map<String, Object>>) handlerCtx.getInputValue("rows");
         String prefix = GuiUtil.getSessionValue("REST_URL") + "/servers/server/";
         Map<String, Object> instanceMap = (Map<String, Object>) handlerCtx.getInputValue("extraInfo");
-        String timeout = (String) instanceMap.get("timeout");
+        String timeout = null;
+        if (instanceMap != null) {
+            timeout = (String) instanceMap.get("timeout");
+        }
         for (Map<String, Object> oneRow : rows) {
             String instanceName = (String) oneRow.get("name");
             if (action.equals("delete-instance")) {
