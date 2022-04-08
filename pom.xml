@@ -152,7 +152,8 @@
         <jakarta.el.version>4.0.2</jakarta.el.version>
         <jakarta.el-api.version>4.0.0</jakarta.el-api.version>
         <javax.cache-api.version>1.1.1.payara-p1</javax.cache-api.version>
-        <mail.version>2.0.1</mail.version>
+        <mail.version>2.1.0-RC2</mail.version>
+        <angus.mail.version>1.0.0-M1</angus.mail.version>
         <jakarta.annotation-api.version>2.1.0</jakarta.annotation-api.version>
         <hk2.version>3.0.1.payara-p1</hk2.version>
         <osgi-resource-locator.version>1.0.3</osgi-resource-locator.version>
