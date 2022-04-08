@@ -9,7 +9,7 @@ SYNOPSIS
            [--nodedir nodedir] [--node node]
            [--debug={false|true}]
            [--force={true|false}] [--kill={false|true}]
-           [instance-name]
+           [--timeout timeout] [instance-name]
 
 DESCRIPTION
        The restart-local-instance subcommand restarts a GlassFish Server
@@ -120,6 +120,10 @@ OPTIONS
            true
                The instance is killed. The subcommand uses functionality of
                the operating system to terminate the instance process.
+
+       --timeout
+           Specifies the amount of time in seconds the command will run for before timing
+           out.
 
 OPERANDS
        instance-name

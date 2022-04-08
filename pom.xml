@@ -46,7 +46,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>fish.payara.server</groupId>
     <artifactId>payara-aggregator</artifactId>
-    <version>5.2022.2-SNAPSHOT</version>
+    <version>5.2022.3-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Payara Project</name>
@@ -62,7 +62,7 @@
         <connection>scm:git:git@github.com:payara/payara.git</connection>
         <url>scm:git:git@github.com:payara/payara.git</url>
         <developerConnection>scm:git:git@github.com:payara/payara.git</developerConnection>
-        <tag>payara-server-5.2022.2-SNAPSHOT</tag>
+        <tag>payara-server-5.2022.3-SNAPSHOT</tag>
     </scm>
 
     <issueManagement>
@@ -152,7 +152,7 @@
         <hk2.version>2.6.1.payara-p7</hk2.version>
         <osgi-resource-locator.version>1.0.3</osgi-resource-locator.version>
         <stax-api.version>1.0-2</stax-api.version>
-        <jackson.version>2.12.6</jackson.version>
+        <jackson.version>2.12.6.20220326</jackson.version>
         <snakeyaml.version>1.28</snakeyaml.version>
         <hazelcast.version>4.2</hazelcast.version>
         <hazelcast.kubernetes.version>2.2.3.payara-p1</hazelcast.kubernetes.version>
@@ -220,7 +220,7 @@
         <websocket-api.version>1.1.2</websocket-api.version>
         <concurrent-api.version>1.1.2</concurrent-api.version>
         <concurrent.version>1.0.payara-p2</concurrent.version>
-        <asm.version>9.1</asm.version>
+        <asm.version>9.2</asm.version>
         <monitoring-console-api.version>1.2</monitoring-console-api.version>
         <monitoring-console-process.version>1.8.1</monitoring-console-process.version>
         <monitoring-console-webapp.version>1.8.1</monitoring-console-webapp.version>

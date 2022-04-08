@@ -38,16 +38,19 @@
  * holder.
  */
 
-// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2022] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.v3.admin.cluster;
 
-import static java.lang.Math.min;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static java.util.logging.Level.FINE;
-import static org.glassfish.api.ActionReport.ExitCode.FAILURE;
-import static org.glassfish.api.ActionReport.ExitCode.SUCCESS;
-import static org.glassfish.api.ActionReport.ExitCode.WARNING;
+import com.sun.enterprise.admin.remote.RemoteRestAdminCommand;
+import com.sun.enterprise.config.serverbeans.Cluster;
+import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Server;
+import com.sun.enterprise.v3.admin.adapter.AdminEndpointDecider;
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.admin.*;
+import org.glassfish.api.admin.CommandRunner.CommandInvocation;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -58,20 +61,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 
-import org.glassfish.api.ActionReport;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.CommandException;
-import org.glassfish.api.admin.CommandRunner;
-import org.glassfish.api.admin.CommandRunner.CommandInvocation;
-import org.glassfish.api.admin.ParameterMap;
-import org.glassfish.api.admin.ProgressStatus;
-
-import com.sun.enterprise.admin.remote.RemoteRestAdminCommand;
-import com.sun.enterprise.config.serverbeans.Cluster;
-import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.Server;
-import com.sun.enterprise.v3.admin.adapter.AdminEndpointDecider;
+import static java.lang.Math.min;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.logging.Level.FINE;
+import static org.glassfish.api.ActionReport.ExitCode.*;
 
 /*
  * ClusterCommandHelper is a helper class that knows how to execute an
@@ -92,6 +85,7 @@ public class ClusterCommandHelper {
     private final CommandRunner runner;
 
     private ProgressStatus progress;
+    private long adminTimeout;
 
     /**
      * Construct a ClusterCommandHelper
@@ -102,6 +96,7 @@ public class ClusterCommandHelper {
     public ClusterCommandHelper(Domain domain, CommandRunner runner) {
         this.domain = domain;
         this.runner = runner;
+        this.adminTimeout = RemoteRestAdminCommand.getReadTimeout();
     }
 
     /**
@@ -241,7 +236,7 @@ public class ClusterCommandHelper {
 
         // Make sure we don't wait longer than the admin read timeout. Set
         // our limit to be 3 seconds less.
-        long adminTimeout = RemoteRestAdminCommand.getReadTimeout() - 3000;
+        adminTimeout = adminTimeout - 3000;
         if (adminTimeout <= 0) {
             // This should never be the case
             adminTimeout = 57 * 1000;
@@ -435,5 +430,13 @@ public class ClusterCommandHelper {
     public static class ReportResult {
         public final List<String> succeededServerNames = new ArrayList<>();
         public final List<String> failedServerNames = new ArrayList<>();
+    }
+
+    /**
+     * Set the timeout for ClusterCommandHelper
+     * @param adminTimeout in milliseconds
+     */
+    public void setAdminTimeout(long adminTimeout) {
+        this.adminTimeout = adminTimeout;
     }
 }

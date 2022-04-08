@@ -70,6 +70,8 @@ import org.glassfish.common.util.admin.ManPageFinder;
 import org.glassfish.hk2.api.ActiveDescriptor;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.BuilderHelper;
+import org.jline.reader.EndOfFileException;
+import org.jline.reader.UserInterruptException;
 import org.jvnet.hk2.component.MultiMap;
 
 import java.io.*;
@@ -79,8 +81,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jline.reader.EndOfFileException;
-import org.jline.reader.UserInterruptException;
 
 /**
  * A remote command handled by the asadmin CLI.
@@ -105,6 +105,7 @@ public class RemoteCLICommand extends CLICommand {
     private RemoteCLICommand.CLIRemoteAdminCommand rac;
     private final MultiMap<String, AdminCommandListener<GfSseInboundEvent>> listeners =
             new MultiMap<String, AdminCommandListener<GfSseInboundEvent>>();
+    private int readTimeout;
 
     /**
      * A special RemoteAdminCommand that overrides methods so that we can handle
@@ -155,6 +156,15 @@ public class RemoteCLICommand extends CLICommand {
             if (StringUtils.ok(stimeout)) {
                 super.setReadTimeout(Integer.parseInt(stimeout));
             }
+        }
+
+        /**
+         * Set the RemoteRestCommand read timeout
+         * @param readTimeout timeout in milliseconds
+         */
+        @Override
+        public void setReadTimeout(int readTimeout){
+            super.setReadTimeout(readTimeout);
         }
         
         @Override
@@ -924,6 +934,9 @@ public class RemoteCLICommand extends CLICommand {
                     programOpts.getPassword(), logger, programOpts.getAuthToken(),programOpts.isNotifyCommand());
             rac.setFileOutputDirectory(outputDir);
             rac.setInteractive(programOpts.isInteractive());
+            if (readTimeout > 0) {
+                rac.setReadTimeout(readTimeout);
+            }
             for (String key : listeners.keySet()) {
                 for (AdminCommandListener<GfSseInboundEvent> listener : listeners.get(key)) {
                     rac.registerListener(key, listener);
@@ -1025,5 +1038,13 @@ public class RemoteCLICommand extends CLICommand {
         File modulesDir = new File(installDir, "modules");
         moduleClassLoader = new DirectoryClassLoader(modulesDir, CLICommand.class.getClassLoader());
         return moduleClassLoader;
+    }
+
+    /**
+     * Set read timeout for RemoteRestCommand
+     * @param readTimeout
+     */
+    public void setReadTimeout(int readTimeout) {
+        this.readTimeout = readTimeout;
     }
 }

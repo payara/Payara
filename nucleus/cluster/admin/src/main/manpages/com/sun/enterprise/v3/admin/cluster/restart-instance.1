@@ -5,7 +5,8 @@ NAME
 
 SYNOPSIS
            restart-instance [--help]
-           [--debug={false|true}] instance-name
+           [--debug={false|true}]
+           [--timeout timeout] instance-name
 
 DESCRIPTION
        The restart-instance subcommand restarts a running GlassFish Server
@@ -80,6 +81,10 @@ OPTIONS
 
            The default is the current setting of this option for the instance
            that is being restarted.
+
+       --timeout
+           Specifies the amount of time in seconds the command will run for before timing
+           out.
 
 OPERANDS
        instance-name
