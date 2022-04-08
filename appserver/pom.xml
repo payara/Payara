@@ -164,11 +164,11 @@
                             <artifact>
                                 <groupId>jakarta.activation</groupId>
                                 <artifactId>jakarta.activation-api</artifactId>
-                                <version>${activation.version}</version>
+                                <version>${jakarta.activation-api.version}</version>
                             </artifact>
                             <jarType>api</jarType>
                             <specVersion>2.1</specVersion>
-                            <specImplVersion>${activation.version}</specImplVersion>
+                            <specImplVersion>${jakarta.activation-api.version}</specImplVersion>
                             <apiPackage>jakarta.activation</apiPackage>
 		    	</spec>
 
