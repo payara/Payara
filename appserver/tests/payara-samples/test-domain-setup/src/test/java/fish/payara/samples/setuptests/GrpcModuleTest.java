@@ -86,7 +86,7 @@ public class GrpcModuleTest {
     public void addGrpcModuleToPayaraTest() throws IOException, URISyntaxException {
         if (ServerOperations.isServer()) {
             pathToGrpcSupportModule = Paths.get(Thread.currentThread().getContextClassLoader().getResource(grpcSupportJarName).toURI());
-            pathToPayaraModulesDir = Paths.get(System.getProperty("com.sun.aas.installRoot") + "\\modules\\" + grpcSupportJarName);
+            pathToPayaraModulesDir = Paths.get(System.getProperty("com.sun.aas.installRoot") + File.separator + "modules" + File.separator + grpcSupportJarName);
             Files.copy(pathToGrpcSupportModule, pathToPayaraModulesDir, StandardCopyOption.REPLACE_EXISTING);
         }
     }

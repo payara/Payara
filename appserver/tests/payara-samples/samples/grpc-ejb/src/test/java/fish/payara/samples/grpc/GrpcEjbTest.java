@@ -84,8 +84,8 @@ public class GrpcEjbTest {
     @InSequence(1)
     public void checkGrpcModuleInstalled() {
         FilenameFilter filter = (dir, name) -> name.matches("(grpc-support-.*[.]jar)");
-        Assert.assertEquals("gRPC Module must be installed for these tests.", 1,
-                new File(System.getProperty("com.sun.aas.installRoot") + "\\modules").list(filter).length);
+        Assert.assertNotNull("gRPC Module must be in the modules directory for these tests.",
+                new File(System.getProperty("com.sun.aas.installRoot") + File.separator + "modules").list(filter).length);
 
     }
 
