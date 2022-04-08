@@ -38,6 +38,8 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+    Portions Copyright [2022] [Payara Foundation and/or its affiliates]
+
 -->
 
 <!initPage
@@ -69,7 +71,7 @@
             getUIComponent(clientId="$pageSession{tableRowGroupId}", component="#{requestScope.tableRowGroup}");
             getSelectedSingleMapRows(TableRowGroup="${tableRowGroup}" selectedRows="#{requestScope.selectedRows}");
             println("Starting Cluster ....");
-            gf.clusterAction(rows="#{requestScope.selectedRows}", action="start-cluster");
+            gf.clusterAction(rows="#{requestScope.selectedRows}", action="start-cluster", extraInfo="#{pageSession.clusterInstanceMap}");
             gf.redirect(page="#{pageSession.listLink}?alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
         />
     </sun:button>
@@ -89,6 +91,33 @@
     </sun:button>
 </define>
 
+<!define name="commandTimeoutDropDown">
+    <sun:dropDown id="timeoutdropdown" rendered="true" submitForm="#{true}"  disabled="#{false}" toolTip="$resource{i18n.common.commandTimeoutDropDown}"
+            labels={ "$resource{i18n.common.commandTimeoutDropDown}"
+                    "10" "30" "60" "120" "300" "600"
+                 }
+            values={"" "10" "30" "60" "120" "300" "600"}>
+            <!command
+                setAttribute(key="click" value="$this{component}");
+                setAttribute(key="actionValue" value="#{click.selected}");
+                mapPut(map="#{pageSession.clusterInstanceMap}" key="timeout" value="${actionValue}");
+            />
+    </sun:dropDown>
+</define>
+
+<!define name="instanceTimeoutDropDown">
+    <sun:dropDown id="itimeoutdropdown" rendered="true" submitForm="#{true}"  disabled="#{false}" toolTip="$resource{i18n.common.instanceTimeoutdropdown}"
+            labels={ "$resource{i18n.common.instanceTimeoutdropdown}"
+                    "10" "30" "60" "120" "300" "600"
+                 }
+            values={"" "10" "30" "60" "120" "300" "600"}>
+            <!command
+                setAttribute(key="click" value="$this{component}");
+                setAttribute(key="actionValue" value="#{click.selected}");
+                mapPut(map="#{pageSession.clusterInstanceMap}" key="instancetimeout" value="${actionValue}");
+            />
+    </sun:dropDown>
+</define>
 
 <!define name="content">
     <event>
