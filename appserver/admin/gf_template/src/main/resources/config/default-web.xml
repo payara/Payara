@@ -330,9 +330,9 @@
         hibernate-validator.jar
         jakarta.ejb-api.jar
         jakarta.enterprise.deploy-api.jar
-	    jakarta.activation-api.jar
-	    angus-activation.jar
-	    jakarta.mail-api.jar
+        jakarta.activation-api.jar
+        angus-activation.jar
+        jakarta.mail-api.jar
         angus-mail.jar
         jakarta.persistence.jar
         jakarta.resource-api.jar
