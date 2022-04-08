@@ -158,7 +158,19 @@
                 <configuration>
                     <dir>${stage.dir}/${install.dir.name}/glassfish/modules</dir>
                     <excludes>jakarta.inject-api.jar,jakarta.servlet.jsp.jstl.jar,jakarta.servlet.jsp.jar,jakarta.enterprise.concurrent.jar, jakarta.persistence.jar</excludes>
-                    <specs>
+		    <specs>
+			<!-- Activation-API -->
+			<spec>
+                            <artifact>
+                                <groupId>jakarta.activation</groupId>
+                                <artifactId>jakarta.activation-api</artifactId>
+                                <version>${activation.version}</version>
+                            </artifact>
+                            <jarType>api</jarType>
+                            <specVersion>2.1</specVersion>
+                            <specImplVersion>${activation.version}</specImplVersion>
+                            <apiPackage>jakarta.activation</apiPackage>
+		    	</spec>
 
                         <!-- JavaMail -->
                         <spec>

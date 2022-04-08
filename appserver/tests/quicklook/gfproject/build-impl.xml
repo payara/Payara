@@ -405,7 +405,9 @@
 
 <!-- the following targets are for running the wsit tests -->
     <path id="wsit.classpath">
-        <pathelement location="${glassfish.home}/modules/jakarta.jws-api.jar"/>
+	<pathelement location="${glassfish.home}/modules/jakarta.jws-api.jar"/>
+	<pathelement location="${glassfish.home}/modules/jakarta.activation-api.jar"/>
+	<pathelement location="${glassfish.home}/modules/angus-activation.jar"/>
     </path>
 
     <condition property="wsjar.available">

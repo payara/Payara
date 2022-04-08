@@ -368,14 +368,37 @@
         <artifactId>jakarta.annotation-api</artifactId>
      </dependency>
 
+     <!-- jakarta.activation-api.jar -->
+     <dependency>
+         <groupId>jakarta.activation</groupId>
+         <artifactId>jakarta.activation-api</artifactId>
+     </dependency>
+
+     <dependency>
+         <groupId>org.eclipse.angus</groupId>
+         <artifactId>angus-activation</artifactId>
+     </dependency>
+
      <dependency>
          <groupId>jakarta.xml.bind</groupId>
-         <artifactId>jakarta.xml.bind-api</artifactId>
+	 <artifactId>jakarta.xml.bind-api</artifactId>
+	 <exclusions>
+             <exclusion>
+                 <groupId>com.sun.activation</groupId>
+                 <artifactId>jakarta.activation</artifactId>
+             </exclusion>
+         </exclusions>
      </dependency>
 
      <dependency>
          <groupId>com.sun.xml.bind</groupId>
-         <artifactId>jaxb-osgi</artifactId>
+	 <artifactId>jaxb-osgi</artifactId>
+	 <exclusions>
+             <exclusion>
+                 <groupId>com.sun.activation</groupId>
+                 <artifactId>jakarta.activation</artifactId>
+             </exclusion>
+         </exclusions>
      </dependency>
 
      <dependency>
