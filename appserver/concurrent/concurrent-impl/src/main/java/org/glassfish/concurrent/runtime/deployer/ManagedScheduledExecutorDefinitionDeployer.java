@@ -82,15 +82,9 @@ public class ManagedScheduledExecutorDefinitionDeployer implements ResourceDeplo
 
     @Override
     public void deployResource(Object resource, String applicationName, String moduleName) throws Exception {
-
-    }
-
-    @Override
-    public void deployResource(Object resource) throws Exception {
         ManagedScheduledExecutorDefinitionDescriptor descriptor = (ManagedScheduledExecutorDefinitionDescriptor) resource;
         ManagedScheduledExecutorServiceConfig config =
                 new ManagedScheduledExecutorServiceConfig(new CustomManagedScheduledExecutorDefinitionImpl(descriptor));
-        String applicationName = invocationManager.getCurrentInvocation().getAppName();
         String customNameOfResource = ConnectorsUtil.deriveResourceName(descriptor.getResourceId(),
                 descriptor.getName(), descriptor.getResourceType());
         ResourceInfo resourceInfo = new ResourceInfo(customNameOfResource, applicationName, null);
@@ -110,6 +104,13 @@ public class ManagedScheduledExecutorDefinitionDeployer implements ResourceDeplo
             LogHelper.log(logger, Level.SEVERE, LogFacade.UNABLE_TO_BIND_OBJECT, ex,
                     "ManagedScheduledExecutorService", config.getJndiName());
         }
+    }
+
+    @Override
+    public void deployResource(Object resource) throws Exception {
+        String applicationName = invocationManager.getCurrentInvocation().getAppName();
+        String moduleName = invocationManager.getCurrentInvocation().getModuleName();
+        deployResource(resource, applicationName, moduleName);
     }
 
     @Override

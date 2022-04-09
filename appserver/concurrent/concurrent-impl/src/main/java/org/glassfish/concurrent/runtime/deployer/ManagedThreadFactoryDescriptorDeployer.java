@@ -82,14 +82,8 @@ public class ManagedThreadFactoryDescriptorDeployer implements ResourceDeployer 
 
     @Override
     public void deployResource(Object resource, String applicationName, String moduleName) throws Exception {
-
-    }
-
-    @Override
-    public void deployResource(Object resource) throws Exception {
         ManagedThreadFactoryDefinitionDescriptor descriptor = (ManagedThreadFactoryDefinitionDescriptor) resource;
         ManagedThreadFactoryConfig config = new ManagedThreadFactoryConfig(new CustomManagedThreadFactory(descriptor));
-        String applicationName = invocationManager.getCurrentInvocation().getAppName();
         String customNameOfResource = ConnectorsUtil.deriveResourceName(descriptor.getResourceId(),
                 descriptor.getName(), descriptor.getResourceType());
         ResourceInfo resourceInfo = new ResourceInfo(customNameOfResource, applicationName, null);
@@ -109,6 +103,13 @@ public class ManagedThreadFactoryDescriptorDeployer implements ResourceDeployer 
             LogHelper.log(logger, Level.SEVERE, LogFacade.UNABLE_TO_BIND_OBJECT, ex,
                     "ManagedThreadFactory", config.getJndiName());
         }
+    }
+
+    @Override
+    public void deployResource(Object resource) throws Exception {
+        String applicationName = invocationManager.getCurrentInvocation().getAppName();
+        String moduleName = invocationManager.getCurrentInvocation().getModuleName();
+        deployResource(resource, applicationName, moduleName);
     }
 
     @Override
