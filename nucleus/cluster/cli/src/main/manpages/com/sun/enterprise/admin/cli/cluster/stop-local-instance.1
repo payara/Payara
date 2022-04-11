@@ -8,7 +8,7 @@ SYNOPSIS
            stop-local-instance [--help]
            [--nodedir node-dir] [--node node]
            [--force={true|false}] [--kill={false|true}]
-           [instance-name]
+           [--timeout timeout] [instance-name]
 
 DESCRIPTION
        The stop-local-instance subcommand stops a GlassFish Server instance on
@@ -69,6 +69,10 @@ OPTIONS
            true
                The instance is killed. The subcommand uses functionality of
                the operating system to terminate the instance process.
+
+       --timeout
+           Specifies the amount of time in seconds the command will run for before timing
+           out.
 
 OPERANDS
        instance-name

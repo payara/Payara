@@ -5,7 +5,8 @@ NAME
 
 SYNOPSIS
            start-cluster [--help] [--autohadboverride={true|false}]
-           [--verbose={false|true}] cluster-name
+           [--verbose={false|true}] [--timeout timeout]
+           [--instancetimeout timeout] cluster-name
 
 DESCRIPTION
        The start-cluster subcommand starts a cluster by starting all GlassFish
@@ -58,6 +59,14 @@ OPTIONS
 
            false
                Displays no additional status information (default).
+
+       --timeout
+           Specifies the amount of time in seconds the command will run for before timing
+           out.
+
+       --instancetimeout
+           Specifies the amount of time in seconds each instance will attempt to start
+           before timing out.
 
 OPERANDS
        cluster-name

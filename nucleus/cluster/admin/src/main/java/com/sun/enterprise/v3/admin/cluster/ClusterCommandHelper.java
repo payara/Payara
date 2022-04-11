@@ -38,16 +38,19 @@
  * holder.
  */
 
-// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2022] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.v3.admin.cluster;
 
-import static java.lang.Math.min;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static java.util.logging.Level.FINE;
-import static org.glassfish.api.ActionReport.ExitCode.FAILURE;
-import static org.glassfish.api.ActionReport.ExitCode.SUCCESS;
-import static org.glassfish.api.ActionReport.ExitCode.WARNING;
+import com.sun.enterprise.admin.remote.RemoteRestAdminCommand;
+import com.sun.enterprise.config.serverbeans.Cluster;
+import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Server;
+import com.sun.enterprise.v3.admin.adapter.AdminEndpointDecider;
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.admin.*;
+import org.glassfish.api.admin.CommandRunner.CommandInvocation;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -58,20 +61,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 
-import org.glassfish.api.ActionReport;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.CommandException;
-import org.glassfish.api.admin.CommandRunner;
-import org.glassfish.api.admin.CommandRunner.CommandInvocation;
-import org.glassfish.api.admin.ParameterMap;
-import org.glassfish.api.admin.ProgressStatus;
-
-import com.sun.enterprise.admin.remote.RemoteRestAdminCommand;
-import com.sun.enterprise.config.serverbeans.Cluster;
-import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.Server;
-import com.sun.enterprise.v3.admin.adapter.AdminEndpointDecider;
+import static java.lang.Math.min;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.logging.Level.FINE;
+import static org.glassfish.api.ActionReport.ExitCode.*;
 
 /*
  * ClusterCommandHelper is a helper class that knows how to execute an
@@ -92,6 +85,7 @@ public class ClusterCommandHelper {
     private final CommandRunner runner;
 
     private ProgressStatus progress;
+    private long adminTimeout;
 
     /**
      * Construct a ClusterCommandHelper
@@ -102,17 +96,18 @@ public class ClusterCommandHelper {
     public ClusterCommandHelper(Domain domain, CommandRunner runner) {
         this.domain = domain;
         this.runner = runner;
+        this.adminTimeout = RemoteRestAdminCommand.getReadTimeout();
     }
 
     /**
      * Loop through all instances in a cluster and execute a command for each one.
      *
-     * @param command The string of the command to run. The instance name will be used as the operand for the command.
-     * @param map A map of parameters to use for the command. May be null if no parameters. When the command is executed for
-     * a server instance, the instance name is set as the DEFAULT parameter (operand)
+     * @param command    The string of the command to run. The instance name will be used as the operand for the command.
+     * @param map        A map of parameters to use for the command. May be null if no parameters. When the command is executed for
+     *                   a server instance, the instance name is set as the DEFAULT parameter (operand)
      * @param targetName The name of the cluster or deployment group containing the instances to run the command against.
-     * @param context The AdminCommandContext to use when executing the command.
-     * @param verbose true for more verbose output
+     * @param context    The AdminCommandContext to use when executing the command.
+     * @param verbose    true for more verbose output
      * @return An ActionReport containing the results
      * @throws CommandException
      */
@@ -124,13 +119,13 @@ public class ClusterCommandHelper {
     /**
      * Loop through all instances in a cluster and execute a command for each one.
      *
-     * @param command The string of the command to run. The instance name will be used as the operand for the command.
-     * @param map A map of parameters to use for the command. May be null if no parameters. When the command is executed for
-     * a server instance, the instance name is set as the DEFAULT parameter (operand)
+     * @param command    The string of the command to run. The instance name will be used as the operand for the command.
+     * @param map        A map of parameters to use for the command. May be null if no parameters. When the command is executed for
+     *                   a server instance, the instance name is set as the DEFAULT parameter (operand)
      * @param targetName The name of the cluster or deployment group containing the instances to run the command against.
-     * @param context The AdminCommandContext to use when executing the command.
-     * @param verbose true for more verbose output
-     * @param rolling Whether calls should be serialized to help with rolling restarts
+     * @param context    The AdminCommandContext to use when executing the command.
+     * @param verbose    true for more verbose output
+     * @param rolling    Whether calls should be serialized to help with rolling restarts
      * @return An ActionReport containing the results
      * @throws CommandException
      */
@@ -199,10 +194,10 @@ public class ClusterCommandHelper {
             map = new ParameterMap();
         }
 
-        
+
         logger.info(String.format(
-            "Executing %s on %d instances using a thread pool of size %d: %s", command, nInstances, threadPoolSize,
-            serverListToString(targetServers)));
+                "Executing %s on %d instances using a thread pool of size %d: %s", command, nInstances, threadPoolSize,
+                serverListToString(targetServers)));
 
         progress.setTotalStepCount(nInstances);
         progress.progress(Strings.get("cluster.command.executing", command, Integer.toString(nInstances)));
@@ -241,12 +236,12 @@ public class ClusterCommandHelper {
 
         // Make sure we don't wait longer than the admin read timeout. Set
         // our limit to be 3 seconds less.
-        long adminTimeout = RemoteRestAdminCommand.getReadTimeout() - 3000;
+        adminTimeout = adminTimeout - 3000;
         if (adminTimeout <= 0) {
             // This should never be the case
             adminTimeout = 57 * 1000;
         }
-        
+
         if (logger.isLoggable(FINE)) {
             logger.fine(String.format("Initial cluster command timeout: %d ms", adminTimeout));
         }
@@ -283,7 +278,7 @@ public class ClusterCommandHelper {
             if (logger.isLoggable(FINE)) {
                 logger.fine(String.format("Instance %d of %d (%s) has responded with %s", n + 1, nInstances, iname, instanceReport.getActionExitCode()));
             }
-            
+
             if (instanceReport.getActionExitCode() != SUCCESS) {
                 // Bummer, the command had an error. Log and save output
                 failureOccurred = true;
@@ -293,7 +288,7 @@ public class ClusterCommandHelper {
                 logger.severe(msg);
                 output.append(msg).append(NL);
                 msg = Strings.get("cluster.command.instancesFailed", command, iname);
-                
+
                 progress.progress(1, msg);
             } else {
                 // Command worked. Note that too.
@@ -416,11 +411,11 @@ public class ClusterCommandHelper {
         StringBuilder serverListBuilder = new StringBuilder();
         for (Server server : servers) {
             serverListBuilder.append(server.getNodeRef())
-                             .append(":")
-                             .append(server.getName())
-                             .append(" ");
+                    .append(":")
+                    .append(server.getName())
+                    .append(" ");
         }
-        
+
         return serverListBuilder.toString().trim();
     }
 
@@ -435,5 +430,14 @@ public class ClusterCommandHelper {
     public static class ReportResult {
         public final List<String> succeededServerNames = new ArrayList<>();
         public final List<String> failedServerNames = new ArrayList<>();
+    }
+
+    /**
+     * Set the timeout for ClusterCommandHelper
+     *
+     * @param adminTimeout in milliseconds
+     */
+    public void setAdminTimeout(long adminTimeout) {
+        this.adminTimeout = adminTimeout;
     }
 }
