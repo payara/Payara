@@ -84,6 +84,7 @@
         <!-- Skip - this test needs to be run repeatedly for around 60 minutes to be effective -->
         <!--<module>corba-read-timeout</module>-->
         <module>microprofile-rest-client</module>
+        <module>grpc</module>
     </modules>
 
     <dependencies>

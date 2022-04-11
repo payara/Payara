@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "fish.payara.samples.grpc";
+option java_outer_classname = "PayaraProto";
+
+package fish.payara.samples.grpc;
+
+service PayaraService {
+  rpc communicate (PayaraReq) returns (stream PayaraResp) {}
+}
+
+message PayaraReq {
+  string message = 1;
+}
+
+message PayaraResp {
+  string message = 1;
+}
