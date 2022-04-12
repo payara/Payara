@@ -49,16 +49,10 @@
 
     <dependencies>
         <dependency>
-            <groupId>fish.payara.samples</groupId>
-            <artifactId>samples-test-utils</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>jakarta.enterprise</groupId>
             <artifactId>jakarta.enterprise.cdi-api</artifactId>
             <scope>provided</scope>
         </dependency>
-
         <!-- gRPC dependencies -->
         <dependency>
             <groupId>io.grpc</groupId>
