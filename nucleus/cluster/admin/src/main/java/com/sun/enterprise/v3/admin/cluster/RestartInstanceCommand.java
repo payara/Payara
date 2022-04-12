@@ -189,12 +189,21 @@ public class RestartInstanceCommand implements AdminCommand {
         NodeUtils nodeUtils = new NodeUtils(habitat, logger);
         ArrayList<String> command = new ArrayList<>();
         String humanCommand;
+        String noderef = instance.getNodeRef();
+        Node node = nodes.getNode(noderef);
+        String nodeDir = node.getNodeDirUnixStyle();
 
         command.add("_synchronize-instance");
         if (sync != null) {
             command.add("--sync");
             command.add(sync);
         }
+        if (nodeDir != null) {
+            command.add("--nodedir");
+            command.add(nodeDir);
+        }
+        command.add("--node");
+        command.add(noderef);
         if (instanceName != null) {
             command.add(instanceName);
         }
@@ -202,11 +211,9 @@ public class RestartInstanceCommand implements AdminCommand {
         // Convert the command into a string representing the command a human should run.
         humanCommand = makeCommandHuman(command);
 
-        String noderef = instance.getNodeRef();
         String msg;
         String nodeHost;
 
-        Node node = nodes.getNode(noderef);
         if (node != null) {
             nodeHost = node.getNodeHost();
         } else {
