@@ -261,8 +261,12 @@ public class ClusterHandler {
         String timeout = null;
         String instanceTimeout = null;
         if (dgInstanceMap != null) {
-            timeout = (String) dgInstanceMap.get("timeout");
-            instanceTimeout = (String) dgInstanceMap.get("instancetimeout");
+            if (isNumeric((String) dgInstanceMap.get("timeout"))) {
+                timeout = (String) dgInstanceMap.get("timeout");
+            }
+            if (isNumeric((String) dgInstanceMap.get("instancetimeout"))) {
+                instanceTimeout = (String) dgInstanceMap.get("instancetimeout");
+            }
         }
         for (Map<String, Object> oneRow : rows) {
             String dgName = (String) oneRow.get("name");
@@ -289,6 +293,15 @@ public class ClusterHandler {
         }
     }
 
+    private static boolean isNumeric(String value) {
+        try {
+            Integer.parseInt(value);
+        } catch (NumberFormatException numberFormatException) {
+            return false;
+        }
+        return true;
+    }
+
     @Handler(id = "gf.clusterAction",
         input = {
             @HandlerInput(name = "rows", type = List.class, required = true),
@@ -303,8 +316,12 @@ public class ClusterHandler {
         String timeout = null;
         String instanceTimeout = null;
         if (action.equals("start-cluster") && clusterInstanceMap != null) {
-            timeout = (String) clusterInstanceMap.get("timeout");
-            instanceTimeout = (String) clusterInstanceMap.get("instancetimeout");
+            if (isNumeric((String) clusterInstanceMap.get("timeout"))) {
+                timeout = (String) clusterInstanceMap.get("timeout");
+            }
+            if (isNumeric((String) clusterInstanceMap.get("instancetimeout"))) {
+                instanceTimeout = (String) clusterInstanceMap.get("instancetimeout");
+            }
         }
 
         for (Map<String, Object> oneRow : rows) {
@@ -354,7 +371,9 @@ public class ClusterHandler {
         Map<String, Object> instanceMap = (Map<String, Object>) handlerCtx.getInputValue("extraInfo");
         String timeout = null;
         if (instanceMap != null) {
-            timeout = (String) instanceMap.get("timeout");
+            if (isNumeric((String) instanceMap.get("timeout"))) {
+                timeout = (String) instanceMap.get("timeout");
+            }
         }
         for (Map<String, Object> oneRow : rows) {
             String instanceName = (String) oneRow.get("name");

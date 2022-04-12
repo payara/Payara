@@ -84,16 +84,10 @@
 </define>
 
 <!define name="commandTimeoutDropDown">
-    <sun:dropDown id="timeoutdropdown" rendered="true" submitForm="#{true}"  disabled="#{false}" toolTip="$resource{i18n.common.commandTimeoutDropDown}"
+    <sun:dropDown id="timeoutdropdown" selected="#{pageSession.instanceMap['timeout']}" rendered="true" disabled="#{false}" toolTip="$resource{i18n.common.commandTimeoutDropDown}"
             labels={ "$resource{i18n.common.commandTimeoutDropDown}"
                     "10" "30" "60" "120" "300" "600"
-                 }
-            values={"" "10" "30" "60" "120" "300" "600"}>
-            <!command
-                setAttribute(key="click" value="$this{component}");
-                setAttribute(key="actionValue" value="#{click.selected}");
-                mapPut(map="#{pageSession.instanceMap}" key="timeout" value="${actionValue}");
-            />
+                 }>
     </sun:dropDown>
 </define>
 
