@@ -398,11 +398,6 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
         this.services = services;
     }
 
-    @Override
-    public String getInfo() {
-        return _info;
-    }
-
     public void setDefaultContextPath(String defaultContextPath) {
         this.defaultContextPath = defaultContextPath;
     }
