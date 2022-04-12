@@ -219,6 +219,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
 
         // store the snapshots of the current state
         List<ThreadContextSnapshot> threadContextSnapshots = new ArrayList<>();
+        // remember values from propagate and clear lists
         contextPropagate.stream()
                 .map((provider) -> allThreadContextProviders.get(provider))
                 .filter(snapshot -> snapshot != null) // ignore standard providers like CONTEXT_TYPE_CLASSLOADING
@@ -227,7 +228,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         contextClear.stream()
                 .map((provider) -> allThreadContextProviders.get(provider))
                 .filter(snapshot -> snapshot != null)
-                .map(snapshot -> snapshot.clearedContext(null)) //contextObjectProperties???
+                .map(snapshot -> snapshot.clearedContext(contextObjectProperties))
                 .forEach(snapshot -> threadContextSnapshots.add(snapshot));
 
         // TODO - support workarea propagation

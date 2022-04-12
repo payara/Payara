@@ -57,9 +57,7 @@ import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
-import org.glassfish.concurrent.runtime.ConcurrentRuntime;
 import org.glassfish.concurrent.runtime.ContextSetupProviderImpl;
-import org.glassfish.concurrent.runtime.deployer.ContextServiceConfig;
 import org.glassfish.config.support.TranslatedConfigView;
 import org.glassfish.deployment.common.JavaEEResourceType;
 import org.jvnet.hk2.annotations.Service;
@@ -95,18 +93,19 @@ public class ContextServiceDefinitionHandler extends AbstractResourceHandler {
         ContextServiceDefinitionDescriptor csdd = createDescriptor(contextServiceDefinition);
         String propageContexts = renameBuiltinContexts(csdd.getPropagated()).stream()
                 .collect(Collectors.joining(", "));
-        ContextServiceConfig contextServiceConfig = new ContextServiceConfig(contextServiceDefinition.name(),
-                propageContexts,
-                "true",
-                renameBuiltinContexts(csdd.getPropagated()),
-                renameBuiltinContexts(csdd.getCleared()),
-                renameBuiltinContexts(csdd.getUnchanged()));
-        ConcurrentRuntime concurrentRuntime = ConcurrentRuntime.getRuntime();
-        // create a context service
-        concurrentRuntime.getContextService(null, contextServiceConfig);
+//        ContextServiceConfig contextServiceConfig = new ContextServiceConfig(contextServiceDefinition.name(),
+//                propageContexts,
+//                "true",
+//                renameBuiltinContexts(csdd.getPropagated()),
+//                renameBuiltinContexts(csdd.getCleared()),
+//                renameBuiltinContexts(csdd.getUnchanged()));
+//        ConcurrentRuntime concurrentRuntime = ConcurrentRuntime.getRuntime();
+//        // create a context service
+//        concurrentRuntime.getContextService(null, contextServiceConfig);
 
         // add to contexts
         for (ResourceContainerContext context : resourceContainerContexts) {
+            // FIXME: should we do specific csdd for each context???
             Set<ResourceDescriptor> csddes = context.getResourceDescriptors(JavaEEResourceType.CSDD);
             csddes.add(csdd);
         }

@@ -41,6 +41,7 @@
 
 package org.glassfish.concurrent.runtime;
 
+import com.sun.appserv.connectors.internal.api.ConnectorConstants;
 import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
@@ -66,7 +67,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.naming.NamingException;
 import org.glassfish.enterprise.concurrent.spi.ContextHandle;
+import org.glassfish.resourcebase.resources.naming.ResourceNamingService;
 
 /**
  * This class provides API to create various Concurrency Utilities objects
@@ -107,6 +110,9 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
 
     @Inject
     ComponentEnvManager compEnvMgr;
+
+    @Inject
+    private ResourceNamingService resourceNamingService;
 
     /**
      * Returns the ConcurrentRuntime instance.
@@ -201,7 +207,32 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
         return contextService;
     }
 
-    public synchronized ManagedExecutorServiceImpl getManagedExecutorService(ResourceInfo resource, ManagedExecutorServiceConfig config) {
+    public synchronized void registerManagedExecutorService(ResourceInfo resourceInfo, ManagedExecutorServiceConfig config) {
+        // FIXME: just trying to get it working, code-wise optimization later
+        // copied
+        String name = resourceInfo.getName();
+        String jndiNameForPool = name;
+        if (!jndiNameForPool.startsWith(ConnectorConstants.POOLS_JNDINAME_PREFIX)) {
+            jndiNameForPool = ConnectorConstants.POOLS_JNDINAME_PREFIX + jndiNameForPool;
+        }
+        if (resourceInfo.getName().startsWith(ConnectorConstants.JAVA_APP_SCOPE_PREFIX)) {
+            if (!name.startsWith(ConnectorConstants.JAVA_APP_SCOPE_PREFIX)) {
+                jndiNameForPool = ConnectorConstants.JAVA_APP_SCOPE_PREFIX + name;
+            }
+        } else if (resourceInfo.getName().startsWith(ConnectorConstants.JAVA_MODULE_SCOPE_PREFIX)) {
+            if (!name.startsWith(ConnectorConstants.JAVA_MODULE_SCOPE_PREFIX)) {
+                jndiNameForPool = ConnectorConstants.JAVA_MODULE_SCOPE_PREFIX + name;
+            }
+        }
+        try {
+            ManagedExecutorServiceImpl managedExecutorService = getManagedExecutorService(resourceInfo, config);
+            resourceNamingService.publishObject(resourceInfo, jndiNameForPool, managedExecutorService, true);
+        } catch (NamingException ex) {
+            Logger.getLogger(ConcurrentRuntime.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public synchronized ManagedExecutorServiceImpl getManagedExecutorService(ResourceInfo resourceInfo, ManagedExecutorServiceConfig config) {
         String jndiName = config.getJndiName();
 
         if (managedExecutorServiceMap != null && managedExecutorServiceMap.containsKey(jndiName)) {
