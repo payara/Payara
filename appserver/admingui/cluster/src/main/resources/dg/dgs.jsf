@@ -89,34 +89,23 @@
          />
     </sun:button>
 </define>
+<sun:script url="/common/js/adminjsf.js" />
 <!define name="commandTimeoutDropDown">
-    <sun:dropDown id="timeoutdropdown" rendered="true" submitForm="#{true}"  disabled="#{false}" toolTip="$resource{i18n.common.commandTimeoutDropDown}"
+    <sun:dropDown id="timeoutdropdown" selected="#{pageSession.dgInstanceMap['timeout']}" rendered="true" disabled="#{false}" toolTip="$resource{i18n.common.commandTimeoutDropDown}"
             labels={ "$resource{i18n.common.commandTimeoutDropDown}"
                     "10" "30" "60" "120" "300" "600"
-                 }
-            values={"" "10" "30" "60" "120" "300" "600"}>
-            <!command
-                setAttribute(key="click" value="$this{component}");
-                setAttribute(key="actionValue" value="#{click.selected}");
-                mapPut(map="#{pageSession.dgInstanceMap}" key="timeout" value="${actionValue}");
-            />
+                 }>
     </sun:dropDown>
 </define>
 <!define name="instanceTimeoutDropDown">
-    <sun:dropDown id="itimeoutdropdown" rendered="true" submitForm="#{true}"  disabled="#{false}" toolTip="$resource{i18n.common.instanceTimeoutdropdown}"
+    <sun:dropDown id="itimeoutdropdown" selected="#{pageSession.dgInstanceMap['instancetimeout']}" rendered="true" submitForm="#{true}"  disabled="#{false}" toolTip="$resource{i18n.common.instanceTimeoutdropdown}"
             labels={ "$resource{i18n.common.instanceTimeoutdropdown}"
                     "10" "30" "60" "120" "300" "600"
-                 }
-            values={"" "10" "30" "60" "120" "300" "600"}>
-            <!command
-                setAttribute(key="click" value="$this{component}");
-                setAttribute(key="actionValue" value="#{click.selected}");
-                mapPut(map="#{pageSession.dgInstanceMap}" key="instancetimeout" value="${actionValue}");
-            />
+                 }>
     </sun:dropDown>
 </define>
 <!define name="extraDropDown">
-    <sun:dropDown id="dropdown1" rendered="true" submitForm="#{true}"  disabled="#{false}" toolTip="$resource{i18n.common.moreActionDropDown}"
+    <sun:dropDown id="dropdown1"  rendered="true" submitForm="#{true}"  disabled="#{false}" toolTip="$resource{i18n.common.moreActionDropDown}"
             labels={ "$resource{i18n.common.moreActionDropDown}"
                     "Restart DG"
                  }
