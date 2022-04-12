@@ -89,7 +89,6 @@
          />
     </sun:button>
 </define>
-<sun:script url="/common/js/adminjsf.js" />
 <!define name="commandTimeoutDropDown">
     <sun:dropDown id="timeoutdropdown" selected="#{pageSession.dgInstanceMap['timeout']}" rendered="true" disabled="#{false}" toolTip="$resource{i18n.common.commandTimeoutDropDown}"
             labels={ "$resource{i18n.common.commandTimeoutDropDown}"
