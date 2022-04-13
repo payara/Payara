@@ -97,7 +97,7 @@
     </sun:dropDown>
 </define>
 <!define name="instanceTimeoutDropDown">
-    <sun:dropDown id="itimeoutdropdown" selected="#{pageSession.dgInstanceMap['instancetimeout']}" rendered="true" submitForm="#{true}"  disabled="#{false}" toolTip="$resource{i18n.common.instanceTimeoutdropdown}"
+    <sun:dropDown id="itimeoutdropdown" selected="#{pageSession.dgInstanceMap['instancetimeout']}" rendered="true" disabled="#{false}" toolTip="$resource{i18n.common.instanceTimeoutdropdown}"
             labels={ "$resource{i18n.common.instanceTimeoutdropdown}"
                     "10" "30" "60" "120" "300" "600"
                  }>
