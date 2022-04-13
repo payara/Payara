@@ -6,7 +6,7 @@ NAME
 SYNOPSIS
            start-instance [--help]
            [--debug={false|true}] [--sync={normal|full|none}]
-           instance-name
+           [--timeout timeout] instance-name
 
 DESCRIPTION
        The start-instance subcommand starts a GlassFish Server instance. This
@@ -93,6 +93,10 @@ OPTIONS
                last synchronization. This type of synchronization might delay
                the startup of the instance while the DAS updates all files in
                the instance's directories.
+
+       --timeout
+           Specifies the amount of time in seconds the command will run for before timing
+           out.
 
 OPERANDS
        instance-name

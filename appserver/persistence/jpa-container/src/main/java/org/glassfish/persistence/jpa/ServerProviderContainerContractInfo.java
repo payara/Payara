@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2022] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.persistence.jpa;
 
@@ -52,6 +53,7 @@ import org.glassfish.persistence.common.DatabaseConstants;
 
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.spi.ClassTransformer;
+import jakarta.persistence.spi.TransformerException;
 import jakarta.validation.Validation;
 import jakarta.validation.ValidatorFactory;
 import java.lang.instrument.ClassFileTransformer;
@@ -95,7 +97,11 @@ public class ServerProviderContainerContractInfo extends ProviderContainerContra
                public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
                                        ProtectionDomain protectionDomain, byte[] classfileBuffer)
                        throws IllegalClassFormatException {
-                   return transformer.transform(loader, className, classBeingRedefined, protectionDomain, classfileBuffer);
+                   try {
+                       return transformer.transform(loader, className, classBeingRedefined, protectionDomain, classfileBuffer);
+                   } catch (TransformerException ex) {
+                       throw (IllegalClassFormatException) (new IllegalClassFormatException().initCause(ex));
+                   }
                }
            });
        }

@@ -37,23 +37,28 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2022] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.cli.cluster;
 
-import java.io.*;
-import java.util.*;
-import java.util.logging.*;
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.api.Param;
-import org.glassfish.api.admin.*;
-import org.glassfish.hk2.api.PerLookup;
-import com.sun.enterprise.admin.cli.*;
-import com.sun.enterprise.util.ObjectAnalyzer;
+import com.sun.enterprise.admin.cli.CLICommand;
 import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
+import com.sun.enterprise.admin.util.TimeoutParamDefaultCalculator;
 import com.sun.enterprise.util.HostAndPort;
+import com.sun.enterprise.util.ObjectAnalyzer;
 import jakarta.inject.Inject;
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.CommandException;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.jvnet.hk2.annotations.Service;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
 
 /**
  * Restart a local server instance.
@@ -65,6 +70,9 @@ public class RestartLocalInstanceCommand extends SynchronizeInstanceCommand {
 
     @Param(optional = true, shortName = "d", defaultValue = "false")
     private Boolean debug;
+
+    @Param(optional = true, defaultCalculator = TimeoutParamDefaultCalculator.class)
+    private int timeout;
 
     @Inject
     private ServiceLocator habitat;
@@ -131,7 +139,7 @@ public class RestartLocalInstanceCommand extends SynchronizeInstanceCommand {
             cmd.executeAndReturnOutput("_restart-instance");
         }
 
-        waitForRestart(oldServerPid);
+        waitForRestart(oldServerPid, (timeout * 1000));
         return 0;
     }
 
@@ -186,6 +194,10 @@ public class RestartLocalInstanceCommand extends SynchronizeInstanceCommand {
     @Override
     protected void validate() throws CommandException {
         super.validate();
+
+        if (timeout <= 0) {
+            throw new CommandException("Timeout must be at least 1 second long.");
+        }
 
         File dir = getServerDirs().getServerDir();
 

@@ -525,9 +525,9 @@
                 <version>${mail.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.sun.mail</groupId>
-                <artifactId>jakarta.mail</artifactId>
-                <version>${mail.version}</version>
+                <groupId>org.eclipse.angus</groupId>
+                <artifactId>angus-mail</artifactId>
+                <version>${angus.mail.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.sun.xml.bind</groupId>
@@ -734,9 +734,9 @@
                 <version>${istack-commons-runtime.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.sun.activation</groupId>
-                <artifactId>jakarta.activation</artifactId>
-                <version>${jakarta.activation-impl.version}</version>
+		<groupId>org.eclipse.angus</groupId>
+                <artifactId>angus-activation</artifactId>
+		<version>${angus.activation.version}</version>
             </dependency>
 
             <!-- Other libraries -->

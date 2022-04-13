@@ -152,7 +152,8 @@
         <jakarta.el.version>4.0.2</jakarta.el.version>
         <jakarta.el-api.version>4.0.0</jakarta.el-api.version>
         <javax.cache-api.version>1.1.1.payara-p1</javax.cache-api.version>
-        <mail.version>2.0.1</mail.version>
+        <mail.version>2.1.0-RC2</mail.version>
+        <angus.mail.version>1.0.0-M1</angus.mail.version>
         <jakarta.annotation-api.version>2.1.0</jakarta.annotation-api.version>
         <hk2.version>3.0.1.payara-p1</hk2.version>
         <osgi-resource-locator.version>1.0.3</osgi-resource-locator.version>
@@ -174,8 +175,8 @@
         <jaxb-extra-osgi.version>2.3.0</jaxb-extra-osgi.version>
         <json.bind-api.version>2.0.0</json.bind-api.version>
         <yasson.version>2.0.2</yasson.version>
-        <jakarta-persistence-api.version>3.0.0</jakarta-persistence-api.version>
-        <eclipselink.version>3.0.2</eclipselink.version>
+        <jakarta-persistence-api.version>3.1.0-RC2</jakarta-persistence-api.version>
+        <eclipselink.version>3.1.0-M1.payara-p1</eclipselink.version>
         <eclipselink.asm.verison>9.1.1</eclipselink.asm.verison>
         <jakarta.transaction-api.version>2.0.0</jakarta.transaction-api.version>
         <jakarta.interceptor-api.version>2.0.0</jakarta.interceptor-api.version>
@@ -200,8 +201,8 @@
         <stax2-api.version>4.2.1</stax2-api.version>
         <jakarta.resource-api.version>2.0.0</jakarta.resource-api.version>
         <jakarta.enterprise.deploy-api.version>1.7.2</jakarta.enterprise.deploy-api.version>
-        <jakarta.activation-api.version>2.0.1</jakarta.activation-api.version>
-        <jakarta.activation-impl.version>2.0.1</jakarta.activation-impl.version>
+        <jakarta.activation-api.version>2.1.0-RC2</jakarta.activation-api.version>
+        <angus.activation.version>1.0.0-M1</angus.activation.version>
         <istack-commons-runtime.version>4.0.1</istack-commons-runtime.version>
         <jline.version>3.20.0</jline.version>
         <wsdl4j.version>1.6.3</wsdl4j.version>

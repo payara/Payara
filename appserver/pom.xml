@@ -158,20 +158,31 @@
                 <configuration>
                     <dir>${stage.dir}/${install.dir.name}/glassfish/modules</dir>
                     <excludes>jakarta.inject-api.jar,jakarta.servlet.jsp.jstl.jar,jakarta.servlet.jsp.jar,jakarta.enterprise.concurrent.jar, jakarta.persistence.jar</excludes>
-                    <specs>
+		    <specs>
+			<!-- Activation-API -->
+			<spec>
+                            <artifact>
+                                <groupId>jakarta.activation</groupId>
+                                <artifactId>jakarta.activation-api</artifactId>
+                                <version>${jakarta.activation-api.version}</version>
+                            </artifact>
+                            <jarType>api</jarType>
+                            <specVersion>2.1</specVersion>
+                            <specImplVersion>${jakarta.activation-api.version}</specImplVersion>
+                            <apiPackage>jakarta.activation</apiPackage>
+		    	</spec>
 
                         <!-- JavaMail -->
                         <spec>
                             <artifact>
-                                <groupId>com.sun.mail</groupId>
-                                <artifactId>jakarta.mail</artifactId>
+                                <groupId>jakarta.mail</groupId>
+                                <artifactId>jakarta.mail-api</artifactId>
                                 <version>${mail.version}</version>
                             </artifact>
-                            <jarType>impl</jarType>
-                            <specVersion>1.6</specVersion>
-                            <implVersion>${mail.version}</implVersion>
+                            <jarType>api</jarType>
+                            <specVersion>2.1</specVersion>
+                            <specImplVersion>${mail.version}</specImplVersion>
                             <apiPackage>jakarta.mail</apiPackage>
-                            <implNamespace>com.sun.mail</implNamespace>
                         </spec>
 
                         <!-- JSONB-B -->

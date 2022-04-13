@@ -37,38 +37,36 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2022] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.v3.admin.cluster;
 
+import com.sun.enterprise.admin.util.TimeoutParamDefaultCalculator;
 import com.sun.enterprise.config.serverbeans.Cluster;
-import java.util.logging.Logger;
-
-import org.glassfish.api.admin.*;
+import com.sun.enterprise.config.serverbeans.Domain;
 import jakarta.inject.Inject;
-
-
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.api.I18n;
-import org.glassfish.api.Param;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.ExitCode;
+import org.glassfish.api.I18n;
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.*;
 import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.Service;
 
-import com.sun.enterprise.config.serverbeans.Domain;
+import java.util.logging.Logger;
 
 @I18n("start.cluster.command")
 @Service(name = "start-cluster")
-@ExecuteOn(value={RuntimeType.DAS})
+@ExecuteOn(value = {RuntimeType.DAS})
 @CommandLock(CommandLock.LockType.NONE) // don't prevent _synchronize-files
 @PerLookup
 @RestEndpoints({
-    @RestEndpoint(configBean=Cluster.class,
-        opType=RestEndpoint.OpType.POST, 
-        path="start-cluster", 
-        description="Start Cluster",
-        params={
-            @RestParam(name="id", value="$parent")
-        })
+        @RestEndpoint(configBean = Cluster.class,
+                opType = RestEndpoint.OpType.POST,
+                path = "start-cluster",
+                description = "Start Cluster",
+                params = {
+                        @RestParam(name = "id", value = "$parent")
+                })
 })
 @Progress
 public class StartClusterCommand implements AdminCommand {
@@ -87,12 +85,34 @@ public class StartClusterCommand implements AdminCommand {
 
     @Param(optional = true, defaultValue = "false")
     private boolean verbose;
-   
+
+    @Param(optional = true, defaultCalculator = TimeoutParamDefaultCalculator.class)
+    private int instanceTimeout;
+
+    @Param(optional = true, defaultCalculator = TimeoutParamDefaultCalculator.class)
+    private int timeout;
+
     @Override
     public void execute(AdminCommandContext context) {
-     
+
         ActionReport report = context.getActionReport();
         Logger logger = context.getLogger();
+
+        if (timeout <= 0) {
+            String msg = "Timeout must be at least 1 second long.";
+            logger.warning(msg);
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setMessage(msg);
+            return;
+        }
+
+        if (instanceTimeout <= 0) {
+            String msg = "Instance Timeout must be at least 1 second long.";
+            logger.warning(msg);
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setMessage(msg);
+            return;
+        }
 
         logger.info(Strings.get("start.cluster", clusterName));
 
@@ -107,14 +127,16 @@ public class StartClusterCommand implements AdminCommand {
 
         ClusterCommandHelper clusterHelper = new ClusterCommandHelper(domain,
                 runner);
-       
+
         try {
             // Run start-instance against each instance in the cluster
-            String commandName = "start-instance";          
-            clusterHelper.runCommand(commandName, null, clusterName, context,
-                    verbose);           
-        }
-        catch (CommandException e) {
+            String commandName = "start-instance";
+            ParameterMap map = new ParameterMap();
+            map.add("timeout", String.valueOf(instanceTimeout));
+            clusterHelper.setAdminTimeout(timeout * 1000);
+            clusterHelper.runCommand(commandName, map, clusterName, context,
+                    verbose);
+        } catch (CommandException e) {
             String msg = e.getLocalizedMessage();
             logger.warning(msg);
             report.setActionExitCode(ExitCode.FAILURE);
