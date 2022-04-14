@@ -47,21 +47,19 @@ import com.sun.enterprise.deployment.ContextServiceDefinitionDescriptor;
 import jakarta.enterprise.concurrent.ContextServiceDefinition;
 import jakarta.inject.Inject;
 import java.util.Collection;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.naming.NamingException;
-import javax.naming.RefAddr;
 import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.glassfish.api.invocation.InvocationManager;
-import org.glassfish.api.logging.LogHelper;
-import org.glassfish.concurrent.LogFacade;
 import org.glassfish.concurrent.runtime.ConcurrentRuntime;
+import org.glassfish.concurrent.runtime.ContextSetupProviderImpl;
+import org.glassfish.enterprise.concurrent.ContextServiceImpl;
 import org.glassfish.resourcebase.resources.api.ResourceConflictException;
 import org.glassfish.resourcebase.resources.api.ResourceDeployer;
 import org.glassfish.resourcebase.resources.api.ResourceDeployerInfo;
 import org.glassfish.resourcebase.resources.api.ResourceInfo;
 import org.glassfish.resourcebase.resources.naming.ResourceNamingService;
-import org.glassfish.resources.naming.SerializableObjectRefAddr;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -95,29 +93,37 @@ public class ContextServiceDefinitionDescriptorDeployer implements ResourceDeplo
     public void deployResource(Object resource, String applicationName, String moduleName) throws Exception {
         ContextServiceDefinitionDescriptor descriptor = (ContextServiceDefinitionDescriptor) resource;
         validateContextServiceDescriptor(descriptor);
+        String propageContexts = renameBuiltinContexts(descriptor.getPropagated()).stream()
+                .collect(Collectors.joining(", "));
         ContextServiceConfig contextServiceConfig = new ContextServiceConfig(
-                descriptor.getName(), null, "true",
-                descriptor.getPropagated(),
-                descriptor.getUnchanged(),
-                descriptor.getCleared());
+                descriptor.getName(), propageContexts, "true",
+                renameBuiltinContexts(descriptor.getPropagated()),
+                renameBuiltinContexts(descriptor.getCleared()),
+                renameBuiltinContexts(descriptor.getUnchanged()));
         String customNameOfResource = ConnectorsUtil.deriveResourceName(descriptor.getResourceId(), descriptor.getName(), descriptor.getResourceType());
         ResourceInfo resourceInfo = new ResourceInfo(customNameOfResource, applicationName, moduleName);
-        javax.naming.Reference ref = new javax.naming.Reference(
-                jakarta.enterprise.concurrent.ContextServiceDefinition.class.getName(),
-                "org.glassfish.concurrent.runtime.deployer.ConcurrentObjectFactory",
-                null);
-        RefAddr addr = new SerializableObjectRefAddr(ContextServiceConfig.class.getName(), contextServiceConfig);
-        ref.add(addr);
-        RefAddr resAddr = new SerializableObjectRefAddr(ResourceInfo.class.getName(), resourceInfo);
-        ref.add(resAddr);
 
-        try {
-            // Publish the object ref
-            namingService.publishObject(resourceInfo, ref, true);
-        } catch (NamingException ex) {
-            LogHelper.log(logger, Level.SEVERE, LogFacade.UNABLE_TO_BIND_OBJECT, ex,
-                    "ContextService", contextServiceConfig.getJndiName());
-        }
+        //ConcurrentRuntime concurrentRuntime = ConcurrentRuntime.getRuntime();
+//        concurrentRuntime.registerManagedExecutorService(resourceInfo, managedExecutorServiceConfig);
+        ContextServiceImpl contextService = concurrentRuntime.createContextService(resourceInfo, contextServiceConfig);
+        namingService.publishObject(resourceInfo, customNameOfResource, contextService, true);
+
+//        javax.naming.Reference ref = new javax.naming.Reference(
+//                jakarta.enterprise.concurrent.ContextServiceDefinition.class.getName(),
+//                "org.glassfish.concurrent.runtime.deployer.ConcurrentObjectFactory",
+//                null);
+//        RefAddr addr = new SerializableObjectRefAddr(ContextServiceConfig.class.getName(), contextServiceConfig);
+//        ref.add(addr);
+//        RefAddr resAddr = new SerializableObjectRefAddr(ResourceInfo.class.getName(), resourceInfo);
+//        ref.add(resAddr);
+//
+//        try {
+//            // Publish the object ref
+//            namingService.publishObject(resourceInfo, ref, true);
+//        } catch (NamingException ex) {
+//            LogHelper.log(logger, Level.SEVERE, LogFacade.UNABLE_TO_BIND_OBJECT, ex,
+//                    "ContextService", contextServiceConfig.getJndiName());
+//        }
     }
 
     @Override
@@ -201,5 +207,26 @@ public class ContextServiceDefinitionDescriptorDeployer implements ResourceDeplo
         if(descriptor.getUnchanged() == null){
             descriptor.setUnchanged(new HashSet<>());
         }
+    }
+
+    private Set<String> renameBuiltinContexts(Set<String> definitions) {
+        Set<String> contexts = new HashSet<>();
+        Set<String> unusedDefinitions = new HashSet<>(definitions);
+        if (unusedDefinitions.contains(ContextServiceDefinition.TRANSACTION)) {
+            contexts.add(ContextSetupProviderImpl.CONTEXT_TYPE_WORKAREA);
+            unusedDefinitions.remove(ContextServiceDefinition.TRANSACTION);
+        }
+        if (unusedDefinitions.contains(ContextServiceDefinition.SECURITY)) {
+            contexts.add(ContextSetupProviderImpl.CONTEXT_TYPE_SECURITY);
+            unusedDefinitions.remove(ContextServiceDefinition.SECURITY);
+        }
+        if (unusedDefinitions.contains(ContextServiceDefinition.APPLICATION)) {
+            contexts.add(ContextSetupProviderImpl.CONTEXT_TYPE_CLASSLOADING);
+            contexts.add(ContextSetupProviderImpl.CONTEXT_TYPE_NAMING);
+            unusedDefinitions.remove(ContextServiceDefinition.APPLICATION);
+        }
+        // add all the remaining, custom definitions
+        contexts.addAll(unusedDefinitions);
+        return contexts;
     }
 }

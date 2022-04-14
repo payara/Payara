@@ -52,7 +52,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
@@ -91,8 +90,8 @@ public class ContextServiceDefinitionHandler extends AbstractResourceHandler {
     public void processSingleAnnotation(ContextServiceDefinition contextServiceDefinition, ResourceContainerContext[] resourceContainerContexts) {
         logger.log(Level.INFO, "Creating custom context service by annotation");
         ContextServiceDefinitionDescriptor csdd = createDescriptor(contextServiceDefinition);
-        String propageContexts = renameBuiltinContexts(csdd.getPropagated()).stream()
-                .collect(Collectors.joining(", "));
+//        String propageContexts = renameBuiltinContexts(csdd.getPropagated()).stream()
+//                .collect(Collectors.joining(", "));
 //        ContextServiceConfig contextServiceConfig = new ContextServiceConfig(contextServiceDefinition.name(),
 //                propageContexts,
 //                "true",

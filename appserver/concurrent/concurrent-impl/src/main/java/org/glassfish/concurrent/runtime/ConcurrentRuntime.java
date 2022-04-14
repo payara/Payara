@@ -169,13 +169,18 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
         if (contextServiceMap != null && contextServiceMap.containsKey(jndiName)) {
             return contextServiceMap.get(jndiName);
         }
-        ContextServiceImpl contextService = createContextService(config.getJndiName(),
-                config.isContextInfoEnabledBoolean(), config.getPropagatedContexts(),
-                config.getClearedContexts(), config.getUchangedContexts());
+        ContextServiceImpl contextService = createContextService(resource, config);
         if (contextServiceMap == null) {
             contextServiceMap = new HashMap();
         }
         contextServiceMap.put(jndiName, contextService);
+        return contextService;
+    }
+
+    public synchronized ContextServiceImpl createContextService(ResourceInfo resource, ContextServiceConfig config) {
+        ContextServiceImpl contextService = createContextServiceImpl(config.getJndiName(),
+                config.isContextInfoEnabledBoolean(), config.getPropagatedContexts(),
+                config.getClearedContexts(), config.getUchangedContexts());
         return contextService;
     }
 
@@ -201,7 +206,7 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
                 // pass the cleanup transaction in list of cleared handlers
                 cleared = Set.of(ContextSetupProviderImpl.CONTEXT_TYPE_WORKAREA);
             }
-            contextService = createContextService(contextServiceJndiName, contextInfoEnabled, propagated, cleared, Collections.EMPTY_SET);
+            contextService = createContextServiceImpl(contextServiceJndiName, contextInfoEnabled, propagated, cleared, Collections.EMPTY_SET);
             contextServiceMap.put(contextServiceJndiName, contextService);
         }
         return contextService;
@@ -355,7 +360,7 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
         }
     }
 
-    private ContextServiceImpl createContextService(String jndiName, boolean isContextInfoEnabled, Set<String> propagated, Set<String> cleared, Set<String> unchanged) {
+    private ContextServiceImpl createContextServiceImpl(String jndiName, boolean isContextInfoEnabled, Set<String> propagated, Set<String> cleared, Set<String> unchanged) {
         ContextSetupProviderImpl contextSetupProvider
                 = new ContextSetupProviderImpl(
                         invocationManager,
