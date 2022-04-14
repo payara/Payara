@@ -806,8 +806,6 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
                     addValve(propValue);
                 } else if (propName.startsWith("listener_")) {
                     addListener(propValue);
-                } else if (propName.equals("securePagesWithPragma")) {
-                    setSecurePagesWithPragma(Boolean.valueOf(propValue));
                 }
             }
         }
