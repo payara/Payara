@@ -682,7 +682,10 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
      * Delete all aliases.
      */
     public void clearAliases() {
-        aliases = new String[0];
+        String[] aliases = findAliases();
+        for (String alias : aliases) {
+            removeAlias(alias);
+        }
     }
 
     private void setIsDisabled(boolean isDisabled) {
