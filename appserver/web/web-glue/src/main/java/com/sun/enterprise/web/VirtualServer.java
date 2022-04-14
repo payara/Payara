@@ -2097,7 +2097,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
     }
 
     @Override
-    public synchronized void stop() throws LifecycleException {
+    public synchronized void stopInternal() throws LifecycleException {
         if (fileLoggerHandler != null) {
             _logger.removeHandler(fileLoggerHandler);
             close(fileLoggerHandler);
@@ -2105,7 +2105,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
         }
         setLogger(_logger, "INFO");
 
-        super.stop();
+        super.stopInternal();
     }
 
     public void updateWebXml(ContextFacade facade, File file) throws Exception {
