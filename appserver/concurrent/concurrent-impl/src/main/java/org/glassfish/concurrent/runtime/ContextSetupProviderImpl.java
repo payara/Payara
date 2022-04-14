@@ -245,27 +245,35 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         InvocationContext handle = (InvocationContext) contextHandle;
         String appName = null;
 
+        ComponentInvocation invocation = handle.getInvocation();
         ClassLoader backupClassLoader = null;
-        if (handle.getInvocation() != null) {
-            appName = handle.getInvocation().getRegistrationName();
-            if (appName == null && handle.getInvocation().getJNDIEnvironment() != null) {
-                appName = DOLUtils.getApplicationFromEnv((JndiNameEnvironment) handle.getInvocation().getJNDIEnvironment()).getRegistrationName();
+        if (invocation != null) {
+            appName = invocation.getRegistrationName();
+            if (appName == null && invocation.getJNDIEnvironment() != null) {
+                appName = DOLUtils.getApplicationFromEnv((JndiNameEnvironment) invocation.getJNDIEnvironment()).getRegistrationName();
             }
             if (appName == null) {
                 // try to get environment from component ID
-                if (handle.getInvocation().getComponentId() != null && compEnvMgr != null) {
-                    JndiNameEnvironment currJndiEnv = compEnvMgr.getJndiNameEnvironment(handle.getInvocation().getComponentId());
+                if (invocation.getComponentId() != null && compEnvMgr != null) {
+                    JndiNameEnvironment currJndiEnv = compEnvMgr.getJndiNameEnvironment(invocation.getComponentId());
                     if (currJndiEnv != null) {
                         com.sun.enterprise.deployment.Application appInfo = DOLUtils.getApplicationFromEnv(currJndiEnv);
                         if (appInfo != null) {
                             appName = appInfo.getRegistrationName();
                             // cache JNDI environment
-                            handle.getInvocation().setJNDIEnvironment(currJndiEnv);
+                            invocation.setJNDIEnvironment(currJndiEnv);
                             backupClassLoader = appInfo.getClassLoader();
                         }
                     }
                 }
             }
+            // TODO - implementation of JNDI clear and unchanged, not working
+//            if (contextClear.contains(CONTEXT_TYPE_NAMING)) {
+//                invocation.setJNDIEnvironment(null);
+//            } else if (contextUnchanged.contains(CONTEXT_TYPE_NAMING)) {
+//                ComponentInvocation currentInvocation = invocationManager.getCurrentInvocation();
+//                invocation.setJNDIEnvironment(currentInvocation == null ? null : currentInvocation.getJNDIEnvironment());
+//            }
         }
 
         // Check whether the application component submitting the task is still running. Throw IllegalStateException if not.
@@ -285,7 +293,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
             resetSecurityContext = SecurityContext.getCurrent();
             SecurityContext.setCurrent(handle.getSecurityContext());
         }
-        ComponentInvocation invocation = handle.getInvocation();
+
         if (invocation != null && !handle.isUseTransactionOfExecutionThread()) {
             // Each invocation needs a ResourceTableKey that returns a unique hashCode for TransactionManager
             invocation.setResourceTableKey(new PairKey(invocation.getInstance(), Thread.currentThread()));
@@ -375,7 +383,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
             SecurityContext.setCurrent(handle.getSecurityContext());
         }
         if (handle.getInvocation() != null && !handle.isUseTransactionOfExecutionThread()) {
-            invocationManager.postInvoke(((InvocationContext)contextHandle).getInvocation());
+            invocationManager.postInvoke(((InvocationContext) contextHandle).getInvocation());
         }
         if (contextClear.contains(CONTEXT_TYPE_WORKAREA) && transactionManager != null) {
             // clean up after user if a transaction is still active

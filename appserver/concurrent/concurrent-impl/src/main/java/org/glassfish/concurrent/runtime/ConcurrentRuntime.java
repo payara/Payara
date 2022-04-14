@@ -41,7 +41,6 @@
 
 package org.glassfish.concurrent.runtime;
 
-import com.sun.appserv.connectors.internal.api.ConnectorConstants;
 import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
@@ -67,7 +66,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.naming.NamingException;
 import org.glassfish.enterprise.concurrent.spi.ContextHandle;
 import org.glassfish.resourcebase.resources.naming.ResourceNamingService;
 
@@ -192,51 +190,6 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
         }
     }
 
-    private ContextServiceImpl prepareContextService(String configuredContextJndiName, String createJndiName, String contextInfo, boolean contextInfoEnabled, boolean cleanupTransaction) {
-        String contextServiceJndiName = createJndiName; // default context
-        if (configuredContextJndiName != null) {
-            contextServiceJndiName = configuredContextJndiName;
-        }
-        ContextServiceImpl contextService = contextServiceMap.get(contextServiceJndiName);
-        if (contextService == null) {
-            // if the context service is not known, create it
-            Set<String> propagated = ContextServiceConfig.parseContextInfo(contextInfo, contextInfoEnabled);
-            Set<String> cleared = Collections.EMPTY_SET;
-            if (cleanupTransaction && !propagated.contains(ContextSetupProviderImpl.CONTEXT_TYPE_WORKAREA)) {
-                // pass the cleanup transaction in list of cleared handlers
-                cleared = Set.of(ContextSetupProviderImpl.CONTEXT_TYPE_WORKAREA);
-            }
-            contextService = createContextServiceImpl(contextServiceJndiName, contextInfoEnabled, propagated, cleared, Collections.EMPTY_SET);
-            contextServiceMap.put(contextServiceJndiName, contextService);
-        }
-        return contextService;
-    }
-
-    public synchronized void registerManagedExecutorService(ResourceInfo resourceInfo, ManagedExecutorServiceConfig config) {
-        // FIXME: just trying to get it working, code-wise optimization later
-        // copied
-        String name = resourceInfo.getName();
-        String jndiNameForPool = name;
-        if (!jndiNameForPool.startsWith(ConnectorConstants.POOLS_JNDINAME_PREFIX)) {
-            jndiNameForPool = ConnectorConstants.POOLS_JNDINAME_PREFIX + jndiNameForPool;
-        }
-        if (resourceInfo.getName().startsWith(ConnectorConstants.JAVA_APP_SCOPE_PREFIX)) {
-            if (!name.startsWith(ConnectorConstants.JAVA_APP_SCOPE_PREFIX)) {
-                jndiNameForPool = ConnectorConstants.JAVA_APP_SCOPE_PREFIX + name;
-            }
-        } else if (resourceInfo.getName().startsWith(ConnectorConstants.JAVA_MODULE_SCOPE_PREFIX)) {
-            if (!name.startsWith(ConnectorConstants.JAVA_MODULE_SCOPE_PREFIX)) {
-                jndiNameForPool = ConnectorConstants.JAVA_MODULE_SCOPE_PREFIX + name;
-            }
-        }
-        try {
-            ManagedExecutorServiceImpl managedExecutorService = getManagedExecutorService(resourceInfo, config);
-            resourceNamingService.publishObject(resourceInfo, jndiNameForPool, managedExecutorService, true);
-        } catch (NamingException ex) {
-            Logger.getLogger(ConcurrentRuntime.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
     public synchronized ManagedExecutorServiceImpl getManagedExecutorService(ResourceInfo resourceInfo, ManagedExecutorServiceConfig config) {
         String jndiName = config.getJndiName();
 
@@ -247,6 +200,17 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
         ContextServiceImpl contextService = prepareContextService(config.getContext(),
                 config.getJndiName() + "-contextservice", config.getContextInfo(),
                 config.isContextInfoEnabledBoolean(), true);
+
+        ManagedExecutorServiceImpl mes = createManagedExecutorService(resourceInfo, config, contextService);
+        if (managedExecutorServiceMap == null) {
+            managedExecutorServiceMap = new HashMap();
+        }
+
+        managedExecutorServiceMap.put(jndiName, mes);
+        return mes;
+    }
+
+    public synchronized ManagedExecutorServiceImpl createManagedExecutorService(ResourceInfo resourceInfo, ManagedExecutorServiceConfig config, ContextServiceImpl contextService) {
         ManagedThreadFactoryImpl managedThreadFactory = new ThreadFactoryWrapper(
                 config.getJndiName() + "-managedThreadFactory",
                 null, //contextService,
@@ -262,12 +226,6 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
                 config.getTaskQueueCapacity(), 
                 contextService,
                 AbstractManagedExecutorService.RejectPolicy.ABORT);
-
-        if (managedExecutorServiceMap == null) {
-            managedExecutorServiceMap = new HashMap();
-        }
-
-        managedExecutorServiceMap.put(jndiName, mes);
 
         if (config.getHungAfterSeconds() > 0L && !config.isLongRunningTasks()) {
             scheduleInternalTimer();
@@ -358,6 +316,29 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
         if (mtf != null) {
             mtf.stop();
         }
+    }
+
+    /**
+     * Load cached context service or create a new one with default setup (propagate all).
+     */
+    private ContextServiceImpl prepareContextService(String configuredContextJndiName, String createJndiName, String contextInfo, boolean contextInfoEnabled, boolean cleanupTransaction) {
+        String contextServiceJndiName = createJndiName; // default context
+        if (configuredContextJndiName != null) {
+            contextServiceJndiName = configuredContextJndiName;
+        }
+        ContextServiceImpl contextService = contextServiceMap.get(contextServiceJndiName);
+        if (contextService == null) {
+            // if the context service is not known, create it
+            Set<String> propagated = ContextServiceConfig.parseContextInfo(contextInfo, contextInfoEnabled);
+            Set<String> cleared = Collections.EMPTY_SET;
+            if (cleanupTransaction && !propagated.contains(ContextSetupProviderImpl.CONTEXT_TYPE_WORKAREA)) {
+                // pass the cleanup transaction in list of cleared handlers
+                cleared = Set.of(ContextSetupProviderImpl.CONTEXT_TYPE_WORKAREA);
+            }
+            contextService = createContextServiceImpl(contextServiceJndiName, contextInfoEnabled, propagated, cleared, Collections.EMPTY_SET);
+            contextServiceMap.put(contextServiceJndiName, contextService);
+        }
+        return contextService;
     }
 
     private ContextServiceImpl createContextServiceImpl(String jndiName, boolean isContextInfoEnabled, Set<String> propagated, Set<String> cleared, Set<String> unchanged) {
