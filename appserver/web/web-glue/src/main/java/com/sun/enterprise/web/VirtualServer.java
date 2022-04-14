@@ -679,21 +679,6 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
     }
 
     /**
-     * Virtual servers are maintained in the reference contained in Server element. First, we need to find the server and
-     * then get the virtual server from the correct reference
-     *
-     * @param appName Name of the app to get vs
-     *
-     * @return virtual servers as a string (separated by space or comma)
-     *
-     * private String getVirtualServers(String appName) { String ret = null; Server server =
-     * Globals.getDefaultHabitat().forContract(Server.class).get(); for (ApplicationRef appRef : server.getApplicationRef())
-     * { if (appRef.getRef().equals(appName)) { return appRef.getVirtualServers(); } }
-     *
-     * return ret; }
-     */
-
-    /**
      * Delete all aliases.
      */
     public void clearAliases() {
