@@ -211,7 +211,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
 //        }
 
         ComponentInvocation currentInvocation = invocationManager.getCurrentInvocation();
-        if (currentInvocation != null) {
+        if (currentInvocation != null && !contextUnchanged.contains(CONTEXT_TYPE_NAMING)) {
             savedInvocation = createComponentInvocation(currentInvocation);
         }
         boolean useTransactionOfExecutionThread = (transactionManager == null && useTransactionOfExecutionThread(contextObjectProperties))
@@ -274,14 +274,14 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         }
 
         ClassLoader resetClassLoader = null;
-        SecurityContext resetSecurityContext = null;
         if (handle.getContextClassLoader() != null) {
             resetClassLoader = Utility.setContextClassLoader(handle.getContextClassLoader());
         } else if (backupClassLoader != null) {
             resetClassLoader = Utility.setContextClassLoader(backupClassLoader);
         }
 
-        if (handle.getSecurityContext() != null) {
+        SecurityContext resetSecurityContext = null;
+        if (handle.getSecurityContext() != null && !contextUnchanged.contains(CONTEXT_TYPE_SECURITY)) {
             resetSecurityContext = SecurityContext.getCurrent();
             SecurityContext.setCurrent(handle.getSecurityContext());
         }
@@ -292,7 +292,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
             invocationManager.preInvoke(invocation);
         }
         // Ensure that there is no existing transaction in the current thread
-        if (contextClear.contains(CONTEXT_TYPE_WORKAREA) && transactionManager != null) {
+        if (transactionManager != null && contextClear.contains(CONTEXT_TYPE_WORKAREA)) {
             transactionManager.clearThreadTx();
         }
 
