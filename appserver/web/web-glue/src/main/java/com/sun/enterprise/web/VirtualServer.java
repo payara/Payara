@@ -736,7 +736,6 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
      */
     public void configure(String vsID, com.sun.enterprise.config.serverbeans.VirtualServer vsBean, String vsDocroot, String vsLogFile, MimeMap vsMimeMap,
             String logServiceFile, String logLevel) {
-        setDebug(debug);
         setAppBase(vsDocroot);
         setName(vsID);
         setID(vsID);
