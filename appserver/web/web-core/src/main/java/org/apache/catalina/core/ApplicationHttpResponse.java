@@ -381,24 +381,7 @@ public class ApplicationHttpResponse extends HttpServletResponseWrapper {
 
     }
 
-
-    /**
-     * Disallow <code>setStatus()</code> calls on an included response.
-     *
-     * @param sc The new status code
-     * @param msg The new message
-     */
-    @Override
-    public void setStatus(int sc, String msg) {
-
-        if (!included)
-            ((HttpServletResponse) getResponse()).setStatus(sc, msg);
-
-    }
-
-
     // -------------------------------------------------------- Package Methods
-
 
     /**
      * Return descriptive information about this implementation.

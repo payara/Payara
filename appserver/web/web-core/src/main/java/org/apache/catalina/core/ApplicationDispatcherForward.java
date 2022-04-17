@@ -303,14 +303,13 @@ class ApplicationDispatcherForward {
 
         ServletOutputStream ostream = null;
         PrintWriter writer = null;
-        FileReader reader = null;
-        BufferedInputStream istream = null;
-        IOException ioe = null;
+        FileReader reader;
+        BufferedInputStream istream;
+        IOException ioe;
 
-        String message = errorPage.getReason();
-        if (message != null && !response.isCommitted()) {
+        if (!response.isCommitted()) {
             response.reset();
-            response.setStatus(statusCode, message);
+            response.setStatus(statusCode);
         }
          
         try {
@@ -336,7 +335,6 @@ class ApplicationDispatcherForward {
             try {
                 istream.close();
             } catch (Throwable t) {
-                ;
             }
         }
 

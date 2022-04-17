@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2019-2021] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2022] Payara Foundation and/or affiliates
 
 package org.apache.catalina.connector;
 
@@ -1050,7 +1050,7 @@ public class Response
      */
     @Override
     public Collection<String> getHeaderNames() {
-        final Collection<String> result = new ArrayList<String>();
+        final Collection<String> result = new ArrayList<>();
         for (final String headerName : coyoteResponse.getResponse().getHeaders().names()) {
             result.add(headerName);
         }
@@ -1109,7 +1109,8 @@ public class Response
     @Override
     public void reset(int status, String message) {
         reset();
-        setStatus(status, message);
+        setStatus(status);
+        coyoteResponse.setDetailMessage(HtmlEntityEncoder.encodeXSS(message));
     }
 
 
@@ -1327,23 +1328,6 @@ public class Response
 
     /**
      * Encode the session identifier associated with this response
-     * into the specified redirect URL, if necessary.
-     *
-     * @param url URL to be encoded
-     * @return encoded URL
-     *
-     * @deprecated As of Version 2.1 of the Java Servlet API, use
-     *  <code>encodeRedirectURL()</code> instead.
-     */
-    @Deprecated
-    @Override
-    public String encodeRedirectUrl(String url) {
-        return encodeRedirectURL(url);
-    }
-
-
-    /**
-     * Encode the session identifier associated with this response
      * into the specified URL, if necessary.
      *
      * @param url URL to be encoded
@@ -1373,23 +1357,6 @@ public class Response
             return url;
         }
     }
-
-
-    /**
-     * Encode the session identifier associated with this response
-     * into the specified URL, if necessary.
-     *
-     * @param url URL to be encoded
-     * @return encoded URL
-     *
-     * @deprecated As of Version 2.1 of the Java Servlet API, use
-     *  <code>encodeURL()</code> instead.
-     */
-    @Override
-    public String encodeUrl(String url) {
-        return encodeURL(url);
-    }
-
 
     /**
      * Apply URL Encoding to the given URL without adding session identifier
@@ -1665,23 +1632,6 @@ public class Response
      */
     @Override
     public void setStatus(int status) {
-        setStatus(status, null);
-    }
-
-
-    /**
-     * Set the HTTP status and message to be returned with this response.
-     *
-     * @param status The new HTTP status
-     * @param message The associated text message
-     *
-     * @deprecated As of Version 2.1 of the Java Servlet API, this method
-     *  has been deprecated due to the ambiguous meaning of the message
-     *  parameter.
-     */
-    @Override
-    public void setStatus(int status, String message) {
-
         if (isCommitted())
             return;
 
@@ -1692,7 +1642,6 @@ public class Response
         coyoteResponse.setStatus(status);
         // use encoding in GlassFish
         coyoteResponse.getResponse().setHtmlEncodingCustomReasonPhrase(false);
-        coyoteResponse.setDetailMessage(HtmlEntityEncoder.encodeXSS(message));
     }
 
 

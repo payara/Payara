@@ -276,20 +276,8 @@ public class CsrfPreventionFilter extends FilterBase {
         }
 
         @Override
-        @Deprecated
-        public String encodeRedirectUrl(String url) {
-            return encodeRedirectURL(url);
-        }
-
-        @Override
         public String encodeRedirectURL(String url) {
             return addNonce(super.encodeRedirectURL(url));
-        }
-
-        @Override
-        @Deprecated
-        public String encodeUrl(String url) {
-            return encodeURL(url);
         }
 
         @Override

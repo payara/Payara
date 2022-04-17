@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2021] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2022] Payara Foundation and/or affiliates
 
 package org.apache.catalina.core;
 
@@ -46,6 +46,7 @@ import org.apache.catalina.LogFacade;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import jakarta.servlet.SessionCookieConfig;
+import java.util.Map;
 
 /**
  * Class that may be used to configure various properties of cookies 
@@ -278,6 +279,21 @@ public class SessionCookieConfigImpl implements SessionCookieConfig {
     @Override
     public int getMaxAge() {
         return maxAge;
+    }
+
+    @Override
+    public void setAttribute(String string, String string1) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public String getAttribute(String string) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Map<String, String> getAttributes() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
 }

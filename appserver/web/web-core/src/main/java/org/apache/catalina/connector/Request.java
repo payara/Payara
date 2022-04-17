@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//Portions Copyright [2016-2021] [Payara Foundation]
+//Portions Copyright [2016-2022] [Payara Foundation]
 
 package org.apache.catalina.connector;
 
@@ -1407,27 +1407,6 @@ public class Request implements HttpRequest, HttpServletRequest {
     }
 
     /**
-     * Return the real path of the specified virtual path.
-     *
-     * @param path Path to be translated
-     *
-     * @deprecated As of version 2.1 of the Java Servlet API, use
-     *  <code>ServletContext.getRealPath()</code>.
-     */
-    @Override
-    public String getRealPath(String path) {
-        if (servletContext == null) {
-            return null;
-        } else {
-            try {
-                return servletContext.getRealPath(path);
-            } catch (IllegalArgumentException e) {
-                return null;
-            }
-        }
-    }
-
-    /**
      * Return the remote IP address making this Request.
      */
     @Override
@@ -2685,18 +2664,6 @@ public class Request implements HttpRequest, HttpServletRequest {
             return false;
         }
 
-    }
-
-    /**
-     * Return <code>true</code> if the session identifier included in this
-     * request came from the request URI.
-     *
-     * @deprecated As of Version 2.1 of the Java Servlet API, use
-     *  <code>isRequestedSessionIdFromURL()</code> instead.
-     */
-    @Override
-    public boolean isRequestedSessionIdFromUrl() {
-        return isRequestedSessionIdFromURL();
     }
 
     /**
@@ -4094,5 +4061,20 @@ public class Request implements HttpRequest, HttpServletRequest {
         return context != null &&
             context.getManager() != null &&
             context.getManager().isSessionVersioningSupported();
+    }
+
+    @Override
+    public String getRequestId() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public String getProtocolRequestId() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public ServletConnection getServletConnection() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
