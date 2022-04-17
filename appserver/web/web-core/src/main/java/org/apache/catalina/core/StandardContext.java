@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
 
 package org.apache.catalina.core;
 
@@ -125,7 +125,6 @@ import jakarta.servlet.ServletRequestEvent;
 import jakarta.servlet.ServletRequestListener;
 import jakarta.servlet.SessionCookieConfig;
 import jakarta.servlet.SessionTrackingMode;
-import jakarta.servlet.SingleThreadModel;
 import jakarta.servlet.descriptor.JspConfigDescriptor;
 import jakarta.servlet.http.HttpServletMapping;
 import jakarta.servlet.http.HttpSession;
@@ -3738,11 +3737,6 @@ public class StandardContext
             throw new NullPointerException(rb.getString(LogFacade.NULL_SERVLET_INSTANCE_EXCEPTION));
         }
 
-        if (servlet instanceof SingleThreadModel) {
-            throw new IllegalArgumentException("Servlet implements " +
-                SingleThreadModel.class.getName());
-        }
-
         /*
          * Make sure the given Servlet instance is unique across all deployed
          * contexts
@@ -7282,17 +7276,6 @@ public class StandardContext
     }
 
     /**
-     * Writes the specified exception and message to a servlet log file.
-     */
-    @Override
-    public void log(Exception exception, String message) {
-        org.apache.catalina.Logger logger = getLogger();
-        if (logger != null) {
-            logger.log(exception, logName() + message);
-        }
-    }
-
-    /**
      * Writes the specified message and exception to a servlet log file.
      */
     @Override
@@ -7301,24 +7284,6 @@ public class StandardContext
         if (logger != null) {
             logger.log(logName() + message, throwable);
         }
-    }
-
-    @Override
-    @Deprecated
-    public Servlet getServlet(String name) {
-        return context.getServlet(name);
-    }
-
-    @Deprecated
-    @Override
-    public Enumeration<String> getServletNames() {
-        return context.getServletNames();
-    }
-
-    @Deprecated
-    @Override
-    public Enumeration<Servlet> getServlets() {
-        return context.getServlets();
     }
 
     /**

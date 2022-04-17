@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2019-2021] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2022] Payara Foundation and/or affiliates
 
 package org.apache.catalina.core;
 
@@ -416,35 +416,11 @@ public class ApplicationContext implements ServletContext {
     }
 
     /**
-     * @deprecated As of Java Servlet API 2.1, with no direct replacement.
-     */
-    @Override
-    public Servlet getServlet(String name) {
-        return (null);
-    }
-
-    /**
      * Return the display name of this web application.
      */
     @Override
     public String getServletContextName() {
         return (context.getDisplayName());
-    }
-
-    /**
-     * @deprecated As of Java Servlet API 2.1, with no direct replacement.
-     */
-    @Override
-    public Enumeration<String> getServletNames() {
-        return (new Enumerator<String>(emptyString));
-    }
-
-    /**
-     * @deprecated As of Java Servlet API 2.1, with no direct replacement.
-     */
-    @Override
-    public Enumeration<Servlet> getServlets() {
-        return (new Enumerator<Servlet>(emptyServlet));
     }
 
     /**
@@ -455,20 +431,6 @@ public class ApplicationContext implements ServletContext {
     @Override
     public void log(String message) {
         context.log(message);
-    }
-
-    /**
-     * Writes the specified exception and message to a servlet log file.
-     *
-     * @param exception Exception to be reported
-     * @param message Message to be written
-     *
-     * @deprecated As of Java Servlet API 2.1, use
-     *  <code>log(String, Throwable)</code> instead
-     */
-    @Override
-    public void log(Exception exception, String message) {   
-        context.log(exception, message);
     }
 
     /**

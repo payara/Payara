@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
 package org.apache.catalina.connector;
 
 import com.sun.enterprise.security.web.integration.WebPrincipal;
@@ -614,16 +614,6 @@ public class RequestFacade implements HttpServletRequest {
     }
 
     @Override
-    public String getRealPath(String path) {
-
-        if (request == null) {
-            throw new IllegalStateException(rb.getString(LogFacade.CANNOT_USE_REQUEST_OBJECT_OUTSIDE_SCOPE_EXCEPTION));
-        }
-
-        return request.getRealPath(path);
-    }
-
-    @Override
     public String getAuthType() {
 
         if (request == null) {
@@ -952,16 +942,6 @@ public class RequestFacade implements HttpServletRequest {
     }
 
     @Override
-    public boolean isRequestedSessionIdFromUrl() {
-
-        if (request == null) {
-            throw new IllegalStateException(rb.getString(LogFacade.CANNOT_USE_REQUEST_OBJECT_OUTSIDE_SCOPE_EXCEPTION));
-        }
-
-        return request.isRequestedSessionIdFromURL();
-    }
-
-    @Override
     public String getLocalAddr() {
 
         if (request == null) {
@@ -1115,6 +1095,21 @@ public class RequestFacade implements HttpServletRequest {
     @Override
     public PushBuilder newPushBuilder() {
         return request.newPushBuilder();
+    }
+
+    @Override
+    public String getRequestId() {
+        return request.getRequestId();
+    }
+
+    @Override
+    public String getProtocolRequestId() {
+        return request.getProtocolRequestId();
+    }
+
+    @Override
+    public ServletConnection getServletConnection() {
+        return request.getServletConnection();
     }
 
     // START S1AS 4703023

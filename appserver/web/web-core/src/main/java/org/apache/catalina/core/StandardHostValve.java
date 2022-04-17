@@ -56,7 +56,7 @@
  * limitations under the License.
  */
 
-// Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2022] [Payara Foundation and/or its affiliates]
 
 package org.apache.catalina.core;
 
@@ -485,9 +485,7 @@ final class StandardHostValve
             Integer statusCodeObj = (Integer) hreq.getAttribute(
                 RequestDispatcher.ERROR_STATUS_CODE);
             int statusCode = statusCodeObj;
-            String message = (String) hreq.getAttribute(
-                RequestDispatcher.ERROR_MESSAGE);
-            hres.setStatus(statusCode, message);
+            hres.setStatus(statusCode);
 
             // Forward control to the specified location
             ServletContext servletContext =
