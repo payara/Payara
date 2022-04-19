@@ -75,7 +75,6 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
 import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -170,7 +169,6 @@ import com.sun.enterprise.web.logger.CatalinaLogger;
 import com.sun.enterprise.web.logger.FileLoggerHandler;
 import com.sun.enterprise.web.logger.FileLoggerHandlerFactory;
 import com.sun.enterprise.web.pluggable.WebContainerFeatureFactory;
-import com.sun.enterprise.web.session.SessionCookieConfig;
 import com.sun.web.security.RealmAdapter;
 
 /**
@@ -267,9 +265,6 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
      * When acess logging has been disabled, this valve is removed from this virtual server's pipeline.
      */
     private final PEAccessLogValve accessLogValve;
-
-    // The value of the ssoCookieSecure property
-    private String ssoCookieSecure;
 
     private boolean ssoCookieHttpOnly;
     private String defaultContextPath;
@@ -421,22 +416,6 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
         }
 
         return super.findChild(contextRoot);
-    }
-
-    // --------------------------------------------------------- Public Methods
-
-    /**
-     * Configures the Secure attribute of the given SSO cookie.
-     *
-     * @param ssoCookie the SSO cookie to be configured
-     * @param hreq the HttpServletRequest that has initiated the SSO session
-     */
-    @Override
-    public void configureSingleSignOnCookieSecure(Cookie ssoCookie, HttpServletRequest hreq) {
-        super.configureSingleSignOnCookieSecure(ssoCookie, hreq);
-        if (ssoCookieSecure != null && !ssoCookieSecure.equals(SessionCookieConfig.DYNAMIC_SECURE)) {
-            ssoCookie.setSecure(Boolean.parseBoolean(ssoCookieSecure));
-        }
     }
 
     @Override
@@ -1308,7 +1287,6 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
                 sso.setReapInterval(Integer.parseInt(expireTime.getValue()));
             }
 
-            configureSingleSignOnCookieSecure();
             configureSingleSignOnCookieHttpOnly();
         }
     }
@@ -1662,20 +1640,6 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
             _logger.log(SEVERE, IGNORE_INVALID_REALM, new Object[] { realm.getClass().getName(), RealmAdapter.class.getName() });
         } else {
             super.setRealm(realm);
-        }
-    }
-
-    /**
-     * Configures the security level of the SSO cookie for this virtual server, based on the value of its sso-cookie-secure
-     * attribute
-     */
-    private void configureSingleSignOnCookieSecure() {
-        String cookieSecure = vsBean.getSsoCookieSecure();
-        if (!"true".equalsIgnoreCase(cookieSecure) && !"false".equalsIgnoreCase(cookieSecure)
-                && !cookieSecure.equalsIgnoreCase(SessionCookieConfig.DYNAMIC_SECURE)) {
-            _logger.log(Level.WARNING, LogFacade.INVALID_SSO_COOKIE_SECURE, new Object[] { cookieSecure, getID() });
-        } else {
-            ssoCookieSecure = cookieSecure;
         }
     }
 

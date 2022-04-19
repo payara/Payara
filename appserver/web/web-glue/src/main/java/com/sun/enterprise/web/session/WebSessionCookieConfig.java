@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2022 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.web.session;
 
@@ -53,11 +54,10 @@ public final class WebSessionCookieConfig extends SessionCookieConfigImpl {
 
     // the following enum match cookieSecure property value in glassfish-web.xml
     public enum CookieSecureType {
-        TRUE, FALSE, DYNAMIC
+        TRUE, FALSE
     };
 
-    // default web.xml(secure=false) = glassfish-web.xml(cookieSecure=dynamic)
-    private CookieSecureType secureCookieType = CookieSecureType.DYNAMIC;
+    private CookieSecureType secureCookieType = CookieSecureType.FALSE;
 
     public WebSessionCookieConfig(StandardContext context) {
         super(context);
@@ -67,7 +67,7 @@ public final class WebSessionCookieConfig extends SessionCookieConfigImpl {
     public void setSecure(boolean secure) {
         super.setSecure(secure);
 
-        secureCookieType = ((secure)? CookieSecureType.TRUE : CookieSecureType.DYNAMIC);
+        secureCookieType = secure ? CookieSecureType.TRUE : CookieSecureType.FALSE;
     }
 
     public void setSecure(String secure) {
@@ -77,10 +77,8 @@ public final class WebSessionCookieConfig extends SessionCookieConfigImpl {
 
         if (isTrue) {
             secureCookieType = CookieSecureType.TRUE;
-        } else if ("false".equalsIgnoreCase(secure)) {
-            secureCookieType = CookieSecureType.FALSE;
         } else {
-            secureCookieType = CookieSecureType.DYNAMIC;
+            secureCookieType = CookieSecureType.FALSE;
         }
     }
 

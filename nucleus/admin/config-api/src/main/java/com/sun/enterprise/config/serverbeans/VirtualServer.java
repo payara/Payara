@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] Payara Foundation and/or affiliates
+// Portions Copyright 2018-2022 Payara Foundation and/or affiliates
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -300,18 +300,6 @@ public interface VirtualServer extends ConfigBeanProxy, PropertyBag {
      * @throws PropertyVetoException
      */
     void setHttpAccessLog(HttpAccessLog value) throws PropertyVetoException;
-
-    /**
-     * Gets the Secure attribute of any JSESSIONIDSSO cookies associated with the web applications deployed to this
-     * virtual server. Applicable only if the sso-enabled property is set to true. To set the Secure attribute of a
-     * JSESSIONID cookie, use the cookieSecure cookie-properties property in the sun-web.xml file. Valid values: "true",
-     * "false", "dynamic"
-     */
-    @Attribute(defaultValue = "dynamic")
-    @Pattern(regexp = "(true|false|dynamic)")
-    String getSsoCookieSecure();
-
-    void setSsoCookieSecure(String value);
 
     @Attribute(defaultValue="true", dataType=Boolean.class)
     String getSsoCookieHttpOnly();
