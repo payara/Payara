@@ -147,6 +147,17 @@ public interface Ssl extends ConfigBeanProxy, PropertyBag {
     void setClassname(String value);
 
     /**
+     * A comma-separated list of the SSL3 ciphers used, with the prefix + to enable or - to disable, for example
+     * +SSL_RSA_WITH_RC4_128_MD5. Allowed SSL3/TLS values are those that are supported by the JVM for the given security
+     * provider and security service configuration. If no value is specified, all supported ciphers are assumed to be
+     * enabled.
+     */
+    @Attribute
+    String getSsl3TlsCiphers();
+
+    void setSsl3TlsCiphers(String value);
+
+    /**
      * Determines whether TLS 1.2 is enabled.
      */
     @Attribute(defaultValue = "" + TLS12_ENABLED, dataType = Boolean.class)

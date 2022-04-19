@@ -47,6 +47,11 @@ gf.checkIfEndPointExist(endpoint="#{pageSession.selfUrl}" exists="#{requestScope
 if (#{requestScope.exist}){
     setPageSessionAttribute(key="edit" value="#{true}" )
     gf.getEntityAttrs(endpoint="#{pageSession.selfUrl}.json" valueMap="#{pageSession.valueMap}");
+    convertToDifferentCiphersGroup(ciphers="#{pageSession.valueMap['ssl3TlsCiphers']}"
+        CommonCiphersList="#{pageSession.selectedCommon}"
+        EphemeralCiphersList="#{pageSession.selectedEphemeral}"
+        OtherCiphersList="#{pageSession.selectedOther}"
+        EccCiphersList="#{pageSession.selectedEcc}")
 
 }
 if (! #{requestScope.exist}){

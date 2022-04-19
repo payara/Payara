@@ -56,6 +56,7 @@ import org.glassfish.api.container.Sniffer;
 import org.glassfish.embeddable.GlassFishException;
 import org.glassfish.embeddable.web.*;
 import org.glassfish.embeddable.web.config.SslConfig;
+import org.glassfish.embeddable.web.config.SslType;
 import org.glassfish.embeddable.web.config.WebContainerConfig;
 import org.glassfish.grizzly.config.dom.*;
 import org.glassfish.hk2.api.ActiveDescriptor;
@@ -306,6 +307,15 @@ public class WebContainerImpl implements WebContainer {
             if (sslConfig.getTrustPassword() != null) {
                 newSsl.setTrustStorePassword(new String(sslConfig.getTrustPassword()));
             }
+
+            if (sslConfig.getAlgorithms() != null) {
+                for (SslType sslType : sslConfig.getAlgorithms()) {
+                    if (sslType.equals(SslType.TLS)) {
+                        newSsl.setSsl3TlsCiphers("true");
+                    }
+                }
+            }
+
             if (sslConfig.getHandshakeTimeout() > 0) {
                 newSsl.setSSLInactivityTimeout(sslConfig.getHandshakeTimeout());
             }

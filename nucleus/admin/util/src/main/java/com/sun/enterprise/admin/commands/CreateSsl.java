@@ -70,8 +70,8 @@ import java.beans.PropertyVetoException;
  * Create Ssl Command
  *
  * Usage: create-ssl --type [http-listener|iiop-listener|iiop-service|protocol] --certname cert_name
- * [--tlsenabled=true]
- * [--tlsrollbackenabled=true] [--clientauthenabled=false] [--target target(Default server)] [listener_id|protocol_id]
+ * [--ssl3tlsciphers ssl3tlsciphers] [--tlsrollbackenabled=true] [--clientauthenabled=false]
+ * [--target target(Default server)] [listener_id|protocol_id]
  *
  * domain.xml element example &lt;ssl cert-nickname="s1as" client-auth-enabled="false"
  * tls-enabled="true" tls-rollback-enabled="true"/&gt;
@@ -118,6 +118,9 @@ public class CreateSsl implements AdminCommand {
 
     @Param(name = "type", acceptableValues = "network-listener, http-listener, iiop-listener, iiop-service, jmx-connector, protocol")
     String type;
+
+    @Param(name = "ssl3TlsCiphers", optional = true)
+    String ssl3tlsciphers;
 
     @Param(name = "tlsRollbackEnabled", optional = true, defaultValue = Ssl.TLS_ROLLBACK_ENABLED + "")
     Boolean tlsrollbackenabled;
@@ -184,6 +187,7 @@ public class CreateSsl implements AdminCommand {
     public void populateSslElement(Ssl newSsl) {
         newSsl.setCertNickname(certName);
         newSsl.setClientAuthEnabled(clientauthenabled.toString());
+        newSsl.setSsl3TlsCiphers(ssl3tlsciphers);
         newSsl.setClassname(GF_SSL_IMPL_NAME);
         newSsl.setTlsRollbackEnabled(tlsrollbackenabled.toString());
     }

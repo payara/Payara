@@ -418,7 +418,7 @@ final class RMIConnectorStarter extends ConnectorStarter {
         sslParams.setKeyStore(keyStore.getAbsolutePath());
         sslParams.setKeyStorePassword(keyStorePwd);
         sslParams.setKeyStoreType(keyStoreType);
-
+        sslParams.setSsl3TlsCiphers(sslConfig.getSsl3TlsCiphers());
         sslParams.setTlsRollbackEnabled(sslConfig.getTlsRollbackEnabled());
         sslParams.setHstsEnabled(sslConfig.getHstsEnabled());
 

@@ -80,7 +80,7 @@ public class SSLParams {
     private String clientAuthEnabled;
     private String clientAuth;
     private String crlFile;
-    private Boolean tlsEnabled=true;
+    private String ssl3TlsCiphers;
     private Boolean tlsRollBackEnabled=false;
     private Boolean hstsEnabled = false;
     private Boolean hstsSubDomains = false;
@@ -253,6 +253,20 @@ public class SSLParams {
 
     public void setKeyStore(String location) {
         keyStore = new File(location);
+    }
+
+    /**
+     * A comma-separated list of the SSL3 ciphers used, with the prefix + to enable or - to disable, for example
+     * +SSL_RSA_WITH_RC4_128_MD5. Allowed SSL3/TLS values are those that are supported by the JVM for the given security
+     * provider and security service configuration. If no value is specified, all supported ciphers are assumed to be
+     * enabled.
+     */
+    public String getSsl3TlsCiphers() {
+        return ssl3TlsCiphers;
+    }
+
+    public void setSsl3TlsCiphers(String ssl3TlsCiphers) {
+        this.ssl3TlsCiphers  = ssl3TlsCiphers;
     }
 
     /**

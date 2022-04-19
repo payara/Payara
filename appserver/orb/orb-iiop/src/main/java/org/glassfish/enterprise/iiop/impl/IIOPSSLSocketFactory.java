@@ -151,7 +151,7 @@ public class IIOPSSLSocketFactory implements ORBSocketFactory {
                             boolean tlsEnabled12 = Boolean.valueOf(ssl.getTls12Enabled());
                             boolean tlsEnabled13 = Boolean.valueOf(ssl.getTls13Enabled());
 
-                            sslInfo = init(ssl.getCertNickname(), tlsEnabled12, tlsEnabled13);
+                            sslInfo = init(ssl.getCertNickname(), ssl.getSsl3TlsCiphers(), tlsEnabled12, tlsEnabled13);
                         } else {
                             sslInfo = getDefaultSslInfo();
                         }
@@ -165,6 +165,7 @@ public class IIOPSSLSocketFactory implements ORBSocketFactory {
                         boolean tlsEnabled12 = Boolean.valueOf(outboundSsl.getTls12Enabled());
                         boolean tlsEnabled13 = Boolean.valueOf(outboundSsl.getTls13Enabled());
                         clientSslInfo = init(outboundSsl.getCertNickname(),
+                                outboundSsl.getSsl3TlsCiphers(),
                                 tlsEnabled12,
                                 tlsEnabled13
                         );
@@ -179,7 +180,7 @@ public class IIOPSSLSocketFactory implements ORBSocketFactory {
                     IIOPSSLUtil sslUtil = Globals.getDefaultHabitat().getService(IIOPSSLUtil.class);
                     AppClientSSL clientSsl = (AppClientSSL) sslUtil.getAppClientSSL();
                     if (clientSsl != null) {
-                        clientSslInfo = init(clientSsl.getCertNickname(),
+                        clientSslInfo = init(clientSsl.getCertNickname(), clientSsl.getSsl3TlsCiphers(),
                                 clientSsl.getTls12Enabled(), clientSsl.getTls13Enabled());
                     } else { // include case keystore, truststore jvm option
                         clientSslInfo = getDefaultSslInfo();
@@ -198,7 +199,7 @@ public class IIOPSSLSocketFactory implements ORBSocketFactory {
      * Return a default SSLInfo object.
      */
     private SSLInfo getDefaultSslInfo() throws Exception {
-        return init(null, true, true);
+        return init(null, null,true, true);
     }
 
     /**
@@ -207,7 +208,7 @@ public class IIOPSSLSocketFactory implements ORBSocketFactory {
      * server side to create a SSLContext
      * it is called once for each serveralias and once for each clientalias
      */
-    private SSLInfo init(String alias, boolean tlsEnabled12, boolean tlsEnabled13) throws Exception {
+    private SSLInfo init(String alias, String ssl3TlsCiphers, boolean tlsEnabled12, boolean tlsEnabled13) throws Exception {
 
         String protocol;
         if (tlsEnabled13) {
@@ -218,7 +219,11 @@ public class IIOPSSLSocketFactory implements ORBSocketFactory {
             protocol = SSL;
         }
 
-
+        String[] ssl3TlsCipherArr = null;
+        if (tlsEnabled12 || tlsEnabled13) {
+            ssl3TlsCipherArr = getEnabledCipherSuites(
+                    ssl3TlsCiphers, tlsEnabled12, tlsEnabled13);
+        }
         SSLContext ctx = SSLContext.getInstance(protocol);
         if (Globals.getDefaultHabitat() != null) {
             IIOPSSLUtil sslUtil = Globals.getDefaultHabitat().getService(IIOPSSLUtil.class);
@@ -229,7 +234,7 @@ public class IIOPSSLSocketFactory implements ORBSocketFactory {
             //ctx.init(mgrs, sslUtil.getTrustManagers(), sslUtil.getInitializedSecureRandom());
         }
 
-        SSLInfo newInfo = new SSLInfo(ctx);
+        SSLInfo newInfo = new SSLInfo(ctx, ssl3TlsCipherArr);
         if (tlsEnabled12) {
             newInfo.addProtocol(TLS12);
         }
@@ -620,10 +625,12 @@ public class IIOPSSLSocketFactory implements ORBSocketFactory {
 
     class SSLInfo {
         private final SSLContext ctx;
+        private String[] ssl3TlsCiphers = null;
         private ArrayList<String> allowedProtocols;
 
-        SSLInfo(SSLContext ctx) {
+        SSLInfo(SSLContext ctx, String[] ssl3TlsCiphers) {
             this.ctx = ctx;
+            this.ssl3TlsCiphers = ssl3TlsCiphers;
             allowedProtocols = new ArrayList<>();
         }
 
@@ -633,6 +640,10 @@ public class IIOPSSLSocketFactory implements ORBSocketFactory {
 
         void addProtocol(String protocol) {
             allowedProtocols.add(protocol);
+        }
+
+        String[] getSsl3TlsCiphers() {
+            return ssl3TlsCiphers;
         }
 
     }

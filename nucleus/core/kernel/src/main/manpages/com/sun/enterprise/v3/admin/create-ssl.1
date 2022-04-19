@@ -9,7 +9,7 @@ SYNOPSIS
            [--target target]
            --type listener_or_service_type
            --certname cert_name
-           [--tlsenabled={true|false}]
+           [--ssl3tlsciphers ssl3tlsciphers]
            [--tlsrollbackenabled={true|false}]
            [--clientauthenabled={false|true}]
            [listener_id]
@@ -73,10 +73,26 @@ OPTIONS
            or the PKCS#11 token. The format of the name in the certificate is
            tokenname:nickname. For this property, the tokenname: is optional.
 
-       --tlsenabled
-           Set this property to false to disable TLS. The default value is
-           true It is good practice to enable TLS, which is a more secure
-           version of SSL.
+       --ssl3tlsciphers
+           A comma-separated list of the SSL3 and/or TLS ciphers to be used.
+           Ciphers not explicitly listed will be disabled for the target, even
+           if those ciphers are available in the particular cipher suite you
+           are using. If this option is not used, all supported ciphers are
+           assumed to be enabled. Allowed values are:
+
+           *   SSL_RSA_WITH_RC4_128_MD5
+
+           *   SSL_RSA_WITH_3DES_EDE_CBC_SHA
+
+           *   SSL_RSA_WITH_DES_CBC_SHA
+
+           *   SSL_RSA_EXPORT_WITH_RC4_40_MD5
+
+           *   SSL_RSA_WITH_NULL_MD5
+
+           *   SSL_RSA_WITH_RC4_128_SHA
+
+           *   SSL_RSA_WITH_NULL_SHA
 
        --tlsrollbackenabled
            Set to true (default) to enable TLS rollback. TLS rollback should

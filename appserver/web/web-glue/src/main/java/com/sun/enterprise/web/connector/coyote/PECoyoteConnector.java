@@ -1265,6 +1265,19 @@ public class PECoyoteConnector extends Connector {
         if (certNickname != null && certNickname.length() > 0) {
             setKeyAlias(sslConfig.getCertNickname());
         }
+
+        // ssl3-tls-ciphers
+        String ciphers = sslConfig.getSsl3TlsCiphers();
+        if (ciphers != null) {
+            String jsseCiphers = getJSSECiphers(ciphers);
+            if (jsseCiphers == null) {
+                if (_logger.isLoggable(Level.FINE)) {
+                    _logger.log(Level.FINE, LogFacade.ALL_CIPHERS_DISABLED, listener.getName());
+                }
+            } else {
+                setCiphers(jsseCiphers);
+            }
+        }
     }
 
 
