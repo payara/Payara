@@ -275,6 +275,16 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
     private ArchiveFactory factory;
     private ActionReport report;
 
+    /**
+     * The default context.xml location
+     */
+    private String defaultContextXmlLocation;
+
+    /**
+     * The default web.xml location
+     */
+    private String defaultWebXmlLocation;
+
     // ------------------------------------------------------------- Properties
 
     /**
@@ -2250,6 +2260,50 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
         }
 
         return httpProbes;
+    }
+
+    /**
+     * Gets the default-context.xml location of web modules deployed on this
+     * virtual server.
+     *
+     * @return default-context.xml location of web modules deployed on this
+     * virtual server
+     */
+    public String getDefaultContextXmlLocation() {
+        return defaultContextXmlLocation;
+    }
+
+    /**
+     * Sets the default-context.xml location for web modules deployed on this
+     * virtual server.
+     *
+     * @param defaultContextXmlLocation default-context.xml location for web modules
+     * deployed on this virtual server
+     */
+    public void setDefaultContextXmlLocation(String defaultContextXmlLocation) {
+        this.defaultContextXmlLocation = defaultContextXmlLocation;
+    }
+
+    /**
+     * Gets the default-web.xml location of web modules deployed on this
+     * virtual server.
+     *
+     * @return default-web.xml location of web modules deployed on this
+     * virtual server
+     */
+    public String getDefaultWebXmlLocation() {
+        return defaultWebXmlLocation;
+    }
+
+    /**
+     * Sets the default-web.xml location for web modules deployed on this
+     * virtual server.
+     *
+     * @param defaultWebXmlLocation default-web.xml location for web modules
+     * deployed on this virtual server
+     */
+    public void setDefaultWebXmlLocation(String defaultWebXmlLocation) {
+        this.defaultWebXmlLocation = defaultWebXmlLocation;
     }
 
     // ---------------------------------------------------------- Nested Classes
