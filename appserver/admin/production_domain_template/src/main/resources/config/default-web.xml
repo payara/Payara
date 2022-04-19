@@ -312,7 +312,8 @@
         hibernate-validator.jar
         jakarta.ejb-api.jar
         jakarta.enterprise.deploy-api.jar
-        jakarta.mail.jar
+        jakarta.mail-api.jar
+        angus-mail.jar
         jakarta.persistence.jar
         jakarta.resource-api.jar
         jakarta.security.auth.message-api.jar

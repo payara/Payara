@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2021 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2022 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,31 +39,20 @@
  */
 package fish.payara.admin.cluster;
 
+import com.sun.enterprise.admin.util.TimeoutParamDefaultCalculator;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.v3.admin.cluster.ClusterCommandHelper;
 import com.sun.enterprise.v3.admin.cluster.Strings;
 import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
-import java.util.logging.Logger;
 import jakarta.inject.Inject;
-import jakarta.validation.constraints.Min;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.CommandException;
-import org.glassfish.api.admin.CommandLock;
-import org.glassfish.api.admin.CommandRunner;
-import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.ParameterMap;
-import org.glassfish.api.admin.Progress;
-import org.glassfish.api.admin.RestEndpoint;
-import org.glassfish.api.admin.RestEndpoints;
-import org.glassfish.api.admin.RestParam;
-import org.glassfish.api.admin.RuntimeType;
-import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.admin.*;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
+
+import java.util.logging.Logger;
 
 /**
  * Starts all instances in a deployment group
@@ -103,15 +92,33 @@ public class StartDeploymentGroupCommand implements AdminCommand {
 
     @Param(optional = true, shortName = "v", defaultValue = "false")
     private boolean verbose;
-    
-    @Min(message = "Timeout must be at least 1 second long.", value = 1)
-    @Param(optional = true, shortName = "t", defaultValue = "120")
+
+    @Param(optional = true, defaultCalculator = TimeoutParamDefaultCalculator.class)
     private int instanceTimeout;
+
+    @Param(optional = true, defaultCalculator = TimeoutParamDefaultCalculator.class)
+    private int timeout;
       
     @Override
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
         Logger logger = context.getLogger();
+
+        if (timeout <= 0) {
+            String msg = "Timeout must be at least 1 second long.";
+            logger.warning(msg);
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setMessage(msg);
+            return;
+        }
+
+        if (instanceTimeout <= 0) {
+            String msg = "Instance Timeout must be at least 1 second long.";
+            logger.warning(msg);
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setMessage(msg);
+            return;
+        }
 
         logger.info(Strings.get("start.dg", deploymentGroup));
 
@@ -132,7 +139,7 @@ public class StartDeploymentGroupCommand implements AdminCommand {
             
             ParameterMap parameterMap = new ParameterMap();
             parameterMap.add("timeout", String.valueOf(instanceTimeout));
-
+            clusterHelper.setAdminTimeout(timeout * 1000);
             clusterHelper.runCommand(commandName, parameterMap, deploymentGroup, context, verbose);
         } catch (CommandException e) {
             String msg = e.getLocalizedMessage();

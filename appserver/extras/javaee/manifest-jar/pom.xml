@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2017-2022] [Payara Foundation and/or its affiliates] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -59,7 +59,7 @@
                 <configuration>
                     <archive>
                         <manifestEntries>
-                            <Class-Path>../modules/jakarta.servlet-api.jar ../modules/jakarta.annotation-api.jar ../modules/jakarta.ejb-api.jar ../modules/jakarta.transaction-api.jar ../modules/jakarta.resource-api.jar ../modules/jakarta.authentication-api.jar ../modules/jakarta.authorization-api.jar ../modules/webservices-osgi.jar ../modules/jaxb-osgi.jar ../modules/jakarta.xml.bind-api.jar ../modules/webservices-api-osgi.jar ../modules/javax.xml.registry-api.jar ../modules/jakarta.mail.jar ../modules/jakarta.faces.jar ../modules/jakarta.servlet.jsp-api.jar ../modules/jakarta.el.jar ../modules/jakarta.servlet.jsp.jstl-api.jar ../modules/jakarta.persistence-api.jar ../modules/jakarta.jms-api.jar ../modules/hibernate-validator.jar ../modules/cdi-api.jar ../../mq/lib/jaxm-api.jar ../modules/jakarta.ws.rs-api.jar ../modules/parsson.jar ../modules/javax.websocket-api.jar ../modules/javax.enterprise.concurrent-api.jar ../modules/jakarta.batch-api.jar ../modules/jakarta.inject-api.jar</Class-Path>
+                            <Class-Path>../modules/jakarta.servlet-api.jar ../modules/jakarta.annotation-api.jar ../modules/jakarta.ejb-api.jar ../modules/jakarta.transaction-api.jar ../modules/jakarta.resource-api.jar ../modules/jakarta.authentication-api.jar ../modules/jakarta.authorization-api.jar ../modules/webservices-osgi.jar ../modules/jaxb-osgi.jar ../modules/jakarta.xml.bind-api.jar ../modules/webservices-api-osgi.jar ../modules/javax.xml.registry-api.jar ../modules/jakarta.mail-api.jar ../modules/angus-mail.jar ../modules/jakarta.activation-api.jar ../modules/angus-activation.jar ../modules/jakarta.faces.jar ../modules/jakarta.servlet.jsp-api.jar ../modules/jakarta.el.jar ../modules/jakarta.servlet.jsp.jstl-api.jar ../modules/jakarta.persistence-api.jar ../modules/jakarta.jms-api.jar ../modules/hibernate-validator.jar ../modules/cdi-api.jar ../../mq/lib/jaxm-api.jar ../modules/jakarta.ws.rs-api.jar ../modules/parsson.jar ../modules/javax.websocket-api.jar ../modules/javax.enterprise.concurrent-api.jar ../modules/jakarta.batch-api.jar ../modules/jakarta.inject-api.jar</Class-Path>
                             <GlassFish-ServerExcluded>true</GlassFish-ServerExcluded>
                         </manifestEntries>
                     </archive>

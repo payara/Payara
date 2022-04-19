@@ -10,6 +10,7 @@
             <property name="domain">${payara.domain.name}</property>
             <property name="debug">${payara.debug}</property>
             <property name="adminHost">${payara.adminHost}</property>
+            <property name="allowConnectingToRunningServer">true</property>
         </configuration>
      </container>
 

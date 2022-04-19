@@ -10,7 +10,7 @@ SYNOPSIS
            [--debug={false|true}] [--dry-run={true|false}]
            [--sync={normal|full|none}]
            [--verbose={false|true}] [--watchdog={true|false}]
-           [instance-name]
+           [--timeout timeout] [instance-name]
 
 DESCRIPTION
        The start-local-instance subcommand starts a GlassFish Server instance
@@ -169,6 +169,10 @@ OPTIONS
            false
                Limited information is not displayed in the console window
                (default).
+
+       --timeout
+           Specifies the amount of time in seconds the command will run for before timing
+           out.
 
 OPERANDS
        instance-name

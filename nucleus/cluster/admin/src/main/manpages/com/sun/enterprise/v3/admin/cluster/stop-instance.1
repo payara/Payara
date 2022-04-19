@@ -6,7 +6,7 @@ NAME
 SYNOPSIS
            stop-instance [--help]
            [--force={false|true}] [--kill={false|true}]
-           instance-name
+           [--timeout timeout] instance-name
 
 DESCRIPTION
        The stop-instance subcommand stops a running GlassFish Server instance.
@@ -48,6 +48,10 @@ OPTIONS
            true
                The instance is killed. The subcommand uses functionality of
                the operating system to terminate the instance process.
+
+       --timeout
+           Specifies the amount of time in seconds the command will run for before timing
+           out.
 
 OPERANDS
        instance-name
