@@ -37,29 +37,20 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2022 Payara Foundation and/or its affiliates
 package com.sun.enterprise.web;
 
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import jakarta.servlet.*;
-import jakarta.servlet.descriptor.JspConfigDescriptor;
-
-import com.sun.enterprise.config.serverbeans.Applications;
-import org.apache.catalina.core.*;
-import org.apache.catalina.deploy.FilterDef;
-import org.apache.catalina.deploy.FilterMap;
-import org.glassfish.embeddable.Deployer;
 import org.glassfish.embeddable.GlassFishException;
 import org.glassfish.embeddable.web.ConfigException;
 import org.glassfish.embeddable.web.Context;
 import org.glassfish.embeddable.web.WebListener;
-import org.glassfish.embeddable.web.config.SecurityConfig;
 import org.glassfish.embeddable.web.config.VirtualServerConfig;
-import org.glassfish.internal.api.Globals;
+
+import java.io.File;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Facade object which masks the internal <code>VirtualServer</code>
