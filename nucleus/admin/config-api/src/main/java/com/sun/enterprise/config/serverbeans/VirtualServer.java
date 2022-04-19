@@ -301,11 +301,6 @@ public interface VirtualServer extends ConfigBeanProxy, PropertyBag {
      */
     void setHttpAccessLog(HttpAccessLog value) throws PropertyVetoException;
 
-    @Attribute(defaultValue="true", dataType=Boolean.class)
-    String getSsoCookieHttpOnly();
-
-    void setSsoCookieHttpOnly(String value);
-
     @DuckTyped
     void addNetworkListener(String name) throws PropertyVetoException;
 

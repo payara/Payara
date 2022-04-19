@@ -261,7 +261,6 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
      */
     private final PEAccessLogValve accessLogValve;
 
-    private boolean ssoCookieHttpOnly;
     private String defaultContextPath;
     private ServerContext serverContext;
     private Config serverConfig;
@@ -388,11 +387,6 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
         }
 
         return super.findChild(contextRoot);
-    }
-
-    @Override
-    public void configureSingleSignOnCookieHttpOnly(Cookie ssoCookie) {
-        ssoCookie.setHttpOnly(ssoCookieHttpOnly);
     }
 
     // ------------------------------------------------------ Lifecycle Methods
@@ -1250,8 +1244,6 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
                 }
                 sso.setReapInterval(Integer.parseInt(expireTime.getValue()));
             }
-
-            configureSingleSignOnCookieHttpOnly();
         }
     }
 
@@ -1605,10 +1597,6 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
         } else {
             super.setRealm(realm);
         }
-    }
-
-    private void configureSingleSignOnCookieHttpOnly() {
-        ssoCookieHttpOnly = Boolean.parseBoolean(vsBean.getSsoCookieHttpOnly());
     }
 
     /**
