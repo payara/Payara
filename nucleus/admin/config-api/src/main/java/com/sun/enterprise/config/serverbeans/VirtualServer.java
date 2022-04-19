@@ -421,10 +421,6 @@ public interface VirtualServer extends ConfigBeanProxy, PropertyBag {
                 description = "Specifies the name attribute of an 'auth-realm' on page 23 element, which overrides "
                     + "the server instance's default realm for stand-alone web applications deployed to this virtual server. "
                     + "A realm defined in a stand-alone web application's web.xml file overrides the virtual server's realm"),
-            @PropertyDesc(name = "securePagesWithPragma", defaultValue = "true", dataType = Boolean.class,
-                description =
-                    "Set this property to false to ensure that for all web applications on this virtual server "
-                        + "file downloads using SSL work properly in Internet Explorer. You can set this property for a specific web application."),
             @PropertyDesc(name = "contextXmlDefault",
                 description = "The location, relative to domain-dir, of the context.xml file for this virtual server, if one is used"),
             /**

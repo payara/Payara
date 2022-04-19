@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2022 Payara Foundation and/or its affiliates
 package com.sun.web.security;
 
 import com.sun.enterprise.deployment.Application;
@@ -412,14 +412,12 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
      * @param response Response we are creating
      * @param constraints Security constraint we are enforcing
      * @param disableProxyCaching whether or not to disable proxy caching for protected resources.
-     * @param securePagesWithPragma true if we add headers which are incompatible with downloading office documents in IE
-     * under SSL but which fix a caching problem in Mozilla.
      * @param ssoEnabled true if sso is enabled
      *
      * @exception IOException if an input/output error occurs
      */
     @Override
-    public int preAuthenticateCheck(HttpRequest request, HttpResponse response, SecurityConstraint[] constraints, boolean disableProxyCaching, boolean securePagesWithPragma, boolean ssoEnabled) throws IOException {
+    public int preAuthenticateCheck(HttpRequest request, HttpResponse response, SecurityConstraint[] constraints, boolean disableProxyCaching, boolean ssoEnabled) throws IOException {
         boolean isGranted = false;
 
         try {
@@ -443,7 +441,7 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
 
         if (isGranted) {
             if (hasRequestPrincipal(request)) {
-                disableProxyCaching(request, response, disableProxyCaching, securePagesWithPragma);
+                disableProxyCaching(request, response, disableProxyCaching);
                 if (ssoEnabled) {
                     HttpServletRequest httpServletRequest = (HttpServletRequest) request.getRequest();
                     if (!getJaccWebAuthorizationManager(true).isPermitAll(httpServletRequest)) {
@@ -460,7 +458,7 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
             return AUTHENTICATED_NOT_AUTHORIZED;
         }
 
-        disableProxyCaching(request, response, disableProxyCaching, securePagesWithPragma);
+        disableProxyCaching(request, response, disableProxyCaching);
 
         return AUTHENTICATE_NEEDED;
     }
