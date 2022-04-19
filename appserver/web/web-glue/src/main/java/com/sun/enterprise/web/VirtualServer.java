@@ -246,11 +246,6 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
      */
     private MimeMap mimeMap;
 
-    /*
-     * Indicates whether symbolic links from this virtual server's docroot are followed. This setting is inherited by all
-     * web modules deployed on this virtual server, unless overridden by a web modules allowLinking property in sun-web.xml.
-     */
-    private boolean allowLinking;
     private String[] cacheControls;
     private ClassLoaderHierarchy classLoaderHierarchy;
     private Domain domain;
@@ -311,29 +306,6 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
             vsValve.setIsDisabled(false);
             vsValve.setIsOff(false);
         }
-    }
-
-    /**
-     * Gets the value of the allowLinking property of this virtual server.
-     *
-     * @return true if symbolic links from this virtual server's docroot (as well as symbolic links from archives of web
-     * modules deployed on this virtual server) are followed, false otherwise
-     */
-    public boolean getAllowLinking() {
-        return allowLinking;
-    }
-
-    /**
-     * Sets the allowLinking property of this virtual server, which determines whether symblic links from this virtual
-     * server's docroot are followed.
-     *
-     * This property is inherited by all web modules deployed on this virtual server, unless overridden by the allowLinking
-     * property in a web module's sun-web.xml.
-     *
-     * @param allowLinking Value of allowLinking property
-     */
-    public void setAllowLinking(boolean allowLinking) {
-        this.allowLinking = allowLinking;
     }
 
     /**
@@ -730,14 +702,6 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
             defaultWebXmlLocation = prop.getValue();
         }
         // End EE: 4920692 Make the default-web.xml be relocatable
-
-        // allowLinking
-        boolean allowLinking = false;
-        prop = vsBean.getProperty("allowLinking");
-        if (prop != null) {
-            allowLinking = Boolean.parseBoolean(prop.getValue());
-        }
-        setAllowLinking(allowLinking);
 
         prop = vsBean.getProperty("contextXmlDefault");
         if (prop != null) {
@@ -2030,7 +1994,6 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
         }
         setDefaultWebXmlLocation(config.getDefaultWebXml());
         setDefaultContextXmlLocation(config.getContextXmlDefault());
-        setAllowLinking(config.isAllowLinking());
         configureRemoteAddressFilterValve(config.getAllowRemoteAddress(), config.getDenyRemoteAddress());
         configureRemoteHostFilterValve(config.getAllowRemoteHost(), config.getAllowRemoteHost());
         configureAliases(config.getHostNames());

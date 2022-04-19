@@ -427,11 +427,6 @@ public interface VirtualServer extends ConfigBeanProxy, PropertyBag {
                         + "file downloads using SSL work properly in Internet Explorer. You can set this property for a specific web application."),
             @PropertyDesc(name = "contextXmlDefault",
                 description = "The location, relative to domain-dir, of the context.xml file for this virtual server, if one is used"),
-            @PropertyDesc(name = "allowLinking", defaultValue = "false", dataType = Boolean.class,
-                description =
-                    "If true, resources that are symbolic links in web applications on this virtual server are served. "
-                        + "The value of this property in the sun-web.xml file takes precedence if defined. "
-                        + "Caution: setting this property to true on Windows systems exposes JSP source code."),
             /**
              * Specifies an alternate document root (docroot), where n is a positive integer that
              * allows specification of more than one. Alternate docroots allow web applications to
