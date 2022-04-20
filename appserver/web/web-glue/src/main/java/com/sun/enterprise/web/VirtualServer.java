@@ -1043,7 +1043,6 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
              * Validate the prop value
              */
             String path = null;
-            String reason = null;
             String status = null;
 
             String[] errorParams = propValue.split(" ");
@@ -1054,13 +1053,6 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
                         _logger.log(Level.WARNING, LogFacade.SEND_ERROR_MULTIPLE_ELEMENT, new Object[] { propValue, getID(), "path" });
                     }
                     path = errorParam.substring("path=".length());
-                }
-
-                if (errorParam.startsWith("reason=")) {
-                    if (reason != null) {
-                        _logger.log(Level.WARNING, LogFacade.SEND_ERROR_MULTIPLE_ELEMENT, new Object[] { propValue, getID(), "reason" });
-                    }
-                    reason = errorParam.substring("reason=".length());
                 }
 
                 if (errorParam.startsWith("code=")) {
@@ -1078,7 +1070,6 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
             errorPage = new ErrorPage();
             errorPage.setLocation(path);
             errorPage.setErrorCode(status);
-            errorPage.setReason(reason);
 
             addErrorPage(errorPage);
         }
