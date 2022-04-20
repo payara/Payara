@@ -99,7 +99,6 @@ import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.core.StandardHost;
 import org.apache.catalina.valves.RemoteAddrValve;
 import org.apache.catalina.valves.RemoteHostValve;
-import org.apache.tomcat.util.descriptor.web.ErrorPage;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.DeployCommandParameters;
@@ -1014,66 +1013,6 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
             _logger.log(SEVERE, UNABLE_TO_LOAD_EXTENSION_SEVERE, ex);
         }
         return null;
-    }
-
-    /**
-     * Configures this VirtualServer with its send-error properties.
-     */
-    void configureErrorPage() {
-        ErrorPage errorPage = null;
-
-        List<Property> props = vsBean.getProperty();
-        if (props == null) {
-            return;
-        }
-
-        for (Property prop : props) {
-            String propName = prop.getName();
-            String propValue = prop.getValue();
-            if (propName == null || propValue == null) {
-                _logger.log(Level.WARNING, LogFacade.NULL_VIRTUAL_SERVER_PROPERTY, getID());
-                continue;
-            }
-
-            if (!propName.startsWith("send-error_")) {
-                continue;
-            }
-
-            /*
-             * Validate the prop value
-             */
-            String path = null;
-            String status = null;
-
-            String[] errorParams = propValue.split(" ");
-            for (String errorParam : errorParams) {
-
-                if (errorParam.startsWith("path=")) {
-                    if (path != null) {
-                        _logger.log(Level.WARNING, LogFacade.SEND_ERROR_MULTIPLE_ELEMENT, new Object[] { propValue, getID(), "path" });
-                    }
-                    path = errorParam.substring("path=".length());
-                }
-
-                if (errorParam.startsWith("code=")) {
-                    if (status != null) {
-                        _logger.log(Level.WARNING, LogFacade.SEND_ERROR_MULTIPLE_ELEMENT, new Object[] { propValue, getID(), "code" });
-                    }
-                    status = errorParam.substring("code=".length());
-                }
-            }
-
-            if (path == null || path.length() == 0) {
-                _logger.log(Level.WARNING, LogFacade.SEND_ERROR_MISSING_PATH, new Object[] { propValue, getID() });
-            }
-
-            errorPage = new ErrorPage();
-            errorPage.setLocation(path);
-            errorPage.setErrorCode(status);
-
-            addErrorPage(errorPage);
-        }
-
     }
 
     /**
