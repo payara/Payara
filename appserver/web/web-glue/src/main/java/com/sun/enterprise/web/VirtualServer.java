@@ -1380,7 +1380,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
     void reconfigureAccessLog(String globalAccessLogBufferSize, String globalAccessLogWriteInterval, ServiceLocator services, Domain domain,
             boolean globalAccessLoggingEnabled, String globalAccessLogPrefix) {
         try {
-            if (accessLogValve.isStarted()) {
+            if (accessLogValve.getState().isAvailable()) {
                 accessLogValve.stop();
             }
             boolean start = accessLogValve.updateVirtualServerProperties(vsBean.getId(), vsBean, domain, services, globalAccessLogBufferSize,
@@ -1403,7 +1403,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
 
         try {
             boolean restart = false;
-            if (accessLogValve.isStarted()) {
+            if (accessLogValve.getState().isAvailable()) {
                 accessLogValve.stop();
                 restart = true;
             }
@@ -1435,7 +1435,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
             addValve(accessLogValve);
         } else {
             try {
-                if (accessLogValve.isStarted()) {
+                if (accessLogValve.getState().isAvailable()) {
                     accessLogValve.stop();
                 }
                 accessLogValve.start();
