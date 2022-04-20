@@ -1120,7 +1120,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
 
             boolean hasExistingSSO = false;
             // Remove existing SSO valve (if any)
-            Valve[] valves = getValves();
+            Valve[] valves = getPipeline().getValves();
             for (int i = 0; valves != null && i < valves.length; i++) {
                 if (valves[i] instanceof SingleSignOn) {
                     getPipeline().removeValve(valves[i]);
@@ -1144,7 +1144,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
             GlassFishSingleSignOn sso = null;
 
             // find existing SSO (if any), in case of a reconfig
-            Valve[] valves = getValves();
+            Valve[] valves = getPipeline().getValves();
             for (int i = 0; valves != null && i < valves.length; i++) {
                 if (valves[i] instanceof GlassFishSingleSignOn) {
                     sso = (GlassFishSingleSignOn) valves[i];
@@ -1253,7 +1253,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
 
         if (remoteAddrValve != null) {
             // Remove existing RemoteAddrValve (if any), in case of a reconfig
-            Valve[] valves = getValves();
+            Valve[] valves = getPipeline().getValves();
             for (int i = 0; valves != null && i < valves.length; i++) {
                 if (valves[i] instanceof RemoteAddrValve) {
                     getPipeline().removeValve(valves[i]);
@@ -1304,7 +1304,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
         }
         if (remoteHostValve != null) {
             // Remove existing RemoteHostValve (if any), in case of a reconfig
-            Valve[] valves = getValves();
+            Valve[] valves = getPipeline().getValves();
             for (int i = 0; valves != null && i < valves.length; i++) {
                 if (valves[i] instanceof RemoteHostValve) {
                     getPipeline().removeValve(valves[i]);
@@ -1507,7 +1507,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
         for (Container container : findChildren()) {
             if (container instanceof StandardContext) {
                 StandardContext context = (StandardContext) container;
-                for (Valve valve : context.getValves()) {
+                for (Valve valve : context.getPipeline().getValves()) {
                     if (valve instanceof AuthenticatorBase) {
                         ((AuthenticatorBase) valve).setSingleSignOn(sso);
                         break;
