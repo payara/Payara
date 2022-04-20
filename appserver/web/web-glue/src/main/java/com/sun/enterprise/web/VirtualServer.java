@@ -1001,7 +1001,6 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
         }
     }
 
-    @Override
     protected Object loadInstance(String className) throws Exception {
         // See IT 11674 for why CommonClassLoader must be used
         Class clazz = serverContext.getCommonClassLoader().loadClass(className);
