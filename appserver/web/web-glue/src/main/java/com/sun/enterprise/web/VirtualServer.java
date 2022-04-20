@@ -1799,7 +1799,6 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
             WebModule wm = (WebModule) findChild(contextRoot);
             if (wm != null) {
                 facade.setUnwrappedContext(wm);
-                wm.setEmbedded(true);
                 if (config != null) {
                     wm.setDefaultWebXml(config.getDefaultWebXml());
                 }
