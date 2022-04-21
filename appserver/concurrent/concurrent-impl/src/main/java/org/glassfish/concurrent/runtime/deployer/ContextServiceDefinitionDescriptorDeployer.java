@@ -103,27 +103,8 @@ public class ContextServiceDefinitionDescriptorDeployer implements ResourceDeplo
         String customNameOfResource = ConnectorsUtil.deriveResourceName(descriptor.getResourceId(), descriptor.getName(), descriptor.getResourceType());
         ResourceInfo resourceInfo = new ResourceInfo(customNameOfResource, applicationName, moduleName);
 
-        //ConcurrentRuntime concurrentRuntime = ConcurrentRuntime.getRuntime();
-//        concurrentRuntime.registerManagedExecutorService(resourceInfo, managedExecutorServiceConfig);
         ContextServiceImpl contextService = concurrentRuntime.createContextService(resourceInfo, contextServiceConfig);
         namingService.publishObject(resourceInfo, customNameOfResource, contextService, true);
-
-//        javax.naming.Reference ref = new javax.naming.Reference(
-//                jakarta.enterprise.concurrent.ContextServiceDefinition.class.getName(),
-//                "org.glassfish.concurrent.runtime.deployer.ConcurrentObjectFactory",
-//                null);
-//        RefAddr addr = new SerializableObjectRefAddr(ContextServiceConfig.class.getName(), contextServiceConfig);
-//        ref.add(addr);
-//        RefAddr resAddr = new SerializableObjectRefAddr(ResourceInfo.class.getName(), resourceInfo);
-//        ref.add(resAddr);
-//
-//        try {
-//            // Publish the object ref
-//            namingService.publishObject(resourceInfo, ref, true);
-//        } catch (NamingException ex) {
-//            LogHelper.log(logger, Level.SEVERE, LogFacade.UNABLE_TO_BIND_OBJECT, ex,
-//                    "ContextService", contextServiceConfig.getJndiName());
-//        }
     }
 
     @Override

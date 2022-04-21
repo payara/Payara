@@ -45,7 +45,6 @@ import com.sun.enterprise.config.serverbeans.Resource;
 import com.sun.enterprise.config.serverbeans.Resources;
 import com.sun.enterprise.deployment.ManagedExecutorDefinitionDescriptor;
 import jakarta.inject.Inject;
-import jakarta.inject.Provider;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.concurrent.config.ManagedExecutorService;
 import org.glassfish.resourcebase.resources.api.ResourceConflictException;
@@ -65,7 +64,6 @@ import java.util.logging.Logger;
 import org.glassfish.concurrent.runtime.ConcurrentRuntime;
 import org.glassfish.enterprise.concurrent.ContextServiceImpl;
 import org.glassfish.enterprise.concurrent.ManagedExecutorServiceImpl;
-import org.glassfish.resourcebase.resources.util.ResourceManagerFactory;
 
 @Service
 @ResourceDeployerInfo(ManagedExecutorDefinitionDescriptor.class)
@@ -74,13 +72,7 @@ public class ManagedExecutorDescriptorDeployer implements ResourceDeployer {
     private static final Logger logger = Logger.getLogger(ManagedExecutorDescriptorDeployer.class.getName());
 
     @Inject
-    private ResourceNamingService namingService;
-
-    @Inject
     private InvocationManager invocationManager;
-
-    @Inject
-    private Provider<ResourceManagerFactory> resourceManagerFactoryProvider;
 
     @Inject
     private ResourceNamingService resourceNamingService;

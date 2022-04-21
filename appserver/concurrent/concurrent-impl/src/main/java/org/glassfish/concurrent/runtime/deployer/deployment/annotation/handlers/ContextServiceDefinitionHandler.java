@@ -56,7 +56,6 @@ import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
-import org.glassfish.concurrent.runtime.ContextSetupProviderImpl;
 import org.glassfish.config.support.TranslatedConfigView;
 import org.glassfish.deployment.common.JavaEEResourceType;
 import org.jvnet.hk2.annotations.Service;
@@ -90,21 +89,9 @@ public class ContextServiceDefinitionHandler extends AbstractResourceHandler {
     public void processSingleAnnotation(ContextServiceDefinition contextServiceDefinition, ResourceContainerContext[] resourceContainerContexts) {
         logger.log(Level.INFO, "Creating custom context service by annotation");
         ContextServiceDefinitionDescriptor csdd = createDescriptor(contextServiceDefinition);
-//        String propageContexts = renameBuiltinContexts(csdd.getPropagated()).stream()
-//                .collect(Collectors.joining(", "));
-//        ContextServiceConfig contextServiceConfig = new ContextServiceConfig(contextServiceDefinition.name(),
-//                propageContexts,
-//                "true",
-//                renameBuiltinContexts(csdd.getPropagated()),
-//                renameBuiltinContexts(csdd.getCleared()),
-//                renameBuiltinContexts(csdd.getUnchanged()));
-//        ConcurrentRuntime concurrentRuntime = ConcurrentRuntime.getRuntime();
-//        // create a context service
-//        concurrentRuntime.getContextService(null, contextServiceConfig);
 
-        // add to contexts
+        // add to resource contexts
         for (ResourceContainerContext context : resourceContainerContexts) {
-            // FIXME: should we do specific csdd for each context???
             Set<ResourceDescriptor> csddes = context.getResourceDescriptors(JavaEEResourceType.CSDD);
             csddes.add(csdd);
         }
@@ -158,27 +145,5 @@ public class ContextServiceDefinitionHandler extends AbstractResourceHandler {
                 ContextServiceDefinition.TRANSACTION));
         allStandardContexts.removeAll(usedContexts.keySet());
         return allStandardContexts;
-    }
-
-
-    private Set<String> renameBuiltinContexts(Set<String> definitions) {
-        Set<String> contexts = new HashSet<>();
-        Set<String> unusedDefinitions = new HashSet<>(definitions);
-        if (unusedDefinitions.contains(ContextServiceDefinition.TRANSACTION)) {
-            contexts.add(ContextSetupProviderImpl.CONTEXT_TYPE_WORKAREA);
-            unusedDefinitions.remove(ContextServiceDefinition.TRANSACTION);
-        }
-        if (unusedDefinitions.contains(ContextServiceDefinition.SECURITY)) {
-            contexts.add(ContextSetupProviderImpl.CONTEXT_TYPE_SECURITY);
-            unusedDefinitions.remove(ContextServiceDefinition.SECURITY);
-        }
-        if (unusedDefinitions.contains(ContextServiceDefinition.APPLICATION)) {
-            contexts.add(ContextSetupProviderImpl.CONTEXT_TYPE_CLASSLOADING);
-            contexts.add(ContextSetupProviderImpl.CONTEXT_TYPE_NAMING);
-            unusedDefinitions.remove(ContextServiceDefinition.APPLICATION);
-        }
-        // add all the remaining, custom definitions
-        contexts.addAll(unusedDefinitions);
-        return contexts;
     }
 }
