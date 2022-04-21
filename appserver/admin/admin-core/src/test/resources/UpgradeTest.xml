@@ -101,7 +101,7 @@
         <access-log rotation-suffix="yyyy-MM-dd" rotation-interval-in-minutes="15"></access-log>
         <http-listener id="http-listener-1" port="8080" address="0.0.0.0" default-virtual-server="server" server-name=""></http-listener>
         <http-listener id="http-listener-2" port="8181" enabled="false" address="0.0.0.0" security-enabled="true" default-virtual-server="server" server-name="">
-          <ssl ssl3-enabled="false" cert-nickname="s1as"></ssl>
+          <ssl cert-nickname="s1as"></ssl>
         </http-listener>
         <http-listener id="admin-listener" port="4848" address="0.0.0.0" default-virtual-server="__asadmin" server-name=""></http-listener>
         <virtual-server id="server" http-listeners="http-listener-1, http-listener-2">

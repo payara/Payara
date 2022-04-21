@@ -47,26 +47,18 @@ import com.sun.enterprise.config.serverbeans.SecureAdminHelper.SecureAdminComman
 import com.sun.enterprise.config.serverbeans.SecureAdminPrincipal;
 import com.sun.enterprise.security.SecurityLoggerInfo;
 import com.sun.enterprise.security.ssl.SSLUtils;
+import jakarta.inject.Inject;
+import org.glassfish.api.I18n;
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.*;
+import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.TransactionFailure;
+
 import java.io.IOException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.UUID;
-import org.glassfish.api.I18n;
-import org.glassfish.api.Param;
-import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.RestEndpoint;
-import org.glassfish.api.admin.RestEndpoints;
-import org.glassfish.api.admin.RuntimeType;
-import jakarta.inject.Inject;
-import org.glassfish.api.admin.AccessRequired;
-
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.PerLookup;
-import org.jvnet.hk2.config.TransactionFailure;
+import java.util.*;
 
 /**
  * Records that secure admin is to be used and adjusts each admin listener
@@ -83,7 +75,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 	asadmin create-protocol --securityenabled=true sec-admin-listener
 	asadmin create-http --default-virtual-server=__asadmin sec-admin-listener
 	#asadmin create-network-listener --listenerport 4849 --protocol sec-admin-listener sec-admin-listener
-	asadmin create-ssl --type network-listener --certname s1as --ssl2enabled=false --ssl3enabled=false --clientauthenabled=false sec-admin-listener
+	asadmin create-ssl --type network-listener --certname s1as --clientauthenabled=false sec-admin-listener
         asadmin set configs.config.server-config.network-config.protocols.protocol.sec-admin-listener.ssl.client-auth=want
 	asadmin set configs.config.server-config.network-config.protocols.protocol.sec-admin-listener.ssl.classname=com.sun.enterprise.security.ssl.GlassfishSSLImpl
 
