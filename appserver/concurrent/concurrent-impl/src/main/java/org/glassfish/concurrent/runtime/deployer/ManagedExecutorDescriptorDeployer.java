@@ -220,7 +220,7 @@ public class ManagedExecutorDescriptorDeployer implements ResourceDeployer {
 
         @Override
         public String getCorePoolSize() {
-            return "0";
+            return String.valueOf(managedExecutorDefinitionDescriptor.getMaximumPoolSize());
         }
 
         @Override
