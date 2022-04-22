@@ -462,18 +462,6 @@
                             <specImplVersion>${jsp-impl.version}</specImplVersion>
                             <apiPackage>jakarta.servlet.jsp</apiPackage>
                         </spec>
-                        <spec>
-                            <artifact>
-                                <groupId>jakarta.el</groupId>
-                                <artifactId>jakarta.el-api</artifactId>
-                                <version>${jakarta.el-api.version}</version>
-                            </artifact>
-                            <jarType>api</jarType>
-                            <specVersion>3.0</specVersion>
-                            <implVersion>${jakarta.el.version}</implVersion>
-                            <apiPackage>jakarta.el</apiPackage>
-                            <implNamespace>com.sun.el</implNamespace>
-                        </spec>
                     </specs>
                 </configuration>
             </plugin>
@@ -508,8 +496,8 @@
                         <artifactId>jakarta.faces-api</artifactId>
                     </exclusion>
                     <exclusion>
-                        <groupId>jakarta.el</groupId>
-                        <artifactId>jakarta.el-api</artifactId>
+                        <groupId>org.glassfish.expressly</groupId>
+                        <artifactId>expressly</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>com.sun.woodstock.dependlibs</groupId>

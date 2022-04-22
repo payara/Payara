@@ -152,15 +152,10 @@
 
         <!-- hk2-config tests use hibernate-validator which requires jakarta.el-api -->
         <dependency>
-          <groupId>jakarta.el</groupId>
-          <artifactId>jakarta.el-api</artifactId>
+          <groupId>org.glassfish.expressly</groupId>
+          <artifactId>expressly</artifactId>
           <scope>test</scope>
        </dependency>
-        <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>jakarta.el</artifactId>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
     <profiles>
         <profile>
