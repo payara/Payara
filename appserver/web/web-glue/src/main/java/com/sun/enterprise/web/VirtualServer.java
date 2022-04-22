@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.web;
 
@@ -206,7 +206,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
        // are used, they might be movable to the constructor or injected
     public VirtualServer() {
         origPipeline = pipeline;
-        vsPipeline = new VirtualServerPipeline(this);
+        vsValve = new VirtualServerValve(this);
         accessLogValve = new PEAccessLogValve();
         accessLogValve.setContainer(this);
     }
@@ -218,7 +218,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
      *
      * - state (disabled/off) - redirects
      */
-    private final VirtualServerPipeline vsPipeline;
+    private final VirtualServerValve vsValve;
 
     /*
      * The original (standard) pipeline of this VirtualServer.
@@ -258,8 +258,6 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
     private Domain domain;
     private ServiceLocator services;
 
-    // Is this virtual server active?
-    private boolean isActive;
     private String authRealmName;
 
     /*
@@ -314,14 +312,9 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
      * @param isActive true if this virtual server is active, false otherwise
      */
     public void setIsActive(boolean isActive) {
-        this.isActive = isActive;
         if (isActive) {
-            vsPipeline.setIsDisabled(false);
-            vsPipeline.setIsOff(false);
-            if (pipeline == vsPipeline && !vsPipeline.hasRedirects()) {
-                // Restore original pipeline
-                setPipeline(origPipeline);
-            }
+            vsValve.setIsDisabled(false);
+            vsValve.setIsOff(false);
         }
     }
 
@@ -457,48 +450,6 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
     }
 
     // ------------------------------------------------------ Lifecycle Methods
-
-    /**
-     * Adds the given valve to the currently active pipeline, keeping the pipeline that is not currently active in sync.
-     */
-    @Override
-    public synchronized void addValve(Valve valve) {
-        super.addValve(valve);
-        if (pipeline == vsPipeline) {
-            origPipeline.addValve(valve);
-        } else {
-            vsPipeline.addValve(valve);
-        }
-    }
-
-    /**
-     * Adds the given Tomcat-style valve to the currently active pipeline, keeping the pipeline that is not currently active
-     * in sync.
-     *
-     * @param valve
-     */
-    @Override
-    public synchronized void addValve(Valve valve) {
-        super.addValve(valve);
-        if (pipeline == vsPipeline) {
-            origPipeline.addValve(valve);
-        } else {
-            vsPipeline.addValve(valve);
-        }
-    }
-
-    /**
-     * Removes the given valve from the currently active pipeline, keeping the valve that is not currently active in sync.
-     */
-    @Override
-    public synchronized void removeValve(Valve valve) {
-        super.removeValve(valve);
-        if (pipeline == vsPipeline) {
-            origPipeline.removeValve(valve);
-        } else {
-            vsPipeline.removeValve(valve);
-        }
-    }
 
     private ConfigBeansUtilities getConfigBeansUtilities() {
         if (services == null) {
@@ -755,21 +706,13 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
     }
 
     private void setIsDisabled(boolean isDisabled) {
-        vsPipeline.setIsDisabled(isDisabled);
-        vsPipeline.setIsOff(false);
-        if (isDisabled && pipeline != vsPipeline) {
-            // Enable custom pipeline
-            setPipeline(vsPipeline);
-        }
+        vsValve.setIsDisabled(isDisabled);
+        vsValve.setIsOff(false);
     }
 
     private void setIsOff(boolean isOff) {
-        vsPipeline.setIsOff(isOff);
-        vsPipeline.setIsDisabled(false);
-        if (isOff && pipeline != vsPipeline) {
-            // Enable custom pipeline
-            setPipeline(vsPipeline);
-        }
+        vsValve.setIsOff(isOff);
+        vsValve.setIsDisabled(false);
     }
 
     private void close(FileLoggerHandler handler) {
@@ -854,13 +797,15 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
         }
 
         setLogFile(vsLogFile, logLevel, logServiceFile);
+
+        // Register the VirtualServerValve in the pipeline
+        addValve(vsValve);
     }
 
     /**
      * Configures the valve_ and listener_ properties of this VirtualServer.
      */
     protected void configureCatalinaProperties() {
-
         List<Property> props = vsBean.getProperty();
         if (props == null) {
             return;
@@ -1218,7 +1163,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
      * Configures this VirtualServer with its redirect properties.
      */
     void configureRedirect() {
-        vsPipeline.clearRedirects();
+        vsValve.clearRedirects();
 
         List<Property> props = vsBean.getProperty();
         if (props == null) {
@@ -1301,16 +1246,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
                 }
             }
 
-            vsPipeline.addRedirect(from, url, urlPrefix, escapeURI);
-        }
-
-        if (vsPipeline.hasRedirects()) {
-            if (pipeline != vsPipeline) {
-                // Enable custom pipeline
-                setPipeline(vsPipeline);
-            }
-        } else if (isActive && pipeline != origPipeline) {
-            setPipeline(origPipeline);
+            vsValve.addRedirect(from, url, urlPrefix, escapeURI);
         }
     }
 
@@ -1331,7 +1267,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
             Valve[] valves = getValves();
             for (int i = 0; valves != null && i < valves.length; i++) {
                 if (valves[i] instanceof SingleSignOn) {
-                    removeValve(valves[i]);
+                    getPipeline().removeValve(valves[i]);
                     hasExistingSSO = true;
                     break;
                 }
@@ -1361,7 +1297,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
             }
 
             if (sso != null && this.ssoFailoverEnabled != ssoFailoverEnabled) {
-                removeValve(sso);
+                getPipeline().removeValve(sso);
                 sso = null;
                 // then SSO Valve will be recreated
             }
@@ -1467,7 +1403,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
             Valve[] valves = getValves();
             for (int i = 0; valves != null && i < valves.length; i++) {
                 if (valves[i] instanceof RemoteAddrValve) {
-                    removeValve(valves[i]);
+                    getPipeline().removeValve(valves[i]);
                     break;
                 }
             }
@@ -1518,7 +1454,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
             Valve[] valves = getValves();
             for (int i = 0; valves != null && i < valves.length; i++) {
                 if (valves[i] instanceof RemoteHostValve) {
-                    removeValve(valves[i]);
+                    getPipeline().removeValve(valves[i]);
                     break;
                 }
             }
@@ -1663,7 +1599,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
      * Disables access logging for this virtual server, by removing its accesslog valve from its pipeline.
      */
     void disableAccessLogging() {
-        removeValve(accessLogValve);
+        getPipeline().removeValve(accessLogValve);
         for (HttpProbeImpl httpProbe : getHttpProbeImpl()) {
             httpProbe.disableAccessLogging();
         }
