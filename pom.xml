@@ -144,8 +144,8 @@
         <jakartaee.api.version>9.1.0</jakartaee.api.version>
         <servlet-api.version>6.0.0</servlet-api.version>
         <grizzly.version>3.0.1.payara-p1</grizzly.version>
-        <jax-rs-api.impl.version>3.0.0</jax-rs-api.impl.version>
-        <jersey.version>3.0.3.payara-p2</jersey.version>
+        <jax-rs-api.impl.version>3.1.0</jax-rs-api.impl.version>
+        <jersey.version>3.1.0-M5</jersey.version>
         <jakarta.validation.version>3.0.0</jakarta.validation.version>
         <hibernate.validator.version>7.0.1.Final</hibernate.validator.version>
         <hibernate.validator-cdi.version>7.0.1.Final</hibernate.validator-cdi.version>
@@ -158,8 +158,8 @@
         <hk2.version>3.0.1.payara-p1</hk2.version>
         <osgi-resource-locator.version>1.0.3</osgi-resource-locator.version>
         <stax-api.version>1.0-2</stax-api.version>
-        <jackson.version>2.13.1</jackson.version>
-        <snakeyaml.version>1.29</snakeyaml.version>
+        <jackson.version>2.13.2</jackson.version>
+        <snakeyaml.version>1.30</snakeyaml.version>
         <hazelcast.version>4.2</hazelcast.version>
         <hazelcast.kubernetes.version>2.2.3.payara-p1</hazelcast.kubernetes.version>
         <jaxb-api.version>3.0.1</jaxb-api.version>
