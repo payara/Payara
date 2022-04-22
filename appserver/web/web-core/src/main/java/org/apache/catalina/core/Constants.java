@@ -67,7 +67,7 @@ public class Constants {
     public static final int MINOR_VERSION = 0;
 
     public static final String JSP_SERVLET_CLASS
-            = "org.apache.jasper.servlet.JspServlet";
+            = "org.glassfish.wasp.servlet.JspServlet";
 
     public static final String JSP_SERVLET_NAME = "jsp";
 
