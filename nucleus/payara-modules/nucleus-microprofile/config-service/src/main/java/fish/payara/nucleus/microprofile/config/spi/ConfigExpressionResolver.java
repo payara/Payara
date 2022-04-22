@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2021] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2021-2022] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -208,10 +208,6 @@ final class ConfigExpressionResolver {
                     // Append the expression to the result, to continue processing the rest
                     if (resolvedExpression != null) {
                         result += resolvedExpression;
-                    }
-
-                    if (result.isEmpty() && !defaultValueFound) {
-                        throw new NoSuchElementException("Unable to resolve expression " + expression);
                     }
                 }
             }
