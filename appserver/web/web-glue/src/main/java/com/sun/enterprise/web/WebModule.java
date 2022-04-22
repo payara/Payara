@@ -118,7 +118,7 @@ import org.apache.catalina.deploy.FilterMaps;
 import org.apache.catalina.loader.WebappLoader;
 import org.apache.catalina.servlets.DefaultServlet;
 import org.apache.catalina.session.StandardManager;
-import org.apache.jasper.servlet.JspServlet;
+import org.glassfish.wasp.servlet.JspServlet;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.embeddable.web.Context;
 import org.glassfish.embeddable.web.config.FormLoginConfig;

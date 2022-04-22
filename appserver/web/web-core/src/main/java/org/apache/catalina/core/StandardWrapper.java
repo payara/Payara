@@ -357,7 +357,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
         openTracing = getDefaultHabitat().getService(OpenTracingService.class);
 
         // suppress PWC6117 file not found errors
-        Logger jspLog = Logger.getLogger("org.apache.jasper.servlet.JspServlet");
+        Logger jspLog = Logger.getLogger("org.glassfish.wasp.servlet.JspServlet");
         if (!(jspLog.getFilter() instanceof NotFoundErrorSupressionFilter)) {
             jspLog.setFilter(new NotFoundErrorSupressionFilter(jspLog.getFilter()));
         }

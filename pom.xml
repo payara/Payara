@@ -165,8 +165,8 @@
         <jaxb-api.version>3.0.1</jaxb-api.version>
         <jaxb-impl.version>3.0.2</jaxb-impl.version>
         <jakarta.ejb-api.version>4.0.0</jakarta.ejb-api.version>
-        <jsp-api.version>3.0.0</jsp-api.version>
-        <jsp-impl.version>3.0.0</jsp-impl.version>
+        <jsp-api.version>3.1.0</jsp-api.version>
+        <jsp-impl.version>3.1.0-M2</jsp-impl.version>
         <jstl-api.version>2.0.0</jstl-api.version>
         <jstl-impl.version>2.0.0</jstl-impl.version>
         <jakarta.faces-api.version>3.0.0</jakarta.faces-api.version>
