@@ -46,27 +46,24 @@ import com.sun.enterprise.config.serverbeans.Resources;
 import com.sun.enterprise.deployment.ManagedExecutorDefinitionDescriptor;
 import jakarta.inject.Inject;
 import org.glassfish.api.invocation.InvocationManager;
-import org.glassfish.api.logging.LogHelper;
-import org.glassfish.concurrent.LogFacade;
 import org.glassfish.concurrent.config.ManagedExecutorService;
 import org.glassfish.resourcebase.resources.api.ResourceConflictException;
 import org.glassfish.resourcebase.resources.api.ResourceDeployer;
 import org.glassfish.resourcebase.resources.api.ResourceDeployerInfo;
 import org.glassfish.resourcebase.resources.api.ResourceInfo;
 import org.glassfish.resourcebase.resources.naming.ResourceNamingService;
-import org.glassfish.resources.naming.SerializableObjectRefAddr;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.types.Property;
 
-import javax.naming.NamingException;
-import javax.naming.RefAddr;
 import java.beans.PropertyVetoException;
 import java.util.Collection;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.concurrent.runtime.ConcurrentRuntime;
+import org.glassfish.enterprise.concurrent.ContextServiceImpl;
+import org.glassfish.enterprise.concurrent.ManagedExecutorServiceImpl;
 
 @Service
 @ResourceDeployerInfo(ManagedExecutorDefinitionDescriptor.class)
@@ -75,10 +72,10 @@ public class ManagedExecutorDescriptorDeployer implements ResourceDeployer {
     private static final Logger logger = Logger.getLogger(ManagedExecutorDescriptorDeployer.class.getName());
 
     @Inject
-    private ResourceNamingService namingService;
+    private InvocationManager invocationManager;
 
     @Inject
-    private InvocationManager invocationManager;
+    private ResourceNamingService resourceNamingService;
 
     @Override
     public void deployResource(Object resource) throws Exception {
@@ -90,27 +87,20 @@ public class ManagedExecutorDescriptorDeployer implements ResourceDeployer {
     @Override
     public void deployResource(Object resource, String applicationName, String moduleName) throws Exception {
         ManagedExecutorDefinitionDescriptor managedExecutorDefinitionDescriptor = (ManagedExecutorDefinitionDescriptor) resource;
-        ManagedExecutorServiceConfig managedExecutorServiceConfig =
-                new ManagedExecutorServiceConfig(new CustomManagedExecutorServiceImpl(managedExecutorDefinitionDescriptor));
+        ManagedExecutorServiceConfig managedExecutorServiceConfig
+                = new ManagedExecutorServiceConfig(new CustomManagedExecutorServiceImpl(managedExecutorDefinitionDescriptor));
+        // prepare the contextService
+        String contextOfResource = managedExecutorDefinitionDescriptor.getContext();
+        ResourceInfo contextResourceInfo = new ResourceInfo(contextOfResource, applicationName, moduleName);
+        ContextServiceImpl contextService = (ContextServiceImpl) resourceNamingService.lookup(contextResourceInfo, contextOfResource);
+        // prepare name for JNDI
         String customNameOfResource = ConnectorsUtil.deriveResourceName(
                 managedExecutorDefinitionDescriptor.getResourceId(), managedExecutorDefinitionDescriptor.getName(), managedExecutorDefinitionDescriptor.getResourceType());
-        ResourceInfo resourceInfo = new ResourceInfo(customNameOfResource, applicationName, null);
-        javax.naming.Reference ref = new javax.naming.Reference(
-                jakarta.enterprise.concurrent.ManagedExecutorService.class.getName(),
-                "org.glassfish.concurrent.runtime.deployer.ConcurrentObjectFactory",
-                null);
-        RefAddr addr = new SerializableObjectRefAddr(ManagedExecutorServiceConfig.class.getName(), managedExecutorServiceConfig);
-        ref.add(addr);
-        RefAddr resAddr = new SerializableObjectRefAddr(ResourceInfo.class.getName(), resourceInfo);
-        ref.add(resAddr);
+        ResourceInfo resourceInfo = new ResourceInfo(customNameOfResource, applicationName, moduleName);
 
-        try {
-            // Publish the object ref
-            namingService.publishObject(resourceInfo, ref, true);
-        } catch (NamingException ex) {
-            LogHelper.log(logger, Level.SEVERE, LogFacade.UNABLE_TO_BIND_OBJECT, ex,
-                    "ManagedExecutorService", managedExecutorServiceConfig.getJndiName());
-        }
+        ConcurrentRuntime concurrentRuntime = ConcurrentRuntime.getRuntime();
+        ManagedExecutorServiceImpl managedExecutorService = concurrentRuntime.createManagedExecutorService(resourceInfo, managedExecutorServiceConfig, contextService);
+        resourceNamingService.publishObject(resourceInfo, customNameOfResource, managedExecutorService, true);
     }
 
     @Override

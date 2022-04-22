@@ -48,6 +48,7 @@ import jakarta.enterprise.concurrent.ManagedTask;
 import jakarta.transaction.InvalidTransactionException;
 import jakarta.transaction.SystemException;
 import jakarta.transaction.Transaction;
+import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -101,11 +102,12 @@ public class TransactionSetupProviderImpl implements TransactionSetupProvider {
         }
     }
 
-    private void writeObject(java.io.ObjectOutputStream out) {
-        // no field to be written
+    private void writeObject(java.io.ObjectOutputStream out) throws IOException {
+        out.defaultWriteObject();
     }
 
-    private void readObject(java.io.ObjectInputStream in) {
+    private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
         // re-initialize these fields
         ConcurrentRuntime concurrentRuntime = ConcurrentRuntime.getRuntime();
         transactionManager = concurrentRuntime.getTransactionManager();
