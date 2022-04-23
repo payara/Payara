@@ -462,6 +462,18 @@
                             <specImplVersion>${jsp-impl.version}</specImplVersion>
                             <apiPackage>jakarta.servlet.jsp</apiPackage>
                         </spec>
+                        <spec>
+                            <artifact>
+                                <groupId>jakarta.el</groupId>
+                                <artifactId>jakarta.el-api</artifactId>
+                                <version>${jakarta.el-api.version}</version>
+                            </artifact>
+                            <jarType>api</jarType>
+                            <specVersion>3.0</specVersion>
+                            <implVersion>${jakarta.el-api.version}</implVersion>
+                            <apiPackage>jakarta.el</apiPackage>
+                            <implNamespace>com.sun.el</implNamespace>
+                        </spec>
                     </specs>
                 </configuration>
             </plugin>

@@ -149,7 +149,8 @@
         <jakarta.validation.version>3.0.0</jakarta.validation.version>
         <hibernate.validator.version>7.0.1.Final</hibernate.validator.version>
         <hibernate.validator-cdi.version>7.0.1.Final</hibernate.validator-cdi.version>
-        <expressly.version>5.0.0-M1</expressly.version>
+        <jakarta.el-api.version>5.0.0</jakarta.el-api.version>
+        <expressly.version>5.0.0-M2</expressly.version>
         <javax.cache-api.version>1.1.1.payara-p1</javax.cache-api.version>
         <mail.version>2.1.0-RC2</mail.version>
         <angus.mail.version>1.0.0-M1</angus.mail.version>
