@@ -846,10 +846,9 @@ public class CommonHandlers {
     private static String handleBareAttribute(FacesContext ctx, String url) {
 	// Get Page Session...
 	UIViewRoot root = ctx.getViewRoot();
-	Map<String, Serializable> pageSession =
-	    PageSessionResolver.getPageSession(ctx, root);
+	Map<String, Serializable> pageSession = null;
 	if (pageSession == null) {
-	    pageSession = PageSessionResolver.createPageSession(ctx, root);
+	    pageSession = createPageSession(ctx, root);
 	}
         String request = ctx.getExternalContext().getRequestParameterMap().get("bare");
 	if (request != null) {
@@ -871,6 +870,30 @@ public class CommonHandlers {
 	    }
 	}
 	return url;
+    }
+    
+    /**
+     * <p>
+     * This method will create a new "page session" <code>Map</code>. It will overwrite any existing "page session"
+     * <code>Map</code>, so be careful.
+     * </p>
+     */
+    public static Map<String, Serializable> createPageSession(FacesContext ctx, UIViewRoot root) {
+
+        // The attribute key in which to store the "page" session Map.
+        String PAGE_SESSION_KEY = "_ps";
+
+        if (root == null) {
+            root = ctx.getViewRoot();
+        }
+        // Create it...
+        Map<String, Serializable> map = new HashMap<>(4);
+
+        // Store it...
+        root.getAttributes().put(PAGE_SESSION_KEY, map);
+
+        // Return it...
+        return map;
     }
 
     /**
