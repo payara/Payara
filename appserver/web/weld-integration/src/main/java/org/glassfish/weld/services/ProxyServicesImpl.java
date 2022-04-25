@@ -37,12 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2022] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld.services;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.security.PrivilegedExceptionAction;
 
 import org.glassfish.internal.api.ClassLoaderHierarchy;
 import org.jboss.weld.serialization.spi.ProxyServices;
@@ -76,22 +74,6 @@ public class ProxyServicesImpl implements ProxyServices {
     
     public ProxyServicesImpl(ServiceLocator services) {
         clh = services.getService(ClassLoaderHierarchy.class);
-    }
-
-    
-    @Override
-    public ClassLoader getClassLoader(final Class<?> proxiedBeanType) {
-        SecurityManager sm = System.getSecurityManager();
-        if (sm != null) {
-            return AccessController
-                    .doPrivileged(new PrivilegedAction<ClassLoader>() {
-                        public ClassLoader run() {
-                            return getClassLoaderforBean(proxiedBeanType);
-                        }
-                    });
-        } else {
-            return getClassLoaderforBean(proxiedBeanType);
-        }
     }
     
     /**
@@ -144,28 +126,6 @@ public class ProxyServicesImpl implements ProxyServices {
         return tcl;
     }
 
-    @Override
-    public Class<?> loadBeanClass(final String className) {
-        try {
-            SecurityManager sm = System.getSecurityManager();
-            if (sm != null) {
-                return (Class<?>) AccessController
-                        .doPrivileged(new PrivilegedExceptionAction<Object>() {
-                            public Object run() throws Exception {
-                                ClassLoader cl = _getClassLoader();
-                                return Class.forName(className, true, cl);
-                            }
-                        });
-            } else {
-                ClassLoader cl = _getClassLoader();
-                return Class.forName(className, true, cl);
-            }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            throw new RuntimeException(ex);
-        }
-    }
-    
     public Class<?> loadClass(Class<?> originalClass, String classBinaryName) throws ClassNotFoundException {
         return originalClass;
     }

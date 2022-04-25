@@ -147,7 +147,7 @@ public class ACCJCDIServiceImpl implements JCDIService {
             BeanManager beanManager = wc.getBeanManager();
 
             AnnotatedType<T> annotatedType = beanManager.createAnnotatedType(managedClass);
-            InjectionTarget<T> target = beanManager.createInjectionTarget(annotatedType);
+            InjectionTarget<T> target = beanManager.getInjectionTargetFactory(annotatedType).createInjectionTarget(null);
 
             CreationalContext<T> cc = beanManager.createCreationalContext(null);
 
@@ -173,7 +173,7 @@ public class ACCJCDIServiceImpl implements JCDIService {
 
             @SuppressWarnings("unchecked")
             AnnotatedType<T> annotatedType = beanManager.createAnnotatedType((Class<T>) managedObject.getClass());
-            InjectionTarget<T> target = beanManager.createInjectionTarget(annotatedType);
+            InjectionTarget<T> target = beanManager.getInjectionTargetFactory(annotatedType).createInjectionTarget(null);
 
             CreationalContext<T> cc = beanManager.createCreationalContext(null);
 

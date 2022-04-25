@@ -199,11 +199,6 @@ public class JMSCDIExtension implements Extension {
         }
 
         @Override
-        public boolean isNullable() {
-            return false;
-        }
-
-        @Override
         public Object create(CreationalContext ctx) {
             Object instance = injectionTarget.produce(ctx);
             injectionTarget.inject(instance, ctx);

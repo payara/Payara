@@ -465,6 +465,10 @@
           <groupId>jakarta.enterprise</groupId>
           <artifactId>jakarta.enterprise.cdi-api</artifactId>
       </dependency>
+      <dependency>
+          <groupId>jakarta.enterprise</groupId>
+          <artifactId>jakarta.enterprise.lang-model</artifactId>
+      </dependency>
 
       <!-- Request tracing for remote eJB -->
       <dependency>

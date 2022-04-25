@@ -283,11 +283,6 @@ public class TransactionScopedCDIUtil {
         }
 
         @Override
-        public boolean isNullable() {
-            return false;
-        }
-
-        @Override
         public Object create(CreationalContext<Object> ctx) {
             try (Context eeCtx = ctxUtil.isPresent() ? ctxUtil.get().pushContext() : null) {
                 Object instance = injectionTarget.produce(ctx);

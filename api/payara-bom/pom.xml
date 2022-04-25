@@ -330,6 +330,11 @@
                 <version>${cdi-api.version}</version>
             </dependency>
             <dependency>
+                <groupId>jakarta.enterprise</groupId>
+                <artifactId>jakarta.enterprise.lang-model</artifactId>
+                <version>${cdi-api.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>jakarta.inject</groupId>
                 <artifactId>jakarta.inject-api</artifactId>
                 <version>${jakarta.inject.version}</version>

@@ -97,6 +97,10 @@
             <artifactId>jakarta.enterprise.cdi-api</artifactId>
         </dependency>
         <dependency>
+          <groupId>jakarta.enterprise</groupId>
+          <artifactId>jakarta.enterprise.lang-model</artifactId>
+        </dependency>
+        <dependency>
             <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>glassfish-naming</artifactId>
             <version>${project.version}</version>
