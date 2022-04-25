@@ -254,6 +254,21 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
         }
         ContextServiceImpl contextService = prepareContextService(config.getContext(), config.getJndiName() + "-contextservice",
                 config.getContextInfo(), config.isContextInfoEnabledBoolean(), true);
+
+        ManagedScheduledExecutorServiceImpl mes = createManagedScheduledExecutorService(resource, config, contextService);
+
+        if (managedScheduledExecutorServiceMap == null) {
+            managedScheduledExecutorServiceMap = new HashMap();
+        }
+        managedScheduledExecutorServiceMap.put(jndiName, mes);
+        if (config.getHungAfterSeconds() > 0L && !config.isLongRunningTasks()) {
+            scheduleInternalTimer();
+        }
+        return mes;
+    }
+
+    public ManagedScheduledExecutorServiceImpl createManagedScheduledExecutorService(ResourceInfo resource,
+            ManagedScheduledExecutorServiceConfig config, ContextServiceImpl contextService) {
         ManagedThreadFactoryImpl managedThreadFactory = new ThreadFactoryWrapper(
                 config.getJndiName() + "-managedThreadFactory",
                 null,
@@ -267,13 +282,6 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
                 config.getThreadLifeTimeSeconds(),
                 contextService,
                 AbstractManagedExecutorService.RejectPolicy.ABORT);
-        if (managedScheduledExecutorServiceMap == null) {
-            managedScheduledExecutorServiceMap = new HashMap();
-        }
-        managedScheduledExecutorServiceMap.put(jndiName, mes);
-        if (config.getHungAfterSeconds() > 0L && !config.isLongRunningTasks()) {
-            scheduleInternalTimer();
-        }
         return mes;
     }
 
@@ -297,12 +305,19 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
         String context = config.getContext();
         ContextServiceImpl contextService = prepareContextService(context, config.getJndiName() + "-contextservice",
                 config.getContextInfo(), config.isContextInfoEnabledBoolean(), true);
-        ManagedThreadFactoryImpl managedThreadFactory = new ThreadFactoryWrapper(config.getJndiName(), contextService,
-                config.getThreadPriority());
+
+        ManagedThreadFactoryImpl managedThreadFactory = createManagedThreadFactory(resource, config, contextService);
+
         if (managedThreadFactoryMap == null) {
             managedThreadFactoryMap = new HashMap();
         }
         managedThreadFactoryMap.put(jndiName, managedThreadFactory);
+        return managedThreadFactory;
+    }
+
+    public ManagedThreadFactoryImpl createManagedThreadFactory(ResourceInfo resource, ManagedThreadFactoryConfig config, ContextServiceImpl contextService) {
+        ManagedThreadFactoryImpl managedThreadFactory = new ThreadFactoryWrapper(config.getJndiName(), contextService,
+                config.getThreadPriority());
         return managedThreadFactory;
     }
 
