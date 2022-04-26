@@ -38,65 +38,128 @@
  * holder.
  */
 
+// Portions Copyright 2022 Payara Foundation and/or its affiliates
+
 package com.sun.enterprise.web.logger;
 
-import org.apache.catalina.Container;
-import org.apache.catalina.LifecycleException;
-import org.apache.catalina.Logger;
-
 import jakarta.servlet.ServletException;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
+import org.apache.catalina.LifecycleException;
+import org.apache.juli.logging.Log;
+
 import java.io.CharArrayWriter;
 import java.io.PrintWriter;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Convenience base class for <b>Logger</b> implementations.  The only
  * method that must be implemented is 
- * <code>write(String msg, int verbosity)</code>, plus any property
+ * <code>write(String msg, Level level)</code>, plus any property
  * setting and lifecycle methods required for configuration.
  *
  */
 
-abstract class LoggerBase implements Logger {
-
-    // ----------------------------------------------------- Instance Variables
-
-    /**
-     * The Container with which this Logger has been associated.
-     */
-    protected Container container = null;
+abstract class LoggerBase implements Log {
 
     /**
      * The descriptive information about this implementation.
      */
-    protected static final String info =
-        "com.sun.enterprise.web.logger.LoggerBase/1.0";
+    protected static final String info = "com.sun.enterprise.web.logger.LoggerBase/2.0";
 
-    /**
-     * The property change support for this component.
-     */
-    protected PropertyChangeSupport support = new PropertyChangeSupport(this);
+    protected Logger logger;
 
-    // ------------------------------------------------------------- Properties
-
-    /**
-     * Return the Container with which this Logger has been associated.
-     */
-    public Container getContainer() {
-        return (container);
+    LoggerBase(Logger logger) {
+        this.logger = logger;
     }
 
-    /**
-     * Set the Container with which this Logger has been associated.
-     *
-     * @param container The associated Container
-     */
-    public void setContainer(Container container) {
+    @Override
+    public boolean isDebugEnabled() {
+        return logger.isLoggable(Level.FINE);
+    }
 
-        Container oldContainer = this.container;
-        this.container = container;
-        support.firePropertyChange("container", oldContainer, this.container);
+    @Override
+    public boolean isErrorEnabled() {
+        return logger.isLoggable(Level.SEVERE);
+    }
+
+    @Override
+    public boolean isFatalEnabled() {
+        return logger.isLoggable(Level.SEVERE);
+    }
+
+    @Override
+    public boolean isInfoEnabled() {
+        return logger.isLoggable(Level.INFO);
+    }
+
+    @Override
+    public boolean isTraceEnabled() {
+        return logger.isLoggable(Level.FINER);
+    }
+
+    @Override
+    public boolean isWarnEnabled() {
+        return logger.isLoggable(Level.WARNING);
+    }
+
+    @Override
+    public void trace(Object message) {
+        write(message.toString(), Level.FINER);
+    }
+
+    @Override
+    public void trace(Object message, Throwable throwable) {
+        write(message.toString(), throwable, Level.FINER);
+    }
+
+    @Override
+    public void debug(Object message) {
+        write(message.toString(), Level.FINE);
+    }
+
+    @Override
+    public void debug(Object message, Throwable throwable) {
+        write(message.toString(), throwable, Level.FINE);
+    }
+
+    @Override
+    public void info(Object message) {
+        write(message.toString(), Level.INFO);
+    }
+
+    @Override
+    public void info(Object message, Throwable throwable) {
+        write(message.toString(), throwable, Level.INFO);
+    }
+
+    @Override
+    public void warn(Object message) {
+        write(message.toString(), Level.WARNING);
+    }
+
+    @Override
+    public void warn(Object message, Throwable throwable) {
+        write(message.toString(), throwable, Level.WARNING);
+    }
+
+    @Override
+    public void error(Object message) {
+        write(message.toString(), Level.SEVERE);
+    }
+
+    @Override
+    public void error(Object message, Throwable throwable) {
+        write(message.toString(), throwable, Level.SEVERE);
+    }
+
+    @Override
+    public void fatal(Object message) {
+        write(message.toString(), Level.SEVERE);
+    }
+
+    @Override
+    public void fatal(Object message, Throwable throwable) {
+        write(message.toString(), throwable, Level.SEVERE);
     }
 
     /**
@@ -109,34 +172,6 @@ abstract class LoggerBase implements Logger {
     }
 
     /**
-     * Logger interface method (ignored)
-     */
-    public int getVerbosity() {
-        //Ignored
-        return -1;
-    }
-
-    /**
-     * Logger interface method (ignored)
-     *
-     * @param verbosity The new verbosity level
-     */
-    public void setVerbosity(int verbosity) {
-        //Ignored
-    }
-
-    // --------------------------------------------------------- Public Methods
-
-    /**
-     * Add a property change listener to this component.
-     *
-     * @param listener The listener to add
-     */
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        support.addPropertyChangeListener(listener);
-    }
-
-    /**
      * Writes the specified message to a servlet log file, usually an event
      * log.  The name and type of the servlet log is specific to the
      * servlet container. 
@@ -145,7 +180,7 @@ abstract class LoggerBase implements Logger {
      *  written to the log file
      */
     public void log(String msg) {
-        write(msg, DEBUG);
+        debug(msg);
     }
 
     /**
@@ -174,7 +209,7 @@ abstract class LoggerBase implements Logger {
      * @param throwable The <code>Throwable</code> error or exception
      */
     public void log(String msg, Throwable throwable) {
-        write(msg, throwable, ERROR);
+        write(msg, throwable, Level.SEVERE);
     }
 
     /**
@@ -184,10 +219,10 @@ abstract class LoggerBase implements Logger {
      *
      * @param message A <code>String</code> specifying the message to be
      *  written to the log file
-     * @param verbosity Verbosity level of this message
+     * @param level Verbosity {@link Level} of this message
      */
-    public void log(String message, int verbosity) {
-        write(message, verbosity);
+    public void log(String message, Level level) {
+        write(message, level);
     }
 
     /**
@@ -198,40 +233,32 @@ abstract class LoggerBase implements Logger {
      * @param message A <code>String</code> that describes the error or
      *  exception
      * @param throwable The <code>Throwable</code> error or exception
-     * @param verbosity Verbosity level of this message
+     * @param level Verbosity {@link Level} of this message
      */
-    public void log(String message, Throwable throwable, int verbosity) {
-        write(message, throwable, verbosity);
+    public void log(String message, Throwable throwable, Level level) {
+        write(message, throwable, level);
     }
 
-    /**
-     * Remove a property change listener from this component.
-     *
-     * @param listener The listener to remove
-     */
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        support.removePropertyChangeListener(listener);
-    }
-
-    protected void write(String msg, Throwable throwable, int verbosity) {
+    protected void write(String msg, Throwable throwable, Level level) {
         CharArrayWriter buf = new CharArrayWriter();
         PrintWriter writer = new PrintWriter(buf);
         writer.println(msg);
         throwable.printStackTrace(writer);
         Throwable rootCause = null;
         if (throwable instanceof LifecycleException)
-            rootCause = ((LifecycleException) throwable).getCause();
+            rootCause = throwable.getCause();
         else if (throwable instanceof ServletException)
             rootCause = ((ServletException) throwable).getRootCause();
         if (rootCause != null) {
             writer.println("----- Root Cause -----");
             rootCause.printStackTrace(writer);
         }
-        write(buf.toString(), verbosity);
+        write(buf.toString(), level);
     }
 
     /**
      * Logs the given message at the given verbosity level.
      */
-    protected abstract void write(String msg, int verbosity);
+    protected abstract void write(String msg, Level level);
+
 }
