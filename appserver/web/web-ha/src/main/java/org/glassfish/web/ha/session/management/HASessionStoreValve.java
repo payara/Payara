@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2022 Payara Foundation and/or affiliates
 
 /*
  * HASessionStoreValve.java
@@ -46,20 +47,21 @@
 
 package org.glassfish.web.ha.session.management;
 
-import java.util.logging.Logger;
-import java.util.logging.Level;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import com.sun.enterprise.web.connector.grizzly.Constants;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
-import org.apache.catalina.valves.ValveBase;
-import org.apache.catalina.Globals;
 import org.apache.catalina.Manager;
-import org.apache.catalina.Request;
-import org.apache.catalina.Response;
 import org.apache.catalina.Session;
+import org.apache.catalina.connector.Request;
+import org.apache.catalina.connector.Response;
 import org.apache.catalina.core.StandardContext;
+import org.apache.catalina.valves.ValveBase;
 import org.glassfish.ha.common.HACookieManager;
 
 /**
@@ -85,7 +87,7 @@ public class HASessionStoreValve extends ValveBase {
      * @param request
      * @param response
      */    
-    public int invoke(org.apache.catalina.Request request, org.apache.catalina.Response response) throws java.io.IOException, jakarta.servlet.ServletException {
+    public void invoke(Request request, Response response) throws java.io.IOException, jakarta.servlet.ServletException {
         //FIXME this is for 7.0PE style valves
         //left here if the same optimization is done to the valve architecture
         String sessionId = null;
@@ -108,7 +110,7 @@ public class HASessionStoreValve extends ValveBase {
                 Cookie[] cookies = httpServletrequest.getCookies();
                 if (cookies != null) {
                     for (Cookie cookie: cookies) {
-                        if (cookie.getName().equalsIgnoreCase(Globals.JREPLICA_COOKIE_NAME)) {
+                        if (cookie.getName().equalsIgnoreCase(Constants.JREPLICA_COOKIE_NAME)) {
                             oldJreplicaValue = cookie.getValue();
                         }
                     }
@@ -116,29 +118,21 @@ public class HASessionStoreValve extends ValveBase {
                     if (replica != null) {
                         Session sess = request.getSessionInternal(false);
                         if (sess != null) {
-                            sess.setNote(Globals.JREPLICA_SESSION_NOTE, replica);
+                            sess.setNote(Constants.JREPLICA_SESSION_NOTE, replica);
                         }
                     }
                 }
             }
         }
 
-
-        return INVOKE_NEXT;
-        // return 0;
+        try {
+            getNext().invoke(request, response);
+        } finally {
+            doPostInvoke(request, response);
+        }
     }
     
-    /**
-     * A post-request processing implementation that does the valveSave.
-     * @param request
-     * @param response
-     */
-    public void postInvoke(Request request, Response response)
-        throws IOException, ServletException {
-        //FIXME this is for 7.0PE style valves
-        //left here if the same optimization is done to the valve architecture
-        doPostInvoke(request, response);
-    }
+
        
     
     /**

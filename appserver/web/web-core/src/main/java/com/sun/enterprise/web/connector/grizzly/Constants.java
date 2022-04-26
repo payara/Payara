@@ -48,4 +48,37 @@ package com.sun.enterprise.web.connector.grizzly;
 public final class Constants {
 
     public static final String Package = "com.sun.enterprise.web.connector.grizzly";
+
+    /**
+     * The name of the cookie used to carry a session's version info
+     */
+    public static final String SESSION_VERSION_COOKIE_NAME =
+            "JSESSIONIDVERSION";
+
+    /**
+     * The name of the path parameter used to carry a session's version info
+     */
+    public static final String SESSION_VERSION_PARAMETER_NAME =
+            "jsessionidversion";
+
+    public static final String SESSION_VERSION_PARAMETER =
+            ";" + SESSION_VERSION_PARAMETER_NAME + "=";
+
+    public static final String SESSION_VERSIONS_REQUEST_ATTRIBUTE =
+            "com.sun.enterprise.http.sessionVersions";
+
+    public static final String JREPLICA_COOKIE_NAME = "JREPLICA";
+
+    public static final String JREPLICA_PARAMETER_NAME = "jreplica";
+
+    public static final String JREPLICA_PARAMETER =
+            ";" + JREPLICA_PARAMETER_NAME + "=";
+
+    public static final String JREPLICA_SESSION_NOTE =
+            "com.sun.enterprise.http.jreplicaLocation";
+
+
+    private Constants() {
+
+    }
 }

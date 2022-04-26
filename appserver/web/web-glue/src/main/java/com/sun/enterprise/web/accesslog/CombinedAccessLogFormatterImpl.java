@@ -40,8 +40,8 @@
 
 package com.sun.enterprise.web.accesslog;
 
-import org.apache.catalina.Request;
-import org.apache.catalina.Response;
+import org.apache.catalina.connector.Request;
+import org.apache.catalina.connector.Response;
 
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.http.HttpServletRequest;
