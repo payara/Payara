@@ -74,6 +74,7 @@ import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
+import com.sun.enterprise.web.logger.CatalinaLogger;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import javax.xml.XMLConstants;
@@ -166,7 +167,6 @@ import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.admin.report.PlainTextActionReporter;
 import com.sun.enterprise.v3.services.impl.GrizzlyProxy;
 import com.sun.enterprise.v3.services.impl.GrizzlyService;
-import com.sun.enterprise.web.logger.CatalinaLogger;
 import com.sun.enterprise.web.logger.FileLoggerHandler;
 import com.sun.enterprise.web.logger.FileLoggerHandlerFactory;
 import com.sun.enterprise.web.pluggable.WebContainerFeatureFactory;
@@ -785,7 +785,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
 
     private void setLogger(Logger newLogger, String logLevel) {
         _logger = newLogger;
-        // wrap into a cataline logger
+        // Wrap into a Apache JULI logger
         CatalinaLogger catalinaLogger = new CatalinaLogger(newLogger);
         catalinaLogger.setLevel(logLevel);
         setLogger(catalinaLogger);
