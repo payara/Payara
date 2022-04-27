@@ -95,7 +95,11 @@ public class CommonResourceProxy implements NamingObjectProxy.InitializationNami
                 throw ne;
             }
         }
-        return ic.lookup(actualResourceName);
+        Object obj = ic.lookup(actualResourceName);
+        if (obj instanceof JndiLookupNotifier) {
+            ((JndiLookupNotifier) obj).notifyJndiLookup();
+        }
+        return obj;
     }
 
     protected ResourceDeployer getResourceDeployer(Object resource) {
