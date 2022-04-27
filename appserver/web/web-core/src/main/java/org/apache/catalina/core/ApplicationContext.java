@@ -299,10 +299,6 @@ public class ApplicationContext implements ServletContext {
      */
     @Override
     public int getEffectiveMajorVersion() {
-        if (isRestricted) {
-            throw new UnsupportedOperationException(
-                    rb.getString(LogFacade.UNSUPPORTED_OPERATION_EXCEPTION));
-        }
         return context.getEffectiveMajorVersion();
     }
         
@@ -312,10 +308,6 @@ public class ApplicationContext implements ServletContext {
      */
     @Override
     public int getEffectiveMinorVersion() {
-        if (isRestricted) {
-            throw new UnsupportedOperationException(
-                    rb.getString(LogFacade.UNSUPPORTED_OPERATION_EXCEPTION));
-        }
         return context.getEffectiveMinorVersion();
     }
 
@@ -818,10 +810,6 @@ public class ApplicationContext implements ServletContext {
      */
     @Override
     public Set<SessionTrackingMode> getDefaultSessionTrackingModes() {
-        if (isRestricted) {
-            throw new UnsupportedOperationException(
-                    rb.getString(LogFacade.UNSUPPORTED_OPERATION_EXCEPTION));
-        }
         return context.getDefaultSessionTrackingModes();
     }
 
@@ -834,10 +822,6 @@ public class ApplicationContext implements ServletContext {
      */
     @Override
     public Set<SessionTrackingMode> getEffectiveSessionTrackingModes() {
-        if (isRestricted) {
-            throw new UnsupportedOperationException(
-                    rb.getString(LogFacade.UNSUPPORTED_OPERATION_EXCEPTION));
-        }
         return context.getEffectiveSessionTrackingModes();
     }
 
@@ -900,19 +884,11 @@ public class ApplicationContext implements ServletContext {
      */
     @Override
     public JspConfigDescriptor getJspConfigDescriptor() {
-        if (isRestricted) {
-            throw new UnsupportedOperationException(
-                    rb.getString(LogFacade.UNSUPPORTED_OPERATION_EXCEPTION));
-        }
         return context.getJspConfigDescriptor();
     }
 
     @Override
     public ClassLoader getClassLoader() {
-        if (isRestricted) {
-            throw new UnsupportedOperationException(
-                    rb.getString(LogFacade.UNSUPPORTED_OPERATION_EXCEPTION));
-        }
         return context.getClassLoader();
     }
 
@@ -927,19 +903,11 @@ public class ApplicationContext implements ServletContext {
 
     @Override
     public String getVirtualServerName() {
-        if (isRestricted) {
-            throw new UnsupportedOperationException(
-                    rb.getString(LogFacade.UNSUPPORTED_OPERATION_EXCEPTION));
-        }
         return context.getVirtualServerName();
     }
 
     @Override
     public int getSessionTimeout() {
-        if (isRestricted) {
-            throw new UnsupportedOperationException(
-                    rb.getString(LogFacade.UNSUPPORTED_OPERATION_EXCEPTION));
-        }
         return context.getSessionTimeout();
     }
 
@@ -954,9 +922,6 @@ public class ApplicationContext implements ServletContext {
     
 	@Override
 	public String getRequestCharacterEncoding() {
-		if (isRestricted) {
-			throw new UnsupportedOperationException(rb.getString(LogFacade.UNSUPPORTED_OPERATION_EXCEPTION));
-		}
 		return context.getRequestCharacterEncoding();
 	}
 
@@ -970,12 +935,8 @@ public class ApplicationContext implements ServletContext {
 
 	@Override
 	public String getResponseCharacterEncoding() {
-		if (isRestricted) {
-			throw new UnsupportedOperationException(rb.getString(LogFacade.UNSUPPORTED_OPERATION_EXCEPTION));
-		}
 		return context.getResponseCharacterEncoding();
 	}
-    
     
         @Override
         public void setResponseCharacterEncoding(String encoding) {
