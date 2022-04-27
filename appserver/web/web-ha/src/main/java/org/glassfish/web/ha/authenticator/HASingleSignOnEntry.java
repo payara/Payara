@@ -37,19 +37,18 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.web.ha.authenticator;
 
 import com.sun.enterprise.container.common.spi.util.JavaEEIOUtils;
 
+import com.sun.enterprise.security.web.PayaraSingleSignOnEntry;
 import org.apache.catalina.Container;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.Session;
 import org.apache.catalina.authenticator.SingleSignOn;
-import org.apache.catalina.authenticator.SingleSignOnEntry;
 import org.glassfish.web.ha.LogFacade;
-import org.glassfish.web.ha.session.management.HAStoreBase;
 
 import java.io.*;
 import java.security.Principal;
@@ -59,7 +58,7 @@ import java.util.logging.Logger;
 /**
  * @author Shing Wai Chan
  */
-public class HASingleSignOnEntry extends SingleSignOnEntry {
+public class HASingleSignOnEntry extends PayaraSingleSignOnEntry {
     private static final Logger logger = LogFacade.getLogger();
 
     protected long maxIdleTime;
@@ -73,7 +72,7 @@ public class HASingleSignOnEntry extends SingleSignOnEntry {
         this(null, null, null, null, null, 0, 0, 0, null);
     }
 
-    public HASingleSignOnEntry(Container container, HASingleSignOnEntryMetadata m,
+    public HASingleSignOnEntry(HASingleSignOn sso, Container container, HASingleSignOnEntryMetadata m,
             JavaEEIOUtils ioUtils) {
         this(m.getId(), null, m.getAuthType(),
                 m.getUserName(), m.getRealmName(),
@@ -81,7 +80,8 @@ public class HASingleSignOnEntry extends SingleSignOnEntry {
                 ioUtils);
 
         // GLASSFISH-21148: constructor called with null - don't forget to update metadata!
-        this.principal = parsePrincipal(m);
+        Principal principal = parsePrincipal(m);
+        updateCredentials(principal, m.authType, m.getUserName(), null);
         this.metadata.principalBytes = m.getPrincipalBytes() == null ? null : m.getPrincipalBytes().clone();
 
         for (HASessionData data: m.getHASessionDataSet()) {
@@ -93,10 +93,10 @@ public class HASingleSignOnEntry extends SingleSignOnEntry {
                 throw new IllegalStateException("Cannot find the session: " + data.getSessionId(), ex);
             }
             if (session != null) {
-              sessions.put(data.getSessionId(), session);
+                addSession(sso, m.getId(), session);
             }
         }
-        logger.log(Level.FINER, "Loaded HA SSO entry from metadata. Principal: {}", this.principal);
+        logger.log(Level.FINER, "Loaded HA SSO entry from metadata. Principal: {}", getPrincipal());
     }
 
     // TODO: javadoc: difference between principal.getName and userName?
@@ -114,7 +114,7 @@ public class HASingleSignOnEntry extends SingleSignOnEntry {
                 id, version, convertToByteArray(principal), authType,
                 username, realmName,
                 lastAccessTime, maxIdleTime);
-        logger.log(Level.FINER, "Created HA SSO entry. Principal: {}", this.principal);
+        logger.log(Level.FINER, "Created HA SSO entry. Principal: {}", getPrincipal());
     }
 
     public HASingleSignOnEntryMetadata getMetadata() {
@@ -126,21 +126,17 @@ public class HASingleSignOnEntry extends SingleSignOnEntry {
     }
 
     @Override
-    public synchronized boolean addSession(SingleSignOn sso, Session session) {
-        boolean result = super.addSession(sso, session);
-        if (result) {
-            metadata.addHASessionData(new HASessionData(session.getId(),
-                session.getManager().getContainer().getName()));
-        }
-
-        return result;
+    public synchronized void addSession(SingleSignOn sso, String ssoId, Session session) {
+        super.addSession(sso, ssoId,  session);
+        metadata.addHASessionData(
+                new HASessionData(session.getId(), session.getManager().getContext().getPath()));
     }
 
     @Override
     public synchronized void removeSession(Session session) {
         super.removeSession(session);
         metadata.removeHASessionData(new HASessionData(session.getId(),
-                session.getManager().getContainer().getName()));
+                session.getManager().getContext().getPath()));
     }
 
     @Override

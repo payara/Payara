@@ -46,7 +46,8 @@
 
 package com.sun.enterprise.web;
 
-import com.sun.enterprise.security.web.GlassFishSingleSignOn;
+import com.sun.enterprise.security.web.AbstractSingleSignOn;
+import com.sun.enterprise.security.web.PayaraSingleSignOn;
 
 /**
  * @author lwhite
@@ -57,6 +58,6 @@ public interface SSOFactory {
      * Creates a SingleSignOn valve
      * @param virtualServerName name of virtual server
      */
-    public GlassFishSingleSignOn createSingleSignOnValve(
+    public AbstractSingleSignOn<?> createSingleSignOnValve(
         String virtualServerName);
 }

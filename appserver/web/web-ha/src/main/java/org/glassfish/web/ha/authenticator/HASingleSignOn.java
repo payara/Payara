@@ -41,7 +41,8 @@
 package org.glassfish.web.ha.authenticator;
 
 import com.sun.enterprise.container.common.spi.util.JavaEEIOUtils;
-import com.sun.enterprise.security.web.GlassFishSingleSignOn;
+import com.sun.enterprise.security.web.AbstractSingleSignOn;
+import com.sun.enterprise.security.web.PayaraSingleSignOn;
 import org.apache.catalina.Session;
 import org.apache.catalina.authenticator.SingleSignOnEntry;
 import org.glassfish.ha.store.api.BackingStore;
@@ -55,7 +56,7 @@ import java.util.logging.Logger;
 /**
  * @author Shing Wai Chan
  */
-public class HASingleSignOn extends GlassFishSingleSignOn {
+public class HASingleSignOn extends AbstractSingleSignOn<HASingleSignOnEntry> {
     private static final Logger logger = LogFacade.getLogger();
 
     private BackingStore<String, HASingleSignOnEntryMetadata> ssoEntryMetadataBackingStore = null;
@@ -71,20 +72,7 @@ public class HASingleSignOn extends GlassFishSingleSignOn {
 
     @Override
     protected void deregister(final String ssoId) {
-
-        //S1AS8 6155481 START
-        if (logger.isLoggable(Level.FINE)) {
-            logger.fine("Deregistering sso id '" + ssoId + "'");
-        }
-        //S1AS8 6155481 END
-        // Look up and remove the corresponding SingleSignOnEntry
-        final SingleSignOnEntry sso = this.cache.remove(ssoId);
-        if (sso == null) {
-            return;
-        }
-
-        // Expire any associated sessions
-        sso.expireSessions();
+        super.deregister(ssoId);
 
         try {
             this.ssoEntryMetadataBackingStore.remove(ssoId);
@@ -97,62 +85,50 @@ public class HASingleSignOn extends GlassFishSingleSignOn {
     }
 
     @Override
-    protected void register(String ssoId, Principal principal, String authType,
-                  String username, char[] password, String realmName) {
-
-        if (logger.isLoggable(Level.FINE)) {
-            logger.fine("Registering sso id '" + ssoId+ "' for principal '" + principal + "' and username '" + username
-                    + "' with auth type '" + authType + "' and realmName '" + realmName + "'");
-        }
-
-        final HASingleSignOnEntry ssoEntry = new HASingleSignOnEntry(
-            ssoId,
-            principal,
-            authType,
-            username,
-            realmName,
-            // revisit maxIdleTime 1000000, version 0
-            System.currentTimeMillis(),
-            1000000,
-            0,
-            ioUtils
+    protected HASingleSignOnEntry createEntry(String ssoId, Principal principal, String authType, String username) {
+        return new HASingleSignOnEntry(
+                ssoId,
+                principal,
+                authType,
+                username,
+                currentRealm.get(),
+                // revisit maxIdleTime 1000000, version 0
+                System.currentTimeMillis(),
+                1000000,
+                0,
+                ioUtils
         );
+    }
 
-        this.cache.put(ssoId, ssoEntry);
-
+    @Override
+    protected void entryAdded(HASingleSignOnEntry entry) {
+        super.entryAdded(entry);
         try {
-            this.ssoEntryMetadataBackingStore.save(ssoId, ssoEntry.getMetadata(), true);
+            this.ssoEntryMetadataBackingStore.save(entry.getMetadata().getId(), entry.getMetadata(), true);
         } catch(BackingStoreException ex) {
             throw new IllegalStateException(ex);
         }
     }
 
     @Override
-    public void associate(String ssoId, long ssoVersion, Session session) {
-
-        if (!started) {
-            return;
-        }
-
-        if (debug >= 1)
-            log("Associate sso id " + ssoId + " with session " + session);
-
-        HASingleSignOnEntry sso = (HASingleSignOnEntry)lookup(ssoId, ssoVersion);
+    protected boolean associate(String ssoId, Session session) {
+        HASingleSignOnEntry sso = lookup(ssoId, currentVersion.get());
         if (sso != null) {
-            session.setSsoId(ssoId);
-            sso.addSession(this, session);
+            sso.addSession(this, ssoId, session);
 
             try {
                 ssoEntryMetadataBackingStore.save(ssoId, sso.getMetadata(), false);
             } catch(BackingStoreException ex) {
                 throw new IllegalStateException(ex);
             }
+            return true;
         }
+        return false;
     }
 
     @Override
-    protected SingleSignOnEntry lookup(final String ssoId, final long ssoVersion) {
-        SingleSignOnEntry ssoEntry = super.lookup(ssoId, ssoVersion);
+    protected HASingleSignOnEntry lookup(final String ssoId, final long ssoVersion) {
+        HASingleSignOnEntry ssoEntry = super.lookup(ssoId, ssoVersion);
         if (ssoEntry != null && ssoVersion > ssoEntry.getVersion()) {
             // clean the old cache
             this.cache.remove(ssoId);
@@ -164,7 +140,7 @@ public class HASingleSignOn extends GlassFishSingleSignOn {
             try {
                 final HASingleSignOnEntryMetadata mdata = this.ssoEntryMetadataBackingStore.load(ssoId, null);
                 if (mdata != null) {
-                    ssoEntry = new HASingleSignOnEntry(getContainer(), mdata, ioUtils);
+                    ssoEntry = new HASingleSignOnEntry(this, getContainer(), mdata, ioUtils);
                     this.cache.put(ssoId, ssoEntry);
                 }
             } catch(BackingStoreException ex) {
