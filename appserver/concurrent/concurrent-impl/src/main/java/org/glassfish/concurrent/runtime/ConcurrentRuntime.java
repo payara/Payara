@@ -51,7 +51,6 @@ import org.glassfish.concurrent.runtime.deployer.ContextServiceConfig;
 import org.glassfish.concurrent.runtime.deployer.ManagedExecutorServiceConfig;
 import org.glassfish.concurrent.runtime.deployer.ManagedScheduledExecutorServiceConfig;
 import org.glassfish.concurrent.runtime.deployer.ManagedThreadFactoryConfig;
-import org.glassfish.enterprise.concurrent.*;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.PreDestroy;
 import org.glassfish.internal.data.ApplicationRegistry;
@@ -61,12 +60,24 @@ import org.jvnet.hk2.annotations.Service;
 
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.enterprise.concurrent.AbstractManagedExecutorService;
+import org.glassfish.enterprise.concurrent.AbstractManagedThread;
+import org.glassfish.enterprise.concurrent.ContextServiceImpl;
+import org.glassfish.enterprise.concurrent.ManagedExecutorServiceImpl;
+import org.glassfish.enterprise.concurrent.ManagedScheduledExecutorServiceImpl;
+import org.glassfish.enterprise.concurrent.ManagedThreadFactoryImpl;
 import org.glassfish.enterprise.concurrent.spi.ContextHandle;
+import org.glassfish.javaee.services.JndiLookupNotifier;
 import org.glassfish.resourcebase.resources.naming.ResourceNamingService;
 
 /**
@@ -405,7 +416,7 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
     /**
      * context loader propagation to threads causes memory leaks on redeploy
      */
-    private static final class ThreadFactoryWrapper extends ManagedThreadFactoryImpl {
+    private static final class ThreadFactoryWrapper extends ManagedThreadFactoryImpl implements JndiLookupNotifier {
         public ThreadFactoryWrapper(String string, ContextServiceImpl contextService, int threadPriority) {
             super(string, contextService, threadPriority);
         }
@@ -420,6 +431,14 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
                 Utility.setContextClassLoader(appClassLoader);
             }
         }
+
+        /**
+         * Save current thread context when MTF was looked up in JNDI.
+         */
+        public void notifyJndiLookup() {
+            savedContextHandleForSetup = (contextSetupProvider == null) ? null : contextSetupProvider.saveContext(contextService);
+        }
+
     }
 
     @Override

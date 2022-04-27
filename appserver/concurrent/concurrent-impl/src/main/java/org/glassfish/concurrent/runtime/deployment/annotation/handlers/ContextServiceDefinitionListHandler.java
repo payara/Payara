@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.concurrent.runtime.deployer.deployment.annotation.handlers;
+package org.glassfish.concurrent.runtime.deployment.annotation.handlers;
 
 import com.sun.enterprise.deployment.annotation.context.ResourceContainerContext;
 import com.sun.enterprise.deployment.annotation.handlers.AbstractResourceHandler;
