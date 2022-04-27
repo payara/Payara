@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2022] [Payara Foundation and/or its affiliates]
 
 package org.apache.catalina.core;
 
@@ -62,7 +63,7 @@ package org.apache.catalina.core;
 public class Constants {
 
     public static final String Package = "org.apache.catalina.core";
-    public static final int MAJOR_VERSION = 5;
+    public static final int MAJOR_VERSION = 6;
     public static final int MINOR_VERSION = 0;
 
     public static final String JSP_SERVLET_CLASS =
