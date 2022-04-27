@@ -73,6 +73,7 @@
         <module>jcip</module>
         <module>libpam4j</module>
         <module>microprofile-opentracing-repackaged</module>
+        <module>jakarta.el-transition</module>
     </modules>
     <build>
         <plugins>

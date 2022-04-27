@@ -258,8 +258,9 @@
             <artifactId>jakarta.security.enterprise</artifactId>
         </dependency>
         <dependency>
-            <groupId>jakarta.el</groupId>
-            <artifactId>jakarta.el-api</artifactId>
+            <groupId>fish.payara.server.internal.packager</groupId>
+            <artifactId>jakarta.el-transition</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.expressly</groupId>
