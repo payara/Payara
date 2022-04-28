@@ -464,15 +464,15 @@
                         </spec>
                         <spec>
                             <artifact>
-                                <groupId>jakarta.el</groupId>
-                                <artifactId>jakarta.el-api</artifactId>
-                                <version>${jakarta.el-api.version}</version>
+                                <groupId>org.glassfish.expressly</groupId>
+                                <artifactId>expressly</artifactId>
+                                <version>${expressly.version}</version>
                             </artifact>
-                            <jarType>api</jarType>
-                            <specVersion>3.0</specVersion>
-                            <implVersion>${jakarta.el-api.version}</implVersion>
+                            <jarType>impl</jarType>
+                            <specVersion>5.0</specVersion>
+                            <implVersion>5.0.0</implVersion>
                             <apiPackage>jakarta.el</apiPackage>
-                            <implNamespace>com.sun.el</implNamespace>
+                            <implNamespace>org.glassfish.expressly</implNamespace>
                         </spec>
                     </specs>
                 </configuration>
