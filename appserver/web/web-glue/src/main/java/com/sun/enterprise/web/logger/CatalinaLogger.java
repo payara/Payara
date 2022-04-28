@@ -52,13 +52,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Convenience base class for <b>Logger</b> implementations.  The only
- * method that must be implemented is 
- * <code>write(String msg, Level level)</code>, plus any property
- * setting and lifecycle methods required for configuration.
- *
+ * Apache JULI {@link Log} implementation for Catalina. Constructed from the older CatalinaLogger, BaseLogger, and
+ * IASLogger classes.
  */
-
 public class CatalinaLogger implements Log {
 
     /**
