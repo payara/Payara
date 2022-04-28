@@ -784,11 +784,13 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
     }
 
     private void setLogger(Logger newLogger, String logLevel) {
+        // Set as the logger for this VirtualServer
         _logger = newLogger;
-        // Wrap into a Apache JULI logger
+
+        // Also set as the overall container logger, wrapping into a Apache JULI logger
         CatalinaLogger catalinaLogger = new CatalinaLogger(newLogger);
         catalinaLogger.setLevel(logLevel);
-        setLogger(catalinaLogger);
+        logger = catalinaLogger;
     }
 
     /**

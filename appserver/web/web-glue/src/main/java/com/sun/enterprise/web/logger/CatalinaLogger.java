@@ -64,6 +64,20 @@ public class CatalinaLogger implements Log {
 
     protected Logger logger;
 
+    /**
+     * Construct an instance and set the JUL logger name using the given name.
+     * This is the constructor that the Apache {@link org.apache.juli.logging.LogFactory} looks for via its
+     * ServiceLoader mechanism
+     * @param name The name of the JUL logger to create
+     */
+    public CatalinaLogger(String name) {
+        logger = Logger.getLogger(name);
+    }
+
+    /**
+     * Construct an instance and use the provided JUL logger.
+     * @param logger
+     */
     public CatalinaLogger(Logger logger) {
         this.logger = logger;
     }
@@ -296,4 +310,5 @@ public class CatalinaLogger implements Log {
             logger.setLevel(Level.INFO);
         }
     }
+
 }
