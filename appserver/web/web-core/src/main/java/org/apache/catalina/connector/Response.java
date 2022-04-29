@@ -81,6 +81,8 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 
 import com.sun.appserv.ProxyHandler;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.UnsupportedCharsetException;
 import org.apache.catalina.Connector;
 import org.apache.catalina.Context;
 import org.apache.catalina.LogFacade;
@@ -782,27 +784,34 @@ public class Response
     @Override
     public PrintWriter getWriter() throws IOException {
 
-        if (usingOutputStream)
+        if (usingOutputStream) {
             throw new IllegalStateException(rb.getString(LogFacade.GET_OUTPUT_STREAM_BEEN_CALLED_EXCEPTION));
+        }
+        try {
+            /*
+             * If the response's character encoding has not been specified as
+             * described in <code>getCharacterEncoding</code> (i.e., the method
+             * just returns the default value <code>ISO-8859-1</code>),
+             * <code>getWriter</code> updates it to <code>ISO-8859-1</code>
+             * (with the effect that a subsequent call to getContentType() will
+             * include a charset=ISO-8859-1 component which will also be
+             * reflected in the Content-Type response header, thereby satisfying
+             * the Servlet spec requirement that containers must communicate the
+             * character encoding used for the servlet response's writer to the
+             * client).
+             */
+            setCharacterEncoding(getCharacterEncoding());
 
-        /*
-         * If the response's character encoding has not been specified as
-         * described in <code>getCharacterEncoding</code> (i.e., the method
-         * just returns the default value <code>ISO-8859-1</code>),
-         * <code>getWriter</code> updates it to <code>ISO-8859-1</code>
-         * (with the effect that a subsequent call to getContentType() will
-         * include a charset=ISO-8859-1 component which will also be
-         * reflected in the Content-Type response header, thereby satisfying
-         * the Servlet spec requirement that containers must communicate the
-         * character encoding used for the servlet response's writer to the
-         * client).
-         */
-        setCharacterEncoding(getCharacterEncoding());
-
-        usingWriter = true;
-        outputBuffer.checkConverter();
-        if (writer == null) {
-            writer = createWriter(outputBuffer);
+            usingWriter = true;
+            outputBuffer.checkConverter();
+            if (writer == null) {
+                writer = createWriter(outputBuffer);
+            }
+        } catch (UnsupportedCharsetException uce) {
+            UnsupportedEncodingException uee
+                    = new UnsupportedEncodingException(uce.getMessage());
+            uee.initCause(uce);
+            throw uee;
         }
         return writer;
 
