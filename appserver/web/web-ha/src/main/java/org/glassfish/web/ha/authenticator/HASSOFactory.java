@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
 
 /*
  * HASSOFactory.java
@@ -52,7 +52,7 @@ import com.sun.enterprise.container.common.spi.util.JavaEEIOUtils;
 
 import com.sun.enterprise.web.SSOFactory;
 import com.sun.enterprise.web.session.PersistenceType;
-import com.sun.enterprise.security.web.GlassFishSingleSignOn;
+import com.sun.enterprise.security.web.PayaraSingleSignOn;
 import com.sun.enterprise.web.ServerConfigLookup;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 
@@ -93,7 +93,7 @@ public class HASSOFactory implements SSOFactory {
      * is true and sso-failover-enabled
      */
     @Override
-    public GlassFishSingleSignOn createSingleSignOnValve(String virtualServerName) {
+    public HASingleSignOn createSingleSignOnValve(String virtualServerName) {
         PersistenceType persistenceType = serverConfigLookup.getPersistenceTypeFromConfig();
         String persistenceTypeStr = persistenceType != null? persistenceType.getType() : PersistenceType.HAZELCAST.getType();
         return new HASingleSignOn(ioUtils,

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,28 +37,23 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
+package com.sun.enterprise.security.web;
 
-/*
- * SSOFactory.java
- *
- * Created on August 25, 2004, 10:13 AM
- */
-
-package com.sun.enterprise.web;
-
-import com.sun.enterprise.security.web.AbstractSingleSignOn;
-import com.sun.enterprise.security.web.PayaraSingleSignOn;
+import java.security.Principal;
 
 /**
- * @author lwhite
+ * A <strong>Valve</strong> that supports a "single sign on" user experience, where the security identity of a user who
+ * successfully authenticates to one web application is propogated to other web applications in the same security
+ * domain.
+ *
+ * @author Jyri Virkki (first implementation)
+ * @author Jean-Francois Arcand
  */
-public interface SSOFactory {
-    
-    /**
-     * Creates a SingleSignOn valve
-     * @param virtualServerName name of virtual server
-     */
-    public AbstractSingleSignOn<?> createSingleSignOnValve(
-        String virtualServerName);
+public class PayaraSingleSignOn extends AbstractSingleSignOn<PayaraSingleSignOnEntry> {
+
+    @Override
+    protected PayaraSingleSignOnEntry createEntry(String ssoId, Principal principal, String authType, String username) {
+        return new PayaraSingleSignOnEntry(ssoId, 0, principal,  authType, username, currentRealm.get());
+    }
 }

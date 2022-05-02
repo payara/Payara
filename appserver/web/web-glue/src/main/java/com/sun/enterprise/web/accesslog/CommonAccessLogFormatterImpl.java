@@ -37,12 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2022] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.web.accesslog;
 
-import org.apache.catalina.HttpResponse;
-import org.apache.catalina.Request;
-import org.apache.catalina.Response;
+import org.apache.catalina.connector.Request;
+import org.apache.catalina.connector.Response;
 
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.http.HttpServletRequest;
@@ -219,7 +219,7 @@ public class CommonAccessLogFormatterImpl extends AccessLogFormatter {
      * Appends the response status to the given char buffer.
      */
     private void appendResponseStatus(CharBuffer cb, Response response) {
-        cb.put(String.valueOf(((HttpResponse) response).getStatus()));
+        cb.put(String.valueOf(response.getStatus()));
     }
 
 
@@ -228,6 +228,6 @@ public class CommonAccessLogFormatterImpl extends AccessLogFormatter {
      * buffer.
      */
     private void appendResponseLength(CharBuffer cb, Response response) {
-        cb.put("" + response.getContentCount());
+        cb.put(String.valueOf(response.getContentLength()));
     }
 }

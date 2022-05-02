@@ -74,6 +74,7 @@ import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
+import com.sun.enterprise.security.web.AbstractSingleSignOn;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import javax.xml.XMLConstants;
@@ -160,7 +161,6 @@ import com.sun.enterprise.config.serverbeans.SecurityService;
 import com.sun.enterprise.config.serverbeans.ServerTags;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.deployment.Application;
-import com.sun.enterprise.security.web.GlassFishSingleSignOn;
 import com.sun.enterprise.server.logging.GFFileHandler;
 import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.admin.report.PlainTextActionReporter;
@@ -1285,13 +1285,13 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
                 _logger.log(Level.FINE, LogFacade.ENABLE_SSO, getID());
             }
 
-            GlassFishSingleSignOn sso = null;
+            AbstractSingleSignOn<?> sso = null;
 
             // find existing SSO (if any), in case of a reconfig
             Valve[] valves = getValves();
             for (int i = 0; valves != null && i < valves.length; i++) {
-                if (valves[i] instanceof GlassFishSingleSignOn) {
-                    sso = (GlassFishSingleSignOn) valves[i];
+                if (valves[i] instanceof AbstractSingleSignOn) {
+                    sso = (AbstractSingleSignOn<?>) valves[i];
                     break;
                 }
             }

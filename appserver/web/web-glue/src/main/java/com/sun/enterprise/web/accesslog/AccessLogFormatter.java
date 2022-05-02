@@ -37,13 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+ * Portions Copyright [2017-2022] [Payara Foundation and/or its affiliates]
  */
 
 package com.sun.enterprise.web.accesslog;
 
-import org.apache.catalina.Request;
-import org.apache.catalina.Response;
+import org.apache.catalina.connector.Request;
+import org.apache.catalina.connector.Response;
 
 import java.nio.CharBuffer;
 import java.text.SimpleDateFormat;
