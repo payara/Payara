@@ -691,10 +691,18 @@ public class EJBUtils {
             );
         }
 
+        ClassLoader appClassLoader;
+        String generatedRemoteInterfaceName = EJBUtils.
+                getGeneratedRemoteIntfName(businessInterface);
+        Class generatedRemoteInterfaceClass = loadClassIgnoringExceptions(contextLoader, generatedRemoteInterfaceName);
+
+        if (generatedRemoteInterfaceClass != null) {
+            return contextLoader;
+        }
+
         final Class businessInterfaceClass =
             contextLoader.loadClass(businessInterface);
 
-        ClassLoader appClassLoader;
         if(System.getSecurityManager() == null) {
             appClassLoader = businessInterfaceClass.getClassLoader();
         } else {
