@@ -20,7 +20,7 @@ nb-configuration.xml
 /appserver/tests/quicklook/test-output/
 /appserver/tests/quicklook/*.output
 /appserver/tests/quicklook/**/*.war
-*.log
+*test-events.log
 appserver/extras/arquillian-containers/payara-common/dependency-reduced-pom.xml
 appserver/tests/quicklook/quicklook_summary.txt
 **/nbproject
