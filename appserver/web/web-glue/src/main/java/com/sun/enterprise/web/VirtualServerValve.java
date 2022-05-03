@@ -37,12 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2022 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.web;
 
-import org.apache.catalina.Request;
-import org.apache.catalina.Response;
-import org.apache.catalina.core.StandardPipeline;
+import org.apache.catalina.connector.Request;
+import org.apache.catalina.connector.Response;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -57,17 +57,19 @@ import java.util.ResourceBundle;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.apache.catalina.valves.ValveBase;
 import org.glassfish.grizzly.http.util.CharChunk;
 import org.glassfish.web.LogFacade;
 
 /**
- * Pipeline associated with a virtual server.
+ * Valve associated with a virtual server.
  *
- * This pipeline inherits the state (off/disabled) of its associated
- * virtual server, and will abort execution and return an appropriate response
- * error code if its associated virtual server is off or disabled.
+ * This valve inherits the state (off/disabled) of its associated virtual server, and will abort execution and return
+ * an appropriate response error code if its associated virtual server is off or disabled. It can also be configured
+ * to perform a redirect.
  */
-public class VirtualServerPipeline extends StandardPipeline {
+public class VirtualServerValve extends ValveBase {
 
     private static final Logger logger = LogFacade.getLogger();
 
@@ -88,48 +90,45 @@ public class VirtualServerPipeline extends StandardPipeline {
      * @param vs Virtual server with which this VirtualServerPipeline is being
      * associated
      */
-    public VirtualServerPipeline(VirtualServer vs) {
-        super(vs);
+    public VirtualServerValve(VirtualServer vs) {
+        super();
         this.vs = vs;
-        locations = new ConcurrentLinkedQueue<CharChunk>();
+        locations = new ConcurrentLinkedQueue<>();
     }
 
     /**
-     * Processes the specified request, and produces the appropriate
-     * response, by invoking the first valve (if any) of this pipeline, or
-     * the pipeline's basic valve.
+     * Processes the specified request, checking if the associated virtual server
+     * is enabled or not, and if it has any redirects.
      *
-     * @param request The request to process
-     * @param response The response to return
+     * @param request Request to be processed
+     * @param response Response to be produced
+     *
+     * @exception IOException if an input/output error occurred
+     * @exception ServletException if a servlet error occurred
      */
-    public void invoke(Request request, Response response)
-            throws IOException, ServletException {
-
+    @Override
+    public void invoke(Request request, Response response) throws IOException, ServletException {
         if (isOff) {
             String msg = rb.getString(LogFacade.VS_VALVE_OFF);
             msg = MessageFormat.format(msg, new Object[] { vs.getName() });
             if (logger.isLoggable(Level.FINE)) {
                 logger.log(Level.FINE, msg);
             }
-            ((HttpServletResponse) response.getResponse()).sendError(
-                                            HttpServletResponse.SC_NOT_FOUND,
-                                            msg);
+            response.getResponse().sendError(HttpServletResponse.SC_NOT_FOUND, msg);
         } else if (isDisabled) {
             String msg = rb.getString(LogFacade.VS_VALVE_DISABLED);
             msg = MessageFormat.format(msg, new Object[] { vs.getName() });
             if (logger.isLoggable(Level.FINE)) {
                 logger.log(Level.FINE, msg);
             }
-            ((HttpServletResponse) response.getResponse()).sendError(
-                                            HttpServletResponse.SC_FORBIDDEN,
-                                            msg);
+            response.getResponse().sendError(HttpServletResponse.SC_FORBIDDEN, msg);
         } else {
             boolean redirect = false;
             if (redirects != null) {
                 redirect = redirectIfNecessary(request, response);
             }
             if (!redirect) {
-                super.invoke(request, response);
+                getNext().invoke(request, response);
             }
         }
     }
@@ -176,16 +175,6 @@ public class VirtualServerPipeline extends StandardPipeline {
         redirects.add(new RedirectParameters(from, url, urlPrefix, escape));
     }
 
-
-    /**
-     * @return true if this VirtualServerPipeline has any redirects
-     * configured, and false otherwise.
-     */
-    boolean hasRedirects() {
-        return ((redirects != null) && (redirects.size() > 0));
-    }
-
-
     /**
      * Clears all redirects.
      */
@@ -211,8 +200,8 @@ public class VirtualServerPipeline extends StandardPipeline {
             return false;
         }
    
-        HttpServletRequest hreq = (HttpServletRequest) request.getRequest();
-        HttpServletResponse hres = (HttpServletResponse) request.getResponse();
+        HttpServletRequest hreq = request.getRequest();
+        HttpServletResponse hres = request.getResponse();
         String requestURI = hreq.getRequestURI();
         RedirectParameters redirectMatch = null;
 
@@ -285,7 +274,7 @@ public class VirtualServerPipeline extends StandardPipeline {
                         locationCC.append(":");
                         locationCC.append(String.valueOf(url.getPort()));
                     }
-                    locationCC.append(response.encode(url.getPath()));
+                    locationCC.append(response.encodeURL(url.getPath()));
                     if (queryString != null) {
                         locationCC.append("?");
                         locationCC.append(url.getQuery());
