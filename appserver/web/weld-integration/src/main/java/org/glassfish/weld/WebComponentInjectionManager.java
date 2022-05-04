@@ -86,8 +86,8 @@ public class WebComponentInjectionManager<T> implements WebComponentDecorator<T>
             @SuppressWarnings("rawtypes")
             Class<T> clazz = (Class<T>) webComponent.getClass();
             AnnotatedType<T> annotatedType = beanManager.createAnnotatedType(clazz);
-            InjectionTarget<T> injectionTarget = beanManager.createInjectionTarget(annotatedType);
-            injectionTarget.inject(webComponent, ccontext);
+            //InjectionTarget<T> injectionTarget = beanManager.createInjectionTarget(annotatedType);
+            //injectionTarget.inject(webComponent, ccontext);
         }
     }
 }

@@ -48,6 +48,8 @@ import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
 import jakarta.servlet.jsp.JspApplicationContext;
 import jakarta.servlet.jsp.JspFactory;
+
+import java.lang.reflect.Constructor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -79,7 +81,8 @@ public class WeldContextListener implements ServletContextListener {
 
              try {
                  Class<?> weldClass = Class.forName("org.jboss.weld.module.web.el.WeldELContextListener");
-                 WeldELContextListener welcl = ( WeldELContextListener ) weldClass.newInstance();
+                 Constructor contructor = weldClass.getConstructor();
+                 WeldELContextListener welcl = ( WeldELContextListener ) contructor.newInstance();
                  jspAppContext.addELContextListener(welcl);
              } catch (Exception e) {
                  logger.log(Level.WARNING,

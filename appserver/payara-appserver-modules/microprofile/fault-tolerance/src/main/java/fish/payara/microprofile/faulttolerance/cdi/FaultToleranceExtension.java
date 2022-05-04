@@ -215,13 +215,13 @@ public class FaultToleranceExtension implements Extension {
         private final BeanManager bm;
         private final Annotation binding;
         private final BeanAttributes<FaultToleranceInterceptor> beanAttributes;
-        private final InjectionTarget<FaultToleranceInterceptor> injectionTarget;
+        //private final InjectionTarget<FaultToleranceInterceptor> injectionTarget;
 
         ProgrammaticInterceptor(AnnotatedType<FaultToleranceInterceptor> at, BeanManager bm, Annotation binding) {
             this.bm = bm;
             this.binding = binding;
             beanAttributes = bm.createBeanAttributes(at);
-            injectionTarget = bm.createInjectionTarget(at);
+            //injectionTarget = bm.createInjectionTarget(at);
         }
 
         @Override
@@ -246,30 +246,31 @@ public class FaultToleranceExtension implements Extension {
 
         @Override
         public Set<InjectionPoint> getInjectionPoints() {
-            return injectionTarget.getInjectionPoints();
+            //return injectionTarget.getInjectionPoints();
+            return null;
         }
 
-        @Override
+        /*@Override
         public boolean isNullable() {
             return false;
-        }
+        }*/
 
         @Override
         public FaultToleranceInterceptor create(CreationalContext<FaultToleranceInterceptor> creationalContext) {
-            FaultToleranceInterceptor instance = injectionTarget.produce(creationalContext);
-            injectionTarget.inject(instance, creationalContext);
-            injectionTarget.postConstruct(instance);
-            return instance;
+            //FaultToleranceInterceptor instance = injectionTarget.produce(creationalContext);
+            //injectionTarget.inject(instance, creationalContext);
+            //injectionTarget.postConstruct(instance);
+            return null;//instance;
         }
 
         @Override
         public void destroy(FaultToleranceInterceptor instance, CreationalContext<FaultToleranceInterceptor> creationalContext) {
-            try {
+            /*try {
                 injectionTarget.preDestroy(instance);
                 injectionTarget.dispose(instance);
             } finally {
                 creationalContext.release();
-            }
+            }*/
         }
 
         @Override

@@ -147,17 +147,17 @@ public class ACCJCDIServiceImpl implements JCDIService {
             BeanManager beanManager = wc.getBeanManager();
 
             AnnotatedType<T> annotatedType = beanManager.createAnnotatedType(managedClass);
-            InjectionTarget<T> target = beanManager.createInjectionTarget(annotatedType);
+            //InjectionTarget<T> target = beanManager.createInjectionTarget(annotatedType);
 
             CreationalContext<T> cc = beanManager.createCreationalContext(null);
 
-            target.inject(managedObject, cc);
+            //target.inject(managedObject, cc);
 
-            if( invokePostConstruct ) {
-                target.postConstruct(managedObject);
-            }
+            //if( invokePostConstruct ) {
+                //target.postConstruct(managedObject);
+            //}
 
-            context = new JCDIInjectionContextImpl<>(target, cc, managedObject);
+            //context = new JCDIInjectionContextImpl<>(target, cc, managedObject);
         }
 
         return context;
@@ -173,11 +173,11 @@ public class ACCJCDIServiceImpl implements JCDIService {
 
             @SuppressWarnings("unchecked")
             AnnotatedType<T> annotatedType = beanManager.createAnnotatedType((Class<T>) managedObject.getClass());
-            InjectionTarget<T> target = beanManager.createInjectionTarget(annotatedType);
+            //InjectionTarget<T> target = beanManager.createInjectionTarget(annotatedType);
 
             CreationalContext<T> cc = beanManager.createCreationalContext(null);
 
-            target.inject(managedObject, cc);
+            //target.inject(managedObject, cc);
         }
     }
 

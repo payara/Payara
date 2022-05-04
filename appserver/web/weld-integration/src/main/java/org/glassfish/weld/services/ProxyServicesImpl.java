@@ -79,7 +79,7 @@ public class ProxyServicesImpl implements ProxyServices {
     }
 
     
-    @Override
+    //@Override
     public ClassLoader getClassLoader(final Class<?> proxiedBeanType) {
         SecurityManager sm = System.getSecurityManager();
         if (sm != null) {
@@ -144,7 +144,7 @@ public class ProxyServicesImpl implements ProxyServices {
         return tcl;
     }
 
-    @Override
+    //@Override
     public Class<?> loadBeanClass(final String className) {
         try {
             SecurityManager sm = System.getSecurityManager();

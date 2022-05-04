@@ -198,10 +198,10 @@ public class JMSCDIExtension implements Extension {
             return false;
         }
 
-        @Override
+        /*@Override
         public boolean isNullable() {
             return false;
-        }
+        }*/
 
         @Override
         public Object create(CreationalContext ctx) {

@@ -157,10 +157,10 @@ public class ServerSentEventCdiExtension implements Extension {
             return false;
         }
 
-        @Override
-        public boolean isNullable() {
-            return false;
-        }
+        //@Override
+        //public boolean isNullable() {
+          //  return false;
+        //}
 
         @Override
         public Set<InjectionPoint> getInjectionPoints() {
@@ -219,5 +219,6 @@ public class ServerSentEventCdiExtension implements Extension {
         path = path.trim();
         return path.startsWith("/") ? path : "/" + path;
     }
+
 
 }

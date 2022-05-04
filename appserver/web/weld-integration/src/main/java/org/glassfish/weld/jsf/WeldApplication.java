@@ -57,6 +57,7 @@ import org.glassfish.weld.util.Util;
 
 import org.glassfish.wasp.runtime.JspApplicationContextImpl;
 
+@Deprecated
 public class WeldApplication extends ApplicationWrapper {
    
     private final Application application;

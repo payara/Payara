@@ -354,9 +354,9 @@ public class JCDIServiceImpl implements JCDIService {
         BeanManager beanManager = bootstrap.getManager(bda);
         @SuppressWarnings("unchecked")
         AnnotatedType<T> annotatedType = beanManager.createAnnotatedType((Class<T>) managedObject.getClass());
-        InjectionTarget<T> it = beanManager.createInjectionTarget(annotatedType);
+        //InjectionTarget<T> it = beanManager.createInjectionTarget(annotatedType);
         CreationalContext<T> cc = beanManager.createCreationalContext(null);
-        it.inject(managedObject, cc);
+        //it.inject(managedObject, cc);
     }
 
     @SuppressWarnings("rawtypes")

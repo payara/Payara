@@ -282,10 +282,10 @@ public class TransactionScopedCDIUtil {
             return false;
         }
 
-        @Override
+        /*@Override
         public boolean isNullable() {
             return false;
-        }
+        }*/
 
         @Override
         public Object create(CreationalContext<Object> ctx) {
