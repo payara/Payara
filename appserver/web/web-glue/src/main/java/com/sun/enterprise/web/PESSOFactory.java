@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2022] [Payara Foundation and/or its affiliates]
 
 /*
  * PESSOFactory.java
@@ -46,7 +47,7 @@
 
 package com.sun.enterprise.web;
 
-import com.sun.enterprise.security.web.GlassFishSingleSignOn;
+import com.sun.enterprise.security.web.PayaraSingleSignOn;
 
 /**
  * @author lwhite
@@ -61,9 +62,9 @@ public class PESSOFactory implements SSOFactory {
      * Creates a SingleSignOn valve
      * @param virtualServerName
      */
-    public GlassFishSingleSignOn createSingleSignOnValve(
+    public PayaraSingleSignOn createSingleSignOnValve(
             String virtualServerName) {
-        return new GlassFishSingleSignOn();
+        return new PayaraSingleSignOn();
     }
     
 }

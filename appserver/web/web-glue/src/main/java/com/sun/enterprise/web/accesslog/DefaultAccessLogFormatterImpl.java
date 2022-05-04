@@ -37,15 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] [Payara Foundation]
+// Portions Copyright [2018-2022] [Payara Foundation]
 package com.sun.enterprise.web.accesslog;
 
 import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
 import com.sun.enterprise.web.Constants;
 import org.apache.catalina.Container;
 import org.apache.catalina.HttpResponse;
-import org.apache.catalina.Request;
-import org.apache.catalina.Response;
+import org.apache.catalina.connector.Request;
+import org.apache.catalina.connector.Response;
 import org.glassfish.web.LogFacade;
 
 import jakarta.servlet.ServletRequest;

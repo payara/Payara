@@ -37,11 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.web;
 
 import com.sun.enterprise.config.serverbeans.*;
+import com.sun.enterprise.config.serverbeans.AccessLog;
 import com.sun.enterprise.config.serverbeans.VirtualServer;
 import com.sun.enterprise.web.accesslog.AccessLogFormatter;
 import com.sun.enterprise.web.accesslog.CombinedAccessLogFormatterImpl;
@@ -49,7 +50,10 @@ import com.sun.enterprise.web.accesslog.CommonAccessLogFormatterImpl;
 import com.sun.enterprise.web.accesslog.DefaultAccessLogFormatterImpl;
 import com.sun.enterprise.web.pluggable.WebContainerFeatureFactory;
 import com.sun.enterprise.util.io.FileUtils;
+import jakarta.servlet.ServletException;
 import org.apache.catalina.*;
+import org.apache.catalina.connector.Request;
+import org.apache.catalina.connector.Response;
 import org.apache.catalina.valves.ValveBase;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -87,7 +91,7 @@ import org.glassfish.internal.api.LogManager;
 
 public final class PEAccessLogValve
         extends ValveBase
-        implements Runnable {
+        implements Lifecycle, Runnable {
 
     private static final Logger _logger = LogFacade.getLogger();
 
@@ -128,6 +132,8 @@ public final class PEAccessLogValve
             = new SimpleDateFormat(LOG_ROTATION_TIME_FORMAT);
 
     // ----------------------------------------------------- Instance Variables
+    private boolean started;
+
     /**
      * The directory in which log files are created.
      */
@@ -378,15 +384,6 @@ public final class PEAccessLogValve
     }
 
     /**
-     * Return descriptive information about this implementation.
-     * @return
-     */
-    @Override
-    public String getInfo() {
-        return info;
-    }
-
-    /**
      * Set the format pattern, first translating any recognized alias.
      *
      * @param p The new pattern
@@ -553,19 +550,18 @@ public final class PEAccessLogValve
      * @return
      */
     @Override
-    public int invoke(Request request, Response response) {
-
-        if (formatter!=null && formatter.needTimeTaken()) {
+    public void invoke(Request request, Response response) throws IOException, ServletException {
+        if (formatter != null && formatter.needTimeTaken()) {
             request.setNote(Constants.REQUEST_START_TIME_NOTE, System.currentTimeMillis());
         }
-
-        return INVOKE_NEXT;
+        try {
+            getNext().invoke(request, response);
+        } finally {
+            postInvoke(request, response);
+        }
     }
 
-    @Override
-    public void postInvoke(Request request, Response response)
-            throws IOException {
-
+    private void postInvoke(Request request, Response response) throws IOException {
         if (!started || condition!=null &&
                 null!=request.getRequest().getAttribute(condition)) {
             return;
@@ -1150,35 +1146,6 @@ public final class PEAccessLogValve
     }
 
     // ------------------------------------------------------ Lifecycle Methods
-    /**
-     * Add a lifecycle event listener to this component.
-     *
-     * @param listener The listener to add
-     */
-    @Override
-    public void addLifecycleListener(LifecycleListener listener) {
-        lifecycle.addLifecycleListener(listener);
-    }
-
-    /**
-     * Gets the (possibly empty) list of lifecycle listeners associated
-     * with this PEAccessLogValve.
-     * @return
-     */
-    @Override
-    public List<LifecycleListener> findLifecycleListeners() {
-        return lifecycle.findLifecycleListeners();
-    }
-
-    /**
-     * Remove a lifecycle event listener from this component.
-     *
-     * @param listener The listener to add
-     */
-    @Override
-    public void removeLifecycleListener(LifecycleListener listener) {
-        lifecycle.removeLifecycleListener(listener);
-    }
 
     /**
      * Prepare for the beginning of active use of the public methods of this
@@ -1189,14 +1156,12 @@ public final class PEAccessLogValve
      *  that prevents this component from being used
      */
     @Override
-    public void start() throws LifecycleException {
+    protected void startInternal() throws LifecycleException {
 
         // Validate and update our current component state
         if (started) {
             throw new LifecycleException(_resourceBundle.getString(LogFacade.ACCESS_LOG_ALREADY_STARTED));
         }
-
-        lifecycle.fireLifecycleEvent(START_EVENT, null);
 
         if (bufferSize <= MIN_BUFFER_SIZE) {
             bufferSize = MIN_BUFFER_SIZE;
@@ -1244,14 +1209,14 @@ public final class PEAccessLogValve
      *  that needs to be reported
      */
     @Override
-    public void stop() throws LifecycleException {
+    protected void stopInternal() throws LifecycleException {
 
         // Validate and update our current component state
         if (!started) {
             throw new LifecycleException(_resourceBundle.getString(LogFacade.ACCESS_LOG_NOT_STARTED));
         }
 
-        lifecycle.fireLifecycleEvent(STOP_EVENT, null);
+        //lifecycle.fireLifecycleEvent(STOP_EVENT, null);
         started = false;
 
         if (!flushRealTime){

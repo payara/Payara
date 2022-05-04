@@ -74,6 +74,8 @@ import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
+import com.sun.enterprise.web.logger.CatalinaLogger;
+import com.sun.enterprise.security.web.AbstractSingleSignOn;
 import jakarta.servlet.http.Cookie;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
@@ -158,13 +160,11 @@ import com.sun.enterprise.config.serverbeans.SecurityService;
 import com.sun.enterprise.config.serverbeans.ServerTags;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.deployment.Application;
-import com.sun.enterprise.security.web.GlassFishSingleSignOn;
 import com.sun.enterprise.server.logging.GFFileHandler;
 import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.admin.report.PlainTextActionReporter;
 import com.sun.enterprise.v3.services.impl.GrizzlyProxy;
 import com.sun.enterprise.v3.services.impl.GrizzlyService;
-import com.sun.enterprise.web.logger.CatalinaLogger;
 import com.sun.enterprise.web.logger.FileLoggerHandler;
 import com.sun.enterprise.web.logger.FileLoggerHandlerFactory;
 import com.sun.enterprise.web.pluggable.WebContainerFeatureFactory;
@@ -664,11 +664,13 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
     }
 
     private void setLogger(Logger newLogger, String logLevel) {
+        // Set as the logger for this VirtualServer
         _logger = newLogger;
-        // wrap into a cataline logger
+
+        // Also set as the overall container logger, wrapping into a Apache JULI logger
         CatalinaLogger catalinaLogger = new CatalinaLogger(newLogger);
         catalinaLogger.setLevel(logLevel);
-        setLogger(catalinaLogger);
+        logger = catalinaLogger;
     }
 
     /**
@@ -1141,13 +1143,13 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
                 _logger.log(Level.FINE, LogFacade.ENABLE_SSO, getID());
             }
 
-            GlassFishSingleSignOn sso = null;
+            AbstractSingleSignOn<?> sso = null;
 
             // find existing SSO (if any), in case of a reconfig
             Valve[] valves = getPipeline().getValves();
             for (int i = 0; valves != null && i < valves.length; i++) {
-                if (valves[i] instanceof GlassFishSingleSignOn) {
-                    sso = (GlassFishSingleSignOn) valves[i];
+                if (valves[i] instanceof AbstractSingleSignOn) {
+                    sso = (AbstractSingleSignOn<?>) valves[i];
                     break;
                 }
             }

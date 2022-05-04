@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,62 +38,259 @@
  * holder.
  */
 
+// Portions Copyright 2022 Payara Foundation and/or its affiliates
+
 package com.sun.enterprise.web.logger;
 
-import com.sun.enterprise.util.logging.IASLevel;
+import jakarta.servlet.ServletException;
+import org.apache.catalina.LifecycleException;
+import org.apache.juli.logging.Log;
 
+import java.io.CharArrayWriter;
+import java.io.PrintWriter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * This is an adapter of java.util.logging.Logger to org.apache.catalina.Logger.
- *
- * @author Shing Wai Chan
- *
+ * Apache JULI {@link Log} implementation for Catalina. Constructed from the older CatalinaLogger, BaseLogger, and
+ * IASLogger classes.
  */
-public final class CatalinaLogger extends LoggerBase {
-    private Logger logger = null;
+public class CatalinaLogger implements Log {
 
     /**
-     * Construct a new instance of this class, that uses the specified
-     * logger instance.
-     *
-     * @param logger The logger to send log messages to
+     * The descriptive information about this implementation.
+     */
+    protected static final String info = "com.sun.enterprise.web.logger.CatalinaLogger/2.0";
+
+    protected Logger logger;
+
+    /**
+     * Construct an instance and set the JUL logger name using the given name.
+     * This is the constructor that the Apache {@link org.apache.juli.logging.LogFactory} looks for via its
+     * ServiceLoader mechanism
+     * @param name The name of the JUL logger to create
+     */
+    public CatalinaLogger(String name) {
+        logger = Logger.getLogger(name);
+    }
+
+    /**
+     * Construct an instance and use the provided JUL logger.
+     * @param logger
      */
     public CatalinaLogger(Logger logger) {
         this.logger = logger;
     }
 
     @Override
-    protected void write(String msg, int verbosity) {
-        
+    public boolean isDebugEnabled() {
+        return logger.isLoggable(Level.FINE);
+    }
+
+    @Override
+    public boolean isErrorEnabled() {
+        return logger.isLoggable(Level.SEVERE);
+    }
+
+    @Override
+    public boolean isFatalEnabled() {
+        return logger.isLoggable(Level.SEVERE);
+    }
+
+    @Override
+    public boolean isInfoEnabled() {
+        return logger.isLoggable(Level.INFO);
+    }
+
+    @Override
+    public boolean isTraceEnabled() {
+        return logger.isLoggable(Level.FINER);
+    }
+
+    @Override
+    public boolean isWarnEnabled() {
+        return logger.isLoggable(Level.WARNING);
+    }
+
+    @Override
+    public void trace(Object message) {
+        write(message.toString(), Level.FINER);
+    }
+
+    @Override
+    public void trace(Object message, Throwable throwable) {
+        write(message.toString(), throwable, Level.FINER);
+    }
+
+    @Override
+    public void debug(Object message) {
+        write(message.toString(), Level.FINE);
+    }
+
+    @Override
+    public void debug(Object message, Throwable throwable) {
+        write(message.toString(), throwable, Level.FINE);
+    }
+
+    @Override
+    public void info(Object message) {
+        write(message.toString(), Level.INFO);
+    }
+
+    @Override
+    public void info(Object message, Throwable throwable) {
+        write(message.toString(), throwable, Level.INFO);
+    }
+
+    @Override
+    public void warn(Object message) {
+        write(message.toString(), Level.WARNING);
+    }
+
+    @Override
+    public void warn(Object message, Throwable throwable) {
+        write(message.toString(), throwable, Level.WARNING);
+    }
+
+    @Override
+    public void error(Object message) {
+        write(message.toString(), Level.SEVERE);
+    }
+
+    @Override
+    public void error(Object message, Throwable throwable) {
+        write(message.toString(), throwable, Level.SEVERE);
+    }
+
+    @Override
+    public void fatal(Object message) {
+        write(message.toString(), Level.SEVERE);
+    }
+
+    @Override
+    public void fatal(Object message, Throwable throwable) {
+        write(message.toString(), throwable, Level.SEVERE);
+    }
+
+    /**
+     * Return descriptive information about this Logger implementation and
+     * the corresponding version number, in the format
+     * <code>&lt;description&gt;/&lt;version&gt;</code>.
+     */
+    public String getInfo() {
+        return (info);
+    }
+
+    /**
+     * Writes the specified message to a servlet log file, usually an event
+     * log.  The name and type of the servlet log is specific to the
+     * servlet container. 
+     *
+     * @param msg A <code>String</code> specifying the message to be
+     *  written to the log file
+     */
+    public void log(String msg) {
+        debug(msg);
+    }
+
+    /**
+     * Writes the specified exception, and message, to a servlet log file.
+     * The implementation of this method should call
+     * <code>log(msg, exception)</code> instead.  This method is deprecated
+     * in the ServletContext interface, but not deprecated here to avoid
+     * many useless compiler warnings.  This message will be logged
+     * unconditionally.
+     *
+     * @param exception An <code>Exception</code> to be reported
+     * @param msg The associated message string
+     */
+    public void log(Exception exception, String msg) {
+        log(msg, exception);
+    }
+
+    /**
+     * Writes an explanatory message and a stack trace for a given
+     * <code>Throwable</code> exception to the servlet log file.  The name
+     * and type of the servlet log file is specific to the servlet container,
+     * usually an event log.  This message will be logged unconditionally.
+     *
+     * @param msg A <code>String</code> that describes the error or
+     *  exception
+     * @param throwable The <code>Throwable</code> error or exception
+     */
+    public void log(String msg, Throwable throwable) {
+        write(msg, throwable, Level.SEVERE);
+    }
+
+    /**
+     * Writes the specified message to the servlet log file, usually an event
+     * log, if the logger is set to a verbosity level equal to or higher than
+     * the specified value for this message.
+     *
+     * @param message A <code>String</code> specifying the message to be
+     *  written to the log file
+     * @param level Verbosity {@link Level} of this message
+     */
+    public void log(String message, Level level) {
+        write(message, level);
+    }
+
+    /**
+     * Writes the specified message and exception to the servlet log file,
+     * usually an event log, if the logger is set to a verbosity level equal
+     * to or higher than the specified value for this message.
+     *
+     * @param message A <code>String</code> that describes the error or
+     *  exception
+     * @param throwable The <code>Throwable</code> error or exception
+     * @param level Verbosity {@link Level} of this message
+     */
+    public void log(String message, Throwable throwable, Level level) {
+        write(message, throwable, level);
+    }
+
+    protected void write(String msg, Throwable throwable, Level level) {
+        CharArrayWriter buf = new CharArrayWriter();
+        PrintWriter writer = new PrintWriter(buf);
+        writer.println(msg);
+        throwable.printStackTrace(writer);
+        Throwable rootCause = null;
+        if (throwable instanceof LifecycleException)
+            rootCause = throwable.getCause();
+        else if (throwable instanceof ServletException)
+            rootCause = ((ServletException) throwable).getRootCause();
+        if (rootCause != null) {
+            writer.println("----- Root Cause -----");
+            rootCause.printStackTrace(writer);
+        }
+        write(buf.toString(), level);
+    }
+
+    /**
+     * Logs the given message at the given verbosity level.
+     */
+    protected void write(String msg, Level level) {
         if (logger == null) {
             return;
         }
 
-        Level level = Level.INFO;
-
-        if (verbosity == FATAL) {
-            level = (Level)IASLevel.FATAL;
-        } else if (verbosity == ERROR) {
-            level = Level.SEVERE;
-        } else if (verbosity == WARNING) {
-            level = Level.WARNING;
-        } else if (verbosity == INFORMATION) {
-            level = Level.INFO;
-        } else if (verbosity == DEBUG) {
-            level = Level.FINER;
+        // Get the stack trace.
+        StackTraceElement stack[] = (new Throwable()).getStackTrace();
+        String classname = "";
+        String methodname = "";
+        for (int ix=0; ix < stack.length; ix++) {
+            StackTraceElement frame = stack[ix];
+            classname = frame.getClassName();
+            if (!classname.startsWith("com.sun.enterprise.web.logger")) {
+                // We've found the relevant frame. Get Method Name.
+                methodname = frame.getMethodName();
+                break;
+            }
         }
 
-        logger.log(level, msg);
+        logger.logp(level, classname, methodname, msg);
     }
 
-    /**
-     * Set the verbosity level of this logger.  Messages logged with a
-     * higher verbosity than this level will be silently ignored.
-     * 
-     * @param logLevel The new verbosity level, as a string
-     */
     public void setLevel(String logLevel) {
         if ("SEVERE".equalsIgnoreCase(logLevel)) {
             logger.setLevel(Level.SEVERE);
@@ -113,4 +310,5 @@ public final class CatalinaLogger extends LoggerBase {
             logger.setLevel(Level.INFO);
         }
     }
+
 }
