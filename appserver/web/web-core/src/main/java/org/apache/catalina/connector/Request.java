@@ -106,6 +106,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static java.lang.Integer.parseInt;
+import org.glassfish.grizzly.http.Protocol;
 
 /**
  * Wrapper object for the Coyote request.
@@ -4063,18 +4064,20 @@ public class Request implements HttpRequest, HttpServletRequest {
             context.getManager().isSessionVersioningSupported();
     }
 
-    @Override
+        @Override
     public String getRequestId() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return coyoteRequest.getRequestId();
     }
 
     @Override
     public String getProtocolRequestId() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return coyoteRequest.getProtocolRequestId();
     }
 
     @Override
     public ServletConnection getServletConnection() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        String connectionId = coyoteRequest.getConnection() == null ? null : Long.toString(coyoteRequest.getConnection().getId());
+        return new ServletConnectionImpl(connectionId, coyoteRequest.getProtocol(), coyoteRequest.isSecure());
     }
+
 }
