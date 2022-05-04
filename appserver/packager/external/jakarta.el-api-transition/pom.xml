@@ -51,12 +51,12 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>jakarta.servlet-api</artifactId>
+    <artifactId>jakarta.el-api</artifactId>
 
     <dependencies>
         <dependency>
-            <groupId>jakarta.servlet</groupId>
-            <artifactId>jakarta.servlet-api</artifactId>
+            <groupId>jakarta.el</groupId>
+            <artifactId>jakarta.el-api</artifactId>
             <scope>provided</scope>
         </dependency>
     </dependencies>
@@ -75,13 +75,9 @@
                         <phase>package</phase>
                         <configuration>
                             <instructions>
-                                <Embed-Dependency>jakarta.servlet-api;inline=true</Embed-Dependency>
+                                <Embed-Dependency>jakarta.el-api;inline=true</Embed-Dependency>
                                 <Export-Package>jakarta.*,
-                                    jakarta.servlet;version="5.1.9";uses:="jakarta.servlet.annotation,jakarta.servlet.descriptor",
-                                    jakarta.servlet.annotation;version="5.1.9";uses:="jakarta.servlet",
-                                    jakarta.servlet.descriptor;version="5.1.9",
-                                    jakarta.servlet.http;version="5.1.9";uses:="jakarta.servlet",
-                                    jakarta.servlet.resources;version="5.1.9"</Export-Package>
+                                    jakarta.el;version="4.0.0"</Export-Package>
                             </instructions>
                         </configuration>
                     </execution>
