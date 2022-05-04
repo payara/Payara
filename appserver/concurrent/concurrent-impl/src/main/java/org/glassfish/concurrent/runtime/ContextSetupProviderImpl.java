@@ -106,10 +106,10 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
 
     // Predefined handlers for context propagation
     // TODO: replace with ConcurrentRuntime.CONTEXT_INFO_* ?
-    public static final String CONTEXT_TYPE_CLASSLOADING = "CLASSLOADING";
-    public static final String CONTEXT_TYPE_SECURITY = "SECURITY";
-    public static final String CONTEXT_TYPE_NAMING = "NAMING";
-    public static final String CONTEXT_TYPE_WORKAREA = "WORKAREA";
+    public static final String CONTEXT_TYPE_CLASSLOADING = "CLASSLOADING"; // Conccurency 3.0: N/A
+    public static final String CONTEXT_TYPE_SECURITY = "SECURITY"; // Conccurency 3.0: SECURITY
+    public static final String CONTEXT_TYPE_NAMING = "NAMING"; // Conccurency 3.0: APPLICATION
+    public static final String CONTEXT_TYPE_WORKAREA = "WORKAREA"; // Conccurency 3.0: TRANSACTION
 
     // TODO: do we need these booleans if we have sets?
     private boolean classloading, security, naming, workArea;
@@ -117,6 +117,10 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
     private final Set<String> contextClear;
     private final Set<String> contextUnchanged;
     private Map<String, ThreadContextProvider> allThreadContextProviders = null;
+    /**
+     * Points to the context, which contains ALL_REMAINING.
+     */
+    private final Set<String> allRemaining;
 
     private transient RequestTracingService requestTracing;
     private transient OpenTracingService openTracing;
@@ -142,6 +146,23 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         contextClear = new HashSet<>(cleared);
         contextUnchanged = new HashSet<>(unchanged);
 
+        // process ALL_REMAINING
+        if (contextPropagate.contains(ContextServiceDefinition.ALL_REMAINING)) {
+            allRemaining = contextPropagate;
+        } else if (contextClear.contains(ContextServiceDefinition.ALL_REMAINING)) {
+            allRemaining = contextClear;
+        } else if (contextUnchanged.contains(ContextServiceDefinition.ALL_REMAINING)) {
+            allRemaining = contextUnchanged;
+        } else {
+            allRemaining = contextPropagate; // By default, propagate contexts
+        }
+
+        // put standard "providers" to Remaining if not specified
+        addToRemainingIfNotPresent(CONTEXT_TYPE_CLASSLOADING);
+        addToRemainingIfNotPresent(CONTEXT_TYPE_SECURITY);
+        addToRemainingIfNotPresent(CONTEXT_TYPE_NAMING);
+        addToRemainingIfNotPresent(CONTEXT_TYPE_WORKAREA);
+
         initialiseServices();
 
         for (String contextType : propagated) {
@@ -155,7 +176,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
                 case CONTEXT_TYPE_NAMING:
                     naming = true;
                     break;
-                case CONTEXT_TYPE_WORKAREA:;
+                case CONTEXT_TYPE_WORKAREA:
                     workArea = true;
                     break;
             }
@@ -184,35 +205,37 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
 //        if (allThreadContextProviders == null) {
 //            synchronized (this) {
 //                if (allThreadContextProviders == null) {
-                    allThreadContextProviders = new HashMap<>();
-                    for (ThreadContextProvider service : ServiceLoader.load(jakarta.enterprise.concurrent.spi.ThreadContextProvider.class, Utility.getClassLoader())) {
-                        String serviceName = service.getThreadContextType();
-                        if (contextPropagate.contains(serviceName) || contextClear.contains(serviceName) || contextUnchanged.contains(serviceName)) {
-                            allThreadContextProviders.put(serviceName, service);
-                        } else {
-                            if (contextPropagate.contains(ContextServiceDefinition.ALL_REMAINING)) {
-                                contextPropagate.add(serviceName);
-                                allThreadContextProviders.put(serviceName, service);
-                            } else if (contextClear.contains(ContextServiceDefinition.ALL_REMAINING)) {
-                                contextClear.add(serviceName);
-                                allThreadContextProviders.put(serviceName, service);
-                            } else if (contextUnchanged.contains(ContextServiceDefinition.ALL_REMAINING)) {
-                                contextUnchanged.add(serviceName);
-                                allThreadContextProviders.put(serviceName, service);
-                            }
-                        }
-                    }
-                    // check, if there is no unexpected provider name
-                    verifyProviders(contextPropagate);
-                    verifyProviders(contextClear);
-                    verifyProviders(contextUnchanged);
+        allThreadContextProviders = new HashMap<>();
+        for (ThreadContextProvider service : ServiceLoader.load(jakarta.enterprise.concurrent.spi.ThreadContextProvider.class, Utility.getClassLoader())) {
+            String serviceName = service.getThreadContextType();
+            if (contextPropagate.contains(serviceName) || contextClear.contains(serviceName) || contextUnchanged.contains(serviceName)) {
+                allThreadContextProviders.put(serviceName, service);
+            } else {
+                if (allRemaining != null) {
+                    allRemaining.add(serviceName);
+                    allThreadContextProviders.put(serviceName, service);
+                }
+            }
+        }
+        // check, if there is no unexpected provider name
+        verifyProviders(contextPropagate);
+        verifyProviders(contextClear);
+        verifyProviders(contextUnchanged);
 //                }
 //            }
 //        }
 
         ComponentInvocation currentInvocation = invocationManager.getCurrentInvocation();
-        if (currentInvocation != null && !contextUnchanged.contains(CONTEXT_TYPE_NAMING)) {
-            savedInvocation = createComponentInvocation(currentInvocation);
+//        if (currentInvocation != null && !contextUnchanged.contains(CONTEXT_TYPE_NAMING)) {
+//            savedInvocation = createComponentInvocation(currentInvocation);
+//        }
+        if (currentInvocation != null) {
+            if (contextPropagate.contains(CONTEXT_TYPE_NAMING)) {
+                savedInvocation = createComponentInvocation(currentInvocation);
+            }
+            if (contextClear.contains(CONTEXT_TYPE_NAMING)) {
+                savedInvocation = new ComponentInvocation();
+            }
         }
         boolean useTransactionOfExecutionThread = (transactionManager == null && useTransactionOfExecutionThread(contextObjectProperties))
                 || contextUnchanged.contains(CONTEXT_TYPE_WORKAREA);
@@ -231,7 +254,6 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
                 .map(snapshot -> snapshot.clearedContext(contextObjectProperties))
                 .forEach(snapshot -> threadContextSnapshots.add(snapshot));
 
-        // TODO - support workarea propagation
         return new InvocationContext(savedInvocation, contextClassloader, currentSecurityContext, useTransactionOfExecutionThread,
                 threadContextSnapshots, Collections.EMPTY_LIST);
     }
@@ -294,7 +316,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
             SecurityContext.setCurrent(handle.getSecurityContext());
         }
 
-        if (invocation != null && !handle.isUseTransactionOfExecutionThread()) {
+        if (invocation != null) {
             // Each invocation needs a ResourceTableKey that returns a unique hashCode for TransactionManager
             invocation.setResourceTableKey(new PairKey(invocation.getInstance(), Thread.currentThread()));
             invocationManager.preInvoke(invocation);
@@ -473,6 +495,13 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
                     }
                     break;
             }
+        }
+    }
+
+    private void addToRemainingIfNotPresent(String contextType) {
+        if (!(contextPropagate.contains(contextType) || contextClear.contains(contextType) || contextUnchanged.contains(contextType))) {
+            // such context type is not present in any context
+            allRemaining.add(contextType);
         }
     }
 
