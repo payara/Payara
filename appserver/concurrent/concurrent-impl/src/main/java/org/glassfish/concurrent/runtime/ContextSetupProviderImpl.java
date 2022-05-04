@@ -202,9 +202,6 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         }
 
         // TODO: put initialization of providers to better place; caching is a problem due to different classloaders
-//        if (allThreadContextProviders == null) {
-//            synchronized (this) {
-//                if (allThreadContextProviders == null) {
         allThreadContextProviders = new HashMap<>();
         for (ThreadContextProvider service : ServiceLoader.load(jakarta.enterprise.concurrent.spi.ThreadContextProvider.class, Utility.getClassLoader())) {
             String serviceName = service.getThreadContextType();
@@ -221,14 +218,8 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         verifyProviders(contextPropagate);
         verifyProviders(contextClear);
         verifyProviders(contextUnchanged);
-//                }
-//            }
-//        }
 
         ComponentInvocation currentInvocation = invocationManager.getCurrentInvocation();
-//        if (currentInvocation != null && !contextUnchanged.contains(CONTEXT_TYPE_NAMING)) {
-//            savedInvocation = createComponentInvocation(currentInvocation);
-//        }
         if (currentInvocation != null) {
             if (contextPropagate.contains(CONTEXT_TYPE_NAMING)) {
                 savedInvocation = createComponentInvocation(currentInvocation);
@@ -289,13 +280,6 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
                     }
                 }
             }
-            // TODO - implementation of JNDI clear and unchanged, not working
-//            if (contextClear.contains(CONTEXT_TYPE_NAMING)) {
-//                invocation.setJNDIEnvironment(null);
-//            } else if (contextUnchanged.contains(CONTEXT_TYPE_NAMING)) {
-//                ComponentInvocation currentInvocation = invocationManager.getCurrentInvocation();
-//                invocation.setJNDIEnvironment(currentInvocation == null ? null : currentInvocation.getJNDIEnvironment());
-//            }
         }
 
         // Check whether the application component submitting the task is still running. Throw IllegalStateException if not.
