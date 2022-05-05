@@ -55,6 +55,9 @@ public class ContextServiceDefinitionNode extends DeploymentDescriptorNode<Conte
     protected java.util.Map getDispatchTable() {
         java.util.Map table = super.getDispatchTable();
         table.put(TagNames.CONTEXT_SERVICE_NAME, "setName");
+        table.put(TagNames.CONTEXT_SERVICE_PROPAGATED, "addPropagated");
+        table.put(TagNames.CONTEXT_SERVICE_CLEARED, "addCleared");
+        table.put(TagNames.CONTEXT_SERVICE_UNCHANGED, "addUnchanged");
         return table;
     }
 
