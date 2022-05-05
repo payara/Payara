@@ -282,11 +282,6 @@ public class TransactionScopedCDIUtil {
             return false;
         }
 
-        /*@Override
-        public boolean isNullable() {
-            return false;
-        }*/
-
         @Override
         public Object create(CreationalContext<Object> ctx) {
             try (Context eeCtx = ctxUtil.isPresent() ? ctxUtil.get().pushContext() : null) {

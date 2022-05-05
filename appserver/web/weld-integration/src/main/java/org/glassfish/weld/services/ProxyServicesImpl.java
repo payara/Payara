@@ -78,8 +78,7 @@ public class ProxyServicesImpl implements ProxyServices {
         clh = services.getService(ClassLoaderHierarchy.class);
     }
 
-    
-    //@Override
+
     public ClassLoader getClassLoader(final Class<?> proxiedBeanType) {
         SecurityManager sm = System.getSecurityManager();
         if (sm != null) {

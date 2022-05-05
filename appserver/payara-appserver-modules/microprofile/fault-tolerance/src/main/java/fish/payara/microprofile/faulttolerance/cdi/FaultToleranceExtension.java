@@ -71,6 +71,7 @@ import jakarta.enterprise.inject.spi.Interceptor;
 import jakarta.enterprise.inject.spi.ProcessAnnotatedType;
 import jakarta.enterprise.inject.spi.WithAnnotations;
 import jakarta.enterprise.inject.spi.configurator.AnnotatedMethodConfigurator;
+import jakarta.enterprise.inject.spi.InjectionTargetFactory;
 import jakarta.interceptor.InvocationContext;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
@@ -215,13 +216,14 @@ public class FaultToleranceExtension implements Extension {
         private final BeanManager bm;
         private final Annotation binding;
         private final BeanAttributes<FaultToleranceInterceptor> beanAttributes;
-        //private final InjectionTarget<FaultToleranceInterceptor> injectionTarget;
+        private final InjectionTarget<FaultToleranceInterceptor> injectionTarget;
 
         ProgrammaticInterceptor(AnnotatedType<FaultToleranceInterceptor> at, BeanManager bm, Annotation binding) {
             this.bm = bm;
             this.binding = binding;
             beanAttributes = bm.createBeanAttributes(at);
-            //injectionTarget = bm.createInjectionTarget(at);
+            InjectionTargetFactory<FaultToleranceInterceptor> itf = bm.getInjectionTargetFactory(at);
+            injectionTarget = itf.createInjectionTarget(null);
         }
 
         @Override
@@ -246,31 +248,25 @@ public class FaultToleranceExtension implements Extension {
 
         @Override
         public Set<InjectionPoint> getInjectionPoints() {
-            //return injectionTarget.getInjectionPoints();
-            return null;
+            return injectionTarget.getInjectionPoints();
         }
-
-        /*@Override
-        public boolean isNullable() {
-            return false;
-        }*/
 
         @Override
         public FaultToleranceInterceptor create(CreationalContext<FaultToleranceInterceptor> creationalContext) {
-            //FaultToleranceInterceptor instance = injectionTarget.produce(creationalContext);
-            //injectionTarget.inject(instance, creationalContext);
-            //injectionTarget.postConstruct(instance);
-            return null;//instance;
+            FaultToleranceInterceptor instance = injectionTarget.produce(creationalContext);
+            injectionTarget.inject(instance, creationalContext);
+            injectionTarget.postConstruct(instance);
+            return instance;
         }
 
         @Override
         public void destroy(FaultToleranceInterceptor instance, CreationalContext<FaultToleranceInterceptor> creationalContext) {
-            /*try {
+            try {
                 injectionTarget.preDestroy(instance);
                 injectionTarget.dispose(instance);
             } finally {
                 creationalContext.release();
-            }*/
+            }
         }
 
         @Override

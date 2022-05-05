@@ -58,6 +58,8 @@ import jakarta.enterprise.context.spi.CreationalContext;
 import jakarta.enterprise.inject.spi.AnnotatedType;
 import jakarta.enterprise.inject.spi.BeanManager;
 import jakarta.enterprise.inject.spi.InjectionTarget;
+import jakarta.enterprise.inject.spi.InjectionTargetFactory;
+import jakarta.enterprise.inject.spi.Bean;
 import jakarta.inject.Inject;
 import javax.naming.NamingException;
 import jakarta.servlet.ServletContext;
@@ -147,17 +149,17 @@ public class ACCJCDIServiceImpl implements JCDIService {
             BeanManager beanManager = wc.getBeanManager();
 
             AnnotatedType<T> annotatedType = beanManager.createAnnotatedType(managedClass);
-            //InjectionTarget<T> target = beanManager.createInjectionTarget(annotatedType);
+            InjectionTargetFactory<T> target = beanManager.getInjectionTargetFactory(annotatedType);
 
             CreationalContext<T> cc = beanManager.createCreationalContext(null);
 
-            //target.inject(managedObject, cc);
+            InjectionTarget it = target.createInjectionTarget((Bean<T>) managedObject);
 
-            //if( invokePostConstruct ) {
-                //target.postConstruct(managedObject);
-            //}
+            if( invokePostConstruct ) {
+                it.postConstruct(managedObject);
+            }
 
-            //context = new JCDIInjectionContextImpl<>(target, cc, managedObject);
+            context = new JCDIInjectionContextImpl(it, cc, managedObject);
         }
 
         return context;
@@ -173,11 +175,13 @@ public class ACCJCDIServiceImpl implements JCDIService {
 
             @SuppressWarnings("unchecked")
             AnnotatedType<T> annotatedType = beanManager.createAnnotatedType((Class<T>) managedObject.getClass());
-            //InjectionTarget<T> target = beanManager.createInjectionTarget(annotatedType);
+
+            InjectionTargetFactory<T> itf = beanManager.getInjectionTargetFactory(annotatedType);
+            InjectionTarget<T> target = itf.createInjectionTarget((Bean<T>)managedObject);
 
             CreationalContext<T> cc = beanManager.createCreationalContext(null);
 
-            //target.inject(managedObject, cc);
+            target.inject(managedObject, cc);
         }
     }
 

@@ -134,12 +134,6 @@ public class HK2CDIBean<T> implements Bean<T> {
     public boolean isAlternative() {
         return false;
     }
-
-    /*@Override
-    public boolean isNullable() {
-        // TODO, some scoped DO support a null return
-        return false;
-    }*/
     
     public ActiveDescriptor<T> getHK2Descriptor() {
         return descriptor;
