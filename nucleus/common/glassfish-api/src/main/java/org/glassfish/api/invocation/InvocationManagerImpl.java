@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 package org.glassfish.api.invocation;
 
 import static java.lang.ThreadLocal.withInitial;
@@ -77,8 +77,7 @@ public class InvocationManagerImpl implements InvocationManager {
 
     private static final Logger LOGGER = Logger.getLogger(InvocationManagerImpl.class.getName());
 
-    private final ThreadLocal<InvocationFrames> framesByThread;
-//    private final InheritableThreadLocal<InvocationFrames> framesByThread;
+    private final InheritableThreadLocal<InvocationFrames> framesByThread;
     private final ThreadLocal<Deque<ApplicationEnvironment>> appEnvironments = withInitial(ArrayDeque::new);
     private final ThreadLocal<Deque<Method>> webServiceMethods = withInitial(ArrayDeque::new);
     private final ConcurrentMap<ComponentInvocationType, ListComponentInvocationHandler> typeHandlers = new ConcurrentHashMap<>();
@@ -100,19 +99,17 @@ public class InvocationManagerImpl implements InvocationManager {
     private InvocationManagerImpl(Iterable<ComponentInvocationHandler> handlers) {
         this.allTypesHandler = initInvocationHandlers(handlers);
 
-//        framesByThread = new InheritableThreadLocal<InvocationFrames>() {
-        framesByThread = new ThreadLocal<InvocationFrames>() {
+        framesByThread = new InheritableThreadLocal<InvocationFrames>() {
 
             @Override
             protected InvocationFrames initialValue() {
                 return new InvocationFrames();
             }
 
-            // comment
-//            @Override
-//            protected InvocationFrames childValue(InvocationFrames parentValue) {
-//                return computeChildTheadInvocation(parentValue);
-//            }
+            @Override
+            protected InvocationFrames childValue(InvocationFrames parentValue) {
+                return computeChildTheadInvocation(parentValue);
+            }
         };
     }
 
