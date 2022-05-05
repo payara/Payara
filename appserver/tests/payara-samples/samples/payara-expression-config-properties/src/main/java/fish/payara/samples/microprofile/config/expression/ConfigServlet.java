@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2020-2022] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -85,7 +85,8 @@ public class ConfigServlet extends HttpServlet {
                 "\n" + "Password Alias from File: " + config.getOptionalValue("fish.payara.examples.expression.password", String.class).orElse(null) +
                 "\n" + "System Property Alias from File: " + config.getOptionalValue("fish.payara.examples.expression.system", String.class).orElse(null) +
                 "\n" + "Environment Variable Alias referencing System Property Alias from File: " + config.getOptionalValue("fish.payara.examples.expression.recurse", String.class).orElse(null) +
-                "\n" + "Environment Variable Alias and System Property Alias from File (same property): " + config.getOptionalValue("fish.payara.examples.expression.multiple", String.class).orElse(null));
+                "\n" + "Environment Variable Alias and System Property Alias from File (same property): " + config.getOptionalValue("fish.payara.examples.expression.multiple", String.class).orElse(null) +
+                "\n" + "Optional non-existent Config Value: " + config.getOptionalValue("fish.payara.examples.expression.nonexistent", String.class).orElse(null));
     }
 
     @SuppressWarnings({"unchecked"})

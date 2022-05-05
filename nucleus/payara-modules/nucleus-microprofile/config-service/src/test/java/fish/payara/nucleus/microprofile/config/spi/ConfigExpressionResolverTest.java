@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2021] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2021-2022] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -122,11 +122,6 @@ public class ConfigExpressionResolverTest {
         ConfigValue result = resolver.resolve("reference.concat");
         assertEquals("1${key}${key}2", result.getRawValue());
         assertEquals("1valuevalue2", result.getValue());
-    }
-
-    @Test(expected = NoSuchElementException.class)
-    public void testNonExistantReference() {
-        resolver.resolve("reference.not.found");
     }
 
     @Test

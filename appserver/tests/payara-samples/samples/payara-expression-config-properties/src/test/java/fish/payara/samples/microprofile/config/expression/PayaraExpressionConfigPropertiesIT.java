@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2020-2022] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,6 +39,7 @@
  */
 package fish.payara.samples.microprofile.config.expression;
 
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.TextPage;
 import com.gargoylesoftware.htmlunit.WebClient;
 
@@ -55,6 +56,10 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -94,6 +99,8 @@ public class PayaraExpressionConfigPropertiesIT {
 
     @Test
     public void testAliasSubstitution() throws Exception {
+        System.out.println("testAliasSubstitution test");
+
         try (WebClient client = new WebClient()) {
             TextPage page = client.getPage(url + "ConfigServlet");
             System.out.println(page.getContent());
@@ -114,6 +121,23 @@ public class PayaraExpressionConfigPropertiesIT {
                 "Expected \"Environment Variable Alias and System Property Alias from File (same property)\" to give Bibbles and Bobbles",
                 page.getContent().contains(
                     "Environment Variable Alias and System Property Alias from File (same property): Bibbles and Bobbles"));
+            assertTrue(
+                    "Expected \"Optional non-existent Config Value \" to give empty optional",
+                    page.getContent().contains(
+                            "Optional non-existent Config Value: null"));
+        }
+    }
+
+    @Test
+    public void testNonExistentConfigValue() throws Exception{
+        System.out.println("testNonExistentConfigValue test");
+        try (WebClient client = new WebClient()){
+            client.getPage(url + "ErrorServlet");
+
+
+        } catch (FailingHttpStatusCodeException ex){
+            assertEquals(SC_INTERNAL_SERVER_ERROR, ex.getStatusCode());
+            assertThat(ex.getResponse().getContentAsString(), containsString("java.util.NoSuchElementException: Unable to find property with name fish.payara.examples.expression.nonexistent"));
         }
     }
 }
