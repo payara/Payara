@@ -39,6 +39,7 @@
  */
 package com.sun.enterprise.deployment;
 
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import org.glassfish.deployment.common.JavaEEResourceType;
@@ -100,6 +101,13 @@ public class ContextServiceDefinitionDescriptor extends ResourceDescriptor {
         this.cleared = cleared;
     }
 
+    public void addCleared(String clearedItem) {
+        if (cleared == null) {
+            cleared = new HashSet<>();
+        }
+        this.cleared.add(clearedItem);
+    }
+
     public Set<String> getPropagated() {
         return propagated;
     }
@@ -108,12 +116,26 @@ public class ContextServiceDefinitionDescriptor extends ResourceDescriptor {
         this.propagated = propagated;
     }
 
+    public void addPropagated(String propagatedItem) {
+        if (propagated == null) {
+            propagated = new HashSet<>();
+        }
+        this.propagated.add(propagatedItem);
+    }
+
     public Set<String> getUnchanged() {
         return unchanged;
     }
 
     public void setUnchanged(Set<String> unchanged) {
         this.unchanged = unchanged;
+    }
+
+    public void addUnchanged(String unchangedItem) {
+        if (unchanged == null) {
+            unchanged = new HashSet<>();
+        }
+        this.unchanged.add(unchangedItem);
     }
 
     public java.util.Properties getProperties() {
