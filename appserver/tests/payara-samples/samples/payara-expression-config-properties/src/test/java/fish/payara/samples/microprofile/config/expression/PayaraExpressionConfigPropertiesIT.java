@@ -127,17 +127,4 @@ public class PayaraExpressionConfigPropertiesIT {
                             "Optional non-existent Config Value: null"));
         }
     }
-
-    @Test
-    public void testNonExistentConfigValue() throws Exception{
-        System.out.println("testNonExistentConfigValue test");
-        try (WebClient client = new WebClient()){
-            client.getPage(url + "ErrorServlet");
-
-
-        } catch (FailingHttpStatusCodeException ex){
-            assertEquals(SC_INTERNAL_SERVER_ERROR, ex.getStatusCode());
-            assertThat(ex.getResponse().getContentAsString(), containsString("java.util.NoSuchElementException: Unable to find property with name fish.payara.examples.expression.nonexistent"));
-        }
-    }
 }
