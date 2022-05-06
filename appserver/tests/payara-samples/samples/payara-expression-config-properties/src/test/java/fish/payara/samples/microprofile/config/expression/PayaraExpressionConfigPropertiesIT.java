@@ -39,14 +39,11 @@
  */
 package fish.payara.samples.microprofile.config.expression;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.TextPage;
 import com.gargoylesoftware.htmlunit.WebClient;
-
 import fish.payara.samples.CliCommands;
 import fish.payara.samples.NotMicroCompatible;
 import fish.payara.samples.PayaraArquillianTestRunner;
-import java.net.URL;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -56,10 +53,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
+import java.net.URL;
+
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -99,8 +94,6 @@ public class PayaraExpressionConfigPropertiesIT {
 
     @Test
     public void testAliasSubstitution() throws Exception {
-        System.out.println("testAliasSubstitution test");
-
         try (WebClient client = new WebClient()) {
             TextPage page = client.getPage(url + "ConfigServlet");
             System.out.println(page.getContent());
@@ -121,10 +114,6 @@ public class PayaraExpressionConfigPropertiesIT {
                 "Expected \"Environment Variable Alias and System Property Alias from File (same property)\" to give Bibbles and Bobbles",
                 page.getContent().contains(
                     "Environment Variable Alias and System Property Alias from File (same property): Bibbles and Bobbles"));
-            assertTrue(
-                    "Expected \"Optional non-existent Config Value \" to give empty optional",
-                    page.getContent().contains(
-                            "Optional non-existent Config Value: null"));
         }
     }
 }
