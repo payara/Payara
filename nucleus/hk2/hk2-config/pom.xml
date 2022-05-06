@@ -57,7 +57,7 @@
 
     <properties>
         <jakarta.validation.version.upperbound>4</jakarta.validation.version.upperbound>
-        <hibernate.validator.version.upperbound>8</hibernate.validator.version.upperbound>
+        <hibernate.validator.version.upperbound>9</hibernate.validator.version.upperbound>
     </properties>
     
     <build>
@@ -110,8 +110,8 @@
                 <configuration>
                     <instructions>
                         <Import-Package>
-                            jakarta.validation.*;resolution:=optional;version="${jakarta.validation.version}",
-                            org.hibernate.validator.*;resolution:=optional;version="[8.0.0,9.0.0)",
+                            jakarta.validation.*;resolution:=optional;version="${range;[==,${jakarta.validation.version.upperbound});${jakarta.validation.version}}",
+                            org.hibernate.validator.*;resolution:=optional;version="${range;[==,${hibernate.validator.version.upperbound});${hibernate.validator.version}}",
                             *
                         </Import-Package>
                     </instructions>
