@@ -37,9 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2022] Payara Foundation and/or affiliates
 
 package org.glassfish.appclient.client.acc;
+
+import org.glassfish.appclient.common.ClientClassLoaderDelegate;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -47,22 +49,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
-import java.lang.reflect.Field;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.security.AccessController;
-import java.security.PermissionCollection;
-import java.security.PrivilegedAction;
-import java.security.ProtectionDomain;
-import java.security.CodeSource;
+import java.security.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
-
-import org.glassfish.appclient.common.ClientClassLoaderDelegate;
+import java.util.function.Consumer;
 
 /**
  *
@@ -86,10 +82,9 @@ public class ACCClassLoader extends URLClassLoader {
         if (instance != null) {
             throw new IllegalStateException("already set");
         }
-        final ClassLoader currentCL = Thread.currentThread().getContextClassLoader();
-        final boolean currentCLWasAgentCL = currentCL.getClass().getName().equals(
-                    AGENT_LOADER_CLASS_NAME);
-        final ClassLoader parentForACCCL = currentCLWasAgentCL ? currentCL.getParent() : currentCL;
+        ClassLoader currentClassLoader = Thread.currentThread().getContextClassLoader();
+        boolean currentCLWasAgentCL = currentClassLoader.getClass().getName().equals(AGENT_LOADER_CLASS_NAME);
+        ClassLoader parentForACCCL = currentCLWasAgentCL ? currentClassLoader.getParent() : currentClassLoader;
         PrivilegedAction<ACCClassLoader> action = () -> new ACCClassLoader(userClassPath(), parentForACCCL,
                 shouldTransform);
         instance = AccessController.doPrivileged(action);
@@ -111,19 +106,24 @@ public class ACCClassLoader extends URLClassLoader {
 
     private static void adjustACCAgentClassLoaderParent(final ACCClassLoader instance)
             throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
-        final ClassLoader systemClassLoader = ClassLoader.getSystemClassLoader();
+        ClassLoader systemClassLoader = ClassLoader.getSystemClassLoader();
         if (systemClassLoader.getClass().getName().equals(AGENT_LOADER_CLASS_NAME)) {
-            final Field jwsLoaderParentField = ClassLoader.class.getDeclaredField("parent");
-            jwsLoaderParentField.setAccessible(true);
-            jwsLoaderParentField.set(systemClassLoader, instance);
-            System.setProperty("org.glassfish.appclient.acc.agentLoaderDone", "true");
+            if (systemClassLoader instanceof Consumer<?>) {
+
+                @SuppressWarnings("unchecked")
+                Consumer<ClassLoader> consumerOfClassLoader = (Consumer<ClassLoader>) systemClassLoader;
+
+                consumerOfClassLoader.accept(instance);
+
+                System.setProperty("org.glassfish.appclient.acc.agentLoaderDone", "true");
+            }
         }
     }
 
     private static URL[] userClassPath() {
-        final URI GFSystemURI = GFSystemURI();
-        final List<URL> result = classPathToURLs(System.getProperty("java.class.path"));
-        for (ListIterator<URL> it = result.listIterator(); it.hasNext();) {
+        URI GFSystemURI = GFSystemURI();
+        List<URL> result = classPathToURLs(System.getProperty("java.class.path"));
+        for (ListIterator<URL> it = result.listIterator(); it.hasNext(); ) {
             final URL url = it.next();
             try {
                 if (url.toURI().equals(GFSystemURI)) {
@@ -152,7 +152,7 @@ public class ACCClassLoader extends URLClassLoader {
         if (classPath == null) {
             return Collections.emptyList();
         }
-        final List<URL> result = new ArrayList<>();
+        List<URL> result = new ArrayList<>();
         try {
             for (String classPathElement : classPath.split(File.pathSeparator)) {
                 result.add(new File(classPathElement).toURI().normalize().toURL());
@@ -214,8 +214,8 @@ public class ACCClassLoader extends URLClassLoader {
     }
 
     private Class<?> copyClass(final Class<?> c) throws ClassNotFoundException {
-        final String name = c.getName();
-        final ProtectionDomain pd = c.getProtectionDomain();
+        String name = c.getName();
+        ProtectionDomain pd = c.getProtectionDomain();
         byte[] bytecode = readByteCode(name);
 
         for (ClassFileTransformer xf : transformers) {
