@@ -45,17 +45,18 @@ import jakarta.enterprise.concurrent.ManagedExecutorDefinition;
 import jakarta.enterprise.concurrent.ManagedExecutorService;
 import fish.payara.sample.concurrency.annotations.contextservice.util.IntContextProvider;
 import jakarta.ejb.Stateless;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 @ContextServiceDefinition(name = "java:app/concurrent/ContextA",
         propagated = {ContextServiceDefinition.APPLICATION, "IntContextProvider"},
-        unchanged = ContextServiceDefinition.TRANSACTION)
+        unchanged = ContextServiceDefinition.TRANSACTION,
+        cleared = {}) // cleared contains TRANSACTION by default, so it needs to be specified as empty
 @ContextServiceDefinition(name = "java:app/concurrent/ContextB",
         propagated = {ContextServiceDefinition.APPLICATION, "IntContextProvider"},
-        unchanged = ContextServiceDefinition.TRANSACTION)
+        unchanged = ContextServiceDefinition.TRANSACTION,
+        cleared = {}) // cleared contains TRANSACTION by default, so it needs to be specified as empty
 @ManagedExecutorDefinition(name = "java:app/concurrent/MES1",
         maxAsync = 3,
         context = "java:app/concurrent/ContextA")
@@ -99,6 +100,7 @@ public class ContextServiceEJB {
             return msg;
         });
 
+        IntContextProvider.setValue(20);
         Future<String> future2 = mes2.submit(() -> {
             String msg = "" + IntContextProvider.getValue();
             System.out.println(msg);
