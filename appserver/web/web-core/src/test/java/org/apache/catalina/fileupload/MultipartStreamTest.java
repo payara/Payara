@@ -43,6 +43,7 @@ package org.apache.catalina.fileupload;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
+import org.apache.tomcat.util.http.fileupload.MultipartStream;
 import org.junit.Test;
 
 import static org.junit.Assert.assertNotNull;

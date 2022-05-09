@@ -127,6 +127,12 @@
             <groupId>fish.payara.server.internal.web</groupId>
             <artifactId>war-util</artifactId>
             <version>${project.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>fish.payara.server.internal.web</groupId>
+                    <artifactId>web-naming</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.common</groupId>
@@ -187,6 +193,12 @@
         <dependency>
             <groupId>org.apache.tomcat</groupId>
             <artifactId>tomcat-catalina</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

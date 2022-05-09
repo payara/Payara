@@ -1,0 +1,360 @@
+/*
+ *
+ *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ *  Copyright (c) 2022 Payara Foundation and/or its affiliates. All rights reserved.
+ *
+ *  The contents of this file are subject to the terms of either the GNU
+ *  General Public License Version 2 only ("GPL") or the Common Development
+ *  and Distribution License("CDDL") (collectively, the "License").  You
+ *  may not use this file except in compliance with the License.  You can
+ *  obtain a copy of the License at
+ *  https://github.com/payara/Payara/blob/master/LICENSE.txt
+ *  See the License for the specific
+ *  language governing permissions and limitations under the License.
+ *
+ *  When distributing the software, include this License Header Notice in each
+ *  file and include the License file at glassfish/legal/LICENSE.txt.
+ *
+ *  GPL Classpath Exception:
+ *  The Payara Foundation designates this particular file as subject to the "Classpath"
+ *  exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+ *  file that accompanied this code.
+ *
+ *  Modifications:
+ *  If applicable, add the following below the License Header, with the fields
+ *  enclosed by brackets [] replaced by your own identifying information:
+ *  "Portions Copyright [year] [name of copyright owner]"
+ *
+ *  Contributor(s):
+ *  If you wish your version of this file to be governed by only the CDDL or
+ *  only the GPL Version 2, indicate your decision by adding "[Contributor]
+ *  elects to include this software in this distribution under the [CDDL or GPL
+ *  Version 2] license."  If you don't indicate a single choice of license, a
+ *  recipient has the option to distribute your version of this file under
+ *  either the CDDL, the GPL Version 2 or to extend the choice of license to
+ *  its licensees as provided above.  However, if you add GPL Version 2 code
+ *  and therefore, elected the GPL Version 2 license, then the option applies
+ *  only if the new code is made subject to such option by the copyright
+ *  holder.
+ *
+ */
+
+package fish.payara.appserver.web.core;
+
+import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import jakarta.servlet.ReadListener;
+import jakarta.servlet.RequestDispatcher;
+import org.apache.catalina.Context;
+import org.apache.catalina.Host;
+import org.apache.coyote.AbstractProcessor;
+import org.apache.coyote.ActionCode;
+import org.apache.coyote.Adapter;
+import org.apache.coyote.ContinueResponseTiming;
+import org.apache.coyote.InputBuffer;
+import org.apache.juli.logging.Log;
+import org.apache.tomcat.util.buf.ByteChunk;
+import org.apache.tomcat.util.net.AbstractEndpoint;
+import org.apache.tomcat.util.net.ApplicationBufferHandler;
+import org.apache.tomcat.util.net.SocketEvent;
+import org.apache.tomcat.util.net.SocketWrapperBase;
+import org.glassfish.grizzly.http.server.HttpHandler;
+import org.glassfish.grizzly.http.server.Request;
+import org.glassfish.grizzly.http.server.Response;
+
+import static org.apache.catalina.connector.CoyoteAdapter.ADAPTER_NOTES;
+
+public class CoyoteBridge extends HttpHandler {
+    private final GrizzlyConnector connector;
+
+    private final GrizzlyAdapter adapter = new GrizzlyAdapter();
+
+    private static final ThreadLocal<String> THREAD_NAME =
+            ThreadLocal.withInitial(() -> Thread.currentThread().getName());
+
+    public CoyoteBridge(GrizzlyConnector grizzlyConnector) {
+        this.connector = grizzlyConnector;
+    }
+
+    @Override
+    public void service(Request request, Response response) throws Exception {
+        var processor = getProcessor(request, response);
+
+        if (connector.getXpoweredBy()) {
+            response.addHeader("X-Powered-By", "Grizlyote");
+        }
+
+        boolean async = false;
+        boolean postParseSuccess = false;
+
+        processor.getRequest().getRequestProcessor().setWorkerThreadName(THREAD_NAME.get());
+        processor.getRequest().setRequestThread();
+
+        // this is from CoyoteAdapter.service
+        try {
+            // Parse and set Catalina and configuration specific
+            // request parameters
+            postParseSuccess = true;//postParseRequest(req, request, res, response);
+            if (postParseSuccess) {
+                //check valves if we support async
+                processor.catalinaRequest.setAsyncSupported(
+                        connector.getService().getContainer().getPipeline().isAsyncSupported());
+                // Calling the container
+                connector.getService().getContainer().getPipeline().getFirst().invoke(
+                        processor.catalinaRequest, processor.catalinaResponse);
+            }
+            if (processor.catalinaRequest.isAsync()) {
+                async = true;
+                ReadListener readListener = processor.getRequest().getReadListener();
+                if (readListener != null && processor.catalinaRequest.isFinished()) {
+                    // Possible the all data may have been read during service()
+                    // method so this needs to be checked here
+                    ClassLoader oldCL = null;
+                    try {
+                        oldCL = processor.catalinaRequest.getContext().bind(false, null);
+                        if (processor.getRequest().sendAllDataReadEvent()) {
+                            processor.getRequest().getReadListener().onAllDataRead();
+                        }
+                    } finally {
+                        processor.catalinaRequest.getContext().unbind(false, oldCL);
+                    }
+                }
+
+                Throwable throwable =
+                        (Throwable) processor.catalinaRequest.getAttribute(RequestDispatcher.ERROR_EXCEPTION);
+
+                // If an async request was started, is not going to end once
+                // this container thread finishes and an error occurred, trigger
+                // the async error process
+                if (!processor.catalinaRequest.isAsyncCompleting() && throwable != null) {
+                    processor.catalinaRequest.getAsyncContextInternal().setErrorState(throwable, true);
+                }
+            } else {
+                processor.catalinaRequest.finishRequest();
+                processor.catalinaResponse.finishResponse();
+            }
+
+        } catch (IOException e) {
+            // Ignore
+        } finally {
+            AtomicBoolean error = new AtomicBoolean(false);
+            processor.getResponse().action(ActionCode.IS_ERROR, error);
+
+            if (processor.catalinaRequest.isAsyncCompleting() && error.get()) {
+                // Connection will be forcibly closed which will prevent
+                // completion happening at the usual point. Need to trigger
+                // call to onComplete() here.
+                processor.getResponse().action(ActionCode.ASYNC_POST_PROCESS,  null);
+                async = false;
+            }
+
+            // Access log
+            if (!async && postParseSuccess) {
+                // Log only if processing was invoked.
+                // If postParseRequest() failed, it has already logged it.
+                Context context = processor.catalinaRequest.getContext();
+                Host host = processor.catalinaRequest.getHost();
+                // If the context is null, it is likely that the endpoint was
+                // shutdown, this connection closed and the request recycled in
+                // a different thread. That thread will have updated the access
+                // log so it is OK not to update the access log here in that
+                // case.
+                // The other possibility is that an error occurred early in
+                // processing and the request could not be mapped to a Context.
+                // Log via the host or engine in that case.
+                long time = System.nanoTime() - processor.getRequest().getStartTimeNanos();
+                if (context != null) {
+                    context.logAccess(processor.catalinaRequest, processor.catalinaResponse, time, false);
+                } else if (response.isError()) {
+                    if (host != null) {
+                        host.logAccess(processor.catalinaRequest, processor.catalinaResponse, time, false);
+                    } else {
+                        connector.getService().getContainer().logAccess(
+                                processor.catalinaRequest, processor.catalinaResponse, time, false);
+                    }
+                }
+            }
+
+            processor.getRequest().getRequestProcessor().setWorkerThreadName(null);
+
+            // Recycle the wrapper request and response
+            if (!async) {
+                //updateWrapperErrorCount(request, response);
+                processor.getRequest().recycle();
+                processor.getResponse().recycle();
+                processor.catalinaRequest.recycle();
+                processor.catalinaResponse.recycle();
+            }
+        }
+    }
+
+    private GrizzlyProcessor getProcessor(Request request, Response response) {
+        // TODO: Pooling thread reuse, etc.
+        return new GrizzlyProcessor(adapter, request, response);
+    }
+
+    /**
+     * Adapter executes Coyote requests in servlet container.
+     */
+    final class GrizzlyAdapter implements Adapter {
+        @Override
+        public void service(org.apache.coyote.Request request, org.apache.coyote.Response response) throws Exception {
+            throw new UnsupportedOperationException("This is not the entrypoint in our impl");
+        }
+
+        @Override
+        public boolean prepare(org.apache.coyote.Request request, org.apache.coyote.Response response) throws Exception {
+            throw new UnsupportedOperationException("Not implemented yet");
+        }
+
+        @Override
+        public boolean asyncDispatch(org.apache.coyote.Request request, org.apache.coyote.Response response, SocketEvent socketEvent) throws Exception {
+            throw new UnsupportedOperationException("Not implemented yet");
+        }
+
+        @Override
+        public void log(org.apache.coyote.Request request, org.apache.coyote.Response response, long time) {
+
+        }
+
+        @Override
+        public void checkRecycled(org.apache.coyote.Request request, org.apache.coyote.Response response) {
+
+        }
+
+        @Override
+        public String getDomain() {
+            return connector.getDomain();
+        }
+    }
+
+    /**
+     * Position of grizzly request within coyote adapter notes
+     */
+    static final int GRIZZLY_NOTE = 9;
+
+    /**
+     * Processor executes low-level coyote operations as demanded by processing pipeline.
+     * Here we bind all three request/response pairs together so we can hopefully delegate everything to grizzly
+     */
+    final class GrizzlyProcessor extends AbstractProcessor {
+        private final Request grizzlyRequest;
+
+        private final Response grizzlyResponse;
+
+        private final CatalinaRequest catalinaRequest;
+
+        private final CatalinaResponse catalinaResponse;
+
+        protected GrizzlyProcessor(Adapter adapter, Request grizzlyRequest, Response grizzlyResponse) {
+            super(adapter);
+            this.grizzlyRequest = grizzlyRequest;
+            this.grizzlyResponse = grizzlyResponse;
+            request.setNote(GRIZZLY_NOTE, grizzlyRequest);
+            response.setNote(GRIZZLY_NOTE, grizzlyResponse);
+            this.catalinaRequest = new CatalinaRequest(connector);
+            this.catalinaResponse = new CatalinaResponse(grizzlyResponse);
+            catalinaRequest.setRequests(request, grizzlyRequest);
+            request.setNote(ADAPTER_NOTES, catalinaRequest);
+            catalinaResponse.setCoyoteResponse(response);
+            response.setNote(ADAPTER_NOTES, catalinaResponse);
+            // todo: bind buffers
+        }
+
+        private org.apache.coyote.Response getResponse() {
+            return response;
+        }
+
+        @Override
+        protected void prepareResponse() throws IOException {
+
+        }
+
+        @Override
+        protected void finishResponse() throws IOException {
+            grizzlyResponse.finish();
+        }
+
+        @Override
+        protected void ack(ContinueResponseTiming continueResponseTiming) {
+
+        }
+
+        @Override
+        protected void flush() throws IOException {
+            grizzlyResponse.flush();
+        }
+
+        @Override
+        protected int available(boolean read) {
+            int available =  grizzlyRequest.getInputBuffer().available();
+            if (available <= 0 && read) {
+                grizzlyRequest.getInputBuffer().readBuffer();
+                return grizzlyRequest.getInputBuffer().available();
+            }
+            return available;
+        }
+
+        @Override
+        protected void setRequestBody(ByteChunk byteChunk) {
+
+        }
+
+        @Override
+        protected void setSwallowResponse() {
+
+        }
+
+        @Override
+        protected void disableSwallowRequest() {
+
+        }
+
+        @Override
+        protected boolean isRequestBodyFullyRead() {
+            return false;
+        }
+
+        @Override
+        protected void registerReadInterest() {
+
+        }
+
+        @Override
+        protected boolean isReadyForWrite() {
+            return false;
+        }
+
+        @Override
+        protected boolean isTrailerFieldsReady() {
+            return false;
+        }
+
+        @Override
+        protected boolean flushBufferedWrite() throws IOException {
+            return false;
+        }
+
+        @Override
+        protected AbstractEndpoint.Handler.SocketState dispatchEndRequest() throws IOException {
+            return null;
+        }
+
+        @Override
+        protected AbstractEndpoint.Handler.SocketState service(SocketWrapperBase<?> socketWrapperBase) throws IOException {
+            return null;
+        }
+
+        @Override
+        protected Log getLog() {
+            return null;
+        }
+
+        @Override
+        public void pause() {
+
+        }
+    }
+}
