@@ -68,7 +68,7 @@ public class ServletConnectionImpl implements ServletConnection {
 
     @Override
     public String getProtocolConnectionId() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return this.connectionId;
     }
 
     @Override

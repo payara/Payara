@@ -50,6 +50,7 @@ import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import jakarta.servlet.SessionCookieConfig;
 import static java.lang.String.CASE_INSENSITIVE_ORDER;
+import java.util.Collections;
 import static java.util.Collections.unmodifiableMap;
 import java.util.Map;
 import java.util.TreeMap;
@@ -62,7 +63,7 @@ public class SessionCookieConfigImpl implements SessionCookieConfig {
 
     private String name = DEFAULT_NAME;
     private final StandardContext ctx;
-    private final Map<String, String> attributes = new TreeMap<>(CASE_INSENSITIVE_ORDER);
+    private Map<String, String> attributes;
 
     private static final ResourceBundle rb = LogFacade.getLogger().getResourceBundle();
 
@@ -275,6 +276,9 @@ public class SessionCookieConfigImpl implements SessionCookieConfig {
         if (COOKIE_MAX_AGE_ATTR.equalsIgnoreCase(name) && value != null) {
             Integer.parseInt(value);
         }
+        if (this.attributes == null) {
+            this.attributes = new TreeMap<>(CASE_INSENSITIVE_ORDER);
+        }
         this.attributes.put(name, value);
     }
 
@@ -288,6 +292,9 @@ public class SessionCookieConfigImpl implements SessionCookieConfig {
      */
     @Override
     public String getAttribute(String name) {
+        if (this.attributes == null) {
+            return null;
+        }
         return this.attributes.get(name);
     }
 
@@ -299,6 +306,9 @@ public class SessionCookieConfigImpl implements SessionCookieConfig {
      */
     @Override
     public Map<String, String> getAttributes() {
+        if (this.attributes == null) {
+            Collections.emptyMap();
+        }
         return unmodifiableMap(this.attributes);
     }
 
