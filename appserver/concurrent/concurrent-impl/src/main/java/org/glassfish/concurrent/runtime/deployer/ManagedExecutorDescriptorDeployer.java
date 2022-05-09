@@ -89,16 +89,18 @@ public class ManagedExecutorDescriptorDeployer implements ResourceDeployer {
         ManagedExecutorDefinitionDescriptor managedExecutorDefinitionDescriptor = (ManagedExecutorDefinitionDescriptor) resource;
         ManagedExecutorServiceConfig managedExecutorServiceConfig
                 = new ManagedExecutorServiceConfig(new CustomManagedExecutorServiceImpl(managedExecutorDefinitionDescriptor));
+        ConcurrentRuntime concurrentRuntime = ConcurrentRuntime.getRuntime();
+
         // prepare the contextService
-        String contextOfResource = managedExecutorDefinitionDescriptor.getContext();
-        ResourceInfo contextResourceInfo = new ResourceInfo(contextOfResource, applicationName, moduleName);
-        ContextServiceImpl contextService = (ContextServiceImpl) resourceNamingService.lookup(contextResourceInfo, contextOfResource);
+        ContextServiceImpl contextService = concurrentRuntime.findOrCreateContextService(
+                managedExecutorDefinitionDescriptor.getContext(),
+                managedExecutorDefinitionDescriptor.getName(), applicationName, moduleName);
+
         // prepare name for JNDI
         String customNameOfResource = ConnectorsUtil.deriveResourceName(
                 managedExecutorDefinitionDescriptor.getResourceId(), managedExecutorDefinitionDescriptor.getName(), managedExecutorDefinitionDescriptor.getResourceType());
         ResourceInfo resourceInfo = new ResourceInfo(customNameOfResource, applicationName, moduleName);
 
-        ConcurrentRuntime concurrentRuntime = ConcurrentRuntime.getRuntime();
         ManagedExecutorServiceImpl managedExecutorService = concurrentRuntime.createManagedExecutorService(resourceInfo, managedExecutorServiceConfig, contextService);
         resourceNamingService.publishObject(resourceInfo, customNameOfResource, managedExecutorService, true);
     }

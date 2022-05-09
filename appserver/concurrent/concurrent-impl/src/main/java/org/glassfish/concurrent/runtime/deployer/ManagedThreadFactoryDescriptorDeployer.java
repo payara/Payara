@@ -81,16 +81,18 @@ public class ManagedThreadFactoryDescriptorDeployer implements ResourceDeployer 
     public void deployResource(Object resource, String applicationName, String moduleName) throws Exception {
         ManagedThreadFactoryDefinitionDescriptor descriptor = (ManagedThreadFactoryDefinitionDescriptor) resource;
         ManagedThreadFactoryConfig config = new ManagedThreadFactoryConfig(new CustomManagedThreadFactory(descriptor));
+        ConcurrentRuntime concurrentRuntime = ConcurrentRuntime.getRuntime();
+
         // prepare the contextService
-        String contextOfResource = descriptor.getContext();
-        ResourceInfo contextResourceInfo = new ResourceInfo(contextOfResource, applicationName, moduleName);
-        ContextServiceImpl contextService = (ContextServiceImpl) resourceNamingService.lookup(contextResourceInfo, contextOfResource);
+        ContextServiceImpl contextService = concurrentRuntime.findOrCreateContextService(
+                descriptor.getContext(),
+                descriptor.getName(), applicationName, moduleName);
+
         // prepare name for JNDI
         String customNameOfResource = ConnectorsUtil.deriveResourceName(descriptor.getResourceId(),
                 descriptor.getName(), descriptor.getResourceType());
         ResourceInfo resourceInfo = new ResourceInfo(customNameOfResource, applicationName, moduleName);
 
-        ConcurrentRuntime concurrentRuntime = ConcurrentRuntime.getRuntime();
         ManagedThreadFactoryImpl managedThreadFactory = concurrentRuntime.createManagedThreadFactory(resourceInfo, config, contextService);
         resourceNamingService.publishObject(resourceInfo, customNameOfResource, managedThreadFactory, true);
     }
