@@ -93,6 +93,22 @@ public interface ManagedThreadFactory extends ConfigBeanProxy, Resource,
      *              {@link String }
      */
     void setThreadPriority(String value) throws PropertyVetoException;
+
+    /**
+     * Gets the value of the context property.
+     *
+     * @return possible object is {@link String }
+     */
+    @Attribute(defaultValue = "" + Integer.MAX_VALUE, dataType = String.class)
+    @Min(value = 0)
+    String getContext();
+
+    /**
+     * Sets the value of the context property.
+     *
+     * @param value allowed object is {@link String }
+     */
+    void setContext(String value) throws PropertyVetoException;
     
     @DuckTyped
     String getIdentity();

@@ -98,5 +98,9 @@ public abstract class BaseConfig implements Serializable {
         return contextInfoEnabled;
     }
 
+    public boolean isContextInfoEnabledBoolean() {
+        return Boolean.valueOf(contextInfoEnabled);
+    }
+
     abstract TYPE getType();
 }

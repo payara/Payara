@@ -69,7 +69,7 @@
         <dependency>
             <groupId>jakarta.platform</groupId>
             <artifactId>jakarta.jakartaee-web-api</artifactId>
-            <version>9.0.0</version>
+            <version>${jakarta-platform.version}</version>
             <scope>provided</scope>
         </dependency>
 
@@ -129,7 +129,7 @@
                                 <artifactItem>
                                     <groupId>jakarta.platform</groupId>
                                     <artifactId>jakarta.jakartaee-web-api</artifactId>
-                                    <version>9.0.0</version>
+                                    <version>${jakarta-platform.version}</version>
                                 </artifactItem>
                             </artifactItems>
                         </configuration>

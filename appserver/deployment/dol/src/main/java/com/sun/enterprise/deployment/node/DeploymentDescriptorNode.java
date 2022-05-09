@@ -526,9 +526,17 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T> {
             } catch (NumberFormatException nfe) {
                 DOLUtils.getDefaultLogger().log(Level.WARNING, DOLUtils.INVALID_DESC_MAPPING, new Object[] { getXMLPath(), nfe.toString() });
             } catch (NoSuchMethodException e2) {
-                // try with boolean as a parameter
-                Method toInvoke = target.getClass().getMethod(methodName, new Class[] { boolean.class });
-                toInvoke.invoke(target, new Object[] { Boolean.valueOf(value) });
+                //try with long as a parameter
+                try {
+                    Method toInvoke = target.getClass().getMethod(methodName, new Class[]{long.class});
+                    toInvoke.invoke(target, new Object[]{Long.valueOf(value)});
+                } catch(NumberFormatException e) {
+                    DOLUtils.getDefaultLogger().log(Level.WARNING, DOLUtils.INVALID_DESC_MAPPING, new Object[] { getXMLPath(), e.toString() });
+                } catch(NoSuchMethodException e3) {
+                    // try with boolean as a parameter
+                    Method toInvoke = target.getClass().getMethod(methodName, new Class[] { boolean.class });
+                    toInvoke.invoke(target, new Object[] { Boolean.valueOf(value) });
+                }
             }
         }
     }
