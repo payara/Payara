@@ -79,7 +79,7 @@ public class ProxyServicesImpl implements ProxyServices {
     }
 
 
-    public ClassLoader getClassLoader(final Class<?> proxiedBeanType) {
+    /*public ClassLoader getClassLoader(final Class<?> proxiedBeanType) {
         SecurityManager sm = System.getSecurityManager();
         if (sm != null) {
             return AccessController
@@ -91,7 +91,7 @@ public class ProxyServicesImpl implements ProxyServices {
         } else {
             return getClassLoaderforBean(proxiedBeanType);
         }
-    }
+    }*/
     
     /**
      * Gets the ClassLoader associated with the Bean. Weld generates Proxies

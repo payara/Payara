@@ -53,10 +53,10 @@ import jakarta.security.auth.message.config.ServerAuthConfig;
  */
 class SimpleSAMAuthConfigProvider implements AuthConfigProvider {
     
-    private final Map<String,String> properties;
+    private final Map<String,Object> properties;
     private Class samClass;
     
-    SimpleSAMAuthConfigProvider(Map<String,String> properties, AuthConfigFactory factory, Class samClass) {
+    SimpleSAMAuthConfigProvider(Map<String,Object> properties, AuthConfigFactory factory, Class samClass) {
         this.properties = properties;
         this.samClass = samClass;
         if (factory != null) {

@@ -94,7 +94,7 @@ public class CDIEventbusNotifierService extends PayaraConfiguredNotifier<CDIEven
 
         final EventbusMessage event = new CDIEventbusMessage(notification);
 
-        CDI.current().getBeanManager().fireEvent(event, new Outbound() {
+        /*CDI.current().getBeanManager().fireEvent(event, new Outbound() {
             @Override
             public String eventName() {
                 return "";
@@ -114,7 +114,7 @@ public class CDIEventbusNotifierService extends PayaraConfiguredNotifier<CDIEven
             public Class<? extends Annotation> annotationType() {
                 return Outbound.class;
             }
-        });
+        });*/
     }
 
 }

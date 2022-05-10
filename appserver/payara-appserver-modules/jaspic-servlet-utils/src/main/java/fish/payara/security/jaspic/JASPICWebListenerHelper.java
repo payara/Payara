@@ -77,7 +77,7 @@ public class JASPICWebListenerHelper {
        // enable a SAM to use them to initialise itself
        ServletContext sc = sce.getServletContext();
        Enumeration<String> names = sce.getServletContext().getInitParameterNames();
-       HashMap<String,String> samProperties = new HashMap<>();
+       HashMap<String,Object> samProperties = new HashMap<>();
        while(names.hasMoreElements()) {
            String name = names.nextElement();
            samProperties.put(name, sc.getInitParameter(name));
