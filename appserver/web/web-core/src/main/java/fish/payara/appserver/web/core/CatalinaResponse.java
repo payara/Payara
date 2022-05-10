@@ -44,6 +44,7 @@ package fish.payara.appserver.web.core;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
@@ -66,13 +67,13 @@ public class CatalinaResponse extends org.apache.catalina.connector.Response {
     }
 
     @Override
-    public void setCoyoteResponse(org.apache.coyote.Response coyoteResponse) {
-        super.setCoyoteResponse(coyoteResponse);
+    public org.apache.coyote.Response getCoyoteResponse() {
+        return super.getCoyoteResponse();
     }
 
     @Override
-    public org.apache.coyote.Response getCoyoteResponse() {
-        return super.getCoyoteResponse();
+    public void setCoyoteResponse(org.apache.coyote.Response coyoteResponse) {
+        super.setCoyoteResponse(coyoteResponse);
     }
 
     @Override
@@ -83,6 +84,7 @@ public class CatalinaResponse extends org.apache.catalina.connector.Response {
     @Override
     public void recycle() {
         super.recycle();
+        coyoteResponse.recycle();
     }
 
     @Override
@@ -101,13 +103,13 @@ public class CatalinaResponse extends org.apache.catalina.connector.Response {
     }
 
     @Override
-    public void setAppCommitted(boolean appCommitted) {
-        super.setAppCommitted(appCommitted);
+    public boolean isAppCommitted() {
+        return super.isAppCommitted();
     }
 
     @Override
-    public boolean isAppCommitted() {
-        return super.isAppCommitted();
+    public void setAppCommitted(boolean appCommitted) {
+        super.setAppCommitted(appCommitted);
     }
 
     @Override
@@ -131,13 +133,13 @@ public class CatalinaResponse extends org.apache.catalina.connector.Response {
     }
 
     @Override
-    public void setSuspended(boolean suspended) {
-        super.setSuspended(suspended);
+    public boolean isSuspended() {
+        return super.isSuspended();
     }
 
     @Override
-    public boolean isSuspended() {
-        return super.isSuspended();
+    public void setSuspended(boolean suspended) {
+        super.setSuspended(suspended);
     }
 
     @Override
@@ -167,7 +169,7 @@ public class CatalinaResponse extends org.apache.catalina.connector.Response {
 
     @Override
     public void finishResponse() throws IOException {
-        super.finishResponse();
+        grizzlyResponse.finish();
     }
 
     @Override
@@ -176,8 +178,18 @@ public class CatalinaResponse extends org.apache.catalina.connector.Response {
     }
 
     @Override
+    public void setContentLength(int length) {
+        grizzlyResponse.setContentLength(length);
+    }
+
+    @Override
     public String getContentType() {
         return super.getContentType();
+    }
+
+    @Override
+    public void setContentType(String type) {
+        grizzlyResponse.setContentType(type);
     }
 
     @Override
@@ -187,37 +199,53 @@ public class CatalinaResponse extends org.apache.catalina.connector.Response {
 
     @Override
     public void flushBuffer() throws IOException {
-        super.flushBuffer();
+        grizzlyResponse.getOutputBuffer().flush();
     }
 
     @Override
     public int getBufferSize() {
-        return super.getBufferSize();
+        return grizzlyResponse.getBufferSize();
+    }
+
+    @Override
+    public void setBufferSize(int size) {
+        grizzlyResponse.setBufferSize(size);
     }
 
     @Override
     public String getCharacterEncoding() {
-        return super.getCharacterEncoding();
+        return grizzlyResponse.getCharacterEncoding();
+    }
+
+    @Override
+    public void setCharacterEncoding(String charset) {
+        grizzlyResponse.setCharacterEncoding(charset);
     }
 
     @Override
     public ServletOutputStream getOutputStream() throws IOException {
+        // TODO: wrap
         return super.getOutputStream();
     }
 
     @Override
     public Locale getLocale() {
-        return super.getLocale();
+        return grizzlyResponse.getLocale();
+    }
+
+    @Override
+    public void setLocale(Locale locale) {
+        grizzlyResponse.setLocale(locale);
     }
 
     @Override
     public PrintWriter getWriter() throws IOException {
-        return super.getWriter();
+        return new PrintWriter(grizzlyResponse.getWriter());
     }
 
     @Override
     public boolean isCommitted() {
-        return super.isCommitted();
+        return grizzlyResponse.isCommitted();
     }
 
     @Override
@@ -227,7 +255,7 @@ public class CatalinaResponse extends org.apache.catalina.connector.Response {
 
     @Override
     public void resetBuffer() {
-        super.resetBuffer();
+        grizzlyResponse.resetBuffer();
     }
 
     @Override
@@ -236,63 +264,54 @@ public class CatalinaResponse extends org.apache.catalina.connector.Response {
     }
 
     @Override
-    public void setBufferSize(int size) {
-        super.setBufferSize(size);
-    }
-
-    @Override
-    public void setContentLength(int length) {
-        super.setContentLength(length);
-    }
-
-    @Override
     public void setContentLengthLong(long length) {
-        super.setContentLengthLong(length);
-    }
-
-    @Override
-    public void setContentType(String type) {
-        super.setContentType(type);
-    }
-
-    @Override
-    public void setCharacterEncoding(String charset) {
-        super.setCharacterEncoding(charset);
-    }
-
-    @Override
-    public void setLocale(Locale locale) {
-        super.setLocale(locale);
+        grizzlyResponse.setContentLengthLong(length);
     }
 
     @Override
     public String getHeader(String name) {
-        return super.getHeader(name);
+        return grizzlyResponse.getHeader(name);
     }
 
     @Override
     public Collection<String> getHeaderNames() {
-        return super.getHeaderNames();
+        return Arrays.asList(grizzlyResponse.getHeaderNames());
     }
 
     @Override
     public Collection<String> getHeaders(String name) {
-        return super.getHeaders(name);
+        return Arrays.asList(grizzlyResponse.getHeaderValues(name));
     }
 
     @Override
     public String getMessage() {
-        return super.getMessage();
+        return grizzlyResponse.getMessage();
     }
 
     @Override
     public int getStatus() {
-        return super.getStatus();
+        return grizzlyResponse.getStatus();
+    }
+
+    @Override
+    public void setStatus(int status) {
+        grizzlyResponse.setStatus(status);
     }
 
     @Override
     public void addCookie(Cookie cookie) {
-        super.addCookie(cookie);
+        grizzlyResponse.addCookie(translateCookie(cookie));
+    }
+
+    private org.glassfish.grizzly.http.Cookie translateCookie(Cookie cookie) {
+        var grizzlyCookie = new org.glassfish.grizzly.http.Cookie(cookie.getName(), cookie.getValue());
+        grizzlyCookie.setComment(cookie.getComment());
+        grizzlyCookie.setDomain(cookie.getDomain());
+        grizzlyCookie.setPath(cookie.getPath());
+        grizzlyCookie.setSecure(cookie.getSecure());
+        grizzlyCookie.setHttpOnly(cookie.isHttpOnly());
+        grizzlyCookie.setMaxAge(cookie.getMaxAge());
+        return grizzlyCookie;
     }
 
     @Override
@@ -307,37 +326,37 @@ public class CatalinaResponse extends org.apache.catalina.connector.Response {
 
     @Override
     public void addDateHeader(String name, long value) {
-        super.addDateHeader(name, value);
+        grizzlyResponse.addDateHeader(name, value);
     }
 
     @Override
     public void addHeader(String name, String value) {
-        super.addHeader(name, value);
+        grizzlyResponse.addHeader(name, value);
     }
 
     @Override
     public void addIntHeader(String name, int value) {
-        super.addIntHeader(name, value);
+        grizzlyResponse.addIntHeader(name, value);
     }
 
     @Override
     public boolean containsHeader(String name) {
-        return super.containsHeader(name);
-    }
-
-    @Override
-    public void setTrailerFields(Supplier<Map<String, String>> supplier) {
-        super.setTrailerFields(supplier);
+        return grizzlyResponse.containsHeader(name);
     }
 
     @Override
     public Supplier<Map<String, String>> getTrailerFields() {
-        return super.getTrailerFields();
+        return grizzlyResponse.getTrailers();
+    }
+
+    @Override
+    public void setTrailerFields(Supplier<Map<String, String>> supplier) {
+        grizzlyResponse.setTrailers(supplier);
     }
 
     @Override
     public String encodeRedirectURL(String url) {
-        return super.encodeRedirectURL(url);
+        return grizzlyResponse.encodeRedirectURL(url);
     }
 
     @Override
@@ -347,7 +366,7 @@ public class CatalinaResponse extends org.apache.catalina.connector.Response {
 
     @Override
     public String encodeURL(String url) {
-        return super.encodeURL(url);
+        return grizzlyResponse.encodeURL(url);
     }
 
     @Override
@@ -357,52 +376,50 @@ public class CatalinaResponse extends org.apache.catalina.connector.Response {
 
     @Override
     public void sendAcknowledgement(ContinueResponseTiming continueResponseTiming) throws IOException {
-        super.sendAcknowledgement(continueResponseTiming);
+        // todo continueResponseTiming
+        grizzlyResponse.sendAcknowledgement();
     }
 
     @Override
     public void sendError(int status) throws IOException {
-        super.sendError(status);
+        grizzlyResponse.sendError(status);
     }
 
     @Override
     public void sendError(int status, String message) throws IOException {
-        super.sendError(status, message);
+        grizzlyResponse.sendError(status, message);
     }
 
     @Override
     public void sendRedirect(String location) throws IOException {
-        super.sendRedirect(location);
+        grizzlyResponse.sendRedirect(location);
     }
 
     @Override
     public void sendRedirect(String location, int status) throws IOException {
+        // not supported in grizzly
         super.sendRedirect(location, status);
     }
 
     @Override
     public void setDateHeader(String name, long value) {
-        super.setDateHeader(name, value);
+        grizzlyResponse.setDateHeader(name, value);
     }
 
     @Override
     public void setHeader(String name, String value) {
-        super.setHeader(name, value);
+        grizzlyResponse.setHeader(name, value);
     }
 
     @Override
     public void setIntHeader(String name, int value) {
-        super.setIntHeader(name, value);
-    }
-
-    @Override
-    public void setStatus(int status) {
-        super.setStatus(status);
+        grizzlyResponse.setIntHeader(name, value);
     }
 
     @Override
     public void setStatus(int status, String message) {
-        super.setStatus(status, message);
+        setStatus(status);
+        grizzlyResponse.setDetailMessage(message);
     }
 
     @Override

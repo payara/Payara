@@ -43,6 +43,7 @@
 package fish.payara.appserver.web.core;
 
 import java.io.BufferedReader;
+import java.io.CharConversionException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -51,6 +52,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
@@ -133,6 +135,7 @@ public class CatalinaRequest extends org.apache.catalina.connector.Request {
     @Override
     public void recycle() {
         super.recycle();
+        coyoteRequest.recycle();
         // grizzly is recycled in its own lifecycle
     }
 
@@ -505,22 +508,22 @@ public class CatalinaRequest extends org.apache.catalina.connector.Request {
 
     @Override
     public void addLocale(Locale locale) {
-        super.addLocale(locale);
+        grizzlyRequest.addLocale(locale);
     }
 
     @Override
     public void clearCookies() {
-        super.clearCookies();
+        grizzlyRequest.clearCookies();
     }
 
     @Override
     public void clearLocales() {
-        super.clearLocales();
+        grizzlyRequest.clearLocales();
     }
 
     @Override
     public void setAuthType(String type) {
-        super.setAuthType(type);
+        grizzlyRequest.getRequest().authType().setString(type);
     }
 
     @Override
@@ -530,47 +533,54 @@ public class CatalinaRequest extends org.apache.catalina.connector.Request {
 
     @Override
     public void setRequestedSessionCookie(boolean flag) {
-        super.setRequestedSessionCookie(flag);
+        grizzlyRequest.setRequestedSessionCookie(flag);
     }
 
     @Override
     public void setRequestedSessionId(String id) {
-        super.setRequestedSessionId(id);
+        grizzlyRequest.setRequestedSessionId(id);
     }
 
     @Override
     public void setRequestedSessionURL(boolean flag) {
-        super.setRequestedSessionURL(flag);
+        grizzlyRequest.setRequestedSessionURL(flag);
     }
 
     @Override
     public void setRequestedSessionSSL(boolean flag) {
-        super.setRequestedSessionSSL(flag);
+        grizzlyRequest.setRequestedSessionURL(flag);
     }
 
     @Override
     public String getDecodedRequestURI() {
-        return super.getDecodedRequestURI();
+        try {
+            return grizzlyRequest.getDecodedRequestURI();
+        } catch (CharConversionException e) {
+            throw new IllegalArgumentException(e);
+        }
     }
 
     @Override
     public MessageBytes getDecodedRequestURIMB() {
-        return super.getDecodedRequestURIMB();
+        if (coyoteRequest.decodedURI().isNull()) {
+            coyoteRequest.decodedURI().setString(getDecodedRequestURI());
+        }
+        return coyoteRequest.decodedURI();
     }
 
     @Override
     public void setUserPrincipal(Principal principal) {
-        super.setUserPrincipal(principal);
+        grizzlyRequest.setUserPrincipal(principal);
     }
 
     @Override
     public boolean isTrailerFieldsReady() {
-        return super.isTrailerFieldsReady();
+        return grizzlyRequest.areTrailersAvailable();
     }
 
     @Override
     public Map<String, String> getTrailerFields() {
-        return super.getTrailerFields();
+        return grizzlyRequest.getTrailers();
     }
 
     @Override
@@ -590,7 +600,7 @@ public class CatalinaRequest extends org.apache.catalina.connector.Request {
 
     @Override
     public String getAuthType() {
-        return super.getAuthType();
+        return grizzlyRequest.getAuthType();
     }
 
     @Override
@@ -600,37 +610,61 @@ public class CatalinaRequest extends org.apache.catalina.connector.Request {
 
     @Override
     public Cookie[] getCookies() {
+        // TODO
         return super.getCookies();
     }
 
     @Override
     public ServerCookies getServerCookies() {
+        // TODO
         return super.getServerCookies();
     }
 
     @Override
     public long getDateHeader(String name) {
-        return super.getDateHeader(name);
+        return grizzlyRequest.getDateHeader(name);
     }
+    
 
     @Override
     public String getHeader(String name) {
-        return super.getHeader(name);
+        return grizzlyRequest.getHeader(name);
+    }
+
+    static class IteratorWrapper<T> implements Enumeration<T> {
+        final Iterator<T> iter;
+        IteratorWrapper(Iterator<T> iter) {
+            this.iter = iter;
+        }
+        @Override
+        public boolean hasMoreElements() {
+            return iter.hasNext();
+        }
+
+        @Override
+        public T nextElement() {
+            return iter.next();
+        }
+
+        @Override
+        public Iterator<T> asIterator() {
+            return iter;
+        }
     }
 
     @Override
     public Enumeration<String> getHeaders(String name) {
-        return super.getHeaders(name);
+        return new IteratorWrapper<>(grizzlyRequest.getHeaders(name).iterator());
     }
 
     @Override
     public Enumeration<String> getHeaderNames() {
-        return super.getHeaderNames();
+        return new IteratorWrapper<>(grizzlyRequest.getHeaderNames().iterator());
     }
 
     @Override
     public int getIntHeader(String name) {
-        return super.getIntHeader(name);
+        return grizzlyRequest.getIntHeader(name);
     }
 
     @Override
@@ -640,7 +674,7 @@ public class CatalinaRequest extends org.apache.catalina.connector.Request {
 
     @Override
     public String getMethod() {
-        return super.getMethod();
+        return grizzlyRequest.getMethod().getMethodString();
     }
 
     @Override
@@ -655,12 +689,12 @@ public class CatalinaRequest extends org.apache.catalina.connector.Request {
 
     @Override
     public String getQueryString() {
-        return super.getQueryString();
+        return grizzlyRequest.getQueryString();
     }
 
     @Override
     public String getRemoteUser() {
-        return super.getRemoteUser();
+        return grizzlyRequest.getRemoteUser();
     }
 
     @Override
@@ -670,17 +704,17 @@ public class CatalinaRequest extends org.apache.catalina.connector.Request {
 
     @Override
     public String getRequestedSessionId() {
-        return super.getRequestedSessionId();
+        return grizzlyRequest.getRequestedSessionId();
     }
 
     @Override
     public String getRequestURI() {
-        return super.getRequestURI();
+        return grizzlyRequest.getRequestURI();
     }
 
     @Override
     public StringBuffer getRequestURL() {
-        return super.getRequestURL();
+        return new StringBuffer(getRequestURI());
     }
 
     @Override
@@ -700,12 +734,12 @@ public class CatalinaRequest extends org.apache.catalina.connector.Request {
 
     @Override
     public boolean isRequestedSessionIdFromCookie() {
-        return super.isRequestedSessionIdFromCookie();
+        return grizzlyRequest.isRequestedSessionIdFromCookie();
     }
 
     @Override
     public boolean isRequestedSessionIdFromURL() {
-        return super.isRequestedSessionIdFromURL();
+        return grizzlyRequest.isRequestedSessionIdFromURL();
     }
 
     @Override
@@ -715,7 +749,7 @@ public class CatalinaRequest extends org.apache.catalina.connector.Request {
 
     @Override
     public boolean isRequestedSessionIdValid() {
-        return super.isRequestedSessionIdValid();
+        return grizzlyRequest.isRequestedSessionIdValid();
     }
 
     @Override
@@ -725,12 +759,12 @@ public class CatalinaRequest extends org.apache.catalina.connector.Request {
 
     @Override
     public Principal getPrincipal() {
-        return super.getPrincipal();
+        return grizzlyRequest.getUserPrincipal();
     }
 
     @Override
     public Principal getUserPrincipal() {
-        return super.getUserPrincipal();
+        return grizzlyRequest.getUserPrincipal();
     }
 
     @Override
@@ -740,12 +774,12 @@ public class CatalinaRequest extends org.apache.catalina.connector.Request {
 
     @Override
     public void changeSessionId(String newSessionId) {
-        super.changeSessionId(newSessionId);
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public String changeSessionId() {
-        return super.changeSessionId();
+        return grizzlyRequest.changeSessionId();
     }
 
     @Override
@@ -760,12 +794,12 @@ public class CatalinaRequest extends org.apache.catalina.connector.Request {
 
     @Override
     public boolean isFinished() {
-        return super.isFinished();
+        return grizzlyRequest.getInputBuffer().isFinished();
     }
 
     @Override
     protected void checkSwallowInput() {
-        super.checkSwallowInput();
+        throw new UnsupportedOperationException();
     }
 
     @Override

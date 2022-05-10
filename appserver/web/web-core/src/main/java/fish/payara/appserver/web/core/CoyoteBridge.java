@@ -43,12 +43,18 @@
 package fish.payara.appserver.web.core;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import jakarta.servlet.ReadListener;
 import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.SessionTrackingMode;
 import org.apache.catalina.Context;
 import org.apache.catalina.Host;
+import org.apache.catalina.Wrapper;
+import org.apache.catalina.util.SessionConfig;
+import org.apache.catalina.util.URLEncoder;
 import org.apache.coyote.AbstractProcessor;
 import org.apache.coyote.ActionCode;
 import org.apache.coyote.Adapter;
@@ -56,10 +62,13 @@ import org.apache.coyote.ContinueResponseTiming;
 import org.apache.coyote.InputBuffer;
 import org.apache.juli.logging.Log;
 import org.apache.tomcat.util.buf.ByteChunk;
+import org.apache.tomcat.util.buf.CharChunk;
+import org.apache.tomcat.util.buf.MessageBytes;
 import org.apache.tomcat.util.net.AbstractEndpoint;
 import org.apache.tomcat.util.net.ApplicationBufferHandler;
 import org.apache.tomcat.util.net.SocketEvent;
 import org.apache.tomcat.util.net.SocketWrapperBase;
+import org.glassfish.grizzly.http.Method;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.grizzly.http.server.Response;
@@ -96,7 +105,7 @@ public class CoyoteBridge extends HttpHandler {
         try {
             // Parse and set Catalina and configuration specific
             // request parameters
-            postParseSuccess = true;//postParseRequest(req, request, res, response);
+            postParseSuccess = processor.parseRequest();
             if (postParseSuccess) {
                 //check valves if we support async
                 processor.catalinaRequest.setAsyncSupported(
@@ -260,6 +269,8 @@ public class CoyoteBridge extends HttpHandler {
             request.setNote(ADAPTER_NOTES, catalinaRequest);
             catalinaResponse.setCoyoteResponse(response);
             response.setNote(ADAPTER_NOTES, catalinaResponse);
+            catalinaResponse.setRequest(catalinaRequest);
+            catalinaRequest.setResponse(catalinaResponse);
             // todo: bind buffers
         }
 
@@ -279,7 +290,11 @@ public class CoyoteBridge extends HttpHandler {
 
         @Override
         protected void ack(ContinueResponseTiming continueResponseTiming) {
-
+            try {
+                grizzlyResponse.sendAcknowledgement();
+            } catch (IOException e) {
+                throw new IllegalStateException(e);
+            }
         }
 
         @Override
@@ -324,12 +339,12 @@ public class CoyoteBridge extends HttpHandler {
 
         @Override
         protected boolean isReadyForWrite() {
-            return false;
+            return grizzlyResponse.getOutputBuffer().canWrite();
         }
 
         @Override
         protected boolean isTrailerFieldsReady() {
-            return false;
+            return grizzlyRequest.areTrailersAvailable();
         }
 
         @Override
@@ -349,12 +364,229 @@ public class CoyoteBridge extends HttpHandler {
 
         @Override
         protected Log getLog() {
-            return null;
+            return connector.getService().getContainer().getLogger();
         }
 
         @Override
         public void pause() {
 
+        }
+
+        // See CoyoteAdapter.postParseRequest
+        boolean parseRequest() throws IOException, ServletException {
+            // If the processor has set the scheme (AJP does this, HTTP does this if
+            // SSL is enabled) use this to set the secure flag as well. If the
+            // processor hasn't set it, use the settings from the connector
+            catalinaRequest.setSecure(grizzlyRequest.isSecure());
+
+            // At this point the Host header has been processed.
+            // Override if the proxyPort/proxyHost are set
+            String proxyName = connector.getProxyName();
+            int proxyPort = connector.getProxyPort();
+            getRequest().setServerPort(grizzlyRequest.getServerPort());
+            if (proxyName != null) {
+                getRequest().serverName().setString(proxyName);
+            }
+
+            String undecodedURI = grizzlyRequest.getRequestURI();
+
+            // Check for ping OPTIONS * request
+            if (undecodedURI.equals("*")) {
+                if (grizzlyRequest.getMethod() == Method.OPTIONS) {
+                    StringBuilder allow = new StringBuilder();
+                    allow.append("GET, HEAD, POST, PUT, DELETE, OPTIONS");
+                    // Trace if allowed
+                    if (connector.getAllowTrace()) {
+                        allow.append(", TRACE");
+                    }
+                    grizzlyResponse.setHeader("Allow", allow.toString());
+                    // Access log entry as processing won't reach AccessLogValve
+                    connector.getService().getContainer().logAccess(catalinaRequest, catalinaResponse, 0, true);
+                    return false;
+                } else {
+                    grizzlyResponse.sendError(400, "Invalid URI");
+                }
+            }
+
+            String decodedUriString = grizzlyRequest.getDecodedRequestURI();
+            getRequest().decodedURI().setString(decodedUriString);
+
+            // Request mapping.
+            String decodedServerName;
+            if (connector.getUseIPVHosts()) {
+                decodedServerName = grizzlyRequest.getLocalName();
+            } else {
+                decodedServerName = grizzlyRequest.getServerName();
+            }
+            getRequest().serverName().setString(decodedServerName);
+
+
+            // Version for the second mapping loop and
+            // Context that we expect to get for that version
+            String version = null;
+            Context versionContext = null;
+            boolean mapRequired = true;
+
+            while (mapRequired) {
+
+                // This will map the the latest version by default
+                connector.getService().getMapper().map(getRequest().serverName(), getRequest().decodedURI(),
+                        version, catalinaRequest.getMappingData());
+
+                // If there is no context at this point, either this is a 404
+                // because no ROOT context has been deployed or the URI was invalid
+                // so no context could be mapped.
+                if (catalinaRequest.getContext() == null) {
+                    // Allow processing to continue.
+                    // If present, the rewrite Valve may rewrite this to a valid
+                    // request.
+                    // The StandardEngineValve will handle the case of a missing
+                    // Host and the StandardHostValve the case of a missing Context.
+                    // If present, the error reporting valve will provide a response
+                    // body.
+                    return true;
+                }
+
+                // Now we have the context, we can parse the session ID from the URL
+                // (if any). Need to do this before we redirect in case we need to
+                // include the session id in the redirect
+                String sessionID;
+                if (catalinaRequest.getServletContext().getEffectiveSessionTrackingModes()
+                        .contains(SessionTrackingMode.URL)) {
+
+                    // TODO: Where are path (matrix) parameters processed?
+                    // Get the session ID if there was one
+                    sessionID = request.getPathParameter(
+                            SessionConfig.getSessionUriParamName(
+                                    catalinaRequest.getContext()));
+                    if (sessionID != null) {
+                        catalinaRequest.setRequestedSessionId(sessionID);
+                        catalinaRequest.setRequestedSessionURL(true);
+                    }
+                }
+
+                // Look for session ID in cookies and SSL session
+//                try {
+//                    parseSessionCookiesId(request);
+//                } catch (IllegalArgumentException e) {
+//                    // Too many cookies
+//                    if (!response.isError()) {
+//                        response.setError();
+//                        response.sendError(400);
+//                    }
+//                    return true;
+//                }
+//                parseSessionSslId(request);
+
+                sessionID = catalinaRequest.getRequestedSessionId();
+
+                mapRequired = false;
+                if (version != null && catalinaRequest.getContext() == versionContext) {
+                    // We got the version that we asked for. That is it.
+                } else {
+                    version = null;
+                    versionContext = null;
+
+                    Context[] contexts = catalinaRequest.getMappingData().contexts;
+                    // Single contextVersion means no need to remap
+                    // No session ID means no possibility of remap
+                    if (contexts != null && sessionID != null) {
+                        // Find the context associated with the session
+                        for (int i = contexts.length; i > 0; i--) {
+                            Context ctxt = contexts[i - 1];
+                            if (ctxt.getManager().findSession(sessionID) != null) {
+                                // We found a context. Is it the one that has
+                                // already been mapped?
+                                if (!ctxt.equals(catalinaRequest.getMappingData().context)) {
+                                    // Set version so second time through mapping
+                                    // the correct context is found
+                                    version = ctxt.getWebappVersion();
+                                    versionContext = ctxt;
+                                    // Reset mapping
+                                    catalinaRequest.getMappingData().recycle();
+                                    mapRequired = true;
+                                    // Recycle cookies and session info in case the
+                                    // correct context is configured with different
+                                    // settings
+                                    catalinaRequest.recycleSessionInfo();
+                                    catalinaRequest.recycleCookieInfo(true);
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if (!mapRequired && catalinaRequest.getContext().getPaused()) {
+                    // Found a matching context but it is paused. Mapping data will
+                    // be wrong since some Wrappers may not be registered at this
+                    // point.
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        // Should never happen
+                    }
+                    // Reset mapping
+                    catalinaRequest.getMappingData().recycle();
+                    mapRequired = true;
+                }
+            }
+
+            // Possible redirect
+            MessageBytes redirectPathMB = catalinaRequest.getMappingData().redirectPath;
+            if (!redirectPathMB.isNull()) {
+                String redirectPath = URLEncoder.DEFAULT.encode(
+                        redirectPathMB.toString(), StandardCharsets.UTF_8);
+                String query = catalinaRequest.getQueryString();
+                if (catalinaRequest.isRequestedSessionIdFromURL()) {
+                    // This is not optimal, but as this is not very common, it
+                    // shouldn't matter
+                    redirectPath = redirectPath + ";" +
+                            SessionConfig.getSessionUriParamName(
+                                    catalinaRequest.getContext()) +
+                            "=" + catalinaRequest.getRequestedSessionId();
+                }
+                if (query != null) {
+                    // This is not optimal, but as this is not very common, it
+                    // shouldn't matter
+                    redirectPath = redirectPath + "?" + query;
+                }
+                grizzlyResponse.sendRedirect(redirectPath);
+                catalinaRequest.getContext().logAccess(catalinaRequest, catalinaResponse, 0, true);
+                return false;
+            }
+
+            // Filter trace method
+            if (!connector.getAllowTrace()
+                    && grizzlyRequest.getMethod() == Method.TRACE) {
+                Wrapper wrapper = catalinaRequest.getWrapper();
+                String header = null;
+                if (wrapper != null) {
+                    String[] methods = wrapper.getServletMethods();
+                    if (methods != null) {
+                        for (String method : methods) {
+                            if ("TRACE".equals(method)) {
+                                continue;
+                            }
+                            if (header == null) {
+                                header = method;
+                            } else {
+                                header += ", " + method;
+                            }
+                        }
+                    }
+                }
+                if (header != null) {
+                    grizzlyResponse.addHeader("Allow", header);
+                }
+                grizzlyResponse.sendError(405, "TRACE method is not allowed");
+                // Safe to skip the remainder of this method.
+                return true;
+            }
+
+            //doConnectorAuthenticationAuthorization(req, request);
+
+            return true;
         }
     }
 }

@@ -48,6 +48,9 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import jakarta.servlet.Servlet;
 import org.apache.catalina.LifecycleException;
@@ -78,7 +81,18 @@ public class GrizzlyConnectorTestManual {
 
     @BeforeClass
     public static void setupServer() {
+        setLoggerLevels();
         grizzly = new Grizzly();
+    }
+
+    private static void setLoggerLevels() {
+        Logger.getLogger("org.glassfish.grizzly").setLevel(Level.ALL);
+        Logger.getLogger("org.apache.catalina").setLevel(Level.ALL);
+        Logger.getLogger("org.apache.catalina.util.LifecycleBase").setLevel(Level.INFO);
+        for (Handler handler : Logger.getLogger("").getHandlers()) {
+            handler.setLevel(Level.ALL);
+        }
+        ;
     }
 
 
@@ -199,6 +213,7 @@ public class GrizzlyConnectorTestManual {
         }
 
         void start(Connector c) throws LifecycleException {
+            setLoggerLevels();
             service.addConnector(c);
             server.start();
         }
