@@ -668,15 +668,9 @@
             </dependency>
 
             <dependency>
-                <groupId>org.glassfish.web</groupId>
-                <artifactId>jakarta.servlet.jsp</artifactId>
+                <groupId>org.glassfish.wasp</groupId>
+                <artifactId>wasp</artifactId>
                 <version>${jsp-impl.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>jakarta.servlet.jsp</groupId>
-                        <artifactId>jakarta.servlet.jsp-api</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <dependency>

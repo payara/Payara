@@ -142,8 +142,8 @@
 
         <!-- BOM-referenced versions -->
         <jakartaee.api.version>9.1.0</jakartaee.api.version>
-        <servlet-api.version>5.0.0</servlet-api.version>
-        <grizzly.version>3.0.1.payara-p1</grizzly.version>
+        <servlet-api.version>6.0.0</servlet-api.version>
+        <grizzly.version>4.0.0-M2</grizzly.version>
         <jax-rs-api.impl.version>3.0.0</jax-rs-api.impl.version>
         <jersey.version>3.0.3.payara-p2</jersey.version>
         <jakarta.validation.version>3.0.1</jakarta.validation.version>
@@ -160,13 +160,13 @@
         <stax-api.version>1.0-2</stax-api.version>
         <jackson.version>2.13.1</jackson.version>
         <snakeyaml.version>1.29</snakeyaml.version>
-        <hazelcast.version>4.2</hazelcast.version>
+        <hazelcast.version>4.2.4</hazelcast.version>
         <hazelcast.kubernetes.version>2.2.3.payara-p1</hazelcast.kubernetes.version>
         <jaxb-api.version>3.0.1</jaxb-api.version>
         <jaxb-impl.version>3.0.2</jaxb-impl.version>
         <jakarta.ejb-api.version>4.0.0</jakarta.ejb-api.version>
-        <jsp-api.version>3.0.0</jsp-api.version>
-        <jsp-impl.version>3.0.0</jsp-impl.version>
+        <jsp-api.version>3.1.0</jsp-api.version>
+        <jsp-impl.version>3.1.0-M2</jsp-impl.version>
         <jstl-api.version>2.0.0</jstl-api.version>
         <jstl-impl.version>2.0.0</jstl-impl.version>
         <jakarta.faces-api.version>3.0.0</jakarta.faces-api.version>

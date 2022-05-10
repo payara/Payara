@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//Portions Copyright [2016-2021] [Payara Foundation]
+//Portions Copyright [2016-2022] [Payara Foundation]
 
 package org.apache.catalina.connector;
 
@@ -106,6 +106,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static java.lang.Integer.parseInt;
+import org.glassfish.grizzly.http.Protocol;
 
 /**
  * Wrapper object for the Coyote request.
@@ -1407,27 +1408,6 @@ public class Request implements HttpRequest, HttpServletRequest {
     }
 
     /**
-     * Return the real path of the specified virtual path.
-     *
-     * @param path Path to be translated
-     *
-     * @deprecated As of version 2.1 of the Java Servlet API, use
-     *  <code>ServletContext.getRealPath()</code>.
-     */
-    @Override
-    public String getRealPath(String path) {
-        if (servletContext == null) {
-            return null;
-        } else {
-            try {
-                return servletContext.getRealPath(path);
-            } catch (IllegalArgumentException e) {
-                return null;
-            }
-        }
-    }
-
-    /**
      * Return the remote IP address making this Request.
      */
     @Override
@@ -2685,18 +2665,6 @@ public class Request implements HttpRequest, HttpServletRequest {
             return false;
         }
 
-    }
-
-    /**
-     * Return <code>true</code> if the session identifier included in this
-     * request came from the request URI.
-     *
-     * @deprecated As of Version 2.1 of the Java Servlet API, use
-     *  <code>isRequestedSessionIdFromURL()</code> instead.
-     */
-    @Override
-    public boolean isRequestedSessionIdFromUrl() {
-        return isRequestedSessionIdFromURL();
     }
 
     /**
@@ -4095,4 +4063,21 @@ public class Request implements HttpRequest, HttpServletRequest {
             context.getManager() != null &&
             context.getManager().isSessionVersioningSupported();
     }
+
+        @Override
+    public String getRequestId() {
+        return coyoteRequest.getRequestId();
+    }
+
+    @Override
+    public String getProtocolRequestId() {
+        return coyoteRequest.getProtocolRequestId();
+    }
+
+    @Override
+    public ServletConnection getServletConnection() {
+        String connectionId = coyoteRequest.getConnection() == null ? null : Long.toString(coyoteRequest.getConnection().getId());
+        return new ServletConnectionImpl(connectionId, coyoteRequest.getProtocol(), coyoteRequest.isSecure());
+    }
+
 }

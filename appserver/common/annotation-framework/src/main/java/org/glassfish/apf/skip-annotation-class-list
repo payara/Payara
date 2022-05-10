@@ -1,4 +1,4 @@
 jakarta.servlet.GenericServlet
 jakarta.servlet.http.HttpServlet
-org.apache.jasper.servlet.JspServlet
+org.glassfish.wasp.servlet.JspServlet
 org.apache.catalina.servlets.DefaultServlet

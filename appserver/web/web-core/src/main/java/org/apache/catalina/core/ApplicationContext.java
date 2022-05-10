@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2019-2021] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2022] Payara Foundation and/or affiliates
 
 package org.apache.catalina.core;
 
@@ -299,10 +299,6 @@ public class ApplicationContext implements ServletContext {
      */
     @Override
     public int getEffectiveMajorVersion() {
-        if (isRestricted) {
-            throw new UnsupportedOperationException(
-                    rb.getString(LogFacade.UNSUPPORTED_OPERATION_EXCEPTION));
-        }
         return context.getEffectiveMajorVersion();
     }
         
@@ -312,10 +308,6 @@ public class ApplicationContext implements ServletContext {
      */
     @Override
     public int getEffectiveMinorVersion() {
-        if (isRestricted) {
-            throw new UnsupportedOperationException(
-                    rb.getString(LogFacade.UNSUPPORTED_OPERATION_EXCEPTION));
-        }
         return context.getEffectiveMinorVersion();
     }
 
@@ -416,35 +408,11 @@ public class ApplicationContext implements ServletContext {
     }
 
     /**
-     * @deprecated As of Java Servlet API 2.1, with no direct replacement.
-     */
-    @Override
-    public Servlet getServlet(String name) {
-        return (null);
-    }
-
-    /**
      * Return the display name of this web application.
      */
     @Override
     public String getServletContextName() {
         return (context.getDisplayName());
-    }
-
-    /**
-     * @deprecated As of Java Servlet API 2.1, with no direct replacement.
-     */
-    @Override
-    public Enumeration<String> getServletNames() {
-        return (new Enumerator<String>(emptyString));
-    }
-
-    /**
-     * @deprecated As of Java Servlet API 2.1, with no direct replacement.
-     */
-    @Override
-    public Enumeration<Servlet> getServlets() {
-        return (new Enumerator<Servlet>(emptyServlet));
     }
 
     /**
@@ -455,20 +423,6 @@ public class ApplicationContext implements ServletContext {
     @Override
     public void log(String message) {
         context.log(message);
-    }
-
-    /**
-     * Writes the specified exception and message to a servlet log file.
-     *
-     * @param exception Exception to be reported
-     * @param message Message to be written
-     *
-     * @deprecated As of Java Servlet API 2.1, use
-     *  <code>log(String, Throwable)</code> instead
-     */
-    @Override
-    public void log(Exception exception, String message) {   
-        context.log(exception, message);
     }
 
     /**
@@ -856,10 +810,6 @@ public class ApplicationContext implements ServletContext {
      */
     @Override
     public Set<SessionTrackingMode> getDefaultSessionTrackingModes() {
-        if (isRestricted) {
-            throw new UnsupportedOperationException(
-                    rb.getString(LogFacade.UNSUPPORTED_OPERATION_EXCEPTION));
-        }
         return context.getDefaultSessionTrackingModes();
     }
 
@@ -872,10 +822,6 @@ public class ApplicationContext implements ServletContext {
      */
     @Override
     public Set<SessionTrackingMode> getEffectiveSessionTrackingModes() {
-        if (isRestricted) {
-            throw new UnsupportedOperationException(
-                    rb.getString(LogFacade.UNSUPPORTED_OPERATION_EXCEPTION));
-        }
         return context.getEffectiveSessionTrackingModes();
     }
 
@@ -938,19 +884,11 @@ public class ApplicationContext implements ServletContext {
      */
     @Override
     public JspConfigDescriptor getJspConfigDescriptor() {
-        if (isRestricted) {
-            throw new UnsupportedOperationException(
-                    rb.getString(LogFacade.UNSUPPORTED_OPERATION_EXCEPTION));
-        }
         return context.getJspConfigDescriptor();
     }
 
     @Override
     public ClassLoader getClassLoader() {
-        if (isRestricted) {
-            throw new UnsupportedOperationException(
-                    rb.getString(LogFacade.UNSUPPORTED_OPERATION_EXCEPTION));
-        }
         return context.getClassLoader();
     }
 
@@ -965,19 +903,11 @@ public class ApplicationContext implements ServletContext {
 
     @Override
     public String getVirtualServerName() {
-        if (isRestricted) {
-            throw new UnsupportedOperationException(
-                    rb.getString(LogFacade.UNSUPPORTED_OPERATION_EXCEPTION));
-        }
         return context.getVirtualServerName();
     }
 
     @Override
     public int getSessionTimeout() {
-        if (isRestricted) {
-            throw new UnsupportedOperationException(
-                    rb.getString(LogFacade.UNSUPPORTED_OPERATION_EXCEPTION));
-        }
         return context.getSessionTimeout();
     }
 
@@ -992,9 +922,6 @@ public class ApplicationContext implements ServletContext {
     
 	@Override
 	public String getRequestCharacterEncoding() {
-		if (isRestricted) {
-			throw new UnsupportedOperationException(rb.getString(LogFacade.UNSUPPORTED_OPERATION_EXCEPTION));
-		}
 		return context.getRequestCharacterEncoding();
 	}
 
@@ -1008,12 +935,8 @@ public class ApplicationContext implements ServletContext {
 
 	@Override
 	public String getResponseCharacterEncoding() {
-		if (isRestricted) {
-			throw new UnsupportedOperationException(rb.getString(LogFacade.UNSUPPORTED_OPERATION_EXCEPTION));
-		}
 		return context.getResponseCharacterEncoding();
 	}
-    
     
         @Override
         public void setResponseCharacterEncoding(String encoding) {
