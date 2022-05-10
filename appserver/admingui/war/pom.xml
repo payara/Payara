@@ -102,7 +102,10 @@
                     <archive>
                         <manifestEntries>
                             <Glassfish-require-services>org.glassfish.api.admingui.ConsoleProvider</Glassfish-require-services>
-                            <HK2-Import-Bundles>fish.payara.server.internal.admingui.console-common,org.glassfish.hk2.hk2,fish.payara.server.internal.admingui.console-plugin-service, fish.payara.server.internal.deployment.deployment-client, jakarta.servlet-api, jakarta.servlet.jsp-api, org.glassfish.jakarta.el, org.glassfish.jsftemplating, fish.payara.server.internal.admingui.dataprovider, com.sun.pkg.client  </HK2-Import-Bundles>
+                            <HK2-Import-Bundles>fish.payara.server.internal.admingui.console-common,org.glassfish.hk2.hk2,fish.payara.server.internal.admingui.console-plugin-service, fish.payara.server.internal.deployment.deployment-client,
+                                <!-- FISH-6249: transitional API has different bundle name
+                                jakarta.servlet-api,-->fish.payara.server.internal.packager.jakarta.servlet-api,
+                                fish.payara.server.internal.packager.jakarta.servlet.jsp-api, org.glassfish.jakarta.el, org.glassfish.jsftemplating, fish.payara.server.internal.admingui.dataprovider, com.sun.pkg.client  </HK2-Import-Bundles>
                         </manifestEntries>
                     </archive>
                 </configuration>

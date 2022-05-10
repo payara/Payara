@@ -70,8 +70,9 @@
             <artifactId>jersey-hk2</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.jersey.containers</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>jersey-container-grizzly2-http</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.media</groupId>

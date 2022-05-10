@@ -232,12 +232,13 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>jakarta.servlet.jsp</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>jakarta.servlet.jsp-api</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.web</groupId>
-            <artifactId>jakarta.servlet.jsp</artifactId>
+            <groupId>org.glassfish.wasp</groupId>
+            <artifactId>wasp</artifactId>
         </dependency>
         <dependency>
             <groupId>jakarta.servlet.jsp.jstl</groupId>
@@ -259,8 +260,9 @@
         </dependency>
 
         <dependency>
-            <groupId>jakarta.el</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>jakarta.el-api</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish</groupId>
