@@ -299,7 +299,7 @@
       <param-value>
         /lib/
         \lib\
-        jakarta.el.jar
+        expressly.jar
         jakarta.servlet-api.jar
         jakarta.servlet.jsp-api.jar
         jakarta.servlet.jsp.jstl-api.jar

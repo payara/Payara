@@ -147,10 +147,10 @@
         <jax-rs-api.impl.version>3.0.0</jax-rs-api.impl.version>
         <jersey.version>3.0.3.payara-p2</jersey.version>
         <jakarta.validation.version>3.0.1</jakarta.validation.version>
-        <hibernate.validator.version>7.0.1.Final</hibernate.validator.version>
-        <hibernate.validator-cdi.version>7.0.1.Final</hibernate.validator-cdi.version>
-        <jakarta.el.version>4.0.2</jakarta.el.version>
+        <hibernate.validator.version>8.0.0.Alpha3</hibernate.validator.version>
+        <hibernate.validator-cdi.version>8.0.0.Alpha3</hibernate.validator-cdi.version>
         <jakarta.el-api.version>5.0.0</jakarta.el-api.version>
+        <expressly.version>5.0.0-M2</expressly.version>
         <javax.cache-api.version>1.1.1.payara-p1</javax.cache-api.version>
         <mail.version>2.1.0-RC2</mail.version>
         <angus.mail.version>1.0.0-M1</angus.mail.version>
