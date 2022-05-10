@@ -63,6 +63,7 @@ public class CatalinaResponse extends org.apache.catalina.connector.Response {
     private final Response grizzlyResponse;
 
     CatalinaResponse(Response grizzlyResponse) {
+        super();
         this.grizzlyResponse = grizzlyResponse;
     }
 

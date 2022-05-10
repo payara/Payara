@@ -48,11 +48,13 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import jakarta.servlet.Servlet;
+import org.apache.catalina.Container;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.core.StandardContext;
@@ -71,18 +73,34 @@ import org.glassfish.grizzly.http.server.Response;
 import org.glassfish.grizzly.http.server.ServerConfiguration;
 import org.glassfish.grizzly.utils.Charsets;
 import org.glassfish.jersey.internal.guava.ThreadFactoryBuilder;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class GrizzlyConnectorTestManual {
     private static Grizzly grizzly;
 
+    private static Catalina catalina;
+
+    private static GrizzlyConnector connector;
+
+    private static HttpClient client;
+
     @BeforeClass
-    public static void setupServer() {
+    public static void setupServer() throws LifecycleException {
         setLoggerLevels();
         grizzly = new Grizzly();
+        catalina = new Catalina();
+        connector = new GrizzlyConnector();
+        connector.setXpoweredBy(true);
+        catalina.start(connector);
+        grizzly.config.addHttpHandler(connector.asHttpHandler());
+        client = HttpClient.newHttpClient();
     }
 
     private static void setLoggerLevels() {
@@ -95,6 +113,15 @@ public class GrizzlyConnectorTestManual {
         ;
     }
 
+    @AfterClass
+    public static void shutdown() throws LifecycleException, ExecutionException, InterruptedException {
+        if (catalina != null) {
+            catalina.stop();
+        }
+        if (grizzly != null) {
+            grizzly.server.shutdown().get();
+        }
+    }
 
     @Test
     public void pureGrizzlyStartup() throws IOException, InterruptedException {
@@ -111,21 +138,21 @@ public class GrizzlyConnectorTestManual {
                 return "hello"; // otherwise cannot be removed
             }
         };
-        grizzly.config.addHttpHandler(hello);
+        grizzly.config.addHttpHandler(hello, "/pureGrizzlyStartup/");
 
-        var response = getRoot(grizzly.port);
+        var response = get("/pureGrizzlyStartup");
         assertEquals(200, response.statusCode());
         assertEquals("Hello from Grizzly", response.body());
-        grizzly.config.removeHttpHandler(hello);
+        // grizzly.config.removeHttpHandler(hello); // there's a bug in HttpHandlerChain.removeHttpHandler which would make this the root handler instead
     }
 
-    private HttpResponse<String> getRoot(int port) throws IOException, InterruptedException {
-        return HttpClient.newHttpClient()
-                .send(HttpRequest.newBuilder().uri(URI.create("http://localhost:" + port)).GET().build(),
-                        HttpResponse.BodyHandlers.ofString());
+    private HttpResponse<String> get(String path) throws IOException, InterruptedException {
+        return client.send(HttpRequest.newBuilder(URI.create("http://localhost:" + grizzly.port).resolve(path)).GET().build(),
+                HttpResponse.BodyHandlers.ofString());
     }
 
-    @Test
+    //@Ignore("Running two catalina processes in single jvm breaks NamingContextListener")
+    //@Test
     public void pureCatalinaStartup() throws LifecycleException, IOException, InterruptedException {
         var catalina = new Catalina();
         var coyote = new Connector();
@@ -142,12 +169,13 @@ public class GrizzlyConnectorTestManual {
         catalina.stop();
     }
 
+    private HttpResponse<String> getRoot(int port) throws IOException, InterruptedException {
+        return client.send(HttpRequest.newBuilder().uri(URI.create("http://localhost:" + port)).GET().build(),
+                HttpResponse.BodyHandlers.ofString());
+    }
+
     @Test
     public void bridgeStartup() throws LifecycleException, IOException, InterruptedException {
-        var catalina = new Catalina();
-        var connector = new GrizzlyConnector();
-        catalina.start(connector);
-        grizzly.config.addHttpHandler(connector.asHttpHandler());
         var ctx = catalina.addContext("ROOT");
 
         catalina.addServlet(ctx, new TestServlet1(), "");
@@ -155,8 +183,9 @@ public class GrizzlyConnectorTestManual {
         var response = getRoot(grizzly.port);
         assertEquals(200, response.statusCode());
         assertEquals("Hello from Servlet", response.body());
+        assertTrue(response.headers().firstValue("X-Powered-By").isPresent());
 
-        catalina.stop();
+        catalina.removeServletByMapping(ctx, "");
     }
 
     static class Grizzly {
@@ -239,6 +268,18 @@ public class GrizzlyConnectorTestManual {
             ctx.addChild(wrapper);
             wrapper.addMapping(mapping);
             return wrapper;
+        }
+
+        public void removeServletByMapping(StandardContext ctx, String path) {
+            for (Container child : ctx.findChildren()) {
+                var wrapper = (StandardWrapper)child;
+                for (String mapping : wrapper.findMappings()) {
+                    if (mapping.equals(path)) {
+                        ctx.removeChild(child);
+                        break;
+                    }
+                }
+            }
         }
     }
 

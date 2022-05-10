@@ -72,6 +72,11 @@ public class GrizzlyConnector extends Connector {
     }
 
     @Override
+    protected void stopInternal() throws LifecycleException {
+        setState(LifecycleState.STOPPING);
+    }
+
+    @Override
     protected void initInternal() throws LifecycleException {
         // we're not using protocalhandler facitily
 

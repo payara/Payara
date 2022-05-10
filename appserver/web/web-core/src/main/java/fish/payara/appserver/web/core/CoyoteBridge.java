@@ -88,6 +88,11 @@ public class CoyoteBridge extends HttpHandler {
     }
 
     @Override
+    public String getName() {
+        return "CatalinaBridge";
+    }
+
+    @Override
     public void service(Request request, Response response) throws Exception {
         var processor = getProcessor(request, response);
 
