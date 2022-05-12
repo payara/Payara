@@ -1073,10 +1073,6 @@ public final class ApplicationDispatcher
                 this.mappingForDispatch = computeNamedDispatchHttpServletMapping(context, hcurrent);
             }
 
-            if (DispatcherType.ASYNC.equals(state.dispatcherType)) {
-                this.mappingForDispatch = hcurrent.getHttpServletMapping();
-            }
-
             wrapper = new ApplicationHttpRequest
                 (hcurrent, context, crossContext, mappingForDispatch, state.dispatcherType);
         } else {

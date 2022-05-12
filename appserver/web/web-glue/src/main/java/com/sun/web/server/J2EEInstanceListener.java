@@ -51,7 +51,7 @@ import com.sun.enterprise.web.WebModule;
 import org.apache.catalina.*;
 import org.apache.catalina.connector.RequestFacade;
 import org.apache.catalina.servlets.DefaultServlet;
-import org.apache.jasper.servlet.JspServlet;
+import org.glassfish.wasp.servlet.JspServlet;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.hk2.api.ServiceHandle;

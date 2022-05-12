@@ -60,6 +60,7 @@ package org.glassfish.grizzly.config.ssl;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -148,9 +149,9 @@ class JSSESupport implements SSLSupport {
         return session.getCipherSuite();
     }
 
-    public Object[] getPeerCertificateChain() 
+    public Certificate[] getPeerCertificates() 
         throws IOException {
-        return getPeerCertificateChain(false);
+        return getPeerCertificates(false);
     }
 
     protected java.security.cert.X509Certificate [] 
@@ -188,7 +189,7 @@ class JSSESupport implements SSLSupport {
 	    return null;
 	return x509Certs;
     }
-    public Object[] getPeerCertificateChain(boolean force)
+    public Certificate[] getPeerCertificates(boolean force)
         throws IOException {
         // Look up the current SSLSession
         /* SJSAS 6439313

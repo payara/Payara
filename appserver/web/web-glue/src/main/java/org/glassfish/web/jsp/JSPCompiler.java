@@ -62,7 +62,7 @@ import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.WebComponentDescriptor;
 import com.sun.enterprise.deployment.web.InitializationParameter;
 import com.sun.enterprise.util.io.FileUtils;
-import org.apache.jasper.JspC;
+import org.glassfish.wasp.JspC;
 import org.glassfish.deployment.common.DeploymentException;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.loader.util.ASClassLoaderUtil;

@@ -55,7 +55,7 @@ import jakarta.servlet.jsp.JspFactory;
 
 import org.glassfish.weld.util.Util;
 
-import org.apache.jasper.runtime.JspApplicationContextImpl;
+import org.glassfish.wasp.runtime.JspApplicationContextImpl;
 
 public class WeldApplication extends ApplicationWrapper {
    

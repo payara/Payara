@@ -66,6 +66,15 @@
             <version>${project.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>jakarta.el</groupId>
+            <artifactId>jakarta.el-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.expressly</groupId>
+            <artifactId>expressly</artifactId>
+        </dependency>
+
         <!-- test dependencies -->
         <dependency>
             <groupId>fish.payara.server.internal.test-utils</groupId>
@@ -73,14 +82,6 @@
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
-            <dependency>
-                <groupId>jakarta.el</groupId>
-                <artifactId>jakarta.el-api</artifactId>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish</groupId>
-                <artifactId>jakarta.el</artifactId>
-            </dependency>
     </dependencies>
 
     <profiles>

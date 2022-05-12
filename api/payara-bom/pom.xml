@@ -520,9 +520,9 @@
                 <version>${jakarta.el-api.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.glassfish</groupId>
-                <artifactId>jakarta.el</artifactId>
-                <version>${jakarta.el.version}</version>
+                <groupId>org.glassfish.expressly</groupId>
+                <artifactId>expressly</artifactId>
+                <version>${expressly.version}</version>
             </dependency>
             <dependency>
                 <groupId>jakarta.mail</groupId>
@@ -668,15 +668,9 @@
             </dependency>
 
             <dependency>
-                <groupId>org.glassfish.web</groupId>
-                <artifactId>jakarta.servlet.jsp</artifactId>
+                <groupId>org.glassfish.wasp</groupId>
+                <artifactId>wasp</artifactId>
                 <version>${jsp-impl.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>jakarta.servlet.jsp</groupId>
-                        <artifactId>jakarta.servlet.jsp-api</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <dependency>

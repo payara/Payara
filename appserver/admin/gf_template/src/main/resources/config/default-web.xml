@@ -291,11 +291,11 @@
   <!-- * Set the "classpath" initialization parameter appropriately         -->
   <!--   for this web application.                                          -->
   <!-- * Set the "jspCompilerPlugin" initialization parameter to            -->
-  <!--   "org.apache.jasper.compiler.JikesJavaCompiler".                    -->
+  <!--   "org.glassfish.wasp.compiler.JikesJavaCompiler".                    -->
 
   <servlet>
     <servlet-name>jsp</servlet-name>
-    <servlet-class>org.apache.jasper.servlet.JspServlet</servlet-class>
+    <servlet-class>org.glassfish.wasp.servlet.JspServlet</servlet-class>
     <init-param>
       <param-name>xpoweredBy</param-name>
       <param-value>false</param-value>
@@ -317,7 +317,7 @@
       <param-value>
         /lib/
         \lib\
-        jakarta.el.jar
+        expressly.jar
         jakarta.servlet-api.jar
         jakarta.servlet.jsp-api.jar
         jakarta.servlet.jsp.jstl-api.jar
