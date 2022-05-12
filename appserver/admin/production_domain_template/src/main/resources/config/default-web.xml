@@ -306,7 +306,7 @@
         jakarta.servlet.jsp.jstl.jar
         jakarta.jms-api.jar
         jakarta.faces.jar
-        jakarta.servlet.jsp.jar
+        wasp.jar
         jspcaching-connector.jar
         web-glue.jar
         hibernate-validator.jar
