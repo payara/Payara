@@ -48,7 +48,6 @@ import org.glassfish.api.admin.CommandException;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
-import com.sun.enterprise.admin.cli.remote.RemoteCommand;
 import com.sun.enterprise.backup.BackupException;
 import com.sun.enterprise.backup.BackupManager;
 import com.sun.enterprise.backup.BackupWarningException;
