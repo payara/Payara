@@ -81,6 +81,12 @@
             <artifactId>jakarta.enterprise.cdi-api</artifactId>
             <scope>provided</scope>
         </dependency>
+
+        <dependency>
+            <groupId>jakarta.xml.bind</groupId>
+            <artifactId>jakarta.xml.bind-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -109,6 +115,9 @@
                                     org.eclipse.persistence.core,
                                     org.eclipse.persistence.moxy,
                                     jakarta.interceptor-api
+                                    jakarta.interceptor-api,
+                                    jakarta.xml.bind-api,
+                                    com.sun.xml.bind.jaxb-osgi
                                 </Require-Bundle>
                                 <!-- Manually specify the shim versions of packages to be exported via this bundle -->
                                 <!-- Note the "shortened" syntax here: For every API the packages are delimited with
@@ -128,10 +137,6 @@
                                     jakarta.servlet.jsp.tagext;version="3.0.99";shim="true",
                                     <!-- EL -->
                                     jakarta.el;version="4.0.99";shim="true",
-                                    <!-- JAXB - forward shim (3 exported as 4) -->
-                                    jakarta.xml.bind;
-                                    jakarta.xml.bind.annotation;
-                                    jakarta.xml.bind.annotation.adapters;version="4.0.1";shim="true",
 
                                     <!-- Eclipselink forward shim (3 exported as 4) -->
                                     org.eclipse.persistence.internal.core.helper;
@@ -151,8 +156,96 @@
                                     jakarta.enterprise.inject.se;
                                     jakarta.enterprise.inject.spi;
                                     jakarta.enterprise.inject.spi.configurator;
-                                    jakarta.enterprise.util;version="4.0.99";shim="true"
-
+                                    jakarta.enterprise.util;version="4.0.99";shim="true",
+                                    
+                                    <!-- Jakarta XML Binding - forward shim (4 exported as 3) -->
+                                    jakarta.xml.bind;
+                                    jakarta.xml.bind.annotation;
+                                    jakarta.xml.bind.annotation.adapters;version="4.0.1";shim="true",
+                                    jakarta.xml.bind;
+                                    jakarta.xml.bind.annotation;
+                                    jakarta.xml.bind.annotation.adapters;
+                                    jakarta.xml.bind.attachment;
+                                    jakarta.xml.bind.helpers;
+                                    jakarta.xml.bind.util;
+                                    com.sun.codemodel;
+                                    com.sun.codemodel.fmt;
+                                    com.sun.codemodel.util;
+                                    com.sun.codemodel.writer;
+                                    com.sun.codemodel;
+                                    com.sun.codemodel.fmt;
+                                    com.sun.codemodel.util;
+                                    com.sun.codemodel.writer;
+                                    com.sun.istack.tools;
+                                    com.sun.tools.rngdatatype;
+                                    com.sun.tools.rngdatatype.helpers;
+                                    com.sun.tools.rngom.ast.builder;
+                                    com.sun.tools.rngom.ast.om;
+                                    com.sun.tools.rngom.ast.util;
+                                    com.sun.tools.rngom.digested;
+                                    com.sun.tools.rngom.dt;
+                                    com.sun.tools.rngom.dt.builtin;
+                                    com.sun.tools.rngom.nc;
+                                    com.sun.tools.rngom.parse;
+                                    com.sun.tools.rngom.parse.compact;
+                                    com.sun.tools.rngom.parse.xml;
+                                    com.sun.tools.rngom.xml.sax;
+                                    com.sun.tools.rngom.xml.util;
+                                    com.sun.tools.xjc;
+                                    com.sun.tools.xjc.api;
+                                    com.sun.tools.xjc.generator.bean;
+                                    com.sun.tools.xjc.generator.bean.field;
+                                    com.sun.tools.xjc.model;
+                                    com.sun.tools.xjc.model.nav;
+                                    com.sun.tools.xjc.outline;
+                                    com.sun.tools.xjc.reader;
+                                    com.sun.tools.xjc.reader.gbind;
+                                    com.sun.tools.xjc.reader.internalizer;
+                                    com.sun.tools.xjc.reader.xmlschema;
+                                    com.sun.tools.xjc.reader.xmlschema.bindinfo;
+                                    com.sun.tools.xjc.util;
+                                    com.sun.xml.dtdparser;
+                                    com.sun.xml.xsom;
+                                    com.sun.xml.xsom.impl;
+                                    com.sun.xml.xsom.impl.parser;
+                                    com.sun.xml.xsom.impl.util;
+                                    com.sun.xml.xsom.parser;
+                                    com.sun.xml.xsom.util;
+                                    com.sun.xml.xsom.visitor;
+                                    org.glassfish.jaxb.core;
+                                    org.glassfish.jaxb.core.annotation;
+                                    org.glassfish.jaxb.core.api;
+                                    org.glassfish.jaxb.core.api.impl;
+                                    org.glassfish.jaxb.core.marshaller;
+                                    org.glassfish.jaxb.core.unmarshaller;
+                                    org.glassfish.jaxb.core.util;
+                                    org.glassfish.jaxb.core.v2;
+                                    org.glassfish.jaxb.core.v2.model.annotation;
+                                    org.glassfish.jaxb.core.v2.model.core;
+                                    org.glassfish.jaxb.core.v2.model.impl;
+                                    org.glassfish.jaxb.core.v2.model.nav;
+                                    org.glassfish.jaxb.core.v2.model.util;
+                                    org.glassfish.jaxb.core.v2.runtime;
+                                    org.glassfish.jaxb.core.v2.runtime.unmarshaller;
+                                    org.glassfish.jaxb.core.v2.schemagen.episode;
+                                    org.glassfish.jaxb.core.v2.util;
+                                    org.glassfish.jaxb.runtime;
+                                    org.glassfish.jaxb.runtime.api;
+                                    org.glassfish.jaxb.runtime.marshaller;
+                                    org.glassfish.jaxb.runtime.unmarshaller;
+                                    org.glassfish.jaxb.runtime.util;
+                                    org.glassfish.jaxb.runtime.v2;
+                                    org.glassfish.jaxb.runtime.v2.model.annotation;
+                                    org.glassfish.jaxb.runtime.v2.model.impl;
+                                    org.glassfish.jaxb.runtime.v2.model.runtime;
+                                    org.glassfish.jaxb.runtime.v2.runtime;
+                                    org.glassfish.jaxb.runtime.v2.runtime.output;
+                                    org.glassfish.jaxb.runtime.v2.runtime.property;
+                                    org.glassfish.jaxb.runtime.v2.runtime.reflect;
+                                    org.glassfish.jaxb.runtime.v2.runtime.unmarshaller;
+                                    org.glassfish.jaxb.runtime.v2.schemagen;
+                                    org.glassfish.jaxb.runtime.v2.schemagen.xmlschema;
+                                    org.glassfish.jaxb.runtime.v2.util;version="3.0.99";shim="true"
                                     <!-- Minimal version of shim for MP 5.0. -->
                                     <!-- TODO: This is only thing that should remain in final release -->
                                     <!--
