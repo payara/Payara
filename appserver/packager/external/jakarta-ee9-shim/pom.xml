@@ -104,7 +104,8 @@
                                     jakarta.servlet-api,
                                     jakarta.el-api,
                                     jakarta.servlet.jsp-api,
-                                    jakarta.enterprise.cdi-api
+                                    jakarta.enterprise.cdi-api,
+									jakarta.interceptor-api
                                 </Require-Bundle>
                                 <!-- Manually specify the shim versions of packages to be exported via this bundle -->
                                 <!-- Note the "shortened" syntax here: For every API the packages are delimited with
@@ -144,6 +145,8 @@
                                     jakarta.enterprise.inject;
                                     jakarta.enterprise.context;version="3.0.99";shim=true
                                     -->
+									<!--Interceptor-->
+									jakarta.interceptor;version="2.1.0";shim=true
                                 </Export-Package>
                             </instructions>
                         </configuration>
