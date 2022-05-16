@@ -382,6 +382,35 @@
 
         <pluginManagement>
             <plugins>
+                
+                <plugin>
+                    <groupId>org.codehaus.gmaven</groupId>
+                    <artifactId>groovy-maven-plugin</artifactId>
+                    <version>2.1.1</version>
+                    <executions>
+                        <execution>
+                            <phase>install</phase>
+                            <goals>
+                                <goal>execute</goal>
+                            </goals>
+                            <configuration>
+                                <source>
+                                    println("NOTICE: Setting up version number properties");
+                                    String[] versionProps;
+                                    versionProps = "${project.version}".split('.');
+                                    System.setProperty("major_version", "${versionProps[0]}");
+                                    System.setProperty("minor_version", "${versionProps[1]}");
+                                    String patchVersion;
+                                    for(int i = 2; i == versionProps.length - 1; i++) {
+                                        patchVersion += "${versionProps[i]}"
+                                    }
+                                    System.setProperty("update_version", "${patchVersion}");
+                                </source>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+                
                 <plugin>
                     <artifactId>maven-jar-plugin</artifactId>
                     <version>${maven.jar.plugin.version}</version>
