@@ -78,7 +78,6 @@ import org.glassfish.enterprise.concurrent.ManagedExecutorServiceImpl;
 import org.glassfish.enterprise.concurrent.ManagedScheduledExecutorServiceImpl;
 import org.glassfish.enterprise.concurrent.ManagedThreadFactoryImpl;
 import org.glassfish.enterprise.concurrent.spi.ContextHandle;
-import org.glassfish.javaee.services.JndiLookupNotifier;
 import org.glassfish.resourcebase.resources.naming.ResourceNamingService;
 
 /**
@@ -446,7 +445,7 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
     /**
      * context loader propagation to threads causes memory leaks on redeploy
      */
-    private static final class ThreadFactoryWrapper extends ManagedThreadFactoryImpl implements JndiLookupNotifier {
+    private static final class ThreadFactoryWrapper extends ManagedThreadFactoryImpl {
         public ThreadFactoryWrapper(String string, ContextServiceImpl contextService, int threadPriority) {
             super(string, contextService, threadPriority);
         }
@@ -461,14 +460,6 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
                 Utility.setContextClassLoader(appClassLoader);
             }
         }
-
-        /**
-         * Save current thread context when MTF was looked up in JNDI.
-         */
-        public void notifyJndiLookup() {
-            savedContextHandleForSetup = (contextSetupProvider == null) ? null : contextSetupProvider.saveContext(contextService);
-        }
-
     }
 
     @Override
