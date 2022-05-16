@@ -148,9 +148,6 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
     RunLevelController runLevelController;
 
     @Inject
-    Provider<CommandRunner> commandRunnerProvider;
-    
-    @Inject
     private AppInstanceListener appInstanceListener;
     
     private MasterRunLevelListener masterListener;
