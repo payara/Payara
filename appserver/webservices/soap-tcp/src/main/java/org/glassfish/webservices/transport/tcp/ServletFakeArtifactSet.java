@@ -44,6 +44,7 @@ package org.glassfish.webservices.transport.tcp;
 import com.sun.xml.ws.api.DistributedPropertySet;
 
 import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.ServletConnection;
 import jakarta.servlet.ServletInputStream;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.*;
@@ -393,6 +394,21 @@ public final class ServletFakeArtifactSet extends DistributedPropertySet {
         }
 
         public jakarta.servlet.ServletContext getServletContext() {
+            return null;
+        }
+
+        @Override
+        public String getRequestId() {
+            return null;
+        }
+
+        @Override
+        public String getProtocolRequestId() {
+            return null;
+        }
+
+        @Override
+        public ServletConnection getServletConnection() {
             return null;
         }
     }

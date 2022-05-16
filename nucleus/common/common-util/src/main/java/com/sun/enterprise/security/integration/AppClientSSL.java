@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2022] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.security.integration;
 
@@ -46,16 +46,12 @@ package com.sun.enterprise.security.integration;
  * @author Kumar
  */
 public class AppClientSSL {
-    private boolean tlsEnabled = true;
-    private boolean tlsEnabled11 = true;
+
     private boolean tlsEnabled12 = true;
     private boolean tlsEnabled13 = true;
     private boolean tlsRollbackEnabled = true;
     private String ssl3TlsCiphers;
-    private boolean ssl3Enabled = true;
     private String certNickName;
-    private boolean ssl2Enabled = false;
-    private String ssl2Ciphers;
     private boolean clientAuthEnabled = false;
     
     /**
@@ -79,80 +75,12 @@ public class AppClientSSL {
     }
 
     /**
-     * Gets the value of the ssl2Enabled property.
-     *
-     * @return possible object is
-     *         {@link String }
-     */
-    public boolean getSsl2Enabled() {
-        return this.ssl2Enabled;
-    }
-
-    /**
-     * Sets the value of the ssl2Enabled property.
-     *
-     * @param value allowed object is
-     *              {@link String }
-     */
-    public void setSsl2Enabled(String value) {
-        this.ssl2Enabled = Boolean.parseBoolean(value);
-    }
-    public void setSsl2Enabled(boolean value) {
-        this.ssl2Enabled = value;
-    }
-
-    /**
-     * Gets the value of the ssl2Ciphers property.
-     *
-     * @return possible object is
-     *         {@link String }
-     */
-    public String getSsl2Ciphers() {
-        return ssl2Ciphers;
-    }
-
-    /**
-     * Sets the value of the ssl2Ciphers property.
-     * Values:  rc4, rc4export, rc2, rc2export, idea, des, desede3.
-     *
-     * @param value allowed object is
-     *              {@link String }
-     */
-    public void setSsl2Ciphers(String value)  {
-        this.ssl2Ciphers = value;
-    }
-
-    /**
-     * Gets the value of the ssl3Enabled property.
-     *
-     * @return possible object is
-     *         {@link String }
-     */
-    public boolean getSsl3Enabled() {
-        return this.ssl3Enabled;
-    }
-
-    /**
-     * Sets the value of the ssl3Enabled property.
-     *
-     * @param value allowed object is
-     *              {@link String }
-     */
-    public void setSsl3Enabled(String value) {
-        this.ssl3Enabled = Boolean.parseBoolean(value);
-    }
-    
-    public void setSsl3Enabled(boolean value) {
-        this.ssl3Enabled = value;
-    }
-
-    /**
-     A comma-separated list of the SSL3 ciphers used, with the prefix + to enable or - to 
-        disable, for example +SSL_RSA_WITH_RC4_128_MD5 . Allowed values are 
-        SSL_RSA_WITH_RC4_128_MD5, SSL_RSA_WITH_3DES_EDE_CBC_SHA, SSL_RSA_WITH_DES_CBC_SHA, 
-        SSL_RSA_EXPORT_WITH_RC4_40_MD5, SSL_RSA_WITH_NULL_MD5, SSL_RSA_WITH_RC4_128_SHA, and 
-        SSL_RSA_WITH_NULL_SHA. Values available in previous releases are supported for backward 
-        compatibility.
+     A comma-separated list of the SSL3 ciphers used, with the prefix + to enable or - to
+     disable, for example +SSL_RSA_WITH_RC4_128_MD5 . Allowed values are
+     SSL_RSA_WITH_RC4_128_MD5, SSL_RSA_WITH_3DES_EDE_CBC_SHA, SSL_RSA_WITH_DES_CBC_SHA,
+     SSL_RSA_EXPORT_WITH_RC4_40_MD5, SSL_RSA_WITH_NULL_MD5, SSL_RSA_WITH_RC4_128_SHA, and
+     SSL_RSA_WITH_NULL_SHA. Values available in previous releases are supported for backward
+     compatibility.
      */
     public String getSsl3TlsCiphers() {
         return ssl3TlsCiphers;
@@ -168,48 +96,12 @@ public class AppClientSSL {
         this.ssl3TlsCiphers = value;
     }
 
-    /**
-     * Gets the value of the tlsEnabled property.
-     *
-     * @return possible object is
-     *         {@link String }
-     */
-    public boolean getTlsEnabled() {
-        return this.tlsEnabled;
-    }
-
-    public boolean getTls11Enabled() {
-        return this.tlsEnabled11;
-    }
-
     public boolean getTls12Enabled() {
         return this.tlsEnabled12;
     }
 
     public boolean getTls13Enabled() {
         return this.tlsEnabled13;
-    }
-
-    /**
-     * Sets the value of the tlsEnabled property.
-     *
-     * @param value allowed object is
-     *              {@link String }
-     */
-    public void setTlsEnabled(String value) {
-        this.tlsEnabled = Boolean.parseBoolean(value);
-    }
-    
-    public void setTlsEnabled(boolean value) {
-        this.tlsEnabled = value;
-    }
-
-    public void setTlsEnabled11(String value) {
-        this.tlsEnabled11 = Boolean.parseBoolean(value);
-    }
-    
-    public void setTlsEnabled11(boolean value) {
-        this.tlsEnabled11 = value;
     }
 
     public void setTlsEnabled12(String value) {

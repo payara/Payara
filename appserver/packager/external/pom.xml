@@ -72,7 +72,8 @@
         <module>jmsra</module>
         <module>jcip</module>
         <module>libpam4j</module>
-        <module>microprofile-opentracing-repackaged</module>
+        <module>jersey-container-grizzly2-http-transition</module>
+        <module>jakarta-ee9-shim</module>
     </modules>
     <build>
         <plugins>

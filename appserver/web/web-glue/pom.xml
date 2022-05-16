@@ -168,12 +168,12 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.web</groupId>
-            <artifactId>jakarta.servlet.jsp</artifactId>
+            <groupId>org.glassfish.wasp</groupId>
+            <artifactId>wasp</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>jakarta.el</artifactId>
+            <groupId>org.glassfish.expressly</groupId>
+            <artifactId>expressly</artifactId>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.admin</groupId>

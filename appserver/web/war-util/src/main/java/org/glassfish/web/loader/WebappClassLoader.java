@@ -581,10 +581,12 @@ public class WebappClassLoader
 
 
     /**
+     * Unused. Always returns {@code null} - See CVE-2022-22965
      * Get associated resources.
      */
+    @Deprecated
     public DirContext getResources() {
-        return this.resources;
+        return null;
     }
 
 
@@ -2633,7 +2635,7 @@ public class WebappClassLoader
      * class loader or any class loader where this loader is a parent class
      * loader. Whilst {@link ResourceBundle#clearCache()} could be used there
      * are complications around the
-     * {@link org.apache.jasper.servlet.JasperLoader} that mean a reflection
+     * {@link org.glassfish.wasp.servlet.JasperLoader} that mean a reflection
      * based approach is more likely to be complete.
      *
      * The ResourceBundle is using WeakReferences so it shouldn't be pinning the

@@ -37,9 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
-package com.sun.enterprise.security.jacc.provider;
+// Portions Copyright [2018-2022] [Payara Foundation and/or its affiliates]
 
+package com.sun.enterprise.security.web.integration;
+
+import org.glassfish.exousia.modules.locked.AuthorizationRoleMapper;
 import static java.util.logging.Level.SEVERE;
 
 import java.security.Principal;
@@ -62,7 +64,7 @@ import org.glassfish.internal.api.Globals;
  *
  * @author monzillo
  */
-public class GlassfishRoleMapper implements JACCRoleMapper {
+public class GlassfishRoleMapper implements AuthorizationRoleMapper {
 
     private static final Logger defaultLogger = Logger.getLogger(GlassfishRoleMapper.class.getName());
     private final Logger logger;
@@ -231,6 +233,7 @@ public class GlassfishRoleMapper implements JACCRoleMapper {
         return roleSet;
     }
 
+    @Override
     public Set<Principal> getPrincipalsInRole(String pcid, String roleName) throws SecurityException, UnsupportedOperationException {
         return getPrincipalsInRole(getInternalMapper(pcid), roleName);
     }

@@ -38,7 +38,7 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.glassfish</groupId>
+            <groupId>org.eclipse.parsson</groupId>
             <artifactId>jakarta.json</artifactId>
             <scope>provided</scope>
             <optional>true</optional>

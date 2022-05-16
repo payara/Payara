@@ -51,7 +51,7 @@ import jakarta.servlet.jsp.JspFactory;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.apache.jasper.runtime.JspApplicationContextImpl;
+import org.glassfish.wasp.runtime.JspApplicationContextImpl;
 import org.glassfish.cdi.CDILoggerInfo;
 import org.jboss.weld.module.web.el.WeldELContextListener;
 

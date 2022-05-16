@@ -70,6 +70,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.naming.NamingException;
 import org.glassfish.enterprise.concurrent.AbstractManagedExecutorService;
 import org.glassfish.enterprise.concurrent.AbstractManagedThread;
 import org.glassfish.enterprise.concurrent.ContextServiceImpl;
@@ -98,6 +99,8 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
     public static final String CONTEXT_INFO_JNDI = "JNDI";
     public static final String CONTEXT_INFO_SECURITY = "Security";
     public static final String CONTEXT_INFO_WORKAREA = "WorkArea";
+
+    public static final String CONTEXT_INFO_ALL = CONTEXT_INFO_CLASSLOADER + "," + CONTEXT_INFO_JNDI + "," + CONTEXT_INFO_SECURITY + "," + CONTEXT_INFO_WORKAREA;
 
     private ScheduledExecutorService internalScheduler;
     private static final Logger logger  = LogFacade.getLogger();
@@ -208,8 +211,9 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
             return managedExecutorServiceMap.get(jndiName);
         }
 
-        ContextServiceImpl contextService = prepareContextService(config.getContext(),
-                config.getJndiName() + "-contextservice", config.getContextInfo(),
+        ContextServiceImpl contextService = prepareContextService(
+                createContextServiceName(config.getContext(), config.getJndiName()),
+                config.getContextInfo(),
                 config.isContextInfoEnabledBoolean(), true);
 
         ManagedExecutorServiceImpl mes = createManagedExecutorService(resourceInfo, config, contextService);
@@ -263,7 +267,7 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
         if (managedScheduledExecutorServiceMap != null && managedScheduledExecutorServiceMap.containsKey(jndiName)) {
             return managedScheduledExecutorServiceMap.get(jndiName);
         }
-        ContextServiceImpl contextService = prepareContextService(config.getContext(), config.getJndiName() + "-contextservice",
+        ContextServiceImpl contextService = prepareContextService(createContextServiceName(config.getContext(), config.getJndiName()),
                 config.getContextInfo(), config.isContextInfoEnabledBoolean(), true);
 
         ManagedScheduledExecutorServiceImpl mes = createManagedScheduledExecutorService(resource, config, contextService);
@@ -314,7 +318,7 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
             return managedThreadFactoryMap.get(jndiName);
         }
         String context = config.getContext();
-        ContextServiceImpl contextService = prepareContextService(context, config.getJndiName() + "-contextservice",
+        ContextServiceImpl contextService = prepareContextService(createContextServiceName(context, config.getJndiName()),
                 config.getContextInfo(), config.isContextInfoEnabledBoolean(), true);
 
         ManagedThreadFactoryImpl managedThreadFactory = createManagedThreadFactory(resource, config, contextService);
@@ -347,11 +351,7 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
     /**
      * Load cached context service or create a new one with default setup (propagate all).
      */
-    private ContextServiceImpl prepareContextService(String configuredContextJndiName, String createJndiName, String contextInfo, boolean contextInfoEnabled, boolean cleanupTransaction) {
-        String contextServiceJndiName = createJndiName; // default context
-        if (configuredContextJndiName != null) {
-            contextServiceJndiName = configuredContextJndiName;
-        }
+    private ContextServiceImpl prepareContextService(String contextServiceJndiName, String contextInfo, boolean contextInfoEnabled, boolean cleanupTransaction) {
         ContextServiceImpl contextService = contextServiceMap.get(contextServiceJndiName);
         if (contextService == null) {
             // if the context service is not known, create it
@@ -406,11 +406,41 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
                     1,
                     60, TimeUnit.SECONDS,
                     0L,
-                    prepareContextService(null, name + "-contextservice",
+                    prepareContextService(createContextServiceName(null, name),
                             CONTEXT_INFO_CLASSLOADER, true, false),
                     AbstractManagedExecutorService.RejectPolicy.ABORT);
             internalScheduler.scheduleAtFixedRate(new HungTasksLogger(), 1L, 1L, TimeUnit.MINUTES);
         }
+    }
+
+    /**
+     * Decide JNDI name of context service. Either it is specified or it is created from the owning object.
+     *
+     * @param configuredContextJndiName JNDI name specified (typically context parameter in annotation)
+     * @param parentObjectJndiName JNDI nam of ManagedExecutorService, ManagedThreadFactory etc. using the context service
+     * @return JNDI name for the context service to be stored in the JNDI tree.
+     */
+    public static String createContextServiceName(String configuredContextJndiName, String parentObjectJndiName) {
+        String contextServiceJndiName = configuredContextJndiName; 
+        if (contextServiceJndiName == null) {
+            contextServiceJndiName = parentObjectJndiName + "-contextservice";
+        }
+        return contextServiceJndiName;
+    }
+
+    public ContextServiceImpl findOrCreateContextService(String configuredContextJndiName, String parentObjectJndiName, String applicationName, String moduleName) {
+        String contextOfResource = ConcurrentRuntime.createContextServiceName(
+                configuredContextJndiName,
+                parentObjectJndiName);
+        ResourceInfo contextResourceInfo = new ResourceInfo(contextOfResource, applicationName, moduleName);
+        ContextServiceImpl contextService;
+        try {
+            contextService = (ContextServiceImpl) resourceNamingService.lookup(contextResourceInfo, contextOfResource);
+        } catch (NamingException e) {
+            // not found, create a default one
+            contextService = prepareContextService(contextOfResource, CONTEXT_INFO_ALL, true, true);
+        }
+        return contextService;
     }
 
     /**

@@ -30,7 +30,7 @@ pipeline {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Building SRC  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 withCredentials([usernameColonPassword(credentialsId: 'JenkinsNexusUser', variable: 'NEXUS_USER')]) {
                     sh """mvn -B -V -ff -e clean install --strict-checksums -PQuickBuild \
-                    -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
+                    -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
                     -Djavax.xml.accessExternalSchema=all -Dbuild.number=${payaraBuildNumber}"""
                 }
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#    Built SRC   *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
@@ -54,7 +54,7 @@ pipeline {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 sh """mvn -B -V -ff -e clean test --strict-checksums -Pall \
                 -Dglassfish.home=\"${pwd()}/appserver/distributions/payara/target/stage/payara6/glassfish\" \
-                -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
+                -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
                 -Djavax.xml.accessExternalSchema=all \
                 -f appserver/tests/quicklook/pom.xml"""
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
@@ -77,8 +77,9 @@ pipeline {
                 sh """mvn -V -B -ff clean install --strict-checksums -Ppayara-server-managed \
                 -Dpayara.version=${pom.version} \
                 -Dglassfish.home=\"${pwd()}/appserver/distributions/payara/target/stage/payara6/glassfish\" \
+                -Dcom.sun.aas.productRoot=\"${pwd()}/appserver/distributions/payara/target/stage/payara6/glassfish\" \
                 -Dpayara_domain=${DOMAIN_NAME} \
-                -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
+                -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
                 -Djavax.xml.accessExternalSchema=all \
                 -Dsurefire.rerunFailingTestsCount=2 \
                 -f appserver/tests/payara-samples """
@@ -94,7 +95,7 @@ pipeline {
             steps{
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
-                    branches: [[name: "*/microprofile-4.0"]],
+                    branches: [[name: "*/microprofile-5.0"]],
                     userRemoteConfigs: [[url: "https://github.com/payara/MicroProfile-TCK-Runners.git"]]]
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
@@ -103,7 +104,7 @@ pipeline {
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 sh """mvn -B -V -ff -e clean verify --strict-checksums \
-                -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
+                -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
                 -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
                 -Dpayara_domain=${DOMAIN_NAME} -Duse.cnHost=true \
                 -Dsurefire.rerunFailingTestsCount=2 -Ppayara-server-managed,payara6"""
@@ -134,7 +135,7 @@ pipeline {
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 sh "mvn -B -V -ff -e clean install --strict-checksums -Dsurefire.useFile=false \
-                -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
+                -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
                 -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
                 -Dsurefire.rerunFailingTestsCount=2 -Ppayara-server-remote,stable"
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
@@ -167,7 +168,7 @@ pipeline {
 
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 sh """mvn -B -V -ff -e clean install --strict-checksums -Dsurefire.useFile=false \
-                -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
+                -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
                 -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
                 -Dsurefire.rerunFailingTestsCount=2 -Ppayara-server-managed,payara6"""
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
@@ -197,7 +198,7 @@ pipeline {
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 sh """mvn -B -V -ff -e clean install --strict-checksums -Dsurefire.useFile=false \
-                -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
+                -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
                 -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
                 -Dpayara_domain=${DOMAIN_NAME} -Duse.cnHost=true \
                 -Dsurefire.rerunFailingTestsCount=2 -Ppayara-server-remote,stable,payara6"""

@@ -236,8 +236,8 @@
             <artifactId>jakarta.servlet.jsp-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.web</groupId>
-            <artifactId>jakarta.servlet.jsp</artifactId>
+            <groupId>org.glassfish.wasp</groupId>
+            <artifactId>wasp</artifactId>
         </dependency>
         <dependency>
             <groupId>jakarta.servlet.jsp.jstl</groupId>
@@ -257,14 +257,13 @@
             <groupId>org.glassfish.soteria</groupId>
             <artifactId>jakarta.security.enterprise</artifactId>
         </dependency>
-
         <dependency>
             <groupId>jakarta.el</groupId>
             <artifactId>jakarta.el-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>jakarta.el</artifactId>
+            <groupId>org.glassfish.expressly</groupId>
+            <artifactId>expressly</artifactId>
         </dependency>
         <dependency>
             <groupId>jakarta.websocket</groupId>

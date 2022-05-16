@@ -2,7 +2,7 @@
 <!--
    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
   
-   Copyright (c) [2017-2021] Payara Foundation and/or its affiliates. All rights reserved.
+   Copyright (c) [2017-2022] Payara Foundation and/or its affiliates. All rights reserved.
   
    The contents of this file are subject to the terms of either the GNU
    General Public License Version 2 only ("GPL") or the Common Development
@@ -288,11 +288,11 @@
   <!-- * Set the "classpath" initialization parameter appropriately         -->
   <!--   for this web application.                                          -->
   <!-- * Set the "jspCompilerPlugin" initialization parameter to            -->
-  <!--   "org.apache.jasper.compiler.JikesJavaCompiler".                    -->
+  <!--   "org.glassfish.wasp.compiler.JikesJavaCompiler".                    -->
 
   <servlet>
     <servlet-name>jsp</servlet-name>
-    <servlet-class>org.apache.jasper.servlet.JspServlet</servlet-class>
+    <servlet-class>org.glassfish.wasp.servlet.JspServlet</servlet-class>
     <init-param>
       <param-name>xpoweredBy</param-name>
       <param-value>false</param-value>
@@ -314,7 +314,7 @@
       <param-value>
         /lib/
         \lib\
-        jakarta.el.jar
+        expressly.jar
         jakarta.servlet-api.jar
         jakarta.servlet.jsp-api.jar
         jakarta.servlet.jsp.jstl-api.jar
@@ -327,7 +327,10 @@
         bean-validator.jar
         jakarta.ejb-api.jar
         jakarta.enterprise.deploy-api.jar
-        jakarta.mail.jar
+        jakarta.activation-api.jar
+        angus-activation.jar
+        jakarta.mail-api.jar
+        angus-mail.jar
         jakarta.persistence.jar
         jakarta.resource-api.jar
         jakarta.security.auth.message-api.jar

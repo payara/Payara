@@ -83,8 +83,8 @@
             <artifactId>jakarta.servlet.jsp-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>jakarta.el</artifactId>
+            <groupId>org.glassfish.expressly</groupId>
+            <artifactId>expressly</artifactId>
         </dependency>
         <dependency>
             <groupId>jakarta.servlet</groupId>

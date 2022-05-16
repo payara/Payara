@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2021] Payara Foundation and/or affiliates
+// Portions Copyright [2017-2022] Payara Foundation and/or affiliates
 package com.sun.enterprise.admin.cli.cluster;
 
 import com.sun.enterprise.admin.launcher.GFLauncher;
@@ -46,15 +46,9 @@ import com.sun.enterprise.admin.launcher.GFLauncherFactory;
 import com.sun.enterprise.admin.launcher.GFLauncherInfo;
 import com.sun.enterprise.admin.servermgmt.cli.StartServerCommand;
 import com.sun.enterprise.admin.servermgmt.cli.StartServerHelper;
+import com.sun.enterprise.admin.util.TimeoutParamDefaultCalculator;
 import com.sun.enterprise.universal.xml.MiniXmlParserException;
 import com.sun.enterprise.util.ObjectAnalyzer;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-
-import jakarta.validation.constraints.Min;
-
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
 import org.glassfish.api.admin.ExecuteOn;
@@ -62,10 +56,11 @@ import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
-import static com.sun.enterprise.admin.cli.CLIConstants.RESTART_DEBUG_OFF;
-import static com.sun.enterprise.admin.cli.CLIConstants.RESTART_DEBUG_ON;
-import static com.sun.enterprise.admin.cli.CLIConstants.RESTART_NORMAL;
-import static com.sun.enterprise.admin.cli.CLIConstants.WALL_CLOCK_START_PROP;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.sun.enterprise.admin.cli.CLIConstants.*;
 import static java.util.Arrays.asList;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.logging.Level.FINE;
@@ -91,8 +86,7 @@ public class StartLocalInstanceCommand extends SynchronizeInstanceCommand implem
     @Param(name = "dry-run", shortName = "n", optional = true, defaultValue = "false")
     private boolean dryRun;
 
-    @Min(message = "Timeout must be at least 1 second long.", value = 1)
-    @Param(optional = true, defaultValue = "600")
+    @Param(optional = true, defaultCalculator = TimeoutParamDefaultCalculator.class)
     private int timeout; // In Seconds, by default 10 minutes for historical reasons
 
     private StartServerHelper startServerHelper;
@@ -142,7 +136,7 @@ public class StartLocalInstanceCommand extends SynchronizeInstanceCommand implem
             throw new CommandException(Strings.get("Instance.noSuchInstance"));
         }
 
-        if (timeout < 1) {
+        if (timeout <= 0) {
             throw new CommandException("Timeout must be at least 1 second long.");
         }
 
@@ -213,7 +207,7 @@ public class StartLocalInstanceCommand extends SynchronizeInstanceCommand implem
                             break;
                         default:
                             return returnValue;
-                        }
+                    }
 
                     if (env.debug()) {
                         System.setProperty(WALL_CLOCK_START_PROP, Long.toString(System.currentTimeMillis()));
@@ -262,8 +256,7 @@ public class StartLocalInstanceCommand extends SynchronizeInstanceCommand implem
             args.add("--node");
             args.add(node);
         }
-        if (ok(instanceName))
-         {
+        if (ok(instanceName)) {
             args.add(instanceName); // the operand
         }
 

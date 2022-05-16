@@ -110,7 +110,7 @@
                 <enabled>false</enabled>
             </snapshots>
         </repository>
-        
+
         <!-- Temporal for Jakarta EE 10 development until the jar files are available on maven central -->
         <repository>
             <id>staged-jakarta-releases</id>
@@ -133,6 +133,7 @@
         <maven.javadoc.plugin.version>3.1.1</maven.javadoc.plugin.version>
         <maven.install.plugin.version>3.0.0-M1</maven.install.plugin.version>
         <maven.bundle.plugin.version>4.1.0</maven.bundle.plugin.version>
+        <maven.failsafe.plugin.version>3.0.0-M5</maven.failsafe.plugin.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -143,30 +144,31 @@
         <!--<jakartaee.api.version>10.0.0-RC1</jakartaee.api.version> Currently fails with CDIEventbusNotifierService -->
         <!--<jakartaee.api.version>10.0.0-SNAPSHOT</jakartaee.api.version>-->
         <jakartaee.api.version>9.1.0</jakartaee.api.version>
-        <servlet-api.version>5.0.0</servlet-api.version>
-        <grizzly.version>3.0.1.payara-p1</grizzly.version>
+        <servlet-api.version>6.0.0</servlet-api.version>
+        <grizzly.version>4.0.0-M2</grizzly.version>
         <jax-rs-api.impl.version>3.0.0</jax-rs-api.impl.version>
         <jersey.version>3.0.3.payara-p2</jersey.version>
-        <jakarta.validation.version>3.0.0</jakarta.validation.version>
-        <hibernate.validator.version>7.0.1.Final</hibernate.validator.version>
-        <hibernate.validator-cdi.version>7.0.1.Final</hibernate.validator-cdi.version>
-        <jakarta.el.version>4.0.2</jakarta.el.version>
-        <jakarta.el-api.version>4.0.0</jakarta.el-api.version>
+        <jakarta.validation.version>3.0.1</jakarta.validation.version>
+        <hibernate.validator.version>8.0.0.Alpha3</hibernate.validator.version>
+        <hibernate.validator-cdi.version>8.0.0.Alpha3</hibernate.validator-cdi.version>
+        <jakarta.el-api.version>5.0.0</jakarta.el-api.version>
+        <expressly.version>5.0.0-M2</expressly.version>
         <javax.cache-api.version>1.1.1.payara-p1</javax.cache-api.version>
-        <mail.version>2.0.1</mail.version>
-        <jakarta.annotation-api.version>2.0.0</jakarta.annotation-api.version>
+        <mail.version>2.1.0-RC2</mail.version>
+        <angus.mail.version>1.0.0-M1</angus.mail.version>
+        <jakarta.annotation-api.version>2.1.0</jakarta.annotation-api.version>
         <hk2.version>3.0.1.payara-p1</hk2.version>
         <osgi-resource-locator.version>1.0.3</osgi-resource-locator.version>
         <stax-api.version>1.0-2</stax-api.version>
-        <jackson.version>2.13.0</jackson.version>
+        <jackson.version>2.13.1</jackson.version>
         <snakeyaml.version>1.29</snakeyaml.version>
-        <hazelcast.version>4.2</hazelcast.version>
-        <hazelcast.kubernetes.version>2.2.3</hazelcast.kubernetes.version>
+        <hazelcast.version>4.2.4</hazelcast.version>
+        <hazelcast.kubernetes.version>2.2.3.payara-p1</hazelcast.kubernetes.version>
         <jaxb-api.version>3.0.1</jaxb-api.version>
         <jaxb-impl.version>3.0.2</jaxb-impl.version>
         <jakarta.ejb-api.version>4.0.0</jakarta.ejb-api.version>
-        <jsp-api.version>3.0.0</jsp-api.version>
-        <jsp-impl.version>3.0.0</jsp-impl.version>
+        <jsp-api.version>3.1.0</jsp-api.version>
+        <jsp-impl.version>3.1.0-M2</jsp-impl.version>
         <jstl-api.version>2.0.0</jstl-api.version>
         <jstl-impl.version>2.0.0</jstl-impl.version>
         <jakarta.faces-api.version>3.0.0</jakarta.faces-api.version>
@@ -175,8 +177,8 @@
         <jaxb-extra-osgi.version>2.3.0</jaxb-extra-osgi.version>
         <json.bind-api.version>2.0.0</json.bind-api.version>
         <yasson.version>2.0.2</yasson.version>
-        <jakarta-persistence-api.version>3.0.0</jakarta-persistence-api.version>
-        <eclipselink.version>3.0.2</eclipselink.version>
+        <jakarta-persistence-api.version>3.1.0-RC2</jakarta-persistence-api.version>
+        <eclipselink.version>3.1.0-M1.payara-p1</eclipselink.version>
         <eclipselink.asm.verison>9.1.1</eclipselink.asm.verison>
         <jakarta.transaction-api.version>2.0.0</jakarta.transaction-api.version>
         <jakarta.interceptor-api.version>2.0.0</jakarta.interceptor-api.version>
@@ -188,11 +190,12 @@
         <jakarta.security.enterprise.version>2.0.1</jakarta.security.enterprise.version>
         <jakarta.security.jacc-api.version>2.0.0</jakarta.security.jacc-api.version>
         <jakarta.security.auth.message-api.version>2.0.0</jakarta.security.auth.message-api.version>
-        <jms-api.version>3.0.0</jms-api.version>
-        <mq.version>6.1.0.payara-p1</mq.version>
-        <jakarta.batch-api.version>2.0.0</jakarta.batch-api.version>
-        <com.ibm.jbatch.container.version>2.0.0</com.ibm.jbatch.container.version>
-        <com.ibm.jbatch.spi.version>2.0.0</com.ibm.jbatch.spi.version>
+        <exousia.version>1.0.1</exousia.version>
+        <jms-api.version>3.1.0</jms-api.version>
+        <mq.version>6.1.0.payara-p2</mq.version>
+        <jakarta.batch-api.version>2.1.0-M1</jakarta.batch-api.version>
+        <com.ibm.jbatch.container.version>2.1.0-M1</com.ibm.jbatch.container.version>
+        <com.ibm.jbatch.spi.version>2.1.0-M1</com.ibm.jbatch.spi.version>
         <jaxws-api.version>3.0.0</jaxws-api.version>
         <jakarta.jws-api.version>3.0.0</jakarta.jws-api.version>
         <webservices.version>3.0.3</webservices.version>
@@ -201,12 +204,14 @@
         <stax2-api.version>4.2.1</stax2-api.version>
         <jakarta.resource-api.version>2.0.0</jakarta.resource-api.version>
         <jakarta.enterprise.deploy-api.version>1.7.2</jakarta.enterprise.deploy-api.version>
-        <jakarta.activation-api.version>2.0.1</jakarta.activation-api.version>
-        <jakarta.activation-impl.version>2.0.1</jakarta.activation-impl.version>
+        <jakarta.activation-api.version>2.1.0-RC2</jakarta.activation-api.version>
+        <angus.activation.version>1.0.0-M1</angus.activation.version>
         <istack-commons-runtime.version>4.0.1</istack-commons-runtime.version>
         <jline.version>3.20.0</jline.version>
         <wsdl4j.version>1.6.3</wsdl4j.version>
-        <jsonp.version>2.0.1</jsonp.version>
+        <transitional.jsonp-jaxrs.version>2.0.1</transitional.jsonp-jaxrs.version>
+        <parsson.version>1.1.0</parsson.version>
+        <jsonp-api.version>2.1.0</jsonp-api.version>
         <jbi.version>1.0</jbi.version>
         <!--<jakarta-platform.version>10.0.0-SNAPSHOT</jakarta-platform.version>-->
         <jakarta-platform.version>9.1.0</jakarta-platform.version>
@@ -219,7 +224,7 @@
         <microprofile-metrics.version>4.0</microprofile-metrics.version>
         <microprofile-rest-client.version>3.0</microprofile-rest-client.version>
         <microprofile-openapi.version>3.0</microprofile-openapi.version>
-        <payara-arquillian-container.version>3.0.alpha2</payara-arquillian-container.version>
+        <payara-arquillian-container.version>3.0.alpha4</payara-arquillian-container.version>
         <payara.security-connectors.version>3.0.alpha4</payara.security-connectors.version>
         <opentracing.version>0.33.0</opentracing.version>
         <h2db.version>1.4.200</h2db.version>
@@ -231,7 +236,7 @@
         <monitoring-console-process.version>2.0.1</monitoring-console-process.version>
         <monitoring-console-webapp.version>2.0.1</monitoring-console-webapp.version>
         <validation.xml.root>${project.build.outputDirectory}</validation.xml.root>
-        <payara.transformer>0.2.6</payara.transformer>
+        <payara.transformer>0.2.7</payara.transformer>
         <osgi.version>7.0.0</osgi.version>
         <osgi.dto.version>1.1.1</osgi.dto.version>
     </properties>

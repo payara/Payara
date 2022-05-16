@@ -57,6 +57,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -120,7 +121,7 @@ public class ContextServiceWebRestIT {
         WebTarget target = this.client.target(new URL(this.base, "annotation/multipleannotation").toExternalForm());
         String message = target.request().accept(MediaType.TEXT_PLAIN).get(String.class);
         logger.log(Level.INFO, "Returned message {0}", new Object[]{message});
-        assertTrue(message.contains("100"));
+        assertEquals("1020", message);
     }
 
 

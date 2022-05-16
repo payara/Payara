@@ -82,18 +82,18 @@ public class ManagedScheduledExecutorDefinitionDeployer implements ResourceDeplo
         ManagedScheduledExecutorDefinitionDescriptor mseDefinitionDescriptor = (ManagedScheduledExecutorDefinitionDescriptor) resource;
         ManagedScheduledExecutorServiceConfig mseConfig
                 = new ManagedScheduledExecutorServiceConfig(new CustomManagedScheduledExecutorDefinitionImpl(mseDefinitionDescriptor));
+        ConcurrentRuntime concurrentRuntime = ConcurrentRuntime.getRuntime();
 
         // prepare the contextService
-        String contextOfResource = mseDefinitionDescriptor.getContext();
-        ResourceInfo contextResourceInfo = new ResourceInfo(contextOfResource, applicationName, moduleName);
-        ContextServiceImpl contextService = (ContextServiceImpl) resourceNamingService.lookup(contextResourceInfo, contextOfResource);
+        ContextServiceImpl contextService = concurrentRuntime.findOrCreateContextService(
+                mseDefinitionDescriptor.getContext(),
+                mseDefinitionDescriptor.getName(), applicationName, moduleName);
 
         // prepare name for JNDI
         String customNameOfResource = ConnectorsUtil.deriveResourceName(mseDefinitionDescriptor.getResourceId(),
                 mseDefinitionDescriptor.getName(), mseDefinitionDescriptor.getResourceType());
         ResourceInfo resourceInfo = new ResourceInfo(customNameOfResource, applicationName, moduleName);
 
-        ConcurrentRuntime concurrentRuntime = ConcurrentRuntime.getRuntime();
         ManagedScheduledExecutorServiceImpl managedScheduledExecutorService = concurrentRuntime.createManagedScheduledExecutorService(resourceInfo, mseConfig, contextService);
         resourceNamingService.publishObject(resourceInfo, customNameOfResource, managedScheduledExecutorService, true);
     }
