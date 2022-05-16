@@ -42,86 +42,37 @@
 
 package fish.payara.appserver.web.core;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.concurrent.ExecutionException;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-import jakarta.servlet.Servlet;
-import org.apache.catalina.Container;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.connector.Connector;
-import org.apache.catalina.core.StandardContext;
-import org.apache.catalina.core.StandardEngine;
-import org.apache.catalina.core.StandardHost;
-import org.apache.catalina.core.StandardServer;
-import org.apache.catalina.core.StandardService;
-import org.apache.catalina.core.StandardWrapper;
-import org.apache.catalina.startup.Tomcat;
-import org.glassfish.grizzly.PortRange;
 import org.glassfish.grizzly.http.server.HttpHandler;
-import org.glassfish.grizzly.http.server.HttpServer;
-import org.glassfish.grizzly.http.server.NetworkListener;
 import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.grizzly.http.server.Response;
-import org.glassfish.grizzly.http.server.ServerConfiguration;
-import org.glassfish.grizzly.utils.Charsets;
-import org.glassfish.jersey.internal.guava.ThreadFactoryBuilder;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
+import org.junit.ClassRule;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 public class GrizzlyConnectorTestManual {
-    private static Grizzly grizzly;
-
-    private static Catalina catalina;
-
-    private static GrizzlyConnector connector;
+    @ClassRule
+    public static GrizzlyTestHarness harness = new GrizzlyTestHarness();
 
     private static HttpClient client;
 
     @BeforeClass
     public static void setupServer() throws LifecycleException {
-        setLoggerLevels();
-        grizzly = new Grizzly();
-        catalina = new Catalina();
-        connector = new GrizzlyConnector();
-        connector.setXpoweredBy(true);
-        catalina.start(connector);
-        grizzly.config.addHttpHandler(connector.asHttpHandler());
         client = HttpClient.newHttpClient();
     }
 
-    private static void setLoggerLevels() {
-        Logger.getLogger("org.glassfish.grizzly").setLevel(Level.ALL);
-        Logger.getLogger("org.apache.catalina").setLevel(Level.ALL);
-        Logger.getLogger("org.apache.catalina.util.LifecycleBase").setLevel(Level.INFO);
-        for (Handler handler : Logger.getLogger("").getHandlers()) {
-            handler.setLevel(Level.ALL);
-        }
-        ;
-    }
-
-    @AfterClass
-    public static void shutdown() throws LifecycleException, ExecutionException, InterruptedException {
-        if (catalina != null) {
-            catalina.stop();
-        }
-        if (grizzly != null) {
-            grizzly.server.shutdown().get();
-        }
-    }
 
     @Test
     public void pureGrizzlyStartup() throws IOException, InterruptedException {
@@ -138,7 +89,7 @@ public class GrizzlyConnectorTestManual {
                 return "hello"; // otherwise cannot be removed
             }
         };
-        grizzly.config.addHttpHandler(hello, "/pureGrizzlyStartup/");
+        harness.grizzly.config.addHttpHandler(hello, "/pureGrizzlyStartup/");
 
         var response = get("/pureGrizzlyStartup");
         assertEquals(200, response.statusCode());
@@ -147,14 +98,14 @@ public class GrizzlyConnectorTestManual {
     }
 
     private HttpResponse<String> get(String path) throws IOException, InterruptedException {
-        return client.send(HttpRequest.newBuilder(URI.create("http://localhost:" + grizzly.port).resolve(path)).GET().build(),
+        return client.send(HttpRequest.newBuilder(URI.create("http://localhost:" + harness.grizzly.port).resolve(path)).GET().build(),
                 HttpResponse.BodyHandlers.ofString());
     }
 
     //@Ignore("Running two catalina processes in single jvm breaks NamingContextListener")
     //@Test
     public void pureCatalinaStartup() throws LifecycleException, IOException, InterruptedException {
-        var catalina = new Catalina();
+        var catalina = new GrizzlyTestHarness.Catalina();
         var coyote = new Connector();
         coyote.setPort(0);
         catalina.start(coyote);
@@ -176,111 +127,14 @@ public class GrizzlyConnectorTestManual {
 
     @Test
     public void bridgeStartup() throws LifecycleException, IOException, InterruptedException {
-        var ctx = catalina.addContext("ROOT");
+        var ctx = harness.addContext("ROOT", c -> c.addServlet(new TestServlet1(), ""));
 
-        catalina.addServlet(ctx, new TestServlet1(), "");
-
-        var response = getRoot(grizzly.port);
+        var response = getRoot(harness.grizzly.port);
         assertEquals(200, response.statusCode());
         assertEquals("Hello from Servlet", response.body());
         assertTrue(response.headers().firstValue("X-Powered-By").isPresent());
 
-        catalina.removeServletByMapping(ctx, "");
-    }
-
-    static class Grizzly {
-        HttpServer server;
-
-        int port;
-
-        ServerConfiguration config;
-
-        Grizzly() {
-            NetworkListener listener = new NetworkListener("grizzly", "localhost", new PortRange(8080, 9080), true);
-            listener.getTransport().getWorkerThreadPoolConfig()
-                    .setThreadFactory(
-                            (new ThreadFactoryBuilder())
-                                    .setNameFormat("grizzly-http-server-%d")
-                                    .setUncaughtExceptionHandler((t, e) -> e.printStackTrace())
-                                    .build());
-            server = new HttpServer();
-            server.addListener(listener);
-            config = server.getServerConfiguration();
-            config.setPassTraceRequest(true);
-            config.setDefaultQueryEncoding(Charsets.UTF8_CHARSET);
-            try {
-                server.start();
-                port = listener.getPort();
-            } catch (IOException e) {
-                server.shutdownNow();
-            }
-        }
-    }
-
-    static class Catalina {
-
-        private final StandardService service;
-
-        private final StandardEngine engine;
-
-        private final StandardHost host;
-
-        private final StandardServer server;
-
-        Catalina() {
-            server = new StandardServer();
-            server.setCatalinaHome(new File("."));
-
-            service = new StandardService();
-            server.addService(service);
-            engine = new StandardEngine();
-            service.setContainer(engine);
-            host = new StandardHost();
-            host.setName("localhost");
-            engine.setDefaultHost("localhost");
-            engine.addChild(host);
-        }
-
-        void start(Connector c) throws LifecycleException {
-            setLoggerLevels();
-            service.addConnector(c);
-            server.start();
-        }
-
-        void stop() throws LifecycleException {
-            server.stop();
-        }
-
-        StandardContext addContext(String name) {
-            var ctx = new StandardContext();
-            ctx.setName(name);
-            ctx.setPath("ROOT".equals(name) ? "" : ("/" + name));
-            // Needed for embedded usecase without tomcat deployer
-            ctx.addLifecycleListener(new Tomcat.FixContextListener());
-            host.addChild(ctx);
-            return ctx;
-        }
-
-        StandardWrapper addServlet(StandardContext ctx, Servlet instance, String mapping) {
-            var wrapper = new StandardWrapper();
-            wrapper.setServlet(instance);
-            wrapper.setName(instance.getClass().getName());
-            ctx.addChild(wrapper);
-            wrapper.addMapping(mapping);
-            return wrapper;
-        }
-
-        public void removeServletByMapping(StandardContext ctx, String path) {
-            for (Container child : ctx.findChildren()) {
-                var wrapper = (StandardWrapper)child;
-                for (String mapping : wrapper.findMappings()) {
-                    if (mapping.equals(path)) {
-                        ctx.removeChild(child);
-                        break;
-                    }
-                }
-            }
-        }
+        harness.catalina.removeServletByMapping(ctx, "");
     }
 
 
