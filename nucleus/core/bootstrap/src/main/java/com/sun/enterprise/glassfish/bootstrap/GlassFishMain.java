@@ -38,11 +38,10 @@
  * holder.
  *
  */
-// Portions Copyright [2017-2021] Payara Foundation and/or affilates
+// Portions Copyright [2017-2022] Payara Foundation and/or affilates
 
 package com.sun.enterprise.glassfish.bootstrap;
 
-import fish.payara.boot.runtime.BootCommands;
 import fish.payara.logging.PayaraLogManager;
 import org.glassfish.embeddable.*;
 
@@ -61,7 +60,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.sun.enterprise.module.bootstrap.ArgumentManager.argsToMap;
-import static java.util.logging.Level.SEVERE;
 
 /**
  * @author Sanjeeb.Sahoo@Sun.COM
@@ -135,14 +133,11 @@ public class GlassFishMain {
             addShutdownHook();
             gfr = GlassFishRuntime.bootstrap(new BootstrapProperties(ctx), getClass().getClassLoader());
             gf = gfr.newGlassFish(new GlassFishProperties(ctx));
-            doBootCommands(ctx.getProperty("-prebootcommandfile"));
             if (Boolean.valueOf(Util.getPropertyOrSystemProperty(ctx, "GlassFish_Interactive", "false"))) {
                 startConsole();
             } else {
                 gf.start();
             }
-            
-            doBootCommands(ctx.getProperty("-postbootcommandfile")); 
         }
 
         private void startConsole() throws IOException {
@@ -290,27 +285,6 @@ public class GlassFishMain {
             }
             return tokens;
         }
- 
-        /**
-         * Runs a series of commands from a file
-         * @param file 
-         */
-        private void doBootCommands(String file) {
-            if (file == null) {
-                return;
-            }
-            try {
-                BootCommands bootCommands = new BootCommands();
-                System.out.println("Reading in commandments from " + file);
-                bootCommands.parseCommandScript(new File(file));
-                bootCommands.executeCommands(gf.getCommandRunner());
-            } catch (IOException ex) {
-                LOGGER.log(SEVERE, "Error reading from file");
-            } catch (Throwable ex) {
-                LOGGER.log(SEVERE, null, ex);
-            }
-        }
-
     }
 
 }

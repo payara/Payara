@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2019-2022] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2022] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,42 +37,56 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.boot.runtime;
+package com.sun.enterprise.v3.bootstrap;
 
+import com.sun.enterprise.module.bootstrap.StartupContext;
+import org.glassfish.api.StartupRunLevel;
+import org.glassfish.embeddable.CommandRunner;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.jvnet.hk2.annotations.Service;
+
+import javax.inject.Inject;
+import java.io.File;
 import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import org.junit.Test;
+import java.util.logging.Logger;
 
-/**
- *
- * @author Gaurav Gupta
- */
-public class BootCommandsTest {
+import static java.util.logging.Level.SEVERE;
 
-    @Test
-    public void parseCommand() throws IOException {
-        BootCommands bootCommands = new BootCommands();
-        String commandText = "create-custom-resource --restype java.lang.String -s v --name='custom-res' --description=\"results \\\"in\\\" error\" --property value=\"${ENV=ini_ws_uri}\" vfp/vfp-menu/ini.ws.uri";
-        try (Reader reader = new StringReader(commandText)){
-            bootCommands.parseCommandScript(reader);
+@Service
+@RunLevel(value = StartupRunLevel.IMPLICITLY_RELIED_ON)
+public class BootCommandService implements PostConstruct {
+
+    private static final Logger LOGGER = Logger.getLogger(BootCommandService.class.getName());
+
+    @Inject
+    StartupContext startupContext;
+
+    @Inject
+    CommandRunner commandRunner;
+
+    /**
+     * Runs a series of commands from a file
+     * @param file
+     */
+    public void doBootCommands(String file) {
+        if (file == null) {
+            return;
         }
-        assertThat(bootCommands.getCommands().size(), is(1));
-        
-        BootCommand command = bootCommands.getCommands().get(0);
-        assertThat(command.getArguments().length, is(9));
-        assertEquals(command.getArguments()[0], "--restype");
-        assertEquals(command.getArguments()[1], "java.lang.String");
-        assertEquals(command.getArguments()[2], "-s");
-        assertEquals(command.getArguments()[3], "v");
-        assertEquals(command.getArguments()[4], "--name='custom-res'");
-        assertEquals(command.getArguments()[5], "--description=\"results \\\"in\\\" error\"");
-        assertEquals(command.getArguments()[6], "--property");
-        assertEquals(command.getArguments()[7], "value=\"${ENV=ini_ws_uri}\"");
-        assertEquals(command.getArguments()[8], "vfp/vfp-menu/ini.ws.uri");
+        try {
+            BootCommands bootCommands = new BootCommands();
+            System.out.println("Reading in commandments from " + file);
+            bootCommands.parseCommandScript(new File(file));
+            bootCommands.executeCommands(commandRunner);
+        } catch (IOException ex) {
+            LOGGER.log(SEVERE, "Error reading from file");
+        } catch (Throwable ex) {
+            LOGGER.log(SEVERE, null, ex);
+        }
     }
 
+    @Override
+    public void postConstruct() {
+        doBootCommands(startupContext.getArguments().getProperty("-postbootcommandfile"));
+    }
 }

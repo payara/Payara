@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.boot.runtime;
+package com.sun.enterprise.v3.bootstrap;
 
 import java.io.BufferedReader;
 import java.io.File;
