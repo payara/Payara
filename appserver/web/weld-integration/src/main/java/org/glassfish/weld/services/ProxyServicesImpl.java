@@ -78,7 +78,7 @@ public class ProxyServicesImpl implements ProxyServices {
         clh = services.getService(ClassLoaderHierarchy.class);
     }
 
-
+    //todo review ig the code should be added to another place
     /*public ClassLoader getClassLoader(final Class<?> proxiedBeanType) {
         SecurityManager sm = System.getSecurityManager();
         if (sm != null) {
@@ -143,6 +143,7 @@ public class ProxyServicesImpl implements ProxyServices {
         return tcl;
     }
 
+    //todo review is this class should be added on another place
     //@Override
     public Class<?> loadBeanClass(final String className) {
         try {

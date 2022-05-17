@@ -167,7 +167,8 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
                         }
                     }
                     Annotation annotations[] = qualifiers.toArray(new Annotation[0]);
-                    //bm.fireEvent(eventPayload,annotations);
+                    bm.getEvent().select(annotations).fire(eventPayload);
+                    // todo review what to do with this, Do I need to replace with something new?
                 } catch (IOException | ClassNotFoundException ex) {
                     Logger.getLogger(ClusteredCDIEventBusImpl.class.getName())
                             .log(ex.getCause() instanceof IllegalStateException ? Level.FINE : Level.INFO,

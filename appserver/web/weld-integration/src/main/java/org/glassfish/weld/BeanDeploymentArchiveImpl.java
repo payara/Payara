@@ -100,7 +100,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
     private BDAType bdaType = BDAType.UNKNOWN;
 
     private DeploymentContext context;
-
+    //todo the parse process for the xml changed the interpretation of the empty beans.xml. Need to check this
     private WeldBootstrap weldBootstrap;
 
     private final Map<AnnotatedType<?>, InjectionTarget<?>> itMap = new HashMap<>();
@@ -380,7 +380,8 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
     public BDAType getBDAType() {
         return bdaType;
     }
-
+    //todo review bean descovery mode
+    //todo for CDI 4 if the beans.xml is empty means descovery mode as annotated
     private void populate(Collection<com.sun.enterprise.deployment.EjbDescriptor> ejbs, Application app) {
         try {
             boolean webinfbda = false;
