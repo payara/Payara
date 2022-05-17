@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.sun.enterprise.v3.bootstrap;
+package fish.payara.boot.runtime;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -54,6 +54,7 @@ import static java.util.logging.Level.SEVERE;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import org.glassfish.config.support.TranslatedConfigView;
 import org.glassfish.embeddable.CommandRunner;
 

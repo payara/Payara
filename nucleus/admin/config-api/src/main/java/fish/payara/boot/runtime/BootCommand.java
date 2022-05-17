@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.sun.enterprise.v3.bootstrap;
+package fish.payara.boot.runtime;
 
 import org.glassfish.embeddable.CommandResult;
 import org.glassfish.embeddable.CommandResult.ExitStatus;

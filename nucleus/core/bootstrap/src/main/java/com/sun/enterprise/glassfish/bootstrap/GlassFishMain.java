@@ -43,6 +43,7 @@
 package com.sun.enterprise.glassfish.bootstrap;
 
 import fish.payara.logging.PayaraLogManager;
+import fish.payara.boot.runtime.BootCommands;
 import org.glassfish.embeddable.*;
 
 import java.io.BufferedReader;
@@ -60,6 +61,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.sun.enterprise.module.bootstrap.ArgumentManager.argsToMap;
+import static java.util.logging.Level.SEVERE;
 
 /**
  * @author Sanjeeb.Sahoo@Sun.COM
@@ -133,6 +135,7 @@ public class GlassFishMain {
             addShutdownHook();
             gfr = GlassFishRuntime.bootstrap(new BootstrapProperties(ctx), getClass().getClassLoader());
             gf = gfr.newGlassFish(new GlassFishProperties(ctx));
+            doBootCommands(ctx.getProperty("-prebootcommandfile"));
             if (Boolean.valueOf(Util.getPropertyOrSystemProperty(ctx, "GlassFish_Interactive", "false"))) {
                 startConsole();
             } else {
@@ -284,6 +287,26 @@ public class GlassFishMain {
                 tokens.add(token);
             }
             return tokens;
+        }
+
+        /**
+         * Runs a series of commands from a file
+         * @param file
+         */
+        private void doBootCommands(String file) {
+            if (file == null) {
+                return;
+            }
+            try {
+                BootCommands bootCommands = new BootCommands();
+                System.out.println("Reading in commandments from " + file);
+                bootCommands.parseCommandScript(new File(file));
+                bootCommands.executeCommands(gf.getCommandRunner());
+            } catch (IOException ex) {
+                LOGGER.log(SEVERE, "Error reading from file");
+            } catch (Throwable ex) {
+                LOGGER.log(SEVERE, null, ex);
+            }
         }
     }
 

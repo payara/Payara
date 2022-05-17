@@ -41,6 +41,7 @@ package com.sun.enterprise.v3.bootstrap;
 
 import com.sun.enterprise.module.bootstrap.StartupContext;
 import org.glassfish.api.StartupRunLevel;
+import fish.payara.boot.runtime.BootCommands;
 import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.runlevel.RunLevel;
