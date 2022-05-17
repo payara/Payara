@@ -44,14 +44,17 @@ package fish.payara.appserver.web.core;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import jakarta.servlet.ReadListener;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.SessionTrackingMode;
+import jakarta.servlet.http.HttpSession;
 import org.apache.catalina.Context;
 import org.apache.catalina.Host;
+import org.apache.catalina.Manager;
 import org.apache.catalina.Wrapper;
 import org.apache.catalina.util.SessionConfig;
 import org.apache.catalina.util.URLEncoder;
@@ -68,10 +71,14 @@ import org.apache.tomcat.util.net.AbstractEndpoint;
 import org.apache.tomcat.util.net.ApplicationBufferHandler;
 import org.apache.tomcat.util.net.SocketEvent;
 import org.apache.tomcat.util.net.SocketWrapperBase;
+import org.glassfish.grizzly.http.Cookie;
 import org.glassfish.grizzly.http.Method;
+import org.glassfish.grizzly.http.Note;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.grizzly.http.server.Response;
+import org.glassfish.grizzly.http.server.Session;
+import org.glassfish.grizzly.http.server.SessionManager;
 
 import static org.apache.catalina.connector.CoyoteAdapter.ADAPTER_NOTES;
 
@@ -82,6 +89,8 @@ public class CoyoteBridge extends HttpHandler {
 
     private static final ThreadLocal<String> THREAD_NAME =
             ThreadLocal.withInitial(() -> Thread.currentThread().getName());
+
+    private static final String GRIZZLY_SESSION_NOTE = "fish.payara.web.GrizzlySession";
 
     public CoyoteBridge(GrizzlyConnector grizzlyConnector) {
         this.connector = grizzlyConnector;
@@ -97,7 +106,7 @@ public class CoyoteBridge extends HttpHandler {
         var processor = getProcessor(request, response);
 
         if (connector.getXpoweredBy()) {
-            response.addHeader("X-Powered-By", "Grizlyote");
+            response.addHeader("X-Powered-By", "Grizllyote");
         }
 
         boolean async = false;
@@ -209,6 +218,176 @@ public class CoyoteBridge extends HttpHandler {
         return new GrizzlyProcessor(adapter, request, response);
     }
 
+
+    // we bridge to catalina's session manager
+    @Override
+    protected SessionManager getSessionManager(Request request) {
+        // Session manager is determined before service is called and therefore mapping data is filled in.
+        if (request.getNote(SESSION_MANAGER_NOTE) == null) {
+            request.setNote(SESSION_MANAGER_NOTE, new CatalinaSessionManager(request));
+        }
+        return request.getNote(SESSION_MANAGER_NOTE);
+    }
+
+    class CatalinaSessionManager implements SessionManager {
+        private final Request request;
+
+        private CatalinaSessionManager(Request r) {
+            this.request = r;
+        }
+
+        private Manager catalinaManager(Request request) {
+            var catalinaRequest = request.getNote(CATALINA_REQUEST);
+            if (catalinaRequest.getContext() == null) {
+                return null;
+            }
+            return catalinaRequest.getContext().getManager();
+        }
+
+        @Override
+        public Session getSession(Request request, String id) {
+            var manager = catalinaManager(request);
+            if (manager == null) {
+                return null;
+            }
+            try {
+                var catalinaSession = manager.findSession(id);
+                return wrap(catalinaSession);
+            } catch (IOException e) {
+                throw new IllegalStateException(e);
+            }
+        }
+
+        private Session wrap(org.apache.catalina.Session catalinaSession) {
+            var facade = (Session)catalinaSession.getNote(GRIZZLY_SESSION_NOTE);
+            if (facade == null) {
+                facade = new SessionFacade(catalinaSession);
+                catalinaSession.setNote(GRIZZLY_SESSION_NOTE, facade);
+            }
+            return facade;
+        }
+
+        @Override
+        public Session createSession(Request request) {
+            var manager = catalinaManager(request);
+            var session = manager.createEmptySession();
+            return wrap(session);
+        }
+
+        @Override
+        public String changeSessionId(Request request, Session session) {
+            var manager = catalinaManager(request);
+            if (manager == null) {
+                return null;
+            }
+            if (session instanceof SessionFacade) {
+                return manager.rotateSessionId(((SessionFacade) session).catalinaSession);
+            }
+            throw new IllegalArgumentException("Incorrect session type");
+        }
+
+        @Override
+        public void configureSessionCookie(Request request, Cookie cookie) {
+
+        }
+
+        @Override
+        public void setSessionCookieName(String s) {
+
+        }
+
+        @Override
+        public String getSessionCookieName() {
+            return "JSESSIONID"; // TODO configurable?
+        }
+    }
+
+    static class SessionFacade extends Session {
+        private final org.apache.catalina.Session catalinaSession;
+
+        private SessionFacade(org.apache.catalina.Session catalinaSession) {
+            this.catalinaSession = catalinaSession;
+        }
+
+        @Override
+        public boolean isValid() {
+            return catalinaSession.isValid();
+        }
+
+        @Override
+        public void setValid(boolean isValid) {
+            catalinaSession.setValid(isValid);
+        }
+
+        @Override
+        public boolean isNew() {
+            return catalinaSession.getSession().isNew();
+        }
+
+        @Override
+        public String getIdInternal() {
+            return catalinaSession.getIdInternal();
+        }
+
+        @Override
+        protected void setIdInternal(String id) {
+            // we cannot actually change it
+            super.setIdInternal(id);
+        }
+
+        @Override
+        public void setAttribute(String key, Object value) {
+            catalinaSession.getSession().setAttribute(key, value);
+        }
+
+        @Override
+        public Object getAttribute(String key) {
+            return catalinaSession.getSession().getAttribute(key);
+        }
+
+        @Override
+        public Object removeAttribute(String key) {
+            catalinaSession.getSession().removeAttribute(key);
+            return null; // we don't need the overhead of fetching the removal
+        }
+
+        @Override
+        public ConcurrentMap<String, Object> attributes() {
+            throw new UnsupportedOperationException("Grizzly map view onto catalina session is not supported");
+        }
+
+        @Override
+        public long getCreationTime() {
+            return catalinaSession.getCreationTime();
+        }
+
+        @Override
+        public long getSessionTimeout() {
+            return catalinaSession.getMaxInactiveInterval()*1000L;
+        }
+
+        @Override
+        public void setSessionTimeout(long sessionTimeout) {
+            catalinaSession.setMaxInactiveInterval((int) (sessionTimeout/1000));
+        }
+
+        @Override
+        public long getTimestamp() {
+            return catalinaSession.getLastAccessedTime();
+        }
+
+        @Override
+        public void setTimestamp(long timestamp) {
+
+        }
+
+        @Override
+        public long access() {
+            catalinaSession.access();
+            return catalinaSession.getLastAccessedTime();
+        }
+    }
+
     /**
      * Adapter executes Coyote requests in servlet container.
      */
@@ -249,6 +428,10 @@ public class CoyoteBridge extends HttpHandler {
      */
     static final int GRIZZLY_NOTE = 9;
 
+
+    private static final Note<CatalinaRequest> CATALINA_REQUEST = Request.createNote("fish.payara.web.CatalinaRequest");
+    private static final Note<SessionManager> SESSION_MANAGER_NOTE = Request.createNote("fish.payara.web.SessionManager");
+
     /**
      * Processor executes low-level coyote operations as demanded by processing pipeline.
      * Here we bind all three request/response pairs together so we can hopefully delegate everything to grizzly
@@ -261,6 +444,7 @@ public class CoyoteBridge extends HttpHandler {
         private final CatalinaRequest catalinaRequest;
 
         private final CatalinaResponse catalinaResponse;
+
 
         protected GrizzlyProcessor(Adapter adapter, Request grizzlyRequest, Response grizzlyResponse) {
             super(adapter);
@@ -276,6 +460,8 @@ public class CoyoteBridge extends HttpHandler {
             response.setNote(ADAPTER_NOTES, catalinaResponse);
             catalinaResponse.setRequest(catalinaRequest);
             catalinaRequest.setResponse(catalinaResponse);
+
+            grizzlyRequest.setNote(CATALINA_REQUEST, catalinaRequest);
             // todo: bind buffers
         }
 

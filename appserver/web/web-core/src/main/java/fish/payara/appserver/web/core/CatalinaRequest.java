@@ -47,6 +47,7 @@ import java.io.CharConversionException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.UnsupportedCharsetException;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -60,6 +61,7 @@ import java.util.TreeMap;
 import jakarta.servlet.AsyncContext;
 import jakarta.servlet.DispatcherType;
 import jakarta.servlet.FilterChain;
+import jakarta.servlet.ReadListener;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
@@ -84,6 +86,8 @@ import org.apache.catalina.mapper.MappingData;
 import org.apache.tomcat.util.buf.B2CConverter;
 import org.apache.tomcat.util.buf.MessageBytes;
 import org.apache.tomcat.util.http.ServerCookies;
+import org.glassfish.grizzly.ReadHandler;
+import org.glassfish.grizzly.http.io.InputBuffer;
 import org.glassfish.grizzly.http.server.Request;
 
 public class CatalinaRequest extends org.apache.catalina.connector.Request {
@@ -317,8 +321,101 @@ public class CatalinaRequest extends org.apache.catalina.connector.Request {
 
     @Override
     public ServletInputStream getInputStream() throws IOException {
-        // TODO: add input bufferring
-        return super.getInputStream();
+        return new ServletInputStream() {
+            InputStream inputStream = grizzlyRequest.getInputStream();
+            InputBuffer buffer = grizzlyRequest.getInputBuffer();
+
+            @Override
+            public boolean isFinished() {
+                return buffer.isFinished();
+            }
+
+            @Override
+            public boolean isReady() {
+                return buffer.ready();
+            }
+
+            @Override
+            public void setReadListener(ReadListener readListener) {
+                // TODO: thread jumping, probably
+                buffer.notifyAvailable(new ReadHandler() {
+                    @Override
+                    public void onDataAvailable() throws Exception {
+                        readListener.onDataAvailable();
+                    }
+
+                    @Override
+                    public void onError(Throwable throwable) {
+                        readListener.onError(throwable);
+                    }
+
+                    @Override
+                    public void onAllDataRead() throws Exception {
+                        readListener.onAllDataRead();
+                    }
+                });
+            }
+
+            @Override
+            public int read() throws IOException {
+                return inputStream.read();
+            }
+
+            @Override
+            public int read(byte[] b) throws IOException {
+                return inputStream.read(b);
+            }
+
+            @Override
+            public int read(byte[] b, int off, int len) throws IOException {
+                return inputStream.read(b, off, len);
+            }
+
+            @Override
+            public byte[] readAllBytes() throws IOException {
+                return inputStream.readAllBytes();
+            }
+
+            @Override
+            public byte[] readNBytes(int len) throws IOException {
+                return inputStream.readNBytes(len);
+            }
+
+            @Override
+            public int readNBytes(byte[] b, int off, int len) throws IOException {
+                return inputStream.readNBytes(b, off, len);
+            }
+
+            @Override
+            public long skip(long n) throws IOException {
+                return inputStream.skip(n);
+            }
+
+            @Override
+            public int available() throws IOException {
+                return inputStream.available();
+            }
+
+            @Override
+            public void close() throws IOException {
+                inputStream.close();
+            }
+
+            @Override
+            public void mark(int readlimit) {
+                inputStream.mark(readlimit);
+            }
+
+            @Override
+            public void reset() throws IOException {
+                inputStream.reset();
+            }
+
+            @Override
+            public boolean markSupported() {
+                return inputStream.markSupported();
+            }
+        };
     }
 
     @Override
@@ -359,7 +456,13 @@ public class CatalinaRequest extends org.apache.catalina.connector.Request {
     @Override
     public BufferedReader getReader() throws IOException {
         // TODO: Actual buffering
-        return new BufferedReader(grizzlyRequest.getReader());
+        try {
+            return new BufferedReader(grizzlyRequest.getReader());
+        } catch (UnsupportedCharsetException uce) {
+            var ex = new UnsupportedEncodingException(uce.getMessage());
+            ex.initCause(uce);
+            throw ex;
+        }
     }
 
     @Override
@@ -439,7 +542,13 @@ public class CatalinaRequest extends org.apache.catalina.connector.Request {
 
     @Override
     public void setCharacterEncoding(String enc) throws UnsupportedEncodingException {
-        grizzlyRequest.setCharacterEncoding(enc);
+        try {
+            grizzlyRequest.setCharacterEncoding(enc);
+        } catch (UnsupportedCharsetException uce) {
+            var ex = new UnsupportedEncodingException(uce.getMessage());
+            ex.initCause(uce);
+            throw ex;
+        }
     }
 
     @Override
@@ -774,12 +883,12 @@ public class CatalinaRequest extends org.apache.catalina.connector.Request {
 
     @Override
     public void changeSessionId(String newSessionId) {
-        throw new UnsupportedOperationException();
+        super.changeSessionId(newSessionId);
     }
 
     @Override
     public String changeSessionId() {
-        return grizzlyRequest.changeSessionId();
+        return super.changeSessionId();
     }
 
     @Override
@@ -829,6 +938,22 @@ public class CatalinaRequest extends org.apache.catalina.connector.Request {
 
     @Override
     protected Session doGetSession(boolean create) {
+        // now it's time to parse session cookie
+        if (grizzlyRequest.getRequestedSessionId() == null) {
+            var cookiesLocale = grizzlyRequest.getCookies();
+
+            final String sessionCookieNameLocal = grizzlyRequest.getSessionCookieName();
+            for (int i = 0; i < cookiesLocale.length; i++) {
+                final org.glassfish.grizzly.http.Cookie c = cookiesLocale[i];
+                if (sessionCookieNameLocal.equals(c.getName())) {
+                    grizzlyRequest.setRequestedSessionId(c.getValue());
+                    grizzlyRequest.setRequestedSessionCookie(true);
+                    break;
+                }
+            }
+        }
+        requestedSessionId = grizzlyRequest.getRequestedSessionId();
+        requestedSessionCookie = grizzlyRequest.isRequestedSessionIdFromCookie();
         return super.doGetSession(create);
     }
 
@@ -844,7 +969,50 @@ public class CatalinaRequest extends org.apache.catalina.connector.Request {
 
     @Override
     protected void convertCookies() {
-        super.convertCookies();
+        if (cookiesConverted) {
+            return;
+        }
+
+        cookiesConverted = true;
+
+        if (getContext() == null) {
+            return;
+        }
+
+        var serverCookies = grizzlyRequest.getCookies();
+
+        if (serverCookies == null || serverCookies.length == 0) {
+            return;
+        }
+        int count = serverCookies.length;
+        cookies = new Cookie[count];
+
+        int idx=0;
+        for (int i = 0; i < count; i++) {
+            var scookie = serverCookies[i];
+            try {
+                // We must unescape the '\\' escape character
+                Cookie cookie = new Cookie(scookie.getName(),null);
+                int version = scookie.getVersion();
+                cookie.setVersion(version);
+                cookie.setValue(unescape(scookie.getValue()));
+                cookie.setPath(unescape(scookie.getPath()));
+                String domain = scookie.getDomain();
+                if (domain!=null) {
+                    cookie.setDomain(unescape(domain));//avoid NPE
+                }
+                String comment = scookie.getComment();
+                cookie.setComment(version==1?unescape(comment):null);
+                cookies[idx++] = cookie;
+            } catch(IllegalArgumentException e) {
+                // Ignore bad cookie
+            }
+        }
+        if( idx < count ) {
+            Cookie[] ncookies = new Cookie[idx];
+            System.arraycopy(cookies, 0, ncookies, 0, idx);
+            cookies = ncookies;
+        }
     }
 
     @Override
