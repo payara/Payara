@@ -75,7 +75,7 @@ public class BootCommandService implements PostConstruct {
         }
         try {
             BootCommands bootCommands = new BootCommands();
-            System.out.println("Reading in commandments from " + file);
+            System.out.println("Reading in commands from " + file);
             bootCommands.parseCommandScript(new File(file));
             bootCommands.executeCommands(commandRunner);
         } catch (IOException ex) {
