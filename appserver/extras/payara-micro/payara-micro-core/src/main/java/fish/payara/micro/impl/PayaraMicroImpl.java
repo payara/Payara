@@ -93,8 +93,8 @@ import org.glassfish.embeddable.GlassFishProperties;
 import org.glassfish.embeddable.GlassFishRuntime;
 
 import fish.payara.appserver.rest.endpoints.config.admin.ListRestEndpointsCommand;
-import com.sun.enterprise.v3.bootstrap.BootCommand;
-import com.sun.enterprise.v3.bootstrap.BootCommands;
+import fish.payara.boot.runtime.BootCommand;
+import fish.payara.boot.runtime.BootCommands;
 import fish.payara.deployment.util.GAVConvertor;
 import fish.payara.micro.BootstrapException;
 import fish.payara.micro.PayaraMicroRuntime;

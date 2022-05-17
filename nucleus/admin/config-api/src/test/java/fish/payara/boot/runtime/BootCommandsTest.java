@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.sun.enterprise.v3.bootstrap;
+package fish.payara.boot.runtime;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -45,6 +45,9 @@ import java.io.StringReader;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+
+import fish.payara.boot.runtime.BootCommand;
+import fish.payara.boot.runtime.BootCommands;
 import org.junit.Test;
 
 /**
