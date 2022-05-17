@@ -49,7 +49,7 @@ import java.util.logging.Logger;
 
 /**
  * Simple class for holding an asadmin command representation for using during
- * post boot
+ * pre and post boot
  * @author Steve Millidge
  */
 public class BootCommand {
