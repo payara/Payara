@@ -89,10 +89,17 @@ import org.apache.tomcat.util.http.ServerCookies;
 import org.glassfish.grizzly.ReadHandler;
 import org.glassfish.grizzly.http.io.InputBuffer;
 import org.glassfish.grizzly.http.server.Request;
+import org.glassfish.grizzly.http.server.util.Globals;
 
 public class CatalinaRequest extends org.apache.catalina.connector.Request {
 
     private Request grizzlyRequest;
+
+    enum CoyoteAccessReason {
+        ASYNC;
+    }
+
+    private CoyoteAccessReason coyoteAllowed;
 
     /**
      * Create a new Request object associated with the given Connector.
@@ -116,8 +123,12 @@ public class CatalinaRequest extends org.apache.catalina.connector.Request {
     }
     @Override
     public org.apache.coyote.Request getCoyoteRequest() {
+        if (coyoteAllowed != null) {
+            return super.getCoyoteRequest();
+        }
         // TODO: carefully copy all relevant data
         throw new UnsupportedOperationException("We don't like coyote requests around here");
+
         //return super.getCoyoteRequest();
     }
 
@@ -140,6 +151,7 @@ public class CatalinaRequest extends org.apache.catalina.connector.Request {
     public void recycle() {
         super.recycle();
         coyoteRequest.recycle();
+        coyoteAllowed = null;
         // grizzly is recycled in its own lifecycle
     }
 
@@ -286,6 +298,10 @@ public class CatalinaRequest extends org.apache.catalina.connector.Request {
 
     @Override
     public Object getAttribute(String name) {
+        if (Globals.DISPATCHER_TYPE_ATTR.equals(name)) {
+            // bug in grizzly: no handling for dispatcher type
+            return getDispatcherType();
+        }
         return grizzlyRequest.getAttribute(name);
     }
 
@@ -537,6 +553,10 @@ public class CatalinaRequest extends org.apache.catalina.connector.Request {
 
     @Override
     public void setAttribute(String name, Object value) {
+        if (Globals.DISPATCHER_TYPE_ATTR.equals(name)) {
+            // bug in grizzly, dispatcher type not handled in getAttribute
+            internalDispatcherType = (DispatcherType) value;
+        }
         grizzlyRequest.setAttribute(name, value);
     }
 
@@ -564,6 +584,7 @@ public class CatalinaRequest extends org.apache.catalina.connector.Request {
     @Override
     public AsyncContext startAsync(ServletRequest request, ServletResponse response) {
         // TODO: Heavy dependency on coyote here
+        coyoteAllowed = CoyoteAccessReason.ASYNC;
         // Reimplementation requires overriding all async methods as asyncContext is private
         return super.startAsync(request, response);
     }
