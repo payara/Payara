@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2019] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2022] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,51 +37,57 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.boot.runtime;
+package com.sun.enterprise.v3.bootstrap;
 
-import org.glassfish.embeddable.CommandResult;
-import org.glassfish.embeddable.CommandResult.ExitStatus;
+import com.sun.enterprise.module.bootstrap.StartupContext;
+import org.glassfish.api.StartupRunLevel;
+import fish.payara.boot.runtime.BootCommands;
 import org.glassfish.embeddable.CommandRunner;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.jvnet.hk2.annotations.Service;
 
-import static java.util.logging.Level.INFO;
-import static java.util.logging.Level.WARNING;
+import javax.inject.Inject;
+import java.io.File;
+import java.io.IOException;
 import java.util.logging.Logger;
 
-/**
- * Simple class for holding an asadmin command representation for using during
- * pre and post boot
- * @author Steve Millidge
- */
-public class BootCommand {
-    
-    private final String command;
-    private final String[] arguments;
+import static java.util.logging.Level.SEVERE;
 
-    private static final Logger LOGGER = Logger.getLogger(BootCommand.class.getName());
+@Service
+@RunLevel(value = StartupRunLevel.IMPLICITLY_RELIED_ON)
+public class BootCommandService implements PostConstruct {
 
-    public BootCommand(String command, String ... arguments) {
-        this.command = command;
-        this.arguments = arguments;
-    }
-    
-    public boolean execute(CommandRunner runner) {
-        boolean result = true;
-        CommandResult asadminResult = runner.run(command, arguments);
-        if (asadminResult.getExitStatus().equals(ExitStatus.FAILURE)) {
-            LOGGER.log(WARNING, String.format("Boot Command %s failed %s ", command, asadminResult.getOutput()), asadminResult.getFailureCause());
-            result = false;
-        } else {
-            LOGGER.log(INFO, String.format("Boot Command %s returned with result %s : %s", command, asadminResult.getExitStatus(), asadminResult.getOutput()));
+    private static final Logger LOGGER = Logger.getLogger(BootCommandService.class.getName());
+
+    @Inject
+    StartupContext startupContext;
+
+    @Inject
+    CommandRunner commandRunner;
+
+    /**
+     * Runs a series of commands from a file
+     * @param file
+     */
+    public void doBootCommands(String file) {
+        if (file == null) {
+            return;
         }
-        return result;
+        try {
+            BootCommands bootCommands = new BootCommands();
+            System.out.println("Reading in commands from " + file);
+            bootCommands.parseCommandScript(new File(file));
+            bootCommands.executeCommands(commandRunner);
+        } catch (IOException ex) {
+            LOGGER.log(SEVERE, "Error reading from file");
+        } catch (Throwable ex) {
+            LOGGER.log(SEVERE, null, ex);
+        }
     }
 
-    public String getCommand() {
-        return command;
+    @Override
+    public void postConstruct() {
+        doBootCommands(startupContext.getArguments().getProperty("-postbootcommandfile"));
     }
-
-    public String[] getArguments() {
-        return arguments;
-    }
-
 }
