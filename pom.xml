@@ -167,8 +167,8 @@
         <jakarta.ejb-api.version>4.0.0</jakarta.ejb-api.version>
         <jsp-api.version>3.1.0</jsp-api.version>
         <jsp-impl.version>3.1.0-M2</jsp-impl.version>
-        <jstl-api.version>2.0.0</jstl-api.version>
-        <jstl-impl.version>2.0.0</jstl-impl.version>
+        <jstl-api.version>3.0.0</jstl-api.version>
+        <jstl-impl.version>3.0.0</jstl-impl.version>
         <jakarta.faces-api.version>3.0.0</jakarta.faces-api.version>
         <mojarra.version>3.0.1</mojarra.version>
         <tyrus.version>2.0.1</tyrus.version>
