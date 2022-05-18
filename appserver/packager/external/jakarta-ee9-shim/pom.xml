@@ -158,6 +158,9 @@
                                     jakarta.enterprise.inject.spi.configurator;
                                     jakarta.enterprise.util;version="4.0.99";shim="true",
                                     
+                                    <!-- XML WS -->
+                                    org.apache.xml.security;version="2.3.99";shim="true",
+
                                     <!-- Jakarta XML Binding - forward shim (4 exported as 3) -->
                                     jakarta.xml.bind;
                                     jakarta.xml.bind.annotation;
