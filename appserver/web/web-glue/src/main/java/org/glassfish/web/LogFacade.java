@@ -1570,4 +1570,11 @@ public class LogFacade {
             cause = "An exception occurred during creation of absolute URL of Catalina config file {0}",
             action = "Check the Exception for error")
     public static final String EXCEPTION_CREATING_CATALINA_CONFIG_FILE_ABSOLUTE_URL = PREFIX + "00289";
+
+    @LogMessageInfo(
+            message = "Exception during processing of valve for web module {1}",
+            level = "SEVERE",
+            cause = "An exception occurred during processing valve",
+            action = "Check the exception for the error")
+    public static final String EXCEPTION_DURING_VALVE_EVENT = PREFIX + "00290";
 }
