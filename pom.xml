@@ -397,7 +397,7 @@
             <plugin>
                 <groupId>fish.payara.maven.plugins</groupId>
                 <artifactId>dynamic-build-properties-maven-plugin</artifactId>
-                <version>0.0.1.a1</version>
+                <version>0.0.1.a2</version>
                 <executions>
                     <execution>
                         <phase>validate</phase>
