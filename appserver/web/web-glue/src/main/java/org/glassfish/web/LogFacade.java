@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2022] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.web;
 
@@ -1572,7 +1572,7 @@ public class LogFacade {
     public static final String EXCEPTION_CREATING_CATALINA_CONFIG_FILE_ABSOLUTE_URL = PREFIX + "00289";
 
     @LogMessageInfo(
-            message = "Exception during processing of valve for web module {1}",
+            message = "Exception during processing of valve for web module {0}",
             level = "SEVERE",
             cause = "An exception occurred during processing valve",
             action = "Check the exception for the error")

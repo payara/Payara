@@ -43,6 +43,7 @@ package fish.payara.web;
 
 import com.sun.enterprise.container.common.spi.util.InjectionManager;
 import com.sun.enterprise.security.integration.AppServSecurityContext;
+import com.sun.enterprise.security.integration.RealmInitializer;
 import com.sun.enterprise.security.integration.SecurityConstants;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import com.sun.enterprise.web.WebComponentInvocation;
@@ -51,7 +52,9 @@ import jakarta.inject.Inject;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletRequestWrapper;
+import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.catalina.Container;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.Realm;
@@ -166,7 +169,7 @@ public class WebModuleValve extends ValveBase {
         try {
             getNext().invoke(request, response);
         } finally {
-            afterEvents(request, response);
+            afterEvents(response);
         }
     }
 
@@ -220,7 +223,7 @@ public class WebModuleValve extends ValveBase {
                 transactionManager.enlistComponentResources();
             }
         } catch (Exception ex) {
-            invocationManager.postInvoke(webComponentInvocation); // See CR 6920895
+            invocationManager.postInvoke(webComponentInvocation);
             String msg = RESOURCE_BUNDLE.getString(LogFacade.EXCEPTION_DURING_VALVE_EVENT);
             msg = MessageFormat.format(msg, webModule);
             throw new RuntimeException(msg, ex);
@@ -245,8 +248,6 @@ public class WebModuleValve extends ValveBase {
         }
     }
 
-
-
     private void checkObjectForDoAsPermission(final Object o) throws AccessControlException {
         if (System.getSecurityManager() != null) {
             AccessController.doPrivileged((PrivilegedAction<Void>) () -> {
@@ -259,8 +260,57 @@ public class WebModuleValve extends ValveBase {
         }
     }
 
-    private void afterEvents(Request request, Response response) {
+    private void afterEvents(Response response) {
+        // The container should be StandardWrapper, from which we can get the Servlet instance
+        StandardWrapper standardWrapper = (StandardWrapper) getContainer();
+        WebComponentInvocation webComponentInvocation = new WebComponentInvocation(webModule,
+                standardWrapper.getServlet());
 
+        try {
+            invocationManager.postInvoke(webComponentInvocation);
+        } catch (Exception exception) {
+            String msg = RESOURCE_BUNDLE.getString(LogFacade.EXCEPTION_DURING_VALVE_EVENT);
+            msg = MessageFormat.format(msg, webModule);
+            LOGGER.log(Level.SEVERE, msg, exception);
+            throw exception;
+        } finally {
+            // Emit monitoring probe event
+            ServletResponse servletResponse = response.getResponse();
+            int status = -1;
+            if (servletResponse != null && servletResponse instanceof HttpServletResponse) {
+                status = ((HttpServletResponse) servletResponse).getStatus();
+            }
+            webModule.afterServiceEvent(getContainer().getName(), status);
+
+            // Check it's the top level invocation
+            if (invocationManager.getCurrentInvocation() == null) {
+                try {
+                    // Clear security context
+                    Realm realm = webModule.getRealm();
+                    if (realm != null && (realm instanceof RealmInitializer)) {
+                        // Cleanup not only AppServSecurityContext but also PolicyContext
+                        ((RealmInitializer) realm).logout();
+                    }
+                } catch (Exception exception) {
+                    String msg = RESOURCE_BUNDLE.getString(LogFacade.EXCEPTION_DURING_VALVE_EVENT);
+                    msg = MessageFormat.format(msg, webModule);
+                    LOGGER.log(Level.SEVERE, msg, exception);
+                }
+
+                if (transactionManager != null) {
+                    try {
+                        if (transactionManager.getTransaction() != null) {
+                            transactionManager.rollback();
+                        }
+                        transactionManager.cleanTxnTimeout();
+                    } catch (Exception ex) {
+                    }
+                }
+            }
+
+            if (transactionManager != null) {
+                transactionManager.componentDestroyed(standardWrapper.getServlet(), webComponentInvocation);
+            }
+        }
     }
-
 }
