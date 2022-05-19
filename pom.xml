@@ -142,6 +142,7 @@
         <maven.install.plugin.version>3.0.0-M1</maven.install.plugin.version>
         <maven.bundle.plugin.version>4.1.0</maven.bundle.plugin.version>
         <maven.failsafe.plugin.version>3.0.0-M5</maven.failsafe.plugin.version>
+        <dynamic.build.properties.version>0.0.1.a2</dynamic.build.properties.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -397,7 +398,7 @@
             <plugin>
                 <groupId>fish.payara.maven.plugins</groupId>
                 <artifactId>dynamic-build-properties-maven-plugin</artifactId>
-                <version>0.0.1.a2</version>
+                <version>${dynamic.build.properties.version}</version>
                 <executions>
                     <execution>
                         <phase>validate</phase>
