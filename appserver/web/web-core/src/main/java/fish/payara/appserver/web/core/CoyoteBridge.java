@@ -456,7 +456,7 @@ public class CoyoteBridge extends HttpHandler {
             this.catalinaResponse = new CatalinaResponse(grizzlyResponse);
             catalinaRequest.setRequests(request, grizzlyRequest);
             request.setNote(ADAPTER_NOTES, catalinaRequest);
-            catalinaResponse.setCoyoteResponse(response);
+            catalinaResponse.setResponses(response);
             response.setNote(ADAPTER_NOTES, catalinaResponse);
             catalinaResponse.setRequest(catalinaRequest);
             catalinaRequest.setResponse(catalinaResponse);

@@ -87,6 +87,7 @@ import org.apache.tomcat.util.buf.B2CConverter;
 import org.apache.tomcat.util.buf.MessageBytes;
 import org.apache.tomcat.util.http.ServerCookies;
 import org.glassfish.grizzly.ReadHandler;
+import org.glassfish.grizzly.http.Protocol;
 import org.glassfish.grizzly.http.io.InputBuffer;
 import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.grizzly.http.server.util.Globals;
@@ -94,6 +95,10 @@ import org.glassfish.grizzly.http.server.util.Globals;
 public class CatalinaRequest extends org.apache.catalina.connector.Request {
 
     private Request grizzlyRequest;
+
+    public boolean supportsRelativeRedirects() {
+        return grizzlyRequest.getProtocol() != Protocol.HTTP_0_9 && grizzlyRequest.getProtocol() != Protocol.HTTP_1_0;
+    }
 
     enum CoyoteAccessReason {
         ASYNC;
