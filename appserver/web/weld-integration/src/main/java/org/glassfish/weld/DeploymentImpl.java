@@ -37,12 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld;
 
 import com.sun.enterprise.container.common.spi.util.InjectionManager;
 import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.WARNING;
 import static org.glassfish.weld.connector.WeldUtils.*;
 
 import java.io.IOException;
@@ -81,6 +82,12 @@ import com.sun.enterprise.deployment.util.DOLUtils;
 import org.glassfish.weld.services.InjectionServicesImpl;
 import org.jboss.weld.injection.spi.InjectionServices;
 import org.jboss.weld.injection.spi.ResourceInjectionServices;
+import org.jboss.weld.lite.extension.translator.BuildCompatibleExtensionLoader;
+import org.jboss.weld.lite.extension.translator.LiteExtensionTranslator;
+import java.security.PrivilegedAction;
+import static java.lang.System.getSecurityManager;
+import static java.security.AccessController.doPrivileged;
+
 
 /*
  * Represents a deployment of a CDI (Weld) application.
@@ -478,6 +485,24 @@ public class DeploymentImpl implements CDI11Deployment {
         List<BeanDeploymentArchive> bdas = getBeanDeploymentArchives();
         ArrayList<Metadata<Extension>> extnList = new ArrayList<>();
 
+        //registering the org.jboss.weld.lite.extension.translator.LiteExtensionTranslator
+        //to be able to execute build compatible extensions
+        if (!BuildCompatibleExtensionLoader.getBuildCompatibleExtensions().isEmpty()) {
+            try {
+                LiteExtensionTranslator extensionTranslator = getSecurityManager() != null ?
+                        doPrivileged(new PrivilegedAction<LiteExtensionTranslator>() {
+                            @Override
+                            public LiteExtensionTranslator run() {
+                                return new LiteExtensionTranslator();
+                            }
+                        }): new LiteExtensionTranslator();
+                extnList.add(new MetadataImpl<>(extensionTranslator));
+            } catch(Exception e) {
+                logger.log(WARNING, "Problem to register CDI Build Compatible Extensions");
+                throw new RuntimeException(e);
+            }
+        }
+
         // Track classloaders to ensure we don't scan the same classloader twice
         HashSet<ClassLoader> scannedClassLoaders = new HashSet<>();
 
@@ -819,4 +844,5 @@ public class DeploymentImpl implements CDI11Deployment {
     public String getContextId() {
         return contextId;
     }
+
 }
