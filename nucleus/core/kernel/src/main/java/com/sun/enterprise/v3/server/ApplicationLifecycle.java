@@ -1207,7 +1207,12 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             Container container;
             try {
                 container = engineInfo.getContainer();
-            } catch(Exception e) {
+            } catch (Exception e) {
+                if (e instanceof org.glassfish.hk2.api.MultiException) {
+                    for (Throwable se : ((org.glassfish.hk2.api.MultiException) e).getErrors()) {
+                        logger.log(SEVERE, e.getMessage(), e);
+                    }
+                }
                 logger.log(SEVERE, KernelLoggerInfo.cantStartContainer,
                         new Object[] {engineInfo.getSniffer().getModuleType(), e});
                 return false;
