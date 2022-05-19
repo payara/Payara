@@ -230,7 +230,7 @@
         <h2db.version>1.4.200</h2db.version>
         <websocket-api.version>2.0.0</websocket-api.version>
         <concurrent-api.version>3.0.0</concurrent-api.version>
-        <concurrent.version>3.0.0-SNAPSHOT</concurrent.version>
+        <concurrent.version>3.0.0-RC1</concurrent.version>
         <asm.version>9.2</asm.version>
         <monitoring-console-api.version>2.0.1</monitoring-console-api.version>
         <monitoring-console-process.version>2.0.1</monitoring-console-process.version>
