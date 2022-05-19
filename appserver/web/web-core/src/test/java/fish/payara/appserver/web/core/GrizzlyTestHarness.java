@@ -49,7 +49,9 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import jakarta.servlet.Filter;
 import jakarta.servlet.Servlet;
+import jakarta.servlet.http.HttpSessionIdListener;
 import org.apache.catalina.Container;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.connector.Connector;
@@ -60,6 +62,8 @@ import org.apache.catalina.core.StandardServer;
 import org.apache.catalina.core.StandardService;
 import org.apache.catalina.core.StandardWrapper;
 import org.apache.catalina.startup.Tomcat;
+import org.apache.tomcat.util.descriptor.web.FilterDef;
+import org.apache.tomcat.util.descriptor.web.FilterMap;
 import org.glassfish.grizzly.PortRange;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.http.server.NetworkListener;
@@ -131,8 +135,18 @@ public class GrizzlyTestHarness extends ExternalResource {
             return this;
         }
 
-        default ContextBuilder addServlet(String servletName, Class<? extends Servlet> servletClass, String mapping) {
-            Catalina.addServlet(getContext(), servletName, servletClass, mapping);
+        default ContextBuilder addServlet(String servletName, Class<? extends Servlet> servletClass, String mapping, String... extraMapping) {
+            Catalina.addServlet(getContext(), servletName, servletClass, mapping, extraMapping);
+            return this;
+        }
+
+        default ContextBuilder addEventListener(HttpSessionIdListener listener) {
+            getContext().addApplicationEventListener(listener);
+            return this;
+        }
+
+        default ContextBuilder addFilter(String filterName, Class<? extends Filter> filterClass, String mapping) {
+            Catalina.addFilter(getContext(), filterName, filterClass, mapping);
             return this;
         }
     }
@@ -141,6 +155,10 @@ public class GrizzlyTestHarness extends ExternalResource {
         var ctx = catalina.addContext(contextName);
         builder.accept(() -> ctx);
         return ctx;
+    }
+
+    public void removeContext(StandardContext context) {
+        catalina.removeContext(context);
     }
 
     protected static class Grizzly {
@@ -174,6 +192,18 @@ public class GrizzlyTestHarness extends ExternalResource {
 
     protected static class Catalina {
 
+        public static void addFilter(StandardContext context, String filterName, Class<? extends Filter> filterClass, String mapping) {
+            var filterDef = new FilterDef();
+            filterDef.setFilterName(filterName);
+            context.addFilterDef(filterDef);
+            filterDef.setFilterClass(filterClass.getName());
+
+            var map = new FilterMap();
+            map.setFilterName(filterName);
+            map.addURLPattern(mapping);
+            context.addFilterMap(map);
+        }
+
         private final StandardService service;
 
         private final StandardEngine engine;
@@ -183,6 +213,8 @@ public class GrizzlyTestHarness extends ExternalResource {
         private final StandardServer server;
 
         Catalina() {
+            // e. g. relative redirects are not expected by servlet tck
+            System.setProperty("org.apache.catalina.STRICT_SERVLET_COMPLIANCE", "true");
             server = new StandardServer();
             server.setCatalinaHome(new File("."));
 
@@ -212,6 +244,8 @@ public class GrizzlyTestHarness extends ExternalResource {
             // Needed for embedded usecase without tomcat deployer
             ctx.addLifecycleListener(new Tomcat.FixContextListener());
             host.addChild(ctx);
+            // TCK methods need activity checking - session cannot expire while request is being processed.
+            ctx.getManager().setSessionActivityCheck(true);
             return ctx;
         }
 
@@ -224,12 +258,16 @@ public class GrizzlyTestHarness extends ExternalResource {
             return wrapper;
         }
 
-        protected static StandardWrapper addServlet(StandardContext ctx, String servletName, Class<? extends Servlet> servletClass, String mapping) {
+        protected static StandardWrapper addServlet(StandardContext ctx, String servletName, Class<? extends Servlet> servletClass, String mapping,
+                                                    String... extraMapping) {
             var wrapper = new StandardWrapper();
             wrapper.setServletClass(servletClass.getName());
             wrapper.setName(servletName);
             ctx.addChild(wrapper);
             wrapper.addMapping(mapping);
+            for (String extra : extraMapping) {
+                wrapper.addMapping(extra);
+            }
             return wrapper;
         }
 
@@ -243,6 +281,10 @@ public class GrizzlyTestHarness extends ExternalResource {
                     }
                 }
             }
+        }
+
+        public void removeContext(StandardContext context) {
+            host.removeChild(context);
         }
     }
 }

@@ -72,6 +72,7 @@ import org.glassfish.grizzly.http.io.OutputBuffer;
 import org.glassfish.grizzly.http.server.Response;
 import org.glassfish.grizzly.http.util.Header;
 import org.glassfish.grizzly.http.util.HttpStatus;
+import org.glassfish.grizzly.http.util.MimeHeaders;
 
 public class CatalinaResponse extends org.apache.catalina.connector.Response {
     private static final Logger LOG = Logger.getLogger(CatalinaResponse.class.getName());
@@ -364,23 +365,48 @@ public class CatalinaResponse extends org.apache.catalina.connector.Response {
 
     @Override
     public void addCookie(Cookie cookie) {
-        grizzlyResponse.addCookie(translateCookie(cookie));
-    }
+        // grizzly supports cookies but not exactly in servlet compliant way (doesn't set max-age on version 0 cookies)
 
-    private org.glassfish.grizzly.http.Cookie translateCookie(Cookie cookie) {
-        var grizzlyCookie = new org.glassfish.grizzly.http.Cookie(cookie.getName(), cookie.getValue());
-        grizzlyCookie.setComment(cookie.getComment());
-        grizzlyCookie.setDomain(cookie.getDomain());
-        grizzlyCookie.setPath(cookie.getPath());
-        grizzlyCookie.setSecure(cookie.getSecure());
-        grizzlyCookie.setHttpOnly(cookie.isHttpOnly());
-        grizzlyCookie.setMaxAge(cookie.getMaxAge());
-        return grizzlyCookie;
+        // Ignore any call from an included servlet
+        if (included || isCommitted()) {
+            return;
+        }
+
+        getCookies().add(cookie);
+
+        String header = generateCookieString(cookie);
+        //if we reached here, no exception, cookie is valid
+        // the header name is Set-Cookie for both "old" and v.1 ( RFC2109 )
+        // RFC2965 is not supported by browsers and the Servlet spec
+        // asks for 2109.
+        // Tomcat supports different encoding for cookies, Grizzly, however, does not.
+        addHeader("Set-Cookie", header);
     }
 
     @Override
     public void addSessionCookieInternal(Cookie cookie) {
-        super.addSessionCookieInternal(cookie);
+        if (isCommitted()) {
+            return;
+        }
+
+        String name = cookie.getName();
+        final String headername = "Set-Cookie";
+        final String startsWith = name + "=";
+        String header = generateCookieString(cookie);
+        boolean set = false;
+        MimeHeaders headers = grizzlyResponse.getResponse().getHeaders();
+        int n = headers.size();
+        for (int i = 0; i < n; i++) {
+            if (headers.getName(i).toString().equals(headername)) {
+                if (headers.getValue(i).toString().startsWith(startsWith)) {
+                    headers.getValue(i).setString(header);
+                    set = true;
+                }
+            }
+        }
+        if (!set) {
+            addHeader(headername, header);
+        }
     }
 
     @Override
