@@ -393,6 +393,7 @@
 			<jvmarg value="-DASADMIN=${ASADMIN}" />
 			<jvmarg value="-DAPPCLIENT=${APPCLIENT}"/>
 			<jvmarg value="--add-opens=java.base/java.lang=ALL-UNNAMED" />
+			<jvmarg value="--add-opens=java.base/jdk.internal.reflect=ALL-UNNAMED" />
 			<sysproperty key="glassfish.home" value="${glassfish.home}"/>
 			<sysproperty key="domain.name" value="${domain.name}"/>
 			<sysproperty key="BASEDIR" value="${basedir}"/>
