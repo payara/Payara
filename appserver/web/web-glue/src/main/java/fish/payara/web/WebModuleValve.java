@@ -301,6 +301,14 @@ public class WebModuleValve extends ValveBase {
         }
     }
 
+    /**
+     * Retrieves the {@link AppServSecurityContext} service and sets the security context with the given
+     * {@link Principal}.
+     *
+     * @param principal The {@link Principal} to set the security context with.
+     * @throws IllegalStateException if a {@link ServerContext} to get a {@link ServiceLocator} from
+     *                               could not be obtained from the {@link WebModule} this valve is attached to.
+     */
     private void setSecurityContextWithPrincipal(Principal principal) throws IllegalStateException {
         ServerContext serverContext = getServerContext();
 
@@ -319,14 +327,22 @@ public class WebModuleValve extends ValveBase {
         }
     }
 
-    private void checkObjectForDoAsPermission(final Object o) throws AccessControlException {
+    /**
+     * Check that the "doAsPrivileged" permission is granted for the given {@link Object}
+     *
+     * @param object the {@link Object} to check the "doAsPrivileged" permission is granted for
+     * @throws AccessControlException if the {@link Object} does not have the "doAsPrivileged" permission granted
+     */
+    private void checkObjectForDoAsPermission(final Object object) throws AccessControlException {
         if (System.getSecurityManager() != null) {
             AccessController.doPrivileged((PrivilegedAction<Void>) () -> {
-                ProtectionDomain protectionDomain = o.getClass().getProtectionDomain();
-                Policy policy = Policy.getPolicy(); if (!policy.implies(protectionDomain, doAsPrivilegedPerm)) {
+                ProtectionDomain protectionDomain = object.getClass().getProtectionDomain();
+                Policy policy = Policy.getPolicy();
+                if (!policy.implies(protectionDomain, doAsPrivilegedPerm)) {
                     throw new AccessControlException("permission required to override getUserPrincipal",
                             doAsPrivilegedPerm);
-                } return null;
+                }
+                return null;
             });
         }
     }
