@@ -45,11 +45,10 @@ package fish.payara.appserver.web.core;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleState;
 import org.apache.catalina.connector.Connector;
-import org.apache.catalina.util.LifecycleBase;
 import org.glassfish.grizzly.http.server.HttpHandler;
 
-public class GrizzlyConnector extends Connector {
-    private final CoyoteBridge bridge = new CoyoteBridge(this);
+class GrizzlyConnector extends Connector {
+    private final GrizzlyCatalinaBridge bridge = new GrizzlyCatalinaBridge(this);
 
     public HttpHandler asHttpHandler() {
         return bridge;

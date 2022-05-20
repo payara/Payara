@@ -77,15 +77,14 @@ import org.glassfish.grizzly.http.util.MimeHeaders;
 public class CatalinaResponse extends org.apache.catalina.connector.Response {
     private static final Logger LOG = Logger.getLogger(CatalinaResponse.class.getName());
 
-    private final Response grizzlyResponse;
+    private Response grizzlyResponse;
 
     private final AtomicBoolean errorReported = new AtomicBoolean();
 
     private volatile boolean outputSuspended;
 
-    CatalinaResponse(Response grizzlyResponse) {
+    CatalinaResponse() {
         super();
-        this.grizzlyResponse = grizzlyResponse;
     }
 
     @Override
@@ -601,8 +600,9 @@ public class CatalinaResponse extends org.apache.catalina.connector.Response {
         return super.toEncoded(url, sessionId);
     }
 
-    void setResponses(org.apache.coyote.Response response) {
+    void setResponses(org.apache.coyote.Response response, Response grizzlyResponse) {
         super.setCoyoteResponse(response);
+        this.grizzlyResponse = grizzlyResponse;
     }
 
     private class GrizzlyServletOutputStream extends ServletOutputStream {
