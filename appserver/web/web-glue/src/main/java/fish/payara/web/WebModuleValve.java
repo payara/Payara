@@ -62,6 +62,7 @@ import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.core.StandardWrapper;
 import org.apache.catalina.valves.ValveBase;
+import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -83,7 +84,7 @@ import java.util.logging.Logger;
 /**
  * Reimplementation of the J2EEInstanceListener class (see Payara 5.x sources) which previously handled the
  * INIT, DESTROY, SERVICE, and FILTER events that got fired by Tomcat during request processing.
- *
+ * <p>
  * Specifically this class looks to associate servlet requests with the Payara TransactionManager, link up the
  * Tomcat Catalina Realm with the {@link AppServSecurityContext}, and ensure managed objects are destroyed in Weld.
  */
@@ -105,6 +106,8 @@ public class WebModuleValve extends ValveBase {
     private InjectionManager injectionManager;
 
     private WebModule webModule;
+
+    private boolean servicesInitialised = false;
 
     public WebModuleValve() {
         this(null);
@@ -134,14 +137,58 @@ public class WebModuleValve extends ValveBase {
 
         // Look up services using ServiceLocator obtained from ServerContext if they haven't been injected
         if (invocationManager == null || injectionManager == null || transactionManager == null) {
-            ServerContext serverContext = getServerContext();
-            ServiceLocator services = serverContext.getDefaultServices();
-            invocationManager = services.getService(InvocationManager.class);
-            transactionManager = getJavaEETransactionManager(services);
-            injectionManager = services.getService(InjectionManager.class);
+            initialiseServices(false);
+        } else {
+            servicesInitialised = true;
         }
     }
 
+    /**
+     * Look up {@link InvocationManager}, {@link InjectionManager}, and {@link JavaEETransactionManager} using
+     * {@link ServiceLocator} obtained from {@link ServerContext} if any of them have not already been injected or
+     * looked up.
+     *
+     * @param throwException if an {@link IllegalStateException} should be thrown if a {@link ServerContext} could not
+     *                       be obtained from the {@link WebModule}
+     * @throws IllegalStateException if a {@link ServerContext} could not be obtained from the {@link WebModule} and
+     *                               throwException parameter was set to true
+     */
+    private void initialiseServices(boolean throwException) throws IllegalStateException {
+        ServiceLocator services;
+        try {
+            services = getServerContext().getDefaultServices();
+        } catch (IllegalStateException illegalStateException) {
+            if (throwException) {
+                throw illegalStateException;
+            } else {
+                LOGGER.log(Level.FINE, illegalStateException.getMessage());
+                return;
+            }
+        }
+
+        if (invocationManager == null) {
+            invocationManager = services.getService(InvocationManager.class);
+        }
+
+        if (transactionManager == null) {
+            transactionManager = getJavaEETransactionManager(services);
+        }
+
+        if (injectionManager == null) {
+            injectionManager = services.getService(InjectionManager.class);
+        }
+
+        if (invocationManager != null && injectionManager != null && transactionManager != null) {
+            servicesInitialised = true;
+        }
+    }
+
+    /**
+     * Look up the {@link ServerContext} from the {@link WebModule} this {@link WebModuleValve} is attached to.
+     *
+     * @return the {@link ServerContext} of the {@link WebModule} this {@link WebModuleValve} is attached to.
+     * @throws IllegalStateException if a {@link ServerContext} could not be obtained from the {@link WebModule}
+     */
     private ServerContext getServerContext() throws IllegalStateException {
         ServerContext serverContext = webModule.getServerContext();
         if (serverContext == null) {
@@ -153,6 +200,12 @@ public class WebModuleValve extends ValveBase {
         return serverContext;
     }
 
+    /**
+     * Look up the {@link JavaEETransactionManager} using the given {@link ServiceLocator}.
+     *
+     * @param services the {@link ServiceLocator} to use to look up the {@link JavaEETransactionManager} service
+     * @return the {@link JavaEETransactionManager} service, or null if an active one could not be found
+     */
     private JavaEETransactionManager getJavaEETransactionManager(ServiceLocator services) {
         JavaEETransactionManager tm = null;
         ServiceHandle<JavaEETransactionManager> inhabitant = services.getServiceHandle(JavaEETransactionManager.class);
@@ -164,16 +217,37 @@ public class WebModuleValve extends ValveBase {
     }
 
     @Override
-    public void invoke(Request request, Response response) throws IOException, ServletException {
-        beforeEvents(request);
+    public void invoke(Request request, Response response) throws IOException, IllegalStateException, ServletException {
+        // Double check we have everything we need and exit out if we don't
+        if (!servicesInitialised) {
+            initialiseServices(true);
+        }
+
+        // The container should be StandardWrapper, from which we can get the Servlet instance
+        StandardWrapper standardWrapper = (StandardWrapper) getContainer();
+        WebComponentInvocation webComponentInvocation = new WebComponentInvocation(webModule,
+                standardWrapper.getServlet());
+
+        preInvoke(request, webComponentInvocation);
         try {
             getNext().invoke(request, response);
         } finally {
-            afterEvents(response);
+            afterInvoke(response, webComponentInvocation);
         }
     }
 
-    private void beforeEvents(Request request) {
+    /**
+     * Method that handles pre-processing of the {@link Request} as it moves through the
+     * {@link org.apache.catalina.Pipeline}. This covers setting the {@link AppServSecurityContext} with the
+     * {@link Principal} obtained from the {@link Request}, calling
+     * {@link InvocationManager#preInvoke(ComponentInvocation)} using the provided {@link WebComponentInvocation},
+     * and enlisting the component with the {@link JavaEETransactionManager}.
+     *
+     * @param request                The {@link Request} to pre-process.
+     * @param webComponentInvocation The {@link WebComponentInvocation} used to call
+     *                               {@link InvocationManager#preInvoke(ComponentInvocation)}.
+     */
+    private void preInvoke(Request request, WebComponentInvocation webComponentInvocation) {
         Realm realm = webModule.getRealm();
         if (realm != null) {
             HttpServletRequest httpServletRequest = request.getRequest();
@@ -208,14 +282,11 @@ public class WebModuleValve extends ValveBase {
             }
         }
 
-        // The container should be StandardWrapper, from which we can get the Servlet instance
-        StandardWrapper standardWrapper = (StandardWrapper) getContainer();
-        WebComponentInvocation webComponentInvocation = new WebComponentInvocation(webModule,
-                standardWrapper.getServlet());
         try {
             invocationManager.preInvoke(webComponentInvocation);
 
-            // Emit monitoring probe event
+            // Emit monitoring probe event using name of the StandardWrapper
+            StandardWrapper standardWrapper = (StandardWrapper) getContainer();
             webModule.beforeServiceEvent(standardWrapper.getName());
 
             // Enlist resources with TransactionManager for service method
@@ -260,12 +331,18 @@ public class WebModuleValve extends ValveBase {
         }
     }
 
-    private void afterEvents(Response response) {
-        // The container should be StandardWrapper, from which we can get the Servlet instance
-        StandardWrapper standardWrapper = (StandardWrapper) getContainer();
-        WebComponentInvocation webComponentInvocation = new WebComponentInvocation(webModule,
-                standardWrapper.getServlet());
-
+    /**
+     * Method that handles post-processing of the {@link Response} as it moves through the
+     * {@link org.apache.catalina.Pipeline}. This covers calling
+     * {@link InvocationManager#postInvoke(ComponentInvocation)} using the provided {@link WebComponentInvocation},
+     * clearing the {@link AppServSecurityContext}, and cleaning up any transactions in the
+     * {@link JavaEETransactionManager}.
+     *
+     * @param response               The {@link Response} to post-process.
+     * @param webComponentInvocation The {@link WebComponentInvocation} used to call
+     *                               {@link InvocationManager#preInvoke(ComponentInvocation)}.
+     */
+    private void afterInvoke(Response response, WebComponentInvocation webComponentInvocation) {
         try {
             invocationManager.postInvoke(webComponentInvocation);
         } catch (Exception exception) {
@@ -309,6 +386,8 @@ public class WebModuleValve extends ValveBase {
             }
 
             if (transactionManager != null) {
+                // The container should be StandardWrapper, from which we can get the Servlet instance
+                StandardWrapper standardWrapper = (StandardWrapper) getContainer();
                 transactionManager.componentDestroyed(standardWrapper.getServlet(), webComponentInvocation);
             }
         }
