@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.web;
 
@@ -62,6 +62,7 @@ import com.sun.enterprise.web.session.PersistenceType;
 import com.sun.enterprise.web.session.SessionCookieConfig;
 import com.sun.web.security.RealmAdapter;
 import fish.payara.jacc.JaccConfigurationFactory;
+import fish.payara.web.WebModuleValve;
 import jakarta.security.jacc.PolicyConfigurationFactory;
 import jakarta.security.jacc.PolicyContextException;
 import jakarta.servlet.Filter;
@@ -82,7 +83,6 @@ import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.Realm;
 import org.apache.catalina.Valve;
-import org.apache.catalina.loader.WebappLoader;
 import org.apache.catalina.servlets.DefaultServlet;
 import org.apache.jasper.servlet.JspServlet;
 import org.apache.tomcat.util.descriptor.web.FilterMap;
@@ -215,6 +215,8 @@ public class WebModule extends PwcWebModule implements Context {
     private boolean isStandalone = true;
 
     private final ServiceLocator services;
+
+    private WebModuleValve webModuleValve;
 
     // Originally from forked StandardContext
     protected boolean directoryDeployed = false;
@@ -468,6 +470,16 @@ public class WebModule extends PwcWebModule implements Context {
         } else {
             super.setRealm(realm);
         }
+    }
+
+    @Override
+    public synchronized void initInternal() throws LifecycleException {
+        super.initInternal();
+
+        // Add our valve here instead of during construction, since we may want to perform lookup using the
+        // ServiceLocator obtained from the ServerContext, which would be null during construction
+        webModuleValve = new WebModuleValve(this);
+        getPipeline().addValve(webModuleValve);
     }
 
     /**
