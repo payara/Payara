@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates.]
+// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates.]
 
 package com.sun.enterprise.v3.server;
 
@@ -1208,8 +1208,8 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             try {
                 container = engineInfo.getContainer();
             } catch (Exception e) {
-                if (e instanceof org.glassfish.hk2.api.MultiException) {
-                    for (Throwable se : ((org.glassfish.hk2.api.MultiException) e).getErrors()) {
+                if (e instanceof MultiException) {
+                    for (Throwable se : ((MultiException) e).getErrors()) {
                         logger.log(SEVERE, e.getMessage(), e);
                     }
                 }
