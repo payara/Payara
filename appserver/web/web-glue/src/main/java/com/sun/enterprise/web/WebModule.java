@@ -234,8 +234,6 @@ public class WebModule extends PwcWebModule implements Context {
     public WebModule(ServiceLocator services) {
         super();
         this.services = services;
-        webModuleValve = new WebModuleValve(this);
-        getPipeline().addValve(webModuleValve);
     }
 
 
@@ -472,6 +470,16 @@ public class WebModule extends PwcWebModule implements Context {
         } else {
             super.setRealm(realm);
         }
+    }
+
+    @Override
+    public synchronized void initInternal() throws LifecycleException {
+        super.initInternal();
+
+        // Add our valve here instead of during construction, since we may want to perform lookup using the
+        // ServiceLocator obtained from the ServerContext, which would be null during construction
+        webModuleValve = new WebModuleValve(this);
+        getPipeline().addValve(webModuleValve);
     }
 
     /**
