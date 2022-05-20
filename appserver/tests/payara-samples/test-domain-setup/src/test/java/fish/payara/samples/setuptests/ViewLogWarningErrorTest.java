@@ -43,6 +43,7 @@ package fish.payara.samples.setuptests;
 import static fish.payara.samples.PayaraTestShrinkWrap.getWebArchive;
 import fish.payara.samples.ServerOperations;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -113,6 +114,6 @@ public class ViewLogWarningErrorTest {
      */
     private List<String> viewLog() throws IOException {
         Path serverLog = ServerOperations.getDomainPath("logs/server.log");
-        return Files.readAllLines(serverLog);
+        return Files.readAllLines(serverLog, Charset.defaultCharset());
     }
 }
