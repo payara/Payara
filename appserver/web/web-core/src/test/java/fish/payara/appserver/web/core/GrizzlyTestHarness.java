@@ -79,20 +79,16 @@ public class GrizzlyTestHarness extends ExternalResource {
 
     protected Catalina catalina;
 
-    private GrizzlyConnector connector;
-
     public void start() {
         setLoggerLevels();
         grizzly = new Grizzly();
         catalina = new GrizzlyTestHarness.Catalina();
-        connector = new GrizzlyConnector();
-        connector.setXpoweredBy(true);
         try {
-            catalina.start(connector);
+            catalina.start();
         } catch (LifecycleException e) {
             throw new IllegalStateException(e);
         }
-        grizzly.config.addHttpHandler(connector.asHttpHandler());
+        grizzly.config.addHttpHandler(catalina.stack.httpHandler());
     }
 
     static void setLoggerLevels() {
@@ -171,6 +167,8 @@ public class GrizzlyTestHarness extends ExternalResource {
         Grizzly() {
             NetworkListener listener = new NetworkListener("grizzly", "localhost", new PortRange(8080, 9080), true);
             listener.getTransport().getWorkerThreadPoolConfig()
+                    .setCorePoolSize(1)
+                    .setMaxPoolSize(4)
                     .setThreadFactory(
                             (new ThreadFactoryBuilder())
                                     .setNameFormat("grizzly-http-server-%d")
@@ -181,6 +179,7 @@ public class GrizzlyTestHarness extends ExternalResource {
             config = server.getServerConfiguration();
             config.setPassTraceRequest(true);
             config.setDefaultQueryEncoding(Charsets.UTF8_CHARSET);
+
             try {
                 server.start();
                 port = listener.getPort();
@@ -204,37 +203,31 @@ public class GrizzlyTestHarness extends ExternalResource {
             context.addFilterMap(map);
         }
 
-        private final StandardService service;
-
-        private final StandardEngine engine;
-
         private final StandardHost host;
 
-        private final StandardServer server;
+        private final CatalinaWebStack stack;
 
         Catalina() {
             // e. g. relative redirects are not expected by servlet tck
             System.setProperty("org.apache.catalina.STRICT_SERVLET_COMPLIANCE", "true");
-            server = new StandardServer();
-            server.setCatalinaHome(new File("."));
+            stack = CatalinaWebStack.create(new CatalinaWebStack.Configuration() {
+                @Override
+                public File getCatalinaHome() {
+                    return new File(".");
+                }
+            });
 
-            service = new StandardService();
-            server.addService(service);
-            engine = new StandardEngine();
-            service.setContainer(engine);
             host = new StandardHost();
             host.setName("localhost");
-            engine.setDefaultHost("localhost");
-            engine.addChild(host);
+            stack.addDefaultHost(host);
         }
 
-        void start(Connector c) throws LifecycleException {
-            service.addConnector(c);
-            server.start();
+        void start() throws LifecycleException {
+            stack.start();
         }
 
         void stop() throws LifecycleException {
-            server.stop();
+            stack.stop();
         }
 
         protected StandardContext addContext(String name) {

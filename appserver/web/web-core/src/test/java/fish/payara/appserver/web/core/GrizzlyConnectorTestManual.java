@@ -102,24 +102,6 @@ public class GrizzlyConnectorTestManual {
                 HttpResponse.BodyHandlers.ofString());
     }
 
-    //@Ignore("Running two catalina processes in single jvm breaks NamingContextListener")
-    //@Test
-    public void pureCatalinaStartup() throws LifecycleException, IOException, InterruptedException {
-        var catalina = new GrizzlyTestHarness.Catalina();
-        var coyote = new Connector();
-        coyote.setPort(0);
-        catalina.start(coyote);
-        var ctx = catalina.addContext("ROOT");
-
-        catalina.addServlet(ctx, new TestServlet1(), "");
-
-        var response = getRoot(coyote.getLocalPort());
-        assertEquals(200, response.statusCode());
-        assertEquals("Hello from Servlet", response.body());
-
-        catalina.stop();
-    }
-
     private HttpResponse<String> getRoot(int port) throws IOException, InterruptedException {
         return client.send(HttpRequest.newBuilder().uri(URI.create("http://localhost:" + port)).GET().build(),
                 HttpResponse.BodyHandlers.ofString());
