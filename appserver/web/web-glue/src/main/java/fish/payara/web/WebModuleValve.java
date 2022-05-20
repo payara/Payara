@@ -132,7 +132,7 @@ public class WebModuleValve extends ValveBase {
             }
         }
 
-        // Look up and services if they haven't been injected
+        // Look up services using ServiceLocator obtained from ServerContext if they haven't been injected
         if (invocationManager == null || injectionManager == null || transactionManager == null) {
             ServerContext serverContext = getServerContext();
             ServiceLocator services = serverContext.getDefaultServices();
