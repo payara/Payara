@@ -409,6 +409,8 @@
 		<testng outputdir="${test.report}"
                 classpathref="embedded.testng.classpath" haltOnFailure="true">
 			<jvmarg value="-Djava.compiler=NONE"/>
+			<jvmarg value="--add-opens=java.base/java.lang=ALL-UNNAMED" />
+			<jvmarg value="--illegal-access=debug" />
 			<sysproperty key="glassfish.home" value="${glassfish.home}"/>
 			<sysproperty key="BASEDIR" value="${basedir}"/>
 			<xmlfileset dir="." includes="${testng.xml}"/>
