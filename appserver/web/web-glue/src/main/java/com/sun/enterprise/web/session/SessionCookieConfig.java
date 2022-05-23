@@ -37,10 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2022 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.web.session;
-
-import org.apache.catalina.Globals;
 
 import java.net.URLEncoder;
 
@@ -54,14 +53,6 @@ import java.net.URLEncoder;
  */
 
 public final class SessionCookieConfig {
-
-    // ----------------------------------------------------- Manifest Constants
-
-    /**
-     * The value that allows the JSESSIONID cookie's secure attribute to
-     * be configured based on the connection i.e. secure if HTTPS.
-     */
-    public static final String DYNAMIC_SECURE = "dynamic";
 
     // ----------------------------------------------------------- Constructors
 
@@ -113,9 +104,6 @@ public final class SessionCookieConfig {
     private String _comment = null;
 
     /**
-     * When set to "dynamic", the cookie is marked as secure only if the
-     * connection on which the request was received is secure. To override this
-     * behaviour, the value of this property can be set to "true" or "false". 
      * If set to "true", user agents will use secure means to contact the
      * origin server when sending back the cookie regardless of whether the
      * connection on which the request was received is secure. If set to 
@@ -123,7 +111,7 @@ public final class SessionCookieConfig {
      * origin server when sending back the cookie regardless of whether the
      * connection on which the request was received is secure.
      */
-    private String _secure = DYNAMIC_SECURE;
+    private Boolean _secure = null;
 
     /**
      * The Boolean (if set) indicates whether the session coookie will
@@ -237,18 +225,17 @@ public final class SessionCookieConfig {
      */
     public void setSecure(String secure) throws IllegalArgumentException {
         if ((secure == null) || (!secure.equalsIgnoreCase("true") &&
-                !secure.equalsIgnoreCase("false") &&
-                !secure.equalsIgnoreCase(SessionCookieConfig.DYNAMIC_SECURE))) {
+                !secure.equalsIgnoreCase("false"))) {
             throw new IllegalArgumentException();
         }
-        _secure = secure;
+        _secure = new Boolean(secure);
     }
 
     /**
      * Return whether the cookie is to be marked Secure or not.
      * @return "dynamic", "true" or "false"
      */
-    public String getSecure() {
+    public Boolean getSecure() {
         return _secure;
     }
 
@@ -286,8 +273,10 @@ public final class SessionCookieConfig {
             sb.append(", comment=");
             sb.append(_comment);
         }
-        sb.append(", secure=");
-        sb.append(_secure);
+        if (_secure != null) {
+            sb.append(", secure=");
+            sb.append(_secure);
+        }
         if (_httpOnly != null) {
             sb.append(", httpOnly=");
             sb.append(_httpOnly);

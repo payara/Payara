@@ -51,7 +51,6 @@ public class VirtualServerConfig {
     private boolean accessLoggingEnabled;
     private String defaultWebXml;
     private String contextXmlDefault;
-    private boolean allowLinking;
     private String allowRemoteAddress;
     private String denyRemoteAddress;
     private String allowRemoteHost;
@@ -136,26 +135,6 @@ public class VirtualServerConfig {
      */
     public String getContextXmlDefault() {
         return contextXmlDefault;
-    }
-
-    /**
-     * Enables or disables the serving of resources that are symbolic links.
-     *
-     * @param allowLinking true if resources that are symbolic links are
-     * to be served, false otherwise
-     */
-    public void setAllowLinking(boolean allowLinking) {
-        this.allowLinking = allowLinking;
-    }
-
-    /**
-     * Checks if resources that are symbolic links will be served.
-     *
-     * @return true if resources that are symbolic links will be served,
-     * false otherwise
-     */
-    public boolean isAllowLinking() {
-        return allowLinking;
     }
 
     /**

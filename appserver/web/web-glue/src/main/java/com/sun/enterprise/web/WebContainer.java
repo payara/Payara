@@ -1212,7 +1212,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         virtualServer.configureRemoteHostFilterValve();
         virtualServer.configureSingleSignOn(globalSSOEnabled, webContainerFeatureFactory, isSsoFailoverEnabled());
         virtualServer.configureRedirect();
-        virtualServer.configureErrorPage();
         virtualServer.configureErrorReportValve();
         virtualServer.setServerContext(getServerContext());
         virtualServer.setServerConfig(serverConfig);
@@ -2419,8 +2418,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
             virtualServer.configureSingleSignOn(globalSSOEnabled, webContainerFeatureFactory, isSsoFailoverEnabled());
         } else if ("authRealm".equals(name)) {
             virtualServer.configureAuthRealm(securityService);
-        } else if (name.startsWith("send-error")) {
-            virtualServer.configureErrorPage();
         } else if (ERROR_REPORT_VALVE.equals(name)) {
             virtualServer.setErrorReportValveClass(value);
         } else if (name.startsWith("redirect")) {

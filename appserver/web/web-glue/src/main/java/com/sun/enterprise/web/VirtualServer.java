@@ -77,7 +77,6 @@ import java.util.logging.Logger;
 import com.sun.enterprise.web.logger.CatalinaLogger;
 import com.sun.enterprise.security.web.AbstractSingleSignOn;
 import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -100,7 +99,6 @@ import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.core.StandardHost;
-import org.apache.catalina.deploy.ErrorPage;
 import org.apache.catalina.valves.RemoteAddrValve;
 import org.apache.catalina.valves.RemoteHostValve;
 import org.glassfish.api.ActionReport;
@@ -170,7 +168,6 @@ import com.sun.enterprise.v3.services.impl.GrizzlyService;
 import com.sun.enterprise.web.logger.FileLoggerHandler;
 import com.sun.enterprise.web.logger.FileLoggerHandlerFactory;
 import com.sun.enterprise.web.pluggable.WebContainerFeatureFactory;
-import com.sun.enterprise.web.session.SessionCookieConfig;
 import com.sun.web.security.RealmAdapter;
 
 /**
@@ -248,11 +245,6 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
      */
     private MimeMap mimeMap;
 
-    /*
-     * Indicates whether symbolic links from this virtual server's docroot are followed. This setting is inherited by all
-     * web modules deployed on this virtual server, unless overridden by a web modules allowLinking property in sun-web.xml.
-     */
-    private boolean allowLinking;
     private String[] cacheControls;
     private ClassLoaderHierarchy classLoaderHierarchy;
     private Domain domain;
@@ -268,10 +260,6 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
      */
     private final PEAccessLogValve accessLogValve;
 
-    // The value of the ssoCookieSecure property
-    private String ssoCookieSecure;
-
-    private boolean ssoCookieHttpOnly;
     private String defaultContextPath;
     private ServerContext serverContext;
     private Config serverConfig;
@@ -285,6 +273,16 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
     private Deployment deployment;
     private ArchiveFactory factory;
     private ActionReport report;
+
+    /**
+     * The default context.xml location
+     */
+    private String defaultContextXmlLocation;
+
+    /**
+     * The default web.xml location
+     */
+    private String defaultWebXmlLocation;
 
     // ------------------------------------------------------------- Properties
 
@@ -316,29 +314,6 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
             vsValve.setIsDisabled(false);
             vsValve.setIsOff(false);
         }
-    }
-
-    /**
-     * Gets the value of the allowLinking property of this virtual server.
-     *
-     * @return true if symbolic links from this virtual server's docroot (as well as symbolic links from archives of web
-     * modules deployed on this virtual server) are followed, false otherwise
-     */
-    public boolean getAllowLinking() {
-        return allowLinking;
-    }
-
-    /**
-     * Sets the allowLinking property of this virtual server, which determines whether symblic links from this virtual
-     * server's docroot are followed.
-     *
-     * This property is inherited by all web modules deployed on this virtual server, unless overridden by the allowLinking
-     * property in a web module's sun-web.xml.
-     *
-     * @param allowLinking Value of allowLinking property
-     */
-    public void setAllowLinking(boolean allowLinking) {
-        this.allowLinking = allowLinking;
     }
 
     /**
@@ -398,11 +373,6 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
         this.services = services;
     }
 
-    @Override
-    public String getInfo() {
-        return _info;
-    }
-
     public void setDefaultContextPath(String defaultContextPath) {
         this.defaultContextPath = defaultContextPath;
     }
@@ -426,27 +396,6 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
         }
 
         return super.findChild(contextRoot);
-    }
-
-    // --------------------------------------------------------- Public Methods
-
-    /**
-     * Configures the Secure attribute of the given SSO cookie.
-     *
-     * @param ssoCookie the SSO cookie to be configured
-     * @param hreq the HttpServletRequest that has initiated the SSO session
-     */
-    @Override
-    public void configureSingleSignOnCookieSecure(Cookie ssoCookie, HttpServletRequest hreq) {
-        super.configureSingleSignOnCookieSecure(ssoCookie, hreq);
-        if (ssoCookieSecure != null && !ssoCookieSecure.equals(SessionCookieConfig.DYNAMIC_SECURE)) {
-            ssoCookie.setSecure(Boolean.parseBoolean(ssoCookieSecure));
-        }
-    }
-
-    @Override
-    public void configureSingleSignOnCookieHttpOnly(Cookie ssoCookie) {
-        ssoCookie.setHttpOnly(ssoCookieHttpOnly);
     }
 
     // ------------------------------------------------------ Lifecycle Methods
@@ -684,25 +633,13 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
     }
 
     /**
-     * Virtual servers are maintained in the reference contained in Server element. First, we need to find the server and
-     * then get the virtual server from the correct reference
-     *
-     * @param appName Name of the app to get vs
-     *
-     * @return virtual servers as a string (separated by space or comma)
-     *
-     * private String getVirtualServers(String appName) { String ret = null; Server server =
-     * Globals.getDefaultHabitat().forContract(Server.class).get(); for (ApplicationRef appRef : server.getApplicationRef())
-     * { if (appRef.getRef().equals(appName)) { return appRef.getVirtualServers(); } }
-     *
-     * return ret; }
-     */
-
-    /**
      * Delete all aliases.
      */
     public void clearAliases() {
-        aliases = new String[0];
+        String[] aliases = findAliases();
+        for (String alias : aliases) {
+            removeAlias(alias);
+        }
     }
 
     private void setIsDisabled(boolean isDisabled) {
@@ -755,7 +692,6 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
      */
     public void configure(String vsID, com.sun.enterprise.config.serverbeans.VirtualServer vsBean, String vsDocroot, String vsLogFile, MimeMap vsMimeMap,
             String logServiceFile, String logLevel) {
-        setDebug(debug);
         setAppBase(vsDocroot);
         setName(vsID);
         setID(vsID);
@@ -771,14 +707,6 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
             defaultWebXmlLocation = prop.getValue();
         }
         // End EE: 4920692 Make the default-web.xml be relocatable
-
-        // allowLinking
-        boolean allowLinking = false;
-        prop = vsBean.getProperty("allowLinking");
-        if (prop != null) {
-            allowLinking = Boolean.parseBoolean(prop.getValue());
-        }
-        setAllowLinking(allowLinking);
 
         prop = vsBean.getProperty("contextXmlDefault");
         if (prop != null) {
@@ -826,8 +754,6 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
                     addValve(propValue);
                 } else if (propName.startsWith("listener_")) {
                     addListener(propValue);
-                } else if (propName.equals("securePagesWithPragma")) {
-                    setSecurePagesWithPragma(Boolean.valueOf(propValue));
                 }
             }
         }
@@ -1076,7 +1002,6 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
         }
     }
 
-    @Override
     protected Object loadInstance(String className) throws Exception {
         // See IT 11674 for why CommonClassLoader must be used
         Class clazz = serverContext.getCommonClassLoader().loadClass(className);
@@ -1090,75 +1015,6 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
             _logger.log(SEVERE, UNABLE_TO_LOAD_EXTENSION_SEVERE, ex);
         }
         return null;
-    }
-
-    /**
-     * Configures this VirtualServer with its send-error properties.
-     */
-    void configureErrorPage() {
-        ErrorPage errorPage = null;
-
-        List<Property> props = vsBean.getProperty();
-        if (props == null) {
-            return;
-        }
-
-        for (Property prop : props) {
-            String propName = prop.getName();
-            String propValue = prop.getValue();
-            if (propName == null || propValue == null) {
-                _logger.log(Level.WARNING, LogFacade.NULL_VIRTUAL_SERVER_PROPERTY, getID());
-                continue;
-            }
-
-            if (!propName.startsWith("send-error_")) {
-                continue;
-            }
-
-            /*
-             * Validate the prop value
-             */
-            String path = null;
-            String reason = null;
-            String status = null;
-
-            String[] errorParams = propValue.split(" ");
-            for (String errorParam : errorParams) {
-
-                if (errorParam.startsWith("path=")) {
-                    if (path != null) {
-                        _logger.log(Level.WARNING, LogFacade.SEND_ERROR_MULTIPLE_ELEMENT, new Object[] { propValue, getID(), "path" });
-                    }
-                    path = errorParam.substring("path=".length());
-                }
-
-                if (errorParam.startsWith("reason=")) {
-                    if (reason != null) {
-                        _logger.log(Level.WARNING, LogFacade.SEND_ERROR_MULTIPLE_ELEMENT, new Object[] { propValue, getID(), "reason" });
-                    }
-                    reason = errorParam.substring("reason=".length());
-                }
-
-                if (errorParam.startsWith("code=")) {
-                    if (status != null) {
-                        _logger.log(Level.WARNING, LogFacade.SEND_ERROR_MULTIPLE_ELEMENT, new Object[] { propValue, getID(), "code" });
-                    }
-                    status = errorParam.substring("code=".length());
-                }
-            }
-
-            if (path == null || path.length() == 0) {
-                _logger.log(Level.WARNING, LogFacade.SEND_ERROR_MISSING_PATH, new Object[] { propValue, getID() });
-            }
-
-            errorPage = new ErrorPage();
-            errorPage.setLocation(path);
-            errorPage.setErrorCode(status);
-            errorPage.setReason(reason);
-
-            addErrorPage(errorPage);
-        }
-
     }
 
     /**
@@ -1266,7 +1122,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
 
             boolean hasExistingSSO = false;
             // Remove existing SSO valve (if any)
-            Valve[] valves = getValves();
+            Valve[] valves = getPipeline().getValves();
             for (int i = 0; valves != null && i < valves.length; i++) {
                 if (valves[i] instanceof SingleSignOn) {
                     getPipeline().removeValve(valves[i]);
@@ -1290,7 +1146,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
             AbstractSingleSignOn<?> sso = null;
 
             // find existing SSO (if any), in case of a reconfig
-            Valve[] valves = getValves();
+            Valve[] valves = getPipeline().getValves();
             for (int i = 0; valves != null && i < valves.length; i++) {
                 if (valves[i] instanceof AbstractSingleSignOn) {
                     sso = (AbstractSingleSignOn<?>) valves[i];
@@ -1329,9 +1185,6 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
                 }
                 sso.setReapInterval(Integer.parseInt(expireTime.getValue()));
             }
-
-            configureSingleSignOnCookieSecure();
-            configureSingleSignOnCookieHttpOnly();
         }
     }
 
@@ -1402,7 +1255,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
 
         if (remoteAddrValve != null) {
             // Remove existing RemoteAddrValve (if any), in case of a reconfig
-            Valve[] valves = getValves();
+            Valve[] valves = getPipeline().getValves();
             for (int i = 0; valves != null && i < valves.length; i++) {
                 if (valves[i] instanceof RemoteAddrValve) {
                     getPipeline().removeValve(valves[i]);
@@ -1453,7 +1306,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
         }
         if (remoteHostValve != null) {
             // Remove existing RemoteHostValve (if any), in case of a reconfig
-            Valve[] valves = getValves();
+            Valve[] valves = getPipeline().getValves();
             for (int i = 0; valves != null && i < valves.length; i++) {
                 if (valves[i] instanceof RemoteHostValve) {
                     getPipeline().removeValve(valves[i]);
@@ -1529,7 +1382,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
     void reconfigureAccessLog(String globalAccessLogBufferSize, String globalAccessLogWriteInterval, ServiceLocator services, Domain domain,
             boolean globalAccessLoggingEnabled, String globalAccessLogPrefix) {
         try {
-            if (accessLogValve.isStarted()) {
+            if (accessLogValve.getState().isAvailable()) {
                 accessLogValve.stop();
             }
             boolean start = accessLogValve.updateVirtualServerProperties(vsBean.getId(), vsBean, domain, services, globalAccessLogBufferSize,
@@ -1552,7 +1405,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
 
         try {
             boolean restart = false;
-            if (accessLogValve.isStarted()) {
+            if (accessLogValve.getState().isAvailable()) {
                 accessLogValve.stop();
                 restart = true;
             }
@@ -1584,7 +1437,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
             addValve(accessLogValve);
         } else {
             try {
-                if (accessLogValve.isStarted()) {
+                if (accessLogValve.getState().isAvailable()) {
                     accessLogValve.stop();
                 }
                 accessLogValve.start();
@@ -1656,7 +1509,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
         for (Container container : findChildren()) {
             if (container instanceof StandardContext) {
                 StandardContext context = (StandardContext) container;
-                for (Valve valve : context.getValves()) {
+                for (Valve valve : context.getPipeline().getValves()) {
                     if (valve instanceof AuthenticatorBase) {
                         ((AuthenticatorBase) valve).setSingleSignOn(sso);
                         break;
@@ -1685,24 +1538,6 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
         } else {
             super.setRealm(realm);
         }
-    }
-
-    /**
-     * Configures the security level of the SSO cookie for this virtual server, based on the value of its sso-cookie-secure
-     * attribute
-     */
-    private void configureSingleSignOnCookieSecure() {
-        String cookieSecure = vsBean.getSsoCookieSecure();
-        if (!"true".equalsIgnoreCase(cookieSecure) && !"false".equalsIgnoreCase(cookieSecure)
-                && !cookieSecure.equalsIgnoreCase(SessionCookieConfig.DYNAMIC_SECURE)) {
-            _logger.log(Level.WARNING, LogFacade.INVALID_SSO_COOKIE_SECURE, new Object[] { cookieSecure, getID() });
-        } else {
-            ssoCookieSecure = cookieSecure;
-        }
-    }
-
-    private void configureSingleSignOnCookieHttpOnly() {
-        ssoCookieHttpOnly = Boolean.parseBoolean(vsBean.getSsoCookieHttpOnly());
     }
 
     /**
@@ -1966,7 +1801,6 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
             WebModule wm = (WebModule) findChild(contextRoot);
             if (wm != null) {
                 facade.setUnwrappedContext(wm);
-                wm.setEmbedded(true);
                 if (config != null) {
                     wm.setDefaultWebXml(config.getDefaultWebXml());
                 }
@@ -2088,7 +1922,6 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
         }
         setDefaultWebXmlLocation(config.getDefaultWebXml());
         setDefaultContextXmlLocation(config.getContextXmlDefault());
-        setAllowLinking(config.isAllowLinking());
         configureRemoteAddressFilterValve(config.getAllowRemoteAddress(), config.getDenyRemoteAddress());
         configureRemoteHostFilterValve(config.getAllowRemoteHost(), config.getAllowRemoteHost());
         configureAliases(config.getHostNames());
@@ -2104,7 +1937,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
     }
 
     @Override
-    public synchronized void stop() throws LifecycleException {
+    public synchronized void stopInternal() throws LifecycleException {
         if (fileLoggerHandler != null) {
             _logger.removeHandler(fileLoggerHandler);
             close(fileLoggerHandler);
@@ -2112,7 +1945,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
         }
         setLogger(_logger, "INFO");
 
-        super.stop();
+        super.stopInternal();
     }
 
     public void updateWebXml(ContextFacade facade, File file) throws Exception {
@@ -2357,6 +2190,50 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
         }
 
         return httpProbes;
+    }
+
+    /**
+     * Gets the default-context.xml location of web modules deployed on this
+     * virtual server.
+     *
+     * @return default-context.xml location of web modules deployed on this
+     * virtual server
+     */
+    public String getDefaultContextXmlLocation() {
+        return defaultContextXmlLocation;
+    }
+
+    /**
+     * Sets the default-context.xml location for web modules deployed on this
+     * virtual server.
+     *
+     * @param defaultContextXmlLocation default-context.xml location for web modules
+     * deployed on this virtual server
+     */
+    public void setDefaultContextXmlLocation(String defaultContextXmlLocation) {
+        this.defaultContextXmlLocation = defaultContextXmlLocation;
+    }
+
+    /**
+     * Gets the default-web.xml location of web modules deployed on this
+     * virtual server.
+     *
+     * @return default-web.xml location of web modules deployed on this
+     * virtual server
+     */
+    public String getDefaultWebXmlLocation() {
+        return defaultWebXmlLocation;
+    }
+
+    /**
+     * Sets the default-web.xml location for web modules deployed on this
+     * virtual server.
+     *
+     * @param defaultWebXmlLocation default-web.xml location for web modules
+     * deployed on this virtual server
+     */
+    public void setDefaultWebXmlLocation(String defaultWebXmlLocation) {
+        this.defaultWebXmlLocation = defaultWebXmlLocation;
     }
 
     // ---------------------------------------------------------- Nested Classes
