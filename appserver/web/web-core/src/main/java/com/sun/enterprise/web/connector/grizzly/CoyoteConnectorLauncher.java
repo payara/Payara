@@ -60,8 +60,13 @@ package com.sun.enterprise.web.connector.grizzly;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ScheduledExecutorService;
 
+import org.apache.coyote.Adapter;
 import org.apache.coyote.ProtocolHandler;
+import org.apache.coyote.UpgradeProtocol;
+import org.apache.tomcat.util.net.SSLHostConfig;
 import org.glassfish.grizzly.config.ssl.ServerSocketFactory;
 import org.glassfish.grizzly.http.server.HttpHandler;
 
@@ -91,6 +96,7 @@ public class CoyoteConnectorLauncher implements ProtocolHandler
         this(false,false,null);
     }
 
+
     
     public CoyoteConnectorLauncher(boolean secure, boolean blocking, 
                           String selectorThreadImpl) {
@@ -113,7 +119,7 @@ public class CoyoteConnectorLauncher implements ProtocolHandler
 
     /** Pass config info
      */
-    @Override
+    //@Override
     public void setAttribute( String name, Object value ) {
 
         attributes.put(name, value);
@@ -126,7 +132,7 @@ public class CoyoteConnectorLauncher implements ProtocolHandler
 */
     }
 
-    @Override
+    //@Override
     public Object getAttribute( String key ) {
         return attributes.get(key);
     }
@@ -147,17 +153,47 @@ public class CoyoteConnectorLauncher implements ProtocolHandler
 
     /** The adapter, used to call the connector 
      */
-    @Override
+    //@Override
     public void setHandler(HttpHandler adapter) {
         this.adapter=adapter;
     }
 
-    @Override
+    //@Override
     public HttpHandler getHandler() {
         return adapter;
     }
 
-    
+
+    @Override
+    public Adapter getAdapter() {
+        return null;
+    }
+
+    @Override
+    public void setAdapter(Adapter adapter) {
+
+    }
+
+    @Override
+    public Executor getExecutor() {
+        return null;
+    }
+
+    @Override
+    public void setExecutor(Executor executor) {
+
+    }
+
+    @Override
+    public ScheduledExecutorService getUtilityExecutor() {
+        return null;
+    }
+
+    @Override
+    public void setUtilityExecutor(ScheduledExecutorService scheduledExecutorService) {
+
+    }
+
     /** Start the protocol
      */
     @Override
@@ -170,10 +206,65 @@ public class CoyoteConnectorLauncher implements ProtocolHandler
     }
 
     @Override
+    public void pause() throws Exception {
+
+    }
+
+    @Override
+    public void resume() throws Exception {
+
+    }
+
+    @Override
+    public void stop() throws Exception {
+
+    }
+
+    @Override
     public void destroy() throws Exception {
 
     }
-    
+
+    @Override
+    public void closeServerSocketGraceful() {
+
+    }
+
+    @Override
+    public long awaitConnectionsClose(long l) {
+        return 0;
+    }
+
+    @Override
+    public boolean isAprRequired() {
+        return false;
+    }
+
+    @Override
+    public boolean isSendfileSupported() {
+        return false;
+    }
+
+    @Override
+    public void addSslHostConfig(SSLHostConfig sslHostConfig) {
+
+    }
+
+    @Override
+    public SSLHostConfig[] findSslHostConfigs() {
+        return new SSLHostConfig[0];
+    }
+
+    @Override
+    public void addUpgradeProtocol(UpgradeProtocol upgradeProtocol) {
+
+    }
+
+    @Override
+    public UpgradeProtocol[] findUpgradeProtocols() {
+        return new UpgradeProtocol[0];
+    }
+
     // -------------------- Properties--------------------
     protected boolean secure;
 
