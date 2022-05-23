@@ -146,8 +146,8 @@
         <jakartaee.api.version>9.1.0</jakartaee.api.version>
         <servlet-api.version>6.0.0</servlet-api.version>
         <grizzly.version>4.0.0-M2</grizzly.version>
-        <jax-rs-api.impl.version>3.0.0</jax-rs-api.impl.version>
-        <jersey.version>3.0.3.payara-p2</jersey.version>
+        <jax-rs-api.impl.version>3.1.0</jax-rs-api.impl.version>
+        <jersey.version>3.1.0-M6</jersey.version>
         <jakarta.validation.version>3.0.1</jakarta.validation.version>
         <hibernate.validator.version>8.0.0.Alpha3</hibernate.validator.version>
         <hibernate.validator-cdi.version>8.0.0.Alpha3</hibernate.validator-cdi.version>
@@ -209,7 +209,6 @@
         <istack-commons-runtime.version>4.0.1</istack-commons-runtime.version>
         <jline.version>3.20.0</jline.version>
         <wsdl4j.version>1.6.3</wsdl4j.version>
-        <transitional.jsonp-jaxrs.version>2.0.1</transitional.jsonp-jaxrs.version>
         <parsson.version>1.1.0</parsson.version>
         <jsonp-api.version>2.1.0</jsonp-api.version>
         <jbi.version>1.0</jbi.version>
