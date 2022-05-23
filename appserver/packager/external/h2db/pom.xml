@@ -64,12 +64,12 @@
                         -->
                         <phase>process-classes</phase>
                         <configuration>
-                            <target>
+                            <tasks>
                                 <resolveArtifact artifactId="h2db" property="h2db.zip" />
                                 <mkdir dir="target/classes/glassfish/h2db" />
 				<unzip src="${h2db.zip}" dest="target/classes/glassfish/h2db">
                                 </unzip>
-                            </target>
+                            </tasks>
                         </configuration>
                         <goals>
                             <goal>run</goal>

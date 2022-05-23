@@ -64,11 +64,11 @@
                     <execution>
                         <phase>generate-sources</phase>
                         <configuration>
-                            <target>
+                            <tasks>
                                 <!-- Extract Rest Monitoring war file into the final location -->
                                 <resolveArtifact artifactId="rest-monitoring-war" property="war" />
                                 <unzip src="${war}" dest="target/dependency/glassfish/lib/install/applications/__restmonitoring" />
-                            </target>
+                            </tasks>
                         </configuration>
                         <goals>
                             <goal>run</goal>

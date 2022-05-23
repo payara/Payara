@@ -72,11 +72,11 @@
                     <execution>
                         <phase>generate-sources</phase>
                         <configuration>
-                            <target>
+                            <tasks>
                                 <!-- extract admin gui war file into the final location -->
                                 <resolveArtifact artifactId="war" property="war" />
                                 <unzip src="${war}" dest="target/classes/glassfish/lib/install/applications/__admingui" />
-                            </target>
+                            </tasks>
                         </configuration>
                         <goals>
                             <goal>run</goal>

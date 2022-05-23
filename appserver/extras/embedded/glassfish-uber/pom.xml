@@ -147,9 +147,9 @@
                             <goal>run</goal>
                         </goals>
                         <configuration>
-                            <target>
+                            <tasks>
                                 <ant dir="." antfile="build.xml" target="all"/>
-                            </target>
+                            </tasks>
                         </configuration>
                     </execution>
                 </executions>

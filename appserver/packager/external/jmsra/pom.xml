@@ -61,7 +61,7 @@
                     <execution>
                         <phase>process-classes</phase>
                         <configuration>
-                            <target>
+                            <tasks>
                                 <resolveArtifact artifactId="mq-distribution" property="mq-distribution.zip" />
 				<mkdir dir="target/tmp" />
 				<mkdir dir="target/classes/glassfish/lib/install/applications/jmsra" />
@@ -72,7 +72,7 @@
 			        </unzip>
 				<unzip src="target/tmp/mq/lib/imqjmsra.rar" dest="target/classes/glassfish/lib/install/applications/jmsra">
                                 </unzip>
-                            </target>
+                            </tasks>
                         </configuration>
                         <goals>
                             <goal>run</goal>

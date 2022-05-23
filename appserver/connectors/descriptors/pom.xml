@@ -62,7 +62,7 @@
                     <execution>
                         <phase>compile</phase>
                         <configuration>
-                            <target>
+                            <tasks>
                                 <jar file="target/descriptors.jar">
                                     <fileset dir="src/main/resources">
                                         <exclude name="**/*connector_1_5.dtd" />
@@ -70,7 +70,7 @@
                                     </fileset>
                                 </jar>
                                 <attachArtifact file="target/descriptors.jar" type="jar" classifier="resources" />
-                            </target>
+                            </tasks>
                         </configuration>
                         <goals>
                             <goal>run</goal>

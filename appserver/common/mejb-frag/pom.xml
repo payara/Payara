@@ -93,10 +93,10 @@
                     <execution>
                         <phase>generate-sources</phase>
                         <configuration>
-                            <target>
+                            <tasks>
                                 <!-- place the jar into the location we want, relative to target/classes  -->
                                 <resolveArtifact artifactId="mejb" tofile="target/classes/glassfish/lib/install/applications/mejb.jar" />
-                            </target>
+                            </tasks>
                         </configuration>
                         <goals>
                             <goal>run</goal>

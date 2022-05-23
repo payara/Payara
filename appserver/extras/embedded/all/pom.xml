@@ -101,14 +101,14 @@
                             <goal>run</goal>
                         </goals>
                         <configuration>
-                            <target>
+                            <tasks>
                                 <ant dir="." antfile="../build.xml" target="create.distribution">
                                     <property name="finaljar"
                                       value="${project.build.directory}/payara-embedded-all.jar"/>
                                     <property name="bundlename" value="fish.payara.extras.embedded.all"/>
                                     <property name="install.dir.name" value="${install.dir.name}"/>
                                 </ant>
-                            </target>
+                            </tasks>
                         </configuration>
                     </execution>
                 </executions>

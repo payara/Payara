@@ -113,9 +113,9 @@
                 <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
                 <artifactId>maven-antrun-extended-plugin</artifactId>
                 <configuration>
-                    <target>
+                    <tasks>
                         <ant dir="." antfile="build.xml" target="create.bundle" />
-                    </target>
+                    </tasks>
                 </configuration>
                 <executions>
                     <execution>

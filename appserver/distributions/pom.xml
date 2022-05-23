@@ -185,12 +185,12 @@
                             <id>create-ips-distribution</id>
                             <phase>package</phase>
                             <configuration>
-                                <target>
+                                <tasks>
                                     <ant dir="." antfile="../distributions.xml" target="create-${project.artifactId}-distributions">
                                         <property name="install.dir.name" value="${install.dir.name}" />
                                         <property name="ips.compress" value="${ips.compress}" />
                                     </ant>
-                                </target>
+                                </tasks>
                             </configuration>
                         </execution>
                     </executions>
@@ -260,9 +260,9 @@
                                 </goals>
                                 <phase>package</phase>
                                 <configuration>
-                                    <target>
+                                    <tasks>
                                         <ant dir="." antfile="./repo-import.xml" />
-                                    </target>
+                                    </tasks>
                                 </configuration>
                             </execution>
                         </executions>

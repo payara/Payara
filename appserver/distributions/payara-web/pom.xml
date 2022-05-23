@@ -77,12 +77,12 @@
                             <goal>run</goal>
                         </goals>
                         <configuration>
-                            <target>
+                            <tasks>
                                 <property name="distribution"
                                           value="payara-web"/>
                                 <ant antfile="../distributions.xml"
                                      target="set-distribution"/>
-                            </target>
+                            </tasks>
                         </configuration>
                     </execution>
                 </executions>

@@ -20,12 +20,12 @@
                     <execution>
                         <phase>compile</phase>
                         <configuration>
-                            <target>
+                            <tasks>
                                 <jar file="target/dtds.jar">
                                     <fileset dir="src/main/resources" />
                                 </jar>
                                 <attachArtifact file="target/dtds.jar" type="jar" classifier="resources" />
-                            </target>
+                            </tasks>
                         </configuration>
                         <goals>
                             <goal>run</goal>

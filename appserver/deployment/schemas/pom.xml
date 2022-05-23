@@ -126,11 +126,11 @@
                             <goal>run</goal>
                         </goals>
                         <configuration>
-                            <target>
+                            <tasks>
                                 <copy todir="${project.build.directory}/classes/glassfish/lib/schemas" flatten="true">
                                     <fileset dir="${jpa.schema.temp.location}/javax/persistence" />
                                 </copy>
-                            </target>
+                            </tasks>
                         </configuration>
                     </execution>
                 </executions>

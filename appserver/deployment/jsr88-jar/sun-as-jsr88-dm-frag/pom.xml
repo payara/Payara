@@ -93,10 +93,10 @@
                     <execution>
                         <phase>generate-sources</phase>
                         <configuration>
-                            <target>
+                            <tasks>
                                 <!-- place the manifest-only jar into the location we want, relative to target/classes  -->
                                 <resolveArtifact artifactId="sun-as-jsr88-dm" tofile="target/classes/glassfish/lib/deployment/sun-as-jsr88-dm.jar" />
-                            </target>
+                            </tasks>
                         </configuration>
                         <goals>
                             <goal>run</goal>

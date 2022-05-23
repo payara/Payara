@@ -96,10 +96,10 @@
                     <execution>
                         <phase>generate-sources</phase>
                         <configuration>
-                            <target>
+                            <tasks>
                                 <!-- place the ejb timer app jar into the location -->
                                 <resolveArtifact artifactId="wstx-services" tofile="target/classes/glassfish/lib/install/applications/metro/wstx-services.war" />
-                            </target>
+                            </tasks>
                         </configuration>
                         <goals>
                             <goal>run</goal>

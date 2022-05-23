@@ -67,7 +67,7 @@
                     <execution>
                         <phase>test</phase>
                         <configuration>
-                            <target>
+                            <tasks>
                                 <property name="compile_classpath" refid="maven.compile.classpath"/>
                                 <property name="plugin_classpath" refid="maven.plugin.classpath"/>
 
@@ -78,7 +78,7 @@
                                     <property name="jruby-all.classifier" value="${jruby-all.classifier}"/>
                                     <property name="glassfish.home" value="${glassfish.home}"/>
                                 </ant>
-                            </target>
+                            </tasks>
                         </configuration>
                         <goals>
                             <goal>run</goal>

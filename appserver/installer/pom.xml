@@ -87,10 +87,10 @@
                    <execution>
                      <phase>package</phase>
                      <configuration>
-                       <target>
+                       <tasks>
                          <ant dir="." antfile="build.xml" target="all">
 			 </ant>
-                       </target>
+                       </tasks>
                      </configuration>
 		     <goals>
                         <goal>run</goal>
