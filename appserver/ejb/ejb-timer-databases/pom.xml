@@ -95,10 +95,10 @@
                     <execution>
                         <phase>generate-sources</phase>
                         <configuration>
-                            <tasks>
+                            <target>
                                 <!-- place the ejb timer app jar into the location -->
                                 <resolveArtifact artifactId="ejb-timer-service-app" tofile="target/classes/glassfish/lib/install/applications/ejb-timer-service-app.war" />
-                            </tasks>
+                            </target>
                         </configuration>
                         <goals>
                             <goal>run</goal>

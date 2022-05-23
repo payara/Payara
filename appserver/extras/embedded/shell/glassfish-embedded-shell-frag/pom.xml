@@ -99,10 +99,10 @@
                     <execution>
                         <phase>generate-sources</phase>
                         <configuration>
-                            <tasks>
+                            <target>
                                 <!-- place the manifest-only jar into the location we want, relative to target/classes  -->
                                 <resolveArtifact artifactId="glassfish-embedded-shell" tofile="target/classes/glassfish/lib/embedded/glassfish-embedded-shell.jar" />
-                            </tasks>
+                            </target>
                         </configuration>
                         <goals>
                             <goal>run</goal>

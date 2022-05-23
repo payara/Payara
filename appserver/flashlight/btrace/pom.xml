@@ -94,10 +94,10 @@
                     <execution>
                         <phase>generate-sources</phase>
                         <configuration>
-                            <tasks>
+                            <target>
                                 <resolveArtifact artifactId="btrace-agent" tofile="target/classes/glassfish/lib/monitor/btrace-agent.jar" />
                                 <resolveArtifact artifactId="btrace-boot" tofile="target/classes/glassfish/lib/monitor/btrace-boot.jar" />
-                            </tasks>
+                            </target>
                         </configuration>
                         <goals>
                             <goal>run</goal>

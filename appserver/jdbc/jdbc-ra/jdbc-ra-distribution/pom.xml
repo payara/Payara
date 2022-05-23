@@ -62,7 +62,7 @@
           <execution>
             <phase>generate-sources</phase>
             <configuration>
-	      <tasks>
+	      <target>
                 <!-- Resolving jdbc-core, jdbc30 and jdbc40 artifacts -->			
                 <resolveArtifact artifactId="jdbc-core" groupId="fish.payara.server.internal.jdbc.jdbc-ra.jdbc-core" property="core.jar" />
                 <resolveArtifact artifactId="jdbc30" groupId="fish.payara.server.internal.jdbc.jdbc-ra.jdbc30" property="30.jar" />
@@ -81,7 +81,7 @@
 
             	<!-- TODO: Kohsuke to come back here and make sure mvn install puts a zip file, not .distribution-fragment -->
 	        <attachArtifact file="target/jdbc-ra.zip" />
-              </tasks>
+              </target>
             </configuration>
             <goals>
               <goal>run</goal>

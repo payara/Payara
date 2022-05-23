@@ -61,13 +61,13 @@
                     <execution>
                         <phase>process-classes</phase>
                         <configuration>
-                            <tasks>
+                            <target>
                                 <resolveArtifact artifactId="jaxr-ra" property="jaxr-ra.rar" />
 				<mkdir dir="target/tmp" />
 				<mkdir dir="target/classes/glassfish/lib/install/applications/jaxr-ra" />
 				<unjar src="${jaxr-ra.rar}" dest="target/classes/glassfish/lib/install/applications/jaxr-ra">
                                 </unjar>
-                            </tasks>
+                            </target>
                         </configuration>
                         <goals>
                             <goal>run</goal>
