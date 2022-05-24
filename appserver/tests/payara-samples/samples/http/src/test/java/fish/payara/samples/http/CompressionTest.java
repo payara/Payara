@@ -53,6 +53,7 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import static org.junit.Assert.assertTrue;
+import org.junit.Ignore;
 
 /**
  * @author James Hillyard
