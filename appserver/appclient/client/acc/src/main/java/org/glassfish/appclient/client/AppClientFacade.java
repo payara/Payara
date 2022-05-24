@@ -151,7 +151,6 @@ public class AppClientFacade {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        java.lang.System.clearProperty("java.system.class.loader");
         try {
             if (acc == null) {
                 /*
