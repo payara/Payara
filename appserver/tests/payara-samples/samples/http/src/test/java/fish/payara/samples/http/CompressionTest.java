@@ -59,6 +59,7 @@ import static org.junit.Assert.assertTrue;
  */
 
 @RunWith(PayaraArquillianTestRunner.class)
+@Ignore("EE10 TODO: Grizzly 4 removed direct attributes for compression")
 public class CompressionTest {
     private static final Logger log = Logger.getLogger(CompressionTest.class.getName());
 
