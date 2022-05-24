@@ -639,12 +639,6 @@ public class AppClientContainer {
                         injectionManager.injectClass(clientMainClass, acDesc);
                         isInjected = true;
                     } catch (InjectionException ie) {
-                        System.out.println("Message:");
-                        System.out.println(ie.getMessage());
-                        System.out.println("Stack:");
-                        ie.printStackTrace();
-                        System.out.println("Cause Stack:");
-                        ie.getCause().printStackTrace();
                         Throwable t = ie;
                         boolean isAuthError = false;
                         if (container.secHelper.isLoginCancelled()) {
