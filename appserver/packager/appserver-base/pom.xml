@@ -101,7 +101,6 @@
             </plugin>
              <plugin>
                 <artifactId>maven-antrun-plugin</artifactId>
-                <version>3.1.0</version>
                 <executions>
                     <execution>
                         <id>update-readme-versions</id>
@@ -110,7 +109,7 @@
                             <goal>run</goal>
                         </goals>
                         <configuration>
-                            <target>
+                            <tasks>
                                 <replace token="@@@FULL_VERSION@@@" value="${project.version}" dir="${stage.dir}">
                                     <include name="README.txt"/>
                                 </replace>
@@ -123,7 +122,7 @@
                                 <replace token="@@@UPDATE_VERSION@@@" value="${update_version}" dir="${stage.dir}">
                                     <include name="README.txt"/>
                                 </replace>
-                            </target>
+                            </tasks>
                         </configuration>
                     </execution>
                 </executions>
