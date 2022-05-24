@@ -135,8 +135,6 @@ public class JSSE14SocketFactory extends JSSESocketFactory {
             // START SJSAS 6439313
             context = SSLContext.getInstance(protocol);
             // END SJSAS 6439313 
-            // Configure SSL session timeout and cache size
-            configureSSLSessionContext(context.getServerSessionContext());
             String trustAlgorithm = (String) attributes.get("truststoreAlgorithm");
             if (trustAlgorithm == null) {
                 trustAlgorithm = TrustManagerFactory.getDefaultAlgorithm();
@@ -145,6 +143,8 @@ public class JSSE14SocketFactory extends JSSESocketFactory {
                 (String) attributes.get("keyAlias")),
                 getTrustManagers(trustAlgorithm),
                 new SecureRandom());
+            // Configure SSL session timeout and cache size
+            configureSSLSessionContext(context.getServerSessionContext());
             // create proxy
             sslProxy = context.getServerSocketFactory();
             // Determine which cipher suites to enable
