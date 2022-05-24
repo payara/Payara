@@ -63,6 +63,7 @@
         <jsftemplating.version>2.1.4</jsftemplating.version>
         <jboss.classfilewriter.version>1.2.5.Final</jboss.classfilewriter.version>
         <apache.bcel.version>6.2</apache.bcel.version>
+        
         <!-- Java EE Security API -->
         <javax.security.enterprise-spec.version>1.0</javax.security.enterprise-spec.version>
         <jna.version>5.2.0</jna.version>
@@ -76,16 +77,15 @@
         <production_domain_template>production-domain.jar</production_domain_template>
         <version_prefix />
         <version_suffix>#badassfish</version_suffix>
-        <major_version>5</major_version>
-        <minor_version>2022</minor_version>
-        <update_version>3-SNAPSHOT</update_version>
-        <install.dir.name>payara${major_version}</install.dir.name>
+        <install.dir.name>payara5</install.dir.name>
+        
         <uc-pkg-client.version>1.122-57.2889</uc-pkg-client.version>
         <uc-pkg-bootstrap.version>1.122-57.2889</uc-pkg-bootstrap.version>
         <dbschema.version>3.1.1</dbschema.version>
         <dbschema.osgi.version>6.0</dbschema.osgi.version>
         <schema2beans.version>3.1.1</schema2beans.version>
         <schema2beans.osgi.version>5.5</schema2beans.osgi.version>
+        
         <!-- Java API for XML Registries Resource Adapter -->
         <jaxr.version>JAXR_RA_20091012</jaxr.version>
         <rest.monitoring.version>1.0.0-Beta</rest.monitoring.version>
@@ -96,6 +96,7 @@
         <reactor-core.version>3.4.0</reactor-core.version>
         <reactive-streams.version>1.0.3</reactive-streams.version>
         <jcip-annotations.version>1.0-1</jcip-annotations.version>
+        
         <!-- Yubico client validation version property -->
         <yubico-validation-client2.version>3.0.2.payara-p1</yubico-validation-client2.version>
         <dockerfile-maven-plugin.version>1.4.13</dockerfile-maven-plugin.version>
