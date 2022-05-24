@@ -63,7 +63,6 @@ public class MDBTests {
     @Parameters({ "BATCH_FILE1" })
     @Test
     public void createJMSRscTest(String batchFile1) throws Exception {
-        java.lang.System.clearProperty("java.system.class.loader");
         Assert.assertEquals(
             RtExec.execute(
                 "MDBTests.createJMSRscTest", 
