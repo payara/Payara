@@ -577,7 +577,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
                         continue;
                     }
 
-                    if (vs.getDefaultWebModuleID().equals(applicationInfo.getName())) {
+                    if (Objects.equals(vs.getDefaultWebModuleID(), applicationInfo.getName())) {
                         try {
                             updateHost(vs.getBean());
                         } catch (LifecycleException e) {

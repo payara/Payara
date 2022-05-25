@@ -141,6 +141,8 @@
         <deploy.skip>true</deploy.skip>
 
         <!-- BOM-referenced versions -->
+        <!--<jakartaee.api.version>10.0.0-RC1</jakartaee.api.version> Currently fails with CDIEventbusNotifierService -->
+        <!--<jakartaee.api.version>10.0.0-SNAPSHOT</jakartaee.api.version>-->
         <jakartaee.api.version>9.1.0</jakartaee.api.version>
         <servlet-api.version>6.0.0</servlet-api.version>
         <grizzly.version>4.0.0-M2</grizzly.version>
@@ -211,6 +213,7 @@
         <parsson.version>1.1.0</parsson.version>
         <jsonp-api.version>2.1.0</jsonp-api.version>
         <jbi.version>1.0</jbi.version>
+        <!--<jakarta-platform.version>10.0.0-SNAPSHOT</jakarta-platform.version>-->
         <jakarta-platform.version>9.1.0</jakarta-platform.version>
         <microprofile-release.version>5.0</microprofile-release.version>
         <microprofile-opentracing.version>3.0</microprofile-opentracing.version>
@@ -226,8 +229,8 @@
         <opentracing.version>0.33.0</opentracing.version>
         <h2db.version>1.4.200</h2db.version>
         <websocket-api.version>2.0.0</websocket-api.version>
-        <concurrent-api.version>2.0.0</concurrent-api.version>
-        <concurrent.version>2.0.0</concurrent.version>
+        <concurrent-api.version>3.0.0</concurrent-api.version>
+        <concurrent.version>3.0.0-RC1</concurrent.version>
         <asm.version>9.2</asm.version>
         <monitoring-console-api.version>2.0.1</monitoring-console-api.version>
         <monitoring-console-process.version>2.0.1</monitoring-console-process.version>

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2022] [Payara Foundation and/or its affiliates]
 package org.glassfish.ejb.deployment.node;
 
 import java.util.Iterator;
@@ -66,6 +66,9 @@ import com.sun.enterprise.deployment.node.ResourceEnvRefNode;
 import com.sun.enterprise.deployment.node.ResourceRefNode;
 import com.sun.enterprise.deployment.node.SecurityRoleRefNode;
 import com.sun.enterprise.deployment.node.XMLElement;
+import com.sun.enterprise.deployment.node.ManagedExecutorDefinitionNode;
+import com.sun.enterprise.deployment.node.ManagedThreadFactoryDefinitionNode;
+import com.sun.enterprise.deployment.node.ManagedScheduledExecutorDefinitionNode;
 import com.sun.enterprise.deployment.types.EjbReference;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.xml.TagNames;
@@ -114,6 +117,14 @@ public abstract class EjbNode<S extends EjbDescriptor> extends DisplayableCompon
 
         // Use special method for overrides because more than one schedule can be specified on a single method
         registerElementHandler(new XMLElement(EjbTagNames.TIMER), ScheduledTimerNode.class, "addScheduledTimerDescriptorFromDD");
+        //adding support for the managed-executor tag
+        registerElementHandler(new XMLElement(TagNames.MANAGED_EXECUTOR), ManagedExecutorDefinitionNode.class, "addResourceDescriptor");
+        //adding support for the managed-thread-factory tag
+        registerElementHandler(new XMLElement(TagNames.MANAGED_THREAD_FACTORY), ManagedThreadFactoryDefinitionNode.class, "addResourceDescriptor");
+        //adding support for the managed-scheduled-executor tag
+        registerElementHandler(new XMLElement(TagNames.MANAGED_SCHEDULED_EXECUTOR), ManagedScheduledExecutorDefinitionNode.class, "addResourceDescriptor");
+        //adding support for the context-service tag
+        registerElementHandler(new XMLElement(TagNames.CONTEXT_SERVICE), com.sun.enterprise.deployment.node.ContextServiceDefinitionNode.class, "addResourceDescriptor");
     }
 
     @Override

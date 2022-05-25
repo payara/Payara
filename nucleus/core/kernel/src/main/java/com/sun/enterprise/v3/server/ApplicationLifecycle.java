@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates.]
+// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates.]
 
 package com.sun.enterprise.v3.server;
 
@@ -1207,7 +1207,12 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             Container container;
             try {
                 container = engineInfo.getContainer();
-            } catch(Exception e) {
+            } catch (Exception e) {
+                if (e instanceof MultiException) {
+                    for (Throwable se : ((MultiException) e).getErrors()) {
+                        logger.log(SEVERE, e.getMessage(), e);
+                    }
+                }
                 logger.log(SEVERE, KernelLoggerInfo.cantStartContainer,
                         new Object[] {engineInfo.getSniffer().getModuleType(), e});
                 return false;
