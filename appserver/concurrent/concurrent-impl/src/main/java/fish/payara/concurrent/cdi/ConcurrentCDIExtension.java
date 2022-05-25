@@ -66,7 +66,7 @@ public class ConcurrentCDIExtension implements Extension {
     private static final Logger log = Logger.getLogger(ConcurrentCDIExtension.class.getName());
 
     void beforeBeanDiscovery(@Observes BeforeBeanDiscovery beforeBeanDiscovery, BeanManager beanManager) {
-        log.fine("ConcurrentCDIExtension.beforeBeanDiscovery");
+        log.finest("ConcurrentCDIExtension.beforeBeanDiscovery");
         // Add each of the Concurrent interceptors
         beforeBeanDiscovery.addInterceptorBinding(Asynchronous.class);
         AnnotatedType<AsynchronousInterceptor> asynchronousInterceptor
@@ -76,7 +76,7 @@ public class ConcurrentCDIExtension implements Extension {
 
     <T> void processAnnotatedType(@Observes @WithAnnotations({Asynchronous.class}) ProcessAnnotatedType<T> processAnnotatedType,
             BeanManager beanManager) throws Exception {
-        log.fine("ConcurrentCDIExtension.processAnnotatedType");
+        log.finest("ConcurrentCDIExtension.processAnnotatedType");
         AnnotatedType<T> annotatedType = processAnnotatedType.getAnnotatedType();
 
         // Validate the Fault Tolerance annotations for each annotated method
