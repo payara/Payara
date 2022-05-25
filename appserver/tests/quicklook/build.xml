@@ -387,7 +387,7 @@
 		<mkdir dir="${test.report}"/>
 
 		<if>
-			<equals arg1="${java.version}" arg2="17"/>
+			<contains string="${java.version}" substring="1.8" />
 			<then>
 				<echo>----------then-------------</echo>
 				<echo>${java.version}</echo>
@@ -399,7 +399,6 @@
 					<jvmarg value="-Dhttp.port=${glassfish.http.port}"/>
 					<jvmarg value="-DASADMIN=${ASADMIN}" />
 					<jvmarg value="-DAPPCLIENT=${APPCLIENT}"/>
-					<jvmarg value="--add-opens=java.base/java.lang=ALL-UNNAMED" />
 					<sysproperty key="glassfish.home" value="${glassfish.home}"/>
 					<sysproperty key="domain.name" value="${domain.name}"/>
 					<sysproperty key="BASEDIR" value="${basedir}"/>
@@ -417,6 +416,7 @@
 					<jvmarg value="-Dhttp.port=${glassfish.http.port}"/>
 					<jvmarg value="-DASADMIN=${ASADMIN}" />
 					<jvmarg value="-DAPPCLIENT=${APPCLIENT}"/>
+					<jvmarg value="--add-opens=java.base/java.lang=ALL-UNNAMED" />
 					<jvmarg value="--illegal-access=debug" />
 					<sysproperty key="glassfish.home" value="${glassfish.home}"/>
 					<sysproperty key="domain.name" value="${domain.name}"/>
