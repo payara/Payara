@@ -387,7 +387,7 @@
 		<mkdir dir="${test.report}"/>
 
 		<if>
-			<equals arg1="${ant.java.version}" arg2="17"/>
+			<equals arg1="${java.version}" arg2="17"/>
 			<then>
 				<echo>----------then-------------</echo>
 				<echo>${ant.java.version}</echo>
