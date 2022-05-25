@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.concurrent.cdi;
+package fish.payara.concurrent.cdi;
 
 import jakarta.enterprise.concurrent.Asynchronous;
 import jakarta.enterprise.event.Observes;
