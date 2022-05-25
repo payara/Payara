@@ -156,7 +156,7 @@ public class WebModuleValve extends ValveBase {
     private void initialiseServices(boolean throwException) throws IllegalStateException {
         ServiceLocator services;
         try {
-            services = getServerContext().getDefaultServices();
+            services = WebModuleGlueUtil.getServerContext(webModule).getDefaultServices();
         } catch (IllegalStateException illegalStateException) {
             if (throwException) {
                 throw illegalStateException;
@@ -181,23 +181,6 @@ public class WebModuleValve extends ValveBase {
         if (invocationManager != null && injectionManager != null && transactionManager != null) {
             servicesInitialised = true;
         }
-    }
-
-    /**
-     * Look up the {@link ServerContext} from the {@link WebModule} this {@link WebModuleValve} is attached to.
-     *
-     * @return the {@link ServerContext} of the {@link WebModule} this {@link WebModuleValve} is attached to.
-     * @throws IllegalStateException if a {@link ServerContext} could not be obtained from the {@link WebModule}
-     */
-    private ServerContext getServerContext() throws IllegalStateException {
-        ServerContext serverContext = webModule.getServerContext();
-        if (serverContext == null) {
-            String msg = RESOURCE_BUNDLE.getString(LogFacade.NO_SERVER_CONTEXT);
-            msg = MessageFormat.format(msg, webModule.getName());
-            throw new IllegalStateException(msg);
-        }
-
-        return serverContext;
     }
 
     /**
@@ -310,7 +293,7 @@ public class WebModuleValve extends ValveBase {
      *                               could not be obtained from the {@link WebModule} this valve is attached to.
      */
     private void setSecurityContextWithPrincipal(Principal principal) throws IllegalStateException {
-        ServerContext serverContext = getServerContext();
+        ServerContext serverContext = WebModuleGlueUtil.getServerContext(webModule);
 
         AppServSecurityContext securityContext = serverContext.getDefaultServices().getService(
                 AppServSecurityContext.class);
