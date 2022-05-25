@@ -68,6 +68,7 @@ public class InvokeMethodResponseDeserializer implements JsonbDeserializer<Invok
                 type = parser.getString();
             } else if (event == JsonParser.Event.KEY_NAME && parser.getString().equals("result")) {
                 Type resultClass = determineClass(type);
+                parser.next();
                 result = ctx.deserialize(resultClass, parser);
                 resultPresent = true;
             }

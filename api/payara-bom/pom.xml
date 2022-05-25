@@ -703,12 +703,12 @@
                 <artifactId>jakarta.json</artifactId>
                 <version>${parsson.version}</version>
             </dependency>
-
             <dependency>
-                <groupId>org.glassfish</groupId>
-                <artifactId>jsonp-jaxrs</artifactId>
-                <version>${transitional.jsonp-jaxrs.version}</version>
+                <groupId>org.eclipse.parsson</groupId>
+                <artifactId>parsson-media</artifactId>
+                <version>${parsson.version}</version>
             </dependency>
+
             <dependency>
                 <groupId>com.ibm.jbatch</groupId>
                 <artifactId>com.ibm.jbatch.container</artifactId>
