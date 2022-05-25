@@ -172,6 +172,9 @@ public class InvocationContext implements ContextHandle {
         return threadContextRestorers;
     }
 
+    /**
+     * Used to make duplicate of the InvocationContext.
+     */
     private void writeObject(java.io.ObjectOutputStream out) throws IOException {
         out.writeBoolean(useTransactionOfExecutionThread);
         // write values for invocation
@@ -209,6 +212,9 @@ public class InvocationContext implements ContextHandle {
         out.writeObject(threadContextRestorers);
     }
 
+    /**
+     * Used to make duplicate of the InvocationContext.
+     */
     private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
         useTransactionOfExecutionThread = in.readBoolean();
         // reconstruct invocation
