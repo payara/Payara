@@ -107,32 +107,26 @@ public class ManagedExecutorDescriptorDeployer implements ResourceDeployer {
 
     @Override
     public void undeployResource(Object resource) throws Exception {
-        // FIXME: implement
     }
 
     @Override
     public void undeployResource(Object resource, String applicationName, String moduleName) throws Exception {
-        // FIXME: implement
     }
 
     @Override
     public void redeployResource(Object resource) throws Exception {
-        // FIXME: implement
     }
 
     @Override
     public void enableResource(Object resource) throws Exception {
-        // FIXME: implement
     }
 
     @Override
     public void disableResource(Object resource) throws Exception {
-        // FIXME: implement
     }
 
     @Override
     public boolean handles(Object resource) {
-        // FIXME: implement
         return false;
     }
 
@@ -143,13 +137,11 @@ public class ManagedExecutorDescriptorDeployer implements ResourceDeployer {
 
     @Override
     public Class[] getProxyClassesForDynamicReconfiguration() {
-        // FIXME: implement
         return new Class[0];
     }
 
     @Override
     public boolean canDeploy(boolean postApplicationDeployment, Collection<Resource> allResources, Resource resource) {
-        // FIXME: implement
         return false;
     }
 

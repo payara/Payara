@@ -213,7 +213,6 @@ public interface ConnectorConstants extends ResourceConstants {
     /**
      * Reserved sub-context where concurrent objects are bound with generated names.
      */
-//    public static String CONCURRENT_JNDINAME_PREFIX = RESERVE_PREFIX + "/concurrent/";
     public static String CONCURRENT_JNDINAME_PREFIX = "concurrent/";
 
     /**

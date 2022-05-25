@@ -227,11 +227,11 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
     public synchronized ManagedExecutorServiceImpl createManagedExecutorService(ResourceInfo resourceInfo, ManagedExecutorServiceConfig config, ContextServiceImpl contextService) {
         ManagedThreadFactoryImpl managedThreadFactory = new ThreadFactoryWrapper(
                 config.getJndiName() + "-managedThreadFactory",
-                null, //contextService,
+                null,
                 config.getThreadPriority());
         ManagedExecutorServiceImpl mes = new ManagedExecutorServiceImpl(config.getJndiName(),
                 managedThreadFactory,
-                config.getHungAfterSeconds() * 1000L, // in millseconds
+                config.getHungAfterSeconds() * 1_000L, // in milliseconds
                 config.isLongRunningTasks(),
                 config.getCorePoolSize(),
                 config.getMaximumPoolSize(),

@@ -106,10 +106,10 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
 
     // Predefined handlers for context propagation
     // TODO: replace with ConcurrentRuntime.CONTEXT_INFO_* ?
-    public static final String CONTEXT_TYPE_CLASSLOADING = "CLASSLOADING"; // Conccurency 3.0: N/A
-    public static final String CONTEXT_TYPE_SECURITY = "SECURITY"; // Conccurency 3.0: SECURITY
-    public static final String CONTEXT_TYPE_NAMING = "NAMING"; // Conccurency 3.0: APPLICATION
-    public static final String CONTEXT_TYPE_WORKAREA = "WORKAREA"; // Conccurency 3.0: TRANSACTION
+    public static final String CONTEXT_TYPE_CLASSLOADING = "CLASSLOADING"; // Concurrency 3.0: N/A
+    public static final String CONTEXT_TYPE_SECURITY = "SECURITY"; // Concurrency 3.0: SECURITY
+    public static final String CONTEXT_TYPE_NAMING = "NAMING"; // Concurrency 3.0: APPLICATION
+    public static final String CONTEXT_TYPE_WORKAREA = "WORKAREA"; // Concurrency 3.0: TRANSACTION
 
     // TODO: do we need these booleans if we have sets?
     private boolean classloading, security, naming, workArea;

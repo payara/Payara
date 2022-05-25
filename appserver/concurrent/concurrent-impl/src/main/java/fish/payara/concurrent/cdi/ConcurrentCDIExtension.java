@@ -79,7 +79,7 @@ public class ConcurrentCDIExtension implements Extension {
         log.finest("ConcurrentCDIExtension.processAnnotatedType");
         AnnotatedType<T> annotatedType = processAnnotatedType.getAnnotatedType();
 
-        // Validate the Fault Tolerance annotations for each annotated method
+        // Validate the Asynchronous annotations for each annotated method
         Set<AnnotatedMethod<? super T>> annotatedMethods = annotatedType.getMethods();
         for (AnnotatedMethod<?> annotatedMethod : annotatedMethods) {
             Method method = annotatedMethod.getJavaMember();
