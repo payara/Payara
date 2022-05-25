@@ -386,19 +386,44 @@
 
 		<mkdir dir="${test.report}"/>
 
-		<testng outputdir="${test.report}" classpathref="run.testng.classpath" haltOnFailure="true">
-			<jvmarg value="-Djava.compiler=NONE"/>
-			<jvmarg value="-Dhttp.host=${glassfish.http.host}"/>
-			<jvmarg value="-Dhttp.port=${glassfish.http.port}"/>
-			<jvmarg value="-DASADMIN=${ASADMIN}" />
-			<jvmarg value="-DAPPCLIENT=${APPCLIENT}"/>
-			<jvmarg value="--add-opens=java.base/java.lang=ALL-UNNAMED" />
-			<jvmarg value="--illegal-access=debug" />
-			<sysproperty key="glassfish.home" value="${glassfish.home}"/>
-			<sysproperty key="domain.name" value="${domain.name}"/>
-			<sysproperty key="BASEDIR" value="${basedir}"/>
-			<xmlfileset dir="." includes="${testng.xml}"/>
-		</testng>
+		<if>
+			<equals arg1="${ant.java.version}" arg2="17"/>
+			<then>
+				<echo>----------then-------------</echo>
+				<echo>${ant.java.version}</echo>
+
+				<testng outputdir="${test.report}" classpathref="run.testng.classpath" haltOnFailure="true">
+					<jvmarg value="-Djava.compiler=NONE"/>
+					<jvmarg value="-Dhttp.host=${glassfish.http.host}"/>
+					<jvmarg value="-Dhttp.port=${glassfish.http.port}"/>
+					<jvmarg value="-DASADMIN=${ASADMIN}" />
+					<jvmarg value="-DAPPCLIENT=${APPCLIENT}"/>
+					<jvmarg value="--add-opens=java.base/java.lang=ALL-UNNAMED" />
+					<sysproperty key="glassfish.home" value="${glassfish.home}"/>
+					<sysproperty key="domain.name" value="${domain.name}"/>
+					<sysproperty key="BASEDIR" value="${basedir}"/>
+					<xmlfileset dir="." includes="${testng.xml}"/>
+				</testng>
+			</then>
+			<else>
+				<echo>----------else-------------</echo>
+				<echo>${ant.java.version}</echo>
+
+				<testng outputdir="${test.report}" classpathref="run.testng.classpath" haltOnFailure="true">
+					<jvmarg value="-Djava.compiler=NONE"/>
+					<jvmarg value="-Dhttp.host=${glassfish.http.host}"/>
+					<jvmarg value="-Dhttp.port=${glassfish.http.port}"/>
+					<jvmarg value="-DASADMIN=${ASADMIN}" />
+					<jvmarg value="-DAPPCLIENT=${APPCLIENT}"/>
+					<jvmarg value="--illegal-access=debug" />
+					<sysproperty key="glassfish.home" value="${glassfish.home}"/>
+					<sysproperty key="domain.name" value="${domain.name}"/>
+					<sysproperty key="BASEDIR" value="${basedir}"/>
+					<xmlfileset dir="." includes="${testng.xml}"/>
+				</testng>
+			</else>
+		</if>
+
 
 		<record name="${basedir}/runtestng.output" action="stop"/>
 	</target>
