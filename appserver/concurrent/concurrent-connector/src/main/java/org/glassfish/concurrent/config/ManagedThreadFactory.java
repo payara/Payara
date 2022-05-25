@@ -99,8 +99,7 @@ public interface ManagedThreadFactory extends ConfigBeanProxy, Resource,
      *
      * @return possible object is {@link String }
      */
-    @Attribute(defaultValue = "" + Integer.MAX_VALUE, dataType = String.class)
-    @Min(value = 0)
+    @Attribute(defaultValue = "", dataType = String.class)
     String getContext();
 
     /**
