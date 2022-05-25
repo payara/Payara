@@ -390,7 +390,8 @@
 			<equals arg1="${java.version}" arg2="17"/>
 			<then>
 				<echo>----------then-------------</echo>
-				<echo>${ant.java.version}</echo>
+				<echo>${java.version}</echo>
+				<echo>--add-opens=java.base/java.lang=ALL-UNNAMED</echo>
 
 				<testng outputdir="${test.report}" classpathref="run.testng.classpath" haltOnFailure="true">
 					<jvmarg value="-Djava.compiler=NONE"/>
@@ -407,7 +408,8 @@
 			</then>
 			<else>
 				<echo>----------else-------------</echo>
-				<echo>${ant.java.version}</echo>
+				<echo>${java.version}</echo>
+				<echo>--illegal-access=debug</echo>
 
 				<testng outputdir="${test.report}" classpathref="run.testng.classpath" haltOnFailure="true">
 					<jvmarg value="-Djava.compiler=NONE"/>
