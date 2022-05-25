@@ -113,6 +113,10 @@ pipeline {
             post {
                 always {
                     junit '**/target/surefire-reports/*.xml'
+                    junit '**/target/failsafe-reports/*.xml'
+                }
+                failure {
+                    zip archive: true, dir: "**/payara6/glassfish/domains/${DOMAIN_NAME}/logs", glob: 'server.*', zipFile: 'mp-tck-log.zip'
                 }
             }
         }
@@ -176,6 +180,9 @@ pipeline {
             post {
                 always {
                     junit '**/target/surefire-reports/*.xml'
+                }
+                failure {
+                    zip archive: true, dir: "**/payara6/glassfish/domains/${DOMAIN_NAME}/logs", glob: 'server.*', zipFile: 'cargotracker-log.zip'
                 }
             }
         }
