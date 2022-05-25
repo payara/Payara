@@ -63,7 +63,7 @@ import org.glassfish.enterprise.concurrent.AsynchronousInterceptor;
  */
 public class ConcurrentCDIExtension implements Extension {
 
-    static final Logger log = Logger.getLogger(ConcurrentCDIExtension.class.getName());
+    private static final Logger log = Logger.getLogger(ConcurrentCDIExtension.class.getName());
 
     void beforeBeanDiscovery(@Observes BeforeBeanDiscovery beforeBeanDiscovery, BeanManager beanManager) {
         log.fine("ConcurrentCDIExtension.beforeBeanDiscovery");
