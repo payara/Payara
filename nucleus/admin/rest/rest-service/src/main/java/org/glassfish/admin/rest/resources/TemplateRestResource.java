@@ -414,8 +414,7 @@ public class TemplateRestResource extends AbstractResource implements OptionsCap
             Map<String, List<FormDataBodyPart>> m1 = formData.getFields();
 
             Set<String> ss = m1.keySet();
-            // TODO verify how to replace this part of the code that is failing with jersey upgrade to 3.1.0-M2
-/*            for (String fieldName : ss) {
+            for (String fieldName : ss) {
                 for (FormDataBodyPart bodyPart : formData.getFields(fieldName)) {
                     if (bodyPart.getContentDisposition().getFileName() != null) {//we have a file
                         //save it and mark it as delete on exit.
@@ -442,7 +441,7 @@ public class TemplateRestResource extends AbstractResource implements OptionsCap
                         data.put(fieldName, bodyPart.getValue());
                     }
                 }
-            }*/
+            }
         } catch (Exception ex) {
             RestLogging.restLogger.log(Level.SEVERE, null, ex);
         } finally {
