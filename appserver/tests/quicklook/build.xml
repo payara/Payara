@@ -391,7 +391,6 @@
 			<then>
 				<echo>----------then-------------</echo>
 				<echo>${java.version}</echo>
-				<echo>--add-opens=java.base/java.lang=ALL-UNNAMED</echo>
 
 				<testng outputdir="${test.report}" classpathref="run.testng.classpath" haltOnFailure="true">
 					<jvmarg value="-Djava.compiler=NONE"/>
@@ -408,6 +407,7 @@
 			<else>
 				<echo>----------else-------------</echo>
 				<echo>${java.version}</echo>
+				<echo>--add-opens=java.base/java.lang=ALL-UNNAMED</echo>
 				<echo>--illegal-access=debug</echo>
 
 				<testng outputdir="${test.report}" classpathref="run.testng.classpath" haltOnFailure="true">

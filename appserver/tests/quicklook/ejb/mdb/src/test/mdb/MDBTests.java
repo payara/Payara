@@ -90,7 +90,8 @@ public class MDBTests {
                 + " -client " + clientJar
                 + " -targetserver" + " localhost:3700"
                 + " -name ejb-ejb30-hello-mdb-client"
-                + " -cp " + gfClientJar + File.pathSeparator + clientJar;
+                + " -cp " + gfClientJar + File.pathSeparator + clientJar
+                + " --add-opens=java.base/java.lang=ALL-UNNAMED";
         
         execReturn = RtExec.execute("MDBTests.runJMSAppTest", cmd);
         Assert.assertEquals(execReturn, true, "Run appclient against JMS APP failed ...");
