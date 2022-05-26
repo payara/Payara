@@ -45,6 +45,9 @@ import java.io.StringReader;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+
+import fish.payara.boot.runtime.BootCommand;
+import fish.payara.boot.runtime.BootCommands;
 import org.junit.Test;
 
 /**
