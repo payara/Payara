@@ -62,6 +62,7 @@ import com.sun.enterprise.web.session.PersistenceType;
 import com.sun.enterprise.web.session.SessionCookieConfig;
 import com.sun.web.security.RealmAdapter;
 import fish.payara.jacc.JaccConfigurationFactory;
+import fish.payara.web.WebModuleInstanceManager;
 import fish.payara.web.WebModuleValve;
 import jakarta.security.jacc.PolicyConfigurationFactory;
 import jakarta.security.jacc.PolicyContextException;
@@ -83,8 +84,11 @@ import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.Realm;
 import org.apache.catalina.Valve;
+import org.apache.catalina.core.DefaultInstanceManager;
+import org.apache.catalina.deploy.NamingResourcesImpl;
 import org.apache.catalina.servlets.DefaultServlet;
 import org.apache.jasper.servlet.JspServlet;
+import org.apache.tomcat.InstanceManager;
 import org.apache.tomcat.util.descriptor.web.FilterMap;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.embeddable.web.Context;
@@ -234,6 +238,11 @@ public class WebModule extends PwcWebModule implements Context {
     public WebModule(ServiceLocator services) {
         super();
         this.services = services;
+    }
+
+    @Override
+    public InstanceManager createInstanceManager() {
+        return new WebModuleInstanceManager(this);
     }
 
 
