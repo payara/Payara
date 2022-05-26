@@ -181,7 +181,7 @@ public class WebModuleInstanceManager implements InstanceManager {
     }
 
     /**
-     * Processes and injects an already instantiated object (typically a programmatic dynamic filter registration)
+     * Processes and injects an already instantiated object.
      *
      * @param object The object to process and inject
      * @throws InvocationTargetException If there's an issue injecting the instance
