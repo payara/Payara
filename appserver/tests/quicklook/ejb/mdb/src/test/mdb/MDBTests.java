@@ -87,7 +87,6 @@ public class MDBTests {
         String clientJar = cwd + File.separator + mdbAppDir + mdbApp + "Client.jar";
         String gfClientJar = GLASSFISH_HOME + File.separator + "lib" + File.separator + "gf-client.jar";
         cmd = APPCLIENT + " " + GLASSFISH_APPCLIENT_MAIN_CLASS_NAME
-                + " --illegal-access=debug"
                 + " -client " + clientJar
                 + " -targetserver" + " localhost:3700"
                 + " -name ejb-ejb30-hello-mdb-client"

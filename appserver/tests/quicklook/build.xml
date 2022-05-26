@@ -416,7 +416,6 @@
 					<jvmarg value="-Dhttp.port=${glassfish.http.port}"/>
 					<jvmarg value="-DASADMIN=${ASADMIN}" />
 					<jvmarg value="-DAPPCLIENT=${APPCLIENT}"/>
-					<jvmarg value="--add-opens=java.base/java.lang=ALL-UNNAMED" />
 					<jvmarg value="--illegal-access=debug" />
 					<sysproperty key="glassfish.home" value="${glassfish.home}"/>
 					<sysproperty key="domain.name" value="${domain.name}"/>
