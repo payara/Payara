@@ -129,7 +129,7 @@ public class RootBeanDeploymentArchive extends BeanDeploymentArchiveImpl {
 
     @Override
     public BeansXml getBeansXml() {
-        return null;
+        return getModuleBda().getBeansXml();
     }
 
     @Override
