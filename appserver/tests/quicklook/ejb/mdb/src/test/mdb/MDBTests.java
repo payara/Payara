@@ -90,6 +90,7 @@ public class MDBTests {
                 + " -client " + clientJar
                 + " -targetserver" + " localhost:3700"
                 + " -name ejb-ejb30-hello-mdb-client"
+                + " --illegal-access=debug"
                 + " -cp " + gfClientJar + File.pathSeparator + clientJar;
         
         execReturn = RtExec.execute("MDBTests.runJMSAppTest", cmd);
