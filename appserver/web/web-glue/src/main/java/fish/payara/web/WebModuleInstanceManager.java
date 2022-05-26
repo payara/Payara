@@ -109,7 +109,7 @@ public class WebModuleInstanceManager implements InstanceManager {
     @Override
     public Object newInstance(Class<?> clazz) throws IllegalAccessException, InvocationTargetException, NamingException,
             InstantiationException, IllegalArgumentException, NoSuchMethodException, SecurityException {
-        return createCdiManagedInstance(clazz);
+        return createManagedInstance(clazz);
     }
 
     @Override
@@ -129,7 +129,7 @@ public class WebModuleInstanceManager implements InstanceManager {
     }
 
     /**
-     * Creates a CDI managed instance of the given class and performs any necessary injections.
+     * Creates a managed instance of the given class and performs any necessary injections.
      *
      * This functionality previously existed under {@link com.sun.enterprise.web.WebContainer}, split over numerous
      * methods (e.g. createServletInstance).
@@ -140,7 +140,7 @@ public class WebModuleInstanceManager implements InstanceManager {
      * @throws SecurityException
      * @throws InvocationTargetException
      */
-    private Object createCdiManagedInstance(Class<?> clazz) throws IllegalArgumentException, SecurityException,
+    private Object createManagedInstance(Class<?> clazz) throws IllegalArgumentException, SecurityException,
             InvocationTargetException {
         validateJSR299Scope(clazz);
         WebComponentInvocation webComponentInvocation = new WebComponentInvocation(webModule);
