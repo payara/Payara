@@ -78,7 +78,9 @@ public class Client {
     public Client(String[] args) {
         
         if( args.length == 1 ) {
-            numMessages = new Integer(args[0]).intValue();
+            try {
+                numMessages = new Integer(args[0]).intValue();
+            } catch (NumberFormatException ex) {}
         }
 
     }
