@@ -134,5 +134,9 @@
             <groupId>org.eclipse.transformer</groupId>
             <artifactId>org.eclipse.transformer.payara</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.eclipse.transformer</groupId>
+            <artifactId>org.eclipse.transformer.payara.deployment.api</artifactId>
+        </dependency>
     </dependencies>
 </project>

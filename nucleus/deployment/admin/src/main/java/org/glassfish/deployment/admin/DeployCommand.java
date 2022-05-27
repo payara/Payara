@@ -47,8 +47,6 @@ import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.deploy.shared.FileArchive;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import fish.payara.deployment.admin.PayaraTransformer;
-import static fish.payara.deployment.admin.PayaraTransformer.TRANSFORM_NAMESPACE;
 import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -60,6 +58,8 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jakarta.inject.Inject;
+import org.eclipse.transformer.payara.deployment.JakartaNamespaceDeploymentTransformer;
+import org.eclipse.transformer.payara.deployment.JakartaNamespaceDeploymentTransformerConstants;
 import org.glassfish.admin.payload.PayloadImpl;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.ExitCode;
@@ -511,23 +511,32 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                             .archiveHandler(archiveHandler)
                             .build(initialContext);
 
-            String transformNS = System.getProperty(TRANSFORM_NAMESPACE);
+            String transformNS = System.getProperty(JakartaNamespaceDeploymentTransformerConstants.TRANSFORM_NAMESPACE);
             Types types = deployment.getDeployableTypes(deploymentContext);
-            if (Boolean.valueOf(transformNS) || (transformNS == null && PayaraTransformer.isJakartaEEApplication(types))) {
-                span.start(DeploymentTracing.AppStage.TRANSFORM_ARCHIVE);
-                deploymentContext.getSource().close();
-                File output = PayaraTransformer.transformApplication(path, context, isDirectoryDeployed);
-                if (output == null) {
-                    return;
-                }
+            if (Boolean.valueOf(transformNS) ||
+                    (transformNS == null && JakartaNamespaceDeploymentTransformer.isJakartaEEApplication(types))) {
+                Optional<JakartaNamespaceDeploymentTransformer> jakartaNamespaceDeploymentTransformerOptional =
+                        ServiceLoader.load(JakartaNamespaceDeploymentTransformer.class).findFirst();
+                if (jakartaNamespaceDeploymentTransformerOptional.isPresent()) {
+                    JakartaNamespaceDeploymentTransformer jakartaNamespaceDeploymentTransformerService =
+                            jakartaNamespaceDeploymentTransformerOptional.get();
 
-                deploymentContext.setSource((FileArchive)archiveFactory.createArchive(output));
-                
-                // reset transient and module data of orignal deployed archive
-                deploymentContext.removeTransientAppMetaData(Types.class.getName());
-                deploymentContext.removeTransientAppMetaData(Parser.class.getName());
-                deploymentContext.resetModuleMetaData();
-                structuredTracing.register(deploymentContext);
+                    span.start(DeploymentTracing.AppStage.TRANSFORM_ARCHIVE);
+                    deploymentContext.getSource().close();
+                    File output = jakartaNamespaceDeploymentTransformerService.transformApplication(
+                            path, context, isDirectoryDeployed);
+                    if (output == null) {
+                        return;
+                    }
+
+                    deploymentContext.setSource((FileArchive)archiveFactory.createArchive(output));
+
+                    // reset transient and module data of orignal deployed archive
+                    deploymentContext.removeTransientAppMetaData(Types.class.getName());
+                    deploymentContext.removeTransientAppMetaData(Parser.class.getName());
+                    deploymentContext.resetModuleMetaData();
+                    structuredTracing.register(deploymentContext);
+                }
             }
             // reset the properties (might be null) set by the deployers when undeploying.
             if (undeployProps != null) {
