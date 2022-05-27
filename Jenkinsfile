@@ -62,6 +62,7 @@ pipeline {
             }
             post {
                 always {
+                    junit 'appserver/tests/quicklook/test-output/QuickLookTests/*.xml'
                     processReportAndStopDomain()
                 }
                 cleanup {
@@ -241,7 +242,7 @@ void processReportAndStopDomain() {
 }
 
 void saveLogsAndCleanup(String logArchiveName) {
-    zip archive: true, dir: "appserver/distributions/payara/target/stage/payara5/glassfish/domains/${DOMAIN_NAME}/logs", glob: 'server.*', zipFile: logArchiveName
+    zip archive: true, dir: "appserver/distributions/payara/target/stage/payara6/glassfish/domains/${DOMAIN_NAME}/logs", glob: 'server.*', zipFile: logArchiveName
     echo 'tidying up after tests: '
     sh "rm -f -v *.zip"
     sh "${ASADMIN} delete-domain ${DOMAIN_NAME}"
