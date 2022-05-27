@@ -163,10 +163,13 @@ public class WeldUtils {
         boolean result = false;
 
         // Archives with extensions are not candidates for implicit bean discovery
-        if (archive != null && !archive.exists(META_INF_SERVICES_EXTENSION)) {
-          result = isImplicitBeanArchive(context, archive.getURI());
+        if(archive != null) {
+            if (!archive.exists(META_INF_SERVICES_EXTENSION)) {
+                result = isImplicitBeanArchive(context, archive.getURI());
+            } else if (archive.exists(META_INF_BEANS_XML)) {
+                result = isImplicitBeanArchive(context, archive.getURI());
+            }
         }
-
         return result;
     }
 
