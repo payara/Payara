@@ -87,6 +87,7 @@ pipeline {
             }
             post {
                 always {
+                    junit 'appserver/tests/quicklook/test-output/QuickLookTests/*.xml'
                     processReportAndStopDomain()
                 }
                 cleanup {
