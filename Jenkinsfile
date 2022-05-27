@@ -70,6 +70,11 @@ pipeline {
                 }
             }
         }
+        stage('Setup for Payara Samples Tests') {
+            steps {
+                setupDomain()
+            }
+        }
         stage('Run Payara Samples Tests') {
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
@@ -96,6 +101,11 @@ pipeline {
                     branches: [[name: "*/microprofile-5.0"]],
                     userRemoteConfigs: [[url: "https://github.com/payara/MicroProfile-TCK-Runners.git"]]]
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+        }
+        stage('Setup for MP TCK Tests') {
+            steps {
+                setupDomain()
             }
         }
         stage('Run MP TCK Tests') {
