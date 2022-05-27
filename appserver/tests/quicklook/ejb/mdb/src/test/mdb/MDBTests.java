@@ -86,11 +86,11 @@ public class MDBTests {
     public void runJMSAppTest(String mdbAppDir) throws Exception {
         String clientJar = cwd + File.separator + mdbAppDir + mdbApp + "Client.jar";
         String gfClientJar = GLASSFISH_HOME + File.separator + "lib" + File.separator + "gf-client.jar";
-        cmd = APPCLIENT + " " + GLASSFISH_APPCLIENT_MAIN_CLASS_NAME
+        cmd = APPCLIENT + " --illegal-access=debug "
+                + GLASSFISH_APPCLIENT_MAIN_CLASS_NAME
                 + " -client " + clientJar
                 + " -targetserver" + " localhost:3700"
                 + " -name ejb-ejb30-hello-mdb-client"
-                + " --illegal-access=debug"
                 + " -cp " + gfClientJar + File.pathSeparator + clientJar;
         
         execReturn = RtExec.execute("MDBTests.runJMSAppTest", cmd);
