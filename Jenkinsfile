@@ -164,7 +164,7 @@ pipeline {
             steps{
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out cargoTracker tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
-                    branches: [[name: "*/master"]],
+                    branches: [[name: "*/Payara6"]],
                     userRemoteConfigs: [[url: "https://github.com/payara/cargoTracker.git"]]]
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out cargoTracker tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
