@@ -935,8 +935,6 @@ public class CLIBootstrap {
          */
         addAgentOption();
 
-        addOpensOption();
-
         /*
          * If the user did not specify a client or usage or help then add the -usage option.
          */
@@ -1002,14 +1000,6 @@ public class CLIBootstrap {
      */
     private void addDebugAgentOption() throws UserError {
         otherJVMOptions.processValue(new String[] { "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005"}, 0);
-    }
-
-    /**
-     * Adds the --add-opens debug option to the command line.
-     *
-     */
-    private void addOpensOption() throws UserError {
-        otherJVMOptions.processValue(new String[] { "--add-opens=java.desktop/java.beans=ALL-UNNAMED"}, 0);
     }
 
     private String agentOptionsFromFile() {
