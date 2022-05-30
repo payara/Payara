@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2022] Payara Foundation and/or affiliates
 
 package org.glassfish.concurrent.runtime.deployer;
 
@@ -96,6 +97,10 @@ public abstract class BaseConfig implements Serializable {
 
     public String getContextInfoEnabled() {
         return contextInfoEnabled;
+    }
+
+    public boolean isContextInfoEnabledBoolean() {
+        return Boolean.valueOf(contextInfoEnabled);
     }
 
     abstract TYPE getType();

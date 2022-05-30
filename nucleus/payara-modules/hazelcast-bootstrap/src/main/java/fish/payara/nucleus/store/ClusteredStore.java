@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2016-2021 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2022 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -72,7 +72,7 @@ import org.glassfish.internal.api.JavaEEContextUtil.Context;
  * @author steve
  */
 @Service(name = "payara-cluster-store")
-@RunLevel(StartupRunLevel.VAL)
+@RunLevel(StartupRunLevel.IMPLICITLY_RELIED_ON)
 public class ClusteredStore implements EventListener, MonitoringDataSource {
     private static final Logger logger = Logger.getLogger(ClusteredStore.class.getCanonicalName());
 

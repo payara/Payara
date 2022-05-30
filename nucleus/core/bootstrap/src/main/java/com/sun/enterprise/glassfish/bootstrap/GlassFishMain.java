@@ -38,12 +38,12 @@
  * holder.
  *
  */
-// Portions Copyright [2017-2021] Payara Foundation and/or affilates
+// Portions Copyright [2017-2022] Payara Foundation and/or affilates
 
 package com.sun.enterprise.glassfish.bootstrap;
 
-import fish.payara.boot.runtime.BootCommands;
 import fish.payara.logging.PayaraLogManager;
+import fish.payara.boot.runtime.BootCommands;
 import org.glassfish.embeddable.*;
 
 import java.io.BufferedReader;
@@ -141,8 +141,6 @@ public class GlassFishMain {
             } else {
                 gf.start();
             }
-            
-            doBootCommands(ctx.getProperty("-postbootcommandfile")); 
         }
 
         private void startConsole() throws IOException {
@@ -290,10 +288,10 @@ public class GlassFishMain {
             }
             return tokens;
         }
- 
+
         /**
          * Runs a series of commands from a file
-         * @param file 
+         * @param file
          */
         private void doBootCommands(String file) {
             if (file == null) {
@@ -310,7 +308,6 @@ public class GlassFishMain {
                 LOGGER.log(SEVERE, null, ex);
             }
         }
-
     }
 
 }

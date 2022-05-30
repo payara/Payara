@@ -37,21 +37,89 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2022] Payara Fondation and/or affiliates
 
 package org.glassfish.concurrent.runtime.deployer;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.StringTokenizer;
 import org.glassfish.concurrent.config.ContextService;
+import org.glassfish.concurrent.runtime.ContextSetupProviderImpl;
 
 /**
  * Contains configuration information for a ContextService object
  */
 public class ContextServiceConfig extends BaseConfig {
 
-    public ContextServiceConfig(ContextService config) {
-        super(config.getJndiName(), config.getContextInfo(), config.getContextInfoEnabled());
+    private final Set<String> propagatedContexts;
+    private final Set<String> clearedContexts;
+    private final Set<String> uchangedContexts;
+
+    public ContextServiceConfig(String jndiName) {
+        super(jndiName, null, "true");
+        this.propagatedContexts = parseContextInfo(this.contextInfo, this.isContextInfoEnabledBoolean());
+        this.clearedContexts = new HashSet<>();
+        this.uchangedContexts = new HashSet<>();
     }
 
+    public ContextServiceConfig(ContextService config) {
+        super(config.getJndiName(), config.getContextInfo(), config.getContextInfoEnabled());
+        this.propagatedContexts = parseContextInfo(this.contextInfo, this.isContextInfoEnabledBoolean());
+        this.clearedContexts = new HashSet<>();
+        this.uchangedContexts = new HashSet<>();
+    }
+
+    public ContextServiceConfig(String jndiName, String contextInfo, String contextInfoEnabled, Set<String> propagatedContexts, Set<String> clearedContexts, Set<String> uchangedContexts) {
+        super(jndiName, contextInfo, contextInfoEnabled);
+        this.propagatedContexts = propagatedContexts;
+        this.clearedContexts = clearedContexts;
+        this.uchangedContexts = uchangedContexts;
+    }
+
+    @Override
     public TYPE getType() {
         return TYPE.CONTEXT_SERVICE;
     }
+
+    public Set<String> getPropagatedContexts() {
+        return propagatedContexts;
+    }
+
+    public Set<String> getClearedContexts() {
+        return clearedContexts;
+    }
+
+    public Set<String> getUchangedContexts() {
+        return uchangedContexts;
+    }
+
+    public static Set<String> parseContextInfo(String contextInfo, boolean isContextInfoEnabled) {
+        Set<String> contextTypeArray = new HashSet<>();
+        if (contextInfo == null) {
+            // by default, if no context info is passed, we propagate all context types
+            contextTypeArray.add(ContextSetupProviderImpl.CONTEXT_TYPE_CLASSLOADING);
+            contextTypeArray.add(ContextSetupProviderImpl.CONTEXT_TYPE_NAMING);
+            contextTypeArray.add(ContextSetupProviderImpl.CONTEXT_TYPE_SECURITY);
+            contextTypeArray.add(ContextSetupProviderImpl.CONTEXT_TYPE_WORKAREA);
+        } else if (isContextInfoEnabled) {
+            StringTokenizer st = new StringTokenizer(contextInfo, ",", false);
+            while (st.hasMoreTokens()) {
+                String token = st.nextToken().trim();
+                if (org.glassfish.concurrent.runtime.ConcurrentRuntime.CONTEXT_INFO_CLASSLOADER.equalsIgnoreCase(token)) {
+                    contextTypeArray.add(ContextSetupProviderImpl.CONTEXT_TYPE_CLASSLOADING);
+                } else if (org.glassfish.concurrent.runtime.ConcurrentRuntime.CONTEXT_INFO_JNDI.equalsIgnoreCase(token)) {
+                    contextTypeArray.add(ContextSetupProviderImpl.CONTEXT_TYPE_NAMING);
+                } else if (org.glassfish.concurrent.runtime.ConcurrentRuntime.CONTEXT_INFO_SECURITY.equalsIgnoreCase(token)) {
+                    contextTypeArray.add(ContextSetupProviderImpl.CONTEXT_TYPE_SECURITY);
+                } else if (org.glassfish.concurrent.runtime.ConcurrentRuntime.CONTEXT_INFO_WORKAREA.equalsIgnoreCase(token)) {
+                    contextTypeArray.add(ContextSetupProviderImpl.CONTEXT_TYPE_WORKAREA);
+                } else {
+                    contextTypeArray.add(token); // custom context
+                }
+            }
+        }
+        return contextTypeArray;
+    }
+
 }

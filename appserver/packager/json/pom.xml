@@ -128,8 +128,8 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>jsonp-jaxrs</artifactId>
+            <groupId>org.eclipse.parsson</groupId>
+            <artifactId>parsson-media</artifactId>
             <optional>true</optional>
         </dependency>
 
