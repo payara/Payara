@@ -99,6 +99,34 @@
                     </execution>
                 </executions>
             </plugin>
+             <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>update-readme-versions</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <tasks>
+                                <replace token="@@@FULL_VERSION@@@" value="${project.version}" dir="${stage.dir}">
+                                    <include name="README.txt"/>
+                                </replace>
+                                <replace token="@@@MAJOR_VERSION@@@" value="${major_version}" dir="${stage.dir}">
+                                    <include name="README.txt"/>
+                                </replace>
+                                <replace token="@@@MINOR_VERSION@@@" value="${minor_version}" dir="${stage.dir}">
+                                    <include name="README.txt"/>
+                                </replace>
+                                <replace token="@@@UPDATE_VERSION@@@" value="${update_version}" dir="${stage.dir}">
+                                    <include name="README.txt"/>
+                                </replace>
+                            </tasks>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 

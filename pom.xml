@@ -113,6 +113,19 @@
 
     </repositories>
 
+    <pluginRepositories>
+        <pluginRepository>
+            <id>payara-nexus-artifacts</id>
+            <url>https://nexus.payara.fish/repository/payara-artifacts</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </pluginRepository>
+    </pluginRepositories>
+
     <properties>
         <maven.clean.plugin.version>3.1.0</maven.clean.plugin.version>
         <maven.compiler.plugin.version>3.8.0</maven.compiler.plugin.version>
@@ -129,6 +142,7 @@
         <maven.install.plugin.version>3.0.0-M1</maven.install.plugin.version>
         <maven.bundle.plugin.version>4.1.0</maven.bundle.plugin.version>
         <maven.failsafe.plugin.version>3.0.0-M5</maven.failsafe.plugin.version>
+        <dynamic.build.properties.version>0.0.1.a2</dynamic.build.properties.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -380,8 +394,32 @@
     <build>
         <defaultGoal>install</defaultGoal>
 
+        <plugins>
+            <plugin>
+                <groupId>fish.payara.maven.plugins</groupId>
+                <artifactId>dynamic-build-properties-maven-plugin</artifactId>
+                <version>${dynamic.build.properties.version}</version>
+                <executions>
+                    <execution>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>split-version-by-delimiter</goal>
+                        </goals>
+                        <configuration>
+                            <parameterNames>
+                                <param>major_version</param>
+                                <param>minor_version</param>
+                                <param>update_version</param>
+                            </parameterNames>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+
         <pluginManagement>
             <plugins>
+                
                 <plugin>
                     <artifactId>maven-jar-plugin</artifactId>
                     <version>${maven.jar.plugin.version}</version>
