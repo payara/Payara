@@ -58,8 +58,8 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jakarta.inject.Inject;
-import org.eclipse.transformer.payara.deployment.JakartaNamespaceDeploymentTransformer;
-import org.eclipse.transformer.payara.deployment.JakartaNamespaceDeploymentTransformerConstants;
+import fish.payara.eclipse.transformer.payara.deployment.JakartaNamespaceDeploymentTransformer;
+import fish.payara.eclipse.transformer.payara.deployment.JakartaNamespaceDeploymentTransformerConstants;
 import org.glassfish.admin.payload.PayloadImpl;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.ExitCode;
@@ -511,16 +511,16 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                             .archiveHandler(archiveHandler)
                             .build(initialContext);
 
-            String transformNS = System.getProperty(JakartaNamespaceDeploymentTransformerConstants.TRANSFORM_NAMESPACE);
-            Types types = deployment.getDeployableTypes(deploymentContext);
-            if (Boolean.valueOf(transformNS) ||
-                    (transformNS == null && JakartaNamespaceDeploymentTransformer.isJakartaEEApplication(types))) {
-                Optional<JakartaNamespaceDeploymentTransformer> jakartaNamespaceDeploymentTransformerOptional =
-                        ServiceLoader.load(JakartaNamespaceDeploymentTransformer.class).findFirst();
-                if (jakartaNamespaceDeploymentTransformerOptional.isPresent()) {
-                    JakartaNamespaceDeploymentTransformer jakartaNamespaceDeploymentTransformerService =
-                            jakartaNamespaceDeploymentTransformerOptional.get();
-
+            Optional<JakartaNamespaceDeploymentTransformer> jakartaNamespaceDeploymentTransformerOptional =
+                    ServiceLoader.load(JakartaNamespaceDeploymentTransformer.class).findFirst();
+            if (jakartaNamespaceDeploymentTransformerOptional.isPresent()) {
+                JakartaNamespaceDeploymentTransformer jakartaNamespaceDeploymentTransformerService =
+                        jakartaNamespaceDeploymentTransformerOptional.get();
+                String transformNS = System.getProperty(
+                        JakartaNamespaceDeploymentTransformerConstants.TRANSFORM_NAMESPACE);
+                Types types = deployment.getDeployableTypes(deploymentContext);
+                if (Boolean.valueOf(transformNS) || (transformNS == null &&
+                        jakartaNamespaceDeploymentTransformerService.isJakartaEEApplication(types))) {
                     span.start(DeploymentTracing.AppStage.TRANSFORM_ARCHIVE);
                     deploymentContext.getSource().close();
                     File output = jakartaNamespaceDeploymentTransformerService.transformApplication(
@@ -538,6 +538,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                     structuredTracing.register(deploymentContext);
                 }
             }
+
             // reset the properties (might be null) set by the deployers when undeploying.
             if (undeployProps != null) {
                 deploymentContext.getAppProps().putAll(undeployProps);
