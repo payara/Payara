@@ -1009,7 +1009,7 @@ public class CLIBootstrap {
      *
      */
     private void addOpensOption() throws UserError {
-        otherJVMOptions.processValue(new String[] { "--add-opens=java.base/java.lang=ALL-UNNAMED"}, 0);
+        otherJVMOptions.processValue(new String[] { "--add-opens=java.desktop/java.beans=ALL-UNNAMED"}, 0);
     }
 
     private String agentOptionsFromFile() {
