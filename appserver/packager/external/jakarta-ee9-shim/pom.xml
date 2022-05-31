@@ -111,10 +111,8 @@
                                     jakarta.el-api,
                                     jakarta.servlet.jsp-api,
                                     jakarta.enterprise.cdi-api,
-                                    jakarta.xml.bind-api,
                                     org.eclipse.persistence.core,
                                     org.eclipse.persistence.moxy,
-                                    jakarta.interceptor-api
                                     jakarta.interceptor-api,
                                     jakarta.xml.bind-api,
                                     com.sun.xml.bind.jaxb-osgi
@@ -162,9 +160,6 @@
                                     org.apache.xml.security;version="2.3.99";shim="true",
 
                                     <!-- Jakarta XML Binding - forward shim (4 exported as 3) -->
-                                    jakarta.xml.bind;
-                                    jakarta.xml.bind.annotation;
-                                    jakarta.xml.bind.annotation.adapters;version="4.0.1";shim="true",
                                     jakarta.xml.bind;
                                     jakarta.xml.bind.annotation;
                                     jakarta.xml.bind.annotation.adapters;
