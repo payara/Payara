@@ -169,17 +169,6 @@ public class WeldUtils {
      */
     public static boolean isImplicitBeanArchive(DeploymentContext context, ReadableArchive archive)
             throws IOException {
-        //boolean result = false;
-
-        // Archives with extensions are not candidates for implicit bean discovery
-        //if(archive != null) {
-            //if (!archive.exists(META_INF_SERVICES_EXTENSION)) {
-              //  result = isImplicitBeanArchive(context, archive.getURI());
-            //} else if (archive.exists(META_INF_BEANS_XML)) {
-              //  result = isImplicitBeanArchive(context, archive.getURI());
-            //}
-        //}
-        //return result;
         return isImplicitBeanArchive(context, archive.getURI());
     }
 
@@ -535,38 +524,24 @@ public class WeldUtils {
     return getBeansXmlInputStream( context.getSource() );
   }
 
-  /**
-   * Determine if an archive is a valid bda based on what the spec says about extensions.
-   * See section 12.1 which states that if an archive contains an extension but no beans.xml then it is NOT
-   * a valid bean deployment archive.
-   *
-   * @param archive The archive to check.
-   * @return false if there is an extension and no beans.xml
-   *         true otherwise
-   */
-  public static boolean isValidBdaBasedOnExtensionAndBeansXml( ReadableArchive archive ) {
-    //boolean retVal = true;
-
-    try {
-      /*if ( archive.exists(META_INF_SERVICES_EXTENSION)) {
-        retVal = false;
-        InputStream inputStream = getBeansXmlInputStream( archive );
-        if ( inputStream != null ) {
-          retVal = true;  // is a valid bda
-          try {
-            inputStream.close();
-          } catch (IOException ignore) {
-          }
+    /**
+     * Determine if an archive is a valid bda based on what the spec says about extensions.
+     * See section 12.1 which states that if an archive contains an extension but no beans.xml then it is NOT
+     * a valid bean deployment archive.
+     *
+     * @param archive The archive to check.
+     * @return false if there is an extension and no beans.xml
+     * true otherwise
+     */
+    public static boolean isValidBdaBasedOnExtensionAndBeansXml(ReadableArchive archive) {
+        try {
+            if (hasExtension(archive) && !hasBeansXML(archive)) {
+                return false;
+            }
+        } catch (IOException ignore) {
         }
-      }*/
-        if(hasExtension(archive) && !hasBeansXML(archive)) {
-            return false;
-        }
-    } catch (IOException ignore) {
+        return true;
     }
-
-    return true;
-  }
 
     private static boolean hasExtension(ReadableArchive archive) throws IOException {
         try {
