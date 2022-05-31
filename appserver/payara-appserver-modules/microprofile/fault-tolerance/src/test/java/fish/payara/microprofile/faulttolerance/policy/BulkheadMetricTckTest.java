@@ -106,13 +106,17 @@ public class BulkheadMetricTckTest extends AbstractMetricTest {
      */
     @Test(timeout = 3000)
     public void bulkheadMetricHistogramTest() {
+        final long delayMs = 100;
+        long beforeInitTimestamp = System.nanoTime();
         callMethodWithNewThreadAndWaitFor(commonWaiter);
         callMethodWithNewThreadAndWaitFor(commonWaiter);
+        // time spent during initialization of , it needs to be added to the expected time
+        long initTime = (System.nanoTime() - beforeInitTimestamp) / 1_000_000; // from nano to milli
         waitUntilPermitsAquired(2, 0);
 
         assertFurtherThreadThrowsBulkheadException(1);
 
-        waitSome(100);
+        waitSome(delayMs);
         commonWaiter.complete(null);
         waitUntilPermitsAquired(0, 0);
 
@@ -122,8 +126,8 @@ public class BulkheadMetricTckTest extends AbstractMetricTest {
 
         assertNotNull(executionTimes);
         assertEquals(2, executionTimes.getCount());
-        assertApproxMillis(100, Math.round(snap.getMedian()));
-        assertApproxMillis(100, Math.round(snap.getMean()));
+        assertApproxMillis(delayMs, initTime, Math.round(snap.getMedian()));
+        assertApproxMillis(delayMs, initTime, Math.round(snap.getMean()));
 
         // Now let's put some quick results through the bulkhead
         callMethodDirectly(null);
@@ -131,7 +135,7 @@ public class BulkheadMetricTckTest extends AbstractMetricTest {
 
         assertEquals(4, executionTimes.getCount());
         snap = executionTimes.getSnapshot();
-        assertApproxMillis(50, Math.round(snap.getMean()));
+        assertApproxMillis(delayMs / 2, initTime / 2L, Math.round(snap.getMean()));
     }
 
     @Bulkhead(2)
@@ -175,9 +179,9 @@ public class BulkheadMetricTckTest extends AbstractMetricTest {
         return bodyWaitThenReturnSuccessDirectly(waiter);
     }
 
-    private static void assertApproxMillis(long expectedMillis, long actualNanos) {
+    private static void assertApproxMillis(long expectedMillis, long initTime, long actualNanos) {
         long millis = actualNanos / 1_000_000;
-        long error = Math.round(expectedMillis * 0.3);
-        assertThat(millis, allOf(greaterThan(expectedMillis), lessThan(expectedMillis+error)));
+        long error = Math.round(expectedMillis * 0.3) + initTime;
+        assertThat(millis, allOf(greaterThan(expectedMillis), lessThan(expectedMillis + error)));
     }
 }
