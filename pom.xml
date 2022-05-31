@@ -200,7 +200,7 @@
         <woodstox.version>6.2.7</woodstox.version>
         <woodstock-jsf.version>5.0.0</woodstock-jsf.version>
         <stax2-api.version>4.2.1</stax2-api.version>
-        <jakarta.resource-api.version>2.0.0</jakarta.resource-api.version>
+        <jakarta.resource-api.version>2.1.0</jakarta.resource-api.version>
         <jakarta.enterprise.deploy-api.version>1.7.2</jakarta.enterprise.deploy-api.version>
         <jakarta.activation-api.version>2.1.0-RC2</jakarta.activation-api.version>
         <angus.activation.version>1.0.0-M1</angus.activation.version>
