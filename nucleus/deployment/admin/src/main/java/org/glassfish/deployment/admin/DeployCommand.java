@@ -41,6 +41,8 @@
 
 package org.glassfish.deployment.admin;
 
+import fish.payara.deployment.transformer.JakartaNamespaceDeploymentTransformer;
+import fish.payara.deployment.transformer.JakartaNamespaceDeploymentTransformerConstants;
 import fish.payara.nucleus.hotdeploy.HotDeployService;
 import fish.payara.nucleus.hotdeploy.ApplicationState;
 import com.sun.enterprise.config.serverbeans.*;
@@ -58,8 +60,6 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jakarta.inject.Inject;
-import fish.payara.eclipse.transformer.payara.deployment.JakartaNamespaceDeploymentTransformer;
-import fish.payara.eclipse.transformer.payara.deployment.JakartaNamespaceDeploymentTransformerConstants;
 import org.glassfish.admin.payload.PayloadImpl;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.ExitCode;
@@ -510,9 +510,18 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                             source(initialContext.getSource())
                             .archiveHandler(archiveHandler)
                             .build(initialContext);
-
+            
             Optional<JakartaNamespaceDeploymentTransformer> jakartaNamespaceDeploymentTransformerOptional =
-                    ServiceLoader.load(JakartaNamespaceDeploymentTransformer.class).findFirst();
+                    Optional.empty();
+            try {
+                jakartaNamespaceDeploymentTransformerOptional = ServiceLoader.load(JakartaNamespaceDeploymentTransformer.class).findFirst();
+            } catch (NoClassDefFoundError exception) {
+                // ClassNotFoundException gets thrown if we've found a service but couldn't instantiate it
+                logger.log(Level.WARNING,
+                        "Caught exception trying to instantiate a deployment transformer, skipping...",
+                        exception);
+            }
+            
             if (jakartaNamespaceDeploymentTransformerOptional.isPresent()) {
                 JakartaNamespaceDeploymentTransformer jakartaNamespaceDeploymentTransformerService =
                         jakartaNamespaceDeploymentTransformerOptional.get();
