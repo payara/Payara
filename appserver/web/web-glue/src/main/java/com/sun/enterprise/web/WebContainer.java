@@ -724,85 +724,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
     }
 
     /**
-     * Instantiates and injects the given Servlet class for the given WebModule
-     */
-    <T extends Servlet> T createServletInstance(WebModule module, Class<T> clazz) throws Exception {
-        validateJSR299Scope(clazz);
-        WebComponentInvocation webComponentInvocation = new WebComponentInvocation(module);
-
-        try {
-            invocationMgr.preInvoke(webComponentInvocation);
-            return injectionMgr.createManagedObject(clazz);
-        } finally {
-            invocationMgr.postInvoke(webComponentInvocation);
-        }
-    }
-
-    /**
-     * Instantiates and injects the given Filter class for the given WebModule
-     */
-    <T extends Filter> T createFilterInstance(WebModule module, Class<T> clazz) throws Exception {
-        validateJSR299Scope(clazz);
-        WebComponentInvocation webComponentInvocation = new WebComponentInvocation(module);
-
-        try {
-            invocationMgr.preInvoke(webComponentInvocation);
-            return injectionMgr.createManagedObject(clazz);
-        } finally {
-            invocationMgr.postInvoke(webComponentInvocation);
-        }
-    }
-
-    /**
-     * Instantiates and injects the given EventListener class for the given WebModule
-     */
-    <T extends java.util.EventListener> T createListenerInstance(WebModule module, Class<T> clazz) throws Exception {
-        validateJSR299Scope(clazz);
-        WebComponentInvocation webComponentInvocation = new WebComponentInvocation(module);
-
-        try {
-            invocationMgr.preInvoke(webComponentInvocation);
-            return injectionMgr.createManagedObject(clazz);
-        } finally {
-            invocationMgr.postInvoke(webComponentInvocation);
-        }
-    }
-
-    /**
-     * Instantiates and injects the given HttpUpgradeHandler class for the given WebModule
-     */
-    <T extends HttpUpgradeHandler> T createHttpUpgradeHandlerInstance(WebModule module, Class<T> clazz) throws Exception {
-        validateJSR299Scope(clazz);
-        WebComponentInvocation webComponentInvocation = new WebComponentInvocation(module);
-
-        try {
-            invocationMgr.preInvoke(webComponentInvocation);
-            return injectionMgr.createManagedObject(clazz);
-        } finally {
-            invocationMgr.postInvoke(webComponentInvocation);
-        }
-    }
-
-    /**
-     * Instantiates and injects the given tag handler class for the given WebModule
-     *
-     * @param <T>
-     * @param module
-     * @param clazz
-     * @return
-     * @throws java.lang.Exception
-     */
-    public <T extends JspTag> T createTagHandlerInstance(WebModule module, Class<T> clazz) throws Exception {
-        WebComponentInvocation webComponentInvocation = new WebComponentInvocation(module);
-        try {
-            invocationMgr.preInvoke(webComponentInvocation);
-            return injectionMgr.createManagedObject(clazz);
-        } finally {
-            invocationMgr.postInvoke(webComponentInvocation);
-        }
-    }
-
-    /**
      * Use an network-listener subelements and creates a corresponding Tomcat Connector for each.
      *
      * @param listener the NetworkListener config object.
@@ -2760,19 +2681,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
 
     public Class<?> loadCommonClass(String className) throws Exception {
         return classLoaderHierarchy.getCommonClassLoader().loadClass(className);
-    }
-
-    /**
-     * According to SRV 15.5.15, Servlets, Filters, Listeners can only be without any scope annotation or are annotated with
-     *
-     * @Dependent scope. All other scopes are invalid and must be rejected.
-     */
-    private void validateJSR299Scope(Class<?> clazz) {
-        if (cdiService != null && cdiService.isCDIScoped(clazz)) {
-            String msg = rb.getString(LogFacade.INVALID_ANNOTATION_SCOPE);
-            msg = MessageFormat.format(msg, clazz.getName());
-            throw new IllegalArgumentException(msg);
-        }
     }
 
     /**

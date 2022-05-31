@@ -62,6 +62,7 @@ import com.sun.enterprise.web.session.PersistenceType;
 import com.sun.enterprise.web.session.SessionCookieConfig;
 import com.sun.web.security.RealmAdapter;
 import fish.payara.jacc.JaccConfigurationFactory;
+import fish.payara.web.WebModuleInstanceManager;
 import fish.payara.web.WebModuleValve;
 import jakarta.security.jacc.PolicyConfigurationFactory;
 import jakarta.security.jacc.PolicyContextException;
@@ -83,8 +84,11 @@ import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.Realm;
 import org.apache.catalina.Valve;
+import org.apache.catalina.core.DefaultInstanceManager;
+import org.apache.catalina.deploy.NamingResourcesImpl;
 import org.apache.catalina.servlets.DefaultServlet;
 import org.apache.jasper.servlet.JspServlet;
+import org.apache.tomcat.InstanceManager;
 import org.apache.tomcat.util.descriptor.web.FilterMap;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.embeddable.web.Context;
@@ -234,6 +238,11 @@ public class WebModule extends PwcWebModule implements Context {
     public WebModule(ServiceLocator services) {
         super();
         this.services = services;
+    }
+
+    @Override
+    public InstanceManager createInstanceManager() {
+        return new WebModuleInstanceManager(this);
     }
 
 
@@ -1333,33 +1342,6 @@ public class WebModule extends PwcWebModule implements Context {
     }
 
     /*
-     * Commented out for now.
-     * This method previously overrode a helper method in StandardContext, which has now been moved to Application and
-     * utilises private / protected methods in DefaultInstanceManager.
-     *
-     * If we want to maintain our own CDI integration, we may need to reimplement our own InstanceManager.
-     *
-     */
-
-//    /**
-//     * Create an instance of a given class.
-//     *
-//     * @param clazz
-//     *
-//     * @return an instance of the given class
-//     * @throws Exception
-//     */
-//    @Override
-//    public <T extends HttpUpgradeHandler> T createHttpUpgradeHandlerInstance(Class<T> clazz) throws Exception {
-//        if (webContainer != null) {
-//            return webContainer.createHttpUpgradeHandlerInstance(this, clazz);
-//        } else {
-//            return super.createHttpUpgradeHandlerInstance(clazz);
-//        }
-//    }
-
-
-    /*
      * Servlet related probe events
      */
 
@@ -1598,15 +1580,7 @@ public class WebModule extends PwcWebModule implements Context {
         }
 
         try {
-            T servletInstance = webContainer.createServletInstance(this, servletClass);
-            // Despite the method name getInstanceManager().newInstance(Object o) shouldn't actually create a
-            // new instance - it is expected to call through to the DefaultInstanceManager implementation which
-            // expects to be passed an instantiated object to perform annotation processing
-            getInstanceManager().newInstance(servletInstance);
-            return servletInstance;
-        } catch (ServletException servletException) {
-            // Throw without further processing
-            throw servletException;
+            return (T) getInstanceManager().newInstance(servletClass);
         } catch (Exception exception) {
             // Log and rethrow as ServletException
             logger.log(Level.SEVERE, LogFacade.EXCEPTION_CREATING_SERVLET_INSTANCE);
@@ -1646,15 +1620,7 @@ public class WebModule extends PwcWebModule implements Context {
         }
 
         try {
-            T filterInstance = webContainer.createFilterInstance(this, filterClass);
-            // Despite the method name getInstanceManager().newInstance(Object o) shouldn't actually create a
-            // new instance - it is expected to call through to the DefaultInstanceManager implementation which
-            // expects to be passed an instantiated object to perform annotation processing
-            getInstanceManager().newInstance(filterInstance);
-            return filterInstance;
-        } catch (ServletException servletException) {
-            // Throw without further processing
-            throw servletException;
+            return (T) getInstanceManager().newInstance(filterClass);
         } catch (Exception exception) {
             // Log and rethrow as ServletException
             logger.log(Level.SEVERE, LogFacade.EXCEPTION_CREATING_FILTER_INSTANCE);
@@ -1699,15 +1665,7 @@ public class WebModule extends PwcWebModule implements Context {
         }
 
         try {
-            T listenerInstance = webContainer.createListenerInstance(this, listenerClass);
-            // Despite the method name getInstanceManager().newInstance(Object o) shouldn't actually create a
-            // new instance - it is expected to call through to the DefaultInstanceManager implementation which
-            // expects to be passed an instantiated object to perform annotation processing
-            getInstanceManager().newInstance(listenerInstance);
-            return listenerInstance;
-        } catch (ServletException servletException) {
-            // Throw without further processing
-            throw servletException;
+            return (T) getInstanceManager().newInstance(listenerClass);
         } catch (Exception exception) {
             // Log and rethrow as ServletException
             logger.log(Level.SEVERE, LogFacade.EXCEPTION_CREATING_LISTENER_INSTANCE);
