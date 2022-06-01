@@ -456,6 +456,10 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
         return bundleToBeanDeploymentArchive.get(bundle);
     }
 
+    public boolean isCdiEnabled(BundleDescriptor bundle) {
+        return bundleToBeanDeploymentArchive.containsKey(bundle);
+    }
+
     public boolean is299Enabled(BundleDescriptor bundle) {
         return bundleToBeanDeploymentArchive.containsKey(bundle);
     }

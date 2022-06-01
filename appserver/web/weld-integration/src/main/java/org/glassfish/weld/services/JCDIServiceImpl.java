@@ -157,7 +157,7 @@ public class JCDIServiceImpl implements JCDIService {
         // E.g. allows EjbBundleDescriptor from a .war to be handled correctly.
         BundleDescriptor topLevelBundleDesc = (BundleDescriptor) bundle.getModuleDescriptor().getDescriptor();
 
-        return weldDeployer.is299Enabled(topLevelBundleDesc);
+        return weldDeployer.isCdiEnabled(topLevelBundleDesc);
 
     }
 

@@ -44,6 +44,7 @@ package org.glassfish.weld;
 import com.sun.enterprise.container.common.spi.util.InjectionManager;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.WARNING;
+import static java.util.stream.Collectors.toList;
 import static org.glassfish.weld.connector.WeldUtils.*;
 
 import java.io.IOException;
@@ -82,11 +83,12 @@ import com.sun.enterprise.deployment.util.DOLUtils;
 import org.glassfish.weld.services.InjectionServicesImpl;
 import org.jboss.weld.injection.spi.InjectionServices;
 import org.jboss.weld.injection.spi.ResourceInjectionServices;
-import org.jboss.weld.lite.extension.translator.BuildCompatibleExtensionLoader;
+import jakarta.enterprise.inject.build.compatible.spi.BuildCompatibleExtension;
 import org.jboss.weld.lite.extension.translator.LiteExtensionTranslator;
 import java.security.PrivilegedAction;
 import static java.lang.System.getSecurityManager;
 import static java.security.AccessController.doPrivileged;
+import jakarta.enterprise.inject.build.compatible.spi.SkipIfPortableExtensionPresent;
 
 
 /*
@@ -487,15 +489,16 @@ public class DeploymentImpl implements CDI11Deployment {
 
         //registering the org.jboss.weld.lite.extension.translator.LiteExtensionTranslator
         //to be able to execute build compatible extensions
-        if (!BuildCompatibleExtensionLoader.getBuildCompatibleExtensions().isEmpty()) {
+        List<Class<? extends BuildCompatibleExtension>> buildExtensions = getBuildCompatibleExtensions();
+        if (!buildExtensions.isEmpty()) {
             try {
                 LiteExtensionTranslator extensionTranslator = getSecurityManager() != null ?
                         doPrivileged(new PrivilegedAction<LiteExtensionTranslator>() {
                             @Override
                             public LiteExtensionTranslator run() {
-                                return new LiteExtensionTranslator();
+                                return new LiteExtensionTranslator(buildExtensions, Thread.currentThread().getContextClassLoader());
                             }
-                        }): new LiteExtensionTranslator();
+                        }): new LiteExtensionTranslator(buildExtensions, Thread.currentThread().getContextClassLoader());
                 extnList.add(new MetadataImpl<>(extensionTranslator));
             } catch(Exception e) {
                 logger.log(WARNING, "Problem to register CDI Build Compatible Extensions");
@@ -593,6 +596,15 @@ public class DeploymentImpl implements CDI11Deployment {
         }
     }
 
+    private List<Class<? extends BuildCompatibleExtension>> getBuildCompatibleExtensions() {
+        return
+                ServiceLoader.load(BuildCompatibleExtension.class, Thread.currentThread().getContextClassLoader())
+                        .stream()
+                        .map(java.util.ServiceLoader.Provider::get)
+                        .map(e -> e.getClass())
+                        .filter(e -> !e.isAnnotationPresent(SkipIfPortableExtensionPresent.class))
+                        .collect(toList());
+    }
 
     // This method creates and returns a List of BeanDeploymentArchives for each
     // Weld enabled jar under /lib of an existing Archive.

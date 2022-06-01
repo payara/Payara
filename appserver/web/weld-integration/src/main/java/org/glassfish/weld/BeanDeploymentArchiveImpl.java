@@ -419,15 +419,20 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
                     addBeansXMLURL(archive, beansXMLURL);
                 }
             } else if (archive.exists(WEB_INF_CLASSES)) { // If WEB-INF/classes exists, check for CDI beans there
-                // Check WEB-INF/classes for CDI-enabling annotations
-                URI webinfclasses = new File(context.getSourceDir().getAbsolutePath(),
-                                             WEB_INF_CLASSES).toURI();
-                if (WeldUtils.isImplicitBeanArchive(context, webinfclasses)) {
-                    webinfbda = true;
-                    if (logger.isLoggable(FINE)) {
-                        logger.log(FINE,
-                                   CDILoggerInfo.PROCESSING_CDI_ENABLED_ARCHIVE,
-                                   new Object[]{archive.getURI()});
+
+                if(WeldUtils.hasExtension(archive)) {
+                    bdaType = BDAType.WAR;
+                } else {
+                    // Check WEB-INF/classes for CDI-enabling annotations
+                    URI webinfclasses = new File(context.getSourceDir().getAbsolutePath(),
+                            WEB_INF_CLASSES).toURI();
+                    if (WeldUtils.isImplicitBeanArchive(context, webinfclasses)) {
+                        webinfbda = true;
+                        if (logger.isLoggable(FINE)) {
+                            logger.log(FINE,
+                                    CDILoggerInfo.PROCESSING_CDI_ENABLED_ARCHIVE,
+                                    new Object[]{archive.getURI()});
+                        }
                     }
                 }
             }

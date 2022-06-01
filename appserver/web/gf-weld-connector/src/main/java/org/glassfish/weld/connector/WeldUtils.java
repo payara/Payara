@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld.connector;
 
@@ -169,6 +169,9 @@ public class WeldUtils {
      */
     public static boolean isImplicitBeanArchive(DeploymentContext context, ReadableArchive archive)
             throws IOException {
+        if(!isValidBdaBasedOnExtensionAndBeansXml(archive)) {
+            return false;
+        }
         return isImplicitBeanArchive(context, archive.getURI());
     }
 
@@ -536,6 +539,7 @@ public class WeldUtils {
     public static boolean isValidBdaBasedOnExtensionAndBeansXml(ReadableArchive archive) {
         try {
             if (hasExtension(archive) && !hasBeansXML(archive)) {
+                // Extensions and no beans.xml: not a bda
                 return false;
             }
         } catch (IOException ignore) {
@@ -543,7 +547,7 @@ public class WeldUtils {
         return true;
     }
 
-    private static boolean hasExtension(ReadableArchive archive) throws IOException {
+    public static boolean hasExtension(ReadableArchive archive) {
         try {
             if (isWar(archive)) {
                 return archive.exists(WEB_INF_SERVICES_EXTENSION) || archive.exists(WEB_INF_BCE_EXTENSION);
@@ -556,7 +560,7 @@ public class WeldUtils {
     }
 
 
-    private static boolean hasBeansXML(ReadableArchive archive) throws IOException {
+    public static boolean hasBeansXML(ReadableArchive archive) throws IOException {
         if (isWar(archive)) {
             return archive.exists(WeldUtils.WEB_INF_BEANS_XML) ||
                     archive.exists(WeldUtils.WEB_INF_CLASSES_META_INF_BEANS_XML);
@@ -591,13 +595,13 @@ public class WeldUtils {
      * Get the "bean-discovery-mode" from the "beans" element if it exists in beans.xml
      * From section 12.1 of CDI spec:
      * A bean archive has a bean discovery mode of all, annotated or none. A bean archive which
-     * contains a beans.xml file with no version has a default bean discovery mode of all. A bean
+     * contains a beans.xml file with no version has a default bean discovery mode of annotated. A bean
      * archive which contains a beans.xml file with version 1.1 (or later) must specify the bean-
      * discovey-mode attribute. The default value for the attribute is annotated.
      *
      * @param beansXmlInputStream The InputStream for the beans.xml to check.
      * @return "annotated" if there is no beans.xml
-     * "all" if the bean-discovery-mode is missing
+     * "annotated" if the bean-discovery-mode is missing
      * "annotated" if the bean-discovery-mode is empty
      * The value of bean-discovery-mode in all other cases.
      */
@@ -619,11 +623,13 @@ public class WeldUtils {
         if (beanDiscoveryMode == null) {
             //when empty beans.xml or bean-discovery-mode not specified
             return "annotated";
-        } else if (beanDiscoveryMode.equals("")) {
-            return "annotated";
-        } else {
-            return beanDiscoveryMode;
         }
+
+        if (beanDiscoveryMode.equals("")) {
+            return "annotated";
+        }
+
+        return beanDiscoveryMode;
     }
 
     private static class LocalDefaultHandler extends DefaultHandler {
@@ -631,7 +637,7 @@ public class WeldUtils {
 
         @Override
         public void startElement(String uri, String localName,String qName, Attributes attributes) throws SAXException {
-            if ( qName.equals( "beans" ) ) {
+            if (qName.equals("beans")) {
                 beanDiscoveryMode = attributes.getValue("bean-discovery-mode");
                 throw new SAXStoppedIntentionallyException();
             }
