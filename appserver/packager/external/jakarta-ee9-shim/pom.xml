@@ -87,6 +87,12 @@
             <artifactId>jakarta.xml.bind-api</artifactId>
             <scope>provided</scope>
         </dependency>
+        
+        <dependency>
+            <groupId>jakarta.servlet.jsp.jstl</groupId>
+            <artifactId>jakarta.servlet.jsp.jstl-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -113,7 +119,8 @@
                                     jakarta.enterprise.cdi-api,
                                     jakarta.interceptor-api,
                                     jakarta.xml.bind-api,
-                                    com.sun.xml.bind.jaxb-osgi
+                                    com.sun.xml.bind.jaxb-osgi,
+                                    jakarta.servlet.jsp.jstl-api
                                 </Require-Bundle>
                                 <!-- Manually specify the shim versions of packages to be exported via this bundle -->
                                 <!-- Note the "shortened" syntax here: For every API the packages are delimited with
@@ -148,7 +155,7 @@
                                     jakarta.enterprise.inject.spi;
                                     jakarta.enterprise.inject.spi.configurator;
                                     jakarta.enterprise.util;version="4.0.99";shim="true",
-                                    
+
                                     <!-- XML WS -->
                                     org.apache.xml.security;version="2.3.99";shim="true",
 
@@ -236,7 +243,14 @@
                                     org.glassfish.jaxb.runtime.v2.runtime.unmarshaller;
                                     org.glassfish.jaxb.runtime.v2.schemagen;
                                     org.glassfish.jaxb.runtime.v2.schemagen.xmlschema;
-                                    org.glassfish.jaxb.runtime.v2.util;version="3.0.99";shim="true"
+                                    org.glassfish.jaxb.runtime.v2.util;version="3.0.99";shim="true",
+
+                                    <!-- JSTL -->
+                                    jakarta.servlet.jsp.jstl.core;
+                                    jakarta.servlet.jsp.jstl.tlv;
+                                    jakarta.servlet.jsp.jstl.sql;
+                                    jakarta.servlet.jsp.jstl.fmt;version="2.0.0";shim="true"
+
                                     <!-- Minimal version of shim for MP 5.0. -->
                                     <!-- TODO: This is only thing that should remain in final release -->
                                     <!--
