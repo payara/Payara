@@ -513,7 +513,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
 
             String transformNS = System.getProperty(TRANSFORM_NAMESPACE);
             Types types = deployment.getDeployableTypes(deploymentContext);
-            if (Boolean.valueOf(transformNS) || (transformNS == null && PayaraTransformer.isJakartaEEApplication(types))) {
+            if (Boolean.valueOf(transformNS)) {
                 span.start(DeploymentTracing.AppStage.TRANSFORM_ARCHIVE);
                 deploymentContext.getSource().close();
                 File output = PayaraTransformer.transformApplication(path, context, isDirectoryDeployed);
