@@ -277,11 +277,20 @@ public class PayaraConfigTest {
 
     private <T> void assertCachedValue(ConfigSource source, String key, Class<T> propertyType, T expectedValue1,
             T expectedValue2) throws InterruptedException {
+        long cacheExpiresAt = System.currentTimeMillis() + CACHE_TTL;
         assertValue("Value not as expected before update", key, propertyType, expectedValue1);
         source.getProperties().put(key, expectedValue2.toString());
         for (int i = 0; i < 10; i++) {
-            assertValue("Run " + i + ", value is not cached", key, propertyType, expectedValue1);
-            //Note: This could fail in case of slow execution of loop, if this is an issue the CACHE_TTL has to be increased
+            try {
+                assertValue("Run " + i + ", value is not cached", key, propertyType, expectedValue1);
+            } catch (AssertionError e) {
+                if (System.currentTimeMillis() >= cacheExpiresAt) {
+                    // we didn't manage to finish the test within timeout;
+                    break;
+                } else {
+                    throw e;
+                }
+            }
         }
         Thread.sleep(CACHE_TTL);
         assertValue("Cached value still used after TTL", key, propertyType, expectedValue2);

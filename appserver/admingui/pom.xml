@@ -151,7 +151,6 @@
         <module>rest-monitoring-plugin</module>
         <module>microprofile-console-plugin</module>
         <module>microprofile-console-plugin-l10n</module>
-        <!--module>jackson-jaxb</module-->
     </modules>
 
     <properties>

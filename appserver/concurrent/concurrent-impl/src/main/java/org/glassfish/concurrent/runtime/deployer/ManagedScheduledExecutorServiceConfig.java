@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2022] Payara Foundation and/or affiliates
 package org.glassfish.concurrent.runtime.deployer;
 
 import org.glassfish.concurrent.config.ManagedScheduledExecutorService;
@@ -52,6 +53,7 @@ public class ManagedScheduledExecutorServiceConfig extends BaseConfig {
     private int corePoolSize;
     private long keepAliveSeconds;
     private long threadLifeTimeSeconds;
+    private String context;
 
     public ManagedScheduledExecutorServiceConfig(ManagedScheduledExecutorService config) {
         super(config.getJndiName(), config.getContextInfo(), config.getContextInfoEnabled());
@@ -61,6 +63,7 @@ public class ManagedScheduledExecutorServiceConfig extends BaseConfig {
         corePoolSize = parseInt(config.getCorePoolSize(), 0);
         keepAliveSeconds = parseLong(config.getKeepAliveSeconds(), 60);
         threadLifeTimeSeconds = parseLong(config.getThreadLifetimeSeconds(), 0L);
+        this.context = config.getContext();
     }
 
     public int getHungAfterSeconds() {
@@ -85,6 +88,10 @@ public class ManagedScheduledExecutorServiceConfig extends BaseConfig {
 
     public long getThreadLifeTimeSeconds() {
         return threadLifeTimeSeconds;
+    }
+
+    public String getContext() {
+        return context;
     }
 
     @Override

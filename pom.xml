@@ -171,14 +171,14 @@
         <jstl-impl.version>2.0.0</jstl-impl.version>
         <jakarta.faces-api.version>3.0.0</jakarta.faces-api.version>
         <mojarra.version>3.0.1</mojarra.version>
-        <tyrus.version>2.0.1</tyrus.version>
+        <tyrus.version>2.1.0-M3</tyrus.version>
         <jaxb-extra-osgi.version>2.3.0</jaxb-extra-osgi.version>
         <json.bind-api.version>3.0.0</json.bind-api.version>
         <yasson.version>3.0.0-RC1</yasson.version>
         <jakarta-persistence-api.version>3.1.0-RC2</jakarta-persistence-api.version>
         <eclipselink.version>3.1.0-M1.payara-p1</eclipselink.version>
         <eclipselink.asm.verison>9.1.1</eclipselink.asm.verison>
-        <jakarta.transaction-api.version>2.0.0</jakarta.transaction-api.version>
+        <jakarta.transaction-api.version>2.0.1</jakarta.transaction-api.version>
         <jakarta.interceptor-api.version>2.1.0</jakarta.interceptor-api.version>
         <jakarta.inject.version>2.0.0</jakarta.inject.version>
         <cdi-api.version>4.0.0</cdi-api.version>
@@ -188,12 +188,12 @@
         <jakarta.security.enterprise.version>2.0.1</jakarta.security.enterprise.version>
         <jakarta.security.jacc-api.version>2.1.0</jakarta.security.jacc-api.version>
         <jakarta.security.auth.message-api.version>2.0.0</jakarta.security.auth.message-api.version>
-        <exousia.version>1.0.1</exousia.version>
+        <exousia.version>2.1.0-M2</exousia.version>
         <jms-api.version>3.1.0</jms-api.version>
         <mq.version>6.1.0.payara-p2</mq.version>
-        <jakarta.batch-api.version>2.1.0-M2</jakarta.batch-api.version>
-        <com.ibm.jbatch.container.version>2.1.0-M2</com.ibm.jbatch.container.version>
-        <com.ibm.jbatch.spi.version>2.1.0-M2</com.ibm.jbatch.spi.version>
+        <jakarta.batch-api.version>2.1.0</jakarta.batch-api.version>
+        <com.ibm.jbatch.container.version>2.1.1</com.ibm.jbatch.container.version>
+        <com.ibm.jbatch.spi.version>2.1.1</com.ibm.jbatch.spi.version>
         <jaxws-api.version>3.0.0</jaxws-api.version>
         <jakarta.jws-api.version>3.0.0</jakarta.jws-api.version>
         <webservices.version>3.0.3</webservices.version>
@@ -210,6 +210,7 @@
         <parsson.version>1.1.0</parsson.version>
         <jsonp-api.version>2.1.0</jsonp-api.version>
         <jbi.version>1.0</jbi.version>
+        <!--<jakarta-platform.version>10.0.0-SNAPSHOT</jakarta-platform.version>-->
         <jakarta-platform.version>9.1.0</jakarta-platform.version>
         <microprofile-release.version>5.0</microprofile-release.version>
         <microprofile-opentracing.version>3.0</microprofile-opentracing.version>
@@ -224,9 +225,9 @@
         <payara.security-connectors.version>3.0.alpha4</payara.security-connectors.version>
         <opentracing.version>0.33.0</opentracing.version>
         <h2db.version>1.4.200</h2db.version>
-        <websocket-api.version>2.0.0</websocket-api.version>
-        <concurrent-api.version>2.0.0</concurrent-api.version>
-        <concurrent.version>2.0.0</concurrent.version>
+        <websocket-api.version>2.1.0</websocket-api.version>
+        <concurrent-api.version>3.0.0</concurrent-api.version>
+        <concurrent.version>3.0.0-RC1</concurrent.version>
         <asm.version>9.2</asm.version>
         <monitoring-console-api.version>2.0.1</monitoring-console-api.version>
         <monitoring-console-process.version>2.0.1</monitoring-console-process.version>

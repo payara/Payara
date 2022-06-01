@@ -39,6 +39,7 @@
     holder.
 
 -->
+<!-- Portions Copyright [2022] Payara Fondation and/or affiliates -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
@@ -201,6 +202,10 @@
         <dependency>
 	    <groupId>jakarta.interceptor</groupId>
 	    <artifactId>jakarta.interceptor-api</artifactId>
+        </dependency>
+       <dependency>
+            <groupId>jakarta.enterprise.concurrent</groupId>
+            <artifactId>jakarta.enterprise.concurrent-api</artifactId>
         </dependency>
     </dependencies>
 </project>

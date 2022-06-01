@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2022] Payara Foundation and/or affiliates
 
 package org.glassfish.common.util;
 
@@ -56,6 +56,8 @@ import java.lang.reflect.Array;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static com.sun.enterprise.util.Utility.getClassLoader;
 
 /**
  * @author Sanjeeb.Sahoo@Sun.COM
@@ -122,6 +124,9 @@ public class OSGiObjectInputOutputStreamFactoryImpl
             throws IOException
     {
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        if (loader == null) {
+            loader = getClassLoader();
+        }
         return new OSGiObjectInputStream(in, loader);
     }
 

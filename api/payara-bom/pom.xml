@@ -401,6 +401,11 @@
                 <version>${websocket-api.version}</version>
             </dependency>
             <dependency>
+                <groupId>jakarta.websocket</groupId>
+                <artifactId>jakarta.websocket-client-api</artifactId>
+                <version>${websocket-api.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>jakarta.enterprise.concurrent</groupId>
                 <artifactId>jakarta.enterprise.concurrent-api</artifactId>
                 <version>${concurrent-api.version}</version>

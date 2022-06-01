@@ -64,7 +64,7 @@
         <module>jaxrs-rolesallowed</module>
         <module>jaxrs-rolesallowed-servlet</module>
         <module>jaxws-security</module>
-        <module>jaxws-tracing</module>
+        <!--module>jaxws-tracing</module-->
         <module>microprofile-endpoints</module>
         <module>microprofile-healthcheck</module>
         <module>oauth2</module>
@@ -73,17 +73,18 @@
         <module>rolesPermitted</module>
         <module>realm-identity-stores</module>
         <module>jakartaee-namespace-transformer</module>
-        <module>http</module>
+        <!--module>http</module-->
         <module>logging</module>
         <module>ejb-http-remoting</module>
         <module>remote-ejb-tracing</module>
         <module>rolesallowed-unprotected-methods</module>
         <module>microprofile-rc-ft</module>
         <module>multiple-keystores</module>
-        <module>client-certificate-validator</module>
+        <!--module>client-certificate-validator</module-->
         <!-- Skip - this test needs to be run repeatedly for around 60 minutes to be effective -->
         <!--<module>corba-read-timeout</module>-->
-        <module>microprofile-rest-client</module>
+        <!--module>microprofile-rest-client</module-->
+        <module>concurrency</module>
     </modules>
 
     <dependencies>
