@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2018-2020] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2018-2022] [Payara Foundation and/or its affiliates] -->
 <project name="GlassFish-V3-QuickLook" default="all" basedir=".">
 	<property environment="env"/>
 
@@ -378,7 +378,7 @@
 	</taskdef>
 
 	<!-- Target is re-definted here as didn't want to specify ws.root property -->
-	<target  name="runtest" depends="initprops,setOSConditions,asenv-unix,asenv-windows">
+	<target name="runtest" depends="initprops,setOSConditions,asenv-unix,asenv-windows">
 		<record name="${basedir}/runtestng.output" action="start"/>
 
 		<echo message="=============Starting TestNG functional tests from ${testng.xml} ============"/>
@@ -386,17 +386,46 @@
 
 		<mkdir dir="${test.report}"/>
 
-		<testng outputdir="${test.report}" classpathref="run.testng.classpath" haltOnFailure="true">
-			<jvmarg value="-Djava.compiler=NONE"/>
-			<jvmarg value="-Dhttp.host=${glassfish.http.host}"/>
-			<jvmarg value="-Dhttp.port=${glassfish.http.port}"/>
-			<jvmarg value="-DASADMIN=${ASADMIN}" />
-			<jvmarg value="-DAPPCLIENT=${APPCLIENT}"/>
-			<sysproperty key="glassfish.home" value="${glassfish.home}"/>
-			<sysproperty key="domain.name" value="${domain.name}"/>
-			<sysproperty key="BASEDIR" value="${basedir}"/>
-			<xmlfileset dir="." includes="${testng.xml}"/>
-		</testng>
+		<if>
+			<contains string="${java.version}" substring="1.8" />
+			<then>
+				<echo>----------then-------------</echo>
+				<echo>${java.version}</echo>
+
+				<testng outputdir="${test.report}" classpathref="run.testng.classpath" haltOnFailure="true">
+					<jvmarg value="-Djava.compiler=NONE"/>
+					<jvmarg value="-Dhttp.host=${glassfish.http.host}"/>
+					<jvmarg value="-Dhttp.port=${glassfish.http.port}"/>
+					<jvmarg value="-DASADMIN=${ASADMIN}" />
+					<jvmarg value="-DAPPCLIENT=${APPCLIENT}"/>
+					<sysproperty key="glassfish.home" value="${glassfish.home}"/>
+					<sysproperty key="domain.name" value="${domain.name}"/>
+					<sysproperty key="BASEDIR" value="${basedir}"/>
+					<xmlfileset dir="." includes="${testng.xml}"/>
+				</testng>
+			</then>
+			<else>
+				<echo>----------else-------------</echo>
+				<echo>${java.version}</echo>
+				<echo>--add-opens=java.base/java.lang=ALL-UNNAMED</echo>
+				<echo>--illegal-access=debug</echo>
+
+				<testng outputdir="${test.report}" classpathref="run.testng.classpath" haltOnFailure="true">
+					<jvmarg value="-Djava.compiler=NONE"/>
+					<jvmarg value="-Dhttp.host=${glassfish.http.host}"/>
+					<jvmarg value="-Dhttp.port=${glassfish.http.port}"/>
+					<jvmarg value="-DASADMIN=${ASADMIN}" />
+					<jvmarg value="-DAPPCLIENT=${APPCLIENT}"/>
+					<jvmarg value="--add-opens=java.base/java.lang=ALL-UNNAMED" />
+					<jvmarg value="--illegal-access=debug" />
+					<sysproperty key="glassfish.home" value="${glassfish.home}"/>
+					<sysproperty key="domain.name" value="${domain.name}"/>
+					<sysproperty key="BASEDIR" value="${basedir}"/>
+					<xmlfileset dir="." includes="${testng.xml}"/>
+				</testng>
+			</else>
+		</if>
+
 
 		<record name="${basedir}/runtestng.output" action="stop"/>
 	</target>
