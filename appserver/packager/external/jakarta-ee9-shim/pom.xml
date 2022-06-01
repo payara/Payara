@@ -111,8 +111,6 @@
                                     jakarta.el-api,
                                     jakarta.servlet.jsp-api,
                                     jakarta.enterprise.cdi-api,
-                                    org.eclipse.persistence.core,
-                                    org.eclipse.persistence.moxy,
                                     jakarta.interceptor-api,
                                     jakarta.xml.bind-api,
                                     com.sun.xml.bind.jaxb-osgi
@@ -135,11 +133,6 @@
                                     jakarta.servlet.jsp.tagext;version="3.0.99";shim="true",
                                     <!-- EL -->
                                     jakarta.el;version="4.0.99";shim="true",
-
-                                    <!-- Eclipselink forward shim (3 exported as 4) -->
-                                    org.eclipse.persistence.internal.core.helper;
-                                    org.eclipse.persistence.jaxb;
-                                    org.eclipse.persistence.jaxb.rs;version="4.0.0";shim=true,
 
                                     <!-- Interceptor forward shim (2.0 -> 2.1) -->
                                     jakarta.interceptor;version="2.1.99";shim=true,
