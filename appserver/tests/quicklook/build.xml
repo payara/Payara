@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2018-2020] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2018-2022] [Payara Foundation and/or its affiliates] -->
 <project name="GlassFish-V3-QuickLook" default="all" basedir=".">
 	<property environment="env"/>
 
