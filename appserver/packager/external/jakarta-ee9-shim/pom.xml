@@ -165,7 +165,7 @@
                                     jakarta.enterprise.inject.se;
                                     jakarta.enterprise.inject.spi;
                                     jakarta.enterprise.inject.spi.configurator;
-                                    jakarta.enterprise.util;version="4.0.99";shim="true",
+                                    jakarta.enterprise.util;version="3.0.99";shim="true",
 
                                     <!-- Jakarta Authentication -->
                                     jakarta.security.auth.message.callback;
