@@ -162,24 +162,24 @@
         <snakeyaml.version>1.29</snakeyaml.version>
         <hazelcast.version>4.2.4</hazelcast.version>
         <hazelcast.kubernetes.version>2.2.3.payara-p1</hazelcast.kubernetes.version>
-        <jaxb-api.version>3.0.1</jaxb-api.version>
-        <jaxb-impl.version>3.0.2</jaxb-impl.version>
+        <jaxb-api.version>4.0.0</jaxb-api.version>
+        <jaxb-impl.version>4.0.0-M4</jaxb-impl.version>
         <jakarta.ejb-api.version>4.0.0</jakarta.ejb-api.version>
         <jsp-api.version>3.1.0</jsp-api.version>
         <jsp-impl.version>3.1.0-M4</jsp-impl.version>
-        <jstl-api.version>2.0.0</jstl-api.version>
-        <jstl-impl.version>2.0.0</jstl-impl.version>
+        <jstl-api.version>3.0.0</jstl-api.version>
+        <jstl-impl.version>3.0.0</jstl-impl.version>
         <jakarta.faces-api.version>3.0.0</jakarta.faces-api.version>
         <mojarra.version>3.0.1</mojarra.version>
         <tyrus.version>2.1.0-M3</tyrus.version>
         <jaxb-extra-osgi.version>2.3.0</jaxb-extra-osgi.version>
         <json.bind-api.version>3.0.0</json.bind-api.version>
         <yasson.version>3.0.0-RC1</yasson.version>
-        <jakarta-persistence-api.version>3.1.0-RC2</jakarta-persistence-api.version>
-        <eclipselink.version>3.1.0-M1.payara-p1</eclipselink.version>
-        <eclipselink.asm.verison>9.1.1</eclipselink.asm.verison>
+        <jakarta-persistence-api.version>3.1.0</jakarta-persistence-api.version>
+        <eclipselink.version>4.0.0-M3.payara-p1</eclipselink.version>
+        <eclipselink.asm.verison>9.3.0</eclipselink.asm.verison>
         <jakarta.transaction-api.version>2.0.1</jakarta.transaction-api.version>
-        <jakarta.interceptor-api.version>2.1.0</jakarta.interceptor-api.version>
+        <jakarta.interceptor-api.version>2.0.0</jakarta.interceptor-api.version>
         <jakarta.inject.version>2.0.0</jakarta.inject.version>
         <cdi-api.version>4.0.1</cdi-api.version>
         <weld.version>5.0.0.SP1</weld.version>
@@ -194,13 +194,14 @@
         <jakarta.batch-api.version>2.1.0</jakarta.batch-api.version>
         <com.ibm.jbatch.container.version>2.1.1</com.ibm.jbatch.container.version>
         <com.ibm.jbatch.spi.version>2.1.1</com.ibm.jbatch.spi.version>
-        <jaxws-api.version>3.0.0</jaxws-api.version>
+        <jaxws-api.version>4.0.0</jaxws-api.version>
         <jakarta.jws-api.version>3.0.0</jakarta.jws-api.version>
-        <webservices.version>3.0.3</webservices.version>
+        <webservices.version>4.0.0-M4</webservices.version>
+        <org.apache.santuario.version>2.3.0</org.apache.santuario.version>
         <woodstox.version>6.2.7</woodstox.version>
         <woodstock-jsf.version>5.0.0</woodstock-jsf.version>
         <stax2-api.version>4.2.1</stax2-api.version>
-        <jakarta.resource-api.version>2.0.0</jakarta.resource-api.version>
+        <jakarta.resource-api.version>2.1.0</jakarta.resource-api.version>
         <jakarta.enterprise.deploy-api.version>1.7.2</jakarta.enterprise.deploy-api.version>
         <jakarta.activation-api.version>2.1.0-RC2</jakarta.activation-api.version>
         <angus.activation.version>1.0.0-M1</angus.activation.version>
