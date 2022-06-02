@@ -59,7 +59,7 @@ class SimpleSAMAuthContext implements ServerAuthContext {
     CallbackHandler handler;
     Map<String,Object> options;
 
-    SimpleSAMAuthContext(String authContextID, Subject serviceSubject, Map<String,Object> properties, CallbackHandler handler, ServerAuthModule sam) throws AuthException {
+    SimpleSAMAuthContext(String authContextID, Subject serviceSubject, Map<String, Object> properties, CallbackHandler handler, ServerAuthModule sam) throws AuthException {
         this.sam = sam;
         this.handler = handler;
         this.options = properties;

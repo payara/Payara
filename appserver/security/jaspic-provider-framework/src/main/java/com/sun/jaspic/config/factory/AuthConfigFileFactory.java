@@ -40,6 +40,8 @@
 // Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.jaspic.config.factory;
 
+import jakarta.security.auth.message.module.ServerAuthModule;
+
 /**
  *
  * @author ronmonzillo

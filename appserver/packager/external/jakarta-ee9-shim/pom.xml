@@ -83,11 +83,17 @@
         </dependency>
 
         <dependency>
+            <groupId>jakarta.authentication</groupId>
+            <artifactId>jakarta.authentication-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
             <groupId>jakarta.xml.bind</groupId>
             <artifactId>jakarta.xml.bind-api</artifactId>
             <scope>provided</scope>
         </dependency>
-
+        
         <dependency>
             <groupId>jakarta.servlet.jsp.jstl</groupId>
             <artifactId>jakarta.servlet.jsp.jstl-api</artifactId>
@@ -119,10 +125,13 @@
                                     jakarta.enterprise.cdi-api,
                                     jakarta.interceptor-api,
                                     jakarta.xml.bind-api,
-                                    com.sun.xml.bind.jaxb-osgi,
-                                    jakarta.servlet.jsp.jstl-api,
                                     org.eclipse.persistence.core,
-                                    org.eclipse.persistence.moxy
+                                    org.eclipse.persistence.moxy,
+                                    jakarta.interceptor-api,
+                                    jakarta.security.auth.message-api,
+                                    com.sun.xml.bind.jaxb-osgi,
+                                    jakarta.servlet.jsp.jstl-api
+
                                 </Require-Bundle>
                                 <!-- Manually specify the shim versions of packages to be exported via this bundle -->
                                 <!-- Note the "shortened" syntax here: For every API the packages are delimited with
@@ -142,15 +151,6 @@
                                     jakarta.servlet.jsp.tagext;version="3.0.99";shim="true",
                                     <!-- EL -->
                                     jakarta.el;version="4.0.99";shim="true",
-                                    <!-- JAXB - forward shim (3 exported as 4) -->
-                                    jakarta.xml.bind;
-                                    jakarta.xml.bind.annotation;
-                                    jakarta.xml.bind.annotation.adapters;version="4.0.1";shim="true",
-
-                                    <!-- Eclipselink forward shim (3 exported as 4) -->
-                                    org.eclipse.persistence.internal.core.helper;
-                                    org.eclipse.persistence.jaxb;
-                                    org.eclipse.persistence.jaxb.rs;version="4.0.0";shim=true,
 
                                     <!-- Interceptor forward shim (2.0 -> 2.1) -->
                                     jakarta.interceptor;version="2.1.99";shim=true,
@@ -166,6 +166,12 @@
                                     jakarta.enterprise.inject.spi;
                                     jakarta.enterprise.inject.spi.configurator;
                                     jakarta.enterprise.util;version="4.0.99";shim="true",
+
+                                    <!-- Jakarta Authentication -->
+                                    jakarta.security.auth.message.callback;
+                                    jakarta.security.auth.message.config;
+                                    jakarta.security.auth.message.module;
+                                    jakarta.security.auth.message;version="2.0.0";shim="true",
 
                                     <!-- XML WS -->
                                     org.apache.xml.security;version="2.3.99";shim="true",
@@ -269,8 +275,6 @@
                                     jakarta.enterprise.inject;
                                     jakarta.enterprise.context;version="3.0.99";shim=true
                                     -->
-                                    <!-- eclipse parsson -->
-                                    org.eclipse.parsson.media;version="1.0.99";shim="true"
                                 </Export-Package>
                             </instructions>
                         </configuration>
