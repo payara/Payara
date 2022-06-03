@@ -112,10 +112,11 @@ public class BulkheadMetricTckTest extends AbstractMetricTest {
         callMethodWithNewThreadAndWaitFor(commonWaiter);
         callMethodWithNewThreadAndWaitFor(commonWaiter);
         // time spent during initialization of , it needs to be added to the expected time
-        long initTime = TimeUnit.NANOSECONDS.toMillis((System.nanoTime() - beforeInitTimestamp));
         waitUntilPermitsAquired(2, 0);
 
         assertFurtherThreadThrowsBulkheadException(1);
+
+        long waitTimeForOneMethod = TimeUnit.NANOSECONDS.toMillis((System.nanoTime() - beforeInitTimestamp)) / 2 + delayMs;
 
         waitSome(delayMs);
         commonWaiter.complete(null);
@@ -127,8 +128,8 @@ public class BulkheadMetricTckTest extends AbstractMetricTest {
 
         assertNotNull(executionTimes);
         assertEquals(2, executionTimes.getCount());
-        assertApproxMillis(delayMs, initTime, Math.round(snap.getMedian()));
-        assertApproxMillis(delayMs, initTime, Math.round(snap.getMean()));
+        assertApproxMillis("Testing median, should be " + delayMs + " - " + waitTimeForOneMethod, delayMs, waitTimeForOneMethod, Math.round(snap.getMedian()));
+        assertApproxMillis("Testing mean of 2, should be " + delayMs + " - " + waitTimeForOneMethod, delayMs, waitTimeForOneMethod, Math.round(snap.getMean()));
 
         // Now let's put some quick results through the bulkhead
         callMethodDirectly(null);
@@ -136,7 +137,7 @@ public class BulkheadMetricTckTest extends AbstractMetricTest {
 
         assertEquals(4, executionTimes.getCount());
         snap = executionTimes.getSnapshot();
-        assertApproxMillis(delayMs / 2, initTime / 2L, Math.round(snap.getMean()));
+        assertApproxMillis("Testing mean of 4, should be " + (delayMs / 2) + " - " + (waitTimeForOneMethod / 2), delayMs / 2, waitTimeForOneMethod / 2, Math.round(snap.getMean()));
     }
 
     @Bulkhead(2)
@@ -180,9 +181,9 @@ public class BulkheadMetricTckTest extends AbstractMetricTest {
         return bodyWaitThenReturnSuccessDirectly(waiter);
     }
 
-    private static void assertApproxMillis(long expectedMillis, long initTime, long actualNanos) {
+    private static void assertApproxMillis(String msg, long expectedMillis, long expectedMillisWithWait, long actualNanos) {
         long millis = actualNanos / 1_000_000;
-        long error = Math.round(expectedMillis * 0.3) + initTime;
-        assertThat(millis, allOf(greaterThan(expectedMillis), lessThan(expectedMillis + error)));
+        long max = Math.round(expectedMillisWithWait * 1.3);
+        assertThat(msg, millis, allOf(greaterThan(expectedMillis), lessThan(max)));
     }
 }
