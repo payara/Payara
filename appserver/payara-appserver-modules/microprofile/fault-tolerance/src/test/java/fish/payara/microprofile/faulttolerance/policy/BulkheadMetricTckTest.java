@@ -48,6 +48,7 @@ import static org.junit.Assert.assertNotNull;
 
 import java.util.concurrent.Future;
 
+import java.util.concurrent.TimeUnit;
 import org.eclipse.microprofile.faulttolerance.Asynchronous;
 import org.eclipse.microprofile.faulttolerance.Bulkhead;
 import org.eclipse.microprofile.metrics.Counter;
@@ -111,7 +112,7 @@ public class BulkheadMetricTckTest extends AbstractMetricTest {
         callMethodWithNewThreadAndWaitFor(commonWaiter);
         callMethodWithNewThreadAndWaitFor(commonWaiter);
         // time spent during initialization of , it needs to be added to the expected time
-        long initTime = (System.nanoTime() - beforeInitTimestamp) / 1_000_000; // from nano to milli
+        long initTime = TimeUnit.NANOSECONDS.toMillis((System.nanoTime() - beforeInitTimestamp));
         waitUntilPermitsAquired(2, 0);
 
         assertFurtherThreadThrowsBulkheadException(1);
