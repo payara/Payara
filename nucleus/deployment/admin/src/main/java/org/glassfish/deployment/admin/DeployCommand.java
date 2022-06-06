@@ -529,7 +529,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                         JakartaNamespaceDeploymentTransformerConstants.TRANSFORM_NAMESPACE);
                 Types types = deployment.getDeployableTypes(deploymentContext);
                 if (Boolean.valueOf(transformNS) || (transformNS == null &&
-                        jakartaNamespaceDeploymentTransformerService.isJakartaEEApplication(types))) {
+                        !jakartaNamespaceDeploymentTransformerService.isJakartaEEApplication(types))) {
                     span.start(DeploymentTracing.AppStage.TRANSFORM_ARCHIVE);
                     deploymentContext.getSource().close();
                     File output = jakartaNamespaceDeploymentTransformerService.transformApplication(
