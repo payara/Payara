@@ -41,8 +41,8 @@
 
 package org.glassfish.deployment.admin;
 
-import fish.payara.deployment.transformer.JakartaNamespaceDeploymentTransformer;
-import fish.payara.deployment.transformer.JakartaNamespaceDeploymentTransformerConstants;
+import fish.payara.deployment.transformer.api.JakartaNamespaceDeploymentTransformer;
+import fish.payara.deployment.transformer.api.JakartaNamespaceDeploymentTransformerConstants;
 import fish.payara.nucleus.hotdeploy.HotDeployService;
 import fish.payara.nucleus.hotdeploy.ApplicationState;
 import com.sun.enterprise.config.serverbeans.*;
