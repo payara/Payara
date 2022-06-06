@@ -125,9 +125,6 @@
                                     jakarta.enterprise.cdi-api,
                                     jakarta.interceptor-api,
                                     jakarta.xml.bind-api,
-                                    org.eclipse.persistence.core,
-                                    org.eclipse.persistence.moxy,
-                                    jakarta.interceptor-api,
                                     jakarta.security.auth.message-api,
                                     com.sun.xml.bind.jaxb-osgi,
                                     jakarta.servlet.jsp.jstl-api
