@@ -130,8 +130,8 @@
                                     jakarta.interceptor-api,
                                     jakarta.security.auth.message-api,
                                     com.sun.xml.bind.jaxb-osgi,
-                                    jakarta.servlet.jsp.jstl-api
-
+                                    jakarta.servlet.jsp.jstl-api,
+                                    jakarta.security.enterprise-api
                                 </Require-Bundle>
                                 <!-- Manually specify the shim versions of packages to be exported via this bundle -->
                                 <!-- Note the "shortened" syntax here: For every API the packages are delimited with
@@ -266,7 +266,7 @@
                                     jakarta.servlet.jsp.jstl.core;
                                     jakarta.servlet.jsp.jstl.tlv;
                                     jakarta.servlet.jsp.jstl.sql;
-                                    jakarta.servlet.jsp.jstl.fmt;version="2.0.0";shim="true"
+                                    jakarta.servlet.jsp.jstl.fmt;version="2.0.0";shim="true",
 
                                     <!-- Minimal version of shim for MP 5.0. -->
                                     <!-- TODO: This is only thing that should remain in final release -->
@@ -275,6 +275,13 @@
                                     jakarta.enterprise.inject;
                                     jakarta.enterprise.context;version="3.0.99";shim=true
                                     -->
+                                    <!-- security-->
+                                    jakarta.security.enterprise;
+                                    jakarta.security.enterprise.authentication.mechanism.http;
+                                    jakarta.security.enterprise.authentication.mechanism.http.openid;
+                                    jakarta.security.enterprise.credential;
+                                    jakarta.security.enterprise.identitystore;
+                                    jakarta.security.enterprise.identitystore.openid;version="2.0.99";shim="true"
                                 </Export-Package>
                             </instructions>
                         </configuration>
