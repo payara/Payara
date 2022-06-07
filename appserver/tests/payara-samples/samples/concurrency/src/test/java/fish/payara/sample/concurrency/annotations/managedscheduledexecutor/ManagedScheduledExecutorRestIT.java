@@ -108,7 +108,7 @@ public class ManagedScheduledExecutorRestIT {
         String[] data = message.split(":");
         if(data[1] != null) {
             int numberOfExecutions = Integer.parseInt(data[1]);
-            assertTrue( numberOfExecutions > 0 && numberOfExecutions <= 3);
+            assertTrue(numberOfExecutions > 0 && numberOfExecutions <= 3, "Number of execution expected >0 and <=3, was " + numberOfExecutions);
         }
         assertTrue(message.contains("CronTrigger Submitted"));
     }
