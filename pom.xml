@@ -161,6 +161,7 @@
         <jackson.version>2.13.1</jackson.version>
         <snakeyaml.version>1.29</snakeyaml.version>
         <hazelcast.version>5.1.1</hazelcast.version>
+        <hazelcast.kubernetes.version>2.2.3.payara-p1</hazelcast.kubernetes.version>
         <jaxb-api.version>4.0.0</jaxb-api.version>
         <jaxb-impl.version>4.0.0-M4</jaxb-impl.version>
         <jakarta.ejb-api.version>4.0.0</jakarta.ejb-api.version>
