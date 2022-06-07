@@ -93,7 +93,7 @@
             </sun:button>
         </sun:panelGroup>
     </facet>
-    <!facet userInfoExtras>
+    <!facet asadminRecorderPanel>
         <sun:panelGroup id="asadminRecorderPanel">
             <sun:button id="enableAsadminRecorderLink" rendered="#{showEnableAsadminRecorderButton}" toolTip="$resource{i18n.enableAsadminRecorderToolTip}" target="_top" text="$resource{i18n.masthead.enableAsadminRecorder}"
                         onClick="if (!confirm('$resource{i18n.msg.JS.confirmEnableAsadminRecorder}')) {return false;} else {this.value='$resource{i18n.button.Processing}';}" onKeyPress="javascript: return true;">
