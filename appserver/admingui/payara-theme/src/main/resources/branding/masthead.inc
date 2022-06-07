@@ -59,7 +59,7 @@
 
     <!facet utilityBar>
         <sun:panelGroup id="utilityBar">
-            <sun:hyperlink id="homeLink" toolTip="$resource{i18n.homeLinkTooltip}" target="_top" text="$resource{i18n.masthead.Home}" url="#{request.contextPath}/common/index.jsf" />
+            <sun:hyperlink id="homeLink" toolTip="$resource{i18n.homePageLinkTooltip}" target="_top" text="$resource{i18n.masthead.Home}" url="#{request.contextPath}/common/index.jsf" />
             <sun:hyperlink id="versionLink" toolTip="$resource{i18n.versionTooltip}" text="$resource{i18n.masthead.Version}"
                 onClick="javascript: var versionWin = window.open('#{request.contextPath}/common/version.jsf','VersionWindow','scrollbars,resizable,width=800,height=740,top='+((screen.height - (screen.height/1.618)) - (500/2))+',left='+((screen.width-650)/2) ); versionWin.focus(); return false;" onKeyPress="javascript: return true;" />
             <sun:hyperlink id="enterpriseLink" toolTip="$resource{i18n.enterpriseLinkTooltip}" target="_blank" text="$resource{i18n.masthead.EnterpriseLink}" url="https://www.payara.fish/products/payara-server/" />
@@ -71,6 +71,16 @@
                         logout();
                         redirect("#{request.contextPath}/common/index.jsf");
                     />
+            </sun:button>
+
+            <sun:button id="enableAsadminRecorderLink" rendered="#{showEnableAsadminRecorderButton}" toolTip="$resource{i18n.enableAsadminRecorderToolTip}" target="_top" text="$resource{i18n.masthead.enableAsadminRecorder}"
+                        onClick="if (!confirm('$resource{i18n.msg.JS.confirmEnableAsadminRecorder}')) {return false;} else {this.value='$resource{i18n.button.Processing}';}" onKeyPress="javascript: return true;">
+                <!command
+                setSessionAttribute(key="showEnableAsadminRecorderButton", value="false");
+                setSessionAttribute(key="showDisableAsadminRecorderButton", value="true");
+                gf.restRequest(endpoint="#{sessionScope.REST_URL}/enable-asadmin-recorder" method="POST");
+                redirect("#{request.contextPath}/common/index.jsf");
+                />
             </sun:button>
         </sun:panelGroup>
     </facet>
