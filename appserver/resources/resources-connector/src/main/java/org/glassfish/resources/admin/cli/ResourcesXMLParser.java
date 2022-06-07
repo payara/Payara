@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2022] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.resources.admin.cli;
 
@@ -45,19 +45,45 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.i18n.StringManager;
 import org.glassfish.api.I18n;
 import org.glassfish.resources.api.Resource;
-import org.w3c.dom.*;
-import org.xml.sax.*;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 import org.xml.sax.ext.LexicalHandler;
 
-import javax.xml.parsers.*;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -367,6 +393,8 @@ public class ResourcesXMLParser implements EntityResolver
                 else if (nodeName.equalsIgnoreCase(org.glassfish.resources.api.Resource.CONNECTOR_WORK_SECURITY_MAP))
                 {
                     generateWorkSecurityMap(nextKid, scope);
+                } else if (nodeName.equalsIgnoreCase(org.glassfish.resources.api.Resource.MANAGED_EXECUTOR_SERVICE)) {
+                    generateManagedExecutorService(nextKid, scope);
                 }
             }
         }
@@ -697,6 +725,61 @@ public class ResourcesXMLParser implements EntityResolver
 
         //debug strings
         printResourceElements(jdbcResource);
+    }
+
+    /**
+     * Generate the ManagedExecutorService resource
+     */
+    private void generateManagedExecutorService(Node nextKid, String scope) throws Exception {
+        NamedNodeMap attributes = nextKid.getAttributes();
+        if (attributes == null) {
+            return;
+        }
+
+        Node jndiNameNode = attributes.getNamedItem(JNDI_NAME);
+        String jndiName = getScopedName(jndiNameNode.getNodeValue(), scope);
+        Node corePoolSizeNode = attributes.getNamedItem(CORE_POOL_SIZE);
+        Node maxPoolSizeNode = attributes.getNamedItem(MAXIMUM_POOL_SIZE);
+        Node contextInfoNode = attributes.getNamedItem(CONTEXT_INFO);
+        Node contextInfoEnabledNode = attributes.getNamedItem(CONTEXT_INFO_ENABLED);
+
+        Resource managedExecutorServiceResource = new org.glassfish.resources.api.Resource(org.glassfish.resources.api.Resource.MANAGED_EXECUTOR_SERVICE);
+        managedExecutorServiceResource.setAttribute(JNDI_NAME, jndiName);
+        if (corePoolSizeNode != null) {
+            String corePoolSizeValue = corePoolSizeNode.getNodeValue();
+            managedExecutorServiceResource.setAttribute(CORE_POOL_SIZE, corePoolSizeValue);
+        }
+        if (maxPoolSizeNode != null) {
+            String maxPoolSizeValue = maxPoolSizeNode.getNodeValue();
+            managedExecutorServiceResource.setAttribute(MAXIMUM_POOL_SIZE, maxPoolSizeValue);
+        }
+        if (contextInfoNode != null) {
+            String contextInfoValue = contextInfoNode.getNodeValue();
+            managedExecutorServiceResource.setAttribute(CONTEXT_INFO, contextInfoValue);
+        }
+        if (contextInfoEnabledNode != null) {
+            String contextInfoEnabledValue = contextInfoEnabledNode.getNodeValue();
+            managedExecutorServiceResource.setAttribute(CONTEXT_INFO_ENABLED, contextInfoEnabledValue);
+        }
+
+        NodeList children = nextKid.getChildNodes();
+        //get description
+        if (children != null) {
+            for (int ii = 0; ii < children.getLength(); ii++) {
+                if (children.item(ii).getNodeName().equals("description")) {
+                    if (children.item(ii).getFirstChild() != null) {
+                        managedExecutorServiceResource.setDescription(
+                                children.item(ii).getFirstChild().getNodeValue());
+                    }
+                }
+            }
+        }
+
+        vResources.add(managedExecutorServiceResource);
+        resourceMap.put(managedExecutorServiceResource, nextKid);
+
+        //debug strings
+        printResourceElements(managedExecutorServiceResource);
     }
 
     /**

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.resources.module;
 
@@ -245,12 +245,14 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
         } catch (Exception e) {
             // only DeploymentExceptions are propagated and result in deployment failure
             // in the event notification infrastructure
-            throw new DeploymentException("Failue while processing glassfish-resources.xml(s) in the archive ", e);
+            // FIXME: provide file name!
+            throw new DeploymentException("Failure while processing glassfish-resources.xml(s) in the archive ", e);
         }
     }
     
     private void processArchive(DeploymentContext dc) {
 
+        String processedFilename = "glassfish-resources.xml";
         try {
             ReadableArchive archive = dc.getSource();
 
@@ -270,6 +272,7 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
                     String moduleName = entry.getKey();
                     String fileName = entry.getValue();
                     debug("Sun Resources XML : " + fileName);
+                    processedFilename = fileName;
 
                     moduleName = org.glassfish.resourcebase.resources.util.ResourceUtil.getActualModuleNameWithExtension(moduleName);
                     String scope ;
@@ -329,7 +332,7 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
         } catch (Exception e) {
             // only DeploymentExceptions are propagated and result in deployment failure
             // in the event notification infrastructure
-            throw new DeploymentException("Failue while processing glassfish-resources.xml(s) in the archive ", e);
+            throw new DeploymentException("Failure while processing " + processedFilename + " in the archive ", e);
         }
     }
 

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation]
+// Portions Copyright [2016-2022] [Payara Foundation]
 package org.glassfish.concurrent.admin;
 
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
@@ -153,7 +153,13 @@ public abstract class ManagedExecutorServiceBaseManager implements ResourceManag
             clazz = ManagedScheduledExecutorService.class;
         }
         status = resourcesHelper.validateBindableResourceForDuplicates(resources, jndiName, validateResourceRef, target, clazz);
-        
+
+        try {
+            Integer.parseInt(corePoolSize);
+        } catch (NumberFormatException nfe) {
+            return new ResourceStatus(ResourceStatus.FAILURE, localStrings.getLocalString("coresize.must.be.number", "Option corepoolsize must be a number."));
+        }
+
         return status;
     }
 

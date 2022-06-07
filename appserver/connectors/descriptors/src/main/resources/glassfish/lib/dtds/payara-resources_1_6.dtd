@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2018-2020] Payara Foundation and/or affiliates -->
+<!-- Portions Copyright [2018-2022] Payara Foundation and/or affiliates -->
 
 <!--  
   A resources instance document referring to this DTD should have a DOCTYPE as follows:
@@ -52,7 +52,7 @@
     admin-object-resource, connector-connection-pool,                 
     connector-resource, custom-resource, external-jndi-resource,      
     jdbc-connection-pool, jdbc-resource, mail-resource,
-    work-security-map              
+    work-security-map, managed-executor-service         
 -->
 <!ENTITY % boolean "(yes | no | on | off | 1 | 0 | true | false)">
 
@@ -93,7 +93,8 @@
     ((custom-resource | external-jndi-resource | jdbc-resource | mail-resource 
     | admin-object-resource | connector-resource
     | resource-adapter-config | jdbc-connection-pool      
-    | connector-connection-pool | work-security-map)*)>                                              
+    | connector-connection-pool | work-security-map
+    | managed-executor-service)*)>                                              
 
 
 
@@ -104,7 +105,7 @@
     admin-object-resource, connector-connection-pool,                 
     connector-resource, custom-resource, external-jndi-resource,      
     jdbc-connection-pool, jdbc-resource, mail-resource,               
-    work-security-map, property                    
+    work-security-map, property, managed-executor-service                   
 -->
 <!ELEMENT description (#PCDATA)>
 
@@ -869,4 +870,19 @@ mapped-principal CDATA #REQUIRED>
 <!ATTLIST group-map
 eis-group CDATA #REQUIRED
 mapped-group CDATA #REQUIRED>
+
+<!-- managed-executor-service
+    ManagedExecutorService resource definition                 
+
+  Used in:
+    resources                                                         
+-->
+<!ELEMENT managed-executor-service (description?)>
+
+<!ATTLIST managed-executor-service
+    jndi-name CDATA #REQUIRED
+    core-pool-size CDATA "0"
+    maximum-pool-size CDATA "2147483647"
+    context-info CDATA "Classloader,JNDI,Security,WorkArea"
+    context-info-enabled %boolean; "true">
 

@@ -37,10 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2022] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.resources.api;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Properties;
 
 import static org.glassfish.resources.admin.cli.ResourceConstants.*;
 
@@ -58,26 +63,30 @@ public class Resource {
     public static final String JDBC_CONNECTION_POOL     = "jdbc-connection-pool";
     public static final String CONNECTOR_CONNECTION_POOL = "connector-connection-pool";
 
-    public static final String RESOURCE_ADAPTER_CONFIG  = "resource-adapter-config";
+    public static final String MANAGED_EXECUTOR_SERVICE = "managed-executor-service";
+    // TODO: add also managed-scheduled-executor, managed-thread-factory
+
+    public static final String RESOURCE_ADAPTER_CONFIG = "resource-adapter-config";
     public static final String PERSISTENCE_MANAGER_FACTORY_RESOURCE = "persistence-manager-factory-resource";
     public static final String CONNECTOR_SECURITY_MAP    = "security-map";
     public static final String CONNECTOR_WORK_SECURITY_MAP    = "work-security-map";
 
     public static final List BINDABLE_RESOURCES = Collections.unmodifiableList(
             Arrays.asList(
-                CUSTOM_RESOURCE,
-                CONNECTOR_RESOURCE,
-                ADMIN_OBJECT_RESOURCE,
-                JDBC_RESOURCE,
-                MAIL_RESOURCE,
-                EXTERNAL_JNDI_RESOURCE
+                    CUSTOM_RESOURCE,
+                    CONNECTOR_RESOURCE,
+                    ADMIN_OBJECT_RESOURCE,
+                    JDBC_RESOURCE,
+                    MAIL_RESOURCE,
+                    EXTERNAL_JNDI_RESOURCE,
+                    MANAGED_EXECUTOR_SERVICE
             ));
 
     public static final List RESOURCE_POOL = Collections.unmodifiableList(
             Arrays.asList(
                 JDBC_CONNECTION_POOL,
-                CONNECTOR_CONNECTION_POOL
-            )); 
+                    CONNECTOR_CONNECTION_POOL
+            ));
 
     private String resType;
     private HashMap attrList = new HashMap();
@@ -241,9 +250,10 @@ public class Resource {
         
         String rType = getType();
         String identity = "";
-        if (rType.equals(CUSTOM_RESOURCE)|| rType.equals(EXTERNAL_JNDI_RESOURCE)
-             || rType.equals(JDBC_RESOURCE)|| rType.equals(PERSISTENCE_MANAGER_FACTORY_RESOURCE)
-             || rType.equals(CONNECTOR_RESOURCE)|| rType.equals(ADMIN_OBJECT_RESOURCE) || rType.equals(MAIL_RESOURCE)) {
+        if (rType.equals(CUSTOM_RESOURCE) || rType.equals(EXTERNAL_JNDI_RESOURCE)
+                || rType.equals(JDBC_RESOURCE) || rType.equals(PERSISTENCE_MANAGER_FACTORY_RESOURCE)
+                || rType.equals(CONNECTOR_RESOURCE) || rType.equals(ADMIN_OBJECT_RESOURCE)
+                || rType.equals(MAIL_RESOURCE) || rType.equals(MANAGED_EXECUTOR_SERVICE)) {
             identity =  getAttribute(this, JNDI_NAME);
         }else if (rType.equals(JDBC_CONNECTION_POOL) || rType.equals(CONNECTOR_CONNECTION_POOL)) {
             identity =  getAttribute(this, CONNECTION_POOL_NAME);
