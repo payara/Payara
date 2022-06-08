@@ -736,30 +736,70 @@ public class ResourcesXMLParser implements EntityResolver
             return;
         }
 
+        Resource managedExecutorServiceResource = new org.glassfish.resources.api.Resource(org.glassfish.resources.api.Resource.MANAGED_EXECUTOR_SERVICE);
+
         Node jndiNameNode = attributes.getNamedItem(JNDI_NAME);
         String jndiName = getScopedName(jndiNameNode.getNodeValue(), scope);
-        Node corePoolSizeNode = attributes.getNamedItem(CORE_POOL_SIZE);
-        Node maxPoolSizeNode = attributes.getNamedItem(MAXIMUM_POOL_SIZE);
-        Node contextInfoNode = attributes.getNamedItem(CONTEXT_INFO);
-        Node contextInfoEnabledNode = attributes.getNamedItem(CONTEXT_INFO_ENABLED);
-
-        Resource managedExecutorServiceResource = new org.glassfish.resources.api.Resource(org.glassfish.resources.api.Resource.MANAGED_EXECUTOR_SERVICE);
         managedExecutorServiceResource.setAttribute(JNDI_NAME, jndiName);
+        Node corePoolSizeNode = attributes.getNamedItem(CORE_POOL_SIZE);
         if (corePoolSizeNode != null) {
             String corePoolSizeValue = corePoolSizeNode.getNodeValue();
             managedExecutorServiceResource.setAttribute(CORE_POOL_SIZE, corePoolSizeValue);
         }
+        Node maxPoolSizeNode = attributes.getNamedItem(MAXIMUM_POOL_SIZE);
         if (maxPoolSizeNode != null) {
             String maxPoolSizeValue = maxPoolSizeNode.getNodeValue();
             managedExecutorServiceResource.setAttribute(MAXIMUM_POOL_SIZE, maxPoolSizeValue);
         }
+        Node contextInfoNode = attributes.getNamedItem(CONTEXT_INFO);
         if (contextInfoNode != null) {
             String contextInfoValue = contextInfoNode.getNodeValue();
             managedExecutorServiceResource.setAttribute(CONTEXT_INFO, contextInfoValue);
         }
+        Node contextInfoEnabledNode = attributes.getNamedItem(CONTEXT_INFO_ENABLED);
         if (contextInfoEnabledNode != null) {
             String contextInfoEnabledValue = contextInfoEnabledNode.getNodeValue();
             managedExecutorServiceResource.setAttribute(CONTEXT_INFO_ENABLED, contextInfoEnabledValue);
+        }
+        Node enabledNode = attributes.getNamedItem(ENABLED);
+        if (enabledNode != null) {
+            String enabledValue = enabledNode.getNodeValue();
+            managedExecutorServiceResource.setAttribute(ENABLED, enabledValue);
+        }
+        Node threadpriorityNode = attributes.getNamedItem(THREAD_PRIORITY);
+        if (threadpriorityNode != null) {
+            String threadpriorityValue = threadpriorityNode.getNodeValue();
+            managedExecutorServiceResource.setAttribute(THREAD_PRIORITY, threadpriorityValue);
+        }
+        Node longrunningstasksNode = attributes.getNamedItem(LONG_RUNNING_TASKS);
+        if (longrunningstasksNode != null) {
+            String longrunningstasksValue = longrunningstasksNode.getNodeValue();
+            managedExecutorServiceResource.setAttribute(LONG_RUNNING_TASKS, longrunningstasksValue);
+        }
+        Node hungaftersecondsNode = attributes.getNamedItem(HUNG_AFTER_SECONDS);
+        if (hungaftersecondsNode != null) {
+            String hungaftersecondsValue = hungaftersecondsNode.getNodeValue();
+            managedExecutorServiceResource.setAttribute(HUNG_AFTER_SECONDS, hungaftersecondsValue);
+        }
+        Node corepoolsizeNode = attributes.getNamedItem(CORE_POOL_SIZE);
+        if (corepoolsizeNode != null) {
+            String corepoolsizeValue = corepoolsizeNode.getNodeValue();
+            managedExecutorServiceResource.setAttribute(CORE_POOL_SIZE, corepoolsizeValue);
+        }
+        Node keepalivesecondsNode = attributes.getNamedItem(KEEP_ALIVE_SECONDS);
+        if (keepalivesecondsNode != null) {
+            String keepalivesecondsValue = keepalivesecondsNode.getNodeValue();
+            managedExecutorServiceResource.setAttribute(KEEP_ALIVE_SECONDS, keepalivesecondsValue);
+        }
+        Node threadlifetimesecondsNode = attributes.getNamedItem(THREAD_LIFETIME_SECONDS);
+        if (threadlifetimesecondsNode != null) {
+            String threadlifetimesecondsValue = threadlifetimesecondsNode.getNodeValue();
+            managedExecutorServiceResource.setAttribute(THREAD_LIFETIME_SECONDS, threadlifetimesecondsValue);
+        }
+        Node taskqueuecapacityNode = attributes.getNamedItem(TASK_QUEUE_CAPACITY);
+        if (taskqueuecapacityNode != null) {
+            String taskqueuecapacityValue = taskqueuecapacityNode.getNodeValue();
+            managedExecutorServiceResource.setAttribute(TASK_QUEUE_CAPACITY, taskqueuecapacityValue);
         }
 
         NodeList children = nextKid.getChildNodes();
