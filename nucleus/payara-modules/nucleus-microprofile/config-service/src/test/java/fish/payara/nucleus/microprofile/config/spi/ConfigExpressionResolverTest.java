@@ -39,20 +39,18 @@
  */
 package fish.payara.nucleus.microprofile.config.spi;
 
-import fish.payara.nucleus.microprofile.config.source.PropertiesConfigSource;
-import static fish.payara.nucleus.microprofile.config.spi.ConfigTestUtils.createSource;
-import static java.util.Collections.singleton;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-
-import java.util.HashMap;
-import java.util.NoSuchElementException;
-import java.util.Properties;
-
 import org.eclipse.microprofile.config.ConfigValue;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.HashMap;
+import java.util.NoSuchElementException;
+
+import static fish.payara.nucleus.microprofile.config.spi.ConfigTestUtils.createSource;
+import static java.util.Collections.singleton;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class ConfigExpressionResolverTest {
     
@@ -122,6 +120,11 @@ public class ConfigExpressionResolverTest {
         ConfigValue result = resolver.resolve("reference.concat");
         assertEquals("1${key}${key}2", result.getRawValue());
         assertEquals("1valuevalue2", result.getValue());
+    }
+
+    @Test(expected = NoSuchElementException.class)
+    public void testNonExistentReference() {
+        resolver.resolve("reference.not.found");
     }
 
     @Test

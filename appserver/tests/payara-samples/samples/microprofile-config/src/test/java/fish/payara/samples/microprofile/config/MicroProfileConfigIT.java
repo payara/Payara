@@ -86,4 +86,12 @@ public class MicroProfileConfigIT {
         Assert.assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
         Assert.assertTrue(response.readEntity(String.class).equals("Config value not found!"));
     }
+
+    @Test
+    public void testPartialNonExistentConfigValue() {
+        WebTarget webtarget = ClientBuilder.newClient().target(url + "api/test/getPartialNonExistent");
+        Response response = webtarget.request().get();
+        Assert.assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
+        Assert.assertTrue(response.readEntity(String.class).contains("java.util.NoSuchElementException: Unable to resolve expression ${NONEXISTENT}partial"));
+    }
 }

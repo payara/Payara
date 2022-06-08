@@ -70,4 +70,10 @@ public class TestResource {
         return config.getOptionalValue("fish.payara.samples.microprofile.config.nonexistent", String.class)
                 .orElse("Config value not found!");
     }
+
+    @GET
+    @Path("/getPartialNonExistent")
+    public String getPartialNonExistent() {
+        return config.getValue("fish.payara.samples.microprofile.config.partialnonexistent", String.class);
+    }
 }
