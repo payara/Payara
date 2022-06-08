@@ -121,7 +121,6 @@ public class ProxyServicesImpl implements ProxyServices {
         return isAppCL;
     }
 
-
     private ClassLoader _getClassLoader() {
         ClassLoader tcl = Thread.currentThread().getContextClassLoader();
         return tcl;
@@ -139,11 +138,16 @@ public class ProxyServicesImpl implements ProxyServices {
     @Override
     public Class<?> defineClass(Class<?> originalClass, String className, byte[] classBytes, int off, int len,
                                 ProtectionDomain protectionDomain) throws ClassFormatError {
-        ClassLoader cl = _getClassLoader();
+        ClassLoader cl = getClassLoaderforBean(originalClass);
         if(protectionDomain == null) {
            return defineClass(cl, className, classBytes, off, len);
         }
         return defineClass(cl, className, classBytes, off, len, protectionDomain);
+    }
+
+    @Override
+    public Class<?> defineClass(Class<?> originalClass, String className, byte[] classBytes, int off, int len) throws ClassFormatError {
+        return defineClass(originalClass, className, classBytes, off, len, null);
     }
 
     private Class<?> defineClass(final ClassLoader loader, final String className,
