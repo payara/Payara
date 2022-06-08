@@ -197,6 +197,7 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
                                              List<org.glassfish.resources.api.Resource> connectorResources,
                                              List<org.glassfish.resources.api.Resource> nonConnectorResources,
                                              Map<org.glassfish.resources.api.Resource, ResourcesXMLParser> resourceXmlParsers) {
+        String processedFilename = "glassfish-resources.xml";
         try {
             if (ResourceUtil.hasGlassfishResourcesXML(archive, locator) || ResourceUtil.hasPayaraResourcesXML(archive, locator)) {
                 Map<String, Map<String, List>> appScopedResources = new HashMap<String, Map<String, List>>();
@@ -209,6 +210,7 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
                     String moduleName = entry.getKey();
                     String fileName = entry.getValue();
                     debug("GlassFish Resources XML : " + fileName);
+                    processedFilename = fileName;
 
                     moduleName = org.glassfish.resourcebase.resources.util.ResourceUtil.getActualModuleNameWithExtension(moduleName);
                     String scope;
@@ -245,8 +247,7 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
         } catch (Exception e) {
             // only DeploymentExceptions are propagated and result in deployment failure
             // in the event notification infrastructure
-            // FIXME: provide file name!
-            throw new DeploymentException("Failure while processing glassfish-resources.xml(s) in the archive ", e);
+            throw new DeploymentException("Failure while processing " + processedFilename + " in the archive ", e);
         }
     }
     
