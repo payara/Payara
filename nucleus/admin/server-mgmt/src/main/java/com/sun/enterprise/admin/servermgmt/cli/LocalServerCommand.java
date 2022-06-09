@@ -244,7 +244,7 @@ public abstract class LocalServerCommand extends CLICommand {
         // issue : 14971, should ideally use javax.net.ssl.keyStore and
         // javax.net.ssl.keyStoreType system props here but they are
         // unavailable to asadmin start-domain hence falling back to
-        // cacerts.jks instead of keystore.jks. Since the truststore
+        // cacerts.p12 instead of keystore.p12. Since the truststore
         // is less-likely to be Non-JKS
 
         return loadAndVerifyKeystore(getJKS(), mpv);
@@ -553,7 +553,7 @@ public abstract class LocalServerCommand extends CLICommand {
         if (serverDirs == null)
             return null;
 
-        File mp = new File(new File(serverDirs.getServerDir(), "config"), "cacerts.jks");
+        File mp = new File(new File(serverDirs.getServerDir(), "config"), "cacerts.p12");
         if (!mp.canRead())
             return null;
         return mp;
