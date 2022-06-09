@@ -2399,8 +2399,8 @@ admingui.ajax = {
         }
 
         // FIXME: These 2 functions (should) only need be replaced after FPR...
-        webui.suntheme.hyperlink.submit = admingui.woodstock.hyperLinkSubmit;
-        webui.suntheme.jumpDropDown.changed = admingui.woodstock.dropDownChanged;
+        // webui.suntheme.hyperlink.submit = admingui.woodstock.hyperLinkSubmit;
+        // webui.suntheme.jumpDropDown.changed = admingui.woodstock.dropDownChanged;
         var contextObj = {};
         admingui.ajax.processElement(contextObj, contentNode, true);
         admingui.ajax.processScripts(contextObj);
