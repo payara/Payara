@@ -37,69 +37,47 @@
  */
 package fish.payara.examples;
 
-import javax.ejb.Stateless;
-import javax.inject.Inject;
-import javax.ws.rs.*;
-import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import javax.annotation.Resource;
-import javax.enterprise.concurrent.ManagedExecutorService;
+import javax.enterprise.concurrent.ManagedScheduledExecutorService;
+import javax.enterprise.concurrent.ManagedThreadFactory;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 
 /**
- * Resource for people, using ManagedExecutorService.
+ * Simple test for ManagedScheduledExecutorService and ManagedThreadFactory defined in payara-resources.xml.
  *
- * @author mertcaliskan, Petr Aubrecht
+ * @author Petr Aubrecht <petr@aubrecht.net>
  */
-@Stateless
-@Path("person")
-public class PersonResource {
+@Path("concurrent")
+public class MSESResource {
+    @Resource(lookup = "java:app/concurrent/MSESPayara")
+    private ManagedScheduledExecutorService mses;
 
-    @Resource(lookup = "java:app/concurrent/MESPayara")
-    private ManagedExecutorService mes;
-
-    @Inject
-    private PersonDao personDao;
+    @Resource(lookup = "java:app/concurrent/MTFPayara")
+    private ManagedThreadFactory mtf;
 
     @GET
-    @Produces("application/json")
-    public List<Person> all() {
-        return personDao.getAll();
+    @Produces(MediaType.TEXT_PLAIN)
+    @Path("mses")
+    public String findMSES() {
+        return "MSES " + (mses == null ? "MISSING" : "PRESENT");
     }
 
-    @POST
-    @Consumes("application/json")
-    public void save(Person person) {
-        personDao.save(person);
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    @Path("mtf")
+    public String findMTF() throws InterruptedException, ExecutionException, TimeoutException {
+        CompletableFuture<Integer> info = new CompletableFuture<>();
+        mtf.newThread(() -> {
+            info.complete(Thread.currentThread().getPriority());
+        }).start();
+        return "MTF, priority " + info.get(1, TimeUnit.SECONDS);
     }
 
-    @POST
-    @Path("create-demo")
-    @Consumes("application/json")
-    public void createDemo(Person person) throws InterruptedException, ExecutionException {
-        Future<?> future1 = mes.submit(() -> {
-            Person p1 = new Person("John", "Doe");
-            personDao.save(p1);
-        });
-        Future<?> future2 = mes.submit(() -> {
-            Person p2 = new Person("Jane", "Doe");
-            personDao.save(p2);
-        });
-        future1.get();
-        future2.get();
-    }
-
-    @PUT
-    @Consumes("application/json")
-    public void update(Person person) {
-        personDao.update(person);
-    }
-
-    @DELETE
-    @Path("/{id}")
-    @Consumes("application/json")
-    public void delete(@PathParam("id") Long id) {
-        Person person = personDao.find(id);
-        personDao.delete(person);
-    }
 }

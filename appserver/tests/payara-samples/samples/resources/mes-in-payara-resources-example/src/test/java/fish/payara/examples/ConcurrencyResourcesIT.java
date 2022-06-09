@@ -56,6 +56,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.jupiter.api.AfterEach;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -68,9 +69,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
  * @author Petr Aubrecht <aubrecht@asoftware.cz>
  */
 @ExtendWith(ArquillianExtension.class)
-public class ManagedExecutorServiceIT {
+public class ConcurrencyResourcesIT {
 
-    private final static Logger logger = Logger.getLogger(ManagedExecutorServiceIT.class.getName());
+    private final static Logger logger = Logger.getLogger(ConcurrencyResourcesIT.class.getName());
 
     @ArquillianResource
     private URL base;
@@ -126,7 +127,7 @@ public class ManagedExecutorServiceIT {
     }
 
     @Test
-    @DisplayName("Test ")
+    @DisplayName("Test ManagedExecutorService loaded from payara-resources.xml")
     @RunAsClient
     public void testManagedExecutorServiceResource() throws MalformedURLException {
         logger.log(Level.INFO, "Consuming service to submit rest {0}", new Object[]{client});
@@ -137,6 +138,30 @@ public class ManagedExecutorServiceIT {
         assertTrue(message.contains("\"lastName\":\"Doe\""));
         assertTrue(message.contains("\"name\":\"Jane\"}"));
         assertTrue(message.contains("\"name\":\"John\""));
+    }
+
+    @Test
+    @DisplayName("Test ManagedScheduledExecutorService loaded from payara-resources.xml")
+    @RunAsClient
+    public void testManagedScheduledExecutorServiceResource() throws MalformedURLException {
+        logger.log(Level.INFO, "Consuming service to submit rest {0}", new Object[]{client});
+        WebTarget target = this.client.target(new URL(this.base, "resources/concurrent/mses").toExternalForm());
+        logger.info(target.getUri().toASCIIString());
+        String message = target.request().accept(MediaType.TEXT_PLAIN_TYPE).get(String.class);
+        logger.log(Level.INFO, "Returned message {0}", new Object[]{message});
+        assertEquals("MSES PRESENT", message);
+    }
+
+    @Test
+    @DisplayName("Test ManagedThreadFactory loaded from payara-resources.xml")
+    @RunAsClient
+    public void testManagedThreadFactoryResource() throws MalformedURLException {
+        logger.log(Level.INFO, "Consuming service to submit rest {0}", new Object[]{client});
+        WebTarget target = this.client.target(new URL(this.base, "resources/concurrent/mtf").toExternalForm());
+        logger.info(target.getUri().toASCIIString());
+        String message = target.request().accept(MediaType.TEXT_PLAIN_TYPE).get(String.class);
+        logger.log(Level.INFO, "Returned message {0}", new Object[]{message});
+        assertEquals("MTF, priority 3", message);
     }
 
 }

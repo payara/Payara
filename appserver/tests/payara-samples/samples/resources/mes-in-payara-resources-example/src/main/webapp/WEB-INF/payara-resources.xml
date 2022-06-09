@@ -50,18 +50,25 @@
         <property name="password" value=""/>
         <property name="url" value="jdbc:h2:mem:hibernateExample"/>
     </jdbc-connection-pool>
-    <!-- Concurrency 3.0 style -->
-    <!-- managed-executor-service
-        jndi-name="java:app/concurrent/MESConcrurrent3"
-        maxAsync="3"
-        context="java:app/concurrent/ContextA"
-    / -->
-    <!-- Payara style -->
+    <!-- ManagedExecutorService -->
     <managed-executor-service
         jndi-name="java:app/concurrent/MESPayara"
         maximum-pool-size="3"
         context-info="Classloader,JNDI,Security,WorkArea"
         context-info-enabled="true"
         keep-alive-seconds="30"
+    />
+    <!-- ManagedScheduledExecutorService -->
+    <managed-scheduled-executor-service
+        jndi-name="java:app/concurrent/MSESPayara"
+        hung-after-seconds="10"
+        context-info="Classloader,JNDI,Security,WorkArea"
+        context-info-enabled="true"
+        keep-alive-seconds="30"
+    />
+    <!-- ManagedThreadFactory -->
+    <managed-thread-factory
+        jndi-name="java:app/concurrent/MTFPayara"
+        thread-priority="3"
     />
 </resources>

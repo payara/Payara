@@ -395,6 +395,10 @@ public class ResourcesXMLParser implements EntityResolver
                     generateWorkSecurityMap(nextKid, scope);
                 } else if (nodeName.equalsIgnoreCase(org.glassfish.resources.api.Resource.MANAGED_EXECUTOR_SERVICE)) {
                     generateManagedExecutorService(nextKid, scope);
+                } else if (nodeName.equalsIgnoreCase(org.glassfish.resources.api.Resource.MANAGED_SCHEDULED_EXECUTOR_SERVICE)) {
+                    generateManagedScheduledExecutorService(nextKid, scope);
+                } else if (nodeName.equalsIgnoreCase(org.glassfish.resources.api.Resource.MANAGED_THREAD_FACTORY)) {
+                    generateManagedThreadFactory(nextKid, scope);
                 }
             }
         }
@@ -820,6 +824,151 @@ public class ResourcesXMLParser implements EntityResolver
 
         //debug strings
         printResourceElements(managedExecutorServiceResource);
+    }
+
+    /**
+     * Generate the ManagedScheduledExecutorService resource
+     */
+    private void generateManagedScheduledExecutorService(Node nextKid, String scope) throws Exception {
+        NamedNodeMap attributes = nextKid.getAttributes();
+        if (attributes == null) {
+            return;
+        }
+
+        Resource managedScheduledExecutorServiceResource = new org.glassfish.resources.api.Resource(org.glassfish.resources.api.Resource.MANAGED_SCHEDULED_EXECUTOR_SERVICE);
+
+        Node jndiNameNode = attributes.getNamedItem(JNDI_NAME);
+        String jndiName = getScopedName(jndiNameNode.getNodeValue(), scope);
+        managedScheduledExecutorServiceResource.setAttribute(JNDI_NAME, jndiName);
+        Node corePoolSizeNode = attributes.getNamedItem(CORE_POOL_SIZE);
+        if (corePoolSizeNode != null) {
+            String corePoolSizeValue = corePoolSizeNode.getNodeValue();
+            managedScheduledExecutorServiceResource.setAttribute(CORE_POOL_SIZE, corePoolSizeValue);
+        }
+        Node contextInfoNode = attributes.getNamedItem(CONTEXT_INFO);
+        if (contextInfoNode != null) {
+            String contextInfoValue = contextInfoNode.getNodeValue();
+            managedScheduledExecutorServiceResource.setAttribute(CONTEXT_INFO, contextInfoValue);
+        }
+        Node contextInfoEnabledNode = attributes.getNamedItem(CONTEXT_INFO_ENABLED);
+        if (contextInfoEnabledNode != null) {
+            String contextInfoEnabledValue = contextInfoEnabledNode.getNodeValue();
+            managedScheduledExecutorServiceResource.setAttribute(CONTEXT_INFO_ENABLED, contextInfoEnabledValue);
+        }
+        Node enabledNode = attributes.getNamedItem(ENABLED);
+        if (enabledNode != null) {
+            String enabledValue = enabledNode.getNodeValue();
+            managedScheduledExecutorServiceResource.setAttribute(ENABLED, enabledValue);
+        }
+        Node threadpriorityNode = attributes.getNamedItem(THREAD_PRIORITY);
+        if (threadpriorityNode != null) {
+            String threadpriorityValue = threadpriorityNode.getNodeValue();
+            managedScheduledExecutorServiceResource.setAttribute(THREAD_PRIORITY, threadpriorityValue);
+        }
+        Node longrunningstasksNode = attributes.getNamedItem(LONG_RUNNING_TASKS);
+        if (longrunningstasksNode != null) {
+            String longrunningstasksValue = longrunningstasksNode.getNodeValue();
+            managedScheduledExecutorServiceResource.setAttribute(LONG_RUNNING_TASKS, longrunningstasksValue);
+        }
+        Node hungaftersecondsNode = attributes.getNamedItem(HUNG_AFTER_SECONDS);
+        if (hungaftersecondsNode != null) {
+            String hungaftersecondsValue = hungaftersecondsNode.getNodeValue();
+            managedScheduledExecutorServiceResource.setAttribute(HUNG_AFTER_SECONDS, hungaftersecondsValue);
+        }
+        Node corepoolsizeNode = attributes.getNamedItem(CORE_POOL_SIZE);
+        if (corepoolsizeNode != null) {
+            String corepoolsizeValue = corepoolsizeNode.getNodeValue();
+            managedScheduledExecutorServiceResource.setAttribute(CORE_POOL_SIZE, corepoolsizeValue);
+        }
+        Node keepalivesecondsNode = attributes.getNamedItem(KEEP_ALIVE_SECONDS);
+        if (keepalivesecondsNode != null) {
+            String keepalivesecondsValue = keepalivesecondsNode.getNodeValue();
+            managedScheduledExecutorServiceResource.setAttribute(KEEP_ALIVE_SECONDS, keepalivesecondsValue);
+        }
+        Node threadlifetimesecondsNode = attributes.getNamedItem(THREAD_LIFETIME_SECONDS);
+        if (threadlifetimesecondsNode != null) {
+            String threadlifetimesecondsValue = threadlifetimesecondsNode.getNodeValue();
+            managedScheduledExecutorServiceResource.setAttribute(THREAD_LIFETIME_SECONDS, threadlifetimesecondsValue);
+        }
+
+        NodeList children = nextKid.getChildNodes();
+        //get description
+        if (children != null) {
+            for (int ii = 0; ii < children.getLength(); ii++) {
+                if (children.item(ii).getNodeName().equals("description")) {
+                    if (children.item(ii).getFirstChild() != null) {
+                        managedScheduledExecutorServiceResource.setDescription(
+                                children.item(ii).getFirstChild().getNodeValue());
+                    }
+                }
+            }
+        }
+
+        vResources.add(managedScheduledExecutorServiceResource);
+        resourceMap.put(managedScheduledExecutorServiceResource, nextKid);
+
+        //debug strings
+        printResourceElements(managedScheduledExecutorServiceResource);
+    }
+
+    /**
+     * Generate the ManagedThreadFactory resource
+     */
+    private void generateManagedThreadFactory(Node nextKid, String scope) throws Exception {
+        NamedNodeMap attributes = nextKid.getAttributes();
+        if (attributes == null) {
+            return;
+        }
+
+        Resource managedThreadFactoryResource = new org.glassfish.resources.api.Resource(org.glassfish.resources.api.Resource.MANAGED_THREAD_FACTORY);
+
+        Node jndiNameNode = attributes.getNamedItem(JNDI_NAME);
+        String jndiName = getScopedName(jndiNameNode.getNodeValue(), scope);
+        managedThreadFactoryResource.setAttribute(JNDI_NAME, jndiName);
+        Node corePoolSizeNode = attributes.getNamedItem(CORE_POOL_SIZE);
+        if (corePoolSizeNode != null) {
+            String corePoolSizeValue = corePoolSizeNode.getNodeValue();
+            managedThreadFactoryResource.setAttribute(CORE_POOL_SIZE, corePoolSizeValue);
+        }
+        Node contextInfoNode = attributes.getNamedItem(CONTEXT_INFO);
+        if (contextInfoNode != null) {
+            String contextInfoValue = contextInfoNode.getNodeValue();
+            managedThreadFactoryResource.setAttribute(CONTEXT_INFO, contextInfoValue);
+        }
+        Node contextInfoEnabledNode = attributes.getNamedItem(CONTEXT_INFO_ENABLED);
+        if (contextInfoEnabledNode != null) {
+            String contextInfoEnabledValue = contextInfoEnabledNode.getNodeValue();
+            managedThreadFactoryResource.setAttribute(CONTEXT_INFO_ENABLED, contextInfoEnabledValue);
+        }
+        Node enabledNode = attributes.getNamedItem(ENABLED);
+        if (enabledNode != null) {
+            String enabledValue = enabledNode.getNodeValue();
+            managedThreadFactoryResource.setAttribute(ENABLED, enabledValue);
+        }
+        Node threadpriorityNode = attributes.getNamedItem(THREAD_PRIORITY);
+        if (threadpriorityNode != null) {
+            String threadpriorityValue = threadpriorityNode.getNodeValue();
+            managedThreadFactoryResource.setAttribute(THREAD_PRIORITY, threadpriorityValue);
+        }
+
+        NodeList children = nextKid.getChildNodes();
+        //get description
+        if (children != null) {
+            for (int ii = 0; ii < children.getLength(); ii++) {
+                if (children.item(ii).getNodeName().equals("description")) {
+                    if (children.item(ii).getFirstChild() != null) {
+                        managedThreadFactoryResource.setDescription(
+                                children.item(ii).getFirstChild().getNodeValue());
+                    }
+                }
+            }
+        }
+
+        vResources.add(managedThreadFactoryResource);
+        resourceMap.put(managedThreadFactoryResource, nextKid);
+
+        //debug strings
+        printResourceElements(managedThreadFactoryResource);
     }
 
     /**

@@ -51,6 +51,7 @@ public class ApplicationConfig extends Application {
     }
 
     private void addRestResourceClasses(Set<Class<?>> resources) {
+        resources.add(fish.payara.examples.MSESResource.class);
         resources.add(fish.payara.examples.PersonResource.class);
     }
 }

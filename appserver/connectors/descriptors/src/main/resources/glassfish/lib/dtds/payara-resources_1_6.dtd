@@ -94,7 +94,8 @@
     | admin-object-resource | connector-resource
     | resource-adapter-config | jdbc-connection-pool      
     | connector-connection-pool | work-security-map
-    | managed-executor-service)*)>                                              
+    | managed-executor-service | managed-scheduled-executor-service
+    | managed-thread-factory)*)>                                              
 
 
 
@@ -105,7 +106,8 @@
     admin-object-resource, connector-connection-pool,                 
     connector-resource, custom-resource, external-jndi-resource,      
     jdbc-connection-pool, jdbc-resource, mail-resource,               
-    work-security-map, property, managed-executor-service                   
+    work-security-map, property, managed-executor-service,
+    managed-scheduled-executor-service, managed-thread-factory             
 -->
 <!ELEMENT description (#PCDATA)>
 
@@ -882,13 +884,13 @@ mapped-group CDATA #REQUIRED>
         Determines whether the resource is enabled at runtime. The default
         value is true.
 
-    contextinfoenabled
+    context-info-enabled
         Determines whether container contexts are propagated to threads. If
         set to true, the contexts specified in the contextinfo option are
         propagated. If set to false, no contexts are propagated and the
         contextinfo option is ignored. The default value is true.
 
-    contextinfo
+    context-info
         Specifies individual container contexts to propagate to threads.
         Valid values are Classloader, JNDI, Security, and WorkArea. Values
         are specified in a comma-separated list and are case-insensitive.
@@ -967,5 +969,127 @@ mapped-group CDATA #REQUIRED>
     keep-alive-seconds CDATA "60"
     thread-lifetime-seconds CDATA "0"
     task-queue-capacity CDATA "2147483647"
+    >
+
+<!-- managed-scheduled-executor-service
+    ManagedScheduledExecutorService resource definition                 
+
+  attributes
+    jndi_name
+        The JNDI name of this resource.
+
+    enabled
+        Determines whether the resource is enabled at runtime. The default
+        value is true.
+
+    context-info-enabled
+        Determines whether container contexts are propagated to threads. If
+        set to true, the contexts specified in the contextinfo option are
+        propagated. If set to false, no contexts are propagated and the
+        contextinfo option is ignored. The default value is true.
+
+    context-info
+        Specifies individual container contexts to propagate to threads.
+        Valid values are Classloader, JNDI, Security, and WorkArea. Values
+        are specified in a comma-separated list and are case-insensitive.
+        All contexts are propagated by default.
+
+    thread-priority
+        Specifies the priority to assign to created threads. The default
+        value is 5.
+
+    long-runnings-tasks
+        Specifies whether the resource should be used for long-running
+        tasks. The default value is false. If set to true, long-running
+        tasks are not reported as stuck.
+
+    hung-after-seconds
+        Specifies the number of seconds that a task can execute before it
+        is considered unresponsive. The default value is 0, which means
+        that tasks are never considered unresponsive.
+
+    core-pool-size
+        Specifies the number of threads to keep in a thread pool, even if
+        they are idle. The default value is 0, which means that a thread is
+        created when the first task is scheduled.
+
+    keep-alive-seconds
+        Specifies the number of seconds that threads can remain idle when
+        the number of threads is greater than corepoolsize. The default
+        value is 60.
+
+    thread-lifetime-seconds
+        Specifies the number of seconds that threads can remain in a thread
+        pool before being purged, regardless of whether the number of
+        threads is greater than corepoolsize or whether the threads are
+        idle. The default value is 0, which means that threads are never
+        purged.
+
+  children
+        description                                                            
+            Textual Description                                       
+
+  Used in:
+    resources                                                         
+-->
+<!ELEMENT managed-scheduled-executor-service (description?)>
+
+<!ATTLIST managed-scheduled-executor-service
+    jndi-name CDATA #REQUIRED
+    enabled %boolean; "true"
+    context-info-enabled %boolean; "true"
+    context-info CDATA "Classloader,JNDI,Security,WorkArea"
+    core-pool-size CDATA "0"
+    thread-priority CDATA "5"
+    long-runnings-tasks %boolean; "false"
+    hung-after-seconds CDATA "0"
+    core-pool-size CDATA "0"
+    keep-alive-seconds CDATA "60"
+    thread-lifetime-seconds CDATA "0"
+    >
+
+<!-- managed-thread-factory
+    ManagedThreadFactory resource definition                 
+
+  attributes
+    jndi_name
+        The JNDI name of this resource.
+
+    enabled
+        Determines whether the resource is enabled at runtime. The default
+        value is true.
+
+    context-info-enabled
+        Determines whether container contexts are propagated to threads. If
+        set to true, the contexts specified in the contextinfo option are
+        propagated. If set to false, no contexts are propagated and the
+        contextinfo option is ignored. The default value is true.
+
+    context-info
+        Specifies individual container contexts to propagate to threads.
+        Valid values are Classloader, JNDI, Security, and WorkArea. Values
+        are specified in a comma-separated list and are case-insensitive.
+        All contexts are propagated by default.
+
+    thread-priority
+        Specifies the priority to assign to created threads. The default
+        value is 5.
+
+  children
+        description                                                            
+            Textual Description                                       
+
+  Used in:
+    resources                                                         
+-->
+<!ELEMENT managed-thread-factory (description?)>
+
+<!ATTLIST managed-thread-factory
+    jndi-name CDATA #REQUIRED
+    enabled %boolean; "true"
+    context-info-enabled %boolean; "true"
+    context-info CDATA "Classloader,JNDI,Security,WorkArea"
+    core-pool-size CDATA "0"
+    thread-priority CDATA "5"
     >
 

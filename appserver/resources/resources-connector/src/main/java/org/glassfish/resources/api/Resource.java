@@ -64,7 +64,8 @@ public class Resource {
     public static final String CONNECTOR_CONNECTION_POOL = "connector-connection-pool";
 
     public static final String MANAGED_EXECUTOR_SERVICE = "managed-executor-service";
-    // TODO: add also managed-scheduled-executor, managed-thread-factory
+    public static final String MANAGED_SCHEDULED_EXECUTOR_SERVICE = "managed-scheduled-executor-service";
+    public static final String MANAGED_THREAD_FACTORY = "managed-thread-factory";
 
     public static final String RESOURCE_ADAPTER_CONFIG = "resource-adapter-config";
     public static final String PERSISTENCE_MANAGER_FACTORY_RESOURCE = "persistence-manager-factory-resource";

@@ -47,7 +47,7 @@
     <name>Payara Samples - ManagedExecutorService in payara-resources.xml</name>
     <parent>
         <groupId>fish.payara.samples</groupId>
-        <artifactId>payara-samples-profiled-tests</artifactId>
+        <artifactId>payara-samples-resources-tests</artifactId>
         <version>5.2022.3-SNAPSHOT</version>
     </parent>
 
