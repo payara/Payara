@@ -570,6 +570,11 @@
                 <version>${jakarta.security.enterprise.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.glassfish.soteria</groupId>
+                <artifactId>soteria.spi.bean.decorator.weld</artifactId>
+                <version>${jakarta.security.enterprise.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.eclipse.persistence</groupId>
                 <artifactId>org.eclipse.persistence.core</artifactId>
                 <version>${eclipselink.version}</version>

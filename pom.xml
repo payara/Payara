@@ -183,8 +183,8 @@
         <cdi-api.version>3.0.0</cdi-api.version>
         <weld.version>4.0.0.Final</weld.version>
         <weld-api.version>4.0.Final</weld-api.version>
-        <jakarta.security.enterprise-api.version>2.0.0</jakarta.security.enterprise-api.version>
-        <jakarta.security.enterprise.version>2.0.1</jakarta.security.enterprise.version>
+        <jakarta.security.enterprise-api.version>3.0.0</jakarta.security.enterprise-api.version>
+        <jakarta.security.enterprise.version>3.0.0-M5</jakarta.security.enterprise.version>
         <jakarta.security.jacc-api.version>2.1.0</jakarta.security.jacc-api.version>
         <jakarta.security.auth.message-api.version>3.0.0</jakarta.security.auth.message-api.version>
         <exousia.version>2.1.0-M2</exousia.version>
