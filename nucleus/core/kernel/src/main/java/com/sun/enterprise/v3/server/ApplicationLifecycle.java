@@ -829,6 +829,10 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             return Collections.emptyList();
         }
 
+        for(URI externalLib : DeploymentUtils.getExternalLibraries(deploymentContext.getSource())) {
+            externalLibArchives.add(archiveFactory.openArchive(new File(externalLib.getPath())));
+        }
+
         for (URI externalLib : deploymentContext.getAppLibs()) {
             externalLibArchives.add(archiveFactory.openArchive(new File(externalLib.getPath())));
         }
