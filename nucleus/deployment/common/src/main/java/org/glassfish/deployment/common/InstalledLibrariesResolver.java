@@ -308,7 +308,9 @@ public class InstalledLibrariesResolver {
                                         libraries[i].getAbsolutePath() +
                                         "; it is a directory");
                         continue;
-                    } else if (!libraries[i].getName().toLowerCase(Locale.getDefault()).endsWith(".jar")) {
+                    }
+
+                    if (!libraries[i].getName().toLowerCase(Locale.getDefault()).endsWith(".jar")) {
                         deplLogger.log(Level.FINE,
                                 "Skipping installed library processing on " +
                                         libraries[i].getAbsolutePath() +
@@ -329,8 +331,7 @@ public class InstalledLibrariesResolver {
 
                         //Extension-Name of optional package
                         if (manifest != null) {
-                            String extName = manifest.getMainAttributes().
-                                    getValue(Attributes.Name.EXTENSION_NAME);
+                            String extName = manifest.getMainAttributes().getValue(Attributes.Name.EXTENSION_NAME);
                             String specVersion = manifest.getMainAttributes().
                                     getValue(Attributes.Name.SPECIFICATION_VERSION);
                             deplLogger.fine("Extension " + libraries[i].getAbsolutePath() +
