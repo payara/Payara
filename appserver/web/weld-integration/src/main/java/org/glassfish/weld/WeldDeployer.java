@@ -525,20 +525,15 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                 invocationManager.preInvoke(componentInvocation);
                 bootstrap.startExtensions(postProcessExtensions(deploymentImpl.getExtensions(), archives));
                 bootstrap.startContainer(deploymentImpl.getContextId() + ".bda", SERVLET, deploymentImpl);
-                // Install support for delegating some EJB tasks to the right bean archive.
-                // Without this, when the a bean manager for the root bean archive is used, it will not
-                // find the EJB definitions in a sub-archive, and will treat the bean as a normal CDI bean.
-                //
-                // For EJB beans a few special rules have to be taken into account, and without applying these
-                // rules CreateBeanAttributesTest#testBeanAttributesForSessionBean fails.
+
+                //This changes added to pass the following test
+                // CreateBeanAttributesTest#testBeanAttributesForSessionBean
                 if(!deploymentImpl.getBeanDeploymentArchives().isEmpty()) {
                     BeanDeploymentArchive rootArchive = deploymentImpl.getBeanDeploymentArchives().get(0);
                     ServiceRegistry rootServices = bootstrap.getManager(rootArchive).getServices();
                     EjbSupport originalEjbSupport = rootServices.get(EjbSupport.class);
                     if (originalEjbSupport != null) {
-                        // We need to create a proxy instead of a simple wrapper, since EjbSupport
-                        // references the type "EnhancedAnnotatedType", which the Weld OSGi bundle doesn't
-                        // export.
+                        // We need to create a proxy instead of a simple wrapper
                         EjbSupport proxyEjbSupport = (EjbSupport) java.lang.reflect.Proxy.newProxyInstance(EjbSupport.class.getClassLoader(),
                                 new Class[]{EjbSupport.class}, new java.lang.reflect.InvocationHandler() {
                                     @Override
@@ -547,7 +542,6 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
 
                                             EjbSupport targetEjbSupport = getTargetEjbSupport((Class<?>) args[0]);
 
-                                            // Unlikely to be null, but let's check to be sure.
                                             if (targetEjbSupport != null) {
                                                 return method.invoke(targetEjbSupport, args);
                                             }

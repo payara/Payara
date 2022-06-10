@@ -54,7 +54,6 @@ import com.sun.enterprise.config.serverbeans.ServerTags;
 import com.sun.jsftemplating.annotation.Handler;
 import com.sun.jsftemplating.annotation.HandlerInput;
 import com.sun.jsftemplating.annotation.HandlerOutput;
-//import com.sun.jsftemplating.el.PageSessionResolver;
 import com.sun.jsftemplating.handlers.NavigationHandlers;
 import com.sun.jsftemplating.layout.descriptors.handler.HandlerContext;
 import com.sun.jsftemplating.util.Util;
@@ -847,7 +846,6 @@ public class CommonHandlers {
 	// Get Page Session...
 	UIViewRoot root = ctx.getViewRoot();
 	Map<String, Serializable> pageSession = null;
-	    //PageSessionResolver.getPageSession(ctx, root);
 	if (pageSession == null) {
 	    pageSession = createPageSession(ctx, root);
 	}
@@ -906,13 +904,8 @@ public class CommonHandlers {
         if (root == null) {
             root = ctx.getViewRoot();
         }
-        // Create it...
         Map<String, Serializable> map = new HashMap<>(4);
-
-        // Store it...
         root.getAttributes().put("_ps", map);
-
-        // Return it...
         return map;
     }
     

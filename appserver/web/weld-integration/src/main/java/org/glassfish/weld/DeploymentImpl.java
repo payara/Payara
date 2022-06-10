@@ -701,7 +701,8 @@ public class DeploymentImpl implements CDI11Deployment {
     private void processBdasForAppLibs( ReadableArchive archive, DeploymentContext context ) {
         List<RootBeanDeploymentArchive> libBdas = new ArrayList<>();
         try {
-            // each appLib in context.getAppLibs is a URI of the form "file:/glassfish/runtime/trunk/glassfish4/glassfish/domains/domain1/lib/applibs/mylib.jar"
+            // each appLib in context.getAppLibs is a URI of the form
+            // "file:/glassfish/runtime/trunk/glassfish4/glassfish/domains/domain1/lib/applibs/mylib.jar"
             List<URI> appLibs = context.getAppLibs();
 
             Set<String> installedLibraries = InstalledLibrariesResolver.getInstalledLibraries(archive);
