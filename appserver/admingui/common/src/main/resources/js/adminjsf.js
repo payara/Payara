@@ -2684,8 +2684,7 @@ admingui.woodstock = {
 
     dropDownChanged: function(jumpDropdown) {
         if (typeof(jumpDropdown) === "string") {
-            console.log(jumpDropdown);
-            jumpDropdown = document.getElementById("propertyForm:propertySheetLogResults:propertSectionLogResults:instanceProp:instance"); // webui.suntheme.dropDown.getSelectElement(jumpDropdown);
+            jumpDropdown = document.getElementById(jumpDropdown); // webui.suntheme.dropDown.getSelectElement(jumpDropdown);
         }
 
         // Force WS "submitter" flag to true
