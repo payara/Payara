@@ -146,8 +146,8 @@
 
 </ui:event>
 <sun:html id="html2">
-	<h:outputScript name="jsf.js" library="jakarta.faces" target="head" />
 <sun:head id="propertyhead" title="$resource{i18nc.logViewer.PageTitle}" debug="false" parseOnLoad="false">
+	<h:outputScript name="jsf.js" library="jakarta.faces" target="head" />
     <sun:script url="/resource/common/js/adminjsf.js" />
 </sun:head>
 <sun:body onLoad="javascript: checkHiddenElements(); setFocusTableResults('#{hasResults}');" id="body3">
