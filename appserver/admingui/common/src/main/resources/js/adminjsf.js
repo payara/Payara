@@ -2684,7 +2684,7 @@ admingui.woodstock = {
 
     dropDownChanged: function(jumpDropdown) {
         if (typeof(jumpDropdown) === "string") {
-            jumpDropdown = webuijsf.suntheme.dropDown.getSelectElement(jumpDropdown);
+            jumpDropdown = admingui.woodstock.dropDownChanged(jumpDropdown); // webui.suntheme.dropDown.getSelectElement(jumpDropdown);
         }
 
         // Force WS "submitter" flag to true
@@ -2702,6 +2702,7 @@ admingui.woodstock = {
         submitterField.value = "true";
 
         // FIXME: Not sure why the following is done...
+        /* webui breaks the code
         var listItem = jumpDropdown.options;
         for (var cntr=0; cntr < listItem.length; ++cntr) {
             if (listItem[cntr].className ==
@@ -2721,6 +2722,7 @@ admingui.woodstock = {
                 listItem[cntr].className = webui.suntheme.props.jumpDropDown.optionClassName;
             }
         }
+         */
         admingui.ajax.postAjaxRequest(jumpDropdown);
         return false;
     },
