@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld;
 
@@ -64,6 +64,7 @@ import static org.glassfish.weld.BeanDeploymentArchiveImpl.stripMavenVersion;
 import static org.glassfish.weld.util.Util.initializeWeldSingletonProvider;
 import static org.jboss.weld.bootstrap.api.Environments.SERVLET;
 import static org.jboss.weld.bootstrap.spi.BeanDiscoveryMode.NONE;
+import static org.jboss.weld.manager.BeanManagerLookupService.lookupBeanManager;
 
 import java.security.AccessController;
 import java.util.Collection;
@@ -129,6 +130,9 @@ import org.jboss.weld.security.NewInstanceAction;
 import org.jboss.weld.security.spi.SecurityServices;
 import org.jboss.weld.serialization.spi.ProxyServices;
 import org.jboss.weld.transaction.spi.TransactionServices;
+import org.jboss.weld.bootstrap.api.ServiceRegistry;
+import org.jboss.weld.module.EjbSupport;
+import org.jboss.weld.manager.BeanManagerImpl;
 import org.jvnet.hk2.annotations.Service;
 
 import com.sun.enterprise.container.common.spi.util.InjectionManager;
@@ -521,6 +525,64 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                 invocationManager.preInvoke(componentInvocation);
                 bootstrap.startExtensions(postProcessExtensions(deploymentImpl.getExtensions(), archives));
                 bootstrap.startContainer(deploymentImpl.getContextId() + ".bda", SERVLET, deploymentImpl);
+                // Install support for delegating some EJB tasks to the right bean archive.
+                // Without this, when the a bean manager for the root bean archive is used, it will not
+                // find the EJB definitions in a sub-archive, and will treat the bean as a normal CDI bean.
+                //
+                // For EJB beans a few special rules have to be taken into account, and without applying these
+                // rules CreateBeanAttributesTest#testBeanAttributesForSessionBean fails.
+                if(!deploymentImpl.getBeanDeploymentArchives().isEmpty()) {
+                    BeanDeploymentArchive rootArchive = deploymentImpl.getBeanDeploymentArchives().get(0);
+                    ServiceRegistry rootServices = bootstrap.getManager(rootArchive).getServices();
+                    EjbSupport originalEjbSupport = rootServices.get(EjbSupport.class);
+                    if (originalEjbSupport != null) {
+                        // We need to create a proxy instead of a simple wrapper, since EjbSupport
+                        // references the type "EnhancedAnnotatedType", which the Weld OSGi bundle doesn't
+                        // export.
+                        EjbSupport proxyEjbSupport = (EjbSupport) java.lang.reflect.Proxy.newProxyInstance(EjbSupport.class.getClassLoader(),
+                                new Class[]{EjbSupport.class}, new java.lang.reflect.InvocationHandler() {
+                                    @Override
+                                    public Object invoke(Object proxy, java.lang.reflect.Method method, Object[] args) throws Throwable {
+                                        if (method.getName().equals("isEjb")) {
+
+                                            EjbSupport targetEjbSupport = getTargetEjbSupport((Class<?>) args[0]);
+
+                                            // Unlikely to be null, but let's check to be sure.
+                                            if (targetEjbSupport != null) {
+                                                return method.invoke(targetEjbSupport, args);
+                                            }
+
+                                        } else if (method.getName().equals("createSessionBeanAttributes")) {
+                                            Object enhancedAnnotated = args[0];
+
+                                            Class<?> beanClass = (Class<?>)
+                                                    enhancedAnnotated.getClass()
+                                                            .getMethod("getJavaClass")
+                                                            .invoke(enhancedAnnotated);
+
+                                            EjbSupport targetEjbSupport = getTargetEjbSupport(beanClass);
+                                            if (targetEjbSupport != null) {
+                                                return method.invoke(targetEjbSupport, args);
+                                            }
+                                        }
+
+                                        return method.invoke(originalEjbSupport, args);
+                                    }
+
+                                    private EjbSupport getTargetEjbSupport(Class<?> beanClass) {
+                                        BeanDeploymentArchive ejbArchive = deploymentImpl.getBeanDeploymentArchive(beanClass);
+                                        if (ejbArchive == null) {
+                                            return null;
+                                        }
+
+                                        BeanManagerImpl ejbBeanManager = lookupBeanManager(beanClass, bootstrap.getManager(ejbArchive));
+
+                                        return ejbBeanManager.getServices().get(EjbSupport.class);
+                                    }
+                                });
+                        rootServices.add(EjbSupport.class, proxyEjbSupport);
+                    }
+                }
                 bootstrap.startInitialization();
                 fireProcessInjectionTargetEvents(bootstrap, deploymentImpl);
                 bootstrap.deployBeans();
