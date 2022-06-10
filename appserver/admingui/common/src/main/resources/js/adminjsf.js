@@ -2684,7 +2684,7 @@ admingui.woodstock = {
 
     dropDownChanged: function(jumpDropdown) {
         if (typeof(jumpDropdown) === "string") {
-            jumpDropdown = webui.suntheme.dropDown.getSelectElement(jumpDropdown);
+            jumpDropdown = webuijsf.suntheme.dropDown.getSelectElement(jumpDropdown);
         }
 
         // Force WS "submitter" flag to true
