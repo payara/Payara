@@ -2382,11 +2382,9 @@ admingui.ajax = {
         }
 
         if (!contentNode) {
-            var htmlElement = document.getElementsByTagName("html")[0]
-            htmlElement.innerHTML = result;
-        } else {
-            contentNode.innerHTML = result;
+            contentNode = document.getElementsByTagName("html")[0];
         }
+        contentNode.innerHTML = result;
 
         if (viewState != null) {
             var form = document.getElementById(this.context.formid);
