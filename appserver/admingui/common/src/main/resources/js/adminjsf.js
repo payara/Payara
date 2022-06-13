@@ -2622,10 +2622,12 @@ admingui.ajax = {
     },
 
     getResource: function(path, callback) {
-        admingui.ajax.invoke("gf.serveResource", {
-            path:path,
-            content:content
-        }, callback, 1, true);
+        if (content) {
+            admingui.ajax.invoke("gf.serveResource", {
+                path: path,
+                content: content
+            }, callback, 1, true);
+        }
     },
 
     /**
