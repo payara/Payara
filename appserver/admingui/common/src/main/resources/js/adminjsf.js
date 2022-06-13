@@ -2601,7 +2601,9 @@ admingui.ajax = {
             }
             var src = document.getElementById('execButton');
             if ((src == null) || (typeof(src) === 'undefined')) {
-                alert("'execButton' not found!  Unable to submit JSF2 Ajax Request!");
+                if (args.content !== '') {
+                    alert("'execButton' not found!  Unable to submit JSF2 Ajax Request!");
+                }
             } else {
                 // Don't ping b/c this is from the header and therefor is a ping
                 jsf.ajax.request(src, null,
