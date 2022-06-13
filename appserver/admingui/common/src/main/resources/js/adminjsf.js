@@ -2399,9 +2399,13 @@ admingui.ajax = {
         }
 
         // FIXME: These 2 functions (should) only need be replaced after FPR...
-        // FIXME: The next 2 lines were commented because webui is not recognized and the code breaks with it
-        // webui.suntheme.hyperlink.submit = admingui.woodstock.hyperLinkSubmit;
-        // webui.suntheme.jumpDropDown.changed = admingui.woodstock.dropDownChanged;
+        require(['webui/suntheme/hyperlink'], function (hyperlink) {
+            hyperlink.submit = admingui.woodstock.hyperLinkSubmit;
+        });
+
+        require(['webui/suntheme/jumpDropDown'], function (jumpDropDown) {
+            jumpDropDown.changed = admingui.woodstock.dropDownChanged;
+        });
         var contextObj = {};
         admingui.ajax.processElement(contextObj, contentNode, true);
         admingui.ajax.processScripts(contextObj);
