@@ -2380,7 +2380,14 @@ admingui.ajax = {
                 }
             }
         }
-        contentNode.innerHTML = result;
+
+        if (!contentNode) {
+            var htmlElement = document.getElementsByTagName("html")[0]
+            htmlElement.innerHTML = result;
+        } else {
+            contentNode.innerHTML = result;
+        }
+
         if (viewState != null) {
             var form = document.getElementById(this.context.formid);
             if (!form) {
