@@ -2684,46 +2684,46 @@ admingui.woodstock = {
 
     dropDownChanged: function(jumpDropdown) {
         if (typeof(jumpDropdown) === "string") {
-            jumpDropdown = document.getElementById(jumpDropdown); // webui.suntheme.dropDown.getSelectElement(jumpDropdown);
+            require(['webui/suntheme/dropDown'], function (dropDown) {
+                jumpDropdown = dropDown.getSelectElement(jumpDropdown);
+
+                // Force WS "submitter" flag to true
+                var submitterFieldId = jumpDropdown.id + "_submitter";
+                var submitterField = document.getElementById(submitterFieldId);
+                if (!submitterField) {
+                    submitterFieldId = jumpDropdown.parentNode.id + "_submitter";
+                    submitterField = document.getElementById(submitterFieldId);
+                    if (!submitterField) {
+                        admingui.util.log("Unable to find dropDown submitter for: "
+                            + jumpDropdown.id);
+                        return false;
+                    }
+                }
+                submitterField.value = "true";
+                require(['webui/suntheme/props'], function (props) {
+                    // FIXME: Not sure why the following is done...
+                    var listItem = jumpDropdown.options;
+                    for (var cntr=0; cntr < listItem.length; ++cntr) {
+                        if (listItem[cntr].className == props.jumpDropDown.optionSeparatorClassName
+                            || listItem[cntr].className == props.jumpDropDown.optionGroupClassName) {
+                            continue;
+                        } else if (listItem[cntr].disabled) {
+                            // Regardless if the option is currently selected or not,
+                            // the disabled option style should be used when the option
+                            // is disabled. So, check for the disabled item first.
+                            // See CR 6317842.
+                            listItem[cntr].className = props.jumpDropDown.optionDisabledClassName;
+                        } else if (listItem[cntr].selected) {
+                            listItem[cntr].className = props.jumpDropDown.optionSelectedClassName;
+                        } else {
+                            listItem[cntr].className = props.jumpDropDown.optionClassName;
+                        }
+                    }
+                    admingui.ajax.postAjaxRequest(jumpDropdown);
+                });
+            });
         }
 
-        // Force WS "submitter" flag to true
-        var submitterFieldId = jumpDropdown.id + "_submitter";
-        var submitterField = document.getElementById(submitterFieldId);
-        if (!submitterField) {
-            submitterFieldId = jumpDropdown.parentNode.id + "_submitter";
-            submitterField = document.getElementById(submitterFieldId);
-            if (!submitterField) {
-                admingui.util.log("Unable to find dropDown submitter for: "
-                    + jumpDropdown.id);
-                return false;
-            }
-        }
-        submitterField.value = "true";
-
-        // FIXME: Not sure why the following is done...
-        /* webui breaks the code
-        var listItem = jumpDropdown.options;
-        for (var cntr=0; cntr < listItem.length; ++cntr) {
-            if (listItem[cntr].className ==
-                webui.suntheme.props.jumpDropDown.optionSeparatorClassName
-                || listItem[cntr].className ==
-                webui.suntheme.props.jumpDropDown.optionGroupClassName) {
-                continue;
-            } else if (listItem[cntr].disabled) {
-                // Regardless if the option is currently selected or not,
-                // the disabled option style should be used when the option
-                // is disabled. So, check for the disabled item first.
-                // See CR 6317842.
-                listItem[cntr].className = webui.suntheme.props.jumpDropDown.optionDisabledClassName;
-            } else if (listItem[cntr].selected) {
-                listItem[cntr].className = webui.suntheme.props.jumpDropDown.optionSelectedClassName;
-            } else {
-                listItem[cntr].className = webui.suntheme.props.jumpDropDown.optionClassName;
-            }
-        }
-         */
-        admingui.ajax.postAjaxRequest(jumpDropdown);
         return false;
     },
 
