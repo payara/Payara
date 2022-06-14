@@ -90,8 +90,7 @@ public class ASClassLoaderUtil {
     @LogMessageInfo(message = "unexpected error in getting urls", level="WARNING")
     private static final String UNEXPECTED_EXCEPTION = "NCLS-DEPLOYMENT-00018";
 
-    @LogMessageInfo(message = "unexpected error when trying to get external lib", level="WARNING")
-    private static final String UNEXPECTED_EXTLIB_OPEN_EXCEPTION = "NCLS-DEPLOYMENT-00019";
+    private static final String UNEXPECTED_EXTLIB_OPEN_EXCEPTION = "Unexpected error when trying to get external lib";
 
     private static String modulesClassPath = null;
 
