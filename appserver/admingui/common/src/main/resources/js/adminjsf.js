@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-/*Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+/*Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
 /*
  * Common utility
  */
@@ -2399,8 +2399,13 @@ admingui.ajax = {
         }
 
         // FIXME: These 2 functions (should) only need be replaced after FPR...
-        webui.suntheme.hyperlink.submit = admingui.woodstock.hyperLinkSubmit;
-        webui.suntheme.jumpDropDown.changed = admingui.woodstock.dropDownChanged;
+        require(['webui/suntheme/hyperlink'], function (hyperlink) {
+            hyperlink.submit = admingui.woodstock.hyperLinkSubmit;
+        });
+
+        require(['webui/suntheme/jumpDropDown'], function (jumpDropDown) {
+            jumpDropDown.changed = admingui.woodstock.dropDownChanged;
+        });
         var contextObj = {};
         admingui.ajax.processElement(contextObj, contentNode, true);
         admingui.ajax.processScripts(contextObj);
