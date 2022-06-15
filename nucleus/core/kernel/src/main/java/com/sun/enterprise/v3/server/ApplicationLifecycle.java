@@ -670,6 +670,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             }
             StructuredDeploymentTracing tracing = StructuredDeploymentTracing.load(context);
             Boolean skipScanExternalLibProp = Boolean.valueOf(context.getAppProps().getProperty(DeploymentProperties.SKIP_SCAN_EXTERNAL_LIB));
+
             Parser parser = getDeployableParser(context.getSource(), skipScanExternalLibProp, false, tracing,
                     context.getLogger(), context);
             ParsingContext parsingContext = parser.getContext();
@@ -683,9 +684,10 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                                       boolean modelUnAnnotatedMembers, StructuredDeploymentTracing tracing,
                                       Logger logger, DeploymentContext deploymentContext) throws IOException {
         Parser parser = new Parser(createBuilder(modelUnAnnotatedMembers, logger).build());
-        ReadableArchiveScannerAdapter scannerAdapter = new ReadableArchiveScannerAdapter(parser, source);
-        DeploymentSpan mainScanSpan = tracing.startSpan(DeploymentTracing.AppStage.CLASS_SCANNING, source.getName());
-        return processParsing(skipScanExternalLibProp, tracing, parser, scannerAdapter, mainScanSpan, deploymentContext);
+        try(ReadableArchiveScannerAdapter scannerAdapter = new ReadableArchiveScannerAdapter(parser, source)) {
+            DeploymentSpan mainScanSpan = tracing.startSpan(DeploymentTracing.AppStage.CLASS_SCANNING, source.getName());
+            return processParsing(skipScanExternalLibProp, tracing, parser, scannerAdapter, mainScanSpan, deploymentContext);
+        }
     }
 
     public Parser getDeployableParser(ReadableArchive source, boolean skipScanExternalLibProp,
@@ -730,20 +732,17 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             throws IOException {
         try {
             parser.parse(scannerAdapter, () -> mainScanSpan.close());
-            for (ReadableArchive externalLibArchive : getExternalLibraries(skipScanExternalLibProp, deploymentContext)) {
-                ReadableArchiveScannerAdapter libAdapter = null;
-                try {
-                    DeploymentSpan span = tracing.startSpan(DeploymentTracing.AppStage.CLASS_SCANNING, externalLibArchive.getName());
-                    libAdapter = new ReadableArchiveScannerAdapter(parser, externalLibArchive);
+            List<ReadableArchive> externalLibraries = getExternalLibraries(skipScanExternalLibProp, deploymentContext);
+            for (ReadableArchive externalLibArchive : externalLibraries) {
+                DeploymentSpan span = tracing.startSpan(DeploymentTracing.AppStage.CLASS_SCANNING, externalLibArchive.getName());
+                try (ReadableArchiveScannerAdapter libAdapter = new ReadableArchiveScannerAdapter(parser, externalLibArchive)) {
                     parser.parse(libAdapter, () -> span.close());
-                } finally {
-                    if (libAdapter != null) {
-                        libAdapter.close();
-                    }
                 }
             }
             parser.awaitTermination();
-            scannerAdapter.close();
+            for(ReadableArchive externalLibArchive: externalLibraries) {
+                externalLibArchive.close();
+            }
             return parser;
         } catch (InterruptedException | java.net.URISyntaxException e) {
             throw new IOException(e);
