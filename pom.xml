@@ -46,7 +46,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>fish.payara.server</groupId>
     <artifactId>payara-aggregator</artifactId>
-    <version>6.2022.1.Alpha3-SNAPSHOT</version>
+    <version>6.2022.1.Alpha4-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Payara Project</name>
@@ -62,7 +62,7 @@
         <connection>scm:git:git@github.com:payara/payara.git</connection>
         <url>scm:git:git@github.com:payara/payara.git</url>
         <developerConnection>scm:git:git@github.com:payara/payara.git</developerConnection>
-        <tag>payara-server-6.2022.1.Alpha3-SNAPSHOT</tag>
+        <tag>payara-server-6.2022.1.Alpha4-SNAPSHOT</tag>
     </scm>
 
     <issueManagement>
@@ -160,8 +160,7 @@
         <stax-api.version>1.0-2</stax-api.version>
         <jackson.version>2.13.1</jackson.version>
         <snakeyaml.version>1.29</snakeyaml.version>
-        <hazelcast.version>4.2.4</hazelcast.version>
-        <hazelcast.kubernetes.version>2.2.3.payara-p1</hazelcast.kubernetes.version>
+        <hazelcast.version>5.1.1</hazelcast.version>
         <jaxb-api.version>4.0.0</jaxb-api.version>
         <jaxb-impl.version>4.0.0-M4</jaxb-impl.version>
         <jakarta.ejb-api.version>4.0.0</jakarta.ejb-api.version>
@@ -187,7 +186,7 @@
         <jakarta.security.enterprise-api.version>2.0.0</jakarta.security.enterprise-api.version>
         <jakarta.security.enterprise.version>2.0.1</jakarta.security.enterprise.version>
         <jakarta.security.jacc-api.version>2.1.0</jakarta.security.jacc-api.version>
-        <jakarta.security.auth.message-api.version>2.0.0</jakarta.security.auth.message-api.version>
+        <jakarta.security.auth.message-api.version>3.0.0</jakarta.security.auth.message-api.version>
         <exousia.version>2.1.0-M2</exousia.version>
         <jms-api.version>3.1.0</jms-api.version>
         <mq.version>6.1.0.payara-p2</mq.version>
@@ -208,7 +207,7 @@
         <istack-commons-runtime.version>4.0.1</istack-commons-runtime.version>
         <jline.version>3.20.0</jline.version>
         <wsdl4j.version>1.6.3</wsdl4j.version>
-        <parsson.version>1.1.0</parsson.version>
+        <parsson.version>1.1.1.payara-p1</parsson.version>
         <jsonp-api.version>2.1.0</jsonp-api.version>
         <jbi.version>1.0</jbi.version>
         <!--<jakarta-platform.version>10.0.0-SNAPSHOT</jakarta-platform.version>-->

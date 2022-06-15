@@ -47,7 +47,7 @@
     <parent>
         <artifactId>external</artifactId>
         <groupId>fish.payara.server.internal.packager</groupId>
-        <version>6.2022.1.Alpha3-SNAPSHOT</version>
+        <version>6.2022.1.Alpha4-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -79,6 +79,12 @@
         <dependency>
             <groupId>jakarta.enterprise</groupId>
             <artifactId>jakarta.enterprise.cdi-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        
+        <dependency>
+            <groupId>jakarta.authentication</groupId>
+            <artifactId>jakarta.authentication-api</artifactId>
             <scope>provided</scope>
         </dependency>
 
@@ -119,8 +125,10 @@
                                     jakarta.enterprise.cdi-api,
                                     jakarta.interceptor-api,
                                     jakarta.xml.bind-api,
+                                    jakarta.security.auth.message-api,
                                     com.sun.xml.bind.jaxb-osgi,
                                     jakarta.servlet.jsp.jstl-api
+
                                 </Require-Bundle>
                                 <!-- Manually specify the shim versions of packages to be exported via this bundle -->
                                 <!-- Note the "shortened" syntax here: For every API the packages are delimited with
@@ -155,6 +163,12 @@
                                     jakarta.enterprise.inject.spi;
                                     jakarta.enterprise.inject.spi.configurator;
                                     jakarta.enterprise.util;version="4.0.99";shim="true",
+
+                                    <!-- Jakarta Authentication -->
+                                    jakarta.security.auth.message.callback;
+                                    jakarta.security.auth.message.config;
+                                    jakarta.security.auth.message.module;
+                                    jakarta.security.auth.message;version="2.0.0";shim="true",
 
                                     <!-- XML WS -->
                                     org.apache.xml.security;version="2.3.99";shim="true",
