@@ -717,7 +717,7 @@ public class DeploymentImpl implements CDI11Deployment {
                                     String bdaId = archive.getName() + "_" + libArchive.getName();
                                     RootBeanDeploymentArchive rootBda =
                                         new RootBeanDeploymentArchive(libArchive,
-                                                                      Collections.<EjbDescriptor>emptyList(),
+                                                                      Collections.emptyList(),
                                                                       context,
                                                                       bdaId );
                                     libBdas.add(rootBda);
