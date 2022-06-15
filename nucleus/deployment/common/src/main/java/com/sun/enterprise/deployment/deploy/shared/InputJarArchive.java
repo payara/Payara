@@ -241,6 +241,10 @@ public class InputJarArchive extends JarArchive implements ReadableArchive {
      * @param entryName entry name
      */
     public InputStream getEntry(String entryName) throws IOException {
+        //for the momment this is a fix to prevent inputstream issues
+        if(jarFile == null) {
+            open(this.getURI());
+        }
         if (jarFile != null) {
             ZipEntry ze = jarFile.getEntry(entryName);
             if(ze == null) {
