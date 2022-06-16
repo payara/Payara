@@ -165,7 +165,7 @@
         <jaxb-impl.version>4.0.0-M4</jaxb-impl.version>
         <jakarta.ejb-api.version>4.0.0</jakarta.ejb-api.version>
         <jsp-api.version>3.1.0</jsp-api.version>
-        <jsp-impl.version>3.1.0-M4</jsp-impl.version>
+        <jsp-impl.version>3.1.0-M6</jsp-impl.version>
         <jstl-api.version>3.0.0</jstl-api.version>
         <jstl-impl.version>3.0.0</jstl-impl.version>
         <jakarta.faces-api.version>4.0.0</jakarta.faces-api.version>
