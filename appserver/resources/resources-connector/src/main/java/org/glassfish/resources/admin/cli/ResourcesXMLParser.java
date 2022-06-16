@@ -146,6 +146,7 @@ public class ResourcesXMLParser implements EntityResolver
     private static final String publicID_ges31 = "GlassFish.org//DTD GlassFish Application Server 3.1 Resource Definitions";
     private static final String publicId_py4 = "Payara.fish//DTD Payara Server 4 Resource Definitions";
 
+    private static final String DTD_1_7 = "payara-resources_1_7.dtd";
     private static final String DTD_1_6 = "payara-resources_1_6.dtd";
     private static final String DTD_1_5 = "glassfish-resources_1_5.dtd";
     private static final String DTD_1_4 = "sun-resources_1_4.dtd";
@@ -156,6 +157,7 @@ public class ResourcesXMLParser implements EntityResolver
 
     private static final List<String> systemIDs = Collections.unmodifiableList(
             Arrays.asList(
+                    DTD_1_7,
                     DTD_1_6,
                     DTD_1_5,
                     DTD_1_4,
@@ -784,11 +786,6 @@ public class ResourcesXMLParser implements EntityResolver
         if (hungaftersecondsNode != null) {
             String hungaftersecondsValue = hungaftersecondsNode.getNodeValue();
             managedExecutorServiceResource.setAttribute(HUNG_AFTER_SECONDS, hungaftersecondsValue);
-        }
-        Node corepoolsizeNode = attributes.getNamedItem(CORE_POOL_SIZE);
-        if (corepoolsizeNode != null) {
-            String corepoolsizeValue = corepoolsizeNode.getNodeValue();
-            managedExecutorServiceResource.setAttribute(CORE_POOL_SIZE, corepoolsizeValue);
         }
         Node keepalivesecondsNode = attributes.getNamedItem(KEEP_ALIVE_SECONDS);
         if (keepalivesecondsNode != null) {
@@ -1878,7 +1875,7 @@ public class ResourcesXMLParser implements EntityResolver
             }else if(publicId.contains(publicID_ges31)){
                 dtdFileName = DTD_1_5;
             } else if (publicId.contains(publicId_py4)) {
-                dtdFileName = DTD_1_6;
+                dtdFileName = DTD_1_7;
             }
         }
 

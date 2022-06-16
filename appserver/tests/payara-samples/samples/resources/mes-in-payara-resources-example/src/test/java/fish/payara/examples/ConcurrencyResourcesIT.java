@@ -64,7 +64,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
- * Test REST using MES configured from payara-resources xml.
+ * Test REST using ManamgedExecutorService configured in payara-resources xml.
  *
  * @author Petr Aubrecht <aubrecht@asoftware.cz>
  */
@@ -80,10 +80,7 @@ public class ConcurrencyResourcesIT {
 
     @Deployment
     public static WebArchive createDeployment() {
-//        File[] dependencyFiles = Maven.resolver().loadPomFromFile("pom.xml").importRuntimeDependencies().resolve().withTransitivity().asFile();
-//        System.out.println(Arrays.toString(dependencyFiles));
         WebArchive war = ShrinkWrap.create(WebArchive.class, "mes-in-payara-resources-example.war")
-                //        WebArchive war = ShrinkWrap.create(WebArchive.class)
                 .addPackage(PersonResource.class.getPackage())
                 .addAsWebResource(new File("src/main/webapp/index.xhtml"))
                 .addAsResource(new File("src/main/resources/META-INF/persistence.xml"), "META-INF/persistence.xml")
