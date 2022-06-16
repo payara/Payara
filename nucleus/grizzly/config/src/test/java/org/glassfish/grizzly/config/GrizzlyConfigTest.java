@@ -273,10 +273,10 @@ public class GrizzlyConfigTest extends BaseTestGrizzlyConfig {
     private void configure() throws URISyntaxException {
         ClassLoader cl = getClass().getClassLoader();
         System
-            .setProperty("javax.net.ssl.trustStore", new File(cl.getResource("cacerts.jks").toURI()).getAbsolutePath());
+            .setProperty("javax.net.ssl.trustStore", new File(cl.getResource("cacerts.p12").toURI()).getAbsolutePath());
         System.setProperty("javax.net.ssl.trustStorePassword", "changeit");
         System
-            .setProperty("javax.net.ssl.keyStore", new File(cl.getResource("keystore.jks").toURI()).getAbsolutePath());
+            .setProperty("javax.net.ssl.keyStore", new File(cl.getResource("keystore.p12").toURI()).getAbsolutePath());
         System.setProperty("javax.net.ssl.keyStorePassword", "changeit");
     }
 
