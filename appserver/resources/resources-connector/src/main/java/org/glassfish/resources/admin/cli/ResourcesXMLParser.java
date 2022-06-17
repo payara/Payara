@@ -872,11 +872,6 @@ public class ResourcesXMLParser implements EntityResolver
             String hungaftersecondsValue = hungaftersecondsNode.getNodeValue();
             managedScheduledExecutorServiceResource.setAttribute(HUNG_AFTER_SECONDS, hungaftersecondsValue);
         }
-        Node corepoolsizeNode = attributes.getNamedItem(CORE_POOL_SIZE);
-        if (corepoolsizeNode != null) {
-            String corepoolsizeValue = corepoolsizeNode.getNodeValue();
-            managedScheduledExecutorServiceResource.setAttribute(CORE_POOL_SIZE, corepoolsizeValue);
-        }
         Node keepalivesecondsNode = attributes.getNamedItem(KEEP_ALIVE_SECONDS);
         if (keepalivesecondsNode != null) {
             String keepalivesecondsValue = keepalivesecondsNode.getNodeValue();
