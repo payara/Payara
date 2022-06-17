@@ -78,6 +78,7 @@ import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.function.Supplier;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -578,7 +579,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                     }
                 }
                 bootstrap.startInitialization();
-                fireProcessInjectionTargetEvents(bootstrap, deploymentImpl);
+                fireProcessInjectionTargetEvents(bootstrap, applicationInfo, deploymentImpl);
                 bootstrap.deployBeans();
                 bootstrap.validateBeans();
                 bootstrap.endInitialization();
@@ -809,7 +810,8 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
      * would provide a better way to do this, otherwise we may need TODO to store InjectionTarget<X> to
      * be used in instance creation
      */
-    private void fireProcessInjectionTargetEvents(WeldBootstrap bootstrap, DeploymentImpl deploymentImpl) {
+    private void fireProcessInjectionTargetEvents(WeldBootstrap bootstrap, ApplicationInfo applicationInfo,
+            DeploymentImpl deploymentImpl) {
         List<BeanDeploymentArchive> beanDeploymentArchives = deploymentImpl.getBeanDeploymentArchives();
 
         Class<?> messageListenerClass = getMessageListenerClass();
@@ -820,7 +822,8 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
         boolean isFullProfile = messageListenerClass != null;
 
         for (BeanDeploymentArchive beanDeploymentArchive : beanDeploymentArchives) {
-            for (Class<?> bdaClazz : ((BeanDeploymentArchiveImpl) beanDeploymentArchive).getBeanClassObjects()) {
+            Collection<Class<?>> beanClassObjects = ((BeanDeploymentArchiveImpl) beanDeploymentArchive).getBeanClassObjects();
+            for (Class<?> bdaClazz : beanClassObjects) {
                 for (Class<?> nonClazz : NON_CONTEXT_CLASSES) {
                     if (nonClazz.isAssignableFrom(bdaClazz)) {
                         firePITEvent(bootstrap, beanDeploymentArchive, bdaClazz);
@@ -835,6 +838,41 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                     }
 
                     firePITEvent(bootstrap, beanDeploymentArchive, bdaClazz);
+                }
+            }
+
+            // Fix for CDI TCK test: ContainerEventTest#testProcessInjectionTargetEventFiredForServlet
+            // Check for Servlets which have not yet been loaded and haven't been identified as Beans
+            // From the spec: "The container must also fire an event for every Jakarta EE component class supporting
+            // injection that may be instantiated by the container at runtime". Stress on the "may".
+            Collection<String> injectionTargetClassNames = WeldUtils.getInjectionTargetClassNames(
+                    deploymentImpl.getTypes(), beanDeploymentArchive.getKnownClasses());
+            for (String injectionTargetClassName : injectionTargetClassNames) {
+                // Don't fire twice
+                if (beanDeploymentArchive.getBeanClasses().contains(injectionTargetClassName)) {
+                    continue;
+                }
+
+                Class<?> injectionTargetClass = null;
+                try {
+                    injectionTargetClass = applicationInfo.getAppClassLoader().loadClass(injectionTargetClassName);
+                } catch (ClassNotFoundException appClassLoaderClassNotFoundException) {
+                    try {
+                        logger.log(Level.FINE, "Caught exception loading class using application class loader, " +
+                                "trying again with module class loader");
+                        injectionTargetClass = applicationInfo.getModuleClassLoader().loadClass(injectionTargetClassName);
+                    } catch (ClassNotFoundException moduleClassLoaderClassNotFoundException) {
+                        logger.log(Level.FINE, "Caught exception loading class using module class loader, " +
+                                "ProcessInjectionTarget event may not get fired for " + injectionTargetClassName);
+                    }
+                }
+
+                if (injectionTargetClass != null) {
+                    for (Class<?> nonClazz : NON_CONTEXT_CLASSES) {
+                        if (nonClazz.isAssignableFrom(injectionTargetClass)) {
+                            firePITEvent(bootstrap, beanDeploymentArchive, injectionTargetClass);
+                        }
+                    }
                 }
             }
         }

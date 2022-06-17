@@ -47,6 +47,7 @@ import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
@@ -60,6 +61,7 @@ import jakarta.ejb.Stateless;
 import jakarta.enterprise.context.*;
 import jakarta.enterprise.inject.Model;
 import jakarta.enterprise.inject.Stereotype;
+import jakarta.inject.Inject;
 import jakarta.inject.Scope;
 import jakarta.inject.Singleton;
 import jakarta.interceptor.Interceptor;
@@ -70,9 +72,13 @@ import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
 import org.glassfish.hk2.classmodel.reflect.AnnotationType;
+import org.glassfish.hk2.classmodel.reflect.ClassModel;
+import org.glassfish.hk2.classmodel.reflect.FieldModel;
+import org.glassfish.hk2.classmodel.reflect.MethodModel;
 import org.glassfish.hk2.classmodel.reflect.Type;
 import org.glassfish.hk2.classmodel.reflect.Types;
 import org.glassfish.internal.api.Globals;
+import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -290,6 +296,57 @@ public class WeldUtils {
         }
 
         return result;
+    }
+
+    public static Collection<String> getInjectionTargetClassNames(Types types, Collection<String> knownClassNames) {
+        final Set<String> result = new HashSet<>();
+
+        if (types != null) {
+            for (String knownClassName : knownClassNames) {
+                Type type = types.getBy(knownClassName);
+
+                if (type != null && type instanceof ClassModel) {
+                    boolean injectionTarget = false;
+
+                    Collection<FieldModel> fieldModels = ((ClassModel) type).getFields();
+                    for (FieldModel fieldModel : fieldModels) {
+                        injectionTarget = annotatedWithInject(fieldModel.getAnnotations());
+                        if (injectionTarget) {
+                            break;
+                        }
+                    }
+
+                    if (!injectionTarget) {
+                        Collection<MethodModel> methodModels = type.getMethods();
+                        for (MethodModel methodModel : methodModels) {
+                            injectionTarget = annotatedWithInject(methodModel.getAnnotations());
+                            if (injectionTarget) {
+                                break;
+                            }
+                        }
+                    }
+
+                    if (injectionTarget) {
+                        result.add(type.getName());
+                        break;
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
+
+    private static boolean annotatedWithInject(Collection<AnnotationModel> annotationModels) {
+        boolean injectionTarget = false;
+        for (AnnotationModel annotationModel : annotationModels) {
+            if (annotationModel.getType().equals(Inject.class)) {
+                injectionTarget = true;
+                break;
+            }
+        }
+
+        return injectionTarget;
     }
 
 

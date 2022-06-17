@@ -64,6 +64,7 @@ import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.cdi.CDILoggerInfo;
 import org.glassfish.deployment.common.DeploymentContextImpl;
 import org.glassfish.deployment.common.InstalledLibrariesResolver;
+import org.glassfish.hk2.classmodel.reflect.Types;
 import org.glassfish.javaee.core.deployment.ApplicationHolder;
 import org.glassfish.weld.connector.WeldUtils;
 import org.glassfish.weld.connector.WeldUtils.BDAType;
@@ -856,6 +857,10 @@ public class DeploymentImpl implements CDI11Deployment {
 
     public String getContextId() {
         return contextId;
+    }
+
+    public Types getTypes() {
+        return context.getTransientAppMetaData(Types.class.getName(), Types.class);
     }
 
 }
