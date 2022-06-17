@@ -36,9 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
- *
- * Portions Copyright [2017-2020] Payara Foundation and/or affiliates
  */
+// Portions Copyright [2017-2022] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.resources.admin.cli;
 
@@ -258,6 +257,7 @@ public final class ResourceConstants {
     public static final String KEEP_ALIVE_SECONDS = "keep-alive-seconds";
     public static final String THREAD_LIFETIME_SECONDS = "thread-lifetime-seconds";
     public static final String TASK_QUEUE_CAPACITY = "task-queue-capacity";
+    public static final String MAX_ASYNC = "max-async";
 
     public static final String SYSTEM_ALL_REQ = "system-all-req";
     

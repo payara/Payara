@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2022] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.concurrent.admin;
 
@@ -78,19 +79,26 @@ public class ManagedExecutorServiceManager extends ManagedExecutorServiceBaseMan
 
     @Override
     protected ResourceStatus isValid(Resources resources, boolean validateResourceRef, String target){
-        if (Integer.parseInt(corePoolSize) == 0 &&
-            Integer.parseInt(maximumPoolSize) == 0) {
+        ResourceStatus superStatus = super.isValid(resources, validateResourceRef, target);
+
+        try {
+            Integer.parseInt(maximumPoolSize);
+        } catch (NumberFormatException nfe) {
+            return new ResourceStatus(ResourceStatus.FAILURE, localStrings.getLocalString("maxsize.must.be.number", "Option maximumpoolsize must be a number."));
+        }
+
+        if (Integer.parseInt(corePoolSize) == 0
+                && Integer.parseInt(maximumPoolSize) == 0) {
             String msg = localStrings.getLocalString("coresize.maxsize.both.zero", "Options corepoolsize and maximumpoolsize cannot both have value 0.");
             return new ResourceStatus(ResourceStatus.FAILURE, msg);
         }
 
-        if (Integer.parseInt(corePoolSize) >
-            Integer.parseInt(maximumPoolSize)) {
+        if (Integer.parseInt(corePoolSize) > Integer.parseInt(maximumPoolSize)) {
             String msg = localStrings.getLocalString("coresize.biggerthan.maxsize", "Option corepoolsize cannot have a bigger value than option maximumpoolsize.");
             return new ResourceStatus(ResourceStatus.FAILURE, msg);
         }
 
-        return super.isValid(resources, validateResourceRef, target); 
+        return superStatus;
     }
 
     protected ManagedExecutorServiceBase createConfigBean(Resources param, Properties properties) throws PropertyVetoException, TransactionFailure {
