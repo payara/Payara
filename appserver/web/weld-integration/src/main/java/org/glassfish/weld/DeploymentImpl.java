@@ -859,6 +859,11 @@ public class DeploymentImpl implements CDI11Deployment {
         return contextId;
     }
 
+    /**
+     * Gets the {@link Types} from the {@link DeploymentContext}'s transient metadata
+     *
+     * @return The {@link Types} from the {@link DeploymentContext}'s transient metadata
+     */
     public Types getTypes() {
         return context.getTransientAppMetaData(Types.class.getName(), Types.class);
     }

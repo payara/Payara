@@ -47,7 +47,6 @@ import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
@@ -78,7 +77,6 @@ import org.glassfish.hk2.classmodel.reflect.MethodModel;
 import org.glassfish.hk2.classmodel.reflect.Type;
 import org.glassfish.hk2.classmodel.reflect.Types;
 import org.glassfish.internal.api.Globals;
-import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -298,6 +296,14 @@ public class WeldUtils {
         return result;
     }
 
+    /**
+     * Searches through the known class names of a {@link BeanDeploymentArchive} to determine which have fields or
+     * methods with the {@link Inject} annotation.
+     *
+     * @param types The Types obtained from a {@link DeploymentContext}'s transient metadata
+     * @param knownClassNames The known class names of a {@link BeanDeploymentArchive}
+     * @return The class names from the given list which have fields or methods annotated with {@link Inject}
+     */
     public static Collection<String> getInjectionTargetClassNames(Types types, Collection<String> knownClassNames) {
         final Set<String> result = new HashSet<>();
 
