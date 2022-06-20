@@ -44,7 +44,7 @@
 
 <!--  
   A resources instance document referring to this DTD should have a DOCTYPE as follows:
- <!DOCTYPE resources PUBLIC "-//Payara.fish//DTD Payara Server 4 Resource Definitions//EN" "http://docs.payara.fish/schemas/payara-resources_1_6.dtd">-->
+ <!DOCTYPE resources PUBLIC "-//Payara.fish//DTD Payara Server 4 Resource Definitions//EN" "http://docs.payara.fish/schemas/payara-resources_1_7.dtd">-->
 <!-- ENTITIES -->
 <!-- boolean
 
