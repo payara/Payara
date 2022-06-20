@@ -769,8 +769,8 @@ public class DeploymentImpl implements CDI11Deployment {
         }
 
         for ( BeanDeploymentArchive oneBda : beanDeploymentArchives ) {
-            BeanDeploymentArchiveImpl beanDeploymentArchiveImpl = ( BeanDeploymentArchiveImpl ) oneBda;
-            if ( beanDeploymentArchiveImpl.getBeanClassObjects().contains( beanClass ) ) {
+            BeanDeploymentArchiveImpl beanDeploymentArchiveImpl = (BeanDeploymentArchiveImpl) oneBda;
+            if ( beanDeploymentArchiveImpl.getKnownClasses().contains(beanClass.getName()) ) {
                 return oneBda;
             }
         }
