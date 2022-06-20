@@ -328,7 +328,6 @@ public class WeldUtils {
 
                     if (injectionTarget) {
                         result.add(type.getName());
-                        break;
                     }
                 }
             }
