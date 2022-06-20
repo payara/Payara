@@ -340,7 +340,7 @@ public class WeldUtils {
     private static boolean annotatedWithInject(Collection<AnnotationModel> annotationModels) {
         boolean injectionTarget = false;
         for (AnnotationModel annotationModel : annotationModels) {
-            if (annotationModel.getType().equals(Inject.class)) {
+            if (annotationModel.getType().getName().equals(Inject.class.getName())) {
                 injectionTarget = true;
                 break;
             }
