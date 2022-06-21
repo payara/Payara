@@ -96,7 +96,29 @@
         
         <dependency>
             <groupId>jakarta.servlet.jsp.jstl</groupId>
-            <artifactId>jakarta.servlet.jsp.jstl-api</artifactId>
+            <artifactId>jakarta.servlet.jsp.jstl-api</artifactId>   
+            <scope>provided</scope>
+        </dependency>     
+
+        <dependency>
+            <groupId>jakarta.authentication</groupId>
+            <artifactId>jakarta.authentication-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>jakarta.security.enterprise</groupId>
+            <artifactId>jakarta.security.enterprise-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.soteria</groupId>
+            <artifactId>jakarta.security.enterprise</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.weld</groupId>
+            <artifactId>weld-osgi-bundle</artifactId>
             <scope>provided</scope>
         </dependency>
     </dependencies>
@@ -127,8 +149,10 @@
                                     jakarta.xml.bind-api,
                                     jakarta.security.auth.message-api,
                                     com.sun.xml.bind.jaxb-osgi,
-                                    jakarta.servlet.jsp.jstl-api
-
+                                    jakarta.servlet.jsp.jstl-api,
+                                    jakarta.security.enterprise-api,
+                                    org.glassfish.jakarta.security.enterprise,
+                                    org.jboss.weld.osgi-bundle
                                 </Require-Bundle>
                                 <!-- Manually specify the shim versions of packages to be exported via this bundle -->
                                 <!-- Note the "shortened" syntax here: For every API the packages are delimited with
@@ -263,7 +287,152 @@
                                     jakarta.servlet.jsp.jstl.core;
                                     jakarta.servlet.jsp.jstl.tlv;
                                     jakarta.servlet.jsp.jstl.sql;
-                                    jakarta.servlet.jsp.jstl.fmt;version="2.0.0";shim="true"
+
+                                    jakarta.servlet.jsp.jstl.fmt;version="2.0.0";shim="true",
+                                    
+                                    jakarta.security.auth.message.callback;
+                                    jakarta.security.auth.message.config;
+                                    jakarta.security.auth.message.module;
+                                    jakarta.security.auth.message;version="2.0.0";shim="true",
+                                    
+                                    jakarta.security.enterprise;
+                                    jakarta.security.enterprise.authentication.mechanism.http;
+                                    jakarta.security.enterprise.authentication.mechanism.http.openid;
+                                    jakarta.security.enterprise.credential;
+                                    jakarta.security.enterprise.identitystore;
+                                    jakarta.security.enterprise.identitystore.openid;version="2.0.0";shim="true",
+                                    
+                                    org.glassfish.soteria;
+                                    org.glassfish.soteria.authorization;
+                                    org.glassfish.soteria.authorization.spi;
+                                    org.glassfish.soteria.authorization.spi.impl;
+                                    org.glassfish.soteria.cdi;
+                                    org.glassfish.soteria.cdi.spi;
+                                    org.glassfish.soteria.cdi.spi.impl;
+                                    org.glassfish.soteria.identitystores;
+                                    org.glassfish.soteria.identitystores.annotation;
+                                    org.glassfish.soteria.identitystores.hash;
+                                    org.glassfish.soteria.mechanisms;
+                                    org.glassfish.soteria.mechanisms.jaspic;
+                                    org.glassfish.soteria.mechanisms.openid;
+                                    org.glassfish.soteria.mechanisms.openid.controller;
+                                    org.glassfish.soteria.mechanisms.openid.domain;
+                                    org.glassfish.soteria.servlet;version="2.0.1";shim="true",
+
+                                    <!-- Required by org.glassfish.soteria.spi.bean.decorator.weld-->
+                                    org.jboss.weld;
+                                    org.jboss.weld.annotated;
+                                    org.jboss.weld.annotated.enhanced;
+                                    org.jboss.weld.annotated.enhanced.jlr;
+                                    org.jboss.weld.annotated.runtime;
+                                    org.jboss.weld.annotated.slim;
+                                    org.jboss.weld.annotated.slim.backed;
+                                    org.jboss.weld.annotated.slim.unbacked;
+                                    org.jboss.weld.bean;
+                                    org.jboss.weld.bean.attributes;
+                                    org.jboss.weld.bean.builtin;
+                                    org.jboss.weld.bean.builtin.ee;
+                                    org.jboss.weld.bean.interceptor;
+                                    org.jboss.weld.bean.proxy;
+                                    org.jboss.weld.bean.proxy.util;
+                                    org.jboss.weld.bootstrap;
+                                    org.jboss.weld.bootstrap.api;
+                                    org.jboss.weld.bootstrap.api.helpers;
+                                    org.jboss.weld.bootstrap.enablement;
+                                    org.jboss.weld.bootstrap.event;
+                                    org.jboss.weld.bootstrap.events;
+                                    org.jboss.weld.bootstrap.events.configurator;
+                                    org.jboss.weld.bootstrap.spi;
+                                    org.jboss.weld.bootstrap.spi.helpers;
+                                    org.jboss.weld.config;
+                                    org.jboss.weld.configuration.spi;
+                                    org.jboss.weld.configuration.spi.helpers;
+                                    org.jboss.weld.config;
+                                    org.jboss.weld.configuration.spi;
+                                    org.jboss.weld.configuration.spi.helpers;
+                                    org.jboss.weld.construction.api;
+                                    org.jboss.weld.context;
+                                    org.jboss.weld.context.activator;
+                                    org.jboss.weld.context.api;
+                                    org.jboss.weld.context.bound;
+                                    org.jboss.weld.context.ejb;
+                                    org.jboss.weld.context.http;
+                                    org.jboss.weld.context.unbound;
+                                    org.jboss.weld.contexts;
+                                    org.jboss.weld.contexts.activator;
+                                    org.jboss.weld.contexts.beanstore;
+                                    org.jboss.weld.contexts.bound;
+                                    org.jboss.weld.contexts.cache;
+                                    org.jboss.weld.contexts.conversation;
+                                    org.jboss.weld.contexts.unbound;
+                                    org.jboss.weld.ejb.api;
+                                    org.jboss.weld.ejb.spi;
+                                    org.jboss.weld.ejb.spi.helpers;
+                                    org.jboss.weld.event;
+                                    org.jboss.weld.events;
+                                    org.jboss.weld.exceptions;
+                                    org.jboss.weld.executor;
+                                    org.jboss.weld.inject;
+                                    org.jboss.weld.injection;
+                                    org.jboss.weld.injection.attributes;
+                                    org.jboss.weld.injection.producer;
+                                    org.jboss.weld.injection.spi;
+                                    org.jboss.weld.injection.spi.helpers;
+                                    org.jboss.weld.interceptor;
+                                    org.jboss.weld.interceptor.builder;
+                                    org.jboss.weld.interceptor.proxy;
+                                    org.jboss.weld.interceptor.reader;
+                                    org.jboss.weld.interceptor.spi.metadata;
+                                    org.jboss.weld.interceptor.spi.model;
+                                    org.jboss.weld.interceptor.util;
+                                    org.jboss.weld.interceptor.util.proxy;
+                                    org.jboss.weld.literal;
+                                    org.jboss.weld.logging;
+                                    org.jboss.weld.manager;
+                                    org.jboss.weld.manager.api;
+                                    org.jboss.weld.metadata;
+                                    org.jboss.weld.metadata.cache;
+                                    org.jboss.weld.module;
+                                    org.jboss.weld.module.ejb;
+                                    org.jboss.weld.module.ejb.context;
+                                    org.jboss.weld.module.ejb.context.beanstore;
+                                    org.jboss.weld.module.jsf;
+                                    org.jboss.weld.module.jsf.servlet;
+                                    org.jboss.weld.module.jta;
+                                    org.jboss.weld.module.web;
+                                    org.jboss.weld.module.web.context.beanstore.http;
+                                    org.jboss.weld.module.web.context.http;
+                                    org.jboss.weld.module.web.el;
+                                    org.jboss.weld.module.web.logging;
+                                    org.jboss.weld.module.web.servlet;
+                                    org.jboss.weld.module.web.util.el;
+                                    org.jboss.weld.module.web.util.servlet;
+                                    org.jboss.weld.persistence;
+                                    org.jboss.weld.probe;
+                                    org.jboss.weld.proxy;
+                                    org.jboss.weld.resolution;
+                                    org.jboss.weld.resources;
+                                    org.jboss.weld.resources.spi;
+                                    org.jboss.weld.resources.spi.helpers;
+                                    org.jboss.weld.security;
+                                    org.jboss.weld.security.spi;
+                                    org.jboss.weld.serialization;
+                                    org.jboss.weld.serialization.spi;
+                                    org.jboss.weld.serialization.spi.helpers;
+                                    org.jboss.weld.servlet.api;
+                                    org.jboss.weld.servlet.api.helpers;
+                                    org.jboss.weld.servlet.spi;
+                                    org.jboss.weld.servlet.spi.helpers;
+                                    org.jboss.weld.transaction.spi;
+                                    org.jboss.weld.util;
+                                    org.jboss.weld.util.annotated;
+                                    org.jboss.weld.util.bean;
+                                    org.jboss.weld.util.bytecode;
+                                    org.jboss.weld.util.cache;
+                                    org.jboss.weld.util.collections;
+                                    org.jboss.weld.util.reflection;
+                                    org.jboss.weld.ws;
+                                    org.jboss.weld.xml;version="5.0";shim="true"
 
                                     <!-- Minimal version of shim for MP 5.0. -->
                                     <!-- TODO: This is only thing that should remain in final release -->
