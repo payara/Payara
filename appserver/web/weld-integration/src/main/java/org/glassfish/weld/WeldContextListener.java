@@ -39,7 +39,7 @@
  *
  * Portions Copyright [2017-2021] Payara Foundation and/or affiliates
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
 package org.glassfish.weld;
 
 import jakarta.enterprise.inject.spi.BeanManager;

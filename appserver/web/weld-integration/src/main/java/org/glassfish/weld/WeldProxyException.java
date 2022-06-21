@@ -18,6 +18,8 @@ package org.glassfish.weld;
 
 /**
  * Runtime exception meaning that the operation failed to finish the desired operation.
+ *
+ * @author David Matějček
  */
 public class WeldProxyException extends RuntimeException {
 
