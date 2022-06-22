@@ -873,6 +873,10 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                             firePITEvent(bootstrap, beanDeploymentArchive, injectionTargetClass);
                         }
                     }
+
+                    if(jakarta.jms.MessageListener.class.isAssignableFrom(injectionTargetClass)) {
+                        firePITEvent(bootstrap, beanDeploymentArchive, injectionTargetClass);
+                    }
                 }
             }
         }
