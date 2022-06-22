@@ -73,7 +73,7 @@ public interface MdbContainer extends ConfigBeanProxy, PropertyBag, ConfigExtens
      * @return possible object is
      *         {@link String }
      */
-    @Attribute(defaultValue = "1")
+    @Attribute(defaultValue = "0")
     @Min(value = 0)
     String getSteadyPoolSize();
 
