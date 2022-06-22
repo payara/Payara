@@ -37,7 +37,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.persistence.ejb.entitybean.container;
 
@@ -1945,7 +1944,7 @@ public class EntityContainer extends BaseContainer implements CacheListener {
     // called from getContext and getReadyEJB
     protected EntityContextImpl getPooledEJB() {
         try {
-            return (EntityContextImpl) entityCtxPool.getObject(null);
+            return (EntityContextImpl) entityCtxPool.getObject(true, null);
         } catch (com.sun.ejb.containers.util.pool.PoolException inEx) {
             throw new EJBException(inEx);
         }

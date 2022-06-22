@@ -37,7 +37,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2022] [Payara Foundation and/or its affiliates]
 package org.glassfish.ejb.mdb;
 
 import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
@@ -896,10 +895,6 @@ public final class MessageBeanContainer extends BaseContainer implements Message
     public void startApplication(boolean deploy) {
         super.startApplication(deploy);
 
-        if (messageBeanPool_ instanceof NonBlockingPool) {
-            NonBlockingPool nonBlockingPool = (NonBlockingPool) messageBeanPool_;
-            nonBlockingPool.prepopulate(beanPoolDesc_.getSteadyPoolSize());
-        }
 
         // Start delivery of messages to message bean instances.
         try {
