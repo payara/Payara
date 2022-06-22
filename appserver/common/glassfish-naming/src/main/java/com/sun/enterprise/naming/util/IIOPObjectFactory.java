@@ -36,6 +36,9 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2022] Payara Foundation and/or affiliates
+ *
  */
 
 package com.sun.enterprise.naming.util;
@@ -59,7 +62,7 @@ public class IIOPObjectFactory implements ObjectFactory {
                                     Name name,
                                     Context nameCtx,
                                     Hashtable env) throws Exception {
-        env.put("java.naming.factory.initial", "com.sun.jndi.cosnaming.CNCtxFactory");
+        env.put("java.naming.factory.initial", org.glassfish.jndi.cosnaming.CNCtxFactory.class.getName());
 
         InitialContext ic = new InitialContext(env);
 
