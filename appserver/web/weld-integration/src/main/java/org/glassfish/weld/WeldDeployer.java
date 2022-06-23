@@ -874,7 +874,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                         }
                     }
 
-                    if(jakarta.jms.MessageListener.class.isAssignableFrom(injectionTargetClass)) {
+                    if(isFullProfile && messageListenerClass.isAssignableFrom(injectionTargetClass)) {
                         firePITEvent(bootstrap, beanDeploymentArchive, injectionTargetClass);
                     }
                 }
