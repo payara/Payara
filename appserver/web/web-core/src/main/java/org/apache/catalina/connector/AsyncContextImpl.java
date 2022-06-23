@@ -645,10 +645,6 @@ class AsyncContextImpl implements AsyncContext {
                     AsyncEvent asyncEvent = new AsyncEvent(
                         this, asyncListenerContext.getRequest(),
                         asyncListenerContext.getResponse(), t);
-                    if(asyncListenerContext.getResponse() instanceof HttpServletResponse) {
-                        ((HttpServletResponse)asyncListenerContext.getResponse()).
-                                setStatus(HttpServletResponse.SC_OK);
-                    }
                     try {
                         switch (asyncEventType) {
                             case COMPLETE:
