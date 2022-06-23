@@ -2256,9 +2256,11 @@ admingui.ajax = {
             contentNode = document.getElementById("content");
         }
         contentNode.innerHTML = o.responseText;
-        // FIXME: These 2 functions only need to be replaced after a FPR...
-        webui.suntheme.hyperlink.submit = admingui.woodstock.hyperLinkSubmit;
-        webui.suntheme.jumpDropDown.changed = admingui.woodstock.dropDownChanged;
+        if (typeof (webui) !== 'undefined') {
+            // FIXME: These 2 functions only need to be replaced after a FPR...
+            webui.suntheme.hyperlink.submit = admingui.woodstock.hyperLinkSubmit;
+            webui.suntheme.jumpDropDown.changed = admingui.woodstock.dropDownChanged;
+        }
         admingui.ajax.processElement(o, contentNode, true);
         admingui.ajax.processScripts(o);
         // Restore cursor
