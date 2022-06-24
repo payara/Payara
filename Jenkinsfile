@@ -128,38 +128,38 @@ pipeline {
 //                 }
 //             }
 //         }
-        stage('Checkout EE8 Tests') {
-            steps{
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out EE8 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
-                    branches: [[name: "*/Payara6"]],
-                    userRemoteConfigs: [[url: "https://github.com/payara/patched-src-javaee8-samples.git"]]]
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out EE8 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-            }
-        }
-        stage('Setup for EE8 Tests') {
-            steps {
-                setupDomain()
-            }
-        }
-        stage('Run EE8 Tests') {
-            steps {
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh "mvn -B -V -ff -e clean install --strict-checksums -Dsurefire.useFile=false \
-                -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
-                -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
-                -Ppayara-server-remote,stable"
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-            }
-            post {
-                always {
-                    processReportAndStopDomain()
-                }
-                cleanup {
-                    saveLogsAndCleanup 'ee8-samples-log.zip'
-                }
-            }
-        }
+//         stage('Checkout EE8 Tests') {
+//             steps{
+//                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out EE8 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+//                 checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
+//                     branches: [[name: "*/Payara6"]],
+//                     userRemoteConfigs: [[url: "https://github.com/payara/patched-src-javaee8-samples.git"]]]
+//                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out EE8 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+//             }
+//         }
+//         stage('Setup for EE8 Tests') {
+//             steps {
+//                 setupDomain()
+//             }
+//         }
+//         stage('Run EE8 Tests') {
+//             steps {
+//                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+//                 sh "mvn -B -V -ff -e clean install --strict-checksums -Dsurefire.useFile=false \
+//                 -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
+//                 -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
+//                 -Ppayara-server-remote,stable"
+//                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+//             }
+//             post {
+//                 always {
+//                     processReportAndStopDomain()
+//                 }
+//                 cleanup {
+//                     saveLogsAndCleanup 'ee8-samples-log.zip'
+//                 }
+//             }
+//         }
         stage('Checkout CargoTracker Tests') {
             steps{
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out cargoTracker tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
