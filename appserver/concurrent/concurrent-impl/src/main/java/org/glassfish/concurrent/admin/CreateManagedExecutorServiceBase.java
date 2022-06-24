@@ -77,6 +77,9 @@ public class CreateManagedExecutorServiceBase {
     @Param(name="longrunningtasks", alias="longRunningTasks", defaultValue="false", optional=true)
     protected Boolean longrunningtasks;
 
+    @Param(name="useforkjoinpool", alias="useForkJoinPool", defaultValue="false", optional=true)
+    protected Boolean useforkjoinpool;
+
     @Param(name="hungafterseconds", alias="hungAfterSeconds", defaultValue="0", optional=true)
     protected Integer hungafterseconds;
 
@@ -106,6 +109,8 @@ public class CreateManagedExecutorServiceBase {
             threadpriority.toString());
         attrList.put(ResourceConstants.LONG_RUNNING_TASKS, 
             longrunningtasks.toString());
+        attrList.put(ResourceConstants.USE_FORK_JOIN_POOL,
+            useforkjoinpool.toString());
         attrList.put(ResourceConstants.HUNG_AFTER_SECONDS, 
             hungafterseconds.toString());
         attrList.put(ResourceConstants.CORE_POOL_SIZE, 
