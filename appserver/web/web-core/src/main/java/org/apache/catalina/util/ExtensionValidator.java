@@ -73,6 +73,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Locale;
@@ -368,11 +369,20 @@ public final class ExtensionValidator {
                 while (values.hasNext()) {
                     Extension ext = (Extension) values.next();
                     if (availableMap == null) {
-                        availableMap = new HashMap<String, Extension>();
+                        availableMap = new HashMap<>();
                         availableMap.put(ext.getUniqueId(), ext);
                     } else if (!availableMap.containsKey(ext.getUniqueId())) {
                         availableMap.put(ext.getUniqueId(), ext);
                     }
+                }
+            }
+            List<Extension> listExtensions = mre.getRequiredExtensions();
+            if (listExtensions != null) {
+                for (Extension extension : listExtensions) {
+                    if (availableMap == null) {
+                        availableMap = new HashMap<>();
+                    }
+                    availableMap.put(extension.getUniqueId(), extension);
                 }
             }
         }

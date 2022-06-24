@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2022] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.cdi.transaction;
 
@@ -279,11 +279,6 @@ public class TransactionScopedCDIUtil {
 
         @Override
         public boolean isAlternative() {
-            return false;
-        }
-
-        @Override
-        public boolean isNullable() {
             return false;
         }
 

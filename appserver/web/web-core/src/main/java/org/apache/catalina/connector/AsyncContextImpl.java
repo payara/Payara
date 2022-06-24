@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2021] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2022] Payara Foundation and/or affiliates
 
 package org.apache.catalina.connector;
 
@@ -48,6 +48,7 @@ import org.apache.catalina.core.*;
 
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.EventListener;

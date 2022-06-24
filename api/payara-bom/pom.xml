@@ -570,6 +570,11 @@
                 <version>${jakarta.security.enterprise.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.glassfish.soteria</groupId>
+                <artifactId>soteria.spi.bean.decorator.weld</artifactId>
+                <version>${jakarta.security.enterprise.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.eclipse.persistence</groupId>
                 <artifactId>org.eclipse.persistence.core</artifactId>
                 <version>${eclipselink.version}</version>
@@ -682,6 +687,11 @@
                 </exclusions>
             </dependency>
             <dependency>
+                <groupId>org.jboss.weld</groupId>
+                <artifactId>weld-lite-extension-translator</artifactId>
+                <version>${weld.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.jboss.weld.se</groupId>
                 <artifactId>weld-se-shaded</artifactId>
                 <version>${weld.version}</version>
@@ -723,12 +733,12 @@
                 <artifactId>jakarta.json</artifactId>
                 <version>${parsson.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.eclipse.parsson</groupId>
                 <artifactId>parsson-media</artifactId>
                 <version>${parsson.version}</version>
             </dependency>
+
             <dependency>
                 <groupId>com.ibm.jbatch</groupId>
                 <artifactId>com.ibm.jbatch.container</artifactId>
@@ -816,11 +826,6 @@
                 <groupId>com.hazelcast</groupId>
                 <artifactId>hazelcast</artifactId>
                 <version>${hazelcast.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.hazelcast</groupId>
-                <artifactId>hazelcast-kubernetes</artifactId>
-                <version>${hazelcast.kubernetes.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

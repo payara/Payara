@@ -227,7 +227,7 @@ class RuntimeDirectory {
            System.setProperty("java.security.policy", serverPolicyPath.toAbsolutePath().toString());
         }
 
-        Path keystorePath = configDir.toPath().resolve("keystore.jks");
+        Path keystorePath = configDir.toPath().resolve("keystore.p12");
         if (System.getProperty("javax.net.ssl.keyStore") != null) {
             // copy into the runtime directory the referenced file
             Path referencedConfig = Paths.get(System.getProperty("javax.net.ssl.keyStore"));
@@ -244,7 +244,7 @@ class RuntimeDirectory {
             System.setProperty("javax.net.ssl.keyStore", keystorePath.toAbsolutePath().toString());
         }
 
-        Path truststorePath = configDir.toPath().resolve("cacerts.jks");
+        Path truststorePath = configDir.toPath().resolve("cacerts.p12");
         if (System.getProperty("javax.net.ssl.trustStore") != null) {
             // copy into the runtime directory the referenced file
             Path referencedConfig = Paths.get(System.getProperty("javax.net.ssl.trustStore"));

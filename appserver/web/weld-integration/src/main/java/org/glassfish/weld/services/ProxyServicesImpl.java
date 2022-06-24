@@ -37,16 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2022] [Payara Foundation and/or its affiliates]
 package org.glassfish.weld.services;
-
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.security.PrivilegedExceptionAction;
 
 import org.glassfish.internal.api.ClassLoaderHierarchy;
 import org.jboss.weld.serialization.spi.ProxyServices;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.weld.ClassGenerator;
+import org.glassfish.weld.WeldProxyException;
+import java.security.ProtectionDomain;
 
 /**
  * An implementation of the <code>ProxyServices</code> Service.
@@ -76,22 +75,6 @@ public class ProxyServicesImpl implements ProxyServices {
     
     public ProxyServicesImpl(ServiceLocator services) {
         clh = services.getService(ClassLoaderHierarchy.class);
-    }
-
-    
-    @Override
-    public ClassLoader getClassLoader(final Class<?> proxiedBeanType) {
-        SecurityManager sm = System.getSecurityManager();
-        if (sm != null) {
-            return AccessController
-                    .doPrivileged(new PrivilegedAction<ClassLoader>() {
-                        public ClassLoader run() {
-                            return getClassLoaderforBean(proxiedBeanType);
-                        }
-                    });
-        } else {
-            return getClassLoaderforBean(proxiedBeanType);
-        }
     }
     
     /**
@@ -138,36 +121,13 @@ public class ProxyServicesImpl implements ProxyServices {
         return isAppCL;
     }
 
-
     private ClassLoader _getClassLoader() {
         ClassLoader tcl = Thread.currentThread().getContextClassLoader();
         return tcl;
     }
-
-    @Override
-    public Class<?> loadBeanClass(final String className) {
-        try {
-            SecurityManager sm = System.getSecurityManager();
-            if (sm != null) {
-                return (Class<?>) AccessController
-                        .doPrivileged(new PrivilegedExceptionAction<Object>() {
-                            public Object run() throws Exception {
-                                ClassLoader cl = _getClassLoader();
-                                return Class.forName(className, true, cl);
-                            }
-                        });
-            } else {
-                ClassLoader cl = _getClassLoader();
-                return Class.forName(className, true, cl);
-            }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            throw new RuntimeException(ex);
-        }
-    }
     
     public Class<?> loadClass(Class<?> originalClass, String classBinaryName) throws ClassNotFoundException {
-        return originalClass;
+        return _getClassLoader().loadClass(classBinaryName);
     }
 
     @Override
@@ -175,4 +135,37 @@ public class ProxyServicesImpl implements ProxyServices {
         // nothing to cleanup in this implementation.
     }
 
+    @Override
+    public Class<?> defineClass(Class<?> originalClass, String className, byte[] classBytes, int off, int len,
+                                ProtectionDomain protectionDomain) throws ClassFormatError {
+        ClassLoader cl = getClassLoaderforBean(originalClass);
+        if(protectionDomain == null) {
+           return defineClass(cl, className, classBytes, off, len);
+        }
+        return defineClass(cl, className, classBytes, off, len, protectionDomain);
+    }
+
+    @Override
+    public Class<?> defineClass(Class<?> originalClass, String className, byte[] classBytes, int off, int len) throws ClassFormatError {
+        return defineClass(originalClass, className, classBytes, off, len, null);
+    }
+
+    private Class<?> defineClass(final ClassLoader loader, final String className,
+                                 final byte[] classBytes, final int off, final int len) {
+        try {
+            return ClassGenerator.defineClass(loader, className, classBytes, 0, len);
+        } catch(final Exception e) {
+            throw new WeldProxyException("Could not define class" +  className, e);
+        }
+    }
+
+    private Class<?> defineClass(final ClassLoader loader, final String className,
+                                 final byte[] classBytes, final int off, final int len,
+                                 ProtectionDomain protectionDomain) {
+        try {
+            return ClassGenerator.defineClass(loader, className, classBytes, 0, len, protectionDomain);
+        } catch(final Exception e) {
+            throw new WeldProxyException("Could not define class" +  className, e);
+        }
+    }
 }
