@@ -160,41 +160,41 @@ pipeline {
 //                 }
 //             }
 //         }
-        stage('Checkout CargoTracker Tests') {
-            steps{
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out cargoTracker tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
-                    branches: [[name: "*/Payara6"]],
-                    userRemoteConfigs: [[url: "https://github.com/payara/cargoTracker.git"]]]
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out cargoTracker tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-            }
-        }
-        stage('Setup for CargoTracker Tests') {
-            steps {
-                setupDomain()
-            }
-        }
-        stage('Run CargoTracker Tests') {
-            steps {
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Cleaning CargoTracker Database in /tmp  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh "rm -rf /tmp/cargo*"
-
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh """mvn -B -V -ff -e clean install --strict-checksums -Dsurefire.useFile=false \
-                -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
-                -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
-                -Ppayara-server-remote,payara6"""
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-            }
-            post {
-                always {
-                    processReportAndStopDomain()
-                }
-                cleanup {
-                    saveLogsAndCleanup 'cargotracker-log.zip'
-                }
-            }
-        }
+//         stage('Checkout CargoTracker Tests') {
+//             steps{
+//                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out cargoTracker tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+//                 checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
+//                     branches: [[name: "*/Payara6"]],
+//                     userRemoteConfigs: [[url: "https://github.com/payara/cargoTracker.git"]]]
+//                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out cargoTracker tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+//             }
+//         }
+//         stage('Setup for CargoTracker Tests') {
+//             steps {
+//                 setupDomain()
+//             }
+//         }
+//         stage('Run CargoTracker Tests') {
+//             steps {
+//                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Cleaning CargoTracker Database in /tmp  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+//                 sh "rm -rf /tmp/cargo*"
+//
+//                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+//                 sh """mvn -B -V -ff -e clean install --strict-checksums -Dsurefire.useFile=false \
+//                 -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
+//                 -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
+//                 -Ppayara-server-remote,payara6"""
+//                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+//             }
+//             post {
+//                 always {
+//                     processReportAndStopDomain()
+//                 }
+//                 cleanup {
+//                     saveLogsAndCleanup 'cargotracker-log.zip'
+//                 }
+//             }
+//         }
         stage('Checkout EE7 Tests') {
             steps{
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out EE7 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
