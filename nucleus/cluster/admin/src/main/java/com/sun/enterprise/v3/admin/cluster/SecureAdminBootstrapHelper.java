@@ -75,8 +75,8 @@ public abstract class SecureAdminBootstrapHelper {
     private static final String DOMAIN_XML_PATH = "config/domain.xml";
     private static final String[] SECURE_ADMIN_FILE_REL_URIS_TO_COPY = new String[]{
         DOMAIN_XML_PATH,
-        "config/keystore.jks",
-        "config/cacerts.jks"
+        "config/keystore.p12",
+        "config/cacerts.p12"
     };
     private static final String[] SECURE_ADMIN_FILE_DIRS_TO_CREATE = new String[]{
         "config"

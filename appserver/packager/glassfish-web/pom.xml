@@ -258,6 +258,11 @@
             <artifactId>jakarta.security.enterprise</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.glassfish.soteria</groupId>
+            <artifactId>soteria.spi.bean.decorator.weld</artifactId>
+            <version>${jakarta.security.enterprise.version}</version>
+        </dependency>
+        <dependency>
             <groupId>jakarta.el</groupId>
             <artifactId>jakarta.el-api</artifactId>
         </dependency>

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2022] [Payara Foundation and/or its affiliates]
 package org.glassfish.ejb.config;
 
 import org.jvnet.hk2.config.Attribute;
@@ -73,8 +73,8 @@ public interface MdbContainer extends ConfigBeanProxy, PropertyBag, ConfigExtens
      * @return possible object is
      *         {@link String }
      */
-    @Attribute (defaultValue="0")
-    @Min(value=0)
+    @Attribute(defaultValue = "0")
+    @Min(value = 0)
     String getSteadyPoolSize();
 
     /**
@@ -94,8 +94,8 @@ public interface MdbContainer extends ConfigBeanProxy, PropertyBag, ConfigExtens
      * @return possible object is
      *         {@link String }
      */
-    @Attribute (defaultValue="8")
-    @Min(value=0)
+    @Attribute(defaultValue = "8")
+    @Min(value = 0)
     String getPoolResizeQuantity();
 
     /**
@@ -113,8 +113,8 @@ public interface MdbContainer extends ConfigBeanProxy, PropertyBag, ConfigExtens
      * @return possible object is
      *         {@link String }
      */
-    @Attribute (defaultValue="32")
-    @Min(value=0)
+    @Attribute(defaultValue = "32")
+    @Min(value = 0)
     String getMaxPoolSize();
 
     /**
@@ -134,8 +134,8 @@ public interface MdbContainer extends ConfigBeanProxy, PropertyBag, ConfigExtens
      * @return possible object is
      *         {@link String }
      */
-    @Attribute (defaultValue="600")
-    @Min(value=0)
+    @Attribute(defaultValue = "600")
+    @Min(value = 0)
     String getIdleTimeoutInSeconds();
 
     /**

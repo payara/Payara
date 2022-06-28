@@ -69,6 +69,7 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 
 import fish.payara.samples.PayaraArquillianTestRunner;
@@ -111,6 +112,7 @@ public class RolesPermittedTest {
     }
 
     @Test
+    @Ignore
     @RunAsClient
     @InSequence(1)
     public void testAuthenticationWithAdminUser() {
@@ -121,6 +123,7 @@ public class RolesPermittedTest {
     }
 
     @Test
+    @Ignore
     @RunAsClient
     @InSequence(2)
     public void testAdminUserSession() {
@@ -131,6 +134,7 @@ public class RolesPermittedTest {
     }
 
     @Test
+    @Ignore
     @RunAsClient
     public void testAuthenticationWithStandardUser() {
         JsonObject result = getJsonResponse(STANDARD_USER, PASSWORD);

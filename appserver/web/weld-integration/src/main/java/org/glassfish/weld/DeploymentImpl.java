@@ -37,12 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld;
 
 import com.sun.enterprise.container.common.spi.util.InjectionManager;
 import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.WARNING;
+import static java.util.stream.Collectors.toList;
 import static org.glassfish.weld.connector.WeldUtils.*;
 
 import java.io.IOException;
@@ -62,6 +64,7 @@ import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.cdi.CDILoggerInfo;
 import org.glassfish.deployment.common.DeploymentContextImpl;
 import org.glassfish.deployment.common.InstalledLibrariesResolver;
+import org.glassfish.hk2.classmodel.reflect.Types;
 import org.glassfish.javaee.core.deployment.ApplicationHolder;
 import org.glassfish.weld.connector.WeldUtils;
 import org.glassfish.weld.connector.WeldUtils.BDAType;
@@ -81,6 +84,13 @@ import com.sun.enterprise.deployment.util.DOLUtils;
 import org.glassfish.weld.services.InjectionServicesImpl;
 import org.jboss.weld.injection.spi.InjectionServices;
 import org.jboss.weld.injection.spi.ResourceInjectionServices;
+import jakarta.enterprise.inject.build.compatible.spi.BuildCompatibleExtension;
+import org.jboss.weld.lite.extension.translator.LiteExtensionTranslator;
+import java.security.PrivilegedAction;
+import static java.lang.System.getSecurityManager;
+import static java.security.AccessController.doPrivileged;
+import jakarta.enterprise.inject.build.compatible.spi.SkipIfPortableExtensionPresent;
+
 
 /*
  * Represents a deployment of a CDI (Weld) application.
@@ -478,6 +488,25 @@ public class DeploymentImpl implements CDI11Deployment {
         List<BeanDeploymentArchive> bdas = getBeanDeploymentArchives();
         ArrayList<Metadata<Extension>> extnList = new ArrayList<>();
 
+        //registering the org.jboss.weld.lite.extension.translator.LiteExtensionTranslator
+        //to be able to execute build compatible extensions
+        List<Class<? extends BuildCompatibleExtension>> buildExtensions = getBuildCompatibleExtensions();
+        if (!buildExtensions.isEmpty()) {
+            try {
+                LiteExtensionTranslator extensionTranslator = getSecurityManager() != null ?
+                        doPrivileged(new PrivilegedAction<LiteExtensionTranslator>() {
+                            @Override
+                            public LiteExtensionTranslator run() {
+                                return new LiteExtensionTranslator(buildExtensions, Thread.currentThread().getContextClassLoader());
+                            }
+                        }): new LiteExtensionTranslator(buildExtensions, Thread.currentThread().getContextClassLoader());
+                extnList.add(new MetadataImpl<>(extensionTranslator));
+            } catch(Exception e) {
+                logger.log(WARNING, "Problem to register CDI Build Compatible Extensions");
+                throw new RuntimeException(e);
+            }
+        }
+
         // Track classloaders to ensure we don't scan the same classloader twice
         HashSet<ClassLoader> scannedClassLoaders = new HashSet<>();
 
@@ -568,6 +597,15 @@ public class DeploymentImpl implements CDI11Deployment {
         }
     }
 
+    private List<Class<? extends BuildCompatibleExtension>> getBuildCompatibleExtensions() {
+        return
+                ServiceLoader.load(BuildCompatibleExtension.class, Thread.currentThread().getContextClassLoader())
+                        .stream()
+                        .map(java.util.ServiceLoader.Provider::get)
+                        .map(e -> e.getClass())
+                        .filter(e -> !e.isAnnotationPresent(SkipIfPortableExtensionPresent.class))
+                        .collect(toList());
+    }
 
     // This method creates and returns a List of BeanDeploymentArchives for each
     // Weld enabled jar under /lib of an existing Archive.
@@ -664,7 +702,8 @@ public class DeploymentImpl implements CDI11Deployment {
     private void processBdasForAppLibs( ReadableArchive archive, DeploymentContext context ) {
         List<RootBeanDeploymentArchive> libBdas = new ArrayList<>();
         try {
-            // each appLib in context.getAppLibs is a URI of the form "file:/glassfish/runtime/trunk/glassfish4/glassfish/domains/domain1/lib/applibs/mylib.jar"
+            // each appLib in context.getAppLibs is a URI of the form
+            // "file:/glassfish/runtime/trunk/glassfish4/glassfish/domains/domain1/lib/applibs/mylib.jar"
             List<URI> appLibs = context.getAppLibs();
 
             Set<String> installedLibraries = InstalledLibrariesResolver.getInstalledLibraries(archive);
@@ -679,7 +718,7 @@ public class DeploymentImpl implements CDI11Deployment {
                                     String bdaId = archive.getName() + "_" + libArchive.getName();
                                     RootBeanDeploymentArchive rootBda =
                                         new RootBeanDeploymentArchive(libArchive,
-                                                                      Collections.<EjbDescriptor>emptyList(),
+                                                                      Collections.emptyList(),
                                                                       context,
                                                                       bdaId );
                                     libBdas.add(rootBda);
@@ -730,8 +769,8 @@ public class DeploymentImpl implements CDI11Deployment {
         }
 
         for ( BeanDeploymentArchive oneBda : beanDeploymentArchives ) {
-            BeanDeploymentArchiveImpl beanDeploymentArchiveImpl = ( BeanDeploymentArchiveImpl ) oneBda;
-            if ( beanDeploymentArchiveImpl.getBeanClassObjects().contains( beanClass ) ) {
+            BeanDeploymentArchiveImpl beanDeploymentArchiveImpl = (BeanDeploymentArchiveImpl) oneBda;
+            if ( beanDeploymentArchiveImpl.getKnownClasses().contains(beanClass.getName()) ) {
                 return oneBda;
             }
         }
@@ -819,4 +858,14 @@ public class DeploymentImpl implements CDI11Deployment {
     public String getContextId() {
         return contextId;
     }
+
+    /**
+     * Gets the {@link Types} from the {@link DeploymentContext}'s transient metadata
+     *
+     * @return The {@link Types} from the {@link DeploymentContext}'s transient metadata
+     */
+    public Types getTypes() {
+        return context.getTransientAppMetaData(Types.class.getName(), Types.class);
+    }
+
 }
