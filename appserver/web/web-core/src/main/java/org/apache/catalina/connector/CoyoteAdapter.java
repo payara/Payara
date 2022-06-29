@@ -551,7 +551,7 @@ public class CoyoteAdapter extends HttpHandler {
 
         // Filter trace method
         if (!connector.getAllowTrace() &&
-                (Method.TRACE.equals(req.getMethod()))) { //|| Method.OPTIONS.equals(req.getMethod()))) {
+                (Method.TRACE.equals(req.getMethod()) || Method.OPTIONS.equals(req.getMethod()))) {
             Wrapper wrapper = request.getWrapper();
             String header = null;
             if (wrapper != null) {
@@ -571,17 +571,17 @@ public class CoyoteAdapter extends HttpHandler {
                 }
             }
 
-            //if (Method.TRACE.equals(req.getMethod())) {
-                res.setStatus(HttpStatus.METHOD_NOT_ALLOWED_405.getStatusCode(), "TRACE method is not allowed");
+            if (Method.TRACE.equals(req.getMethod())) {
+                res.setStatus(405, "TRACE method is not allowed");
                 res.addHeader("Allow", header);
                 return false;
-            //}
+            }
 
-            /*if (Method.OPTIONS.equals(req.getMethod())) {
+            if (Method.OPTIONS.equals(req.getMethod())) {
                 res.setStatus(HttpStatus.OK_200);
                 res.addHeader("Allow", header);
                 return false;
-            }*/
+            }
         }
 
         // Possible redirect
