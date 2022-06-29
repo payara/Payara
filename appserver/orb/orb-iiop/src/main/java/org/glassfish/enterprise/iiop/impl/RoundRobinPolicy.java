@@ -37,13 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2022] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.enterprise.iiop.impl;
 
 import com.sun.corba.ee.spi.folb.ClusterInstanceInfo;
 import com.sun.corba.ee.spi.folb.SocketInfo;
-import com.sun.jndi.cosnaming.IiopUrl;
+import org.glassfish.jndi.cosnaming.IiopUrl;
 import org.glassfish.internal.api.ORBLocator;
 import org.glassfish.logging.annotation.LogMessageInfo;
 

@@ -92,6 +92,7 @@
         <module>microprofile-rest-client</module>
         <module>grpc</module>
         <module>grpc-ejb</module>
+        <module>resources</module>
     </modules>
 
     <dependencies>
