@@ -199,7 +199,7 @@
         </unzip>
         <copy todir="${domaindir}">
             <fileset dir="${tempdir}/config">
-                <include name="*.p12"/>
+                <include name="*.jks"/>
                 <include name="keyfile"/>
             </fileset>
         </copy>
