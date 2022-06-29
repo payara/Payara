@@ -89,6 +89,7 @@ import org.glassfish.grizzly.http.util.ByteChunk;
 import org.glassfish.grizzly.http.util.CharChunk;
 import org.glassfish.grizzly.http.util.DataChunk;
 import org.glassfish.grizzly.http.util.MessageBytes;
+import org.glassfish.grizzly.http.util.HttpStatus;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.web.valve.GlassFishValve;
 import org.glassfish.web.valve.ServletContainerInterceptor;
@@ -549,7 +550,8 @@ public class CoyoteAdapter extends HttpHandler {
         request.setWrapper((Wrapper) request.getMappingData().wrapper);
 
         // Filter trace method
-        if (!connector.getAllowTrace() && Method.TRACE.equals(req.getMethod())) {
+        if (!connector.getAllowTrace() &&
+                (Method.TRACE.equals(req.getMethod()) || Method.OPTIONS.equals(req.getMethod()))) {
             Wrapper wrapper = request.getWrapper();
             String header = null;
             if (wrapper != null) {
@@ -567,10 +569,19 @@ public class CoyoteAdapter extends HttpHandler {
                         }
                     }
                 }
-            }                               
-            res.setStatus(405, "TRACE method is not allowed");
-            res.addHeader("Allow", header);
-            return false;
+            }
+
+            if (Method.TRACE.equals(req.getMethod())) {
+                res.setStatus(405, "TRACE method is not allowed");
+                res.addHeader("Allow", header);
+                return false;
+            }
+
+            if (Method.OPTIONS.equals(req.getMethod())) {
+                res.setStatus(HttpStatus.OK_200);
+                res.addHeader("Allow", header);
+                return false;
+            }
         }
 
         // Possible redirect
