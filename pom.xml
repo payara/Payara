@@ -181,8 +181,8 @@
         <jakarta.interceptor-api.version>2.1.0</jakarta.interceptor-api.version>
         <jakarta.inject.version>2.0.0</jakarta.inject.version>
         <cdi-api.version>4.0.1</cdi-api.version>
-        <weld.version>5.0.0.SP2</weld.version>
-        <weld-api.version>5.0.Final</weld-api.version>
+        <weld.version>5.0.1.Final</weld.version>
+        <weld-api.version>5.0.SP2</weld-api.version>
         <jakarta.security.enterprise-api.version>3.0.0</jakarta.security.enterprise-api.version>
         <jakarta.security.enterprise.version>3.0.0-M5</jakarta.security.enterprise.version>
         <jakarta.security.jacc-api.version>2.1.0</jakarta.security.jacc-api.version>
