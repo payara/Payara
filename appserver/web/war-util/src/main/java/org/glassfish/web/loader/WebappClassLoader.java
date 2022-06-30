@@ -3381,8 +3381,8 @@ public class WebappClassLoader
         Map<Class, ?> m = null;
         try {
             m = getBeanELResolverProperties(fld);
-        } catch (IllegalAccessException iae) {
-            logger.log(Level.WARNING, LogFacade.UNABLE_PURGE_BEAN_CLASSES, iae);
+        } catch (Exception ex) {
+            logger.log(Level.WARNING, LogFacade.UNABLE_PURGE_BEAN_CLASSES, ex);
             return;
         }
 
