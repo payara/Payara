@@ -1999,10 +1999,6 @@ public class WebappClassLoader
             return;
         }
 
-        // START GlassFish Issue 587
-        purgeELBeanClasses();
-        // END GlassFish Issue 587
-
         /*
          * Clearing references should be done before setting started to
          * false, due to possible side effects.
@@ -3348,62 +3344,6 @@ public class WebappClassLoader
         byteCodePreprocessors.add(preprocessor);
     }
     // END SJSAS 6344989
-
-
-    // START GlassFish Issue 587
-    /*
-     * Purges all bean classes that were loaded by this WebappClassLoader
-     * from the caches maintained by jakarta.el.BeanELResolver, in order to
-     * avoid this WebappClassLoader from leaking.
-     */
-    private void purgeELBeanClasses() {
-
-        Field fieldlist[] = jakarta.el.BeanELResolver.class.getDeclaredFields();
-        for (Field fld : fieldlist) {
-            if (fld.getName().equals("properties")) {
-                purgeELBeanClasses(fld);
-                break;
-            }
-        }
-    }
-
-    /*
-     * Purges all bean classes that were loaded by this WebappClassLoader
-     * from the cache represented by the given reflected field.
-     *
-     * @param fld The reflected field from which to remove the bean classes
-     * that were loaded by this WebappClassLoader
-     */
-    private void purgeELBeanClasses(final Field fld) {
-
-        setAccessible(fld);
-
-        Map<Class, ?> m = null;
-        try {
-            m = getBeanELResolverProperties(fld);
-        } catch (Exception ex) {
-            logger.log(Level.WARNING, LogFacade.UNABLE_PURGE_BEAN_CLASSES, ex);
-            return;
-        }
-
-        if (m.isEmpty()) {
-            return;
-        }
-
-        Iterator<Class> iter = m.keySet().iterator();
-        while (iter.hasNext()) {
-            Class mbeanClass = iter.next();
-            if (this.equals(mbeanClass.getClassLoader())) {
-                iter.remove();
-            }
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    private static Map<Class, ?> getBeanELResolverProperties(Field fld) throws IllegalAccessException {
-        return (Map<Class, ?>)fld.get(null);
-    }
-    // END GlassFish Issue 587
 
      /**
      * Create and return a temporary loader with the same visibility
