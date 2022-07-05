@@ -1,4 +1,4 @@
-def ASADMIN = "${pwd()}/${getPayaraDirectoryName(CFG.'build.version)}/bin/asadmin"
+def ASADMIN = "${pwd()}/${getPayaraDirectoryName(CFG.'build.version')}/bin/asadmin"
 
 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Setting up tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 sh "${ASADMIN} create-domain --no-password ${CFG.domain_name}"

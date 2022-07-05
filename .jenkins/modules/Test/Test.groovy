@@ -1,5 +1,5 @@
 MPLPostStep('always') {
-    sh "${pwd()}/${getPayaraDirectoryName(CFG.'build.version)}/bin/asadmin stop-domain ${CFG.domain_name}"
+    sh "${pwd()}/${getPayaraDirectoryName(CFG.'build.version')}/bin/asadmin stop-domain ${CFG.domain_name}"
     cleanWs()
 }
 
