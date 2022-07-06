@@ -204,7 +204,7 @@
             <dependency>
                 <groupId>org.glassfish.woodstock</groupId>
                 <artifactId>woodstock-webui-jsf-suntheme</artifactId>
-                <version>${woodstock-jsf.version}</version>
+                <version>${woodstock-jsf-suntheme.version}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
