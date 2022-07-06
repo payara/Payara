@@ -388,7 +388,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         if (handle.getSecurityContext() != null) {
             SecurityContext.setCurrent(handle.getSecurityContext());
         }
-        if (handle.getInvocation() != null && !handle.isUseTransactionOfExecutionThread()) {
+        if (handle.getInvocation() != null) {
             invocationManager.postInvoke(((InvocationContext) contextHandle).getInvocation());
         }
         if (contextClear.contains(CONTEXT_TYPE_WORKAREA) && transactionManager != null) {
