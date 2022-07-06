@@ -183,7 +183,7 @@ pipeline {
                 sh """mvn -B -V -ff -e clean install --strict-checksums -Dsurefire.useFile=false \
                 -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
                 -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
-                -Ppayara-server-remote,payara6"""
+                -Ppayara-server-remote -DtrimStackTrace=false"""
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
