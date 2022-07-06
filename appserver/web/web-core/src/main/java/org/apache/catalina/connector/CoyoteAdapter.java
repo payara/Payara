@@ -371,6 +371,11 @@ public class CoyoteAdapter extends HttpHandler {
                         GlassFishValve hostValve = host.getPipeline().getBasic();
                         hostValve.invoke(request, response);
                         // Error handling
+
+                        // Exclude TRACE from Allow header if allowTrace is false
+                        if(!connector.getAllowTrace()) {
+                            removeTraceMethod(response);
+                        }
                         hostValve.postInvoke(request, response); 
                     }
                 }
@@ -388,6 +393,16 @@ public class CoyoteAdapter extends HttpHandler {
     }
     // ------------------------------------------------------ Protected Methods
 
+    /**
+     * Method to remove TRACE method from Allow header
+     * @param HttpResponse response to process
+     */
+    private void removeTraceMethod(final Response response) {
+        String header = response.getHeader("Allow");
+        if (header != null) {
+            response.setHeader("Allow", header.replace(", TRACE", ""));
+        }
+    }
 
     /**
      * Parse additional request parameters.
@@ -551,7 +566,7 @@ public class CoyoteAdapter extends HttpHandler {
 
         // Filter trace method
         if (!connector.getAllowTrace() &&
-                (Method.TRACE.equals(req.getMethod()) || Method.OPTIONS.equals(req.getMethod()))) {
+                (Method.TRACE.equals(req.getMethod()))) {
             Wrapper wrapper = request.getWrapper();
             String header = null;
             if (wrapper != null) {
@@ -570,18 +585,9 @@ public class CoyoteAdapter extends HttpHandler {
                     }
                 }
             }
-
-            if (Method.TRACE.equals(req.getMethod())) {
-                res.setStatus(405, "TRACE method is not allowed");
-                res.addHeader("Allow", header);
-                return false;
-            }
-
-            if (Method.OPTIONS.equals(req.getMethod())) {
-                res.setStatus(HttpStatus.OK_200);
-                res.addHeader("Allow", header);
-                return false;
-            }
+            res.setStatus(405, "TRACE method is not allowed");
+            res.addHeader("Allow", header);
+            return false;
         }
 
         // Possible redirect
