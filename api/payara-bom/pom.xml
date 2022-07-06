@@ -687,6 +687,11 @@
                 </exclusions>
             </dependency>
             <dependency>
+                <groupId>org.jboss.weld</groupId>
+                <artifactId>weld-lite-extension-translator</artifactId>
+                <version>${weld.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.jboss.weld.se</groupId>
                 <artifactId>weld-se-shaded</artifactId>
                 <version>${weld.version}</version>
@@ -728,12 +733,12 @@
                 <artifactId>jakarta.json</artifactId>
                 <version>${parsson.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.eclipse.parsson</groupId>
                 <artifactId>parsson-media</artifactId>
                 <version>${parsson.version}</version>
             </dependency>
+
             <dependency>
                 <groupId>com.ibm.jbatch</groupId>
                 <artifactId>com.ibm.jbatch.container</artifactId>

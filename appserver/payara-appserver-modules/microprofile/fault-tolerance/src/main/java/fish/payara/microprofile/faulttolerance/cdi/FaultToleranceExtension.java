@@ -71,6 +71,7 @@ import jakarta.enterprise.inject.spi.Interceptor;
 import jakarta.enterprise.inject.spi.ProcessAnnotatedType;
 import jakarta.enterprise.inject.spi.WithAnnotations;
 import jakarta.enterprise.inject.spi.configurator.AnnotatedMethodConfigurator;
+import jakarta.enterprise.inject.spi.InjectionTargetFactory;
 import jakarta.interceptor.InvocationContext;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
@@ -221,7 +222,8 @@ public class FaultToleranceExtension implements Extension {
             this.bm = bm;
             this.binding = binding;
             beanAttributes = bm.createBeanAttributes(at);
-            injectionTarget = bm.createInjectionTarget(at);
+            InjectionTargetFactory<FaultToleranceInterceptor> itf = bm.getInjectionTargetFactory(at);
+            injectionTarget = itf.createInjectionTarget(null);
         }
 
         @Override
@@ -247,11 +249,6 @@ public class FaultToleranceExtension implements Extension {
         @Override
         public Set<InjectionPoint> getInjectionPoints() {
             return injectionTarget.getInjectionPoints();
-        }
-
-        @Override
-        public boolean isNullable() {
-            return false;
         }
 
         @Override

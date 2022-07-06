@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.appclient.client.acc;
 
@@ -58,6 +58,8 @@ import jakarta.enterprise.context.spi.CreationalContext;
 import jakarta.enterprise.inject.spi.AnnotatedType;
 import jakarta.enterprise.inject.spi.BeanManager;
 import jakarta.enterprise.inject.spi.InjectionTarget;
+import jakarta.enterprise.inject.spi.InjectionTargetFactory;
+import jakarta.enterprise.inject.spi.Bean;
 import jakarta.inject.Inject;
 import javax.naming.NamingException;
 import jakarta.servlet.ServletContext;
@@ -147,17 +149,17 @@ public class ACCJCDIServiceImpl implements JCDIService {
             BeanManager beanManager = wc.getBeanManager();
 
             AnnotatedType<T> annotatedType = beanManager.createAnnotatedType(managedClass);
-            InjectionTarget<T> target = beanManager.createInjectionTarget(annotatedType);
+            InjectionTargetFactory<T> target = beanManager.getInjectionTargetFactory(annotatedType);
 
             CreationalContext<T> cc = beanManager.createCreationalContext(null);
 
-            target.inject(managedObject, cc);
+            InjectionTarget it = target.createInjectionTarget((Bean<T>) managedObject);
 
             if( invokePostConstruct ) {
-                target.postConstruct(managedObject);
+                it.postConstruct(managedObject);
             }
 
-            context = new JCDIInjectionContextImpl<>(target, cc, managedObject);
+            context = new JCDIInjectionContextImpl(it, cc, managedObject);
         }
 
         return context;
@@ -173,7 +175,9 @@ public class ACCJCDIServiceImpl implements JCDIService {
 
             @SuppressWarnings("unchecked")
             AnnotatedType<T> annotatedType = beanManager.createAnnotatedType((Class<T>) managedObject.getClass());
-            InjectionTarget<T> target = beanManager.createInjectionTarget(annotatedType);
+
+            InjectionTargetFactory<T> itf = beanManager.getInjectionTargetFactory(annotatedType);
+            InjectionTarget<T> target = itf.createInjectionTarget((Bean<T>)managedObject);
 
             CreationalContext<T> cc = beanManager.createCreationalContext(null);
 
