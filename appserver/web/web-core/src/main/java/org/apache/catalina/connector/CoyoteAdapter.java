@@ -394,13 +394,13 @@ public class CoyoteAdapter extends HttpHandler {
     // ------------------------------------------------------ Protected Methods
 
     /**
-     * Method to remove TRACE method from Allow header
-     * @param HttpResponse response to process
+     * Method to remove TRACE method from Response Allow header
+     * @param response of type Response to be processed
      */
     private void removeTraceMethod(final Response response) {
         String header = response.getHeader("Allow");
         if (header != null) {
-            response.setHeader("Allow", header.replace(", TRACE", ""));
+            response.setHeader("Allow", header.replace("TRACE,", ""));
         }
     }
 
@@ -565,8 +565,7 @@ public class CoyoteAdapter extends HttpHandler {
         request.setWrapper((Wrapper) request.getMappingData().wrapper);
 
         // Filter trace method
-        if (!connector.getAllowTrace() &&
-                (Method.TRACE.equals(req.getMethod()))) {
+        if (!connector.getAllowTrace() && (Method.TRACE.equals(req.getMethod()))) {
             Wrapper wrapper = request.getWrapper();
             String header = null;
             if (wrapper != null) {
