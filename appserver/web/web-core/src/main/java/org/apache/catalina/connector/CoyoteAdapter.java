@@ -569,7 +569,7 @@ public class CoyoteAdapter extends HttpHandler {
         request.setWrapper((Wrapper) request.getMappingData().wrapper);
 
         // Filter trace method
-        if (!connector.getAllowTrace() && (Method.TRACE.equals(req.getMethod()))) {
+        if (!connector.getAllowTrace() && Method.TRACE.equals(req.getMethod())) {
             Wrapper wrapper = request.getWrapper();
             String header = null;
             if (wrapper != null) {
