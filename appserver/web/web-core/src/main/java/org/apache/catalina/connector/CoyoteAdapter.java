@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+// Portions Copyright [2022] [Payara Foundation and/or its affiliates]
 package org.apache.catalina.connector;
 
 import java.nio.charset.Charset;
@@ -81,7 +81,6 @@ import org.apache.catalina.LogFacade;
 import org.apache.catalina.Wrapper;
 import org.apache.catalina.core.ContainerBase;
 import org.apache.catalina.util.ServerInfo;
-import org.apache.catalina.util.StringManager;
 import org.glassfish.grizzly.http.Method;
 import org.glassfish.grizzly.http.server.AfterServiceListener;
 import org.glassfish.grizzly.http.server.HttpHandler;
@@ -91,7 +90,6 @@ import org.glassfish.grizzly.http.util.ByteChunk;
 import org.glassfish.grizzly.http.util.CharChunk;
 import org.glassfish.grizzly.http.util.DataChunk;
 import org.glassfish.grizzly.http.util.MessageBytes;
-import org.glassfish.grizzly.http.util.HttpStatus;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.web.valve.GlassFishValve;
 import org.glassfish.web.valve.ServletContainerInterceptor;
