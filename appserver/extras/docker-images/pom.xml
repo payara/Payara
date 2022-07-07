@@ -214,6 +214,7 @@
                 </plugins>
             </build>
         </profile>
+        <!-- Split into a separate profile for when we want to update images for distributions that don't support JDK 17 -->
         <profile>
             <id>generate-jdk17-docker-image</id>
             <activation>
