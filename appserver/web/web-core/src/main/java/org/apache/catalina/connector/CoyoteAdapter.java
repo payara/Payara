@@ -66,6 +66,8 @@ import java.util.Collection;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -400,7 +402,9 @@ public class CoyoteAdapter extends HttpHandler {
     private void removeTraceMethod(final Response response) {
         String header = response.getHeader("Allow");
         if (header != null) {
-            response.setHeader("Allow", header.replace("TRACE,", ""));
+            header = Arrays.stream(header.split(",")).map(s-> s.trim()).filter(s->!s.equals("TRACE")).
+                    collect(Collectors.joining(", "));
+            response.setHeader("Allow", header);
         }
     }
 
