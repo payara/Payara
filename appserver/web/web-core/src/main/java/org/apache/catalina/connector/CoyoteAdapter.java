@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+// Portions Copyright [2022] [Payara Foundation and/or its affiliates]
 package org.apache.catalina.connector;
 
 import java.nio.charset.Charset;
@@ -66,6 +66,8 @@ import java.util.Collection;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -79,7 +81,6 @@ import org.apache.catalina.LogFacade;
 import org.apache.catalina.Wrapper;
 import org.apache.catalina.core.ContainerBase;
 import org.apache.catalina.util.ServerInfo;
-import org.apache.catalina.util.StringManager;
 import org.glassfish.grizzly.http.Method;
 import org.glassfish.grizzly.http.server.AfterServiceListener;
 import org.glassfish.grizzly.http.server.HttpHandler;
@@ -89,7 +90,6 @@ import org.glassfish.grizzly.http.util.ByteChunk;
 import org.glassfish.grizzly.http.util.CharChunk;
 import org.glassfish.grizzly.http.util.DataChunk;
 import org.glassfish.grizzly.http.util.MessageBytes;
-import org.glassfish.grizzly.http.util.HttpStatus;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.web.valve.GlassFishValve;
 import org.glassfish.web.valve.ServletContainerInterceptor;
@@ -371,7 +371,12 @@ public class CoyoteAdapter extends HttpHandler {
                         GlassFishValve hostValve = host.getPipeline().getBasic();
                         hostValve.invoke(request, response);
                         // Error handling
-                        hostValve.postInvoke(request, response); 
+
+                        // Exclude TRACE from Allow header if allowTrace is false
+                        if(!connector.getAllowTrace()) {
+                            removeTraceMethod(response);
+                        }
+                        hostValve.postInvoke(request, response);
                     }
                 }
             } finally {
@@ -388,6 +393,18 @@ public class CoyoteAdapter extends HttpHandler {
     }
     // ------------------------------------------------------ Protected Methods
 
+    /**
+     * Method to remove TRACE method from Response Allow header
+     * @param response of type Response to be processed
+     */
+    private void removeTraceMethod(final Response response) {
+        String header = response.getHeader("Allow");
+        if (header != null) {
+            header = Arrays.stream(header.split(",")).map(s-> s.trim()).filter(s->!s.equals("TRACE")).
+                    collect(Collectors.joining(", "));
+            response.setHeader("Allow", header);
+        }
+    }
 
     /**
      * Parse additional request parameters.
@@ -550,8 +567,7 @@ public class CoyoteAdapter extends HttpHandler {
         request.setWrapper((Wrapper) request.getMappingData().wrapper);
 
         // Filter trace method
-        if (!connector.getAllowTrace() &&
-                (Method.TRACE.equals(req.getMethod()) || Method.OPTIONS.equals(req.getMethod()))) {
+        if (!connector.getAllowTrace() && Method.TRACE.equals(req.getMethod())) {
             Wrapper wrapper = request.getWrapper();
             String header = null;
             if (wrapper != null) {
@@ -570,18 +586,9 @@ public class CoyoteAdapter extends HttpHandler {
                     }
                 }
             }
-
-            if (Method.TRACE.equals(req.getMethod())) {
-                res.setStatus(405, "TRACE method is not allowed");
-                res.addHeader("Allow", header);
-                return false;
-            }
-
-            if (Method.OPTIONS.equals(req.getMethod())) {
-                res.setStatus(HttpStatus.OK_200);
-                res.addHeader("Allow", header);
-                return false;
-            }
+            res.setStatus(405, "TRACE method is not allowed");
+            res.addHeader("Allow", header);
+            return false;
         }
 
         // Possible redirect
