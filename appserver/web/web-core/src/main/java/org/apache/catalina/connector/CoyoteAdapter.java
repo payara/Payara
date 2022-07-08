@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+// Portions Copyright [2022] [Payara Foundation and/or its affiliates]
 package org.apache.catalina.connector;
 
 import java.nio.charset.Charset;
@@ -66,6 +66,8 @@ import java.util.Collection;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -79,7 +81,6 @@ import org.apache.catalina.LogFacade;
 import org.apache.catalina.Wrapper;
 import org.apache.catalina.core.ContainerBase;
 import org.apache.catalina.util.ServerInfo;
-import org.apache.catalina.util.StringManager;
 import org.glassfish.grizzly.http.Method;
 import org.glassfish.grizzly.http.server.AfterServiceListener;
 import org.glassfish.grizzly.http.server.HttpHandler;
@@ -370,6 +371,11 @@ public class CoyoteAdapter extends HttpHandler {
                         GlassFishValve hostValve = host.getPipeline().getBasic();
                         hostValve.invoke(request, response);
                         // Error handling
+
+                        // Exclude TRACE from Allow header if allowTrace is false
+                        if(!connector.getAllowTrace()) {
+                            removeTraceMethod(response);
+                        }
                         hostValve.postInvoke(request, response); 
                     }
                 }
@@ -387,6 +393,18 @@ public class CoyoteAdapter extends HttpHandler {
     }
     // ------------------------------------------------------ Protected Methods
 
+    /**
+     * Method to remove TRACE method from Response Allow header
+     * @param response of type Response to be processed
+     */
+    private void removeTraceMethod(final Response response) {
+        String header = response.getHeader("Allow");
+        if (header != null) {
+            header = Arrays.stream(header.split(",")).map(s-> s.trim()).filter(s->!s.equals("TRACE")).
+                    collect(Collectors.joining(", "));
+            response.setHeader("Allow", header);
+        }
+    }
 
     /**
      * Parse additional request parameters.
@@ -567,7 +585,7 @@ public class CoyoteAdapter extends HttpHandler {
                         }
                     }
                 }
-            }                               
+            }
             res.setStatus(405, "TRACE method is not allowed");
             res.addHeader("Allow", header);
             return false;
