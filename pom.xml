@@ -214,7 +214,7 @@
         <payara-arquillian-container.version>3.0.alpha4</payara-arquillian-container.version>
         <payara.security-connectors.version>3.0.alpha4</payara.security-connectors.version>
         <opentracing.version>0.33.0</opentracing.version>
-        <h2db.version>1.4.200</h2db.version>
+        <h2db.version>2.1.212</h2db.version>
         <websocket-api.version>2.1.0</websocket-api.version>
         <concurrent-api.version>3.0.0</concurrent-api.version>
         <concurrent.version>3.0.0-RC1</concurrent.version>
