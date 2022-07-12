@@ -85,7 +85,7 @@
             <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.valueMap['longRunningTasks']}" selectedValue="true"  />
        </sun:property>
 
-       <sun:property id="useforkjoinpool"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncon.useforkjoinpool}">
+       <sun:property id="useforkjoinpool" rendered="#{pageSession.showForkJoin}" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncon.useforkjoinpool}">
            <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.valueMap['useForkJoinPool']}" selectedValue="true"  />
        </sun:property>
        
