@@ -246,7 +246,6 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
                 managedThreadFactory,
                 config.getHungAfterSeconds() * 1000L, // in millseconds
                 config.isLongRunningTasks(),
-                config.getUseForkJoinPool(),
                 config.getCorePoolSize(),
                 config.getKeepAliveSeconds(), TimeUnit.SECONDS,
                 config.getThreadLifeTimeSeconds(),
@@ -372,7 +371,6 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
             internalScheduler = new ManagedScheduledExecutorServiceImpl(name,
                     managedThreadFactory,
                     0L,
-                    false,
                     false,
                     1,
                     60, TimeUnit.SECONDS,

@@ -48,7 +48,6 @@ public class ManagedScheduledExecutorServiceConfig extends BaseConfig {
 
     private int hungAfterSeconds;
     private boolean longRunningTasks;
-    private boolean useForkJoinPool;
     private int threadPriority;
     private int corePoolSize;
     private long keepAliveSeconds;
@@ -58,7 +57,6 @@ public class ManagedScheduledExecutorServiceConfig extends BaseConfig {
         super(config.getJndiName(), config.getContextInfo(), config.getContextInfoEnabled());
         hungAfterSeconds = parseInt(config.getHungAfterSeconds(), 0);
         longRunningTasks = Boolean.valueOf(config.getLongRunningTasks());
-        useForkJoinPool = Boolean.valueOf(config.getUseForkJoinPool());
         threadPriority = parseInt(config.getThreadPriority(), Thread.NORM_PRIORITY);
         corePoolSize = parseInt(config.getCorePoolSize(), 0);
         keepAliveSeconds = parseLong(config.getKeepAliveSeconds(), 60);
@@ -87,10 +85,6 @@ public class ManagedScheduledExecutorServiceConfig extends BaseConfig {
 
     public long getThreadLifeTimeSeconds() {
         return threadLifeTimeSeconds;
-    }
-
-    public boolean getUseForkJoinPool() {
-        return useForkJoinPool;
     }
 
     @Override
