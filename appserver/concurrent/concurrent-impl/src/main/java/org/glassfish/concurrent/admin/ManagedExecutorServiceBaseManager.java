@@ -83,7 +83,6 @@ public abstract class ManagedExecutorServiceBaseManager implements ResourceManag
     protected String contextInfoEnabled = Boolean.TRUE.toString();
     protected String contextInfo = CONTEXT_INFO_DEFAULT_VALUE;
     protected String longRunningTasks = Boolean.FALSE.toString();
-    protected String useForkJoinPool = Boolean.FALSE.toString();
     protected String hungAfterSeconds = "0";
     protected String corePoolSize = "0";
     protected String keepAliveSeconds = "60";
@@ -154,12 +153,10 @@ public abstract class ManagedExecutorServiceBaseManager implements ResourceManag
         }
         status = resourcesHelper.validateBindableResourceForDuplicates(resources, jndiName, validateResourceRef, target, clazz);
 
-        if ("false".equals(useForkJoinPool)) {
-            try {
-                Integer.parseInt(corePoolSize);
-            } catch (NumberFormatException nfe) {
-                return new ResourceStatus(ResourceStatus.FAILURE, localStrings.getLocalString("coresize.must.be.number", "Option corepoolsize must be a number."));
-            }
+        try {
+            Integer.parseInt(corePoolSize);
+        } catch (NumberFormatException nfe) {
+            return new ResourceStatus(ResourceStatus.FAILURE, localStrings.getLocalString("coresize.must.be.number", "Option corepoolsize must be a number."));
         }
 
         return status;
@@ -172,7 +169,6 @@ public abstract class ManagedExecutorServiceBaseManager implements ResourceManag
         contextInfoEnabled = (String) attributes.get(CONTEXT_INFO_ENABLED);
         threadPriority = (String) attributes.get(THREAD_PRIORITY);
         longRunningTasks = (String) attributes.get(LONG_RUNNING_TASKS);
-        useForkJoinPool =  (String) attributes.get(USE_FORK_JOIN_POOL);
         hungAfterSeconds = (String) attributes.get(HUNG_AFTER_SECONDS);
         corePoolSize = (String) attributes.get(CORE_POOL_SIZE);
         keepAliveSeconds = (String) attributes.get(KEEP_ALIVE_SECONDS);
@@ -208,7 +204,6 @@ public abstract class ManagedExecutorServiceBaseManager implements ResourceManag
         managedExecutorService.setEnabled(enabled);
         //Fix for GLASSFISH-21251
         managedExecutorService.setLongRunningTasks(longRunningTasks);
-        managedExecutorService.setUseForkJoinPool(useForkJoinPool);
         //end of fix GLASSFISH-21251
         if (properties != null) {
             for ( Map.Entry e : properties.entrySet()) {

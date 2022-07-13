@@ -69,12 +69,14 @@ public class ManagedExecutorServiceManager extends ManagedExecutorServiceBaseMan
 
     private String maximumPoolSize = ""+Integer.MAX_VALUE;
     private String taskQueueCapacity = ""+Integer.MAX_VALUE;
+    private String useForkJoinPool = Boolean.FALSE.toString();
 
     @Override
     protected void setAttributes(HashMap attributes, String target) {
         super.setAttributes(attributes, target);
         maximumPoolSize = (String) attributes.get(MAXIMUM_POOL_SIZE);
         taskQueueCapacity = (String) attributes.get(TASK_QUEUE_CAPACITY);
+        useForkJoinPool = (String) attributes.get(USE_FORK_JOIN_POOL);
     }
 
     @Override
@@ -105,9 +107,10 @@ public class ManagedExecutorServiceManager extends ManagedExecutorServiceBaseMan
 
     protected ManagedExecutorServiceBase createConfigBean(Resources param, Properties properties) throws PropertyVetoException, TransactionFailure {
         ManagedExecutorService managedExecutorService = param.createChild(ManagedExecutorService.class);
-        setAttributesOnConfigBean(managedExecutorService, properties); 
+        setAttributesOnConfigBean(managedExecutorService, properties);
         managedExecutorService.setMaximumPoolSize(maximumPoolSize);
         managedExecutorService.setTaskQueueCapacity(taskQueueCapacity);
+        managedExecutorService.setUseForkJoinPool(useForkJoinPool);
         return managedExecutorService;
     }
 
