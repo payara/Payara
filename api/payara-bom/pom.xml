@@ -409,16 +409,6 @@
                 <groupId>jakarta.enterprise.concurrent</groupId>
                 <artifactId>jakarta.enterprise.concurrent-api</artifactId>
                 <version>${concurrent-api.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.jboss.arquillian.testng</groupId>
-                        <artifactId>arquillian-testng-container</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.testng</groupId>
-                        <artifactId>testng</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
 
