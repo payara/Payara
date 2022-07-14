@@ -69,9 +69,9 @@
                 <protocol-filter classname="org.glassfish.grizzly.config.portunif.HttpRedirectFilter" name="redirect-filter" />
               </protocol-chain>
             </protocol-chain-instance-handler>
-            <ssl trust-store="target/test-classes/cacerts.p12"
+            <ssl trust-store="target/test-classes/cacerts.jks"
                  trust-store-password="changeit"
-                 key-store="target/test-classes/keystore.p12"
+                 key-store="target/test-classes/keystore.jks"
                  key-store-password="changeit"/>
         </protocol>
 

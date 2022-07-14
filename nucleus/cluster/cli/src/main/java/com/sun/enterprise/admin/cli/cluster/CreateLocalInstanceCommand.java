@@ -330,7 +330,7 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
             masterPassword = DEFAULT_MASTER_PASSWORD;
 
         if (saveMasterPassword) {
-            File mp = new File(new File(getServerDirs().getServerDir(), "config"), "keystore.p12");
+            File mp = new File(new File(getServerDirs().getServerDir(), "config"), "keystore.jks");
             if (mp.canRead()) {
                 if (verifyMasterPassword(masterPassword)) {
 
