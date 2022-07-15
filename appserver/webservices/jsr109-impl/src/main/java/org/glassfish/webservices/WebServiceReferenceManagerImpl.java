@@ -488,6 +488,9 @@ public class WebServiceReferenceManagerImpl implements WebServiceReferenceManage
         }
 
         URL wsdl = desc.getWsdlFileUrl();
+        if (wsdl == null || wsdl.getPath() == null) {
+            return null;
+        }
         String wsdlPath = wsdl.getPath().trim();
         if (!wsdlPath.contains(WebServiceEndpoint.PUBLISHING_SUBCONTEXT)) {
             return null;
