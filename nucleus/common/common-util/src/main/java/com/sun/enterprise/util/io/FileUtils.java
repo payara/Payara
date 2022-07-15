@@ -939,6 +939,8 @@ public class FileUtils  {
         }
 
         if (!fin.exists()) {
+            _utillogger.severe(String.format("Input %s doesn't exist, output %s", fin.getAbsolutePath(), fout.getAbsolutePath()));
+            Thread.dumpStack();
             throw new IllegalArgumentException("File source doesn't exist");
         }
 
@@ -1183,7 +1185,7 @@ public class FileUtils  {
             }
         }
     }
-    
+
     public static void appendText(String fileName, StringBuilder buffer) throws IOException, FileNotFoundException {
         appendText(fileName, buffer.toString());
     }
