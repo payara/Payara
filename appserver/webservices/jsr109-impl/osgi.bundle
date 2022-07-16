@@ -40,6 +40,7 @@
 
 -exportcontents: \
                         com.sun.enterprise.webservice; \
+                        com.sun.enterprise.webservice.spi; \
                         org.glassfish.webservices; \
                         org.glassfish.webservices.config; \
                         org.glassfish.webservices.monitoring; version=${project.osgi.version}
