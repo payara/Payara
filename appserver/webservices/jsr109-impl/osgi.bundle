@@ -40,13 +40,13 @@
 
 -exportcontents: \
                         com.sun.enterprise.webservice; \
-                        com.sun.enterprise.webservice.spi; \
                         org.glassfish.webservices; \
                         org.glassfish.webservices.config; \
                         org.glassfish.webservices.monitoring; version=${project.osgi.version}
 Import-Package: \
                        com.sun.enterprise.deployment.*, \
                        com.sun.enterprise.deployment.annotation.*, \
+                       com.sun.enterprise.webservice.spi.*; \
                        com.sun.enterprise.config.serverbeans, \
                        jakarta.ejb;resolution:=optional, \
                        * 
