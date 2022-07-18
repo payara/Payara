@@ -65,11 +65,11 @@
         <module>jaxrs-rolesallowed-servlet</module>
         <module>jaxws-security</module>
         <!--module>jaxws-tracing</module-->
-        <!--module>microprofile-config</module-->
+        <module>microprofile-config</module>
         <module>microprofile-endpoints</module>
-        <!--module>microprofile-healthcheck</module-->
-        <!--module>oauth2</module-->
-        <!--module>openid</module-->
+        <module>microprofile-healthcheck</module>
+        <module>oauth2</module>
+        <module>openid</module>
         <module>rest-management</module>
         <module>rolesPermitted</module>
         <module>realm-identity-stores</module>
