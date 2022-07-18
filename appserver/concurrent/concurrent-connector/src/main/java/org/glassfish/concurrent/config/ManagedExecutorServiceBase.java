@@ -92,7 +92,7 @@ public interface ManagedExecutorServiceBase extends ConfigBeanProxy,
      *              {@link String }
      */
     void setLongRunningTasks(String value) throws PropertyVetoException;
-    
+
     /**
      * Gets the value of the hungAfterSeconds property.
      *

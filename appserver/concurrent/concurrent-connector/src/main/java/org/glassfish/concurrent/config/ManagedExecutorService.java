@@ -109,6 +109,23 @@ public interface ManagedExecutorService extends ConfigBeanProxy, Resource,
      */
     void setTaskQueueCapacity(String value) throws PropertyVetoException;
 
+    /**
+     * Gets the value of the useForkJoinPool property.
+     *
+     * @return possible object is
+     *         {@link String }
+     */
+    @Attribute(defaultValue="false", dataType=Boolean.class)
+    String getUseForkJoinPool();
+
+    /**
+     * Sets the value of the useForkJoinPool property.
+     *
+     * @param value allowed object is
+     *              {@link String }
+     */
+    void setUseForkJoinPool(String value) throws PropertyVetoException;
+
     @DuckTyped
     String getIdentity();
 

@@ -251,6 +251,7 @@ public final class ResourceConstants {
     public static final String CONTEXT_INFO_ENABLED = "context-info-enabled";
     public static final String THREAD_PRIORITY = "thread-priority";
     public static final String LONG_RUNNING_TASKS = "long-runnings-tasks";
+    public static final String USE_FORK_JOIN_POOL = "use-fork-join-pool";
     public static final String HUNG_AFTER_SECONDS = "hung-after-seconds";
     public static final String CORE_POOL_SIZE = "core-pool-size";
     public static final String MAXIMUM_POOL_SIZE = "maximum-pool-size";

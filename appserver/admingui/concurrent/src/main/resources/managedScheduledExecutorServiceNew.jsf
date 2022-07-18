@@ -65,6 +65,7 @@
         setPageSessionAttribute(key="useString" value="#{false}");
         setPageSessionAttribute(key="showMaxPoolSize" value="#{false}");
         setPageSessionAttribute(key="showTaskQueue" value="#{false}");
+        setPageSessionAttribute(key="showForkJoin" value="#{false}");
     />
     </event>
     "    <script type="text/javascript">admingui.nav.selectTreeNodeById(admingui.nav.TREE_ID+":resources:concurrent:managedScheduledExecutorServices");</script>
