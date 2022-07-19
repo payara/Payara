@@ -5,5 +5,10 @@
 PRTestPipeline {
     jdk = 'zulu-8'
     agent_label = 'PR-Test-Agent'
-    test_suites = ['Quicklook', 'Payara-Samples', 'patched-src-javaee7-samples', 'patched-src-javaee8-samples', 'cargotracker', 'MicroProfile-TCK-Runners']
+    test_suites = [[suite_name: 'Quicklook'],
+                   [suite_name: 'Payara-Samples'],
+                   [suite_name: 'patched-src-javaee7-samples'],
+                   [suite_name: 'patched-src-javaee8-samples'], 
+                   [suite_name: 'cargotracker'], 
+                   [suite_name: 'MicroProfile-TCK-Runners', branch: 'microprofile-4.0']]
 }
