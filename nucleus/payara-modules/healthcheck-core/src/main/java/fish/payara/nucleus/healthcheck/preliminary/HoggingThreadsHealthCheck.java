@@ -198,7 +198,7 @@ public class HoggingThreadsHealthCheck
             .red(1, -2, false, null, null, false);
     }
 
-    private synchronized void acceptHoggingThreads(Map<Long, ThreadCpuTimeRecord> recordsById, HoggingThreadConsumer consumer) {
+    private void acceptHoggingThreads(Map<Long, ThreadCpuTimeRecord> recordsById, HoggingThreadConsumer consumer) {
         final ThreadMXBean bean = ManagementFactory.getThreadMXBean();
         final long now = System.currentTimeMillis();
         final long currentThreadId = Thread.currentThread().getId();
