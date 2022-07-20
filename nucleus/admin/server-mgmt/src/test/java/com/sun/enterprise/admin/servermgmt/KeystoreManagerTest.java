@@ -39,7 +39,7 @@ public class KeystoreManagerTest {
         // load sample store (with expired cert) and create a new temp store file for testing with
         keyStoreFile = File.createTempFile("cacerts-temp", ".jks.tmp");
         KeyStore store = KeyStore.getInstance("JKS");
-        store.load(this.getClass().getResourceAsStream("expired-cert-keystore.jks"), KEYSTORE_PASS.toCharArray());
+        store.load(this.getClass().getResourceAsStream("expired-cert-keystore.p12"), KEYSTORE_PASS.toCharArray());
         store.store(new FileOutputStream(keyStoreFile), "password".toCharArray());
         keyStoreFile.deleteOnExit();
     }

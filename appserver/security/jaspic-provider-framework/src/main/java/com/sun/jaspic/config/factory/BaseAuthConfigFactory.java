@@ -68,7 +68,6 @@ import jakarta.servlet.ServletContext;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import static org.glassfish.soteria.Utils.isEmpty;
-import org.glassfish.soteria.mechanisms.jaspic.DefaultAuthConfigProvider;
 
 /**
  * This class implements methods in the abstract class AuthConfigFactory.

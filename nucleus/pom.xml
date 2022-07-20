@@ -93,17 +93,6 @@
                 <enabled>false</enabled>
             </snapshots>
         </pluginRepository>
-        <pluginRepository>
-            <id>payara-patched-externals</id>
-            <name>Payara Patched Externals</name>
-            <url>https://raw.github.com/payara/Payara_PatchedProjects/master</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </pluginRepository>
     </pluginRepositories>
 
     <properties>
@@ -137,7 +126,7 @@
         <hk2.plugin.version>3.0.2</hk2.plugin.version> <!-- May need patched-->
         <tiger.types.version>1.4.payara-p1</tiger.types.version>
 
-        <glassfish-corba.version>4.2.4</glassfish-corba.version>
+        <glassfish-corba.version>4.2.4.payara-p1</glassfish-corba.version>
         <saaj-api.version>1.4.0</saaj-api.version>
 
         <!-- Library for introspecting types with full generic information including resolving of field and method types. -->
