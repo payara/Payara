@@ -963,7 +963,12 @@ Parent is ${project.parent}</echo>
             <dependency>
                 <groupId>org.eclipse.transformer</groupId>
                 <artifactId>org.eclipse.transformer.payara</artifactId>
-                <version>${payara.transformer}</version>
+                <version>${payara.transformer.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fish.payara.deployment.transformer</groupId>
+                <artifactId>deployment-transformer-api</artifactId>
+                <version>${payara.deployment.transformer.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.bouncycastle</groupId>
