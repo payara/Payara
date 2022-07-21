@@ -66,7 +66,6 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import static org.valid4j.matchers.http.HttpResponseMatchers.hasStatus;
 
@@ -94,7 +93,7 @@ public class MultipleRealmIdentityStoreDefinitionTest {
                         PersonController.class,
                         AuthoritiesConstants.class
                 )
-                .addAsWebInfResource(EmptyAsset.INSTANCE, ArchivePaths.create("beans.xml"));
+                .addAsWebInfResource("all-beans.xml", "beans.xml");
     }
 
     @Before
@@ -104,7 +103,6 @@ public class MultipleRealmIdentityStoreDefinitionTest {
     }
 
     @Test
-    @Ignore
     public void testWithCorrectCredentials() throws Exception {
         PersonControllerClient client = getBasicPersonControllerClient(deploymentUrl, DEFAULT_USER, DEFAULT_PASSWORD);
         Response response = client.createPerson(Person.DEFAULT_INSTANCE);
