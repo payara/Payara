@@ -233,6 +233,7 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
                 managedThreadFactory,
                 config.getHungAfterSeconds() * 1_000L, // in milliseconds
                 config.isLongRunningTasks(),
+                config.getUseForkJoinPool(),
                 config.getCorePoolSize(),
                 config.getMaximumPoolSize(),
                 config.getKeepAliveSeconds(), TimeUnit.SECONDS,
