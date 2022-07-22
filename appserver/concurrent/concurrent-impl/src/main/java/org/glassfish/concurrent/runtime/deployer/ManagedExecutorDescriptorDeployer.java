@@ -178,6 +178,15 @@ public class ManagedExecutorDescriptorDeployer implements ResourceDeployer {
         }
 
         @Override
+        public String getUseForkJoinPool() {
+            return "false";
+        }
+
+        @Override
+        public void setUseForkJoinPool(String value) throws PropertyVetoException {
+        }
+
+        @Override
         public String getIdentity() {
             return null;
         }
