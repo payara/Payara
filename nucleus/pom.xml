@@ -105,7 +105,7 @@
 
         <!-- Servlet -->
         <!-- Requires JDK8u161 or above-->
-        <grizzly.npn.api.version>1.9.payara-p1</grizzly.npn.api.version>
+        <grizzly.npn.api.version>1.9.payara-p2</grizzly.npn.api.version>
         <grizzly.npn.osgi.version>1.9</grizzly.npn.osgi.version>
 
         <!-- Microprofile -->
