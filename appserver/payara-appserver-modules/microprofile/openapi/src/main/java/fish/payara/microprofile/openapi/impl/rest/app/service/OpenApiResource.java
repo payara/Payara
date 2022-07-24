@@ -82,7 +82,7 @@ public class OpenApiResource {
         OpenAPI document = null;
         try {
             document = openApiService.getDocument();
-        } catch (OpenAPIBuildException | IOException ex) {
+        } catch (OpenAPIBuildException | IOException | CloneNotSupportedException ex) {
             LOGGER.log(WARNING, "OpenAPI document creation failed.", ex);
         }
 

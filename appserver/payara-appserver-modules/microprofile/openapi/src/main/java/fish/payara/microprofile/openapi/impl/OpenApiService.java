@@ -136,7 +136,7 @@ public class OpenApiService {
      * @throws OpenAPIBuildException if creating the document failed.
      * @throws java.io.IOException if source archive not accessible
      */
-    public synchronized OpenAPI getDocument() throws OpenAPIBuildException, IOException {
+    public synchronized OpenAPI getDocument() throws OpenAPIBuildException, IOException, CloneNotSupportedException {
         if (documents.isEmpty()) {
             return null;
         }
@@ -148,9 +148,9 @@ public class OpenApiService {
         do {
             OpenAPI next = iterator.next().get();
             if (result == null) {
-                result = next;
+                result = ((OpenAPIImpl) next).clone();
             } else {
-                OpenAPIImpl.merge(result, next, true, null);
+                OpenAPIImpl.merge(next, result, true, null);
             }
         } while (iterator.hasNext());
 

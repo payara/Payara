@@ -49,6 +49,8 @@ import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.create
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.readOnlyView;
+
+import java.util.ArrayList;
 import java.util.List;
 import org.eclipse.microprofile.openapi.models.Components;
 import org.eclipse.microprofile.openapi.models.ExternalDocumentation;
@@ -60,7 +62,7 @@ import org.eclipse.microprofile.openapi.models.servers.Server;
 import org.eclipse.microprofile.openapi.models.tags.Tag;
 import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
 
-public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI {
+public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI, Cloneable {
 
     protected String openapi;
     protected Info info;
@@ -312,6 +314,20 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI {
         // Handle @Components
         ComponentsImpl.merge(from.getComponents(), to.getComponents(), override, context);
         PathsImpl.merge(from.getPaths(), to.getPaths(), override);
+    }
+
+    @Override
+    public OpenAPI clone()
+            throws CloneNotSupportedException {
+        OpenAPI clonedObj = new OpenAPIImpl();
+        clonedObj.setOpenapi(this.openapi);
+        clonedObj.setInfo(this.info);
+        clonedObj.setServers(new ArrayList<>(this.servers));
+        clonedObj.setSecurity(new ArrayList<>(this.security));
+        clonedObj.setTags(new ArrayList<>(this.tags));
+        clonedObj.setPaths(new PathsImpl(this.paths.getPathItems()));
+        clonedObj.setComponents(this.components);
+        return clonedObj;
     }
 
 }
