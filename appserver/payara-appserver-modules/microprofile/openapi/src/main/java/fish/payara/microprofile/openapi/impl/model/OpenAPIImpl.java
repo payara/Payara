@@ -322,6 +322,7 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI, Clo
         OpenAPI clonedObj = new OpenAPIImpl();
         clonedObj.setOpenapi(this.openapi);
         clonedObj.setInfo(this.info);
+        clonedObj.setExternalDocs(this.externalDocs);
         clonedObj.setServers(new ArrayList<>(this.servers));
         clonedObj.setSecurity(new ArrayList<>(this.security));
         clonedObj.setTags(new ArrayList<>(this.tags));
