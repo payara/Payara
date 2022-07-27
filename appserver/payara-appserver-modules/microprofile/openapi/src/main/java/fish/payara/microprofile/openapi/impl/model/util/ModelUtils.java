@@ -49,13 +49,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.Map.Entry;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
@@ -769,5 +763,17 @@ public final class ModelUtils {
             return null;
         }
         return new TreeMap<>(items);
+    }
+
+    public static Map<String, Set<String>> buildEndpoints(Map<String, Set<String>> original, String contextRoot, Set<String> paths) {
+        if (original == null || original.isEmpty()) {
+            original = createOrderedMap();
+        }
+        if (original.containsKey(contextRoot)) {
+            original.get(contextRoot).addAll(paths);
+            return original;
+        }
+        original.put(contextRoot, paths);
+        return original;
     }
 }

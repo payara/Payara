@@ -45,13 +45,12 @@ import fish.payara.microprofile.openapi.impl.model.security.SecurityRequirementI
 import fish.payara.microprofile.openapi.impl.model.servers.ServerImpl;
 import fish.payara.microprofile.openapi.impl.model.tags.TagImpl;
 import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
-import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.createList;
-import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
-import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
-import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.readOnlyView;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.eclipse.microprofile.openapi.models.Components;
 import org.eclipse.microprofile.openapi.models.ExternalDocumentation;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
@@ -62,6 +61,8 @@ import org.eclipse.microprofile.openapi.models.servers.Server;
 import org.eclipse.microprofile.openapi.models.tags.Tag;
 import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
 
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.*;
+
 public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI, Cloneable {
 
     protected String openapi;
@@ -71,6 +72,7 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI, Clo
     protected List<SecurityRequirement> security = createList();
     protected List<Tag> tags = createList();
     protected Paths paths = new PathsImpl();
+    protected Map<String, Set<String>> endpoints = createOrderedMap();
     protected Components components = new ComponentsImpl();
     
     private ApiContext context;
@@ -331,4 +333,11 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI, Clo
         return clonedObj;
     }
 
+    public Map<String, Set<String>> getEndpoints() {
+        return endpoints;
+    }
+
+    public void setEndpoints(Map<String, Set<String>> endpoints) {
+        this.endpoints = endpoints;
+    }
 }
