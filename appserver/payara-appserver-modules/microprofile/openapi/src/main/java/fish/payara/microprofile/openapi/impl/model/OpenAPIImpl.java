@@ -50,6 +50,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import org.eclipse.microprofile.openapi.models.Components;
 import org.eclipse.microprofile.openapi.models.ExternalDocumentation;
@@ -316,6 +317,15 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI, Clo
         // Handle @Components
         ComponentsImpl.merge(from.getComponents(), to.getComponents(), override, context);
         PathsImpl.merge(from.getPaths(), to.getPaths(), override);
+        //Hanlde Endpoints
+        Map<String, Set<String>> endpoints = ((OpenAPIImpl) to).getEndpoints();
+        if (!endpoints.isEmpty()) {
+            OpenAPIImpl toImpl = (OpenAPIImpl) to;
+            for (String root : endpoints.keySet()) {
+                Set<String> paths = endpoints.get(root);
+                toImpl.setEndpoints(ModelUtils.buildEndpoints(toImpl.getEndpoints(), root, paths));
+            }
+        }
     }
 
     @Override
@@ -330,6 +340,7 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI, Clo
         clonedObj.setTags(new ArrayList<>(this.tags));
         clonedObj.setPaths(new PathsImpl(this.paths.getPathItems()));
         clonedObj.setComponents(this.components);
+        ((OpenAPIImpl) clonedObj).setEndpoints(new TreeMap<>(this.getEndpoints()));
         return clonedObj;
     }
 
