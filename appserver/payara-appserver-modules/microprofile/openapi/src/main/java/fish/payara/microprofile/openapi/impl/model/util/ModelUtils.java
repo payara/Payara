@@ -769,11 +769,9 @@ public final class ModelUtils {
         if (original == null || original.isEmpty()) {
             original = createOrderedMap();
         }
-        if (original.containsKey(contextRoot)) {
-            original.get(contextRoot).addAll(paths);
-            return original;
+        if (!original.containsKey(contextRoot)) {
+            original.put(contextRoot, paths);
         }
-        original.put(contextRoot, paths);
         return original;
     }
 }

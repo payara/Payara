@@ -317,8 +317,8 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI, Clo
         // Handle @Components
         ComponentsImpl.merge(from.getComponents(), to.getComponents(), override, context);
         PathsImpl.merge(from.getPaths(), to.getPaths(), override);
-        //Hanlde Endpoints
-        Map<String, Set<String>> endpoints = ((OpenAPIImpl) to).getEndpoints();
+        //Handle Endpoints
+        Map<String, Set<String>> endpoints = ((OpenAPIImpl) from).getEndpoints();
         if (!endpoints.isEmpty()) {
             OpenAPIImpl toImpl = (OpenAPIImpl) to;
             for (String root : endpoints.keySet()) {
