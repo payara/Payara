@@ -52,7 +52,7 @@
     <name>Payara Docker Images</name>
 
     <properties>
-        <payara.version>${project.version}</payara.version>
+        <project.version>${project.version}</project.version>
         <docker.noCache>true</docker.noCache>
 
         <docker.java.repository>azul/zulu-openjdk</docker.java.repository>
@@ -64,7 +64,7 @@
         <docker.payara.rootDirectoryName>payara5</docker.payara.rootDirectoryName>
 
         <docker.payara.repository>payara/${project.artifactId}</docker.payara.repository>
-        <docker.payara.tag>${payara.version}</docker.payara.tag>
+        <docker.payara.tag>${project.version}</docker.payara.tag>
         <docker.payara.image>${docker.payara.repository}:${docker.payara.tag}</docker.payara.image>
     </properties>
 
