@@ -59,7 +59,7 @@
         <java.min.version>1.8</java.min.version>
         <maven.min.version>3.5</maven.min.version>
 
-        <project.version>${project.version}</project.version>
+        <payara.version>${project.version}</payara.version>
         <payara.debug>false</payara.debug>
         <!-- remote host for payara to connect to -->
         <payara.adminHost>localhost</payara.adminHost>
@@ -88,7 +88,7 @@
         <profile>
             <!--
             This profile will install a Payara server and start up the server per sample.
-            The Payara version that's used can be set via the project.version property.
+            The Payara version that's used can be set via the payara.version property.
             This is the default profile and does not have to be specified explicitly.
             -->
             <id>payara-server-managed</id>
