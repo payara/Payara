@@ -158,7 +158,7 @@
                                         <artifactItem>
                                             <groupId>fish.payara.distributions</groupId>
                                             <artifactId>payara</artifactId>
-                                            <version>${project.version}</version>
+                                            <version>${payara.version}</version>
                                             <type>zip</type>
                                             <overWrite>false</overWrite>
                                             <outputDirectory>${session.executionRootDirectory}/target</outputDirectory>
@@ -177,7 +177,7 @@
             <id>payara-micro-managed</id>
             <!--
             This profile will install a Payara Micro and start up the server per sample.
-            The Payara version that's used can be set via the project.version property.
+            The Payara version that's used can be set via the payara.version property.
             -->
             <properties>
                 <payara.containerType>MICRO</payara.containerType>
@@ -212,10 +212,10 @@
                                         <artifactItem>
                                             <groupId>fish.payara.extras</groupId>
                                             <artifactId>payara-micro</artifactId>
-                                            <version>${project.version}</version>
+                                            <version>${payara.version}</version>
                                             <overWrite>false</overWrite>
                                             <outputDirectory>${session.executionRootDirectory}/target/</outputDirectory>
-                                            <destFileName>payara-micro-${project.version}.jar</destFileName>
+                                            <destFileName>payara-micro-${payara.version}.jar</destFileName>
                                         </artifactItem>
                                     </artifactItems>
                                 </configuration>
@@ -278,7 +278,7 @@
             <dependency>
                 <groupId>fish.payara.api</groupId>
                 <artifactId>payara-bom</artifactId>
-                <version>${project.version}</version>
+                <version>${payara.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -324,55 +324,55 @@
             <dependency>
                 <groupId>fish.payara.server.internal.admin</groupId>
                 <artifactId>config-api</artifactId>
-                <version>${project.version}</version>
+                <version>${payara.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>fish.payara.server.internal.common</groupId>
                 <artifactId>internal-api</artifactId>
-                <version>${project.version}</version>
+                <version>${payara.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>fish.payara.server.internal.common</groupId>
                 <artifactId>simple-glassfish-api</artifactId>
-                <version>${project.version}</version>
+                <version>${payara.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>fish.payara.server.internal.extras</groupId>
                 <artifactId>payara-micro-boot</artifactId>
-                <version>${project.version}</version>
+                <version>${payara.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>fish.payara.server.internal.payara-modules</groupId>
                 <artifactId>hazelcast-bootstrap</artifactId>
-                <version>${project.version}</version>
+                <version>${payara.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>fish.payara.server.internal.payara-modules</groupId>
                 <artifactId>healthcheck-core</artifactId>
-                <version>${project.version}</version>
+                <version>${payara.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>fish.payara.server.internal.payara-modules</groupId>
                 <artifactId>notification-core</artifactId>
-                <version>${project.version}</version>
+                <version>${payara.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>fish.payara.server.internal.payara-modules</groupId>
                 <artifactId>healthcheck-stuck</artifactId>
-                <version>${project.version}</version>
+                <version>${payara.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>fish.payara.server.internal.security</groupId>
                 <artifactId>security</artifactId>
-                <version>${project.version}</version>
+                <version>${payara.version}</version>
                 <scope>test</scope>
             </dependency>
 
@@ -464,7 +464,7 @@
                         <payara.home>${session.executionRootDirectory}/target/${payara.directory.name}</payara.home>
                         <payara.domain.name>${payara.domain.name}</payara.domain.name>
                         <!-- affects micro only -->
-                        <payara.microJar>${session.executionRootDirectory}/target/payara-micro-${project.version}.jar</payara.microJar>
+                        <payara.microJar>${session.executionRootDirectory}/target/payara-micro-${payara.version}.jar</payara.microJar>
                         <payara.clusterEnabled>true</payara.clusterEnabled>
                         <payara.debug>${payara.debug}</payara.debug>
                     </systemPropertyVariables>
@@ -480,7 +480,7 @@
                         <payara.home>${session.executionRootDirectory}/target/${payara.directory.name}</payara.home>
                         <payara.domain.name>${payara.domain.name}</payara.domain.name>
                         <!-- affects micro only -->
-                        <payara.microJar>${session.executionRootDirectory}/target/payara-micro-${project.version}.jar</payara.microJar>
+                        <payara.microJar>${session.executionRootDirectory}/target/payara-micro-${payara.version}.jar</payara.microJar>
                         <payara.clusterEnabled>true</payara.clusterEnabled>
                         <payara.debug>${payara.debug}</payara.debug>
                     </systemPropertyVariables>
