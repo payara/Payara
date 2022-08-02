@@ -52,7 +52,6 @@
     <name>Payara Docker Images</name>
 
     <properties>
-        <project.version>${project.version}</project.version>
         <docker.noCache>true</docker.noCache>
 
         <docker.java.repository>azul/zulu-openjdk</docker.java.repository>
