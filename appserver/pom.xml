@@ -88,7 +88,6 @@
         
         <!-- Java API for XML Registries Resource Adapter -->
         <jaxr.version>JAXR_RA_20091012</jaxr.version>
-        <rest.monitoring.version>1.0.0-Beta</rest.monitoring.version>
 
         <nimbus-jose-jwt.version>9.8.1</nimbus-jose-jwt.version>
         <accessors-smart.version>1.2.payara-p2</accessors-smart.version>
