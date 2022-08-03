@@ -53,6 +53,7 @@
 
     <properties>
         <payara.version>${project.version}</payara.version>
+
         <docker.noCache>true</docker.noCache>
 
         <docker.java.repository>azul/zulu-openjdk</docker.java.repository>

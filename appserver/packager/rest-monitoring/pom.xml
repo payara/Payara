@@ -53,6 +53,7 @@
 
     <properties>
         <temp.dir>${project.build.directory}/dependency</temp.dir>
+        <rest.monitoring.version>1.0.0-Beta</rest.monitoring.version>
     </properties>
 
     <build>
