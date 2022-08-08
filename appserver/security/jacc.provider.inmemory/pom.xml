@@ -41,35 +41,69 @@
 
 -->
 
-<!-- Portions Copyright [2018-2022] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    
+
     <parent>
-        <groupId>fish.payara.server</groupId>
-        <artifactId>payara-parent</artifactId>
-        <version>6.2022.1.Alpha4</version>
+        <groupId>fish.payara.server.internal.security</groupId>
+        <artifactId>securitymodule</artifactId>
+        <version>6.2022.1.Alpha4-SNAPSHOT</version>
     </parent>
+
+    <artifactId>jacc.provider.inmemory</artifactId>
+    <packaging>glassfish-jar</packaging>
+
+    <name>A Pluggable InMemory JACC Provider</name>
+    <description>
+    	This module implements a JACC provider (authorization module) that uses in-memory
+    	storage to put the Permissions instances in that are received from the JACC parser.
+    	
+    	This module is pluggable by the end-user and uses the standard JACC SPI to facilitate
+    	this pluggability, but the implementation is partially Payara specific.
+    </description>
+
+    <developers>
+        <developer>
+            <id>monzillo</id>
+            <name>Ron Monzillo</name>
+            <organization>Oracle, Inc.</organization>
+            <roles>
+                <role>developer</role>
+            </roles>
+        </developer>
+    </developers>
     
-    <groupId>fish.payara.server.internal.security</groupId>
-    <artifactId>securitymodule</artifactId>
-    <packaging>pom</packaging>
+    <build>
+        <sourceDirectory>src/main/java</sourceDirectory>
+        <resources>
+            <resource>
+                <directory>src/main/java</directory>
+                <includes>
+                    <include>**/*.properties</include>
+                </includes>
+            </resource>
+        </resources>
+    </build>
     
-    <name>GlassFish Security Parent</name>
-    <description>Security Infrastructure and Technology Integration Modules</description>
-    
-    <modules>
-        <module>webintegration</module>
-        <module>core-ee</module>
-        <module>security-all</module>
-        <module>jacc.provider.inmemory</module>
-        <module>jaspic-provider-framework</module>
-        <module>webservices.security</module>
-        <module>ejb.security</module>
-        <module>appclient.security</module>
-        <module>core-ee-l10n</module>
-        <module>webservices.security-l10n</module>
-        <module>realm-stores</module>
-    </modules>
+    <dependencies>
+        <dependency>
+            <groupId>fish.payara.server.internal.common</groupId>
+            <artifactId>internal-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+                <dependency>
+            <groupId>fish.payara.api</groupId>
+            <artifactId>payara-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.authorization</groupId>
+            <artifactId>jakarta.authorization-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.exousia</groupId>
+            <artifactId>exousia</artifactId>
+        </dependency>
+    </dependencies>
 </project>
