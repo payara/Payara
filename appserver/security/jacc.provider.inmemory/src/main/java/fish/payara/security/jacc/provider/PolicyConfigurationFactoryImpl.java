@@ -230,24 +230,6 @@ public class PolicyConfigurationFactoryImpl extends SimplePolicyConfigurationFac
         return super.inService(contextId);
         
     }
-//    /**
-//     * This method tries to find the Policy Configuration copied into the file system (by the DAS) after the 
-//     * repository was initialized. 
-//     * 
-//     * This will only open the Policy Configuration if remove is true (otherwise the Policy Configuration will
-//     * remain in service);
-//     */
-//    private SimplePolicyConfiguration getPolicyConfigurationImplFromDirectory(String contextId, boolean open, boolean remove) {
-//        SimplePolicyConfiguration policyConfigurationImpl = null;
-//        
-//        File contextDirectory = new File(getContextDirectoryName(contextId));
-//        if (contextDirectory.exists()) {
-//            policyConfigurationImpl = new PolicyConfigurationImpl(contextDirectory, open, remove, this);
-//            contextToConfigurationMap.put(contextId, policyConfigurationImpl);
-//        }
-//        
-//        return policyConfigurationImpl;
-//    }
 
     protected List<PolicyConfiguration> getPolicyConfigurationImpls() {
         return new ArrayList<>(contextToConfigurationMap.values());
