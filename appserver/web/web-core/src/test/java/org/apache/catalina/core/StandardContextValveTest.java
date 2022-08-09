@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2021] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2021-2022] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -95,6 +95,7 @@ public class StandardContextValveTest extends TestCase {
     public void normalizeURLTest() {
         String path1 = "/app/../some/../something/../my.jsp";
         String path2 = "/app/./some/./something/./my.jsp";
+        String path3 = "./my.jsp";
 
         String result = standardContextValve.normalize(path1);
 
@@ -103,6 +104,10 @@ public class StandardContextValveTest extends TestCase {
         result = standardContextValve.normalize(path2);
 
         assertEquals("/app/some/something/my.jsp", result);
+
+        result = standardContextValve.normalize(path3);
+
+        assertEquals("/my.jsp", result);
     }
 
     protected void verifyThatResourceIsNotFound(int pipelineResult, int times, HttpRequest httpRequest, HttpResponse httpResponse,

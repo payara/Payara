@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2022ambi] [Payara Foundation and/or its affiliates]
 
 package org.apache.catalina.core;
 
@@ -115,7 +115,7 @@ final class StandardContextValve
     /**
      * Cast to a StandardContext right away, as it will be needed later.
      * 
-     * @see org.apache.catalina.Contained#setContainer(org.apache.catalina.Container)
+     * @see Contained#setContainer(Container)
      */
     @Override
     public void setContainer(Container container) {
@@ -288,6 +288,10 @@ final class StandardContextValve
         // starts with a double-slash
         if(rv.indexOf("//") == 0) {
             rv = rv.replace("//", "/");
+        }
+        // starts with dot-slash
+        if(rv.indexOf("./") == 0) {
+            rv = rv.replaceFirst("./", "/");
         }
 
         // Normalize the slashes and add leading slash if necessary
