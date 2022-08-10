@@ -68,7 +68,6 @@ import org.glassfish.hk2.classmodel.reflect.Types;
 import org.glassfish.javaee.core.deployment.ApplicationHolder;
 import org.glassfish.weld.connector.WeldUtils;
 import org.glassfish.weld.connector.WeldUtils.BDAType;
-import org.glassfish.weld.services.ResourceInjectionServicesImpl;
 import org.jboss.weld.bootstrap.WeldBootstrap;
 import org.jboss.weld.bootstrap.api.ServiceRegistry;
 import org.jboss.weld.bootstrap.api.helpers.SimpleServiceRegistry;
@@ -83,7 +82,6 @@ import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import org.glassfish.weld.services.InjectionServicesImpl;
 import org.jboss.weld.injection.spi.InjectionServices;
-import org.jboss.weld.injection.spi.ResourceInjectionServices;
 import jakarta.enterprise.inject.build.compatible.spi.BuildCompatibleExtension;
 import org.jboss.weld.lite.extension.translator.LiteExtensionTranslator;
 import java.security.PrivilegedAction;
@@ -440,7 +438,6 @@ public class DeploymentImpl implements CDI11Deployment {
                                           beanClasses, beanXMLUrls, ejbs, context);
         // have to create new InjectionServicesImpl for each new BDA so injection context is propagated for the correct bundle
         newBda.getServices().add(InjectionServices.class, new InjectionServicesImpl(injectionManager, DOLUtils.getCurrentBundleForContext(context), this));
-        newBda.getServices().add(ResourceInjectionServices.class, new ResourceInjectionServicesImpl());
         BeansXml beansXml = newBda.getBeansXml();
         if (beansXml == null || !beansXml.getBeanDiscoveryMode().equals(BeanDiscoveryMode.NONE)) {
             if ( logger.isLoggable( FINE ) ) {

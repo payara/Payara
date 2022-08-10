@@ -389,13 +389,11 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                     // Each InjectionServicesImpl instance knows its associated GlassFish bundle.
 
                     InjectionServices injectionServices = new InjectionServicesImpl(deploymentImpl.injectionManager, bundle, deploymentImpl);
-                    ResourceInjectionServicesImpl resourceInjectionServices = new ResourceInjectionServicesImpl();
                     if (logger.isLoggable(FINE)) {
                         logger.log(FINE, ADDING_INJECTION_SERVICES, new Object[] { injectionServices, beanDeploymentArchive.getId() });
                     }
 
                     beanDeploymentArchive.getServices().add(InjectionServices.class, injectionServices);
-                    beanDeploymentArchive.getServices().add(ResourceInjectionServices.class, resourceInjectionServices);
                     EEModuleDescriptor eeModuleDescriptor = getEEModuleDescriptor(beanDeploymentArchive);
                     if (eeModuleDescriptor != null) {
                         beanDeploymentArchive.getServices().add(EEModuleDescriptor.class, eeModuleDescriptor);

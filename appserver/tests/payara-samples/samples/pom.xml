@@ -86,6 +86,7 @@
         <!--<module>corba-read-timeout</module>-->
         <!--module>microprofile-rest-client</module-->
         <module>concurrency</module>
+        <module>reproducers</module>
     </modules>
 
     <dependencies>
