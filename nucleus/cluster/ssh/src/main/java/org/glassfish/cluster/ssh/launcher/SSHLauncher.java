@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2022] Payara Foundation and/or affiliates
 
 package org.glassfish.cluster.ssh.launcher;
 
@@ -531,8 +531,8 @@ public class SSHLauncher {
             t1.join();
             t2.join();
 
-            // wait for some time since the delivery of the exit status often gets delayed
-            session.waitForCondition(ChannelCondition.EXIT_STATUS,3000);
+            // Wait for the command to return
+            session.waitForCondition(ChannelCondition.EXIT_STATUS, DEFAULT_TIMEOUT_MSEC);
             Integer r = session.getExitStatus();
             if(r!=null) return r.intValue();
             return -1;
