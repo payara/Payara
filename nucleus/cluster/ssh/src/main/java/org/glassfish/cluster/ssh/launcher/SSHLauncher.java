@@ -77,7 +77,10 @@ public class SSHLauncher {
 
     private static final String SSH_DIR = ".ssh" + File.separator;
     private static final String AUTH_KEY_FILE = "authorized_keys";
+
+    private static final String TIMEOUT_PROPERTY = "fish.payara.node.ssh.timeout";
     private static final int DEFAULT_TIMEOUT_MSEC = 120000; // 2 minutes
+
     private static final String SSH_KEYGEN = "ssh-keygen";
     private static final char LINE_SEP = System.getProperty("line.separator").charAt(0);
 
@@ -532,7 +535,7 @@ public class SSHLauncher {
             t2.join();
 
             // Wait for the command to return
-            session.waitForCondition(ChannelCondition.EXIT_STATUS, DEFAULT_TIMEOUT_MSEC);
+            session.waitForCondition(ChannelCondition.EXIT_STATUS, getTimeout());
             Integer r = session.getExitStatus();
             if(r!=null) return r.intValue();
             return -1;
@@ -951,7 +954,8 @@ public class SSHLauncher {
         if(logger.isLoggable(Level.FINER)) {
             logger.finer("Command = " + k);
         }
-        pm.setTimeoutMsec(DEFAULT_TIMEOUT_MSEC);
+
+        pm.setTimeoutMsec(getTimeout());
 
         if (logger.isLoggable(Level.FINER))
             pm.setEcho(true);
@@ -1097,5 +1101,23 @@ public class SSHLauncher {
             }
         }
         return commandBuilder.toString();
+    }
+
+    /**
+     * Gets the timeout to use for SSH in milliseconds. The value is obtained from the {@value TIMEOUT_PROPERTY}
+     * property, defaulting to {@value DEFAULT_TIMEOUT_MSEC} if this is invalid or unspecified.
+     *
+     * @return The timeout in milliseconds.
+     */
+    private int getTimeout() {
+        int timeout = DEFAULT_TIMEOUT_MSEC;
+        try {
+            timeout = Integer.parseInt(System.getProperty(TIMEOUT_PROPERTY));
+        } catch (NumberFormatException numberFormatException) {
+            logger.log(Level.INFO, "Value of {0} does not appear to be a valid integer, defaulting to {1}ms: {2}",
+                    new Object[]{TIMEOUT_PROPERTY, DEFAULT_TIMEOUT_MSEC, numberFormatException});
+        }
+
+        return timeout;
     }
 }
