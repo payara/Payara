@@ -1112,9 +1112,12 @@ public class SSHLauncher {
     private int getTimeout() {
         int timeout = DEFAULT_TIMEOUT_MSEC;
         try {
-            timeout = Integer.parseInt(System.getProperty(TIMEOUT_PROPERTY));
+            String timeoutPropertyValue = System.getProperty(TIMEOUT_PROPERTY);
+            if (StringUtils.ok(timeoutPropertyValue)) {
+                timeout = Integer.parseInt(timeoutPropertyValue);
+            }
         } catch (NumberFormatException numberFormatException) {
-            logger.log(Level.INFO, "Value of {0} does not appear to be a valid integer, defaulting to {1}ms: {2}",
+            logger.log(Level.WARNING, "Value of {0} does not appear to be a valid integer, defaulting to {1}ms: {2}",
                     new Object[]{TIMEOUT_PROPERTY, DEFAULT_TIMEOUT_MSEC, numberFormatException});
         }
 
