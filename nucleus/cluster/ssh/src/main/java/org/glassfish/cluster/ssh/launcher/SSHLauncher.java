@@ -78,8 +78,8 @@ public class SSHLauncher {
     private static final String SSH_DIR = ".ssh" + File.separator;
     private static final String AUTH_KEY_FILE = "authorized_keys";
 
-    private static final String TIMEOUT_PROPERTY = "fish.payara.node.ssh.timeout";
-    private static final int DEFAULT_TIMEOUT_MSEC = 120000; // 2 minutes
+    protected static final String TIMEOUT_PROPERTY = "fish.payara.node.ssh.timeout";
+    protected static final int DEFAULT_TIMEOUT_MSEC = 120000; // 2 minutes
 
     private static final String SSH_KEYGEN = "ssh-keygen";
     private static final char LINE_SEP = System.getProperty("line.separator").charAt(0);
@@ -1109,7 +1109,7 @@ public class SSHLauncher {
      *
      * @return The timeout in milliseconds.
      */
-    private int getTimeout() {
+    protected int getTimeout() {
         int timeout = DEFAULT_TIMEOUT_MSEC;
         try {
             String timeoutPropertyValue = System.getProperty(TIMEOUT_PROPERTY);
