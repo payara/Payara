@@ -80,6 +80,7 @@ public class SSHLauncher {
 
     protected static final String TIMEOUT_PROPERTY = "fish.payara.node.ssh.timeout";
     protected static final int DEFAULT_TIMEOUT_MSEC = 120000; // 2 minutes
+    protected static final int MINIMUM_TIMEOUT_MSEC = 1;
 
     private static final String SSH_KEYGEN = "ssh-keygen";
     private static final char LINE_SEP = System.getProperty("line.separator").charAt(0);
@@ -1115,6 +1116,11 @@ public class SSHLauncher {
             String timeoutPropertyValue = System.getProperty(TIMEOUT_PROPERTY);
             if (StringUtils.ok(timeoutPropertyValue)) {
                 timeout = Integer.parseInt(timeoutPropertyValue);
+                if (timeout < MINIMUM_TIMEOUT_MSEC) {
+                    logger.log(Level.WARNING, "Value of {0} does not appear to be within accepted range of {1} and {2}, defaulting to {3}ms: {4}",
+                            new Object[]{TIMEOUT_PROPERTY, MINIMUM_TIMEOUT_MSEC, Integer.MAX_VALUE, DEFAULT_TIMEOUT_MSEC, timeout});
+                    timeout = DEFAULT_TIMEOUT_MSEC;
+                }
             }
         } catch (NumberFormatException numberFormatException) {
             logger.log(Level.WARNING, "Value of {0} does not appear to be a valid integer, defaulting to {1}ms: {2}",
