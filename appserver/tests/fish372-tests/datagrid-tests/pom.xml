@@ -11,10 +11,9 @@
   <artifactId>datagrid-tests</artifactId>
   <packaging>war</packaging>
   <properties>
-    <!--payara-micro-path>${project.parent
-    .basedir}/appserver/extras/payara-micro
-      /payara-micro-distribution/target/</payara-micro-path-->
     <payara-micro-version>${project.parent.version}</payara-micro-version>
+    <skipPreIntegrationTest>false</skipPreIntegrationTest>
+    <skipPostIntegrationTest>false</skipPostIntegrationTest>
   </properties>
   <build>
     <finalName>${project.name}</finalName>
@@ -40,10 +39,19 @@
               <goal>start</goal>
             </goals>
             <configuration>
+              <skip>${skipPreIntegrationTest}</skip>
+              <payaraVersion>${payara-micro-version}</payaraVersion>
+              <daemon>true</daemon>
+              <contextRoot>/</contextRoot>
               <commandLineOptions>
                 <option>
                   <key>--port</key>
                   <value>9090</value>
+                </option>
+                <option>
+                  <key>--deploy</key>
+                  <value>${project.build.directory}/${project.build.finalName}
+                  </value>
                 </option>
               </commandLineOptions>
             </configuration>
@@ -55,6 +63,10 @@
               <goal>start</goal>
             </goals>
             <configuration>
+              <skip>${skipPreIntegrationTest}</skip>
+              <payaraVersion>${payara-micro-version}</payaraVersion>
+              <daemon>true</daemon>
+              <contextRoot>/</contextRoot>
               <commandLineOptions>
                 <option>
                   <key>--port</key>
@@ -63,33 +75,71 @@
                 <option>
                   <key>--nocluster</key>
                 </option>
+                <option>
+                  <key>--deploy</key>
+                  <value>${project.build.directory}/${project.build.finalName}
+                  </value>
+                </option>
               </commandLineOptions>
             </configuration>
           </execution>
           <execution>
-            <id>payara-stop</id>
+            <id>nohazelcast-true-start</id>
+            <phase>pre-integration-test</phase>
+            <goals>
+              <goal>start</goal>
+            </goals>
+            <configuration>
+              <skip>${skipPreIntegrationTest}</skip>
+              <payaraVersion>${payara-micro-version}</payaraVersion>
+              <daemon>true</daemon>
+              <contextRoot>/</contextRoot>
+              <commandLineOptions>
+                <option>
+                  <key>--port</key>
+                  <value>9292</value>
+                </option>
+                <option>
+                  <key>--nohazelcast</key>
+                </option>
+                <option>
+                  <key>--deploy</key>
+                  <value>${project.build.directory}/${project.build.finalName}
+                  </value>
+                </option>
+              </commandLineOptions>
+            </configuration>
+          </execution>
+          <execution>
+            <id>stop-payara</id>
             <phase>post-integration-test</phase>
             <goals>
               <goal>stop</goal>
             </goals>
+            <configuration>
+              <skip>${skipPostIntegrationTest}</skip>
+            </configuration>
           </execution>
         </executions>
-        <configuration>
-          <payaraVersion>${payara-micro-version}</payaraVersion>
-          <artifactItem>
-            <groupId>fish.payara.extras</groupId>
-            <artifactId>payara-micro</artifactId>
-            <version>${payara-micro-version}</version>
-          </artifactItem>
-          <daemon>true</daemon>
-          <contextRoot>myApp</contextRoot>
-          <commandLineOptions>
-            <option>
-              <key>--deploy</key>
-              <value>${project.build.directory}/${project.build.finalName}</value>
-            </option>
-          </commandLineOptions>
-        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <version>2.22.2</version>
+        <executions>
+          <execution>
+            <id>integration-test</id>
+            <goals>
+              <goal>integration-test</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>verify</id>
+            <goals>
+              <goal>verify</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
