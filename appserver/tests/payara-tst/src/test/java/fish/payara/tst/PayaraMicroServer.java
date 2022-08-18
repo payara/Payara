@@ -37,22 +37,18 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.samples.programatic;
+package fish.payara.tst;
 
-import static org.junit.Assert.fail;
+import fish.payara.micro.*;
+import fish.payara.micro.boot.*;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.lang.annotation.*;
+import java.lang.reflect.*;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.*;
 
-import fish.payara.micro.PayaraInstance;
-import fish.payara.micro.PayaraMicroRuntime;
-import fish.payara.micro.boot.PayaraMicroBoot;
-import fish.payara.micro.boot.PayaraMicroLauncher;
+import static org.junit.Assert.*;
 
 /**
  * A wrapper on the {@link PayaraMicroRuntime} and {@link PayaraInstance} to ease test setup and verification.
@@ -64,7 +60,8 @@ import fish.payara.micro.boot.PayaraMicroLauncher;
  *
  * Tests using the {@link PayaraMicroServer} should call {@link #start()} before the test(s) and {@link #stop()} after.
  */
-public final class PayaraMicroServer {
+public final class PayaraMicroServer
+{
 
     static {
         System.setProperty("java.util.logging.config.file", "src/test/resources/logging.properties");

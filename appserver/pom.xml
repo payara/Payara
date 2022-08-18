@@ -137,6 +137,9 @@
         <module>payara-appserver-modules</module>
         <module>docker</module>
         <module>monitoring-console</module>
+      <module>tests/payara-tst</module>
+      <module>tests/fish372-tests</module>
+        <module>tests/fish372-tests/datagrid-tests</module>
     </modules>
 
 
@@ -156,6 +159,7 @@
                 <artifactId>spec-version-maven-plugin</artifactId>
                 <version>1.2</version>
                 <configuration>
+                    <!--suppress UnresolvedMavenProperty -->
                     <dir>${stage.dir}/${install.dir.name}/glassfish/modules</dir>
                     <excludes>javax.inject.jar,javax.servlet.jsp.jstl.jar,javax.servlet.jsp.jar,javax.enterprise.concurrent.jar, jakarta.persistence.jar</excludes>
                     <specs>

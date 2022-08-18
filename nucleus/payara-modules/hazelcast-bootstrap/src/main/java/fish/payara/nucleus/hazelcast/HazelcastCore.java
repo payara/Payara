@@ -411,6 +411,9 @@ public class HazelcastCore implements EventListener, ConfigListener {
 
     private void buildNetworkConfiguration(Config config) throws NumberFormatException {
         NetworkConfig nConfig = config.getNetworkConfig();
+        String noClusterProp = System.getProperty("payaramicro.noCluster");
+        if (noClusterProp != null && Boolean.parseBoolean(noClusterProp))
+            config.getNetworkConfig().getJoin().getAutoDetectionConfig().setEnabled(false);
         if (nodeConfig.getPublicAddress() != null && !nodeConfig.getPublicAddress().isEmpty()) {
             nConfig.setPublicAddress(nodeConfig.getPublicAddress());
         }
