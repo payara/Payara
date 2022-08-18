@@ -79,4 +79,40 @@ public class SSHLauncherTest {
         System.setProperty(SSHLauncher.TIMEOUT_PROPERTY, customTimeout);
         Assert.assertEquals(SSHLauncher.DEFAULT_TIMEOUT_MSEC, sshLauncher.getTimeout());
     }
+
+    @Test
+    public void negativeTimeoutIgnoredTest() {
+        final String customTimeout = "-123456";
+        System.setProperty(SSHLauncher.TIMEOUT_PROPERTY, customTimeout);
+        Assert.assertEquals(SSHLauncher.DEFAULT_TIMEOUT_MSEC, sshLauncher.getTimeout());
+    }
+
+    @Test
+    public void minimumTimeoutAllowedTest() {
+        final String customTimeout = "1";
+        System.setProperty(SSHLauncher.TIMEOUT_PROPERTY, customTimeout);
+        Assert.assertEquals(Integer.parseInt(customTimeout), sshLauncher.getTimeout());
+    }
+
+    @Test
+    public void zeroTimeoutIgnoredTest() {
+        final String customTimeout = "0";
+        System.setProperty(SSHLauncher.TIMEOUT_PROPERTY, customTimeout);
+        Assert.assertEquals(SSHLauncher.DEFAULT_TIMEOUT_MSEC, sshLauncher.getTimeout());
+    }
+
+    @Test
+    public void maximumTimeoutAllowedTest() {
+        final String customTimeout = Integer.toString(Integer.MAX_VALUE);
+        System.setProperty(SSHLauncher.TIMEOUT_PROPERTY, customTimeout);
+        Assert.assertEquals(Integer.parseInt(customTimeout), sshLauncher.getTimeout());
+    }
+
+    @Test
+    public void overMaximumTimeoutIgnoredTest() {
+        final String customTimeout = Integer.toString(Integer.MAX_VALUE) + 1;
+        System.out.println(customTimeout);
+        System.setProperty(SSHLauncher.TIMEOUT_PROPERTY, customTimeout);
+        Assert.assertEquals(SSHLauncher.DEFAULT_TIMEOUT_MSEC, sshLauncher.getTimeout());
+    }
 }
