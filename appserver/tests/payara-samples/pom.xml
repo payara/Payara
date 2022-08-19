@@ -68,8 +68,6 @@
 
         <!-- Exclude unstable tests by default-->
         <excludedGroups>fish.payara.samples.Unstable</excludedGroups>
-        <version.shrinkwrap-api>1.2.6</version.shrinkwrap-api>
-        <version.shrinkwrap-resolver>3.1.4</version.shrinkwrap-resolver>
     </properties>
 
     <modules>
