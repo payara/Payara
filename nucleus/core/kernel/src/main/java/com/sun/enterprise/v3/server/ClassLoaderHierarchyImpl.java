@@ -303,11 +303,6 @@ public class ClassLoaderHierarchyImpl implements ClassLoaderHierarchy {
         }
 
         @Override
-        public String getName() {
-            return "AppClassloader of "+ first.getName();
-        }
-
-        @Override
         protected Class<?> findClass(String name) throws ClassNotFoundException {
             try {
                 return first.loadClass(name);
