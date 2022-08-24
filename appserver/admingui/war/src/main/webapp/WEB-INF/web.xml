@@ -79,7 +79,14 @@
         <param-name>jakarta.faces.SEPARATOR_CHAR</param-name>
         <param-value>:</param-value>
     </context-param>
-
+    <!-- Manual initialization for Faces 3 impl bundled just for admingui -->
+    <context-param>
+        <param-name>com.sun.faces.injectionProvider</param-name>
+        <param-value>fish.payara.server.internal.admingui.GlassFishInjectionProvider</param-value>
+    </context-param>
+    <listener>
+        <listener-class>com.sun.faces.config.ConfigureListener</listener-class>
+    </listener>
     <filter>
         <filter-name>UploadFilter</filter-name>
         <filter-class>com.sun.webui.jsf.util.UploadFilter</filter-class>
