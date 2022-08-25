@@ -176,7 +176,7 @@
         <jakarta.security.enterprise.version>3.0.0-M5</jakarta.security.enterprise.version>
         <jakarta.security.jacc-api.version>2.1.0</jakarta.security.jacc-api.version>
         <jakarta.security.auth.message-api.version>3.0.0</jakarta.security.auth.message-api.version>
-        <exousia.version>2.1.0-M2</exousia.version>
+        <exousia.version>2.1.0</exousia.version>
         <jms-api.version>3.1.0</jms-api.version>
         <mq.version>6.1.0.payara-p2</mq.version>
         <jakarta.batch-api.version>2.1.0</jakarta.batch-api.version>

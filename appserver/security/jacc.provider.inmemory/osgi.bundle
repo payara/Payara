@@ -40,3 +40,15 @@
 
 -exportcontents: fish.payara.security.jacc.provider; version=${project.osgi.version}
 
+Import-Package: \
+                        fish.payara.jacc, \
+                        jakarta.security.jacc, \
+                        javax.management, \
+                        javax.security.auth, \
+                        org.glassfish.deployment.common, \
+                        org.glassfish.exousia.modules.locked, \
+                        org.glassfish.internal.api, \
+                        org.jvnet.hk2.annotations, \
+                        javassist, \
+                        javassist.util.proxy, \
+                        *
