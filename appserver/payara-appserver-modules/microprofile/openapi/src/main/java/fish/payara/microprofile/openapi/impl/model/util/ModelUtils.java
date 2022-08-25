@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2022] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -55,6 +55,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.Map.Entry;
 import java.util.function.BiConsumer;
@@ -769,5 +770,15 @@ public final class ModelUtils {
             return null;
         }
         return new TreeMap<>(items);
+    }
+
+    public static Map<String, Set<String>> buildEndpoints(Map<String, Set<String>> original, String contextRoot, Set<String> paths) {
+        if (original == null || original.isEmpty()) {
+            original = createOrderedMap();
+        }
+        if (!original.containsKey(contextRoot)) {
+            original.put(contextRoot, paths);
+        }
+        return original;
     }
 }
