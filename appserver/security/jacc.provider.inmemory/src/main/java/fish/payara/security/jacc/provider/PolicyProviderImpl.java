@@ -43,6 +43,7 @@ import fish.payara.jacc.ContextProvider;
 import fish.payara.jacc.JaccConfigurationFactory;
 import jakarta.security.jacc.PolicyContext;
 import java.security.Permission;
+import java.security.Policy;
 import java.security.ProtectionDomain;
 import org.glassfish.exousia.modules.locked.SimplePolicyProvider;
 
@@ -51,6 +52,17 @@ import org.glassfish.exousia.modules.locked.SimplePolicyProvider;
  * Implementation of jacc PolicyProvider class
  */
 public class PolicyProviderImpl extends SimplePolicyProvider {
+
+    private final Policy basePolicy;
+
+    /**
+     * Create a new instance of PolicyProviderImpl
+     * Delegates to existing policy provider
+     */
+    public PolicyProviderImpl() {
+        basePolicy = Policy.getPolicy();
+    }
+    
 
     private static ThreadLocal<Boolean> contextProviderReentry = new ThreadLocal<Boolean>() {
 
@@ -62,6 +74,9 @@ public class PolicyProviderImpl extends SimplePolicyProvider {
 
     @Override
     public boolean implies(ProtectionDomain domain, Permission permission) {
+        if (!permission.getClass().getName().startsWith("jakarta.")) {
+            return basePolicy.implies(domain, permission);
+        }
         String contextId = PolicyContext.getContextID();
         if (contextId != null) {
             ContextProvider contextProvider = getContextProvider(contextId, getPolicyFactory());
