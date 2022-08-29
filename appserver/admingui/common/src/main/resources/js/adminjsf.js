@@ -115,15 +115,24 @@ function getField(theForm, fieldName) {
     return null;
 }
 
+// in case modules are not loaded, return temporary object with empty, but existing data
+function createFakeText(id) {
+    return {
+        id,
+        value: "FAKE"
+    };
+}
+
 // FIXME: suntheme should not be used -- prevents theme from changing
 function getTextElement(componentName) {
     require(['webui/suntheme/field'], function (field) {
         var el = field.getInputElement(componentName);
-        if (el == null) {
+        if (el === null) {
             el = document.getElementById(componentName); // This may get too deep inside WS, but it should work as a fall back
         }
         return el;
     });
+    return createFakeText(componentName);
 }
 
 function getSelectElement(componentName) {
