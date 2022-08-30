@@ -42,6 +42,7 @@ package fish.payara.security.jacc.provider;
 import fish.payara.jacc.ContextProvider;
 import fish.payara.jacc.JaccConfigurationFactory;
 import jakarta.security.jacc.PolicyContext;
+import java.security.NoSuchAlgorithmException;
 import java.security.Permission;
 import java.security.Policy;
 import java.security.ProtectionDomain;
@@ -53,7 +54,7 @@ import org.glassfish.exousia.modules.locked.SimplePolicyProvider;
  */
 public class PolicyProviderImpl extends SimplePolicyProvider {
 
-    private final Policy basePolicy;
+    private Policy basePolicy;
 
     /**
      * Create a new instance of PolicyProviderImpl
@@ -61,40 +62,45 @@ public class PolicyProviderImpl extends SimplePolicyProvider {
      */
     public PolicyProviderImpl() {
         basePolicy = Policy.getPolicy();
+        if (basePolicy == null) {
+            try {
+                basePolicy = Policy.getInstance("JavaPolicy", null);
+            } catch (NoSuchAlgorithmException e) {
+                e.printStackTrace();
+            }
+        }
     }
-    
 
-    private static ThreadLocal<Boolean> contextProviderReentry = new ThreadLocal<Boolean>() {
-
+    private static final ThreadLocal<Object> contextProviderReentry = new ThreadLocal<Object>() {
         @Override
-        protected Boolean initialValue() {
-            return false;
+        protected synchronized Object initialValue() {
+            return new byte[]{0};
         }
     };
 
     @Override
     public boolean implies(ProtectionDomain domain, Permission permission) {
-        if (!permission.getClass().getName().startsWith("jakarta.")) {
-            return basePolicy.implies(domain, permission);
+
+        byte[] alreadyCalled = (byte[]) contextProviderReentry.get();
+        if (alreadyCalled[0] == 1) {
+            return true;
         }
-        String contextId = PolicyContext.getContextID();
-        if (contextId != null) {
-            ContextProvider contextProvider = getContextProvider(contextId, getPolicyFactory());
-            if (contextProvider != null) {
-
-                if (contextProviderReentry.get()) {
-                    return false;
-                }
-
-                contextProviderReentry.set(true);
-                try {
+        alreadyCalled[0] = 1;
+        try {
+            if (!permission.getClass().getName().startsWith("jakarta.")) {
+                return basePolicy.implies(domain, permission);
+            }
+            String contextId = PolicyContext.getContextID();
+            if (contextId != null) {
+                ContextProvider contextProvider = getContextProvider(contextId, getPolicyFactory());
+                if (contextProvider != null) {
                     return contextProvider.getPolicy().implies(domain, permission);
-                } finally {
-                    contextProviderReentry.set(false);
                 }
             }
+            return super.implies(domain, permission);
+        } finally {
+            alreadyCalled[0] = 0;
         }
-        return super.implies(domain, permission);
     }
 
     // Obtains PolicyConfigurationFactory
@@ -108,4 +114,5 @@ public class PolicyProviderImpl extends SimplePolicyProvider {
         }
         return null;
     }
+    
 }
