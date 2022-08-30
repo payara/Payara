@@ -73,7 +73,7 @@ public class PolicyProviderImpl extends SimplePolicyProvider {
 
     private static final ThreadLocal<Object> contextProviderReentry = new ThreadLocal<Object>() {
         @Override
-        protected synchronized Object initialValue() {
+        protected Object initialValue() {
             return new byte[]{0};
         }
     };
