@@ -96,16 +96,11 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
             <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.web</groupId>
-            <artifactId>weld-integration</artifactId>
-            <version>${project.version}</version>
-            <scope>provided</scope>
-        </dependency>
 
         <dependency>
-            <groupId>org.glassfish.jsftemplating</groupId>
-            <artifactId>jsftemplating</artifactId>
+            <groupId>fish.payara.server.internal.admingui</groupId>
+            <artifactId>faces-compat</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>jakarta.json</groupId>

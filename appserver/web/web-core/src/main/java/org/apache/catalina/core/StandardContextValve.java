@@ -115,7 +115,7 @@ final class StandardContextValve
     /**
      * Cast to a StandardContext right away, as it will be needed later.
      * 
-     * @see org.apache.catalina.Contained#setContainer(org.apache.catalina.Container)
+     * @see Contained#setContainer(Container)
      */
     @Override
     public void setContainer(Container container) {

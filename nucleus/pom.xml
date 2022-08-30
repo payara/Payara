@@ -119,7 +119,7 @@
 
         <!-- Servlet -->
         <!-- Requires JDK8u161 or above-->
-        <grizzly.npn.api.version>2.0.0</grizzly.npn.api.version>
+        <grizzly.npn.api.version>2.0.0.payara-p1</grizzly.npn.api.version>
         <grizzly.npn.osgi.version>2.0.0</grizzly.npn.osgi.version>
 
         <!-- Other -->
