@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2022] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -50,6 +50,10 @@ import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extrac
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.readOnlyView;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.Set;
 import org.eclipse.microprofile.openapi.models.Components;
 import org.eclipse.microprofile.openapi.models.ExternalDocumentation;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
@@ -59,8 +63,9 @@ import org.eclipse.microprofile.openapi.models.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.models.servers.Server;
 import org.eclipse.microprofile.openapi.models.tags.Tag;
 import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.*;
 
-public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI {
+public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI, Cloneable {
 
     protected String openapi;
     protected Info info;
@@ -69,6 +74,7 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI {
     protected List<SecurityRequirement> security = createList();
     protected List<Tag> tags = createList();
     protected Paths paths = new PathsImpl();
+    protected Map<String, Set<String>> endpoints = createOrderedMap();
     protected Components components = new ComponentsImpl();
     
     private ApiContext context;
@@ -312,6 +318,39 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI {
         // Handle @Components
         ComponentsImpl.merge(from.getComponents(), to.getComponents(), override, context);
         PathsImpl.merge(from.getPaths(), to.getPaths(), override);
+        //Handle Endpoints
+        Map<String, Set<String>> endpoints = ((OpenAPIImpl) from).getEndpoints();
+        if (!endpoints.isEmpty()) {
+            OpenAPIImpl toImpl = (OpenAPIImpl) to;
+            for (String root : endpoints.keySet()) {
+                Set<String> paths = endpoints.get(root);
+                toImpl.setEndpoints(ModelUtils.buildEndpoints(toImpl.getEndpoints(), root, paths));
+            }
+        }
+    }
+
+    @Override
+    public OpenAPI clone()
+            throws CloneNotSupportedException {
+        OpenAPI clonedObj = new OpenAPIImpl();
+        clonedObj.setOpenapi(this.openapi);
+        clonedObj.setInfo(this.info);
+        clonedObj.setExternalDocs(this.externalDocs);
+        clonedObj.setServers(new ArrayList<>(this.servers));
+        clonedObj.setSecurity(new ArrayList<>(this.security));
+        clonedObj.setTags(new ArrayList<>(this.tags));
+        clonedObj.setPaths(new PathsImpl(this.paths.getPathItems()));
+        clonedObj.setComponents(this.components);
+        ((OpenAPIImpl) clonedObj).setEndpoints(new TreeMap<>(this.getEndpoints()));
+        return clonedObj;
+    }
+
+    public Map<String, Set<String>> getEndpoints() {
+        return endpoints;
+    }
+
+    public void setEndpoints(Map<String, Set<String>> endpoints) {
+        this.endpoints = endpoints;
     }
 
 }
