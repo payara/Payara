@@ -524,6 +524,12 @@
             <artifactId>payara-client-ee8</artifactId>
             <scope>test</scope>
             <optional>true</optional>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.glassfish.jersey.ext.cdi</groupId>
+                    <artifactId>jersey-cdi1x</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!-- needed for maven-war-plugin to work properly -->
         <dependency>
