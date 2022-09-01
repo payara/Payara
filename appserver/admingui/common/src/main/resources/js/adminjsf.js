@@ -2096,29 +2096,25 @@ admingui.table = {
     },
 
     changeButtons : function (buttons,tableId){
-        require(["webui/suntheme/table"], function(themeTable) {
-            try {
-                var table = document.getElementById(tableId);// + ":_table");
-                var selections = table.getAllSelectedRowsCount();
-                var disabled = (selections > 0) ? false : true;
-                for (count=0; count < buttons.length; count++) {
-                    var element = document.getElementById(buttons[count]);
-                    if (element) {
-                        element.disabled = disabled;
-                        element.className = disabled ? "Btn2Dis_sun4" : "Btn1_sun4";
-                    }
+        try {
+            var table = document.getElementById(tableId);// + ":_table");
+            var selections = table.getAllSelectedRowsCount();
+            var disabled = (selections > 0) ? false : true;
+            for (count=0; count < buttons.length; count++) {
+                var element = document.getElementById(buttons[count]);
+                if (element) {
+                    element.disabled = disabled;
+                    element.className = disabled ? "Btn2Dis_sun4" : "Btn1_sun4";
                 }
-            } catch (err) {
-            alert(err);
             }
-        });
+        } catch (err) {
+            alert(err);
+        }
     },
 
     initAllRows : function (tableId) {
-        require(["webui/suntheme/table"], function(themeTable) {
-            var table = document.getElementById(tableId);
-            table.initAllRows();
-        });
+        var table = document.getElementById(tableId);
+        table.initAllRows();
     }
 }
 

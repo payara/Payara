@@ -85,9 +85,8 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.admingui</groupId>
-            <artifactId>faces-compat</artifactId>
-            <version>${project.version}</version>
+            <groupId>org.glassfish.jsftemplating</groupId>
+            <artifactId>jsftemplating</artifactId>
         </dependency>
     </dependencies>
 </project>
