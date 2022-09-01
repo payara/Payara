@@ -64,6 +64,7 @@ import com.sun.enterprise.security.audit.AuditManager;
 import com.sun.enterprise.security.auth.realm.RealmsManager;
 import com.sun.enterprise.security.common.Util;
 import com.sun.enterprise.security.ssl.SSLUtils;
+import org.glassfish.exousia.modules.locked.AuthorizationRoleMapper;
 
 /**
  * This class extends default implementation of ServerLifecycle interface.

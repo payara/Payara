@@ -63,7 +63,6 @@
         <module>webintegration</module>
         <module>core-ee</module>
         <module>security-all</module>
-        <module>jacc.provider.inmemory</module>
         <module>jaspic-provider-framework</module>
         <module>webservices.security</module>
         <module>ejb.security</module>

@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.admingui.common.util;
 
@@ -173,9 +173,7 @@ public class GuiUtil {
         sessionMap.put("_noNetwork", (System.getProperty("com.sun.enterprise.tools.admingui.NO_NETWORK", "false").equals("true"))? Boolean.TRUE: Boolean.FALSE);
         sessionMap.put("supportCluster", Boolean.FALSE);
         Map version = RestUtil.restRequest(sessionMap.get("REST_URL")+"/version", null, "GET" ,null, false);
-        Map versionData = (Map)version.get("data");
-        sessionMap.put("appServerVersion", versionData.get("message"));
-        sessionMap.put("appServerMajorVersion", ((Map)versionData.get("extraProperties")).get("version-number"));
+        sessionMap.put("appServerVersion", ((Map)version.get("data")).get("message"));
         Map locations = RestUtil.restRequest(sessionMap.get("REST_URL")+"/locations", null, "GET" ,null, false);
         final String installDir = (String)((Map) ((Map) locations.get("data")).get("properties")).get("Base-Root");
         sessionMap.put("baseRootDir", installDir);

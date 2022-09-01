@@ -84,7 +84,7 @@ import org.jvnet.hk2.config.types.Property;
  *
  *
  * domain.xml element example
- *   <jacc-provider policy-provider="fish.payara.security.jacc.provider.PolicyProviderImpl" name="default" policy-configuration-factory-provider="fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl">
+ *   <jacc-provider policy-provider="org.glassfish.exousia.modules.locked.SimplePolicyProvider" name="default" policy-configuration-factory-provider="org.glassfish.exousia.modules.locked.SimplePolicyConfigurationFactory">
  *   </jacc-provider>
  *
  */
