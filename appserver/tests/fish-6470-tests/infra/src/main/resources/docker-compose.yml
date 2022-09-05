@@ -1,0 +1,30 @@
+version: '3.6'
+services:
+  payara-full:
+    container_name: payara-full
+    image: payara/server-full:5.2022.2
+    ports:
+      - 8080:8080
+      - 8081:8081
+      - 4848:4848
+      - 9009:9009
+    expose:
+      - 8080
+      - 8081
+      - 4848
+      - 9009
+    volumes:
+      - ../../../../server/target/server.war:/opt/payara/deployments/server.war
+      - ../../../../server-with-basic-auth/target/server-with-basic-auth.war:/opt/payara/deployments/server-with-basic-auth.war
+      - ../../../../server-with-ssl/target/server-with-ssl.war:/opt/payara/deployments/server-with-ssl.war
+  payara-micro:
+    container_name: payar-micro
+    image: payara/micro:5.2022.2
+    ports:
+      - 28080:8080
+      - 26900:6900
+    expose:
+      - 8080
+      - 6900
+    volumes:
+      - ../../../../micro/target:/opt/payara/deployments
