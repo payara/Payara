@@ -49,7 +49,7 @@
     <parent>
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-aggregator</artifactId>
-        <version>6.2022.1.Alpha5-SNAPSHOT</version>
+        <version>6.2022.1.Alpha4</version>
     </parent>
 
     <artifactId>payara-nucleus-parent</artifactId>
@@ -119,7 +119,7 @@
 
         <!-- Servlet -->
         <!-- Requires JDK8u161 or above-->
-        <grizzly.npn.api.version>2.0.0</grizzly.npn.api.version>
+        <grizzly.npn.api.version>2.0.0.payara-p1</grizzly.npn.api.version>
         <grizzly.npn.osgi.version>2.0.0</grizzly.npn.osgi.version>
 
         <!-- Other -->

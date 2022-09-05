@@ -104,9 +104,8 @@ public class InstallJaccProviderTest {
         return archive;
     }
 
-    //@Test
-    //TODO - uncomment after fixing problem: SimplePolicyConfigurationFactory is not an instance of fish.payara.jacc.JaccConfigurationFactory
-    //@RunAsClient
+    @Test
+    @RunAsClient
     public void testAuthenticated() throws IOException {
 
         String response =
@@ -139,9 +138,8 @@ public class InstallJaccProviderTest {
 
     }
 
-    //@Test
-    //TODO - uncomment after fixing problem: SimplePolicyConfigurationFactory is not an instance of fish.payara.jacc.JaccConfigurationFactory
-    //@RunAsClient
+    @Test
+    @RunAsClient
     public void testNotAuthenticated() throws IOException {
 
         String response =
