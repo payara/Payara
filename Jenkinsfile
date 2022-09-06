@@ -195,39 +195,39 @@ pipeline {
                 }
             }
         }
-//         stage('Checkout EE7 Tests') {
-//             steps{
-//                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out EE7 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-//                 checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
-//                     branches: [[name: "*/Payara6"]],
-//                     userRemoteConfigs: [[url: "https://github.com/payara/patched-src-javaee7-samples.git"]]]
-//                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out EE7 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-//             }
-//         }
-//         stage('Setup for EE7 Tests') {
-//             steps {
-//                 setupDomain()
-//             }
-//         }
-//         stage('Run EE7 Tests') {
-//             steps {
-//                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-//                 sh """mvn -B -V -ff -e clean install --strict-checksums \
-//                 -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
-//                 -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
-//                 -Dpayara_domain=${DOMAIN_NAME} \
-//                 -Ppayara-server-remote,stable,payara6"""
-//                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-//             }
-//             post {
-//                 always {
-//                     processReportAndStopDomain()
-//                 }
-//                 cleanup {
-//                     saveLogsAndCleanup 'ee7-samples-log.zip'
-//                 }
-//             }
-//         }
+        stage('Checkout EE7 Tests') {
+            steps{
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out EE7 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
+                    branches: [[name: "*/Payara6"]],
+                    userRemoteConfigs: [[url: "https://github.com/payara/patched-src-javaee7-samples.git"]]]
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out EE7 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+        }
+        stage('Setup for EE7 Tests') {
+            steps {
+                setupDomain()
+            }
+        }
+        stage('Run EE7 Tests') {
+            steps {
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                sh """mvn -B -V -ff -e clean install --strict-checksums \
+                -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
+                -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
+                -Dpayara_domain=${DOMAIN_NAME} \
+                -Ppayara-server-remote,stable,payara6"""
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+            post {
+                always {
+                    processReportAndStopDomain()
+                }
+                cleanup {
+                    saveLogsAndCleanup 'ee7-samples-log.zip'
+                }
+            }
+        }
     }
 }
 
