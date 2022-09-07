@@ -1,0 +1,4 @@
+create-protocol http-redirect
+create-protocol-filter --protocol http-redirect --classname org.glassfish.grizzly.config.portunif.HttpRedirectFilter redirect-filter
+create-protocol-finder --protocol pu-protocol --targetprotocol http-redirect --classname org.glassfish.grizzly.config.portunif.HttpProtocolFinder http-redirect
+set configs.config.server-config.network-config.network-listeners.network-listener.http-listener-2.protocol=pu-protocol
