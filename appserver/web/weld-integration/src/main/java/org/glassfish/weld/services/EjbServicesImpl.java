@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld.services;
 
@@ -53,7 +53,6 @@ import static org.glassfish.cdi.CDILoggerInfo.TRYING_TO_REGISTER_INTERCEPTOR;
 import java.lang.reflect.Method;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import jakarta.annotation.PostConstruct;
@@ -68,7 +67,7 @@ import jakarta.interceptor.AroundTimeout;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import org.glassfish.cdi.CDILoggerInfo;
+import jakarta.interceptor.InvocationContext;
 import org.glassfish.ejb.api.EjbContainerServices;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.weld.ejb.EjbDescriptorImpl;
@@ -282,7 +281,16 @@ public class EjbServicesImpl implements EjbServices {
             Class<?> interceptorClass = next.getBeanClass();
 
             while (interceptorClass != null && !interceptorClass.equals(Object.class)) {
-                String methodName = getInterceptorMethod( interceptorClass, getInterceptorAnnotationType(interceptionType));
+                String methodName = getInterceptorMethod(interceptorClass, getInterceptorAnnotationType(interceptionType));
+                // Validating interceptor that implemented programmatically instead of annotation
+                // we have to look for "intercept" method name explicitly for aroundInvoke interception type.
+                if (methodName == null && ejbInt.getInterceptor() != null && ejbInt.getInterceptor().intercepts(InterceptionType.AROUND_INVOKE)) {
+                    try {
+                        methodName = interceptorClass.getMethod("intercept", InvocationContext.class).getName();
+                    } catch (NoSuchMethodException ignored) {
+                        // ignore
+                    }
+                }
                 if (methodName != null) {
                     LifecycleCallbackDescriptor lifecycleDesc = new LifecycleCallbackDescriptor();
 
