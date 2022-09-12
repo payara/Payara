@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2022] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.mbeanserver.ssl;
 
@@ -609,6 +609,7 @@ public class SSLClientConfigurator {
             CipherInfo ci = ciphers.get(configName);
             if (ci == null) {
                 ciphers.putAll(getInstance().getSupportedCipherSuites());
+                ci = ciphers.get(configName);
             }
             return ci;
         }
