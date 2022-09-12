@@ -52,6 +52,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>reproducers</artifactId>
+    <name>Payara Samples - Reproducers</name>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
@@ -62,6 +63,19 @@
         <dependency>
             <groupId>org.eclipse.microprofile.metrics</groupId>
             <artifactId>microprofile-metrics-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.microprofile</groupId>
+            <artifactId>microprofile</artifactId>
+            <version>4.1</version>
+            <type>pom</type>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.platform</groupId>
+            <artifactId>jakarta.jakartaee-api</artifactId>
+            <version>10.0.0</version>
+            <scope>provided</scope>
         </dependency>
 
     </dependencies>
