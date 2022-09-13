@@ -42,6 +42,7 @@
 package org.glassfish.weld;
 
 import com.sun.enterprise.admin.util.JarFileUtils;
+import com.sun.enterprise.config.serverbeans.ServerTags;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import org.glassfish.api.deployment.DeploymentContext;
@@ -63,6 +64,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.*;
@@ -768,7 +770,17 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
     @SuppressWarnings("unchecked")
     protected BeansXml parseBeansXML(ReadableArchive archive, String beansXMLPath) throws IOException {
         URL url = getBeansXMLFileURL(archive, beansXMLPath);
-        BeansXml result =  weldBootstrap.parse(url);
+        if (WeldUtils.isEmptyBeansXmlModeALL(context)) {
+            try {
+                File beansxml = new File(url.toURI());
+                if (beansxml.length() == 0) {
+                    url = this.getClass().getResource("/beans-all.xml");
+                }
+            } catch (URISyntaxException ex) {
+                Logger.getLogger(BeanDeploymentArchiveImpl.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        BeansXml result = weldBootstrap.parse(url);
         JarFileUtils.closeCachedJarFiles();
         return result;
     }
