@@ -42,7 +42,6 @@
 package org.glassfish.weld;
 
 import com.sun.enterprise.admin.util.JarFileUtils;
-import com.sun.enterprise.config.serverbeans.ServerTags;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import org.glassfish.api.deployment.DeploymentContext;
