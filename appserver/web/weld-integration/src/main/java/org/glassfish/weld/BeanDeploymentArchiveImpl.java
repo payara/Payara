@@ -777,7 +777,9 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
                     url = this.getClass().getResource("/beans-all.xml");
                 }
             } catch (URISyntaxException ex) {
-                Logger.getLogger(BeanDeploymentArchiveImpl.class.getName()).log(Level.SEVERE, null, ex);
+                if (logger.isLoggable(Level.SEVERE)) {
+                    logger.log(Level.SEVERE, null, ex);
+                }
             }
         }
         BeansXml result = weldBootstrap.parse(url);
