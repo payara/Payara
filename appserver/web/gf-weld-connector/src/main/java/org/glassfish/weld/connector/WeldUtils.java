@@ -694,7 +694,7 @@ public class WeldUtils {
 
         if (beanDiscoveryMode == null) {
             //when empty beans.xml or bean-discovery-mode not specified
-            return "all";
+            return "annotated";
         }
 
         if (beanDiscoveryMode.equals("")) {

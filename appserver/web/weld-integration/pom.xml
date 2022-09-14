@@ -84,7 +84,6 @@
             <resource>
                 <directory>src/main/resources</directory>
                 <includes>
-                    <include>beans-all.xml</include>
                     <include>**/faces-config.xml</include>
                     <include>**/com.sun.faces.spi.FacesConfigResourceProvider</include>
                     <include>**/jakarta.enterprise.inject.spi.Extension</include>
