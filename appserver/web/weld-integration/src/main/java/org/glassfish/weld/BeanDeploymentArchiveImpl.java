@@ -769,10 +769,20 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
     @SuppressWarnings("unchecked")
     protected BeansXml parseBeansXML(ReadableArchive archive, String beansXMLPath) throws IOException {
         URL url = getBeansXMLFileURL(archive, beansXMLPath);
-        BeansXml result;
+        BeansXml result = null;
         if (WeldUtils.isEmptyBeansXmlModeALL(context)) {
-            result = weldBootstrap.parse(url, BeanDiscoveryMode.ALL);
-        } else {
+            try {
+                File beansxml = new File(url.toURI());
+                if (beansxml.length() == 0) {
+                    result = weldBootstrap.parse(url, BeanDiscoveryMode.ALL);
+                }
+            } catch (URISyntaxException ex) {
+                if (logger.isLoggable(Level.SEVERE)) {
+                    logger.log(Level.SEVERE, null, ex);
+                }
+            }
+        }
+        if (result == null) {
             result = weldBootstrap.parse(url);
         }
         JarFileUtils.closeCachedJarFiles();
