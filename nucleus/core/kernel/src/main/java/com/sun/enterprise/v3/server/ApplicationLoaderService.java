@@ -45,6 +45,7 @@ import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.admin.report.HTMLActionReporter;
+import com.sun.enterprise.v3.bootstrap.BootCommandService;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -124,6 +125,10 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
 
     @Inject
     ApplicationRegistry appRegistry;
+
+    // Explicit dependency, boot command file can contain setup for already deployed applications
+    @Inject
+    private BootCommandService bootCommandService;
 
     @Inject
     Events events;
@@ -331,8 +336,11 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
         }
         events.send(new Event<>(Deployment.ALL_APPLICATIONS_LOADED, null), false);
 
-        for(Deployment.ApplicationDeployment depl : appDeployments) {
-            deployment.initialize(depl.appInfo, depl.appInfo.getSniffers(), depl.context);
+        for (Deployment.ApplicationDeployment depl : appDeployments) {
+            if (!depl.appInfo.isLoaded()) {
+                // it may be loaded by postbootcommandfile
+                deployment.initialize(depl.appInfo, depl.appInfo.getSniffers(), depl.context);
+            }
         }
 
         events.send(new Event<>(Deployment.ALL_APPLICATIONS_PROCESSED, null));

@@ -72,7 +72,7 @@ import org.glassfish.internal.api.JavaEEContextUtil.Context;
  * @author steve
  */
 @Service(name = "payara-cluster-store")
-@RunLevel(StartupRunLevel.IMPLICITLY_RELIED_ON)
+@RunLevel(StartupRunLevel.VAL)
 public class ClusteredStore implements EventListener, MonitoringDataSource {
     private static final Logger logger = Logger.getLogger(ClusteredStore.class.getCanonicalName());
 

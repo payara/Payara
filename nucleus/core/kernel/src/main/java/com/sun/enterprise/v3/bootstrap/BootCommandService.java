@@ -55,7 +55,7 @@ import java.util.logging.Logger;
 import static java.util.logging.Level.SEVERE;
 
 @Service
-@RunLevel(value = StartupRunLevel.IMPLICITLY_RELIED_ON)
+@RunLevel(value = StartupRunLevel.VAL)
 public class BootCommandService implements PostConstruct {
 
     private static final Logger LOGGER = Logger.getLogger(BootCommandService.class.getName());
