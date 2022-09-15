@@ -337,7 +337,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
         events.send(new Event<>(Deployment.ALL_APPLICATIONS_LOADED, null), false);
 
         for (Deployment.ApplicationDeployment depl : appDeployments) {
-            if (!depl.appInfo.isLoaded()) {
+            if (!depl.appInfo.isRunning()) {
                 // it may be loaded by postbootcommandfile
                 deployment.initialize(depl.appInfo, depl.appInfo.getSniffers(), depl.context);
             }
