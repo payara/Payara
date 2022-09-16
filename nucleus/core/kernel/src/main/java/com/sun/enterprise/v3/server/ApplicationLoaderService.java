@@ -161,6 +161,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
      * Get a Deployer capable for each application found
      * Invoke the deployer load() method for each application.
      */
+    @Override
     public void postConstruct() {
 
         assert env!=null;
@@ -233,12 +234,17 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
                 app.containsSnifferType(ServerTags.CONNECTOR)) {
                 continue;
             }
+            ApplicationInfo appDeployment = deployment.get(app.getName());
+            if (appDeployment != null && appDeployment.isRunning()) {
+                // skip applications loaded via deploy in postbootcommand file
+                continue;
+            }
             // load the referenced enabled applications on this instance
             // and always (partially) load on DAS when application is
             // referenced by non-DAS target so the application
             // information is available on DAS
             if (Boolean.valueOf(app.getEnabled()) || loadAppOnDAS(app.getName())) {
-              DeploymentOrder.addApplicationDeployment(new ApplicationOrderInfo(app, appOrderInfoMap.get(app.getName()).intValue()));
+                DeploymentOrder.addApplicationDeployment(new ApplicationOrderInfo(app, appOrderInfoMap.get(app.getName()).intValue()));
             }
         }
 
@@ -337,10 +343,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
         events.send(new Event<>(Deployment.ALL_APPLICATIONS_LOADED, null), false);
 
         for (Deployment.ApplicationDeployment depl : appDeployments) {
-            if (!depl.appInfo.isRunning()) {
-                // it may be loaded by postbootcommandfile
-                deployment.initialize(depl.appInfo, depl.appInfo.getSniffers(), depl.context);
-            }
+            deployment.initialize(depl.appInfo, depl.appInfo.getSniffers(), depl.context);
         }
 
         events.send(new Event<>(Deployment.ALL_APPLICATIONS_PROCESSED, null));
