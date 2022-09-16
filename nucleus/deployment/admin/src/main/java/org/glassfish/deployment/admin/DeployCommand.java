@@ -533,7 +533,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                     span.start(DeploymentTracing.AppStage.TRANSFORM_ARCHIVE);
                     deploymentContext.getSource().close();
                     File output = jakartaNamespaceDeploymentTransformerService.transformApplication(
-                            path, context, isDirectoryDeployed);
+                            path, context, isDirectoryDeployed, false);
                     if (output == null) {
                         return;
                     }

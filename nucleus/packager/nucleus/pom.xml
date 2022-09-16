@@ -135,6 +135,11 @@
             <optional>true</optional>
         </dependency>
         <dependency>
+            <groupId>fish.payara.deployment.transformer</groupId>
+            <artifactId>deployment-transformer-impl</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
             <groupId>fish.payara.server.internal.deployment</groupId>
             <artifactId>deployment-autodeploy</artifactId>
             <version>${project.version}</version>

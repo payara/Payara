@@ -971,6 +971,11 @@ Parent is ${project.parent}</echo>
                 <version>${payara.deployment.transformer.version}</version>
             </dependency>
             <dependency>
+                <groupId>fish.payara.deployment.transformer</groupId>
+                <artifactId>deployment-transformer-impl</artifactId>
+                <version>${payara.deployment.transformer.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.bouncycastle</groupId>
                 <artifactId>bcprov-jdk15on</artifactId>
                 <version>1.64</version>
