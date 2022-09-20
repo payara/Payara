@@ -88,6 +88,8 @@ public class WeldUtils {
 
     private static Logger logger = Logger.getLogger(WeldUtils.class.getName());
 
+    private static final String EMPTY_BEANS_XML_MODE_ALL = "fish.payara.deployment.emptyBeansXmlModeALL";
+
     public static final char SEPARATOR_CHAR = '/';
     public static final String WEB_INF = "WEB-INF";
     public static final String WEB_INF_CLASSES = WEB_INF + SEPARATOR_CHAR + "classes";
@@ -583,6 +585,14 @@ public class WeldUtils {
 
     public static void setCDIDevMode(DeploymentContext context, boolean enabled) {
        context.getAppProps().setProperty(ServerTags.CDI_DEV_MODE_ENABLED_PROP, String.valueOf(enabled));
+    }
+    
+    public static boolean isEmptyBeansXmlModeALL(DeploymentContext context) {
+        if(Boolean.getBoolean(EMPTY_BEANS_XML_MODE_ALL)) {
+            return true;
+        }
+        Object propValue = context.getAppProps().get(ServerTags.EMPTY_BEANS_XML_MODE_ALL_PROP);
+        return propValue != null && Boolean.parseBoolean((String) propValue);
     }
 
   public static InputStream getBeansXmlInputStream(DeploymentContext context) {

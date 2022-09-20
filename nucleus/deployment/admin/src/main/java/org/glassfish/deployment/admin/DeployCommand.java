@@ -538,6 +538,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                         return;
                     }
 
+                    deploymentContext.getAppProps().setProperty(ServerTags.EMPTY_BEANS_XML_MODE_ALL_PROP, Boolean.TRUE.toString());
                     deploymentContext.setSource((FileArchive)archiveFactory.createArchive(output));
 
                     // reset transient and module data of orignal deployed archive

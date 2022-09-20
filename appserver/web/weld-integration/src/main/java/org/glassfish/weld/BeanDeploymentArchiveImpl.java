@@ -61,8 +61,10 @@ import jakarta.enterprise.inject.spi.AnnotatedType;
 import jakarta.enterprise.inject.spi.InjectionTarget;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.*;
@@ -768,7 +770,18 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
     @SuppressWarnings("unchecked")
     protected BeansXml parseBeansXML(ReadableArchive archive, String beansXMLPath) throws IOException {
         URL url = getBeansXMLFileURL(archive, beansXMLPath);
-        BeansXml result =  weldBootstrap.parse(url);
+        BeansXml result;
+        boolean enableLegacyMode = false;
+        if (WeldUtils.isEmptyBeansXmlModeALL(context)) {
+            try ( InputStream in = url.openStream()) {
+                enableLegacyMode = in.available() == 0;
+            }
+        }
+        if (enableLegacyMode) {
+            result = weldBootstrap.parse(url, BeanDiscoveryMode.ALL);
+        } else {
+            result = weldBootstrap.parse(url);
+        }
         JarFileUtils.closeCachedJarFiles();
         return result;
     }

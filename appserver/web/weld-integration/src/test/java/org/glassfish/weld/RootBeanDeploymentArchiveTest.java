@@ -104,6 +104,7 @@ public class RootBeanDeploymentArchiveTest {
         expect(readableArchive.exists(WeldUtils.WEB_INF_CLASSES_META_INF_BEANS_XML)).andReturn(false).anyTimes();
 
         // in BeanDeploymentArchiveImpl.populate
+        expect(deploymentContext.getAppProps()).andReturn(new Properties()).anyTimes();
         expect(deploymentContext.getTransientAppMetadata()).andReturn(null).anyTimes();
         expect(deploymentContext.getModuleMetaData(Application.class)).andReturn(null).anyTimes();
         expect(deploymentContext.getTransientAppMetaData(WeldDeployer.WELD_BOOTSTRAP, WeldBootstrap.class)).andReturn(wb).anyTimes();

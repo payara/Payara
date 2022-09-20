@@ -196,6 +196,7 @@ public class ServerTags  {
     //public static final String ENABLED = "enabled";
     public static final String VIRTUAL_SERVERS = "virtual-servers";
     public static final String CDI_DEV_MODE_ENABLED_PROP = "cdiDevModeEnabled";
+    public static final String EMPTY_BEANS_XML_MODE_ALL_PROP = "emptyBeansXmlModeALL";
     
     //public static final String LB_ENABLED = "lb-enabled";
     //public static final String DISABLE_TIMEOUT_IN_MINUTES = "disable-timeout-in-minutes";
