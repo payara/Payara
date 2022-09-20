@@ -150,6 +150,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import java.net.URISyntaxException;
 import org.glassfish.hk2.classmodel.reflect.util.ParsingConfig;
+import org.glassfish.hk2.utilities.BuilderHelper;
 
 /**
  * Application Loader is providing useful methods to load applications
@@ -228,6 +229,11 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     public void postConstruct() {
         deploymentLifecycleProbeProvider = new DeploymentLifecycleProbeProvider();
         alcInterceptors = habitat.getAllServices(ApplicationLifecycleInterceptor.class);
+
+        // initialize listening services before application startup
+        habitat.getAllServices(BuilderHelper.createNameFilter("ManagedBeanManagerImpl"));
+        habitat.getAllServices(BuilderHelper.createNameFilter("ResourceManager"));
+        habitat.getAllServices(BuilderHelper.createNameFilter("ApplicationScopedResourcesManager"));
     }
 
     /**
