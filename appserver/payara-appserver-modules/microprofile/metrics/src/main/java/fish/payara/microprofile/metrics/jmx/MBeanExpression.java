@@ -40,8 +40,8 @@
 
 package fish.payara.microprofile.metrics.jmx;
 
-import static fish.payara.microprofile.metrics.jmx.MBeanMetadataHelper.ATTRIBUTE_SEPARATOR;
-import static fish.payara.microprofile.metrics.jmx.MBeanMetadataHelper.SUB_ATTRIBUTE_SEPARATOR;
+import static fish.payara.microprofile.metrics.jmx.MetricsMetadataHelper.ATTRIBUTE_SEPARATOR;
+import static fish.payara.microprofile.metrics.jmx.MetricsMetadataHelper.SUB_ATTRIBUTE_SEPARATOR;
 import java.lang.management.ManagementFactory;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
