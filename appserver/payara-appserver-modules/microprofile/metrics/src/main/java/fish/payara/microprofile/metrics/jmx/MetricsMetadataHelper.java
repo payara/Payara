@@ -63,6 +63,7 @@ import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.eclipse.microprofile.metrics.MetricUnits;
 import org.eclipse.microprofile.metrics.Tag;
 import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 import org.jvnet.hk2.annotations.Service;
 
@@ -81,6 +82,9 @@ public class MetricsMetadataHelper {
 
     @Inject
     private ServerEnvironment serverEnv;
+
+    @Inject
+    private ServiceLocator habitat;
 
     /**
      * Registers metrics as MBeans
@@ -126,7 +130,7 @@ public class MetricsMetadataHelper {
                     }
                     metricRegistry.register(beanMetadata, type, tags.toArray(new Tag[tags.size()]));
                 } else {
-                    HealthCheckStatsProvider healthCheck = Globals.getDefaultHabitat().getService(HealthCheckStatsProvider.class, beanMetadata.getService());
+                    HealthCheckStatsProvider healthCheck = habitat.getService(HealthCheckStatsProvider.class, beanMetadata.getService());
                     if (healthCheck != null) {
                         switch (beanMetadata.getTypeRaw()) {
                             case COUNTER:
