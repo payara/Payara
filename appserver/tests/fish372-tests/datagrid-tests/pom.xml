@@ -152,7 +152,27 @@
             </configuration>
           </execution>
           <execution>
-            <id>stop-payara</id>
+            <id>stop-payara-1</id>
+            <phase>post-integration-test</phase>
+            <goals>
+              <goal>stop</goal>
+            </goals>
+            <configuration>
+              <skip>${skipPostIntegrationTest}</skip>
+            </configuration>
+          </execution>
+          <execution>
+            <id>stop-payara-2</id>
+            <phase>post-integration-test</phase>
+            <goals>
+              <goal>stop</goal>
+            </goals>
+            <configuration>
+              <skip>${skipPostIntegrationTest}</skip>
+            </configuration>
+          </execution>
+          <execution>
+            <id>stop-payara-3</id>
             <phase>post-integration-test</phase>
             <goals>
               <goal>stop</goal>
