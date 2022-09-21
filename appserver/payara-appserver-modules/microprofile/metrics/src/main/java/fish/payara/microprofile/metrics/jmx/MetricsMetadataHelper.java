@@ -127,17 +127,21 @@ public class MetricsMetadataHelper {
                     metricRegistry.register(beanMetadata, type, tags.toArray(new Tag[tags.size()]));
                 } else {
                     HealthCheckStatsProvider healthCheck = Globals.getDefaultHabitat().getService(HealthCheckStatsProvider.class, beanMetadata.getService());
-                    switch (beanMetadata.getTypeRaw()) {
-                        case COUNTER:
-                            type = new HealthCheckCounter(healthCheck);
-                            break;
-                        case GAUGE:
-                            type = new HealthCheckGauge(healthCheck);
-                            break;
-                        default:
-                            throw new IllegalStateException("Unsupported type : " + beanMetadata);
+                    if (healthCheck != null) {
+                        switch (beanMetadata.getTypeRaw()) {
+                            case COUNTER:
+                                type = new HealthCheckCounter(healthCheck);
+                                break;
+                            case GAUGE:
+                                type = new HealthCheckGauge(healthCheck);
+                                break;
+                            default:
+                                throw new IllegalStateException("Unsupported type : " + beanMetadata);
+                        }
+                        metricRegistry.register(beanMetadata, type, tags.toArray(new Tag[tags.size()]));
+                    } else {
+                        throw new IllegalStateException("Health-Check service not found : " + beanMetadata.getService());
                     }
-                    metricRegistry.register(beanMetadata, type, tags.toArray(new Tag[tags.size()]));
                 }
             } catch (IllegalArgumentException ex) {
                 LOGGER.log(WARNING, ex.getMessage(), ex);
