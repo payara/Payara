@@ -209,7 +209,7 @@ holder.
             <type>gauge</type>
             <unit>none</unit>
             <displayName>Stuck Thread Count</displayName>
-            <description>Displays the stuck thread count which are blocked, and can't return to the threadpool for a certain amout of time.</description>
+            <description>Displays the stuck thread count which is blocked, and can't return to the threadpool for a certain amount of time.</description>
         </metadata>
     </vendor>
 </config>
