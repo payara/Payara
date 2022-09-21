@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2022] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2022 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,57 +37,44 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.sun.enterprise.v3.bootstrap;
+package fish.payara.samples.resource.fish6238;
 
-import com.sun.enterprise.module.bootstrap.StartupContext;
-import org.glassfish.api.StartupRunLevel;
-import fish.payara.boot.runtime.BootCommands;
-import org.glassfish.embeddable.CommandRunner;
-import org.glassfish.hk2.api.PostConstruct;
-import org.glassfish.hk2.runlevel.RunLevel;
-import org.jvnet.hk2.annotations.Service;
+import fish.payara.samples.resource.fish6238.SingletonBean;
+import fish.payara.samples.resource.fish6238.StatelessBean;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import javax.inject.Inject;
-import java.io.File;
-import java.io.IOException;
-import java.util.logging.Logger;
+import static org.junit.Assert.assertEquals;
 
-import static java.util.logging.Level.SEVERE;
 
-@Service
-@RunLevel(value = StartupRunLevel.VAL)
-public class BootCommandService implements PostConstruct {
-
-    private static final Logger LOGGER = Logger.getLogger(BootCommandService.class.getName());
+@RunWith(Arquillian.class)
+public class FaultToleranceTest {
 
     @Inject
-    StartupContext startupContext;
+    private SingletonBean singletonBean;
 
     @Inject
-    CommandRunner commandRunner;
+    private StatelessBean statelessBean;
 
-    /**
-     * Runs a series of commands from a file
-     * @param file
-     */
-    public void doBootCommands(String file) {
-        if (file == null) {
-            return;
-        }
-        try {
-            BootCommands bootCommands = new BootCommands();
-            System.out.println("Reading in commands from " + file);
-            bootCommands.parseCommandScript(new File(file));
-            bootCommands.executeCommands(commandRunner);
-        } catch (IOException ex) {
-            LOGGER.log(SEVERE, "Error reading from file");
-        } catch (Throwable ex) {
-            LOGGER.log(SEVERE, null, ex);
-        }
+    @Deployment
+    public static WebArchive deployment() {
+        return ShrinkWrap.create(WebArchive.class)
+                .addClasses(SingletonBean.class, StatelessBean.class);
     }
 
-    @Override
-    public void postConstruct() {
-        doBootCommands(startupContext.getArguments().getProperty("-postbootcommandfile"));
+    @Test
+    public void statelessBeanTest() {
+        assertEquals(statelessBean.sayHello("MyMessage"), "fallback stateless");
     }
+
+    @Test
+    public void singletonBeanTest() {
+        assertEquals(singletonBean.sayHello("MyMessage"), "fallback singleton");
+    }
+
 }
