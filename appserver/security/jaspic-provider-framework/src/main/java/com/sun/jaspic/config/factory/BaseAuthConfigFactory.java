@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2022] [Payara Foundation and/or its affiliates]
 package com.sun.jaspic.config.factory;
 
 import static com.sun.jaspic.config.helper.JASPICLogManager.JASPIC_LOGGER;
@@ -68,6 +68,7 @@ import jakarta.servlet.ServletContext;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import static org.glassfish.soteria.Utils.isEmpty;
+
 
 /**
  * This class implements methods in the abstract class AuthConfigFactory.

@@ -115,12 +115,9 @@
         </dependency>
 
         <dependency>
-            <groupId>org.glassfish.jsftemplating</groupId>
-            <artifactId>jsftemplating</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jsftemplating</groupId>
-            <artifactId>jsftemplating-dt</artifactId>
+            <groupId>fish.payara.server.internal.admingui</groupId>
+            <artifactId>faces-compat</artifactId>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
@@ -140,8 +137,9 @@
             <artifactId>expressly</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>jakarta.faces</artifactId>
+            <groupId>fish.payara.server.internal.admingui</groupId>
+            <artifactId>faces-compat</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>

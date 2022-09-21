@@ -45,6 +45,7 @@ import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.admin.report.HTMLActionReporter;
+import com.sun.enterprise.v3.bootstrap.BootCommandService;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -125,6 +126,10 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
     @Inject
     ApplicationRegistry appRegistry;
 
+    // Explicit dependency, boot command file can contain setup for already deployed applications
+    @Inject
+    private BootCommandService bootCommandService;
+
     @Inject
     Events events;
 
@@ -156,6 +161,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
      * Get a Deployer capable for each application found
      * Invoke the deployer load() method for each application.
      */
+    @Override
     public void postConstruct() {
 
         assert env!=null;
@@ -228,12 +234,17 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
                 app.containsSnifferType(ServerTags.CONNECTOR)) {
                 continue;
             }
+            ApplicationInfo appDeployment = deployment.get(app.getName());
+            if (appDeployment != null && appDeployment.isRunning()) {
+                // skip applications loaded via deploy in postbootcommand file
+                continue;
+            }
             // load the referenced enabled applications on this instance
             // and always (partially) load on DAS when application is
             // referenced by non-DAS target so the application
             // information is available on DAS
             if (Boolean.valueOf(app.getEnabled()) || loadAppOnDAS(app.getName())) {
-              DeploymentOrder.addApplicationDeployment(new ApplicationOrderInfo(app, appOrderInfoMap.get(app.getName()).intValue()));
+                DeploymentOrder.addApplicationDeployment(new ApplicationOrderInfo(app, appOrderInfoMap.get(app.getName()).intValue()));
             }
         }
 
@@ -331,7 +342,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
         }
         events.send(new Event<>(Deployment.ALL_APPLICATIONS_LOADED, null), false);
 
-        for(Deployment.ApplicationDeployment depl : appDeployments) {
+        for (Deployment.ApplicationDeployment depl : appDeployments) {
             deployment.initialize(depl.appInfo, depl.appInfo.getSniffers(), depl.context);
         }
 

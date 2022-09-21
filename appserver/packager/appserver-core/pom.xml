@@ -261,6 +261,10 @@
             <groupId>jakarta.mail</groupId>
             <artifactId>jakarta.mail-api</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.eclipse.angus</groupId>
+            <artifactId>angus-mail</artifactId>
+        </dependency>
         <!-- FISH-6249: transitional servlet API to fool implementations relying on servlet 5 yet -->
         <dependency>
             <groupId>jakarta.servlet</groupId>

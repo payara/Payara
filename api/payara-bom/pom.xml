@@ -409,16 +409,6 @@
                 <groupId>jakarta.enterprise.concurrent</groupId>
                 <artifactId>jakarta.enterprise.concurrent-api</artifactId>
                 <version>${concurrent-api.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.jboss.arquillian.testng</groupId>
-                        <artifactId>arquillian-testng-container</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.testng</groupId>
-                        <artifactId>testng</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
 
@@ -687,6 +677,11 @@
                 </exclusions>
             </dependency>
             <dependency>
+                <groupId>org.jboss.weld</groupId>
+                <artifactId>weld-lite-extension-translator</artifactId>
+                <version>${weld.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.jboss.weld.se</groupId>
                 <artifactId>weld-se-shaded</artifactId>
                 <version>${weld.version}</version>
@@ -728,12 +723,12 @@
                 <artifactId>jakarta.json</artifactId>
                 <version>${parsson.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.eclipse.parsson</groupId>
                 <artifactId>parsson-media</artifactId>
                 <version>${parsson.version}</version>
             </dependency>
+
             <dependency>
                 <groupId>com.ibm.jbatch</groupId>
                 <artifactId>com.ibm.jbatch.container</artifactId>
