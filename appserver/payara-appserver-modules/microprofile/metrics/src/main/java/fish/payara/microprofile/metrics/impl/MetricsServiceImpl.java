@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2018-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2022] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -89,12 +89,13 @@ import fish.payara.microprofile.metrics.MetricUnitsUtils;
 import fish.payara.microprofile.metrics.MetricsService;
 import fish.payara.microprofile.metrics.admin.MetricsServiceConfiguration;
 import fish.payara.microprofile.metrics.exception.NoSuchRegistryException;
-import fish.payara.microprofile.metrics.jmx.MBeanMetadata;
-import fish.payara.microprofile.metrics.jmx.MBeanMetadataConfig;
-import fish.payara.microprofile.metrics.jmx.MBeanMetadataHelper;
+import fish.payara.microprofile.metrics.jmx.MetricsMetadata;
+import fish.payara.microprofile.metrics.jmx.MetricsMetadataConfig;
+import fish.payara.microprofile.metrics.jmx.MetricsMetadataHelper;
 import fish.payara.monitoring.collect.MonitoringDataCollector;
 import fish.payara.monitoring.collect.MonitoringDataSource;
 import fish.payara.nucleus.executorservice.PayaraExecutorService;
+import fish.payara.nucleus.healthcheck.HealthCheckStatsProvider;
 import java.util.logging.Level;
 
 @Service(name = "microprofile-metrics-service")
@@ -104,7 +105,7 @@ public class MetricsServiceImpl implements MetricsService, ConfigListener, Monit
     private static final Logger LOGGER = Logger.getLogger(MetricsService.class.getName());
 
     @Inject
-    MetricsServiceConfiguration configuration;
+    private MetricsServiceConfiguration configuration;
 
     @Inject
     private ServerEnvironment serverEnv;
@@ -113,7 +114,7 @@ public class MetricsServiceImpl implements MetricsService, ConfigListener, Monit
     ServiceLocator serviceLocator;
 
     @Inject
-    private MBeanMetadataHelper helper;
+    private MetricsMetadataHelper helper;
 
     private MetricsServiceConfiguration metricsServiceConfiguration;
 
@@ -121,9 +122,9 @@ public class MetricsServiceImpl implements MetricsService, ConfigListener, Monit
 
     private Boolean metricsSecure;
 
-    private List<MBeanMetadata> unresolvedBaseMetadataList;
+    private List<MetricsMetadata> unresolvedBaseMetadataList;
 
-    private List<MBeanMetadata> unresolvedVendorMetadataList;
+    private List<MetricsMetadata> unresolvedVendorMetadataList;
 
     private static final class RegisteredMetric {
 
@@ -254,6 +255,10 @@ public class MetricsServiceImpl implements MetricsService, ConfigListener, Monit
                 Metric metric = entry.getValue();
                 try {
                     MonitoringDataCollector metricCollector = tagCollector(contextName, metricID, collector);
+                    if(metric instanceof HealthCheckStatsProvider
+                                && !((HealthCheckStatsProvider)metric).isEnabled()) {
+                            continue;
+                    }
                     if (metric instanceof Counting) {
                         metricCollector.collect(toName(metricID, "Count"), ((Counting) metric).getCount());
                     }
@@ -263,7 +268,7 @@ public class MetricsServiceImpl implements MetricsService, ConfigListener, Monit
                     if (metric instanceof Timer) {
                         metricCollector.collect(toName(metricID, "MaxDuration"), ((Timer) metric).getSnapshot().getMax());
                     }
-                    if (metric instanceof Gauge) {
+                    if (metric instanceof Gauge) { 
                         Object value = ((Gauge<?>) metric).getValue();
                         if (value instanceof Number) {
                             metricCollector.collect(toName(metricID,
@@ -271,7 +276,7 @@ public class MetricsServiceImpl implements MetricsService, ConfigListener, Monit
                         }
                     }
                 } catch (Exception ex) {
-                    LOGGER.log(Level.SEVERE, "Failed to retrieve metric: " + metricID);;
+                    LOGGER.log(Level.SEVERE, "Failed to retrieve metric: {0}", metricID);
                 }
             }
         }
@@ -378,17 +383,17 @@ public class MetricsServiceImpl implements MetricsService, ConfigListener, Monit
         return collector.group(tag);
     }
 
-    private static void checkSystemCpuLoadIssue(MBeanMetadataConfig metadataConfig) {
+    private static void checkSystemCpuLoadIssue(MetricsMetadataConfig metadataConfig) {
         // Could be constant but placed it in method as it is a workaround until fixed in JVM.
         // TODO Make this check dependent on the JDK version (as it hopefully will get solved in the future) -> Azul fix request made.
         String mbeanSystemCPULoad = "java.lang:type=OperatingSystem/SystemCpuLoad";
         long count = metadataConfig.getBaseMetadata().stream()
-                .map(MBeanMetadata::getMBean)
+                .map(MetricsMetadata::getMBean)
                 .filter(mbeanSystemCPULoad::equalsIgnoreCase)
                 .count();
 
         count += metadataConfig.getVendorMetadata().stream()
-                .map(MBeanMetadata::getMBean)
+                .map(MetricsMetadata::getMBean)
                 .filter(mbeanSystemCPULoad::equalsIgnoreCase)
                 .count();
 
@@ -403,7 +408,7 @@ public class MetricsServiceImpl implements MetricsService, ConfigListener, Monit
      *
      * @param metadataConfig
      */
-    private void initMetadataConfig(List<MBeanMetadata> baseMetadataList, List<MBeanMetadata> vendorMetadataList, boolean isRetry) {
+    private void initMetadataConfig(List<MetricsMetadata> baseMetadataList, List<MetricsMetadata> vendorMetadataList, boolean isRetry) {
         if (!baseMetadataList.isEmpty()) {
             unresolvedBaseMetadataList = helper.registerMetadata(
                     getContext(MetricsContext.SERVER_CONTEXT_NAME).getBaseRegistry(),
@@ -432,15 +437,15 @@ public class MetricsServiceImpl implements MetricsService, ConfigListener, Monit
         }
     }
 
-    private MBeanMetadataConfig getConfig() {
+    private MetricsMetadataConfig getConfig() {
         InputStream defaultConfig = MetricsService.class.getResourceAsStream("/metrics.xml");
-        MBeanMetadataConfig config = JAXB.unmarshal(defaultConfig, MBeanMetadataConfig.class);
+        MetricsMetadataConfig config = JAXB.unmarshal(defaultConfig, MetricsMetadataConfig.class);
 
         File metricsResource = new File(serverEnv.getConfigDirPath(), "metrics.xml");
         if (metricsResource.exists()) {
             try {
                 InputStream userMetrics = new FileInputStream(metricsResource);
-                MBeanMetadataConfig extraConfig = JAXB.unmarshal(userMetrics, MBeanMetadataConfig.class);
+                MetricsMetadataConfig extraConfig = JAXB.unmarshal(userMetrics, MetricsMetadataConfig.class);
                 config.addBaseMetadata(extraConfig.getBaseMetadata());
                 config.addVendorMetadata(extraConfig.getVendorMetadata());
 
@@ -456,7 +461,7 @@ public class MetricsServiceImpl implements MetricsService, ConfigListener, Monit
         if (metricsEnabled == null) {
             metricsEnabled = Boolean.valueOf(metricsServiceConfiguration.getEnabled());
         }
-        return metricsEnabled.booleanValue();
+        return metricsEnabled;
     }
 
     public void resetMetricsEnabledProperty() {
@@ -516,11 +521,11 @@ public class MetricsServiceImpl implements MetricsService, ConfigListener, Monit
     }
 
     private void bootstrap() {
-        MBeanMetadataConfig metadataConfig = getConfig();
+        MetricsMetadataConfig metadataConfig = getConfig();
         checkSystemCpuLoadIssue(metadataConfig); // PAYARA 2938
         initMetadataConfig(metadataConfig.getBaseMetadata(), metadataConfig.getVendorMetadata(), false);
     }
-
+    
     @Override
     public UnprocessedChangeEvents changed(PropertyChangeEvent[] events) {
         List<UnprocessedChangeEvent> unchangedList = new ArrayList<>();

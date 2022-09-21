@@ -39,6 +39,9 @@
  */
 package fish.payara.microprofile.metrics.jmx;
 
+import fish.payara.microprofile.metrics.healthcheck.HealthCheckCounter;
+import fish.payara.microprofile.metrics.healthcheck.HealthCheckGauge;
+import fish.payara.nucleus.healthcheck.HealthCheckStatsProvider;
 import java.util.ArrayList;
 import java.util.List;
 import static java.util.Objects.nonNull;
@@ -60,10 +63,12 @@ import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.eclipse.microprofile.metrics.MetricUnits;
 import org.eclipse.microprofile.metrics.Tag;
 import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.Globals;
 import org.jvnet.hk2.annotations.Service;
 
 @Service
-public class MBeanMetadataHelper {
+public class MetricsMetadataHelper {
 
     public static final String SPECIFIER = "%s"; // microprofile-metrics specification defined specifier
     public static final String KEY = "${key}";
@@ -73,31 +78,34 @@ public class MBeanMetadataHelper {
     public static final String SUB_ATTRIBUTE_SEPARATOR = "#";
     public static final String INSTANCE = "${instance}";
 
-    private static final Logger LOGGER = Logger.getLogger(MBeanMetadataHelper.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(MetricsMetadataHelper.class.getName());
 
     @Inject
     private ServerEnvironment serverEnv;
+
+    @Inject
+    private ServiceLocator habitat;
 
     /**
      * Registers metrics as MBeans
      *
      * @param metricRegistry Registry to add metrics to
-     * @param metadataList List of all {@link MBeanMetadata} representing a
+     * @param metadataList List of all {@link MetricsMetadata} representing a
      * {@link Metric}
      * @param globalTags
      * @param isRetry true if this is not initial registration, this is used to
      * register lazy-loaded MBeans
      * @return the list of unresolved MBean Metadata
      */
-    public List<MBeanMetadata> registerMetadata(MetricRegistry metricRegistry,
-            List<MBeanMetadata> metadataList, boolean isRetry) {
+    public List<MetricsMetadata> registerMetadata(MetricRegistry metricRegistry,
+            List<MetricsMetadata> metadataList, boolean isRetry) {
 
         if (!metricRegistry.getNames().isEmpty() && !isRetry) {
             metricRegistry.removeMatching(MetricFilter.ALL);
         }
 
-        List<MBeanMetadata> unresolvedMetadataList = resolveDynamicMetadata(metadataList);
-        for (MBeanMetadata beanMetadata : metadataList) {
+        List<MetricsMetadata> unresolvedMetadataList = resolveDynamicMetadata(metadataList);
+        for (MetricsMetadata beanMetadata : metadataList) {
             List<Tag> tags = new ArrayList<>();
             for (XmlTag tag : beanMetadata.getTags()) {
                 tags.add(new Tag(tag.getName(), tag.getValue()));
@@ -108,18 +116,37 @@ public class MBeanMetadataHelper {
                     continue;
                 }
                 Metric type;
-                MBeanExpression mBeanExpression = new MBeanExpression(beanMetadata.getMBean());
-                switch (beanMetadata.getTypeRaw()) {
-                    case COUNTER:
-                        type = new MBeanCounterImpl(mBeanExpression);
-                        break;
-                    case GAUGE:
-                        type = new MBeanGuageImpl(mBeanExpression);
-                        break;
-                    default:
-                        throw new IllegalStateException("Unsupported type : " + beanMetadata);
+                if (beanMetadata.getMBean() != null) {
+                    MBeanExpression mBeanExpression = new MBeanExpression(beanMetadata.getMBean());
+                    switch (beanMetadata.getTypeRaw()) {
+                        case COUNTER:
+                            type = new MBeanCounterImpl(mBeanExpression);
+                            break;
+                        case GAUGE:
+                            type = new MBeanGuageImpl(mBeanExpression);
+                            break;
+                        default:
+                            throw new IllegalStateException("Unsupported type : " + beanMetadata);
+                    }
+                    metricRegistry.register(beanMetadata, type, tags.toArray(new Tag[tags.size()]));
+                } else {
+                    HealthCheckStatsProvider healthCheck = habitat.getService(HealthCheckStatsProvider.class, beanMetadata.getService());
+                    if (healthCheck != null) {
+                        switch (beanMetadata.getTypeRaw()) {
+                            case COUNTER:
+                                type = new HealthCheckCounter(healthCheck);
+                                break;
+                            case GAUGE:
+                                type = new HealthCheckGauge(healthCheck);
+                                break;
+                            default:
+                                throw new IllegalStateException("Unsupported type : " + beanMetadata);
+                        }
+                        metricRegistry.register(beanMetadata, type, tags.toArray(new Tag[tags.size()]));
+                    } else {
+                        throw new IllegalStateException("Health-Check service not found : " + beanMetadata.getService());
+                    }
                 }
-                metricRegistry.register(beanMetadata, type, tags.toArray(new Tag[tags.size()]));
             } catch (IllegalArgumentException ex) {
                 LOGGER.log(WARNING, ex.getMessage(), ex);
             }
@@ -133,20 +160,21 @@ public class MBeanMetadataHelper {
      * @param metadataList list of MBean Metadata
      * @return the list of unresolved MBean Metadata
      */
-    public List<MBeanMetadata> resolveDynamicMetadata(List<MBeanMetadata> metadataList) {
-        List<MBeanMetadata> unresolvedMetadataList = new ArrayList<>();
-        List<MBeanMetadata> resolvedMetadataList = new ArrayList<>();
+    public List<MetricsMetadata> resolveDynamicMetadata(List<MetricsMetadata> metadataList) {
+        List<MetricsMetadata> unresolvedMetadataList = new ArrayList<>();
+        List<MetricsMetadata> resolvedMetadataList = new ArrayList<>();
         List<Metadata> removedMetadataList = new ArrayList<>(metadataList.size());
-        for (MBeanMetadata metadata : metadataList) {
+        for (MetricsMetadata metadata : metadataList) {
             if (!metadata.isValid()) {
                 removedMetadataList.add(metadata);
                 continue;
             }
-            if (metadata.getMBean().contains(SPECIFIER)
+            if (metadata.getMBean() != null
+                    && (metadata.getMBean().contains(SPECIFIER)
                     || metadata.getMBean().contains(KEY)
                     || metadata.getMBean().contains(ATTRIBUTE)
                     || metadata.getMBean().contains(SUB_ATTRIBUTE)
-                    || metadata.getMBean().contains(INSTANCE)) {
+                    || metadata.getMBean().contains(INSTANCE))) {
                 try {
                     String instanceName = serverEnv.getInstanceName();
                     // set (optional) instance the query expression
@@ -200,14 +228,14 @@ public class MBeanMetadataHelper {
         return unresolvedMetadataList;
     }
 
-    private static List<MBeanMetadata> loadAttribute(
+    private static List<MetricsMetadata> loadAttribute(
             ObjectName objName,
             MBeanExpression mBeanExpression,
-            MBeanMetadata metadata,
+            MetricsMetadata metadata,
             String key,
             String instanceName) {
 
-        List<MBeanMetadata> metadataList = new ArrayList<>();
+        List<MetricsMetadata> metadataList = new ArrayList<>();
         String attributeName;
 
         if (ATTRIBUTE.equals(mBeanExpression.getAttributeName())) {
@@ -243,15 +271,15 @@ public class MBeanMetadataHelper {
         return metadataList;
     }
 
-    private static List<MBeanMetadata> loadSubAttribute(
+    private static List<MetricsMetadata> loadSubAttribute(
             ObjectName objName,
             MBeanExpression mBeanExpression,
-            MBeanMetadata metadata,
+            MetricsMetadata metadata,
             String key,
             String attribute,
             String instanceName,
             boolean isDynamicAttribute) {
-        List<MBeanMetadata> metadataList = new ArrayList<>();
+        List<MetricsMetadata> metadataList = new ArrayList<>();
         String exp = objName.getCanonicalName();
         String subAttribute = mBeanExpression.getSubAttributeName();
         if (subAttribute != null) {
@@ -276,7 +304,7 @@ public class MBeanMetadataHelper {
                             newMetadataBuilder = newMetadataBuilder.withUnit((String) compositeData.get(subAttribute));
                         }
                     }
-                    MBeanMetadata newMbeanMetadata = new MBeanMetadata(newMetadataBuilder.build());
+                    MetricsMetadata newMbeanMetadata = new MetricsMetadata(newMetadataBuilder.build());
                     newMbeanMetadata.addTags(metadata.getTags());
                     metadataList.add(createMetadata(newMbeanMetadata, exp, key, attribute, subAttribute, instanceName));
                 }
@@ -297,8 +325,8 @@ public class MBeanMetadataHelper {
         return metadataList;
     }
 
-    private static MBeanMetadata createMetadata(
-            MBeanMetadata metadata,
+    private static MetricsMetadata createMetadata(
+            MetricsMetadata metadata,
             String exp,
             String key,
             String attribute,
@@ -312,7 +340,7 @@ public class MBeanMetadataHelper {
             builder.append(SUB_ATTRIBUTE_SEPARATOR);
             builder.append(subAttribute);
         }
-        MBeanMetadata newMetaData =  new MBeanMetadata(builder.toString(),
+        MetricsMetadata newMetaData =  new MetricsMetadata(builder.toString(),
                 formatMetadata(
                         metadata.getName(),
                         key,

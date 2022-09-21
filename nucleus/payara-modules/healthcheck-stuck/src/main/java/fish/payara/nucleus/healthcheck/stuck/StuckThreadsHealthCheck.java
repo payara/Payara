@@ -39,6 +39,7 @@
  */
 package fish.payara.nucleus.healthcheck.stuck;
 
+import fish.payara.nucleus.healthcheck.HealthCheckStatsProvider;
 import fish.payara.nucleus.healthcheck.HealthCheckResult;
 import fish.payara.monitoring.collect.MonitoringData;
 import fish.payara.monitoring.collect.MonitoringDataCollector;
@@ -75,7 +76,17 @@ import org.jvnet.hk2.annotations.Service;
 @RunLevel(StartupRunLevel.VAL)
 public class StuckThreadsHealthCheck extends
         BaseHealthCheck<HealthCheckStuckThreadExecutionOptions, StuckThreadsChecker>
-        implements MonitoringDataSource, MonitoringWatchSource {
+        implements MonitoringDataSource, MonitoringWatchSource, HealthCheckStatsProvider<Integer> {
+
+    @Override
+    public Integer getValue() {
+       return this.stuckThreadsStore.getThreads().size();
+    }
+
+    @Override
+    public boolean isEnabled() {
+       return this.getOptions() != null ? this.getOptions().isEnabled() : false;
+    }
 
     @FunctionalInterface
     private interface StuckThreadConsumer {

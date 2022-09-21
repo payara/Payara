@@ -46,39 +46,39 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 @XmlRootElement(name = "config")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class MBeanMetadataConfig {
+public class MetricsMetadataConfig {
 
     @XmlElementWrapper(name = "base")
     @XmlElement(name = "metadata")
-    private final List<MBeanMetadata> baseMetadata = new CopyOnWriteArrayList<>();
+    private final List<MetricsMetadata> baseMetadata = new CopyOnWriteArrayList<>();
 
     @XmlElementWrapper(name = "vendor")
     @XmlElement(name = "metadata")
-    private final List<MBeanMetadata> vendorMetadata = new CopyOnWriteArrayList<>();
+    private final List<MetricsMetadata> vendorMetadata = new CopyOnWriteArrayList<>();
 
-    public List<MBeanMetadata> getBaseMetadata() {
+    public List<MetricsMetadata> getBaseMetadata() {
         return baseMetadata;
     }
 
-    public void setBaseMetadata(List<MBeanMetadata> baseMetadata) {
+    public void setBaseMetadata(List<MetricsMetadata> baseMetadata) {
         this.baseMetadata.clear();
         this.addBaseMetadata(baseMetadata);
     }
 
-    public void addBaseMetadata(List<MBeanMetadata> baseMetadata) {
+    public void addBaseMetadata(List<MetricsMetadata> baseMetadata) {
         this.baseMetadata.addAll(baseMetadata);
     }
 
-    public List<MBeanMetadata> getVendorMetadata() {
+    public List<MetricsMetadata> getVendorMetadata() {
         return vendorMetadata;
     }
 
-    public void setVendorMetadata(List<MBeanMetadata> vendorMetadata) {
+    public void setVendorMetadata(List<MetricsMetadata> vendorMetadata) {
         this.vendorMetadata.clear();
         this.addVendorMetadata(vendorMetadata);
     }
 
-    public void addVendorMetadata(List<MBeanMetadata> vendorMetadata) {
+    public void addVendorMetadata(List<MetricsMetadata> vendorMetadata) {
         this.vendorMetadata.addAll(vendorMetadata);
     }
 

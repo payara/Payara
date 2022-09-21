@@ -126,7 +126,7 @@ holder.
             <type>gauge</type>
             <unit>none</unit>
             <displayName>System Load Average</displayName>
-            <description>Displays the system load average for the last minute. The system load average is the sum of the number of runnable entities queued to the available processors and the number of runnable entities running on the available processors averaged over a period of time. The way in which the load average is calculated is operating system specific but is typically a damped time-dependent average. If the load average is not available, a negative value is displayed. This attribute is designed to provide a hint about the system load and may be queried frequently. The load average may be unavailable on some platform where it is expensive to implement this method.</description>
+            <description>Displays the system load average for the last minute. The system load average is the sum of the number of runnable entities queued to the available processors and the number of runnable entities running on the available processors averaged over a period of time. The way in which the load average is calculated is operating system specific but is typically a damped time-dependent average. If the load average is not available, a negative value is displayed. This attribute is designed to provide a hint about the system load and may be queried frequently. The load average may be unavailable on some platforms where it is expensive to implement this method.</description>
         </metadata>
         <metadata>
             <name>jvm.uptime</name>
@@ -201,7 +201,15 @@ holder.
             <type>gauge</type>
             <unit>none</unit>
             <displayName>System Cpu Load</displayName>
-            <description>Display the "recent cpu usage" for the whole system. This value is a double in the [0.0,1.0] interval. A value of 0.0 means that all CPUs were idle during the recent period of time observed, while a value of 1.0 means that all CPUs were actively running 100% of the time during the recent period being observed. All values betweens 0.0 and 1.0 are possible depending of the activities going on in the system. If the system recent cpu usage is not available, the method returns a negative value.</description>
+            <description>Display the "recent cpu usage" for the whole system. This value is a double in the [0.0,1.0] interval. A value of 0.0 means that all CPUs were idle during the recent period of time observed, while a value of 1.0 means that all CPUs were actively running 100% of the time during the recent period being observed. All values between 0.0 and 1.0 are possible depending of the activities going on in the system. If the system recent cpu usage is not available, the method returns a negative value.</description>
+        </metadata>
+        <metadata>
+            <name>thread.stuck.count</name>
+            <service>healthcheck-stuck</service>
+            <type>gauge</type>
+            <unit>none</unit>
+            <displayName>Stuck Thread Count</displayName>
+            <description>Displays the stuck thread count which is blocked, and can't return to the threadpool for a certain amount of time.</description>
         </metadata>
     </vendor>
 </config>

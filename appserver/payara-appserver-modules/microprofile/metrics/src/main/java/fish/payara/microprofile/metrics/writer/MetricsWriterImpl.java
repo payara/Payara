@@ -58,6 +58,7 @@ import fish.payara.microprofile.metrics.MetricsService.MetricsContext;
 import fish.payara.microprofile.metrics.exception.NoSuchMetricException;
 import fish.payara.microprofile.metrics.exception.NoSuchRegistryException;
 import fish.payara.microprofile.metrics.impl.MetricRegistryImpl;
+import fish.payara.nucleus.healthcheck.HealthCheckStatsProvider;
 
 public class MetricsWriterImpl implements MetricsWriter {
 
@@ -121,6 +122,10 @@ public class MetricsWriterImpl implements MetricsWriter {
         Metadata metadata = registry.getMetadata(metricName);
         for (Entry<MetricID, Metric> metric : registry.getMetrics(metricName).entrySet()) {
             MetricID metricID = metric.getKey();
+            if (metric.getValue() instanceof HealthCheckStatsProvider
+                    && !((HealthCheckStatsProvider) metric.getValue()).isEnabled()) {
+                continue;
+            }
             if (globalTags.length > 0) {
                 Tag[]  tagsWithoutGlobal = metricID.getTagsAsArray();
                 Tag[] tags = new Tag[tagsWithoutGlobal.length +  globalTags.length];
