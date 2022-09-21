@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld.services;
 
@@ -65,6 +65,7 @@ import javax.enterprise.inject.spi.Interceptor;
 import javax.interceptor.AroundConstruct;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.AroundTimeout;
+import javax.interceptor.InvocationContext;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
@@ -282,7 +283,7 @@ public class EjbServicesImpl implements EjbServices {
             Class<?> interceptorClass = next.getBeanClass();
 
             while (interceptorClass != null && !interceptorClass.equals(Object.class)) {
-                String methodName = getInterceptorMethod( interceptorClass, getInterceptorAnnotationType(interceptionType));
+                String methodName = getInterceptorMethod(interceptorClass, getInterceptorAnnotationType(interceptionType));
                 if (methodName != null) {
                     LifecycleCallbackDescriptor lifecycleDesc = new LifecycleCallbackDescriptor();
 

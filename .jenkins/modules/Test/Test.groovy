@@ -4,7 +4,7 @@ MPLPostStep('always') {
 }
 
 // Perform suite specific test execution
-if(CFG.suite.equals("Payara-Samples")) {
+if(CFG.suite.suite_name.equals("Payara-Samples")) {
     MPLModule('Payara Samples Test', CFG)
 } else {
     MPLModule('Quicklook Test', CFG)

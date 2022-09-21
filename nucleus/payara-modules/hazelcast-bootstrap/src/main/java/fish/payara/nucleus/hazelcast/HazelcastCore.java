@@ -107,7 +107,7 @@ import java.util.logging.Logger;
  * @since 4.1.151
  */
 @Service(name = "hazelcast-core")
-@RunLevel(StartupRunLevel.IMPLICITLY_RELIED_ON)
+@RunLevel(StartupRunLevel.VAL)
 public class HazelcastCore implements EventListener, ConfigListener {
 
     public final static String INSTANCE_ATTRIBUTE_MAP = "payara-instance-map";

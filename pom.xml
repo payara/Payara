@@ -143,7 +143,7 @@
         <servlet-api.version>4.0.2</servlet-api.version>
         <grizzly.version>2.4.4.payara-p8</grizzly.version>
         <jax-rs-api.impl.version>2.1.6</jax-rs-api.impl.version>
-        <jersey.version>2.34.payara-p2</jersey.version>
+        <jersey.version>2.36.payara-p1</jersey.version>
         <jakarta.validation.version>2.0.2</jakarta.validation.version>
         <hibernate.validator.version>6.1.5.Final</hibernate.validator.version>
         <hibernate.validator-cdi.version>6.1.5.Final</hibernate.validator-cdi.version>
@@ -185,7 +185,7 @@
         <jakarta.security.jacc-api.version>1.6.1</jakarta.security.jacc-api.version>
         <jakarta.security.auth.message-api.version>1.1.3</jakarta.security.auth.message-api.version>
         <jms-api.version>2.0.2</jms-api.version>
-        <mq.version>5.1.4.payara-p2</mq.version>
+        <mq.version>5.1.4.payara-p3</mq.version>
         <jakarta.batch-api.version>1.0.2</jakarta.batch-api.version>
         <com.ibm.jbatch.container.version>1.0.3.payara-p3</com.ibm.jbatch.container.version>
         <com.ibm.jbatch.spi.version>1.0.3</com.ibm.jbatch.spi.version>
@@ -217,7 +217,7 @@
         <microprofile-rest-client.version>2.0</microprofile-rest-client.version>
         <microprofile-openapi.version>2.0</microprofile-openapi.version>
         <payara-arquillian-container.version>2.4.1</payara-arquillian-container.version>
-        <payara.security-connectors.version>2.3.0</payara.security-connectors.version>
+        <payara.security-connectors.version>2.4.0</payara.security-connectors.version>
         <opentracing.version>0.33.0</opentracing.version>
         <h2db.version>1.4.200</h2db.version>
         <websocket-api.version>1.1.2</websocket-api.version>
