@@ -1970,11 +1970,9 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             System.setProperty("hazelcast.wait.seconds.before.join", Integer.toString(initialJoinWait));
         }
 
-        if (noCluster)
-        {
-            System.setProperty("payaramicro.noCluster", String.valueOf(true));
-        }
-        else if (noHazelcast) {
+        if (noCluster) {
+            preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-config-specific-configuration.clustering-enabled=false"));
+        } else if (noHazelcast) {
             preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-config-specific-configuration.enabled=false"));
             preBootCommands.add(new BootCommand("set", "configs.config.server-config.ejb-container.ejb-timer-service.ejb-timer-service=Dummy"));
         } else {

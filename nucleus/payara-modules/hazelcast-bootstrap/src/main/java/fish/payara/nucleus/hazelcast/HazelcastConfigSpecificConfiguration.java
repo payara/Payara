@@ -55,6 +55,10 @@ public interface HazelcastConfigSpecificConfiguration extends ConfigBeanProxy, C
     @Attribute(defaultValue = "true", dataType = Boolean.class)
     String getEnabled();
     public void setEnabled(String value);
+
+    @Attribute(defaultValue = "true", dataType = Boolean.class)
+    String getClusteringEnabled();
+    public void setClusteringEnabled(String value);
     
     @Attribute(defaultValue = "", dataType = String.class)
     String getPublicAddress();
