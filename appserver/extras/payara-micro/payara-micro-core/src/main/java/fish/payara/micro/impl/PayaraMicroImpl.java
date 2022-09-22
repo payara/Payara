@@ -62,7 +62,6 @@ import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -88,7 +87,6 @@ import com.sun.enterprise.server.logging.ODLLogFormatter;
 
 import fish.payara.deployment.util.JavaArchiveUtils;
 import fish.payara.deployment.util.URIUtils;
-import java.util.stream.Collectors;
 import org.glassfish.embeddable.BootstrapProperties;
 import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.embeddable.Deployer;
@@ -1822,29 +1820,15 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     private ByteArrayInputStream replaceEnvProperties(InputStream is) throws IOException {
         //preprocessing the properties read from the custom properties file
         Properties configuration = new Properties();
-        Properties environment = new Properties();
         configuration.load(is);
-        //set the System.getProperties to be used for the replacement process. The desired property to be mapped
-        //should need to be available on the System properties
-        environment.putAll(System.getProperties());
-        environment.putAll(System.getenv());
-        configuration = new PropertyPlaceholderHelper(convertPropertiesToMap(environment),
+        //set the System.getenv() to be used for the replacement process. The desired property to be mapped
+        //should need to be available on the System.getenv() Map
+        configuration = new PropertyPlaceholderHelper(System.getenv(),
                 PropertyPlaceholderHelper.ENV_REGEX).replacePropertiesPlaceholder(configuration);
         StringWriter writer = new StringWriter();
         configuration.store(new PrintWriter(writer), null);
         //here is added the new inputStream with the preprocessed properties solving the replacement issues
         return new ByteArrayInputStream(writer.getBuffer().toString().getBytes());
-    }
-
-    /**
-     * Method to convert Properties to Map<String, String>
-     * @param properties to be processed
-     * @return a Map<String, String>
-     */
-    private Map<String, String> convertPropertiesToMap(Properties  properties) {
-        return properties.entrySet().stream().collect(Collectors.toMap(
-                e -> String.valueOf(e.getKey()), e -> String.valueOf(e.getValue()),
-                (p , n) -> n, HashMap::new));
     }
 
     private void configureCommandFiles() throws IOException {
