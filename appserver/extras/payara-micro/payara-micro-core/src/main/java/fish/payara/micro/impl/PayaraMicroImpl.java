@@ -1822,10 +1822,13 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     private ByteArrayInputStream replaceEnvProperties(InputStream is) throws IOException {
         //preprocessing the properties read from the custom properties file
         Properties configuration = new Properties();
+        Properties environment = new Properties();
         configuration.load(is);
         //set the System.getProperties to be used for the replacement process. The desired property to be mapped
         //should need to be available on the System properties
-        configuration = new PropertyPlaceholderHelper(convertPropertiesToMap(System.getProperties()),
+        environment.putAll(System.getProperties());
+        environment.putAll(System.getenv());
+        configuration = new PropertyPlaceholderHelper(convertPropertiesToMap(environment),
                 PropertyPlaceholderHelper.ENV_REGEX).replacePropertiesPlaceholder(configuration);
         StringWriter writer = new StringWriter();
         configuration.store(new PrintWriter(writer), null);
