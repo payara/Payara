@@ -56,7 +56,6 @@
         <module>nucleus</module>
         <module>appserver</module>
         <module>api</module>
-      <module>appserver/tests/fish-6470-tests</module>
     </modules>
 
     <scm>
