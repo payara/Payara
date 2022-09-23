@@ -95,71 +95,71 @@ pipeline {
                 }
             }
         }
-        stage('Checkout MP TCK Runners') {
-            steps{
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
-                    branches: [[name: "*/microprofile-5.0"]],
-                    userRemoteConfigs: [[url: "https://github.com/payara/MicroProfile-TCK-Runners.git"]]]
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-            }
-        }
-        stage('Setup for MP TCK Tests') {
-            steps {
-                setupDomain()
-            }
-        }
-        stage('Run MP TCK Tests') {
-            steps {
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh """mvn -B -V -ff -e clean verify --strict-checksums \
-                -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
-                -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
-                -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/appserver/distributions/payara/target/stage/payara6" \
-                -Ppayara-server-remote"""
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-            }
-            post {
-                always {
-                    processReportAndStopDomain()
-                }
-                cleanup {
-                    saveLogsAndCleanup 'mp-tck-log.zip'
-                }
-            }
-        }
+//         stage('Checkout MP TCK Runners') {
+//             steps{
+//                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+//                 checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
+//                     branches: [[name: "*/microprofile-5.0"]],
+//                     userRemoteConfigs: [[url: "https://github.com/payara/MicroProfile-TCK-Runners.git"]]]
+//                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+//             }
+//         }
+//         stage('Setup for MP TCK Tests') {
+//             steps {
+//                 setupDomain()
+//             }
+//         }
+//         stage('Run MP TCK Tests') {
+//             steps {
+//                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+//                 sh """mvn -B -V -ff -e clean verify --strict-checksums \
+//                 -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
+//                 -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
+//                 -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/appserver/distributions/payara/target/stage/payara6" \
+//                 -Ppayara-server-remote"""
+//                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+//             }
+//             post {
+//                 always {
+//                     processReportAndStopDomain()
+//                 }
+//                 cleanup {
+//                     saveLogsAndCleanup 'mp-tck-log.zip'
+//                 }
+//             }
+//         }
         stage('Checkout EE8 Tests') {
-            steps{
+             steps{
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out EE8 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
-                    branches: [[name: "*/Payara6"]],
-                    userRemoteConfigs: [[url: "https://github.com/payara/patched-src-javaee8-samples.git"]]]
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out EE8 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-            }
-        }
-        stage('Setup for EE8 Tests') {
+                 checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
+                     branches: [[name: "*/Payara6"]],
+                     userRemoteConfigs: [[url: "https://github.com/payara/patched-src-javaee8-samples.git"]]]
+                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out EE8 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+             }
+         }
+         stage('Setup for EE8 Tests') {
+             steps {
+                 setupDomain()
+             }
+         }
+         stage('Run EE8 Tests') {
             steps {
-                setupDomain()
-            }
-        }
-        stage('Run EE8 Tests') {
-            steps {
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh "mvn -B -V -ff -e clean install --strict-checksums -Dsurefire.useFile=false \
-                -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
-                -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
-                -Ppayara-server-remote,stable"
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-            }
-            post {
-                always {
-                    processReportAndStopDomain()
-                }
-                cleanup {
-                    saveLogsAndCleanup 'ee8-samples-log.zip'
-                }
-            }
-        }
+                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                 sh "mvn -B -V -ff -e clean install --strict-checksums -Dsurefire.useFile=false \
+                 -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
+                 -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
+                 -Ppayara-server-remote,stable"
+                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+             }
+             post {
+                 always {
+                     processReportAndStopDomain()
+                 }
+                 cleanup {
+                     saveLogsAndCleanup 'ee8-samples-log.zip'
+                 }
+             }
+         }
         stage('Checkout CargoTracker Tests') {
             steps{
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out cargoTracker tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'

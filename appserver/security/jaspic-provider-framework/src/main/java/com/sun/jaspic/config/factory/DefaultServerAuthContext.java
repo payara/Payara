@@ -34,7 +34,7 @@ import jakarta.security.auth.message.module.ServerAuthModule;
  * <p>
  * Since this simple example only has a single SAM, we delegate directly to that one. Note that this {@link ServerAuthContext}
  * and the {@link ServerAuthModule} (SAM) share a common base interface: {@link ServerAuth}.
- * 
+ *
  * @author Arjan Tijms
  */
 public class DefaultServerAuthContext implements ServerAuthContext {

@@ -100,11 +100,15 @@
             </snapshots>
         </repository>
 
-        <!-- Temporal for Jakarta EE 10 development until the jar files are available on maven central -->
+        <!-- Temporary repo for Jakarta EE 10 development until the jar files are available on maven central -->
         <repository>
             <id>staged-jakarta-releases</id>
             <url>https://jakarta.oss.sonatype.org/content/groups/staging/</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
         </repository>
+        
     </repositories>
 
     <properties>
@@ -134,7 +138,7 @@
         <servlet-api.version>6.0.0</servlet-api.version>
         <grizzly.version>4.0.0.payara-p1</grizzly.version>
         <jax-rs-api.impl.version>3.1.0</jax-rs-api.impl.version>
-        <jersey.version>3.1.0-M6</jersey.version>
+        <jersey.version>3.1.0-M7.payara-p1</jersey.version>
         <jakarta.validation.version>3.0.1</jakarta.validation.version>
         <hibernate.validator.version>8.0.0.Alpha3</hibernate.validator.version>
         <hibernate.validator-cdi.version>8.0.0.Alpha3</hibernate.validator-cdi.version>
@@ -143,7 +147,7 @@
         <javax.cache-api.version>1.1.1.payara-p1</javax.cache-api.version>
         <mail.version>2.1.0-RC2</mail.version>
         <angus.mail.version>1.0.0-M1</angus.mail.version>
-        <jakarta.annotation-api.version>2.1.0</jakarta.annotation-api.version>
+        <jakarta.annotation-api.version>2.1.1</jakarta.annotation-api.version>
         <hk2.version>3.0.1.payara-p1</hk2.version>
         <osgi-resource-locator.version>1.0.3</osgi-resource-locator.version>
         <stax-api.version>1.0-2</stax-api.version>
@@ -154,11 +158,11 @@
         <jaxb-impl.version>4.0.0-M4</jaxb-impl.version>
         <jakarta.ejb-api.version>4.0.0</jakarta.ejb-api.version>
         <jsp-api.version>3.1.0</jsp-api.version>
-        <jsp-impl.version>3.1.0-M4</jsp-impl.version>
+        <jsp-impl.version>3.1.0-M6</jsp-impl.version>
         <jstl-api.version>3.0.0</jstl-api.version>
         <jstl-impl.version>3.0.0</jstl-impl.version>
-        <jakarta.faces-api.version>3.0.0</jakarta.faces-api.version>
-        <mojarra.version>3.0.1</mojarra.version>
+        <jakarta.faces-api.version>4.0.1</jakarta.faces-api.version>
+        <mojarra.version>4.0.0</mojarra.version>
         <tyrus.version>2.1.0.payara-p1</tyrus.version>
         <jaxb-extra-osgi.version>2.3.0</jaxb-extra-osgi.version>
         <json.bind-api.version>3.0.0</json.bind-api.version>
@@ -167,11 +171,11 @@
         <eclipselink.version>4.0.0-M3.payara-p1</eclipselink.version>
         <eclipselink.asm.verison>9.3.0</eclipselink.asm.verison>
         <jakarta.transaction-api.version>2.0.1</jakarta.transaction-api.version>
-        <jakarta.interceptor-api.version>2.0.0</jakarta.interceptor-api.version>
+        <jakarta.interceptor-api.version>2.1.0</jakarta.interceptor-api.version>
         <jakarta.inject.version>2.0.0</jakarta.inject.version>
-        <cdi-api.version>3.0.0</cdi-api.version>
-        <weld.version>4.0.0.Final</weld.version>
-        <weld-api.version>4.0.Final</weld-api.version>
+        <cdi-api.version>4.0.1</cdi-api.version>
+        <weld.version>5.0.1.Final</weld.version>
+        <weld-api.version>5.0.SP2</weld-api.version>
         <jakarta.security.enterprise-api.version>3.0.0</jakarta.security.enterprise-api.version>
         <jakarta.security.enterprise.version>3.0.0-M5</jakarta.security.enterprise.version>
         <jakarta.security.jacc-api.version>2.1.0</jakarta.security.jacc-api.version>
@@ -211,12 +215,12 @@
         <microprofile-metrics.version>4.0</microprofile-metrics.version>
         <microprofile-rest-client.version>3.0</microprofile-rest-client.version>
         <microprofile-openapi.version>3.0</microprofile-openapi.version>
-        <payara-arquillian-container.version>3.0.alpha4</payara-arquillian-container.version>
-        <payara.security-connectors.version>3.0.alpha5</payara.security-connectors.version>
+        <payara-arquillian-container.version>3.0.alpha6</payara-arquillian-container.version>
+        <payara.security-connectors.version>3.0.alpha6</payara.security-connectors.version>
         <opentracing.version>0.33.0</opentracing.version>
         <h2db.version>2.1.212</h2db.version>
         <websocket-api.version>2.1.0</websocket-api.version>
-        <concurrent-api.version>3.0.0</concurrent-api.version>
+        <concurrent-api.version>3.0.1</concurrent-api.version>
         <concurrent.version>3.0.0.payara-p1</concurrent.version>
         <asm.version>9.2</asm.version>
         <monitoring-console-api.version>2.0.1</monitoring-console-api.version>

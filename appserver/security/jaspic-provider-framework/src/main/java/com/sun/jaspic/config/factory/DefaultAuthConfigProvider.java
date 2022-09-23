@@ -30,7 +30,7 @@ import jakarta.security.auth.message.module.ServerAuthModule;
 /**
  * This class functions as a kind of factory-factory for {@link ServerAuthConfig} instances, which are by themselves factories
  * for {@link ServerAuthContext} instances, which are delegates for the actual {@link ServerAuthModule} (SAM) that we're after.
- * 
+ *
  * @author Arjan Tijms
  */
 public class DefaultAuthConfigProvider implements AuthConfigProvider {
@@ -46,7 +46,7 @@ public class DefaultAuthConfigProvider implements AuthConfigProvider {
 
     /**
      * Constructor with signature and implementation that's required by API.
-     * 
+     *
      * @param properties provider properties
      * @param factory the auth config factory
      */

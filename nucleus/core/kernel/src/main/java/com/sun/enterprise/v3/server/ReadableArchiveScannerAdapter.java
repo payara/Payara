@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2022] [Payara Foundation and/or its affiliates.]
+
 package com.sun.enterprise.v3.server;
 
 import java.io.IOException;
@@ -54,13 +56,14 @@ import org.glassfish.hk2.classmodel.reflect.ArchiveAdapter;
 import org.glassfish.hk2.classmodel.reflect.Parser;
 import org.glassfish.hk2.classmodel.reflect.util.AbstractAdapter;
 import org.glassfish.kernel.KernelLoggerInfo;
+import org.glassfish.hk2.classmodel.reflect.Parser.Result;
 
 /**
  * ArchiveAdapter for DOL readable archive instances
  * 
  * @author Jerome Dochez
  */
-public class ReadableArchiveScannerAdapter extends AbstractAdapter {
+public class ReadableArchiveScannerAdapter extends AbstractAdapter implements AutoCloseable {
     
     final ReadableArchive archive;
     final Parser parser;
@@ -103,7 +106,7 @@ public class ReadableArchiveScannerAdapter extends AbstractAdapter {
         this.parent = parent;
         this.archive = archive;
         this.parser = parent.parser;
-        this.uri = uri==null?archive.getURI():uri;
+        this.uri = uri == null ? archive.getURI() : uri;
     }
 
     @Override
@@ -117,8 +120,8 @@ public class ReadableArchiveScannerAdapter extends AbstractAdapter {
     }
 
     @Override
-    public void onSelectedEntries(ArchiveAdapter.Selector selector, EntryTask entryTask, final Logger logger ) throws IOException {
-
+    public void onSelectedEntries(ArchiveAdapter.Selector selector, EntryTask entryTask,
+                                  final Logger logger ) throws IOException {
         Enumeration<String> entries = archive.entries();
         while (entries.hasMoreElements()) {
             final String name = entries.nextElement();
@@ -143,9 +146,9 @@ public class ReadableArchiveScannerAdapter extends AbstractAdapter {
 
     private void releaseCount() throws IOException {
         int release = releaseCount.decrementAndGet();
-        if (release==0) {
+        if (release == 0) {
             archive.close();
-            if (parent!=null) {
+            if (parent != null) {
                 parent.releaseCount();
             }
         }
@@ -153,37 +156,27 @@ public class ReadableArchiveScannerAdapter extends AbstractAdapter {
 
     protected void handleEntry(String name, Entry entry, Logger logger /*ignored*/, EntryTask entryTask)
         throws IOException {
-        
-        InputStream is = null;
-        try {
-            try {
-                is = archive.getEntry(name);
-                if (is==null) {
-                    alogger.log(Level.SEVERE, KernelLoggerInfo.invalidInputStream, name);
-                    return;
-                }
-                 entryTask.on(entry, is);
-            } catch (Exception e) {
-                alogger.log(Level.SEVERE, KernelLoggerInfo.exceptionWhileParsing,
-                        new Object[] { entry.name, archive.getURI(), entry.size, e});
+        try(InputStream is = archive.getEntry(name)) {
+            if(is == null) {
+                alogger.log(Level.SEVERE, KernelLoggerInfo.invalidInputStream, name);
+                return;
             }
-        } finally {
-            if (is!=null)
-                is.close();
+            entryTask.on(entry, is);
+        } catch(Exception e) {
+            alogger.log(Level.SEVERE, KernelLoggerInfo.exceptionWhileParsing,
+                    new Object[] { entry.name, archive.getURI(), entry.size, e});
         }
     }
 
-    protected Future handleJar(final String name, final Logger logger)
-        throws IOException {
-
-       // we need to check that there is no exploded directory by this name.
+    protected Future<Result> handleJar(final String name, final Logger logger) throws IOException {
+        // we need to check that there is no exploded directory by this name.
         String explodedName = name.replaceAll("[/ ]", "__").replace(".jar", "_jar");
         if (!archive.exists(explodedName)) {
 
             final ReadableArchive subArchive = archive.getSubArchive(name);
-            if (subArchive==null) {
+            if (subArchive == null) {
                 logger.log(Level.SEVERE, KernelLoggerInfo.cantOpenSubArchive,
-                        new Object[] {name, archive.getURI()});
+                        new Object[]{name, archive.getURI()});
                 return null;
             }
 
@@ -203,7 +196,7 @@ public class ReadableArchiveScannerAdapter extends AbstractAdapter {
                         adapter.close();
                     } catch (IOException e) {
                         logger.log(Level.SEVERE, KernelLoggerInfo.exceptionWhileClosing,
-                                new Object[] { name, e });
+                                new Object[]{name, e});
                     }
                 }
             });
@@ -221,7 +214,7 @@ public class ReadableArchiveScannerAdapter extends AbstractAdapter {
         }
 
         @Override
-        protected Future handleJar(String name, Logger logger) throws IOException {
+        protected Future<Result> handleJar(String name, Logger logger) throws IOException {
             // we don't process second level internal jars 
             return null;
         }

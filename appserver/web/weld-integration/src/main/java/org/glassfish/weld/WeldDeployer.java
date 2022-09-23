@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld;
 
@@ -64,6 +64,7 @@ import static org.glassfish.weld.BeanDeploymentArchiveImpl.stripMavenVersion;
 import static org.glassfish.weld.util.Util.initializeWeldSingletonProvider;
 import static org.jboss.weld.bootstrap.api.Environments.SERVLET;
 import static org.jboss.weld.bootstrap.spi.BeanDiscoveryMode.NONE;
+import static org.jboss.weld.manager.BeanManagerLookupService.lookupBeanManager;
 
 import java.security.AccessController;
 import java.util.Collection;
@@ -77,6 +78,7 @@ import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.function.Supplier;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -129,6 +131,9 @@ import org.jboss.weld.security.NewInstanceAction;
 import org.jboss.weld.security.spi.SecurityServices;
 import org.jboss.weld.serialization.spi.ProxyServices;
 import org.jboss.weld.transaction.spi.TransactionServices;
+import org.jboss.weld.bootstrap.api.ServiceRegistry;
+import org.jboss.weld.module.EjbSupport;
+import org.jboss.weld.manager.BeanManagerImpl;
 import org.jvnet.hk2.annotations.Service;
 
 import com.sun.enterprise.container.common.spi.util.InjectionManager;
@@ -384,13 +389,11 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                     // Each InjectionServicesImpl instance knows its associated GlassFish bundle.
 
                     InjectionServices injectionServices = new InjectionServicesImpl(deploymentImpl.injectionManager, bundle, deploymentImpl);
-                    ResourceInjectionServicesImpl resourceInjectionServices = new ResourceInjectionServicesImpl();
                     if (logger.isLoggable(FINE)) {
                         logger.log(FINE, ADDING_INJECTION_SERVICES, new Object[] { injectionServices, beanDeploymentArchive.getId() });
                     }
 
                     beanDeploymentArchive.getServices().add(InjectionServices.class, injectionServices);
-                    beanDeploymentArchive.getServices().add(ResourceInjectionServices.class, resourceInjectionServices);
                     EEModuleDescriptor eeModuleDescriptor = getEEModuleDescriptor(beanDeploymentArchive);
                     if (eeModuleDescriptor != null) {
                         beanDeploymentArchive.getServices().add(EEModuleDescriptor.class, eeModuleDescriptor);
@@ -456,6 +459,10 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
         return bundleToBeanDeploymentArchive.get(bundle);
     }
 
+    public boolean isCdiEnabled(BundleDescriptor bundle) {
+        return bundleToBeanDeploymentArchive.containsKey(bundle);
+    }
+
     public boolean is299Enabled(BundleDescriptor bundle) {
         return bundleToBeanDeploymentArchive.containsKey(bundle);
     }
@@ -517,8 +524,60 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                 invocationManager.preInvoke(componentInvocation);
                 bootstrap.startExtensions(postProcessExtensions(deploymentImpl.getExtensions(), archives));
                 bootstrap.startContainer(deploymentImpl.getContextId() + ".bda", SERVLET, deploymentImpl);
+
+                //This changes added to pass the following test
+                // CreateBeanAttributesTest#testBeanAttributesForSessionBean
+                if(!deploymentImpl.getBeanDeploymentArchives().isEmpty()) {
+                    BeanDeploymentArchive rootArchive = deploymentImpl.getBeanDeploymentArchives().get(0);
+                    ServiceRegistry rootServices = bootstrap.getManager(rootArchive).getServices();
+                    EjbSupport originalEjbSupport = rootServices.get(EjbSupport.class);
+                    if (originalEjbSupport != null) {
+                        // We need to create a proxy instead of a simple wrapper
+                        EjbSupport proxyEjbSupport = (EjbSupport) java.lang.reflect.Proxy.newProxyInstance(EjbSupport.class.getClassLoader(),
+                                new Class[]{EjbSupport.class}, new java.lang.reflect.InvocationHandler() {
+                                    @Override
+                                    public Object invoke(Object proxy, java.lang.reflect.Method method, Object[] args) throws Throwable {
+                                        if (method.getName().equals("isEjb")) {
+
+                                            EjbSupport targetEjbSupport = getTargetEjbSupport((Class<?>) args[0]);
+
+                                            if (targetEjbSupport != null) {
+                                                return method.invoke(targetEjbSupport, args);
+                                            }
+
+                                        } else if (method.getName().equals("createSessionBeanAttributes")) {
+                                            Object enhancedAnnotated = args[0];
+
+                                            Class<?> beanClass = (Class<?>)
+                                                    enhancedAnnotated.getClass()
+                                                            .getMethod("getJavaClass")
+                                                            .invoke(enhancedAnnotated);
+
+                                            EjbSupport targetEjbSupport = getTargetEjbSupport(beanClass);
+                                            if (targetEjbSupport != null) {
+                                                return method.invoke(targetEjbSupport, args);
+                                            }
+                                        }
+
+                                        return method.invoke(originalEjbSupport, args);
+                                    }
+
+                                    private EjbSupport getTargetEjbSupport(Class<?> beanClass) {
+                                        BeanDeploymentArchive ejbArchive = deploymentImpl.getBeanDeploymentArchive(beanClass);
+                                        if (ejbArchive == null) {
+                                            return null;
+                                        }
+
+                                        BeanManagerImpl ejbBeanManager = lookupBeanManager(beanClass, bootstrap.getManager(ejbArchive));
+
+                                        return ejbBeanManager.getServices().get(EjbSupport.class);
+                                    }
+                                });
+                        rootServices.add(EjbSupport.class, proxyEjbSupport);
+                    }
+                }
                 bootstrap.startInitialization();
-                fireProcessInjectionTargetEvents(bootstrap, deploymentImpl);
+                fireProcessInjectionTargetEvents(bootstrap, applicationInfo, deploymentImpl);
                 bootstrap.deployBeans();
                 bootstrap.validateBeans();
                 bootstrap.endInitialization();
@@ -749,7 +808,8 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
      * would provide a better way to do this, otherwise we may need TODO to store InjectionTarget<X> to
      * be used in instance creation
      */
-    private void fireProcessInjectionTargetEvents(WeldBootstrap bootstrap, DeploymentImpl deploymentImpl) {
+    private void fireProcessInjectionTargetEvents(WeldBootstrap bootstrap, ApplicationInfo applicationInfo,
+            DeploymentImpl deploymentImpl) {
         List<BeanDeploymentArchive> beanDeploymentArchives = deploymentImpl.getBeanDeploymentArchives();
 
         Class<?> messageListenerClass = getMessageListenerClass();
@@ -760,7 +820,8 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
         boolean isFullProfile = messageListenerClass != null;
 
         for (BeanDeploymentArchive beanDeploymentArchive : beanDeploymentArchives) {
-            for (Class<?> bdaClazz : ((BeanDeploymentArchiveImpl) beanDeploymentArchive).getBeanClassObjects()) {
+            Collection<Class<?>> beanClassObjects = ((BeanDeploymentArchiveImpl) beanDeploymentArchive).getBeanClassObjects();
+            for (Class<?> bdaClazz : beanClassObjects) {
                 for (Class<?> nonClazz : NON_CONTEXT_CLASSES) {
                     if (nonClazz.isAssignableFrom(bdaClazz)) {
                         firePITEvent(bootstrap, beanDeploymentArchive, bdaClazz);
@@ -775,6 +836,45 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                     }
 
                     firePITEvent(bootstrap, beanDeploymentArchive, bdaClazz);
+                }
+            }
+
+            // Fix for CDI TCK test: ContainerEventTest#testProcessInjectionTargetEventFiredForServlet
+            // Check for Servlets which have not yet been loaded and haven't been identified as Beans
+            // From the spec: "The container must also fire an event for every Jakarta EE component class supporting
+            // injection that may be instantiated by the container at runtime". Stress on the "may".
+            Collection<String> injectionTargetClassNames = WeldUtils.getInjectionTargetClassNames(
+                    deploymentImpl.getTypes(), beanDeploymentArchive.getKnownClasses());
+            for (String injectionTargetClassName : injectionTargetClassNames) {
+                // Don't fire twice
+                if (beanDeploymentArchive.getBeanClasses().contains(injectionTargetClassName)) {
+                    continue;
+                }
+
+                Class<?> injectionTargetClass = null;
+                try {
+                    injectionTargetClass = applicationInfo.getAppClassLoader().loadClass(injectionTargetClassName);
+                } catch (ClassNotFoundException appClassLoaderClassNotFoundException) {
+                    try {
+                        logger.log(Level.FINE, "Caught exception loading class using application class loader, " +
+                                "trying again with module class loader");
+                        injectionTargetClass = applicationInfo.getModuleClassLoader().loadClass(injectionTargetClassName);
+                    } catch (ClassNotFoundException moduleClassLoaderClassNotFoundException) {
+                        logger.log(Level.FINE, "Caught exception loading class using module class loader, " +
+                                "ProcessInjectionTarget event may not get fired for " + injectionTargetClassName);
+                    }
+                }
+
+                if (injectionTargetClass != null) {
+                    for (Class<?> nonClazz : NON_CONTEXT_CLASSES) {
+                        if (nonClazz.isAssignableFrom(injectionTargetClass)) {
+                            firePITEvent(bootstrap, beanDeploymentArchive, injectionTargetClass);
+                        }
+                    }
+
+                    if(isFullProfile && messageListenerClass.isAssignableFrom(injectionTargetClass)) {
+                        firePITEvent(bootstrap, beanDeploymentArchive, injectionTargetClass);
+                    }
                 }
             }
         }

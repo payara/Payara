@@ -355,12 +355,12 @@ public class ServerEnvironmentImpl implements ServerEnvironment, PostConstruct {
 
     @Override
     public File getJKS() {
-        return new File (getConfigDirPath(), "keystore.p12");
+        return new File (getConfigDirPath(), "keystore.jks");
     }
 
     @Override
     public File getTrustStore() {
-        return new File(getConfigDirPath(), "cacerts.p12");
+        return new File(getConfigDirPath(), "cacerts.jks");
     }
 
     private Status status=Status.starting;

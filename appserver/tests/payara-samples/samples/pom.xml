@@ -65,6 +65,7 @@
         <module>jaxrs-rolesallowed-servlet</module>
         <module>jaxws-security</module>
         <!--module>jaxws-tracing</module-->
+        <module>legacy-mode-empty-beans-xml</module>
         <module>microprofile-config</module>
         <module>microprofile-endpoints</module>
         <module>microprofile-healthcheck</module>
@@ -86,6 +87,7 @@
         <!--<module>corba-read-timeout</module>-->
         <!--module>microprofile-rest-client</module-->
         <module>concurrency</module>
+        <module>reproducers</module>
     </modules>
 
     <dependencies>

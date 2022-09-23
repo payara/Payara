@@ -43,24 +43,28 @@
 package com.sun.enterprise.v3.server;
 
 import com.sun.enterprise.loader.CurrentBeforeParentClassLoader;
+import com.sun.enterprise.module.common_impl.CompositeEnumeration;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
 import jakarta.inject.Inject;
 
+import org.glassfish.internal.api.DelegatingClassLoader;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.BuilderHelper;
 import org.jvnet.hk2.config.TranslationException;
 import org.jvnet.hk2.config.VariableResolver;
-import org.glassfish.internal.api.DelegatingClassLoader;
 import org.glassfish.internal.api.ConnectorClassLoaderService;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.DeploymentContext;
 
 import java.net.URI;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -223,7 +227,12 @@ public class ClassLoaderHierarchyImpl implements ClassLoaderHierarchy {
         if (defs.isEmpty()) {
             return parent;
         }  else {
-            return modulesRegistry.getModulesClassLoader(parent, defs);
+            // modules formed from requirements need to have higher priority than application classloader, so that
+            // admin gui can override faces implementation that resides in API ClassLoader
+            ClassLoader preferredClassLoader = modulesRegistry.getModulesClassLoader(modulesRegistry.getParentClassLoader(), defs);
+            // DelegatingClassLoader does exist in the codebase, but it has requirement that all delegates have same parent
+            // which is exactly what we do not want to have here as that parent would be API ClassLoader.
+            return new SimpleDelegatingClassLoader(modulesRegistry.getParentClassLoader(), preferredClassLoader, parent);
         }
     }
 
@@ -280,5 +289,40 @@ public class ClassLoaderHierarchyImpl implements ClassLoaderHierarchy {
 	    final String result = translate(value);
 	    return result;
 	}
+    }
+
+    private static class SimpleDelegatingClassLoader extends ClassLoader {
+        private final ClassLoader first;
+
+        private final ClassLoader second;
+
+        public SimpleDelegatingClassLoader(ClassLoader parent, ClassLoader first, ClassLoader second) {
+            super(parent);
+            this.first = first;
+            this.second = second;
+        }
+
+        @Override
+        protected Class<?> findClass(String name) throws ClassNotFoundException {
+            try {
+                return first.loadClass(name);
+            } catch (ClassNotFoundException cne) {
+                return second.loadClass(name);
+            }
+        }
+
+        @Override
+        protected URL findResource(String name) {
+            URL result = first.getResource(name);
+            if (result == null) {
+                return second.getResource(name);
+            }
+            return result;
+        }
+
+        @Override
+        protected Enumeration<URL> findResources(String name) throws IOException {
+            return new CompositeEnumeration(Arrays.asList(first.getResources(name), second.getResources(name)));
+        }
     }
 }

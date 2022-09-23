@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld.services;
 
@@ -49,6 +49,7 @@ import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.EjbInterceptor;
 import com.sun.enterprise.deployment.JndiNameEnvironment;
+import jakarta.enterprise.inject.CreationException;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.cdi.CDILoggerInfo;
@@ -62,6 +63,7 @@ import org.jboss.weld.bean.InterceptorImpl;
 import org.jboss.weld.bootstrap.WeldBootstrap;
 import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
 import org.jboss.weld.contexts.WeldCreationalContext;
+import org.jboss.weld.exceptions.IllegalArgumentException;
 import org.jboss.weld.manager.api.WeldInjectionTarget;
 import org.jboss.weld.manager.api.WeldManager;
 import org.jvnet.hk2.annotations.Service;
@@ -157,7 +159,7 @@ public class JCDIServiceImpl implements JCDIService {
         // E.g. allows EjbBundleDescriptor from a .war to be handled correctly.
         BundleDescriptor topLevelBundleDesc = (BundleDescriptor) bundle.getModuleDescriptor().getDescriptor();
 
-        return weldDeployer.is299Enabled(topLevelBundleDesc);
+        return weldDeployer.isCdiEnabled(topLevelBundleDesc);
 
     }
 
@@ -354,7 +356,8 @@ public class JCDIServiceImpl implements JCDIService {
         BeanManager beanManager = bootstrap.getManager(bda);
         @SuppressWarnings("unchecked")
         AnnotatedType<T> annotatedType = beanManager.createAnnotatedType((Class<T>) managedObject.getClass());
-        InjectionTarget<T> it = beanManager.createInjectionTarget(annotatedType);
+        InjectionTargetFactory<T> itf = beanManager.getInjectionTargetFactory(annotatedType);
+        InjectionTarget<T> it = itf.createInjectionTarget(null);
         CreationalContext<T> cc = beanManager.createCreationalContext(null);
         it.inject(managedObject, cc);
     }
@@ -402,15 +405,14 @@ public class JCDIServiceImpl implements JCDIService {
 
         org.jboss.weld.ejb.spi.EjbDescriptor<T> ejbDesc = beanManager.getEjbDescriptor( ejb.getName());
 
-        // get or create the ejb's creational context
-        CreationalContext<T> creationalContext = ejbContext.getCreationalContext();
-        if ( creationalContext == null ) {
+        // create the ejb's creational context
+        if ( ejbContext.getCreationalContext() == null ) {
             // We have to do this because interceptors are created before the ejb but in certain cases we must associate
             // the interceptors with the ejb so that they are cleaned up correctly.
             // And we only want to create the ejb's creational context once or we will have a memory
             // leak there too.
             Bean<T> bean = beanManager.getBean(ejbDesc);
-            creationalContext = beanManager.createCreationalContext(bean);
+            WeldCreationalContext<T> creationalContext = beanManager.createCreationalContext(bean);
             ejbContext.setCreationalContext( creationalContext );
         }
 
@@ -420,7 +422,7 @@ public class JCDIServiceImpl implements JCDIService {
         if ( interceptor != null ) {
             // using the ejb's creationalContext so we don't have to do any cleanup.
             // the cleanup will be handled by weld when it clean's up the ejb.
-            Object instance = beanManager.getReference( interceptor, interceptorClass, creationalContext );
+            Object instance = beanManager.getReference( interceptor, interceptorClass, ejbContext.getCreationalContext() );
             return ( T ) instance;
         }
 
@@ -432,14 +434,41 @@ public class JCDIServiceImpl implements JCDIService {
             // using the ejb's creationalContext so we don't have to do any cleanup.
             // the cleanup will be handled by weld when it clean's up the ejb.
             interceptorBean = beanManager.resolve(availableBeans);
-        } else {
+            Object instance = beanManager.getReference(interceptorBean, interceptorClass, ejbContext.getCreationalContext());
+            return (T) instance;
+        }
+        // first we create the interceptor as an unmanaged object, as this guarantees correct resource injection
+        // this however doesn't work when interceptor does @Inject @Intercepted Bean<?>. In such case it needs
+        // to be created as a bean, but its resource injection context suffers.
+        // Using Weld's ResourceInjectionServices would solve this, but that doesn't support optional injection
+        // as per Jakarta Platform 5.4 "Simple Environment Entries"
+
+        try {
+            // There are other interceptors like SessionBeanInterceptor that are
+            // defined via code and they are not beans.
+            // Cannot use the ejb's creationalContext.
+            WeldCreationalContext<T> creationalContext = beanManager.createCreationalContext(null);
+
+            InjectionTarget injectionTarget = beanManager.getInjectionTargetFactory(beanManager.createAnnotatedType(interceptorClass))
+                    .createInterceptorInjectionTarget();
+
+            T interceptorInstance = (T) injectionTarget.produce(creationalContext);
+            injectionTarget.inject(interceptorInstance, creationalContext);
+
+            // Make sure the interceptor's cdi objects get cleaned up when the ejb is cleaned up.
+            ejbContext.addDependentContext(new JCDIInjectionContextImpl<>(injectionTarget, creationalContext, interceptorInstance));
+
+            return interceptorInstance;
+        } catch (CreationException | IllegalArgumentException weldIAE) {
+            // IllegalArgumentException - it didn't work out due to @Intercepted injection, we'll create interceptor as CDI bean
+            // CreationException - the interceptor uses constructor injection which is not support for EJB
             AnnotatedType<T> annotatedType = beanManager.createAnnotatedType(interceptorClass);
             BeanAttributes<T> attributes = beanManager.createBeanAttributes(annotatedType);
             EnhancedAnnotatedType<T> enhancedAnnotatedType = beanManager.createEnhancedAnnotatedType(interceptorClass);
             interceptorBean = InterceptorImpl.of(attributes, enhancedAnnotatedType, beanManager);
+            Object instance = beanManager.getReference(interceptorBean, interceptorClass, ejbContext.getCreationalContext());
+            return (T) instance;
         }
-        Object instance = beanManager.getReference(interceptorBean, interceptorClass, creationalContext);
-        return (T) instance;
     }
 
     @Override
