@@ -93,6 +93,7 @@
         <module>grpc</module>
         <module>grpc-ejb</module>
         <module>resources</module>
+        <module>reproducers</module>
     </modules>
 
     <dependencies>
