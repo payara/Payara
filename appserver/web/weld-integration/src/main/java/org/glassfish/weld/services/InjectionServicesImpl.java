@@ -37,16 +37,23 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld.services;
 
-import com.sun.enterprise.deployment.*;
+import com.sun.enterprise.deployment.BundleDescriptor;
+import com.sun.enterprise.deployment.EjbBundleDescriptor;
+import com.sun.enterprise.deployment.EjbDescriptor;
+import com.sun.enterprise.deployment.InjectionCapable;
+import com.sun.enterprise.deployment.InjectionInfo;
+import com.sun.enterprise.deployment.JndiNameEnvironment;
+import com.sun.enterprise.deployment.ManagedBeanDescriptor;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.ejb.api.EjbContainerServices;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.weld.DeploymentImpl;
 import org.glassfish.weld.connector.WeldUtils;
+import org.jboss.weld.annotated.slim.backed.BackedAnnotatedType;
 import org.jboss.weld.injection.spi.InjectionContext;
 import org.jboss.weld.injection.spi.InjectionServices;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -138,7 +145,14 @@ public class InjectionServicesImpl implements InjectionServices {
               // must use the current jndi component env to lookup the objects to inject
               injectionManager.inject( targetClass, target, injectionEnv, null, false );
             } else {
-              if( componentEnv == null ) {
+                BackedAnnotatedType backedAnnotatedType = ((BackedAnnotatedType) annotatedType);
+                //added condition to skip the failure when the TransactionScopedCDIEventHelperImpl is tried to be used
+                //for the TransactionalScoped CDI Bean
+                if(!(backedAnnotatedType != null
+                        && backedAnnotatedType.getIdentifier() != null
+                        && backedAnnotatedType.getIdentifier().getBdaId()
+                        .equals("org.glassfish.cdi.transaction.TransactionalExtension"))
+                        && componentEnv == null ) {
                 //throw new IllegalStateException("No valid EE environment for injection of " + targetClassName);
                 System.err.println("No valid EE environment for injection of " + targetClassName);
                 injectionContext.proceed();
