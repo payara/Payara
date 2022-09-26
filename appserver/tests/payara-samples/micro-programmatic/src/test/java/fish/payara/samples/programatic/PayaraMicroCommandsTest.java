@@ -39,22 +39,19 @@
  */
 package fish.payara.samples.programatic;
 
-import fish.payara.micro.ClusterCommandResult;
-import fish.payara.micro.boot.PayaraMicroBoot;
-import fish.payara.micro.boot.PayaraMicroLauncher;
-import org.junit.Assert;
-import org.junit.Test;
+import fish.payara.micro.*;
+import fish.payara.micro.boot.*;
+import org.junit.*;
 
 /**
  *
  * @author jonathan coustick
  */
 public class PayaraMicroCommandsTest {
-
     @Test
     public void bootCommandtest() throws Exception {
         PayaraMicroBoot microBoot = PayaraMicroLauncher.getBootClass();
-        microBoot.setNoCluster(true);
+        microBoot.setNoHazelcast(true);
         microBoot.setPreBootHandler((t) -> {
             ClusterCommandResult result = t.run("set", "configs.config.server-config.health-check-service-configuration.enabled=true");
             Assert.assertEquals(ClusterCommandResult.ExitStatus.SUCCESS, result.getExitStatus());
@@ -89,6 +86,16 @@ public class PayaraMicroCommandsTest {
         }
         System.out.println("Shutting down Payara Micro");
         microBoot.shutdown();
-    }
 
+        microBoot.setPreBootHandler((t) -> {
+                t.run("set-healthcheck-configuration", "--enabled", "false");
+            });
+
+            microBoot.setPostBootHandler((t) -> {
+                t.run("set-healthcheck-configuration", "--enabled", "false");
+            });
+
+        System.out.println("Shutting down Payara Micro");
+        microBoot.shutdown();
+    }
 }
