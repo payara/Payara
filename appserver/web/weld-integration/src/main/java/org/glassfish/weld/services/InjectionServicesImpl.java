@@ -145,15 +145,15 @@ public class InjectionServicesImpl implements InjectionServices {
               // must use the current jndi component env to lookup the objects to inject
               injectionManager.inject( targetClass, target, injectionEnv, null, false );
             } else {
-                if(annotatedType instanceof BackedAnnotatedType) {
+                if (annotatedType instanceof BackedAnnotatedType) {
                     BackedAnnotatedType backedAnnotatedType = ((BackedAnnotatedType) annotatedType);
                     //added condition to skip the failure when the TransactionScopedCDIEventHelperImpl is tried to be used
                     //for the TransactionalScoped CDI Bean
-                    if(backedAnnotatedType != null
+                    if (backedAnnotatedType != null
                             && backedAnnotatedType.getIdentifier() != null
                             && backedAnnotatedType.getIdentifier().getBdaId()
                             .equals("org.glassfish.cdi.transaction.TransactionalExtension")
-                            && componentEnv == null ) {
+                            && componentEnv == null) {
                         injectionContext.proceed();
                         return;
                     }
