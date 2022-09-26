@@ -37,16 +37,28 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld.services;
 
-import com.sun.enterprise.deployment.*;
+import com.sun.enterprise.deployment.BundleDescriptor;
+import com.sun.enterprise.deployment.EjbBundleDescriptor;
+import com.sun.enterprise.deployment.EjbDescriptor;
+import com.sun.enterprise.deployment.InjectionCapable;
+import com.sun.enterprise.deployment.InjectionInfo;
+import com.sun.enterprise.deployment.JndiNameEnvironment;
+import com.sun.enterprise.deployment.ManagedBeanDescriptor;
+import jakarta.enterprise.inject.spi.AnnotatedField;
+import jakarta.enterprise.inject.spi.AnnotatedType;
+import jakarta.enterprise.inject.spi.BeanManager;
+import jakarta.enterprise.inject.spi.DefinitionException;
+import jakarta.enterprise.inject.spi.InjectionTarget;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.ejb.api.EjbContainerServices;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.weld.DeploymentImpl;
 import org.glassfish.weld.connector.WeldUtils;
+import org.jboss.weld.annotated.slim.backed.*;
 import org.jboss.weld.injection.spi.InjectionContext;
 import org.jboss.weld.injection.spi.InjectionServices;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -58,7 +70,6 @@ import com.sun.enterprise.container.common.spi.util.InjectionManager;
 import jakarta.annotation.Resource;
 import jakarta.ejb.EJB;
 import jakarta.enterprise.inject.Produces;
-import jakarta.enterprise.inject.spi.*;
 import jakarta.enterprise.inject.spi.InjectionTarget;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
@@ -138,12 +149,26 @@ public class InjectionServicesImpl implements InjectionServices {
               // must use the current jndi component env to lookup the objects to inject
               injectionManager.inject( targetClass, target, injectionEnv, null, false );
             } else {
-              if( componentEnv == null ) {
-                //throw new IllegalStateException("No valid EE environment for injection of " + targetClassName);
-                System.err.println("No valid EE environment for injection of " + targetClassName);
-                injectionContext.proceed();
-                return;
-              }
+                if (annotatedType instanceof BackedAnnotatedType) {
+                    BackedAnnotatedType backedAnnotatedType = ((BackedAnnotatedType) annotatedType);
+                    //added condition to skip the failure when the TransactionScopedCDIEventHelperImpl is tried to be used
+                    //for the TransactionalScoped CDI Bean
+                    if (backedAnnotatedType != null
+                            && backedAnnotatedType.getIdentifier() != null
+                            && backedAnnotatedType.getIdentifier().getBdaId()
+                            .equals("org.glassfish.cdi.transaction.TransactionalExtension")
+                            && componentEnv == null) {
+                        injectionContext.proceed();
+                        return;
+                    }
+                }
+
+                if (componentEnv == null) {
+                    //throw new IllegalStateException("No valid EE environment for injection of " + targetClassName);
+                    System.err.println("No valid EE environment for injection of " + targetClassName);
+                    injectionContext.proceed();
+                    return;
+                }
 
               // Perform EE-style injection on the target.  Skip PostConstruct since
               // in this case 299 impl is responsible for calling it.
