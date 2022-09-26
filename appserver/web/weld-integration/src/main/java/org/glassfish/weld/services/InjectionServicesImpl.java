@@ -157,7 +157,9 @@ public class InjectionServicesImpl implements InjectionServices {
                         injectionContext.proceed();
                         return;
                     }
-                } else if (componentEnv == null) {
+                }
+
+                if (componentEnv == null) {
                     //throw new IllegalStateException("No valid EE environment for injection of " + targetClassName);
                     System.err.println("No valid EE environment for injection of " + targetClassName);
                     injectionContext.proceed();
