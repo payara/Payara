@@ -145,19 +145,24 @@ public class InjectionServicesImpl implements InjectionServices {
               // must use the current jndi component env to lookup the objects to inject
               injectionManager.inject( targetClass, target, injectionEnv, null, false );
             } else {
-                BackedAnnotatedType backedAnnotatedType = ((BackedAnnotatedType) annotatedType);
-                //added condition to skip the failure when the TransactionScopedCDIEventHelperImpl is tried to be used
-                //for the TransactionalScoped CDI Bean
-                if(!(backedAnnotatedType != null
-                        && backedAnnotatedType.getIdentifier() != null
-                        && backedAnnotatedType.getIdentifier().getBdaId()
-                        .equals("org.glassfish.cdi.transaction.TransactionalExtension"))
-                        && componentEnv == null ) {
-                //throw new IllegalStateException("No valid EE environment for injection of " + targetClassName);
-                System.err.println("No valid EE environment for injection of " + targetClassName);
-                injectionContext.proceed();
-                return;
-              }
+                if(annotatedType instanceof BackedAnnotatedType) {
+                    BackedAnnotatedType backedAnnotatedType = ((BackedAnnotatedType) annotatedType);
+                    //added condition to skip the failure when the TransactionScopedCDIEventHelperImpl is tried to be used
+                    //for the TransactionalScoped CDI Bean
+                    if(backedAnnotatedType != null
+                            && backedAnnotatedType.getIdentifier() != null
+                            && backedAnnotatedType.getIdentifier().getBdaId()
+                            .equals("org.glassfish.cdi.transaction.TransactionalExtension")
+                            && componentEnv == null ) {
+                        injectionContext.proceed();
+                        return;
+                    }
+                } else if (componentEnv == null) {
+                    //throw new IllegalStateException("No valid EE environment for injection of " + targetClassName);
+                    System.err.println("No valid EE environment for injection of " + targetClassName);
+                    injectionContext.proceed();
+                    return;
+                }
 
               // Perform EE-style injection on the target.  Skip PostConstruct since
               // in this case 299 impl is responsible for calling it.
