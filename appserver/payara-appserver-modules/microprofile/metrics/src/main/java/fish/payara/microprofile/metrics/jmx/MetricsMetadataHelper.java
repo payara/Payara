@@ -41,6 +41,7 @@ package fish.payara.microprofile.metrics.jmx;
 
 import fish.payara.microprofile.metrics.healthcheck.HealthCheckCounter;
 import fish.payara.microprofile.metrics.healthcheck.HealthCheckGauge;
+import fish.payara.microprofile.metrics.healthcheck.ServiceExpression;
 import fish.payara.nucleus.healthcheck.HealthCheckStatsProvider;
 import java.util.ArrayList;
 import java.util.List;
@@ -64,7 +65,6 @@ import org.eclipse.microprofile.metrics.MetricUnits;
 import org.eclipse.microprofile.metrics.Tag;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.internal.api.Globals;
 import org.jvnet.hk2.annotations.Service;
 
 @Service
@@ -130,14 +130,15 @@ public class MetricsMetadataHelper {
                     }
                     metricRegistry.register(beanMetadata, type, tags.toArray(new Tag[tags.size()]));
                 } else {
-                    HealthCheckStatsProvider healthCheck = habitat.getService(HealthCheckStatsProvider.class, beanMetadata.getService());
+                    ServiceExpression expression = new ServiceExpression(beanMetadata.getService());
+                    HealthCheckStatsProvider healthCheck = habitat.getService(HealthCheckStatsProvider.class, expression.getServiceId());
                     if (healthCheck != null) {
                         switch (beanMetadata.getTypeRaw()) {
                             case COUNTER:
-                                type = new HealthCheckCounter(healthCheck);
+                                type = new HealthCheckCounter(healthCheck, expression);
                                 break;
                             case GAUGE:
-                                type = new HealthCheckGauge(healthCheck);
+                                type = new HealthCheckGauge(healthCheck, expression);
                                 break;
                             default:
                                 throw new IllegalStateException("Unsupported type : " + beanMetadata);

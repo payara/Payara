@@ -48,12 +48,15 @@ import org.eclipse.microprofile.metrics.Counter;
  * {@link UnsupportedOperationException}. Just use the {@link #getCount()}
  * method to get the value of the HealthCheck backing this.
  */
-public class HealthCheckCounter implements Counter, HealthCheckStatsProvider<Integer> {
+public class HealthCheckCounter implements Counter, HealthCheckStatsProvider {
 
-    private final HealthCheckStatsProvider<Integer> healthCheck;
+    private final HealthCheckStatsProvider healthCheck;
+    
+    private final ServiceExpression expression;
 
-    public HealthCheckCounter(HealthCheckStatsProvider<Integer> healthCheck) {
+    public HealthCheckCounter(HealthCheckStatsProvider healthCheck, ServiceExpression expression) {
         this.healthCheck = healthCheck;
+        this.expression = expression;
     }
 
     /**
@@ -77,12 +80,12 @@ public class HealthCheckCounter implements Counter, HealthCheckStatsProvider<Int
 
     @Override
     public long getCount() {
-        return healthCheck.getValue();
+        return getValue(Long.class, expression.getAttributeName());
     }
-    
+
     @Override
-    public Integer getValue() {
-       return healthCheck.getValue();
+    public <Long> Long getValue(Class<Long> type, String attributeName) {
+        return healthCheck.getValue(type, attributeName);
     }
 
     @Override
