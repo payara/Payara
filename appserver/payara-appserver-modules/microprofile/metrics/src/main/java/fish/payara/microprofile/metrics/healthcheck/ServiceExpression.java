@@ -37,14 +37,34 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package fish.payara.nucleus.healthcheck;
+package fish.payara.microprofile.metrics.healthcheck;
 
-import org.jvnet.hk2.annotations.Contract;
+public class ServiceExpression {
 
-@Contract
-public interface HealthCheckStatsProvider {
+    private String service;
 
-    public <T extends Object> T getValue(Class<T> type, String attributeName);
+    private String attributeName;
 
-    boolean isEnabled();
+    private static final String ATTRIBUTE_SEPARATOR = "#";
+
+    public ServiceExpression(String expression) {
+        if (expression == null || expression.trim().isEmpty()) {
+            throw new IllegalArgumentException("Service Expression is null");
+        }
+        int slashIndex = expression.lastIndexOf(ATTRIBUTE_SEPARATOR);
+        if (slashIndex < 0) {
+            throw new IllegalArgumentException("MBean Expression is invalid : " + expression);
+        }
+        service = expression.substring(0, slashIndex);
+        attributeName = expression.substring(slashIndex + 1);
+    }
+
+    public String getServiceId() {
+        return service;
+    }
+
+    public String getAttributeName() {
+        return attributeName;
+    }
+
 }

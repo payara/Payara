@@ -46,22 +46,30 @@ import org.eclipse.microprofile.metrics.Gauge;
  * Implementation of a gauge based off an HealthCheck.
  *
  */
-public class HealthCheckGauge implements Gauge<Number>, HealthCheckStatsProvider<Number> {
+public class HealthCheckGauge implements Gauge<Number>, HealthCheckStatsProvider {
 
-    private final HealthCheckStatsProvider<Number> healthCheck;
+    private final HealthCheckStatsProvider healthCheck;
+    
+    private final ServiceExpression expression;
 
-    public HealthCheckGauge(HealthCheckStatsProvider<Number> healthCheck) {
+    public HealthCheckGauge(HealthCheckStatsProvider healthCheck, ServiceExpression expression) {
         this.healthCheck = healthCheck;
+        this.expression = expression;
     }
 
     @Override
     public Number getValue() {
-        return healthCheck.getValue();
+        return getValue(Number.class, expression.getAttributeName());
     }
 
     @Override
     public boolean isEnabled() {
        return healthCheck.isEnabled();
+    }
+
+    @Override
+    public <Number> Number getValue(Class<Number> type, String attributeName) {
+        return healthCheck.getValue(type, attributeName);
     }
 
 }

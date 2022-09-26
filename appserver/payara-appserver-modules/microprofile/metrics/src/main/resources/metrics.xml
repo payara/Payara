@@ -205,11 +205,19 @@ holder.
         </metadata>
         <metadata>
             <name>thread.stuck.count</name>
-            <service>healthcheck-stuck</service>
+            <service>healthcheck-stuck#count</service>
             <type>gauge</type>
             <unit>none</unit>
             <displayName>Stuck Thread Count</displayName>
             <description>Displays the stuck thread count which is blocked, and can't return to the threadpool for a certain amount of time.</description>
+        </metadata>
+        <metadata>
+            <name>thread.stuck.maxDuration</name>
+            <service>healthcheck-stuck#maxDuration</service>
+            <type>gauge</type>
+            <unit>none</unit>
+            <displayName>Stuck Thread Max Duration</displayName>
+            <description>Displays the maximum duration of stuck thread which is blocked, and can't return to the threadpool for a certain amount of time.</description>
         </metadata>
     </vendor>
 </config>
