@@ -158,8 +158,10 @@ public class InjectionServicesImpl implements InjectionServices {
                     // to be used for the TransactionalScoped CDI Bean
                     if (backedAnnotatedType != null
                             && backedAnnotatedType.getIdentifier() != null
-                            && backedAnnotatedType.getIdentifier().getBdaId()
+                            && (backedAnnotatedType.getIdentifier().getBdaId()
                             .equals("org.glassfish.cdi.transaction.TransactionalExtension")
+                            || backedAnnotatedType.getIdentifier().getBdaId()
+                            .equals("org.glassfish.cdi.transaction.TransactionScopedContextExtension"))
                             && componentEnv == null) {
                         injectionContext.proceed();
                         return;
