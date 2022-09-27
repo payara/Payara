@@ -55,6 +55,8 @@ import fish.payara.nucleus.healthcheck.configuration.StuckThreadsChecker;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -83,7 +85,7 @@ public class StuckThreadsHealthCheck extends
     private final Map<String, Number> stuckThreadResult = new ConcurrentHashMap<>();
     private static final String STUCK_THREAD_COUNT = "count";
     private static final String STUCK_THREAD_MAX_DURATION = "maxDuration";
-    private static final Set<String> VALID_ATTRIBUTES = Set.of(STUCK_THREAD_COUNT, STUCK_THREAD_MAX_DURATION);
+    private static final Set<String> VALID_ATTRIBUTES = new HashSet<>(Arrays.asList(STUCK_THREAD_COUNT, STUCK_THREAD_MAX_DURATION));
 
     @FunctionalInterface
     private interface StuckThreadConsumer {
