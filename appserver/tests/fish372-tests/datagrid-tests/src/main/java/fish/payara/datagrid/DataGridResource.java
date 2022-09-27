@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2022 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,69 +37,52 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+package fish.payara.datagrid;
 
-package fish.payara.micro.cmd.options;
+import com.hazelcast.core.*;
+import com.hazelcast.map.*;
 
+import javax.inject.*;
+import javax.ws.rs.*;
+import javax.ws.rs.core.*;
 
-import org.junit.Test;
+@Path("/api")
+@Produces("text/plain")
+public class DataGridResource
+{
+  private static final String RESPONSE = "Have got distributed cache with %d entries";
+  @Inject
+  private DataGrid dataGrid;
 
-import static org.junit.Assert.fail;
+  @GET
+  @Path("produce")
+  public Response produceDistributedCache() {
+    HazelcastInstance h1 = Hazelcast.newHazelcastInstance(null);
+    IMap<Integer, String> map1 = h1.getMap("testmap");
+    for (int i = 0; i < 10; i++)
+      map1.put(i, "value" + i);
+    return Response.ok().entity(String.format(RESPONSE, map1.size())).build();
+  }
 
-public class RequestTracingValidatorTest {
+  @GET
+  @Path("consume")
+  public Response consumeDistributedCache() {
+    HazelcastInstance h1 = Hazelcast.newHazelcastInstance(null);
+    IMap<Integer, String> map1 = h1.getMap("testmap");
+    if (map1.size() != 10)
+      throw new WebApplicationException(Response.Status.NOT_FOUND);
+    return Response.ok().entity(String.format(RESPONSE, map1.size())).build();
+  }
 
+  @GET
+  @Path("get")
+  public Response getCachedValue (@QueryParam("key") String key) {
+    return Response.ok().entity(dataGrid.getValue(key)).build();
+  }
 
-    @Test
-    public void test_no_following_option_no_following_value() {
-        try {
-            new RuntimeOptions(new String[]{"--enableRequestTracing"});
-        } catch (ValidationException e) {
-            fail(e.getMessage());
-        }
-    }
-
-    @Test
-    public void test_following_option_no_following_value() {
-        try {
-            new RuntimeOptions(new String[]{"--enableRequestTracing", "--noCluster"});
-        } catch (ValidationException e) {
-            fail(e.getMessage());
-        }
-    }
-
-    @Test
-    public void test_following_option_no_following_value_with_noHazelcast() {
-        try {
-            new RuntimeOptions(new String[]{"--enableRequestTracing", "--noHazelcast"});
-        } catch (ValidationException e) {
-            fail(e.getMessage());
-        }
-    }
-
-    @Test
-    public void test_following_option_following_value() {
-        try {
-            new RuntimeOptions(new String[]{"--enableRequestTracing", "3MINUTES", "--noCluster"});
-        } catch (ValidationException e) {
-            fail(e.getMessage());
-        }
-    }
-
-    @Test
-    public void test_following_option_following_value_with_noHazelcast() {
-        try {
-            new RuntimeOptions(new String[]{"--enableRequestTracing", "3MINUTES", "--noHazelcast"});
-        } catch (ValidationException e) {
-            fail(e.getMessage());
-        }
-    }
-
-    @Test
-    public void test_no_following_option_following_value() {
-        try {
-            new RuntimeOptions(new String[]{"--enableRequestTracing", "8H"});
-        } catch (ValidationException e) {
-            fail(e.getMessage());
-        }
-    }
-
+  @PUT
+  @Path("add")
+  public void addCachedValue (@QueryParam("key") String key, @QueryParam("value") String value) {
+    dataGrid.addValue(key, value);
+  }
 }

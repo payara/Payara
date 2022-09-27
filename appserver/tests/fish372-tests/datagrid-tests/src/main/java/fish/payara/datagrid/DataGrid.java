@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2022 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,69 +37,25 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+package fish.payara.datagrid;
 
-package fish.payara.micro.cmd.options;
+import fish.payara.cluster.*;
 
+import javax.enterprise.context.*;
+import java.io.*;
+import java.util.*;
 
-import org.junit.Test;
+@Clustered
+@ApplicationScoped
+public class DataGrid implements Serializable
+{
+  private Map<String, String> map1 = new HashMap<>();
 
-import static org.junit.Assert.fail;
+  public void addValue (String key, String value)  {
+    map1.put(key, value);
+  }
 
-public class RequestTracingValidatorTest {
-
-
-    @Test
-    public void test_no_following_option_no_following_value() {
-        try {
-            new RuntimeOptions(new String[]{"--enableRequestTracing"});
-        } catch (ValidationException e) {
-            fail(e.getMessage());
-        }
-    }
-
-    @Test
-    public void test_following_option_no_following_value() {
-        try {
-            new RuntimeOptions(new String[]{"--enableRequestTracing", "--noCluster"});
-        } catch (ValidationException e) {
-            fail(e.getMessage());
-        }
-    }
-
-    @Test
-    public void test_following_option_no_following_value_with_noHazelcast() {
-        try {
-            new RuntimeOptions(new String[]{"--enableRequestTracing", "--noHazelcast"});
-        } catch (ValidationException e) {
-            fail(e.getMessage());
-        }
-    }
-
-    @Test
-    public void test_following_option_following_value() {
-        try {
-            new RuntimeOptions(new String[]{"--enableRequestTracing", "3MINUTES", "--noCluster"});
-        } catch (ValidationException e) {
-            fail(e.getMessage());
-        }
-    }
-
-    @Test
-    public void test_following_option_following_value_with_noHazelcast() {
-        try {
-            new RuntimeOptions(new String[]{"--enableRequestTracing", "3MINUTES", "--noHazelcast"});
-        } catch (ValidationException e) {
-            fail(e.getMessage());
-        }
-    }
-
-    @Test
-    public void test_no_following_option_following_value() {
-        try {
-            new RuntimeOptions(new String[]{"--enableRequestTracing", "8H"});
-        } catch (ValidationException e) {
-            fail(e.getMessage());
-        }
-    }
-
+  public String getValue (String key)  {
+    return map1.get(key);
+  }
 }
