@@ -53,6 +53,8 @@ import jakarta.enterprise.inject.spi.AnnotatedType;
 import jakarta.enterprise.inject.spi.BeanManager;
 import jakarta.enterprise.inject.spi.DefinitionException;
 import jakarta.enterprise.inject.spi.InjectionTarget;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.ejb.api.EjbContainerServices;
 import org.glassfish.internal.api.Globals;
@@ -94,6 +96,8 @@ public class InjectionServicesImpl implements InjectionServices {
     private BundleDescriptor bundleContext;
 
     private DeploymentImpl deployment;
+
+    private static final Logger logger = Logger.getLogger(InjectionServicesImpl.class.getName());
 
     public InjectionServicesImpl(InjectionManager injectionMgr, BundleDescriptor context, DeploymentImpl deployment) {
         injectionManager = injectionMgr;
@@ -151,8 +155,8 @@ public class InjectionServicesImpl implements InjectionServices {
             } else {
                 if (annotatedType instanceof BackedAnnotatedType) {
                     BackedAnnotatedType backedAnnotatedType = ((BackedAnnotatedType) annotatedType);
-                    //added condition to skip the failure when the TransactionScopedCDIEventHelperImpl is tried to be used
-                    //for the TransactionalScoped CDI Bean
+                    //added condition to skip printing logs when the TransactionScopedCDIEventHelperImpl is tried
+                    // to be used for the TransactionalScoped CDI Bean
                     if (backedAnnotatedType != null
                             && backedAnnotatedType.getIdentifier() != null
                             && backedAnnotatedType.getIdentifier().getBdaId()
@@ -164,8 +168,8 @@ public class InjectionServicesImpl implements InjectionServices {
                 }
 
                 if (componentEnv == null) {
-                    //throw new IllegalStateException("No valid EE environment for injection of " + targetClassName);
-                    System.err.println("No valid EE environment for injection of " + targetClassName);
+                    logger.log(Level.SEVERE, "No valid EE environment for injection of {0}",
+                            new Object[]{targetClass});
                     injectionContext.proceed();
                     return;
                 }
