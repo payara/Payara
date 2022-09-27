@@ -101,8 +101,6 @@ public class InjectionServicesImpl implements InjectionServices {
     
     private static final Logger logger = Logger.getLogger(InjectionServicesImpl.class.getName());
 
-    private static final Logger logger = Logger.getLogger(InjectionServicesImpl.class.getName());
-
     public InjectionServicesImpl(InjectionManager injectionMgr, BundleDescriptor context, DeploymentImpl deployment) {
         injectionManager = injectionMgr;
         bundleContext = context;
