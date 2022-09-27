@@ -48,6 +48,13 @@ import com.sun.enterprise.deployment.InjectionCapable;
 import com.sun.enterprise.deployment.InjectionInfo;
 import com.sun.enterprise.deployment.JndiNameEnvironment;
 import com.sun.enterprise.deployment.ManagedBeanDescriptor;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.enterprise.inject.spi.AnnotatedField;
+import javax.enterprise.inject.spi.AnnotatedType;
+import javax.enterprise.inject.spi.BeanManager;
+import javax.enterprise.inject.spi.DefinitionException;
+import javax.enterprise.inject.spi.InjectionTarget;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.ejb.api.EjbContainerServices;
 import org.glassfish.internal.api.Globals;
@@ -65,8 +72,6 @@ import com.sun.enterprise.container.common.spi.util.InjectionManager;
 import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.enterprise.inject.Produces;
-import javax.enterprise.inject.spi.*;
-import javax.enterprise.inject.spi.InjectionTarget;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceContext;
@@ -90,6 +95,8 @@ public class InjectionServicesImpl implements InjectionServices {
     private BundleDescriptor bundleContext;
 
     private DeploymentImpl deployment;
+
+    private static final Logger logger = Logger.getLogger(InjectionServicesImpl.class.getName());
 
     public InjectionServicesImpl(InjectionManager injectionMgr, BundleDescriptor context, DeploymentImpl deployment) {
         injectionManager = injectionMgr;
@@ -160,8 +167,8 @@ public class InjectionServicesImpl implements InjectionServices {
                 }
 
                 if (componentEnv == null) {
-                    //throw new IllegalStateException("No valid EE environment for injection of " + targetClassName);
-                    System.err.println("No valid EE environment for injection of " + targetClassName);
+                    logger.log(Level.SEVERE, "No valid EE environment for injection of {0}",
+                            new Object[]{targetClass});
                     injectionContext.proceed();
                     return;
                 }
