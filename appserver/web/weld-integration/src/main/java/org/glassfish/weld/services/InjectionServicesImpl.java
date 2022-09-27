@@ -172,8 +172,9 @@ public class InjectionServicesImpl implements InjectionServices {
                 }
 
                 if (componentEnv == null) {
-                    logger.log(Level.SEVERE, "No valid EE environment for injection of {0}",
-                            new Object[]{targetClass});
+                    logger.log(Level.FINE,
+                            "No valid EE environment for injection of {0}. The methods that is missing the context is {1}",
+                            new Object[] {targetClass, injectionContext.getAnnotatedType().getMethods()});
                     injectionContext.proceed();
                     return;
                 }
