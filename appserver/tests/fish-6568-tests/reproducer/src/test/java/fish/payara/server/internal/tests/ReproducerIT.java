@@ -14,6 +14,8 @@ import org.testcontainers.utility.*;
 
 import java.net.*;
 import java.nio.file.*;
+import java.time.*;
+import java.time.temporal.*;
 
 import static io.restassured.RestAssured.*;
 import static org.assertj.core.api.Assertions.*;
@@ -26,13 +28,16 @@ public class ReproducerIT
   private static URI uri;
 
   @Container
-  private static final GenericContainer<?> oracle = new GenericContainer<>("oracleinanutshell/oracle-xe-11g:latest")
+  private static final GenericContainer<?> oracle =
+    new GenericContainer<>("oracleinanutshell/oracle-xe-11g:latest")
       .withExposedPorts(1521, 5500)
-      .withEnv ("ORACLE_ALLOW_REMOTE", "true")
+      .withEnv("ORACLE_ALLOW_REMOTE", "true")
       .withEnv("ORACLE_DISABLE_ASYNCH_IO", "true")
-      .withClasspathResourceMapping("scripts/oracle", "/docker-entrypoint-initdb.d", BindMode.READ_WRITE)
+      .withClasspathResourceMapping("scripts/oracle",
+        "/docker-entrypoint-initdb.d", BindMode.READ_WRITE)
       .withLogConsumer(new Slf4jLogConsumer(log))
-      .waitingFor(Wait.forLogMessage(".*SQL>.*", 1));
+      .waitingFor(Wait.forLogMessage(".*SQL>.*", 1))
+      .withStartupTimeout(Duration.of(60, ChronoUnit.SECONDS));
 
   @Container
   private static GenericContainer payara =
@@ -81,16 +86,17 @@ public class ReproducerIT
   @Order(15)
   public void testPayaraLogFileDoesNotContainSaxParserException()
   {
-    assertThat(payara.getLogs()).doesNotContain("org.xml.sax.SAXParseException");
+    assertThat(payara.getLogs()).doesNotContain(
+      "org.xml.sax.SAXParseException");
   }
 
   @Test
   @Order(20)
   public void testCreatePersonShouldSucceed()
   {
-    assertThat (given()
+    assertThat(given()
       .contentType(ContentType.JSON)
-      .body(new Person ("John", "Doe"))
+      .body(new Person("John", "Doe"))
       .when()
       .post(uri)
       .then()
@@ -103,13 +109,14 @@ public class ReproducerIT
   @Order(30)
   public void testFindAllShouldSucceed()
   {
-    assertThat (given()
+    assertThat(given()
       .contentType(ContentType.JSON)
       .when()
       .get(uri)
       .then()
       .assertThat().statusCode(200)
       .and()
-      .extract().body().jsonPath().getList(".", Person.class).size()).isEqualTo(1);
+      .extract().body().jsonPath().getList(".", Person.class).size()).isEqualTo(
+      1);
   }
 }
