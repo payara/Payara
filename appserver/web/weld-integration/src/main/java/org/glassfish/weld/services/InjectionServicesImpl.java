@@ -80,7 +80,10 @@ import javax.xml.ws.WebServiceRef;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Logger;
 import java.util.Set;
+import java.util.logging.Level;
+
 
 import org.glassfish.api.invocation.ComponentInvocation;
 
@@ -95,6 +98,8 @@ public class InjectionServicesImpl implements InjectionServices {
     private BundleDescriptor bundleContext;
 
     private DeploymentImpl deployment;
+    
+    private static final Logger logger = Logger.getLogger(InjectionServicesImpl.class.getName());
 
     private static final Logger logger = Logger.getLogger(InjectionServicesImpl.class.getName());
 
