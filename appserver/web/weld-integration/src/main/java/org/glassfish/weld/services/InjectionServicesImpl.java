@@ -92,18 +92,18 @@ import org.glassfish.api.invocation.ComponentInvocation;
  */
 public class InjectionServicesImpl implements InjectionServices {
 
+    private static final Logger logger = Logger.getLogger(InjectionServicesImpl.class.getName());
+
+    private static final String TRANSACTIONAL_EXTENSION_NAME = "org.glassfish.cdi.transaction.TransactionalExtension";
+
+    private static final String TRANSACTION_EXTENSION_NAME = "org.glassfish.cdi.transaction.TransactionScopedContextExtension";
+
     private InjectionManager injectionManager;
 
     // Associated bundle context
     private BundleDescriptor bundleContext;
 
     private DeploymentImpl deployment;
-    
-    private static final Logger logger = Logger.getLogger(InjectionServicesImpl.class.getName());
-
-    private static final String TRANSACTIONAL_EXTENSION_NAME = "org.glassfish.cdi.transaction.TransactionalExtension";
-
-    private static final String TRANSACTION_EXTENSION_NAME = "org.glassfish.cdi.transaction.TransactionScopedContextExtension";
 
     private Predicate<BackedAnnotatedType> availableAnnotatedType = n -> n != null && n.getIdentifier() != null;
     private Predicate<AnnotatedTypeIdentifier> isTransactionExtension = t -> t.getBdaId().equals(TRANSACTIONAL_EXTENSION_NAME)
