@@ -40,14 +40,15 @@ public class ReproducerIT
       .withStartupTimeout(Duration.of(60, ChronoUnit.SECONDS));
 
   @Container
-  private static GenericContainer payara =
-    new GenericContainer("payara/micro:5.2022.2-jdk11")
+  private static final GenericContainer<?> payara =
+    new GenericContainer<>("payara/micro:5.2022.2-jdk11")
       .dependsOn(oracle)
       .withExposedPorts(8080)
       .withCopyFileToContainer(MountableFile.forHostPath(
         Paths.get("target/reproducer.war")
-          .toAbsolutePath(), 0777), "/opt/payara/deployments/test.war")
+          .toAbsolutePath(), 511), "/opt/payara/deployments/test.war")
       .waitingFor(Wait.forLogMessage(".* Payara Micro .* ready in .*\\s", 1))
+      .withStartupTimeout(Duration.of(60, ChronoUnit.SECONDS))
       .withCommand(
         "--noCluster --deploy /opt/payara/deployments/test.war --contextRoot /test");
 
@@ -61,7 +62,7 @@ public class ReproducerIT
   }
 
   @AfterAll
-  public static void after()
+  public static void afterAll()
   {
     uri = null;
   }
@@ -76,7 +77,7 @@ public class ReproducerIT
 
   @Test
   @Order(12)
-  public void testOraclePayaraMicroIsRunning()
+  public void testPayaraMicroIsRunning()
   {
     assertThat(payara).isNotNull();
     assertThat(payara.isRunning()).isTrue();
