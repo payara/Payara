@@ -22,3 +22,5 @@ The integration test checks wether:
 - the JPA operation are performed as expected.
 
 This sample requires, of course, a Docker daemon running on the local box.
+
+Once that you've succeeded to reproduce the issue, in order to work-around it, you need to run `mvn -Pfish6568 clean install`. Using this profile will allow you to take advantage of the `xml-maven-plugin` which leverages the OASIS XML catalog concept such that to solve the reference to the `persitence_3_0.xsd` resource in `persistence.xml` by the local file `src/main/resources/schema/persistence_3_0.xsd`.

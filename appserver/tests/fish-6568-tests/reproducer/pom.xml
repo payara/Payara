@@ -95,23 +95,32 @@
           </execution>
         </executions>
       </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>xml-maven-plugin</artifactId>
-        <configuration>
-          <validationSets>
-            <validationSet>
-              <dir>src/main/resources/META-INF</dir>
-              <includes>
-                <include>persistence.xml</include>
-              </includes>
-            </validationSet>
-          </validationSets>
-          <catalogs>
-            <catalog>src/main/resources/schema/catalog.xml</catalog>
-          </catalogs>
-        </configuration>
-      </plugin>
     </plugins>
   </build>
+  <profiles>
+    <profile>
+      <id>fish-6568</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>xml-maven-plugin</artifactId>
+            <configuration>
+              <validationSets>
+                <validationSet>
+                  <dir>src/main/resources/META-INF</dir>
+                  <includes>
+                    <include>persistence.xml</include>
+                  </includes>
+                </validationSet>
+              </validationSets>
+              <catalogs>
+                <catalog>src/main/resources/schema/catalog.xml</catalog>
+              </catalogs>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>
