@@ -53,6 +53,7 @@ import jakarta.enterprise.inject.spi.AnnotatedType;
 import jakarta.enterprise.inject.spi.BeanManager;
 import jakarta.enterprise.inject.spi.DefinitionException;
 import jakarta.enterprise.inject.spi.InjectionTarget;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.api.invocation.InvocationManager;
@@ -60,6 +61,7 @@ import org.glassfish.ejb.api.EjbContainerServices;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.weld.DeploymentImpl;
 import org.glassfish.weld.connector.WeldUtils;
+import org.jboss.weld.annotated.slim.AnnotatedTypeIdentifier;
 import org.jboss.weld.annotated.slim.backed.BackedAnnotatedType;
 import org.jboss.weld.injection.spi.InjectionContext;
 import org.jboss.weld.injection.spi.InjectionServices;
@@ -89,6 +91,12 @@ import org.glassfish.api.invocation.ComponentInvocation;
  */
 public class InjectionServicesImpl implements InjectionServices {
 
+    private static final Logger logger = Logger.getLogger(InjectionServicesImpl.class.getName());
+
+    private static final String TRANSACTIONAL_EXTENSION_NAME = "org.glassfish.cdi.transaction.TransactionalExtension";
+
+    private static final String TRANSACTION_EXTENSION_NAME = "org.glassfish.cdi.transaction.TransactionScopedContextExtension";
+
     private InjectionManager injectionManager;
 
     // Associated bundle context
@@ -96,7 +104,10 @@ public class InjectionServicesImpl implements InjectionServices {
 
     private DeploymentImpl deployment;
 
-    private static final Logger logger = Logger.getLogger(InjectionServicesImpl.class.getName());
+    private Predicate<BackedAnnotatedType> availableAnnotatedType = n -> n != null && n.getIdentifier() != null;
+
+    private Predicate<AnnotatedTypeIdentifier> isTransactionExtension = t -> t.getBdaId().equals(TRANSACTIONAL_EXTENSION_NAME)
+            || t.getBdaId().equals(TRANSACTION_EXTENSION_NAME);
 
     public InjectionServicesImpl(InjectionManager injectionMgr, BundleDescriptor context, DeploymentImpl deployment) {
         injectionManager = injectionMgr;
@@ -154,15 +165,10 @@ public class InjectionServicesImpl implements InjectionServices {
             } else {
                 if (annotatedType instanceof BackedAnnotatedType) {
                     BackedAnnotatedType backedAnnotatedType = ((BackedAnnotatedType) annotatedType);
-                    //added condition to skip printing logs when the TransactionScopedCDIEventHelperImpl is tried
+                    //Added condition to skip printing logs when the TransactionScopedCDIEventHelperImpl is tried
                     // to be used for the TransactionalScoped CDI Bean
-                    if (backedAnnotatedType != null
-                            && backedAnnotatedType.getIdentifier() != null
-                            && (backedAnnotatedType.getIdentifier().getBdaId()
-                            .equals("org.glassfish.cdi.transaction.TransactionalExtension")
-                            || backedAnnotatedType.getIdentifier().getBdaId()
-                            .equals("org.glassfish.cdi.transaction.TransactionScopedContextExtension"))
-                            && componentEnv == null) {
+                    if (componentEnv == null && availableAnnotatedType.test(backedAnnotatedType)
+                            && isTransactionExtension.test(backedAnnotatedType.getIdentifier())) {
                         injectionContext.proceed();
                         return;
                     }
