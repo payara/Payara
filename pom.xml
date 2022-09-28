@@ -140,12 +140,12 @@
         <jax-rs-api.impl.version>3.1.0</jax-rs-api.impl.version>
         <jersey.version>3.1.0-M8</jersey.version>
         <jakarta.validation.version>3.0.1</jakarta.validation.version>
-        <hibernate.validator.version>8.0.0.Alpha3</hibernate.validator.version>
-        <hibernate.validator-cdi.version>8.0.0.Alpha3</hibernate.validator-cdi.version>
+        <hibernate.validator.version>8.0.0.Final</hibernate.validator.version>
+        <hibernate.validator-cdi.version>8.0.0.Final</hibernate.validator-cdi.version>
         <jakarta.el-api.version>5.0.0</jakarta.el-api.version>
         <expressly.version>5.0.0</expressly.version>
         <javax.cache-api.version>1.1.1.payara-p1</javax.cache-api.version>
-        <mail.version>2.1.0-RC2</mail.version>
+        <mail.version>2.1.0</mail.version>
         <angus.mail.version>1.0.0</angus.mail.version>
         <jakarta.annotation-api.version>2.1.1</jakarta.annotation-api.version>
         <hk2.version>3.0.1.payara-p1</hk2.version>
@@ -166,7 +166,7 @@
         <tyrus.version>2.1.0.payara-p1</tyrus.version>
         <jaxb-extra-osgi.version>2.3.0</jaxb-extra-osgi.version>
         <json.bind-api.version>3.0.0</json.bind-api.version>
-        <yasson.version>3.0.0-RC2</yasson.version>
+        <yasson.version>3.0.2</yasson.version>
         <jakarta-persistence-api.version>3.1.0</jakarta-persistence-api.version>
         <eclipselink.version>4.0.0-M3.payara-p1</eclipselink.version>
         <eclipselink.asm.verison>9.3.0</eclipselink.asm.verison>
@@ -196,12 +196,12 @@
         <stax2-api.version>4.2.1</stax2-api.version>
         <jakarta.resource-api.version>2.1.0</jakarta.resource-api.version>
         <jakarta.enterprise.deploy-api.version>1.7.2</jakarta.enterprise.deploy-api.version>
-        <jakarta.activation-api.version>2.1.0-RC2</jakarta.activation-api.version>
+        <jakarta.activation-api.version>2.1.0</jakarta.activation-api.version>
         <angus.activation.version>1.0.0</angus.activation.version>
         <istack-commons-runtime.version>4.0.1</istack-commons-runtime.version>
         <jline.version>3.20.0</jline.version>
         <wsdl4j.version>1.6.3</wsdl4j.version>
-        <parsson.version>1.1.1.payara-p1</parsson.version>
+        <parsson.version>1.1.1</parsson.version>
         <jsonp-api.version>2.1.0</jsonp-api.version>
         <jbi.version>1.0</jbi.version>
         <!--<jakarta-platform.version>10.0.0-SNAPSHOT</jakarta-platform.version>-->
