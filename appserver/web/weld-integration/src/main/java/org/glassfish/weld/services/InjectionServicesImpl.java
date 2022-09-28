@@ -106,6 +106,7 @@ public class InjectionServicesImpl implements InjectionServices {
     private DeploymentImpl deployment;
 
     private Predicate<BackedAnnotatedType> availableAnnotatedType = n -> n != null && n.getIdentifier() != null;
+    
     private Predicate<AnnotatedTypeIdentifier> isTransactionExtension = t -> t.getBdaId().equals(TRANSACTIONAL_EXTENSION_NAME)
             || t.getBdaId().equals(TRANSACTION_EXTENSION_NAME);
 
