@@ -121,10 +121,10 @@
         <maven.release.plugin.version>2.5.3</maven.release.plugin.version>
         <maven.dependency.plugin.version>3.1.1</maven.dependency.plugin.version>
         <maven.gpg.plugin.version>1.6</maven.gpg.plugin.version>
-        <maven.deploy.plugin.version>3.0.0-M1</maven.deploy.plugin.version>
+        <maven.deploy.plugin.version>3.0.0</maven.deploy.plugin.version>
         <maven.source.plugin.version>3.1.0</maven.source.plugin.version>
         <maven.javadoc.plugin.version>3.1.1</maven.javadoc.plugin.version>
-        <maven.install.plugin.version>3.0.0-M1</maven.install.plugin.version>
+        <maven.install.plugin.version>3.0.1</maven.install.plugin.version>
         <maven.bundle.plugin.version>4.1.0</maven.bundle.plugin.version>
         <maven.failsafe.plugin.version>3.0.0-M5</maven.failsafe.plugin.version>
 
@@ -138,15 +138,15 @@
         <servlet-api.version>6.0.0</servlet-api.version>
         <grizzly.version>4.0.0.payara-p1</grizzly.version>
         <jax-rs-api.impl.version>3.1.0</jax-rs-api.impl.version>
-        <jersey.version>3.1.0-M7.payara-p1</jersey.version>
+        <jersey.version>3.1.0-M8</jersey.version>
         <jakarta.validation.version>3.0.1</jakarta.validation.version>
         <hibernate.validator.version>8.0.0.Alpha3</hibernate.validator.version>
         <hibernate.validator-cdi.version>8.0.0.Alpha3</hibernate.validator-cdi.version>
         <jakarta.el-api.version>5.0.0</jakarta.el-api.version>
-        <expressly.version>5.0.0-M2</expressly.version>
+        <expressly.version>5.0.0</expressly.version>
         <javax.cache-api.version>1.1.1.payara-p1</javax.cache-api.version>
         <mail.version>2.1.0-RC2</mail.version>
-        <angus.mail.version>1.0.0-M1</angus.mail.version>
+        <angus.mail.version>1.0.0</angus.mail.version>
         <jakarta.annotation-api.version>2.1.1</jakarta.annotation-api.version>
         <hk2.version>3.0.1.payara-p1</hk2.version>
         <osgi-resource-locator.version>1.0.3</osgi-resource-locator.version>
@@ -155,10 +155,10 @@
         <snakeyaml.version>1.30</snakeyaml.version>
         <hazelcast.version>5.1.1</hazelcast.version>
         <jaxb-api.version>4.0.0</jaxb-api.version>
-        <jaxb-impl.version>4.0.0-M4</jaxb-impl.version>
+        <jaxb-impl.version>4.0.1</jaxb-impl.version>
         <jakarta.ejb-api.version>4.0.0</jakarta.ejb-api.version>
         <jsp-api.version>3.1.0</jsp-api.version>
-        <jsp-impl.version>3.1.0-M6</jsp-impl.version>
+        <jsp-impl.version>3.1.0</jsp-impl.version>
         <jstl-api.version>3.0.0</jstl-api.version>
         <jstl-impl.version>3.0.0</jstl-impl.version>
         <jakarta.faces-api.version>4.0.1</jakarta.faces-api.version>
@@ -177,7 +177,7 @@
         <weld.version>5.0.1.Final</weld.version>
         <weld-api.version>5.0.SP2</weld-api.version>
         <jakarta.security.enterprise-api.version>3.0.0</jakarta.security.enterprise-api.version>
-        <jakarta.security.enterprise.version>3.0.0-M5</jakarta.security.enterprise.version>
+        <jakarta.security.enterprise.version>3.0.0</jakarta.security.enterprise.version>
         <jakarta.security.jacc-api.version>2.1.0</jakarta.security.jacc-api.version>
         <jakarta.security.auth.message-api.version>3.0.0</jakarta.security.auth.message-api.version>
         <exousia.version>2.1.0</exousia.version>
@@ -188,7 +188,7 @@
         <com.ibm.jbatch.spi.version>2.1.1</com.ibm.jbatch.spi.version>
         <jaxws-api.version>4.0.0</jaxws-api.version>
         <jakarta.jws-api.version>3.0.0</jakarta.jws-api.version>
-        <webservices.version>4.0.0-M4</webservices.version>
+        <webservices.version>4.0.1</webservices.version>
         <org.apache.santuario.version>2.3.0</org.apache.santuario.version>
         <woodstox.version>6.2.7</woodstox.version>
         <woodstock-jsf.version>5.0.0</woodstock-jsf.version>
@@ -197,7 +197,7 @@
         <jakarta.resource-api.version>2.1.0</jakarta.resource-api.version>
         <jakarta.enterprise.deploy-api.version>1.7.2</jakarta.enterprise.deploy-api.version>
         <jakarta.activation-api.version>2.1.0-RC2</jakarta.activation-api.version>
-        <angus.activation.version>1.0.0-M1</angus.activation.version>
+        <angus.activation.version>1.0.0</angus.activation.version>
         <istack-commons-runtime.version>4.0.1</istack-commons-runtime.version>
         <jline.version>3.20.0</jline.version>
         <wsdl4j.version>1.6.3</wsdl4j.version>
