@@ -95,6 +95,7 @@ import fish.payara.microprofile.metrics.jmx.MetricsMetadataHelper;
 import fish.payara.monitoring.collect.MonitoringDataCollector;
 import fish.payara.monitoring.collect.MonitoringDataSource;
 import fish.payara.nucleus.executorservice.PayaraExecutorService;
+import fish.payara.nucleus.healthcheck.HealthCheckService;
 import fish.payara.nucleus.healthcheck.HealthCheckStatsProvider;
 import java.util.logging.Level;
 
@@ -103,6 +104,9 @@ import java.util.logging.Level;
 public class MetricsServiceImpl implements MetricsService, ConfigListener, MonitoringDataSource {
 
     private static final Logger LOGGER = Logger.getLogger(MetricsService.class.getName());
+
+    @Inject
+    private HealthCheckService healthCheckService;
 
     @Inject
     private MetricsServiceConfiguration configuration;
@@ -246,7 +250,7 @@ public class MetricsServiceImpl implements MetricsService, ConfigListener, Monit
         }
     }
 
-    private static void collectRegistry(String contextName, MetricRegistry registry, MonitoringDataCollector collector) {
+    private void collectRegistry(String contextName, MetricRegistry registry, MonitoringDataCollector collector) {
 
         // OBS: this way of iterating the metrics in the registry is optimal because of its internal data organisation
         for (String name : registry.getNames()) {
@@ -256,7 +260,7 @@ public class MetricsServiceImpl implements MetricsService, ConfigListener, Monit
                 try {
                     MonitoringDataCollector metricCollector = tagCollector(contextName, metricID, collector);
                     if(metric instanceof HealthCheckStatsProvider
-                                && !((HealthCheckStatsProvider)metric).isEnabled()) {
+                                && (!((HealthCheckStatsProvider)metric).isEnabled() || !healthCheckService.isEnabled())) {
                             continue;
                     }
                     if (metric instanceof Counting) {
