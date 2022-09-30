@@ -146,7 +146,7 @@
 
         <commons-io.version>2.11.0</commons-io.version>
 
-        <mimepull.version>1.9.15</mimepull.version>
+        <mimepull.version>1.10.0</mimepull.version>
 
         <!-- Apache Felix is an open source implementation of the OSGi Core Release 8 framework specification. -->
         <org.apache.felix.main.version>7.0.1</org.apache.felix.main.version>
