@@ -63,6 +63,7 @@ import fish.payara.nucleus.hazelcast.xsd.AliasedDiscoveryStrategy;
 import fish.payara.nucleus.hazelcast.xsd.Hazelcast;
 import fish.payara.nucleus.hazelcast.xsd.Interfaces;
 import fish.payara.nucleus.hazelcast.xsd.Join;
+import fish.payara.nucleus.hazelcast.xsd.LiteMember;
 import fish.payara.nucleus.hazelcast.xsd.Multicast;
 import fish.payara.nucleus.hazelcast.xsd.Network;
 import fish.payara.nucleus.hazelcast.xsd.Port;
@@ -315,11 +316,14 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
                                 Hazelcast hazelcast = (Hazelcast) unmarshaller.unmarshal(xmlConfigFile);
                                 for (Object item : hazelcast.getImportOrConfigReplacersOrClusterName()) {
                                     JAXBElement element = (JAXBElement) item;
-                                    if (element.getName().equals("license-key")) {
+                                    if (element.getName().getLocalPart().equals("license-key")) {
                                         licenseKey = (String) element.getValue();
+                                        continue;
                                     }
-                                    if (element.getName().equals("lite-member")) {
-                                        lite = (Boolean) element.getValue();
+                                    if (element.getName().getLocalPart().equals("lite-member")) {
+                                        LiteMember liteMember = (LiteMember) element.getValue();
+                                        lite = liteMember.isEnabled();
+                                        continue;
                                     }
                                     if (element.getDeclaredType().equals(Network.class)) {
                                         Network network = (Network) element.getValue();
@@ -355,11 +359,10 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
                                             AliasedDiscoveryStrategy kubernetes = join.getKubernetes();
                                             if (kubernetes != null && kubernetes.isEnabled()) {
                                                 for (Element e : kubernetes.getAny()) {
-                                                    if (e.getTagName().equals("namespace")) {
-                                                        kubernetesNamespace = e.getNodeValue();
-                                                    }
-                                                    if (e.getTagName().equals("service-name")) {
-                                                        kubernetesServiceName = e.getNodeValue();
+                                                    if (e.getLocalName().equals("namespace")) {
+                                                        kubernetesNamespace = e.getFirstChild().getNodeValue();
+                                                    } else if (e.getLocalName().equals("service-name")) {
+                                                        kubernetesServiceName = e.getFirstChild().getNodeValue();
                                                     }
                                                 }
 
