@@ -155,7 +155,7 @@
         <snakeyaml.version>1.30</snakeyaml.version>
         <hazelcast.version>5.1.1</hazelcast.version>
         <jaxb-api.version>4.0.0</jaxb-api.version>
-        <jaxb-impl.version>4.0.0-M4</jaxb-impl.version>
+        <jaxb-impl.version>4.0.1</jaxb-impl.version>
         <jakarta.ejb-api.version>4.0.0</jakarta.ejb-api.version>
         <jsp-api.version>3.1.0</jsp-api.version>
         <jsp-impl.version>3.1.0-M6</jsp-impl.version>
