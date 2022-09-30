@@ -59,9 +59,11 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
 
+import fish.payara.nucleus.hazelcast.xsd.AliasedDiscoveryStrategy;
 import fish.payara.nucleus.hazelcast.xsd.Hazelcast;
 import fish.payara.nucleus.hazelcast.xsd.Interfaces;
 import fish.payara.nucleus.hazelcast.xsd.Join;
+import fish.payara.nucleus.hazelcast.xsd.Multicast;
 import fish.payara.nucleus.hazelcast.xsd.Network;
 import fish.payara.nucleus.hazelcast.xsd.Port;
 import fish.payara.nucleus.hazelcast.xsd.TcpIp;
@@ -88,6 +90,7 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
+import org.w3c.dom.Element;
 
 /**
  *
@@ -312,6 +315,12 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
                                 Hazelcast hazelcast = (Hazelcast) unmarshaller.unmarshal(xmlConfigFile);
                                 for (Object item : hazelcast.getImportOrConfigReplacersOrClusterName()) {
                                     JAXBElement element = (JAXBElement) item;
+                                    if (element.getName().equals("license-key")) {
+                                        licenseKey = (String) element.getValue();
+                                    }
+                                    if (element.getName().equals("lite-member")) {
+                                        lite = (Boolean) element.getValue();
+                                    }
                                     if (element.getDeclaredType().equals(Network.class)) {
                                         Network network = (Network) element.getValue();
                                         Port port = network.getPort();
@@ -337,6 +346,23 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
                                                         tcpipMembers = String.join(",", memberList.getMember());
                                                     }
                                                 }
+                                            }
+                                            Multicast multicast = join.getMulticast();
+                                            if (multicast != null && multicast.isEnabled()) {
+                                                multiCastGroup = multicast.getMulticastGroup();
+                                                multicastPort = String.valueOf(multicast.getMulticastPort());
+                                            }
+                                            AliasedDiscoveryStrategy kubernetes = join.getKubernetes();
+                                            if (kubernetes != null && kubernetes.isEnabled()) {
+                                                for (Element e : kubernetes.getAny()) {
+                                                    if (e.getTagName().equals("namespace")) {
+                                                        kubernetesNamespace = e.getNodeValue();
+                                                    }
+                                                    if (e.getTagName().equals("service-name")) {
+                                                        kubernetesServiceName = e.getNodeValue();
+                                                    }
+                                                }
+
                                             }
                                         }
                                     }
