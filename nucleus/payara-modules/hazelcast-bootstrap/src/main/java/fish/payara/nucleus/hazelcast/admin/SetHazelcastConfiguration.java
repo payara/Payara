@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2022] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -55,6 +55,16 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.inject.Inject;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.Unmarshaller;
+
+import fish.payara.nucleus.hazelcast.xsd.Hazelcast;
+import fish.payara.nucleus.hazelcast.xsd.Interfaces;
+import fish.payara.nucleus.hazelcast.xsd.Join;
+import fish.payara.nucleus.hazelcast.xsd.Network;
+import fish.payara.nucleus.hazelcast.xsd.Port;
+import fish.payara.nucleus.hazelcast.xsd.TcpIp;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -233,6 +243,10 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
                 ConfigSupport.apply(new SingleConfigCode<HazelcastRuntimeConfiguration>() {
                     @Override
                     public Object run(final HazelcastRuntimeConfiguration hazelcastRuntimeConfigurationProxy) throws PropertyVetoException, TransactionFailure {
+                        if (configFile != null && !"".equals(configFile.trim())) {
+                            hazelcastRuntimeConfigurationProxy.setHazelcastConfigurationFile(configFile);
+                            fillParamsFromFile(configFile);
+                        }
                         if (startPort != null) {
                             hazelcastRuntimeConfigurationProxy.setStartPort(startPort);
                         }                        
@@ -241,9 +255,6 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
                         }                        
                         if (multicastPort != null) {
                             hazelcastRuntimeConfigurationProxy.setMulticastPort(multicastPort);
-                        }
-                        if (configFile != null) {
-                            hazelcastRuntimeConfigurationProxy.setHazelcastConfigurationFile(configFile);
                         }
                         if (hostawarePartitioning != null) {
                             hazelcastRuntimeConfigurationProxy.setHostAwarePartitioning(hostawarePartitioning.toString());
@@ -291,8 +302,57 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
                         return null;
                     }
 
+                    private void fillParamsFromFile(String configFile) {
+                        File xmlConfigFile = new File(configFile);
+                        if (xmlConfigFile.exists()) {
+                            try {
+                                JAXBContext jc = JAXBContext.newInstance(Hazelcast.class);
+                                Unmarshaller unmarshaller = jc.createUnmarshaller();
+                                unmarshaller.setSchema(null);
+                                Hazelcast hazelcast = (Hazelcast) unmarshaller.unmarshal(xmlConfigFile);
+                                for (Object item : hazelcast.getImportOrConfigReplacersOrClusterName()) {
+                                    JAXBElement element = (JAXBElement) item;
+                                    if (element.getDeclaredType().equals(Network.class)) {
+                                        Network network = (Network) element.getValue();
+                                        Port port = network.getPort();
+                                        if (port != null) {
+                                            dasPort = String.valueOf(port.getValue());
+                                            autoIncrementPort = port.isAutoIncrement();
+                                        }
+                                        if (network.getPublicAddress() != null
+                                                && !"".equals(network.getPublicAddress().trim())) {
+                                            dasPublicAddress = network.getPublicAddress();
+                                        }
+                                        Interfaces networkInterfaces = network.getInterfaces();
+                                        if (networkInterfaces != null && networkInterfaces.isEnabled()) {
+                                            interfaces = String.join(",", networkInterfaces.getInterface());
+                                        }
+                                        Join join = network.getJoin();
+                                        if (join != null) {
+                                            TcpIp tcpIp = join.getTcpIp();
+                                            if (tcpIp != null) {
+                                                for (JAXBElement member : tcpIp.getRequiredMemberOrMemberOrInterface()) {
+                                                    if (member.getDeclaredType().equals(TcpIp.MemberList.class)) {
+                                                        TcpIp.MemberList memberList = (TcpIp.MemberList) member.getValue();
+                                                        tcpipMembers = String.join(",", memberList.getMember());
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            } catch (Exception ex) {
+                                if (logger.isLoggable(Level.FINE)) {
+                                    logger.fine("Hazelcast config file: Exception reading request");
+                                    logger.fine(ex.toString());
+                                }
+                                return;
+                            }
+                        }
+                    }
+
                 }, hazelcastRuntimeConfiguration);
-                
+
                 // get the configs that need the change applied if target is domain it is all configs
                 Config config = targetUtil.getConfig(target);
                 List<Config> configsToApply = new ArrayList<>(5);
@@ -303,9 +363,7 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
                 }
 
                 for(Config configToApply : configsToApply) {
-                    
                     HazelcastConfigSpecificConfiguration nodeConfiguration = configToApply.getExtensionByType(HazelcastConfigSpecificConfiguration.class);
-
                     ConfigSupport.apply(new SingleConfigCode<HazelcastConfigSpecificConfiguration>() {
                         @Override
                         public Object run(final HazelcastConfigSpecificConfiguration hazelcastRuntimeConfigurationProxy) throws PropertyVetoException, TransactionFailure {
