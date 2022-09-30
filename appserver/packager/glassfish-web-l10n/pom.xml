@@ -154,11 +154,6 @@
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.web</groupId>
-            <artifactId>web-naming-l10n</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.web</groupId>
             <artifactId>war-util-l10n</artifactId>
             <version>${project.version}</version>
         </dependency>

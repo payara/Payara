@@ -40,6 +40,7 @@
     holder.
 
 -->
+<!-- Portions Copyright 2022 Payara Foundation and/or its affiliates. -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -76,7 +77,6 @@
         <module>war-util-l10n</module>
         <module>web-core-l10n</module>
         <module>web-glue-l10n</module>
-        <module>web-naming-l10n</module>
         <module>cdi-api-fragment</module>
     </modules>
 
