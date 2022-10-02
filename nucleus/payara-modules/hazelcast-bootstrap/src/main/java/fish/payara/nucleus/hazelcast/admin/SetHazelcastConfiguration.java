@@ -316,6 +316,10 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
                                 Hazelcast hazelcast = (Hazelcast) unmarshaller.unmarshal(xmlConfigFile);
                                 for (Object item : hazelcast.getImportOrConfigReplacersOrClusterName()) {
                                     JAXBElement element = (JAXBElement) item;
+                                    if (element.getName().getLocalPart().equals("cluster-name")) {
+                                        hzClusterName = (String) element.getValue();
+                                        continue;
+                                    }
                                     if (element.getName().getLocalPart().equals("license-key")) {
                                         licenseKey = (String) element.getValue();
                                         continue;
