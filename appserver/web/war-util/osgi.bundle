@@ -40,7 +40,6 @@
 # Portions Copyright 2021 Payara Foundation and/or its affiliates
 
 -exportcontents: \
-                        com.sun.enterprise.glassfish.web; \
                         org.glassfish.web.loader; \
                         org.glassfish.web.util; \
                         fish.payara.web.loader; \

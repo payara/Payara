@@ -158,7 +158,7 @@ public class WarHandler extends AbstractArchiveHandler {
         Application applicationTemp = context.getModuleMetaData(Application.class);
         boolean hotDeploy = context.getCommandParameters(DeployCommandParameters.class).hotDeploy;
         final Application application = applicationTemp == null? Application.createApplication() : applicationTemp;
-        WebappClassLoader cloader = AccessController.doPrivileged(new PrivilegedAction<WebappClassLoader>() {
+        WebappClassLoader cloader = doPrivileged(new PrivilegedAction<WebappClassLoader>() {
             @Override
             public WebappClassLoader run() {
                 return new WebappClassLoader(parent, application, hotDeploy);
