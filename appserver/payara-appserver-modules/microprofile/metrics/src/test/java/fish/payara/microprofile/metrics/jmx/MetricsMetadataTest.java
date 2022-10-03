@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) [2021] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2022] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -49,11 +49,11 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MBeanMetadataTest {
+public class MetricsMetadataTest {
 
     @Test
     public void isValid_basic() {
-        MBeanMetadata metadata = new MBeanMetadata("m", "name"
+        MetricsMetadata metadata = new MetricsMetadata("m", "name"
                 , "Display", "description", MetricType.COUNTER, "none");
         List<XmlTag> tags = new ArrayList<>();
         tags.add(new XmlTag("test", "JUnit"));
@@ -63,7 +63,7 @@ public class MBeanMetadataTest {
 
     @Test
     public void isValid_EmptyTag() {
-        MBeanMetadata metadata = new MBeanMetadata("m", "name", "Display", "description"
+        MetricsMetadata metadata = new MetricsMetadata("m", "name", "Display", "description"
                 , MetricType.COUNTER, "none");
         List<XmlTag> tags = new ArrayList<>();
         tags.add(new XmlTag("test", "JUnit"));
@@ -73,7 +73,7 @@ public class MBeanMetadataTest {
 
     @Test
     public void isValid_PlaceHolder() {
-        MBeanMetadata metadata = new MBeanMetadata("amx:type=jdbc-connection-pool-mon,pp=/mon/server-mon[local-instance],name=resources/%sPool/numconnfree#current"
+        MetricsMetadata metadata = new MetricsMetadata("amx:type=jdbc-connection-pool-mon,pp=/mon/server-mon[local-instance],name=resources/%sPool/numconnfree#current"
                 , "jdbc.connection.pool.%s.pool.instance.free.connections"
                 , "Free Connections (Instance)"
                 , "The total number of free connections in the pool as of the last sampling"
@@ -85,7 +85,7 @@ public class MBeanMetadataTest {
 
     @Test
     public void isValid_PlaceHolderSomeTag() {
-        MBeanMetadata metadata = new MBeanMetadata("amx:type=jdbc-connection-pool-mon,pp=/mon/server-mon[local-instance],name=resources/%sPool/numconnfree#current"
+        MetricsMetadata metadata = new MetricsMetadata("amx:type=jdbc-connection-pool-mon,pp=/mon/server-mon[local-instance],name=resources/%sPool/numconnfree#current"
                 , "jdbc.connection.pool.%s.pool.instance.free.connections"
                 , "Free Connections (Instance)"
                 , "The total number of free connections in the pool as of the last sampling"
@@ -98,7 +98,7 @@ public class MBeanMetadataTest {
 
     @Test
     public void isValid_PlaceHolderPlaceHolderTag() {
-        MBeanMetadata metadata = new MBeanMetadata("amx:type=jdbc-connection-pool-mon,pp=/mon/server-mon[local-instance],name=resources/%sPool/numconnfree#current"
+        MetricsMetadata metadata = new MetricsMetadata("amx:type=jdbc-connection-pool-mon,pp=/mon/server-mon[local-instance],name=resources/%sPool/numconnfree#current"
                 , "jdbc.connection.pool.instance.free.connections"
                 , "Free Connections (Instance)"
                 , "The total number of free connections in the pool as of the last sampling"
@@ -112,7 +112,7 @@ public class MBeanMetadataTest {
     @Test
     public void isValid_PlaceHolderEmptyTag() {
         // FISH-5801
-        MBeanMetadata metadata = new MBeanMetadata("amx:type=jdbc-connection-pool-mon,pp=/mon/server-mon[local-instance],name=resources/%sPool/numconnfree#current"
+        MetricsMetadata metadata = new MetricsMetadata("amx:type=jdbc-connection-pool-mon,pp=/mon/server-mon[local-instance],name=resources/%sPool/numconnfree#current"
                 , "jdbc.connection.pool.%s.pool.instance.free.connections"
                 , "Free Connections (Instance)"
                 , "The total number of free connections in the pool as of the last sampling"
