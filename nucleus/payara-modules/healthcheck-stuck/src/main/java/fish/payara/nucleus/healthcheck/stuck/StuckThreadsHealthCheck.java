@@ -39,6 +39,7 @@
  */
 package fish.payara.nucleus.healthcheck.stuck;
 
+import fish.payara.nucleus.healthcheck.HealthCheckStatsProvider;
 import fish.payara.nucleus.healthcheck.HealthCheckResult;
 import fish.payara.monitoring.collect.MonitoringData;
 import fish.payara.monitoring.collect.MonitoringDataCollector;
@@ -54,6 +55,8 @@ import fish.payara.nucleus.healthcheck.configuration.StuckThreadsChecker;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -62,6 +65,8 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
+import java.util.Map;
+import java.util.Set;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
@@ -75,7 +80,12 @@ import org.jvnet.hk2.annotations.Service;
 @RunLevel(StartupRunLevel.VAL)
 public class StuckThreadsHealthCheck extends
         BaseHealthCheck<HealthCheckStuckThreadExecutionOptions, StuckThreadsChecker>
-        implements MonitoringDataSource, MonitoringWatchSource {
+        implements MonitoringDataSource, MonitoringWatchSource, HealthCheckStatsProvider {
+
+    private final Map<String, Number> stuckThreadResult = new ConcurrentHashMap<>();
+    private static final String STUCK_THREAD_COUNT = "count";
+    private static final String STUCK_THREAD_MAX_DURATION = "maxDuration";
+    private static final Set<String> VALID_ATTRIBUTES = new HashSet<>(Arrays.asList(STUCK_THREAD_COUNT, STUCK_THREAD_MAX_DURATION));
 
     @FunctionalInterface
     private interface StuckThreadConsumer {
@@ -83,14 +93,33 @@ public class StuckThreadsHealthCheck extends
     }
 
     @Inject
-    StuckThreadsStore stuckThreadsStore;
+    private StuckThreadsStore stuckThreadsStore;
 
     @Inject
-    StuckThreadsChecker checker;
+    private StuckThreadsChecker checker;
 
     @PostConstruct
     void postConstruct() {
         postConstruct(this, StuckThreadsChecker.class);
+    }
+
+    @Override
+    public Object getValue(Class type, String attributeName) {
+        if (attributeName == null) {
+            throw new IllegalArgumentException("attribute name is required");
+        }
+        if (!VALID_ATTRIBUTES.contains(attributeName)) {
+            throw new IllegalArgumentException("Invalid attribute name, supported attributes are " + VALID_ATTRIBUTES);
+        }
+        if (!Number.class.isAssignableFrom(type)) {
+            throw new IllegalArgumentException("attribute type must be number");
+        }
+        return stuckThreadResult.getOrDefault(attributeName, 0);
+    }
+
+    @Override
+    public boolean isEnabled() {
+       return this.getOptions() != null ? this.getOptions().isEnabled() : false;
     }
 
     @Override
@@ -126,6 +155,8 @@ public class StuckThreadsHealthCheck extends
         });
         collector.collect("StuckThreadDuration", maxDuration);
         collector.collect("StuckThreadCount", count);
+        stuckThreadResult.put(STUCK_THREAD_MAX_DURATION, maxDuration.get());
+        stuckThreadResult.put(STUCK_THREAD_COUNT, count.get());
     }
 
     @Override

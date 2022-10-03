@@ -37,16 +37,32 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld.services;
 
-import com.sun.enterprise.deployment.*;
+import com.sun.enterprise.deployment.BundleDescriptor;
+import com.sun.enterprise.deployment.EjbBundleDescriptor;
+import com.sun.enterprise.deployment.EjbDescriptor;
+import com.sun.enterprise.deployment.InjectionCapable;
+import com.sun.enterprise.deployment.InjectionInfo;
+import com.sun.enterprise.deployment.JndiNameEnvironment;
+import com.sun.enterprise.deployment.ManagedBeanDescriptor;
+import java.util.function.Predicate;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.enterprise.inject.spi.AnnotatedField;
+import javax.enterprise.inject.spi.AnnotatedType;
+import javax.enterprise.inject.spi.BeanManager;
+import javax.enterprise.inject.spi.DefinitionException;
+import javax.enterprise.inject.spi.InjectionTarget;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.ejb.api.EjbContainerServices;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.weld.DeploymentImpl;
 import org.glassfish.weld.connector.WeldUtils;
+import org.jboss.weld.annotated.slim.AnnotatedTypeIdentifier;
+import org.jboss.weld.annotated.slim.backed.BackedAnnotatedType;
 import org.jboss.weld.injection.spi.InjectionContext;
 import org.jboss.weld.injection.spi.InjectionServices;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -58,8 +74,6 @@ import com.sun.enterprise.container.common.spi.util.InjectionManager;
 import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.enterprise.inject.Produces;
-import javax.enterprise.inject.spi.*;
-import javax.enterprise.inject.spi.InjectionTarget;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceContext;
@@ -70,6 +84,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+
 import org.glassfish.api.invocation.ComponentInvocation;
 
 /**
@@ -77,12 +92,23 @@ import org.glassfish.api.invocation.ComponentInvocation;
  */
 public class InjectionServicesImpl implements InjectionServices {
 
+    private static final Logger logger = Logger.getLogger(InjectionServicesImpl.class.getName());
+
+    private static final String TRANSACTIONAL_EXTENSION_NAME = "org.glassfish.cdi.transaction.TransactionalExtension";
+
+    private static final String TRANSACTION_EXTENSION_NAME = "org.glassfish.cdi.transaction.TransactionScopedContextExtension";
+
     private InjectionManager injectionManager;
 
     // Associated bundle context
     private BundleDescriptor bundleContext;
 
     private DeploymentImpl deployment;
+
+    private Predicate<BackedAnnotatedType> availableAnnotatedType = n -> n != null && n.getIdentifier() != null;
+    
+    private Predicate<AnnotatedTypeIdentifier> isTransactionExtension = t -> t.getBdaId().equals(TRANSACTIONAL_EXTENSION_NAME)
+            || t.getBdaId().equals(TRANSACTION_EXTENSION_NAME);
 
     public InjectionServicesImpl(InjectionManager injectionMgr, BundleDescriptor context, DeploymentImpl deployment) {
         injectionManager = injectionMgr;
@@ -138,12 +164,24 @@ public class InjectionServicesImpl implements InjectionServices {
               // must use the current jndi component env to lookup the objects to inject
               injectionManager.inject( targetClass, target, injectionEnv, null, false );
             } else {
-              if( componentEnv == null ) {
-                //throw new IllegalStateException("No valid EE environment for injection of " + targetClassName);
-                System.err.println("No valid EE environment for injection of " + targetClassName);
-                injectionContext.proceed();
-                return;
-              }
+                if (annotatedType instanceof BackedAnnotatedType) {
+                    BackedAnnotatedType backedAnnotatedType = ((BackedAnnotatedType) annotatedType);
+                    //Added condition to skip the failure when the TransactionScopedCDIEventHelperImpl is tried to be used
+                    //for the TransactionalScoped CDI Bean
+                    if (componentEnv == null && availableAnnotatedType.test(backedAnnotatedType)
+                            && isTransactionExtension.test(backedAnnotatedType.getIdentifier())) {
+                        injectionContext.proceed();
+                        return;
+                    }
+                }
+
+                if (componentEnv == null) {
+                    logger.log(Level.FINE,
+                            "No valid EE environment for injection of {0}. The methods that is missing the context is {1}",
+                            new Object[] {targetClass, injectionContext.getAnnotatedType().getMethods()});
+                    injectionContext.proceed();
+                    return;
+                }
 
               // Perform EE-style injection on the target.  Skip PostConstruct since
               // in this case 299 impl is responsible for calling it.

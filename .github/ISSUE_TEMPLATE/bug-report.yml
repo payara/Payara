@@ -1,0 +1,69 @@
+name: Bug Report
+description: Report a bug or defect in the Payara Platform
+title: "Bug Report: "
+labels: [ "Status: Open", "Type: Bug" ]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Brief Summary
+      description: |
+        Describe clearly and concisely a summary of the bug or defect.
+    validations:
+      required: true
+  - type: textarea
+    id: expected-outcome
+    attributes:
+      label: Expected Outcome
+      description: |
+        Provide a detailed summary of the expected behaviour the corresponding distribution and/or deployed applications SHOULD exhibit after executing the steps described below
+    validations:
+      required: true
+  - type: textarea
+    id: current-outcome
+    attributes:
+      label: Current Outcome
+      description: |
+        Provide a detailed summary of the actual behaviour the corresponding distribution and/or deployed applications exhibit after executing the steps described below. Please put emphasis on any unwanted results.
+    validations:
+      required: true
+  - type: textarea
+    id: reproducer
+    attributes:
+      label: Reproducer
+      description: |
+        Please provide a simple to follow scenario on how to reproduce this issue on the latest release of Payara Community Edition.
+        A reproducer should follow the SSCCE rules: http://www.sscce.org/
+    validations:
+      required: true
+  - type: input
+    id: operating-system
+    attributes:
+      label: Operating System
+      description: What operating system and version are you using?
+      placeholder: Example - Windows 10 Pro
+    validations:
+      required: true
+  - type: input
+    id: jdk-version
+    attributes:
+      label: JDK Version
+      description: What JDK version and distribution are you using?
+      placeholder: Example - Zulu JDK 1.8.0_322
+    validations:
+      required: true
+  - type: dropdown
+    id: payara-distribution
+    validations:
+      required: true
+    attributes:
+      label: Payara Distribution
+      description: What distribution of Payara are you using?
+      multiple: true
+      options:
+        - Payara Server Full Profile
+        - Payara Server Web Profile
+        - Payara Micro
+        - Payara Embedded All
+        - Payara Embedded Web
+        - Payara Docker Image

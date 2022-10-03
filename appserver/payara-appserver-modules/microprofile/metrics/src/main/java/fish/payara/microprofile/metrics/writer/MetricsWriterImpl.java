@@ -58,6 +58,9 @@ import fish.payara.microprofile.metrics.MetricsService.MetricsContext;
 import fish.payara.microprofile.metrics.exception.NoSuchMetricException;
 import fish.payara.microprofile.metrics.exception.NoSuchRegistryException;
 import fish.payara.microprofile.metrics.impl.MetricRegistryImpl;
+import fish.payara.nucleus.healthcheck.HealthCheckService;
+import fish.payara.nucleus.healthcheck.HealthCheckStatsProvider;
+import org.glassfish.internal.api.Globals;
 
 public class MetricsWriterImpl implements MetricsWriter {
 
@@ -65,6 +68,7 @@ public class MetricsWriterImpl implements MetricsWriter {
     private final Set<String> contextNames;
     private final Function<String, MetricsContext> getContextByName;
     private final Tag[] globalTags;
+    private final HealthCheckService healthCheckService;
 
     public MetricsWriterImpl(MetricExporter exporter, Set<String> contextNames,
             Function<String, MetricsContext> getContextByName, Tag... globalTags) {
@@ -72,6 +76,8 @@ public class MetricsWriterImpl implements MetricsWriter {
         this.contextNames = contextNames;
         this.getContextByName = getContextByName;
         this.globalTags = globalTags;
+        this.healthCheckService = Globals.getDefaultBaseServiceLocator().getService(HealthCheckService.class);
+
     }
 
     @Override
@@ -121,6 +127,10 @@ public class MetricsWriterImpl implements MetricsWriter {
         Metadata metadata = registry.getMetadata(metricName);
         for (Entry<MetricID, Metric> metric : registry.getMetrics(metricName).entrySet()) {
             MetricID metricID = metric.getKey();
+            if (metric.getValue() instanceof HealthCheckStatsProvider
+                    && (!((HealthCheckStatsProvider) metric.getValue()).isEnabled() || !healthCheckService.isEnabled())) {
+                continue;
+            }
             if (globalTags.length > 0) {
                 Tag[]  tagsWithoutGlobal = metricID.getTagsAsArray();
                 Tag[] tags = new Tag[tagsWithoutGlobal.length +  globalTags.length];
