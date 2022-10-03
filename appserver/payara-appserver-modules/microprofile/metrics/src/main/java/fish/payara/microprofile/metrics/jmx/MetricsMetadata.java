@@ -40,10 +40,10 @@
 
 package fish.payara.microprofile.metrics.jmx;
 
-import static fish.payara.microprofile.metrics.jmx.MBeanMetadataHelper.ATTRIBUTE;
-import static fish.payara.microprofile.metrics.jmx.MBeanMetadataHelper.KEY;
-import static fish.payara.microprofile.metrics.jmx.MBeanMetadataHelper.SPECIFIER;
-import static fish.payara.microprofile.metrics.jmx.MBeanMetadataHelper.SUB_ATTRIBUTE;
+import static fish.payara.microprofile.metrics.jmx.MetricsMetadataHelper.ATTRIBUTE;
+import static fish.payara.microprofile.metrics.jmx.MetricsMetadataHelper.KEY;
+import static fish.payara.microprofile.metrics.jmx.MetricsMetadataHelper.SPECIFIER;
+import static fish.payara.microprofile.metrics.jmx.MetricsMetadataHelper.SUB_ATTRIBUTE;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -64,12 +64,15 @@ import org.eclipse.microprofile.metrics.MetricType;
 import org.eclipse.microprofile.metrics.MetricUnits;
 
 @XmlAccessorType(XmlAccessType.FIELD)
-public class MBeanMetadata implements Metadata {
+public class MetricsMetadata implements Metadata {
 
-    private static final Logger LOGGER = Logger.getLogger(MBeanMetadata.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(MetricsMetadata.class.getName());
 
     @XmlElement(name = "mbean")
     private String mBean;
+
+    @XmlElement(name = "service")
+    private String service;
 
     @XmlElement
     private boolean dynamic = true;
@@ -97,15 +100,15 @@ public class MBeanMetadata implements Metadata {
     private List<XmlTag> tags;
 
 
-    public MBeanMetadata() {
+    public MetricsMetadata() {
         tags = new ArrayList<>();
     }
 
-    public MBeanMetadata(Metadata metadata) {
+    public MetricsMetadata(Metadata metadata) {
         this(null, metadata.getName(), metadata.getDisplayName(), metadata.description().orElse(null), metadata.getTypeRaw(), metadata.unit().orElse(null));
     }
 
-    public MBeanMetadata(String mBean, String name, String displayName, String description, MetricType typeRaw, String unit) {
+    public MetricsMetadata(String mBean, String name, String displayName, String description, MetricType typeRaw, String unit) {
         this();
         this.mBean = mBean;
         this.name = name;
@@ -121,6 +124,14 @@ public class MBeanMetadata implements Metadata {
 
     public void setMBean(String mBean) {
         this.mBean = mBean;
+    }
+
+    public String getService() {
+        return service;
+    }
+
+    public void setService(String service) {
+        this.service = service;
     }
 
     public boolean isDynamic() {
@@ -184,14 +195,14 @@ public class MBeanMetadata implements Metadata {
 
     private boolean validateMetadata() {
         boolean validationResult = true;
-        MBeanMetadata metadata = this;
+        MetricsMetadata metadata = this;
 
         if (isNull(metadata.getName())) {
             LOGGER.log(WARNING, "'name' property not defined in " + metadata.getMBean() + " mbean metadata", new Exception());
             validationResult = false;
         }
-        if (isNull(metadata.getMBean())) {
-            LOGGER.log(WARNING, "'mbean' property not defined in {0} metadata", metadata.getName());
+        if (isNull(metadata.getMBean()) && isNull(metadata.getService())) {
+            LOGGER.log(WARNING, "'mbean' or 'service' property not defined in {0} metadata", metadata.getName());
             validationResult = false;
         }
         if (isNull(metadata.getType())) {
@@ -275,7 +286,7 @@ public class MBeanMetadata implements Metadata {
 
     @Override
     public String toString() {
-        return new StringJoiner(", ", MBeanMetadata.class.getSimpleName() + "[", "]")
+        return new StringJoiner(", ", MetricsMetadata.class.getSimpleName() + "[", "]")
                 .add("mBean='" + mBean + "'")
                 .add("dynamic=" + dynamic)
                 .add("name='" + name + "'")
