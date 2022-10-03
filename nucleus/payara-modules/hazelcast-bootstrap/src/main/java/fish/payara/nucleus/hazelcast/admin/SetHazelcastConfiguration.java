@@ -60,6 +60,7 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
 
 import fish.payara.nucleus.hazelcast.xsd.AliasedDiscoveryStrategy;
+import fish.payara.nucleus.hazelcast.xsd.ExecutorService;
 import fish.payara.nucleus.hazelcast.xsd.Hazelcast;
 import fish.payara.nucleus.hazelcast.xsd.Interfaces;
 import fish.payara.nucleus.hazelcast.xsd.Join;
@@ -67,6 +68,7 @@ import fish.payara.nucleus.hazelcast.xsd.LiteMember;
 import fish.payara.nucleus.hazelcast.xsd.Multicast;
 import fish.payara.nucleus.hazelcast.xsd.Network;
 import fish.payara.nucleus.hazelcast.xsd.Port;
+import fish.payara.nucleus.hazelcast.xsd.ScheduledExecutorService;
 import fish.payara.nucleus.hazelcast.xsd.TcpIp;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
@@ -327,6 +329,26 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
                                     if (element.getName().getLocalPart().equals("lite-member")) {
                                         LiteMember liteMember = (LiteMember) element.getValue();
                                         lite = liteMember.isEnabled();
+                                        continue;
+                                    }
+                                    if (element.getDeclaredType().equals(ExecutorService.class)) {
+                                        ExecutorService executorService = (ExecutorService) element.getValue();
+                                        if (executorService.getPoolSize() != null) {
+                                            executorPoolSize = String.valueOf(executorService.getPoolSize());
+                                        }
+                                        if (executorService.getQueueCapacity() != null) {
+                                            executorQueueCapacity = String.valueOf(executorService.getQueueCapacity());
+                                        }
+                                        continue;
+                                    }
+                                    if (element.getDeclaredType().equals(ScheduledExecutorService.class)) {
+                                        ScheduledExecutorService scheduledExecutorService = (ScheduledExecutorService) element.getValue();
+                                        if (scheduledExecutorService.getPoolSize() != null) {
+                                            scheduledExecutorPoolSize = String.valueOf(scheduledExecutorService.getPoolSize());
+                                        }
+                                        if (scheduledExecutorService.getCapacity() != null) {
+                                            scheduledExecutorQueueCapacity = String.valueOf(scheduledExecutorService.getCapacity());
+                                        }
                                         continue;
                                     }
                                     if (element.getDeclaredType().equals(Network.class)) {
