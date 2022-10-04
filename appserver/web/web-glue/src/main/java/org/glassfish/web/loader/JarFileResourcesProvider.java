@@ -50,6 +50,7 @@ import java.util.jar.JarFile;
  *
  * @author Shing Wai Chan
  */
+@Deprecated
 public interface JarFileResourcesProvider {
     public JarFile[] getJarFiles();
 }
