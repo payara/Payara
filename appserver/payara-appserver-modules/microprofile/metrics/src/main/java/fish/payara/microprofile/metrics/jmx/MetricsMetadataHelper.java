@@ -221,12 +221,69 @@ public class MetricsMetadataHelper {
                 } finally {
                     removedMetadataList.add(metadata);
                 }
+            } else if (metadata.getService() != null
+                    && (metadata.getService().contains(SPECIFIER)
+                    || metadata.getService().contains(ATTRIBUTE)
+                    || metadata.getService().contains(SUB_ATTRIBUTE)
+                    || metadata.getService().contains(INSTANCE))) {
+                ServiceExpression expression = new ServiceExpression(
+                        metadata.getService().replace(SPECIFIER, "*")
+                );
+                if (expression.getAttributeName() != null
+                        && (expression.getAttributeName().equals("*") || expression.getAttributeName().equals(ATTRIBUTE))) {
+                    removedMetadataList.add(metadata);
+                    resolvedMetadataList.addAll(
+                            loadAttribute(expression, metadata)
+                    );
+                } else if (expression.getSubAttributeName() != null
+                        && (expression.getSubAttributeName().equals("*") || expression.getSubAttributeName().equals(SUB_ATTRIBUTE))) {
+                    removedMetadataList.add(metadata);
+                    resolvedMetadataList.addAll(
+                            loadSubAttribute(expression, metadata, expression.getAttributeName())
+                    );
+                }
             }
         }
 
         metadataList.removeAll(removedMetadataList);
         metadataList.addAll(resolvedMetadataList);
         return unresolvedMetadataList;
+    }
+    
+    private List<MetricsMetadata> loadAttribute(
+            ServiceExpression expression,
+            MetricsMetadata metadata) {
+
+        List<MetricsMetadata> metadataList = new ArrayList<>();
+        String instanceName = serverEnv.getInstanceName();
+        HealthCheckStatsProvider healthCheck = habitat.getService(HealthCheckStatsProvider.class, expression.getServiceId());
+        for (String attribute : healthCheck.getAttributes()) {
+            if (expression.getSubAttributeName() != null
+                    && (expression.getSubAttributeName().equals("*") || expression.getSubAttributeName().equals(SUB_ATTRIBUTE))) {
+                metadataList.addAll(
+                        loadSubAttribute(expression, metadata, attribute)
+                );
+            } else {
+                metadataList.add(createMetadata(metadata, expression.getServiceId(), null, attribute, expression.getSubAttributeName(), instanceName));
+            }
+        }
+
+        return metadataList;
+    }
+
+    private List<MetricsMetadata> loadSubAttribute(
+            ServiceExpression expression,
+            MetricsMetadata metadata,
+            String attribute) {
+
+        List<MetricsMetadata> metadataList = new ArrayList<>();
+        String instanceName = serverEnv.getInstanceName();
+        HealthCheckStatsProvider healthCheck = habitat.getService(HealthCheckStatsProvider.class, expression.getServiceId());
+        for (String subAttribute : healthCheck.getSubAttributes()) {
+            metadataList.add(createMetadata(metadata, expression.getServiceId(), null, attribute, subAttribute, instanceName));
+        }
+
+        return metadataList;
     }
 
     private static List<MetricsMetadata> loadAttribute(
@@ -341,7 +398,7 @@ public class MetricsMetadataHelper {
             builder.append(SUB_ATTRIBUTE_SEPARATOR);
             builder.append(subAttribute);
         }
-        MetricsMetadata newMetaData =  new MetricsMetadata(builder.toString(),
+        MetricsMetadata newMetaData =  new MetricsMetadata(
                 formatMetadata(
                         metadata.getName(),
                         key,
@@ -366,6 +423,11 @@ public class MetricsMetadataHelper {
                 metadata.getTypeRaw(),
                 metadata.unit().orElse(null)
         );
+        if(metadata.getMBean() != null) {
+            newMetaData.setMBean(builder.toString());
+        } else {
+            newMetaData.setService(builder.toString());
+        }
         for (XmlTag oldTag: metadata.getTags()) {
             XmlTag newTag = new XmlTag();
             newTag.setName(formatMetadata(oldTag.getName(), key, attribute, subAttribute, instanceName));
@@ -398,5 +460,9 @@ public class MetricsMetadataHelper {
         }
         return metadata;
     }
+    
+
+
+
 
 }

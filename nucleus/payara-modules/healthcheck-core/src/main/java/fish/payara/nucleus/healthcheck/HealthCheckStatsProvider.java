@@ -39,12 +39,17 @@
  */
 package fish.payara.nucleus.healthcheck;
 
+import java.util.Set;
 import org.jvnet.hk2.annotations.Contract;
 
 @Contract
 public interface HealthCheckStatsProvider {
 
-    public <T extends Object> T getValue(Class<T> type, String attributeName);
+    <T extends Object> T getValue(Class<T> type, String attribute, String subAttribute);
+
+    Set<String> getAttributes();
+
+    Set<String> getSubAttributes();
 
     boolean isEnabled();
 }

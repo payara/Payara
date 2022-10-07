@@ -39,24 +39,38 @@
  */
 package fish.payara.microprofile.metrics.healthcheck;
 
+import static fish.payara.microprofile.metrics.jmx.MetricsMetadataHelper.ATTRIBUTE_SEPARATOR;
+import static fish.payara.microprofile.metrics.jmx.MetricsMetadataHelper.SUB_ATTRIBUTE_SEPARATOR;
+
 public class ServiceExpression {
 
     private String service;
 
     private String attributeName;
+    private String subAttributeName;
 
-    private static final String ATTRIBUTE_SEPARATOR = "#";
 
     public ServiceExpression(String expression) {
         if (expression == null || expression.trim().isEmpty()) {
             throw new IllegalArgumentException("Service Expression is null");
         }
         int slashIndex = expression.lastIndexOf(ATTRIBUTE_SEPARATOR);
-        if (slashIndex < 0) {
-            throw new IllegalArgumentException("MBean Expression is invalid : " + expression);
+        if (slashIndex >= 0) {
+            service = expression.substring(0, slashIndex);
+            attributeName = expression.substring(slashIndex + 1);
+            if (attributeName.contains(SUB_ATTRIBUTE_SEPARATOR)) {
+                int hashIndex = attributeName.indexOf(SUB_ATTRIBUTE_SEPARATOR);
+                subAttributeName = attributeName.substring(hashIndex + 1);
+                attributeName = attributeName.substring(0, hashIndex);
+            }
+        } else {
+            slashIndex = expression.lastIndexOf(SUB_ATTRIBUTE_SEPARATOR);
+            if (slashIndex < 0) {
+                throw new IllegalArgumentException("Service Expression is invalid : " + expression);
+            }
+            service = expression.substring(0, slashIndex);
+            subAttributeName = expression.substring(slashIndex + 1);
         }
-        service = expression.substring(0, slashIndex);
-        attributeName = expression.substring(slashIndex + 1);
     }
 
     public String getServiceId() {
@@ -65,6 +79,10 @@ public class ServiceExpression {
 
     public String getAttributeName() {
         return attributeName;
+    }
+
+    public String getSubAttributeName() {
+        return subAttributeName;
     }
 
 }
