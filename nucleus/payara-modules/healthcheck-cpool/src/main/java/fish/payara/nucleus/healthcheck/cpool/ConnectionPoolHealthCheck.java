@@ -51,6 +51,7 @@ import fish.payara.monitoring.collect.MonitoringWatchCollector;
 import fish.payara.monitoring.collect.MonitoringWatchSource;
 import fish.payara.notification.healthcheck.HealthCheckResultEntry;
 import fish.payara.nucleus.healthcheck.HealthCheckResult;
+import fish.payara.nucleus.healthcheck.HealthCheckStatsProvider;
 import fish.payara.nucleus.healthcheck.cpool.configuration.ConnectionPoolChecker;
 import fish.payara.nucleus.healthcheck.preliminary.BaseThresholdHealthCheck;
 import org.glassfish.hk2.runlevel.RunLevel;
@@ -65,9 +66,16 @@ import org.jvnet.hk2.annotations.Service;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
+import static java.util.Arrays.asList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import static java.util.stream.Collectors.toSet;
 
 /**
  * @author mertcaliskan
@@ -77,7 +85,7 @@ import java.util.function.Consumer;
 @RunLevel(10)
 public class ConnectionPoolHealthCheck
     extends BaseThresholdHealthCheck<HealthCheckConnectionPoolExecutionOptions, ConnectionPoolChecker>
-    implements MonitoringDataSource, MonitoringWatchSource {
+    implements MonitoringDataSource, MonitoringWatchSource, HealthCheckStatsProvider {
 
     @Inject
     private Domain domain;
@@ -88,9 +96,53 @@ public class ConnectionPoolHealthCheck
     @Inject
     private PoolManager poolManager;
 
+    private final Map<String, Long> usedConnections = new ConcurrentHashMap<>();
+    private final Map<String, Long> freeConnections = new ConcurrentHashMap<>();
+    private static final String USED_CONNECTION = "usedConnection";
+    private static final String FREE_CONNECTION = "freeConnection";
+    private static final String TOTAL_CONNECTION = "totalConnection";
+    private static final Set<String> VALID_SUB_ATTRIBUTES = new HashSet<>(asList(USED_CONNECTION, FREE_CONNECTION, TOTAL_CONNECTION));
+
     @PostConstruct
     void postConstruct() {
         postConstruct(this, ConnectionPoolChecker.class);
+    }
+
+    @Override
+    public Object getValue(Class type, String attributeName, String subAttributeName) {
+        if (subAttributeName == null) {
+            throw new IllegalArgumentException("sub-attribute name is required");
+        }
+        if (!VALID_SUB_ATTRIBUTES.contains(subAttributeName)) {
+            throw new IllegalArgumentException("Invalid sub-attribute name: " + subAttributeName + ", supported sub-attributes are " + VALID_SUB_ATTRIBUTES);
+        }
+        if (!Number.class.isAssignableFrom(type)) {
+            throw new IllegalArgumentException("attribute type must be number");
+        }
+        switch (subAttributeName) {
+            case USED_CONNECTION:
+                return usedConnections.getOrDefault(attributeName, 0L);
+            case FREE_CONNECTION:
+                return freeConnections.getOrDefault(attributeName, 0L);
+            case TOTAL_CONNECTION:
+                return usedConnections.getOrDefault(attributeName, 0L) + freeConnections.getOrDefault(attributeName, 0L);
+        }
+        return 0L;
+    }
+
+    @Override
+    public Set<String> getAttributes() {
+       return getAllJdbcResourcesName().stream().map(PoolInfo::getName).collect(toSet());
+    }
+
+    @Override
+    public Set<String> getSubAttributes() {
+        return VALID_SUB_ATTRIBUTES;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return this.getOptions() != null ? this.getOptions().isEnabled() : false;
     }
 
     @Override
@@ -113,6 +165,8 @@ public class ConnectionPoolHealthCheck
     @Override
     protected HealthCheckResult doCheckInternal() {
         HealthCheckResult result = new HealthCheckResult();
+        freeConnections.clear();
+        usedConnections.clear();
         consumeAllJdbcResources(createConsumer((info, usedPercentage) ->
             result.add(new HealthCheckResultEntry(decideOnStatusWithRatio(usedPercentage),
                     info.getName() + " Usage (%): " + new DecimalFormat("#.00").format(usedPercentage)))
@@ -129,8 +183,10 @@ public class ConnectionPoolHealthCheck
     @MonitoringData(ns = "health", intervalSeconds = 8)
     public void collect(MonitoringDataCollector collector) {
         if (options != null && options.isEnabled()) {
-            consumeAllJdbcResources(createConsumer((info, usedPercentage) ->
-                collector.group(info.getName()).collect("PoolUsage", usedPercentage.longValue())
+            freeConnections.clear();
+            usedConnections.clear();
+            consumeAllJdbcResources(createConsumer((info, usedPercentage)
+                    -> collector.group(info.getName()).collect("PoolUsage", usedPercentage.longValue())
             ));
         }
     }
@@ -152,6 +208,8 @@ public class ConnectionPoolHealthCheck
                         double usedPercentage = 100d * usedConnection / totalConnection;
                         poolUsageConsumer.accept(poolInfo, usedPercentage);
                     }
+                    freeConnections.put(poolInfo.getName(), freeConnection);
+                    usedConnections.put(poolInfo.getName(), usedConnection);
                 }
             }
         };
@@ -183,5 +241,39 @@ public class ConnectionPoolHealthCheck
                 }
             }
         }
+    }
+    
+    private List<PoolInfo> getAllJdbcResourcesName() {
+        List<PoolInfo> poolInfos = new ArrayList<>();
+        poolInfos.addAll(getJdbcResourcesInfo(domain.getResources()));
+        for (Application app : applications.getApplications()) {
+            if (ResourcesUtil.createInstance().isEnabled(app)) {
+                poolInfos.addAll(getJdbcResourcesInfo(app.getResources()));
+                List<Module> modules = app.getModule();
+                if (modules != null) {
+                    for (Module module : modules) {
+                        poolInfos.addAll(getJdbcResourcesInfo(module.getResources()));
+                    }
+                }
+            }
+        }
+        return poolInfos; 
+    }
+
+    private List<PoolInfo> getJdbcResourcesInfo(Resources resources) {
+        List<PoolInfo> poolInfos = new ArrayList<>();
+        if (resources != null) {
+            List<Resource> list = resources.getResources();
+            if (list != null) {
+                for (Resource resource : list) {
+                    if (JdbcResource.class.isInstance(resource)) {
+                        ResourceInfo resourceInfo = ResourceUtil.getResourceInfo((JdbcResource)resource);
+                        JdbcConnectionPool pool = JdbcResourcesUtil.createInstance().getJdbcConnectionPoolOfResource(resourceInfo);
+                        poolInfos.add(ResourceUtil.getPoolInfo(pool));
+                    }
+                }
+            }
+        }
+        return poolInfos;   
     }
 }
