@@ -274,7 +274,7 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
                 ConfigSupport.apply(new SingleConfigCode<HazelcastRuntimeConfiguration>() {
                     @Override
                     public Object run(final HazelcastRuntimeConfiguration hazelcastRuntimeConfigurationProxy) throws PropertyVetoException, TransactionFailure {
-                        if (hazelcastCore != null) {
+                        if (hazelcastElement != null) {
                             hazelcastRuntimeConfigurationProxy.setHazelcastConfigurationFile(configFile);
                             fillParamsFromFile(hazelcastElement);
                         }
