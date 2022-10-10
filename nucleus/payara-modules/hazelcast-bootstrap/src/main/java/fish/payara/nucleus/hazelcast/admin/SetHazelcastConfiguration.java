@@ -403,6 +403,13 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
                                 }
                                 return;
                             }
+                        } else {
+                            String message = "Hazelcast configuration file not found";
+                            if (logger.isLoggable(Level.FINE)) {
+                                logger.fine(message);
+                            }
+                            actionReport.setMessage(message);
+                            actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
                         }
                     }
 
