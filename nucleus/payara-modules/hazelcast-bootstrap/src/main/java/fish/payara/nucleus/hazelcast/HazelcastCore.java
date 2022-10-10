@@ -309,7 +309,11 @@ public class HazelcastCore implements EventListener, ConfigListener {
         try {
             serverConfigURL = new URL(context.getServerConfigURL());
             File serverConfigFile = new File(serverConfigURL.getPath());
-            hazelcastFilePath = serverConfigFile.getParentFile().getAbsolutePath() + File.separator + configuration.getHazelcastConfigurationFile();
+            if (new File(configuration.getHazelcastConfigurationFile()).exists()) {
+                hazelcastFilePath = configuration.getHazelcastConfigurationFile();
+            } else {
+                hazelcastFilePath = serverConfigFile.getParentFile().getAbsolutePath() + File.separator + configuration.getHazelcastConfigurationFile();
+            }
             File file = new File(hazelcastFilePath);
             if (file.exists()) {
                 config = ConfigLoader.load(hazelcastFilePath);
