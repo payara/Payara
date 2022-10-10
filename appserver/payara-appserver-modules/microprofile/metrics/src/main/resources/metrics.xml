@@ -220,12 +220,12 @@ holder.
             <description>Displays the maximum duration of stuck thread which is blocked, and can't return to the threadpool for a certain amount of time.</description>
         </metadata>>
         <metadata>
-            <name>${attribute}.${subattribute}</name>
+            <name>connection.pool.${attribute}.${subattribute}</name>
             <service>healthcheck-cpool/${attribute}#${subattribute}</service>
-            <type>gauge</type>
+            <type>counter</type>
             <unit>none</unit>
             <displayName>${attribute} ${subattribute}</displayName>
-            <description>Displays the number of ${subattribute} of ${attribute}.</description>
+            <description>Displays the number of ${subattribute} in the Connection Pool ${attribute}.</description>
         </metadata>
     </vendor>
 </config>
