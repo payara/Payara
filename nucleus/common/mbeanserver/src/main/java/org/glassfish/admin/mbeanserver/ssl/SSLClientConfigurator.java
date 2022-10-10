@@ -211,6 +211,18 @@ public class SSLClientConfigurator {
         }
     }
 
+    /**
+     * Returns the map of the default Cipher Suites
+     * @return
+     */
+    public Map<String, CipherInfo> getSupportedCipherSuites() {
+        Map<String, CipherInfo> defaultCiphers = new HashMap<>();
+        SSLServerSocketFactory sslServerSocketFactory =
+          (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
+        Arrays.asList(sslServerSocketFactory.getDefaultCipherSuites())
+          .forEach(cs -> defaultCiphers.put(cs, new CipherInfo(cs, CipherInfo.TLS)));
+        return defaultCiphers;
+    }
 
     /**
      * Gets the initialized key managers.
@@ -493,10 +505,8 @@ public class SSLClientConfigurator {
      * cipher suite name can not be mapped
      */
     private static String getJSSECipher(final String cipher) {
-
         final CipherInfo ci = CipherInfo.getCipherInfo(cipher);
         return ((ci != null) ? ci.getCipherName() : null);
-
     }
 
     private String toCommaSeparatedString(String[] strArray) {
@@ -547,9 +557,9 @@ public class SSLClientConfigurator {
             for (int i = 0, len = OLD_CIPHER_MAPPING.length; i < len; i++) {
                 String nonStdName = OLD_CIPHER_MAPPING[i][0];
                 String stdName = OLD_CIPHER_MAPPING[i][1];
-                ciphers.put(nonStdName,
-                        new CipherInfo(stdName, TLS));
+                ciphers.put(nonStdName, new CipherInfo(stdName, (TLS)));
             }
+            ciphers.putAll(getInstance().getSupportedCipherSuites());
         }
 
         /**
@@ -563,15 +573,16 @@ public class SSLClientConfigurator {
         }
 
         public static void updateCiphers(final SSLContext sslContext) {
-            SSLServerSocketFactory factory = sslContext.getServerSocketFactory();
-            String[] supportedCiphers = factory.getDefaultCipherSuites();
-            for (int i = 0, len = supportedCiphers.length; i < len; i++) {
-                String s = supportedCiphers[i];
-                ciphers.put(s, new CipherInfo(s, TLS));
-            }
+            ciphers.putAll(getInstance().getSupportedCipherSuites());
         }
+
         public static CipherInfo getCipherInfo(final String configName) {
-            return ciphers.get(configName);
+            CipherInfo ci = ciphers.get(configName);
+            if (ci == null) {
+                ciphers.putAll(getInstance().getSupportedCipherSuites());
+                ci = ciphers.get(configName);
+            }
+            return ci;
         }
 
         public String getCipherName() {
@@ -583,7 +594,6 @@ public class SSLClientConfigurator {
         public boolean isTLS() {
             return (protocolVersion & TLS) == TLS;
         }
-
     } // END CipherInfo
 
     
