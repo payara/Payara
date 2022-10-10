@@ -117,7 +117,7 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
     protected Logger logger;
 
     @Inject
-    protected HazelcastCore hazelcast;
+    protected HazelcastCore hazelcastCore;
 
     @Inject
     private Domain domain;
@@ -242,6 +242,31 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
         if (!validate(actionReport)) {
             return;
         }
+        final Hazelcast hazelcastElement;
+        if (configFile != null && !"".equals(configFile.trim()) && !"hazelcast-config.xml".equals(configFile)) {
+            File xmlConfigFile = new File(configFile);
+            if (!xmlConfigFile.exists()) {
+                String message = "Hazelcast config file not found: " + configFile;
+                logger.log(Level.INFO, message);
+                actionReport.setMessage(message);
+                actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                return;
+            }
+            try {
+                JAXBContext jc = JAXBContext.newInstance(Hazelcast.class);
+                Unmarshaller unmarshaller = jc.createUnmarshaller();
+                unmarshaller.setSchema(null);
+                hazelcastElement = (Hazelcast) unmarshaller.unmarshal(xmlConfigFile);
+            } catch (Exception ex) {
+                String message = "Hazelcast config file parsing exception: " + ex.toString();
+                logger.log(Level.INFO, message);
+                actionReport.setMessage(message);
+                actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                return;
+            }
+        } else {
+            hazelcastElement = null;
+        }
 
         HazelcastRuntimeConfiguration hazelcastRuntimeConfiguration = domain.getExtensionByType(HazelcastRuntimeConfiguration.class);
         if (hazelcastRuntimeConfiguration != null) {
@@ -249,9 +274,9 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
                 ConfigSupport.apply(new SingleConfigCode<HazelcastRuntimeConfiguration>() {
                     @Override
                     public Object run(final HazelcastRuntimeConfiguration hazelcastRuntimeConfigurationProxy) throws PropertyVetoException, TransactionFailure {
-                        if (configFile != null && !"".equals(configFile.trim())) {
+                        if (hazelcastCore != null) {
                             hazelcastRuntimeConfigurationProxy.setHazelcastConfigurationFile(configFile);
-                            fillParamsFromFile(configFile);
+                            fillParamsFromFile(hazelcastElement);
                         }
                         if (startPort != null) {
                             hazelcastRuntimeConfigurationProxy.setStartPort(startPort);
@@ -308,111 +333,88 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
                         return null;
                     }
 
-                    private void fillParamsFromFile(String configFile) {
-                        File xmlConfigFile = new File(configFile);
-                        if (xmlConfigFile.exists()) {
-                            try {
-                                JAXBContext jc = JAXBContext.newInstance(Hazelcast.class);
-                                Unmarshaller unmarshaller = jc.createUnmarshaller();
-                                unmarshaller.setSchema(null);
-                                Hazelcast hazelcast = (Hazelcast) unmarshaller.unmarshal(xmlConfigFile);
-                                for (Object item : hazelcast.getImportOrConfigReplacersOrClusterName()) {
-                                    JAXBElement element = (JAXBElement) item;
-                                    if (element.getName().getLocalPart().equals("cluster-name")) {
-                                        hzClusterName = (String) element.getValue();
-                                        continue;
+                    private void fillParamsFromFile(Hazelcast hazelcast) {
+                        for (Object item : hazelcast.getImportOrConfigReplacersOrClusterName()) {
+                                JAXBElement element = (JAXBElement) item;
+                                if (element.getName().getLocalPart().equals("cluster-name")) {
+                                    hzClusterName = (String) element.getValue();
+                                    continue;
+                                }
+                                if (element.getName().getLocalPart().equals("license-key")) {
+                                    licenseKey = (String) element.getValue();
+                                    continue;
+                                }
+                                if (element.getName().getLocalPart().equals("lite-member")) {
+                                    LiteMember liteMember = (LiteMember) element.getValue();
+                                    lite = liteMember.isEnabled();
+                                    continue;
+                                }
+                                if (element.getDeclaredType().equals(ExecutorService.class)) {
+                                    ExecutorService executorService = (ExecutorService) element.getValue();
+                                    if (executorService.getPoolSize() != null) {
+                                        executorPoolSize = String.valueOf(executorService.getPoolSize());
                                     }
-                                    if (element.getName().getLocalPart().equals("license-key")) {
-                                        licenseKey = (String) element.getValue();
-                                        continue;
+                                    if (executorService.getQueueCapacity() != null) {
+                                        executorQueueCapacity = String.valueOf(executorService.getQueueCapacity());
                                     }
-                                    if (element.getName().getLocalPart().equals("lite-member")) {
-                                        LiteMember liteMember = (LiteMember) element.getValue();
-                                        lite = liteMember.isEnabled();
-                                        continue;
+                                    continue;
+                                }
+                                if (element.getDeclaredType().equals(ScheduledExecutorService.class)) {
+                                    ScheduledExecutorService scheduledExecutorService = (ScheduledExecutorService) element.getValue();
+                                    if (scheduledExecutorService.getPoolSize() != null) {
+                                        scheduledExecutorPoolSize = String.valueOf(scheduledExecutorService.getPoolSize());
                                     }
-                                    if (element.getDeclaredType().equals(ExecutorService.class)) {
-                                        ExecutorService executorService = (ExecutorService) element.getValue();
-                                        if (executorService.getPoolSize() != null) {
-                                            executorPoolSize = String.valueOf(executorService.getPoolSize());
-                                        }
-                                        if (executorService.getQueueCapacity() != null) {
-                                            executorQueueCapacity = String.valueOf(executorService.getQueueCapacity());
-                                        }
-                                        continue;
+                                    if (scheduledExecutorService.getCapacity() != null) {
+                                        scheduledExecutorQueueCapacity = String.valueOf(scheduledExecutorService.getCapacity());
                                     }
-                                    if (element.getDeclaredType().equals(ScheduledExecutorService.class)) {
-                                        ScheduledExecutorService scheduledExecutorService = (ScheduledExecutorService) element.getValue();
-                                        if (scheduledExecutorService.getPoolSize() != null) {
-                                            scheduledExecutorPoolSize = String.valueOf(scheduledExecutorService.getPoolSize());
-                                        }
-                                        if (scheduledExecutorService.getCapacity() != null) {
-                                            scheduledExecutorQueueCapacity = String.valueOf(scheduledExecutorService.getCapacity());
-                                        }
-                                        continue;
+                                    continue;
+                                }
+                                if (element.getDeclaredType().equals(Network.class)) {
+                                    Network network = (Network) element.getValue();
+                                    Port port = network.getPort();
+                                    if (port != null) {
+                                        dasPort = String.valueOf(port.getValue());
+                                        autoIncrementPort = port.isAutoIncrement();
                                     }
-                                    if (element.getDeclaredType().equals(Network.class)) {
-                                        Network network = (Network) element.getValue();
-                                        Port port = network.getPort();
-                                        if (port != null) {
-                                            dasPort = String.valueOf(port.getValue());
-                                            autoIncrementPort = port.isAutoIncrement();
-                                        }
-                                        if (network.getPublicAddress() != null
-                                                && !"".equals(network.getPublicAddress().trim())) {
-                                            dasPublicAddress = network.getPublicAddress();
-                                        }
-                                        Interfaces networkInterfaces = network.getInterfaces();
-                                        if (networkInterfaces != null && networkInterfaces.isEnabled()) {
-                                            interfaces = String.join(",", networkInterfaces.getInterface());
-                                        }
-                                        Join join = network.getJoin();
-                                        if (join != null) {
-                                            TcpIp tcpIp = join.getTcpIp();
-                                            if (tcpIp != null) {
-                                                for (JAXBElement member : tcpIp.getRequiredMemberOrMemberOrInterface()) {
-                                                    if (member.getDeclaredType().equals(TcpIp.MemberList.class)) {
-                                                        TcpIp.MemberList memberList = (TcpIp.MemberList) member.getValue();
-                                                        tcpipMembers = String.join(",", memberList.getMember());
-                                                    }
+                                    if (network.getPublicAddress() != null
+                                            && !"".equals(network.getPublicAddress().trim())) {
+                                        dasPublicAddress = network.getPublicAddress();
+                                    }
+                                    Interfaces networkInterfaces = network.getInterfaces();
+                                    if (networkInterfaces != null && networkInterfaces.isEnabled()) {
+                                        interfaces = String.join(",", networkInterfaces.getInterface());
+                                    }
+                                    Join join = network.getJoin();
+                                    if (join != null) {
+                                        TcpIp tcpIp = join.getTcpIp();
+                                        if (tcpIp != null) {
+                                            for (JAXBElement member : tcpIp.getRequiredMemberOrMemberOrInterface()) {
+                                                if (member.getDeclaredType().equals(TcpIp.MemberList.class)) {
+                                                    TcpIp.MemberList memberList = (TcpIp.MemberList) member.getValue();
+                                                    tcpipMembers = String.join(",", memberList.getMember());
                                                 }
                                             }
-                                            Multicast multicast = join.getMulticast();
-                                            if (multicast != null && multicast.isEnabled()) {
-                                                multiCastGroup = multicast.getMulticastGroup();
-                                                multicastPort = String.valueOf(multicast.getMulticastPort());
-                                            }
-                                            AliasedDiscoveryStrategy kubernetes = join.getKubernetes();
-                                            if (kubernetes != null && kubernetes.isEnabled()) {
-                                                for (Element e : kubernetes.getAny()) {
-                                                    if (e.getLocalName().equals("namespace")) {
-                                                        kubernetesNamespace = e.getFirstChild().getNodeValue();
-                                                    } else if (e.getLocalName().equals("service-name")) {
-                                                        kubernetesServiceName = e.getFirstChild().getNodeValue();
-                                                    }
+                                        }
+                                        Multicast multicast = join.getMulticast();
+                                        if (multicast != null && multicast.isEnabled()) {
+                                            multiCastGroup = multicast.getMulticastGroup();
+                                            multicastPort = String.valueOf(multicast.getMulticastPort());
+                                        }
+                                        AliasedDiscoveryStrategy kubernetes = join.getKubernetes();
+                                        if (kubernetes != null && kubernetes.isEnabled()) {
+                                            for (Element e : kubernetes.getAny()) {
+                                                if (e.getLocalName().equals("namespace")) {
+                                                    kubernetesNamespace = e.getFirstChild().getNodeValue();
+                                                } else if (e.getLocalName().equals("service-name")) {
+                                                    kubernetesServiceName = e.getFirstChild().getNodeValue();
                                                 }
+                                            }
 
-                                            }
                                         }
                                     }
                                 }
-                            } catch (Exception ex) {
-                                if (logger.isLoggable(Level.FINE)) {
-                                    logger.fine("Hazelcast config file: Exception reading request");
-                                    logger.fine(ex.toString());
-                                }
-                                return;
                             }
-                        } else {
-                            String message = "Hazelcast configuration file not found";
-                            if (logger.isLoggable(Level.FINE)) {
-                                logger.fine(message);
-                            }
-                            actionReport.setMessage(message);
-                            actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                        }
                     }
-
                 }, hazelcastRuntimeConfiguration);
 
                 // get the configs that need the change applied if target is domain it is all configs
@@ -493,15 +495,15 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
                 if (enabled != null) {
                     isEnabled = enabled;
                 } else {
-                    isEnabled = hazelcast.isEnabled();
+                    isEnabled = hazelcastCore.isEnabled();
                 }
                 // this command runs on all instances so they can update their configuration.
                 if ("domain".equals(target)) {
-                    hazelcast.setEnabled(isEnabled);
+                    hazelcastCore.setEnabled(isEnabled);
                 } else {
                     for (Server targetServer : targetUtil.getInstances(target)    ) {
                         if (server.getInstanceName().equals(targetServer.getName())) {
-                            hazelcast.setEnabled(isEnabled);  
+                            hazelcastCore.setEnabled(isEnabled);
                         }
                     }
                 }
