@@ -60,8 +60,20 @@ import com.hazelcast.map.IMap;
 import com.hazelcast.nio.serialization.Serializer;
 import com.hazelcast.nio.serialization.StreamSerializer;
 import static com.hazelcast.spi.properties.ClusterProperty.WAIT_SECONDS_BEFORE_JOIN;
+
+import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.Utility;
 import fish.payara.nucleus.events.HazelcastEvents;
+import fish.payara.nucleus.hazelcast.xsd.AliasedDiscoveryStrategy;
+import fish.payara.nucleus.hazelcast.xsd.ExecutorService;
+import fish.payara.nucleus.hazelcast.xsd.Interfaces;
+import fish.payara.nucleus.hazelcast.xsd.Join;
+import fish.payara.nucleus.hazelcast.xsd.LiteMember;
+import fish.payara.nucleus.hazelcast.xsd.Multicast;
+import fish.payara.nucleus.hazelcast.xsd.Network;
+import fish.payara.nucleus.hazelcast.xsd.Port;
+import fish.payara.nucleus.hazelcast.xsd.ScheduledExecutorService;
+import fish.payara.nucleus.hazelcast.xsd.TcpIp;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.admin.ServerEnvironment.Status;
@@ -76,16 +88,24 @@ import org.glassfish.internal.deployment.Deployment;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigListener;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.SingleConfigCode;
+import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.Transactions;
 import org.jvnet.hk2.config.UnprocessedChangeEvent;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
+import org.w3c.dom.Element;
 
 import javax.annotation.PostConstruct;
 import javax.cache.spi.CachingProvider;
 import javax.inject.Inject;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.Unmarshaller;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -127,8 +147,13 @@ public class HazelcastCore implements EventListener, ConfigListener {
 
     private boolean datagridEncryptionValue;
 
+    private fish.payara.nucleus.hazelcast.xsd.Hazelcast hazelcastElement;
+
     @Inject
     Events events;
+
+    @Inject
+    private Domain domain;
 
     @Inject
     ServerContext context;
@@ -343,6 +368,37 @@ public class HazelcastCore implements EventListener, ConfigListener {
                             }
                         }
                     }
+                }
+                final fish.payara.nucleus.hazelcast.xsd.Hazelcast hazelcastElement;
+                try {
+                    JAXBContext jc = JAXBContext.newInstance(fish.payara.nucleus.hazelcast.xsd.Hazelcast.class);
+                    Unmarshaller unmarshaller = jc.createUnmarshaller();
+                    unmarshaller.setSchema(null);
+                    hazelcastElement =
+                            (fish.payara.nucleus.hazelcast.xsd.Hazelcast) unmarshaller.unmarshal(file);
+                    if (hazelcastElement != null) {
+                        ConfigSupport.apply(new SingleConfigCode<HazelcastRuntimeConfiguration>() {
+                            @Override
+                            public Object run(final HazelcastRuntimeConfiguration hazelcastRuntimeConfigurationProxy) throws PropertyVetoException, TransactionFailure {
+                                if (hazelcastElement != null) {
+                                    fillConfigurationFromHazelcastElem(hazelcastElement, hazelcastRuntimeConfigurationProxy);
+                                }
+                                return null;
+                            }
+                        }, configuration);
+                        ConfigSupport.apply(new SingleConfigCode<HazelcastConfigSpecificConfiguration>() {
+                            @Override
+                            public Object run(final HazelcastConfigSpecificConfiguration hazelcastRuntimeConfigurationProxy) throws PropertyVetoException, TransactionFailure {
+                                if (hazelcastElement != null) {
+                                    fillSpecificConfigFromHazelcastElem(hazelcastElement, hazelcastRuntimeConfigurationProxy);
+                                }
+                                return null;
+                            }
+                        }, nodeConfig);
+                    }
+                } catch (Exception ex) {
+                    Logger.getLogger(HazelcastCore.class.getName()).log(Level.SEVERE,
+                            "Hazelcast config file parsing exception: " + ex.toString(), ex);
                 }
             } else { // there is no config override
                 config.setClassLoader(clh.getCommonClassLoader());
@@ -630,5 +686,96 @@ public class HazelcastCore implements EventListener, ConfigListener {
         // We want to return the value as it was at boot time here to prevent the server changing encryption behaviour
         // without a restart
         return datagridEncryptionValue;
+    }
+
+    public void fillConfigurationFromHazelcastElem(fish.payara.nucleus.hazelcast.xsd.Hazelcast hazelcast,
+                                                   HazelcastRuntimeConfiguration configuration) {
+        for (Object item : hazelcast.getImportOrConfigReplacersOrClusterName()) {
+            JAXBElement element = (JAXBElement) item;
+            if (element.getName().getLocalPart().equals("cluster-name")) {
+                configuration.setClusterGroupName((String) element.getValue());
+                continue;
+            }
+            if (element.getName().getLocalPart().equals("license-key")) {
+                configuration.setLicenseKey((String) element.getValue());
+                continue;
+            }
+            if (element.getDeclaredType().equals(Network.class)) {
+                Network network = (Network) element.getValue();
+                Port port = network.getPort();
+                if (port != null) {
+                    configuration.setDasPort(String.valueOf(port.getValue()));
+                    configuration.setAutoIncrementPort("" + port.isAutoIncrement());
+                }
+                if (network.getPublicAddress() != null
+                        && !"".equals(network.getPublicAddress().trim())) {
+                    configuration.setDASPublicAddress(network.getPublicAddress());
+                }
+                Interfaces networkInterfaces = network.getInterfaces();
+                if (networkInterfaces != null && networkInterfaces.isEnabled()) {
+                    configuration.setInterface(String.join(",", networkInterfaces.getInterface()));
+                }
+                Join join = network.getJoin();
+                if (join != null) {
+                    TcpIp tcpIp = join.getTcpIp();
+                    if (tcpIp != null) {
+                        for (JAXBElement member : tcpIp.getRequiredMemberOrMemberOrInterface()) {
+                            if (member.getDeclaredType().equals(TcpIp.MemberList.class)) {
+                                TcpIp.MemberList memberList = (TcpIp.MemberList) member.getValue();
+                                configuration.setTcpipMembers(String.join(",", memberList.getMember()));
+                            }
+                        }
+                    }
+                    Multicast multicast = join.getMulticast();
+                    if (multicast != null && multicast.isEnabled()) {
+                        configuration.setMulticastGroup(multicast.getMulticastGroup());
+                        configuration.setMulticastPort(String.valueOf(multicast.getMulticastPort()));
+                    }
+                    AliasedDiscoveryStrategy kubernetes = join.getKubernetes();
+                    if (kubernetes != null && kubernetes.isEnabled()) {
+                        for (Element e : kubernetes.getAny()) {
+                            if (e.getLocalName().equals("namespace")) {
+                                configuration.setKubernetesNamespace(e.getFirstChild().getNodeValue());
+                            } else if (e.getLocalName().equals("service-name")) {
+                                configuration.setKubernetesServiceName(e.getFirstChild().getNodeValue());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public void fillSpecificConfigFromHazelcastElem(fish.payara.nucleus.hazelcast.xsd.Hazelcast hazelcast,
+                                                   HazelcastConfigSpecificConfiguration specificConfig) {
+        for (Object item : hazelcast.getImportOrConfigReplacersOrClusterName()) {
+            JAXBElement element = (JAXBElement) item;
+            if (element.getName().getLocalPart().equals("lite-member")) {
+                LiteMember liteMember = (LiteMember) element.getValue();
+                Boolean lite = liteMember.isEnabled();
+                specificConfig.setLite(lite.toString());
+                continue;
+            }
+            if (element.getDeclaredType().equals(ExecutorService.class)) {
+                ExecutorService executorService = (ExecutorService) element.getValue();
+                if (executorService.getPoolSize() != null) {
+                    specificConfig.setExecutorPoolSize(String.valueOf(executorService.getPoolSize()));
+                }
+                if (executorService.getQueueCapacity() != null) {
+                    specificConfig.setExecutorQueueCapacity(String.valueOf(executorService.getQueueCapacity()));
+                }
+                continue;
+            }
+            if (element.getDeclaredType().equals(ScheduledExecutorService.class)) {
+                ScheduledExecutorService scheduledExecutorService = (ScheduledExecutorService) element.getValue();
+                if (scheduledExecutorService.getPoolSize() != null) {
+                    specificConfig.setScheduledExecutorPoolSize(String.valueOf(scheduledExecutorService.getPoolSize()));
+                }
+                if (scheduledExecutorService.getCapacity() != null) {
+                    specificConfig.setScheduledExecutorQueueCapacity(String.valueOf(scheduledExecutorService.getCapacity()));
+                }
+                continue;
+            }
+        }
     }
 }
