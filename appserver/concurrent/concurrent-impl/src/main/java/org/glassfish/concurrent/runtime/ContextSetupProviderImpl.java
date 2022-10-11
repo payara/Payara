@@ -165,7 +165,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
 
         initialiseServices();
 
-        for (String contextType : propagated) {
+        for (String contextType : contextPropagate) {
             switch (contextType) {
                 case CONTEXT_TYPE_CLASSLOADING:
                     classloading = true;
@@ -215,31 +215,31 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
             }
         }
         // check, if there is no unexpected provider name
-        verifyProviders(contextPropagate);
-        verifyProviders(contextClear);
-        verifyProviders(contextUnchanged);
+        Set<String> verifiedContextPropagate = filterVerifiedProviders(contextPropagate);
+        Set<String> verifiedContextClear = filterVerifiedProviders(contextClear);
+        Set<String> verifiedContextUnchanged = filterVerifiedProviders(contextUnchanged);
 
         ComponentInvocation currentInvocation = invocationManager.getCurrentInvocation();
         if (currentInvocation != null) {
-            if (contextPropagate.contains(CONTEXT_TYPE_NAMING)) {
+            if (verifiedContextPropagate.contains(CONTEXT_TYPE_NAMING)) {
                 savedInvocation = createComponentInvocation(currentInvocation);
             }
-            if (contextClear.contains(CONTEXT_TYPE_NAMING)) {
+            if (verifiedContextClear.contains(CONTEXT_TYPE_NAMING)) {
                 savedInvocation = new ComponentInvocation();
             }
         }
         boolean useTransactionOfExecutionThread = (transactionManager == null && useTransactionOfExecutionThread(contextObjectProperties))
-                || contextUnchanged.contains(CONTEXT_TYPE_WORKAREA);
+                || verifiedContextUnchanged.contains(CONTEXT_TYPE_WORKAREA);
 
         // store the snapshots of the current state
         List<ThreadContextSnapshot> threadContextSnapshots = new ArrayList<>();
         // remember values from propagate and clear lists
-        contextPropagate.stream()
+        verifiedContextPropagate.stream()
                 .map((provider) -> allThreadContextProviders.get(provider))
                 .filter(snapshot -> snapshot != null) // ignore standard providers like CONTEXT_TYPE_CLASSLOADING
                 .map(snapshot -> snapshot.currentContext(contextObjectProperties))
                 .forEach(snapshot -> threadContextSnapshots.add(snapshot));
-        contextClear.stream()
+        verifiedContextClear.stream()
                 .map((provider) -> allThreadContextProviders.get(provider))
                 .filter(snapshot -> snapshot != null)
                 .map(snapshot -> snapshot.clearedContext(contextObjectProperties))
@@ -314,7 +314,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
             startConcurrentContextSpan(invocation, handle);
         }
 
-        if (stuckThreads != null){
+        if (stuckThreads != null) {
             stuckThreads.registerThread(Thread.currentThread().getId());
         }
 
@@ -388,7 +388,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         if (handle.getSecurityContext() != null) {
             SecurityContext.setCurrent(handle.getSecurityContext());
         }
-        if (handle.getInvocation() != null) {
+        if (handle.getInvocation() != null /*&& !handle.isUseTransactionOfExecutionThread()*/) {
             invocationManager.postInvoke(((InvocationContext) contextHandle).getInvocation());
         }
         if (contextClear.contains(CONTEXT_TYPE_WORKAREA) && transactionManager != null) {
@@ -413,7 +413,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         if (requestTracing != null && requestTracing.isRequestTracingEnabled()) {
             requestTracing.endTrace();
         }
-        if (stuckThreads != null){
+        if (stuckThreads != null) {
             stuckThreads.deregisterThread(Thread.currentThread().getId());
         }
     }
@@ -460,7 +460,8 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         return ManagedTask.SUSPEND;
     }
 
-    private void verifyProviders(Set<String> providers) {
+    private Set<String> filterVerifiedProviders(Set<String> providers) {
+        HashSet<String> filtered = new HashSet<>();
         Iterator<String> providerIter = providers.iterator();
         while (providerIter.hasNext()) {
             String provider = providerIter.next();
@@ -470,16 +471,18 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
                 case CONTEXT_TYPE_NAMING:
                 case CONTEXT_TYPE_WORKAREA:
                 case ContextServiceDefinition.ALL_REMAINING:
-                    // OK, they are known
+                    filtered.add(provider);
                     break;
                 default:
-                    if (!allThreadContextProviders.containsKey(provider)) {
-                        logger.severe("Thread context provider '" + provider + "' is not registered in WEB-APP/services/jakarta.enterprise.concurrent.spi.ThreadContextProvider and will be ignored!");
-                        providerIter.remove();
+                    if (allThreadContextProviders.containsKey(provider)) {
+                        filtered.add(provider);
+                    } else {
+                        logger.log(Level.SEVERE, "Thread context provider ''{0}'' is not registered in WEB-APP/services/jakarta.enterprise.concurrent.spi.ThreadContextProvider and will be ignored!", provider);
                     }
                     break;
             }
         }
+         return filtered;
     }
 
     private void addToRemainingIfNotPresent(String contextType) {
@@ -576,7 +579,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
             logger.log(Level.INFO, "Error retrieving OpenTracing service "
                     + "during initialisation of Concurrent Context - NullPointerException", ex);
         }
-        
+
     }
 }
 
