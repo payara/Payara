@@ -37,12 +37,14 @@
 # only if the new code is made subject to such option by the copyright
 # holder.
 #
+# Portions Copyright 2022 Payara Foundation and/or its affiliates.
 
 -exportcontents: \
                         com.sun.appserv.web.cache;version=${project.osgi.version}, \
                         com.sun.appserv.web.cache.filter;version=${project.osgi.version}, \
                         com.sun.appserv.web.cache.mapping;version=${project.osgi.version}, \
                         com.sun.appserv.web.taglibs.cache;version=${project.osgi.version}, \
+                        com.sun.enterprise.glassfish.web; \
                         com.sun.enterprise.security.web;version=${project.osgi.version}, \
                         com.sun.enterprise.util.logging;version=${project.osgi.version}, \
                         com.sun.enterprise.web;version=${project.osgi.version}, \

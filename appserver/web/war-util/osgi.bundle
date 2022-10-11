@@ -37,10 +37,9 @@
 # only if the new code is made subject to such option by the copyright
 # holder.
 #
-# Portions Copyright 2021 Payara Foundation and/or its affiliates
+# Portions Copyright 2021-2022 Payara Foundation and/or its affiliates
 
 -exportcontents: \
-                        com.sun.enterprise.glassfish.web; \
                         org.glassfish.web.loader; \
                         org.glassfish.web.util; \
                         fish.payara.web.loader; \

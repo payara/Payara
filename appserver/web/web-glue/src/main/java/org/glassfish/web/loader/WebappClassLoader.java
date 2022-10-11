@@ -70,7 +70,6 @@ import com.sun.enterprise.security.integration.PermsHolder;
 import com.sun.enterprise.util.io.FileUtils;
 import org.apache.naming.JndiPermission;
 import org.apache.naming.resources.DirContextURLStreamHandler;
-import org.apache.naming.resources.JarFileResourcesProvider;
 import org.apache.naming.resources.ProxyDirContext;
 import org.apache.naming.resources.Resource;
 import org.apache.naming.resources.ResourceAttributes;
@@ -2185,7 +2184,15 @@ public class WebappClassLoader
      */
     private void clearReferencesJdbc() {
         InputStream is = getResourceAsStream(
-                "org/glassfish/web/loader/JdbcLeakPrevention.class");
+                "org/apache/catalina/loader/JdbcLeakPrevention.class");
+
+        // Fallback solution if we can't find the Catalina class - remove once tested we *can* find the Catalina class
+        boolean usingCatalinaJdbcLeakPrevention = true;
+        if (is == null) {
+            is = getResourceAsStream(
+                    "org/glassfish/web/loader/JdbcLeakPrevention.class");
+        }
+
         // We know roughly how big the class will be (~ 1K) so allow 2k as a
         // starting point
         byte[] classBytes = new byte[2048];
@@ -2204,9 +2211,18 @@ public class WebappClassLoader
                         }
                         read = is.read(classBytes, offset, classBytes.length-offset);
                     }
-                    jdbcLeakPreventionResourceClass =
-                        defineClass("org.glassfish.web.loader.JdbcLeakPrevention",
-                            classBytes, 0, offset, this.getClass().getProtectionDomain());
+
+                    // Fallback solution if we can't find the Catalina class.
+                    // Just use Catalina class once tested we *can* find the Catalina class
+                    if (usingCatalinaJdbcLeakPrevention) {
+                        jdbcLeakPreventionResourceClass =
+                                defineClass("org.apache.catalina.loader.JdbcLeakPrevention",
+                                        classBytes, 0, offset, this.getClass().getProtectionDomain());
+                    } else {
+                        jdbcLeakPreventionResourceClass =
+                                defineClass("org.glassfish.web.loader.JdbcLeakPrevention",
+                                        classBytes, 0, offset, this.getClass().getProtectionDomain());
+                    }
                 } else {
                     logger.log(Level.FINE, getString(LogFacade.LEAK_PREVENTION_JDBC_REUSE, contextName));
                 }

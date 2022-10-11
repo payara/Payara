@@ -77,7 +77,11 @@ import java.util.List;
  * Since this class is loaded by {@link WebappClassLoader}, it can not refer to
  * any internal Tomcat classes as that will cause the security manager to
  * complain.
+ *
+ * This is (at least) temporarily marked as deprecated since a Catalina equivalent exists which we can use.
+ * Kept around for the time being until we can test that the Catalina class can be found.
  */
+@Deprecated
 public class JdbcLeakPrevention {
 
     public List<String> clearJdbcDriverRegistrations() throws SQLException {
