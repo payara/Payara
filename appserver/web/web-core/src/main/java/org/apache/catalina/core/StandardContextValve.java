@@ -293,6 +293,10 @@ final class StandardContextValve
         if(rv.indexOf("./") == 0) {
             rv = rv.replaceFirst("./", "/");
         }
+        // starts with dot-dot-slash
+        if(rv.indexOf("../") == 0) {
+            rv = rv.replaceFirst("../", "/");
+        }
 
         // Normalize the slashes and add leading slash if necessary
         if (rv.indexOf('\\') >= 0) {
