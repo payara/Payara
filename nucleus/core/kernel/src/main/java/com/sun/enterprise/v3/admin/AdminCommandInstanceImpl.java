@@ -48,9 +48,6 @@ import org.glassfish.api.admin.AdminCommandEventBroker;
 import org.glassfish.api.admin.Job;
 import org.glassfish.api.admin.CommandProgress;
 import org.glassfish.api.admin.Payload;
-import org.glassfish.api.admin.progress.JobInfo;
-import org.glassfish.api.admin.progress.JobPersistence;
-import org.glassfish.internal.api.Globals;
 import org.glassfish.security.services.common.SubjectUtil;
 
 import javax.security.auth.Subject;
@@ -172,24 +169,7 @@ public class AdminCommandInstanceImpl extends AdminCommandStateImpl implements J
         super.actionReport = report;
         this.payload = outbound;
         this.completionDate = System.currentTimeMillis();
-        if (isManagedJob) {
-            JobPersistence jobPersistenceService;
-            if (scope != null) {
-                jobPersistenceService = Globals.getDefaultHabitat().getService(JobPersistence.class, scope + "job-persistence");
-                State finalState = State.COMPLETED;
-                if (getState().equals(State.REVERTING)) {
-                    finalState = State.REVERTED;
-                }
-                String user = null;
-                if (subjectUsernames.size() > 0) {
-                    user = subjectUsernames.get(0);
-                }
-                jobPersistenceService.persist(new JobInfo(id, commandName, executionDate, report.getActionExitCode().name(), user, report.getMessage(), getJobsFile(), finalState.name(), completionDate));
-                setState(finalState);
-            }
-        } else {
-            setState(State.COMPLETED);
-        }
+        setState(State.COMPLETED);
     }
     
     @Override

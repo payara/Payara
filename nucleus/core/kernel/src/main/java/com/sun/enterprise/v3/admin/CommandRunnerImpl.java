@@ -1858,11 +1858,8 @@ public class CommandRunnerImpl implements CommandRunner {
             }
 
             Job job = null;
-            if (isManagedJob) {
-                job = jobCreator.createJob(null, scope(), name(), subject, isManagedJob, parameters());
-            }  else {
-                job = jobCreator.createJob(null, scope(), name(), subject, isManagedJob, parameters());
-            }
+            job = jobCreator.createJob(null, scope(), name(), subject, isManagedJob, parameters());
+
 
             //Register the brokers  else the detach functionality will not work
             for (NameListerPair nameListerPair : nameListerPairs) {
