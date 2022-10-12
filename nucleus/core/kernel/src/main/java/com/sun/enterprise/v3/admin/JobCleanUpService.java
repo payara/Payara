@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2020] Payara Foundation and/or affiliates
+// Portions Copyright [2020-2022] Payara Foundation and/or affiliates
 package com.sun.enterprise.v3.admin;
 
 import com.sun.appserv.server.util.Version;
@@ -75,9 +75,6 @@ import org.glassfish.api.admin.ProcessEnvironment;
 @Service(name="job-cleanup")
 @RunLevel(value= StartupRunLevel.VAL)
 public class JobCleanUpService implements PostConstruct,ConfigListener {
-
-    @Inject
-    JobManagerService jobManagerService;
 
     @Inject
     Domain domain;
@@ -121,40 +118,8 @@ public class JobCleanUpService implements PostConstruct,ConfigListener {
         ObservableBean bean = (ObservableBean) ConfigSupport.getImpl(managedJobConfig);
         logger.fine(KernelLoggerInfo.initializingManagedConfigBean);
         bean.addListener(this);
-
-
-
-        scheduleCleanUp();
     }
 
-
-    /**
-     * This will schedule a cleanup of expired jobs based on configurable values
-     */
-    private void scheduleCleanUp() {
-        if (micro) {
-            return;
-        }
-
-        if (managedJobConfig == null) {
-            managedJobConfig = domain.getExtensionByType(ManagedJobConfig.class);
-            ObservableBean bean = (ObservableBean) ConfigSupport.getImpl(managedJobConfig);
-            logger.fine(KernelLoggerInfo.initializingManagedConfigBean);
-            bean.addListener(this);   
-        }
-
-        logger.fine(KernelLoggerInfo.schedulingCleanup);
-        //default values to 20 minutes for delayBetweenRuns and initialDelay
-        long delayBetweenRuns = 1200000;
-        long initialDelay = 1200000;
-
-        delayBetweenRuns = jobManagerService.convert(managedJobConfig.getPollInterval());
-        initialDelay = jobManagerService.convert(managedJobConfig.getInitialDelay());
-
-
-        ScheduledFuture<?> cleanupFuture = scheduler.scheduleAtFixedRate(new JobCleanUpTask(),initialDelay,delayBetweenRuns,TimeUnit.MILLISECONDS);
-
-    }
 
     /**
      * This method is notified for any changes in job-inactivity-limit or
@@ -170,50 +135,6 @@ public class JobCleanUpService implements PostConstruct,ConfigListener {
         return ConfigSupport.sortAndDispatch(events, new PropertyChangeHandler(), logger);
     }
 
-
-    private  final class JobCleanUpTask implements Runnable {
-        public void run() {
-            try {
-                //This can have data  when server starts up  initially or as jobs complete
-                ConcurrentHashMap<String,CompletedJob> completedJobsMap = jobManagerService.getCompletedJobsInfo();
-
-                Iterator<CompletedJob> completedJobs = new HashSet<CompletedJob>(completedJobsMap.values()).iterator();
-                while (completedJobs.hasNext()   ) {
-                    CompletedJob completedJob = completedJobs.next();
-
-                    logger.log(Level.FINE,KernelLoggerInfo.cleaningJob, new Object[]{completedJob.getId()});
-
-                    cleanUpExpiredJobs(completedJob.getJobsFile());
-                }
-            } catch (Exception e ) {
-                throw new RuntimeException(KernelLoggerInfo.exceptionCleaningJobs,e);
-            }
-
-        }
-
-
-    }
-
-    /**
-     * This will periodically purge expired jobs
-     */
-    private void cleanUpExpiredJobs(File file) {
-        ArrayList<JobInfo> expiredJobs = jobManagerService.getExpiredJobs(file);
-        if (expiredJobs.size() > 0 ) {
-            for (JobInfo job: expiredJobs) {
-                //remove from Job registy
-                jobManagerService.purgeJob(job.jobId);
-                //remove from jobs.xml file
-                jobManagerService.purgeCompletedJobForId(job.jobId,file);
-                //remove from local cache for completed jobs
-                jobManagerService.removeFromCompletedJobs(job.jobId);
-                if(logger.isLoggable(Level.FINE)) {
-                    logger.log(Level.FINE,KernelLoggerInfo.cleaningJob, job.jobId);
-                }
-            }
-        }
-
-    }
 
 
     class PropertyChangeHandler implements Changed {
@@ -237,7 +158,6 @@ public class JobCleanUpService implements PostConstruct,ConfigListener {
         }
 
         private <T extends ConfigBeanProxy> NotProcessed handleChangeEvent(T instance) {
-            scheduleCleanUp();
             return null;
         }
     }

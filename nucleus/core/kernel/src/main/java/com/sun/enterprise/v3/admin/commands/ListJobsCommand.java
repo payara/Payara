@@ -37,27 +37,22 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2022] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.v3.admin.commands;
-import com.sun.enterprise.admin.progress.ProgressStatusClient;
-import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.i18n.StringManager;
-import com.sun.enterprise.v3.admin.JobAuthorizationAttributeProcessor;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Collection;
 import java.util.Date;
 import javax.inject.Inject;
 
-import com.sun.enterprise.v3.admin.JobManagerService;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.MessagePart;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.api.admin.progress.JobInfo;
-import org.glassfish.api.admin.progress.JobInfos;
 import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.security.services.common.SubjectUtil;
 import org.jvnet.hk2.annotations.Service;
 
 
@@ -74,9 +69,6 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
     
     private ActionReport report;
     private static final String DEFAULT_USER_STRING = "-";
-
-    @Inject
-    private JobManagerService jobManagerService;
 
     /**
      * Associates an access check with each candidate JobInfo we might report on.
@@ -110,14 +102,6 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
 
     final private static StringManager localStrings =
             StringManager.getManager(ListJobsCommand.class);
-
-    protected JobInfos getCompletedJobs() {
-        return jobManagerService.getCompletedJobs(jobManagerService.getJobsFile());
-    }
-    
-    protected JobInfo getCompletedJobForId(final String jobID) {
-        return (JobInfo) jobManagerService.getCompletedJobForId(jobID);
-    }
     
     protected boolean isSingleJobOK(final Job singleJob) {
         return (singleJob != null);
@@ -131,67 +115,7 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
         return job.getScope()==null;
     }
     
-    private List<JobInfo> chooseJobs() {
-        List<JobInfo> jobsToReport = new ArrayList<JobInfo>();
 
-        if (jobID != null) {
-            Job oneJob = jobManagerService.get(jobID);
-            JobInfo info = null;
-
-            if (isSingleJobOK(oneJob)) {
-                List<String> userList =  oneJob.getSubjectUsernames();
-                ActionReport actionReport = oneJob.getActionReport();
-                String message = actionReport == null ? "" : actionReport.getMessage();
-
-                if (!StringUtils.ok(message)) {
-                    message = ProgressStatusClient.composeMessageForPrint(oneJob.getCommandProgress());
-                }
-                String exitCode =  actionReport == null ? "" : actionReport.getActionExitCode().name();
-                info = new JobInfo(oneJob.getId(),oneJob.getName(),oneJob.getCommandExecutionDate(),exitCode,userList.get(0),message,oneJob.getJobsFile(),oneJob.getState().name(),0);
-
-            }  else {
-                if (getCompletedJobs() != null) {
-                    info = getCompletedJobForId(jobID);
-                }
-            }
-
-          if (info != null && !skipJob(info.jobName)) {
-              jobsToReport.add(info);
-          }
-
-        }  else {
-
-            for (Iterator<Job> iterator = jobManagerService.getJobs(); iterator.hasNext(); ) {
-                Job job = iterator.next();
-                if (isJobEligible(job)) {
-                    List<String> userList =  job.getSubjectUsernames();
-                    ActionReport actionReport = job.getActionReport();
-
-                    String message = actionReport == null ? "" : actionReport.getMessage();
-                    if (!StringUtils.ok(message)) {
-                        message = ProgressStatusClient.composeMessageForPrint(job.getCommandProgress());
-                    }
-                    String exitCode = actionReport == null ? "" : actionReport.getActionExitCode().name();
-
-                    String user = DEFAULT_USER_STRING;
-                    if(userList.size() > 0){
-                        user = userList.get(0);
-                    }
-                    jobsToReport.add(new JobInfo(job.getId(),job.getName(),job.getCommandExecutionDate(),exitCode,user,message,job.getJobsFile(),job.getState().name(),0));
-                }
-            }
-
-            JobInfos completedJobs = getCompletedJobs();
-            if (completedJobs != null ) {
-                for (JobInfo info : completedJobs.getJobInfoList()) {
-                    if (!skipJob(info.jobName)) {
-                        jobsToReport.add(info);
-                    }
-                }
-            }
-        }
-        return jobsToReport;
-    }
         
     @Override
     public void execute(AdminCommandContext context) {
@@ -205,11 +129,6 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
 
     @Override
     public Collection<? extends AccessRequired.AccessCheck> getAccessChecks() {
-        final List<JobInfo> jobInfoList = chooseJobs();
-        for (JobInfo jobInfo : jobInfoList) {
-            jobAccessChecks.add(new AccessRequired.AccessCheck<JobInfo>(jobInfo,
-                    JobAuthorizationAttributeProcessor.JOB_RESOURCE_NAME_PREFIX + jobInfo.jobId,"read", false));
-        }
         return jobAccessChecks;
     }
 

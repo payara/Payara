@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2022] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.v3.admin;
 
 import com.sun.enterprise.admin.event.AdminCommandEventBrokerImpl;
@@ -172,35 +173,18 @@ public class AdminCommandInstanceImpl extends AdminCommandStateImpl implements J
         this.payload = outbound;
         this.completionDate = System.currentTimeMillis();
         if (isManagedJob) {
-            if (getState().equals(State.RUNNING_RETRYABLE) && failToRetryable) {
-                JobManagerService jobManager = Globals.getDefaultHabitat().getService(JobManagerService.class);
-                jobManager.getRetryableJobsInfo().put(id, CheckpointHelper.CheckpointFilename.createBasic(this));
-                jobManager.purgeJob(id);
-                setState(State.FAILED_RETRYABLE);
-            } else {
-                JobPersistence jobPersistenceService;
-                if (scope != null)   {
-                    jobPersistenceService = Globals.getDefaultHabitat().getService(JobPersistence.class,scope+"job-persistence");
-                }  else  {
-                    jobPersistenceService = Globals.getDefaultHabitat().getService(JobPersistenceService.class);
-                }
+            JobPersistence jobPersistenceService;
+            if (scope != null) {
+                jobPersistenceService = Globals.getDefaultHabitat().getService(JobPersistence.class, scope + "job-persistence");
                 State finalState = State.COMPLETED;
                 if (getState().equals(State.REVERTING)) {
                     finalState = State.REVERTED;
                 }
                 String user = null;
-                if(subjectUsernames.size() > 0){
+                if (subjectUsernames.size() > 0) {
                     user = subjectUsernames.get(0);
                 }
-                jobPersistenceService.persist(new JobInfo(id,commandName,executionDate,report.getActionExitCode().name(),user,report.getMessage(),getJobsFile(),finalState.name(),completionDate));
-                if (getState().equals(State.RUNNING_RETRYABLE) || getState().equals(State.REVERTING)) {
-                    JobManagerService jobManager = Globals.getDefaultHabitat().getService(JobManagerService.class);
-                    File jobFile = getJobsFile();
-                    if (jobFile == null) {
-                        jobFile = jobManager.getJobsFile();
-                    }
-                    jobManager.deleteCheckpoint(jobFile.getParentFile(), getId());
-                }
+                jobPersistenceService.persist(new JobInfo(id, commandName, executionDate, report.getActionExitCode().name(), user, report.getMessage(), getJobsFile(), finalState.name(), completionDate));
                 setState(finalState);
             }
         } else {
