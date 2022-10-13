@@ -293,6 +293,17 @@ final class StandardContextValve
         if(rv.indexOf("./") == 0) {
             rv = rv.replaceFirst("./", "/");
         }
+        // has /WEB-INF or /META-INF
+        final String RV = rv.toUpperCase();
+        int index = RV.indexOf("/WEB-INF/");
+        if (index != -1 || RV.endsWith("/WEB-INF")) {
+            return "/WEB-INF";
+        } else {
+            index = RV.indexOf("/META-INF/");
+            if (index != -1 || RV.endsWith("/META-INF")) {
+                return "/META-INF";
+            }
+        }
 
         // Normalize the slashes and add leading slash if necessary
         if (rv.indexOf('\\') >= 0) {
