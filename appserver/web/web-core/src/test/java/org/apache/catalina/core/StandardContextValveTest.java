@@ -96,6 +96,8 @@ public class StandardContextValveTest extends TestCase {
         String path1 = "/app/../some/../something/../my.jsp";
         String path2 = "/app/./some/./something/./my.jsp";
         String path3 = "./my.jsp";
+        String path4 = "../app/WEB-INF/web.xml";
+        String path5 = "../app/META-INF";
 
         String result = standardContextValve.normalize(path1);
 
@@ -108,6 +110,14 @@ public class StandardContextValveTest extends TestCase {
         result = standardContextValve.normalize(path3);
 
         assertEquals("/my.jsp", result);
+
+        result = standardContextValve.normalize(path4);
+
+        assertEquals("/WEB-INF", result);
+
+        result = standardContextValve.normalize(path5);
+
+        assertEquals("/META-INF", result);
     }
 
     protected void verifyThatResourceIsNotFound(int pipelineResult, int times, HttpRequest httpRequest, HttpResponse httpResponse,
