@@ -67,6 +67,8 @@ import org.glassfish.web.valve.GlassFishValve;
 import javax.servlet.*;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Locale;
+
 import org.glassfish.grizzly.utils.Charsets;
 
 /**
@@ -133,7 +135,6 @@ final class StandardContextValve
      *
      * @param request Request to be processed
      * @param response Response to be produced
-     * @param valveContext Valve context used to forward to the next Valve
      *
      * @exception IOException if an input/output error occurred
      * @exception ServletException if a servlet error occurred
@@ -286,12 +287,23 @@ final class StandardContextValve
 
         String rv = path;
         // starts with a double-slash
-        if(rv.indexOf("//") == 0) {
+        if (rv.indexOf("//") == 0) {
             rv = rv.replace("//", "/");
         }
         // starts with dot-slash
-        if(rv.indexOf("./") == 0) {
+        if (rv.indexOf("./") == 0) {
             rv = rv.replaceFirst("./", "/");
+        }
+        // has /WEB-INF or /META-INF
+        final String RV = rv.toUpperCase();
+        int index = RV.indexOf("/WEB-INF/");
+        if (index != -1 || RV.endsWith("/WEB-INF")) {
+            return "/WEB-INF";
+        } else {
+            index = RV.indexOf("/META-INF/");
+            if (index != -1 || RV.endsWith("/META-INF")) {
+                return "/META-INF";
+            }
         }
 
         // Normalize the slashes and add leading slash if necessary
