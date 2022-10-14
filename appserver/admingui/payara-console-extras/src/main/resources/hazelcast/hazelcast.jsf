@@ -102,18 +102,6 @@
                     }
 
                     gf.updateEntity(endpoint="#{sessionScope.REST_URL}/set-hazelcast-configuration" attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
-
-                    gf.restRequest(endpoint="#{sessionScope.REST_URL}/get-hazelcast-configuration"  method="GET" result="#{requestScope.resp}");
-                    setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.getHazelcastConfiguration}");
-                    setPageSessionAttribute(key="convertToFalseList", value={"enabled","dynamic","autoIncrementPort","hostAwarePartitioning","encryptDatagrid"});
-                    setSessionAttribute(key="hazelcastTabs" value="hazelcastConfig");
-                    if (#{pageSession.valueMap['enabled']}=true) {
-                        setPageSessionAttribute(key="enabledSelected", value="true");
-                    }
-                    setPageSessionAttribute(key="dynamic", value="false");
-                    setPageSessionAttribute(key="clusterMode", value="#{pageSession.valueMap['clusterMode']}");
-                    mapPut(map="#{pageSession.valueMap}" key="target" value="domain");
-                    setAttribute(key="zero" value="$int{0}");
                 />
             </sun:button>
         </sun:panelGroup>
