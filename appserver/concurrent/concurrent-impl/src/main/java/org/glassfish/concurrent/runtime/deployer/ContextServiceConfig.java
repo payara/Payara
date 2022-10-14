@@ -41,6 +41,8 @@
 
 package org.glassfish.concurrent.runtime.deployer;
 
+import jakarta.enterprise.concurrent.ContextServiceDefinition;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -60,14 +62,14 @@ public class ContextServiceConfig extends BaseConfig {
         super(jndiName, null, "true");
         this.propagatedContexts = parseContextInfo(this.contextInfo, this.isContextInfoEnabledBoolean());
         this.clearedContexts = new HashSet<>();
-        this.uchangedContexts = new HashSet<>();
+        this.uchangedContexts = new HashSet<>(Arrays.asList(ContextServiceDefinition.ALL_REMAINING));
     }
 
     public ContextServiceConfig(ContextService config) {
         super(config.getJndiName(), config.getContextInfo(), config.getContextInfoEnabled());
         this.propagatedContexts = parseContextInfo(this.contextInfo, this.isContextInfoEnabledBoolean());
         this.clearedContexts = new HashSet<>();
-        this.uchangedContexts = new HashSet<>();
+        this.uchangedContexts = new HashSet<>(Arrays.asList(ContextServiceDefinition.ALL_REMAINING));
     }
 
     public ContextServiceConfig(String jndiName, String contextInfo, String contextInfoEnabled, Set<String> propagatedContexts, Set<String> clearedContexts, Set<String> uchangedContexts) {
