@@ -341,6 +341,7 @@ public class HazelcastCore implements EventListener, ConfigListener {
             }
             File file = new File(hazelcastFilePath);
             if (file.exists()) {
+                Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "Loading Hazelcast configuration from file: {0}", hazelcastFilePath);
                 config = ConfigLoader.load(hazelcastFilePath);
                 if (config == null) {
                     Logger.getLogger(HazelcastCore.class.getName()).log(Level.WARNING, "Hazelcast Core could not find configuration file {0} using default configuration", hazelcastFilePath);
@@ -382,6 +383,7 @@ public class HazelcastCore implements EventListener, ConfigListener {
                             public Object run(final HazelcastRuntimeConfiguration hazelcastRuntimeConfigurationProxy) throws PropertyVetoException, TransactionFailure {
                                 if (hazelcastElement != null) {
                                     fillConfigurationFromHazelcastElem(hazelcastElement, hazelcastRuntimeConfigurationProxy);
+                                    Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "Hazelcast general configuration created");
                                 }
                                 return null;
                             }
@@ -391,6 +393,7 @@ public class HazelcastCore implements EventListener, ConfigListener {
                             public Object run(final HazelcastConfigSpecificConfiguration hazelcastRuntimeConfigurationProxy) throws PropertyVetoException, TransactionFailure {
                                 if (hazelcastElement != null) {
                                     fillSpecificConfigFromHazelcastElem(hazelcastElement, hazelcastRuntimeConfigurationProxy);
+                                    Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "Hazelcast specific configuration created");
                                 }
                                 return null;
                             }
