@@ -218,6 +218,14 @@ holder.
             <unit>none</unit>
             <displayName>Stuck Thread Max Duration</displayName>
             <description>Displays the maximum duration of stuck thread which is blocked, and can't return to the threadpool for a certain amount of time.</description>
+        </metadata>>
+        <metadata>
+            <name>connection.pool.${attribute}.${subattribute}</name>
+            <service>healthcheck-cpool/${attribute}#${subattribute}</service>
+            <type>counter</type>
+            <unit>none</unit>
+            <displayName>${attribute} ${subattribute}</displayName>
+            <description>Displays the number of ${subattribute} in the Connection Pool ${attribute}.</description>
         </metadata>
     </vendor>
 </config>

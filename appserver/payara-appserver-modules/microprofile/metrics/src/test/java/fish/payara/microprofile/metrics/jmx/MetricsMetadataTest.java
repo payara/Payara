@@ -122,4 +122,19 @@ public class MetricsMetadataTest {
         metadata.addTags(tags);
         Assert.assertTrue(metadata.isValid());
     }
+
+    @Test
+    public void isValid_Service() {
+        MetricsMetadata metadata = new MetricsMetadata(
+                "jdbc.connection.pool.${attribute}.pool.instance.free.connections"
+                , "Free Connections (Instance)"
+                , "The total number of free connections in the pool as of the last sampling"
+                , MetricType.GAUGE, "none");
+        metadata.setService("healthcheck-cpool/${attribute}#freeConnection");
+        List<XmlTag> tags = new ArrayList<>();
+        tags.add(new XmlTag("test", "JUnit"));
+        metadata.addTags(tags);
+        Assert.assertTrue(metadata.isValid());
+    }
+
 }

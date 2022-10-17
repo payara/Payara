@@ -118,6 +118,15 @@ public class MetricsMetadata implements Metadata {
         this.unit = unit;
     }
 
+    public MetricsMetadata(String name, String displayName, String description, MetricType typeRaw, String unit) {
+        this();
+        this.name = name;
+        this.displayName = displayName;
+        this.description = description;
+        this.type = typeRaw.toString();
+        this.unit = unit;
+    }
+
     public String getMBean() {
         return mBean;
     }
