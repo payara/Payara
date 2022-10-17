@@ -243,7 +243,7 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
             return;
         }
         final Hazelcast hazelcastElement;
-        if (configFile != null && !"".equals(configFile.trim()) && !"hazelcast-config.xml".equals(configFile)) {
+        if (configFile != null && !"hazelcast-config.xml".equals(configFile)) {
             File xmlConfigFile = new File(configFile);
             if (!xmlConfigFile.exists()) {
                 String message = "Hazelcast config file not found: " + configFile;
@@ -274,9 +274,11 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
                 ConfigSupport.apply(new SingleConfigCode<HazelcastRuntimeConfiguration>() {
                     @Override
                     public Object run(final HazelcastRuntimeConfiguration hazelcastRuntimeConfigurationProxy) throws PropertyVetoException, TransactionFailure {
+                        hazelcastRuntimeConfigurationProxy.setHazelcastConfigurationFile(configFile);
                         if (hazelcastElement != null) {
-                            hazelcastRuntimeConfigurationProxy.setHazelcastConfigurationFile(configFile);
-                            fillParamsFromFile(hazelcastElement);
+                            hazelcastCore.fillConfigurationFromHazelcastElem(hazelcastElement, hazelcastRuntimeConfigurationProxy);
+                            actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+                            return null;
                         }
                         if (startPort != null) {
                             hazelcastRuntimeConfigurationProxy.setStartPort(startPort);
@@ -332,63 +334,6 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
                         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                         return null;
                     }
-
-                    private void fillParamsFromFile(Hazelcast hazelcast) {
-                        for (Object item : hazelcast.getImportOrConfigReplacersOrClusterName()) {
-                            JAXBElement element = (JAXBElement) item;
-                            if (element.getName().getLocalPart().equals("cluster-name")) {
-                                hzClusterName = (String) element.getValue();
-                                continue;
-                            }
-                            if (element.getName().getLocalPart().equals("license-key")) {
-                                licenseKey = (String) element.getValue();
-                                continue;
-                            }
-                            if (element.getDeclaredType().equals(Network.class)) {
-                                Network network = (Network) element.getValue();
-                                Port port = network.getPort();
-                                if (port != null) {
-                                    dasPort = String.valueOf(port.getValue());
-                                    autoIncrementPort = port.isAutoIncrement();
-                                }
-                                if (network.getPublicAddress() != null
-                                        && !"".equals(network.getPublicAddress().trim())) {
-                                    dasPublicAddress = network.getPublicAddress();
-                                }
-                                Interfaces networkInterfaces = network.getInterfaces();
-                                if (networkInterfaces != null && networkInterfaces.isEnabled()) {
-                                    interfaces = String.join(",", networkInterfaces.getInterface());
-                                }
-                                Join join = network.getJoin();
-                                if (join != null) {
-                                    TcpIp tcpIp = join.getTcpIp();
-                                    if (tcpIp != null) {
-                                        for (JAXBElement member : tcpIp.getRequiredMemberOrMemberOrInterface()) {
-                                            if (member.getDeclaredType().equals(TcpIp.MemberList.class)) {
-                                                TcpIp.MemberList memberList = (TcpIp.MemberList) member.getValue();
-                                                tcpipMembers = String.join(",", memberList.getMember());
-                                            }
-                                        }
-                                    }
-                                    Multicast multicast = join.getMulticast();
-                                    if (multicast != null && multicast.isEnabled()) {
-                                        multiCastGroup = multicast.getMulticastGroup();
-                                        multicastPort = String.valueOf(multicast.getMulticastPort());
-                                    }
-                                    AliasedDiscoveryStrategy kubernetes = join.getKubernetes();
-                                    if (kubernetes != null && kubernetes.isEnabled()) {
-                                        for (Element e : kubernetes.getAny()) {
-                                            if (e.getLocalName().equals("namespace")) {
-                                                kubernetesNamespace = e.getFirstChild().getNodeValue();
-                                            } else if (e.getLocalName().equals("service-name")) {
-                                                kubernetesServiceName = e.getFirstChild().getNodeValue();
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
                 }, hazelcastRuntimeConfiguration);
 
                 // get the configs that need the change applied if target is domain it is all configs
@@ -406,7 +351,9 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
                         @Override
                         public Object run(final HazelcastConfigSpecificConfiguration hazelcastRuntimeConfigurationProxy) throws PropertyVetoException, TransactionFailure {
                             if (hazelcastElement != null) {
-                                fillSpecificParamsFromFile(hazelcastElement);
+                                hazelcastCore.fillSpecificConfigFromHazelcastElem(hazelcastElement, hazelcastRuntimeConfigurationProxy);
+                                actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+                                return null;
                             }
                             if (jndiName != null) {
                                 hazelcastRuntimeConfigurationProxy.setJNDIName(jndiName);
@@ -451,37 +398,6 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
                             }
                             actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                             return null;
-                        }
-
-                        private void fillSpecificParamsFromFile(Hazelcast hazelcast) {
-                            for (Object item : hazelcast.getImportOrConfigReplacersOrClusterName()) {
-                                JAXBElement element = (JAXBElement) item;
-                                if (element.getName().getLocalPart().equals("lite-member")) {
-                                    LiteMember liteMember = (LiteMember) element.getValue();
-                                    lite = liteMember.isEnabled();
-                                    continue;
-                                }
-                                if (element.getDeclaredType().equals(ExecutorService.class)) {
-                                    ExecutorService executorService = (ExecutorService) element.getValue();
-                                    if (executorService.getPoolSize() != null) {
-                                        executorPoolSize = String.valueOf(executorService.getPoolSize());
-                                    }
-                                    if (executorService.getQueueCapacity() != null) {
-                                        executorQueueCapacity = String.valueOf(executorService.getQueueCapacity());
-                                    }
-                                    continue;
-                                }
-                                if (element.getDeclaredType().equals(ScheduledExecutorService.class)) {
-                                    ScheduledExecutorService scheduledExecutorService = (ScheduledExecutorService) element.getValue();
-                                    if (scheduledExecutorService.getPoolSize() != null) {
-                                        scheduledExecutorPoolSize = String.valueOf(scheduledExecutorService.getPoolSize());
-                                    }
-                                    if (scheduledExecutorService.getCapacity() != null) {
-                                        scheduledExecutorQueueCapacity = String.valueOf(scheduledExecutorService.getCapacity());
-                                    }
-                                    continue;
-                                }
-                            }
                         }
                     }, nodeConfiguration);
                 }
