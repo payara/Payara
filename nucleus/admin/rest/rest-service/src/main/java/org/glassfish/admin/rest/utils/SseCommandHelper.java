@@ -37,13 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2019-2022] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.admin.rest.utils;
 
 import com.sun.enterprise.admin.remote.AdminCommandStateImpl;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.enterprise.v3.admin.JobManagerService;
 import com.sun.enterprise.admin.report.PropsFileActionReporter;
 import java.io.IOException;
 import java.util.logging.Level;
@@ -55,7 +54,6 @@ import org.glassfish.api.admin.AdminCommandEventBroker;
 import org.glassfish.api.admin.AdminCommandState;
 import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.CommandRunner.CommandInvocation;
-import org.glassfish.internal.api.Globals;
 import org.glassfish.jersey.media.sse.EventOutput;
 import org.glassfish.jersey.media.sse.OutboundEvent;
 
@@ -178,8 +176,6 @@ public class SseCommandHelper implements Runnable, AdminCommandEventBroker.Admin
         }
         SseCommandHelper helper = new SseCommandHelper(commandInvocation, processor);
         commandInvocation.listener(".*", helper);
-        JobManagerService jobManagerService = Globals.getDefaultHabitat().getService(JobManagerService.class);
-        jobManagerService.getThreadPool().execute(helper);
         return helper.eventOuptut;
     }
 }
