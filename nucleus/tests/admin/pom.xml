@@ -73,7 +73,7 @@ modify org.glassfish.nucleus.admin.NucleusStartStopTest static initializer
 of COPY_LIB map constant.)
 
 -->
-<!-- Portions Copyright [2017-2019] Payara Foundation and/or affiliates -->
+<!-- Portions Copyright [2017-2022] Payara Foundation and/or affiliates -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -182,7 +182,7 @@ of COPY_LIB map constant.)
         <dependency>
             <groupId>jakarta.json</groupId>
             <artifactId>jakarta.json-api</artifactId>
-            <version>1.1</version>
+            <version>1.1.6</version>
         </dependency>
     </dependencies>
 </project>

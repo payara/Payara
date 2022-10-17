@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2022] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.v3.admin;
 
 import org.glassfish.api.admin.Job;
@@ -60,8 +61,6 @@ public class JobCreatorService  implements JobCreator {
     @Inject
     private ServerEnvironment serverEnvironment;
 
-    @Inject JobManagerService jobManagerService;
-
     private static final String JOBS_FILE = "jobs.xml";
     /**
      * This will create a new job with the name of command and a new unused id for the job
@@ -74,12 +73,7 @@ public class JobCreatorService  implements JobCreator {
     @Override
     public Job createJob(String id, String scope, String name, Subject subject, boolean isManagedJob, ParameterMap parameters) {
         AdminCommandInstanceImpl job = null;
-        if (isManagedJob) {
-            job =  new AdminCommandInstanceImpl(id, name, scope, subject, true, parameters);
-            job.setJobsFile(jobManagerService.jobsFile);
-        } else {
-            job =  new AdminCommandInstanceImpl(name, scope, subject, false, parameters);
-        }
+        job = new AdminCommandInstanceImpl(name, scope, subject, false, parameters);
         return job;
     }
 
