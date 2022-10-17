@@ -257,17 +257,20 @@ public class MetricsMetadataHelper {
         List<MetricsMetadata> metadataList = new ArrayList<>();
         String instanceName = serverEnv.getInstanceName();
         HealthCheckStatsProvider healthCheck = habitat.getService(HealthCheckStatsProvider.class, expression.getServiceId());
-        for (String attribute : healthCheck.getAttributes()) {
-            if (expression.getSubAttributeName() != null
-                    && (expression.getSubAttributeName().equals("*") || expression.getSubAttributeName().equals(SUB_ATTRIBUTE))) {
-                metadataList.addAll(
-                        loadSubAttribute(expression, metadata, attribute)
-                );
-            } else {
-                metadataList.add(createMetadata(metadata, expression.getServiceId(), null, attribute, expression.getSubAttributeName(), instanceName));
+        if (healthCheck != null) {
+            for (String attribute : healthCheck.getAttributes()) {
+                if (expression.getSubAttributeName() != null
+                        && (expression.getSubAttributeName().equals("*") || expression.getSubAttributeName().equals(SUB_ATTRIBUTE))) {
+                    metadataList.addAll(
+                            loadSubAttribute(expression, metadata, attribute)
+                    );
+                } else {
+                    metadataList.add(createMetadata(metadata, expression.getServiceId(), null, attribute, expression.getSubAttributeName(), instanceName));
+                }
             }
+        } else {
+            LOGGER.log(WARNING, "Health-Check service not found : {0}", expression.getServiceId());
         }
-
         return metadataList;
     }
 
@@ -279,10 +282,13 @@ public class MetricsMetadataHelper {
         List<MetricsMetadata> metadataList = new ArrayList<>();
         String instanceName = serverEnv.getInstanceName();
         HealthCheckStatsProvider healthCheck = habitat.getService(HealthCheckStatsProvider.class, expression.getServiceId());
-        for (String subAttribute : healthCheck.getSubAttributes()) {
-            metadataList.add(createMetadata(metadata, expression.getServiceId(), null, attribute, subAttribute, instanceName));
+        if (healthCheck != null) {
+            for (String subAttribute : healthCheck.getSubAttributes()) {
+                metadataList.add(createMetadata(metadata, expression.getServiceId(), null, attribute, subAttribute, instanceName));
+            }
+        } else {
+            LOGGER.log(WARNING, "Health-Check service not found : {0}", expression.getServiceId());
         }
-
         return metadataList;
     }
 
