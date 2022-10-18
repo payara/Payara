@@ -260,6 +260,10 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
                     @Override
                     public Object run(final HazelcastRuntimeConfiguration hazelcastRuntimeConfigurationProxy) throws PropertyVetoException, TransactionFailure {
                         if (configFile != null) {
+                            if (!configFile.equals(hazelcastRuntimeConfiguration.getHazelcastConfigurationFile())
+                                && configFile.equals("hazelcast-config.xml")) {
+                                hazelcastRuntimeConfigurationProxy.setChangeToDefault("true");
+                            }
                             hazelcastRuntimeConfigurationProxy.setHazelcastConfigurationFile(configFile);
                         }
                         if (startPort != null) {
