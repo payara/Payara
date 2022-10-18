@@ -383,7 +383,7 @@ public class HazelcastCore implements EventListener, ConfigListener {
                     if (hazelcastElement != null) {
                         ConfigSupport.apply(new SingleConfigCode<HazelcastRuntimeConfiguration>() {
                             @Override
-                            public Object run(final HazelcastRuntimeConfiguration hazelcastRuntimeConfigurationProxy) throws PropertyVetoException, TransactionFailure {
+                            public Object run(final HazelcastRuntimeConfiguration hazelcastRuntimeConfigurationProxy) {
                                 fillConfigurationFromHazelcastElem(hazelcastElement, hazelcastRuntimeConfigurationProxy);
                                 Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "Hazelcast general configuration filled from file");
                                 return null;
@@ -391,7 +391,7 @@ public class HazelcastCore implements EventListener, ConfigListener {
                         }, configuration);
                         ConfigSupport.apply(new SingleConfigCode<HazelcastConfigSpecificConfiguration>() {
                             @Override
-                            public Object run(final HazelcastConfigSpecificConfiguration hazelcastRuntimeConfigurationProxy) throws PropertyVetoException, TransactionFailure {
+                            public Object run(final HazelcastConfigSpecificConfiguration hazelcastRuntimeConfigurationProxy) {
                                 fillSpecificConfigFromHazelcastElem(hazelcastElement, hazelcastRuntimeConfigurationProxy);
                                 Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "Hazelcast specific configuration created");
                                 return null;
@@ -792,8 +792,7 @@ public class HazelcastCore implements EventListener, ConfigListener {
     private void fillConfigurationWithDefaults() throws TransactionFailure {
         ConfigSupport.apply(new SingleConfigCode<HazelcastRuntimeConfiguration>() {
             @Override
-            public Object run(final HazelcastRuntimeConfiguration hazelcastRuntimeConfiguration)
-                    throws PropertyVetoException, TransactionFailure {
+            public Object run(final HazelcastRuntimeConfiguration hazelcastRuntimeConfiguration) {
                 hazelcastRuntimeConfiguration.setChangeToDefault("false");
                 hazelcastRuntimeConfiguration.setHazelcastConfigurationFile("hazelcast-config.xml");
                 hazelcastRuntimeConfiguration.setAutoIncrementPort("true");
@@ -821,8 +820,7 @@ public class HazelcastCore implements EventListener, ConfigListener {
         }, configuration);
         ConfigSupport.apply(new SingleConfigCode<HazelcastConfigSpecificConfiguration>() {
             @Override
-            public Object run(final HazelcastConfigSpecificConfiguration hazelcastConfigSpecificConfiguration)
-                    throws PropertyVetoException, TransactionFailure {
+            public Object run(final HazelcastConfigSpecificConfiguration hazelcastConfigSpecificConfiguration) {
                 hazelcastConfigSpecificConfiguration.setEnabled("true");
                 hazelcastConfigSpecificConfiguration.setClusteringEnabled("true");
                 hazelcastConfigSpecificConfiguration.setPublicAddress("");
