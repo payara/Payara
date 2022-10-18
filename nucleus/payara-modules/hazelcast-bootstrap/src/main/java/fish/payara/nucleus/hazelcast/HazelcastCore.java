@@ -153,9 +153,6 @@ public class HazelcastCore implements EventListener, ConfigListener {
     Events events;
 
     @Inject
-    private Domain domain;
-
-    @Inject
     ServerContext context;
 
     @Inject

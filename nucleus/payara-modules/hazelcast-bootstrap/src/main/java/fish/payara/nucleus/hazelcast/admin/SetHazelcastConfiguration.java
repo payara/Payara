@@ -56,20 +56,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.inject.Inject;
 import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
 
-import fish.payara.nucleus.hazelcast.xsd.AliasedDiscoveryStrategy;
-import fish.payara.nucleus.hazelcast.xsd.ExecutorService;
 import fish.payara.nucleus.hazelcast.xsd.Hazelcast;
-import fish.payara.nucleus.hazelcast.xsd.Interfaces;
-import fish.payara.nucleus.hazelcast.xsd.Join;
-import fish.payara.nucleus.hazelcast.xsd.LiteMember;
-import fish.payara.nucleus.hazelcast.xsd.Multicast;
-import fish.payara.nucleus.hazelcast.xsd.Network;
-import fish.payara.nucleus.hazelcast.xsd.Port;
-import fish.payara.nucleus.hazelcast.xsd.ScheduledExecutorService;
-import fish.payara.nucleus.hazelcast.xsd.TcpIp;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -93,7 +82,6 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
-import org.w3c.dom.Element;
 
 /**
  *
