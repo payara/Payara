@@ -329,6 +329,7 @@ public class HazelcastCore implements EventListener, ConfigListener {
         URL serverConfigURL;
         try {
             serverConfigURL = new URL(context.getServerConfigURL());
+            Boolean isChangeToDefault = Boolean.valueOf(configuration.getChangeToDefault());
             File serverConfigFile = new File(serverConfigURL.getPath());
             if (new File(configuration.getHazelcastConfigurationFile()).exists()) {
                 hazelcastFilePath = configuration.getHazelcastConfigurationFile();
@@ -338,15 +339,19 @@ public class HazelcastCore implements EventListener, ConfigListener {
             }
             File file = new File(hazelcastFilePath);
             if (file.exists()) {
-                Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "Loading Hazelcast configuration from file: {0}", hazelcastFilePath);
+                Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO,
+                        "Loading Hazelcast configuration from file: {0}", hazelcastFilePath);
                 config = ConfigLoader.load(hazelcastFilePath);
                 if (config == null) {
-                    Logger.getLogger(HazelcastCore.class.getName()).log(Level.WARNING, "Hazelcast Core could not find configuration file {0} using default configuration", hazelcastFilePath);
+                    Logger.getLogger(HazelcastCore.class.getName()).log(Level.WARNING,
+                            "Hazelcast Core could not find configuration file {0} using default configuration",
+                            hazelcastFilePath);
                     config = new Config();
                 }
                 config.setClassLoader(clh.getCommonClassLoader());
                 if(ctxUtil == null) {
-                    Logger.getLogger(HazelcastCore.class.getName()).log(Level.WARNING, "Hazelcast Application Object Serialization Not Available");
+                    Logger.getLogger(HazelcastCore.class.getName()).log(Level.WARNING,
+                            "Hazelcast Application Object Serialization Not Available");
                 } else {
                     SerializationConfig serConfig = config.getSerializationConfig();
                     if (serConfig == null) {
@@ -362,7 +367,8 @@ public class HazelcastCore implements EventListener, ConfigListener {
                                 config.getSerializationConfig().getGlobalSerializerConfig().setImplementation(
                                         new PayaraHazelcastSerializer(ctxUtil, (StreamSerializer<?>) ser));
                             } else {
-                                Logger.getLogger(HazelcastCore.class.getName()).log(Level.WARNING, "Global serializer is not StreamSerializer: {0}", ser.getClass().getName());
+                                Logger.getLogger(HazelcastCore.class.getName()).log(Level.WARNING,
+                                        "Global serializer is not StreamSerializer: {0}", ser.getClass().getName());
                             }
                         }
                     }
@@ -378,20 +384,16 @@ public class HazelcastCore implements EventListener, ConfigListener {
                         ConfigSupport.apply(new SingleConfigCode<HazelcastRuntimeConfiguration>() {
                             @Override
                             public Object run(final HazelcastRuntimeConfiguration hazelcastRuntimeConfigurationProxy) throws PropertyVetoException, TransactionFailure {
-                                if (hazelcastElement != null) {
-                                    fillConfigurationFromHazelcastElem(hazelcastElement, hazelcastRuntimeConfigurationProxy);
-                                    Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "Hazelcast general configuration created");
-                                }
+                                fillConfigurationFromHazelcastElem(hazelcastElement, hazelcastRuntimeConfigurationProxy);
+                                Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "Hazelcast general configuration created");
                                 return null;
                             }
                         }, configuration);
                         ConfigSupport.apply(new SingleConfigCode<HazelcastConfigSpecificConfiguration>() {
                             @Override
                             public Object run(final HazelcastConfigSpecificConfiguration hazelcastRuntimeConfigurationProxy) throws PropertyVetoException, TransactionFailure {
-                                if (hazelcastElement != null) {
-                                    fillSpecificConfigFromHazelcastElem(hazelcastElement, hazelcastRuntimeConfigurationProxy);
-                                    Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "Hazelcast specific configuration created");
-                                }
+                                fillSpecificConfigFromHazelcastElem(hazelcastElement, hazelcastRuntimeConfigurationProxy);
+                                Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "Hazelcast specific configuration created");
                                 return null;
                             }
                         }, nodeConfig);
@@ -401,6 +403,14 @@ public class HazelcastCore implements EventListener, ConfigListener {
                             "Hazelcast config file parsing exception: " + ex.toString(), ex);
                 }
             } else { // there is no config override
+                if (isChangeToDefault) {
+                    try {
+                        fillConfigurationWithDefaults();
+                    } catch (TransactionFailure e) {
+                        Logger.getLogger(HazelcastCore.class.getName()).log(Level.SEVERE,
+                                "Hazelcast setting to default config exception: " + e.toString(), e);
+                    }
+                }
                 config.setClassLoader(clh.getCommonClassLoader());
 
                 // The below are to test split-brain scenario,
@@ -684,7 +694,7 @@ public class HazelcastCore implements EventListener, ConfigListener {
         return datagridEncryptionValue;
     }
 
-    public void fillConfigurationFromHazelcastElem(fish.payara.nucleus.hazelcast.xsd.Hazelcast hazelcast,
+    private void fillConfigurationFromHazelcastElem(fish.payara.nucleus.hazelcast.xsd.Hazelcast hazelcast,
                                                    HazelcastRuntimeConfiguration configuration) {
         for (Object item : hazelcast.getImportOrConfigReplacersOrClusterName()) {
             JAXBElement element = (JAXBElement) item;
@@ -742,7 +752,7 @@ public class HazelcastCore implements EventListener, ConfigListener {
         }
     }
 
-    public void fillSpecificConfigFromHazelcastElem(fish.payara.nucleus.hazelcast.xsd.Hazelcast hazelcast,
+    private void fillSpecificConfigFromHazelcastElem(fish.payara.nucleus.hazelcast.xsd.Hazelcast hazelcast,
                                                     HazelcastConfigSpecificConfiguration specificConfig) {
         for (Object item : hazelcast.getImportOrConfigReplacersOrClusterName()) {
             JAXBElement element = (JAXBElement) item;
@@ -773,5 +783,56 @@ public class HazelcastCore implements EventListener, ConfigListener {
                 continue;
             }
         }
+    }
+
+    private void fillConfigurationWithDefaults() throws TransactionFailure {
+        ConfigSupport.apply(new SingleConfigCode<HazelcastRuntimeConfiguration>() {
+            @Override
+            public Object run(final HazelcastRuntimeConfiguration hazelcastRuntimeConfiguration) {
+                hazelcastRuntimeConfiguration.setChangeToDefault("false");
+                hazelcastRuntimeConfiguration.setHazelcastConfigurationFile("hazelcast-config.xml");
+                hazelcastRuntimeConfiguration.setAutoIncrementPort("true");
+                hazelcastRuntimeConfiguration.setStartPort("5900");
+                hazelcastRuntimeConfiguration.setDASPublicAddress("");
+                hazelcastRuntimeConfiguration.setDASBindAddress("");
+                hazelcastRuntimeConfiguration.setDasPort("4900");
+                hazelcastRuntimeConfiguration.setMulticastGroup("224.2.2.3");
+                hazelcastRuntimeConfiguration.setMulticastPort("54327");
+                hazelcastRuntimeConfiguration.setTcpipMembers("127.0.0.1:5900");
+                hazelcastRuntimeConfiguration.setDnsMembers("localhost:5900");
+                hazelcastRuntimeConfiguration.setDiscoveryMode("domain");
+                hazelcastRuntimeConfiguration.setGenerateNames("false");
+                hazelcastRuntimeConfiguration.setInterface("");
+                hazelcastRuntimeConfiguration.setClusterGroupName("development");
+                hazelcastRuntimeConfiguration.setHostAwarePartitioning("true");
+                hazelcastRuntimeConfiguration.setLicenseKey("");
+                hazelcastRuntimeConfiguration.setKubernetesNamespace("default");
+                hazelcastRuntimeConfiguration.setKubernetesServiceName("");
+                hazelcastRuntimeConfiguration.setDatagridEncryptionEnabled("false");
+                Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO,
+                        "Hazelcast general configuration filled with defaults");
+                return null;
+            }
+        }, configuration);
+        ConfigSupport.apply(new SingleConfigCode<HazelcastConfigSpecificConfiguration>() {
+            @Override
+            public Object run(final HazelcastConfigSpecificConfiguration hazelcastConfigSpecificConfiguration) {
+                hazelcastConfigSpecificConfiguration.setEnabled("true");
+                hazelcastConfigSpecificConfiguration.setPublicAddress("");
+                hazelcastConfigSpecificConfiguration.setMemberName("payara");
+                hazelcastConfigSpecificConfiguration.setMemberGroup("MicroShoal");
+                hazelcastConfigSpecificConfiguration.setJNDIName("payara/Hazelcast");
+                hazelcastConfigSpecificConfiguration.setCacheManagerJNDIName("payara/CacheManager");
+                hazelcastConfigSpecificConfiguration.setCachingProviderJNDIName("payara/CachingProvider");
+                hazelcastConfigSpecificConfiguration.setExecutorPoolSize("4");
+                hazelcastConfigSpecificConfiguration.setExecutorQueueCapacity("20");
+                hazelcastConfigSpecificConfiguration.setScheduledExecutorPoolSize("4");
+                hazelcastConfigSpecificConfiguration.setScheduledExecutorQueueCapacity("20");
+                hazelcastConfigSpecificConfiguration.setLite("false");
+                Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO,
+                        "Hazelcast specific configuration filled with defaults");
+                return null;
+            }
+        }, nodeConfig);
     }
 }
