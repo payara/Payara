@@ -98,9 +98,11 @@ final class StandardContextValve
 
     private StandardContext context = null;
 
-    private static final Pattern PATTERN_META_INF = Pattern.compile("../*/META-INF/*");
+    private static final Pattern PATTERN_META_INF = Pattern.compile("[.]{2}[/]?.*[/](META-INF[/].*|META-INF$)",
+            Pattern.CASE_INSENSITIVE);
 
-    private static final Pattern PATTERN_WEB_INF = Pattern.compile("../*/WEB-INF/*");
+    private static final Pattern PATTERN_WEB_INF = Pattern.compile("[.]{2}[/]?.*[/](WEB-INF[/].*|WEB-INF$)",
+            Pattern.CASE_INSENSITIVE);
 
     // ------------------------------------------------------------- Properties
 
@@ -298,12 +300,11 @@ final class StandardContextValve
         if (rv.indexOf("./") == 0) {
             rv = rv.replaceFirst("./", "/");
         }
-        // has ../*/WEB-INF/ or ../*/META-INF/
-        final String RV = rv.toUpperCase();
-        if (PATTERN_WEB_INF.matcher(RV).find()) {
+        // has ../*/WEB-INF/* or ../*/META-INF/*
+        if (PATTERN_WEB_INF.matcher(rv).find()) {
             return "/WEB-INF";
         }
-        if (PATTERN_META_INF.matcher(RV).find()) {
+        if (PATTERN_META_INF.matcher(rv).find()) {
             return "/META-INF";
         }
 
