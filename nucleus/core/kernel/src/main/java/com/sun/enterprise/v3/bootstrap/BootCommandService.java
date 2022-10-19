@@ -40,7 +40,7 @@
 package com.sun.enterprise.v3.bootstrap;
 
 import com.sun.enterprise.module.bootstrap.StartupContext;
-import org.glassfish.api.StartupRunLevel;
+import fish.payara.internal.api.PostBootRunLevel;
 import fish.payara.boot.runtime.BootCommands;
 import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.hk2.api.PostConstruct;
@@ -55,7 +55,7 @@ import java.util.logging.Logger;
 import static java.util.logging.Level.SEVERE;
 
 @Service
-@RunLevel(value = StartupRunLevel.VAL)
+@RunLevel(value = PostBootRunLevel.VAL)
 public class BootCommandService implements PostConstruct {
 
     private static final Logger LOGGER = Logger.getLogger(BootCommandService.class.getName());
