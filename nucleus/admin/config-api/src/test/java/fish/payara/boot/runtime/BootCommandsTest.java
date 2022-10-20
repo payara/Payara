@@ -46,8 +46,6 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
-import fish.payara.boot.runtime.BootCommand;
-import fish.payara.boot.runtime.BootCommands;
 import org.junit.Test;
 
 /**
@@ -61,7 +59,7 @@ public class BootCommandsTest {
         BootCommands bootCommands = new BootCommands();
         String commandText = "create-custom-resource --restype java.lang.String -s v --name='custom-res' --description=\"results \\\"in\\\" error\" --property value=\"${ENV=ini_ws_uri}\" vfp/vfp-menu/ini.ws.uri";
         try (Reader reader = new StringReader(commandText)){
-            bootCommands.parseCommandScript(reader);
+            bootCommands.parseCommandScript(reader, false);
         }
         assertThat(bootCommands.getCommands().size(), is(1));
         

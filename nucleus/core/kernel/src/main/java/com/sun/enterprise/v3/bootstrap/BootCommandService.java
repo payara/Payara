@@ -70,14 +70,14 @@ public class BootCommandService implements PostConstruct {
      * Runs a series of commands from a file
      * @param file
      */
-    public void doBootCommands(String file) {
+    public void doBootCommands(String file, boolean expandValues) {
         if (file == null) {
             return;
         }
         try {
             BootCommands bootCommands = new BootCommands();
             System.out.println("Reading in commands from " + file);
-            bootCommands.parseCommandScript(new File(file));
+            bootCommands.parseCommandScript(new File(file), expandValues);
             bootCommands.executeCommands(commandRunner);
         } catch (IOException ex) {
             LOGGER.log(SEVERE, "Error reading from file");
@@ -88,6 +88,6 @@ public class BootCommandService implements PostConstruct {
 
     @Override
     public void postConstruct() {
-        doBootCommands(startupContext.getArguments().getProperty("-postbootcommandfile"));
+        doBootCommands(startupContext.getArguments().getProperty("-postbootcommandfile"), true);
     }
 }
