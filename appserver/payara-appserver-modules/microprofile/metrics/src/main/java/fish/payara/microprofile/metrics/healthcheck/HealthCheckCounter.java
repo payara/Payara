@@ -40,6 +40,7 @@
 package fish.payara.microprofile.metrics.healthcheck;
 
 import fish.payara.nucleus.healthcheck.HealthCheckStatsProvider;
+import java.util.Set;
 import org.eclipse.microprofile.metrics.Counter;
 
 /**
@@ -80,12 +81,7 @@ public class HealthCheckCounter implements Counter, HealthCheckStatsProvider {
 
     @Override
     public long getCount() {
-        return getValue(Long.class, expression.getAttributeName());
-    }
-
-    @Override
-    public <Long> Long getValue(Class<Long> type, String attributeName) {
-        return healthCheck.getValue(type, attributeName);
+        return getValue(Long.class, expression.getAttributeName(), expression.getSubAttributeName());
     }
 
     @Override
@@ -93,4 +89,18 @@ public class HealthCheckCounter implements Counter, HealthCheckStatsProvider {
        return healthCheck.isEnabled();
     }
 
+    @Override
+    public <T> T getValue(Class<T> type, String attribute, String subAttribute) {
+        return healthCheck.getValue(type, attribute, subAttribute);
+    }
+
+    @Override
+    public Set<String> getAttributes() {
+        return healthCheck.getAttributes();
+    }
+
+    @Override
+    public Set<String> getSubAttributes() {
+        return healthCheck.getSubAttributes();
+    }
 }
