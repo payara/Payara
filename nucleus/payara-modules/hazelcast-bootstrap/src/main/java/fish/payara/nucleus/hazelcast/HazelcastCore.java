@@ -726,25 +726,17 @@ public class HazelcastCore implements EventListener, ConfigListener {
             @Override
             public Object run(final HazelcastRuntimeConfiguration hazelcastRuntimeConfiguration) {
                 hazelcastRuntimeConfiguration.setChangeToDefault("false");
-                hazelcastRuntimeConfiguration.setHazelcastConfigurationFile("hazelcast-config.xml");
-                hazelcastRuntimeConfiguration.setAutoIncrementPort("true");
-                hazelcastRuntimeConfiguration.setStartPort("5900");
-                hazelcastRuntimeConfiguration.setDASPublicAddress("");
-                hazelcastRuntimeConfiguration.setDASBindAddress("");
+                hazelcastRuntimeConfiguration.setClusterGroupName("development");
+                hazelcastRuntimeConfiguration.setLicenseKey("");
                 hazelcastRuntimeConfiguration.setDasPort("4900");
+                hazelcastRuntimeConfiguration.setStartPort("5900");
+                hazelcastRuntimeConfiguration.setAutoIncrementPort("true");
+                hazelcastRuntimeConfiguration.setInterface("");
+                hazelcastRuntimeConfiguration.setTcpipMembers("127.0.0.1:5900");
                 hazelcastRuntimeConfiguration.setMulticastGroup("224.2.2.3");
                 hazelcastRuntimeConfiguration.setMulticastPort("54327");
-                hazelcastRuntimeConfiguration.setTcpipMembers("127.0.0.1:5900");
-                hazelcastRuntimeConfiguration.setDnsMembers("localhost:5900");
-                hazelcastRuntimeConfiguration.setDiscoveryMode("domain");
-                hazelcastRuntimeConfiguration.setGenerateNames("false");
-                hazelcastRuntimeConfiguration.setInterface("");
-                hazelcastRuntimeConfiguration.setClusterGroupName("development");
-                hazelcastRuntimeConfiguration.setHostAwarePartitioning("true");
-                hazelcastRuntimeConfiguration.setLicenseKey("");
                 hazelcastRuntimeConfiguration.setKubernetesNamespace("default");
                 hazelcastRuntimeConfiguration.setKubernetesServiceName("");
-                hazelcastRuntimeConfiguration.setDatagridEncryptionEnabled("false");
                 Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO,
                         "Hazelcast general configuration filled with defaults");
                 return null;
@@ -753,19 +745,12 @@ public class HazelcastCore implements EventListener, ConfigListener {
         ConfigSupport.apply(new SingleConfigCode<HazelcastConfigSpecificConfiguration>() {
             @Override
             public Object run(final HazelcastConfigSpecificConfiguration hazelcastConfigSpecificConfiguration) {
-                hazelcastConfigSpecificConfiguration.setEnabled("true");
-                hazelcastConfigSpecificConfiguration.setClusteringEnabled("true");
                 hazelcastConfigSpecificConfiguration.setPublicAddress("");
-                hazelcastConfigSpecificConfiguration.setMemberName("payara");
-                hazelcastConfigSpecificConfiguration.setMemberGroup("MicroShoal");
-                hazelcastConfigSpecificConfiguration.setJNDIName("payara/Hazelcast");
-                hazelcastConfigSpecificConfiguration.setCacheManagerJNDIName("payara/CacheManager");
-                hazelcastConfigSpecificConfiguration.setCachingProviderJNDIName("payara/CachingProvider");
+                hazelcastConfigSpecificConfiguration.setLite("false");
                 hazelcastConfigSpecificConfiguration.setExecutorPoolSize("4");
                 hazelcastConfigSpecificConfiguration.setExecutorQueueCapacity("20");
                 hazelcastConfigSpecificConfiguration.setScheduledExecutorPoolSize("4");
                 hazelcastConfigSpecificConfiguration.setScheduledExecutorQueueCapacity("20");
-                hazelcastConfigSpecificConfiguration.setLite("false");
                 Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO,
                         "Hazelcast specific configuration filled with defaults");
                 return null;
