@@ -39,6 +39,7 @@
  */
 package fish.payara.nucleus.hazelcast.admin;
 
+import com.hazelcast.config.FileSystemXmlConfig;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
@@ -55,10 +56,7 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.inject.Inject;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Unmarshaller;
 
-import fish.payara.nucleus.hazelcast.xsd.Hazelcast;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -240,10 +238,7 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
                 return;
             }
             try {
-                JAXBContext jc = JAXBContext.newInstance(Hazelcast.class);
-                Unmarshaller unmarshaller = jc.createUnmarshaller();
-                unmarshaller.setSchema(null);
-                unmarshaller.unmarshal(xmlConfigFile);
+                new FileSystemXmlConfig(xmlConfigFile);
             } catch (Exception ex) {
                 String message = "Hazelcast config file parsing exception: " + ex.toString();
                 logger.log(Level.INFO, message);
