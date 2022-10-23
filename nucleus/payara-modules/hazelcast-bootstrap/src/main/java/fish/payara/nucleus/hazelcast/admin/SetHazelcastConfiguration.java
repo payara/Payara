@@ -39,6 +39,7 @@
  */
 package fish.payara.nucleus.hazelcast.admin;
 
+import com.hazelcast.config.FileSystemXmlConfig;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
@@ -55,10 +56,7 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import fish.payara.nucleus.hazelcast.xsd.Hazelcast;
 import jakarta.inject.Inject;
-import jakarta.xml.bind.JAXBContext;
-import jakarta.xml.bind.Unmarshaller;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -240,10 +238,7 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
                 return;
             }
             try {
-                JAXBContext jc = JAXBContext.newInstance(Hazelcast.class);
-                Unmarshaller unmarshaller = jc.createUnmarshaller();
-                unmarshaller.setSchema(null);
-                unmarshaller.unmarshal(xmlConfigFile);
+                new FileSystemXmlConfig(xmlConfigFile);
             } catch (Exception ex) {
                 String message = "Hazelcast config file parsing exception: " + ex.toString();
                 logger.log(Level.INFO, message);
@@ -268,10 +263,10 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
                         }
                         if (startPort != null) {
                             hazelcastRuntimeConfigurationProxy.setStartPort(startPort);
-                        }                        
+                        }
                         if (multiCastGroup != null) {
                             hazelcastRuntimeConfigurationProxy.setMulticastGroup(multiCastGroup);
-                        }                        
+                        }
                         if (multicastPort != null) {
                             hazelcastRuntimeConfigurationProxy.setMulticastPort(multicastPort);
                         }
@@ -320,9 +315,8 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
                         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                         return null;
                     }
-
                 }, hazelcastRuntimeConfiguration);
-                
+
                 // get the configs that need the change applied if target is domain it is all configs
                 Config config = targetUtil.getConfig(target);
                 List<Config> configsToApply = new ArrayList<>(5);
@@ -333,9 +327,7 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
                 }
 
                 for(Config configToApply : configsToApply) {
-                    
                     HazelcastConfigSpecificConfiguration nodeConfiguration = configToApply.getExtensionByType(HazelcastConfigSpecificConfiguration.class);
-
                     ConfigSupport.apply(new SingleConfigCode<HazelcastConfigSpecificConfiguration>() {
                         @Override
                         public Object run(final HazelcastConfigSpecificConfiguration hazelcastRuntimeConfigurationProxy) throws PropertyVetoException, TransactionFailure {
@@ -421,7 +413,7 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
             }
         }
     }
-    
+
     private void enableOnTarget(ActionReport actionReport, AdminCommandContext context, Boolean enabled) {
 
         // for all affected targets restart hazelcast. 
