@@ -135,7 +135,8 @@ public class GlassFishMain {
             addShutdownHook();
             gfr = GlassFishRuntime.bootstrap(new BootstrapProperties(ctx), getClass().getClassLoader());
             gf = gfr.newGlassFish(new GlassFishProperties(ctx));
-            doBootCommands(ctx.getProperty("-prebootcommandfile"));
+            // Services required for variable expansion aren't available during pre-boot, so don't expand values
+            doBootCommands(ctx.getProperty("-prebootcommandfile"), false);
             if (Boolean.valueOf(Util.getPropertyOrSystemProperty(ctx, "GlassFish_Interactive", "false"))) {
                 startConsole();
             } else {
@@ -293,14 +294,14 @@ public class GlassFishMain {
          * Runs a series of commands from a file
          * @param file
          */
-        private void doBootCommands(String file) {
+        private void doBootCommands(String file, boolean expandValues) {
             if (file == null) {
                 return;
             }
             try {
                 BootCommands bootCommands = new BootCommands();
                 System.out.println("Reading in commandments from " + file);
-                bootCommands.parseCommandScript(new File(file));
+                bootCommands.parseCommandScript(new File(file), expandValues);
                 bootCommands.executeCommands(gf.getCommandRunner());
             } catch (IOException ex) {
                 LOGGER.log(SEVERE, "Error reading from file");

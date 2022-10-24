@@ -1028,7 +1028,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             gfproperties.setConfigFileURI(runtimeDir.getDomainXML().toURI().toString());
 
             try {
-                configureCommandFiles();
+                parsePreBootCommandFiles();
             } catch (IOException ex) {
                 LOGGER.log(Level.SEVERE, "Unable to load command file", ex);
             }
@@ -1053,7 +1053,12 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             callHandler(preBootHandler);
             gf.start();
 
-            // Execute post boot commands
+            // Parse and execute post boot commands
+            try {
+                parsePostBootCommandFiles();
+            } catch (IOException ex) {
+                LOGGER.log(Level.SEVERE, "Unable to load command file", ex);
+            }
             postBootCommands.executeCommands(gf.getCommandRunner());
             callHandler(postBootHandler);
             this.runtime = new PayaraMicroRuntimeImpl(gf, gfruntime);
@@ -1063,6 +1068,12 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             // These steps are separated in case any steps need to be done in between
             gf.getCommandRunner().run("initialize-all-applications");
 
+            // Parse and execute post deploy commands
+            try {
+                parsePostDeployCommandFiles();
+            } catch (IOException ex) {
+                LOGGER.log(Level.SEVERE, "Unable to load command file", ex);
+            }
             postDeployCommands.executeCommands(gf.getCommandRunner());
 
             long end = System.currentTimeMillis();
@@ -1832,33 +1843,53 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         return new ByteArrayInputStream(writer.getBuffer().toString().getBytes());
     }
 
-    private void configureCommandFiles() throws IOException {
-        // load the embedded files
-        URL scriptURL = Thread.currentThread().getContextClassLoader().getResource("MICRO-INF/pre-boot-commands.txt");
+    /**
+     * Helper method to parse the pre-boot command file.
+     *
+     * @throws IOException
+     */
+    private void parsePreBootCommandFiles() throws IOException {
+        parseCommandFiles("MICRO-INF/pre-boot-commands.txt", preBootFileName, preBootCommands, false);
+    }
+
+    /**
+     * Helper method to parse the post-boot command file.
+     *
+     * @throws IOException
+     */
+    private void parsePostBootCommandFiles() throws IOException {
+        parseCommandFiles("MICRO-INF/post-boot-commands.txt", postBootFileName, postBootCommands, true);
+    }
+
+    /**
+     * Helper method to parse the post-deploy command file.
+     *
+     * @throws IOException
+     */
+    private void parsePostDeployCommandFiles() throws IOException {
+        parseCommandFiles("MICRO-INF/post-deploy-commands.txt", postDeployFileName, postDeployCommands, true);
+    }
+
+    /**
+     * Parse the pre-boot, post-boot, or post-deploy command files - both the embedded one in MICRO-INF and the file
+     * provided by the user.
+     *
+     * @param resourcePath The path of the embedded pre-boot, post-boot, or post-deploy command file.
+     * @param fileName The path of the pre-boot, post-boot, or post-deploy command file provided by the user.
+     * @param bootCommands The {@link BootCommands} object to add the parsed commands to.
+     * @param expandValues Whether variable expansion should be attempted - cannot be done during pre-boot.
+     * @throws IOException
+     */
+    private void parseCommandFiles(String resourcePath, String fileName, BootCommands bootCommands,
+            boolean expandValues) throws IOException {
+        // Load the embedded file
+        URL scriptURL = Thread.currentThread().getContextClassLoader().getResource(resourcePath);
         if (scriptURL != null) {
-            preBootCommands.parseCommandScript(scriptURL);
+            bootCommands.parseCommandScript(scriptURL, expandValues);
         }
 
-        if (preBootFileName != null) {
-            preBootCommands.parseCommandScript(new File(preBootFileName));
-        }
-
-        scriptURL = Thread.currentThread().getContextClassLoader().getResource("MICRO-INF/post-boot-commands.txt");
-        if (scriptURL != null) {
-            postBootCommands.parseCommandScript(scriptURL);
-        }
-
-        if (postBootFileName != null) {
-            postBootCommands.parseCommandScript(new File(postBootFileName));
-        }
-
-        scriptURL = Thread.currentThread().getContextClassLoader().getResource("MICRO-INF/post-deploy-commands.txt");
-        if (scriptURL != null) {
-            postDeployCommands.parseCommandScript(scriptURL);
-        }
-
-        if (postDeployFileName != null) {
-            postDeployCommands.parseCommandScript(new File(postDeployFileName));
+        if (fileName != null) {
+            bootCommands.parseCommandScript(new File(fileName), expandValues);
         }
     }
 
