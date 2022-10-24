@@ -51,7 +51,11 @@ import org.jvnet.hk2.config.Configured;
 @Configured
 public interface HazelcastRuntimeConfiguration 
     extends ConfigBeanProxy, DomainExtension {
-    
+
+    @Attribute(defaultValue = "false", dataType = Boolean.class)
+    String getChangeToDefault();
+    public void setChangeToDefault(String value);
+
     @Attribute(defaultValue = "hazelcast-config.xml")
     String getHazelcastConfigurationFile();
     public void setHazelcastConfigurationFile(String value);
