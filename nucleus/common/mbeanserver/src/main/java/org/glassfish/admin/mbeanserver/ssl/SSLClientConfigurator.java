@@ -55,6 +55,9 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static org.glassfish.grizzly.config.dom.Ssl.TLS12;
+import static org.glassfish.grizzly.config.dom.Ssl.TLS13;
+
 /**
  * This class is a utility class that would configure a client socket factory using
  * either the SSL defaults for GlassFish  or via params supplied.
@@ -431,6 +434,12 @@ public class SSLClientConfigurator {
         List<String> tmpSSLArtifactsList = new LinkedList<>();
         // first configure the protocols
         System.out.println("SSLParams ="+ sslParams);
+        if (sslParams.getTls12Enabled()) {
+            tmpSSLArtifactsList.add(TLS12);
+        }
+        if (sslParams.getTls13Enabled()) {
+            tmpSSLArtifactsList.add(TLS13);
+        }
         if (tmpSSLArtifactsList.isEmpty()) {
             _logger.log(Level.WARNING, allVariantsDisabled);
         } else {
