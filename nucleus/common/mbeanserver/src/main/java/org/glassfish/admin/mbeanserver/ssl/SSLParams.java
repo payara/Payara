@@ -81,6 +81,8 @@ public class SSLParams {
     private String clientAuth;
     private String crlFile;
     private String ssl3TlsCiphers;
+    private Boolean tls12Enabled=true;
+    private Boolean tls13Enabled=true;
     private Boolean tlsRollBackEnabled=false;
     private Boolean hstsEnabled = false;
     private Boolean hstsSubDomains = false;
@@ -267,6 +269,28 @@ public class SSLParams {
 
     public void setSsl3TlsCiphers(String ssl3TlsCiphers) {
         this.ssl3TlsCiphers  = ssl3TlsCiphers;
+    }
+
+    /**
+     * Determines whether TLSv1.2 is enabled.
+     */
+    public Boolean getTls12Enabled() {
+        return tls12Enabled;
+    }
+
+    public void setTls12Enabled(String tls12Enabled) {
+        this.tls12Enabled = Boolean.parseBoolean(tls12Enabled);
+    }
+
+    /**
+     * Determines whether TLSv1.3 is enabled.
+     */
+    public Boolean getTls13Enabled() {
+        return tls13Enabled;
+    }
+
+    public void setTls13Enabled(String tls13Enabled) {
+        this.tls13Enabled = Boolean.parseBoolean(tls13Enabled);
     }
 
     /**
