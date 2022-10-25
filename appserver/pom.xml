@@ -156,6 +156,7 @@
                 <artifactId>spec-version-maven-plugin</artifactId>
                 <version>1.2</version>
                 <configuration>
+                    <!--suppress UnresolvedMavenProperty -->
                     <dir>${stage.dir}/${install.dir.name}/glassfish/modules</dir>
                     <excludes>jakarta.inject-api.jar,jakarta.servlet.jsp.jstl.jar,wasp.jar,jakarta.enterprise.concurrent.jar, jakarta.persistence.jar</excludes>
 		    <specs>
