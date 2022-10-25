@@ -85,4 +85,7 @@ def doOneTest(title, directory, fileToDeploy, extension, verifications, postboot
 
 	print("Shutdown Payara")
 	subprocess.run(['./asadmin', 'stop-domain'])
+	# cleanup
+	os.chdir(TEST_PATH)
+	os.remove("postboot.asadmin") 
 	return testErrors
