@@ -63,7 +63,6 @@ public final class Constants {
     public static final String INHABITANTS_CACHE = "inhabitants";
     public static final String BUILDER_NAME_PROPERTY = "GlassFish.BUILDER_NAME";
     public static final String NO_FORCED_SHUTDOWN = "--noforcedshutdown";
-    public static final String HAZELCAST_CONFIG = "hazelcast.config";
 
     private Constants(){}
 

@@ -141,11 +141,6 @@ public class EmbeddedOSGiGlassFishRuntime extends GlassFishRuntime {
             System.setProperty(com.sun.enterprise.glassfish.bootstrap.Constants.INSTANCE_ROOT_PROP_NAME, instanceRoot.getAbsolutePath());
             System.setProperty(com.sun.enterprise.glassfish.bootstrap.Constants.INSTANCE_ROOT_URI_PROP_NAME, instanceRoot.toURI().toString());
         }
-        final String hazelcastConfig = properties.getProperty(Constants.HAZELCAST_CONFIG);
-        System.out.println("Constants.HAZELCAST_CONFIG: " + hazelcastConfig);
-        if (hazelcastConfig != null && !hazelcastConfig.isEmpty()) {
-            System.setProperty(Constants.HAZELCAST_CONFIG, hazelcastConfig);
-        }
     }
 
     protected GlassFish createGlassFish(ModuleStartup gfKernel, ServiceLocator habitat, Properties gfProps) throws GlassFishException {
