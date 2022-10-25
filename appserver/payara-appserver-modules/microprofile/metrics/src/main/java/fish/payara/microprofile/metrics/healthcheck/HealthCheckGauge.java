@@ -40,6 +40,7 @@
 package fish.payara.microprofile.metrics.healthcheck;
 
 import fish.payara.nucleus.healthcheck.HealthCheckStatsProvider;
+import java.util.Set;
 import org.eclipse.microprofile.metrics.Gauge;
 
 /**
@@ -59,7 +60,7 @@ public class HealthCheckGauge implements Gauge<Number>, HealthCheckStatsProvider
 
     @Override
     public Number getValue() {
-        return getValue(Number.class, expression.getAttributeName());
+        return getValue(Number.class, expression.getAttributeName(), expression.getSubAttributeName());
     }
 
     @Override
@@ -68,8 +69,18 @@ public class HealthCheckGauge implements Gauge<Number>, HealthCheckStatsProvider
     }
 
     @Override
-    public <Number> Number getValue(Class<Number> type, String attributeName) {
-        return healthCheck.getValue(type, attributeName);
+    public <T> T getValue(Class<T> type, String attribute, String subAttribute) {
+        return healthCheck.getValue(type, attribute, subAttribute);
+    }
+
+    @Override
+    public Set<String> getAttributes() {
+        return healthCheck.getAttributes();
+    }
+    
+        @Override
+    public Set<String> getSubAttributes() {
+        return healthCheck.getSubAttributes();
     }
 
 }

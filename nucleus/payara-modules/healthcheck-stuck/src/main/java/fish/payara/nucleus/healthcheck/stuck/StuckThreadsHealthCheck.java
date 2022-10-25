@@ -55,8 +55,7 @@ import fish.payara.nucleus.healthcheck.configuration.StuckThreadsChecker;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
-import java.util.Arrays;
-import java.util.HashSet;
+import static java.util.Arrays.asList;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -65,6 +64,8 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import org.glassfish.api.StartupRunLevel;
@@ -78,14 +79,14 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service(name = "healthcheck-stuck")
 @RunLevel(StartupRunLevel.VAL)
-public class StuckThreadsHealthCheck extends
-        BaseHealthCheck<HealthCheckStuckThreadExecutionOptions, StuckThreadsChecker>
+public class StuckThreadsHealthCheck
+        extends BaseHealthCheck<HealthCheckStuckThreadExecutionOptions, StuckThreadsChecker>
         implements MonitoringDataSource, MonitoringWatchSource, HealthCheckStatsProvider {
 
     private final Map<String, Number> stuckThreadResult = new ConcurrentHashMap<>();
     private static final String STUCK_THREAD_COUNT = "count";
     private static final String STUCK_THREAD_MAX_DURATION = "maxDuration";
-    private static final Set<String> VALID_ATTRIBUTES = new HashSet<>(Arrays.asList(STUCK_THREAD_COUNT, STUCK_THREAD_MAX_DURATION));
+    private static final Set<String> VALID_SUB_ATTRIBUTES = new HashSet<>(asList(STUCK_THREAD_COUNT, STUCK_THREAD_MAX_DURATION));
 
     @FunctionalInterface
     private interface StuckThreadConsumer {
@@ -104,17 +105,27 @@ public class StuckThreadsHealthCheck extends
     }
 
     @Override
-    public Object getValue(Class type, String attributeName) {
-        if (attributeName == null) {
-            throw new IllegalArgumentException("attribute name is required");
+    public Object getValue(Class type, String attributeName, String subAttributeName) {
+        if (subAttributeName == null) {
+            throw new IllegalArgumentException("sub-attribute name is required");
         }
-        if (!VALID_ATTRIBUTES.contains(attributeName)) {
-            throw new IllegalArgumentException("Invalid attribute name, supported attributes are " + VALID_ATTRIBUTES);
+        if (!VALID_SUB_ATTRIBUTES.contains(subAttributeName)) {
+            throw new IllegalArgumentException("Invalid sub-attribute name, supported sub-attributes are " + VALID_SUB_ATTRIBUTES);
         }
         if (!Number.class.isAssignableFrom(type)) {
-            throw new IllegalArgumentException("attribute type must be number");
+            throw new IllegalArgumentException("sub-attribute type must be number");
         }
-        return stuckThreadResult.getOrDefault(attributeName, 0);
+        return stuckThreadResult.getOrDefault(subAttributeName, 0);
+    }
+
+    @Override
+    public Set<String> getAttributes() {
+        return Collections.EMPTY_SET;
+    }
+
+    @Override
+    public Set<String> getSubAttributes() {
+        return VALID_SUB_ATTRIBUTES;
     }
 
     @Override

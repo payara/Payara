@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+//Portions Copyright [2022] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.admin.remote.reader;
 
 import com.sun.enterprise.admin.remote.ParamsWithPayload;
@@ -112,7 +113,7 @@ public class MultipartProprietaryReader implements ProprietaryReader<ParamsWithP
                     parameters = new ParameterMap();
                 }
                 parameters.add(cdParams.getProperty("name"), stream2String(mimePart.readOnce()));
-            } else if (mimePart.getContentType() != null && mimePart.getContentType().startsWith("application/json")) {
+            } else if (cd.contains("name=\"ActionReport\"") && mimePart.getContentType() != null && mimePart.getContentType().startsWith("application/json")) {
                 //ACTION REPORT
                 actionReport = actionReportReader.readFrom(mimePart.readOnce(), "application/json");
             } else {

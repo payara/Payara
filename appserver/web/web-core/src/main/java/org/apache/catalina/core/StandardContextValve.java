@@ -68,6 +68,7 @@ import javax.servlet.*;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Locale;
+import java.util.regex.Pattern;
 
 import org.glassfish.grizzly.utils.Charsets;
 
@@ -97,6 +98,11 @@ final class StandardContextValve
 
     private StandardContext context = null;
 
+    private static final Pattern PATTERN_META_INF = Pattern.compile("[.]{2}[/]?.*[/](META-INF[/].*|META-INF$)",
+            Pattern.CASE_INSENSITIVE);
+
+    private static final Pattern PATTERN_WEB_INF = Pattern.compile("[.]{2}[/]?.*[/](WEB-INF[/].*|WEB-INF$)",
+            Pattern.CASE_INSENSITIVE);
 
     // ------------------------------------------------------------- Properties
 
@@ -294,11 +300,12 @@ final class StandardContextValve
         if (rv.indexOf("./") == 0) {
             rv = rv.replaceFirst("./", "/");
         }
-        // has /WEB-INF or /META-INF
-        final String RV = rv.toUpperCase();
-        int index = RV.indexOf("/WEB-INF/");
-        if (index != -1 || RV.endsWith("/WEB-INF")) {
+        // has ../*/WEB-INF/* or ../*/META-INF/*
+        if (PATTERN_WEB_INF.matcher(rv).find()) {
             return "/WEB-INF";
+        }
+        if (PATTERN_META_INF.matcher(rv).find()) {
+            return "/META-INF";
         }
 
         // Normalize the slashes and add leading slash if necessary

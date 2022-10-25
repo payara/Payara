@@ -94,27 +94,51 @@ public class BootCommands {
         return commands;
     }
 
-    public void parseCommandScript(File file) throws IOException {
-        parseCommandScript(file.toURI().toURL());
+    /**
+     * Parse the given pre-boot, post-boot, or post-deploy command file, optionally performing variable expansion.
+     *
+     * @param file The {@link File} to parse commands from
+     * @param expandValues Whether variable expansion should be performed - cannot be done during pre-boot
+     * @throws IOException
+     */
+    public void parseCommandScript(File file, boolean expandValues) throws IOException {
+        parseCommandScript(file.toURI().toURL(), expandValues);
     }
 
-    public void parseCommandScript(URL scriptURL) throws IOException {
+    /**
+     * Parse the given pre-boot, post-boot, or post-deploy command file, optionally performing variable expansion.
+     *
+     * @param scriptURL The {@link URL} to parse commands from
+     * @param expandValues Whether variable expansion should be performed - cannot be done during pre-boot
+     * @throws IOException
+     */
+    public void parseCommandScript(URL scriptURL, boolean expandValues) throws IOException {
         try (InputStream scriptStream = scriptURL.openStream()) {
             Reader reader = new InputStreamReader(scriptStream);
-            parseCommandScript(reader);
+            parseCommandScript(reader, expandValues);
         } catch (IOException ex) {
             LOGGER.log(SEVERE, null, ex);
         }
     }
 
-    void parseCommandScript(Reader reader) throws IOException {
+    /**
+     * Parse the given pre-boot, post-boot, or post-deploy command file, optionally performing variable expansion.
+     *
+     * @param reader The {@link Reader} to parse commands from
+     * @param expandValues Whether variable expansion should be performed - cannot be done during pre-boot
+     * @throws IOException
+     */
+    void parseCommandScript(Reader reader, boolean expandValues) throws IOException {
         BufferedReader bufferReader = new BufferedReader(reader);
         String commandStr = bufferReader.readLine();
         while (commandStr != null) {
             commandStr = commandStr.trim();
             // # is a comment
             if (commandStr.length() > 0 && !commandStr.startsWith("#")) {
-                commandStr = TranslatedConfigView.expandValue(commandStr);
+                // Variable expansion cannot be done during pre-boot since the required services won't have started yet
+                if (expandValues) {
+                    commandStr = TranslatedConfigView.expandValue(commandStr);
+                }
                 String[] command;
                 List<String> elements = new ArrayList<>();
                 Matcher flagMatcher = COMMAND_FLAG_PATTERN.matcher(commandStr);
