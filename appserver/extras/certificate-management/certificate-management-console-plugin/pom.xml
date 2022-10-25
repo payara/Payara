@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.extras.certificate-management</groupId>
         <artifactId>certificate-management-parent</artifactId>
-        <version>5.2022.4</version>
+        <version>5.2022.5-SNAPSHOT</version>
     </parent>
     <artifactId>certificate-management-console-plugin</artifactId>
     <packaging>glassfish-jar</packaging>
