@@ -41,7 +41,6 @@
 
 package com.sun.enterprise.glassfish.bootstrap.osgi;
 
-import com.sun.enterprise.glassfish.bootstrap.Constants;
 import com.sun.enterprise.glassfish.bootstrap.MainHelper;
 import com.sun.enterprise.glassfish.bootstrap.GlassFishImpl;
 import com.sun.enterprise.module.ModulesRegistry;
@@ -84,9 +83,6 @@ public class EmbeddedOSGiGlassFishRuntime extends GlassFishRuntime {
     @Override
     public synchronized GlassFish newGlassFish(GlassFishProperties gfProps) throws GlassFishException {
         try {
-            for (Object key : gfProps.getProperties().keySet()) {
-                System.out.println(key + ": " + gfProps.getProperties().get(key));
-            }
             // set env props before updating config, because configuration update may actually trigger
             // some code to be executed which may be depending on the environment variable values.
             setEnv(gfProps.getProperties());
