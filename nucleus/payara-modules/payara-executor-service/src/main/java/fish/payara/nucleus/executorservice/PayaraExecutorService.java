@@ -69,7 +69,6 @@ import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
 import org.glassfish.internal.api.Globals;
-import org.glassfish.internal.deployment.Deployment;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigBeanProxy;
@@ -81,6 +80,8 @@ import org.jvnet.hk2.config.UnprocessedChangeEvents;
 import com.sun.enterprise.config.serverbeans.Config;
 
 /**
+ * Service that provides a shared executor service for server internals rather than all services creating and using
+ * their own.
  *
  * @author Andrew Pielage
  */
@@ -130,7 +131,7 @@ public class PayaraExecutorService implements ConfigListener, EventListener {
      */
     @Override
     public void event(Event event) {
-        if (event.is(Deployment.ALL_APPLICATIONS_LOADED)) {
+        if (event.is(EventTypes.POST_SERVER_INIT)) {
             // Embedded containers can be started and stopped multiple times.
             // Thus we need to initialize anytime the server instance is started.
             if (null == threadPoolExecutor) {
