@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.v3.server;
 
@@ -56,9 +56,8 @@ import java.util.logging.Logger;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.inject.Provider;
-
-import fish.payara.internal.api.DeployPreviousApplicationsRunLevel;
 import org.glassfish.api.ActionReport;
+import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.UndeployCommandParameters;
@@ -93,10 +92,11 @@ import org.jvnet.hk2.annotations.Service;
  *
  * @author Jerome Dochez
  */
+//@Priority(8) // low priority , should be started last
 @Service(name="ApplicationLoaderService")
-@RunLevel(value = DeployPreviousApplicationsRunLevel.VAL, mode = RunLevel.RUNLEVEL_MODE_NON_VALIDATING)
-// In the wake of the introduction of PostBootRunLevel and DeployPreviousApplicationsRunLevel, should this still be non-validating?
+@RunLevel( value=StartupRunLevel.VAL, mode=RunLevel.RUNLEVEL_MODE_NON_VALIDATING)
 public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestroy, org.glassfish.hk2.api.PostConstruct {
+//public class ApplicationLoaderService implements Startup, org.glassfish.hk2.api.PreDestroy, org.glassfish.hk2.api.PostConstruct {
 
     final Logger logger = KernelLoggerInfo.getLogger();
 
