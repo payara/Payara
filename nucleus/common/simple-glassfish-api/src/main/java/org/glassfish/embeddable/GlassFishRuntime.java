@@ -93,7 +93,10 @@ public abstract class GlassFishRuntime {
      * @throws GlassFishException
      */
     public static GlassFishRuntime bootstrap(BootstrapProperties bootstrapProperties) throws GlassFishException {
-        System.setProperty("hazelcast.config", bootstrapProperties.getProperty("hazelcast.config"));
+        String hazelcastProperty = bootstrapProperties.getProperty("hazelcast.config");
+        if (hazelcastProperty != null) {
+            System.setProperty("hazelcast.config", hazelcastProperty);
+        }
         return bootstrap(bootstrapProperties, GlassFishRuntime.class.getClassLoader());
     }
 
