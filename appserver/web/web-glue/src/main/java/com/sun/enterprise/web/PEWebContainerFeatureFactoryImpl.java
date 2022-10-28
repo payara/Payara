@@ -63,8 +63,8 @@ public class PEWebContainerFeatureFactoryImpl
     }
     
     @Override
-    public ReplicationReceiver getReplicationReceiver(EmbeddedWebContainer embedded) {
-        return new PEReplicationReceiver(embedded);
+    public ReplicationReceiver getReplicationReceiver(WebContainer webContainer) {
+        return new PEReplicationReceiver();
     }    
     
     @Override

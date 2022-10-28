@@ -195,6 +195,8 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
      */
     protected static final ResourceBundle rb = DEFAULT_LOGGER.getResourceBundle();
 
+    private String[] networkListenerNames;
+
     // ------------------------------------------------------------ Constructor
 
     /**
@@ -482,9 +484,9 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
                     webModuleConfig = new WebModuleConfig();
                     webModuleConfig.setLocation(new File(location));
                     webModuleConfig.setDescriptor(webBundleDescriptorImpl);
-                    webModuleConfig.setParentLoader(EmbeddedWebContainer.class.getClassLoader());
+                    webModuleConfig.setParentLoader(WebContainer.class.getClassLoader());
                     webModuleConfig.setAppClassLoader(privileged(() ->
-                        new WebappClassLoader(EmbeddedWebContainer.class.getClassLoader(), webBundleDescriptorImpl.getApplication())));
+                        new WebappClassLoader(WebContainer.class.getClassLoader(), webBundleDescriptorImpl.getApplication())));
                 }
             }
 
@@ -619,9 +621,9 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
                                                                 .append(File.separator)
                                                                 .append(moduleDir)
                                                                 .toString()));
-                    webModuleConfig.setParentLoader(EmbeddedWebContainer.class.getClassLoader());
+                    webModuleConfig.setParentLoader(WebContainer.class.getClassLoader());
                     webModuleConfig.setAppClassLoader(privileged(() ->
-                        new WebappClassLoader(EmbeddedWebContainer.class.getClassLoader(), app)));
+                        new WebappClassLoader(WebContainer.class.getClassLoader(), app)));
 
                 }
             } else {
@@ -2191,6 +2193,45 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
 
         return httpProbes;
     }
+
+    // BEGIN S1AS 5000999
+    /**
+     * Associates this StandardHost with the given network listener names.
+     *
+     * @param networkListenerNames The network listener names with which to associate this StandardHost
+     */
+    public void setNetworkListenerNames(String[] networkListenerNames) {
+        String[] oldListenerNames = this.networkListenerNames;
+        this.networkListenerNames = networkListenerNames.clone();
+        support.firePropertyChange("ports", oldListenerNames, this.networkListenerNames);
+    }
+
+
+    /**
+     * Gets the network listener names with which this StandardHost is associated.
+     *
+     * @return The network listener names with which this StandardHost is associated,
+     * or null if this StandardHost has not been associated with any ports
+     */
+    @Override
+    public String[] getNetworkListenerNames() {
+        return this.networkListenerNames.clone();
+    }
+    // END S1AS 5000999
+
+
+    public String getNetworkListeners() {
+        List<String> list = Arrays.asList(networkListenerNames);
+        String listeners = null;
+        if (list.size() > 0) {
+            listeners = list.get(0);
+            for (int i = 1; i < list.size(); i++) {
+                listeners = list.get(i) + "," + listeners ;
+            }
+        }
+        return listeners;
+    }
+    
 
     /**
      * Gets the default-context.xml location of web modules deployed on this

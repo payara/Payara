@@ -228,6 +228,12 @@ public class WebModule extends PwcWebModule implements Context {
     // Originally from forked StandardContext, refers to option in weblogic.xml
     protected boolean showArchivedRealPathEnabled = true;
 
+    private boolean available = true;
+
+    private String engineName;
+
+    private String jvmRoute;
+
     /**
      * Constructor.
      */
@@ -238,6 +244,14 @@ public class WebModule extends PwcWebModule implements Context {
     public WebModule(ServiceLocator services) {
         super();
         this.services = services;
+    }
+
+    public boolean isAvailable() {
+        return available;
+    }
+
+    public void setAvailable(boolean available) {
+        this.available = available;
     }
 
     @Override
@@ -1876,5 +1890,23 @@ public class WebModule extends PwcWebModule implements Context {
     public long getUniqueId() {
         com.sun.enterprise.deployment.Application app = wmInfo.getDescriptor().getApplication();
         return app != null? app.getUniqueId() : 0L;
+    }
+
+
+
+    public void setEngineName(String name) {
+        this.engineName = name;
+    }
+
+    public void setJvmRoute(String jvmRoute) {
+        this.jvmRoute = jvmRoute;
+    }
+
+    public String getEngineName() {
+        return engineName;
+    }
+
+    public String getJvmRoute() {
+        return jvmRoute;
     }
 }

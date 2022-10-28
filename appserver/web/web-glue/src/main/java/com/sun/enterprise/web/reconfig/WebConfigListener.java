@@ -49,13 +49,17 @@ import com.sun.enterprise.config.serverbeans.VirtualServer;
 import com.sun.enterprise.v3.services.impl.MapperUpdateListener;
 import com.sun.enterprise.web.WebContainer;
 import org.glassfish.grizzly.config.dom.NetworkListener;
+import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.web.LogFacade;
 import org.glassfish.web.config.serverbeans.ManagerProperties;
 import org.glassfish.web.config.serverbeans.WebContainerAvailability;
 import org.apache.catalina.LifecycleException;
 import jakarta.inject.Inject;
+import org.jvnet.hk2.annotations.Contract;
+import org.jvnet.hk2.annotations.ContractsProvided;
 import org.jvnet.hk2.annotations.Optional;
 import jakarta.inject.Named;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;
 
@@ -75,6 +79,9 @@ import org.glassfish.grizzly.http.server.util.Mapper;
  *
  * @author amyroh
  */
+@Service
+@ContractsProvided(WebConfigListener.class)
+@PerLookup
 public class WebConfigListener implements ConfigListener, MapperUpdateListener {
 
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)

@@ -54,7 +54,7 @@ public interface WebContainerFeatureFactory {
     
     public HealthChecker getHADBHealthChecker(WebContainer webContainer);
     
-    public ReplicationReceiver getReplicationReceiver(EmbeddedWebContainer embedded);
+    public ReplicationReceiver getReplicationReceiver(WebContainer webContainer);
 
     public VirtualServer getVirtualServer();
     

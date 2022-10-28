@@ -63,5 +63,5 @@ public interface WebContainerStartStopOperation {
     
     public void doPostStop(ArrayList list);
     
-    public void init(EmbeddedWebContainer embedded);
+    public void init(WebContainer embedded);
 }

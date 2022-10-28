@@ -44,8 +44,6 @@ package com.sun.enterprise.web.connector.coyote;
 import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
 import com.sun.enterprise.config.serverbeans.HttpService;
 import com.sun.enterprise.web.WebContainer;
-import com.sun.enterprise.web.WebModule;
-import com.sun.enterprise.web.connector.MapperListener;
 import com.sun.enterprise.web.connector.extension.GrizzlyConfig;
 import com.sun.enterprise.web.connector.grizzly.DummyConnectorLauncher;
 import com.sun.enterprise.web.pwc.connector.coyote.PwcCoyoteRequest;
@@ -61,10 +59,7 @@ import org.apache.catalina.*;
 import org.apache.catalina.connector.Connector;
 import org.glassfish.security.common.CipherInfo;
 import org.glassfish.web.LogFacade;
-import org.glassfish.web.admin.monitor.RequestProbeProvider;
 
-import javax.management.Notification;
-import jakarta.servlet.http.HttpServletRequest;
 import java.io.*;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -83,6 +78,7 @@ import static org.glassfish.grizzly.config.dom.Ssl.TLS11;
 import static org.glassfish.grizzly.config.dom.Ssl.TLS12;
 import static org.glassfish.grizzly.config.dom.Ssl.TLS13;
 
+@Deprecated(forRemoval = true)
 public class PECoyoteConnector extends Connector {
 
     private static final String DEFAULT_KEYSTORE_TYPE = "JKS";

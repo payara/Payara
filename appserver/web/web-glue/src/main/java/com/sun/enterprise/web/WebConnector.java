@@ -56,7 +56,8 @@ import org.glassfish.internal.grizzly.V3Mapper;
  * context endpoints.
  *
  * @author jluehe
- */ 
+ */
+@Deprecated(forRemoval = true)
 public class WebConnector extends PECoyoteConnector {
 
     /**

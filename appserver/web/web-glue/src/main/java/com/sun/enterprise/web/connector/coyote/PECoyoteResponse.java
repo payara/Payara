@@ -48,6 +48,7 @@ import org.apache.catalina.connector.Response;
 /**
  * Customized version of the Tomcat 5 CoyoteResponse
  */
+@Deprecated(forRemoval = true)
 public class PECoyoteResponse extends Response {
 
     @Override

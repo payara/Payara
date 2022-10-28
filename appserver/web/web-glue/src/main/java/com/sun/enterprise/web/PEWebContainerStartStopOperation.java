@@ -55,20 +55,11 @@ import java.util.ArrayList;
  * @author lwhite
  */
 public class PEWebContainerStartStopOperation implements WebContainerStartStopOperation {
-    
-    /**
-     * The embedded Catalina object.
-     */
-    protected EmbeddedWebContainer _embedded = null;
-    
+
     /** Creates a new instance of PEWebContainerStartStopOperation */
     public PEWebContainerStartStopOperation() {
     }    
-    
-    /** Creates a new instance of PEWebContainerStartStopOperation */
-    public PEWebContainerStartStopOperation(EmbeddedWebContainer embedded) {
-        _embedded = embedded;
-    }    
+
     
     public void doPostStop(ArrayList list) {
         //deliberate no-op
@@ -79,8 +70,8 @@ public class PEWebContainerStartStopOperation implements WebContainerStartStopOp
         return null;
     }
     
-    public void init(EmbeddedWebContainer embedded) {
-        _embedded = embedded;
+    public void init(WebContainer container) {
+
     }
     
 }
