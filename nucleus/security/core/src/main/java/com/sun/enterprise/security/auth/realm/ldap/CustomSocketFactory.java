@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2022] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.security.auth.realm.ldap;
 
@@ -86,6 +86,20 @@ public class CustomSocketFactory extends SocketFactory implements Comparator<Soc
         } catch (Exception ex) {
             LOGGER.log(Level.WARNING, SecurityLoggerInfo.securityExceptionError, ex);
         }
+    }
+
+    /**
+     * Overriding createSocket() to fix issue FISH-6567 when having connectTimeout for Ldap Connections.
+     * The cause of the issue is that new implementation from blocking mechanism during creation of socket connections
+     * is setting a positive value for the parameter connectTimeout instead of using -1 (as previous versions did)
+     * to control the creation. For more information about the changes please check
+     * @see < href="https://github.com/openjdk/jdk/pull/6568">jdk connection timeout pr</>
+     * @return Socket instance with default ssl context
+     * @throws IOException
+     */
+    @Override
+    public Socket createSocket() throws IOException {
+        return socketFactory.createSocket();
     }
 
     /**
