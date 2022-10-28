@@ -54,6 +54,7 @@ public class HttpCookieTCK extends TCKBase {
         context = harness.addContext("servlet_jsh_cookie_web", ctx ->
                 ctx.addServlet("TestServlet", TestServlet.class, "/TestServlet/*")
         );
-        harness.runTck(new URLClient());
+        // the two tests are Servlet 6-specific
+        harness.runTck(new URLClient(),"setAttributeTest", "getAttributesTest");
     }
 }

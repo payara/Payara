@@ -676,6 +676,8 @@ public class TestServlet extends HttpTCKServlet {
     ServletTestUtil.printResult(pw, passed);
   }
 
+  // This is servlet 6.0 only
+  /*
   public void setAttributeTest(HttpServletRequest request,
       HttpServletResponse response) throws IOException {
 
@@ -736,4 +738,6 @@ public class TestServlet extends HttpTCKServlet {
     }
     ServletTestUtil.printResult(pw, passed);
   }
+
+   */
 }
