@@ -56,6 +56,7 @@
  *  * <http://www.apache.org/>.
  *  *
  */
+// Portions Copyright [2022] [Payara Foundation and/or its affiliates]
 
 package com.sun.ts.tests.servlet.api.jakarta_servlet_http.cookie;
 
