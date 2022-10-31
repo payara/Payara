@@ -9,6 +9,8 @@ MPLModulePostStep('failure') {
     archiveArtifacts artifacts: "./${${getPayaraDirectoryName}}/glassfish/domains/${getDomainName()}/logs/server.log"
 }
 
+error("Temporary forced failure to test failure post step behaviour")
+
 // Perform suite specific test execution
 if(CFG.suite.suite_name.equals("Payara-Samples")) {
     MPLModule('Payara Samples Test', CFG)
