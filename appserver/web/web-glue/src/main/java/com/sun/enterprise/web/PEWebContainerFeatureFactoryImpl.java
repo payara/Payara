@@ -58,12 +58,12 @@ public class PEWebContainerFeatureFactoryImpl
     }
     
     @Override
-    public HealthChecker getHADBHealthChecker(WebContainer webContainer) {
-        return new PEHADBHealthChecker(webContainer);
+    public HealthChecker getHADBHealthChecker() {
+        return new PEHADBHealthChecker();
     }
     
     @Override
-    public ReplicationReceiver getReplicationReceiver(WebContainer webContainer) {
+    public ReplicationReceiver getReplicationReceiver() {
         return new PEReplicationReceiver();
     }    
     

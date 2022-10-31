@@ -52,9 +52,9 @@ public interface WebContainerFeatureFactory {
 
     public WebContainerStartStopOperation getWebContainerStartStopOperation();
     
-    public HealthChecker getHADBHealthChecker(WebContainer webContainer);
+    public HealthChecker getHADBHealthChecker();
     
-    public ReplicationReceiver getReplicationReceiver(WebContainer webContainer);
+    public ReplicationReceiver getReplicationReceiver();
 
     public VirtualServer getVirtualServer();
     

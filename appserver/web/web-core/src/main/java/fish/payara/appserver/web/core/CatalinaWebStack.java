@@ -64,7 +64,7 @@ import org.glassfish.grizzly.http.server.HttpHandler;
  */
 public class CatalinaWebStack {
 
-    private final Tomcat tomcat=new Tomcat();
+    private final Tomcat tomcat = new Tomcat();
     private Server server;
     private Configuration configuration;
 
