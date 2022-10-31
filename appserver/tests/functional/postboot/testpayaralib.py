@@ -18,11 +18,12 @@ print("Current path: "+TEST_PATH)
 # extension - extension to the fileToDeploy
 # verifications - list of pairs: url + text to check
 # postbootcommands - additional commands to be stored in the postbootcommand file before the deploy
-def doOneTest(title, directory, fileToDeploy, extension, verifications, postbootcommands):
+def start_deploy_with_postboot(title, directory, fileToDeploy, extension, verifications, postbootcommands):
 	print("Build "+title)
+	mvn_path = os.path.abspath(os.environ["MAVEN_HOME"]+"/bin/mvn") if "MAVEN_HOME" in os.environ else "mvn"
 	if directory is not None:
 		os.chdir(directory)
-		subprocess.run(['mvn', 'clean', 'package'])
+		subprocess.run([mvn_path, 'clean', 'package'])
 		os.chdir("target")
 	CDIReproducerTargetPath = os.getcwd()
 
@@ -39,7 +40,8 @@ def doOneTest(title, directory, fileToDeploy, extension, verifications, postboot
 
 	print("Run Payara with postbootcommand file parameter")
 	print("Search log for 'Reading in commands from .../postboot.asadmin' right after server start")
-	os.chdir(PAYARA_PATH_BIN)
+	print("Changing path to Payara: "+PAYARA_PATH_BIN)
+	os.chdir(PAYARA_PATH_BIN+"/bin")
 	subprocess.run(['./asadmin', 'start-domain', '--postbootcommandfile', TEST_PATH+'/postboot.asadmin'])
 
 	testErrors = 0;
