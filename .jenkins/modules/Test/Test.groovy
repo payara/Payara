@@ -1,9 +1,10 @@
-MPLPostStep('always') {
+MPLModulePostStep('always') {
+    echo "Cleaning up the workspace"
     sh "${pwd()}/${getPayaraDirectoryName(CFG.'build.version')}/bin/asadmin stop-domain ${CFG.domain_name}"
     cleanWs()
 }
 
-MPLPostStep('failure') {
+MPLModulePostStep('failure') {
     echo "There are test failures, archiving server log"
     archiveArtifacts artifacts: "./${${getPayaraDirectoryName}}/glassfish/domains/${getDomainName()}/logs/server.log"
 }
