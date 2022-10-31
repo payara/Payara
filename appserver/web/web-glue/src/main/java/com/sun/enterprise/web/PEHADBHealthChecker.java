@@ -57,7 +57,7 @@ public class PEHADBHealthChecker implements HealthChecker {
 
     
     /** Creates a new instance of PEHADBHealthChecker */
-    public PEHADBHealthChecker(WebContainer webContainer) {          
+    public PEHADBHealthChecker() {
     }    
         
     /**

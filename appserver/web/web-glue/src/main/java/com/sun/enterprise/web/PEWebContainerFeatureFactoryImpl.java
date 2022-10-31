@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2022] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.web;
 
@@ -58,13 +58,13 @@ public class PEWebContainerFeatureFactoryImpl
     }
     
     @Override
-    public HealthChecker getHADBHealthChecker(WebContainer webContainer) {
-        return new PEHADBHealthChecker(webContainer);
+    public HealthChecker getHADBHealthChecker() {
+        return new PEHADBHealthChecker();
     }
     
     @Override
-    public ReplicationReceiver getReplicationReceiver(EmbeddedWebContainer embedded) {
-        return new PEReplicationReceiver(embedded);
+    public ReplicationReceiver getReplicationReceiver() {
+        return new PEReplicationReceiver();
     }    
     
     @Override

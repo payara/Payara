@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2022] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.web.connector.coyote;
 
@@ -48,6 +49,7 @@ import org.apache.catalina.connector.Response;
 /**
  * Customized version of the Tomcat 5 CoyoteResponse
  */
+@Deprecated(forRemoval = true)
 public class PECoyoteResponse extends Response {
 
     @Override

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2022] [Payara Foundation and/or its affiliates]
 
 /*
  * PEReplicationReceiver.java
@@ -56,7 +57,7 @@ import org.apache.catalina.LifecycleException;
 public class PEReplicationReceiver implements ReplicationReceiver {
     
     /** Creates a new instance of PEReplicationReceiver */
-    public PEReplicationReceiver(EmbeddedWebContainer embedded) {
+    public PEReplicationReceiver() {
     }
     
     public void init() {

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2022] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.web.pwc.connector.coyote;
 
@@ -68,6 +69,7 @@ import java.util.logging.Logger;
  * @author Jeanfrancois Arcand
  * @author Jan Luehe
  */
+@Deprecated(forRemoval = true)
 public class PwcCoyoteRequest extends Request {
 
     private static final Logger logger = LogFacade.getLogger();

@@ -37,13 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2022] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.web;
 
 import org.jvnet.hk2.annotations.Contract;
 
 /**
- * Used by {@link EmbeddedWebContainer} to give other modules an
+ * Used by {@link WebContainer} to give other modules an
  * opporunity to decorate/configure newly created {@link WebModule}s.
  *
  * <p>
@@ -51,6 +52,8 @@ import org.jvnet.hk2.annotations.Contract;
  * if this is how the abstraction should be defined, but this pattern
  * of hooking into various listeners of {@link WebModule} seem common
  * enough.
+ *
+ * UPDATE 2022: This decorator has not seen any use and its probably best to remove it.
  *
  * Note in particular that there's no provision for controlling orders
  * of listeners.

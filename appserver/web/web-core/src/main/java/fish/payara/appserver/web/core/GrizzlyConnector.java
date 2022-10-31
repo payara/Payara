@@ -48,7 +48,21 @@ import org.apache.catalina.connector.Connector;
 import org.glassfish.grizzly.http.server.HttpHandler;
 
 class GrizzlyConnector extends Connector {
+    private final String name;
+
+    GrizzlyConnector() {
+        this.name = null;
+    }
+
+    GrizzlyConnector(String name) {
+        this.name = name;
+    }
+
     private final GrizzlyCatalinaBridge bridge = new GrizzlyCatalinaBridge(this);
+
+    public String getName() {
+        return name;
+    }
 
     public HttpHandler asHttpHandler() {
         return bridge;

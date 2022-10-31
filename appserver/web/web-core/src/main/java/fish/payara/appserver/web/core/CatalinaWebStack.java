@@ -43,13 +43,18 @@
 package fish.payara.appserver.web.core;
 
 import java.io.File;
+import java.util.OptionalInt;
 
+import org.apache.catalina.Container;
+import org.apache.catalina.Engine;
 import org.apache.catalina.Host;
+import org.apache.catalina.JmxEnabled;
 import org.apache.catalina.LifecycleException;
-import org.apache.catalina.core.StandardEngine;
-import org.apache.catalina.core.StandardHost;
-import org.apache.catalina.core.StandardServer;
-import org.apache.catalina.core.StandardService;
+import org.apache.catalina.LifecycleState;
+import org.apache.catalina.Server;
+import org.apache.catalina.Service;
+import org.apache.catalina.connector.Connector;
+import org.apache.catalina.startup.Tomcat;
 import org.glassfish.grizzly.http.server.HttpHandler;
 
 /**
@@ -59,14 +64,14 @@ import org.glassfish.grizzly.http.server.HttpHandler;
  */
 public class CatalinaWebStack {
 
-    private StandardServer server;
+    private final Tomcat tomcat = new Tomcat();
+    private Server server;
     private Configuration configuration;
 
-    private StandardService service;
+    private Service service;
 
-    private StandardEngine engine;
-
-    private GrizzlyConnector connector;
+    private Engine engine;
+    private boolean hasConnectors;
 
 
     private CatalinaWebStack(Configuration configuration) {
@@ -76,16 +81,19 @@ public class CatalinaWebStack {
     void init() {
         // e. g. relative redirects are not expected by servlet tck
         System.setProperty("org.apache.catalina.STRICT_SERVLET_COMPLIANCE", "true");
-        server = new StandardServer();
-        server.setCatalinaHome(configuration.getCatalinaHome());
+        tomcat.setBaseDir(configuration.getCatalinaHome().getAbsolutePath());
 
-        service = new StandardService();
-        server.addService(service);
-        engine = new StandardEngine();
-        service.setContainer(engine);
-
-        connector = new GrizzlyConnector();
-        service.addConnector(connector);
+        server = tomcat.getServer();
+        service = tomcat.getService();
+        service.setName("Payara");
+        engine = tomcat.getEngine();
+        engine.setRealm(null);
+        engine.setParentClassLoader(configuration.parentClassLoader());
+        engine.setDefaultHost(configuration.defaultDomainName());
+        engine.setName(configuration.defaultDomainName());
+        if (service instanceof JmxEnabled) {
+            ((JmxEnabled) service).setDomain(configuration.defaultDomainName());
+        }
     }
 
     public void addDefaultHost(Host host) {
@@ -97,8 +105,20 @@ public class CatalinaWebStack {
         engine.addChild(host);
     }
 
+    public Container[] getHosts() {
+        return engine.findChildren();
+    }
+
+    public Host getHost(String name) {
+        return (Host) engine.findChild(name);
+    }
+
     public void start() throws LifecycleException {
-        server.start();
+        if (!hasConnectors) {
+            service.addConnector(new GrizzlyConnector());
+        }
+        tomcat.init();
+        tomcat.start();
     }
 
     public void stop() throws LifecycleException {
@@ -107,7 +127,11 @@ public class CatalinaWebStack {
 
 
     public HttpHandler httpHandler() {
-        return connector.asHttpHandler();
+        if (service.getState() != LifecycleState.STARTED) {
+            throw new IllegalStateException("Server is not yet started");
+        }
+
+        return ((GrizzlyConnector)service.findConnectors()[0]).asHttpHandler();
     }
 
     public static CatalinaWebStack create(Configuration conf) {
@@ -122,5 +146,50 @@ public class CatalinaWebStack {
     public interface Configuration {
 
         File getCatalinaHome();
+
+        default ClassLoader parentClassLoader() {
+            return Configuration.class.getClassLoader();
+        }
+
+        default String defaultDomainName() {
+            return "localhost";
+        }
+    }
+
+    public Engine getEngine() {
+        return tomcat.getEngine();
+    }
+
+    public synchronized HttpHandler createConnector(String address, int port, String defaultHost, boolean isSecure, String name, String instanceName, OptionalInt redirectPort) {
+        GrizzlyConnector connector = new GrizzlyConnector(name);
+        connector.setSecure(isSecure);
+        connector.setPort(port);
+        redirectPort.ifPresent(connector::setRedirectPort);
+        // there's nothing to do with the rest. They were used for MapperListener, which we don't have anymore.
+        service.addConnector(connector);
+        hasConnectors = true;
+        return connector.asHttpHandler();
+    }
+
+    public void setDefaultRedirectPort(int defaultRedirectPort) {
+        for (Connector connector : service.findConnectors()) {
+            if (connector.getRedirectPort() == -1) {
+                connector.setRedirectPort(defaultRedirectPort);
+            }
+        }
+    }
+
+    public synchronized void removeConnector(String name) {
+        for (Connector connector : service.findConnectors()) {
+            if (connector instanceof GrizzlyConnector &&  ((GrizzlyConnector) connector).getName().equals(name)) {
+                service.removeConnector(connector);
+                hasConnectors = service.findConnectors().length > 0;
+                return;
+            }
+        }
+    }
+
+    public void setJvmRoute(String jvmRoute) {
+        engine.setJvmRoute(jvmRoute);
     }
 }

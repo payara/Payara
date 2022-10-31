@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2022] [Payara Foundation and/or its affiliates]
 
 /*
  * WebContainerStartStopOperation.java
@@ -63,5 +64,5 @@ public interface WebContainerStartStopOperation {
     
     public void doPostStop(ArrayList list);
     
-    public void init(EmbeddedWebContainer embedded);
+    public void init(WebContainer embedded);
 }

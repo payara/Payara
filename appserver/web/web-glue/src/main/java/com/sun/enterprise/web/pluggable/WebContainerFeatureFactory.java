@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2019-2022] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.web.pluggable;
 
@@ -52,9 +52,9 @@ public interface WebContainerFeatureFactory {
 
     public WebContainerStartStopOperation getWebContainerStartStopOperation();
     
-    public HealthChecker getHADBHealthChecker(WebContainer webContainer);
+    public HealthChecker getHADBHealthChecker();
     
-    public ReplicationReceiver getReplicationReceiver(EmbeddedWebContainer embedded);
+    public ReplicationReceiver getReplicationReceiver();
 
     public VirtualServer getVirtualServer();
     
