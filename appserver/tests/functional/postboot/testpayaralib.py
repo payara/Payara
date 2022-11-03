@@ -3,6 +3,8 @@ import os
 import subprocess
 import time
 import urllib.request
+from pathlib import Path
+import platform
 
 global PAYARA_PATH_BIN
 global ATTEMPTS
@@ -12,6 +14,19 @@ ATTEMPTS = 30
 TEST_PATH = os.getcwd()
 print("Current path: "+TEST_PATH)
 
+def findMaven():
+	mvnpath = "mvn"
+	if platform.system() == "Windows":
+		mvnpath = mvnpath + ".cmd"
+	if "MAVEN_HOME" in os.environ:
+		mvnpath = os.path.join(os.environ["MAVEN_HOME"], "bin", mvnpath)
+	try:
+		print("Trying to run Maven: '" + mvnpath + "'")
+		subprocess.run([mvnpath, '-version'])
+	except:
+		raise Exception("Unable to run Maven, tried binary: "+mvnpath) 
+	return mvnpath
+
 # title - simple textual description
 # directory - directory of reproducer, this scripts build it by maven
 # fileToDeploy - name of the app, used with extension to deploy, itself to undeploy
@@ -19,9 +34,9 @@ print("Current path: "+TEST_PATH)
 # verifications - list of pairs: url + text to check
 # postbootcommands - additional commands to be stored in the postbootcommand file before the deploy
 def start_deploy_with_postboot(title, directory, fileToDeploy, extension, verifications, postbootcommands):
-	print("Build "+title)
-	mvn_path = os.path.abspath(os.environ["MAVEN_HOME"]+"/bin/mvn") if "MAVEN_HOME" in os.environ else "mvn"
 	if directory is not None:
+		print("Build "+title)
+		mvn_path = findMaven()
 		os.chdir(directory)
 		subprocess.run([mvn_path, 'clean', 'package'])
 		os.chdir("target")
@@ -35,14 +50,20 @@ def start_deploy_with_postboot(title, directory, fileToDeploy, extension, verifi
 		postbootcommandfile.write(postbootcommand+"\n")
 
 	if fileToDeploy is not None:
-		postbootcommandfile.write("deploy "+CDIReproducerTargetPath+"/"+fileToDeploy+"."+extension+"\n")
+		postbootcommandfile.write("deploy "+os.path.join(CDIReproducerTargetPath, fileToDeploy+"."+extension)+"\n")
 	postbootcommandfile.close()
 
 	print("Run Payara with postbootcommand file parameter")
 	print("Search log for 'Reading in commands from .../postboot.asadmin' right after server start")
 	print("Changing path to Payara: "+PAYARA_PATH_BIN)
-	os.chdir(PAYARA_PATH_BIN+"/bin")
-	subprocess.run(['./asadmin', 'start-domain', '--postbootcommandfile', TEST_PATH+'/postboot.asadmin'])
+	print("Going to Payara dir: '"+os.path.join(PAYARA_PATH_BIN, "bin")+"'")
+	if not os.path.isdir(PAYARA_PATH_BIN):
+		raise Exception("Unable to find Payara, used: '" + PAYARA_PATH_BIN + "', try to set PAYARA_HOME env. variable") 
+	os.chdir(os.path.join(PAYARA_PATH_BIN, "bin"))
+	asadmin_cmd = os.path.join('.', 'asadmin')
+	if platform.system() == "Windows":
+		asadmin_cmd = asadmin_cmd + ".bat"
+	subprocess.run([asadmin_cmd , 'start-domain', '--postbootcommandfile', os.path.join(TEST_PATH, 'postboot.asadmin')])
 
 	testErrors = 0;
 	for verification in verifications:
@@ -54,7 +75,7 @@ def start_deploy_with_postboot(title, directory, fileToDeploy, extension, verifi
 		print("Trying to load url: "+url)
 		pageContent = ""
 		attempts = 1
-		while attempts < ATTEMPTS:
+		while True:
 			error = None
 			try:
 				f = urllib.request.urlopen(url)
@@ -64,7 +85,7 @@ def start_deploy_with_postboot(title, directory, fileToDeploy, extension, verifi
 				error = "ERROR: Unable to open the url: "+url
 
 			if textToVerify in pageContent:
-				print("OK: "+urlToDownload+" deployed and works")
+				print("OK: "+urlToDownload)
 				break
 			else:
 				error = textToVerify + " not found in the output, was: "+pageContent
@@ -78,15 +99,16 @@ def start_deploy_with_postboot(title, directory, fileToDeploy, extension, verifi
 					print("ERROR! " + error)
 					# add error if all attempts failed
 					testErrors += 1
+					break
 
 	#input("Press enter to shutdown")
 
 	if fileToDeploy is not None:
 		print("Undeploying")
-		subprocess.run(['./asadmin', 'undeploy', fileToDeploy])
+		subprocess.run([asadmin_cmd, 'undeploy', fileToDeploy])
 
 	print("Shutdown Payara")
-	subprocess.run(['./asadmin', 'stop-domain'])
+	subprocess.run([asadmin_cmd, 'stop-domain'])
 	# cleanup
 	os.chdir(TEST_PATH)
 	os.remove("postboot.asadmin") 
