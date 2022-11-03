@@ -26,12 +26,11 @@ errors += testpayaralib.start_deploy_with_postboot("ConfigurableCDI", "Configura
 # Test setup of JDBC Connection Pool via postbootcommand file
 # TODO (when Payara will implement this feature): add url configuration via "set-config-property --propertyName=dburl --propertyValue=${com.sun.aas.instanceRoot}/lib/databases/testdb"
 # then use url=${MPCONFIG=dburl}
-os.environ["DBPATH"] = "testdb"
 errors += testpayaralib.start_deploy_with_postboot("H2SQLConnection", None, None, None, [
 		["http://localhost:4848/management/domain/resources/list-jdbc-connection-pools", "testpool"]
 		],
 		[
-		"create-jdbc-connection-pool --restype=java.sql.Driver --driverclassname='org.h2.jdbcx.JdbcDataSource' --property user=user:password=pwd:url=jdbc\\:h2\\:${com.sun.aas.instanceRoot}/lib/databases/${ENV=DBPATH};AUTO_SERVER\\=TRUE testpool",
+		"create-jdbc-connection-pool --restype=java.sql.Driver --driverclassname='org.h2.jdbcx.JdbcDataSource' --property url=jdbc\\:h2\\:mem\\:test testpool",
 		"ping-connection-pool testpool"])
 
 print(str(errors)+ " errors.")
