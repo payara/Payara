@@ -1,6 +1,11 @@
 MPLPostStep('always') {
-    sh "${pwd()}/${getPayaraDirectoryName(CFG.'build.version')}/bin/asadmin stop-domain ${CFG.domain_name}"
+    echo "Cleaning up workspace"
     cleanWs()
+}
+
+MPLPostStep('failure') {
+    echo "There are test failures, archiving server log"
+    archiveArtifacts artifacts: "./${${getPayaraDirectoryName}}/glassfish/domains/${getDomainName()}/logs/server.log"
 }
 
 // Perform suite specific test execution
