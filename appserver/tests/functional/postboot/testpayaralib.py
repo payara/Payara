@@ -75,14 +75,25 @@ def start_deploy_with_postboot(title, directory, fileToDeploy, extension, verifi
 		print("Trying to load url: "+url)
 		pageContent = ""
 		attempts = 1
+		headers = {"User-Agent": "Real Python", "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"}
 		while True:
 			error = None
+			response = None
 			try:
-				f = urllib.request.urlopen(url)
-				pageContent = f.read().decode('utf-8')
-				#print("Page content: >>"+pageContent+"<<")
-			except:
-				error = "ERROR: Unable to open the url: "+url
+				#print("Creating request")
+				urlRequest = urllib.request.Request(url, headers=headers)
+				with urllib.request.urlopen(urlRequest) as response:
+					#print("Reading it")
+					pageBytes = response.read()
+					#print("Parsing to string")
+					pageContent = pageBytes.decode('utf-8')
+					#print("Page content: >>"+pageContent+"<<")
+			except BaseException as ex:
+				error = "ERROR: Unable to open the url: "+url+", "+str(ex)
+			finally:
+				if response is not None:
+					#print("Closing")
+					response.close()
 
 			if textToVerify in pageContent:
 				print("OK: "+urlToDownload)
