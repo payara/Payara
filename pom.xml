@@ -228,7 +228,7 @@
         <monitoring-console-process.version>1.8.1</monitoring-console-process.version>
         <monitoring-console-webapp.version>1.8.1</monitoring-console-webapp.version>
         <validation.xml.root>${project.build.outputDirectory}</validation.xml.root>
-        <payara.transformer>0.2.7</payara.transformer>
+        <payara.transformer>0.2.9</payara.transformer>
         <osgi.version>7.0.0</osgi.version>
         <osgi.dto.version>1.1.0</osgi.dto.version>
     </properties>
