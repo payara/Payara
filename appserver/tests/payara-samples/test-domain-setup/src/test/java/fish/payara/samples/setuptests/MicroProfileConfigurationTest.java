@@ -70,6 +70,13 @@ public class MicroProfileConfigurationTest {
                 throw new IllegalStateException("Can't get current micproprofile state, the output was: '" + output + "'");
             }
             String header = output.get(0);
+            // reliably find headers
+            for (String line : output) {
+                if (line.startsWith("Enabled")) {
+                    header = line;
+                    break;
+                }
+            }
             int securityIndex = header.indexOf("Security");
             String securityString = output.get(1).substring(securityIndex).replaceFirst("[ \t\n].*", "");
             boolean security = Boolean.parseBoolean(securityString);
