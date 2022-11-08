@@ -155,12 +155,12 @@
         <hk2.version>2.6.1.payara-p7</hk2.version>
         <osgi-resource-locator.version>1.0.3</osgi-resource-locator.version>
         <stax-api.version>1.0-2</stax-api.version>
-        <jackson.version>2.12.6.20220326</jackson.version>
+        <jackson.version>2.13.4</jackson.version>
         <snakeyaml.version>1.28</snakeyaml.version>
         <hazelcast.version>4.2.4</hazelcast.version>
         <hazelcast.kubernetes.version>2.2.3.payara-p1</hazelcast.kubernetes.version>
-        <jaxb-api.version>2.3.2</jaxb-api.version>
-        <jaxb-impl.version>2.3.2</jaxb-impl.version>
+        <jaxb-api.version>2.3.3</jaxb-api.version>
+        <jaxb-impl.version>2.3.7</jaxb-impl.version>
         <jakarta.ejb-api.version>3.2.6</jakarta.ejb-api.version>
         <jsp-api.version>2.3.6.payara-p1</jsp-api.version>
         <jsp-impl.version>2.3.4</jsp-impl.version>
