@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2022 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -66,10 +66,17 @@ public class MicroProfileConfigurationTest {
             }
             List<String> output = new ArrayList<>();
             CliCommands.payaraGlassFish(asList("get-metrics-configuration"), output);
-            if (output.size() != 3) {
-                throw new IllegalStateException("Can't get current micproprofile state");
+            if (!output.contains("Command get-metrics-configuration executed successfully.")) {
+                throw new IllegalStateException("Can't get current micproprofile state, the output was: '" + output + "'");
             }
             String header = output.get(0);
+            // reliably find headers
+            for (String line : output) {
+                if (line.startsWith("Enabled")) {
+                    header = line;
+                    break;
+                }
+            }
             int securityIndex = header.indexOf("Security");
             String securityString = output.get(1).substring(securityIndex).replaceFirst("[ \t\n].*", "");
             boolean security = Boolean.parseBoolean(securityString);
