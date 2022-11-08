@@ -140,7 +140,7 @@
 
         <!-- BOM-referenced versions -->
         <jakartaee.api.version>8.0.0</jakartaee.api.version>
-        <servlet-api.version>4.0.2</servlet-api.version>
+        <servlet-api.version>4.0.4</servlet-api.version>
         <grizzly.version>2.4.4.payara-p8</grizzly.version>
         <jax-rs-api.impl.version>2.1.6</jax-rs-api.impl.version>
         <jersey.version>2.36.payara-p1</jersey.version>
