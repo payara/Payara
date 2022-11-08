@@ -154,8 +154,12 @@
                                     <goal>run</goal>
                                 </goals>
                                 <configuration>
-                                    <!--<skip>${skipTests}</skip>-->
-                                    <target unless="payara.micro.managed">
+                                    <skip>${skipTests}</skip>
+                                    <!--
+                                    Only run on remote for now - payara.home may not be set for server-managed and micro
+                                    configures itself differently.
+                                    -->
+                                    <target if="payara.server.remote">
                                         <echo>applications.dir=${applications.dir}</echo>
                                         <exec executable="${payara.executable}">
                                             <arg value="create-system-properties" />
@@ -173,8 +177,12 @@
                                     <goal>run</goal>
                                 </goals>
                                 <configuration>
-                                    <!--                            <skip>${skipTests}</skip>-->
-                                    <target unless="payara.micro.managed">
+                                    <skip>${skipTests}</skip>
+                                    <!--
+                                    Only run on remote for now - payara.home may not be set for server-managed and micro
+                                    configures itself differently.
+                                    -->
+                                    <target if="payara.server.remote">
                                         <exec executable="${payara.executable}">
                                             <arg value="delete-system-property" />
                                             <arg value="applications.dir" />
@@ -214,6 +222,45 @@
                                 the logical solution to this, but I've had no luck getting it to replace ":" with "\:"
                                 or "\" with "\\" and passing the result to maven-antrun-plugin.
                                 -->
+                                <exclude>*RedeployTest.java</exclude>
+                            </excludes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>payara-server-managed</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <configuration>
+                            <excludes>
+                                <!--
+                                Skip on managed profile for now - payara.home may not be set, required to run
+                                asadmin commands.
+                                 -->
+                                <exclude>*RedeployTest.java</exclude>
+                            </excludes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>payara-micro-managed</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <configuration>
+                            <excludes>
+                                <!-- Skip on micro for now: Not yet configured to run required asadmin commands -->
                                 <exclude>*RedeployTest.java</exclude>
                             </excludes>
                         </configuration>
