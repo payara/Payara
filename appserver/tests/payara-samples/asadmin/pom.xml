@@ -53,6 +53,10 @@
     <name>Payara Samples - Payara - AsAdmin</name>
     <packaging>jar</packaging>
 
+    <properties>
+        <applications.dir>${project.basedir}${file.separator}applications</applications.dir>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>fish.payara.server.internal.admin</groupId>
@@ -102,4 +106,121 @@
             <type>pom</type>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <!-- Run as integration tests, not as unit -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <configuration>
+                    <!-- Tests are not currently named in default *IT.java convention -->
+                    <includes>
+                        <include>*Test.java</include>
+                    </includes>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>not-windows</id>
+            <activation>
+                <os>
+                    <family>!Windows</family>
+                </os>
+            </activation>
+
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <!-- Set applications.dir property on Payara Server -->
+                            <execution>
+                                <id>set-applications.dir-property</id>
+                                <phase>pre-integration-test</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <!--<skip>${skipTests}</skip>-->
+                                    <target unless="payara.micro.managed">
+                                        <echo>applications.dir=${applications.dir}</echo>
+                                        <exec executable="${payara.executable}">
+                                            <arg value="create-system-properties" />
+                                            <arg value="applications.dir=${applications.dir}" />
+                                        </exec>
+                                    </target>
+                                </configuration>
+                            </execution>
+
+                            <!-- Unset applications.dir property on Payara Server -->
+                            <execution>
+                                <id>delete-applications.dir-property</id>
+                                <phase>post-integration-test</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <!--                            <skip>${skipTests}</skip>-->
+                                    <target unless="payara.micro.managed">
+                                        <exec executable="${payara.executable}">
+                                            <arg value="delete-system-property" />
+                                            <arg value="applications.dir" />
+                                        </exec>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>windows</id>
+            <activation>
+                <os>
+                    <family>Windows</family>
+                </os>
+            </activation>
+
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <configuration>
+                            <excludes>
+                                <!--
+                                Skip redeploy test on Windows, since it requires the create-system-properties
+                                command to be executed, passing in a path. On Windows a path contains a colon, which is
+                                the split character for this command. The escape character for asadmin is also
+                                backslash, so we'd need to double escape.
+
+                                Author note:
+                                The build-helper-maven-plugin:regex-property would be
+                                the logical solution to this, but I've had no luck getting it to replace ":" with "\:"
+                                or "\" with "\\" and passing the result to maven-antrun-plugin.
+                                -->
+                                <exclude>*RedeployTest.java</exclude>
+                            </excludes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
 </project>

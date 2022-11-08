@@ -68,6 +68,9 @@
 
         <!-- Exclude unstable tests by default-->
         <excludedGroups>fish.payara.samples.Unstable</excludedGroups>
+
+        <payara.home>${session.executionRootDirectory}/target/${payara.directory.name}</payara.home>
+        <payara.executable>${payara.home}${file.separator}bin${file.separator}asadmin</payara.executable>
     </properties>
 
     <modules>
@@ -181,6 +184,7 @@
             -->
             <properties>
                 <payara.containerType>MICRO</payara.containerType>
+                <payara.micro.managed />
             </properties>
 
             <dependencies>
@@ -269,6 +273,18 @@
             <properties>
                 <!-- Include all test, including unstable -->
                 <excludedGroups></excludedGroups>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>windows</id>
+            <activation>
+                <os>
+                    <family>Windows</family>
+                </os>
+            </activation>
+            <properties>
+                <payara.executable>${payara.home}${file.separator}bin${file.separator}asadmin.bat</payara.executable>
             </properties>
         </profile>
     </profiles>
@@ -461,7 +477,7 @@
                         <payara.adminHost>${payara.adminHost}</payara.adminHost>
                         <payara.containerType>${payara.containerType}</payara.containerType>
                         <!-- affects managed only -->
-                        <payara.home>${session.executionRootDirectory}/target/${payara.directory.name}</payara.home>
+                        <payara.home>${payara.home}</payara.home>
                         <payara.domain.name>${payara.domain.name}</payara.domain.name>
                         <!-- affects micro only -->
                         <payara.microJar>${session.executionRootDirectory}/target/payara-micro-${payara.version}.jar</payara.microJar>
@@ -477,7 +493,7 @@
                         <payara.adminHost>${payara.adminHost}</payara.adminHost>
                         <payara.containerType>${payara.containerType}</payara.containerType>
                         <!-- affects managed only -->
-                        <payara.home>${session.executionRootDirectory}/target/${payara.directory.name}</payara.home>
+                        <payara.home>${payara.home}</payara.home>
                         <payara.domain.name>${payara.domain.name}</payara.domain.name>
                         <!-- affects micro only -->
                         <payara.microJar>${session.executionRootDirectory}/target/payara-micro-${payara.version}.jar</payara.microJar>
