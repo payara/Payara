@@ -156,7 +156,7 @@
         <osgi-resource-locator.version>1.0.3</osgi-resource-locator.version>
         <stax-api.version>1.0-2</stax-api.version>
         <jackson.version>2.13.4</jackson.version>
-        <snakeyaml.version>1.28</snakeyaml.version>
+        <snakeyaml.version>1.33</snakeyaml.version>
         <hazelcast.version>4.2.4</hazelcast.version>
         <hazelcast.kubernetes.version>2.2.3.payara-p1</hazelcast.kubernetes.version>
         <jaxb-api.version>2.3.3</jaxb-api.version>
