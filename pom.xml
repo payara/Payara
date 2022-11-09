@@ -157,7 +157,7 @@
         <stax-api.version>1.0-2</stax-api.version>
         <jackson.version>2.12.6.20220326</jackson.version>
         <snakeyaml.version>1.28</snakeyaml.version>
-        <hazelcast.version>4.2.4</hazelcast.version>
+        <hazelcast.version>4.2.5</hazelcast.version>
         <hazelcast.kubernetes.version>2.2.3.payara-p1</hazelcast.kubernetes.version>
         <jaxb-api.version>2.3.2</jaxb-api.version>
         <jaxb-impl.version>2.3.2</jaxb-impl.version>
