@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2022] Payara Foundation and/or its affiliates
 
 /*
  * CommonHandlers.java
@@ -181,11 +182,12 @@ public class WoodstockHandler {
                     prefix = prefix + new SecureRandom().nextInt(100000);
                 }
                 tmpFile = File.createTempFile(prefix, suffix);
-                FileUtils.deleteOnExit(tmpFile);
+                tmpFile.delete(); // remove the file as uploader fails, if it exists
                 if (logger.isLoggable(Level.FINE)) {
                     logger.fine(GuiUtil.getCommonMessage("log.writeToTmpFile"));
                 }
                 uploadedFile.write(tmpFile);
+                FileUtils.deleteOnExit(tmpFile);
                 if (logger.isLoggable(Level.FINE)) {
                     logger.fine(GuiUtil.getCommonMessage("log.afterWriteToTmpFile"));
                 }
