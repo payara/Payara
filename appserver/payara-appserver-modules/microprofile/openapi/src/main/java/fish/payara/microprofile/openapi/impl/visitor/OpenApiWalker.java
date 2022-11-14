@@ -184,8 +184,11 @@ public class OpenApiWalker<E extends AnnotatedElement> implements ApiWalker {
             annotationVisitor.put(OPTIONS.class, (annot, element, con) -> visitor.visitOPTIONS(annot, (MethodModel) element, con));
             annotationVisitor.put(PATCH.class, (annot, element, con) -> visitor.visitPATCH(annot, (MethodModel) element, con));
             annotationVisitor.put(Path.class, (annot, element, con) -> {
-                if (element instanceof MethodModel) {
-                    visitor.visitGET(annot, (MethodModel) element, con);
+                if (element instanceof MethodModel && element.getAnnotations().size() == 1) {
+                    AnnotationModel annotationModel = element.getAnnotations().iterator().next();
+                    if ("Path".equals(annotationModel.getType().getSimpleName())) {
+                        visitor.visitGET(annot, (MethodModel) element, con);
+                    }
                 }
             });
 

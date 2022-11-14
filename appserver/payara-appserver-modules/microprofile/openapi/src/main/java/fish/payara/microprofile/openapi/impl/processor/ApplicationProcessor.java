@@ -167,10 +167,6 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             return;
         }
 
-        if ("Path".equals(get.getType().getSimpleName()) && element.getAnnotations().size() > 1) {
-            return;
-        }
-
         // Get or create the path item
         PathItem pathItem = context.getApi().getPaths().getPathItems().getOrDefault(context.getPath(), new PathItemImpl());
         context.getApi().getPaths().addPathItem(context.getPath(), pathItem);
