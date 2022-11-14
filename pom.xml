@@ -145,8 +145,8 @@
         <jax-rs-api.impl.version>2.1.6</jax-rs-api.impl.version>
         <jersey.version>2.36.payara-p1</jersey.version>
         <jakarta.validation.version>2.0.2</jakarta.validation.version>
-        <hibernate.validator.version>6.1.5.Final</hibernate.validator.version>
-        <hibernate.validator-cdi.version>6.1.5.Final</hibernate.validator-cdi.version>
+        <hibernate.validator.version>6.2.5.Final</hibernate.validator.version>
+        <hibernate.validator-cdi.version>6.2.5.Final</hibernate.validator-cdi.version>
         <jakarta.el.version>3.0.4.payara-p1</jakarta.el.version>
         <jakarta.el-api.version>3.0.4.payara-p1</jakarta.el-api.version>
         <javax.cache-api.version>1.1.1</javax.cache-api.version>
