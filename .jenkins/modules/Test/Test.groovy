@@ -4,9 +4,9 @@ MPLPostStep('always') {
 }
 
 MPLPostStep('failure') {
-    echo "There are test failures, archiving server log"
-    sh "cp ./${getPayaraDirectoryName}/glassfish/domains/${CFG.domain_name}/logs/server.log ./${CFG.suite.suite_name}.log"
-    archiveArtifacts artifacts: "./${CFG.suite.suite_name}.log"
+    echo "There are test failures, archiving server logs to ${CFG.suite.suite_name}-Logs.zip"
+    sh "cp -R ./${getPayaraDirectoryName(CFG.'build.version')}/glassfish/domains/${CFG.domain_name}/logs ./${CFG.suite.suite_name}-Logs"
+    archiveArtifacts artifacts: "${CFG.suite.suite_name}-Logs/**/*.*"
 }
 
 // Perform suite specific test execution
