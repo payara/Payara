@@ -181,7 +181,7 @@
         <weld.version>3.1.8.Final</weld.version>
         <weld-api.version>3.1.SP4</weld-api.version>
         <jakarta.security.enterprise-api.version>1.0.2</jakarta.security.enterprise-api.version>
-        <jakarta.security.enterprise.version>1.1-b01.payara-p4</jakarta.security.enterprise.version>
+        <jakarta.security.enterprise.version>1.1-b01.payara-p5</jakarta.security.enterprise.version>
         <jakarta.security.jacc-api.version>1.6.1</jakarta.security.jacc-api.version>
         <jakarta.security.auth.message-api.version>1.1.3</jakarta.security.auth.message-api.version>
         <jms-api.version>2.0.2</jms-api.version>
