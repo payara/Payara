@@ -213,7 +213,7 @@
         <microprofile-fault-tolerance.version>3.0</microprofile-fault-tolerance.version>
         <microprofile-jwt-auth.version>1.2.2</microprofile-jwt-auth.version>
         <microprofile-healthcheck.version>3.1</microprofile-healthcheck.version>
-        <microprofile-metrics.version>3.0</microprofile-metrics.version>
+        <microprofile-metrics.version>3.0.1</microprofile-metrics.version>
         <microprofile-rest-client.version>2.0</microprofile-rest-client.version>
         <microprofile-openapi.version>2.0</microprofile-openapi.version>
         <payara-arquillian-container.version>2.4.1</payara-arquillian-container.version>
