@@ -168,7 +168,7 @@
         <jstl-impl.version>1.2.5</jstl-impl.version>
         <jakarta.faces-api.version>2.3.2</jakarta.faces-api.version>
         <mojarra.version>2.3.14.payara-p3</mojarra.version>
-        <tyrus.version>1.17.payara-p2</tyrus.version>
+        <tyrus.version>1.20.payara-p1</tyrus.version>
         <jaxb-extra-osgi.version>2.3.0</jaxb-extra-osgi.version>
         <json.bind-api.version>1.0.2</json.bind-api.version>
         <yasson.version>1.0.11</yasson.version>
