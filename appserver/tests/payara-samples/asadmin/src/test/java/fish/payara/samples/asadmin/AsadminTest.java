@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2019-2021 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2022 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,8 +43,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.nio.file.Files;
+import java.util.List;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.DomainExtension;
@@ -60,6 +63,7 @@ import org.glassfish.internal.api.Target;
 import org.hamcrest.CoreMatchers;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.shrinkwrap.api.Archive;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.jvnet.hk2.config.UnsatisfiedDependencyException;
@@ -191,6 +195,28 @@ public abstract class AsadminTest {
             assertContains("on parameter [ "+name+" ]", text);
         }
         assertStatesUsage(result);
+    }
+
+    protected static void checkLogForError(String errorName, String... failingClasses) {
+        try {
+            List<String> lines = Files.readAllLines(ServerOperations.getDomainPath("logs/server.log"));
+            for (int i = 0; i < lines.size(); i++) {
+                String line = lines.get(i);
+                if (line.contains(errorName)) {
+                    // We've found our error, let's check if the cause is any of what we expect
+                    for (String failingClass : failingClasses) {
+                        if (i != lines.size() - 1) {
+                            String nextLine = lines.get(i + 1);
+                            if (nextLine.contains(failingClass)) {
+                                Assert.fail("Found " + errorName + "in server log coming from " + failingClass);
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (IOException ioException) {
+            Assert.fail("Could not read server log: " + ioException.getMessage());
+        }
     }
 
     private static final class PlainCommandResult implements CommandResult {
