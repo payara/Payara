@@ -209,7 +209,7 @@
         <jakarta-platform.version>8.0.0</jakarta-platform.version>
         <microprofile-release.version>4.1</microprofile-release.version>
         <microprofile-opentracing.version>2.0</microprofile-opentracing.version>
-        <microprofile-config.version>2.0</microprofile-config.version>
+        <microprofile-config.version>2.0.1</microprofile-config.version>
         <microprofile-fault-tolerance.version>3.0</microprofile-fault-tolerance.version>
         <microprofile-jwt-auth.version>1.2.1</microprofile-jwt-auth.version>
         <microprofile-healthcheck.version>3.1</microprofile-healthcheck.version>
