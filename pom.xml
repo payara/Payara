@@ -230,7 +230,7 @@
         <validation.xml.root>${project.build.outputDirectory}</validation.xml.root>
         <payara.transformer>0.2.9</payara.transformer>
         <osgi.version>7.0.0</osgi.version>
-        <osgi.dto.version>1.1.0</osgi.dto.version>
+        <osgi.dto.version>1.1.1</osgi.dto.version>
     </properties>
 
     <profiles>
