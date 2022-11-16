@@ -130,7 +130,7 @@
         <classmate.version>1.5.0</classmate.version>
         <jboss.logging.version>3.4.2.Final</jboss.logging.version>
         <!-- Javassist (JAVA programming ASSISTant) makes Java bytecode manipulation simple. It is a class library for editing bytecodes in Java. -->
-        <javassist.version>3.26.0-GA</javassist.version>
+        <javassist.version>3.29.2-GA</javassist.version>
 
         <!-- A pure Java implementation of the SSH-2 protocol -->
         <trilead-ssh2.version>build-217-jenkins-16</trilead-ssh2.version>
