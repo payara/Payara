@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2021 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2022 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -50,18 +50,8 @@ import java.util.Set;
 import javax.annotation.security.RolesAllowed;
 import javax.enterprise.context.SessionScoped;
 import javax.enterprise.event.Observes;
-import javax.enterprise.inject.spi.AfterBeanDiscovery;
-import javax.enterprise.inject.spi.Annotated;
-import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.BeforeBeanDiscovery;
-import javax.enterprise.inject.spi.DeploymentException;
-import javax.enterprise.inject.spi.Extension;
-import javax.enterprise.inject.spi.InjectionPoint;
-import javax.enterprise.inject.spi.ProcessBean;
-import javax.enterprise.inject.spi.ProcessInjectionTarget;
-import javax.enterprise.inject.spi.ProcessManagedBean;
-import javax.enterprise.inject.spi.ProcessSessionBean;
+import javax.enterprise.inject.spi.*;
+
 import org.eclipse.microprofile.auth.LoginConfig;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
@@ -90,13 +80,14 @@ public class JwtAuthCdiExtension implements Extension {
 
     public void register(@Observes BeforeBeanDiscovery beforeBean, BeanManager beanManager) {
         beforeBean.addAnnotatedType(beanManager.createAnnotatedType(InjectionPointGenerator.class), "JWT InjectionPointGenerator ");
+        beforeBean.addAnnotatedType(beanManager.createAnnotatedType(JsonWebTokenProducer.class), JsonWebTokenProducer.class.getName());
     }
     
     /**
      * This method tries to find the LoginConfig annotation and if does flags that fact.
      * 
      */
-    public <T> void findLoginConfigAnnotation(@Observes ProcessBean<T> eventIn, BeanManager beanManager) {
+    public <T> void findLoginConfigAnnotation(@Observes ProcessBean<T> eventIn) {
         
         ProcessBean<T> event = eventIn; // JDK8 u60 workaround
         
@@ -111,7 +102,7 @@ public class JwtAuthCdiExtension implements Extension {
      * declared later on. 
      * 
      */
-    public <T> void findRoles(@Observes ProcessManagedBean<T> eventIn, BeanManager beanManager) {
+    public <T> void findRoles(@Observes ProcessManagedBean<T> eventIn) {
         
         ProcessManagedBean<T> event = eventIn; // JDK8 u60 workaround
         
@@ -132,7 +123,7 @@ public class JwtAuthCdiExtension implements Extension {
         
     }
     
-    public <T> void checkInjectIntoRightScope(@Observes ProcessInjectionTarget<T> eventIn, BeanManager beanManager) {
+    public <T> void checkInjectIntoRightScope(@Observes ProcessInjectionTarget<T> eventIn) {
 
         ProcessInjectionTarget<T> event = eventIn; // JDK8 u60 workaround
         
@@ -162,7 +153,7 @@ public class JwtAuthCdiExtension implements Extension {
         }
     }
    
-    public void installMechanismIfNeeded(@Observes AfterBeanDiscovery eventIn, BeanManager beanManager) {
+    public void installMechanismIfNeeded(@Observes AfterBeanDiscovery eventIn) {
 
         AfterBeanDiscovery afterBeanDiscovery = eventIn; // JDK8 u60 workaround
 
