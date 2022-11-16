@@ -768,6 +768,9 @@ public abstract class AuthenticatorBase extends ValveBase
         assert (realm != null);
         sso.register(value, principal, authType, username, password, realm);
         // END S1AS8 PE 4856080,4918627
+        if (session != null) {
+            sso.associate(value, 0, session);
+        }
 
         request.setNote(Constants.REQ_SSOID_NOTE, value);
         if (sso.isVersioningSupported()) {
@@ -807,6 +810,9 @@ public abstract class AuthenticatorBase extends ValveBase
         if (session != null) {
             session.setPrincipal(null);
             session.setAuthType(null);
+            if (session.getSsoId() != null) {
+                session.expire();
+            }
         }
 
         // principal and authType set to null in the following
