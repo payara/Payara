@@ -337,7 +337,7 @@ public class GlassFishSingleSignOn extends SingleSignOn
         }
 
         String realmName = realm.getRealmName();
-        if (realmName == null) {
+        if (realmName == null || realmName.isEmpty()) {
             // S1AS8 6155481 START
             if (logger.isLoggable(Level.FINE)) {
                 logger.log(Level.FINE, LogFacade.NO_REALM_CONFIGURED);
