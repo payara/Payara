@@ -31,7 +31,7 @@ Apache Log4j 1.2.12, 1.2.17
 Apache Santaurio 2.2.3
 Classmate 1.5.1
 Commons Codec 1.13
-Eclipse MicroProfile 3.3 APIs
+Eclipse MicroProfile 4.1 APIs
 Hazelcast 4.2.5
 Hibernate Validator 6.2.5.Final
 IBM Batch 1.0.3
