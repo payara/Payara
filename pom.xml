@@ -192,7 +192,7 @@
         <jaxws-api.version>2.3.3</jaxws-api.version>
         <jakarta.jws-api.version>1.1.1</jakarta.jws-api.version>
         <webservices.version>2.4.3.payara-p6</webservices.version>
-        <woodstox.version>5.3.0</woodstox.version>
+        <woodstox.version>5.4.0</woodstox.version>
         <stax2-api.version>4.2.1</stax2-api.version>
         <jakarta.xml.registry-api.version>1.0.10</jakarta.xml.registry-api.version>
         <jakarta.xml.rpc-api.version>1.1.4</jakarta.xml.rpc-api.version>
