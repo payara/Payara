@@ -41,7 +41,6 @@ package fish.payara.microprofile.openapi.test.app.application;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import fish.payara.microprofile.openapi.test.app.OpenApiApplicationTest;
-import fish.payara.microprofile.openapi.test.util.JsonUtils;
 import org.eclipse.microprofile.openapi.annotations.enums.Explode;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
@@ -58,7 +57,6 @@ import java.time.Instant;
 import java.util.List;
 
 import static fish.payara.microprofile.openapi.test.util.JsonUtils.path;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
