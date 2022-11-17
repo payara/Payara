@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2022] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -61,6 +61,7 @@ import jakarta.ws.rs.OPTIONS;
 import jakarta.ws.rs.PATCH;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
@@ -196,6 +197,14 @@ public class OpenApiWalker<E extends AnnotatedElement> implements ApiWalker {
             annotationVisitor.put(HEAD.class, (annot, element, con) -> visitor.visitHEAD(annot, (MethodModel) element, con));
             annotationVisitor.put(OPTIONS.class, (annot, element, con) -> visitor.visitOPTIONS(annot, (MethodModel) element, con));
             annotationVisitor.put(PATCH.class, (annot, element, con) -> visitor.visitPATCH(annot, (MethodModel) element, con));
+            annotationVisitor.put(Path.class, (annot, element, con) -> {
+                if (element instanceof MethodModel && element.getAnnotations().size() == 1) {
+                    AnnotationModel annotationModel = element.getAnnotations().iterator().next();
+                    if ("Path".equals(annotationModel.getType().getSimpleName())) {
+                        visitor.visitGET(annot, (MethodModel) element, con);
+                    }
+                }
+            });
 
             // JAX-RS parameters
             annotationVisitor.put(QueryParam.class, visitor::visitQueryParam);
