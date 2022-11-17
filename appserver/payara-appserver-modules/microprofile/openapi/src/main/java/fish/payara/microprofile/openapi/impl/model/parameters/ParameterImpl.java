@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2022] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -99,7 +99,10 @@ public class ParameterImpl extends ExtensibleImpl<Parameter> implements Paramete
         if (styleEnum != null) {
             from.setStyle(Style.valueOf(styleEnum.getValue()));
         }
-        from.setExplode(annotation.getValue("explode", Boolean.class));
+        EnumModel explodeEnum = annotation.getValue("explode", EnumModel.class);
+        if (explodeEnum != null) {
+            from.setExplode("TRUE".equals(explodeEnum.getValue()));
+        }
         from.setAllowReserved(annotation.getValue("allowReserved", Boolean.class));
         AnnotationModel schemaAnnotation = annotation.getValue("schema", AnnotationModel.class);
         if (schemaAnnotation != null) {
