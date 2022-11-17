@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2019-2022] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -87,5 +87,26 @@ public class JsonUtils {
 
     public static ObjectNode toJson(Constructible node) {
         return OpenApiBuilderTest.JSON_MAPPER.valueToTree(node);
+    }
+
+    public static boolean hasPath(JsonNode root, String... pathElements) {
+        JsonNode current = root;
+        if (pathElements == null || pathElements.length == 0) {
+            return false;
+        }
+        for (int i = 0; i < pathElements.length; i++) {
+            String nameOrIndex = pathElements[i];
+            if (current != null) {
+                if (nameOrIndex.startsWith("[") && nameOrIndex.endsWith("]")) {
+                    current = current.get(Integer.parseInt(nameOrIndex.substring(1, nameOrIndex.length() - 1)));
+                } else {
+                    current = current.get(nameOrIndex);
+                }
+            }
+            if (current == null) {
+                return false;
+            }
+        }
+        return true;
     }
 }
