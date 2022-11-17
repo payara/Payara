@@ -116,19 +116,19 @@
     </pluginRepositories>
 
     <properties>
-        <maven.clean.plugin.version>3.1.0</maven.clean.plugin.version>
-        <maven.compiler.plugin.version>3.8.0</maven.compiler.plugin.version>
+        <maven.clean.plugin.version>3.2.0</maven.clean.plugin.version>
+        <maven.compiler.plugin.version>3.10.1</maven.compiler.plugin.version>
         <maven.compiler.showDeprecation>true</maven.compiler.showDeprecation>
-        <maven.jar.plugin.version>3.1.1</maven.jar.plugin.version>
-        <maven.surefire.plugin.version>3.0.0-M5</maven.surefire.plugin.version>
-        <maven.resources.plugin.version>3.1.0</maven.resources.plugin.version>
+        <maven.jar.plugin.version>3.3.0</maven.jar.plugin.version>
+        <maven.surefire.plugin.version>3.0.0-M7</maven.surefire.plugin.version>
+        <maven.resources.plugin.version>3.3.0</maven.resources.plugin.version>
         <maven.release.plugin.version>2.5.3</maven.release.plugin.version>
-        <maven.dependency.plugin.version>3.1.1</maven.dependency.plugin.version>
+        <maven.dependency.plugin.version>3.3.0</maven.dependency.plugin.version>
         <maven.gpg.plugin.version>1.6</maven.gpg.plugin.version>
-        <maven.deploy.plugin.version>3.0.0-M1</maven.deploy.plugin.version>
-        <maven.source.plugin.version>3.1.0</maven.source.plugin.version>
-        <maven.javadoc.plugin.version>3.1.1</maven.javadoc.plugin.version>
-        <maven.install.plugin.version>3.0.0-M1</maven.install.plugin.version>
+        <maven.deploy.plugin.version>3.0.0</maven.deploy.plugin.version>
+        <maven.source.plugin.version>3.2.1</maven.source.plugin.version>
+        <maven.javadoc.plugin.version>3.4.1</maven.javadoc.plugin.version>
+        <maven.install.plugin.version>3.0.1</maven.install.plugin.version>
         <maven.bundle.plugin.version>4.1.0</maven.bundle.plugin.version>
         <maven.failsafe.plugin.version>3.0.0-M5</maven.failsafe.plugin.version>
         <dynamic.build.properties.version>0.0.1.a2</dynamic.build.properties.version>
@@ -216,7 +216,7 @@
         <microprofile-metrics.version>3.0.1</microprofile-metrics.version>
         <microprofile-rest-client.version>2.0</microprofile-rest-client.version>
         <microprofile-openapi.version>2.0.1</microprofile-openapi.version>
-        <payara-arquillian-container.version>2.4.1</payara-arquillian-container.version>
+        <payara-arquillian-container.version>2.5</payara-arquillian-container.version>
         <payara.security-connectors.version>2.4.0</payara.security-connectors.version>
         <opentracing.version>0.33.0</opentracing.version>
         <h2db.version>1.4.200</h2db.version>
@@ -408,7 +408,7 @@
 
         <pluginManagement>
             <plugins>
-                
+
                 <plugin>
                     <artifactId>maven-jar-plugin</artifactId>
                     <version>${maven.jar.plugin.version}</version>

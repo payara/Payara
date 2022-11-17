@@ -87,20 +87,20 @@
         <jdk.version>1.8.0</jdk.version>
         <javadoc.skip>false</javadoc.skip>
 
-        <maven.site.plugin.version>3.7.1</maven.site.plugin.version>
-        <maven.assembly.plugin.version>3.1.0</maven.assembly.plugin.version>
+        <maven.site.plugin.version>3.12.1</maven.site.plugin.version>
+        <maven.assembly.plugin.version>3.4.2</maven.assembly.plugin.version>
         <maven.antrun.plugin.version>1.8</maven.antrun.plugin.version>
-        <maven.remote.resources.plugin.version>1.6.0</maven.remote.resources.plugin.version>
+        <maven.remote.resources.plugin.version>1.7.0</maven.remote.resources.plugin.version>
         <maven.eclipse.plugin.version>2.10</maven.eclipse.plugin.version>
-        <maven.invoker.plugin.version>3.1.0</maven.invoker.plugin.version>
+        <maven.invoker.plugin.version>3.3.0</maven.invoker.plugin.version>
         <maven.war.plugin.version>3.3.2</maven.war.plugin.version>
         <maven.makepkgs.plugin.version>0.6.2</maven.makepkgs.plugin.version>
-        <maven.jaxb2.plugin.version>0.14.0</maven.jaxb2.plugin.version>
+        <maven.jaxb2.plugin.version>0.15.1</maven.jaxb2.plugin.version>
         <maven.antlr.plugin.version>2.2</maven.antlr.plugin.version>
-        <maven.enforcer.plugin.version>3.0.0-M2</maven.enforcer.plugin.version>
-        <maven.jaxws.plugin.version>2.5</maven.jaxws.plugin.version>
+        <maven.enforcer.plugin.version>3.1.0</maven.enforcer.plugin.version>
+        <maven.jaxws.plugin.version>2.6</maven.jaxws.plugin.version>
         <maven.apt.plugin.version>1.0-alpha-5</maven.apt.plugin.version>
-        <maven.build.helper.plugin.version>3.0.0</maven.build.helper.plugin.version>
+        <maven.build.helper.plugin.version>3.3.0</maven.build.helper.plugin.version>
         <maven.plugin.api.version>3.6.0</maven.plugin.api.version>
 
         <!-- Servlet -->
@@ -168,7 +168,7 @@
         <opendmk.version>1.0-b01-ea</opendmk.version>
         <l10n.version>3.1-b41</l10n.version>
         <ha-api.version>3.1.12</ha-api.version>
-        <mockito.version>2.2.6</mockito.version>
+        <mockito.version>2.28.2</mockito.version>
 
         <!-- Build -->
 
@@ -179,8 +179,8 @@
         <command.security.maven.plugin.isFailureFatal>false</command.security.maven.plugin.isFailureFatal>
         <copyright-plugin.version>1.39</copyright-plugin.version>
         <nucleus.install.dir.name>nucleus</nucleus.install.dir.name>
-        <ant.version>1.10.9</ant.version>
-        <ant-launcher.version>1.10.5</ant-launcher.version>
+        <ant.version>1.10.12</ant.version>
+        <ant-launcher.version>1.10.12</ant-launcher.version>
         <metainf-services.version>1.8</metainf-services.version>
 
         <!-- Debug / analysis -->
@@ -191,7 +191,7 @@
         <findbugs-maven-plugin.version>3.0.5</findbugs-maven-plugin.version>
         <findbugs.version>1.7</findbugs.version>
         <findbugs.glassfish.logging.validLoggerPrefixes>javax.enterprise</findbugs.glassfish.logging.validLoggerPrefixes>
-        <jacoco.plugin.version>0.8.0</jacoco.plugin.version>
+        <jacoco.plugin.version>0.8.8</jacoco.plugin.version>
 
     </properties>
 
