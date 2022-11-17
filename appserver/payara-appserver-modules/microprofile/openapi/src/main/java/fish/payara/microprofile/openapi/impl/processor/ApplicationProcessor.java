@@ -677,6 +677,10 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             if (schema.isRequired()) {
                 parentSchema.addRequired(schemaName);
             }
+            // Removing the original property
+            if (!schemaName.equals(fieldOrMethod.getName()) && parentSchema.getProperties().containsKey(fieldOrMethod.getName())) {
+                parentSchema.removeProperty(fieldOrMethod.getName());
+            }
 
             if (property.getRef() == null) {
                 property.setType(ModelUtils.getSchemaType(typeName, context));
