@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2021 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2022 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -91,8 +91,6 @@ import org.glassfish.soteria.cdi.CdiUtils;
  */
 public class CdiInitEventHandler {
 
-    private final static JsonWebTokenImpl emptyJsonWebToken = new JsonWebTokenImpl(null, Collections.emptyMap());
-
     public static void installAuthenticationMechanism(AfterBeanDiscovery afterBeanDiscovery) {
 
         afterBeanDiscovery.addBean(new CdiProducer<IdentityStore>()
@@ -108,14 +106,6 @@ public class CdiInitEventHandler {
                 .types(Object.class, HttpAuthenticationMechanism.class, JWTAuthenticationMechanism.class)
                 .addToId("mechanism " + LoginConfig.class)
                 .create(e -> new JWTAuthenticationMechanism()));
-
-        // MP-JWT 1.0 7.1.1. Injection of JsonWebToken
-        afterBeanDiscovery.addBean(new CdiProducer<JsonWebToken>()
-                .scope(RequestScoped.class)
-                .beanClass(JsonWebToken.class)
-                .types(Object.class, JsonWebToken.class)
-                .addToId("token " + LoginConfig.class)
-                .create(e -> getJsonWebToken()));
 
         // MP-JWT 1.0 7.1.2
         for (JWTInjectableType injectableType : computeTypes()) {
@@ -237,11 +227,7 @@ public class CdiInitEventHandler {
     }
 
     public static JsonWebTokenImpl getJsonWebToken() {
-        JsonWebTokenImpl jsonWebToken = (JsonWebTokenImpl) CdiUtils.getBeanReference(SecurityContext.class).getCallerPrincipal();
-        if (jsonWebToken == null) {
-            jsonWebToken = emptyJsonWebToken;
-        }
-
+        JsonWebTokenImpl jsonWebToken = CdiUtils.getBeanReference(JsonWebTokenImpl.class);
         return jsonWebToken;
     }
 

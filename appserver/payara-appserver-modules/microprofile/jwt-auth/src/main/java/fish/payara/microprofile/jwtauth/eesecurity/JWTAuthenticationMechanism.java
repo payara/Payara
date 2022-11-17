@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2017-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2022] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -64,6 +64,7 @@ import org.eclipse.microprofile.jwt.config.Names;
  * @author Arjan Tijms
  */
 public class JWTAuthenticationMechanism implements HttpAuthenticationMechanism {
+    public static String INVALID_JWT_TOKEN = JWTAuthenticationMechanism.class.getName()+".invalidJwt";
 
     public static final String CONFIG_TOKEN_HEADER_AUTHORIZATION = "Authorization";
     public static final String CONFIG_TOKEN_HEADER_COOKIE = "Cookie";
@@ -89,8 +90,6 @@ public class JWTAuthenticationMechanism implements HttpAuthenticationMechanism {
     @Override
     public AuthenticationStatus validateRequest(HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext) throws AuthenticationException {
 
-        // Don't limit processing of JWT to protected pages (httpMessageContext.isProtected())
-        // as MP TCK requires JWT being parsed (if provided) even if not in protected pages.
         IdentityStoreHandler identityStoreHandler = CDI.current().select(IdentityStoreHandler.class).get();
 
         SignedJWTCredential credential = getCredential(request);
@@ -105,7 +104,13 @@ public class JWTAuthenticationMechanism implements HttpAuthenticationMechanism {
                 return httpMessageContext.notifyContainerAboutLogin(result);
             }
 
-            return httpMessageContext.responseUnauthorized();
+
+            if (httpMessageContext.isProtected()) {
+                return httpMessageContext.responseUnauthorized();
+            }
+
+            // put validation result in an attribute in case unauthenticated endpoint want to touch the token
+            request.setAttribute(INVALID_JWT_TOKEN, true);
         }
 
         return httpMessageContext.doNothing();

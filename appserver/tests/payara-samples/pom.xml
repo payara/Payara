@@ -68,6 +68,9 @@
 
         <!-- Exclude unstable tests by default-->
         <excludedGroups>fish.payara.samples.Unstable</excludedGroups>
+
+        <payara.home></payara.home>
+        <payara.executable>${payara.home}${file.separator}bin${file.separator}asadmin</payara.executable>
     </properties>
 
     <modules>
@@ -99,6 +102,7 @@
             <properties>
                 <payara.domain.name>domain1</payara.domain.name>
                 <payara.directory.name>payara5</payara.directory.name>
+                <payara.server.managed />
             </properties>
 
             <dependencies>
@@ -181,6 +185,7 @@
             -->
             <properties>
                 <payara.containerType>MICRO</payara.containerType>
+                <payara.micro.managed />
             </properties>
 
             <dependencies>
@@ -232,6 +237,10 @@
             This profile requires you to start up a Payara server outside of the build.
             Each sample will then reuse this instance to run the tests.
             -->
+            <properties>
+                <payara.server.remote />
+            </properties>
+
             <dependencies>
                 <dependency>
                     <groupId>fish.payara.arquillian</groupId>
@@ -269,6 +278,18 @@
             <properties>
                 <!-- Include all test, including unstable -->
                 <excludedGroups></excludedGroups>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>windows</id>
+            <activation>
+                <os>
+                    <family>Windows</family>
+                </os>
+            </activation>
+            <properties>
+                <payara.executable>${payara.home}${file.separator}bin${file.separator}asadmin.bat</payara.executable>
             </properties>
         </profile>
     </profiles>
