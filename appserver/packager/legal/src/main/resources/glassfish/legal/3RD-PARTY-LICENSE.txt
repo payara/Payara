@@ -25,7 +25,7 @@ party licensors listed.
 ---------------------------------------------------
 Accessors Smart 1.2
 Apache Ant 1.10.9
-Apache BCEL 6.2
+Apache BCEL 6.6.1
 Apache Felix OSGI 7.x
 Apache Log4j 1.2.12, 1.2.17
 Apache Santaurio 2.2.3
@@ -55,7 +55,7 @@ SnakeYaml 1.33
 SNMP4J 2.5.3
 Tiger Types 1.4
 Weld 3.1.9.Final
-Woodstox Core 5.3.0
+Woodstox Core 5.4.0
 Xalan 2.7.2
 XML APIs 1.3.04
 XPP3 1.1.4c
@@ -265,7 +265,7 @@ limitations under the License.
 
 ---------------------------------------------------
 ANTLR 2.7.7
-ASM 9.3
+ASM 9.4
 JLine 3.13.3
 Yubico Validation Client 3.0.2
 ---------------------------------------------------
