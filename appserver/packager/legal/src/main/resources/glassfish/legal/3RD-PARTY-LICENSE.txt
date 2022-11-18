@@ -266,7 +266,7 @@ limitations under the License.
 ---------------------------------------------------
 ANTLR 2.7.7
 ASM 9.4
-JLine 3.13.3
+JLine 3.21.0
 Yubico Validation Client 3.0.2
 ---------------------------------------------------
 
@@ -299,7 +299,7 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 THE POSSIBILITY OF SUCH DAMAGE.
 
 ---------------------------------------------------
-Mimepull 1.9.12
+Mimepull 1.9.15
 ---------------------------------------------------
 
 Eclipse Distribution License - 1.0
@@ -688,7 +688,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 ---------------------------------------------------
-javassist 3.26.0-GA
+javassist 3.29.2-GA
 ---------------------------------------------------
 
 MOZILLA PUBLIC LICENSE
