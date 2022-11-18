@@ -152,7 +152,7 @@
         <osgi-resource-locator.version>1.0.3</osgi-resource-locator.version>
         <stax-api.version>1.0-2</stax-api.version>
         <jackson.version>2.13.3</jackson.version>
-        <snakeyaml.version>1.30</snakeyaml.version>
+        <snakeyaml.version>1.33</snakeyaml.version>
         <hazelcast.version>5.1.1</hazelcast.version>
         <jaxb-api.version>4.0.0</jaxb-api.version>
         <jaxb-impl.version>4.0.1</jaxb-impl.version>
