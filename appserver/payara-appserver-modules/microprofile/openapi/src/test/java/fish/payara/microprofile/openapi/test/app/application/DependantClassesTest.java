@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2021] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2021-2022] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,6 +44,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import fish.payara.microprofile.openapi.resource.rule.ApplicationProcessedDocument;
 import fish.payara.microprofile.openapi.test.app.OpenApiApplicationTest;
 import fish.payara.microprofile.openapi.test.app.TestApplication;
+import fish.payara.microprofile.openapi.test.app.application.schema.Child;
 import fish.payara.microprofile.openapi.test.app.application.schema.Schema1Depending;
 import fish.payara.microprofile.openapi.test.app.application.schema.Schema2Simple;
 import fish.payara.microprofile.openapi.test.app.application.schema.Schema2Simple1;
@@ -53,6 +54,8 @@ import java.util.Iterator;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.container.ResourceContext;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
@@ -71,6 +74,8 @@ import org.junit.Test;
  */
 @Path("/serversDependant")
 public class DependantClassesTest extends OpenApiApplicationTest {
+    @Context
+    private ResourceContext rc;
 
     // add multiple classes to be processed, simulate component scan
     @Before
@@ -90,6 +95,11 @@ public class DependantClassesTest extends OpenApiApplicationTest {
                     schema = @Schema(implementation = Schema1Depending.class)
             )) Schema1Depending schema1Depending) {
         return new Schema1Depending();
+    }
+
+    @Path("child")
+    public Child sub() {
+        return rc.getResource(Child.class);
     }
 
     /**
@@ -126,5 +136,11 @@ public class DependantClassesTest extends OpenApiApplicationTest {
         assertEquals("schema2SimpleRef", requiredElements.next().asText());
         // no more than two results
         assertFalse(requiredElements.hasNext());
+    }
+
+    @Test
+    public void dependantClassSinglePathAnnotation() {
+        JsonNode operationSubMethod = path(getOpenAPIJson(),"paths./test/serversDependant/child.get");
+        assertEquals("sub", operationSubMethod.findValue("operationId").asText());
     }
 }

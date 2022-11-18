@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2022] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -64,6 +64,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.Path;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.eclipse.microprofile.openapi.annotations.ExternalDocumentation;
@@ -196,6 +197,14 @@ public class OpenApiWalker<E extends AnnotatedElement> implements ApiWalker {
             annotationVisitor.put(HEAD.class, (annot, element, con) -> visitor.visitHEAD(annot, (MethodModel) element, con));
             annotationVisitor.put(OPTIONS.class, (annot, element, con) -> visitor.visitOPTIONS(annot, (MethodModel) element, con));
             annotationVisitor.put(PATCH.class, (annot, element, con) -> visitor.visitPATCH(annot, (MethodModel) element, con));
+            annotationVisitor.put(Path.class, (annot, element, con) -> {
+                if (element instanceof MethodModel && element.getAnnotations().size() == 1) {
+                    AnnotationModel annotationModel = element.getAnnotations().iterator().next();
+                    if ("Path".equals(annotationModel.getType().getSimpleName())) {
+                        visitor.visitGET(annot, (MethodModel) element, con);
+                    }
+                }
+            });
 
             // JAX-RS parameters
             annotationVisitor.put(QueryParam.class, visitor::visitQueryParam);
