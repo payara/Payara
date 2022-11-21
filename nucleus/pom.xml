@@ -128,7 +128,7 @@
 
         <!-- Library for introspecting types with full generic information including resolving of field and method types. -->
         <classmate.version>1.5.0</classmate.version>
-        <jboss.logging.version>3.4.2.Final</jboss.logging.version>
+        <jboss.logging.version>3.4.3.Final</jboss.logging.version>
         <!-- Javassist (JAVA programming ASSISTant) makes Java bytecode manipulation simple. It is a class library for editing bytecodes in Java. -->
         <javassist.version>3.29.2-GA</javassist.version>
 
