@@ -151,8 +151,8 @@
         <hk2.version>3.0.1.payara-p1</hk2.version>
         <osgi-resource-locator.version>1.0.3</osgi-resource-locator.version>
         <stax-api.version>1.0-2</stax-api.version>
-        <jackson.version>2.13.3</jackson.version>
-        <snakeyaml.version>1.30</snakeyaml.version>
+        <jackson.version>2.13.4</jackson.version>
+        <snakeyaml.version>1.33</snakeyaml.version>
         <hazelcast.version>5.1.1</hazelcast.version>
         <jaxb-api.version>4.0.0</jaxb-api.version>
         <jaxb-impl.version>4.0.1</jaxb-impl.version>
@@ -199,7 +199,7 @@
         <jakarta.activation-api.version>2.1.0</jakarta.activation-api.version>
         <angus.activation.version>1.0.0</angus.activation.version>
         <istack-commons-runtime.version>4.0.1</istack-commons-runtime.version>
-        <jline.version>3.20.0</jline.version>
+        <jline.version>3.21.0</jline.version>
         <wsdl4j.version>1.6.3</wsdl4j.version>
         <parsson.version>1.1.1.payara-p1</parsson.version>
         <jsonp-api.version>2.1.0</jsonp-api.version>
