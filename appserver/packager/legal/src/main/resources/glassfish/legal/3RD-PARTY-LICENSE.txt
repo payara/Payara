@@ -37,7 +37,7 @@ Eclipse MicroProfile 5.0 APIs
 Hazelcast 5.1.1
 Hibernate Validator 8.0.0.Final
 IBM Batch 2.1.1
-Jackson 2.13.3
+Jackson 2.13.4
 JBoss Class File Writer 1.2.5.Final
 JBoss Logging 3.5.0.Final
 JCIP Annotations 1.0-1
@@ -53,7 +53,7 @@ OSGi Function 1.1.0
 OSGi Promise 1.1.1
 Reactor Core 3.4.4
 Smack 4.3.4
-SnakeYaml 1.30
+SnakeYaml 1.33
 SNMP4J 2.5.3
 Tiger Types 1.4
 Weld 5.0.1.Final
@@ -268,7 +268,7 @@ limitations under the License.
 ---------------------------------------------------
 ANTLR 2.7.7
 ASM 9.2, 9.4
-JLine 3.20.0
+JLine 3.21.0
 Yubico Validation Client 3.0.2
 ---------------------------------------------------
 
@@ -690,7 +690,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 ---------------------------------------------------
-javassist 3.28.0-GA
+javassist 3.29.2-GA
 ---------------------------------------------------
 
 MOZILLA PUBLIC LICENSE
