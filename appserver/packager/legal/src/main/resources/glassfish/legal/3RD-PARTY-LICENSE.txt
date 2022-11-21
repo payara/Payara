@@ -37,7 +37,7 @@ Hibernate Validator 6.2.5.Final
 IBM Batch 1.0.3
 Jackson 2.13.4
 JBoss Class File Writer 1.2.5.Final
-JBoss Logging 3.4.2.Final
+JBoss Logging 3.4.3.Final
 JCIP Annotations 1.0-1
 JSON Smart 2.4.8
 JXMPP 0.6.4
