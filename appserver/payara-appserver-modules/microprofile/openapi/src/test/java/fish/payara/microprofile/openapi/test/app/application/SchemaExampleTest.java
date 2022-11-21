@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2019-2022] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,16 +40,19 @@
 package fish.payara.microprofile.openapi.test.app.application;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import fish.payara.microprofile.openapi.impl.model.media.SchemaImpl;
 import fish.payara.microprofile.openapi.impl.visitor.OpenApiWalker;
 import fish.payara.microprofile.openapi.test.app.OpenApiApplicationTest;
 import fish.payara.microprofile.openapi.test.util.JsonUtils;
+
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+
 import org.junit.Test;
 
 /**
@@ -60,6 +63,9 @@ import org.junit.Test;
  */
 @Path("/users")
 public class SchemaExampleTest extends OpenApiApplicationTest {
+
+    @Schema(name = "friendly_name")
+    private String notFriendlyName;
 
     @Schema(maxProperties = 1024, minProperties = 1, requiredProperties = { "password" })
     public static class User {
@@ -83,5 +89,13 @@ public class SchemaExampleTest extends OpenApiApplicationTest {
         assertNotNull(passwordProperties);
         assertEquals("string", passwordProperties.get("type").textValue());
         assertEquals("bobSm37", passwordProperties.get("example").textValue());
+    }
+
+    @Test
+    public void fieldSchemaExampleIsRenamed() {
+        ObjectNode root = getOpenAPIJson();
+        assertEquals(false,
+                JsonUtils.hasPath(root, "components.schemas.SchemaExampleTest.properties.notFriendlyName".split("\\.")));
+        assertNotNull(JsonUtils.path(root,"components.schemas.SchemaExampleTest.properties.friendly_name"));
     }
 }
