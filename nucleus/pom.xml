@@ -130,7 +130,7 @@
         <classmate.version>1.5.0</classmate.version>
         <jboss.logging.version>3.4.2.Final</jboss.logging.version>
         <!-- Javassist (JAVA programming ASSISTant) makes Java bytecode manipulation simple. It is a class library for editing bytecodes in Java. -->
-        <javassist.version>3.26.0-GA</javassist.version>
+        <javassist.version>3.29.2-GA</javassist.version>
 
         <!-- A pure Java implementation of the SSH-2 protocol -->
         <trilead-ssh2.version>build-217-jenkins-16</trilead-ssh2.version>
@@ -143,7 +143,7 @@
 
         <commons-io.version>2.11.0</commons-io.version>
 
-        <mimepull.version>1.9.12</mimepull.version>
+        <mimepull.version>1.9.15</mimepull.version>
 
         <!-- Apache Felix is an open source implementation of the OSGi Core Release 8 framework specification. -->
         <org.apache.felix.main.version>7.0.5</org.apache.felix.main.version>
@@ -167,7 +167,7 @@
         <btrace.version>1.2.3</btrace.version>
         <opendmk.version>1.0-b01-ea</opendmk.version>
         <l10n.version>3.1-b41</l10n.version>
-        <ha-api.version>3.1.12</ha-api.version>
+        <ha-api.version>3.1.13</ha-api.version>
         <mockito.version>2.2.6</mockito.version>
 
         <!-- Build -->
@@ -181,7 +181,7 @@
         <nucleus.install.dir.name>nucleus</nucleus.install.dir.name>
         <ant.version>1.10.9</ant.version>
         <ant-launcher.version>1.10.5</ant-launcher.version>
-        <metainf-services.version>1.8</metainf-services.version>
+        <metainf-services.version>1.9</metainf-services.version>
 
         <!-- Debug / analysis -->
         <findbugs.skip>true</findbugs.skip>
