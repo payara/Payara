@@ -8,4 +8,4 @@ mvn -V -B -ff clean install \
     -Djavax.xml.accessExternalSchema=all \
     -f appserver/tests/payara-samples """
 
-junit "appserver/test/payara-samples/**/target/**/*.xml"
+junit "appserver/test/payara-samples/**/*.xml"
