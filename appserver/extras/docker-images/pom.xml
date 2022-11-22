@@ -57,9 +57,9 @@
         <docker.noCache>true</docker.noCache>
 
         <docker.java.repository>azul/zulu-openjdk</docker.java.repository>
-        <docker.jdk8.tag>8u345</docker.jdk8.tag>
-        <docker.jdk11.tag>11.0.16</docker.jdk11.tag>
-        <docker.jdk17.tag>17.0.4</docker.jdk17.tag>
+        <docker.jdk8.tag>8u352</docker.jdk8.tag>
+        <docker.jdk11.tag>11.0.17</docker.jdk11.tag>
+        <docker.jdk17.tag>17.0.5</docker.jdk17.tag>
 
         <docker.payara.domainName>domain1</docker.payara.domainName>
         <docker.payara.rootDirectoryName>payara5</docker.payara.rootDirectoryName>
