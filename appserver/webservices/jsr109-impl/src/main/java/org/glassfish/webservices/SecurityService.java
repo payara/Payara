@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018, 2022] [Payara Foundation and/or its affiliates]
 package org.glassfish.webservices;
 
 import java.security.Principal;
@@ -46,6 +46,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.xml.namespace.QName;
 import javax.xml.rpc.handler.HandlerInfo;
 
+import com.sun.xml.ws.assembler.metro.dev.ClientPipelineHook;
 import org.jvnet.hk2.annotations.Contract;
 
 import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
@@ -55,7 +56,6 @@ import com.sun.enterprise.web.WebModule;
 import com.sun.xml.rpc.spi.runtime.SOAPMessageContext;
 import com.sun.xml.rpc.spi.runtime.StreamingHandler;
 import com.sun.xml.rpc.spi.runtime.SystemHandlerDelegate;
-import com.sun.xml.ws.assembler.ClientPipelineHook;
 
 /**
  *

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018, 2019, 2022] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.webservices;
 
 import static com.sun.enterprise.security.jauth.AuthConfig.SOAP;
@@ -96,7 +96,8 @@ import com.sun.web.security.RealmAdapter;
 import com.sun.xml.rpc.spi.runtime.SOAPMessageContext;
 import com.sun.xml.rpc.spi.runtime.StreamingHandler;
 import com.sun.xml.rpc.spi.runtime.SystemHandlerDelegate;
-import com.sun.xml.ws.assembler.ClientPipelineHook;
+import com.sun.xml.ws.assembler.metro.dev.ClientPipelineHook;
+
 
 /**
  *
