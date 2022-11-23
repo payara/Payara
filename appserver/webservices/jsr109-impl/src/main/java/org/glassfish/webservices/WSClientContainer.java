@@ -61,13 +61,12 @@ public class WSClientContainer extends Container {
 
     public <T> T getSPI(Class<T> spiType) {
         
-        if((spiType == com.sun.xml.ws.assembler.metro.dev.ClientPipelineHook.class) ||
-           (spiType == com.sun.xml.ws.assembler.metro.dev.ClientPipelineHook.class)){
+        if(spiType == com.sun.xml.ws.assembler.metro.dev.ClientPipelineHook.class) {
             if (secServ != null) {
                 return((T)(secServ.getClientPipelineHook(svcRef)));
             }
         }
-        if((spiType == ServiceInterceptor.class)){
+        if(spiType == ServiceInterceptor.class) {
             return((T)(new PortCreationCallbackImpl(svcRef)));
         }
         return null;
