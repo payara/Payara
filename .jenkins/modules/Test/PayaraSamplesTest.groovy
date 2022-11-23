@@ -1,3 +1,14 @@
+def testResults
+
+MPLPostStep('failure') {
+    if(testResults.failCount > 0) {
+        currentBuild.currentResult = "UNSTABLE"
+    } else {
+        currentBuild.currentResult = "ERROR"
+    }
+    MPLPostStepsRun('failure')
+}
+
 sh """
 mvn -V -B -ff clean install \
     --strict-checksums -Ppayara-server-remote \
@@ -8,4 +19,4 @@ mvn -V -B -ff clean install \
     -Djavax.xml.accessExternalSchema=all \
     -f appserver/tests/payara-samples """
 
-junit "appserver/test/payara-samples/**/*.xml"
+testResults = junit "appserver/tests/payara-samples/**/*.xml"
