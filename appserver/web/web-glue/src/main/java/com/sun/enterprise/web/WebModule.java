@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.web;
 
@@ -1548,6 +1548,8 @@ public class WebModule extends PwcWebModule implements Context {
             setUseMyFaces(ConfigBeansUtilities.toBoolean(value));
         } else if("default-role-mapping".equalsIgnoreCase(name)) {
             wmInfo.getDescriptor().setDefaultGroupPrincipalMapping(ConfigBeansUtilities.toBoolean(value));
+        } else if("default-web-xml".equalsIgnoreCase(name)) {
+            vs.setDefaultWebXmlLocation(value);
         } else if(name.startsWith("alternatedocroot_")) {
             parseAlternateDocBase(name, value);
         } else if(name.startsWith("valve_") ||
