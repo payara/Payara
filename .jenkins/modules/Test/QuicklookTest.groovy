@@ -5,3 +5,5 @@ withMaven(jdk: CFG.jdk, options: [artifactsPublisher(disabled: true)]) {
         -Djavax.xml.accessExternalSchema=all \
         -f appserver/tests/quicklook/pom.xml"""
 }
+
+testNG(reportFilenamePattern: 'appserver/tests/quicklook/**/*.xml')
