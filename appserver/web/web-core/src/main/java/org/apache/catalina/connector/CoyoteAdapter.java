@@ -428,6 +428,13 @@ public class CoyoteAdapter extends HttpHandler {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid URI");
             return false;
         }
+
+        // Normalize Decoded URI
+        if (!normalize(decodedURI)) {
+            res.setStatus(400);
+            res.setDetailMessage(("Invalid URI"));
+            return false;
+        }
         
         if (compatWithTomcat || !v3Enabled) {
 //            decodedURI.duplicate(req.requestURI());
@@ -660,22 +667,22 @@ public class CoyoteAdapter extends HttpHandler {
      * return false when trying to go above the root, or if the URI contains
      * a null byte.
      * 
-     * @param uriMB URI to be normalized
+     * @param uriDC URI DataChunk to be normalized
      */
-    public static boolean normalize(MessageBytes uriMB) {
+    public static boolean normalize(DataChunk uriDC) {
 
-        int type = uriMB.getType();
-        if (type == MessageBytes.T_CHARS) {
-            return normalizeChars(uriMB);
+        DataChunk.Type type = uriDC.getType();
+        if (type == DataChunk.Type.Chars) {
+            return normalizeChars(uriDC);
         } else {
-            return normalizeBytes(uriMB);
+            return normalizeBytes(uriDC);
         }
     }
 
 
-    private static boolean normalizeBytes(MessageBytes uriMB) {
+    private static boolean normalizeBytes(DataChunk uriDC) {
 
-        ByteChunk uriBC = uriMB.getByteChunk();
+        ByteChunk uriBC = uriDC.getByteChunk();
         byte[] b = uriBC.getBytes();
         int start = uriBC.getStart();
         int end = uriBC.getEnd();
@@ -780,9 +787,9 @@ public class CoyoteAdapter extends HttpHandler {
     }
 
 
-    private static boolean normalizeChars(MessageBytes uriMB) {
+    private static boolean normalizeChars(DataChunk uriDC) {
 
-        CharChunk uriCC = uriMB.getCharChunk();
+        CharChunk uriCC = uriDC.getCharChunk();
         char[] c = uriCC.getChars();
         int start = uriCC.getStart();
         int end = uriCC.getEnd();
