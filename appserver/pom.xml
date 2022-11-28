@@ -65,7 +65,7 @@
         <apache.bcel.version>6.6.1</apache.bcel.version>
         <!-- Java EE Security API -->
         <jakarta.security.enterprise-spec.version>1.0</jakarta.security.enterprise-spec.version>
-        <jna.version>5.2.0</jna.version>
+        <jna.version>5.12.1</jna.version>
 
         <!-- Application Server / Implementation -->
         <product.name>Payara Server</product.name>
