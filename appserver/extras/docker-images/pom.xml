@@ -142,7 +142,7 @@
                                     <goal>run</goal>
                                 </goals>
                                 <configuration>
-                                    <tasks>
+                                    <target>
                                         <copy file="src/main/docker/Dockerfile" toFile="target/antrun/Dockerfile.jdk8">
                                             <filterset>
                                                 <filter token="docker.java.image" value="${docker.java.repository}:${docker.jdk8.tag}"/>
@@ -154,7 +154,7 @@
                                                 <filter token="docker.payara.tag" value="${docker.payara.tag}-jdk11"/>
                                             </filterset>
                                         </copy>
-                                    </tasks>
+                                    </target>
                                 </configuration>
                             </execution>
                         </executions>
@@ -237,14 +237,14 @@
                                     <goal>run</goal>
                                 </goals>
                                 <configuration>
-                                    <tasks>
+                                    <target>
                                         <copy file="src/main/docker/Dockerfile" toFile="target/antrun/Dockerfile.jdk17">
                                             <filterset>
                                                 <filter token="docker.java.image" value="${docker.java.repository}:${docker.jdk17.tag}"/>
                                                 <filter token="docker.payara.tag" value="${docker.payara.tag}-jdk17"/>
                                             </filterset>
                                         </copy>
-                                    </tasks>
+                                    </target>
                                 </configuration>
                             </execution>
                         </executions>
