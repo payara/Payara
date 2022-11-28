@@ -101,7 +101,6 @@
         <jdk.version>11</jdk.version>
         <javadoc.skip>false</javadoc.skip>
 
-        <maven.site.plugin.version>3.12.1</maven.site.plugin.version>
         <maven.assembly.plugin.version>3.4.2</maven.assembly.plugin.version>
         <maven.antrun.plugin.version>1.8</maven.antrun.plugin.version>
         <maven.remote.resources.plugin.version>1.7.0</maven.remote.resources.plugin.version>
