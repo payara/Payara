@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018, 2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2022] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.webservices;
 
 import static com.sun.enterprise.security.webservices.PipeConstants.ASSEMBLER_CONTEXT;
