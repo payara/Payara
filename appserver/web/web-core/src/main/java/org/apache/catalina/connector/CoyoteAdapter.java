@@ -58,6 +58,7 @@
 // Portions Copyright [2022] [Payara Foundation and/or its affiliates]
 package org.apache.catalina.connector;
 
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -89,7 +90,6 @@ import org.glassfish.grizzly.http.server.util.MappingData;
 import org.glassfish.grizzly.http.util.ByteChunk;
 import org.glassfish.grizzly.http.util.CharChunk;
 import org.glassfish.grizzly.http.util.DataChunk;
-import org.glassfish.grizzly.http.util.MessageBytes;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.web.valve.GlassFishValve;
 import org.glassfish.web.valve.ServletContainerInterceptor;
@@ -430,9 +430,11 @@ public class CoyoteAdapter extends HttpHandler {
         }
 
         // Normalize Decoded URI
-        if (!normalize(decodedURI)) {
-            res.setStatus(400);
-            res.setDetailMessage(("Invalid URI"));
+        try {
+            normalize(decodedURI);
+        } catch (IOException ioException) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid URI");
+            response.setDetailMessage(ioException.getMessage());
             return false;
         }
         
@@ -669,31 +671,31 @@ public class CoyoteAdapter extends HttpHandler {
      * 
      * @param uriDC URI DataChunk to be normalized
      */
-    public static boolean normalize(DataChunk uriDC) {
-
+    public static void normalize(DataChunk uriDC) throws IOException {
         DataChunk.Type type = uriDC.getType();
         if (type == DataChunk.Type.Chars) {
-            return normalizeChars(uriDC);
+            normalizeChars(uriDC);
         } else {
-            return normalizeBytes(uriDC);
+            normalizeBytes(uriDC);
         }
     }
 
 
-    private static boolean normalizeBytes(DataChunk uriDC) {
-
+    private static void normalizeBytes(DataChunk uriDC) throws IOException {
         ByteChunk uriBC = uriDC.getByteChunk();
         byte[] b = uriBC.getBytes();
         int start = uriBC.getStart();
         int end = uriBC.getEnd();
 
         // An empty URL is not acceptable
-        if (start == end)
-            return false;
+        if (start == end) {
+            throw new IOException("Empty URL");
+        }
 
         // URL * is acceptable
-        if ((end - start == 1) && b[start] == (byte) '*')
-          return true;
+        if ((end - start == 1) && b[start] == (byte) '*') {
+            return;
+        }
 
         int pos = 0;
         int index = 0;
@@ -705,17 +707,17 @@ public class CoyoteAdapter extends HttpHandler {
                 if (ALLOW_BACKSLASH) {
                     b[pos] = (byte) '/';
                 } else {
-                    return false;
+                    throw new IOException("Backslashes not allowed");
                 }
             }
             if (b[pos] == (byte) 0) {
-                return false;
+                throw new IOException("Null byte found during request normalization");
             }
         }
 
         // The URL must start with '/'
         if (b[start] != (byte) '/') {
-            return false;
+            throw new IOException("Request must start with /");
         }
 
         // Replace "//" with "/"
@@ -749,9 +751,10 @@ public class CoyoteAdapter extends HttpHandler {
         // Resolve occurrences of "/./" in the normalized path
         while (true) {
             index = uriBC.indexOf("/./", 0, 3, index);
-            if (index < 0)
+            if (index < 0) {
                 break;
-            copyBytes(b, start + index, start + index + 2, 
+            }
+            copyBytes(b, start + index, start + index + 2,
                       end - start - index - 2);
             end = end - 2;
             uriBC.setEnd(end);
@@ -762,11 +765,13 @@ public class CoyoteAdapter extends HttpHandler {
         // Resolve occurrences of "/../" in the normalized path
         while (true) {
             index = uriBC.indexOf("/../", 0, 4, index);
-            if (index < 0)
+            if (index < 0) {
                 break;
+            }
             // Prevent from going outside our context
-            if (index == 0)
-                return false;
+            if (index == 0) {
+                throw new IOException("Request traversed outside of allowed context");
+            }
             int index2 = -1;
             for (pos = start + index - 1; (pos >= 0) && (index2 < 0); pos --) {
                 if (b[pos] == (byte) '/') {
@@ -781,22 +786,19 @@ public class CoyoteAdapter extends HttpHandler {
         }
 
         uriBC.setBytes(b, start, end);
-
-        return true;
-
     }
 
 
-    private static boolean normalizeChars(DataChunk uriDC) {
-
+    private static void normalizeChars(DataChunk uriDC) throws IOException {
         CharChunk uriCC = uriDC.getCharChunk();
         char[] c = uriCC.getChars();
         int start = uriCC.getStart();
         int end = uriCC.getEnd();
 
         // URL * is acceptable
-        if ((end - start == 1) && c[start] == (char) '*')
-          return true;
+        if ((end - start == 1) && c[start] == '*') {
+            return;
+        }
 
         int pos = 0;
         int index = 0;
@@ -804,27 +806,27 @@ public class CoyoteAdapter extends HttpHandler {
         // Replace '\' with '/'
         // Check for null char
         for (pos = start; pos < end; pos++) {
-            if (c[pos] == (char) '\\') {
+            if (c[pos] == '\\') {
                 if (ALLOW_BACKSLASH) {
-                    c[pos] = (char) '/';
+                    c[pos] = '/';
                 } else {
-                    return false;
+                    throw new IOException("Backslashes not allowed");
                 }
             }
             if (c[pos] == (char) 0) {
-                return false;
+                throw new IOException("Null byte found during request normalization");
             }
         }
 
         // The URL must start with '/'
-        if (c[start] != (char) '/') {
-            return false;
+        if (c[start] != '/') {
+            throw new IOException("Request must start with /");
         }
 
         // Replace "//" with "/"
         if (COLLAPSE_ADJACENT_SLASHES) {
             for (pos = start; pos < (end - 1); pos++) {
-                if (c[pos] == (char) '/') {
+                if (c[pos] == '/') {
                     while ((pos + 1 < end) && (c[pos + 1] == (char) '/')) {
                         copyChars(c, pos, pos + 1, end - pos - 1);
                         end--;
@@ -837,10 +839,10 @@ public class CoyoteAdapter extends HttpHandler {
         // Note: It is possible to extend the URI by 1 without any side effect
         // as the next character is a non-significant WS.
         if (((end - start) > 2) && (c[end - 1] == (char) '.')) {
-            if ((c[end - 2] == (char) '/') 
-                || ((c[end - 2] == (char) '.') 
-                    && (c[end - 3] == (char) '/'))) {
-                c[end] = (char) '/';
+            if ((c[end - 2] == '/')
+                || ((c[end - 2] == '.')
+                    && (c[end - 3] == '/'))) {
+                c[end] = '/';
                 end++;
             }
         }
@@ -852,8 +854,9 @@ public class CoyoteAdapter extends HttpHandler {
         // Resolve occurrences of "/./" in the normalized path
         while (true) {
             index = uriCC.indexOf("/./", 0, 3, index);
-            if (index < 0)
+            if (index < 0) {
                 break;
+            }
             copyChars(c, start + index, start + index + 2, 
                       end - start - index - 2);
             end = end - 2;
@@ -865,14 +868,16 @@ public class CoyoteAdapter extends HttpHandler {
         // Resolve occurrences of "/../" in the normalized path
         while (true) {
             index = uriCC.indexOf("/../", 0, 4, index);
-            if (index < 0)
+            if (index < 0) {
                 break;
+            }
             // Prevent from going outside our context
-            if (index == 0)
-                return false;
+            if (index == 0) {
+                throw new IOException("Request traversed outside of allowed context");
+            }
             int index2 = -1;
             for (pos = start + index - 1; (pos >= 0) && (index2 < 0); pos --) {
-                if (c[pos] == (char) '/') {
+                if (c[pos] == '/') {
                     index2 = pos;
                 }
             }
@@ -884,9 +889,6 @@ public class CoyoteAdapter extends HttpHandler {
         }
 
         uriCC.setChars(c, start, end);
-
-        return true;
-
     }
 
 
