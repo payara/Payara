@@ -17,6 +17,7 @@ SYNOPSIS
            [--keepaliveseconds keepaliveseconds]
            [--threadlifetimeseconds threadlifetimeseconds]
            [--taskqueuecapacity taskqueuecapacity]
+           [--useforkjoinpool={false|true}]
            [--description description]
            [--property property]
            [--target target]
@@ -97,6 +98,13 @@ OPTIONS
            task queue awaiting execution. The default value is 2147483647,
            which means that the task queue is essentially unbounded and can
            store any number of submitted tasks.
+
+       --useforkjoinpool
+           If enabled, a ForkJoinPool will be used instead of the default
+           thread pool. This pool uses the Fork/Join framework, where all
+           threads in the pool attempt to find and execute tasks, with free
+           threads attempting to "steal" work from deques of busy threads.
+           The default value is false.
 
        --description
            Descriptive details about the resource.

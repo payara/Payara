@@ -48,7 +48,7 @@
     <parent>
         <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>nucleus-packages</artifactId>
-        <version>6.2022.1.Alpha3-SNAPSHOT</version>
+        <version>6.2022.2-SNAPSHOT</version>
     </parent>
     
     <artifactId>nucleus-hk2</artifactId>
@@ -125,8 +125,8 @@
         
         <!-- Expression Language -->
         <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>jakarta.el</artifactId>
+            <groupId>org.glassfish.expressly</groupId>
+            <artifactId>expressly</artifactId>
         </dependency>
         
         <dependency>

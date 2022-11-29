@@ -77,6 +77,9 @@ public class CreateManagedExecutorService extends CreateManagedExecutorServiceBa
     @Param(name="taskqueuecapacity", alias="taskQueueCapacity", defaultValue=""+Integer.MAX_VALUE, optional=true)
     private Integer taskqueuecapacity;
 
+    @Param(name="useforkjoinpool", alias="useForkJoinPool", defaultValue="false", optional=true)
+    protected Boolean useforkjoinpool;
+
     @Inject
     private Domain domain;
 
@@ -89,6 +92,8 @@ public class CreateManagedExecutorService extends CreateManagedExecutorServiceBa
             maximumpoolsize.toString());
         attrList.put(ResourceConstants.TASK_QUEUE_CAPACITY,
             taskqueuecapacity.toString());
+        attrList.put(ResourceConstants.USE_FORK_JOIN_POOL,
+                useforkjoinpool.toString());
     }
     /**
      * Executes the command with the command parameters passed as Properties

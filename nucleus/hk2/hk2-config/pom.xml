@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server.internal.hk2</groupId>
         <artifactId>glassfish-nucleus-hk2</artifactId>
-        <version>6.2022.1.Alpha3-SNAPSHOT</version>
+        <version>6.2022.2-SNAPSHOT</version>
     </parent>
     <artifactId>hk2-config</artifactId>
     
@@ -57,7 +57,7 @@
 
     <properties>
         <jakarta.validation.version.upperbound>4</jakarta.validation.version.upperbound>
-        <hibernate.validator.version.upperbound>8</hibernate.validator.version.upperbound>
+        <hibernate.validator.version.upperbound>9</hibernate.validator.version.upperbound>
     </properties>
     
     <build>
@@ -152,15 +152,15 @@
 
         <!-- hk2-config tests use hibernate-validator which requires jakarta.el-api -->
         <dependency>
-          <groupId>jakarta.el</groupId>
-          <artifactId>jakarta.el-api</artifactId>
-          <scope>test</scope>
-       </dependency>
-        <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>jakarta.el</artifactId>
+            <groupId>jakarta.el</groupId>
+            <artifactId>jakarta.el-api</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+          <groupId>org.glassfish.expressly</groupId>
+          <artifactId>expressly</artifactId>
+          <scope>test</scope>
+       </dependency>
     </dependencies>
     <profiles>
         <profile>

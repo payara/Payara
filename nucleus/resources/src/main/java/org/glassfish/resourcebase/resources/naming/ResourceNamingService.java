@@ -37,10 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2022] Payara Foundation and/or affiliates
 
 package org.glassfish.resourcebase.resources.naming;
 
-import com.sun.logging.LogDomains;
 import org.glassfish.api.admin.ProcessEnvironment;
 import org.glassfish.api.naming.ComponentNamingUtil;
 import org.glassfish.api.naming.GlassfishNamingManager;
@@ -59,7 +59,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.glassfish.resourcebase.resources.ResourceLoggingConstansts;
 import org.glassfish.logging.annotation.LoggerInfo;
 import org.glassfish.logging.annotation.LogMessagesResourceBundle;
 
@@ -217,7 +216,7 @@ public class ResourceNamingService {
         String moduleName = resourceInfo.getModuleName();
         moduleName = org.glassfish.resourcebase.resources.util.ResourceUtil.getActualModuleName(moduleName);
 
-        if(!isGlobalName(resourceInfo.getName()) && applicationName != null && moduleName != null){
+        if (resourceInfo.getName().startsWith(JAVA_MODULE_SCOPE_PREFIX) && applicationName != null && moduleName != null) {
             return namingManager.lookupFromModuleNamespace(applicationName, moduleName, getModuleScopedName(name), env);
         }else if(!isGlobalName(resourceInfo.getName()) && applicationName != null) {
             if(pe.getProcessType().isServer() || pe.getProcessType().isEmbedded()){

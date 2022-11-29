@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.extras.certificate-management</groupId>
         <artifactId>certificate-management-parent</artifactId>
-        <version>6.2022.1.Alpha3-SNAPSHOT</version>
+        <version>6.2022.2-SNAPSHOT</version>
     </parent>
     <artifactId>certificate-management-console-plugin</artifactId>
     <packaging>glassfish-jar</packaging>
@@ -66,8 +66,9 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.jsftemplating</groupId>
-            <artifactId>jsftemplating</artifactId>
+            <groupId>fish.payara.server.internal.admingui</groupId>
+            <artifactId>faces-compat</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.orb</groupId>

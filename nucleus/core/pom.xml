@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-nucleus-parent</artifactId>
-        <version>6.2022.1.Alpha3-SNAPSHOT</version>
+        <version>6.2022.2-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.server.internal.core</groupId>
     <artifactId>nucleus-core</artifactId>
@@ -57,6 +57,7 @@
         <module>kernel</module>
         <module>api-exporter</module>
         <module>extra-jre-packages</module>
+        <module>javassist-packages</module>
         <module>logging</module>
         <module>logging-l10n</module>
         <module>kernel-l10n</module>

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2022] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.loader.util;
 
@@ -89,6 +89,8 @@ public class ASClassLoaderUtil {
 
     @LogMessageInfo(message = "unexpected error in getting urls", level="WARNING")
     private static final String UNEXPECTED_EXCEPTION = "NCLS-DEPLOYMENT-00018";
+
+    private static final String UNEXPECTED_EXTLIB_OPEN_EXCEPTION = "Unexpected error when trying to get external lib";
 
     private static String modulesClassPath = null;
 
@@ -450,29 +452,12 @@ public class ASClassLoaderUtil {
      * @return   the manifest file for the given module
      */
     public static Manifest getManifest(String rootPath) {
-
-        InputStream in  = null;
-        Manifest mf     = null;
-
-        // gets the input stream to the MANIFEST.MF file
-        try {
-            in = new FileInputStream(rootPath+File.separator+MANIFEST_ENTRY);
-
-            if (in != null) {
-                mf = new Manifest(in);
-            }
-        } catch (IOException ioe) {
-            // ignore
-        } finally {
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (IOException ioe) {
-                    // Ignore
-                }
-            }
+        try(InputStream is = new FileInputStream(rootPath + File.separator + MANIFEST_ENTRY)) {
+            return new Manifest(is);
+        } catch (java.io.IOException e) {
+            deplLogger.log(Level.WARNING, UNEXPECTED_EXTLIB_OPEN_EXCEPTION, e);
+            return null;
         }
-        return mf;
     }
 
 
@@ -487,19 +472,18 @@ public class ASClassLoaderUtil {
      *           an empty list if given manifest is null
      */
     public static List<URL> getManifestClassPathAsURLs(Manifest manifest,
-            String rootPath) {
-        List<URL> urlList = new ArrayList<URL>();
+                                                       String rootPath) {
+        List<URL> urlList = new ArrayList<>();
         if (manifest != null) {
-            Attributes mainAttributes  = manifest.getMainAttributes();
+            Attributes mainAttributes = manifest.getMainAttributes();
 
-            for (Map.Entry entry : mainAttributes.entrySet()) {
+            for (Map.Entry<Object, Object> entry : mainAttributes.entrySet()) {
 
                 Attributes.Name next = (Attributes.Name) entry.getKey();
 
                 if (next.equals(Attributes.Name.CLASS_PATH)) {
                     String classpathString = (String) entry.getValue();
-                    urlList = getURLsFromClasspath(classpathString, " ", 
-                        rootPath);
+                    urlList = getURLsFromClasspath(classpathString, " ", rootPath);
                 }
             }
         }
@@ -562,12 +546,7 @@ public class ASClassLoaderUtil {
      */
     public static List<URI> getLibDirectoryJarURIs(File moduleLibDirectory) throws Exception {
         List<URI> libLibraryURIs = new ArrayList<URI>();
-        File[] jarFiles = moduleLibDirectory.listFiles(new FileFilter() {
-            @Override
-            public boolean accept(File pathname) {
-                return (pathname.getAbsolutePath().endsWith(".jar"));
-            }
-        });
+        File[] jarFiles = moduleLibDirectory.listFiles(pathname -> pathname.getAbsolutePath().endsWith(".jar"));
 
         if (jarFiles != null && jarFiles.length > 0) {
             for (File jarFile : jarFiles) {

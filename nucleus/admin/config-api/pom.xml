@@ -48,7 +48,7 @@
     <parent>
         <groupId>fish.payara.server.internal.admin</groupId>
         <artifactId>nucleus-admin</artifactId>
-        <version>6.2022.1.Alpha3-SNAPSHOT</version>
+        <version>6.2022.2-SNAPSHOT</version>
     </parent>
     
     <artifactId>config-api</artifactId>
@@ -129,6 +129,11 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>fish.payara.server.internal.common</groupId>
+            <artifactId>simple-glassfish-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.glassfish.annotations</groupId>
             <artifactId>logging-annotation-processor</artifactId>
             <optional>true</optional>
@@ -147,8 +152,8 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>jakarta.el</artifactId>
+            <groupId>org.glassfish.expressly</groupId>
+            <artifactId>expressly</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

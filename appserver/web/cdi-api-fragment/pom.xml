@@ -40,14 +40,14 @@
     holder.
 
 -->
-<!-- Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2018-2022] [Payara Foundation and/or its affiliates] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>fish.payara.server.internal.web</groupId>
         <artifactId>web</artifactId>
-        <version>6.2022.1.Alpha3-SNAPSHOT</version>
+        <version>6.2022.2-SNAPSHOT</version>
     </parent>
 
     <artifactId>cdi-api-fragment</artifactId>
@@ -75,7 +75,7 @@
                             <Bundle-SymbolicName>${project.groupId}.${project.artifactId}</Bundle-SymbolicName>
                             <Bundle-ManifestVersion>2</Bundle-ManifestVersion>
                             <Fragment-Host>jakarta.enterprise.cdi-api</Fragment-Host>
-                            <Import-Package>org.glassfish.weld</Import-Package>
+                            <Import-Package>org.glassfish.weld,org.jboss.weld.lite.extension.translator</Import-Package>
                             <Bundle-Description>${project.description}</Bundle-Description>
                         </manifestEntries>
                     </archive>

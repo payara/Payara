@@ -67,9 +67,27 @@ public class RequestTracingValidatorTest {
     }
 
     @Test
+    public void test_following_option_no_following_value_with_noHazelcast() {
+        try {
+            new RuntimeOptions(new String[]{"--enableRequestTracing", "--noHazelcast"});
+        } catch (ValidationException e) {
+            fail(e.getMessage());
+        }
+    }
+
+    @Test
     public void test_following_option_following_value() {
         try {
             new RuntimeOptions(new String[]{"--enableRequestTracing", "3MINUTES", "--noCluster"});
+        } catch (ValidationException e) {
+            fail(e.getMessage());
+        }
+    }
+
+    @Test
+    public void test_following_option_following_value_with_noHazelcast() {
+        try {
+            new RuntimeOptions(new String[]{"--enableRequestTracing", "3MINUTES", "--noHazelcast"});
         } catch (ValidationException e) {
             fail(e.getMessage());
         }

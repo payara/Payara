@@ -92,7 +92,7 @@ public class ExistingRealmIdentityStoreDefinitionTest {
                         PersonController.class,
                         AuthoritiesConstants.class
                 )
-                .addAsWebInfResource(EmptyAsset.INSTANCE, ArchivePaths.create("beans.xml"));
+                .addAsWebInfResource("all-beans.xml", "beans.xml");
     }
 
     @Before

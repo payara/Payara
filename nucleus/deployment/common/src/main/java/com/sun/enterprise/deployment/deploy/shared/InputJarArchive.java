@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2022] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment.deploy.shared;
 
@@ -81,18 +81,18 @@ public class InputJarArchive extends JarArchive implements ReadableArchive {
     private static final String INVALID_ZIP_FILE = "NCLS-DEPLOYMENT-00020";
 
     // the file we are currently mapped to 
-    volatile protected JarFile jarFile=null;
+    volatile protected JarFile jarFile;
     
     // in case this abstraction is dealing with a jar file
     // within a jar file, the jarFile will be null and this
     // JarInputStream will contain the 
-    volatile protected JarInputStream jarIS=null;
+    volatile protected JarInputStream jarIS;
     
     // the archive Uri
     volatile private URI uri;
 
     // parent jar file for embedded jar
-    private InputJarArchive parentArchive=null;
+    private InputJarArchive parentArchive;
 
     private static StringManager localStrings = StringManager.getManager(InputJarArchive.class);
 
@@ -108,8 +108,8 @@ public class InputJarArchive extends JarArchive implements ReadableArchive {
         if(uri == null) {
             return -1;
         }
-        File tmpFile = new File(uri);
-        return(tmpFile.length());
+
+        return new File(uri).length();
     }
     
     /** @return an @see java.io.OutputStream for a new entry in this
@@ -119,8 +119,8 @@ public class InputJarArchive extends JarArchive implements ReadableArchive {
     public OutputStream addEntry(String name) throws IOException {
         throw new UnsupportedOperationException("Cannot write to an JAR archive open for reading");        
     }
-    
-    /** 
+
+    /**
      * close the abstract archive
      */
     public synchronized void close() throws IOException {
@@ -128,13 +128,13 @@ public class InputJarArchive extends JarArchive implements ReadableArchive {
             e.closeNoRemove();
         }
         entryEnumerations.clear();
-        if (jarFile!=null) {
+        if (jarFile != null) {
             jarFile.close();
-            jarFile=null;
+            jarFile = null;
         }
-        if (jarIS!=null) {
+        if (jarIS != null) {
             jarIS.close();
-            jarIS=null;
+            jarIS = null;
         }
     }
 
@@ -206,20 +206,20 @@ public class InputJarArchive extends JarArchive implements ReadableArchive {
     }
 
     /**
-     *  @return an @see java.util.Enumeration of entries in this abstract
-     * archive, providing the list of embedded archive to not count their 
+     * @return an @see java.util.Enumeration of entries in this abstract
+     * archive, providing the list of embedded archive to not count their
      * entries as part of this archive
      */
-     public Enumeration entries(Enumeration embeddedArchives) {
-	// jar file are not recursive    
-  	return entries();
+    public Enumeration entries(Enumeration embeddedArchives) {
+        // jar file are not recursive
+        return entries();
     }
 
     public JarEntry getJarEntry(String name) {
-        if (jarFile!=null) {
-            return jarFile.getJarEntry(name);
+        if (jarFile == null) {
+            return null;
         }
-        return null;
+        return jarFile.getJarEntry(name);
     }
     
     /**
@@ -229,13 +229,10 @@ public class InputJarArchive extends JarArchive implements ReadableArchive {
      * @param name the file name relative to the root of the module.          * @return the existence the given entry name.
      */
     public boolean exists(String name) throws IOException {
-        if (jarFile!=null) {
-            ZipEntry ze = jarFile.getEntry(name);
-            if (ze!=null) {
-                return true;
-            }
+        if (jarFile == null) {
+           return false;
         }
-        return false;
+        return jarFile.getEntry(name) != null;
     }    
 
     /**
@@ -244,39 +241,46 @@ public class InputJarArchive extends JarArchive implements ReadableArchive {
      * @param entryName entry name
      */
     public InputStream getEntry(String entryName) throws IOException {
-        if (jarFile!=null) {
+        //for the momment this is a fix to prevent inputstream issues
+        if(jarFile == null) {
+            open(this.getURI());
+        }
+        if (jarFile != null) {
             ZipEntry ze = jarFile.getEntry(entryName);
-            if (ze!=null) {
-                return new BufferedInputStream(jarFile.getInputStream(ze));
-            } else {
-                return null;
-            }            
-        } else
-	if ((parentArchive != null) && (parentArchive.jarFile != null)) {
-            JarEntry je;
-            // close the current input stream
-            if (jarIS!=null) {
-                jarIS.close();
-            }
-            
-            // reopen the embedded archive and position the input stream
-            // at the beginning of the desired element
-	    JarEntry archiveJarEntry = (uri != null)? parentArchive.jarFile.getJarEntry(uri.getSchemeSpecificPart()) : null;
-	    if (archiveJarEntry == null) {
-		return null;
-	    }
-            jarIS = new JarInputStream(parentArchive.jarFile.getInputStream(archiveJarEntry));
-            do {
-                je = jarIS.getNextJarEntry();
-            } while (je!=null && !je.getName().equals(entryName));
-            if (je!=null) {
-                return new BufferedInputStream(jarIS);
-            } else {
+            if(ze == null) {
                 return null;
             }
-        } else {
-	    return null;
-	}
+
+            return new BufferedInputStream(jarFile.getInputStream(ze));
+        }
+
+        if (parentArchive == null || parentArchive.jarFile == null) {
+            return null;
+        }
+
+        // close the current input stream
+        if (jarIS != null) {
+            jarIS.close();
+        }
+
+        // reopen the embedded archive and position the input stream
+        // at the beginning of the desired element
+        JarEntry archiveJarEntry = (uri != null) ? parentArchive.jarFile.getJarEntry(uri.getSchemeSpecificPart()) : null;
+
+        if (archiveJarEntry == null) {
+            return null;
+        }
+        JarEntry je;
+        jarIS = new JarInputStream(parentArchive.jarFile.getInputStream(archiveJarEntry));
+        do {
+            je = jarIS.getNextJarEntry();
+        } while (je != null && !je.getName().equals(entryName));
+
+        if(je == null) {
+            return null;
+        }
+
+        return new BufferedInputStream(jarIS);
     }
 
     /**
@@ -286,13 +290,16 @@ public class InputJarArchive extends JarArchive implements ReadableArchive {
      * @return the entry size
      */
     public long getEntrySize(String name) {
-        if (jarFile!=null) {
-            ZipEntry ze = jarFile.getEntry(name);
-            if (ze!=null) {
-                return ze.getSize();
-            }
+        if (jarFile == null) {
+            return 0;
         }
-        return 0;
+
+        ZipEntry ze = jarFile.getEntry(name);
+        if (ze == null) {
+            return 0;
+        }
+
+        return ze.getSize();
     }
 
     /** Open an abstract archive
@@ -307,18 +314,20 @@ public class InputJarArchive extends JarArchive implements ReadableArchive {
      * @return a JarFile instance for a file path
      */
     protected static JarFile getJarFile(URI uri) throws IOException {
-        JarFile jf = null;
+        JarFile jarFile = null;
         try {
             File file = new File(uri);
-            jf = new JarFile(file);
-        } catch(IOException e) {
+            if (file.exists()) {
+                jarFile = new JarFile(file);
+            }
+        } catch (IOException e) {
             deplLogger.log(Level.WARNING, FILE_OPEN_FAILURE, new Object[]{uri});
             // add the additional information about the path
             // since the IOException from jdk doesn't include that info
             String additionalInfo = localStrings.getString("enterprise.deployment.invalid_zip_file", uri);
-            deplLogger.log(Level.WARNING, INVALID_ZIP_FILE, new Object[] { e.getLocalizedMessage(), additionalInfo } );
+            deplLogger.log(Level.WARNING, INVALID_ZIP_FILE, new Object[]{e.getLocalizedMessage(), additionalInfo});
         }
-        return jf;
+        return jarFile;
     }       
     
     
@@ -326,31 +335,36 @@ public class InputJarArchive extends JarArchive implements ReadableArchive {
      * @return the manifest information for this abstract archive
      */
     public Manifest getManifest() throws IOException {
-        if (jarFile!=null) {
+        if (jarFile != null) {
             return jarFile.getManifest();
-        } 
-        if (parentArchive!=null) {    
-            // close the current input stream
-            if (jarIS!=null) {
-                jarIS.close();
+        }
+
+        if (parentArchive == null) {
+            return null;
+        }
+        // close the current input stream
+        if (jarIS != null) {
+            jarIS.close();
+        }
+
+        // reopen the embedded archive and position the input stream
+        // at the beginning of the desired element
+        if (jarIS == null) {
+            jarIS = new JarInputStream(parentArchive.jarFile.getInputStream(parentArchive.jarFile.
+                    getJarEntry(uri.getSchemeSpecificPart())));
+        }
+
+        Manifest manifest = jarIS.getManifest();
+        if (manifest == null) {
+            java.io.InputStream is = getEntry(java.util.jar.JarFile.MANIFEST_NAME);
+            if (is != null) {
+                manifest = new Manifest();
+                manifest.read(is);
+                is.close();
             }
-            // reopen the embedded archive and position the input stream
-            // at the beginning of the desired element
-            if (jarIS==null) {
-                jarIS = new JarInputStream(parentArchive.jarFile.getInputStream(parentArchive.jarFile.getJarEntry(uri.getSchemeSpecificPart())));
-            }
-            Manifest m = jarIS.getManifest();
-            if (m==null) {
-               java.io.InputStream is = getEntry(java.util.jar.JarFile.MANIFEST_NAME);
-               if (is!=null) {
-                    m = new Manifest();
-                    m.read(is);
-                    is.close();
-               }
-            }
-            return m;
-        }                        
-        return null;
+        }
+
+        return manifest;
     }
 
     /**
@@ -367,14 +381,14 @@ public class InputJarArchive extends JarArchive implements ReadableArchive {
      * jar file
      */
     public boolean exists() {
-        return jarFile!=null;
+        return jarFile != null;
     }
     
     /**
      * deletes the underlying jar file
      */
     public boolean delete() {
-        if (jarFile==null) {
+        if (jarFile == null) {
             return false;
         }
         try {
@@ -390,7 +404,7 @@ public class InputJarArchive extends JarArchive implements ReadableArchive {
      * rename the underlying jar file
      */
     public boolean renameTo(String name) {
-        if (jarFile==null) {
+        if (jarFile == null) {
             return false;
         }
         try {
@@ -398,7 +412,7 @@ public class InputJarArchive extends JarArchive implements ReadableArchive {
             jarFile = null;
         } catch (IOException ioe) {
             return false;
-        }        
+        }
         return FileUtils.renameFile(new File(uri), new File(name));
     }
     
@@ -407,15 +421,15 @@ public class InputJarArchive extends JarArchive implements ReadableArchive {
      * the name parameter
      */
     public ReadableArchive getSubArchive(String name) throws IOException {
-        if (jarFile!=null) {
+        if (jarFile != null) {
             // for now, I only support one level down embedded archives
             InputJarArchive ija = new InputJarArchive();
             JarEntry je = jarFile.getJarEntry(name);
-            if (je!=null) {
+            if (je != null) {
                 JarInputStream jis = new JarInputStream(new BufferedInputStream(jarFile.getInputStream(je)));
                 try {
-                    ija.uri = new URI("jar",name, null);
-                } catch(URISyntaxException e) {
+                    ija.uri = new URI("jar", name, null);
+                } catch (URISyntaxException e) {
                     // do nothing
                 }
                 ija.jarIS = jis;
@@ -570,8 +584,7 @@ public class InputJarArchive extends JarArchive implements ReadableArchive {
         private ArchiveJarEntrySource(final URI archiveURI) throws IOException {
             sourceJarFile = getJarFile(archiveURI);
             if (sourceJarFile == null){
-                throw new IOException(localStrings.getString(
-                        "enterprise.deployment.invalid_zip_file", archiveURI));
+                throw new IOException(localStrings.getString("enterprise.deployment.invalid_zip_file", archiveURI));
             }
             jarEntries = sourceJarFile.entries();
         }
@@ -636,12 +649,9 @@ public class InputJarArchive extends JarArchive implements ReadableArchive {
                  */
                 while ((candidateNextEntry = getNextJarEntry()) != null) {
                     final String candidateNextEntryName = candidateNextEntry.getName();
-                    if ( candidateNextEntry.isDirectory() &&
-                           (candidateNextEntryName.indexOf('/') ==
-                                candidateNextEntryName.lastIndexOf('/')) &&
-                           (candidateNextEntryName.indexOf('/') ==
-                                candidateNextEntryName.length() - 1)
-                       ) {
+                    if (candidateNextEntry.isDirectory()
+                            && (candidateNextEntryName.indexOf('/') == candidateNextEntryName.lastIndexOf('/'))
+                            && (candidateNextEntryName.indexOf('/') == candidateNextEntryName.length() - 1)) {
                         break;
                     }
                 }
@@ -672,9 +682,7 @@ public class InputJarArchive extends JarArchive implements ReadableArchive {
                  */
                 while ((candidateNextEntry = getNextJarEntry()) != null) {
                     final String candidateNextEntryName = candidateNextEntry.getName();
-                    if ( ! candidateNextEntry.isDirectory() &&
-                              ! candidateNextEntryName.equals(JarFile.MANIFEST_NAME)
-                       ) {
+                    if (!candidateNextEntry.isDirectory() && !candidateNextEntryName.equals(JarFile.MANIFEST_NAME)) {
                         break;
                     }
                 }
@@ -725,9 +733,7 @@ public class InputJarArchive extends JarArchive implements ReadableArchive {
 
                 @Override
                 public boolean hasNext() {
-                    return (entries != null) ?
-                        nextSlot < entries.size() :
-                        e.hasMoreElements();
+                    return (entries != null) ? nextSlot < entries.size() : e.hasMoreElements();
                 }
 
                 @Override

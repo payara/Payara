@@ -229,8 +229,8 @@ public class JAASAuthContextHelper extends BaseAuthContextImpl {
     }
 
     @Override
-    public Map<String, ?> getInitProperties(int i, Map<String, ?> properties) {
-        Map<String, Object> initProperties = new HashMap<String, Object>();
+    public Map<String, Object> getInitProperties(int i, Map<String, Object> properties) {
+        Map<String, Object> initProperties = new HashMap<>();
 
         if (entry[i] != null) {
             if (properties != null && !properties.isEmpty()) {

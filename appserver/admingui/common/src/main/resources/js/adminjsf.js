@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-/*Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+/*Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
 /*
  * Common utility
  */
@@ -115,26 +115,41 @@ function getField(theForm, fieldName) {
     return null;
 }
 
+// in case modules are not loaded, return temporary object with empty, but existing data
+function createFakeText(id) {
+    return {
+        id,
+        value: "FAKE"
+    };
+}
+
 // FIXME: suntheme should not be used -- prevents theme from changing
 function getTextElement(componentName) {
-    var el = webui.suntheme.field.getInputElement(componentName);
-    if (el == null) {
-        el = document.getElementById(componentName); // This may get too deep inside WS, but it should work as a fall back
-    }
-    return el;
+    require(['webui/suntheme/field'], function (field) {
+        var el = field.getInputElement(componentName);
+        if (el === null) {
+            el = document.getElementById(componentName); // This may get too deep inside WS, but it should work as a fall back
+        }
+        return el;
+    });
+    return createFakeText(componentName);
 }
 
 function getSelectElement(componentName) {
-    return webui.suntheme.dropDown.getSelectElement(componentName);
+    require(['webui/suntheme/dropDown'], function (dropDown) {
+        return dropDown.getSelectElement(componentName);
+
+    });
 }
 
 function getFileInputElement(componentName) {
-    var el = webui.suntheme.upload.getInputElement(componentName);
-    if (el == null) {
-        el = document.getElementById(componentName+"_com.sun.webui.jsf.upload");
-    }
-
-    return el;
+    require(['webui/suntheme/upload'], function (upload) {
+        var el = upload.getInputElement(componentName);
+        if (el == null) {
+            el = document.getElementById(componentName + "_com.sun.webui.jsf.upload");
+        }
+        return el;
+    });
 }
 
 function disableComponent(componentName, type) {
@@ -510,25 +525,27 @@ admingui.nav = {
     TREE_ID: "treeForm:tree",
 
     refreshCluster: function(hasCluster){
-        var node1 = admingui.nav.getTreeFrameElementById(admingui.nav.TREE_ID + ':clusters');
-        var node2 = admingui.nav.getTreeFrameElementById(admingui.nav.TREE_ID + ':clusters2');
-        var node3 = admingui.nav.getTreeFrameElementById(admingui.nav.TREE_ID + ':clusters2_children');
-        var tree = admingui.nav.getTreeFrameElementById(admingui.nav.TREE_ID);
-        // FIXME: This needs the viewId where clusters2 is defined
-        admingui.nav.refreshTree(admingui.nav.TREE_ID + ':clusters2');
-        if (hasCluster=='true' || hasCluster=='TRUE') {
-            node1.style.display='none';
-            node2.style.display='block';
-            node3.style.display='block';
-            tree.selectTreeNode(admingui.nav.TREE_ID + ':clusters2');
-        } else {
-            //there is a problem in hiding clusters2,  it doesn' hide it, maybe because of the
-            //dynamic treenode under it ? still need to figure this out.
-            node3.style.display='none';
-            node2.style.display='none';
-            node1.style.display='block';
-            tree.selectTreeNode(admingui.nav.TREE_ID + ':clusters');
-        }
+        require(["webui/suntheme/tree"], function(themeTable) {
+            var node1 = admingui.nav.getTreeFrameElementById(admingui.nav.TREE_ID + ':clusters');
+            var node2 = admingui.nav.getTreeFrameElementById(admingui.nav.TREE_ID + ':clusters2');
+            var node3 = admingui.nav.getTreeFrameElementById(admingui.nav.TREE_ID + ':clusters2_children');
+            var tree = admingui.nav.getTreeFrameElementById(admingui.nav.TREE_ID);
+            // FIXME: This needs the viewId where clusters2 is defined
+            admingui.nav.refreshTree(admingui.nav.TREE_ID + ':clusters2');
+            if (hasCluster=='true' || hasCluster=='TRUE') {
+                node1.style.display='none';
+                node2.style.display='block';
+                node3.style.display='block';
+                tree.selectTreeNode(admingui.nav.TREE_ID + ':clusters2');
+            } else {
+                //there is a problem in hiding clusters2,  it doesn' hide it, maybe because of the
+                //dynamic treenode under it ? still need to figure this out.
+                node3.style.display='none';
+                node2.style.display='none';
+                node1.style.display='block';
+                tree.selectTreeNode(admingui.nav.TREE_ID + ':clusters');
+            }
+        });
     },
 
     /**
@@ -724,10 +741,12 @@ admingui.nav = {
      *	This function clears all treeNode selections.
      */
     clearTreeSelection: function(treeId) {
-        var tree = document.getElementById(treeId);
-        if (tree) {
-            tree.clearAllHighlight(treeId);
-        }
+        require(["webui/suntheme/tree"], function(themeTable) {
+            var tree = document.getElementById(treeId);
+            if (tree) {
+                tree.clearAllHighlight(treeId);
+            }
+        });
     },
 
     /**
@@ -804,17 +823,19 @@ admingui.nav = {
      *	This function selects the given treeNode.
      */
     selectTreeNode: function(treeNode) {
-        var tree = document.getElementById(admingui.nav.TREE_ID);// admingui.nav.getTree(treeNode);
-        if (tree) {
-            try {
-                admingui.nav.clearTreeSelection(admingui.nav.TREE_ID);
-                tree.clearAllHighlight(tree.id);
-                tree.selectTreeNode(treeNode.id);
-                admingui.nav.expandNode(treeNode);
-            } catch (err) {
-            //console.log(err);
+        require(["webui/suntheme/tree"], function(themeTable) {
+            var tree = document.getElementById(admingui.nav.TREE_ID);// admingui.nav.getTree(treeNode);
+            if (tree) {
+                try {
+                    admingui.nav.clearTreeSelection(admingui.nav.TREE_ID);
+                    tree.clearAllHighlight(tree.id);
+                    tree.selectTreeNode(treeNode.id);
+                    admingui.nav.expandNode(treeNode);
+                } catch (err) {
+                //console.log(err);
+                }
             }
-        }
+        });
     },
 
     expandNode: function(treeNode) {
@@ -834,11 +855,13 @@ admingui.nav = {
      *	This function selects the given treeNode.
      */
     selectTreeNodeById: function(treeNodeId) {
-        var tree = document.getElementById(admingui.nav.TREE_ID);
-        //admingui.nav.getTreeFrameElementById(treeNodeId));
-        if (tree) {
-            tree.selectTreeNode(treeNodeId);
-        }
+        require(["webui/suntheme/tree"], function(themeTable) {
+            var tree = document.getElementById(admingui.nav.TREE_ID);
+            //admingui.nav.getTreeFrameElementById(treeNodeId));
+            if (tree) {
+                tree.selectTreeNode(treeNodeId);
+            }
+        });
     },
 
     /**
@@ -861,10 +884,12 @@ admingui.nav = {
      *	already loaded.
      */
     getSelectedTreeNode: function() {
-        var tree = document.getElementById(admingui.nav.TREE_ID);
-        if (tree && tree.getSelectedTreeNode) {
-            return tree.getSelectedTreeNode(tree.id);
-        }
+        require(["webui/suntheme/tree"], function(themeTable) {
+            var tree = document.getElementById(admingui.nav.TREE_ID);
+            if (tree && tree.getSelectedTreeNode) {
+                return tree.getSelectedTreeNode(tree.id);
+            }
+        });
     },
 
     /**
@@ -1083,10 +1108,12 @@ admingui.help = {
         // Use DOM to show/hide the proper tree
         //
 
-        var tree = document.getElementById(toHide);
-        tree.style.display = "none";
-        tree = document.getElementById(toShow);
-        tree.style.display = "block";
+        require(["webui/suntheme/tree"], function(themeTable) {
+            var tree = document.getElementById(toHide);
+            tree.style.display = "none";
+            tree = document.getElementById(toShow);
+            tree.style.display = "block";
+        });
     },
 
     loadHelpPageFromContextRef: function(contextRef, targetNode) {
@@ -1129,14 +1156,16 @@ admingui.help = {
         selectTreeNode: function(treeNode) {
             var tree = document.getElementById(admingui.help.nav.TREE_ID);// admingui.help.nav.getTree(treeNode);
             if (tree) {
-                try {
-                    admingui.nav.clearTreeSelection(admingui.help.nav.TREE_ID);
-                    tree.clearAllHighlight(tree.id);
-                    tree.selectTreeNode(treeNode.id);
-                    admingui.nav.expandNode(treeNode);
-                } catch (err) {
-                //console.log(err);
-                }
+                require(["webui/suntheme/tree"], function(themeTable) {
+                    try {
+                        admingui.nav.clearTreeSelection(admingui.help.nav.TREE_ID);
+                        tree.clearAllHighlight(tree.id);
+                        tree.selectTreeNode(treeNode.id);
+                        admingui.nav.expandNode(treeNode);
+                    } catch (err) {
+                    //console.log(err);
+                    }
+                });
             }
         }
     }
@@ -2096,25 +2125,29 @@ admingui.table = {
     },
 
     changeButtons : function (buttons,tableId){
-        try {
-            var table = document.getElementById(tableId);// + ":_table");
-            var selections = table.getAllSelectedRowsCount();
-            var disabled = (selections > 0) ? false : true;
-            for (count=0; count < buttons.length; count++) {
-                var element = document.getElementById(buttons[count]);
-                if (element) {
-                    element.disabled = disabled;
-                    element.className = disabled ? "Btn2Dis_sun4" : "Btn1_sun4";
+        require(["webui/suntheme/table"], function(themeTable) {
+            try {
+                var table = document.getElementById(tableId);// + ":_table");
+                var selections = table.getAllSelectedRowsCount();
+                var disabled = (selections > 0) ? false : true;
+                for (count=0; count < buttons.length; count++) {
+                    var element = document.getElementById(buttons[count]);
+                    if (element) {
+                        element.disabled = disabled;
+                        element.className = disabled ? "Btn2Dis_sun4" : "Btn1_sun4";
+                    }
                 }
-            }
-        } catch (err) {
+            } catch (err) {
             alert(err);
-        }
+            }
+        });
     },
 
     initAllRows : function (tableId) {
-        var table = document.getElementById(tableId);
-        table.initAllRows();
+        require(["webui/suntheme/table"], function(themeTable) {
+            var table = document.getElementById(tableId);
+            table.initAllRows();
+        });
     }
 }
 
@@ -2246,28 +2279,32 @@ admingui.ajax = {
     },
 
     processPageAjax : function (o) {
-        var tree = document.getElementById(admingui.nav.TREE_ID);
-        tree.clearAllHighlight(admingui.nav.TREE_ID);
-        var selnode = tree.getSelectedTreeNode(admingui.nav.TREE_ID);
+        require(["webui/suntheme/tree",'webui/suntheme/hyperlink','webui/suntheme/jumpDropDown'], function(themeTable, hyperlink, jumpDropDown) {
+            var tree = document.getElementById(admingui.nav.TREE_ID);
+            tree.clearAllHighlight(admingui.nav.TREE_ID);
+            var selnode = tree.getSelectedTreeNode(admingui.nav.TREE_ID);
 
-        admingui.ajax.updateCurrentPageLink(o.argument.url);
-        var contentNode = o.argument.target;
-        if (contentNode == null) {
-            contentNode = document.getElementById("content");
-        }
-        contentNode.innerHTML = o.responseText;
-        // FIXME: These 2 functions only need to be replaced after a FPR...
-        webui.suntheme.hyperlink.submit = admingui.woodstock.hyperLinkSubmit;
-        webui.suntheme.jumpDropDown.changed = admingui.woodstock.dropDownChanged;
-        admingui.ajax.processElement(o, contentNode, true);
-        admingui.ajax.processScripts(o);
-        // Restore cursor
-        document.body.style.cursor = 'auto';
-        var node = o.argument.sourceNode;
-        if (typeof node != 'undefined') {
-        //admingui.nav.selectTreeNodeById(node.parentNode.parentNode.id);
-        }
-        admingui.nav.selectTreeNodeWithURL(o.argument.url);
+            admingui.ajax.updateCurrentPageLink(o.argument.url);
+            var contentNode = o.argument.target;
+            if (contentNode == null) {
+                contentNode = document.getElementById("content");
+            }
+            contentNode.innerHTML = o.responseText;
+            if (typeof (webui) !== 'undefined') {
+                // FIXME: These 2 functions only need to be replaced after a FPR...
+                hyperlink.submit = admingui.woodstock.hyperLinkSubmit;
+                jumpDropDown.changed = admingui.woodstock.dropDownChanged;
+            }
+            admingui.ajax.processElement(o, contentNode, true);
+            admingui.ajax.processScripts(o);
+            // Restore cursor
+            document.body.style.cursor = 'auto';
+            var node = o.argument.sourceNode;
+            if (typeof node != 'undefined') {
+            //admingui.nav.selectTreeNodeById(node.parentNode.parentNode.id);
+            }
+            admingui.nav.selectTreeNodeWithURL(o.argument.url);
+        });
     },
 
     postAjaxRequest : function (component, args, respTarget, displayLoading) {
@@ -2317,8 +2354,13 @@ admingui.ajax = {
 
         if (typeof(webui) !== 'undefined') {
             // FIXME: These 2 functions (should) only need be replaced after FPR...
-            webui.suntheme.hyperlink.submit = admingui.woodstock.hyperLinkSubmit;
-            webui.suntheme.jumpDropDown.changed = admingui.woodstock.dropDownChanged;
+            require(['webui/suntheme/hyperlink'], function (hyperlink) {
+            	hyperlink.submit = admingui.woodstock.hyperLinkSubmit;
+            });
+            
+            require(['webui/suntheme/jumpDropDown'], function (jumpDropDown) {
+            	jumpDropDown.changed = admingui.woodstock.dropDownChanged;
+            });
         }
 
         contentNode.innerHTML = xmlReq.responseText;
@@ -2380,7 +2422,12 @@ admingui.ajax = {
                 }
             }
         }
+
+        if (!contentNode) {
+            contentNode = document.getElementsByTagName("html")[0];
+        }
         contentNode.innerHTML = result;
+
         if (viewState != null) {
             var form = document.getElementById(this.context.formid);
             if (!form) {
@@ -2399,8 +2446,13 @@ admingui.ajax = {
         }
 
         // FIXME: These 2 functions (should) only need be replaced after FPR...
-        webui.suntheme.hyperlink.submit = admingui.woodstock.hyperLinkSubmit;
-        webui.suntheme.jumpDropDown.changed = admingui.woodstock.dropDownChanged;
+        require(['webui/suntheme/hyperlink'], function (hyperlink) {
+            hyperlink.submit = admingui.woodstock.hyperLinkSubmit;
+        });
+
+        require(['webui/suntheme/jumpDropDown'], function (jumpDropDown) {
+            jumpDropDown.changed = admingui.woodstock.dropDownChanged;
+        });
         var contextObj = {};
         admingui.ajax.processElement(contextObj, contentNode, true);
         admingui.ajax.processScripts(contextObj);
@@ -2591,7 +2643,9 @@ admingui.ajax = {
             }
             var src = document.getElementById('execButton');
             if ((src == null) || (typeof(src) === 'undefined')) {
-                alert("'execButton' not found!  Unable to submit JSF2 Ajax Request!");
+                if (args.content !== '') {
+                    alert("'execButton' not found!  Unable to submit JSF2 Ajax Request!");
+                }
             } else {
                 // Don't ping b/c this is from the header and therefor is a ping
                 jsf.ajax.request(src, null,
@@ -2613,8 +2667,8 @@ admingui.ajax = {
 
     getResource: function(path, callback) {
         admingui.ajax.invoke("gf.serveResource", {
-            path:path,
-            content:content
+            path: path,
+            content: ''
         }, callback, 1, true);
     },
 
@@ -2684,44 +2738,46 @@ admingui.woodstock = {
 
     dropDownChanged: function(jumpDropdown) {
         if (typeof(jumpDropdown) === "string") {
-            jumpDropdown = webui.suntheme.dropDown.getSelectElement(jumpDropdown);
+            require(['webui/suntheme/dropDown'], function (dropDown) {
+                jumpDropdown = dropDown.getSelectElement(jumpDropdown);
+
+                // Force WS "submitter" flag to true
+                var submitterFieldId = jumpDropdown.id + "_submitter";
+                var submitterField = document.getElementById(submitterFieldId);
+                if (!submitterField) {
+                    submitterFieldId = jumpDropdown.parentNode.id + "_submitter";
+                    submitterField = document.getElementById(submitterFieldId);
+                    if (!submitterField) {
+                        admingui.util.log("Unable to find dropDown submitter for: "
+                            + jumpDropdown.id);
+                        return false;
+                    }
+                }
+                submitterField.value = "true";
+                require(['webui/suntheme/props'], function (props) {
+                    // FIXME: Not sure why the following is done...
+                    var listItem = jumpDropdown.options;
+                    for (var cntr=0; cntr < listItem.length; ++cntr) {
+                        if (listItem[cntr].className == props.jumpDropDown.optionSeparatorClassName
+                            || listItem[cntr].className == props.jumpDropDown.optionGroupClassName) {
+                            continue;
+                        } else if (listItem[cntr].disabled) {
+                            // Regardless if the option is currently selected or not,
+                            // the disabled option style should be used when the option
+                            // is disabled. So, check for the disabled item first.
+                            // See CR 6317842.
+                            listItem[cntr].className = props.jumpDropDown.optionDisabledClassName;
+                        } else if (listItem[cntr].selected) {
+                            listItem[cntr].className = props.jumpDropDown.optionSelectedClassName;
+                        } else {
+                            listItem[cntr].className = props.jumpDropDown.optionClassName;
+                        }
+                    }
+                    admingui.ajax.postAjaxRequest(jumpDropdown);
+                });
+            });
         }
 
-        // Force WS "submitter" flag to true
-        var submitterFieldId = jumpDropdown.id + "_submitter";
-        var submitterField = document.getElementById(submitterFieldId);
-        if (!submitterField) {
-            submitterFieldId = jumpDropdown.parentNode.id + "_submitter";
-            submitterField = document.getElementById(submitterFieldId);
-            if (!submitterField) {
-                admingui.util.log("Unable to find dropDown submitter for: "
-                    + jumpDropdown.id);
-                return false;
-            }
-        }
-        submitterField.value = "true";
-
-        // FIXME: Not sure why the following is done...
-        var listItem = jumpDropdown.options;
-        for (var cntr=0; cntr < listItem.length; ++cntr) {
-            if (listItem[cntr].className ==
-                webui.suntheme.props.jumpDropDown.optionSeparatorClassName
-                || listItem[cntr].className ==
-                webui.suntheme.props.jumpDropDown.optionGroupClassName) {
-                continue;
-            } else if (listItem[cntr].disabled) {
-                // Regardless if the option is currently selected or not,
-                // the disabled option style should be used when the option
-                // is disabled. So, check for the disabled item first.
-                // See CR 6317842.
-                listItem[cntr].className = webui.suntheme.props.jumpDropDown.optionDisabledClassName;
-            } else if (listItem[cntr].selected) {
-                listItem[cntr].className = webui.suntheme.props.jumpDropDown.optionSelectedClassName;
-            } else {
-                listItem[cntr].className = webui.suntheme.props.jumpDropDown.optionClassName;
-            }
-        }
-        admingui.ajax.postAjaxRequest(jumpDropdown);
         return false;
     },
 

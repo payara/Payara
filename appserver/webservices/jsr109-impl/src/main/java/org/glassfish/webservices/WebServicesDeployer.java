@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2022] [Payara Foundation and/or its affiliates]
 package org.glassfish.webservices;
 
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
@@ -71,7 +71,6 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 import jakarta.inject.Inject;
-import jakarta.servlet.SingleThreadModel;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;

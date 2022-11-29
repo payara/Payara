@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2022] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -82,8 +82,8 @@ public class OpenApiResource {
         OpenAPI document = null;
         try {
             document = openApiService.getDocument();
-        } catch (OpenAPIBuildException | IOException ex) {
-            LOGGER.log(WARNING, "OpenAPI document creation failed.", ex);
+        } catch (OpenAPIBuildException | IOException | CloneNotSupportedException ex) {
+            LOGGER.log(WARNING, "OpenAPI document creation failed: " + ex.getMessage(), ex);
         }
 
         // If there are none, return an empty OpenAPI document

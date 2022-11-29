@@ -42,7 +42,7 @@
    <parent>
         <groupId>fish.payara.server.internal.payara-modules</groupId>
         <artifactId>payara-nucleus-modules</artifactId>
-        <version>6.2022.1.Alpha3-SNAPSHOT</version>
+        <version>6.2022.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>hazelcast-bootstrap</artifactId>
@@ -76,10 +76,6 @@
         <dependency>
             <groupId>com.hazelcast</groupId>
             <artifactId>hazelcast</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.hazelcast</groupId>
-            <artifactId>hazelcast-kubernetes</artifactId>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.common</groupId>

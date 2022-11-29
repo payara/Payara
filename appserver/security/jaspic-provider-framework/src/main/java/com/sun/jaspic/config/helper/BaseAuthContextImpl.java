@@ -146,7 +146,7 @@ public abstract class BaseAuthContextImpl {
      * @param properties
      * @return
      */
-    public abstract Map<String, ?> getInitProperties(int i, Map<String, ?> properties);
+    public abstract Map<String, Object> getInitProperties(int i, Map<String, Object> properties);
 
     /**
      *

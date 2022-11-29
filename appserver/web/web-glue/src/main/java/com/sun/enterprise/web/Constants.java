@@ -95,7 +95,7 @@ public final class Constants {
      * The Apache Jasper JSP servlet class name.
      */
     public static final String APACHE_JSP_SERVLET_CLASS =
-        "org.apache.jasper.servlet.JspServlet";
+        "org.glassfish.wasp.servlet.JspServlet";
 
     public static final String JSP_URL_PATTERN="*.jsp";
 

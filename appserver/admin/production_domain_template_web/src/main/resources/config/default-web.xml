@@ -188,10 +188,6 @@
   <!--                       (separate from the JVM that the application    -->
   <!--                       server is running in). [true]                  -->
   <!--                                                                      -->
-  <!--   ieClassId           The class-id value to be sent to Internet      -->
-  <!--                       Explorer when using <jsp:plugin> tags.         -->
-  <!--                       [clsid:8AD9C840-044E-11D1-B3E9-00805F499D93]   -->
-  <!--                                                                      -->
   <!--   javaEncoding        Java file encoding to use for generating java  -->
   <!--                       source files. [UTF8]                           -->
   <!--                                                                      -->
@@ -289,11 +285,11 @@
   <!-- * Set the "classpath" initialization parameter appropriately         -->
   <!--   for this web application.                                          -->
   <!-- * Set the "jspCompilerPlugin" initialization parameter to            -->
-  <!--   "org.apache.jasper.compiler.JikesJavaCompiler".                    -->
+  <!--   "org.glassfish.wasp.compiler.JikesJavaCompiler".                    -->
 
   <servlet>
     <servlet-name>jsp</servlet-name>
-    <servlet-class>org.apache.jasper.servlet.JspServlet</servlet-class>
+    <servlet-class>org.glassfish.wasp.servlet.JspServlet</servlet-class>
     <init-param>
       <param-name>xpoweredBy</param-name>
       <param-value>false</param-value>
@@ -323,14 +319,14 @@
       <param-value>
         /lib/
         \lib\
-        jakarta.el.jar
+        expressly.jar
         jakarta.servlet-api.jar
         jakarta.servlet.jsp-api.jar
         jakarta.servlet.jsp.jstl-api.jar
         jakarta.servlet.jsp.jstl.jar
         jakarta.jms-api.jar
         jakarta.faces.jar
-        jakarta.servlet.jsp.jar
+        wasp.jar
         jspcaching-connector.jar
         web-glue.jar
         bean-validator.jar

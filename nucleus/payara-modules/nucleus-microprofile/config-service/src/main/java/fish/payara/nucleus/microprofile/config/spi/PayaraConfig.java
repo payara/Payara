@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2021 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2022 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,16 +41,13 @@ package fish.payara.nucleus.microprofile.config.spi;
 
 import fish.payara.nucleus.microprofile.config.converters.ArrayConverter;
 import fish.payara.nucleus.microprofile.config.converters.AutomaticConverter;
+import fish.payara.nucleus.microprofile.config.util.ConfigValueType;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigValue;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.eclipse.microprofile.config.spi.Converter;
 
-import static fish.payara.nucleus.microprofile.config.spi.ConfigValueResolverImpl.getCacheKey;
-import static fish.payara.nucleus.microprofile.config.spi.ConfigValueResolverImpl.throwWhenNotExists;
-import static java.lang.System.currentTimeMillis;
 import java.lang.reflect.Array;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -60,6 +57,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
+
+import static fish.payara.nucleus.microprofile.config.spi.ConfigValueResolverImpl.getCacheKey;
+import static fish.payara.nucleus.microprofile.config.spi.ConfigValueResolverImpl.throwWhenNotExists;
+import static java.lang.System.currentTimeMillis;
 
 /**
  * Standard implementation for MP {@link Config}.
@@ -156,7 +157,7 @@ public class PayaraConfig implements Config {
 
     @Override
     public <T> Optional<T> getOptionalValue(String propertyName, Class<T> propertyType) {
-        T internalValue = getValueInternal(propertyName, propertyType);
+        T internalValue = getValueInternal(propertyName, propertyType, ConfigValueType.OPTIONAL);
         if (internalValue != null && propertyType.isArray()) {
             if (Array.getLength(internalValue) == 0) {
                 return Optional.empty();
@@ -170,10 +171,14 @@ public class PayaraConfig implements Config {
         return Config.super.getOptionalValues(propertyName, propertyType).filter(list -> !list.isEmpty());
     }
 
-    @SuppressWarnings("unchecked")
     private <T> T getValueInternal(String propertyName, Class<T> propertyType) {
+        return getValueInternal(propertyName, propertyType, ConfigValueType.NORMAL);
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T> T getValueInternal(String propertyName, Class<T> propertyType, ConfigValueType type) {
         if (propertyType == ConfigValue.class) {
-            return (T) getConfigValue(propertyName, getCacheKey(propertyName, propertyType), null, null);
+            return (T) getConfigValue(propertyName, getCacheKey(propertyName, propertyType), null, null, type);
         }
         Optional<Converter<T>> converter = getConverter(propertyType);
         if (!converter.isPresent()) {
@@ -208,6 +213,10 @@ public class PayaraConfig implements Config {
     }
 
     protected ConfigValueImpl getConfigValue(String propertyName, String cacheKey, Long ttl, String defaultValue) {
+        return getConfigValue(propertyName, cacheKey, ttl, defaultValue, ConfigValueType.NORMAL);
+    }
+
+    protected ConfigValueImpl getConfigValue(String propertyName, String cacheKey, Long ttl, String defaultValue, ConfigValueType type) {
         long entryTTL = ttl != null ? ttl : getCacheDurationSeconds();
         
         if (entryTTL <= 0) {
@@ -226,7 +235,7 @@ public class PayaraConfig implements Config {
         // entry not found or expired
         boolean isExpansionEnabled = isExpansionEnabled(propertyName);
         // searchConfigSources can cause recursive call to getConfigValue when expansion is enabled
-        ConfigValueImpl newValue = searchConfigSources(propertyName, defaultValue, isExpansionEnabled);
+        ConfigValueImpl newValue = searchConfigSources(propertyName, defaultValue, isExpansionEnabled, type);
         CacheEntry newCacheEntry = new CacheEntry(newValue, expires);
         // put the new cache entry, if there is not a newer value from other thread
         cacheEntry = cachedValuesByProperty.compute(entryKey, (key, entry) -> {
@@ -301,10 +310,14 @@ public class PayaraConfig implements Config {
         return Optional.of(new ArrayConverter<>(elementType, getConverter(elementType).get()));
     }
 
+    private ConfigValueImpl searchConfigSources(String propertyName, String defaultValue) {
+        return searchConfigSources(propertyName, defaultValue, ConfigValueType.NORMAL);
+    }
+
     /**
      * Do not call this method during compute as it may modify the cachedValuesByProperty map.
      */
-    private ConfigValueImpl searchConfigSources(String propertyName, String defaultValue) {
+    private ConfigValueImpl searchConfigSources(String propertyName, String defaultValue, ConfigValueType type) {
         boolean expansionEnabled = isExpansionEnabled(propertyName);
         return searchConfigSources(propertyName, defaultValue, expansionEnabled);
     }
@@ -318,8 +331,12 @@ public class PayaraConfig implements Config {
     }
 
     private ConfigValueImpl searchConfigSources(String propertyName, String defaultValue, boolean expansionEnabled) {
+        return searchConfigSources(propertyName, defaultValue, expansionEnabled, ConfigValueType.NORMAL);
+    }
+
+    private ConfigValueImpl searchConfigSources(String propertyName, String defaultValue, boolean expansionEnabled, ConfigValueType type) {
         return new ConfigExpressionResolver(sources, expansionEnabled, profile)
-                .resolve(propertyName, defaultValue);
+                .resolve(propertyName, defaultValue, type);
     }
 
     static Class<?> boxedTypeOf(Class<?> type) {

@@ -136,8 +136,8 @@ public abstract class ManagedExecutorServiceBaseManager implements ResourceManag
         return new ResourceStatus(ResourceStatus.SUCCESS, msg);
     }
 
-    protected ResourceStatus isValid(Resources resources, boolean validateResourceRef, String target){
-        ResourceStatus status ;
+    protected ResourceStatus isValid(Resources resources, boolean validateResourceRef, String target) {
+        ResourceStatus status;
 
 
         if (jndiName == null) {

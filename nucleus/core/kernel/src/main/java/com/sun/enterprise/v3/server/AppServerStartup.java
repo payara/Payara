@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates]
+ * Portions Copyright [2017-2022] [Payara Foundation and/or its affiliates]
  */
 
 package com.sun.enterprise.v3.server;
@@ -151,9 +151,6 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
     @Inject
     RunLevelController runLevelController;
 
-    @Inject
-    Provider<CommandRunner> commandRunnerProvider;
-    
     @Inject
     private AppInstanceListener appInstanceListener;
     
@@ -353,6 +350,7 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
             logger.log(level, "Init level done in " +
                 (initFinishTime - context.getCreationTime()) + " ms");
         }
+        events.send(new Event(EventTypes.POST_SERVER_INIT), false);
         
         appInstanceListener.startRecordingFutures();
         if (!proceedTo(StartupRunLevel.VAL)) {
