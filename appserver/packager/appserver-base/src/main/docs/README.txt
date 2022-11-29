@@ -8,9 +8,14 @@ Here are a few short steps to get you started...
 
 Payara Server currently supports the following Java Virtual Machines:
 
-* Oracle JDK 11 (11.0.5+)
-* Azul Zulu JDK 11 (11.0.5u10+)
-* OpenJDK 11 (11.0.5+)
+* Azul Zulu JDK: 11 (11.0.5u10+), 17 (17.34/17.0.3+)
+* Oracle JDK: 11 (11.0.5+), 17 (17.0.3+)
+* Amazon Corretto: 11 (11.0.5+), 17 (17.0.3+)
+* Adopt Open JDK: 11 (11.0.5+), 17 (17.0.3+)
+* Adopt Open JDK with Eclipse Open J9: 11 (11.0.5+), 17 (17.0.3+)
+* Any other JVM based on OpenJDK 11.0.5+ or 17.0.3+
+
+The Payara Platform runs on the x64 and arm64 variants of the above JVMs.
 
 1. Installing Payara Server
 ===========================
