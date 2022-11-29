@@ -1,3 +1,7 @@
+MPLPostStep('always') {
+    testNG(reportFilenamePattern: 'appserver/tests/quicklook/**/*.xml')
+}
+
 withMaven(jdk: CFG.jdk, options: [artifactsPublisher(disabled: true)]) {
     sh """mvn -B -V -ff -e clean test --strict-checksums -Pall \
         -Dglassfish.home=\"${pwd()}/${getPayaraDirectoryName(CFG.'build.version')}/glassfish\" \
@@ -5,5 +9,3 @@ withMaven(jdk: CFG.jdk, options: [artifactsPublisher(disabled: true)]) {
         -Djavax.xml.accessExternalSchema=all \
         -f appserver/tests/quicklook/pom.xml"""
 }
-
-testNG(reportFilenamePattern: 'appserver/tests/quicklook/**/*.xml')
