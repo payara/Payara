@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2022] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.webservices;
 
 import static com.sun.enterprise.security.webservices.PipeConstants.ASSEMBLER_CONTEXT;
@@ -56,7 +56,7 @@ import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
 import com.sun.jaspic.services.AuthConfigRegistrationWrapper;
 import com.sun.xml.ws.api.pipe.ClientPipeAssemblerContext;
 import com.sun.xml.ws.api.pipe.Pipe;
-import com.sun.xml.ws.assembler.ClientPipelineHook;
+import com.sun.xml.ws.assembler.metro.dev.ClientPipelineHook;
 import com.sun.xml.ws.policy.PolicyMap;
 
 /**
