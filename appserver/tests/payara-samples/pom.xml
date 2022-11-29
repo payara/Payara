@@ -308,7 +308,7 @@
                 <groupId>org.jboss.arquillian</groupId>
                 <artifactId>arquillian-bom</artifactId>
                 <!-- >= 1.7.0 supports parallel testing -->
-                <version>1.7.0.Alpha9</version>
+                <version>1.7.0.Alpha13</version>
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
