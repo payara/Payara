@@ -44,7 +44,7 @@
     <parent>
         <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>nucleus-packages</artifactId>
-        <version>5.2022.6-SNAPSHOT</version>
+        <version>5.2023.1-SNAPSHOT</version>
     </parent>
     <artifactId>notification-package</artifactId>
     <name>Nucleus Notification Package</name>
