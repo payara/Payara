@@ -25,13 +25,15 @@ pipeline {
               }
             }
         }
-        stage('Build') {
+        stage('Build and Analysis') {
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Building SRC  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 withCredentials([usernameColonPassword(credentialsId: 'JenkinsNexusUser', variable: 'NEXUS_USER')]) {
-                    sh """mvn -B -V -ff -e clean install --strict-checksums -PQuickBuild \
-                    -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
-                    -Djavax.xml.accessExternalSchema=all -Dbuild.number=${payaraBuildNumber}"""
+                    withSonarQubeEnv('Payara-Testone') {
+                        sh """mvn -B -V -ff -e clean install --strict-checksums -PQuickBuild \
+                        -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
+                        -Djavax.xml.accessExternalSchema=all -Dbuild.number=${payaraBuildNumber}"""
+                    }
                 }
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#    Built SRC   *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
@@ -42,6 +44,13 @@ pipeline {
                 }
                 always {
                     archiveArtifacts allowEmptyArchive: true, artifacts: 'appserver/distributions/payara/target/stage/payara6/glassfish/logs/server.log'
+                }
+            }
+        }
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 1, unit: 'HOURS') {
+                    waitForQualityGate abortPipeline: true
                 }
             }
         }
