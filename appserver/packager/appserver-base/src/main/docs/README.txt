@@ -1,4 +1,4 @@
-Thank you for downloading Payara Server 6.2022.3!
+Thank you for downloading Payara Server 6.2023.1!
 
 Here are a few short steps to get you started...
 
@@ -20,7 +20,7 @@ The Payara Platform runs on the x64 and arm64 variants of the above JVMs.
 1. Installing Payara Server
 ===========================
 
-Installing Payara Server is just a matter of unzipping the Payara Server archive in the desired directory. Since you are reading this, you have probably already unzipped Payara Server. If not, just type the following command in the directory where you want Payara Server to be installed: jar xvf payara-5.2021.3.zip
+Installing Payara Server is just a matter of unzipping the Payara Server archive in the desired directory. Since you are reading this, you have probably already unzipped Payara Server. If not, just type the following command in the directory where you want Payara Server to be installed: jar xvf payara-6.2023.1.zip
 
 The default domain called 'domain1' is already installed and preconfigured.
 
@@ -53,13 +53,13 @@ To stop Payara Server, just issue the following command:
 Open the following in your browser: https://docs.payara.fish/. It contains useful information such as the details about the Payara Project, links to the Payara Server Documentation, etc.
 
 
-Make sure to also check the Payara Server 6.2022.3 Release Notes as they contain important information: https://docs.payara.fish/docs/6.2022.3/release-notes/release-notes-2022-1.Alpha5.html
+Make sure to also check the Payara Server 6.2022.2 Release Notes as they contain important information: https://docs.payara.fish/community/docs/6.2023.1/Release%20Notes/Release%20Notes%206.2023.1.html
 
 
 5. Documentation
 ================
 
-Payara Server 6.2022.3 Release Notes: https://docs.payara.fish/docs/6.2022.3/release-notes/release-notes-2022-1.Alpha5.html
+Payara Server 6.2022.2 Release Notes: https://docs.payara.fish/docs/6.2022.2/release-notes/release-notes-2022-1.Alpha5.html
 
 Payara Server Documentation: https://docs.payara.fish/
 
