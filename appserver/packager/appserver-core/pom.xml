@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>6.2022.1.Alpha3-SNAPSHOT</version>
+        <version>6.2022.2-SNAPSHOT</version>
     </parent>
     <artifactId>appserver-core</artifactId>
     <name>Payara Appserver Core Modules</name>
@@ -249,6 +249,10 @@
             <artifactId>jakarta.authorization-api</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.glassfish.exousia</groupId>
+            <artifactId>exousia</artifactId>
+        </dependency>
+        <dependency>
             <groupId>fish.payara.server.internal.transaction</groupId>
             <artifactId>transaction-internal-api</artifactId>
             <version>${project.version}</version>
@@ -258,8 +262,18 @@
             <artifactId>jakarta.mail-api</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.eclipse.angus</groupId>
+            <artifactId>angus-mail</artifactId>
+        </dependency>
+        <!-- FISH-6249: transitional servlet API to fool implementations relying on servlet 5 yet -->
+        <dependency>
             <groupId>jakarta.servlet</groupId>
             <artifactId>jakarta.servlet-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.server.internal.packager</groupId>
+            <artifactId>jakarta-ee9-shim</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>jakarta.persistence</groupId>
@@ -308,7 +322,7 @@
         <dependency>
             <groupId>org.eclipse.angus</groupId>
             <artifactId>angus-activation</artifactId>
-	</dependency>
+	    </dependency>
         <dependency>
             <groupId>org.glassfish.metro</groupId>
             <artifactId>webservices-api-osgi</artifactId>

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2022] Payara Foundation and/or affiliates
 package org.glassfish.webservices;
 
 import com.sun.istack.NotNull;
@@ -64,7 +65,6 @@ import javax.xml.namespace.QName;
 import jakarta.xml.ws.EndpointReference;
 import org.glassfish.gmbal.ManagedObjectManager;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.w3c.dom.Element;
 
@@ -200,11 +200,6 @@ public class JAXWSAdapterRegistryTest {
 
         @Override
         public ServiceDefinition getServiceDefinition() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public Set getComponentRegistry() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 

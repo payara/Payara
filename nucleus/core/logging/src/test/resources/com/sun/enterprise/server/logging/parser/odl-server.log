@@ -37,11 +37,11 @@
 Hello World XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX0
 java.lang.Exception
 	at org.apache.jsp.hello_jsp._jspService(hello_jsp.java:71)
-	at org.apache.jasper.runtime.HttpJspBase.service(HttpJspBase.java:111)
+	at org.glassfish.wasp.runtime.HttpJspBase.service(HttpJspBase.java:111)
 	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:790)
-	at org.apache.jasper.servlet.JspServletWrapper.service(JspServletWrapper.java:411)
-	at org.apache.jasper.servlet.JspServlet.serviceJspFile(JspServlet.java:473)
-	at org.apache.jasper.servlet.JspServlet.service(JspServlet.java:377)
+	at org.glassfish.wasp.servlet.JspServletWrapper.service(JspServletWrapper.java:411)
+	at org.glassfish.wasp.servlet.JspServlet.serviceJspFile(JspServlet.java:473)
+	at org.glassfish.wasp.servlet.JspServlet.service(JspServlet.java:377)
 	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:790)
 	at org.apache.catalina.core.StandardWrapper.service(StandardWrapper.java:1593)
 	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:285)

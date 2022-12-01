@@ -99,12 +99,12 @@
             <iiop-service>
                 <orb use-thread-pool-ids="thread-pool-1" />
                 <iiop-listener address="0.0.0.0" port="3700" id="orb-listener-1" lazy-init="true" />
-                <ssl ssl3-enabled="false" />
+                <ssl />
                 <iiop-listener security-enabled="true" address="0.0.0.0" port="3820" id="SSL">
-                    <ssl ssl3-enabled="false" classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" cert-nickname="s1as" />
+                    <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" cert-nickname="s1as" />
                 </iiop-listener>
                 <iiop-listener security-enabled="true" address="0.0.0.0" port="3920" id="SSL_MUTUALAUTH">
-                    <ssl ssl3-enabled="false" classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" cert-nickname="s1as" client-auth-enabled="true" />
+                    <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" cert-nickname="s1as" client-auth-enabled="true" />
                 </iiop-listener>
             </iiop-service>
             <admin-service auth-realm-name="admin-realm" type="das-and-server" system-jmx-connector-name="system">
@@ -144,7 +144,7 @@
                     <property value="fileRealm" name="jaas-context" />
                 </auth-realm>
                 <auth-realm classname="com.sun.enterprise.security.auth.realm.certificate.CertificateRealm" name="certificate" />
-                <jacc-provider policy-configuration-factory-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyConfigurationFactory" policy-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyProvider" name="default"></jacc-provider>
+                <jacc-provider policy-configuration-factory-provider="fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl" policy-provider="fish.payara.security.jacc.provider.PolicyProviderImpl" name="default"></jacc-provider>
                 <audit-module classname="com.sun.enterprise.security.ee.Audit" name="default">
                     <property value="false" name="auditOn" />
                 </audit-module>
@@ -255,13 +255,13 @@
                         <http default-virtual-server="server" max-connections="250">
                             <file-cache enabled="false"></file-cache>
                         </http>
-                        <ssl ssl3-enabled="false" />
+                        <ssl />
                     </protocol>
                     <protocol security-enabled="true" name="https-listener">
                         <http default-virtual-server="server" max-connections="250">
                             <file-cache enabled="false"></file-cache>
                         </http>
-                        <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" ssl3-enabled="false" cert-nickname="s1as"></ssl>
+                        <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" cert-nickname="s1as"></ssl>
                     </protocol>
                     <protocol name="admin-listener">
                         <http default-virtual-server="__asadmin" max-connections="250" encoded-slash-enabled="true">

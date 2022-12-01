@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2022] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld.jsf;
 
@@ -55,8 +56,10 @@ import jakarta.servlet.jsp.JspFactory;
 
 import org.glassfish.weld.util.Util;
 
-import org.apache.jasper.runtime.JspApplicationContextImpl;
+import org.glassfish.wasp.runtime.JspApplicationContextImpl;
 
+
+@Deprecated
 public class WeldApplication extends ApplicationWrapper {
    
     private final Application application;

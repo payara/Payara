@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2022 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2022] Payara Foundation and/or affiliates
 
 package com.sun.appserv.connectors.internal.api;
 
@@ -210,6 +211,11 @@ public interface ConnectorConstants extends ResourceConstants {
     public static String POOLS_JNDINAME_PREFIX=RESERVE_PREFIX+"/pools/";
 
     /**
+     * Reserved sub-context where concurrent objects are bound with generated names.
+     */
+    public static String CONCURRENT_JNDINAME_PREFIX = "concurrent/";
+
+    /**
      *  Reserved sub-context where connector resource objects are bound with 
      *  generated names.
      */
@@ -241,7 +247,7 @@ public interface ConnectorConstants extends ResourceConstants {
           false : true;
     
     public static final int DEFAULT_RESOURCE_ADAPTER_SHUTDOWN_TIMEOUT = 30;
-    
+
     public String JAVAX_SQL_DATASOURCE = "javax.sql.DataSource";
     
     public String JAVAX_SQL_CONNECTION_POOL_DATASOURCE = "javax.sql.ConnectionPoolDataSource";

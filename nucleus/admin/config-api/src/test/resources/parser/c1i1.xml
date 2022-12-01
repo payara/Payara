@@ -116,7 +116,7 @@
           <property name="jaas-context" value="fileRealm" />
         </auth-realm>
         <auth-realm classname="com.sun.enterprise.security.auth.realm.certificate.CertificateRealm" name="certificate" />
-        <jacc-provider policy-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyProvider" name="default" policy-configuration-factory-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyConfigurationFactory"></jacc-provider>
+        <jacc-provider policy-provider="fish.payara.security.jacc.provider.PolicyProviderImpl" name="default" policy-configuration-factory-provider="fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl"></jacc-provider>
         <audit-module classname="com.sun.enterprise.security.ee.Audit" name="default">
           <property name="auditOn" value="false" />
         </audit-module>
@@ -189,7 +189,7 @@
           </protocol>
           <protocol security-enabled="true" name="http-listener-2">
             <http default-virtual-server="server" max-connections="250" />
-            <ssl ssl3-enabled="false" cert-nickname="s1as" />
+            <ssl cert-nickname="s1as" />
           </protocol>
           <protocol name="admin-listener">
             <http default-virtual-server="__asadmin" max-connections="250" encoded-slash-enabled="true" />
@@ -238,7 +238,7 @@
           <property name="jaas-context" value="fileRealm" />
         </auth-realm>
         <auth-realm classname="com.sun.enterprise.security.auth.realm.certificate.CertificateRealm" name="certificate" />
-        <jacc-provider policy-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyProvider" name="default" policy-configuration-factory-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyConfigurationFactory"></jacc-provider>
+        <jacc-provider policy-provider="fish.payara.security.jacc.provider.PolicyProviderImpl" name="default" policy-configuration-factory-provider="fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl"></jacc-provider>
         <audit-module classname="com.sun.enterprise.security.ee.Audit" name="default">
           <property name="auditOn" value="false" />
         </audit-module>
@@ -308,7 +308,7 @@
           </protocol>
           <protocol security-enabled="true" name="http-listener-2">
             <http default-virtual-server="server" />
-            <ssl ssl3-enabled="false" cert-nickname="s1as" />
+            <ssl cert-nickname="s1as" />
           </protocol>
           <protocol name="admin-listener">
             <http default-virtual-server="__asadmin" max-connections="250" />
@@ -366,7 +366,7 @@
           <property name="jaas-context" value="fileRealm" />
         </auth-realm>
         <auth-realm name="certificate" classname="com.sun.enterprise.security.auth.realm.certificate.CertificateRealm" />
-        <jacc-provider policy-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyProvider" name="default" policy-configuration-factory-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyConfigurationFactory"></jacc-provider>
+        <jacc-provider policy-provider="fish.payara.security.jacc.provider.PolicyProviderImpl" name="default" policy-configuration-factory-provider="fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl"></jacc-provider>
         <audit-module name="default" classname="com.sun.enterprise.security.ee.Audit">
           <property name="auditOn" value="false" />
         </audit-module>
@@ -436,7 +436,7 @@
           </protocol>
           <protocol security-enabled="true" name="http-listener-2">
             <http default-virtual-server="server" />
-            <ssl ssl3-enabled="false" cert-nickname="s1as" />
+            <ssl cert-nickname="s1as" />
           </protocol>
           <protocol name="admin-listener">
             <http max-connections="250" default-virtual-server="__asadmin" />
@@ -494,7 +494,7 @@
           <property name="jaas-context" value="fileRealm" />
         </auth-realm>
         <auth-realm name="certificate" classname="com.sun.enterprise.security.auth.realm.certificate.CertificateRealm" />
-        <jacc-provider policy-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyProvider" name="default" policy-configuration-factory-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyConfigurationFactory"></jacc-provider>
+        <jacc-provider policy-provider="fish.payara.security.jacc.provider.PolicyProviderImpl" name="default" policy-configuration-factory-provider="fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl"></jacc-provider>
         <audit-module name="default" classname="com.sun.enterprise.security.ee.Audit">
           <property name="auditOn" value="false" />
         </audit-module>
@@ -564,7 +564,7 @@
           </protocol>
           <protocol security-enabled="true" name="http-listener-2">
             <http default-virtual-server="server" />
-            <ssl ssl3-enabled="false" cert-nickname="s1as" />
+            <ssl cert-nickname="s1as" />
           </protocol>
           <protocol name="admin-listener">
             <http max-connections="250" default-virtual-server="__asadmin" />
@@ -622,7 +622,7 @@
           <property name="jaas-context" value="fileRealm" />
         </auth-realm>
         <auth-realm name="certificate" classname="com.sun.enterprise.security.auth.realm.certificate.CertificateRealm" />
-        <jacc-provider policy-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyProvider" name="default" policy-configuration-factory-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyConfigurationFactory"></jacc-provider>
+        <jacc-provider policy-provider="fish.payara.security.jacc.provider.PolicyProviderImpl" name="default" policy-configuration-factory-provider="fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl"></jacc-provider>
         <audit-module name="default" classname="com.sun.enterprise.security.ee.Audit">
           <property name="auditOn" value="false" />
         </audit-module>
@@ -692,7 +692,7 @@
           </protocol>
           <protocol security-enabled="true" name="http-listener-2">
             <http default-virtual-server="server" />
-            <ssl ssl3-enabled="false" cert-nickname="s1as" />
+            <ssl cert-nickname="s1as" />
           </protocol>
           <protocol name="admin-listener">
             <http max-connections="250" default-virtual-server="__asadmin" />
@@ -750,7 +750,7 @@
           <property name="jaas-context" value="fileRealm" />
         </auth-realm>
         <auth-realm name="certificate" classname="com.sun.enterprise.security.auth.realm.certificate.CertificateRealm" />
-        <jacc-provider policy-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyProvider" name="default" policy-configuration-factory-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyConfigurationFactory"></jacc-provider>
+        <jacc-provider policy-provider="fish.payara.security.jacc.provider.PolicyProviderImpl" name="default" policy-configuration-factory-provider="fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl"></jacc-provider>
         <audit-module name="default" classname="com.sun.enterprise.security.ee.Audit">
           <property name="auditOn" value="false" />
         </audit-module>
@@ -820,7 +820,7 @@
           </protocol>
           <protocol security-enabled="true" name="http-listener-2">
             <http default-virtual-server="server" />
-            <ssl ssl3-enabled="false" cert-nickname="s1as" />
+            <ssl cert-nickname="s1as" />
           </protocol>
           <protocol name="admin-listener">
             <http max-connections="250" default-virtual-server="__asadmin" />
@@ -878,7 +878,7 @@
           <property name="jaas-context" value="fileRealm" />
         </auth-realm>
         <auth-realm name="certificate" classname="com.sun.enterprise.security.auth.realm.certificate.CertificateRealm" />
-        <jacc-provider policy-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyProvider" name="default" policy-configuration-factory-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyConfigurationFactory"></jacc-provider>
+        <jacc-provider policy-provider="fish.payara.security.jacc.provider.PolicyProviderImpl" name="default" policy-configuration-factory-provider="fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl"></jacc-provider>
         <audit-module name="default" classname="com.sun.enterprise.security.ee.Audit">
           <property name="auditOn" value="false" />
         </audit-module>
@@ -948,7 +948,7 @@
           </protocol>
           <protocol security-enabled="true" name="http-listener-2">
             <http default-virtual-server="server" />
-            <ssl ssl3-enabled="false" cert-nickname="s1as" />
+            <ssl cert-nickname="s1as" />
           </protocol>
           <protocol name="admin-listener">
             <http max-connections="250" default-virtual-server="__asadmin" />

@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server.internal.admingui</groupId>
         <artifactId>admingui</artifactId>
-        <version>6.2022.1.Alpha3-SNAPSHOT</version>
+        <version>6.2022.2-SNAPSHOT</version>
     </parent>
     <artifactId>console-common</artifactId>
     <packaging>glassfish-jar</packaging>
@@ -115,12 +115,9 @@
         </dependency>
 
         <dependency>
-            <groupId>org.glassfish.jsftemplating</groupId>
-            <artifactId>jsftemplating</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jsftemplating</groupId>
-            <artifactId>jsftemplating-dt</artifactId>
+            <groupId>fish.payara.server.internal.admingui</groupId>
+            <artifactId>faces-compat</artifactId>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
@@ -136,12 +133,13 @@
             <artifactId>jakarta.servlet.jsp-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>jakarta.el</artifactId>
+            <groupId>org.glassfish.expressly</groupId>
+            <artifactId>expressly</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>jakarta.faces</artifactId>
+            <groupId>fish.payara.server.internal.admingui</groupId>
+            <artifactId>faces-compat</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>

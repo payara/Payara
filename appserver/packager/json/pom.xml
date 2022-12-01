@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>6.2022.1.Alpha3-SNAPSHOT</version>
+        <version>6.2022.2-SNAPSHOT</version>
     </parent>
     <artifactId>json</artifactId>
     <name>JSON Package</name>
@@ -128,8 +128,8 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>jsonp-jaxrs</artifactId>
+            <groupId>org.eclipse.parsson</groupId>
+            <artifactId>parsson-media</artifactId>
             <optional>true</optional>
         </dependency>
 

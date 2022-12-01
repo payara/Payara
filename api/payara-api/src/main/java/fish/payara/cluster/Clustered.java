@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2017] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2022] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -84,5 +84,5 @@ public @interface Clustered {
      * and this singleton also exists on the other node. (not truly destroyed)
      * Default is true
      */
-    boolean callPreDestoyOnDetach () default true;
+    boolean callPreDestroyOnDetach () default true;
 }

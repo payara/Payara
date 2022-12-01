@@ -56,7 +56,7 @@
         <http-listener default-virtual-server="server" server-name="" address="0.0.0.0" port="8080" id="http-listener-1">
         </http-listener>
         <http-listener default-virtual-server="server" enabled="false" security-enabled="true" server-name="" address="0.0.0.0" port="8181" id="http-listener-2">
-          <ssl ssl3-enabled="false" cert-nickname="s1as" />
+          <ssl cert-nickname="s1as" />
         </http-listener>
         <http-listener default-virtual-server="__asadmin" server-name="" address="0.0.0.0" port="4848" id="admin-listener">
         </http-listener>
@@ -97,7 +97,7 @@
           <property value="fileRealm" name="jaas-context" />
         </auth-realm>
         <auth-realm classname="com.sun.enterprise.security.auth.realm.certificate.CertificateRealm" name="certificate" />
-        <jacc-provider policy-configuration-factory-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyConfigurationFactory" policy-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyProvider" name="default"></jacc-provider>
+        <jacc-provider policy-configuration-factory-provider="fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl" policy-provider="fish.payara.security.jacc.provider.PolicyProviderImpl" name="default"></jacc-provider>
         <audit-module classname="com.sun.enterprise.security.ee.Audit" name="default">
           <property value="false" name="auditOn" />
         </audit-module>

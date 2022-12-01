@@ -48,7 +48,7 @@
     <parent>
         <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>nucleus-packages</artifactId>
-        <version>6.2022.1.Alpha3-SNAPSHOT</version>
+        <version>6.2022.2-SNAPSHOT</version>
     </parent>
     
     <artifactId>nucleus-jersey</artifactId>
@@ -70,8 +70,9 @@
             <artifactId>jersey-hk2</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.jersey.containers</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>jersey-container-grizzly2-http</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.media</groupId>
@@ -127,15 +128,8 @@
             <artifactId>jackson-annotations</artifactId>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.admingui</groupId>
-            <artifactId>jackson-module-jaxb-annotations</artifactId>
-            <version>${project.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
+            <groupId>com.fasterxml.jackson.module</groupId>
+            <artifactId>jackson-module-jakarta-xmlbind-annotations</artifactId>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>

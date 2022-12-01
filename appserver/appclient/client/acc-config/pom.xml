@@ -41,13 +41,13 @@
 
 -->
 
-<!-- Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2018-2022] [Payara Foundation and/or its affiliates] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
         <groupId>fish.payara.server.appclient</groupId>
         <artifactId>client</artifactId>
-        <version>6.2022.1.Alpha3-SNAPSHOT</version>
+        <version>6.2022.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>acc-config</artifactId>
@@ -167,6 +167,7 @@
                                     <binding dir="${project.basedir}/src/main/resources" includes="configBindings.xml"/>
                                     <arg value="-dtd"/>
                                     <jvmarg value="-DenableExternalEntityProcessing=true"/>
+                                    <jvmarg value="-Duser.language=en"/>
                                 </xjc>
                             </target>
                         </configuration>

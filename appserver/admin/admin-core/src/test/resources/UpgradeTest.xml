@@ -101,7 +101,7 @@
         <access-log rotation-suffix="yyyy-MM-dd" rotation-interval-in-minutes="15"></access-log>
         <http-listener id="http-listener-1" port="8080" address="0.0.0.0" default-virtual-server="server" server-name=""></http-listener>
         <http-listener id="http-listener-2" port="8181" enabled="false" address="0.0.0.0" security-enabled="true" default-virtual-server="server" server-name="">
-          <ssl ssl3-enabled="false" cert-nickname="s1as"></ssl>
+          <ssl cert-nickname="s1as"></ssl>
         </http-listener>
         <http-listener id="admin-listener" port="4848" address="0.0.0.0" default-virtual-server="__asadmin" server-name=""></http-listener>
         <virtual-server id="server" http-listeners="http-listener-1, http-listener-2">
@@ -167,7 +167,7 @@
           <property name="jaas-context" value="fileRealm"></property>
         </auth-realm>
         <auth-realm name="certificate" classname="com.sun.enterprise.security.auth.realm.certificate.CertificateRealm"></auth-realm>
-        <jacc-provider policy-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyProvider" name="default" policy-configuration-factory-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyConfigurationFactory"></jacc-provider>
+        <jacc-provider policy-provider="fish.payara.security.jacc.provider.PolicyProviderImpl" name="default" policy-configuration-factory-provider="fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl"></jacc-provider>
         <audit-module name="default" classname="com.sun.enterprise.security.ee.Audit">
           <property name="auditOn" value="false"></property>
         </audit-module>
