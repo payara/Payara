@@ -28,7 +28,7 @@ pipeline {
         stage('Build and Analysis') {
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Building SRC  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                withSonarQubeEnv('Payara-Testone') {
+                withSonarQubeEnv(installationName: 'Payara-Testone', credentialsId: 'sonarqube-user-token') {
                     sh """mvn -B -V -ff -e clean install --strict-checksums -PQuickBuild \
                     -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
                     -Djavax.xml.accessExternalSchema=all -Dbuild.number=${payaraBuildNumber} sonar:sonar"""
@@ -47,7 +47,7 @@ pipeline {
         }
         stage('Quality Gate') {
             steps {
-                timeout(time: 1, unit: 'HOURS') {
+                timeout(time: 1, unit: 'HOURS', credentialsId: 'sonarqube-user-token') {
                     waitForQualityGate abortPipeline: true
                 }
             }
