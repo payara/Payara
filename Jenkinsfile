@@ -28,12 +28,10 @@ pipeline {
         stage('Build and Analysis') {
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Building SRC  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                withCredentials([usernameColonPassword(credentialsId: 'JenkinsNexusUser', variable: 'NEXUS_USER')]) {
-                    withSonarQubeEnv('Payara-Testone') {
-                        sh """mvn -B -V -ff -e clean install --strict-checksums -PQuickBuild \
-                        -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
-                        -Djavax.xml.accessExternalSchema=all -Dbuild.number=${payaraBuildNumber}"""
-                    }
+                withSonarQubeEnv('Payara-Testone') {
+                    sh """mvn -B -V -ff -e clean install --strict-checksums -PQuickBuild \
+                    -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
+                    -Djavax.xml.accessExternalSchema=all -Dbuild.number=${payaraBuildNumber} sonar:sonar"""
                 }
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#    Built SRC   *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
