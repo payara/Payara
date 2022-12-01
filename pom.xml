@@ -179,7 +179,7 @@
         <jakarta.interceptor-api.version>1.2.5</jakarta.interceptor-api.version>
         <jakarta.inject.version>1.0.5</jakarta.inject.version>
         <cdi-api.version>2.0.2</cdi-api.version>
-        <weld.version>3.1.9.Final</weld.version>
+        <weld.version>3.1.8.Final</weld.version>
         <weld-api.version>3.1.SP4</weld-api.version>
         <jakarta.security.enterprise-api.version>1.0.2</jakarta.security.enterprise-api.version>
         <jakarta.security.enterprise.version>1.1-b01.payara-p5</jakarta.security.enterprise.version>
