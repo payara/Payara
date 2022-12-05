@@ -1,6 +1,6 @@
 #!groovy
 
-@Library('PayaraTestLibrary') _
+@Library('DEVOPS-721') _
 
 PRTestPipeline {
     jdk = 'zulu-8'
