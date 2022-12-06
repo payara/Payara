@@ -37,7 +37,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2022] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.webservices;
 
@@ -61,12 +60,13 @@ public class WSClientContainer extends Container {
 
     public <T> T getSPI(Class<T> spiType) {
         
-        if(spiType == com.sun.xml.ws.assembler.metro.dev.ClientPipelineHook.class) {
+        if((spiType == com.sun.xml.ws.assembler.ClientPipelineHook.class) ||
+           (spiType == com.sun.xml.ws.assembler.dev.ClientPipelineHook.class)){
             if (secServ != null) {
                 return((T)(secServ.getClientPipelineHook(svcRef)));
             }
         }
-        if(spiType == ServiceInterceptor.class) {
+        if((spiType == ServiceInterceptor.class)){
             return((T)(new PortCreationCallbackImpl(svcRef)));
         }
         return null;
