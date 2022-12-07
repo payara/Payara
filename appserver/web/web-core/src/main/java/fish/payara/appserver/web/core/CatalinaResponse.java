@@ -580,12 +580,6 @@ public class CatalinaResponse extends org.apache.catalina.connector.Response {
     }
 
     @Override
-    public void setStatus(int status, String message) {
-        setStatus(status);
-        grizzlyResponse.setDetailMessage(message);
-    }
-
-    @Override
     protected boolean isEncodeable(String location) {
         return super.isEncodeable(location);
     }

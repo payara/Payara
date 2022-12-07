@@ -42,6 +42,7 @@
 
 package fish.payara.appserver.web.core;
 
+import jakarta.servlet.ServletConnection;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -299,7 +300,7 @@ public class GrizzlyCatalinaBridge extends HttpHandler {
     /**
      * Processor is three-way junction between grizzly, coyote and Catalina, which keeps all classes bound together
      * in sync.
-     * Grzilly doesn't do good job at limiting allocations, therefore processor can be recycled to serve other grizzly
+     * Grizzly doesn't do good job at limiting allocations, therefore processor can be recycled to serve other grizzly
      * request/response pair
      */
     final class Processor extends AbstractProcessor {
@@ -418,6 +419,11 @@ public class GrizzlyCatalinaBridge extends HttpHandler {
         @Override
         protected boolean isTrailerFieldsReady() {
             return grizzlyRequest.areTrailersAvailable();
+        }
+
+        @Override
+        protected ServletConnection getServletConnection() {
+            return catalinaRequest.getServletConnection();
         }
 
         @Override
