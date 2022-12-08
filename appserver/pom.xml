@@ -84,8 +84,7 @@
         <uc-pkg-bootstrap.version>1.122-57.2889</uc-pkg-bootstrap.version>
         <dbschema.version>3.1.1</dbschema.version>
         <dbschema.osgi.version>6.0</dbschema.osgi.version>
-        <schema2beans.version>3.1.1</schema2beans.version>
-        <schema2beans.osgi.version>5.5</schema2beans.osgi.version>
+        <schema2beans.version>6.7</schema2beans.version>
         <!-- Java API for XML Registries Resource Adapter -->
         <jaxr.version>JAXR_RA_20091012</jaxr.version>
         <rest.monitoring.version>1.0.0-Beta</rest.monitoring.version>
@@ -571,7 +570,7 @@
             </dependency>
             <dependency>
                 <groupId>org.glassfish.external</groupId>
-                <artifactId>schema2beans-repackaged</artifactId>
+                <artifactId>schema2beans</artifactId>
                 <version>${schema2beans.version}</version>
             </dependency>
             <dependency>
@@ -594,7 +593,7 @@
             <dependency>
                 <groupId>org.netbeans.external</groupId>
                 <artifactId>ddl</artifactId>
-                <version>RELEASE65</version>
+                <version>RELEASE82</version>
             </dependency>
 
             <dependency>
