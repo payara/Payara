@@ -109,7 +109,7 @@
                             <goal>run</goal>
                         </goals>
                         <configuration>
-                            <target>
+                            <tasks>
                                 <replace token="@@@FULL_VERSION@@@" value="${project.version}" dir="${stage.dir}">
                                     <include name="README.txt"/>
                                 </replace>
@@ -122,7 +122,7 @@
                                 <replace token="@@@UPDATE_VERSION@@@" value="${update_version}" dir="${stage.dir}">
                                     <include name="README.txt"/>
                                 </replace>
-                            </target>
+                            </tasks>
                         </configuration>
                     </execution>
                 </executions>
