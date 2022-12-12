@@ -18,7 +18,7 @@
             <version>${project.version}</version>
             <exclusions>
                 <exclusion>
-                    <groupId>fish.payara.server.internal.packager</groupId>
+                    <groupId>fish.payara.server.core.packager</groupId>
                     <artifactId>ldapbp-repackaged</artifactId>
                 </exclusion>
             </exclusions>

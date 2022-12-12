@@ -119,7 +119,7 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.core</groupId>
+            <groupId>fish.payara.server.core.nucleus</groupId>
             <artifactId>kernel-l10n</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -130,7 +130,7 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.core</groupId>
+            <groupId>fish.payara.server.core.nucleus</groupId>
             <artifactId>logging-l10n</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>

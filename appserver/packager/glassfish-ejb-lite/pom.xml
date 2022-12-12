@@ -129,7 +129,7 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.core</groupId>
+            <groupId>fish.payara.server.core.nucleus</groupId>
             <artifactId>jakartaee-kernel</artifactId>
             <version>${project.version}</version>
         </dependency>        

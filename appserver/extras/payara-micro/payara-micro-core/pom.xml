@@ -100,7 +100,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>fish.payara.server.internal.core</groupId>
+            <groupId>fish.payara.server.core.nucleus</groupId>
             <artifactId>glassfish</artifactId>
             <version>${project.version}</version>
         </dependency>

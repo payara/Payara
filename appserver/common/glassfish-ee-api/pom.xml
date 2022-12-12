@@ -49,6 +49,8 @@
         <artifactId>common</artifactId>
         <version>6.2023.1-SNAPSHOT</version>
     </parent>    
+
+    <groupId>fish.payara.server.core.common</groupId>
     <artifactId>glassfish-ee-api</artifactId>
     <packaging>glassfish-jar</packaging>
     
@@ -81,17 +83,17 @@
             <artifactId>jakarta.servlet-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.common</groupId>
+            <groupId>fish.payara.server.core.common</groupId>
             <artifactId>glassfish-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.common</groupId>
+            <groupId>fish.payara.server.core.common</groupId>
             <artifactId>common-util</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.security</groupId>
+            <groupId>fish.payara.server.core.security</groupId>
             <artifactId>security</artifactId>
             <version>${project.version}</version>
         </dependency>

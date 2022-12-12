@@ -103,7 +103,7 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.security</groupId>
+            <groupId>fish.payara.server.core.security</groupId>
             <artifactId>security</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>

@@ -46,7 +46,7 @@
     <modelVersion>4.0.0</modelVersion>
     
     <parent>
-        <groupId>fish.payara.server.internal.core</groupId>
+        <groupId>fish.payara.server.core.nucleus</groupId>
         <artifactId>nucleus-core</artifactId>
         <version>6.2023.1-SNAPSHOT</version>
     </parent>
@@ -93,7 +93,7 @@
             <artifactId>hk2-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.core</groupId>
+            <groupId>fish.payara.server.core.nucleus</groupId>
             <artifactId>kernel</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>

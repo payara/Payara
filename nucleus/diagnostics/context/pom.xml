@@ -70,7 +70,7 @@
             <artifactId>hk2</artifactId>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.core</groupId>
+            <groupId>fish.payara.server.core.nucleus</groupId>
             <artifactId>context-propagation</artifactId>
             <version>${project.version}</version>
         </dependency>

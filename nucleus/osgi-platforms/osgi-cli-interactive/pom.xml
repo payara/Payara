@@ -72,7 +72,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>fish.payara.server.internal.admin</groupId>
+            <groupId>fish.payara.server.core.admin</groupId>
             <artifactId>admin-cli</artifactId>
             <version>${project.version}</version>
         </dependency>

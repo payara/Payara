@@ -50,6 +50,7 @@
         <version>6.2023.1-SNAPSHOT</version>
     </parent>
 
+    <groupId>fish.payara.server.core.packager</groupId>
     <artifactId>libpam4j-repackaged</artifactId>
     <name>libpam4j repackaged as a module</name>
     <description>libpam4j (Java binding for libpam.so) repackaged as a module</description>

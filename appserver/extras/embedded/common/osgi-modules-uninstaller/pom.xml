@@ -62,7 +62,7 @@ holder.
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.core</groupId>
+            <groupId>fish.payara.server.core.nucleus</groupId>
             <artifactId>glassfish</artifactId>
             <version>4.1-SNAPSHOT</version>
             <scope>provided</scope>

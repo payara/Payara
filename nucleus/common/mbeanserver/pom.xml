@@ -48,6 +48,8 @@
         <version>6.2023.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
+
+    <groupId>fish.payara.server.core.common</groupId>
     <artifactId>glassfish-mbeanserver</artifactId>
     <packaging>glassfish-jar</packaging>
     
@@ -73,19 +75,19 @@
         </dependency>
 
         <dependency>
-            <groupId>fish.payara.server.internal.common</groupId>
+            <groupId>fish.payara.server.core.common</groupId>
             <artifactId>internal-api</artifactId>
             <version>${project.version}</version>
         </dependency>              
         
         <dependency>
-            <groupId>fish.payara.server.internal.common</groupId>
+            <groupId>fish.payara.server.core.common</groupId>
             <artifactId>glassfish-api</artifactId>
             <version>${project.version}</version>
         </dependency>  
         
         <dependency>
-            <groupId>fish.payara.server.internal.packager</groupId>
+            <groupId>fish.payara.server.core.packager</groupId>
             <artifactId>jmxremote_optional-repackaged</artifactId>
             <version>${project.version}</version>
         </dependency> 

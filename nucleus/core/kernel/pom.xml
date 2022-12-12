@@ -49,6 +49,8 @@
         <artifactId>nucleus-core</artifactId>
         <version>6.2023.1-SNAPSHOT</version>
     </parent>
+
+    <groupId>fish.payara.server.core.nucleus</groupId>
     <artifactId>kernel</artifactId>
     <packaging>glassfish-jar</packaging>
 
@@ -130,17 +132,17 @@
 
     <dependencies>
         <dependency>
-            <groupId>fish.payara.server.internal.common</groupId>
+            <groupId>fish.payara.server.core.common</groupId>
             <artifactId>glassfish-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.common</groupId>
+            <groupId>fish.payara.server.core.common</groupId>
             <artifactId>internal-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.security</groupId>
+            <groupId>fish.payara.server.core.security</groupId>
             <artifactId>security-services</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -150,12 +152,12 @@
 			<version>${project.version}</version>
 		</dependency-->
         <dependency>
-            <groupId>fish.payara.server.internal.admin</groupId>
+            <groupId>fish.payara.server.core.admin</groupId>
             <artifactId>config-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.admin</groupId>
+            <groupId>fish.payara.server.core.admin</groupId>
             <artifactId>admin-util</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -169,17 +171,17 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.grizzly</groupId>
+            <groupId>fish.payara.server.core.grizzly</groupId>
             <artifactId>nucleus-grizzly-all</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.common</groupId>
+            <groupId>fish.payara.server.core.common</groupId>
             <artifactId>common-util</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.deployment</groupId>
+            <groupId>fish.payara.server.core.deployment</groupId>
             <artifactId>deployment-common</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -190,7 +192,7 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.flashlight</groupId>
+            <groupId>fish.payara.server.core.flashlight</groupId>
             <artifactId>flashlight-framework</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -208,23 +210,23 @@
 	    <artifactId>gmbal</artifactId>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.core</groupId>
+            <groupId>fish.payara.server.core.nucleus</groupId>
             <artifactId>glassfish</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.core</groupId>
+            <groupId>fish.payara.server.core.nucleus</groupId>
             <artifactId>logging</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.common</groupId>
+            <groupId>fish.payara.server.core.common</groupId>
             <artifactId>simple-glassfish-api</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
 	<dependency>
-            <groupId>fish.payara.server.internal.core</groupId>
+            <groupId>fish.payara.server.core.nucleus</groupId>
             <artifactId>api-exporter</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -235,12 +237,12 @@
         </dependency>
 
         <dependency>
-            <groupId>fish.payara.server.internal.payara-modules</groupId>
+            <groupId>fish.payara.server.core.payara-modules</groupId>
             <artifactId>requesttracing-core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.payara-modules</groupId>
+            <groupId>fish.payara.server.core.payara-modules</groupId>
             <artifactId>healthcheck-stuck</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -258,7 +260,7 @@
             <artifactId>expressly</artifactId>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.packager</groupId>
+            <groupId>fish.payara.server.core.packager</groupId>
             <artifactId>tiger-types</artifactId>
             <version>${project.version}</version>
         </dependency>

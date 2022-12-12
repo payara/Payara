@@ -51,6 +51,7 @@
         <version>6.2023.1-SNAPSHOT</version>
     </parent>
     
+    <groupId>fish.payara.server.core.security</groupId>
     <artifactId>jaspic.provider.framework</artifactId>
     <packaging>glassfish-jar</packaging>
     
