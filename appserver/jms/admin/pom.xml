@@ -109,7 +109,7 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-    	    <groupId>fish.payara.server.internal.connectors</groupId>
+    	    <groupId>fish.payara.server.core.connectors</groupId>
     	    <artifactId>connectors-internal-api</artifactId>
     	    <version>${project.version}</version>
         </dependency>

@@ -133,7 +133,7 @@
         </dependency>
 
         <dependency>
-            <groupId>fish.payara.server.core.nucleus</groupId>
+            <groupId>fish.payara.server.core.common</groupId>
             <artifactId>amx-javaee</artifactId>
             <version>${project.version}</version>
         </dependency>

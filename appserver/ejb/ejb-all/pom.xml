@@ -71,7 +71,7 @@
             <type>distribution-fragment</type>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>fish.payara.server.core.ejb</groupId>
             <artifactId>ejb-internal-api</artifactId>
             <version>${project.version}</version>
         </dependency>
