@@ -236,11 +236,6 @@ public class CoyoteConnectorLauncher implements ProtocolHandler
     }
 
     @Override
-    public boolean isAprRequired() {
-        return false;
-    }
-
-    @Override
     public boolean isSendfileSupported() {
         return false;
     }

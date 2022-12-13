@@ -487,11 +487,6 @@ public class CatalinaRequest extends org.apache.catalina.connector.Request {
     }
 
     @Override
-    public String getRealPath(String path) {
-        return super.getRealPath(path);
-    }
-
-    @Override
     public String getRemoteAddr() {
         return grizzlyRequest.getRemoteAddr();
     }
@@ -875,11 +870,6 @@ public class CatalinaRequest extends org.apache.catalina.connector.Request {
     @Override
     public boolean isRequestedSessionIdFromURL() {
         return grizzlyRequest.isRequestedSessionIdFromURL();
-    }
-
-    @Override
-    public boolean isRequestedSessionIdFromUrl() {
-        return super.isRequestedSessionIdFromUrl();
     }
 
     @Override
