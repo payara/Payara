@@ -139,7 +139,7 @@
         <servlet-api.version>6.0.0</servlet-api.version>
         <grizzly.version>4.0.0.payara-p1</grizzly.version>
         <jax-rs-api.impl.version>3.1.0</jax-rs-api.impl.version>
-        <jersey.version>3.1.0</jersey.version>
+        <jersey.version>3.1.0-M8</jersey.version>
         <jakarta.validation.version>3.0.1</jakarta.validation.version>
         <hibernate.validator.version>8.0.0.Final</hibernate.validator.version>
         <hibernate.validator-cdi.version>8.0.0.Final</hibernate.validator-cdi.version>
