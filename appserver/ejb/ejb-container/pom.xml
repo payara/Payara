@@ -130,57 +130,57 @@
             <artifactId>hk2-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.security</groupId>
+            <groupId>fish.payara.server.core.security</groupId>
             <artifactId>security-ee</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.core</groupId>
+            <groupId>fish.payara.server.core.nucleus</groupId>
             <artifactId>kernel</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.admin</groupId>
+            <groupId>fish.payara.server.core.admin</groupId>
             <artifactId>monitoring-core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.admin</groupId>
+            <groupId>fish.payara.server.core.admin</groupId>
             <artifactId>config-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.deployment</groupId>
+            <groupId>fish.payara.server.core.deployment</groupId>
             <artifactId>dol</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.common</groupId>
+            <groupId>fish.payara.server.core.common</groupId>
             <artifactId>common-util</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.common</groupId>
+            <groupId>fish.payara.server.core.common</groupId>
             <artifactId>stats77</artifactId>
             <version>${project.version}</version>
        </dependency>
        <dependency>
-            <groupId>fish.payara.server.internal.deployment</groupId>
+            <groupId>fish.payara.server.core.deployment</groupId>
             <artifactId>deployment-common</artifactId>
             <version>${project.version}</version>
         </dependency>
        <dependency>
-            <groupId>fish.payara.server.internal.deployment</groupId>
+            <groupId>fish.payara.server.core.deployment</groupId>
             <artifactId>deployment-javaee-core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.common</groupId>
+            <groupId>fish.payara.server.core.common</groupId>
             <artifactId>container-common</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.common</groupId>
+            <groupId>fish.payara.server.core.common</groupId>
             <artifactId>glassfish-naming</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -190,27 +190,27 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.common</groupId>
+            <groupId>fish.payara.server.core.common</groupId>
             <artifactId>glassfish-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.connectors</groupId>
+            <groupId>fish.payara.server.core.connectors</groupId>
             <artifactId>connectors-internal-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.common</groupId>
+            <groupId>fish.payara.server.core.common</groupId>
             <artifactId>internal-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.transaction</groupId>
+            <groupId>fish.payara.server.core.transaction</groupId>
             <artifactId>transaction-internal-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.ejb</groupId>
+            <groupId>fish.payara.server.core.ejb</groupId>
             <artifactId>ejb-internal-api</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -225,7 +225,7 @@
 	    <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.orb</groupId>
+            <groupId>fish.payara.server.core.orb</groupId>
             <artifactId>orb-connector</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -249,7 +249,7 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.payara-modules</groupId>
+            <groupId>fish.payara.server.core.payara-modules</groupId>
             <artifactId>opentracing-adapter</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>

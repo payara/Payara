@@ -59,7 +59,7 @@ holder.
             <artifactId>microprofile-rest-client-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.web</groupId>
+            <groupId>fish.payara.server.core.web</groupId>
             <artifactId>war-util</artifactId>
             <version>${project.version}</version>
         </dependency>

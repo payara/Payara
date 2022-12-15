@@ -41,7 +41,7 @@
 
 -->
 
-<!-- Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2017-2022] [Payara Foundation and/or its affiliates] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <parent>
@@ -77,17 +77,17 @@
 
   <dependencies>
       <dependency>
-          <groupId>fish.payara.server.internal.common</groupId>
+          <groupId>fish.payara.server.core.common</groupId>
           <artifactId>glassfish-api</artifactId>
           <version>${project.version}</version>
       </dependency>		    
       <dependency>
-          <groupId>fish.payara.server.internal.connectors</groupId>
+          <groupId>fish.payara.server.core.connectors</groupId>
           <artifactId>connectors-internal-api</artifactId>
           <version>${project.version}</version>
       </dependency>
       <dependency>
-          <groupId>fish.payara.server.internal.common</groupId>
+          <groupId>fish.payara.server.core.common</groupId>
           <artifactId>common-util</artifactId>
           <version>${project.version}</version>
       </dependency>
@@ -100,7 +100,7 @@
           <artifactId>gmbal</artifactId>
       </dependency>
       <dependency>
-          <groupId>fish.payara.server.internal.payara-modules</groupId>
+          <groupId>fish.payara.server.core.payara-modules</groupId>
           <artifactId>requesttracing-core</artifactId>
           <version>${project.version}</version>
       </dependency>
