@@ -87,7 +87,7 @@ public class ASJarSigner implements PostConstruct {
     public static final String USER_SPECIFIED_ALIAS_PROPERTYNAME = "com.sun.aas.jws.signing.alias";
 
     /** keystore type for JKS keystores */
-    private static final String JKS_KEYSTORE_TYPE_VALUE = "jks";
+    private static final String    JKS_KEYSTORE_TYPE_VALUE = "jks";
     
     /** default alias for signing if the admin does not specify one */
     private static final String DEFAULT_ALIAS_VALUE = "s1as";
