@@ -49,7 +49,7 @@
     <parent>
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-nucleus-parent</artifactId>
-        <version>6.2022.2-SNAPSHOT</version>
+        <version>6.2023.1-SNAPSHOT</version>
         <relativePath>../nucleus/pom.xml</relativePath>
     </parent>
 
@@ -62,7 +62,7 @@
         <jakarta.faces-spec.version>4.0.0</jakarta.faces-spec.version>
         <jsftemplating.version>3.0.0</jsftemplating.version>
         <jboss.classfilewriter.version>1.2.5.Final</jboss.classfilewriter.version>
-        <apache.bcel.version>6.6.1</apache.bcel.version>
+        <apache.bcel.version>6.7.0</apache.bcel.version>
         <!-- Java EE Security API -->
         <jakarta.security.enterprise-spec.version>1.0</jakarta.security.enterprise-spec.version>
         <jna.version>5.12.1</jna.version>
@@ -77,15 +77,13 @@
         <version_prefix />
         <version_suffix>#badassfish</version_suffix>
         <major_version>6</major_version>
-        <minor_version>2022</minor_version>
-        <update_version>2-SNAPSHOT</update_version>
+        <minor_version>2023</minor_version>
+        <update_version>3-SNAPSHOT</update_version>
         <install.dir.name>payara${major_version}</install.dir.name>
         <uc-pkg-client.version>1.122-57.2889</uc-pkg-client.version>
         <uc-pkg-bootstrap.version>1.122-57.2889</uc-pkg-bootstrap.version>
-        <dbschema.version>3.1.1</dbschema.version>
-        <dbschema.osgi.version>6.0</dbschema.osgi.version>
-        <schema2beans.version>3.1.1</schema2beans.version>
-        <schema2beans.osgi.version>5.5</schema2beans.osgi.version>
+        <dbschema.version>6.7</dbschema.version>
+        <schema2beans.version>6.7</schema2beans.version>
         <!-- Java API for XML Registries Resource Adapter -->
         <jaxr.version>JAXR_RA_20091012</jaxr.version>
         <rest.monitoring.version>1.0.0-Beta</rest.monitoring.version>
@@ -566,12 +564,12 @@
             </dependency>
             <dependency>
                 <groupId>org.glassfish.external</groupId>
-                <artifactId>dbschema-repackaged</artifactId>
+                <artifactId>dbschema</artifactId>
                 <version>${dbschema.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.external</groupId>
-                <artifactId>schema2beans-repackaged</artifactId>
+                <artifactId>schema2beans</artifactId>
                 <version>${schema2beans.version}</version>
             </dependency>
             <dependency>
@@ -594,7 +592,7 @@
             <dependency>
                 <groupId>org.netbeans.external</groupId>
                 <artifactId>ddl</artifactId>
-                <version>RELEASE65</version>
+                <version>RELEASE82</version>
             </dependency>
 
             <dependency>

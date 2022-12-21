@@ -21,6 +21,8 @@ ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini \
 
 RUN true \
     && apt-get update \
+    # OpenSSL contains security vulnerabilities and is unused by Payara. To prevent recurring issues simply remove OpenSSL
+    && apt-get remove -y openssl \
     && apt-get install -y gpg \
     && rm -rf /var/lib/apt/lists/* \
     && mkdir -p ${HOME_DIR} \

@@ -46,7 +46,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>fish.payara.server</groupId>
     <artifactId>payara-aggregator</artifactId>
-    <version>6.2022.2-SNAPSHOT</version>
+    <version>6.2023.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Payara Project</name>
@@ -62,7 +62,7 @@
         <connection>scm:git:git@github.com:payara/payara.git</connection>
         <url>scm:git:git@github.com:payara/payara.git</url>
         <developerConnection>scm:git:git@github.com:payara/payara.git</developerConnection>
-        <tag>payara-server-6.2022.2-SNAPSHOT</tag>
+        <tag>payara-server-6.2023.1-SNAPSHOT</tag>
     </scm>
 
     <issueManagement>
@@ -124,7 +124,7 @@
         <maven.deploy.plugin.version>3.0.0</maven.deploy.plugin.version>
         <maven.source.plugin.version>3.2.1</maven.source.plugin.version>
         <maven.javadoc.plugin.version>3.4.1</maven.javadoc.plugin.version>
-        <maven.install.plugin.version>3.0.1</maven.install.plugin.version>
+        <maven.install.plugin.version>3.1.0</maven.install.plugin.version>
         <maven.bundle.plugin.version>4.1.0</maven.bundle.plugin.version>
         <maven.failsafe.plugin.version>3.0.0-M5</maven.failsafe.plugin.version>
         <maven.site.plugin.version>3.12.1</maven.site.plugin.version>
@@ -139,7 +139,7 @@
         <servlet-api.version>6.0.0</servlet-api.version>
         <grizzly.version>4.0.0.payara-p1</grizzly.version>
         <jax-rs-api.impl.version>3.1.0</jax-rs-api.impl.version>
-        <jersey.version>3.1.0-M8</jersey.version>
+        <jersey.version>3.1.0-M8.payara-p1</jersey.version>
         <jakarta.validation.version>3.0.1</jakarta.validation.version>
         <hibernate.validator.version>8.0.0.Final</hibernate.validator.version>
         <hibernate.validator-cdi.version>8.0.0.Final</hibernate.validator-cdi.version>
@@ -152,7 +152,7 @@
         <hk2.version>3.0.1.payara-p1</hk2.version>
         <osgi-resource-locator.version>1.0.3</osgi-resource-locator.version>
         <stax-api.version>1.0-2</stax-api.version>
-        <jackson.version>2.13.4</jackson.version>
+        <jackson.version>2.14.1</jackson.version>
         <snakeyaml.version>1.33</snakeyaml.version>
         <hazelcast.version>5.1.1</hazelcast.version>
         <jaxb-api.version>4.0.0</jaxb-api.version>
@@ -178,7 +178,7 @@
         <weld.version>5.0.1.Final</weld.version>
         <weld-api.version>5.0.SP2</weld-api.version>
         <jakarta.security.enterprise-api.version>3.0.0</jakarta.security.enterprise-api.version>
-        <jakarta.security.enterprise.version>3.0.0</jakarta.security.enterprise.version>
+        <jakarta.security.enterprise.version>3.0.1.payara-p1</jakarta.security.enterprise.version>
         <jakarta.security.jacc-api.version>2.1.0</jakarta.security.jacc-api.version>
         <jakarta.security.auth.message-api.version>3.0.0</jakarta.security.auth.message-api.version>
         <exousia.version>2.1.0</exousia.version>
@@ -191,7 +191,7 @@
         <jakarta.jws-api.version>3.0.0</jakarta.jws-api.version>
         <webservices.version>4.0.1</webservices.version>
         <org.apache.santuario.version>3.0.0</org.apache.santuario.version>
-        <woodstox.version>6.2.7</woodstox.version>
+        <woodstox.version>6.4.0</woodstox.version>
         <woodstock-jsf.version>5.0.0</woodstock-jsf.version>
         <woodstock-jsf-suntheme.version>5.0.0.payara-p1</woodstock-jsf-suntheme.version>
         <stax2-api.version>4.2.1</stax2-api.version>
