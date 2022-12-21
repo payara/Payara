@@ -9,9 +9,11 @@ MPLPostStep('failure') {
     archiveArtifacts artifacts: "${CFG.suite.suite_name}-Logs/**/*.*"
 }
 
-// Perform suite specific test execution
-if(CFG.suite.suite_name.equals("Payara-Samples")) {
-    MPLModule('Payara Samples Test', CFG)
-} else {
-    MPLModule('Quicklook Test', CFG)
+withEnv("JAVA_HOME=${tool CFG.jdk}") {
+    // Perform suite specific test execution
+    if(CFG.suite.suite_name.equals("Payara-Samples")) {
+        MPLModule('Payara Samples Test', CFG)
+    } else {
+        MPLModule('Quicklook Test', CFG)
+    }
 }

@@ -1,2 +1,5 @@
 echo 'Installing Payara for Internals'
-sh 'mvn install -DskipTests'
+
+withMaven(jdk: CFG.jdk, publisherStrategy: 'EXPLICIT') {
+    sh 'mvn install -DskipTests'
+}
