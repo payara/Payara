@@ -45,13 +45,13 @@ pipeline {
                 }
             }
         }
-//        stage('Quality Gate') {
-//            steps {
-//                timeout(time: 1, unit: 'HOURS') {
-//                    waitForQualityGate abortPipeline: true, credentialsId: 'sonarqube-user-token'
-//                }
-//            }
-//        }
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 1, unit: 'HOURS') {
+                    waitForQualityGate abortPipeline: true, credentialsId: 'sonarqube-user-token'
+                }
+            }
+        }
         stage('Setup for Quicklook Tests') {
             steps {
                 setupDomain()
