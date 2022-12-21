@@ -1,4 +1,4 @@
-withEnv("JAVA_HOME=${tool CFG.jdk}") {
+withEnv(["JAVA_HOME=${tool CFG.jdk}"]) {
     // Perform the base behaviour
     MPLModule('Test Setup', CFG);
 

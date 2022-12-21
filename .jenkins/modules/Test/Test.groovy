@@ -9,7 +9,7 @@ MPLPostStep('failure') {
     archiveArtifacts artifacts: "${CFG.suite.suite_name}-Logs/**/*.*"
 }
 
-withEnv("JAVA_HOME=${tool CFG.jdk}") {
+withEnv(["JAVA_HOME=${tool CFG.jdk}"]) {
     // Perform suite specific test execution
     if(CFG.suite.suite_name.equals("Payara-Samples")) {
         MPLModule('Payara Samples Test', CFG)
