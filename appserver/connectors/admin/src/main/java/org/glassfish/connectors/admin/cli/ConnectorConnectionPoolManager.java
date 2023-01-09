@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright (c) 2022 Payara Foundation and/or affiliates
 
 package org.glassfish.connectors.admin.cli;
 
@@ -47,6 +48,7 @@ import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.I18n;
 import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.config.support.TranslatedConfigView;
 import org.glassfish.connectors.config.ConnectorConnectionPool;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.resources.admin.cli.ResourceManager;
@@ -273,6 +275,9 @@ public class ConnectorConnectionPoolManager implements ResourceManager {
     }
 
     public void setParams(HashMap attrList) {
+        //Perform variable replacement for all properties before they are set
+        attrList.forEach((key, value) -> attrList.put(key, TranslatedConfigView.expandConfigValue((String) value)));
+
         raname = (String) attrList.get(RES_ADAPTER_NAME);
         connectiondefinition = (String) attrList.get(CONN_DEF_NAME);
         steadypoolsize = (String) attrList.get(STEADY_POOL_SIZE);
