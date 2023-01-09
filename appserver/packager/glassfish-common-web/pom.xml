@@ -178,7 +178,7 @@
         <!-- schema2beans - both CMP and LB admin now depend on it -->
         <dependency>
             <groupId>org.glassfish.external</groupId>
-            <artifactId>schema2beans-repackaged</artifactId>
+            <artifactId>schema2beans</artifactId>
         </dependency>          
         <dependency>
             <groupId>fish.payara.server.internal.extras</groupId>

@@ -40,6 +40,7 @@
     holder.
 
 -->
+<!-- Portions Copyright 2022 Payara Foundation and/or its affiliates -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
@@ -85,31 +86,31 @@
         </dependency>
 
         <dependency>
-            <groupId>fish.payara.server.internal.deployment</groupId>
+            <groupId>fish.payara.server.core.deployment</groupId>
             <artifactId>dol</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>fish.payara.server.internal.admin</groupId>
+            <groupId>fish.payara.server.core.admin</groupId>
             <artifactId>config-api</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>fish.payara.server.internal.resources</groupId>
+            <groupId>fish.payara.server.core.resources</groupId>
             <artifactId>resources-connector</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>fish.payara.server.internal.common</groupId>
+            <groupId>fish.payara.server.core.common</groupId>
             <artifactId>glassfish-api</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>fish.payara.server.internal.deployment</groupId>
+            <groupId>fish.payara.server.core.deployment</groupId>
             <artifactId>deployment-javaee-core</artifactId>
             <version>${project.version}</version>
         </dependency>

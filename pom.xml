@@ -124,7 +124,7 @@
         <maven.deploy.plugin.version>3.0.0</maven.deploy.plugin.version>
         <maven.source.plugin.version>3.2.1</maven.source.plugin.version>
         <maven.javadoc.plugin.version>3.4.1</maven.javadoc.plugin.version>
-        <maven.install.plugin.version>3.0.1</maven.install.plugin.version>
+        <maven.install.plugin.version>3.1.0</maven.install.plugin.version>
         <maven.bundle.plugin.version>4.1.0</maven.bundle.plugin.version>
         <maven.failsafe.plugin.version>3.0.0-M5</maven.failsafe.plugin.version>
         <maven.site.plugin.version>3.12.1</maven.site.plugin.version>
@@ -139,7 +139,7 @@
         <servlet-api.version>6.0.0</servlet-api.version>
         <grizzly.version>4.0.0.payara-p1</grizzly.version>
         <jax-rs-api.impl.version>3.1.0</jax-rs-api.impl.version>
-        <jersey.version>3.1.0-M8</jersey.version>
+        <jersey.version>3.1.0-M8.payara-p1</jersey.version>
         <jakarta.validation.version>3.0.1</jakarta.validation.version>
         <hibernate.validator.version>8.0.0.Final</hibernate.validator.version>
         <hibernate.validator-cdi.version>8.0.0.Final</hibernate.validator-cdi.version>
@@ -152,7 +152,7 @@
         <hk2.version>3.0.1.payara-p1</hk2.version>
         <osgi-resource-locator.version>1.0.3</osgi-resource-locator.version>
         <stax-api.version>1.0-2</stax-api.version>
-        <jackson.version>2.13.4</jackson.version>
+        <jackson.version>2.14.1</jackson.version>
         <snakeyaml.version>1.33</snakeyaml.version>
         <hazelcast.version>5.1.1</hazelcast.version>
         <jaxb-api.version>4.0.0</jaxb-api.version>
@@ -163,7 +163,7 @@
         <jstl-api.version>3.0.0</jstl-api.version>
         <jstl-impl.version>3.0.0</jstl-impl.version>
         <jakarta.faces-api.version>4.0.1</jakarta.faces-api.version>
-        <mojarra.version>4.0.0.payara-p1</mojarra.version>
+        <mojarra.version>4.0.0.payara-p2</mojarra.version>
         <tyrus.version>2.1.0.payara-p1</tyrus.version>
         <jaxb-extra-osgi.version>2.3.0</jaxb-extra-osgi.version>
         <json.bind-api.version>3.0.0</json.bind-api.version>
@@ -178,7 +178,7 @@
         <weld.version>5.0.1.Final</weld.version>
         <weld-api.version>5.0.SP2</weld-api.version>
         <jakarta.security.enterprise-api.version>3.0.0</jakarta.security.enterprise-api.version>
-        <jakarta.security.enterprise.version>3.0.0</jakarta.security.enterprise.version>
+        <jakarta.security.enterprise.version>3.0.1.payara-p1</jakarta.security.enterprise.version>
         <jakarta.security.jacc-api.version>2.1.0</jakarta.security.jacc-api.version>
         <jakarta.security.auth.message-api.version>3.0.0</jakarta.security.auth.message-api.version>
         <exousia.version>2.1.0</exousia.version>

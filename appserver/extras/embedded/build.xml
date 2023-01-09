@@ -126,7 +126,7 @@
         <defaultexcludes add="META-INF/**.inf"/>
         <defaultexcludes add="META-INF/**.SF"/>
 
-        <rejar destfile="${finaljar}" duplicate="preserve" zip64Mode="always">
+        <rejar destfile="${finaljar}" duplicate="preserve" zip64Mode="as-needed">
             <manifest>
                 <attribute name="Bundle-SymbolicName" value="${bundlename}"/>
                 <attribute name="Main-Class" value="com.sun.enterprise.glassfish.bootstrap.UberMain"/>
