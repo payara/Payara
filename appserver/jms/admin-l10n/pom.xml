@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server.internal.jms</groupId>
         <artifactId>jms</artifactId>
-        <version>6.2023.1</version>
+        <version>6.2023.2-SNAPSHOT</version>
     </parent>
     <artifactId>jms-admin-l10n</artifactId>
     
