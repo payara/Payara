@@ -39,7 +39,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright 2017-2022 Payara Foundation and/or affiliates
+    Portions Copyright 2017-2023 Payara Foundation and/or affiliates
 -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
@@ -210,7 +210,7 @@
         <microprofile-release.version>5.0</microprofile-release.version>
         <microprofile-opentracing.version>3.0</microprofile-opentracing.version>
         <microprofile-config.version>3.0</microprofile-config.version>
-        <microprofile-fault-tolerance.version>4.0.payara-p1</microprofile-fault-tolerance.version>
+        <microprofile-fault-tolerance.version>4.0.2.payara-p1</microprofile-fault-tolerance.version>
         <microprofile-jwt-auth.version>2.0</microprofile-jwt-auth.version>
         <microprofile-healthcheck.version>4.0</microprofile-healthcheck.version>
         <microprofile-metrics.version>4.0</microprofile-metrics.version>
