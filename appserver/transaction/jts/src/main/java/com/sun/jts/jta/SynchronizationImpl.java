@@ -41,7 +41,7 @@
 package com.sun.jts.jta;
 
 import java.util.*;
-import javax.transaction.Synchronization;
+import jakarta.transaction.Synchronization;
 
 import org.omg.CORBA.*;
 import org.omg.CosTransactions.*;

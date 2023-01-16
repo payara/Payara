@@ -45,7 +45,7 @@ import com.sun.appserv.web.cache.mapping.CacheMapping;
 import org.apache.catalina.LifecycleException;
 import org.glassfish.web.LogFacade;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 import java.lang.String;
 import java.text.MessageFormat;
 import java.util.*;

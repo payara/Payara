@@ -56,7 +56,7 @@ import java.util.Properties;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 /**
  * @author Jagadish Ramu

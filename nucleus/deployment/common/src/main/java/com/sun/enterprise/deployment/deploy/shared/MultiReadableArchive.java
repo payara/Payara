@@ -54,7 +54,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.jar.Manifest;
 import org.glassfish.api.deployment.archive.ReadableArchive;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;

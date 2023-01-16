@@ -105,21 +105,21 @@ import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.ejb.*;
-import javax.enterprise.inject.Vetoed;
-import javax.interceptor.AroundConstruct;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
+import jakarta.ejb.*;
+import jakarta.enterprise.inject.Vetoed;
+import jakarta.interceptor.AroundConstruct;
 import javax.naming.NamingException;
 import javax.naming.Reference;
 import javax.naming.StringRefAddr;
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.transaction.RollbackException;
-import javax.transaction.Status;
-import javax.transaction.SystemException;
-import javax.transaction.Transaction;
-import javax.transaction.UserTransaction;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.transaction.RollbackException;
+import jakarta.transaction.Status;
+import jakarta.transaction.SystemException;
+import jakarta.transaction.Transaction;
+import jakarta.transaction.UserTransaction;
 
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.opentracing.OpenTracingService;
@@ -2276,7 +2276,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
     private void processEjbTimeoutMethod(Method method) throws Exception {
         Class[] params = method.getParameterTypes();
         if ( (params.length == 0 ||
-            (params.length == 1 && params[0] == javax.ejb.Timer.class)) &&
+            (params.length == 1 && params[0] == jakarta.ejb.Timer.class)) &&
             (method.getReturnType() == Void.TYPE) ) {
 
             isTimedObject_ = true;
@@ -2303,7 +2303,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
         } else {
             throw new EJBException(localStrings.getLocalString(
                 "ejb.invalid_timeout_method",
-                "Invalid @Timeout or @Schedule signature for: {0} @Timeout or @Schedule method must return void and be a no-arg method or take a single javax.ejb.Timer param",
+                "Invalid @Timeout or @Schedule signature for: {0} @Timeout or @Schedule method must return void and be a no-arg method or take a single jakarta.ejb.Timer param",
                 method));
         }
     }
@@ -2445,13 +2445,13 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
 
     /**
      * Create an array of all methods in the standard EJB interfaces:
-     * javax.ejb.EJB(Local){Home|Object} .
+     * jakarta.ejb.EJB(Local){Home|Object} .
      */
     private void initializeEjbInterfaceMethods() throws Exception {
         ejbIntfMethods = new Method[EJB_INTF_METHODS_LENGTH];
 
         if ( isRemote ) {
-            ejbIntfMethods[EJBHome_remove_Handle] = EJBHome.class.getMethod("remove", javax.ejb.Handle.class);
+            ejbIntfMethods[EJBHome_remove_Handle] = EJBHome.class.getMethod("remove", jakarta.ejb.Handle.class);
             ejbIntfMethods[EJBHome_remove_Pkey] = EJBHome.class.getMethod("remove", java.lang.Object.class);
             ejbIntfMethods[EJBHome_getEJBMetaData] = EJBHome.class.getMethod("getEJBMetaData", NO_PARAMS);
             ejbIntfMethods[EJBHome_getHomeHandle] = EJBHome.class.getMethod("getHomeHandle", NO_PARAMS);
@@ -2460,7 +2460,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
             ejbIntfMethods[EJBObject_getPrimaryKey] = EJBObject.class.getMethod("getPrimaryKey", NO_PARAMS);
             ejbIntfMethods[EJBObject_remove] = EJBObject.class.getMethod("remove", NO_PARAMS);
             ejbIntfMethods[EJBObject_getHandle] = EJBObject.class.getMethod("getHandle", NO_PARAMS);
-            ejbIntfMethods[EJBObject_isIdentical] = EJBObject.class.getMethod("isIdentical", javax.ejb.EJBObject.class);
+            ejbIntfMethods[EJBObject_isIdentical] = EJBObject.class.getMethod("isIdentical", jakarta.ejb.EJBObject.class);
 
             if (isStatelessSession) {
                 if (hasRemoteHomeView) {
@@ -2477,7 +2477,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
             ejbIntfMethods[EJBLocalObject_getPrimaryKey] = EJBLocalObject.class.getMethod("getPrimaryKey", NO_PARAMS);
             ejbIntfMethods[EJBLocalObject_remove] = EJBLocalObject.class.getMethod("remove", NO_PARAMS);
             ejbIntfMethods[EJBLocalObject_isIdentical] = //
-                EJBLocalObject.class.getMethod("isIdentical", javax.ejb.EJBLocalObject.class);
+                EJBLocalObject.class.getMethod("isIdentical", jakarta.ejb.EJBLocalObject.class);
 
             if (isStatelessSession) {
                 if (hasLocalHomeView) {
@@ -2870,7 +2870,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
 
         // All methods on the Home/LocalHome & super-interfaces
         // are not business methods.
-        // All methods on javax.ejb.EJBObject and EJBLocalObject
+        // All methods on jakarta.ejb.EJBObject and EJBLocalObject
         // (e.g. remove) are not business methods.
         // All remaining methods are business methods
 
@@ -3228,7 +3228,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
 
     private void setHomeTargetMethodInfo(InvocationInfo invInfo, boolean isLocal) throws EJBException {
 
-        Class homeIntfClazz = isLocal ? javax.ejb.EJBLocalHome.class : javax.ejb.EJBHome.class;
+        Class homeIntfClazz = isLocal ? jakarta.ejb.EJBLocalHome.class : jakarta.ejb.EJBHome.class;
 
         Class methodClass  = invInfo.method.getDeclaringClass();
         Class[] paramTypes = invInfo.method.getParameterTypes();
@@ -3312,7 +3312,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
     private void setEJBObjectTargetMethodInfo(InvocationInfo invInfo, boolean isLocal, Class originalIntf)
         throws EJBException {
 
-        Class ejbIntfClazz = isLocal ? javax.ejb.EJBLocalObject.class : javax.ejb.EJBObject.class;
+        Class ejbIntfClazz = isLocal ? jakarta.ejb.EJBLocalObject.class : jakarta.ejb.EJBObject.class;
 
         Class[] paramTypes = invInfo.method.getParameterTypes();
         String methodName  = invInfo.method.getName();
@@ -3492,7 +3492,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                 // container remove operations will work. (needed for internal 299 contract)
                 addInvocationInfo( //
                     this.ejbIntfMethods[EJBLocalObject_remove], MethodDescriptor.EJB_LOCAL,
-                    javax.ejb.EJBLocalObject.class);
+                    jakarta.ejb.EJBLocalObject.class);
             }
         }
     }
@@ -3605,7 +3605,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
             handler.setProxy(ejbHomeProxy);
         } catch (ClassCastException e) {
             String msg = localStrings.getLocalString("ejb.basecontainer_invalid_home_interface",
-                    "Home interface [{0}] is invalid since it does not extend javax.ejb.EJBHome.", homeIntf);
+                    "Home interface [{0}] is invalid since it does not extend jakarta.ejb.EJBHome.", homeIntf);
             throw new IllegalArgumentException(msg, e);
         }
 
@@ -3672,7 +3672,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
             invHandler.setProxy(proxy);
         } catch (ClassCastException e) {
             String msg = localStrings.getLocalString("ejb.basecontainer_invalid_local_home_interface",
-                    "Local home interface [{0}] is invalid since it does not extend javax.ejb.EJBLocalHome.", localHomeIntf);
+                    "Local home interface [{0}] is invalid since it does not extend jakarta.ejb.EJBLocalHome.", localHomeIntf);
             throw new IllegalArgumentException(msg, e);
         }
 
@@ -3737,7 +3737,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
             handler.setProxy(localObjectProxy);
         } catch (ClassCastException e) {
             String msg = localStrings.getLocalString("ejb.basecontainer_invalid_local_interface",
-                    "Local component interface [{0}] is invalid since it does not extend javax.ejb.EJBLocalObject.", localIntf);
+                    "Local component interface [{0}] is invalid since it does not extend jakarta.ejb.EJBLocalObject.", localIntf);
             throw new IllegalArgumentException(msg, e);
         }
 
@@ -3828,7 +3828,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
             handler.setEJBObject(ejbObjectProxy);
         } catch (ClassCastException e) {
             String msg = localStrings.getLocalString("ejb.basecontainer_invalid_remote_interface",
-                "Remote component interface [{0}] is invalid since it does not extend javax.ejb.EJBObject.", remoteIntf);
+                "Remote component interface [{0}] is invalid since it does not extend jakarta.ejb.EJBObject.", remoteIntf);
             throw new IllegalArgumentException(msg, e);
         }
 
@@ -4099,7 +4099,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
     protected void prepareEjbTimeoutParams(EjbInvocation inv, RuntimeTimerState timerState,
                            EJBTimerService timerService) {
         // Create a TimerWrapper for AroundTimeout and as a method argument.
-        javax.ejb.Timer timer  = new TimerWrapper(timerState.getTimerId(),
+        jakarta.ejb.Timer timer  = new TimerWrapper(timerState.getTimerId(),
                                             timerService);
         inv.timer = timer;
 

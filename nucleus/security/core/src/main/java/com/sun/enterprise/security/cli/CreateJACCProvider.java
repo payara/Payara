@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  * 
- * Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+ * Portions Copyright [2018-2022] [Payara Foundation and/or its affiliates]
  */
 
 package com.sun.enterprise.security.cli;
@@ -60,8 +60,8 @@ import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import org.glassfish.api.admin.AccessRequired;
 import org.glassfish.api.admin.AdminCommandSecurity;
 
@@ -84,8 +84,7 @@ import org.jvnet.hk2.config.types.Property;
  *
  *
  * domain.xml element example
- *   <jacc-provider policy-provider="com.sun.enterprise.security.provider.PolicyWrapper" name="default" policy-configuration-factory-provider="com.sun.enterprise.security.provider.PolicyConfigurationFactoryImpl">
- *         <property name="repository" value="${com.sun.aas.instanceRoot}/generated/policy" />
+ *   <jacc-provider policy-provider="fish.payara.security.jacc.provider.PolicyProviderImpl" name="default" policy-configuration-factory-provider="fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl">
  *   </jacc-provider>
  *
  */

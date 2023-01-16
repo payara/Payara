@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 package com.sun.gjc.spi;
 
 import com.sun.enterprise.util.i18n.StringManager;
@@ -48,12 +48,12 @@ import com.sun.logging.LogDomains;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.resource.ResourceException;
-import javax.resource.spi.ConfigProperty;
-import javax.resource.spi.ConnectionDefinition;
-import javax.resource.spi.ConnectionRequestInfo;
-import javax.resource.spi.ResourceAllocationException;
-import javax.resource.spi.security.PasswordCredential;
+import jakarta.resource.ResourceException;
+import jakarta.resource.spi.ConfigProperty;
+import jakarta.resource.spi.ConnectionDefinition;
+import jakarta.resource.spi.ConnectionRequestInfo;
+import jakarta.resource.spi.ResourceAllocationException;
+import jakarta.resource.spi.security.PasswordCredential;
 
 import static com.sun.gjc.util.SecurityUtils.getPasswordCredential;
 
@@ -97,7 +97,7 @@ public class XAManagedConnectionFactory extends ManagedConnectionFactoryImpl {
      *                                     physical connection
      */
     @Override
-    public javax.resource.spi.ManagedConnection createManagedConnection(javax.security.auth.Subject subject,
+    public jakarta.resource.spi.ManagedConnection createManagedConnection(javax.security.auth.Subject subject,
                                                                         ConnectionRequestInfo cxRequestInfo) throws ResourceException {
         logFine("In createManagedConnection");
         PasswordCredential passwordCredential = getPasswordCredential(this, subject, cxRequestInfo);

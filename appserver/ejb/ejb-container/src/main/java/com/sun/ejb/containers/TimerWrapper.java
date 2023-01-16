@@ -37,19 +37,19 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.containers;
 
 import java.util.Date;
 import java.io.Serializable;
-import javax.ejb.NoSuchObjectLocalException;
-import javax.ejb.NoMoreTimeoutsException;
-import javax.ejb.EJBException;
-import javax.ejb.Timer;
-import javax.ejb.TimerHandle;
-import javax.ejb.ScheduleExpression;
-import javax.ejb.FinderException;
+import jakarta.ejb.NoSuchObjectLocalException;
+import jakarta.ejb.NoMoreTimeoutsException;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.Timer;
+import jakarta.ejb.TimerHandle;
+import jakarta.ejb.ScheduleExpression;
+import jakarta.ejb.FinderException;
 import com.sun.enterprise.container.common.spi.util.IndirectlySerializable;
 import com.sun.enterprise.container.common.spi.util.SerializableObjectFactory;
 import org.glassfish.api.invocation.ComponentInvocation;
@@ -76,7 +76,7 @@ public class TimerWrapper
     }
 
     /*
-     * Implementations of javax.ejb.Timer methods
+     * Implementations of jakarta.ejb.Timer methods
      */
     @Override
     public void cancel() 
@@ -183,7 +183,7 @@ public class TimerWrapper
 
     @Override
     public boolean isCalendarTimer() throws java.lang.IllegalStateException,
-            javax.ejb.NoSuchObjectLocalException, javax.ejb.EJBException {
+            jakarta.ejb.NoSuchObjectLocalException, jakarta.ejb.EJBException {
 
         checkCallPermission();
 
@@ -197,7 +197,7 @@ public class TimerWrapper
 
     @Override
     public boolean isPersistent() throws java.lang.IllegalStateException, 
-            javax.ejb.NoSuchObjectLocalException, javax.ejb.EJBException {
+            jakarta.ejb.NoSuchObjectLocalException, jakarta.ejb.EJBException {
 
         checkCallPermission();
         try {

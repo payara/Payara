@@ -54,7 +54,7 @@ import org.glassfish.api.admin.config.PropertiesDesc;
 
 import org.glassfish.quality.ToDo;
 
-import javax.validation.constraints.Min;
+import jakarta.validation.constraints.Min;
 
 /**
  *

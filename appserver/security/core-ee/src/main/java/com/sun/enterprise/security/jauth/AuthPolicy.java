@@ -37,14 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2021] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.security.jauth;
 
-import javax.security.auth.message.MessagePolicy;
+import jakarta.security.auth.message.MessagePolicy;
 
-import static javax.security.auth.message.MessagePolicy.ProtectionPolicy;
-import static javax.security.auth.message.MessagePolicy.TargetPolicy;
+import static jakarta.security.auth.message.MessagePolicy.ProtectionPolicy;
+import static jakarta.security.auth.message.MessagePolicy.TargetPolicy;
 
 /*
  * This class is used to define the message authentication policy that informs
@@ -65,7 +65,7 @@ import static javax.security.auth.message.MessagePolicy.TargetPolicy;
  * @see ClientAuthModule
  * @see ServerAuthModule
  */
-//Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+//Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 public class AuthPolicy {
 
     public static final int SOURCE_AUTH_NONE = 0;

@@ -42,25 +42,23 @@
 
 package fish.payara.microprofile.jwtauth.cdi;
 
+import fish.payara.microprofile.jwtauth.eesecurity.JWTAuthenticationMechanism;
+import fish.payara.microprofile.jwtauth.jwt.JsonWebTokenImpl;
+import jakarta.enterprise.context.RequestScoped;
+import jakarta.enterprise.inject.Produces;
+import jakarta.enterprise.inject.Typed;
+import jakarta.json.JsonValue;
+import jakarta.security.enterprise.SecurityContext;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.NotAuthorizedException;
+import org.eclipse.microprofile.jwt.Claims;
+import org.eclipse.microprofile.jwt.JsonWebToken;
+
 import java.security.Principal;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-
-import javax.enterprise.context.RequestScoped;
-import javax.enterprise.inject.Produces;
-import javax.enterprise.inject.Typed;
-import javax.json.JsonValue;
-import javax.security.enterprise.SecurityContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.NotAuthorizedException;
-
-import fish.payara.microprofile.jwtauth.eesecurity.JWTAuthenticationMechanism;
-import fish.payara.microprofile.jwtauth.jwt.JsonWebTokenImpl;
-import org.eclipse.microprofile.jwt.Claims;
-import org.eclipse.microprofile.jwt.JsonWebToken;
 
 @RequestScoped
 class JsonWebTokenProducer {

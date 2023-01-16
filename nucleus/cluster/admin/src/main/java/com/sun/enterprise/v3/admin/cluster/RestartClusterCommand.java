@@ -46,6 +46,7 @@ package com.sun.enterprise.v3.admin.cluster;
 import com.sun.enterprise.admin.util.TimeoutParamDefaultCalculator;
 import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Domain;
+import jakarta.inject.Inject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.api.Param;
@@ -53,21 +54,20 @@ import org.glassfish.api.admin.*;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Inject;
 import java.util.logging.Logger;
 
 @Service(name = "restart-cluster")
-@ExecuteOn(value={RuntimeType.DAS})
+@ExecuteOn(value = {RuntimeType.DAS})
 @CommandLock(CommandLock.LockType.NONE) // don't prevent _synchronize-files
 @PerLookup
 @RestEndpoints({
-    @RestEndpoint(configBean=Cluster.class,
-        opType=RestEndpoint.OpType.POST, 
-        path="restart-cluster", 
-        description="Restart Cluster",
-        params={
-            @RestParam(name="id", value="$parent")
-        })
+        @RestEndpoint(configBean = Cluster.class,
+                opType = RestEndpoint.OpType.POST,
+                path = "restart-cluster",
+                description = "Restart Cluster",
+                params = {
+                        @RestParam(name = "id", value = "$parent")
+                })
 })
 @Progress
 public class RestartClusterCommand implements AdminCommand {
@@ -144,8 +144,7 @@ public class RestartClusterCommand implements AdminCommand {
             clusterHelper.setAdminTimeout(timeout * 1000);
             clusterHelper.runCommand(commandName, pm, clusterName, context,
                     verbose, rolling);
-        }
-        catch (CommandException e) {
+        } catch (CommandException e) {
             String msg = e.getLocalizedMessage();
             logger.warning(msg);
             report.setActionExitCode(ExitCode.FAILURE);

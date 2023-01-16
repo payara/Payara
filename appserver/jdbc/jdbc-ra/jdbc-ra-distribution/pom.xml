@@ -45,7 +45,7 @@
   <parent>
     <groupId>fish.payara.server.internal.jdbc.jdbc-ra</groupId>
     <artifactId>jdbc-ra</artifactId>
-    <version>5.2023.1-SNAPSHOT</version>
+    <version>6.2023.2-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>fish.payara.server.internal.jdbc.jdbc-ra.jdbc-ra-distribution</groupId>
@@ -63,14 +63,12 @@
             <phase>generate-sources</phase>
             <configuration>
 	      <tasks>
-                <!-- Resolving jdbc-core, jdbc30 and jdbc40 artifacts -->			
+                <!-- Resolving jdbc-core and jdbc40 artifacts -->
                 <resolveArtifact artifactId="jdbc-core" groupId="fish.payara.server.internal.jdbc.jdbc-ra.jdbc-core" property="core.jar" />
-                <resolveArtifact artifactId="jdbc30" groupId="fish.payara.server.internal.jdbc.jdbc-ra.jdbc30" property="30.jar" />
                 <resolveArtifact artifactId="jdbc40" groupId="fish.payara.server.internal.jdbc.jdbc-ra.jdbc40" property="40.jar" />
 		<resolveArtifact artifactId="templates" groupId="fish.payara.server.internal.jdbc" property="templates.jar" />
 
 	        <unjar src="${core.jar}" dest="target/classes" />
-	        <unjar src="${30.jar}" dest="target/classes" />
 	        <unjar src="${40.jar}" dest="target/classes" />
 		<unjar src="${templates.jar}" dest="target/classes/templates" />
 
@@ -104,13 +102,6 @@
     <dependency>
       <groupId>fish.payara.server.internal.jdbc.jdbc-ra.jdbc40</groupId>
       <artifactId>jdbc40</artifactId>
-      <version>${project.parent.version}</version>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>fish.payara.server.internal.jdbc.jdbc-ra.jdbc30</groupId>
-      <artifactId>jdbc30</artifactId>
       <version>${project.parent.version}</version>
       <scope>provided</scope>
     </dependency>

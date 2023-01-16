@@ -59,9 +59,9 @@
 package org.apache.catalina;
 
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletInputStream;
-import javax.servlet.ServletRequest;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletInputStream;
+import jakarta.servlet.ServletRequest;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;

@@ -49,8 +49,8 @@ import org.glassfish.connectors.config.ResourceAdapterConfig;
 import org.glassfish.resourcebase.resources.api.PoolInfo;
 import org.glassfish.resourcebase.resources.api.ResourceInfo;
 
-import javax.resource.spi.ManagedConnectionFactory;
-import javax.validation.Validator;
+import jakarta.resource.spi.ManagedConnectionFactory;
+import jakarta.validation.Validator;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;

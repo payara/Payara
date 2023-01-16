@@ -55,10 +55,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2018-2021] [Payara Foundation and/or affiliates]
+// Portions Copyright [2018-2022] [Payara Foundation and/or affiliates]
 
 package org.glassfish.grizzly.config.ssl;
 
+import org.glassfish.grizzly.http.util.StringManager;
+
+import javax.net.ssl.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -66,32 +69,10 @@ import java.io.InputStream;
 import java.net.ServerSocket;
 import java.security.KeyStore;
 import java.security.SecureRandom;
-import java.security.cert.CRL;
-import java.security.cert.CRLException;
-import java.security.cert.CertPathParameters;
-import java.security.cert.CertStore;
-import java.security.cert.CertStoreParameters;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
-import java.security.cert.CollectionCertStoreParameters;
-import java.security.cert.PKIXBuilderParameters;
-import java.security.cert.X509CertSelector;
+import java.security.cert.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import javax.net.ssl.CertPathTrustManagerParameters;
-import javax.net.ssl.KeyManager;
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.ManagerFactoryParameters;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLException;
-import javax.net.ssl.SSLServerSocket;
-import javax.net.ssl.SSLSessionContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
-import javax.net.ssl.X509KeyManager;
-
-import org.glassfish.grizzly.http.util.StringManager;
 
 /**
  * SSL server socket factory. It _requires_ a valid RSA key and JSSE.
@@ -350,11 +331,6 @@ public class JSSE14SocketFactory extends JSSESocketFactory {
 
     private void configureSSLSessionContext(SSLSessionContext sslSessionCtxt) {
         String attrValue = (String) attributes.get("tlsSessionTimeout");
-        if (attrValue != null) {
-            sslSessionCtxt.setSessionTimeout(
-                Integer.parseInt(attrValue));
-        }
-        attrValue = (String) attributes.get("ssl3SessionTimeout");
         if (attrValue != null) {
             sslSessionCtxt.setSessionTimeout(
                 Integer.parseInt(attrValue));

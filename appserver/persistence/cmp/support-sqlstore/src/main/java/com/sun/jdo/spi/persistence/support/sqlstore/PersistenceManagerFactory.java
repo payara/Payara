@@ -54,9 +54,9 @@ import java.sql.*;
 public interface PersistenceManagerFactory
 	extends com.sun.jdo.api.persistence.support.PersistenceManagerFactory
 {
-	void registerPersistenceManager (PersistenceManager pm, javax.transaction.Transaction t);
+	void registerPersistenceManager (PersistenceManager pm, jakarta.transaction.Transaction t);
 
-	void releasePersistenceManager (PersistenceManager pm, javax.transaction.Transaction t);
+	void releasePersistenceManager (PersistenceManager pm, jakarta.transaction.Transaction t);
 
 	VersionConsistencyCache getVersionConsistencyCache();
 }

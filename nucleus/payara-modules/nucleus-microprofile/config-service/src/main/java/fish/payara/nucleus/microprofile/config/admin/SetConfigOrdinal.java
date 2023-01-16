@@ -40,8 +40,7 @@
 package fish.payara.nucleus.microprofile.config.admin;
 
 import java.util.logging.Logger;
-
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.APPLICATION;

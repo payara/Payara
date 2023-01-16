@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2021] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.v3.admin.cluster;
 
@@ -52,7 +52,7 @@ import org.glassfish.api.admin.CommandRunner.CommandInvocation;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 
 import org.jvnet.hk2.annotations.Service;

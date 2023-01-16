@@ -55,15 +55,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2022] Payara Foundation and/or affiliates
 
 package org.apache.catalina.connector;
 
 import org.apache.catalina.LogFacade;
 
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 
 import static java.security.AccessController.doPrivileged;
 import static org.apache.catalina.LogFacade.NULL_RESPONSE_OBJECT;
@@ -456,28 +456,6 @@ public class ResponseFacade
     }
 
     @Override
-    public String encodeUrl(String url) {
-
-        // Disallow operation if the object has gone out of scope
-        if (response == null) {
-            throw new IllegalStateException(rb.getString(NULL_RESPONSE_OBJECT));
-        }
-
-        return response.encodeURL(url);
-    }
-
-    @Override
-    public String encodeRedirectUrl(String url) {
-
-        // Disallow operation if the object has gone out of scope
-        if (response == null) {
-            throw new IllegalStateException(rb.getString(NULL_RESPONSE_OBJECT));
-        }
-
-        return response.encodeRedirectURL(url);
-    }
-
-    @Override
     public void sendError(int sc, String msg) throws IOException {
 
         // Disallow operation if the object has gone out of scope
@@ -629,20 +607,6 @@ public class ResponseFacade
             return;
 
         response.setStatus(sc);
-    }
-
-    @Override
-    public void setStatus(int sc, String msg) {
-
-        // Disallow operation if the object has gone out of scope
-        if (response == null) {
-            throw new IllegalStateException(rb.getString(LogFacade.NULL_RESPONSE_OBJECT));
-        }
-
-        if (isCommitted())
-            return;
-
-        response.setStatus(sc, msg);
     }
 
     @Override

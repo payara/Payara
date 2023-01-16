@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server.internal.deployment</groupId>
         <artifactId>deployment</artifactId>
-        <version>5.2023.1-SNAPSHOT</version>
+        <version>6.2023.2-SNAPSHOT</version>
     </parent>
     
     <artifactId>schemas</artifactId>
@@ -95,19 +95,17 @@
                         <!-- 
                             Extract orm*.xsd and persistence*.xsd into a 
                             temp location from jakarta.persistence.jar. The files would be extracted as 
-                            javax/persistence/{file} under the location. It is not possible to specify 
-                            to exclude javax/persistence prefix while extracting the file. The ant task 
+                            jakarta/persistence/{file} under the location. It is not possible to specify 
+                            to exclude jakarta/persistence prefix while extracting the file. The ant task 
                             below would copy the files under classes/glassfish/lib/schemas so that it 
                             can be picked up in packaging phase. 
                         -->
                         <configuration>
                             <artifactItems>
                                 <artifactItem>
-                                    <groupId>org.eclipse.persistence</groupId>
-                                    <artifactId>jakarta.persistence</artifactId>
-                                    <includes>javax/persistence/orm*.xsd,
-                                        javax/persistence/persistence*.xsd
-                                    </includes>
+                                    <groupId>jakarta.persistence</groupId>
+                                    <artifactId>jakarta.persistence-api</artifactId>
+                                    <includes>jakarta/persistence/orm*.xsd, jakarta/persistence/persistence*.xsd</includes>
                                     <outputDirectory>${jpa.schema.temp.location}</outputDirectory>
                                 </artifactItem>
                             </artifactItems>
@@ -128,7 +126,7 @@
                         <configuration>
                             <tasks>
                                 <copy todir="${project.build.directory}/classes/glassfish/lib/schemas" flatten="true">
-                                    <fileset dir="${jpa.schema.temp.location}/javax/persistence" />
+                                    <fileset dir="${jpa.schema.temp.location}/jakarta/persistence" />
                                 </copy>
                             </tasks>
                         </configuration>

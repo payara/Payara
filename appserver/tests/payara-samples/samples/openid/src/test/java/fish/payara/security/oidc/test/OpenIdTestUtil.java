@@ -46,17 +46,11 @@ import fish.payara.security.oidc.client.Callback;
 import fish.payara.security.oidc.client.GetUserName;
 import fish.payara.security.oidc.client.UnsecuredPage;
 import fish.payara.security.oidc.client.defaulttests.SecuredPage;
-import fish.payara.security.oidc.client.ear.SomeEJB;
 import fish.payara.security.oidc.server.ApplicationConfig;
 import fish.payara.security.oidc.server.OidcProvider;
 import java.io.IOException;
 import java.net.URL;
-import javax.ws.rs.core.Response;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.lessThan;
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.both;
+import jakarta.ws.rs.core.Response;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
@@ -79,7 +73,7 @@ public class OpenIdTestUtil {
                 .addClass(OidcProvider.class)
                 .addClass(ApplicationConfig.class)
                 .addAsResource("openid-configuration.json")
-                .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+                .addAsWebInfResource("all-beans.xml", "beans.xml");
         return war;
     }
 
@@ -89,7 +83,7 @@ public class OpenIdTestUtil {
                 .addClass(Callback.class)
                 .addClass(UnsecuredPage.class)
                 .addClass(GetUserName.class)
-                .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+                .addAsWebInfResource("all-beans.xml", "beans.xml");
         return war;
     }
 
@@ -97,18 +91,39 @@ public class OpenIdTestUtil {
         return createClientDeployment().addClass(SecuredPage.class);
 
     }
-    
-    
+
     public static void testOpenIdConnect2Tenants(URL base, WebClient webClient1, WebClient webClient2) throws IOException {
         // authenticate first client with employee tenant
         String result = ((TextPage) webClient1.getPage(base + "Secured?tenant=employee")).getContent();
         result = ((TextPage) webClient1.getPage(base + "Username")).getContent();
         assertEquals("employee", result);
-        
+
         // authenticate the second client with dealer tenant
         result = ((TextPage) webClient2.getPage(base + "Secured?tenant=dealer")).getContent();
         result = ((TextPage) webClient2.getPage(base + "Username")).getContent();
         assertEquals("dealer", result);
+    }
+
+    public static void testOpenIdConnect(WebClient webClient, URL base) throws IOException {
+        // unsecure page should be accessible for an unauthenticated user
+        TextPage unsecuredPage = (TextPage) webClient.getPage(base + "Unsecured");
+        assertEquals(Response.Status.OK.getStatusCode(), unsecuredPage.getWebResponse().getStatusCode());
+        assertEquals("This is an unsecured web page", unsecuredPage.getContent().trim());
+
+        // access to secured web page authenticates the user and instructs to redirect to the callback URL
+        TextPage securedPage = (TextPage) webClient.getPage(base + "Secured");
+        assertEquals(Response.Status.OK.getStatusCode(), securedPage.getWebResponse().getStatusCode());
+        assertEquals(String.format("%sCallback", base.getPath()), securedPage.getUrl().getPath());
+
+        // access secured web page as an authenticated user
+        securedPage = (TextPage) webClient.getPage(base + "Secured");
+        assertEquals(Response.Status.OK.getStatusCode(), securedPage.getWebResponse().getStatusCode());
+        assertEquals("This is a secured web page", securedPage.getContent().trim());
+
+        // finally, access should still be allowed to an unsecured web page when already logged in
+        unsecuredPage = ((TextPage) webClient.getPage(base + "Unsecured"));
+        assertEquals(Response.Status.OK.getStatusCode(), unsecuredPage.getWebResponse().getStatusCode());
+        assertEquals("This is an unsecured web page", unsecuredPage.getContent().trim());
     }
 
     public static void testOpenIdConnect(WebClient webClient, URL base) throws IOException {

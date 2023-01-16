@@ -37,15 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2021] Payara Foundation and/or affiliates
 
 package com.sun.gjc.spi;
 
 
 import com.sun.logging.LogDomains;
 
-import javax.resource.ResourceException;
-import javax.resource.spi.LocalTransactionException;
+import jakarta.resource.ResourceException;
+import jakarta.resource.spi.LocalTransactionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -55,7 +55,7 @@ import java.util.logging.Logger;
  * @author Evani Sai Surya Kiran
  * @version 1.0, 02/08/03
  */
-public class LocalTransactionImpl implements javax.resource.spi.LocalTransaction {
+public class LocalTransactionImpl implements jakarta.resource.spi.LocalTransaction {
 
     private ManagedConnectionImpl mc;
     protected final static Logger _logger;

@@ -69,8 +69,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.Arrays;
 import java.util.stream.Collectors;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import com.sun.appserv.ProxyHandler;
 import java.io.CharConversionException;

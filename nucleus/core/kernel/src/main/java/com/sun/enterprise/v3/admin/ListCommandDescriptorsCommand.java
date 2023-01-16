@@ -43,7 +43,7 @@ package com.sun.enterprise.v3.admin;
 import com.sun.enterprise.universal.collections.ManifestUtils;
 import java.lang.reflect.Field;
 import java.util.*;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.cdi.transaction;
 
@@ -49,16 +49,16 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.enterprise.context.ContextNotActiveException;
-import javax.enterprise.context.spi.Context;
-import javax.enterprise.context.spi.Contextual;
-import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.inject.spi.PassivationCapable;
+import jakarta.enterprise.context.ContextNotActiveException;
+import jakarta.enterprise.context.spi.Context;
+import jakarta.enterprise.context.spi.Contextual;
+import jakarta.enterprise.context.spi.CreationalContext;
+import jakarta.enterprise.inject.spi.PassivationCapable;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.transaction.Status;
-import javax.transaction.TransactionScoped;
-import javax.transaction.TransactionSynchronizationRegistry;
+import jakarta.transaction.Status;
+import jakarta.transaction.TransactionScoped;
+import jakarta.transaction.TransactionSynchronizationRegistry;
 
 /**
  * The Context implementation for obtaining contextual instances of {@link TransactionScoped} beans.
@@ -66,7 +66,7 @@ import javax.transaction.TransactionSynchronizationRegistry;
  * The contextual instances are destroyed when the transaction completes.
  * <p/>
  * Any attempt to call a method on a {@link TransactionScoped} bean when a transaction is not active
- * will result in a {@Link javax.enterprise.context.ContextNotActiveException}.
+ * will result in a {@Link jakarta.enterprise.context.ContextNotActiveException}.
  *
  * A CDI Event: @Initialized(TransactionScoped.class) is fired with
  * {@link TransactionScopedCDIEventPayload}, when the context is initialized for the first time
@@ -123,7 +123,7 @@ public class TransactionScopedContextImpl implements Context {
      * Determines if this context object is active.
      *
      * @return true if there is a current global transaction and its status is
-     *         {@Link javax.transaction.Status.STATUS_ACTIVE} false otherwise
+     *         {@Link jakarta.transaction.Status.STATUS_ACTIVE} false otherwise
      */
     public boolean isActive() {
         try {

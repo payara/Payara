@@ -86,9 +86,9 @@
        </sun:property>
 
        <sun:property id="useforkjoinpool" rendered="#{pageSession.showForkJoin}" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncon.useforkjoinpool}">
-           <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.valueMap['useForkJoinPool']}" selectedValue="true"  />
+            <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.valueMap['useForkJoinPool']}" selectedValue="true"  />
        </sun:property>
-       
+
        <sun:property id="hungafter" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncon.hungAfterSeconds}"  helpText="$resource{i18ncon.hungAfterSecondsHelp}">
             <sun:textField id="hungafter" styleClass="integer" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.common.description']}" text="#{pageSession.valueMap['hungAfterSeconds']}" />
             <sun:staticText id="sec" style="padding: 8pt" text="$resource{i18n.common.Seconds}"/>

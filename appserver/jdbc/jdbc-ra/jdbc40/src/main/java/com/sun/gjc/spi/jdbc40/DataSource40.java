@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2020] Payara Foundation and/or affiliates
+// Portions Copyright [2020-2021] Payara Foundation and/or affiliates
 
 package com.sun.gjc.spi.jdbc40;
 
@@ -46,8 +46,8 @@ import com.sun.gjc.common.DataSourceObjectBuilder;
 import com.sun.gjc.spi.ManagedConnectionFactoryImpl;
 import com.sun.gjc.spi.base.AbstractDataSource;
 
-import javax.resource.ResourceException;
-import javax.resource.spi.ConnectionManager;
+import jakarta.resource.ResourceException;
+import jakarta.resource.spi.ConnectionManager;
 import java.util.logging.Level;
 import java.sql.*;
 import java.util.logging.Logger;

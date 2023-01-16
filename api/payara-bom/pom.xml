@@ -1,7 +1,7 @@
 <!--
   ~    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
   ~
-  ~    Copyright (c) [2019-2021] Payara Foundation and/or its affiliates. All rights reserved.
+  ~    Copyright (c) [2019-2022] Payara Foundation and/or its affiliates. All rights reserved.
   ~
   ~    The contents of this file are subject to the terms of either the GNU
   ~    General Public License Version 2 only ("GPL") or the Common Development
@@ -44,7 +44,7 @@
     <parent>
         <groupId>fish.payara.api</groupId>
         <artifactId>api-parent</artifactId>
-        <version>5.2023.1-SNAPSHOT</version>
+        <version>6.2023.2-SNAPSHOT</version>
     </parent>
 
     <artifactId>payara-bom</artifactId>
@@ -111,6 +111,12 @@
                 <groupId>fish.payara.api</groupId>
                 <artifactId>payara-api</artifactId>
                 <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.security.connectors</groupId>
+                <artifactId>security-connectors-api</artifactId>
+                <version>${payara.security-connectors.version}</version>
             </dependency>
 
             <dependency>
@@ -268,14 +274,7 @@
             <!-- These are hopefully no longer needed with this BOM, but just to be sure -->
             <dependency>
                 <groupId>fish.payara.arquillian</groupId>
-                <artifactId>payara-client-ee8</artifactId>
-                <version>${payara-arquillian-container.version}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>fish.payara.arquillian</groupId>
-                <artifactId>payara-client-ee7</artifactId>
+                <artifactId>payara-client-ee9</artifactId>
                 <version>${payara-arquillian-container.version}</version>
                 <scope>test</scope>
             </dependency>
@@ -295,16 +294,6 @@
                 <groupId>jakarta.validation</groupId>
                 <artifactId>jakarta.validation-api</artifactId>
                 <version>${jakarta.validation.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>jakarta.el</groupId>
-                <artifactId>jakarta.el-api</artifactId>
-                <version>${jakarta.el-api.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>jakarta.mail</groupId>
-                <artifactId>jakarta.mail-api</artifactId>
-                <version>${mail.version}</version>
             </dependency>
             <dependency>
                 <groupId>jakarta.annotation</groupId>
@@ -342,11 +331,6 @@
                 <version>${jakarta.transaction-api.version}</version>
             </dependency>
             <dependency>
-                <groupId>jakarta.xml.rpc</groupId>
-                <artifactId>jakarta.xml.rpc-api</artifactId>
-                <version>${jakarta.xml.rpc-api.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>jakarta.enterprise</groupId>
                 <artifactId>jakarta.enterprise.cdi-api</artifactId>
                 <version>${cdi-api.version}</version>
@@ -376,25 +360,26 @@
                 <artifactId>jakarta.security.enterprise-api</artifactId>
                 <version>${jakarta.security.enterprise-api.version}</version>
             </dependency>
+
             <dependency>
-                <groupId>jakarta.security.jacc</groupId>
-                <artifactId>jakarta.security.jacc-api</artifactId>
+                <groupId>jakarta.authorization</groupId>
+                <artifactId>jakarta.authorization-api</artifactId>
                 <version>${jakarta.security.jacc-api.version}</version>
             </dependency>
             <dependency>
-                <groupId>jakarta.security.auth.message</groupId>
-                <artifactId>jakarta.security.auth.message-api</artifactId>
+                <groupId>org.glassfish.exousia</groupId>
+                <artifactId>exousia</artifactId>
+                <version>${exousia.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.authentication</groupId>
+                <artifactId>jakarta.authentication-api</artifactId>
                 <version>${jakarta.security.auth.message-api.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.eclipse.persistence</groupId>
-                <artifactId>jakarta.persistence</artifactId>
+                <groupId>jakarta.persistence</groupId>
+                <artifactId>jakarta.persistence-api</artifactId>
                 <version>${jakarta-persistence-api.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>jakarta.xml.registry</groupId>
-                <artifactId>jakarta.xml.registry-api</artifactId>
-                <version>${jakarta.xml.registry-api.version}</version>
             </dependency>
             <dependency>
                 <groupId>jakarta.jms</groupId>
@@ -419,6 +404,11 @@
             <dependency>
                 <groupId>jakarta.websocket</groupId>
                 <artifactId>jakarta.websocket-api</artifactId>
+                <version>${websocket-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.websocket</groupId>
+                <artifactId>jakarta.websocket-client-api</artifactId>
                 <version>${websocket-api.version}</version>
             </dependency>
             <dependency>
@@ -475,12 +465,7 @@
             <dependency>
                 <groupId>jakarta.json</groupId>
                 <artifactId>jakarta.json-api</artifactId>
-                <version>${jsonp.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>jakarta.management.j2ee</groupId>
-                <artifactId>jakarta.management.j2ee-api</artifactId>
-                <version>${jakarta.management.j2ee-api.version}</version>
+                <version>${jsonp-api.version}</version>
             </dependency>
             <dependency>
                 <groupId>jakarta.xml.ws</groupId>
@@ -530,8 +515,8 @@
                 <version>${hibernate.validator.version}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>javax.validation</groupId>
-                        <artifactId>validation-api</artifactId>
+                        <groupId>jakarta.validation</groupId>
+                        <artifactId>jakarta.validation-api</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -541,14 +526,24 @@
                 <version>${hibernate.validator-cdi.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.glassfish</groupId>
-                <artifactId>jakarta.el</artifactId>
-                <version>${jakarta.el.version}</version>
+                <groupId>jakarta.el</groupId>
+                <artifactId>jakarta.el-api</artifactId>
+                <version>${jakarta.el-api.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.sun.mail</groupId>
-                <artifactId>jakarta.mail</artifactId>
+                <groupId>org.glassfish.expressly</groupId>
+                <artifactId>expressly</artifactId>
+                <version>${expressly.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.mail</groupId>
+                <artifactId>jakarta.mail-api</artifactId>
                 <version>${mail.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.angus</groupId>
+                <artifactId>angus-mail</artifactId>
+                <version>${angus.mail.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.sun.xml.bind</groupId>
@@ -567,7 +562,12 @@
             </dependency>
             <dependency>
                 <groupId>org.glassfish.soteria</groupId>
-                <artifactId>javax.security.enterprise</artifactId>
+                <artifactId>jakarta.security.enterprise</artifactId>
+                <version>${jakarta.security.enterprise.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.soteria</groupId>
+                <artifactId>soteria.spi.bean.decorator.weld</artifactId>
                 <version>${jakarta.security.enterprise.version}</version>
             </dependency>
             <dependency>
@@ -613,7 +613,7 @@
             <dependency>
                 <groupId>org.eclipse.persistence</groupId>
                 <artifactId>org.eclipse.persistence.asm</artifactId>
-                <version>${eclipselink.version}</version>
+                <version>${eclipselink.asm.verison}</version>
             </dependency>
             <!-- Annotation processor is best suited for provided scope -->
             <dependency>
@@ -637,7 +637,17 @@
                 <artifactId>webservices-api-osgi</artifactId>
                 <version>${webservices.version}</version>
             </dependency>
-
+            <!-- security for webservices -->
+            <dependency>
+                <groupId>org.apache.santuario</groupId>
+                <artifactId>xmlsec</artifactId>
+                <version>${org.apache.santuario.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.metro</groupId>
+                <artifactId>webservices-extra-xmlsec</artifactId>
+                <version>${webservices.version}</version>
+            </dependency>
             <dependency>
                 <groupId>com.sun.xml.bind</groupId>
                 <artifactId>jaxb-extra-osgi</artifactId>
@@ -667,10 +677,15 @@
 
                 <exclusions>
                     <exclusion>
-                        <groupId>javax.enterprise</groupId>
-                        <artifactId>cdi-api</artifactId>
+                        <groupId>jakarta.enterprise</groupId>
+                        <artifactId>jakarta.enterprise.cdi-api</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.weld</groupId>
+                <artifactId>weld-lite-extension-translator</artifactId>
+                <version>${weld.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.jboss.weld.se</groupId>
@@ -684,15 +699,9 @@
             </dependency>
 
             <dependency>
-                <groupId>org.glassfish.web</groupId>
-                <artifactId>javax.servlet.jsp</artifactId>
+                <groupId>org.glassfish.wasp</groupId>
+                <artifactId>wasp</artifactId>
                 <version>${jsp-impl.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>javax.servlet.jsp</groupId>
-                        <artifactId>jsp-api</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <dependency>
@@ -707,7 +716,7 @@
             </dependency>
             <dependency>
                 <groupId>org.glassfish.web</groupId>
-                <artifactId>javax.servlet.jsp.jstl</artifactId>
+                <artifactId>jakarta.servlet.jsp.jstl</artifactId>
                 <version>${jstl-impl.version}</version>
             </dependency>
             <dependency>
@@ -716,16 +725,16 @@
                 <version>${yasson.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.glassfish</groupId>
+                <groupId>org.eclipse.parsson</groupId>
                 <artifactId>jakarta.json</artifactId>
-                <version>${jsonp.version}</version>
+                <version>${parsson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.parsson</groupId>
+                <artifactId>parsson-media</artifactId>
+                <version>${parsson.version}</version>
             </dependency>
 
-            <dependency>
-                <groupId>org.glassfish</groupId>
-                <artifactId>jsonp-jaxrs</artifactId>
-                <version>${jsonp.version}</version>
-            </dependency>
             <dependency>
                 <groupId>com.ibm.jbatch</groupId>
                 <artifactId>com.ibm.jbatch.container</artifactId>
@@ -745,7 +754,7 @@
             </dependency>
             <dependency>
                 <groupId>org.glassfish</groupId>
-                <artifactId>javax.enterprise.concurrent</artifactId>
+                <artifactId>jakarta.enterprise.concurrent</artifactId>
                 <version>${concurrent.version}</version>
             </dependency>
 
@@ -755,9 +764,9 @@
                 <version>${istack-commons-runtime.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.sun.activation</groupId>
-                <artifactId>jakarta.activation</artifactId>
-                <version>${jakarta.activation-impl.version}</version>
+		<groupId>org.eclipse.angus</groupId>
+                <artifactId>angus-activation</artifactId>
+		<version>${angus.activation.version}</version>
             </dependency>
 
             <!-- Other libraries -->
@@ -813,11 +822,6 @@
                 <groupId>com.hazelcast</groupId>
                 <artifactId>hazelcast</artifactId>
                 <version>${hazelcast.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.hazelcast</groupId>
-                <artifactId>hazelcast-kubernetes</artifactId>
-                <version>${hazelcast.kubernetes.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

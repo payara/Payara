@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or affiliates]
 
 package org.apache.catalina.core;
 
@@ -70,8 +70,8 @@ import org.glassfish.web.valve.GlassFishValveAdapter;
 import org.glassfish.web.valve.TomcatValveAdapter;
 
 import javax.management.ObjectName;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpUpgradeHandler;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpUpgradeHandler;
 
 import static java.text.MessageFormat.format;
 import static java.util.logging.Level.INFO;
@@ -96,8 +96,8 @@ import java.util.ResourceBundle;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.AsyncEvent;
-import javax.servlet.AsyncListener;
+import jakarta.servlet.AsyncEvent;
+import jakarta.servlet.AsyncListener;
 
 /** CR 6411114 (Lifecycle implementation moved to ValveBase)
 import org.apache.tomcat.util.modeler.Registry;

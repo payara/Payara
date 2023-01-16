@@ -37,14 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.server.logging;
 
 import org.glassfish.config.support.TranslatedConfigView;
 import org.glassfish.server.ServerEnvironmentImpl;
 import org.jvnet.hk2.annotations.ContractsProvided;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PostConstruct;
@@ -53,7 +53,7 @@ import org.glassfish.hk2.api.PreDestroy;
 import com.sun.common.util.logging.BooleanLatch;
 import com.sun.common.util.logging.GFLogRecord;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 
 import java.text.SimpleDateFormat;
 import java.util.concurrent.ArrayBlockingQueue;

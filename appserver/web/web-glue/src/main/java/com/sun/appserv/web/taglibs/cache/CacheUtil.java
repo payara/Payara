@@ -41,8 +41,8 @@
 package com.sun.appserv.web.taglibs.cache;
 
 import com.sun.appserv.util.cache.Cache;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.jsp.PageContext;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.jsp.PageContext;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;

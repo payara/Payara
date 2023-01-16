@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.container.common.impl.util;
 
@@ -53,8 +53,8 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.annotation.ManagedBean;
-import javax.inject.Inject;
+import jakarta.annotation.ManagedBean;
+import jakarta.inject.Inject;
 import javax.naming.NamingException;
 
 import org.glassfish.api.admin.ProcessEnvironment;

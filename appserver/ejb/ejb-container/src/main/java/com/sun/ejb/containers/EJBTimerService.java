@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 package com.sun.ejb.containers;
 
 import java.io.Serializable;
@@ -55,14 +55,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.CreateException;
-import javax.ejb.EJBException;
-import javax.ejb.FinderException;
-import javax.ejb.ScheduleExpression;
-import javax.ejb.TimerConfig;
-import javax.transaction.Status;
-import javax.transaction.Synchronization;
-import javax.transaction.Transaction;
+import jakarta.ejb.CreateException;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.FinderException;
+import jakarta.ejb.ScheduleExpression;
+import jakarta.ejb.TimerConfig;
+import jakarta.transaction.Status;
+import jakarta.transaction.Synchronization;
+import jakarta.transaction.Transaction;
 
 import com.sun.enterprise.admin.monitor.callflow.Agent;
 import com.sun.enterprise.admin.monitor.callflow.RequestType;
@@ -341,7 +341,7 @@ public abstract class EJBTimerService {
      *
      * @param timerId
      * @return
-     * @throws javax.ejb.FinderException
+     * @throws jakarta.ejb.FinderException
      */
     protected abstract Date getNextTimeout(TimerPrimaryKey timerId) throws FinderException;
 
@@ -355,7 +355,7 @@ public abstract class EJBTimerService {
      * Called by #getScheduleExpression and #isCalendarTimer
      * @param timerId
      * @return
-     * @throws javax.ejb.FinderException
+     * @throws jakarta.ejb.FinderException
      */
     protected abstract EJBTimerSchedule getTimerSchedule(TimerPrimaryKey timerId)
             throws FinderException;
@@ -854,7 +854,7 @@ public abstract class EJBTimerService {
                 throw new CreateException
                         ("Attempt to create an EJB Timer from a bean that is " +
                          "not a Timed Object.  EJB class " + ejbClass + 
-                         " must implement javax.ejb.TimedObject or " +
+                         " must implement jakarta.ejb.TimedObject or " +
                          " annotation a timeout method with @Timeout");
             }
         }

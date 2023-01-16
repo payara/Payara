@@ -39,7 +39,7 @@
  */
 package fish.payara.microprofile.config.extensions.aws.client;
 
-import static javax.xml.bind.DatatypeConverter.printHexBinary;
+import static jakarta.xml.bind.DatatypeConverter.printHexBinary;
 
 import java.math.BigInteger;
 import java.security.MessageDigest;

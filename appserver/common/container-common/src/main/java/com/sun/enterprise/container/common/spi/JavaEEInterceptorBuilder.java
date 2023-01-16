@@ -42,7 +42,7 @@ package com.sun.enterprise.container.common.spi;
 
 
 /**
- * Provides an abstraction for invoking javax.interceptor
+ * Provides an abstraction for invoking jakarta.interceptor
  * callbacks and around invoke methods on a target instance.
  */
 

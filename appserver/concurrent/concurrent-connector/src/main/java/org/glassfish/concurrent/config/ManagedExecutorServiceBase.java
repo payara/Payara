@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2022] Payara Foundation and/or affiliates
 
 package org.glassfish.concurrent.config;
 
@@ -45,8 +46,8 @@ import org.jvnet.hk2.config.*;
 import com.sun.enterprise.config.serverbeans.BindableResource;
 import com.sun.enterprise.config.serverbeans.Resource;
 
-import javax.validation.constraints.Min;
-import javax.validation.Payload;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.Payload;
 import java.beans.PropertyVetoException;
 
 /**
@@ -158,4 +159,20 @@ public interface ManagedExecutorServiceBase extends ConfigBeanProxy,
      * @param value allowed object is {@link String }
      */
     void setThreadLifetimeSeconds(String value) throws PropertyVetoException;
+
+    /**
+     * Gets the value of the context property.
+     *
+     * @return possible object is {@link String }
+     */
+    @Attribute(defaultValue = "", dataType = String.class)
+    String getContext();
+
+    /**
+     * Sets the value of the context property.
+     *
+     * @param value allowed object is {@link String }
+     */
+    void setContext(String value) throws PropertyVetoException;
+
 }

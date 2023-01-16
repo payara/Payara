@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates.]
+ * Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates.]
  */
 
 package org.glassfish.admin.rest.provider;
@@ -47,9 +47,9 @@ import static java.util.Arrays.asList;
 import com.sun.enterprise.admin.report.ActionReporter;
 import java.lang.reflect.Type;
 import java.util.*;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.ext.Provider;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.ext.Provider;
 import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.admin.rest.utils.xml.XmlArray;
 import org.glassfish.admin.rest.utils.xml.XmlMap;

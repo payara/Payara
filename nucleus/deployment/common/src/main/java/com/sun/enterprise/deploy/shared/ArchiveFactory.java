@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2022] Payara Foundation and/or affiliates
+
 package com.sun.enterprise.deploy.shared;
 
 import org.glassfish.api.deployment.DeployCommandParameters;
@@ -48,10 +50,10 @@ import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.hk2.api.MultiException;
 import org.glassfish.hk2.api.ServiceLocator;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.jvnet.hk2.annotations.Service;
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -168,15 +170,14 @@ public class ArchiveFactory {
         }
         for (ReadableArchiveFactory fac : habitat.<ReadableArchiveFactory>getAllServices(ReadableArchiveFactory.class)) {
             //get the first ReadableArchive and move
-            ReadableArchive archive=null;
             try{
-                archive = fac.open(uri, properties);
+                ReadableArchive archive = fac.open(uri, properties);
+                if(archive != null) {
+                    return archive;
+                }
             }catch(Exception e){
                 //ignore?
             }
-            if(archive == null)
-                continue;
-            return archive;
         }
         return openArchive(path);
     }

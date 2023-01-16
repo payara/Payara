@@ -94,7 +94,8 @@ public class WebBundleNode extends WebCommonNode<WebBundleDescriptorImpl> {
     public final static String SCHEMA_ID_25 = "web-app_2_5.xsd";
     public final static String SCHEMA_ID_30 = "web-app_3_0.xsd";
     public final static String SCHEMA_ID_31 = "web-app_3_1.xsd";
-    public final static String SCHEMA_ID = "web-app_4_0.xsd";
+    public final static String SCHEMA_ID_40 = "web-app_4_0.xsd";
+    public final static String SCHEMA_ID = "web-app_5_0.xsd";
     private final static List<String> systemIDs = initSystemIDs();
 
     private static List<String> initSystemIDs() {
@@ -104,6 +105,7 @@ public class WebBundleNode extends WebCommonNode<WebBundleDescriptorImpl> {
         systemIDs.add(SCHEMA_ID_25);
         systemIDs.add(SCHEMA_ID_30);
         systemIDs.add(SCHEMA_ID_31);
+        systemIDs.add(SCHEMA_ID_40);
         return Collections.unmodifiableList(systemIDs);
     }
 

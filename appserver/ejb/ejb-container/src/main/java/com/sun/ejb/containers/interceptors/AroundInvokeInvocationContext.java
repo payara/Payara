@@ -43,7 +43,7 @@ package com.sun.ejb.containers.interceptors;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
-import javax.interceptor.InvocationContext;
+import jakarta.interceptor.InvocationContext;
 
 
 import java.util.Map;

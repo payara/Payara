@@ -39,7 +39,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+    Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 -->
 
 <web-app xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="3.0" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
@@ -68,18 +68,25 @@
         <param-value>true</param-value>
     </context-param>
     <context-param>
-        <param-name>javax.faces.VALIDATE_EMPTY_FIELDS</param-name>
+        <param-name>jakarta.faces.VALIDATE_EMPTY_FIELDS</param-name>
         <param-value>false</param-value>
     </context-param>
     <context-param>
-        <param-name>javax.faces.validator.DISABLE_DEFAULT_BEAN_VALIDATOR</param-name>
+        <param-name>jakarta.faces.validator.DISABLE_DEFAULT_BEAN_VALIDATOR</param-name>
         <param-value>true</param-value>
     </context-param>
     <context-param>
-        <param-name>javax.faces.SEPARATOR_CHAR</param-name>
+        <param-name>jakarta.faces.SEPARATOR_CHAR</param-name>
         <param-value>:</param-value>
     </context-param>
-
+    <!-- Manual initialization for Faces 3 impl bundled just for admingui -->
+    <context-param>
+        <param-name>com.sun.faces.injectionProvider</param-name>
+        <param-value>fish.payara.server.internal.admingui.GlassFishInjectionProvider</param-value>
+    </context-param>
+    <listener>
+        <listener-class>com.sun.faces.config.ConfigureListener</listener-class>
+    </listener>
     <filter>
         <filter-name>UploadFilter</filter-name>
         <filter-class>com.sun.webui.jsf.util.UploadFilter</filter-class>
@@ -94,7 +101,7 @@
     </filter-mapping>
     <servlet>
         <servlet-name>FacesServlet</servlet-name>
-        <servlet-class>javax.faces.webapp.FacesServlet</servlet-class>
+        <servlet-class>jakarta.faces.webapp.FacesServlet</servlet-class>
         <load-on-startup>1</load-on-startup>
     </servlet>
     <servlet>
@@ -158,7 +165,7 @@
         <welcome-file>/index.jsf</welcome-file>
     </welcome-file-list>
     <error-page>
-        <exception-type>javax.faces.application.ViewExpiredException</exception-type>
+        <exception-type>jakarta.faces.application.ViewExpiredException</exception-type>
         <location>/</location>
     </error-page>
 

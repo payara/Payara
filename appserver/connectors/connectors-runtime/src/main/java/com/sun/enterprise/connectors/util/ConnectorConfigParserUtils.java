@@ -51,8 +51,8 @@ import java.util.logging.*;
 import java.util.*;
 import java.lang.*;
 import java.lang.reflect.*;
-import javax.resource.spi.ResourceAdapter;
-import javax.resource.spi.ResourceAdapterAssociation;
+import jakarta.resource.spi.ResourceAdapter;
+import jakarta.resource.spi.ResourceAdapterAssociation;
 
 
 /**

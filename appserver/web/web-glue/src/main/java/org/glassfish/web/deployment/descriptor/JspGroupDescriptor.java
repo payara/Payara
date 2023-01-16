@@ -37,14 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2021] Payara Foundation and/or affiliates
 
 package org.glassfish.web.deployment.descriptor;
 
 import com.sun.enterprise.deployment.OrderedSet;
 import org.glassfish.deployment.common.Descriptor;
 
-import javax.servlet.descriptor.JspPropertyGroupDescriptor;
+import jakarta.servlet.descriptor.JspPropertyGroupDescriptor;
 import java.util.Set;
 
 /**
@@ -64,6 +64,7 @@ public class JspGroupDescriptor extends Descriptor
     private String defaultContentType = null;
     private String buffer = null;
     private String errorOnUndeclaredNamespace;
+    private String errorOnELNotFound;
 
     /**
      * Return the set of URL pattern aliases for this group.
@@ -259,8 +260,22 @@ public class JspGroupDescriptor extends Descriptor
         errorOnUndeclaredNamespace = value;
     }
 
+    @Override
     public String getErrorOnUndeclaredNamespace() {
         return errorOnUndeclaredNamespace;
+    }
+
+    /**
+     * set errorOnELNotFound
+     * @param value
+     */
+    public void setErrorELNotFound(String value) {
+        errorOnELNotFound = value;
+    }
+
+    @Override
+    public String getErrorOnELNotFound() {
+        return errorOnELNotFound;
     }
 
     /**
@@ -284,4 +299,5 @@ public class JspGroupDescriptor extends Descriptor
         toStringBuilder.append( "\n buffer: ").append(buffer);
         toStringBuilder.append( "\n errorOnUndeclaredNamespace: ").append(errorOnUndeclaredNamespace);
     }
+
 }

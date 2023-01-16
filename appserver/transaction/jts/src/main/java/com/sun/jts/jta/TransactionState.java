@@ -42,15 +42,15 @@ package com.sun.jts.jta;
 
 import java.util.*;
 import javax.transaction.xa.*;
-import javax.transaction.*;
+import jakarta.transaction.*;
 import org.omg.CosTransactions.*;
 import com.sun.jts.jta.NativeXAResource;
 import com.sun.jts.jtsxa.XID;
 import com.sun.jts.codegen.jtsxa.OTSResource;
 import com.sun.jts.jtsxa.OTSResourceImpl;
-import javax.transaction.SystemException;
-import javax.transaction.RollbackException;
-import javax.transaction.Synchronization;
+import jakarta.transaction.SystemException;
+import jakarta.transaction.RollbackException;
+import jakarta.transaction.Synchronization;
 import com.sun.jts.jtsxa.Utility;
 import com.sun.jts.CosTransactions.Configuration;
 import com.sun.jts.CosTransactions.ControlImpl;
@@ -315,7 +315,7 @@ public class TransactionState {
                 // throw RollbackException if try to register
                 // a new resource when a transaction is marked rollback
                 if (status !=
-                    javax.transaction.Status.STATUS_ACTIVE) {
+                    jakarta.transaction.Status.STATUS_ACTIVE) {
                     throw new RollbackException();
                 }
 

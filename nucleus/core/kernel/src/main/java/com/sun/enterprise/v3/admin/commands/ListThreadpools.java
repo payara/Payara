@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2020] Payara Foundation and/or affiliates
+// Portions Copyright [2020-2021] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.v3.admin.commands;
 
@@ -55,7 +55,7 @@ import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandLock;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 
 import org.jvnet.hk2.annotations.Service;

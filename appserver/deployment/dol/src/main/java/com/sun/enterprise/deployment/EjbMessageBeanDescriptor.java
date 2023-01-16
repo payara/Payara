@@ -56,13 +56,13 @@ public interface EjbMessageBeanDescriptor extends EjbDescriptor, MessageDestinat
 
     /**
      * 
-     * @return "{@linkplain javax.jms.MessageListener}" if not set
+     * @return "{@linkplain jakarta.jms.MessageListener}" if not set
      */
     String getMessageListenerType();
 
     /**
      * Gets the type of the destination set
-     * @return Either "{@linkplain javax.jms.Queue}" or "{@linkplain javax.jms.Topic}"
+     * @return Either "{@linkplain jakarta.jms.Queue}" or "{@linkplain jakarta.jms.Topic}"
      */
     String getDestinationType();
 
@@ -82,7 +82,7 @@ public interface EjbMessageBeanDescriptor extends EjbDescriptor, MessageDestinat
     String getMdbConnectionFactoryJndiName();
 
     /**
-     * Returns true if the destination type is of {@linkplain javax.jms.Queue}
+     * Returns true if the destination type is of {@linkplain jakarta.jms.Queue}
      * @return
      * @see org.glassfish.ejb.deployment.descriptor.EjbMessageBeanDescriptor#hasTopicDest()
      */
@@ -97,12 +97,12 @@ public interface EjbMessageBeanDescriptor extends EjbDescriptor, MessageDestinat
     /**
      * Returns a set of the activation config properties that have been set for the MDB
      * @return
-     * @see javax.ejb.ActivationConfigProperty
+     * @see jakarta.ejb.ActivationConfigProperty
      */
     Set<EnvironmentProperty> getActivationConfigProperties();
 
     /**
-     * Gets the value of a specific {@link javax.ejb.ActivationConfigProperty}
+     * Gets the value of a specific {@link jakarta.ejb.ActivationConfigProperty}
      * @param name the name of the property
      * @return the actual value of the property
      */

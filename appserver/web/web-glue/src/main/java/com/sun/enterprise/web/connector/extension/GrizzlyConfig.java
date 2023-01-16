@@ -50,11 +50,10 @@ import com.sun.enterprise.config.serverbeans.ModuleMonitoringLevels;
 import com.sun.enterprise.web.WebContainer;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.hk2.api.ServiceLocator;
-import javax.management.j2ee.statistics.Stats;
+import org.glassfish.j2ee.statistics.Stats;
 import org.glassfish.web.LogFacade;
 
 import javax.management.ObjectName;
-import java.lang.String;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.ResourceBundle;

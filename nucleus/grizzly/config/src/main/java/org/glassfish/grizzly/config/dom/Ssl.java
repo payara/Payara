@@ -37,12 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2022] Payara Foundation and/or affiliates
 
 package org.glassfish.grizzly.config.dom;
 
-import javax.validation.constraints.Pattern;
-
+import jakarta.validation.constraints.Pattern;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
@@ -55,12 +54,8 @@ import org.jvnet.hk2.config.types.PropertyBag;
 public interface Ssl extends ConfigBeanProxy, PropertyBag {
     boolean ALLOW_LAZY_INIT = true;
     boolean CLIENT_AUTH_ENABLED = false;
-    boolean SSL2_ENABLED = false;
-    boolean SSL3_ENABLED = false;
-    boolean TLS_ENABLED = true;
-    boolean TLS11_ENABLED = true;
     boolean TLS12_ENABLED = true;
-    boolean TLS13_ENABLED = false;
+    boolean TLS13_ENABLED = true;
     boolean TLS_ROLLBACK_ENABLED = true;
     boolean HSTS_ENABLED = false;
     boolean HSTS_SUBDOMAINS = false;
@@ -71,19 +66,12 @@ public interface Ssl extends ConfigBeanProxy, PropertyBag {
     String CLIENT_AUTH_PATTERN = "(|need|want)";
     String STORE_TYPE_PATTERN = "(JKS|NSS)";
     String PASSWORD_PROVIDER = "plain";
-    String SSL2_CIPHERS_PATTERN =
-            "((\\+|\\-)(rc2|rc2export|rc4|rc4export|idea|des|desede3)(\\s*,\\s*(\\+|\\-)(rc2|rc2export|rc4|rc4export|idea|des|desede3))*)*";
     long HANDSHAKE_TIMEOUT_MILLIS = -1;
 
     String TLS13 = "TLSv1.3";
     String TLS12 = "TLSv1.2";
-    String TLS11 = "TLSv1.1";
-    String TLS1 = "TLSv1";
     String TLS = "TLS";
-    String SSL3 = "SSLv3";
-    String SSL2 = "SSLv2";
     String SSL = "SSL";
-    String SSL2_HELLO = "SSLv2Hello";
 
     /**
      * Nickname of the server certificate in the certificate database or the PKCS#11 token. In the certificate, the name
@@ -95,7 +83,7 @@ public interface Ssl extends ConfigBeanProxy, PropertyBag {
     void setCertNickname(String value);
 
     /**
-     * Determines whether SSL3 client authentication is performed on every request, independent of ACL-based access
+     * Determines whether client authentication is performed on every request, independent of ACL-based access
      * control.
      */
     @Attribute(defaultValue = "" + CLIENT_AUTH_ENABLED, dataType = Boolean.class)
@@ -159,36 +147,6 @@ public interface Ssl extends ConfigBeanProxy, PropertyBag {
     void setClassname(String value);
 
     /**
-     * A comma-separated list of the SSL2 ciphers used, with the prefix + to enable or - to disable, for example +rc4.
-     * Allowed values are rc4, rc4export, rc2, rc2export, idea, des, desede3. If no value is specified, all supported
-     * ciphers are assumed to be enabled. NOT Used in PE
-     */
-    @Attribute
-    @Pattern(regexp = SSL2_CIPHERS_PATTERN)
-    String getSsl2Ciphers();
-
-    void setSsl2Ciphers(String value);
-
-    /**
-     * Determines whether SSL2 is enabled. NOT Used in PE. SSL2 is not supported by either iiop or web-services. When
-     * this element is used as a child of the iiop-listener element then the only allowed value for this attribute is
-     * "false".
-     */
-    @Attribute(defaultValue = "" + SSL2_ENABLED, dataType = Boolean.class)
-    String getSsl2Enabled();
-
-    void setSsl2Enabled(String value);
-
-    /**
-     * Determines whether SSL3 is enabled. If both SSL2 and SSL3 are enabled for a virtual server, the server tries SSL3
-     * encryption first. If that fails, the server tries SSL2 encryption.
-     */
-    @Attribute(defaultValue = "" + SSL3_ENABLED, dataType = Boolean.class)
-    String getSsl3Enabled();
-
-    void setSsl3Enabled(String value);
-
-    /**
      * A comma-separated list of the SSL3 ciphers used, with the prefix + to enable or - to disable, for example
      * +SSL_RSA_WITH_RC4_128_MD5. Allowed SSL3/TLS values are those that are supported by the JVM for the given security
      * provider and security service configuration. If no value is specified, all supported ciphers are assumed to be
@@ -198,22 +156,6 @@ public interface Ssl extends ConfigBeanProxy, PropertyBag {
     String getSsl3TlsCiphers();
 
     void setSsl3TlsCiphers(String value);
-
-    /**
-     * Determines whether TLS is enabled.
-     */
-    @Attribute(defaultValue = "" + TLS_ENABLED, dataType = Boolean.class)
-    String getTlsEnabled();
-
-    void setTlsEnabled(String value);
-
-    /**
-     * Determines whether TLS 1.1 is enabled.
-     */
-    @Attribute(defaultValue = "" + TLS11_ENABLED, dataType = Boolean.class)
-    String getTls11Enabled();
-
-    void setTls11Enabled(String value);
 
     /**
      * Determines whether TLS 1.2 is enabled.

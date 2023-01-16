@@ -2,7 +2,7 @@
  * 
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *  Copyright (c) 2016 Payara Foundation and/or its affiliates.
+ *  Copyright (c) 2016-2021 Payara Foundation and/or its affiliates.
  *  All rights reserved.
  * 
  *  The contents of this file are subject to the terms of the Common Development
@@ -22,7 +22,7 @@ package fish.payara.nucleus.phonehome.admin;
 import fish.payara.nucleus.phonehome.PhoneHomeCore;
 import fish.payara.nucleus.phonehome.PhoneHomeRuntimeConfiguration;
 import java.beans.PropertyVetoException;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.admin.AdminCommand;

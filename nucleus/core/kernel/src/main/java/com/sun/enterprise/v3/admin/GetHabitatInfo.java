@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2019-2021] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.v3.admin;
 
@@ -56,11 +56,11 @@ import java.util.Locale;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import javax.inject.Inject;
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
-import javax.validation.Payload;
-import javax.validation.constraints.Pattern;
+import jakarta.inject.Inject;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
+import jakarta.validation.Payload;
+import jakarta.validation.constraints.Pattern;
 
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.ExitCode;
@@ -226,7 +226,7 @@ public class GetHabitatInfo implements AdminCommand {
      */
     @Retention(RUNTIME)
     @Target({TYPE})
-    @javax.validation.Constraint(validatedBy = GetHabitatInfo.Validator.class)
+    @jakarta.validation.Constraint(validatedBy = GetHabitatInfo.Validator.class)
     public static @interface Constraint {
         String message() default "The contract argument is test but started is true.";
         Class<?>[] groups() default {};

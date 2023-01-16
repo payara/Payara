@@ -84,12 +84,12 @@ import org.jvnet.hk2.config.InjectionResolver;
 import org.jvnet.hk2.config.MessageInterpolatorImpl;
 import org.jvnet.hk2.config.UnsatisfiedDependencyException;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Scope;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.inject.Scope;
+import jakarta.inject.Singleton;
 import javax.security.auth.Subject;
-import javax.validation.*;
+import jakarta.validation.*;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;

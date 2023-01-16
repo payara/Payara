@@ -44,7 +44,7 @@ import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.bootstrap.PopulatorPostProcessor;
 import org.glassfish.hk2.utilities.DescriptorImpl;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.kohsuke.MetaInfServices;
 
 /**

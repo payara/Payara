@@ -44,9 +44,9 @@ import org.glassfish.admin.rest.Constants;
 import org.glassfish.admin.rest.results.GetResultList;
 import org.jvnet.hk2.config.Dom;
 
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.ext.Provider;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.ext.Provider;
 import java.util.List;
 import java.util.Map;
 

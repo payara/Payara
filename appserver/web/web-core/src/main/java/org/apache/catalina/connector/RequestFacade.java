@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
 package org.apache.catalina.connector;
 
 import com.sun.enterprise.security.web.integration.WebPrincipal;
@@ -64,14 +64,14 @@ import org.apache.catalina.Globals;
 import org.apache.catalina.core.RequestFacadeHelper;
 import org.apache.catalina.security.SecurityUtil;
 
-import javax.servlet.*;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import javax.servlet.http.HttpUpgradeHandler;
-import javax.servlet.http.Part;
-import javax.servlet.http.PushBuilder;
+import jakarta.servlet.*;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpUpgradeHandler;
+import jakarta.servlet.http.Part;
+import jakarta.servlet.http.PushBuilder;
 
 import static java.security.AccessController.doPrivileged;
 import static org.apache.catalina.LogFacade.CANNOT_USE_REQUEST_OBJECT_OUTSIDE_SCOPE_EXCEPTION;
@@ -85,7 +85,7 @@ import java.security.Principal;
 import java.security.PrivilegedAction;
 import java.security.SecurityPermission;
 import java.util.*;
-import javax.servlet.http.HttpServletMapping;
+import jakarta.servlet.http.HttpServletMapping;
 
 /**
  * Facade class that wraps a Coyote request object. All methods are delegated to the wrapped request.
@@ -614,16 +614,6 @@ public class RequestFacade implements HttpServletRequest {
     }
 
     @Override
-    public String getRealPath(String path) {
-
-        if (request == null) {
-            throw new IllegalStateException(rb.getString(LogFacade.CANNOT_USE_REQUEST_OBJECT_OUTSIDE_SCOPE_EXCEPTION));
-        }
-
-        return request.getRealPath(path);
-    }
-
-    @Override
     public String getAuthType() {
 
         if (request == null) {
@@ -952,16 +942,6 @@ public class RequestFacade implements HttpServletRequest {
     }
 
     @Override
-    public boolean isRequestedSessionIdFromUrl() {
-
-        if (request == null) {
-            throw new IllegalStateException(rb.getString(LogFacade.CANNOT_USE_REQUEST_OBJECT_OUTSIDE_SCOPE_EXCEPTION));
-        }
-
-        return request.isRequestedSessionIdFromURL();
-    }
-
-    @Override
     public String getLocalAddr() {
 
         if (request == null) {
@@ -1115,6 +1095,21 @@ public class RequestFacade implements HttpServletRequest {
     @Override
     public PushBuilder newPushBuilder() {
         return request.newPushBuilder();
+    }
+
+    @Override
+    public String getRequestId() {
+        return request.getRequestId();
+    }
+
+    @Override
+    public String getProtocolRequestId() {
+        return request.getProtocolRequestId();
+    }
+
+    @Override
+    public ServletConnection getServletConnection() {
+        return request.getServletConnection();
     }
 
     // START S1AS 4703023

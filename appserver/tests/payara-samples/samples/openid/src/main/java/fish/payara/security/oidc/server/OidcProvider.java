@@ -1,8 +1,8 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  *  Copyright (c) [2018-2021] Payara Foundation and/or its affiliates. All rights reserved.
- * 
+ *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
  *  and Distribution License("CDDL") (collectively, the "License").  You
@@ -49,22 +49,28 @@ import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 import java.util.logging.Logger;
 
-import javax.json.Json;
-import javax.json.JsonObjectBuilder;
-import javax.ws.rs.FormParam;
-import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.ResponseBuilder;
+import jakarta.inject.Inject;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.ws.rs.FormParam;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.HeaderParam;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.ResponseBuilder;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.core.MediaType;
+
+import fish.payara.security.openid.api.OpenIdConstant;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import fish.payara.security.openid.api.OpenIdConstant;
 import static fish.payara.security.openid.api.OpenIdConstant.ACCESS_TOKEN;
@@ -87,11 +93,7 @@ import static java.util.Arrays.asList;
 import java.util.List;
 import static java.util.logging.Level.SEVERE;
 import static java.util.stream.Collectors.joining;
-import javax.inject.Inject;
-import javax.json.JsonArrayBuilder;
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import org.eclipse.microprofile.config.Config;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
+import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 
 /**
  *
@@ -117,7 +119,7 @@ public class OidcProvider {
     
     @Inject @ConfigProperty(name = USER_GROUPS_LIST_KEY, defaultValue = "all")
     List<String> userGroups;
-    
+
     @Inject @ConfigProperty(name = EXPIRES_IN_SECONDS_KEY, defaultValue = "3600")
     Integer expiresInSeconds;
 

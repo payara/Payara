@@ -37,12 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2021] Payara Foundation and/or affiliates
 
 package com.sun.jaspic.config.helper;
 
-import javax.security.auth.message.AuthException;
-import javax.security.auth.message.AuthStatus;
+import jakarta.security.auth.message.AuthException;
+import jakarta.security.auth.message.AuthStatus;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -146,7 +146,7 @@ public abstract class BaseAuthContextImpl {
      * @param properties
      * @return
      */
-    public abstract Map<String, ?> getInitProperties(int i, Map<String, ?> properties);
+    public abstract Map<String, Object> getInitProperties(int i, Map<String, Object> properties);
 
     /**
      *

@@ -42,34 +42,32 @@
 package org.glassfish.weld.services;
 
 import static java.util.logging.Level.FINE;
-import static javax.enterprise.inject.spi.InterceptionType.AROUND_CONSTRUCT;
-import static javax.enterprise.inject.spi.InterceptionType.POST_ACTIVATE;
-import static javax.enterprise.inject.spi.InterceptionType.POST_CONSTRUCT;
-import static javax.enterprise.inject.spi.InterceptionType.PRE_DESTROY;
-import static javax.enterprise.inject.spi.InterceptionType.PRE_PASSIVATE;
+import static jakarta.enterprise.inject.spi.InterceptionType.AROUND_CONSTRUCT;
+import static jakarta.enterprise.inject.spi.InterceptionType.POST_ACTIVATE;
+import static jakarta.enterprise.inject.spi.InterceptionType.POST_CONSTRUCT;
+import static jakarta.enterprise.inject.spi.InterceptionType.PRE_DESTROY;
+import static jakarta.enterprise.inject.spi.InterceptionType.PRE_PASSIVATE;
 import static org.glassfish.cdi.CDILoggerInfo.ADDING_INTERCEPTOR_FOR_EJB;
 import static org.glassfish.cdi.CDILoggerInfo.TRYING_TO_REGISTER_INTERCEPTOR;
 
 import java.lang.reflect.Method;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.ejb.PostActivate;
-import javax.ejb.PrePassivate;
-import javax.enterprise.inject.spi.InterceptionType;
-import javax.enterprise.inject.spi.Interceptor;
-import javax.interceptor.AroundConstruct;
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.AroundTimeout;
-import javax.interceptor.InvocationContext;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
+import jakarta.ejb.PostActivate;
+import jakarta.ejb.PrePassivate;
+import jakarta.enterprise.inject.spi.InterceptionType;
+import jakarta.enterprise.inject.spi.Interceptor;
+import jakarta.interceptor.AroundConstruct;
+import jakarta.interceptor.AroundInvoke;
+import jakarta.interceptor.AroundTimeout;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import org.glassfish.cdi.CDILoggerInfo;
+import jakarta.interceptor.InvocationContext;
 import org.glassfish.ejb.api.EjbContainerServices;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.weld.ejb.EjbDescriptorImpl;

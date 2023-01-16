@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2020] Payara Fondation and/or affiliates
+// Portions Copyright [2022] Payara Fondation and/or affiliates
 
 package com.sun.enterprise.deployment;
 
@@ -71,7 +71,10 @@ public class ResourceDescriptorRegistry implements Serializable {
         invalidResourceTypeScopes.put(JavaEEResourceType.JMSDD,new HashSet<>());
         invalidResourceTypeScopes.put(JavaEEResourceType.CFD,new HashSet<>(Arrays.asList(new Class[]{ApplicationClientDescriptor.class})));
         invalidResourceTypeScopes.put(JavaEEResourceType.AODD,new HashSet<>(Arrays.asList(new Class[]{ApplicationClientDescriptor.class})));
-
+        invalidResourceTypeScopes.put(JavaEEResourceType.MEDD,new HashSet<>());
+        invalidResourceTypeScopes.put(JavaEEResourceType.MTFDD,new HashSet<>());
+        invalidResourceTypeScopes.put(JavaEEResourceType.MSEDD,new HashSet<>());
+        invalidResourceTypeScopes.put(JavaEEResourceType.CSDD, new HashSet<>());
     }
 
     private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ResourceDescriptorRegistry.class);
@@ -90,6 +93,10 @@ public class ResourceDescriptorRegistry implements Serializable {
         allResourceDescriptors.addAll(this.getResourceDescriptors(JavaEEResourceType.AODD));
         allResourceDescriptors.addAll(this.getResourceDescriptors(JavaEEResourceType.JMSCFDD));
         allResourceDescriptors.addAll(this.getResourceDescriptors(JavaEEResourceType.JMSDD));
+        allResourceDescriptors.addAll(this.getResourceDescriptors(JavaEEResourceType.MEDD));
+        allResourceDescriptors.addAll(this.getResourceDescriptors(JavaEEResourceType.MTFDD));
+        allResourceDescriptors.addAll(this.getResourceDescriptors(JavaEEResourceType.MSEDD));
+        allResourceDescriptors.addAll(this.getResourceDescriptors(JavaEEResourceType.CSDD));
         return allResourceDescriptors;
     }
 

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 package org.glassfish.weld.ejb;
 
 import java.lang.reflect.Method;
@@ -45,7 +45,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.interceptor.InvocationContext;
+import jakarta.interceptor.InvocationContext;
 
 import org.jboss.weld.module.ejb.SessionBeanInterceptor;
 import org.jboss.weld.ejb.spi.BusinessInterfaceDescriptor;

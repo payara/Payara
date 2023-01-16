@@ -36,7 +36,7 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
- * Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+ * Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
  */
 
 package com.sun.ejb.containers.interceptors;
@@ -54,9 +54,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.PostConstruct;
-import javax.ejb.EJBException;
-import javax.interceptor.InvocationContext;
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.EJBException;
+import jakarta.interceptor.InvocationContext;
 
 import com.sun.ejb.EJBUtils;
 import com.sun.ejb.containers.BaseContainer;
@@ -684,7 +684,7 @@ public class InterceptorManager {
 
     private void load2xLifecycleMethods(List<CallbackInterceptor>[] metaArray) {
 
-        if (javax.ejb.EnterpriseBean.class.isAssignableFrom(beanClass)) {
+        if (jakarta.ejb.EnterpriseBean.class.isAssignableFrom(beanClass)) {
             int sz = lcAnnotationClasses.length;
             for (int i = 0; i < sz; i++) {
                 if (pre30LCMethodNames[i] == null) {

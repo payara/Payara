@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates.]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates.]
 package org.apache.catalina.core;
 
 import fish.payara.nucleus.requesttracing.RequestTracingService;
@@ -71,10 +71,10 @@ import org.glassfish.grizzly.http.server.util.MappingData;
 import org.glassfish.grizzly.http.util.CharChunk;
 import org.glassfish.grizzly.http.util.MessageBytes;
 
-import javax.servlet.*;
-import javax.servlet.http.HttpServletMapping;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.*;
+import jakarta.servlet.http.HttpServletMapping;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
@@ -93,8 +93,8 @@ import static org.apache.catalina.InstanceEvent.EventType.AFTER_DISPATCH_EVENT;
  * from this resource.  This implementation allows application level servlets
  * to wrap the request and/or response objects that are passed on to the
  * called resource, as long as the wrapping classes extend
- * <code>javax.servlet.ServletRequestWrapper</code> and
- * <code>javax.servlet.ServletResponseWrapper</code>.
+ * <code>jakarta.servlet.ServletRequestWrapper</code> and
+ * <code>jakarta.servlet.ServletResponseWrapper</code>.
  *
  * @author Craig R. McClanahan
  * @version $Revision: 1.16 $ $Date: 2007/02/26 22:57:08 $
@@ -1071,10 +1071,6 @@ public final class ApplicationDispatcher
 
             if (this.name != null) {
                 this.mappingForDispatch = computeNamedDispatchHttpServletMapping(context, hcurrent);
-            }
-
-            if (DispatcherType.ASYNC.equals(state.dispatcherType)) {
-                this.mappingForDispatch = hcurrent.getHttpServletMapping();
             }
 
             wrapper = new ApplicationHttpRequest

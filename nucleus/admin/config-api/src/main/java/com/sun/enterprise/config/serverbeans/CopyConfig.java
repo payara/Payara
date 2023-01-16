@@ -50,7 +50,7 @@ import org.glassfish.config.support.GenericCrudCommand;
 import org.glassfish.server.ServerEnvironmentImpl;
 import org.jvnet.hk2.config.TransactionFailure;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;

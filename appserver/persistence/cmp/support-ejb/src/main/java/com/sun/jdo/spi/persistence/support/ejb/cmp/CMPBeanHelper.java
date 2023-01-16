@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2021] Payara Foundation and/or affiliates
 
 /*
  * CMPBeanHelper.java
@@ -54,9 +54,9 @@ import com.sun.jdo.spi.persistence.support.sqlstore.ejb.EJBHelper;
 import com.sun.jdo.spi.persistence.utility.logging.Logger;
 import org.glassfish.persistence.common.I18NHelper;
 
-import javax.ejb.DuplicateKeyException;
-import javax.ejb.EJBException;
-import javax.ejb.ObjectNotFoundException;
+import jakarta.ejb.DuplicateKeyException;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.ObjectNotFoundException;
 import java.util.Collection;
 import java.util.ResourceBundle;
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2021 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2022 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,7 +39,6 @@
  */
 package fish.payara.micro.cdi.extension;
 
-import com.sun.enterprise.util.Utility;
 import fish.payara.micro.cdi.Outbound;
 import fish.payara.micro.cdi.Inbound;
 import fish.payara.micro.cdi.ClusteredCDIEventBus;
@@ -54,15 +53,15 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.enterprise.concurrent.ManagedExecutorService;
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.context.Initialized;
-import javax.enterprise.event.Observes;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.EventMetadata;
-import javax.inject.Inject;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
+import jakarta.enterprise.concurrent.ManagedExecutorService;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.Initialized;
+import jakarta.enterprise.event.Observes;
+import jakarta.enterprise.inject.spi.BeanManager;
+import jakarta.enterprise.inject.spi.EventMetadata;
+import jakarta.inject.Inject;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import org.glassfish.internal.api.Globals;
@@ -167,7 +166,8 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
                         }
                     }
                     Annotation annotations[] = qualifiers.toArray(new Annotation[0]);
-                    bm.fireEvent(eventPayload,annotations);
+                    bm.getEvent().select(annotations).fire(eventPayload);
+                    // todo review what to do with this, Do I need to replace with something new?
                 } catch (IOException | ClassNotFoundException ex) {
                     Logger.getLogger(ClusteredCDIEventBusImpl.class.getName())
                             .log(ex.getCause() instanceof IllegalStateException ? Level.FINE : Level.INFO,

@@ -43,7 +43,7 @@ package com.sun.enterprise.transaction.api;
 import javax.sql.*;
 import javax.transaction.xa.*;
 import javax.security.auth.Subject;
-import javax.resource.spi.ManagedConnection;
+import jakarta.resource.spi.ManagedConnection;
 
 import com.sun.enterprise.util.i18n.StringManager;
 

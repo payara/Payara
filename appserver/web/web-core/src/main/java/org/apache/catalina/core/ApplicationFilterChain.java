@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2021] Payara Foundation and/or affiliates
 
 package org.apache.catalina.core;
 
@@ -65,8 +65,8 @@ import org.apache.catalina.LogFacade;
 import org.apache.catalina.security.SecurityUtil;
 import org.apache.catalina.util.InstanceSupport;
 
-import javax.servlet.*;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.*;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.security.Principal;
 import java.security.PrivilegedActionException;
@@ -78,7 +78,7 @@ import static org.apache.catalina.InstanceEvent.EventType.AFTER_FILTER_EVENT;
 import static org.apache.catalina.InstanceEvent.EventType.BEFORE_FILTER_EVENT;
 
 /**
- * Implementation of <code>javax.servlet.FilterChain</code> used to manage
+ * Implementation of <code>jakarta.servlet.FilterChain</code> used to manage
  * the execution of a set of filters for a particular request.  When the
  * set of defined filters has all been executed, the next call to
  * <code>doFilter()</code> will execute the servlet's <code>service()</code>

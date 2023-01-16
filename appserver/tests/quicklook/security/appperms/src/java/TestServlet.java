@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2021] Payara Foundation and/or affiliates
 
 package myapp;
 
@@ -46,11 +46,11 @@ import java.net.*;
 import java.security.AccessControlException;
 import java.security.AccessController;
 
-import javax.ejb.EJB;
+import jakarta.ejb.EJB;
 import javax.naming.*;
 
-import javax.servlet.*;
-import javax.servlet.http.*;
+import jakarta.servlet.*;
+import jakarta.servlet.http.*;
 
 public class TestServlet extends HttpServlet {
 

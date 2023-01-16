@@ -40,9 +40,9 @@
 
 package jsfinjection;
 
-import javax.annotation.Resource;
-import javax.servlet.*;
-import javax.servlet.http.*;
+import jakarta.annotation.Resource;
+import jakarta.servlet.*;
+import jakarta.servlet.http.*;
 import javax.sql.DataSource;
 import javax.naming.*;
 
@@ -56,7 +56,7 @@ public class FilterTest implements Filter{
         System.out.println("[Filter.destroy]");
     }    
     
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain) throws java.io.IOException, javax.servlet.ServletException {
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain) throws java.io.IOException, jakarta.servlet.ServletException {
         System.out.println("[Filter.doFilter]");
 
         String msg = "PASS";
@@ -86,7 +86,7 @@ public class FilterTest implements Filter{
     }    
     
     
-    public void init(javax.servlet.FilterConfig filterConfig) throws javax.servlet.ServletException {
+    public void init(jakarta.servlet.FilterConfig filterConfig) throws jakarta.servlet.ServletException {
         System.out.println("[Filter.init]");
         context = filterConfig.getServletContext();
     }

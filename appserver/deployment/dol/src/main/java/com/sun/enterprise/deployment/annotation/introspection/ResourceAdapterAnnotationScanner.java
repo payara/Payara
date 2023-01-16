@@ -42,7 +42,7 @@ package com.sun.enterprise.deployment.annotation.introspection;
 
 import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 
 import java.util.Set;
 import java.util.HashSet;
@@ -76,14 +76,14 @@ public class ResourceAdapterAnnotationScanner implements AnnotationScanner {
 
     private void init() {
         annotations = new HashSet();
-        annotations.add("Ljavax/resource/spi/Connector;");
-        annotations.add("Ljavax/resource/spi/AdministeredObject;");
-        annotations.add("Ljavax/resource/spi/Activation;");
-        annotations.add("Ljavax/resource/spi/AuthenticationMechanism;");
-        annotations.add("Ljavax/resource/spi/ConfigProperty;");
-        annotations.add("Ljavax/resource/spi/ConnectionDefinition;");
-        annotations.add("Ljavax/resource/spi/ConnectionDefinitions;");
-        annotations.add("Ljavax/resource/spi/SecurityPermission;");
+        annotations.add("Ljakarta/resource/spi/Connector;");
+        annotations.add("Ljakarta/resource/spi/AdministeredObject;");
+        annotations.add("Ljakarta/resource/spi/Activation;");
+        annotations.add("Ljakarta/resource/spi/AuthenticationMechanism;");
+        annotations.add("Ljakarta/resource/spi/ConfigProperty;");
+        annotations.add("Ljakarta/resource/spi/ConnectionDefinition;");
+        annotations.add("Ljakarta/resource/spi/ConnectionDefinitions;");
+        annotations.add("Ljakarta/resource/spi/SecurityPermission;");
     }
 
     @Override

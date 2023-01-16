@@ -152,8 +152,8 @@ public abstract class Generator {
     }
 
     /**
-     * Return true if method is on a javax.ejb.EJBObject/EJBLocalObject/
-     * javax.ejb.EJBHome,javax.ejb.EJBLocalHome interface.
+     * Return true if method is on a jakarta.ejb.EJBObject/EJBLocalObject/
+     * jakarta.ejb.EJBHome,jakarta.ejb.EJBLocalHome interface.
      */
     protected boolean isEJBIntfMethod(Class ejbIntfClz, Method methodToCheck) {
         boolean isEJBIntfMethod = false;

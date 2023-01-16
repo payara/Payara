@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 package org.apache.catalina.session;
 
 import org.apache.catalina.LogFacade;
@@ -46,7 +46,7 @@ import org.apache.catalina.Session;
 import java.io.*;
 import java.text.MessageFormat;
 import java.util.*;
-import javax.servlet.http.*;
+import jakarta.servlet.http.*;
 
 /**
  * Session manager for cookie-based persistence, where cookies carry session state.

@@ -37,14 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2021] Payara Foundation and/or affiliates
 
 package com.sun.ejb.containers;
 
 import org.glassfish.common.util.timer.TimerSchedule;
 import org.glassfish.ejb.deployment.descriptor.ScheduledTimerDescriptor;
 
-import javax.ejb.ScheduleExpression;
+import jakarta.ejb.ScheduleExpression;
 
 /**
  * A runtime representation of the user-defined calendar-based

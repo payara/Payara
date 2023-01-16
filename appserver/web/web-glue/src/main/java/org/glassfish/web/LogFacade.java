@@ -59,7 +59,7 @@ public class LogFacade {
             "com.sun.enterprise.web.LogMessages";
 
     @LoggerInfo(subsystem="WEB", description="Main WEB Logger", publish=true)
-    public static final String WEB_MAIN_LOGGER = "javax.enterprise.web";
+    public static final String WEB_MAIN_LOGGER = "jakarta.enterprise.web";
 
     public static final Logger LOGGER =
             Logger.getLogger(WEB_MAIN_LOGGER, SHARED_LOGMESSAGE_RESOURCE);

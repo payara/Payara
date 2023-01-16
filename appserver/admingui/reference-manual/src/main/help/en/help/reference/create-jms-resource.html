@@ -123,10 +123,10 @@ options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> 
 </dd>
 <dt class="hdlist1"><code>--restype</code></dt>
 <dd>
-<p>The JMS resource type, which can be <code>javax.jms.Topic</code>,
-<code>javax.jms.Queue</code>, <code>javax.jms.ConnectionFactory</code>,
-<code>javax.jms.TopicConnectionFactory</code>, or
-<code>javax.jms.QueueConnectionFactory</code>.</p>
+<p>The JMS resource type, which can be <code>jakarta.jms.Topic</code>,
+<code>jakarta.jms.Queue</code>, <code>jakarta.jms.ConnectionFactory</code>,
+<code>jakarta.jms.TopicConnectionFactory</code>, or
+<code>jakarta.jms.QueueConnectionFactory</code>.</p>
 </dd>
 <dt class="hdlist1"><code>--target</code></dt>
 <dd>
@@ -315,7 +315,7 @@ subscriptions</p>
 </div>
 <div class="paragraph">
 <p>The following subcommand creates a connection factory resource of type
-<code>javax.jms.ConnectionFactory</code> whose JNDI name is
+<code>jakarta.jms.ConnectionFactory</code> whose JNDI name is
 <code>jms/DurableConnectionFactory</code>. The <code>ClientId</code> property sets a client ID
 on the connection factory so that it can be used for durable
 subscriptions. The JNDI name for a JMS resource customarily includes the
@@ -323,7 +323,7 @@ subscriptions. The JNDI name for a JMS resource customarily includes the
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; create-jms-resource --restype javax.jms.ConnectionFactory
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; create-jms-resource --restype jakarta.jms.ConnectionFactory
 --description "connection factory for durable subscriptions"
 --property ClientId=MyID jms/DurableConnectionFactory
 Connector resource jms/DurableConnectionFactory created.
@@ -343,7 +343,7 @@ to which the resource refers.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; create-jms-resource --restype javax.jms.Queue
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; create-jms-resource --restype jakarta.jms.Queue
 --property Name=PhysicalQueue jms/MyQueue
 Administered object jms/MyQueue created.
 Command create-jms-resource executed successfully.</code></pre>

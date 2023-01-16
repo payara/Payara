@@ -41,9 +41,9 @@
 package roster;
 
 import java.util.ArrayList;
-import javax.ejb.EJBLocalObject;
-import javax.ejb.FinderException;
-import javax.ejb.RemoveException;
+import jakarta.ejb.EJBLocalObject;
+import jakarta.ejb.FinderException;
+import jakarta.ejb.RemoveException;
 import util.LeagueDetails;
 import util.PlayerDetails;
 import util.TeamDetails;

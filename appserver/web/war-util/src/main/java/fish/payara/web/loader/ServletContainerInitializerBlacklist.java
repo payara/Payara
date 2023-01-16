@@ -40,7 +40,7 @@
 
 package fish.payara.web.loader;
 
-import javax.servlet.ServletContainerInitializer;
+import jakarta.servlet.ServletContainerInitializer;
 import java.util.Map;
 import java.util.Set;
 

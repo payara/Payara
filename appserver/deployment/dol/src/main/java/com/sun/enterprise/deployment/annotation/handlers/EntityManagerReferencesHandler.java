@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2020] Payara Foundation and/or affiliates
+// Portions Copyright [2020-2021] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment.annotation.handlers;
 
@@ -47,15 +47,14 @@ import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
 import org.jvnet.hk2.annotations.Service;
-
-import javax.persistence.PersistenceContext;
-import javax.persistence.PersistenceContexts;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.PersistenceContexts;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * This handler is responsible for handling the 
- * javax.persistence.PersistenceContexts annotation.
+ * jakarta.persistence.PersistenceContexts annotation.
  *
  */
 @Service

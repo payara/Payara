@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2022] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.web;
 
 
@@ -44,11 +45,11 @@ import java.io.*;
 import java.net.*;
 import java.text.MessageFormat;
 import java.util.*;
-import javax.servlet.*;
-import javax.servlet.descriptor.JspConfigDescriptor;
-import javax.servlet.http.HttpSessionAttributeListener;
-import javax.servlet.http.HttpSessionIdListener;
-import javax.servlet.http.HttpSessionListener;
+import jakarta.servlet.*;
+import jakarta.servlet.descriptor.JspConfigDescriptor;
+import jakarta.servlet.http.HttpSessionAttributeListener;
+import jakarta.servlet.http.HttpSessionIdListener;
+import jakarta.servlet.http.HttpSessionListener;
 
 import org.apache.catalina.core.*;
 import org.apache.catalina.deploy.FilterDef;
@@ -194,28 +195,8 @@ public class ContextFacade extends WebModule {
     }
 
     @Override
-    public Servlet getServlet(String name) {
-        return context.getServlet(name);
-    }
-
-    @Override
-    public Enumeration<Servlet> getServlets() {
-        return context.getServlets();
-    }
-
-    @Override
-    public Enumeration<String> getServletNames() {
-        return context.getServletNames();
-    }
-
-    @Override
     public void log(String msg) {
         context.log(msg);
-    }
-
-    @Override
-    public void log(Exception exception, String msg) {
-        context.log(exception, msg);
     }
 
     @Override

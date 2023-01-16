@@ -69,9 +69,9 @@ import org.glassfish.api.admin.RestRedirect;
 
 import org.glassfish.quality.ToDo;
 
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * Defines configuration used to create and manage

@@ -37,13 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.containers.interceptors;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import javax.interceptor.InvocationContext;
+import jakarta.interceptor.InvocationContext;
 
 import com.sun.ejb.containers.EJBContextImpl;
 import com.sun.ejb.containers.BaseContainer;

@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates]
 package org.apache.catalina;
 
 import java.beans.PropertyChangeListener;
@@ -63,8 +63,8 @@ import java.io.IOException;
 import java.security.Principal;
 import java.security.cert.X509Certificate;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.apache.catalina.deploy.SecurityConstraint;
 import org.glassfish.hk2.api.PerLookup;

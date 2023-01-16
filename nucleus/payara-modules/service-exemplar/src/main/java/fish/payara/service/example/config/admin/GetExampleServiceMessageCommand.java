@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Payara Foundation. All rights reserved.
+ * Copyright (c) 2016-2021 Payara Foundation. All rights reserved.
  *
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
@@ -16,7 +16,7 @@ package fish.payara.service.example.config.admin;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import fish.payara.service.example.config.ExampleServiceConfiguration;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;

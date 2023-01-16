@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.jaspic.callback;
 
 import static com.sun.enterprise.security.common.AppservAccessController.privileged;
@@ -45,7 +45,7 @@ import static java.util.Arrays.stream;
 
 import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
-import javax.security.auth.message.callback.GroupPrincipalCallback;
+import jakarta.security.auth.message.callback.GroupPrincipalCallback;
 
 import org.glassfish.security.common.Group;
 

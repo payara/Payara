@@ -42,7 +42,7 @@ package org.glassfish.ejb.deployment.annotation.handlers;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import javax.ejb.PostActivate;
+import jakarta.ejb.PostActivate;
 
 import com.sun.enterprise.deployment.EjbInterceptor;
 import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
@@ -56,7 +56,7 @@ import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
 import org.jvnet.hk2.annotations.Service;
 
 /**
- * This handler is responsible for handling javax.ejb.PostActivate 
+ * This handler is responsible for handling jakarta.ejb.PostActivate 
  *
  */
 @Service

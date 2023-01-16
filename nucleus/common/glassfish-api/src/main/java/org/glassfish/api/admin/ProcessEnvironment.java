@@ -42,7 +42,7 @@ package org.glassfish.api.admin;
 
 import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 
 /**
  * Process environment allow access to information related to the execution or process.

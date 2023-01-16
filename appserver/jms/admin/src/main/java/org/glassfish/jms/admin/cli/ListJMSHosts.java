@@ -60,7 +60,7 @@ import org.glassfish.config.support.TargetType;
 import org.glassfish.api.admin.RuntimeType;
 import java.util.ArrayList;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.glassfish.api.admin.*;
 

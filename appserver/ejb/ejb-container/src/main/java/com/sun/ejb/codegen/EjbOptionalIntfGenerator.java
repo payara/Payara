@@ -428,7 +428,7 @@ public class EjbOptionalIntfGenerator
         GeneratorAdapter mg = new GeneratorAdapter(access, asmMethod, null,
                 getExceptionTypes(m), cv);
 
-        mg.throwException(Type.getType(javax.ejb.EJBException.class),
+        mg.throwException(Type.getType(jakarta.ejb.EJBException.class),
                 "Illegal non-business method access on no-interface view");
         
         mg.returnValue();

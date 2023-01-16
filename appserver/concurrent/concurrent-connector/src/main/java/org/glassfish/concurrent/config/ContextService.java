@@ -55,7 +55,7 @@ import org.jvnet.hk2.config.*;
 import org.glassfish.resourcebase.resources.ResourceTypeOrder;
 import org.glassfish.resourcebase.resources.ResourceDeploymentOrder;
 
-import javax.validation.Payload;
+import jakarta.validation.Payload;
 
 /**
  * Concurrency context service resource definition

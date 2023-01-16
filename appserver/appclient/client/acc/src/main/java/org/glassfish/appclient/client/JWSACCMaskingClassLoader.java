@@ -85,7 +85,7 @@ class JWSACCMaskingClassLoader extends MaskingClassLoader {
          * Currently the only masked packages start with javax. or org.
          * Check the prefix as an optimization to avoid searching the collection.
          */
-        if (!(name.startsWith("javax.") || name.startsWith("org."))) {
+        if (!(name.startsWith("javax.") || name.startsWith("jakarta.") || name.startsWith("org."))) {
             return true;
         }
         

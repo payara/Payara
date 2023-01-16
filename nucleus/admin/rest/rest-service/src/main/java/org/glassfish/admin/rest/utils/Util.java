@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2021] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.rest.utils;
 
@@ -51,8 +51,8 @@ import java.io.InputStream;
 import com.sun.enterprise.util.io.FileUtils;
 import org.glassfish.admin.rest.provider.ProviderUtil;
 
-import javax.ws.rs.client.Client;
-import javax.ws.rs.core.UriInfo;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.core.UriInfo;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -66,9 +66,9 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Level;
 import javax.security.auth.Subject;
-import javax.ws.rs.core.PathSegment;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.PathSegment;
+import jakarta.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.core.HttpHeaders;
 import org.glassfish.admin.rest.Constants;
 import org.glassfish.admin.rest.RestLogging;
 

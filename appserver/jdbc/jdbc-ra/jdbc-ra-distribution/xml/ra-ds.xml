@@ -40,11 +40,13 @@
     holder.
 
 -->
-<!-- Portions Copyright [2020] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright 2020-2022 Payara Foundation and/or its affiliates -->
 
-<connector xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-           xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/connector_1_5.xsd"
-           version="1.5">
+<connector xmlns="https://jakarta.ee/xml/ns/jakartaee"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee
+           https://jakarta.ee/xml/ns/jakartaee/connector_2_0.xsd"
+           version="2.0">
 
     <!-- There can be any number of "description" elements including 0 -->
     <!-- This field can be optionally used by the driver vendor to provide a
@@ -233,20 +235,10 @@
 
                 <connectionfactory-interface>javax.sql.DataSource</connectionfactory-interface>
 
-                <!-- Since 9.1 supports both JDBC 3.0 and JDBC 4.0,
-                ConnectionFactory will be
-                com.sun.gjc.spi.jdbc30.DataSource (JDK 1.5) or
-                com.sun.gjc.spi.jdbc40.DataSource (JDK 1.6)
-                -->
                 <connectionfactory-impl-class>com.sun.gjc.spi.DataSource</connectionfactory-impl-class>
 
                 <connection-interface>java.sql.Connection</connection-interface>
 
-                <!-- Since 9.1 supports both JDBC 3.0 and JDBC 4.0,
-                Connection will be
-                com.sun.gjc.spi.jdbc30.ConnectionHolder30 (JDK 1.5) or
-                com.sun.gjc.spi.jdbc40.ConnectionHolder40 (JDK 1.6)
-                -->
                 <connection-impl-class>com.sun.gjc.spi.ConnectionHolder</connection-impl-class>
 
             </connection-definition>
@@ -259,7 +251,7 @@
 
                 <authentication-mechanism-type>BasicPassword</authentication-mechanism-type>
 
-                <credential-interface>javax.resource.spi.security.PasswordCredential</credential-interface>
+                <credential-interface>jakarta.resource.spi.security.PasswordCredential</credential-interface>
             </authentication-mechanism>
 
             <reauthentication-support>false</reauthentication-support>

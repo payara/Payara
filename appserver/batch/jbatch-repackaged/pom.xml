@@ -2,7 +2,7 @@
 <!--
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
- Copyright (c) [2016-2019] Payara Foundation and/or its affiliates. All rights reserved.
+ Copyright (c) [2016-2021] Payara Foundation and/or its affiliates. All rights reserved.
 
  The contents of this file are subject to the terms of either the GNU
  General Public License Version 2 only ("GPL") or the Common Development
@@ -44,7 +44,7 @@
     <parent>
         <groupId>fish.payara.server.internal.batch</groupId>
         <artifactId>batch</artifactId>
-        <version>5.2023.1-SNAPSHOT</version>
+        <version>6.2023.2-SNAPSHOT</version>
     </parent>
 
     <artifactId>payara-jbatch</artifactId>
@@ -124,31 +124,31 @@
                         </Export-Package>
                         <Import-Package>
                             com.ibm.websphere.asynchbeans;resolution:=optional,
-                            javax.annotation;version="[1.1,2)";resolution:=optional,
-                            javax.batch.api,
-                            javax.batch.api.chunk,
-                            javax.batch.api.chunk.listener,
-                            javax.batch.api.listener,
-                            javax.batch.api.partition,
-                            javax.batch.operations,
-                            javax.batch.runtime,
-                            javax.batch.runtime.context,
-                            javax.enterprise.context;resolution:=optional,
-                            javax.enterprise.context.spi;resolution:=optional,
-                            javax.enterprise.inject;resolution:=optional,
-                            javax.enterprise.event;version="[2.0,3)";resolution:=optional,
-                            javax.enterprise.inject.spi;resolution:=optional,
-                            javax.enterprise.util;resolution:=optional,
-                            javax.inject;version="[1.0,2)",
+                            jakarta.annotation;version="[2.0,3)";resolution:=optional,
+                            jakarta.batch.api,
+                            jakarta.batch.api.chunk,
+                            jakarta.batch.api.chunk.listener,
+                            jakarta.batch.api.listener,
+                            jakarta.batch.api.partition,
+                            jakarta.batch.operations,
+                            jakarta.batch.runtime,
+                            jakarta.batch.runtime.context,
+                            jakarta.enterprise.context;resolution:=optional,
+                            jakarta.enterprise.context.spi;resolution:=optional,
+                            jakarta.enterprise.inject;resolution:=optional,
+                            jakarta.enterprise.event;version="[3.0,4)";resolution:=optional,
+                            jakarta.enterprise.inject.spi;resolution:=optional,
+                            jakarta.enterprise.util;resolution:=optional,
+                            jakarta.inject;version="[2.0,3)",
                             javax.naming,
                             javax.naming.spi,
                             javax.sql,
-                            javax.transaction;version="1.1.0";resolution:=optional,
-                            javax.transaction.cdi;version="[4.0,5)";resolution:=optional,
+                            jakarta.transaction;version="2.0.0";resolution:=optional,
+                            jakarta.transaction.cdi;version="[4.0,5)";resolution:=optional,
                             javax.xml,
-                            javax.xml.bind,
-                            javax.xml.bind.annotation,
-                            javax.xml.bind.annotation.adapters,
+                            jakarta.xml.bind,
+                            jakarta.xml.bind.annotation,
+                            jakarta.xml.bind.annotation.adapters,
                             javax.xml.namespace,
                             javax.xml.stream,
                             javax.xml.transform,

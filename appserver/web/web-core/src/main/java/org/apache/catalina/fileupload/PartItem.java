@@ -56,14 +56,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 package org.apache.catalina.fileupload;
 
 import org.apache.catalina.Globals;
 import org.apache.catalina.LogFacade;
 import org.apache.catalina.util.RequestUtil;
 
-import javax.servlet.http.Part;
+import jakarta.servlet.http.Part;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.util.*;

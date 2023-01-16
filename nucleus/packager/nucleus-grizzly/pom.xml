@@ -39,7 +39,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+    Portions Copyright 2018-2022 Payara Foundation and/or its affiliates
 -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
@@ -48,7 +48,7 @@
     <parent>
         <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>nucleus-packages</artifactId>
-        <version>5.2023.1-SNAPSHOT</version>
+        <version>6.2023.2-SNAPSHOT</version>
     </parent>
 
     <artifactId>nucleus-grizzly</artifactId>
@@ -62,7 +62,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>fish.payara.server.internal.grizzly</groupId>
+            <groupId>fish.payara.server.core.grizzly</groupId>
             <artifactId>nucleus-grizzly-all</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
@@ -94,36 +94,6 @@
                                     <artifactId>grizzly-npn-api</artifactId>
                                     <version>${grizzly.npn.api.version}</version>
                                     <destFileName>grizzly-npn-api.jar</destFileName>
-                                </artifactItem>
-                                <!-- NPN Bootstrap versions are referenced in domain.xml, real time version depends on JDK used -->
-                                <!-- Default NPN Bootstrap Jar for old domain.xml files without bootclasspath changes -->
-                                <!-- It is 1.8.1, compatible with JDK 8u191-8u250; newer JDK versions do not need bootstrap -->
-                                <artifactItem>
-                                    <groupId>org.glassfish.grizzly</groupId>
-                                    <artifactId>grizzly-npn-bootstrap</artifactId>
-                                    <version>1.8.1</version>
-                                    <destFileName>grizzly-npn-bootstrap.jar</destFileName>
-                                </artifactItem>
-                                <!-- Other versioned NPN Bootstrap Jars referenced in new domain.xml (since 5.184) -->
-                                <artifactItem>
-                                    <groupId>org.glassfish.grizzly</groupId>
-                                    <artifactId>grizzly-npn-bootstrap</artifactId>
-                                    <version>1.8.1</version>
-                                </artifactItem>
-                                <artifactItem>
-                                    <groupId>org.glassfish.grizzly</groupId>
-                                    <artifactId>grizzly-npn-bootstrap</artifactId>
-                                    <version>1.8</version>
-                                </artifactItem>
-                                <artifactItem>
-                                    <groupId>org.glassfish.grizzly</groupId>
-                                    <artifactId>grizzly-npn-bootstrap</artifactId>
-                                    <version>1.7</version>
-                                </artifactItem>
-                                <artifactItem>
-                                    <groupId>org.glassfish.grizzly</groupId>
-                                    <artifactId>grizzly-npn-bootstrap</artifactId>
-                                    <version>1.6</version>
                                 </artifactItem>
                             </artifactItems>
                             <outputDirectory>${project.build.directory}/dependency/lib</outputDirectory>

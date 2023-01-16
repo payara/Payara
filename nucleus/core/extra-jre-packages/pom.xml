@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server.internal.core</groupId>
         <artifactId>nucleus-core</artifactId>
-        <version>5.2023.1-SNAPSHOT</version>
+        <version>6.2023.2-SNAPSHOT</version>
     </parent>
     <artifactId>glassfish-extra-jre-packages</artifactId>
     <name>GlassFish Extra JRE Packages</name>
@@ -94,7 +94,6 @@
                                     com.sun.j3d.utils.image,
                                     com.sun.j3d.utils.timer,
                                     com.sun.java.swing.plaf.windows,
-                                    com.sun.jndi.cosnaming,
                                     com.sun.jndi.ldap,
                                     com.sun.mirror.apt,
                                     com.sun.mirror.declaration,

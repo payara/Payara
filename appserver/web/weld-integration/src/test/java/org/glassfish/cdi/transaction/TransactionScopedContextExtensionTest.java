@@ -37,14 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.cdi.transaction;
 
 import org.easymock.EasyMockSupport;
 import org.junit.Test;
 
-import javax.enterprise.inject.spi.*;
+import jakarta.enterprise.inject.spi.*;
 
 import static org.easymock.EasyMock.anyObject;
 import static org.easymock.EasyMock.expect;

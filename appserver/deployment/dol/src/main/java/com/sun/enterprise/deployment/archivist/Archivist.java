@@ -67,7 +67,7 @@ import org.glassfish.deployment.common.*;
 import org.glassfish.hk2.api.MultiException;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.classmodel.reflect.*;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.jvnet.hk2.annotations.Contract;
 import org.xml.sax.SAXParseException;
 

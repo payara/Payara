@@ -59,7 +59,7 @@ import org.jvnet.hk2.annotations.Contract;
  * @author Sanjeeb Sahoo
  */
 @Contract
-@javax.inject.Singleton
+@jakarta.inject.Singleton
 public abstract class ArchiveType {
     /**
      * File extension for this type of archive. Empty string is used if there is no extension specified.

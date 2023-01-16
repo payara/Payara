@@ -42,7 +42,7 @@ package com.sun.enterprise.deployment.web;
 
 import java.util.List;
 import java.util.Set;
-import javax.servlet.DispatcherType;
+import jakarta.servlet.DispatcherType;
 
 /** Servlet filter objects */
 public interface ServletFilterMapping {

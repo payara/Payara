@@ -46,7 +46,7 @@
 
 package com.sun.jdo.spi.persistence.support.sqlstore.ejb;
 
-import javax.transaction.*;
+import jakarta.transaction.*;
 
 import com.sun.jdo.api.persistence.model.ClassLoaderStrategy;
 import com.sun.jdo.api.persistence.support.JDOFatalInternalException;
@@ -114,15 +114,15 @@ abstract public class TransactionHelperImpl
     abstract public UserTransaction getUserTransaction();
 
     /** Translate local representation of the Transaction Status to
-     * javax.transaction.Status value if necessary. Otherwise this method
+     * jakarta.transaction.Status value if necessary. Otherwise this method
      * should return the value passed to it as an argument.
      * <P>This method is used during afterCompletion callbacks to translate
      * the parameter value passed by the application server to the
      * afterCompletion method.  The return value must be one of:
-     * <code>javax.transaction.Status.STATUS_COMMITTED</code> or
-     * <code>javax.transaction.Status.STATUS_ROLLED_BACK</code>.
+     * <code>jakarta.transaction.Status.STATUS_COMMITTED</code> or
+     * <code>jakarta.transaction.Status.STATUS_ROLLED_BACK</code>.
      * @param   st      local Status value
-     * @return the javax.transaction.Status value of the status
+     * @return the jakarta.transaction.Status value of the status
      */
     public int translateStatus(int st) {
         return st;
@@ -157,7 +157,7 @@ abstract public class TransactionHelperImpl
      * The second element is com.sun.jdo.api.persistence.support.PersistenceManager
      * object that has been associated with the Transaction context for the
      * calling thread.
-     * The third element is javax.transaction.Transaction object that has been
+     * The third element is jakarta.transaction.Transaction object that has been
      * associated with the given instance of PersistenceManager.
      * The return value is passed unchanged to the postInvoke method.
      *   
@@ -185,8 +185,8 @@ abstract public class TransactionHelperImpl
     *
     * @param jta the Transaction instance for the calling thread.
     * @param sync the internal Synchronization instance to register.
-    * @throws javax.transaction.RollbackException.
-    * @throws javax.transaction.SystemException
+    * @throws jakarta.transaction.RollbackException.
+    * @throws jakarta.transaction.SystemException
     */
     public void registerSynchronization(Transaction jta, Synchronization sync) 
         throws RollbackException, SystemException {
@@ -239,7 +239,7 @@ abstract public class TransactionHelperImpl
      * for managing local transaction boundaries and registering synchronization
      * for call backs during completion of a local transaction.
      * 
-     * @return javax.transaction.TransactionManager
+     * @return jakarta.transaction.TransactionManager
      */
     abstract public TransactionManager getLocalTransactionManager();
 

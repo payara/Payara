@@ -407,21 +407,21 @@ public abstract class LocalServerCommand extends CLICommand {
         waitForRestart(oldServerPid, CLIConstants.WAIT_FOR_DAS_TIME_MS);
     }
 
-        /**
-         * Byron Nevins Says: We have quite a historical assortment of ways to determine
-         * if a server has restarted. There are little teeny timing issues with all of
-         * them. I'm confident that this new technique will clear them all up. Here we
-         * are just monitoring the PID of the new server and comparing it to the pid of
-         * the old server. The oldServerPid is guaranteed to be either the PID of the
-         * "old" server or -1 if we couldn't get it -- or it isn't running. If it is -1
-         * then we make the assumption that once we DO get a valid pid that the server
-         * has started. If the old pid is valid we simply poll until we get a different
-         * pid. Notice that we will never get a valid pid back unless the server is
-         * officially up and running and "STARTED" Created April 2013
-         *
-         * @param oldServerPid The pid of the server which is being restarted.
-         * @throws CommandException if we time out.
-         */
+    /**
+     * Byron Nevins Says: We have quite a historical assortment of ways to determine
+     * if a server has restarted. There are little teeny timing issues with all of
+     * them. I'm confident that this new technique will clear them all up. Here we
+     * are just monitoring the PID of the new server and comparing it to the pid of
+     * the old server. The oldServerPid is guaranteed to be either the PID of the
+     * "old" server or -1 if we couldn't get it -- or it isn't running. If it is -1
+     * then we make the assumption that once we DO get a valid pid that the server
+     * has started. If the old pid is valid we simply poll until we get a different
+     * pid. Notice that we will never get a valid pid back unless the server is
+     * officially up and running and "STARTED" Created April 2013
+     *
+     * @param oldServerPid The pid of the server which is being restarted.
+     * @throws CommandException if we time out.
+     */
     protected final void waitForRestart(final int oldServerPid, long timeout) throws CommandException {
         long end = getEndTime(timeout);
 

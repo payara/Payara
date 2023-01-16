@@ -44,7 +44,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.logging.Level;
 
-import javax.interceptor.AroundConstruct;
+import jakarta.interceptor.AroundConstruct;
 
 import com.sun.enterprise.deployment.EjbInterceptor;
 import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
@@ -58,7 +58,7 @@ import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
 import org.jvnet.hk2.annotations.Service;
 
 /**
- * This handler is responsible for handling javax.intercept.AroundConstruct 
+ * This handler is responsible for handling jakarta.intercept.AroundConstruct 
  *
  */
 @Service

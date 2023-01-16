@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2022 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,22 +41,22 @@ package fish.payara.security.jaspic;
 
 import java.util.Map;
 import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.message.AuthException;
-import javax.security.auth.message.config.AuthConfigFactory;
-import javax.security.auth.message.config.AuthConfigProvider;
-import javax.security.auth.message.config.ClientAuthConfig;
-import javax.security.auth.message.config.ServerAuthConfig;
+import jakarta.security.auth.message.AuthException;
+import jakarta.security.auth.message.config.AuthConfigFactory;
+import jakarta.security.auth.message.config.AuthConfigProvider;
+import jakarta.security.auth.message.config.ClientAuthConfig;
+import jakarta.security.auth.message.config.ServerAuthConfig;
 
 /**
  *
  * @author steve
  */
 class SimpleSAMAuthConfigProvider implements AuthConfigProvider {
-    
-    private final Map<String,String> properties;
+
+    private final Map<String, Object> properties;
     private Class samClass;
     
-    SimpleSAMAuthConfigProvider(Map<String,String> properties, AuthConfigFactory factory, Class samClass) {
+    SimpleSAMAuthConfigProvider(Map<String, Object> properties, AuthConfigFactory factory, Class samClass) {
         this.properties = properties;
         this.samClass = samClass;
         if (factory != null) {

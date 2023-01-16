@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2021] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.resources.javamail.deployer;
@@ -64,8 +64,8 @@ import org.glassfish.resourcebase.resources.util.ResourceUtil;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.types.Property;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import javax.naming.NamingException;
 import java.util.Collection;
 import java.util.List;
@@ -257,7 +257,7 @@ public class MailResourceDeployer extends GlobalResourceDeployer
 
             MailConfiguration config = new MailConfiguration(mailResource);
 
-            javax.naming.Reference ref = new javax.naming.Reference(javax.mail.Session.class.getName(),
+            javax.naming.Reference ref = new javax.naming.Reference(jakarta.mail.Session.class.getName(),
                     MailNamingObjectFactory.class.getName(), null);
             SerializableObjectRefAddr serializableRefAddr = new SerializableObjectRefAddr("jndiName", config);
             ref.add(serializableRefAddr);

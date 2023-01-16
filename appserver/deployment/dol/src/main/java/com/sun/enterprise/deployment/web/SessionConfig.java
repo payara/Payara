@@ -41,7 +41,7 @@
 package com.sun.enterprise.deployment.web;
 
 import java.util.Set;
-import javax.servlet.SessionTrackingMode;
+import jakarta.servlet.SessionTrackingMode;
 
 /**
  * Objects exhibiting this interface represent a session-config for a servlet.

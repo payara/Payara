@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2021] Payara Foundation and/or affiliates
 
 package org.apache.catalina.core;
 
@@ -69,9 +69,9 @@ import org.apache.catalina.util.StringManager;
 import org.apache.catalina.valves.ErrorReportValve;
 import org.glassfish.web.util.HtmlEntityEncoder;
 
-import javax.servlet.*;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.*;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
@@ -303,14 +303,13 @@ class ApplicationDispatcherForward {
 
         ServletOutputStream ostream = null;
         PrintWriter writer = null;
-        FileReader reader = null;
-        BufferedInputStream istream = null;
-        IOException ioe = null;
+        FileReader reader;
+        BufferedInputStream istream;
+        IOException ioe;
 
-        String message = errorPage.getReason();
-        if (message != null && !response.isCommitted()) {
+        if (!response.isCommitted()) {
             response.reset();
-            response.setStatus(statusCode, message);
+            response.setStatus(statusCode);
         }
          
         try {
@@ -336,7 +335,6 @@ class ApplicationDispatcherForward {
             try {
                 istream.close();
             } catch (Throwable t) {
-                ;
             }
         }
 

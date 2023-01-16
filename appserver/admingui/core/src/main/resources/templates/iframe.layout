@@ -49,7 +49,7 @@
 	    setPartialRequest("false");
 	</ui:event>
 	<sun:head title="#{guiTitle}" javaScript="true" debug="false" parseOnLoad="false">
-	    <h:outputScript name="jsf.js" library="javax.faces" target="head" />
+	    <h:outputScript name="jsf.js" library="jakarta.faces" target="head" />
 	    <sun:script url="/resource/common/js/adminjsf.js" />
 	    <!insert name="guiTemplateExtraHead" />
 	    <!insert name="guiExtraHead" />

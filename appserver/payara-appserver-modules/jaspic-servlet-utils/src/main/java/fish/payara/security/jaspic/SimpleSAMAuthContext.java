@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,12 +42,12 @@ package fish.payara.security.jaspic;
 import java.util.Map;
 import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.message.AuthException;
-import javax.security.auth.message.AuthStatus;
-import javax.security.auth.message.MessageInfo;
-import javax.security.auth.message.MessagePolicy;
-import javax.security.auth.message.config.ServerAuthContext;
-import javax.security.auth.message.module.ServerAuthModule;
+import jakarta.security.auth.message.AuthException;
+import jakarta.security.auth.message.AuthStatus;
+import jakarta.security.auth.message.MessageInfo;
+import jakarta.security.auth.message.MessagePolicy;
+import jakarta.security.auth.message.config.ServerAuthContext;
+import jakarta.security.auth.message.module.ServerAuthModule;
 
 /**
  *
@@ -57,9 +57,9 @@ class SimpleSAMAuthContext implements ServerAuthContext {
 
     ServerAuthModule sam;
     CallbackHandler handler;
-    Map<String,String> options;
+    Map<String,Object> options;
 
-    SimpleSAMAuthContext(String authContextID, Subject serviceSubject, Map<String,String> properties, CallbackHandler handler, ServerAuthModule sam) throws AuthException {
+    SimpleSAMAuthContext(String authContextID, Subject serviceSubject, Map<String, Object> properties, CallbackHandler handler, ServerAuthModule sam) throws AuthException {
         this.sam = sam;
         this.handler = handler;
         this.options = properties;

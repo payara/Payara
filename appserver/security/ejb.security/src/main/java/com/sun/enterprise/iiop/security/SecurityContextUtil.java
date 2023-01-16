@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.iiop.security;
 
 import static com.sun.corba.ee.spi.presentation.rmi.StubAdapter.isLocal;
@@ -57,8 +57,8 @@ import java.security.cert.Certificate;
 import java.util.Set;
 import java.util.logging.Level;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import javax.security.auth.Subject;
 
 import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;

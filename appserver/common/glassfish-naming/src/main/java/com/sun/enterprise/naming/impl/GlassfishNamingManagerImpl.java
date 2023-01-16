@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017-2019] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2021] Payara Foundation and/or affiliates
  */
 
 package com.sun.enterprise.naming.impl;
@@ -51,10 +51,10 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.logging.annotation.LogMessageInfo;
 
 import org.jvnet.hk2.annotations.Service;
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 import org.omg.CORBA.ORB;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import javax.naming.Binding;
 import javax.naming.CompositeName;
 import javax.naming.Context;
@@ -165,7 +165,7 @@ public final class  GlassfishNamingManagerImpl implements GlassfishNamingManager
             // Now that we have an ORB, initialize the CosNaming service
             // and set it on the server's naming service.
             Hashtable<String, Object> cosNamingEnv = new Hashtable<>();
-            cosNamingEnv.put("java.naming.factory.initial", "com.sun.jndi.cosnaming.CNCtxFactory");
+            cosNamingEnv.put("java.naming.factory.initial", org.glassfish.jndi.cosnaming.CNCtxFactory.class.getName());
             cosNamingEnv.put("java.naming.corba.orb", orb);
             cosContext = new InitialContext(cosNamingEnv);
             ProviderManager pm = ProviderManager.getProviderManager();

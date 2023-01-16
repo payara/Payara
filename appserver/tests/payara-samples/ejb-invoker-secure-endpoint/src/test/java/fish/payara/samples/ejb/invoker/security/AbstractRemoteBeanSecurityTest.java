@@ -73,7 +73,7 @@ import java.io.IOException;
 import java.net.URI;
 import static javax.naming.Context.INITIAL_CONTEXT_FACTORY;
 import static javax.naming.Context.PROVIDER_URL;
-import static javax.ws.rs.core.SecurityContext.BASIC_AUTH;
+import static jakarta.ws.rs.core.SecurityContext.BASIC_AUTH;
 import static org.jboss.shrinkwrap.api.asset.EmptyAsset.INSTANCE;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import static org.junit.Assert.assertEquals;

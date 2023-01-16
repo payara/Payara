@@ -52,7 +52,7 @@ import org.glassfish.embeddable.GlassFishException;
  * <i>stopped</i> or <i>started</i>. Any requests mapped to a 
  * <tt>VirtualServer</tt> that was stopped will result in a response with
  * a status code equal to
- * javax.servlet.http.HttpServletResponse#SC_NOT_FOUND.
+ * jakarta.servlet.http.HttpServletResponse#SC_NOT_FOUND.
  *
  * <p/>See {@link WebContainer} for usage example.
  * 

@@ -40,6 +40,7 @@
     holder.
 
 -->
+<!-- Portions Copyright [2022] [Payara Foundation and/or its affiliates] -->
 
 <project name="common-impl" default="all" basedir=".">
     
@@ -74,6 +75,10 @@
             <include name="**/amx-core.jar"/>
             <include name="**/amx-javaee.jar"/>
             <include name="**/gf-client.jar"/>
+            <include name="**/jakarta.xml.ws-api.jar"/>
+            <include name="**/webservices-api-osgi.jar"/>
+            <include name="**/webservices-osgi.jar"/>
+            <include name="**/ha-api.jar"/>
         </fileset>
         <pathelement location="${class.output}"/>
         <pathelement location="${test.class.output}"/>
@@ -400,7 +405,9 @@
 
 <!-- the following targets are for running the wsit tests -->
     <path id="wsit.classpath">
-        <pathelement location="${glassfish.home}/modules/jakarta.jws-api.jar"/>
+	<pathelement location="${glassfish.home}/modules/jakarta.jws-api.jar"/>
+	<pathelement location="${glassfish.home}/modules/jakarta.activation-api.jar"/>
+	<pathelement location="${glassfish.home}/modules/angus-activation.jar"/>
     </path>
 
     <condition property="wsjar.available">

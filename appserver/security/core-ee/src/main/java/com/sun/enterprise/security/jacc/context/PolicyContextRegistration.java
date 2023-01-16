@@ -37,13 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2019-2021] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.jacc.context;
 
 import java.util.logging.Logger;
 
-import javax.security.jacc.PolicyContextException;
-import javax.security.jacc.PolicyContextHandler;
+import jakarta.security.jacc.PolicyContextException;
+import jakarta.security.jacc.PolicyContextHandler;
 
 import static com.sun.enterprise.security.jacc.context.PolicyContextHandlerImpl.EJB_ARGUMENTS;
 import static com.sun.enterprise.security.jacc.context.PolicyContextHandlerImpl.ENTERPRISE_BEAN;
@@ -52,7 +52,7 @@ import static com.sun.enterprise.security.jacc.context.PolicyContextHandlerImpl.
 import static com.sun.enterprise.security.jacc.context.PolicyContextHandlerImpl.SOAP_MESSAGE;
 import static com.sun.enterprise.security.jacc.context.PolicyContextHandlerImpl.SUBJECT;
 import static java.util.logging.Level.SEVERE;
-import static javax.security.jacc.PolicyContext.registerHandler;
+import static jakarta.security.jacc.PolicyContext.registerHandler;
 
 public class PolicyContextRegistration {
     private static final Logger LOG = Logger.getLogger(PolicyContextRegistration.class.getName());

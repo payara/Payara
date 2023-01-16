@@ -225,14 +225,14 @@ Web Application</p>
 </div>
 <div class="paragraph">
 <p>This example unsets the servlet context-initialization parameter
-<code>javax.faces.STATE_SAVING_METHOD</code> of the web application <code>basic-ezcomp</code>.
+<code>jakarta.faces.STATE_SAVING_METHOD</code> of the web application <code>basic-ezcomp</code>.
 The parameter reverts to the value, if any, that is defined in the
 application&#8217;s deployment descriptor.</p>
 </div>
 <div class="listingblock">
 <div class="content">
 <pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; unset-web-context-param
---name=javax.faces.STATE_SAVING_METHOD basic-ezcomp
+--name=jakarta.faces.STATE_SAVING_METHOD basic-ezcomp
 
 Command unset-web-context-param executed successfully.</code></pre>
 </div>

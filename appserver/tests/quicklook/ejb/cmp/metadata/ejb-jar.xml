@@ -42,7 +42,7 @@
 
 -->
 
-<!-- Portions Copyright [2020] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2020-2021] [Payara Foundation and/or its affiliates] -->
 
 <ejb-jar>
   <display-name>RosterEJBJAR</display-name>
@@ -630,7 +630,7 @@ where p.name = ?1</ejb-ql>
         <method-intf>Local</method-intf>
         <method-name>isIdentical</method-name>
         <method-params>
-          <method-param>javax.ejb.EJBLocalObject</method-param>
+          <method-param>jakarta.ejb.EJBLocalObject</method-param>
         </method-params>
       </method>
     </method-permission>
@@ -737,7 +737,7 @@ where p.name = ?1</ejb-ql>
         <method-intf>Local</method-intf>
         <method-name>isIdentical</method-name>
         <method-params>
-          <method-param>javax.ejb.EJBLocalObject</method-param>
+          <method-param>jakarta.ejb.EJBLocalObject</method-param>
         </method-params>
       </method>
     </method-permission>
@@ -825,7 +825,7 @@ where p.name = ?1</ejb-ql>
         <method-intf>Local</method-intf>
         <method-name>isIdentical</method-name>
         <method-params>
-          <method-param>javax.ejb.EJBLocalObject</method-param>
+          <method-param>jakarta.ejb.EJBLocalObject</method-param>
         </method-params>
       </method>
       <method>

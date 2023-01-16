@@ -48,7 +48,7 @@ import java.util.logging.Logger;
 public final class LogFacade {
 
     @LoggerInfo(subsystem = "GlassFish-EJB", description = "GlassFish EJB Container Logger", publish = true)
-    private static final String EJB_LOGGER_NAME = "javax.enterprise.ejb.container";
+    private static final String EJB_LOGGER_NAME = "jakarta.enterprise.ejb.container";
 
     @LogMessagesResourceBundle
     private static final String EJB_LOGGER_RB = "com.sun.logging.enterprise.system.container.ejb.LogMessages";

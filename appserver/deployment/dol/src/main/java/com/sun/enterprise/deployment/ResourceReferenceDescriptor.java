@@ -79,9 +79,9 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
     private static final String URL_RESOURCE_TYPE = "java.net.URL";
 
     //START OF IASRI 4633229
-    private static final String CONNECTOR_RESOURCE_TYPE = "javax.resource.cci.ConnectionFactory";
+    private static final String CONNECTOR_RESOURCE_TYPE = "jakarta.resource.cci.ConnectionFactory";
     //END OF IASRI 4633229
-    private static final String MAIL_RESOURCE_TYPE = "javax.mail.Session";
+    private static final String MAIL_RESOURCE_TYPE = "jakarta.mail.Session";
 
     // start IASRI 4734197
     private static final String JDBC_RESOURCE_TYPE = "javax.sql.DataSource";
@@ -90,7 +90,7 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
     private static final String ORB_RESOURCE_TYPE = "org.omg.CORBA.ORB";
 
     private static final String WEBSERVICE_CONTEXT_TYPE =
-        "javax.xml.ws.WebServiceContext";
+        "jakarta.xml.ws.WebServiceContext";
 
     // change field name from type to rType since it's error-prone
     // to use the same field name as its super class
@@ -296,7 +296,7 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
     }
 
     /**
-     * Return true is the resource is of {@link javax.xml.ws.WebServiceContext} type
+     * Return true is the resource is of {@link jakarta.xml.ws.WebServiceContext} type
      * @return
      */
     public boolean isWebServiceContext() {
@@ -349,8 +349,8 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
     public boolean isJMSConnectionFactory() {
         String myType = this.getType();
         return
-            ( myType.equals("javax.jms.QueueConnectionFactory") ||
-              myType.equals("javax.jms.TopicConnectionFactory") );
+            ( myType.equals("jakarta.jms.QueueConnectionFactory") ||
+              myType.equals("jakarta.jms.TopicConnectionFactory") );
     }
 
     /**

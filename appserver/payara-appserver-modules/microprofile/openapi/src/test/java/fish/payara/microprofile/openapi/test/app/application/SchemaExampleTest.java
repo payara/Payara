@@ -45,10 +45,9 @@ import fish.payara.microprofile.openapi.impl.model.media.SchemaImpl;
 import fish.payara.microprofile.openapi.impl.visitor.OpenApiWalker;
 import fish.payara.microprofile.openapi.test.app.OpenApiApplicationTest;
 import fish.payara.microprofile.openapi.test.util.JsonUtils;
-
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -61,6 +60,7 @@ import org.junit.Test;
  * 
  * These should occur as {@link SchemaImpl#getProperties()}.
  */
+@Schema(name = "SchemaExample")
 @Path("/users")
 public class SchemaExampleTest extends OpenApiApplicationTest {
 
@@ -95,7 +95,7 @@ public class SchemaExampleTest extends OpenApiApplicationTest {
     public void fieldSchemaExampleIsRenamed() {
         ObjectNode root = getOpenAPIJson();
         assertEquals(false,
-                JsonUtils.hasPath(root, "components.schemas.SchemaExampleTest.properties.notFriendlyName".split("\\.")));
-        assertNotNull(JsonUtils.path(root,"components.schemas.SchemaExampleTest.properties.friendly_name"));
+                JsonUtils.hasPath(root, "components.schemas.SchemaExample.properties.notFriendlyName".split("\\.")));
+        assertNotNull(JsonUtils.path(root,"components.schemas.SchemaExample.properties.friendly_name"));
     }
 }

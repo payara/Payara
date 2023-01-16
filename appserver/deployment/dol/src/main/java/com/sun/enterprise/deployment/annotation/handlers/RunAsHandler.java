@@ -53,12 +53,12 @@ import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.annotation.security.RunAs;
+import jakarta.annotation.security.RunAs;
 import java.lang.annotation.Annotation;
 
 /**
  * This handler is responsible for handling the
- * javax.annotation.security.RunAs.
+ * jakarta.annotation.security.RunAs.
  * @author Shing Wai Chan
  */
 @Service

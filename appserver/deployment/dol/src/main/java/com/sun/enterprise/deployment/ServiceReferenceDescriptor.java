@@ -273,7 +273,7 @@ public class ServiceReferenceDescriptor extends EnvironmentProperty implements H
     }
 
     public boolean hasGenericServiceInterface() {
-        return "javax.xml.rpc.Service".equals(serviceInterface);
+        return false;
     }
 
     public boolean hasGeneratedServiceInterface() {

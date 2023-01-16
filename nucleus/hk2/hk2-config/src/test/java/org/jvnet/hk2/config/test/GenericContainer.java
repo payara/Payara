@@ -47,7 +47,7 @@ import org.jvnet.hk2.config.ConfigBeanProxy;
 
 import java.util.List;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 @Configured
 public interface GenericContainer extends ConfigBeanProxy {

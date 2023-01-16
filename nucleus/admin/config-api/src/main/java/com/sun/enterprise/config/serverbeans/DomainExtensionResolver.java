@@ -40,7 +40,7 @@
 
 package com.sun.enterprise.config.serverbeans;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.config.support.CrudResolver;
 import org.jvnet.hk2.annotations.Service;

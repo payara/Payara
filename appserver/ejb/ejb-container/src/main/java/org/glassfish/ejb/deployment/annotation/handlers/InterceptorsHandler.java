@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.ejb.deployment.annotation.handlers;
 
@@ -47,11 +47,11 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
-import javax.ejb.PostActivate;
-import javax.ejb.PrePassivate;
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.AroundTimeout;
-import javax.interceptor.Interceptors;
+import jakarta.ejb.PostActivate;
+import jakarta.ejb.PrePassivate;
+import jakarta.interceptor.AroundInvoke;
+import jakarta.interceptor.AroundTimeout;
+import jakarta.interceptor.Interceptors;
 
 import com.sun.enterprise.deployment.EjbInterceptor;
 import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
@@ -72,7 +72,7 @@ import org.jvnet.hk2.annotations.Service;
 import static com.sun.enterprise.deployment.LifecycleCallbackDescriptor.CallbackType;
 
 /**
- * This handler is responsible for handling javax.ejb.Interceptors
+ * This handler is responsible for handling jakarta.ejb.Interceptors
  *
  */
 @Service

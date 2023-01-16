@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2019-2021] [Payara Foundation and/or its affiliates]
 package com.sun.ejb.containers;
 
 import com.sun.ejb.ComponentContext;
@@ -52,8 +52,8 @@ import java.lang.reflect.Method;
 import java.rmi.UnmarshalException;
 import java.util.Map;
 
-import javax.ejb.AccessLocalException;
-import javax.ejb.EJBException;
+import jakarta.ejb.AccessLocalException;
+import jakarta.ejb.EJBException;
 
 import org.glassfish.api.invocation.InvocationManager;
 

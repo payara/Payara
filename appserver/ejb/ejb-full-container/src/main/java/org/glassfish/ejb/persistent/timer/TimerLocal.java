@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2021] [Payara Foundation]
 
 package org.glassfish.ejb.persistent.timer;
 
@@ -45,9 +45,9 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Set;
 
-import javax.ejb.CreateException;
-import javax.ejb.TimerConfig;
-import javax.ejb.Local;
+import jakarta.ejb.CreateException;
+import jakarta.ejb.TimerConfig;
+import jakarta.ejb.Local;
 
 import com.sun.ejb.containers.EJBTimerSchedule;
 import com.sun.ejb.containers.TimerPrimaryKey;

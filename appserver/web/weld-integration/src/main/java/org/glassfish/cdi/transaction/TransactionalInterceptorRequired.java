@@ -37,28 +37,28 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation]
+// Portions Copyright [2016-2021] [Payara Foundation]
 
 package org.glassfish.cdi.transaction;
 
 import static java.util.logging.Level.FINE;
-import static javax.transaction.Status.STATUS_MARKED_ROLLBACK;
+import static jakarta.transaction.Status.STATUS_MARKED_ROLLBACK;
 
 import java.util.logging.Logger;
 
-import javax.annotation.Priority;
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.Interceptor;
-import javax.interceptor.InvocationContext;
-import javax.transaction.TransactionManager;
-import javax.transaction.Transactional;
-import javax.transaction.TransactionalException;
+import jakarta.annotation.Priority;
+import jakarta.interceptor.AroundInvoke;
+import jakarta.interceptor.Interceptor;
+import jakarta.interceptor.InvocationContext;
+import jakarta.transaction.TransactionManager;
+import jakarta.transaction.Transactional;
+import jakarta.transaction.TransactionalException;
 
 import com.sun.enterprise.transaction.TransactionManagerHelper;
 
 /**
  * Transactional annotation Interceptor class for Required transaction type, ie
- * javax.transaction.Transactional.TxType.REQUIRED If called outside a transaction context, a new
+ * jakarta.transaction.Transactional.TxType.REQUIRED If called outside a transaction context, a new
  * JTA transaction will begin, the managed bean method execution will then continue inside this
  * transaction context, and the transaction will be committed. If called inside a transaction
  * context, the managed bean method execution will then continue inside this transaction context.

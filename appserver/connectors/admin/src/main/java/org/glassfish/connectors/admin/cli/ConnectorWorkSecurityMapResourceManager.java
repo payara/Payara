@@ -56,7 +56,7 @@ import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 
-import javax.resource.ResourceException;
+import jakarta.resource.ResourceException;
 import java.beans.PropertyVetoException;
 import java.util.HashMap;
 import java.util.Map;

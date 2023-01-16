@@ -57,7 +57,7 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.ServerContext;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -208,7 +208,7 @@ public class GenerateBashAutoCompletionCommand implements AdminCommand {
             //write function to tell bash what function the autocompletion is for
             writer.write(COMPLETE_CALL);
             writer.newLine();
-            //Add directory of payara5/glassfish/bin to the path
+            //Add directory of payara6/glassfish/bin to the path
             writer.write(ADD_PATH);
             writer.write(serverContext.getInstallRoot().getPath() + File.separator + "bin");
             //flush the buffer

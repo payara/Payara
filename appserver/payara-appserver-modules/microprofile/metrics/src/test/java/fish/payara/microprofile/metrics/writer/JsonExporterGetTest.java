@@ -214,7 +214,7 @@ public class JsonExporterGetTest {
         Metadata metadata = Metadata.builder()
                 .withName(metricID.getName())
                 .build();
-        assertOutputEquals("\n{\n}", metricID, gauge, metadata);
+        assertOutputEquals("{\n}", metricID, gauge, metadata);
     }
 
     @Test
@@ -224,7 +224,7 @@ public class JsonExporterGetTest {
         Metadata metadata = Metadata.builder()
                 .withName(metricID.getName())
                 .build();
-        assertOutputEquals("\n{\n}", metricID, gauge, metadata);
+        assertOutputEquals("{\n}", metricID, gauge, metadata);
     }
 
     @Test
@@ -235,8 +235,7 @@ public class JsonExporterGetTest {
         export(fooValID, fooVal);
         exporter = exporter.in(Type.APPLICATION);
         export(fooValID, fooVal);
-        assertOutputEquals("\n" +
-                "{\n" +
+        assertOutputEquals("{\n" +
                 "    \"base\": {\n" +
                 "        \"fooVal;store=webshop\": 1\n" +
                 "    },\n" +

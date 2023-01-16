@@ -52,7 +52,7 @@
 <sun:html id="html1">
 <sun:head title="$resource{i18n.restart.pageTitle}" parseOnLoad="false">
     <sun:link url="/resource/css/css_ns6up.css" />
-    <h:outputScript name="jsf.js" library="javax.faces" target="body" />
+    <h:outputScript name="jsf.js" library="jakarta.faces" target="body" />
     <sun:script>
 	<f:verbatim>
 	    function triggerRestart() {

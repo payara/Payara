@@ -37,12 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.persistence.ejb.entitybean.container;
 
 import java.lang.reflect.Method;
-import javax.ejb.*;
+import jakarta.ejb.*;
 import org.glassfish.api.invocation.ComponentInvocation;
 import com.sun.ejb.EjbInvocation;
 import com.sun.ejb.containers.EJBContextImpl;

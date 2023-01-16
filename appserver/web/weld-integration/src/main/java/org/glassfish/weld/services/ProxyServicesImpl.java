@@ -1,6 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * Copyright (c) 2010-2021 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -36,207 +37,135 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2021 Payara Foundation and/or its affiliates.
-
+// Portions Copyright [2022] [Payara Foundation and/or its affiliates]
 package org.glassfish.weld.services;
-
-import java.lang.reflect.Method;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.security.PrivilegedExceptionAction;
-import java.security.ProtectionDomain;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.glassfish.internal.api.ClassLoaderHierarchy;
 import org.jboss.weld.serialization.spi.ProxyServices;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.weld.ClassGenerator;
+import org.glassfish.weld.WeldProxyException;
+import java.security.ProtectionDomain;
 
 /**
- * An implementation of the {@link ProxyServices}.
- * <p>
- * This implementation respects the classloader hierarchy used to load original beans.
- * If it is not an application classloader, uses the current thread classloader.
- * If it wasn't possible to detect any usable classloader, throws a {@link WeldProxyException}
- * <p>
- * Context: Weld generates proxies for beans from an application and for certain API artifacts
- * such as <code>UserTransaction</code>.
+ * An implementation of the <code>ProxyServices</code> Service.
+ *
+ * This implementation uses the thread context classloader (the application
+ * classloader) as the classloader for loading the bean proxies. The classloader
+ * that loaded the Bean must be used to load and define the bean proxy to handle
+ * Beans with package-private constructor as discussed in WELD-737.
+ *
+ * Weld proxies today have references to some internal weld implementation classes
+ * such as javassist and org.jboss.weld.proxy.* packages. These classes are
+ * temporarily re-exported through the weld-integration-fragment bundle so that
+ * when the bean proxies when loaded using the application classloader will have
+ * visibility to these internal implementation classes.
+ *
+ * As a fix for WELD-737, Weld may use the Bean's classloader rather than asking
+ * the ProxyServices service implementation. Weld also plans to remove the
+ * dependencies of the bean proxy on internal implementation classes. When that
+ * happens we can remove the weld-integration-fragment workaround and the
+ * ProxyServices implementation
  *
  * @author Sivakumar Thyagarajan
- * @author David Matějček
  */
 public class ProxyServicesImpl implements ProxyServices {
 
-    private static Method defineClassMethod;
-    private static Method defineClassMethodSM;
-    private static final AtomicBoolean CL_METHODS_INITIALIZATION_FINISHED = new AtomicBoolean(false);
+    ClassLoaderHierarchy clh;
 
-    private final ClassLoaderHierarchy classLoaderHierarchy;
-
+    public ProxyServicesImpl(ServiceLocator services) {
+        clh = services.getService(ClassLoaderHierarchy.class);
+    }
 
     /**
-     * @param services immediately used to find a {@link ClassLoaderHierarchy} service
+     * Gets the ClassLoader associated with the Bean. Weld generates Proxies
+     * for Beans from an application/BDA and for certain API artifacts such as
+     * <code>UserTransaction</code>.
+     *
+     * @param proxiedBeanType
+     * @return
      */
-    public ProxyServicesImpl(final ServiceLocator services) {
-        classLoaderHierarchy = services.getService(ClassLoaderHierarchy.class);
-    }
-
-
-    @Deprecated
-    @Override
-    public boolean supportsClassDefining() {
-        // true is mandatory since Weld 4.0.1.SP1, because default method impl returns false
-        // and cdi_all tests then fail
-        return true;
-    }
-
-
-    @Deprecated
-    @Override
-    public ClassLoader getClassLoader(final Class<?> proxiedBeanType) {
-        if (System.getSecurityManager() == null) {
-            return getClassLoaderforBean(proxiedBeanType);
+    private ClassLoader getClassLoaderforBean(Class<?> proxiedBeanType) {
+        //Get the ClassLoader that loaded the Bean. For Beans in an application,
+        //this would be the application/module classloader. For other API
+        //Bean classes, such as UserTransaction, this would be a non-application
+        //classloader
+        ClassLoader prxCL = proxiedBeanType.getClassLoader();
+        //Check if this is an application classloader
+        boolean isAppCL = isApplicationClassLoader(prxCL);
+        if (!isAppCL) {
+            prxCL = _getClassLoader();
+            //fall back to the old behaviour of using TCL to get the application
+            //or module classloader. We return this classloader for non-application
+            //Beans, as Weld Proxies requires other Weld support classes (such as
+            //JBoss Reflection API) that is exported through the weld-osgi-bundle.
         }
-        final PrivilegedAction<ClassLoader> action = () -> getClassLoaderforBean(proxiedBeanType);
-        return AccessController.doPrivileged(action);
+        return prxCL;
     }
 
-
-    @Deprecated
-    @Override
-    public Class<?> loadBeanClass(final String className) {
-        try {
-            if (System.getSecurityManager() == null) {
-                return loadClassByThreadCL(className);
+    /**
+     * Check if the ClassLoader of the Bean type being proxied is a
+     * GlassFish application ClassLoader. The current logic checks if
+     * the common classloader appears as a parent in the classloader hierarchy
+     * of the Bean's classloader.
+     */
+    private boolean isApplicationClassLoader(ClassLoader prxCL) {
+        boolean isAppCL = false;
+        while (prxCL != null) {
+            if (prxCL.equals(clh.getCommonClassLoader())) {
+                isAppCL = true;
+                break;
             }
-            final PrivilegedExceptionAction<Class<?>> action = () -> loadClassByThreadCL(className);
-            return AccessController.doPrivileged(action);
-        } catch (final Exception ex) {
-            throw new WeldProxyException("Failed to load the bean class: " + className, ex);
+            prxCL = prxCL.getParent();
         }
+        return isAppCL;
     }
 
-
-    @Override
-    public Class<?> defineClass(final Class<?> originalClass, final String className, final byte[] classBytes,
-        final int off, final int len) throws ClassFormatError {
-        return defineClass(originalClass, className, classBytes, off, len, null);
+    private ClassLoader _getClassLoader() {
+        ClassLoader tcl = Thread.currentThread().getContextClassLoader();
+        return tcl;
     }
 
-
-    @Override
-    public Class<?> defineClass(final Class<?> originalClass, final String className, final byte[] classBytes,
-        final int off, final int len, final ProtectionDomain protectionDomain) throws ClassFormatError {
-        checkClassDefinitionFeature();
-        final ClassLoader loader = getClassLoaderforBean(originalClass);
-        if (protectionDomain == null) {
-            return defineClass(loader, className, classBytes, off, len);
-        }
-        return defineClass(loader, className, classBytes, off, len, protectionDomain);
+    public Class<?> loadClass(Class<?> originalClass, String classBinaryName) throws ClassNotFoundException {
+        return _getClassLoader().loadClass(classBinaryName);
     }
-
-
-    @Override
-    public Class<?> loadClass(final Class<?> originalClass, final String classBinaryName)
-        throws ClassNotFoundException {
-        return getClassLoaderforBean(originalClass).loadClass(classBinaryName);
-    }
-
 
     @Override
     public void cleanup() {
         // nothing to cleanup in this implementation.
     }
 
-
-    /**
-     * Initialization of access to protected methods of the {@link ClassLoader} class.
-     */
-    private static void checkClassDefinitionFeature() {
-        if (CL_METHODS_INITIALIZATION_FINISHED.compareAndSet(false, true)) {
-            try {
-                final PrivilegedExceptionAction<Void> action = () -> {
-                    final Class<?> cl = Class.forName("java.lang.ClassLoader");
-                    final String name = "defineClass";
-                    defineClassMethod = cl.getDeclaredMethod(name, String.class, byte[].class, int.class, int.class);
-                    defineClassMethod.setAccessible(true);
-                    defineClassMethodSM = cl.getDeclaredMethod(
-                        name, String.class, byte[].class, int.class, int.class, ProtectionDomain.class);
-                    defineClassMethodSM.setAccessible(true);
-                    return null;
-                };
-                AccessController.doPrivileged(action);
-            } catch (final Exception e) {
-                throw new WeldProxyException("Could not initialize access to ClassLoader.defineClass method.", e);
-            }
+    @Override
+    public Class<?> defineClass(Class<?> originalClass, String className, byte[] classBytes, int off, int len,
+                                ProtectionDomain protectionDomain) throws ClassFormatError {
+        ClassLoader cl = getClassLoaderforBean(originalClass);
+        if(protectionDomain == null) {
+            return defineClass(cl, className, classBytes, off, len);
         }
+        return defineClass(cl, className, classBytes, off, len, protectionDomain);
     }
 
-
-    /**
-     * @param originalClass
-     * @return ClassLoader probably usable with the bean.
-     */
-    private ClassLoader getClassLoaderforBean(final Class<?> originalClass) {
-        // Get the ClassLoader that loaded the Bean. For Beans in an application,
-        // this would be the application/module classloader. For other API
-        // Bean classes, such as UserTransaction, this would be a non-application
-        // classloader
-        final ClassLoader originalClassLoader = originalClass.getClassLoader();
-        if (isApplicationClassLoader(originalClassLoader)) {
-            return originalClassLoader;
-        }
-        // fall back to the old behaviour of using thread class loader to get the application
-        // or module classloader. We return this classloader for non-application
-        // Beans, as Weld Proxies requires other Weld support classes (such as
-        // JBoss Reflection API) that is exported through the weld-osgi-bundle.
-        final ClassLoader threadCL = Thread.currentThread().getContextClassLoader();
-        if (threadCL != null) {
-            return threadCL;
-        }
-        throw new WeldProxyException("Could not determine classloader for " + originalClass);
+    @Override
+    public Class<?> defineClass(Class<?> originalClass, String className, byte[] classBytes, int off, int len) throws ClassFormatError {
+        return defineClass(originalClass, className, classBytes, off, len, null);
     }
 
-
-    /**
-     * Check if the ClassLoader of the Bean type being proxied is a GlassFish application
-     * ClassLoader. The current logic checks if the common classloader appears as a parent in
-     * the classloader hierarchy of the Bean's classloader.
-     */
-    private boolean isApplicationClassLoader(ClassLoader classLoader) {
-        while (classLoader != null) {
-            if (classLoader.equals(classLoaderHierarchy.getCommonClassLoader())) {
-                return true;
-            }
-            classLoader = classLoader.getParent();
-        }
-        return false;
-    }
-
-
-    private Class<?> loadClassByThreadCL(final String className) throws ClassNotFoundException {
-        return Class.forName(className, true, Thread.currentThread().getContextClassLoader());
-    }
-
-
-    private Class<?> defineClass(
-        final ClassLoader loader, final String className,
-        final byte[] b, final int off, final int len,
-        final ProtectionDomain protectionDomain) {
+    private Class<?> defineClass(final ClassLoader loader, final String className,
+                                 final byte[] classBytes, final int off, final int len) {
         try {
-            return (Class<?>) defineClassMethodSM.invoke(loader, className, b, 0, len, protectionDomain);
-        } catch (final Exception e) {
-            throw new WeldProxyException("Could not define class " + className, e);
+            return ClassGenerator.defineClass(loader, className, classBytes, 0, len);
+        } catch(final Exception e) {
+            throw new WeldProxyException("Could not define class" +  className, e);
         }
     }
 
-
-    private Class<?> defineClass(
-        final ClassLoader loader, final String className,
-        final byte[] b, final int off, final int len) {
+    private Class<?> defineClass(final ClassLoader loader, final String className,
+                                 final byte[] classBytes, final int off, final int len,
+                                 ProtectionDomain protectionDomain) {
         try {
-            return (Class<?>) defineClassMethod.invoke(loader, className, b, 0, len);
-        } catch (final Exception e) {
-            throw new WeldProxyException("Could not define class " + className, e);
+            return ClassGenerator.defineClass(loader, className, classBytes, 0, len, protectionDomain);
+        } catch(final Exception e) {
+            throw new WeldProxyException("Could not define class" +  className, e);
         }
     }
 }

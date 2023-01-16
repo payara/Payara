@@ -41,8 +41,8 @@ package com.acme;
 
 import org.glassfish.tests.ejb.embedded.SimpleEjb;
 
-import javax.ejb.*;
-import javax.ejb.embeddable.EJBContainer;
+import jakarta.ejb.*;
+import jakarta.ejb.embeddable.EJBContainer;
 import javax.naming.Context;
 import javax.naming.NamingException;
 

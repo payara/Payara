@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2022 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2022] Payara Foundation and/or affiliates
 
 package org.glassfish.deployment.common;
 
@@ -84,5 +85,21 @@ public enum JavaEEResourceType {
     /**
      * AODD: AdministeredObjectDefinitionDescriptor
      */
-    AODD;
+    AODD,
+    /**
+     * MEDD: ManagedExecutorDefinitionDescriptor
+     */
+    MEDD,
+    /**
+     * MTFDD: ManagedThreadFactoryDefinitionDescriptor
+     */
+    MTFDD,
+    /**
+     * MSEDD: ManagedScheduledExecutorDefinitionDescriptor
+     */
+    MSEDD,
+    /**
+     * CSDD: ContextServiceDefinitionDescriptor
+     */
+    CSDD;
 }

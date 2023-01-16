@@ -47,7 +47,7 @@ import org.jvnet.hk2.config.DuckTyped;
 
 import java.util.List;
 
-import javax.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlElement;
 
 /**
  * Base interface for those configuration objects that has nested &lt;property> elements.

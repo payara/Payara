@@ -47,11 +47,11 @@ import com.sun.appserv.connectors.internal.api.WorkManagerFactory;
 import org.glassfish.logging.annotation.LogMessageInfo;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 
-import javax.inject.Inject;
-import javax.inject.Provider;
-import javax.resource.spi.work.WorkManager;
+import jakarta.inject.Inject;
+import jakarta.inject.Provider;
+import jakarta.resource.spi.work.WorkManager;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashMap;

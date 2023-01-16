@@ -37,13 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.containers;
 
-import javax.ejb.TimerService;
-import javax.transaction.TransactionManager;
-import javax.transaction.Status;
+import jakarta.ejb.TimerService;
+import jakarta.transaction.TransactionManager;
+import jakarta.transaction.Status;
 import javax.naming.InitialContext;
 import java.util.logging.Level;
 

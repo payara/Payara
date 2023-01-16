@@ -39,8 +39,8 @@
  */
 package org.glassfish.api.admin;
 
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 import org.glassfish.api.ActionReport;
 import org.jvnet.hk2.annotations.Service;

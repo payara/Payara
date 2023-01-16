@@ -55,22 +55,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2022] [Payara Foundation and/or its affiliates]
 
 package org.apache.catalina.core;
 
 
 public class Constants {
 
-    public static final String Package = "org.apache.catalina.core";
-    public static final int MAJOR_VERSION = 4;
+    public static final String PACKAGE = "org.apache.catalina.core";
+    public static final int MAJOR_VERSION = 6;
     public static final int MINOR_VERSION = 0;
 
-    public static final String JSP_SERVLET_CLASS =
-        "org.apache.jasper.servlet.JspServlet";
+    public static final String JSP_SERVLET_CLASS
+            = "org.glassfish.wasp.servlet.JspServlet";
 
     public static final String JSP_SERVLET_NAME = "jsp";
 
     public static final String DEFAULT_SERVLET_NAME = "default";
 
-    public static final String IS_DEFAULT_ERROR_PAGE_ENABLED_INIT_PARAM = "org.glassfish.web.isDefaultErrorPageEnabled";
+    public static final String IS_DEFAULT_ERROR_PAGE_ENABLED_INIT_PARAM
+            = "org.glassfish.web.isDefaultErrorPageEnabled";
+
+    public static final String COOKIE_COMMENT_ATTR = "Comment";
+
+    public static final String COOKIE_DOMAIN_ATTR = "Domain";
+
+    public static final String COOKIE_HTTP_ONLY_ATTR = "HttpOnly";
+
+    public static final String COOKIE_MAX_AGE_ATTR = "Max-Age"; // cookies auto-expire
+
+    public static final String COOKIE_PATH_ATTR = "Path";
+
+    public static final String COOKIE_SAME_SITE_ATTR = "SameSite";
+
+    public static final String COOKIE_SECURE_ATTR = "Secure"; // cookies over SSL
+
 }

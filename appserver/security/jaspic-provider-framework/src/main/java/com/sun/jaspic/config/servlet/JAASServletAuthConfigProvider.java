@@ -37,21 +37,21 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 package com.sun.jaspic.config.servlet;
 
-import static javax.security.auth.message.MessagePolicy.ProtectionPolicy.AUTHENTICATE_SENDER;
+import static jakarta.security.auth.message.MessagePolicy.ProtectionPolicy.AUTHENTICATE_SENDER;
 
 import java.util.Map;
 
-import javax.security.auth.message.AuthException;
-import javax.security.auth.message.MessageInfo;
-import javax.security.auth.message.MessagePolicy;
-import javax.security.auth.message.MessagePolicy.TargetPolicy;
-import javax.security.auth.message.config.AuthConfigFactory;
-import javax.security.auth.message.module.ServerAuthModule;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.security.auth.message.AuthException;
+import jakarta.security.auth.message.MessageInfo;
+import jakarta.security.auth.message.MessagePolicy;
+import jakarta.security.auth.message.MessagePolicy.TargetPolicy;
+import jakarta.security.auth.message.config.AuthConfigFactory;
+import jakarta.security.auth.message.module.ServerAuthModule;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import com.sun.jaspic.config.delegate.MessagePolicyDelegate;
 import com.sun.jaspic.config.helper.BaseAuthContextImpl;
@@ -64,7 +64,7 @@ import com.sun.jaspic.config.jaas.JAASAuthConfigProvider;
 public class JAASServletAuthConfigProvider extends JAASAuthConfigProvider {
 
     private static final String HTTP_SERVLET_LAYER = "HttpServlet";
-    private static final String MANDATORY_KEY = "javax.security.auth.message.MessagePolicy.isMandatory";
+    private static final String MANDATORY_KEY = "jakarta.security.auth.message.MessagePolicy.isMandatory";
     private static final String MANDATORY_AUTH_CONTEXT_ID = "mandatory";
     private static final String OPTIONAL_AUTH_CONTEXT_ID = "optional";
 

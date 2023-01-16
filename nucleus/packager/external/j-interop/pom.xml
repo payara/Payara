@@ -40,13 +40,13 @@
     holder.
 
 -->
-<!-- Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
         <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>nucleus-external</artifactId>
-        <version>5.2023.1-SNAPSHOT</version>
+        <version>6.2023.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>j-interop-repackaged</artifactId>
@@ -73,7 +73,7 @@
                         <Embed-Dependency>
                             *;scope=compile;inline=true
                         </Embed-Dependency>
-                        <Import-Package>!javax.servlet,!javax.servlet.http,*</Import-Package>
+                        <Import-Package>!jakarta.servlet,!jakarta.servlet.http,*</Import-Package>
                         <!-- !* matches with nothing, so no other class will be included in this bundle,
                          other than what is specified above -->
                         <Private-Package>!*</Private-Package>

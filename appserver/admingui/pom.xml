@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-parent</artifactId>
-        <version>5.2023.1-SNAPSHOT</version>
+        <version>6.2023.2-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.server.internal.admingui</groupId>
     <artifactId>admingui</artifactId>
@@ -151,14 +151,12 @@
         <module>rest-monitoring-plugin</module>
         <module>microprofile-console-plugin</module>
         <module>microprofile-console-plugin-l10n</module>
+        <module>faces-compat</module>
     </modules>
 
     <properties>
-        <commons-fileupload.version>1.4</commons-fileupload.version>
-        <woodstock-dojo-ajax-nodemo.version>0.4.4</woodstock-dojo-ajax-nodemo.version>
-        <woodstock-jsf.version>4.0.2.10.payara-p17</woodstock-jsf.version>
-        <woodstock-jsf-suntheme.version>4.0.2.10.payara-p21</woodstock-jsf-suntheme.version>
-        <woodstock-json.version>1.0</woodstock-json.version>
+        <woodstock-dojo-ajax-nodemo.version>1.12.4</woodstock-dojo-ajax-nodemo.version>
+        <woodstock-json.version>2.0</woodstock-json.version>
         <woodstock-prototype.version>1.7.3</woodstock-prototype.version>
     </properties>
 
@@ -181,6 +179,30 @@
               </execution>
             </executions>
           </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>no-direct-faces-dependency</id>
+                        <inherited>true</inherited>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <bannedDependencies>
+                                    <excludes>
+                                        <exclude>org.glassfish:jakarta.faces</exclude>
+                                        <exclude>org.glassfish.jsftemplating:*</exclude>
+                                    </excludes>
+                                </bannedDependencies>
+                            </rules>
+                            <fail>true</fail>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
         <resources>
           <resource>
@@ -199,20 +221,14 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>commons-fileupload</groupId>
-                <artifactId>commons-fileupload</artifactId>
-                <version>${commons-fileupload.version}</version>
-                <scope>provided</scope>
-            </dependency>
-            <dependency>
-                <groupId>com.sun.woodstock</groupId>
-                <artifactId>webui-jsf</artifactId>
+                <groupId>org.glassfish.woodstock</groupId>
+                <artifactId>woodstock-webui-jsf</artifactId>
                 <version>${woodstock-jsf.version}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
-                <groupId>com.sun.woodstock</groupId>
-                <artifactId>webui-jsf-suntheme</artifactId>
+                <groupId>org.glassfish.woodstock</groupId>
+                <artifactId>woodstock-webui-jsf-suntheme</artifactId>
                 <version>${woodstock-jsf-suntheme.version}</version>
                 <scope>provided</scope>
             </dependency>

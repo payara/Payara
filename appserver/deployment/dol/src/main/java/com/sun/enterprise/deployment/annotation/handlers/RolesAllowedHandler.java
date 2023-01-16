@@ -47,14 +47,14 @@ import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.security.common.Role;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.annotation.security.DenyAll;
-import javax.annotation.security.PermitAll;
-import javax.annotation.security.RolesAllowed;
+import jakarta.annotation.security.DenyAll;
+import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
 import java.lang.annotation.Annotation;
 
 /**
  * This handler is responsible for handling the
- * javax.annotation.security.RolesAllowed.
+ * jakarta.annotation.security.RolesAllowed.
  *
  * @author Shing Wai Chan
  */

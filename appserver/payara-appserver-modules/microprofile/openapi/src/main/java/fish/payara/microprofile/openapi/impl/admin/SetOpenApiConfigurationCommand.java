@@ -42,7 +42,7 @@ package fish.payara.microprofile.openapi.impl.admin;
 import com.sun.enterprise.config.serverbeans.Domain;
 import fish.payara.microprofile.SetSecureMicroprofileConfigurationCommand;
 import java.util.logging.Logger;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import javax.security.auth.Subject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;

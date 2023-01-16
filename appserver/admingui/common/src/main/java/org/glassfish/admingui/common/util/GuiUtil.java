@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.admingui.common.util;
 
@@ -62,14 +62,14 @@ import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.faces.context.ExternalContext;
-import javax.faces.context.FacesContext;
-import javax.json.Json;
-import javax.json.JsonStructure;
-import javax.json.JsonValue.ValueType;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletRequest;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.faces.context.ExternalContext;
+import jakarta.faces.context.FacesContext;
+import jakarta.json.Json;
+import jakarta.json.JsonStructure;
+import jakarta.json.JsonValue.ValueType;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.glassfish.admingui.common.security.AdminConsoleAuthModule;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -152,7 +152,7 @@ public class GuiUtil {
         }
 
         Object request = externalCtx.getRequest();
-        if (request instanceof javax.servlet.ServletRequest){
+        if (request instanceof jakarta.servlet.ServletRequest){
             ServletRequest srequest = (ServletRequest) request;
             sessionMap.put("hostName", srequest.getServerName());
             String restServerName = (String) sessionMap.get(AdminConsoleAuthModule.REST_SERVER_NAME);
@@ -173,7 +173,9 @@ public class GuiUtil {
         sessionMap.put("_noNetwork", (System.getProperty("com.sun.enterprise.tools.admingui.NO_NETWORK", "false").equals("true"))? Boolean.TRUE: Boolean.FALSE);
         sessionMap.put("supportCluster", Boolean.FALSE);
         Map version = RestUtil.restRequest(sessionMap.get("REST_URL")+"/version", null, "GET" ,null, false);
-        sessionMap.put("appServerVersion", ((Map)version.get("data")).get("message"));
+        Map versionData = (Map)version.get("data");
+        sessionMap.put("appServerVersion", versionData.get("message"));
+        sessionMap.put("appServerMajorVersion", ((Map)versionData.get("extraProperties")).get("version-number"));
         Map locations = RestUtil.restRequest(sessionMap.get("REST_URL")+"/locations", null, "GET" ,null, false);
         final String installDir = (String)((Map) ((Map) locations.get("data")).get("properties")).get("Base-Root");
         sessionMap.put("baseRootDir", installDir);

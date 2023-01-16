@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2018] [Payara Foundation and/or it's affiliates]
+// Portions Copyright [2017-2021] [Payara Foundation and/or it's affiliates]
 
 package com.sun.enterprise.admin.util;
 
@@ -64,8 +64,8 @@ import org.jvnet.hk2.annotations.ContractsProvided;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import javax.security.auth.login.LoginException;
 import javax.security.auth.Subject;
 import javax.management.remote.JMXAuthenticator;

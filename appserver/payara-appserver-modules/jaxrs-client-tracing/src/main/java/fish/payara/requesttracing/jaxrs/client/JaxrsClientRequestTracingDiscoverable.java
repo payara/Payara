@@ -1,7 +1,7 @@
 /*
  *    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2019-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *    The contents of this file are subject to the terms of either the GNU
  *    General Public License Version 2 only ("GPL") or the Common Development
@@ -42,9 +42,9 @@ package fish.payara.requesttracing.jaxrs.client;
 
 import org.glassfish.jersey.internal.spi.ForcedAutoDiscoverable;
 
-import javax.ws.rs.ConstrainedTo;
-import javax.ws.rs.RuntimeType;
-import javax.ws.rs.core.FeatureContext;
+import jakarta.ws.rs.ConstrainedTo;
+import jakarta.ws.rs.RuntimeType;
+import jakarta.ws.rs.core.FeatureContext;
 
 @ConstrainedTo(RuntimeType.CLIENT)
 public class JaxrsClientRequestTracingDiscoverable implements ForcedAutoDiscoverable {

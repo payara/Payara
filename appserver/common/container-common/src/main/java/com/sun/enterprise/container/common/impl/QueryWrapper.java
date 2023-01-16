@@ -44,11 +44,11 @@ import com.sun.enterprise.container.common.spi.util.CallFlowAgent;
 import com.sun.enterprise.container.common.spi.util.EntityManagerQueryMethod;
 import com.sun.enterprise.container.common.impl.util.DummyCallFlowAgentImpl;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.util.*;
 
 /**
- * Wrapper class for javax.persistence.Query objects returned from
+ * Wrapper class for jakarta.persistence.Query objects returned from
  * non-transactional access of a container-managed transactional
  * EntityManager.  Proxying the Query object allows us to clear persistence
  * context after execution to allow for returned objects to be detached

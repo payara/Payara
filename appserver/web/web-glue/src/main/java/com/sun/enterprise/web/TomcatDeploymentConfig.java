@@ -53,8 +53,8 @@ import org.apache.catalina.core.StandardWrapper;
 import org.glassfish.web.LogFacade;
 import org.glassfish.web.deployment.descriptor.*;
 
-import javax.servlet.SessionCookieConfig;
-import javax.servlet.descriptor.JspPropertyGroupDescriptor;
+import jakarta.servlet.SessionCookieConfig;
+import jakarta.servlet.descriptor.JspPropertyGroupDescriptor;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Vector;

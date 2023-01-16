@@ -58,9 +58,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Logger;
 
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
-import javax.xml.bind.JAXB;
+import jakarta.annotation.PostConstruct;
+import jakarta.inject.Inject;
+import jakarta.xml.bind.JAXB;
 
 import org.eclipse.microprofile.metrics.Counting;
 import org.eclipse.microprofile.metrics.Gauge;
@@ -259,9 +259,9 @@ public class MetricsServiceImpl implements MetricsService, ConfigListener, Monit
                 Metric metric = entry.getValue();
                 try {
                     MonitoringDataCollector metricCollector = tagCollector(contextName, metricID, collector);
-                    if(metric instanceof HealthCheckStatsProvider
-                                && (!((HealthCheckStatsProvider)metric).isEnabled() || !healthCheckService.isEnabled())) {
-                            continue;
+                    if (metric instanceof HealthCheckStatsProvider
+                            && (!((HealthCheckStatsProvider) metric).isEnabled() || !healthCheckService.isEnabled())) {
+                        continue;
                     }
                     if (metric instanceof Counting) {
                         metricCollector.collect(toName(metricID, "Count"), ((Counting) metric).getCount());

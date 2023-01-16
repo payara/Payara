@@ -45,6 +45,7 @@ package com.sun.enterprise.v3.admin.cluster;
 import com.sun.enterprise.admin.util.TimeoutParamDefaultCalculator;
 import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Domain;
+import jakarta.inject.Inject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.api.I18n;
@@ -53,28 +54,27 @@ import org.glassfish.api.admin.*;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Inject;
 import java.util.logging.Logger;
 
 @I18n("stop.cluster.command")
-@Service(name="stop-cluster")
+@Service(name = "stop-cluster")
 @PerLookup
 @RestEndpoints({
-    @RestEndpoint(configBean=Cluster.class,
-        opType=RestEndpoint.OpType.POST, 
-        path="stop-cluster", 
-        description="Stop Cluster",
-        params={
-            @RestParam(name="id", value="$parent")
-        })
+        @RestEndpoint(configBean = Cluster.class,
+                opType = RestEndpoint.OpType.POST,
+                path = "stop-cluster",
+                description = "Stop Cluster",
+                params = {
+                        @RestParam(name = "id", value = "$parent")
+                })
 })
 @Progress
 public class StopClusterCommand implements AdminCommand {
 
-    @Param(optional=false, primary=true)
+    @Param(optional = false, primary = true)
     private String clusterName;
 
-    @Param(optional=true, defaultValue="false")
+    @Param(optional = true, defaultValue = "false")
     private boolean kill = false;
 
     @Inject
@@ -139,9 +139,7 @@ public class StopClusterCommand implements AdminCommand {
         try {
             // Run start-instance against each instance in the cluster
             String commandName = "stop-instance";
-
             clusterHelper.setAdminTimeout(timeout * 1000);
-
             clusterHelper.runCommand(commandName, map, clusterName, context,
                     verbose);
         } catch (CommandException e) {

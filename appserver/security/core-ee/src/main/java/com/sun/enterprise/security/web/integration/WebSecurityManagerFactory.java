@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2019-2021] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.web.integration;
 
 import com.sun.enterprise.deployment.WebBundleDescriptor;
@@ -55,8 +55,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
-import javax.inject.Singleton;
-import javax.security.jacc.PolicyContextException;
+import jakarta.inject.Singleton;
+import jakarta.security.jacc.PolicyContextException;
 
 import org.glassfish.internal.api.ServerContext;
 import org.jvnet.hk2.annotations.Service;

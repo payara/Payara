@@ -55,8 +55,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.inject.Inject;
 
+import jakarta.inject.Inject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -256,17 +256,17 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
                     public Object run(final HazelcastRuntimeConfiguration hazelcastRuntimeConfigurationProxy) throws PropertyVetoException, TransactionFailure {
                         if (configFile != null) {
                             if (!configFile.equals(hazelcastRuntimeConfiguration.getHazelcastConfigurationFile())
-                                && configFile.equals("hazelcast-config.xml")) {
+                                    && configFile.equals("hazelcast-config.xml")) {
                                 hazelcastRuntimeConfigurationProxy.setChangeToDefault("true");
                             }
                             hazelcastRuntimeConfigurationProxy.setHazelcastConfigurationFile(configFile);
                         }
                         if (startPort != null) {
                             hazelcastRuntimeConfigurationProxy.setStartPort(startPort);
-                        }                        
+                        }
                         if (multiCastGroup != null) {
                             hazelcastRuntimeConfigurationProxy.setMulticastGroup(multiCastGroup);
-                        }                        
+                        }
                         if (multicastPort != null) {
                             hazelcastRuntimeConfigurationProxy.setMulticastPort(multicastPort);
                         }
@@ -411,11 +411,9 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
             if (encryptDatagrid != null && encryptDatagrid) {
                 checkForDatagridKey(actionReport);
             }
-
         }
-
     }
-    
+
     private void enableOnTarget(ActionReport actionReport, AdminCommandContext context, Boolean enabled) {
 
         // for all affected targets restart hazelcast. 

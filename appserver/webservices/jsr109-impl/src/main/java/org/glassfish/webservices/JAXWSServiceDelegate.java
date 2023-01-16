@@ -56,11 +56,11 @@ import java.util.concurrent.Executor;
 import java.lang.reflect.Method;
 
 import javax.xml.namespace.QName;
-import javax.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBContext;
 
-import javax.xml.ws.Service;
-import javax.xml.ws.Dispatch;
-import javax.xml.ws.handler.HandlerResolver;
+import jakarta.xml.ws.Service;
+import jakarta.xml.ws.Dispatch;
+import jakarta.xml.ws.handler.HandlerResolver;
 
 import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
 import com.sun.enterprise.deployment.ServiceRefPortInfo;
@@ -203,7 +203,7 @@ public class JAXWSServiceDelegate extends Service {
         try {
 
             Class noParams[]   = new Class[0];
-            Class serviceClass = javax.xml.ws.Service.class;
+            Class serviceClass = jakarta.xml.ws.Service.class;
 
             //
             // Map Service method to method type.

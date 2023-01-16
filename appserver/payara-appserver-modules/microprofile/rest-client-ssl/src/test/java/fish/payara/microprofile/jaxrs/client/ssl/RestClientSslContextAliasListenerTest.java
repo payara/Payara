@@ -51,7 +51,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
-import javax.ws.rs.core.Configuration;
+import jakarta.ws.rs.core.Configuration;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;

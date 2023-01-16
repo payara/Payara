@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates]
+ * Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates]
  */
 package org.glassfish.admin.rest.provider;
 
@@ -45,12 +45,12 @@ import com.sun.enterprise.admin.report.ActionReporter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import javax.json.JsonException;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.ext.Provider;
+import jakarta.json.JsonException;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.ext.Provider;
 import org.glassfish.admin.rest.composite.CompositeUtil;
 import org.glassfish.admin.rest.resources.CommandResult;
 import org.glassfish.admin.rest.utils.JsonUtil;

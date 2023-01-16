@@ -64,7 +64,7 @@ public class GFLauncherLogger {
     @LogMessagesResourceBundle
     public static final String SHARED_LOGMESSAGE_RESOURCE = "com.sun.enterprise.admin.launcher.LogMessages";
     @LoggerInfo(subsystem = "Launcher", description = "Launcher Logger", publish = true)
-    public static final String LOGGER_NAME = "javax.enterprise.launcher";
+    public static final String LOGGER_NAME = "jakarta.enterprise.launcher";
     private static final Logger LOGGER;
     private static final LocalStringsImpl STRINGS = new LocalStringsImpl(GFLauncherLogger.class);
     private static FileHandler logfileHandler;

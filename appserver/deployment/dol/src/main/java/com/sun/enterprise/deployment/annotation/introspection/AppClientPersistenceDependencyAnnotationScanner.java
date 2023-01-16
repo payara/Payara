@@ -42,7 +42,7 @@ package com.sun.enterprise.deployment.annotation.introspection;
 
 
 import org.jvnet.hk2.annotations.Service;
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 
 /**
  * Scans for annotations relevant to persistence units that indicate an app
@@ -55,8 +55,8 @@ import javax.inject.Singleton;
 public class AppClientPersistenceDependencyAnnotationScanner extends AbstractAnnotationScanner {
 
     protected void init(java.util.Set<String> annotationsSet) {
-        annotationsSet.add("Ljavax/persistence/PersistenceUnit");
-        annotationsSet.add("Ljavax/persistence/PersistenceUnits");
+        annotationsSet.add("Ljakarta/persistence/PersistenceUnit");
+        annotationsSet.add("Ljakarta/persistence/PersistenceUnits");
     }
     
 }

@@ -37,25 +37,17 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 package org.glassfish.webservices;
 
-import java.security.Principal;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.xml.namespace.QName;
-import javax.xml.rpc.handler.HandlerInfo;
-
-import com.sun.xml.ws.assembler.metro.dev.ClientPipelineHook;
-import org.jvnet.hk2.annotations.Contract;
-
 import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
-import com.sun.enterprise.deployment.WebServiceEndpoint;
 import com.sun.enterprise.deployment.runtime.common.MessageSecurityBindingDescriptor;
 import com.sun.enterprise.web.WebModule;
-import com.sun.xml.rpc.spi.runtime.SOAPMessageContext;
-import com.sun.xml.rpc.spi.runtime.StreamingHandler;
-import com.sun.xml.rpc.spi.runtime.SystemHandlerDelegate;
+import com.sun.xml.ws.assembler.metro.dev.ClientPipelineHook;
+import jakarta.servlet.http.HttpServletRequest;
+import org.jvnet.hk2.annotations.Contract;
+
+import java.security.Principal;
 
 /**
  *
@@ -65,21 +57,16 @@ import com.sun.xml.rpc.spi.runtime.SystemHandlerDelegate;
 public interface SecurityService {
 
     Object mergeSOAPMessageSecurityPolicies(MessageSecurityBindingDescriptor desc);
+
     boolean doSecurity(HttpServletRequest hreq, EjbRuntimeEndpointInfo ejbEndpoint, String realmName, WebServiceContextImpl context);
 
-    SystemHandlerDelegate getSecurityHandler(WebServiceEndpoint endpoint);
-
-    boolean validateRequest(Object serverAuthConfig, StreamingHandler implementor, SOAPMessageContext context);
-    void secureResponse(Object serverAuthConfig, StreamingHandler implementor, SOAPMessageContext context);
-
-    HandlerInfo getMessageSecurityHandler(MessageSecurityBindingDescriptor binding, QName serviceName);
-    ClientPipelineHook getClientPipelineHook(ServiceReferenceDescriptor ref);
-
-    void resetSecurityContext();
-    void resetPolicyContext();
-
     Principal getUserPrincipal(boolean isWeb);
+
     boolean isUserInRole(WebModule webModule, Principal principal, String servletName, String role);
 
-}
+    void resetSecurityContext();
 
+    void resetPolicyContext();
+
+    ClientPipelineHook getClientPipelineHook(ServiceReferenceDescriptor ref);
+}

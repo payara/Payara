@@ -39,7 +39,7 @@
  */
 package fish.payara.security.oidc.client.eltests;
 
-import javax.inject.Named;
+import jakarta.inject.Named;
 
 @Named
 public class OpenidConfigBeanEL {

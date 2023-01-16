@@ -67,7 +67,7 @@ public class ASMClassWriter implements ClassWriter, Opcodes {
     private static final String CREATE_AND_INITIALIZE = "createAndInitialize";
     private static final String CREATE_AND_INITIALIZE_SIG = "(Ljava/lang/Class;)Ljava/lang/Object;";
     
-    private static final String PATH_CLASS_NAME = "Ljavax/ws/rs/Path;";
+    private static final String PATH_CLASS_NAME = "Ljakarta/ws/rs/Path;";
 
     private org.objectweb.asm.ClassWriter cw = new org.objectweb.asm.ClassWriter(0);
     private String className;
@@ -399,7 +399,7 @@ public class ASMClassWriter implements ClassWriter, Opcodes {
         av0.visitEnd();
 
 
-        av0 = mv.visitParameterAnnotation(0, "Ljavax/ws/rs/PathParam;", true);
+        av0 = mv.visitParameterAnnotation(0, "Ljakarta/ws/rs/PathParam;", true);
         av0.visit("value", keyAttributeName);
         av0.visitEnd();
 

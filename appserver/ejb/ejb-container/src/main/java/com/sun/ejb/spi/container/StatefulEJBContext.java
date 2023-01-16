@@ -40,7 +40,7 @@
 
 package com.sun.ejb.spi.container;
 
-import javax.ejb.SessionContext;
+import jakarta.ejb.SessionContext;
 
 /**
  *@author Mahesh Kannan

@@ -44,7 +44,7 @@ import java.util.logging.Level;
 
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.glassfish.hk2.api.PostConstruct;
 import java.util.logging.Logger;
 import java.util.Timer;

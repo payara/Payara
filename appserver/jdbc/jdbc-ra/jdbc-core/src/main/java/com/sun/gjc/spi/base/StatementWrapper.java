@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2021] Payara Foundation and/or affiliates
 
 package com.sun.gjc.spi.base;
 
@@ -55,7 +55,7 @@ import java.sql.Statement;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.resource.ResourceException;
+import jakarta.resource.ResourceException;
 
 /**
  * Abstract class for wrapping Statement<br>

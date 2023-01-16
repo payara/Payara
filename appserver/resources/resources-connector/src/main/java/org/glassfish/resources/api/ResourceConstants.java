@@ -116,11 +116,11 @@ public interface ResourceConstants {
     /** resource type residing in an external JNDI repository */
     public static final String EXT_JNDI_RES_TYPE = "external-jndi-resource";
 
-    public static final String JMS_QUEUE = "javax.jms.Queue";
-    public static final String JMS_TOPIC = "javax.jms.Topic";
-    public static final String JMS_QUEUE_CONNECTION_FACTORY = "javax.jms.QueueConnectionFactory";
-    public static final String JMS_TOPIC_CONNECTION_FACTORY = "javax.jms.TopicConnectionFactory";
-    public static final String JMS_MESSAGE_LISTENER = "javax.jms.MessageListener";
+    public static final String JMS_QUEUE = "jakarta.jms.Queue";
+    public static final String JMS_TOPIC = "jakarta.jms.Topic";
+    public static final String JMS_QUEUE_CONNECTION_FACTORY = "jakarta.jms.QueueConnectionFactory";
+    public static final String JMS_TOPIC_CONNECTION_FACTORY = "jakarta.jms.TopicConnectionFactory";
+    public static final String JMS_MESSAGE_LISTENER = "jakarta.jms.MessageListener";
 
     //TODO should be refactored to non-resources module
     /**

@@ -43,7 +43,7 @@ package fish.payara.nucleus.microprofile.config.converters;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.config.spi.Converter;
 
-import javax.annotation.Priority;
+import jakarta.annotation.Priority;
 
 @Priority(1)
 public class ShortConverter implements Converter<Short> {

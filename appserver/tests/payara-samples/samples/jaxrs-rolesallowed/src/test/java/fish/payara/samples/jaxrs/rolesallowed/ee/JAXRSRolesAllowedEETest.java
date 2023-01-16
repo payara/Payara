@@ -2,8 +2,8 @@
 
 package fish.payara.samples.jaxrs.rolesallowed.ee;
 
-import static javax.ws.rs.client.ClientBuilder.newClient;
-import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
+import static jakarta.ws.rs.client.ClientBuilder.newClient;
+import static jakarta.ws.rs.core.MediaType.TEXT_PLAIN;
 import static org.jboss.shrinkwrap.api.ShrinkWrap.create;
 import static org.junit.Assert.assertTrue;
 
@@ -14,7 +14,7 @@ import java.net.URI;
 import java.net.URL;
 import java.util.Base64;
 
-import javax.ws.rs.WebApplicationException;
+import jakarta.ws.rs.WebApplicationException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;

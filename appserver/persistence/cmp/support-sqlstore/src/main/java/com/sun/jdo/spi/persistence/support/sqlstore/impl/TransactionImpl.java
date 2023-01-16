@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 
 /*
  * TransactionImpl.java
@@ -47,7 +47,7 @@
 
 package com.sun.jdo.spi.persistence.support.sqlstore.impl;
 
-import javax.transaction.*;
+import jakarta.transaction.*;
 
 import java.util.*;
 import java.sql.Connection;
@@ -125,7 +125,7 @@ public class TransactionImpl
     private static final Object GLOBAL_LOCK = new Object(); // NOI18N
 
     /**
-     * Transaction status (from javax.transaction.Status).
+     * Transaction status (from jakarta.transaction.Status).
      */
     private int            status;
 
@@ -187,7 +187,7 @@ public class TransactionImpl
      */
     private Object     connectionFactory    = null;
 
-    private javax.transaction.Transaction jta = null;
+    private jakarta.transaction.Transaction jta = null;
 
     /**
      * Type of the datasource. True if it javax.sql.DataSource
@@ -543,7 +543,7 @@ public class TransactionImpl
     }
 
     //
-    // ----- Methods from javax.transaction.Transaction interface ------
+    // ----- Methods from jakarta.transaction.Transaction interface ------
     //
 
     /**
@@ -607,7 +607,7 @@ public class TransactionImpl
     /**
      * Begin a transaction in managed environment
      */
-    public void begin(javax.transaction.Transaction t) {
+    public void begin(jakarta.transaction.Transaction t) {
 
         persistenceManager.acquireExclusiveLock();
 
@@ -1320,7 +1320,7 @@ public class TransactionImpl
     }
 
     /**
-     * Translates a javax.transaction.Status value into a string.
+     * Translates a jakarta.transaction.Status value into a string.
      *
      * @param   status   Status object to translate.
      * @return  Printable String for a Status object.

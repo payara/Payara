@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2021] Payara Foundation and/or affiliates
  */
 package org.glassfish.admin.rest.provider;
 
@@ -50,14 +50,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.UriInfo;
-import javax.ws.rs.ext.MessageBodyWriter;
-import javax.ws.rs.ext.Provider;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.core.UriInfo;
+import jakarta.ws.rs.ext.MessageBodyWriter;
+import jakarta.ws.rs.ext.Provider;
 import org.glassfish.admin.rest.Constants;
 import static org.glassfish.admin.rest.provider.ProviderUtil.*;
 import org.glassfish.admin.rest.utils.ConfigModelComparator;
@@ -78,10 +78,10 @@ public abstract class BaseProvider<T> implements MessageBodyWriter<T> {
     public static final String JSONP_CALLBACK = "jsoncallback";
 
     @Context
-    protected javax.inject.Provider<UriInfo> uriInfo;
+    protected jakarta.inject.Provider<UriInfo> uriInfo;
 
     @Context
-    protected javax.inject.Provider<HttpHeaders> requestHeaders;
+    protected jakarta.inject.Provider<HttpHeaders> requestHeaders;
 
     @Context
     protected ServiceLocator habitat;

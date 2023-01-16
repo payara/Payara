@@ -50,7 +50,7 @@ import java.rmi.RemoteException;
 
 import java.io.Serializable;
 
-import javax.ejb.EJBException;
+import jakarta.ejb.EJBException;
 
 /**
  * @author Ken Saks

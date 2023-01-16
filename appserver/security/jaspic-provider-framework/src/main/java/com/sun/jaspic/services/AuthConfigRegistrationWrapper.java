@@ -37,14 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 package com.sun.jaspic.services;
 
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import javax.security.auth.message.config.RegistrationListener;
+import jakarta.security.auth.message.config.RegistrationListener;
 
 // Adding package private class because specializing the listener implementation class would
 // make the Payara JASPIC (JSR 196) implementation non-replaceable.

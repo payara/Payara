@@ -52,8 +52,8 @@ import org.glassfish.apf.AnnotationProcessorException;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 
-import javax.resource.spi.ActivationSpec;
-import javax.resource.spi.Connector;
+import jakarta.resource.spi.ActivationSpec;
+import jakarta.resource.spi.Connector;
 import java.util.Set;
 import java.util.Iterator;
 import java.util.Collection;
@@ -161,7 +161,7 @@ public class ConnectorValidator extends DefaultDOLVisitor implements ConnectorVi
                     }
                     if(!validClass){
                         throw new IllegalArgumentException("Class ["+activationSpecClass+"] does not " +
-                                "implement javax.resource.spi.ActivationSpec interface, but " +
+                                "implement jakarta.resource.spi.ActivationSpec interface, but " +
                                 "defined in MessageListener ["+ml.getMessageListenerType()+"] of RAR ["+ descriptor.getName() + "]");
                     }
                 }else{

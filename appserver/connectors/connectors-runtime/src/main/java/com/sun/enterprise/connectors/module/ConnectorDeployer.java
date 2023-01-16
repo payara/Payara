@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.connectors.module;
 
@@ -77,9 +77,9 @@ import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 
-import javax.inject.Inject;
-import javax.validation.*;
-import javax.validation.bootstrap.GenericBootstrap;
+import jakarta.inject.Inject;
+import jakarta.validation.*;
+import jakarta.validation.bootstrap.GenericBootstrap;
 import java.beans.PropertyVetoException;
 import java.io.*;
 import java.util.*;
@@ -539,7 +539,7 @@ public class ConnectorDeployer extends JavaEEDeployer<ConnectorContainer, Connec
     }
 
     private List<String> getValidationMappingDescriptors(ReadableArchive archive) {
-        String validationMappingNSName = "jboss.org/xml/ns/javax/validation/mapping";
+        String validationMappingNSName = "jboss.org/xml/ns/jakarta/validation/mapping";
 
         Enumeration entries = archive.entries();
         List<String> mappingList = new ArrayList<String>();

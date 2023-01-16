@@ -37,12 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.ejb.mdb;
 
-import javax.ejb.*;
-import javax.transaction.UserTransaction;
+import jakarta.ejb.*;
+import jakarta.transaction.UserTransaction;
 import com.sun.ejb.EjbInvocation;
 import com.sun.ejb.containers.BaseContainer;
 import com.sun.ejb.containers.EjbContainerUtilImpl;

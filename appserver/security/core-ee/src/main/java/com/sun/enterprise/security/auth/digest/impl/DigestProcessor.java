@@ -37,13 +37,16 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2022 Payara Foundation and/or its affiliates
+// Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license
+
 package com.sun.enterprise.security.auth.digest.impl;
 
-import static com.sun.enterprise.security.auth.digest.api.Constants.A1;
-import static com.sun.logging.LogDomains.SECURITY_LOGGER;
-import static java.util.logging.Level.FINE;
-import static java.util.logging.Level.SEVERE;
+import com.sun.enterprise.security.auth.digest.api.DigestAlgorithmParameter;
+import com.sun.enterprise.security.auth.digest.api.Key;
+import com.sun.enterprise.security.auth.digest.api.NestedDigestAlgoParam;
+import com.sun.enterprise.security.auth.digest.api.Password;
+import com.sun.logging.LogDomains;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -52,11 +55,10 @@ import java.security.NoSuchAlgorithmException;
 import java.security.spec.AlgorithmParameterSpec;
 import java.util.logging.Logger;
 
-import com.sun.enterprise.security.auth.digest.api.DigestAlgorithmParameter;
-import com.sun.enterprise.security.auth.digest.api.Key;
-import com.sun.enterprise.security.auth.digest.api.NestedDigestAlgoParam;
-import com.sun.enterprise.security.auth.digest.api.Password;
-import com.sun.logging.LogDomains;
+import static com.sun.enterprise.security.auth.digest.api.Constants.A1;
+import static com.sun.logging.LogDomains.SECURITY_LOGGER;
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.SEVERE;
 
 /**
  * supports creation and validation of digest.

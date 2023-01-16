@@ -119,18 +119,18 @@ public class CMPTemplateFormatter extends JavaClassWriterHelper{
     public final static String ejbPostCreate_             = "ejbPostCreate"; // NOI18N
     public final static String ejbRemove_                 = "ejbRemove"; // NOI18N
     public final static String ejbLoad_                   = "ejbLoad"; // NOI18N
-    public final static String CreateException_           = "javax.ejb.CreateException"; // NOI18N
-    public final static String DuplicateKeyException_     = "javax.ejb.DuplicateKeyException"; // NOI18N
-    public final static String RemoveException_           = "javax.ejb.RemoveException"; // NOI18N
+    public final static String CreateException_           = "jakarta.ejb.CreateException"; // NOI18N
+    public final static String DuplicateKeyException_     = "jakarta.ejb.DuplicateKeyException"; // NOI18N
+    public final static String RemoveException_           = "jakarta.ejb.RemoveException"; // NOI18N
     public final static String ejbException_              = "EJBException"; // NOI18N
-    public final static String finderException_           = "javax.ejb.FinderException"; // NOI18N
+    public final static String finderException_           = "jakarta.ejb.FinderException"; // NOI18N
     public final static String assertInTransaction_       = "assertInTransaction"; // NOI18N
     public final static String assertPersistenceManagerIsNull_       
                                                           = "assertPersistenceManagerIsNull"; // NOI18N
     public final static String assertPersistenceManagerIsNullCall_       
                                                           = "assertPersistenceManagerIsNullCall"; // NOI18N
     public final static String setEntityContext_          = "setEntityContext"; // NOI18N
-    public final static String EntityContext_             = "javax.ejb.EntityContext"; // NOI18N
+    public final static String EntityContext_             = "jakarta.ejb.EntityContext"; // NOI18N
     public final static String castKey_                   = "castKey"; // NOI18N
     public final static String castOid_                   = "castOid"; // NOI18N
     public final static String getPK_                     = "getPK"; // NOI18N

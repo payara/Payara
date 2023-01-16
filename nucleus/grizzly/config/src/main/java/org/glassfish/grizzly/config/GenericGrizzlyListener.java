@@ -92,6 +92,7 @@ import org.glassfish.grizzly.http.server.AddOn;
 import org.glassfish.grizzly.http.server.BackendConfiguration;
 import org.glassfish.grizzly.http.server.CompressionEncodingFilter;
 import org.glassfish.grizzly.http.CompressionConfig.CompressionMode;
+import org.glassfish.grizzly.http.server.CompressionLevel;
 import org.glassfish.grizzly.http.server.FileCacheFilter;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.HttpServerFilter;
@@ -1139,7 +1140,7 @@ public class GenericGrizzlyListener implements GrizzlyListener {
                 LZMAContentEncoding.getLzmaAliases(),
                 compressionMode != CompressionMode.OFF
         ));
-        final Set<ContentEncoding> set = new HashSet<ContentEncoding>(2);
+        final Set<ContentEncoding> set = new HashSet<>(2);
         set.add(gzipContentEncoding);
         set.add(lzmaEncoding);
         return set;

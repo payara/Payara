@@ -84,7 +84,7 @@ public interface ContextManager
 
   @LoggerInfo(subsystem="DIAG", description="Diagnostcis Context Logger", publish=true)
   public static final String LOGGER_NAME =
-      "javax.enterprise.diagnostics.context.base";
+      "jakarta.enterprise.diagnostics.context.base";
 
   public static final Logger LOGGER = Logger.getLogger(LOGGER_NAME, LOG_MESSAGE_RESOURCE);
 

@@ -59,7 +59,7 @@
     <config-bundle location="domain/resources" replace-if-exist="false">
         <configuration-element config-bean-class-name="org.glassfish.connectors.config.ConnectorConnectionPool">
 <![CDATA[
-    <connector-connection-pool name="jms/__defaultConnectionFactory-Connection-Pool" max-pool-size="250" steady-pool-size="1" resource-adapter-name="jmsra" connection-definition-name="javax.jms.ConnectionFactory">
+    <connector-connection-pool name="jms/__defaultConnectionFactory-Connection-Pool" max-pool-size="250" steady-pool-size="1" resource-adapter-name="jmsra" connection-definition-name="jakarta.jms.ConnectionFactory">
     </connector-connection-pool>
 ]]>
         </configuration-element>

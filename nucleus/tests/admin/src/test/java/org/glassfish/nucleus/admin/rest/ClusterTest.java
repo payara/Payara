@@ -42,7 +42,7 @@ package org.glassfish.nucleus.admin.rest;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 import org.glassfish.admin.rest.client.utils.MarshallingUtils;
 import static org.testng.AssertJUnit.*;
 import org.testng.annotations.Test;

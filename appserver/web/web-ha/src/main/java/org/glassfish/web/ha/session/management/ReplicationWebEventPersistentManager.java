@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates]
 
 
 /*
@@ -60,14 +60,14 @@ import org.glassfish.ha.store.api.BackingStoreException;
 import org.glassfish.ha.store.api.BackingStoreFactory;
 import org.glassfish.ha.store.api.Storeable;
 import org.glassfish.web.ha.LogFacade;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.api.PerLookup;
 
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
 import java.util.Map;
 import java.util.logging.Level;
 
@@ -172,9 +172,9 @@ public class ReplicationWebEventPersistentManager<T extends Storeable> extends R
     }
     
     private Session getSession(ServletRequest request) {
-        javax.servlet.http.HttpServletRequest httpReq =
-            (javax.servlet.http.HttpServletRequest) request;
-        javax.servlet.http.HttpSession httpSess = httpReq.getSession(false);
+        jakarta.servlet.http.HttpServletRequest httpReq =
+            (jakarta.servlet.http.HttpServletRequest) request;
+        jakarta.servlet.http.HttpSession httpSess = httpReq.getSession(false);
         if(httpSess == null) {
             return null;
         }

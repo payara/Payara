@@ -40,12 +40,12 @@
 
 package com.sun.appserv.connectors.internal.spi;
 
-import javax.resource.spi.ManagedConnectionFactory;
-import javax.resource.spi.ConnectionRequestInfo;
-import javax.resource.ResourceException;
+import jakarta.resource.spi.ManagedConnectionFactory;
+import jakarta.resource.spi.ConnectionRequestInfo;
+import jakarta.resource.ResourceException;
 
 
-public interface ConnectionManager extends javax.resource.spi.ConnectionManager {
+public interface ConnectionManager extends jakarta.resource.spi.ConnectionManager {
 
     /**
      * API for internal glassfish modules (eg: jdbcra) to get a connection that does not take part

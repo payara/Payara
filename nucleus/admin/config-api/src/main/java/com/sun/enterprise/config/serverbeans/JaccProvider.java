@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2021] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -54,7 +54,7 @@ import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.config.types.PropertyBag;
 import org.glassfish.quality.ToDo;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * Defines the standard JACC properties used for setting up the JACC provider.
@@ -88,7 +88,7 @@ public interface JaccProvider extends ConfigBeanProxy, PropertyBag {
      * Gets the value of the policyProvider property.
      *
      * Corresponds to (and can be overridden by) the system property
-     * javax.security.jacc.policy.provider
+     * jakarta.security.jacc.policy.provider
      * 
      * @return possible object is
      *         {@link String }
@@ -109,7 +109,7 @@ public interface JaccProvider extends ConfigBeanProxy, PropertyBag {
      * Gets the value of the policyConfigurationFactoryProvider property.
      *
      * Corresponds to (and can be overridden by) the system property
-     * javax.security.jacc.PolicyConfigurationFactory.provider       
+     * jakarta.security.jacc.PolicyConfigurationFactory.provider       
      *
      * @return possible object is
      *         {@link String }

@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) [2020] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2020-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -53,7 +53,7 @@ import java.lang.reflect.Method;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import javax.enterprise.inject.spi.InjectionPoint;
+import jakarta.enterprise.inject.spi.InjectionPoint;
 
 import org.eclipse.microprofile.metrics.Counter;
 import org.eclipse.microprofile.metrics.Metadata;
@@ -80,7 +80,7 @@ import fish.payara.microprofile.metrics.test.TestUtils;
 
 /**
  * Specifically tests the
- * {@link AnnotationReader#getOrRegister(javax.enterprise.inject.spi.InjectionPoint, Class, org.eclipse.microprofile.metrics.MetricRegistry)}
+ * {@link AnnotationReader#getOrRegister(jakarta.enterprise.inject.spi.InjectionPoint, Class, org.eclipse.microprofile.metrics.MetricRegistry)}
  * method.
  *
  * @author Jan Bernitt

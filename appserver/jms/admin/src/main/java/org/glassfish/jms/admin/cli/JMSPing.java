@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2021] [Payara Foundation]
 package org.glassfish.jms.admin.cli;
 
 import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
@@ -61,9 +61,9 @@ import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.resourcebase.resources.api.PoolInfo;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.resource.ResourceException;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.resource.ResourceException;
 import java.util.Properties;
 
 @ExecuteOn({RuntimeType.DAS})
@@ -232,7 +232,7 @@ public class JMSPing implements AdminCommand {
         }
         aoAttrList.set("property", propString);
 
-        aoAttrList.set("restype",  "javax.jms.QueueConnectionFactory");
+        aoAttrList.set("restype",  "jakarta.jms.QueueConnectionFactory");
         aoAttrList.set("DEFAULT",  tmpJMSResource);
         //aoAttrList.set("target", target);
         commandRunner.getCommandInvocation("create-jms-resource", subReport, subject).parameters(aoAttrList).execute();

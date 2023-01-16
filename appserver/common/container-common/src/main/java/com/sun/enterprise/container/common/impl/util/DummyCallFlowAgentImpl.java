@@ -42,7 +42,7 @@ package com.sun.enterprise.container.common.impl.util;
 
 import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 import com.sun.enterprise.container.common.spi.util.CallFlowAgent;
 import com.sun.enterprise.container.common.spi.util.EntityManagerMethod;
 import com.sun.enterprise.container.common.spi.util.EntityManagerQueryMethod;

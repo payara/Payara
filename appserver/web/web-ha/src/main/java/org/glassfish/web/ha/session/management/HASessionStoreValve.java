@@ -49,10 +49,10 @@ package org.glassfish.web.ha.session.management;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.io.IOException;
-import javax.servlet.ServletException;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.apache.catalina.valves.ValveBase;
 import org.apache.catalina.Globals;
 import org.apache.catalina.Manager;
@@ -85,7 +85,7 @@ public class HASessionStoreValve extends ValveBase {
      * @param request
      * @param response
      */    
-    public int invoke(org.apache.catalina.Request request, org.apache.catalina.Response response) throws java.io.IOException, javax.servlet.ServletException {
+    public int invoke(org.apache.catalina.Request request, org.apache.catalina.Response response) throws java.io.IOException, jakarta.servlet.ServletException {
         //FIXME this is for 7.0PE style valves
         //left here if the same optimization is done to the valve architecture
         String sessionId = null;

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.webservices.connector.annotation.handlers;
 
@@ -46,8 +46,8 @@ import com.sun.enterprise.deployment.annotation.context.WebComponentContext;
 import java.lang.reflect.AnnotatedElement;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.Singleton;
-import javax.ejb.Stateless;
+import jakarta.ejb.Singleton;
+import jakarta.ejb.Stateless;
 import org.glassfish.apf.AnnotatedElementHandler;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.api.deployment.archive.ReadableArchive;
@@ -60,7 +60,7 @@ public final class WebServiceUtils {
     static String getEjbName(AnnotatedElement annElem) {
         Stateless stateless = null;
         try {
-            stateless = annElem.getAnnotation(javax.ejb.Stateless.class);
+            stateless = annElem.getAnnotation(jakarta.ejb.Stateless.class);
         } catch (Exception e) {
             if (logger.isLoggable(Level.FINE)) {
                 //This can happen in the web.zip installation where there is no ejb
@@ -70,7 +70,7 @@ public final class WebServiceUtils {
         }
         Singleton singleton = null;
         try {
-            singleton = annElem.getAnnotation(javax.ejb.Singleton.class);
+            singleton = annElem.getAnnotation(jakarta.ejb.Singleton.class);
         } catch (Exception e) {
             if (logger.isLoggable(Level.FINE)) {
                 //This can happen in the web.zip installation where there is no ejb

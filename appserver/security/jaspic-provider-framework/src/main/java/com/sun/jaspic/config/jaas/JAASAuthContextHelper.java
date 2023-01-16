@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 package com.sun.jaspic.config.jaas;
 
 import com.sun.jaspic.config.helper.BaseAuthContextImpl;
@@ -63,8 +63,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import javax.security.auth.login.AppConfigurationEntry;
 import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
-import javax.security.auth.message.AuthException;
-import javax.security.auth.message.AuthStatus;
+import jakarta.security.auth.message.AuthException;
+import jakarta.security.auth.message.AuthStatus;
 
 /**
  *
@@ -229,8 +229,8 @@ public class JAASAuthContextHelper extends BaseAuthContextImpl {
     }
 
     @Override
-    public Map<String, ?> getInitProperties(int i, Map<String, ?> properties) {
-        Map<String, Object> initProperties = new HashMap<String, Object>();
+    public Map<String, Object> getInitProperties(int i, Map<String, Object> properties) {
+        Map<String, Object> initProperties = new HashMap<>();
 
         if (entry[i] != null) {
             if (properties != null && !properties.isEmpty()) {

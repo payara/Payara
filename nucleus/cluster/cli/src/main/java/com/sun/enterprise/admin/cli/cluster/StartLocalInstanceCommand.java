@@ -206,7 +206,7 @@ public class StartLocalInstanceCommand extends SynchronizeInstanceCommand implem
                             break;
                         default:
                             return returnValue;
-                        }
+                    }
 
                     if (env.debug()) {
                         System.setProperty(WALL_CLOCK_START_PROP, Long.toString(System.currentTimeMillis()));
@@ -255,8 +255,7 @@ public class StartLocalInstanceCommand extends SynchronizeInstanceCommand implem
             args.add("--node");
             args.add(node);
         }
-        if (ok(instanceName))
-         {
+        if (ok(instanceName)) {
             args.add(instanceName); // the operand
         }
 

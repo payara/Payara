@@ -44,7 +44,7 @@ import org.glassfish.api.container.Container;
 import org.glassfish.api.deployment.Deployer;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 
 /**
  * OSGi container, will just be used to manage OSGi bundles through deployment

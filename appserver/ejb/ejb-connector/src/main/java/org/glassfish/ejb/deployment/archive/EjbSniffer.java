@@ -49,9 +49,9 @@ import org.glassfish.api.deployment.archive.ArchiveType;
 
 
 import org.jvnet.hk2.annotations.Service;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import javax.enterprise.deploy.shared.ModuleType;
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 
 import java.io.IOException;
 import java.io.File;
@@ -73,8 +73,8 @@ public class EjbSniffer  extends GenericSniffer {
     @Inject EjbType ejbType;
 
     private static final Class[]  ejbAnnotations = new Class[] {
-            javax.ejb.Stateless.class, javax.ejb.Stateful.class,
-            javax.ejb.MessageDriven.class, javax.ejb.Singleton.class };
+            jakarta.ejb.Stateless.class, jakarta.ejb.Stateful.class,
+            jakarta.ejb.MessageDriven.class, jakarta.ejb.Singleton.class };
 
     public EjbSniffer() {
         this("ejb", "META-INF/ejb-jar.xml", null);

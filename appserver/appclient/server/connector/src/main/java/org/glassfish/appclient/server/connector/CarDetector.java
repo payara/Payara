@@ -46,8 +46,8 @@ import java.util.logging.Logger;
 import java.util.jar.Manifest;
 import java.util.jar.Attributes;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 
 import org.glassfish.api.deployment.archive.ArchiveDetector;
 import org.glassfish.api.deployment.archive.ArchiveHandler;

@@ -40,13 +40,13 @@
     holder.
 
 -->
-<!--   Portions Copyright [2018-2019] Payara Foundation and/or affiliates -->
+<!--   Portions Copyright [2018-2022] Payara Foundation and/or affiliates -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
         <groupId>fish.payara.server.internal.admin</groupId>
         <artifactId>nucleus-admin</artifactId>
-        <version>5.2023.1-SNAPSHOT</version>
+        <version>6.2023.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>server-mgmt</artifactId>
@@ -79,50 +79,59 @@
             </resource>
         </resources>
         <plugins>
+            <!-- XXX: no maven plugin for jakarta xml binding impl exists, so we have to stick with Ant and attach source 
+                root to the build ourselves... -->
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>jaxb2-maven-plugin</artifactId>
-                <version>1.5</version>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.0.0</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>com.sun.xml.bind</groupId>
+                        <artifactId>jaxb-xjc</artifactId>
+                        <version>${jaxb-impl.version}</version>
+                    </dependency>
+                </dependencies>
                 <executions>
                     <execution>
-                        <id>templateinfo</id>
+                        <id>xjc</id>
+                        <phase>generate-sources</phase>
                         <goals>
-                            <goal>xjc</goal>
+                            <goal>run</goal>
                         </goals>
                         <configuration>
-                            <schemaDirectory>src/main/resources/xsd/schema</schemaDirectory>
-                            <schemaFiles>template-info.xsd</schemaFiles>
-                            <packageName>com.sun.enterprise.admin.servermgmt.xml.templateinfo</packageName>
-                            <clearOutputDir>false</clearOutputDir>
-                            <staleFile>${project.build.directory}/generated-sources/.jaxb-staleFlag-config</staleFile>
+                            <target>
+                                <taskdef name="xjc" classname="com.sun.tools.xjc.XJCTask" />
+                                <property name="dest"
+                                    location="${project.build.directory}/generated-sources/xjc" />
+                                <mkdir dir="${dest}" />
+                                <xjc destdir="${dest}"
+                                    schema="${project.basedir}/src/main/resources/xsd/schema/template-info.xsd"
+                                    package="com.sun.enterprise.admin.servermgmt.xml.templateinfo" />
+                                <xjc destdir="${dest}"
+                                    schema="${project.basedir}/src/main/resources/xsd/schema/domain-info.xsd"
+                                    package="com.sun.enterprise.admin.servermgmt.xml.domaininfo" />
+                                <xjc destdir="${dest}"
+                                    schema="${project.basedir}/src/main/resources/xsd/schema/stringsubs.xsd"
+                                    package="com.sun.enterprise.admin.servermgmt.xml.stringsubs" />
+                            </target>
                         </configuration>
                     </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <executions>
                     <execution>
-                        <id>domaininfo</id>
+                        <id>add-sources</id>
+                        <phase>generate-sources</phase>
                         <goals>
-                            <goal>xjc</goal>
+                            <goal>add-source</goal>
                         </goals>
                         <configuration>
-                            <schemaDirectory>src/main/resources/xsd/schema</schemaDirectory>
-                            <schemaFiles>domain-info.xsd</schemaFiles>
-                            <extension>true</extension>
-                            <packageName>com.sun.enterprise.admin.servermgmt.xml.domaininfo</packageName>
-                            <clearOutputDir>false</clearOutputDir>
-                            <staleFile>${project.build.directory}/generated-sources/.jaxb-staleFlag-app</staleFile>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>stringsubs</id>
-                        <goals>
-                            <goal>xjc</goal>
-                        </goals>
-                        <configuration>
-                            <extension>true</extension>
-                            <schemaDirectory>src/main/resources/xsd/schema</schemaDirectory>
-                            <schemaFiles>stringsubs.xsd</schemaFiles>
-                            <extension>true</extension>
-                            <packageName>com.sun.enterprise.admin.servermgmt.xml.stringsubs</packageName>
-                            <clearOutputDir>false</clearOutputDir>
+                            <sources>
+                                <source>${project.build.directory}/generated-sources/xjc</source>
+                            </sources>
                         </configuration>
                     </execution>
                 </executions>
@@ -132,17 +141,17 @@
 
     <dependencies>
         <dependency>
-            <groupId>fish.payara.server.internal.common</groupId>
+            <groupId>fish.payara.server.core.common</groupId>
             <artifactId>common-util</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.admin</groupId>
+            <groupId>fish.payara.server.core.admin</groupId>
             <artifactId>admin-util</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.admin</groupId>
+            <groupId>fish.payara.server.core.admin</groupId>
             <artifactId>admin-cli</artifactId>
             <version>${project.version}</version>
         </dependency>

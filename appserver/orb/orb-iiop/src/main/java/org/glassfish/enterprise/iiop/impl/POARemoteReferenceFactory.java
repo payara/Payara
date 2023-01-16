@@ -37,12 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.enterprise.iiop.impl;
 
 
-import javax.ejb.NoSuchObjectLocalException;
+import jakarta.ejb.NoSuchObjectLocalException;
 
 import java.rmi.Remote;
 

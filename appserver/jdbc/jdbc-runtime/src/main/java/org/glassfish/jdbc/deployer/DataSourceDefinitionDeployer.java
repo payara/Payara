@@ -58,8 +58,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.inject.Inject;
-import javax.inject.Provider;
+import jakarta.inject.Inject;
+import jakarta.inject.Provider;
 import javax.naming.NamingException;
 
 import org.glassfish.config.support.TranslatedConfigView;

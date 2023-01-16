@@ -1,0 +1,459 @@
+<!--
+  ~    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+  ~
+  ~    Copyright (c) 2022 Payara Foundation and/or its affiliates. All rights reserved.
+  ~
+  ~    The contents of this file are subject to the terms of either the GNU
+  ~    General Public License Version 2 only ("GPL") or the Common Development
+  ~    and Distribution License("CDDL") (collectively, the "License").  You
+  ~    may not use this file except in compliance with the License.  You can
+  ~    obtain a copy of the License at
+  ~    https://github.com/payara/Payara/blob/master/LICENSE.txt
+  ~    See the License for the specific
+  ~    language governing permissions and limitations under the License.
+  ~
+  ~    When distributing the software, include this License Header Notice in each
+  ~    file and include the License file at glassfish/legal/LICENSE.txt.
+  ~
+  ~    GPL Classpath Exception:
+  ~    The Payara Foundation designates this particular file as subject to the "Classpath"
+  ~    exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+  ~    file that accompanied this code.
+  ~
+  ~    Modifications:
+  ~    If applicable, add the following below the License Header, with the fields
+  ~    enclosed by brackets [] replaced by your own identifying information:
+  ~    "Portions Copyright [year] [name of copyright owner]"
+  ~
+  ~    Contributor(s):
+  ~    If you wish your version of this file to be governed by only the CDDL or
+  ~    only the GPL Version 2, indicate your decision by adding "[Contributor]
+  ~    elects to include this software in this distribution under the [CDDL or GPL
+  ~    Version 2] license."  If you don't indicate a single choice of license, a
+  ~    recipient has the option to distribute your version of this file under
+  ~    either the CDDL, the GPL Version 2 or to extend the choice of license to
+  ~    its licensees as provided above.  However, if you add GPL Version 2 code
+  ~    and therefore, elected the GPL Version 2 license, then the option applies
+  ~    only if the new code is made subject to such option by the copyright
+  ~    holder.
+  -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>fish.payara.api</groupId>
+        <artifactId>api-parent</artifactId>
+        <version>6.2023.2-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>payara-core-bom</artifactId>
+    <name>Payara Core Bill of Materials</name>
+    <packaging>pom</packaging>
+    <description>List of dependencies of Payara core projects</description>
+
+    <properties>
+        <payara.core.version>${payara.version}</payara.core.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>fish.payara.server.core.admin</groupId>
+                <artifactId>admin-cli</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.admin</groupId>
+                <artifactId>admin-core</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.admin</groupId>
+                <artifactId>admin-util</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.admin</groupId>
+                <artifactId>config-api</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.admin</groupId>
+                <artifactId>launcher</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.admin</groupId>
+                <artifactId>monitoring-core</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.common</groupId>
+                <artifactId>amx-core</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.common</groupId>
+                <artifactId>amx-javaee</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.common</groupId>
+                <artifactId>annotation-framework</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.common</groupId>
+                <artifactId>common-util</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.common</groupId>
+                <artifactId>container-common</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.common</groupId>
+                <artifactId>glassfish-api</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.common</groupId>
+                <artifactId>glassfish-ee-api</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.common</groupId>
+                <artifactId>glassfish-mbeanserver</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.common</groupId>
+                <artifactId>glassfish-naming</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.common</groupId>
+                <artifactId>internal-api</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.common</groupId>
+                <artifactId>scattered-archive-api</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.common</groupId>
+                <artifactId>simple-glassfish-api</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.common</groupId>
+                <artifactId>stats77</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.connectors</groupId>
+                <artifactId>connectors-internal-api</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.nucleus</groupId>
+                <artifactId>api-exporter</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.nucleus</groupId>
+                <artifactId>glassfish</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.nucleus</groupId>
+                <artifactId>kernel</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.nucleus</groupId>
+                <artifactId>logging</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.deployment</groupId>
+                <artifactId>deployment-common</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.deployment</groupId>
+                <artifactId>deployment-javaee-core</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.deployment</groupId>
+                <artifactId>dol</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.ejb</groupId>
+                <artifactId>ejb-internal-api</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.flashlight</groupId>
+                <artifactId>flashlight-framework</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.grizzly</groupId>
+                <artifactId>grizzly-config</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.grizzly</groupId>
+                <artifactId>nucleus-grizzly-all</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.hk2</groupId>
+                <artifactId>config-types</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.hk2</groupId>
+                <artifactId>hk2-config</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.orb</groupId>
+                <artifactId>orb-connector</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.orb</groupId>
+                <artifactId>orb-enabler</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.packager</groupId>
+                <artifactId>jmxremote_optional-repackaged</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.packager</groupId>
+                <artifactId>ldapbp-repackaged</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.packager</groupId>
+                <artifactId>libpam4j-repackaged</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.packager</groupId>
+                <artifactId>opentracing-repackaged</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.packager</groupId>
+                <artifactId>tiger-types</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.payara-modules</groupId>
+                <artifactId>hazelcast-bootstrap</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.payara-modules</groupId>
+                <artifactId>healthcheck-core</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.payara-modules</groupId>
+                <artifactId>healthcheck-stuck</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.payara-modules</groupId>
+                <artifactId>opentracing-adapter</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.payara-modules</groupId>
+                <artifactId>payara-executor-service</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.payara-modules</groupId>
+                <artifactId>requesttracing-core</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.resourcebase.resources</groupId>
+                <artifactId>nucleus-resources</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.resources</groupId>
+                <artifactId>resources-connector</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.security</groupId>
+                <artifactId>jaspic.provider.framework</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.security</groupId>
+                <artifactId>security</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.security</groupId>
+                <artifactId>security-ee</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.security</groupId>
+                <artifactId>security-services</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.security</groupId>
+                <artifactId>ssl-impl</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.security</groupId>
+                <artifactId>websecurity</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.transaction</groupId>
+                <artifactId>transaction-internal-api</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.web</groupId>
+                <artifactId>gf-web-connector</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.web</groupId>
+                <artifactId>war-util</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.web</groupId>
+                <artifactId>web-cli</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.web</groupId>
+                <artifactId>web-core</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.web</groupId>
+                <artifactId>web-embed-api</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.web</groupId>
+                <artifactId>web-glue</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.web</groupId>
+                <artifactId>web-gui-plugin-common</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.web</groupId>
+                <artifactId>web-naming</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.web</groupId>
+                <artifactId>web-sse</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>flatten-maven-plugin</artifactId>
+                <configuration>
+                    <flattenMode>bom</flattenMode>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2021] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -49,21 +49,21 @@ import java.util.List;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.event.Observes;
-import javax.enterprise.inject.spi.AfterBeanDiscovery;
-import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.BeforeBeanDiscovery;
-import javax.enterprise.inject.spi.CDI;
-import javax.enterprise.inject.spi.Extension;
-import javax.enterprise.inject.spi.ProcessBean;
-import javax.security.enterprise.authentication.mechanism.http.HttpAuthenticationMechanism;
-import javax.security.enterprise.identitystore.IdentityStore;
-import org.glassfish.soteria.cdi.CdiProducer;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.event.Observes;
+import jakarta.enterprise.inject.spi.AfterBeanDiscovery;
+import jakarta.enterprise.inject.spi.Bean;
+import jakarta.enterprise.inject.spi.BeanManager;
+import jakarta.enterprise.inject.spi.BeforeBeanDiscovery;
+import jakarta.enterprise.inject.spi.CDI;
+import jakarta.enterprise.inject.spi.Extension;
+import jakarta.enterprise.inject.spi.ProcessBean;
+import jakarta.security.enterprise.authentication.mechanism.http.HttpAuthenticationMechanism;
+import jakarta.security.enterprise.identitystore.IdentityStore;
 import org.glassfish.soteria.cdi.LoginToContinueAnnotationLiteral;
 import fish.payara.security.annotations.TwoIdentityStoreAuthenticationMechanismDefinition;
 import fish.payara.security.identitystores.YubikeyIdentityStoreDefinitionAnnotationLiteral;
+import org.glassfish.common.util.PayaraCdiProducer;
 
 /**
  * CDI Extension class. Uses Dynamic producers to add {@link TwoIdentityStoreAuthenticationMechanism},
@@ -101,7 +101,7 @@ public class CDIExtension implements Extension {
 
         optionalYubikeyIdentityStore.ifPresent(yubikeyIdentityStoreDefinition -> {
             logActivatedIdentityStore(YubikeyIdentityStoreDefinition.class, beanClass);
-            identityStoreBeans.add(new CdiProducer<IdentityStore>()
+            identityStoreBeans.add(new PayaraCdiProducer<IdentityStore>()
                     .scope(ApplicationScoped.class)
                     .beanClass(IdentityStore.class)
                     .types(Object.class, IdentityStore.class)
@@ -119,7 +119,7 @@ public class CDIExtension implements Extension {
 
             logActivatedAuthenticationMechanism(TwoIdentityStoreAuthenticationMechanismDefinition.class, beanClass);
 
-            authenticationMechanismBean = new CdiProducer<HttpAuthenticationMechanism>()
+            authenticationMechanismBean = new PayaraCdiProducer<HttpAuthenticationMechanism>()
                     .scope(ApplicationScoped.class)
                     .beanClass(HttpAuthenticationMechanism.class)
                     .types(Object.class, HttpAuthenticationMechanism.class)

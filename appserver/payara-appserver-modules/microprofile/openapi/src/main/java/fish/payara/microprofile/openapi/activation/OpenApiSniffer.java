@@ -70,8 +70,8 @@ public class OpenApiSniffer extends MicroProfileSniffer {
     public Class<? extends Annotation>[] getAnnotationTypes() {
         return new Class[] {
             // All JAX-RS applications are valid applications for OpenAPI
-            javax.ws.rs.Path.class,
-            javax.ws.rs.ApplicationPath.class,
+            jakarta.ws.rs.Path.class,
+            jakarta.ws.rs.ApplicationPath.class,
             // OpenAPI detector classes
             org.eclipse.microprofile.openapi.annotations.OpenAPIDefinition.class
         };

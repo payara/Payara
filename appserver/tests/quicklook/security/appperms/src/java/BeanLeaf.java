@@ -41,10 +41,10 @@
 package myapp;
 
 
-import javax.annotation.PostConstruct;
-import javax.ejb.EJB;
-import javax.ejb.DependsOn;
-import javax.ejb.Singleton;
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.EJB;
+import jakarta.ejb.DependsOn;
+import jakarta.ejb.Singleton;
 
 @Singleton
 public class BeanLeaf {

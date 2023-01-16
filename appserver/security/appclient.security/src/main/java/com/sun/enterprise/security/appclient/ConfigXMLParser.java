@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2021 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,43 +37,50 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2019-2022 Payara Foundation and/or its affiliates
+// Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license
 package com.sun.enterprise.security.appclient;
 
+
 import com.sun.enterprise.security.common.Util;
-import com.sun.enterprise.security.jaspic.config.*;
+import com.sun.enterprise.security.jaspic.AuthMessagePolicy;
+import com.sun.enterprise.security.jaspic.config.ConfigParser;
 import com.sun.enterprise.security.jaspic.config.GFServerConfigProvider;
+import com.sun.logging.LogDomains;
+import jakarta.security.auth.message.MessagePolicy;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Unmarshaller;
+import org.glassfish.appclient.client.acc.config.ClientContainer;
+import org.glassfish.appclient.client.acc.config.MessageSecurityConfig;
+import org.glassfish.appclient.client.acc.config.Property;
+import org.glassfish.appclient.client.acc.config.ProviderConfig;
+import org.glassfish.appclient.client.acc.config.RequestPolicy;
+import org.glassfish.appclient.client.acc.config.ResponsePolicy;
+import org.glassfish.internal.api.Globals;
+
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import com.sun.logging.LogDomains;
-
-import java.util.List;
-import javax.xml.bind.JAXBException;
-import org.glassfish.appclient.client.acc.config.*;
-import sun.security.util.PropertyExpander;
-import com.sun.enterprise.security.jaspic.AuthMessagePolicy;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import javax.security.auth.message.MessagePolicy;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Unmarshaller;
-import org.glassfish.internal.api.Globals;
-
+import static java.util.regex.Matcher.quoteReplacement;
 
 /**
- * Parser for message-security-config in  glassfish-acc.xml
+ * Parser for message-security-config in glassfish-acc.xml
  */
-public class ConfigXMLParser implements ConfigParser { 
-    private static Logger _logger=null;
-    static {
-        _logger = LogDomains.getLogger(ConfigXMLParser.class, LogDomains.SECURITY_LOGGER);
-    }
+public class ConfigXMLParser implements ConfigParser {
+    private static Logger _logger = LogDomains.getLogger(ConfigXMLParser.class, LogDomains.SECURITY_LOGGER);
+
+    private static Pattern PROPERTY_PATTERN = Pattern.compile("\\$\\{\\{(.*?)}}|\\$\\{(.*?)}");
 
     // configuration info
     private Map configMap = new HashMap();
@@ -91,13 +98,12 @@ public class ConfigXMLParser implements ConfigParser {
         }
     }
 
-
     private void processClientConfigContext(Map newConfig) throws IOException {
         // auth-layer
         String intercept = null;
 
         List<MessageSecurityConfig> msgConfigs = this.msgSecConfigs;
-        assert(msgConfigs != null);
+        assert (msgConfigs != null);
         for (MessageSecurityConfig config : msgConfigs) {
             intercept = parseInterceptEntry(config, newConfig);
             List<ProviderConfig> pConfigs = config.getProviderConfig();
@@ -115,10 +121,8 @@ public class ConfigXMLParser implements ConfigParser {
     public Set<String> getLayersWithDefault() {
         return layersWithDefault;
     }
-    
-    private String parseInterceptEntry(
-            MessageSecurityConfig msgConfig, Map newConfig) throws IOException {
 
+    private String parseInterceptEntry(MessageSecurityConfig msgConfig, Map newConfig) throws IOException {
         String intercept = null;
         String defaultServerID = null;
         String defaultClientID = null;
@@ -126,38 +130,29 @@ public class ConfigXMLParser implements ConfigParser {
         intercept = clientMsgSecConfig.getAuthLayer();
         defaultServerID = clientMsgSecConfig.getDefaultProvider();
         defaultClientID = clientMsgSecConfig.getDefaultClientProvider();
-        
+
         if (_logger.isLoggable(Level.FINE)) {
-            _logger.fine("Intercept Entry: " +
-                        "\n    intercept: " + intercept +
-                        "\n    defaultServerID: " + defaultServerID +
-                        "\n    defaultClientID:  " + defaultClientID);
+            _logger.fine("Intercept Entry: " + "\n    intercept: " + intercept + "\n    defaultServerID: " + defaultServerID
+                    + "\n    defaultClientID:  " + defaultClientID);
         }
 
         if (defaultServerID != null || defaultClientID != null) {
             layersWithDefault.add(intercept);
         }
 
-        GFServerConfigProvider.InterceptEntry intEntry =
-            (GFServerConfigProvider.InterceptEntry)newConfig.get(intercept);
+        GFServerConfigProvider.InterceptEntry intEntry = (GFServerConfigProvider.InterceptEntry) newConfig.get(intercept);
         if (intEntry != null) {
-            throw new IOException("found multiple MessageSecurityConfig " +
-                                "entries with the same auth-layer");
+            throw new IOException("found multiple MessageSecurityConfig " + "entries with the same auth-layer");
         }
 
         // create new intercept entry
-        intEntry = new GFServerConfigProvider.InterceptEntry(defaultClientID,
-                defaultServerID, null);
+        intEntry = new GFServerConfigProvider.InterceptEntry(defaultClientID, defaultServerID, null);
         newConfig.put(intercept, intEntry);
         return intercept;
     }
 
     // duplicate implementation for clientbeans config
-    private void parseIDEntry(
-            ProviderConfig pConfig,
-            Map newConfig, String intercept)
-            throws IOException {
-
+    private void parseIDEntry(ProviderConfig pConfig, Map newConfig, String intercept) throws IOException {
         String id = pConfig.getProviderId();
         String type = pConfig.getProviderType();
         String moduleClass = pConfig.getClassName();
@@ -166,47 +161,34 @@ public class ConfigXMLParser implements ConfigParser {
 
         // get the module options
 
-        Map options = new HashMap();
+        Map<String, Object> options = new HashMap();
         List<Property> props = pConfig.getProperty();
         for (Property prop : props) {
             try {
-                options.put(prop.getName(),
-                            PropertyExpander.expand
-                            (prop.getValue(),
-                             false));
-            } catch (sun.security.util.PropertyExpander.ExpandException ee) {
-                // log warning and give the provider a chance to 
-                // interpret value itself.
+                options.put(prop.getName(), expand(prop.getValue()));
+            } catch (IllegalStateException ee) {
+                // log warning and give the provider a chance to interpret value itself.
                 if (_logger.isLoggable(Level.WARNING)) {
                     _logger.warning("jaspic.unexpandedproperty");
                 }
-                options.put(prop.getName(),
-                            prop.getValue());
+                options.put(prop.getName(), prop.getValue());
             }
         }
 
         if (_logger.isLoggable(Level.FINE)) {
-            _logger.fine("ID Entry: " +
-                        "\n    module class: " + moduleClass +
-                        "\n    id: " + id +
-                        "\n    type: " + type +
-                        "\n    request policy: " + requestPolicy +
-                        "\n    response policy: " + responsePolicy +
-                        "\n    options: " + options);
+            _logger.fine("ID Entry: " + "\n    module class: " + moduleClass + "\n    id: " + id + "\n    type: "
+                    + type + "\n    request policy: " + requestPolicy + "\n    response policy: " + responsePolicy
+                    + "\n    options: " + options);
         }
 
         // create ID entry
 
-        GFServerConfigProvider.IDEntry idEntry =
-                new GFServerConfigProvider.IDEntry(type, moduleClass,
-                requestPolicy, responsePolicy, options);
+        GFServerConfigProvider.IDEntry idEntry = new GFServerConfigProvider.IDEntry(type, moduleClass, requestPolicy,
+                responsePolicy, options);
 
-        GFServerConfigProvider.InterceptEntry intEntry =
-                (GFServerConfigProvider.InterceptEntry)newConfig.get(intercept);
+        GFServerConfigProvider.InterceptEntry intEntry = (GFServerConfigProvider.InterceptEntry) newConfig.get(intercept);
         if (intEntry == null) {
-            throw new IOException
-                ("intercept entry for " + intercept +
-                " must be specified before ID entries");
+            throw new IOException("intercept entry for " + intercept + " must be specified before ID entries");
         }
 
         if (intEntry.getIdMap() == null) {
@@ -217,24 +199,48 @@ public class ConfigXMLParser implements ConfigParser {
         intEntry.getIdMap().put(id, idEntry);
     }
 
-    
-    private MessagePolicy parsePolicy(Object policy) {
+    private String expand(String rawProperty) {
+        Matcher propertyMatcher = PROPERTY_PATTERN.matcher(rawProperty);
+        StringBuilder propertyBuilder = new StringBuilder();
+        while (propertyMatcher.find()) {
+            // Check if the ignore pattern matched
+            if (propertyMatcher.group(1) != null) {
+                // Ignore ${{...}} matched, so just append everything
+                propertyMatcher.appendReplacement(propertyBuilder, quoteReplacement(propertyMatcher.group()));
+            } else {
 
+                String replacement = System.getProperty(propertyMatcher.group(2));
+                if (replacement == null) {
+                    throw new IllegalStateException("No system property for " + propertyMatcher.group(2));
+                }
+
+                // The replacement pattern matched
+                propertyMatcher.appendReplacement(propertyBuilder, quoteReplacement(replacement));
+            }
+        }
+        propertyMatcher.appendTail(propertyBuilder);
+
+        return propertyBuilder.toString();
+    }
+
+    private MessagePolicy parsePolicy(Object policy) {
         if (policy == null) {
             return null;
         }
+        
         String authSource = null;
         String authRecipient = null;
 
-       if (policy instanceof RequestPolicy) {
-            RequestPolicy clientRequestPolicy = (RequestPolicy)policy;
+        if (policy instanceof RequestPolicy) {
+            RequestPolicy clientRequestPolicy = (RequestPolicy) policy;
             authSource = clientRequestPolicy.getAuthSource();
             authRecipient = clientRequestPolicy.getAuthRecipient();
         } else if (policy instanceof ResponsePolicy) {
-            ResponsePolicy clientResponsePolicy = (ResponsePolicy)policy;
+            ResponsePolicy clientResponsePolicy = (ResponsePolicy) policy;
             authSource = clientResponsePolicy.getAuthSource();
             authRecipient = clientResponsePolicy.getAuthRecipient();
         }
+        
         return AuthMessagePolicy.getMessagePolicy(authSource, authRecipient);
     }
 
@@ -261,7 +267,7 @@ public class ConfigXMLParser implements ConfigParser {
             assert (util != null);
             msgconfigs = (List<MessageSecurityConfig>) util.getAppClientMsgSecConfigs();
         }
+        
         this.initialize(msgconfigs);
-        //this.initialize(config);
     }
 }

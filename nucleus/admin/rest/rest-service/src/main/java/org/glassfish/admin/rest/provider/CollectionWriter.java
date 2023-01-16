@@ -42,11 +42,11 @@
 package org.glassfish.admin.rest.provider;
 
 import java.util.Collection;
-import javax.json.Json;
-import javax.json.JsonException;
-import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
+import jakarta.json.Json;
+import jakarta.json.JsonException;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response;
 import org.glassfish.admin.rest.Constants;
 
 /**

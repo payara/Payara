@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth.digest.impl;
 
 import static org.glassfish.api.admin.ServerEnvironment.DEFAULT_INSTANCE_NAME;
@@ -45,10 +45,10 @@ import static org.glassfish.api.admin.ServerEnvironment.DEFAULT_INSTANCE_NAME;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Provider;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.inject.Provider;
+import jakarta.inject.Singleton;
 
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.security.common.CNonceCache;

@@ -78,8 +78,8 @@ import org.ietf.jgss.Oid;
 import org.jvnet.hk2.annotations.Service;
 import org.omg.CORBA.ORB;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
 import javax.security.auth.Subject;

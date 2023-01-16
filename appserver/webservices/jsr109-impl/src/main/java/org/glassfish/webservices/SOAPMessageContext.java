@@ -45,7 +45,7 @@ package org.glassfish.webservices;
  * required for the AS's WS security and monitoring mechamisms to work properly.
  */
 public interface SOAPMessageContext
-    extends javax.xml.ws.handler.soap.SOAPMessageContext {
+    extends jakarta.xml.ws.handler.soap.SOAPMessageContext {
 
     /**
      * If there is a SOAPMessage already, use getSOAPMessage(). Ignore all other methods

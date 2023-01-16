@@ -42,11 +42,10 @@
 package com.sun.enterprise.iiop.security;
 
 import com.sun.enterprise.common.iiop.security.GSSUtilsContract;
+import jakarta.inject.Singleton;
 import org.ietf.jgss.GSSException;
 import org.ietf.jgss.Oid;
 import org.jvnet.hk2.annotations.Service;
-
-import javax.inject.Singleton;
 
 /**
  *

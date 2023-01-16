@@ -41,8 +41,8 @@
  */
 package org.glassfish.admin.rest.model;
 
-import javax.json.JsonException;
-import javax.json.JsonObject;
+import jakarta.json.JsonException;
+import jakarta.json.JsonObject;
 import org.glassfish.admin.rest.composite.RestModel;
 import org.glassfish.admin.rest.utils.JsonUtil;
 

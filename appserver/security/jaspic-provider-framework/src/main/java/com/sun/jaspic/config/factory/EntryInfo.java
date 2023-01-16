@@ -37,14 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 package com.sun.jaspic.config.factory;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import javax.security.auth.message.config.AuthConfigFactory.RegistrationContext;
+import jakarta.security.auth.message.config.AuthConfigFactory.RegistrationContext;
 
 /**
  * Each entry is either a constructor entry or a registration entry. Use nulls rather than empty Strings or Lists for

@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *  Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2019-2021] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -46,14 +46,14 @@ import com.sun.enterprise.security.auth.realm.file.FileRealm;
 import fish.payara.security.realm.config.FileRealmIdentityStoreConfiguration;
 import java.util.Arrays;
 import java.util.HashSet;
-import javax.enterprise.inject.Typed;
-import javax.security.enterprise.CallerPrincipal;
-import javax.security.enterprise.credential.Credential;
-import javax.security.enterprise.credential.UsernamePasswordCredential;
-import javax.security.enterprise.identitystore.CredentialValidationResult;
-import static javax.security.enterprise.identitystore.CredentialValidationResult.INVALID_RESULT;
-import static javax.security.enterprise.identitystore.CredentialValidationResult.NOT_VALIDATED_RESULT;
-import javax.security.enterprise.identitystore.IdentityStore;
+import jakarta.enterprise.inject.Typed;
+import jakarta.security.enterprise.CallerPrincipal;
+import jakarta.security.enterprise.credential.Credential;
+import jakarta.security.enterprise.credential.UsernamePasswordCredential;
+import jakarta.security.enterprise.identitystore.CredentialValidationResult;
+import static jakarta.security.enterprise.identitystore.CredentialValidationResult.INVALID_RESULT;
+import static jakarta.security.enterprise.identitystore.CredentialValidationResult.NOT_VALIDATED_RESULT;
+import jakarta.security.enterprise.identitystore.IdentityStore;
 
 /**
  * {@link FileRealmIdentityStore} Identity store validates the user using

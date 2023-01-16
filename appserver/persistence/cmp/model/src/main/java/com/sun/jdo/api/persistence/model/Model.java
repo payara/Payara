@@ -138,7 +138,7 @@ public abstract class Model
 	static
 	{
 		String prefixes[] =
-			{"java.awt", "java.applet", "javax.swing", "javax.ejb"};// NOI18N
+			{"java.awt", "java.applet", "javax.swing", "jakarta.ejb"};// NOI18N
 		String classes[] = {"java.lang.Throwable"};					// NOI18N
 		String collectionClasses[] = { "java.util.Collection",		// NOI18N
 			"java.util.AbstractCollection", 						// NOI18N

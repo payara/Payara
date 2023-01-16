@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2017-2019] Payara Foundation and/or affiliates
+//Portions Copyright [2017-2021] Payara Foundation and/or affiliates
 
 package com.sun.gjc.common;
 
@@ -46,7 +46,7 @@ import java.util.*;
 
 import com.sun.gjc.util.MethodExecutor;
 
-import javax.resource.ResourceException;
+import jakarta.resource.ResourceException;
 
 import com.sun.logging.*;
 

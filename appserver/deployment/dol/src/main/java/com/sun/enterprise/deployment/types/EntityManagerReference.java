@@ -43,8 +43,8 @@ package com.sun.enterprise.deployment.types;
 import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.InjectionCapable;
 
-import javax.persistence.PersistenceContextType;
-import javax.persistence.SynchronizationType;
+import jakarta.persistence.PersistenceContextType;
+import jakarta.persistence.SynchronizationType;
 import java.util.Map;
 
 /** 

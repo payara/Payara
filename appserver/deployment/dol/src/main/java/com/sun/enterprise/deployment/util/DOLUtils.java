@@ -160,9 +160,9 @@ public class DOLUtils {
     private static final String IGNORE_WLSDD = "ignore.wlsdd";
 
     private static final String ID_SEPARATOR = "_";
-    private static final String[] SYSTEM_PACKAGES = {"com.sun.", "org.glassfish.", "org.apache.jasper.", "fish.payara.", "com.ibm.jbatch.",
-                            "org.hibernate.validator.", "org.jboss.weld.", "com.ctc.wstx.", "java.", "javax."};
-    private static final String[] SYSTEM_RESOURCES = {"META-INF/services/javax.", "META-INF/services/org.glassfish.", "META-INF/services/java."};
+    private static final String[] SYSTEM_PACKAGES = {"com.sun.", "org.glassfish.", "org.glassfish.wasp.", "fish.payara.", "com.ibm.jbatch.",
+                            "org.hibernate.validator.", "org.jboss.weld.", "com.ctc.wstx.", "java.", "javax.", "jakarta."};
+    private static final String[] SYSTEM_RESOURCES = {"META-INF/services/javax.", "META-INF/services/jakarta.", "META-INF/services/org.glassfish.", "META-INF/services/java."};
 
     /** no need to creates new DOLUtils */
     private DOLUtils() {
@@ -774,11 +774,13 @@ public class DOLUtils {
 		    schema = (String) st.nextElement();
 		} else {
 		    schema = namespace;
-		    namespace = TagNames.JAVAEE_NAMESPACE;
+		    namespace = TagNames.JAKARTAEE_NAMESPACE;
 		}
                 if (namespace.equals(TagNames.J2EE_NAMESPACE))
                     continue;
                 if (namespace.equals(TagNames.JAVAEE_NAMESPACE))
+                    continue;
+                if (namespace.equals(TagNames.JAKARTAEE_NAMESPACE))
                     continue;
                 if (namespace.equals(W3C_XML_SCHEMA))
                     continue;

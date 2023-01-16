@@ -46,7 +46,7 @@
   <parent>
       <groupId>fish.payara.server</groupId>
       <artifactId>payara-parent</artifactId>
-      <version>5.2023.1-SNAPSHOT</version>
+      <version>6.2023.2-SNAPSHOT</version>
       <relativePath>../../pom.xml</relativePath>
   </parent>
 
@@ -97,7 +97,6 @@
 
   <modules>
     <module>jdbc-core</module>
-    <module>jdbc30</module>
     <module>jdbc40</module>
     <module>jdbc-ra-distribution</module>
     <module>jdbc-core-l10n</module>

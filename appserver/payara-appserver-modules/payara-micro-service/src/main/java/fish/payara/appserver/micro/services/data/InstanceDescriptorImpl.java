@@ -20,13 +20,13 @@ package fish.payara.appserver.micro.services.data;
 import fish.payara.micro.data.ApplicationDescriptor;
 import fish.payara.micro.data.InstanceDescriptor;
 import fish.payara.micro.data.ModuleDescriptor;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonWriter;
 import org.glassfish.internal.data.ApplicationInfo;
 
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonWriter;
 import java.io.StringWriter;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
@@ -46,8 +46,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
 
+import static jakarta.json.stream.JsonGenerator.PRETTY_PRINTING;
 import static java.lang.Boolean.TRUE;
-import static javax.json.stream.JsonGenerator.PRETTY_PRINTING;
 
 /**
  *

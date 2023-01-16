@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2022 Payara Foundation and/or its affiliates
 
 package org.glassfish.web.loader;
 
@@ -67,16 +67,19 @@ import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.glassfish.bootstrap.MainHelper.HotSwapHelper;
 import com.sun.enterprise.security.integration.DDPermissionsLoader;
 import com.sun.enterprise.security.integration.PermsHolder;
-import com.sun.enterprise.util.JDK;
 import com.sun.enterprise.util.io.FileUtils;
 import org.apache.naming.JndiPermission;
 import org.apache.naming.resources.DirContextURLStreamHandler;
 import org.apache.naming.resources.JarFileResourcesProvider;
 import org.apache.naming.resources.ProxyDirContext;
-import org.apache.naming.resources.WebDirContext;
 import org.apache.naming.resources.Resource;
 import org.apache.naming.resources.ResourceAttributes;
+import org.apache.naming.resources.WebDirContext;
+import org.glassfish.api.deployment.GeneratedResourceEntry;
 import org.glassfish.api.deployment.InstrumentableClassLoader;
+import org.glassfish.api.deployment.ResourceClassLoader;
+import org.glassfish.api.deployment.ResourceEntry;
+import org.glassfish.common.util.InstanceCounter;
 import org.glassfish.hk2.api.PreDestroy;
 import org.glassfish.web.util.ExceptionUtils;
 import org.glassfish.web.util.IntrospectionUtils;
@@ -86,7 +89,13 @@ import javax.naming.NameClassPair;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.DirContext;
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.Closeable;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FilePermission;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.lang.ref.Reference;
@@ -99,10 +108,32 @@ import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.security.*;
+import java.security.AccessControlException;
+import java.security.AccessController;
+import java.security.AllPermission;
+import java.security.CodeSource;
+import java.security.Permission;
+import java.security.PermissionCollection;
+import java.security.Permissions;
+import java.security.Policy;
+import java.security.PrivilegedAction;
+import java.security.ProtectionDomain;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.ResourceBundle;
+import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.jar.Attributes;
@@ -114,10 +145,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.zip.ZipFile;
-import org.glassfish.api.deployment.GeneratedResourceEntry;
-import org.glassfish.api.deployment.ResourceEntry;
-import org.glassfish.api.deployment.ResourceClassLoader;
-import org.glassfish.common.util.InstanceCounter;
 
 /**
  * Specialized web application class loader.
@@ -174,6 +201,7 @@ public class WebappClassLoader
      */
     private static final String[] packageTriggers = {
         "javax",                                     // Java extensions
+        "jakarta",
         // START PE 4985680
         "sun",                                       // Sun classes
         // END PE 4985680
@@ -408,7 +436,6 @@ public class WebappClassLoader
 
     private static final Class<?>[] CONSTRUCTOR_ARGS_TYPES;
     private static final Object CONSTRUCTOR_ARGUMENTS;
-    private static final boolean IS_JDK_VERSION_HIGHER_THAN_8 = JDK.getMajor() > 8;
     private static final Boolean isMultiReleaseJar;
     private static final Name MULTI_RELEASE = new Name("Multi-Release");
 
@@ -416,23 +443,18 @@ public class WebappClassLoader
         Class<?>[] constructorArgsTypes;
         Object constructorArguments;
 
-        if (!IS_JDK_VERSION_HIGHER_THAN_8) {
-            isMultiReleaseJar = false;
+        boolean isException = false;
+        try {
+            final Class<?> runtimeVersionClass = Class.forName("java.lang.Runtime$Version");
+            constructorArgsTypes = new Class[]{File.class, boolean.class, int.class, runtimeVersionClass};
+            constructorArguments = Runtime.class.getDeclaredMethod("version").invoke(null);
+        } catch (Exception e) {
+            isException = true;
             constructorArgsTypes = null;
             constructorArguments = null;
-        } else {
-            boolean isException = false;
-            try {
-                final Class<?> runtimeVersionClass = Class.forName("java.lang.Runtime$Version");
-                constructorArgsTypes = new Class[]{File.class, boolean.class, int.class, runtimeVersionClass};
-                constructorArguments = Runtime.class.getDeclaredMethod("version").invoke(null);
-            } catch (Exception e) {
-                isException = true;
-                constructorArgsTypes = null;
-                constructorArguments = null;
-            }
-            isMultiReleaseJar = !isException;
         }
+        isMultiReleaseJar = !isException;
+
         CONSTRUCTOR_ARGS_TYPES = constructorArgsTypes;
         CONSTRUCTOR_ARGUMENTS = constructorArguments;
     }
@@ -862,7 +884,7 @@ public class WebappClassLoader
     public void setUseMyFaces(boolean useMyFaces) {
         this.useMyFaces = useMyFaces;
         if (useMyFaces) {
-            addOverridablePackage("javax.faces");
+            addOverridablePackage("jakarta.faces");
             addOverridablePackage("com.sun.faces");
         }
     }
@@ -1977,10 +1999,6 @@ public class WebappClassLoader
             return;
         }
 
-        // START GlassFish Issue 587
-        purgeELBeanClasses();
-        // END GlassFish Issue 587
-
         /*
          * Clearing references should be done before setting started to
          * false, due to possible side effects.
@@ -2271,7 +2289,8 @@ public class WebappClassLoader
                                 setAccessible(field);
                                 if (Modifier.isFinal(mods)) {
                                     if (!((field.getType().getName().startsWith("java."))
-                                            || (field.getType().getName().startsWith("javax.")))) {
+                                            || (field.getType().getName().startsWith("javax."))
+                                            || (field.getType().getName().startsWith("jakarta.")))) {
                                         nullInstance(field.get(null));
                                     }
                                 } else {
@@ -2612,7 +2631,7 @@ public class WebappClassLoader
      * class loader or any class loader where this loader is a parent class
      * loader. Whilst {@link ResourceBundle#clearCache()} could be used there
      * are complications around the
-     * {@link org.apache.jasper.servlet.JasperLoader} that mean a reflection
+     * {@link org.glassfish.wasp.servlet.JasperLoader} that mean a reflection
      * based approach is more likely to be complete.
      *
      * The ResourceBundle is using WeakReferences so it shouldn't be pinning the
@@ -3238,7 +3257,7 @@ public class WebappClassLoader
     /**
      * Validate a classname. As per SRV.9.7.2, we must restrict loading of
      * classes from J2SE (java.*) and classes of the servlet API
-     * (javax.servlet.*). That should enhance robustness and prevent a number
+     * (jakarta.servlet.*). That should enhance robustness and prevent a number
      * of user error (where an older version of servlet.jar would be present
      * in /WEB-INF/lib).
      *
@@ -3325,62 +3344,6 @@ public class WebappClassLoader
         byteCodePreprocessors.add(preprocessor);
     }
     // END SJSAS 6344989
-
-
-    // START GlassFish Issue 587
-    /*
-     * Purges all bean classes that were loaded by this WebappClassLoader
-     * from the caches maintained by javax.el.BeanELResolver, in order to
-     * avoid this WebappClassLoader from leaking.
-     */
-    private void purgeELBeanClasses() {
-
-        Field fieldlist[] = javax.el.BeanELResolver.class.getDeclaredFields();
-        for (Field fld : fieldlist) {
-            if (fld.getName().equals("properties")) {
-                purgeELBeanClasses(fld);
-                break;
-            }
-        }
-    }
-
-    /*
-     * Purges all bean classes that were loaded by this WebappClassLoader
-     * from the cache represented by the given reflected field.
-     *
-     * @param fld The reflected field from which to remove the bean classes
-     * that were loaded by this WebappClassLoader
-     */
-    private void purgeELBeanClasses(final Field fld) {
-
-        setAccessible(fld);
-
-        Map<Class, ?> m = null;
-        try {
-            m = getBeanELResolverProperties(fld);
-        } catch (IllegalAccessException iae) {
-            logger.log(Level.WARNING, LogFacade.UNABLE_PURGE_BEAN_CLASSES, iae);
-            return;
-        }
-
-        if (m.isEmpty()) {
-            return;
-        }
-
-        Iterator<Class> iter = m.keySet().iterator();
-        while (iter.hasNext()) {
-            Class mbeanClass = iter.next();
-            if (this.equals(mbeanClass.getClassLoader())) {
-                iter.remove();
-            }
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    private static Map<Class, ?> getBeanELResolverProperties(Field fld) throws IllegalAccessException {
-        return (Map<Class, ?>)fld.get(null);
-    }
-    // END GlassFish Issue 587
 
      /**
      * Create and return a temporary loader with the same visibility
@@ -3587,8 +3550,8 @@ public class WebappClassLoader
      */
     private boolean isResourceDelegate(String name) {
         return (delegate
-                || (name.startsWith("javax") &&
-                    (!name.startsWith("javax.faces") || !useMyFaces))
+                || ((name.startsWith("javax") || name.startsWith("jakarta")) &&
+                    (!name.startsWith("jakarta.faces") || !useMyFaces))
                 || name.startsWith("sun")
                 || (name.startsWith("com/sun/faces") &&
                     !name.startsWith("com/sun/faces/extensions") &&
@@ -3604,7 +3567,7 @@ public class WebappClassLoader
     private static JarFile newJarFile(final File file) throws IOException {
 
         JarFile jarFile = new JarFile(file);
-        if (!IS_JDK_VERSION_HIGHER_THAN_8 || !isMultiReleaseJar) {
+        if (!isMultiReleaseJar) {
             return jarFile;
         }
 

@@ -48,7 +48,7 @@ import org.apache.catalina.connector.Response;
 import org.apache.catalina.connector.SessionTracker;
 
 import java.util.ResourceBundle;
-import javax.servlet.ServletRequest;
+import jakarta.servlet.ServletRequest;
 
 /**
  * This class exposes some of the functionality of

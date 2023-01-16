@@ -76,9 +76,9 @@ import org.glassfish.ejb.mdb.monitoring.stats.MessageDrivenBeanStatsProvider;
 import org.glassfish.ejb.spi.MessageBeanClient;
 import org.glassfish.ejb.spi.MessageBeanClientFactory;
 
-import javax.ejb.*;
-import javax.resource.spi.endpoint.MessageEndpoint;
-import javax.transaction.Status;
+import jakarta.ejb.*;
+import jakarta.resource.spi.endpoint.MessageEndpoint;
+import jakarta.transaction.Status;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -695,7 +695,7 @@ public final class MessageBeanContainer extends BaseContainer implements Message
     /**
      * @param method
      *            One of the methods used to deliver messages, e.g. onMessage
-     *            method for javax.jms.MessageListener. Note that if the
+     *            method for jakarta.jms.MessageListener. Note that if the
      *            <code>method</code> is not one of the methods for message
      *            delivery, the behavior of this method is not defined.
      * @return
@@ -895,6 +895,7 @@ public final class MessageBeanContainer extends BaseContainer implements Message
     @Override
     public void startApplication(boolean deploy) {
         super.startApplication(deploy);
+
 
         // Start delivery of messages to message bean instances.
         try {
@@ -1222,7 +1223,7 @@ public final class MessageBeanContainer extends BaseContainer implements Message
                 // any restrictions on what kind of exceptions can be thrown.
                 // This was not the case in J2EE 1.3, since JMS message driven
                 // beans could only implement
-                // void javax.jms.MessageListener.onMessage() , which does
+                // void jakarta.jms.MessageListener.onMessage() , which does
                 // not declare any exceptions.
                 //
                 // In the J2EE 1.3 implementation, exceptions were only

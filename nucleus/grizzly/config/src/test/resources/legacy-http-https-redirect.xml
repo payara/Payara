@@ -39,6 +39,7 @@
     holder.
 
 -->
+<!--  Portions Copyright [2022] Payara Foundation and/or affiliates -->
 
 <network-config>
     <protocols>
@@ -59,8 +60,7 @@
                   server-name="">
                 <file-cache enabled="false"/>
             </http>
-            <ssl ssl3-enabled="false"
-                 trust-store="target/test-classes/cacerts.jks"
+            <ssl trust-store="target/test-classes/cacerts.jks"
                  trust-store-password="changeit"
                  key-store="target/test-classes/keystore.jks"
                  key-store-password="changeit"/>

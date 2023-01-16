@@ -57,7 +57,7 @@ import org.glassfish.loadbalancer.admin.cli.LbLogUtil;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 /**
  *

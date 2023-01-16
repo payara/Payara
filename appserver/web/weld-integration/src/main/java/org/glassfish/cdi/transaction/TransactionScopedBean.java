@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2021] Payara Foundation and/or affiliates
 package org.glassfish.cdi.transaction;
 
 import static org.glassfish.cdi.transaction.TransactionScopedCDIUtil.log;
@@ -45,15 +45,15 @@ import static org.glassfish.cdi.transaction.TransactionScopedContextImpl.TRANSAC
 
 import java.util.Set;
 
-import javax.enterprise.context.spi.Contextual;
-import javax.enterprise.context.spi.CreationalContext;
+import jakarta.enterprise.context.spi.Contextual;
+import jakarta.enterprise.context.spi.CreationalContext;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.transaction.Synchronization;
-import javax.transaction.TransactionSynchronizationRegistry;
+import jakarta.transaction.Synchronization;
+import jakarta.transaction.TransactionSynchronizationRegistry;
 
 /**
- * A wrapper for contextual instances of {@link javax.transaction.TransactionScoped} beans. We need
+ * A wrapper for contextual instances of {@link jakarta.transaction.TransactionScoped} beans. We need
  * this wrapper so that the contextual instance can be destroyed when the transaction completes.
  *
  * @author <a href="mailto:j.j.snyder@oracle.com">JJ Snyder</a>

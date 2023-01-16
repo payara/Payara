@@ -1,7 +1,7 @@
 /*
  *   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *   Copyright (c) [2020] Payara Foundation and/or its affiliates.
+ *   Copyright (c) [2020-2021] Payara Foundation and/or its affiliates.
  *   All rights reserved.
  *
  *   The contents of this file are subject to the terms of either the GNU
@@ -42,9 +42,9 @@ package fish.payara.appserver.cdi.auth.roles;
 
 import java.io.Serializable;
 
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.CDI;
-import javax.security.enterprise.SecurityContext;
+import jakarta.enterprise.inject.spi.BeanManager;
+import jakarta.enterprise.inject.spi.CDI;
+import jakarta.security.enterprise.SecurityContext;
 
 /**
  * A Serializable class that stores non-serializable properties by lazy loading them.

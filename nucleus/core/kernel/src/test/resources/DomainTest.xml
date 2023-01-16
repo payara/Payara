@@ -39,7 +39,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2019-2020] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2019-2022] [Payara Foundation and/or its affiliates] -->
 
 <domain log-root="${com.sun.aas.instanceRoot}/logs" application-root="${com.sun.aas.instanceRoot}/applications">
   <applications>
@@ -66,9 +66,7 @@
           <property name="jaas-context" value="fileRealm"></property>
         </auth-realm>
         <auth-realm classname="com.sun.enterprise.security.auth.realm.certificate.CertificateRealm" name="certificate"></auth-realm>
-        <jacc-provider policy-provider="com.sun.enterprise.security.provider.PolicyWrapper" name="default" policy-configuration-factory-provider="com.sun.enterprise.security.provider.PolicyConfigurationFactoryImpl">
-          <property name="repository" value="${com.sun.aas.instanceRoot}/generated/policy"></property>
-        </jacc-provider>
+        <jacc-provider policy-provider="fish.payara.security.jacc.provider.PolicyProviderImpl" name="default" policy-configuration-factory-provider="fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl"></jacc-provider>
         <audit-module classname="com.sun.enterprise.security.ee.Audit" name="default">
           <property name="auditOn" value="false"></property>
         </audit-module>
@@ -124,7 +122,7 @@
         <jvm-options>-Djava.ext.dirs=${com.sun.aas.javaRoot}/lib/ext${path.separator}${com.sun.aas.javaRoot}/jre/lib/ext${path.separator}${com.sun.aas.instanceRoot}/lib/ext${path.separator}${fish.payara.aas.h2Root}/bin</jvm-options>
         <jvm-options>-Djdbc.drivers=org.h2.Driver</jvm-options>
         <jvm-options>-Dcom.sun.enterprise.config.config_environment_factory_class=com.sun.enterprise.config.serverbeans.AppserverConfigEnvironmentFactory</jvm-options>
-        <jvm-options>-Dcom.sun.enterprise.taglibs=javax.servlet.jsp.jstl.jar,jakarta.faces.jar</jvm-options>
+        <jvm-options>-Dcom.sun.enterprise.taglibs=jakarta.servlet.jsp.jstl.jar,jakarta.faces.jar</jvm-options>
         <jvm-options>-Dcom.sun.enterprise.taglisteners=jakarta.faces.jar</jvm-options>
         <jvm-options>-XX:NewRatio=2</jvm-options>
       </java-config>
@@ -142,7 +140,6 @@
             <http header-buffer-length="8192" forced-response-type="text/plain; charset=iso-8859-1" default-virtual-server="server" max-connections="250" server-name="" default-response-type="text/plain; charset=iso-8859-1">
               <file-cache enabled="false"></file-cache>
             </http>
-            <ssl ssl2-enabled="true" cert-nickname="s1as" client-auth-enabled="true"></ssl>
           </protocol>
           <protocol name="admin-listener">
             <http header-buffer-length="8192" forced-response-type="text/plain; charset=iso-8859-1" default-virtual-server="__asadmin" max-connections="250" server-name="" default-response-type="text/plain; charset=iso-8859-1">

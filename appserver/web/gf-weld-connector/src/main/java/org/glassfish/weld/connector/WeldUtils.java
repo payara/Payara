@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld.connector;
 
@@ -53,17 +53,17 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
-import javax.decorator.Decorator;
-import javax.ejb.MessageDriven;
-import javax.ejb.Stateful;
-import javax.ejb.Stateless;
-import javax.enterprise.context.*;
-import javax.enterprise.inject.Model;
-import javax.enterprise.inject.Stereotype;
-import javax.inject.Scope;
-import javax.inject.Singleton;
-import javax.interceptor.Interceptor;
-import javax.xml.parsers.SAXParser;
+import jakarta.decorator.Decorator;
+import jakarta.ejb.MessageDriven;
+import jakarta.ejb.Stateful;
+import jakarta.ejb.Stateless;
+import jakarta.enterprise.context.*;
+import jakarta.enterprise.inject.Model;
+import jakarta.enterprise.inject.Stereotype;
+import jakarta.inject.Inject;
+import jakarta.inject.Scope;
+import jakarta.inject.Singleton;
+import jakarta.interceptor.Interceptor;
 import javax.xml.parsers.SAXParserFactory;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.DeploymentContext;
@@ -71,6 +71,9 @@ import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
 import org.glassfish.hk2.classmodel.reflect.AnnotationType;
+import org.glassfish.hk2.classmodel.reflect.ClassModel;
+import org.glassfish.hk2.classmodel.reflect.FieldModel;
+import org.glassfish.hk2.classmodel.reflect.MethodModel;
 import org.glassfish.hk2.classmodel.reflect.Type;
 import org.glassfish.hk2.classmodel.reflect.Types;
 import org.glassfish.internal.api.Globals;
@@ -78,8 +81,14 @@ import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 public class WeldUtils {
+
+    private static Logger logger = Logger.getLogger(WeldUtils.class.getName());
+
+    private static final String EMPTY_BEANS_XML_MODE_ALL = "fish.payara.deployment.emptyBeansXmlModeALL";
 
     public static final char SEPARATOR_CHAR = '/';
     public static final String WEB_INF = "WEB-INF";
@@ -95,9 +104,15 @@ public class WeldUtils {
 
     // We don't want this connector module to depend on CDI API, as connector can be present in a distribution
     // which does not have CDI implementation. So, we use the class name as a string.
-    private static final String SERVICES_CLASSNAME = "javax.enterprise.inject.spi.Extension";
-    public static final String META_INF_SERVICES_EXTENSION =
-        "META-INF" + SEPARATOR_CHAR + SERVICES_DIR + SEPARATOR_CHAR + SERVICES_CLASSNAME;
+    private static final String SERVICES_CLASSNAME = "jakarta.enterprise.inject.spi.Extension";
+    private static final String BCE_SERVICES_CLASSNAME = "jakarta.enterprise.inject.build.compatible.spi.BuildCompatibleExtension";
+    public static final String META_INF_SERVICES_EXTENSION = "META-INF" + SEPARATOR_CHAR + SERVICES_DIR +
+            SEPARATOR_CHAR + SERVICES_CLASSNAME;
+    public static final String META_INF_BCE_SERVICES_EXTENSION =  "META-INF" + SEPARATOR_CHAR + SERVICES_DIR +
+            SEPARATOR_CHAR + BCE_SERVICES_CLASSNAME;
+    public static final String WEB_INF_SERVICES_EXTENSION =  WEB_INF_CLASSES + SEPARATOR_CHAR + META_INF_SERVICES_EXTENSION;
+    public static final String WEB_INF_BCE_EXTENSION = WEB_INF_CLASSES + SEPARATOR_CHAR + META_INF_BCE_SERVICES_EXTENSION;
+
 
     public static final String CLASS_SUFFIX = ".class";
     public static final String JAR_SUFFIX = ".jar";
@@ -117,8 +132,8 @@ public class WeldUtils {
         final HashSet<String> cdi = new HashSet<>();
         cdi.add(Scope.class.getName());
         cdi.add(NormalScope.class.getName());
-        cdi.add("javax.faces.view.ViewScoped");
-        cdi.add("javax.faces.flow.FlowScoped");
+        cdi.add("jakarta.faces.view.ViewScoped");
+        cdi.add("jakarta.faces.flow.FlowScoped");
         cdi.add(ConversationScoped.class.getName());
         cdi.add(ApplicationScoped.class.getName());
         cdi.add(SessionScoped.class.getName());
@@ -144,7 +159,7 @@ public class WeldUtils {
         cdi.add(MessageDriven.class.getName());
         cdi.add(Stateful.class.getName());
         cdi.add(Stateless.class.getName());
-        cdi.add(javax.ejb.Singleton.class.getName());
+        cdi.add(jakarta.ejb.Singleton.class.getName());
 
         cdiEnablingAnnotations = Collections.unmodifiableSet(cdi);
     }
@@ -160,14 +175,10 @@ public class WeldUtils {
      */
     public static boolean isImplicitBeanArchive(DeploymentContext context, ReadableArchive archive)
             throws IOException {
-        boolean result = false;
-
-        // Archives with extensions are not candidates for implicit bean discovery
-        if (archive != null && !archive.exists(META_INF_SERVICES_EXTENSION)) {
-          result = isImplicitBeanArchive(context, archive.getURI());
+        if(!isValidBdaBasedOnExtensionAndBeansXml(archive)) {
+            return false;
         }
-
-        return result;
+        return isImplicitBeanArchive(context, archive.getURI());
     }
 
     /**
@@ -285,6 +296,64 @@ public class WeldUtils {
         }
 
         return result;
+    }
+
+    /**
+     * Searches through the known class names of a {@link BeanDeploymentArchive} to determine which have fields or
+     * methods with the {@link Inject} annotation.
+     *
+     * @param types The Types obtained from a {@link DeploymentContext}'s transient metadata
+     * @param knownClassNames The known class names of a {@link BeanDeploymentArchive}
+     * @return The class names from the given list which have fields or methods annotated with {@link Inject}
+     */
+    public static Collection<String> getInjectionTargetClassNames(Types types, Collection<String> knownClassNames) {
+        final Set<String> result = new HashSet<>();
+
+        if (types != null) {
+            for (String knownClassName : knownClassNames) {
+                Type type = types.getBy(knownClassName);
+
+                if (type != null && type instanceof ClassModel) {
+                    boolean injectionTarget = false;
+
+                    Collection<FieldModel> fieldModels = ((ClassModel) type).getFields();
+                    for (FieldModel fieldModel : fieldModels) {
+                        injectionTarget = annotatedWithInject(fieldModel.getAnnotations());
+                        if (injectionTarget) {
+                            break;
+                        }
+                    }
+
+                    if (!injectionTarget) {
+                        Collection<MethodModel> methodModels = type.getMethods();
+                        for (MethodModel methodModel : methodModels) {
+                            injectionTarget = annotatedWithInject(methodModel.getAnnotations());
+                            if (injectionTarget) {
+                                break;
+                            }
+                        }
+                    }
+
+                    if (injectionTarget) {
+                        result.add(type.getName());
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
+
+    private static boolean annotatedWithInject(Collection<AnnotationModel> annotationModels) {
+        boolean injectionTarget = false;
+        for (AnnotationModel annotationModel : annotationModels) {
+            if (annotationModel.getType().getName().equals(Inject.class.getName())) {
+                injectionTarget = true;
+                break;
+            }
+        }
+
+        return injectionTarget;
     }
 
 
@@ -517,40 +586,63 @@ public class WeldUtils {
     public static void setCDIDevMode(DeploymentContext context, boolean enabled) {
        context.getAppProps().setProperty(ServerTags.CDI_DEV_MODE_ENABLED_PROP, String.valueOf(enabled));
     }
+    
+    public static boolean isEmptyBeansXmlModeALL(DeploymentContext context) {
+        if(Boolean.getBoolean(EMPTY_BEANS_XML_MODE_ALL)) {
+            return true;
+        }
+        Object propValue = context.getAppProps().get(ServerTags.EMPTY_BEANS_XML_MODE_ALL_PROP);
+        return propValue != null && Boolean.parseBoolean((String) propValue);
+    }
 
   public static InputStream getBeansXmlInputStream(DeploymentContext context) {
     return getBeansXmlInputStream( context.getSource() );
   }
 
-  /**
-   * Determine if an archive is a valid bda based on what the spec says about extensions.
-   * See section 12.1 which states that if an archive contains an extension but no beans.xml then it is NOT
-   * a valid bean deployment archive.
-   *
-   * @param archive The archive to check.
-   * @return false if there is an extension and no beans.xml
-   *         true otherwise
-   */
-  public static boolean isValidBdaBasedOnExtensionAndBeansXml( ReadableArchive archive ) {
-    boolean retVal = true;
-
-    try {
-      if ( archive.exists(META_INF_SERVICES_EXTENSION)) {
-        retVal = false;
-        InputStream inputStream = getBeansXmlInputStream( archive );
-        if ( inputStream != null ) {
-          retVal = true;  // is a valid bda
-          try {
-            inputStream.close();
-          } catch (IOException ignore) {
-          }
+    /**
+     * Determine if an archive is a valid bda based on what the spec says about extensions.
+     * See section 12.1 which states that if an archive contains an extension but no beans.xml then it is NOT
+     * a valid bean deployment archive.
+     *
+     * @param archive The archive to check.
+     * @return false if there is an extension and no beans.xml
+     * true otherwise
+     */
+    public static boolean isValidBdaBasedOnExtensionAndBeansXml(ReadableArchive archive) {
+        try {
+            if (hasExtension(archive) && !hasBeansXML(archive)) {
+                // Extensions and no beans.xml: not a bda
+                return false;
+            }
+        } catch (IOException ignore) {
         }
-      }
-    } catch (IOException ignore) {
+        return true;
     }
 
-    return retVal;
-  }
+    public static boolean hasExtension(ReadableArchive archive) {
+        try {
+            if (isWar(archive)) {
+                return archive.exists(WEB_INF_SERVICES_EXTENSION) || archive.exists(WEB_INF_BCE_EXTENSION);
+            }
+            return archive.exists(META_INF_SERVICES_EXTENSION) || archive.exists(META_INF_BCE_SERVICES_EXTENSION);
+        } catch (IOException ioe) {
+            logger.log(Level.WARNING, "Error when searching extensions", ioe);
+            return false;
+        }
+    }
+
+
+    public static boolean hasBeansXML(ReadableArchive archive) throws IOException {
+        if (isWar(archive)) {
+            return archive.exists(WeldUtils.WEB_INF_BEANS_XML) ||
+                    archive.exists(WeldUtils.WEB_INF_CLASSES_META_INF_BEANS_XML);
+        }
+        return archive.exists(WeldUtils.META_INF_BEANS_XML);
+    }
+
+    private static boolean isWar(ReadableArchive archive) throws IOException {
+        return archive.exists(WeldUtils.WEB_INF);
+    }
 
 
   public static InputStream getBeansXmlInputStream( ReadableArchive archive ) {
@@ -571,44 +663,45 @@ public class WeldUtils {
     return inputStream;
   }
 
-  /**
-   * Get the "bean-discovery-mode" from the "beans" element if it exists in beans.xml
-   * From section 12.1 of CDI spec:
-   * A bean archive has a bean discovery mode of all, annotated or none. A bean archive which
-   * contains a beans.xml file with no version has a default bean discovery mode of all. A bean
-   * archive which contains a beans.xml file with version 1.1 (or later) must specify the bean-
-   * discovey-mode attribute. The default value for the attribute is annotated.
-   *
-   * @param beansXmlInputStream The InputStream for the beans.xml to check.
-   * @return "annotated" if there is no beans.xml
-   *         "all" if the bean-discovery-mode is missing
-   *         "annotated" if the bean-discovery-mode is empty
-   *         The value of bean-discovery-mode in all other cases.
-   */
-    public static String getBeanDiscoveryMode( InputStream beansXmlInputStream ) {
-      if ( beansXmlInputStream == null ) {
-        // there is no beans.xml.
-        return "annotated";
-      }
+    /**
+     * Get the "bean-discovery-mode" from the "beans" element if it exists in beans.xml
+     * From section 12.1 of CDI spec:
+     * A bean archive has a bean discovery mode of all, annotated or none. A bean archive which
+     * contains a beans.xml file with no version has a default bean discovery mode of annotated. A bean
+     * archive which contains a beans.xml file with version 1.1 (or later) must specify the bean-
+     * discovey-mode attribute. The default value for the attribute is annotated.
+     *
+     * @param beansXmlInputStream The InputStream for the beans.xml to check.
+     * @return "annotated" if there is no beans.xml
+     * "annotated" if the bean-discovery-mode is missing
+     * "annotated" if the bean-discovery-mode is empty
+     * The value of bean-discovery-mode in all other cases.
+     */
+    public static String getBeanDiscoveryMode(InputStream beansXmlInputStream) {
+        if (beansXmlInputStream == null) {
+            // there is no beans.xml.
+            return "annotated";
+        }
 
-      String beanDiscoveryMode = null;
-      LocalDefaultHandler handler = new LocalDefaultHandler();
-      try {
-        SAXParserFactory factory = SAXParserFactory.newInstance();
-        SAXParser saxParser = factory.newSAXParser();
-        saxParser.parse(beansXmlInputStream, handler);
-      } catch ( SAXStoppedIntentionallyException exc ) {
-        beanDiscoveryMode = handler.getBeanDiscoveryMode();
-      } catch (Exception ignore) {
-      }
+        String beanDiscoveryMode = null;
+        LocalDefaultHandler handler = new LocalDefaultHandler();
+        try {
+            SAXParserFactory.newInstance().newSAXParser().parse(beansXmlInputStream, handler);
+        } catch (SAXStoppedIntentionallyException exc) {
+            beanDiscoveryMode = handler.getBeanDiscoveryMode();
+        } catch (Exception ignore) {
+        }
 
-      if (beanDiscoveryMode == null ) {
-        return "all";
-      } else if (beanDiscoveryMode.equals("")) {
-        return "annotated";
-      } else {
+        if (beanDiscoveryMode == null) {
+            //when empty beans.xml or bean-discovery-mode not specified
+            return "annotated";
+        }
+
+        if (beanDiscoveryMode.equals("")) {
+            return "annotated";
+        }
+
         return beanDiscoveryMode;
-      }
     }
 
     private static class LocalDefaultHandler extends DefaultHandler {
@@ -616,13 +709,8 @@ public class WeldUtils {
 
         @Override
         public void startElement(String uri, String localName,String qName, Attributes attributes) throws SAXException {
-            if ( qName.equals( "beans" ) ) {
+            if (qName.equals("beans")) {
                 beanDiscoveryMode = attributes.getValue("bean-discovery-mode");
-                if ( beanDiscoveryMode != null ) {
-                  if ( beanDiscoveryMode.equals( "" ) ) {
-                    beanDiscoveryMode = "annotated";
-                  }
-                }
                 throw new SAXStoppedIntentionallyException();
             }
         }

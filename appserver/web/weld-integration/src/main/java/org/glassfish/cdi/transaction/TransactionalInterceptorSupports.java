@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016-2018] [Payara Foundation]
+// Portions Copyright [2016-2021] [Payara Foundation]
 
 package org.glassfish.cdi.transaction;
 
@@ -46,15 +46,15 @@ import static java.util.logging.Level.FINE;
 
 import java.util.logging.Logger;
 
-import javax.annotation.Priority;
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.Interceptor;
-import javax.interceptor.InvocationContext;
-import javax.transaction.Transactional;
+import jakarta.annotation.Priority;
+import jakarta.interceptor.AroundInvoke;
+import jakarta.interceptor.Interceptor;
+import jakarta.interceptor.InvocationContext;
+import jakarta.transaction.Transactional;
 
 /**
  * Transactional annotation Interceptor class for Supports transaction type, ie
- * javax.transaction.Transactional.TxType.SUPPORT If called outside a transaction context, managed
+ * jakarta.transaction.Transactional.TxType.SUPPORT If called outside a transaction context, managed
  * bean method execution will then continue outside a transaction context. If called inside a
  * transaction context, the managed bean method execution will then continue inside this transaction
  * context.

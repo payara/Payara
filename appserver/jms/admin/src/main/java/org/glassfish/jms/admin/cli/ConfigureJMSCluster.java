@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2020-2021] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.jms.admin.cli;
 
@@ -50,7 +50,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -99,9 +99,9 @@ public class ConfigureJMSCluster implements AdminCommand {
     /*
     configure-jms-cluster [--clustertype =conventional | enhanced] [--messagestoretype=jdbc | file] [--configstoretype=masterbroker | shareddb] [--dbvendor] [--dbuser] [--dbpassword]  [--dburl] [--force] [--property (name=value)[:name-value]*] clusterName
 
-    a. Message store type (JDBC | file) – defaults to file
+    a. Message store type (JDBC | file) - defaults to file
 
-    b. Config store type (MasterBroker | SharedDB) – defaults to MasterBroker
+    b. Config store type (MasterBroker | SharedDB) - defaults to MasterBroker
     c. Cluster Type: Conventional | Enhanced (if enhanced, then (a) and (b) are ignored).
      */
 

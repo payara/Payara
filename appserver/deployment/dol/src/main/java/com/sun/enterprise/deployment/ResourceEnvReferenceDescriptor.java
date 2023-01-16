@@ -58,15 +58,15 @@ public class ResourceEnvReferenceDescriptor extends EnvironmentProperty implemen
     private boolean isManagedBean = false;
     private ManagedBeanDescriptor managedBeanDesc;
 
-    private static final String SESSION_CTX_TYPE = "javax.ejb.SessionContext";
-    private static final String MDB_CTX_TYPE ="javax.ejb.MessageDrivenContext";
-    private static final String EJB_CTX_TYPE ="javax.ejb.EJBContext";
+    private static final String SESSION_CTX_TYPE = "jakarta.ejb.SessionContext";
+    private static final String MDB_CTX_TYPE ="jakarta.ejb.MessageDrivenContext";
+    private static final String EJB_CTX_TYPE ="jakarta.ejb.EJBContext";
     private static final String EJB_TIMER_SERVICE_TYPE
-        = "javax.ejb.TimerService";
-    private static final String VALIDATION_VALIDATOR ="javax.validation.Validator";
-    private static final String VALIDATION_VALIDATOR_FACTORY ="javax.validation.ValidatorFactory";
+        = "jakarta.ejb.TimerService";
+    private static final String VALIDATION_VALIDATOR ="jakarta.validation.Validator";
+    private static final String VALIDATION_VALIDATOR_FACTORY ="jakarta.validation.ValidatorFactory";
 
-    private static final String CDI_BEAN_MANAGER_TYPE = "javax.enterprise.inject.spi.BeanManager";
+    private static final String CDI_BEAN_MANAGER_TYPE = "jakarta.enterprise.inject.spi.BeanManager";
 
     public ResourceEnvReferenceDescriptor() {
     }
@@ -82,7 +82,7 @@ public class ResourceEnvReferenceDescriptor extends EnvironmentProperty implemen
     }
 
     /**
-     * Gets the type of environment reference i.e. javax.ejb.SessionContext
+     * Gets the type of environment reference i.e. jakarta.ejb.SessionContext
      * @return 
      */
     public String getRefType() {

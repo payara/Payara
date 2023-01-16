@@ -42,14 +42,14 @@ package org.glassfish.appclient.server.connector;
 
 import java.util.jar.Manifest;
 import org.glassfish.internal.deployment.GenericSniffer;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.ArchiveType;
 
 
 import org.jvnet.hk2.annotations.Service;
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 
 import java.io.IOException;
 import java.util.jar.Attributes;

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2019-2021] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.internal.deployment;
 
@@ -52,7 +52,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ArchiveHandler;
 import org.glassfish.api.deployment.archive.ReadableArchive;

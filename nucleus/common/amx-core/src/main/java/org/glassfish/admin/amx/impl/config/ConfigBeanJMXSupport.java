@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2021] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.amx.impl.config;
 
@@ -69,9 +69,9 @@ import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.CompositeDataSupport;
 import javax.management.openmbean.CompositeType;
 import javax.management.openmbean.OpenType;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.external.arc.Stability;
 import org.glassfish.external.arc.Taxonomy;
@@ -1076,7 +1076,7 @@ class ConfigBeanJMXSupport
 
         public String pattern()
         {
-            final javax.validation.constraints.Pattern pat = mMethod.getAnnotation(javax.validation.constraints.Pattern.class);
+            final jakarta.validation.constraints.Pattern pat = mMethod.getAnnotation(jakarta.validation.constraints.Pattern.class);
             return pat == null ? null : pat.regexp();
         }
 

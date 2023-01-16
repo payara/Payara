@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2022] [Payara Foundation and/or its affiliates]
+
 package com.sun.web.security;
 
 import java.io.BufferedReader;
@@ -48,8 +49,8 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Locale;
 import java.util.Map;
-import javax.servlet.*;
-import javax.servlet.http.*;
+import jakarta.servlet.*;
+import jakarta.servlet.http.*;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.RequestFacade;
 
@@ -201,11 +202,6 @@ class RequestFacadeWrapper extends RequestFacade {
     }
 
     @Override
-    public boolean isRequestedSessionIdFromUrl() {
-        return servletRequest.isRequestedSessionIdFromUrl();
-    }
-
-    @Override
     public boolean authenticate(HttpServletResponse response) throws IOException, ServletException {
         return servletRequest.authenticate(response);
     }
@@ -352,11 +348,6 @@ class RequestFacadeWrapper extends RequestFacade {
     @Override
     public RequestDispatcher getRequestDispatcher(String path) {
         return servletRequest.getRequestDispatcher(path);
-    }
-
-    @Override
-    public String getRealPath(String path) {
-        return servletRequest.getRealPath(path);
     }
 
     @Override

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2021] Payara Foundation and/or affiliates
  */
 
 
@@ -52,12 +52,12 @@ import org.glassfish.deployment.common.GenericAnnotationDetector;
 
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.ServiceLocator;
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 
 import java.io.IOException;
 import java.util.logging.Logger;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 /**
  * Detects rar type archives.
@@ -74,10 +74,10 @@ public class RarDetector implements ArchiveDetector {
      * Connector annotations for JCA 1.7
      */
     private static final Class[] connectorAnnotations = new Class[]{
-            javax.resource.spi.Connector.class,
-            javax.resource.spi.Activation.class,
-            javax.resource.spi.ConnectionDefinition.class,
-            javax.resource.spi.ConnectionDefinitions.class,
+            jakarta.resource.spi.Connector.class,
+            jakarta.resource.spi.Activation.class,
+            jakarta.resource.spi.ConnectionDefinition.class,
+            jakarta.resource.spi.ConnectionDefinitions.class,
     };
 
     public static final String RAR_DETECTOR_RANK_PROP = "glassfish.rar.detector.rank";

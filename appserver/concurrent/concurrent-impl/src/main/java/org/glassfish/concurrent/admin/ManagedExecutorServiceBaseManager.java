@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2022] [Payara Foundation]
+// Portions Copyright [2016-2021] [Payara Foundation]
 package org.glassfish.concurrent.admin;
 
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
@@ -58,8 +58,8 @@ import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.types.Property;
 
-import javax.inject.Inject;
-import javax.resource.ResourceException;
+import jakarta.inject.Inject;
+import jakarta.resource.ResourceException;
 import java.beans.PropertyVetoException;
 import java.util.HashMap;
 import java.util.Map;

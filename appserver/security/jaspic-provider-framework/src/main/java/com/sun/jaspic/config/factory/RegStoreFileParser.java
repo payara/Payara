@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 package com.sun.jaspic.config.factory;
 
 import static com.sun.jaspic.config.helper.JASPICLogManager.JASPIC_LOGGER;
@@ -59,7 +59,7 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import javax.security.auth.message.config.AuthConfigFactory.RegistrationContext;
+import jakarta.security.auth.message.config.AuthConfigFactory.RegistrationContext;
 
 /**
  * Used by ServerConfigProvider to parse the configuration file. If a file does not exist originally, the default

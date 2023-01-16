@@ -39,9 +39,9 @@
  */
 package org.glassfish.tests.jms.injection;
 
-import javax.ejb.*;
-import javax.inject.Inject;
-import javax.jms.*;
+import jakarta.ejb.*;
+import jakarta.inject.Inject;
+import jakarta.jms.*;
 
 /**
  * @author David Zhao

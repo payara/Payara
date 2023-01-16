@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2022 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,11 +44,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.message.AuthException;
-import javax.security.auth.message.MessageInfo;
-import javax.security.auth.message.config.ServerAuthConfig;
-import javax.security.auth.message.config.ServerAuthContext;
-import javax.security.auth.message.module.ServerAuthModule;
+import jakarta.security.auth.message.AuthException;
+import jakarta.security.auth.message.MessageInfo;
+import jakarta.security.auth.message.config.ServerAuthConfig;
+import jakarta.security.auth.message.config.ServerAuthContext;
+import jakarta.security.auth.message.module.ServerAuthModule;
 
 /**
  *
@@ -59,12 +59,12 @@ public class SimpleSAMConfig implements ServerAuthConfig {
     private final String layer;
     private final String appContext;
     private final CallbackHandler handler;
-    private final Map<String,String> constructedProperties;
+    private final Map<String, Object> constructedProperties;
     private volatile ServerAuthModule sam;
     private Class samClass;
 
 
-    SimpleSAMConfig(String layer, String appContext, CallbackHandler handler, Map<String,String> properties, Class samClass) {
+    SimpleSAMConfig(String layer, String appContext, CallbackHandler handler, Map<String, Object> properties, Class samClass) {
         this.layer = layer;
         this.appContext = appContext;
         this.handler = handler;

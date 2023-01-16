@@ -42,7 +42,7 @@ package org.glassfish.ejb.mdb;
 
 import com.sun.ejb.codegen.EjbOptionalIntfGenerator;
 
-import javax.resource.spi.endpoint.MessageEndpoint;
+import jakarta.resource.spi.endpoint.MessageEndpoint;
 
 public class MessageBeanInterfaceGenerator extends EjbOptionalIntfGenerator {
 

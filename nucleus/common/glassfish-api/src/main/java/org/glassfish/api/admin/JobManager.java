@@ -49,7 +49,7 @@ import org.glassfish.api.admin.progress.JobInfos;
 import org.jvnet.hk2.annotations.Contract;
 
 import javax.security.auth.Subject;
-import javax.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBContext;
 
 /**
  * This is the contract for the JobManagerService

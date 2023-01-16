@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.containers;
 
@@ -47,7 +47,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 import static java.util.logging.Level.WARNING;
-import javax.ejb.FinderException;
+import jakarta.ejb.FinderException;
 
 public class NonPersistentEJBTimerService extends EJBTimerService {
 

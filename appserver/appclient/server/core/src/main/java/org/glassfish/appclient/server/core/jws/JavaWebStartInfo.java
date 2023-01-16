@@ -37,33 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2022 Payara Foundation and/or its affiliates
 
 package org.glassfish.appclient.server.core.jws;
 
 import com.sun.enterprise.deployment.ApplicationClientDescriptor;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
-import java.beans.PropertyChangeEvent;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URI;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.jar.Attributes;
-import java.util.jar.JarFile;
-import java.util.jar.Manifest;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.container.EndpointRegistrationException;
 import org.glassfish.api.deployment.DeploymentContext;
@@ -80,16 +60,33 @@ import org.glassfish.appclient.server.core.jws.servedcontent.StaticContent;
 import org.glassfish.appclient.server.core.jws.servedcontent.StreamedAutoSignedStaticContent;
 import org.glassfish.appclient.server.core.jws.servedcontent.TokenHelper;
 import org.glassfish.deployment.common.DeploymentUtils;
-
-import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.logging.annotation.LogMessageInfo;
 import org.glassfish.logging.annotation.LogMessagesResourceBundle;
 import org.glassfish.logging.annotation.LoggerInfo;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigListener;
 import org.jvnet.hk2.config.UnprocessedChangeEvent;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
 import org.jvnet.hk2.config.types.Property;
+
+import java.beans.PropertyChangeEvent;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URI;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Encapsulates information related to Java Web Start support for a single
@@ -114,9 +111,6 @@ public class JavaWebStartInfo implements ConfigListener {
 
     @Inject
     private DeveloperContentHandler dch;
-
-    @Inject
-    private ExtensionFileManager extensionFileManager;
 
     @Inject
     private ServerEnvironment serverEnv;
@@ -376,65 +370,6 @@ public class JavaWebStartInfo implements ConfigListener {
             JWSAdapterManager.userFriendlyContextRoot(acServerApp)});
     }
 
-    private void processExtensionReferences() throws IOException {
-
-        // TODO: needs to be expanded to handle signed library JARS, perhap signed by different certs
-        final URI fileURI = URI.create("file:" + helper.appClientServerOriginalAnchor(dc).getRawSchemeSpecificPart());
-        Set<ExtensionFileManager.Extension> exts = extensionFileManager.findExtensionTransitiveClosure(
-                new File(fileURI),
-                //new File(helper.appClientServerURI(dc)).getParentFile(),
-                dc.getSource().getManifest().getMainAttributes());
-        tHelper.setProperty(APP_LIBRARY_EXTENSION_PROPERTY_NAME,
-                jarElementsForExtensions(exts));
-        for (ExtensionFileManager.Extension e : exts) {
-            final URI uri = URI.create(JWSAdapterManager.publicExtensionLookupURIText(e));
-            final StaticContent newSystemContent = createSignedStaticContent(
-                    e.getFile(),
-                    signedFileForDomainFile(e.getFile()),
-                    uri,
-                    extensionName(e.getFile()));
-            jwsAdapterManager.addStaticSystemContent(
-                    uri.toString(),
-                    newSystemContent);
-        }
-
-    }
-
-    private String extensionName(final File f) throws IOException {
-        JarFile jf = null;
-        try {
-            jf = new JarFile(f);
-            final Manifest mf = jf.getManifest();
-            final Attributes mainAttrs = mf.getMainAttributes();
-            final String extName = mainAttrs.getValue(Attributes.Name.EXTENSION_NAME);
-            return (extName == null ? "" : extName);
-        } finally {
-            if (jf != null) {
-                jf.close();
-            }
-        }
-    }
-
-    private File signedFileForDomainFile(final File unsignedFile) {
-
-        final File rootForSignedFilesInDomain = jwsAdapterManager.rootForSignedFilesInDomain();
-        mkdirs(rootForSignedFilesInDomain);
-        final URI signedFileURI = rootForSignedFilesInDomain.toURI().resolve(relativeURIToDomainFile(unsignedFile));
-        return new File(signedFileURI);
-    }
-
-    private URI relativeURIToDomainFile(final File domainFile) {
-        return serverEnv.getInstanceRoot().toURI().relativize(domainFile.toURI());
-    }
-
-    private String jarElementsForExtensions(final Set<ExtensionFileManager.Extension> exts) {
-        final StringBuilder sb = new StringBuilder();
-        for (ExtensionFileManager.Extension e : exts) {
-            sb.append("<jar href=\"").append(JWSAdapterManager.publicExtensionHref(e)).append("\"/>");
-        }
-        return sb.toString();
-    }
-
     private void stopJWSServices() throws EndpointRegistrationException {
         /*
          * Mark all this client's content as stopped so the Grizzly adapter
@@ -551,12 +486,6 @@ public class JavaWebStartInfo implements ConfigListener {
                     GROUP_FACADE_PATH_PROPERTY_NAME,
                     acServerApp.getDescriptor().getName());
         }
-
-        /*
-         * Add static content representing any extension libraries this client
-         * (or the JARs it depends on) uses.
-         */
-        processExtensionReferences();
 
         /*
          * Make sure that there are versions of all GF system JARs

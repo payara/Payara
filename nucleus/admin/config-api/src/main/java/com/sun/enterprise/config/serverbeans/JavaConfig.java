@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright 2018-2022 Payara Foundation and/or affiliates
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -72,7 +72,7 @@ public interface JavaConfig extends ConfigBeanProxy, PropertyBag, JvmOptionBag {
      * Gets the value of the javaHome property.
      *
      * Specifies the installation directory for Java runtime. 
-     * JDK 7 or higher is supported.
+     * JDK 11 or higher is supported.
      * 
      * @return possible object is
      *         {@link String }

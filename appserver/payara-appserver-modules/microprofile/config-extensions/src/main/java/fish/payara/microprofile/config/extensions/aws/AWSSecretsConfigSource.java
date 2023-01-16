@@ -54,13 +54,13 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.json.Json;
-import javax.json.JsonException;
-import javax.json.stream.JsonParser;
-import javax.json.stream.JsonParser.Event;
-import javax.ws.rs.HttpMethod;
-import javax.ws.rs.ProcessingException;
-import javax.ws.rs.core.Response;
+import jakarta.json.Json;
+import jakarta.json.JsonException;
+import jakarta.json.stream.JsonParser;
+import jakarta.json.stream.JsonParser.Event;
+import jakarta.ws.rs.HttpMethod;
+import jakarta.ws.rs.ProcessingException;
+import jakarta.ws.rs.core.Response;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -73,7 +73,7 @@ import org.jvnet.hk2.annotations.Service;
 import fish.payara.microprofile.config.extensions.aws.client.AwsRequestBuilder;
 import fish.payara.nucleus.microprofile.config.source.extension.ConfiguredExtensionConfigSource;
 import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 @Service(name = "aws-secrets-config-source")
 public class AWSSecretsConfigSource extends ConfiguredExtensionConfigSource<AWSSecretsConfigSourceConfiguration> {

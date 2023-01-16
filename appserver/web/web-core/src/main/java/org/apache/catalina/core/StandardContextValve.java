@@ -64,10 +64,9 @@ import org.apache.catalina.*;
 import org.apache.catalina.valves.ValveBase;
 import org.glassfish.web.valve.GlassFishValve;
 
-import javax.servlet.*;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.*;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Locale;
 import java.util.regex.Pattern;
 
 import org.glassfish.grizzly.utils.Charsets;
@@ -123,7 +122,7 @@ final class StandardContextValve
     /**
      * Cast to a StandardContext right away, as it will be needed later.
      * 
-     * @see org.apache.catalina.Contained#setContainer(org.apache.catalina.Container)
+     * @see Contained#setContainer(Container)
      */
     @Override
     public void setContainer(Container container) {

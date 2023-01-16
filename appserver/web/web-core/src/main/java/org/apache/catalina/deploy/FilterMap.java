@@ -60,7 +60,7 @@ package org.apache.catalina.deploy;
 
 import org.apache.catalina.util.RequestUtil;
 
-import javax.servlet.DispatcherType;
+import jakarta.servlet.DispatcherType;
 import java.io.Serializable;
 import java.util.EnumSet;
 import java.util.Set;

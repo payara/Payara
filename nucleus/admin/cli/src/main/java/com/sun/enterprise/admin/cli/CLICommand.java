@@ -56,9 +56,9 @@ import java.lang.annotation.Annotation;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.inject.Inject;
-import javax.inject.Scope;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Scope;
+import jakarta.inject.Singleton;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
 import org.glassfish.api.admin.CommandModel;
@@ -1445,6 +1445,7 @@ public abstract class CLICommand implements PostConstruct {
                     .build();
         }
     }
+
     
     protected LineReaderBuilder newLineReaderBuilder() {
         // In community this should be disabled by default
@@ -1458,7 +1459,7 @@ public abstract class CLICommand implements PostConstruct {
             // disable event expansion because it swallows backslashes and we don't need to support events
             .option(LineReader.Option.DISABLE_EVENT_EXPANSION, disabled);
     }
-    
+
     protected void closeTerminal() {
         try {
             if (terminal != null) {

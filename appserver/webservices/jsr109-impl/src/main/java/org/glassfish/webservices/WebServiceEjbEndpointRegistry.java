@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.webservices;
 
@@ -56,12 +56,12 @@ import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import javax.xml.ws.WebServiceException;
-import javax.xml.ws.handler.Handler;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
+import jakarta.xml.ws.WebServiceException;
+import jakarta.xml.ws.handler.Handler;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
 import org.glassfish.ejb.api.EjbEndpointFacade;
@@ -135,7 +135,7 @@ public class WebServiceEjbEndpointRegistry implements WSEjbEndpointRegistry {
                                   EjbEndpointFacade ejbContainer,
                                   Object servant, Class tieClass)  {
         String uri = null;
-        EjbRuntimeEndpointInfo endpoint = createEjbEndpointInfo(webserviceEndpoint, ejbContainer,servant,tieClass);
+        EjbRuntimeEndpointInfo endpoint = createEjbEndpointInfo(webserviceEndpoint, ejbContainer,servant);
         synchronized(webServiceEjbEndpoints) {
             String uriRaw = endpoint.getEndpointAddressUri();
             if (uriRaw != null ) {
@@ -152,14 +152,9 @@ public class WebServiceEjbEndpointRegistry implements WSEjbEndpointRegistry {
             } else throw new WebServiceException(logger.getResourceBundle().getString(LogUtils.EJB_ENDPOINTURI_ERROR));
         }
 
-
         // notify monitoring layers that a new endpoint is being created.
         WebServiceEngineImpl engine = WebServiceEngineImpl.getInstance();
-        if (hasMappingFileUri(endpoint.getEndpoint())) {
-            engine.createHandler((com.sun.xml.rpc.spi.runtime.SystemHandlerDelegate)null, endpoint.getEndpoint());
-        } else {
-            engine.createHandler(endpoint.getEndpoint());
-        }
+        engine.createHandler(endpoint.getEndpoint());
     }
 
 
@@ -218,15 +213,8 @@ public class WebServiceEjbEndpointRegistry implements WSEjbEndpointRegistry {
      */
   public EjbRuntimeEndpointInfo createEjbEndpointInfo(WebServiceEndpoint webServiceEndpoint,
                                   EjbEndpointFacade ejbContainer,
-                                  Object servant, Class tieClass) {
-        EjbRuntimeEndpointInfo info = null;
-        if (webServiceEndpoint.getWebService().hasMappingFile()) {
-            info = new Ejb2RuntimeEndpointInfo(webServiceEndpoint, ejbContainer, servant, tieClass);
-        } else {
-            info = new EjbRuntimeEndpointInfo(webServiceEndpoint, ejbContainer, servant);
-        }
-
-        return info;
+                                  Object servant) {
+        return new EjbRuntimeEndpointInfo(webServiceEndpoint, ejbContainer, servant);
     }
 
     public EjbRuntimeEndpointInfo getEjbWebServiceEndpoint(String uriRaw, String method, String query) {
@@ -276,11 +264,11 @@ public class WebServiceEjbEndpointRegistry implements WSEjbEndpointRegistry {
     }
 
     private void regenerateEjbContextRoots() {
-        synchronized(webServiceEjbEndpoints) {
+        synchronized (webServiceEjbEndpoints) {
             Set<String> contextRoots = new HashSet<String>();
             for (String uri : webServiceEjbEndpoints.keySet()) {
                 String contextRoot = getContextRootForUri(uri);
-                if( (contextRoot != null) && !contextRoot.equals("") ) {
+                if ((contextRoot != null) && !contextRoot.equals("")) {
                     contextRoots.add(contextRoot);
                 }
             }
@@ -290,5 +278,5 @@ public class WebServiceEjbEndpointRegistry implements WSEjbEndpointRegistry {
 
     private static boolean hasMappingFileUri(WebServiceEndpoint endpoint) {
         return endpoint.getWebService().getMappingFileUri() != null;
-    }
+}
 }

@@ -49,7 +49,7 @@ import java.util.Arrays;
  * @version %I%, %G%
  */
 public class PasswordValidationCallback extends
-        javax.security.auth.message.callback.PasswordValidationCallback {
+        jakarta.security.auth.message.callback.PasswordValidationCallback {
 
     /**
      * Create a PasswordValidationCallback.

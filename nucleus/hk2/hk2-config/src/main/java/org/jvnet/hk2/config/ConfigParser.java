@@ -44,7 +44,7 @@ package org.jvnet.hk2.config;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.Dom.Child;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 import javax.xml.stream.XMLInputFactory;
 import static javax.xml.stream.XMLStreamConstants.*;
 import javax.xml.stream.XMLStreamException;

@@ -109,27 +109,27 @@ public class ManagedScheduledExecutorServiceStatsProvider
         return taskCount;
     }
     
-    @ManagedAttribute(id="ActiveCount")
-    @Description("The approximate number of active threads")
-    public CountStatistic getActiveCount() {
-        activeCount.setCount(managedScheduledExecutorServiceImpl.
-                getActiveCount());
-        return activeCount;
-    }
-    
-    @ManagedAttribute(id="LargestPoolSize")
-    @Description("The largest number of threads that have ever simultaneously "
-                    + "been in the pool")
-    public CountStatistic getLargestPoolSize() {
-        largestPoolSize.setCount(managedScheduledExecutorServiceImpl.
-                getLargestPoolSize());
-        return largestPoolSize;
-    }
-    
-    @ManagedAttribute(id="PoolSize")
-    @Description("The current number of threads in the pool")
-    public CountStatistic getPoolSize() {
-        poolSize.setCount(managedScheduledExecutorServiceImpl.getPoolSize());
-        return poolSize;
-    }
+//    @ManagedAttribute(id="ActiveCount")
+//    @Description("The approximate number of active threads")
+//    public CountStatistic getActiveCount() {
+//        activeCount.setCount(managedScheduledExecutorServiceImpl.
+//                getActiveCount());
+//        return activeCount;
+//    }
+//    
+//    @ManagedAttribute(id="LargestPoolSize")
+//    @Description("The largest number of threads that have ever simultaneously "
+//                    + "been in the pool")
+//    public CountStatistic getLargestPoolSize() {
+//        largestPoolSize.setCount(managedScheduledExecutorServiceImpl.
+//                getLargestPoolSize());
+//        return largestPoolSize;
+//    }
+//    
+//    @ManagedAttribute(id="PoolSize")
+//    @Description("The current number of threads in the pool")
+//    public CountStatistic getPoolSize() {
+//        poolSize.setCount(managedScheduledExecutorServiceImpl.getPoolSize());
+//        return poolSize;
+//    }
 }

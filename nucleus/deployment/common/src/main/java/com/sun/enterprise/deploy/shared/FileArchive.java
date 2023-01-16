@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2018-2019] Payara Foundation and/or affiliates
+ * Portions Copyright [2018-2022] Payara Foundation and/or affiliates
  */
 
 package com.sun.enterprise.deploy.shared;
@@ -51,7 +51,7 @@ import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.logging.annotation.LogMessageInfo;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.io.*;
 import java.net.URI;
 import java.nio.file.FileVisitResult;
@@ -340,21 +340,26 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
      */
     @Override
     public ReadableArchive getSubArchive(String name) throws IOException {
-        String subEntryName = getFileSubArchivePath(name);
-        File subEntry = new File(subEntryName);
-        if (subEntry.exists() && isEntryValid(subEntry)) {
-            deplLogger.log(DEBUG_LEVEL, "FileArchive.getSubArchive for {0} found that it is valid",
-                    subEntry.getAbsolutePath());
-            ReadableArchive result = archiveFactory.openArchive(subEntry);
-            if (result instanceof AbstractReadableArchive) {
-                result.setParentArchive(this);
-            }
-            return result;
-        } else if (subEntry.exists()) {
+        File subEntry = new File(getFileSubArchivePath(name));
+
+        if(!subEntry.exists()) {
+            return null;
+        }
+
+        if (!isEntryValid(subEntry)) {
             deplLogger.log(DEBUG_LEVEL, "FileArchive.getSubArchive for {0} found that it is not a valid entry; it is stale",
                     subEntry.getAbsolutePath());
+            return null;
         }
-        return null;
+
+        deplLogger.log(DEBUG_LEVEL, "FileArchive.getSubArchive for {0} found that it is valid", subEntry.getAbsolutePath());
+
+        ReadableArchive result = archiveFactory.openArchive(subEntry);
+        if (result instanceof AbstractReadableArchive) {
+            ((com.sun.enterprise.deploy.shared.AbstractReadableArchive) result).setParentArchive(this);
+        }
+
+        return result;
     }
     /**
      * create or obtain an embedded archive within this abstraction.
@@ -545,9 +550,9 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
         * If the FileArchive has been opened or created then its
         * staleFileManager has been set.
         */
-       if ( ! isOpenedOrCreated) {
-           throw new IllegalStateException();
-       }
+        if (!isOpenedOrCreated) {
+            throw new IllegalStateException();
+        }
        return staleFileManager;
     }
 

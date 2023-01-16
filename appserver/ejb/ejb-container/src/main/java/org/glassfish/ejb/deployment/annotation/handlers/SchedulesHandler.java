@@ -42,8 +42,8 @@ package org.glassfish.ejb.deployment.annotation.handlers;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.ejb.Schedule;
-import javax.ejb.Schedules;
+import jakarta.ejb.Schedule;
+import jakarta.ejb.Schedules;
 
 import com.sun.enterprise.deployment.annotation.context.EjbContext;
 import org.glassfish.apf.AnnotationHandlerFor;
@@ -53,7 +53,7 @@ import org.glassfish.apf.HandlerProcessingResult;
 import org.jvnet.hk2.annotations.Service;
 
 /**
- * This handler is responsible for handling the javax.ejb.Schedules attribute
+ * This handler is responsible for handling the jakarta.ejb.Schedules attribute
  *
  */
 @Service

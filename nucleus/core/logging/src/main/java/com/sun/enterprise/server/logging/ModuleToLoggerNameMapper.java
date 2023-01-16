@@ -111,7 +111,7 @@ public class ModuleToLoggerNameMapper {
         {"jaxr",           new String[] { LogDomains.JAXR_LOGGER} },
         {"jaxrpc",         new String[] { LogDomains.JAXRPC_LOGGER} },
         {"jdo",            new String[] { LogDomains.JDO_LOGGER} },
-        {"jms",            new String[] { LogDomains.JMS_LOGGER, "javax.resourceadapter.mqjmsra"} },
+        {"jms",            new String[] { LogDomains.JMS_LOGGER, "jakarta.resourceadapter.mqjmsra"} },
         {"jta",            new String[] { LogDomains.JTA_LOGGER} },
         {"jts",            new String[] { LogDomains.TRANSACTION_LOGGER} },
         {"mdb-container",  new String[] { LogDomains.MDB_LOGGER} },
@@ -123,7 +123,7 @@ public class ModuleToLoggerNameMapper {
         {"synchronization",new String[] { "javax.ee.enterprise.system.tools.synchronization"} },
         {"web-container",  new String[] { LogDomains.WEB_LOGGER,
                                           "org.apache.catalina",
-                                          "org.apache.coyote","org.apache.jasper" 
+                                          "org.apache.coyote","org.glassfish.wasp" 
                                         } },
         {"group-management-service", new String[] { LogDomains.GMS_LOGGER} },
         {"node-agent",     new String[] { "javax.ee.enterprise.system.nodeagent" } },

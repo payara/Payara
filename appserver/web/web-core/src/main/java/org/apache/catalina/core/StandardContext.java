@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
 
 package org.apache.catalina.core;
 
@@ -107,32 +107,31 @@ import javax.management.ObjectName;
 import javax.naming.Binding;
 import javax.naming.NamingException;
 import javax.naming.directory.DirContext;
-import javax.servlet.Filter;
-import javax.servlet.FilterConfig;
-import javax.servlet.FilterRegistration;
-import javax.servlet.RequestDispatcher;
-import javax.servlet.Servlet;
-import javax.servlet.ServletContainerInitializer;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextAttributeListener;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRegistration;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletRequestAttributeListener;
-import javax.servlet.ServletRequestEvent;
-import javax.servlet.ServletRequestListener;
-import javax.servlet.SessionCookieConfig;
-import javax.servlet.SessionTrackingMode;
-import javax.servlet.SingleThreadModel;
-import javax.servlet.descriptor.JspConfigDescriptor;
-import javax.servlet.http.HttpServletMapping;
-import javax.servlet.http.HttpSession;
-import javax.servlet.http.HttpSessionAttributeListener;
-import javax.servlet.http.HttpSessionIdListener;
-import javax.servlet.http.HttpSessionListener;
-import javax.servlet.http.HttpUpgradeHandler;
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.FilterRegistration;
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.Servlet;
+import jakarta.servlet.ServletContainerInitializer;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletContextAttributeListener;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextListener;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRegistration;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletRequestAttributeListener;
+import jakarta.servlet.ServletRequestEvent;
+import jakarta.servlet.ServletRequestListener;
+import jakarta.servlet.SessionCookieConfig;
+import jakarta.servlet.SessionTrackingMode;
+import jakarta.servlet.descriptor.JspConfigDescriptor;
+import jakarta.servlet.http.HttpServletMapping;
+import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSessionAttributeListener;
+import jakarta.servlet.http.HttpSessionIdListener;
+import jakarta.servlet.http.HttpSessionListener;
+import jakarta.servlet.http.HttpUpgradeHandler;
 
 import org.apache.catalina.Auditor;
 import org.apache.catalina.Authenticator;
@@ -208,6 +207,9 @@ import org.glassfish.web.valve.GlassFishValve;
  * @author Remy Maucherat
  * @version $Revision: 1.48 $ $Date: 2007/07/25 00:52:04 $
  */
+
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+
 public class StandardContext
     extends ContainerBase
     implements Context, ServletContext
@@ -812,7 +814,7 @@ public class StandardContext
 
     /**
      * The list of ordered libs, which is used as the value of the
-     * ServletContext attribute with name javax.servlet.context.orderedLibs
+     * ServletContext attribute with name jakarta.servlet.context.orderedLibs
      */
     private List<String> orderedLibs;
 
@@ -2294,7 +2296,7 @@ public class StandardContext
             }
         }
 
-        if ("javax.faces.webapp.FacesServlet".equals(
+        if ("jakarta.faces.webapp.FacesServlet".equals(
                 wrapper.getServletClassName())) {
             isJsfApplication = true;
         }
@@ -3733,11 +3735,6 @@ public class StandardContext
 
         if (servlet == null) {
             throw new NullPointerException(rb.getString(LogFacade.NULL_SERVLET_INSTANCE_EXCEPTION));
-        }
-
-        if (servlet instanceof SingleThreadModel) {
-            throw new IllegalArgumentException("Servlet implements " +
-                SingleThreadModel.class.getName());
         }
 
         /*
@@ -7279,17 +7276,6 @@ public class StandardContext
     }
 
     /**
-     * Writes the specified exception and message to a servlet log file.
-     */
-    @Override
-    public void log(Exception exception, String message) {
-        org.apache.catalina.Logger logger = getLogger();
-        if (logger != null) {
-            logger.log(exception, logName() + message);
-        }
-    }
-
-    /**
      * Writes the specified message and exception to a servlet log file.
      */
     @Override
@@ -7298,24 +7284,6 @@ public class StandardContext
         if (logger != null) {
             logger.log(logName() + message, throwable);
         }
-    }
-
-    @Override
-    @Deprecated
-    public Servlet getServlet(String name) {
-        return context.getServlet(name);
-    }
-
-    @Deprecated
-    @Override
-    public Enumeration<String> getServletNames() {
-        return context.getServletNames();
-    }
-
-    @Deprecated
-    @Override
-    public Enumeration<Servlet> getServlets() {
-        return context.getServlets();
     }
 
     /**
@@ -7715,7 +7683,7 @@ public class StandardContext
 
     /**
      * Sets the list of ordered libs, which will be used as the value of the
-     * ServletContext attribute with name javax.servlet.context.orderedLibs
+     * ServletContext attribute with name jakarta.servlet.context.orderedLibs
      */
     public void setOrderedLibs(List<String> orderedLibs) {
         this.orderedLibs = orderedLibs;

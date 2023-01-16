@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates] 
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates] 
 package com.sun.gjc.spi;
 
 import com.sun.enterprise.util.i18n.StringManager;
@@ -46,14 +46,14 @@ import com.sun.gjc.common.DataSourceSpec;
 import com.sun.gjc.util.SecurityUtils;
 import com.sun.logging.LogDomains;
 
-import javax.resource.ResourceException;
-import javax.resource.spi.ConnectionRequestInfo;
-import javax.resource.spi.ResourceAllocationException;
-import javax.resource.spi.security.PasswordCredential;
+import jakarta.resource.ResourceException;
+import jakarta.resource.spi.ConnectionRequestInfo;
+import jakarta.resource.spi.ResourceAllocationException;
+import jakarta.resource.spi.security.PasswordCredential;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.resource.spi.ConnectionDefinition;
+import jakarta.resource.spi.ConnectionDefinition;
 
 
 /**
@@ -115,7 +115,7 @@ public class CPManagedConnectionFactory extends ManagedConnectionFactoryImpl {
      *                                     physical connection
      */
     @Override
-    public javax.resource.spi.ManagedConnection createManagedConnection(javax.security.auth.Subject subject,
+    public jakarta.resource.spi.ManagedConnection createManagedConnection(javax.security.auth.Subject subject,
                                                                         ConnectionRequestInfo cxRequestInfo) throws ResourceException {
         logFine("In createManagedConnection");
         PasswordCredential pc = SecurityUtils.getPasswordCredential(this, subject, cxRequestInfo);

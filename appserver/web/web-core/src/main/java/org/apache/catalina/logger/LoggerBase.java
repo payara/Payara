@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2021] Payara Foundation and/or affiliates
 
 package org.apache.catalina.logger;
 
@@ -71,7 +71,7 @@ import org.apache.catalina.core.StandardHost;
 import org.apache.catalina.util.LifecycleSupport;
 
 import javax.management.ObjectName;
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletException;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.CharArrayWriter;

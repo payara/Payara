@@ -46,7 +46,7 @@ import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.internal.deployment.GenericSniffer;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 /**
  * Sniffer for OSGi bundles

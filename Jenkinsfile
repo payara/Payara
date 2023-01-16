@@ -7,8 +7,8 @@ PRTestPipeline {
     agent_label = 'PR-Test-Agent'
     test_suites = [[suite_name: 'Quicklook', suite_location: 'Payara'],
                    [suite_name: 'Payara-Samples', suite_location: 'Payara'],
-                   [suite_name: 'patched-src-javaee7-samples'],
-                   [suite_name: 'patched-src-javaee8-samples'], 
-                   [suite_name: 'cargotracker'], 
-                   [suite_name: 'MicroProfile-TCK-Runners', branch: 'microprofile-4.0']]
+                   [suite_name: 'patched-src-javaee7-samples', branch: 'Payara6'],
+                   [suite_name: 'patched-src-javaee8-samples', branch: 'Payara6'],
+                   [suite_name: 'cargotracker', branch: 'Payara6'],
+                   [suite_name: 'MicroProfile-TCK-Runners', branch: 'microprofile-5.0']]
 }

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.jacc.context;
 
 import static com.sun.enterprise.security.jacc.context.PolicyContextHandlerImpl.EJB_ARGUMENTS;
@@ -47,7 +47,7 @@ import static com.sun.enterprise.security.jacc.context.PolicyContextHandlerImpl.
 import static com.sun.enterprise.security.jacc.context.PolicyContextHandlerImpl.SOAP_MESSAGE;
 import static com.sun.enterprise.security.jacc.context.PolicyContextHandlerImpl.SUBJECT;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import com.sun.enterprise.security.SecurityContext;
 import com.sun.enterprise.security.jacc.cache.PermissionCacheFactory;

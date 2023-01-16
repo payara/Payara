@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2020] Payara Foundation and/or affiliates
+// Portions Copyright 2016-2022 Payara Foundation and/or affiliates
 
 package com.sun.gjc.spi.jdbc40;
 
@@ -73,13 +73,11 @@ public class ProfiledConnectionWrapper40 extends ConnectionHolder40 implements C
      * @param con Connection that is wrapped
      * @param mc  Managed Connection
      * @param cxRequestInfo  Connection Request Info
-     * @param jdbc30Connection If trhe connection is of type JDBC 3.0
      * @param delegator
      */
     public ProfiledConnectionWrapper40(Connection con, ManagedConnectionImpl mc,
-            javax.resource.spi.ConnectionRequestInfo cxRequestInfo,
-            boolean jdbc30Connection, SQLTraceDelegator delegator) {
-        super(con, mc, cxRequestInfo, jdbc30Connection);
+            jakarta.resource.spi.ConnectionRequestInfo cxRequestInfo, SQLTraceDelegator delegator) {
+        super(con, mc, cxRequestInfo);
         this.sqlTraceDelegator = delegator;
     }
 

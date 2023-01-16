@@ -79,9 +79,9 @@ import org.jvnet.hk2.config.*;
 
 import org.glassfish.api.event.EventListener;
 
-import javax.inject.Inject;
-import javax.inject.Provider;
-import javax.resource.ResourceException;
+import jakarta.inject.Inject;
+import jakarta.inject.Provider;
+import jakarta.resource.ResourceException;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;

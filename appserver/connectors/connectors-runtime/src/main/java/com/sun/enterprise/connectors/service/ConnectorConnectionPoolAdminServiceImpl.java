@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.connectors.service;
 
@@ -59,11 +59,11 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.logging.Level;
 import javax.naming.NamingException;
-import javax.resource.ResourceException;
-import javax.resource.spi.ConnectionRequestInfo;
-import javax.resource.spi.ManagedConnection;
-import javax.resource.spi.ManagedConnectionFactory;
-import javax.resource.spi.TransactionSupport;
+import jakarta.resource.ResourceException;
+import jakarta.resource.spi.ConnectionRequestInfo;
+import jakarta.resource.spi.ManagedConnection;
+import jakarta.resource.spi.ManagedConnectionFactory;
+import jakarta.resource.spi.TransactionSupport;
 import javax.security.auth.Subject;
 import org.glassfish.config.support.TranslatedConfigView;
 import org.glassfish.connectors.config.SecurityMap;
@@ -458,7 +458,7 @@ public class ConnectorConnectionPoolAdminServiceImpl extends ConnectorService {
      * @param mcf
      * @param prin
      * @return
-     * @throws javax.resource.ResourceException
+     * @throws jakarta.resource.ResourceException
      */
     protected Subject getDefaultSubject(PoolInfo poolInfo, ManagedConnectionFactory mcf,
             ResourcePrincipal prin) throws ResourceException {
@@ -496,7 +496,7 @@ public class ConnectorConnectionPoolAdminServiceImpl extends ConnectorService {
      * @param mcf
      * @param defaultSubject
      * @return
-     * @throws javax.resource.ResourceException
+     * @throws jakarta.resource.ResourceException
      */
     protected ManagedConnection getManagedConnection(ManagedConnectionFactory mcf,
             Subject defaultSubject, ConnectionRequestInfo cReqInfo) throws ResourceException {
@@ -950,9 +950,9 @@ public class ConnectorConnectionPoolAdminServiceImpl extends ConnectorService {
                     int txSupport = connectorConnectionPool.getTransactionSupport();
 
                     //JSR-322 : check the runtime transaction level support of MCF and use appropriately.
-                    if (mcf instanceof javax.resource.spi.TransactionSupport) {
+                    if (mcf instanceof jakarta.resource.spi.TransactionSupport) {
                         TransactionSupport.TransactionSupportLevel mcfTS =
-                                ((javax.resource.spi.TransactionSupport) mcf).getTransactionSupport();
+                                ((jakarta.resource.spi.TransactionSupport) mcf).getTransactionSupport();
 
                         int containerTxSupport = ConnectionPoolObjectsUtils.convertSpecTxSupportToContainerTxSupport(mcfTS);
                         boolean isValidTxSupportLevel = ConnectionPoolObjectsUtils.isTxSupportConfigurationSane(

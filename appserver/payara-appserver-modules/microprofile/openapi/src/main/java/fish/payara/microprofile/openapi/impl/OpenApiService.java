@@ -44,8 +44,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.annotation.PostConstruct;
-import javax.inject.Singleton;
+import jakarta.annotation.PostConstruct;
+import jakarta.inject.Singleton;
 
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.glassfish.api.deployment.DeploymentContext;

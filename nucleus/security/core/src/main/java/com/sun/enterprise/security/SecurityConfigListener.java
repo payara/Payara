@@ -44,9 +44,9 @@ import com.sun.enterprise.security.auth.realm.NoSuchRealmException;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 import org.jvnet.hk2.annotations.Service;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import com.sun.enterprise.config.serverbeans.SecurityService;
 import com.sun.enterprise.config.serverbeans.AuthRealm;
@@ -63,7 +63,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.inject.Named;
+import jakarta.inject.Named;
 import javax.security.auth.login.Configuration;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.hk2.api.PostConstruct;

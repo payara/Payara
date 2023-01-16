@@ -52,7 +52,7 @@ import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.container.Sniffer;
 import org.glassfish.internal.deployment.SnifferManager;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.glassfish.api.admin.AccessRequired;
 
 import org.jvnet.hk2.annotations.Service;

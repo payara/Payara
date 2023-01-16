@@ -47,9 +47,9 @@ import com.sun.enterprise.deployment.OutboundResourceAdapter;
 import com.sun.enterprise.deployment.ConnectionDefDescriptor;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 
-import javax.resource.spi.ConnectionDefinition;
-import javax.resource.spi.ManagedConnectionFactory;
-import javax.resource.spi.Connector;
+import jakarta.resource.spi.ConnectionDefinition;
+import jakarta.resource.spi.ManagedConnectionFactory;
+import jakarta.resource.spi.Connector;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.util.logging.Logger;

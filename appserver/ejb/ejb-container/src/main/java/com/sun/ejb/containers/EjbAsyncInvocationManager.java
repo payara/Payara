@@ -50,7 +50,7 @@ import java.util.logging.Logger;
 import com.sun.ejb.Container;
 import com.sun.logging.LogDomains;
 import java.lang.reflect.Method;
-import javax.ejb.EJBException;
+import jakarta.ejb.EJBException;
 
 /**
  * @author Mahesh Kannan

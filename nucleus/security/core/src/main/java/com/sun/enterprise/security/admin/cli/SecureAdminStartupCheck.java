@@ -39,7 +39,7 @@
  */
 package com.sun.enterprise.security.admin.cli;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 import org.glassfish.hk2.api.PostConstruct;
 import org.jvnet.hk2.annotations.Service;
 /**

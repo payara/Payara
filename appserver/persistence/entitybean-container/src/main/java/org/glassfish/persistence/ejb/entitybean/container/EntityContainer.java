@@ -37,7 +37,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.persistence.ejb.entitybean.container;
 
@@ -88,10 +87,10 @@ import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.ejb.*;
-import javax.transaction.Status;
-import javax.transaction.SystemException;
-import javax.transaction.Transaction;
+import jakarta.ejb.*;
+import jakarta.transaction.Status;
+import jakarta.transaction.SystemException;
+import jakarta.transaction.Transaction;
 
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.ejb.config.EjbContainer;
@@ -890,7 +889,7 @@ public class EntityContainer extends BaseContainer implements CacheListener {
      * Called from CMP PersistentManager
      */
     @Override
-    public void preSelect() throws javax.ejb.EJBException {
+    public void preSelect() throws jakarta.ejb.EJBException {
         // if the ejbSelect is being invoked with the client's transaction,
         // call ejbStore on all dirty bean instances associated with that
         // transaction. This ensures that the select results will include
@@ -1099,11 +1098,11 @@ public class EntityContainer extends BaseContainer implements CacheListener {
         i.method = removeMethod;
 
         // Method must be a remove method defined on one of :
-        // javax.ejb.EJBHome, javax.ejb.EJBObject, javax.ejb.EJBLocalHome,
-        // javax.ejb.EJBLocalObject
+        // jakarta.ejb.EJBHome, jakarta.ejb.EJBObject, jakarta.ejb.EJBLocalHome,
+        // jakarta.ejb.EJBLocalObject
         Class declaringClass = removeMethod.getDeclaringClass();
-        i.isHome = ( (declaringClass == javax.ejb.EJBHome.class) ||
-                     (declaringClass == javax.ejb.EJBLocalHome.class) );
+        i.isHome = ( (declaringClass == jakarta.ejb.EJBHome.class) ||
+                     (declaringClass == jakarta.ejb.EJBLocalHome.class) );
 
         try {
             preInvoke(i);

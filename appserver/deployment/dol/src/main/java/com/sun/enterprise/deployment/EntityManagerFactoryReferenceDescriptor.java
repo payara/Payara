@@ -75,7 +75,7 @@ public class EntityManagerFactoryReferenceDescriptor extends
     }
 
     public String getInjectResourceType() {
-        return "javax.persistence.EntityManagerFactory";
+        return "jakarta.persistence.EntityManagerFactory";
     }
 
     public void setInjectResourceType(String resourceType) {

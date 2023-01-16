@@ -110,11 +110,11 @@ EXAMPLES
        Example 1, Setting a Servlet Context-Initialization Parameter for a Web
        Application
            This example sets the servlet context-initialization parameter
-           javax.faces.STATE_SAVING_METHOD of the web application basic-ezcomp
+           jakarta.faces.STATE_SAVING_METHOD of the web application basic-ezcomp
            to client. The description The location where the application's
            state is preserved is provided for this parameter.
 
-               asadmin> set-web-context-param --name=javax.faces.STATE_SAVING_METHOD
+               asadmin> set-web-context-param --name=jakarta.faces.STATE_SAVING_METHOD
                --description="The location where the application's state is preserved"
                --value=client basic-ezcomp
 
@@ -123,9 +123,9 @@ EXAMPLES
        Example 2, Ignoring a Servlet Context-Initialization Parameter That Is
        Defined in a Deployment Descriptor
            This example ignores the servlet context-initialization parameter
-           javax.faces.PROJECT_STAGE of the web application basic-ezcomp.
+           jakarta.faces.PROJECT_STAGE of the web application basic-ezcomp.
 
-               asadmin> set-web-context-param --name=javax.faces.PROJECT_STAGE
+               asadmin> set-web-context-param --name=jakarta.faces.PROJECT_STAGE
                --ignoredescriptoritem=true
                basic-ezcomp
 

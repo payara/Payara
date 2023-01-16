@@ -2,7 +2,7 @@
 
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
- Copyright (c) 2016-2017 Payara Foundation. All rights reserved.
+ Copyright (c) 2016-2021 Payara Foundation. All rights reserved.
 
  The contents of this file are subject to the terms of the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
@@ -18,16 +18,16 @@
 package fish.payara.cdi.jsr107;
 
 import fish.payara.cdi.jsr107.implementation.PayaraCacheKeyInvocationContext;
-import javax.annotation.Priority;
+import jakarta.annotation.Priority;
 import javax.cache.Cache;
 import javax.cache.annotation.CacheKeyGenerator;
 import javax.cache.annotation.CacheResolver;
 import javax.cache.annotation.CacheResolverFactory;
 import javax.cache.annotation.CacheResult;
 import javax.cache.annotation.GeneratedCacheKey;
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.Interceptor;
-import javax.interceptor.InvocationContext;
+import jakarta.interceptor.AroundInvoke;
+import jakarta.interceptor.Interceptor;
+import jakarta.interceptor.InvocationContext;
 
 /**
  *

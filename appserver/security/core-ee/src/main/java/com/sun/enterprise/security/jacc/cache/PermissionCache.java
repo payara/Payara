@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.jacc.cache;
 
 import static java.util.Collections.list;
@@ -56,7 +56,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Logger;
 
-import javax.security.jacc.PolicyContext;
+import jakarta.security.jacc.PolicyContext;
 
 import com.sun.enterprise.security.common.AppservAccessController;
 import com.sun.enterprise.security.jacc.cache.CachedPermissionImpl.Epoch;

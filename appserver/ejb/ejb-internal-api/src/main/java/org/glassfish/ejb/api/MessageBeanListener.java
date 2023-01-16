@@ -81,7 +81,7 @@ public interface MessageBeanListener {
      * an 0-length array if there are 0 arguments.
      *
      * @throws Throwable  This is either an application exception as thrown
-     * from the message bean instance or a javax.ejb.EJBException in the case
+     * from the message bean instance or a jakarta.ejb.EJBException in the case
      * that the bean throws a system exception.  Note that exceptions are 
      * *always* propagated, regardless of transaction type.  
      */

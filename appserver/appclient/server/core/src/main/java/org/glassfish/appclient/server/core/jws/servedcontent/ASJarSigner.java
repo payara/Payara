@@ -37,25 +37,35 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2022 Payara Foundation and/or its affiliates
+// Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license
 
 package org.glassfish.appclient.server.core.jws.servedcontent;
 
-import com.sun.enterprise.security.ssl.JarSigner;
+import com.sun.enterprise.server.pluggable.SecuritySupport;
 import com.sun.enterprise.util.i18n.StringManager;
-import com.sun.logging.LogDomains;
+import jakarta.inject.Singleton;
+import jdk.security.jarsigner.JarSigner;
+import org.glassfish.appclient.server.core.jws.JavaWebStartInfo;
+import org.glassfish.hk2.api.PostConstruct;
+import org.jvnet.hk2.annotations.Service;
+
 import java.io.File;
 import java.io.FileOutputStream;
+import java.security.KeyStore;
+import java.security.PrivateKey;
+import java.security.cert.CertPath;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateFactory;
 import java.util.Collections;
 import java.util.Map;
 import java.util.jar.Attributes;
+import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipOutputStream;
 
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.PostConstruct;
-import javax.inject.Singleton;
-import org.glassfish.appclient.server.core.jws.JavaWebStartInfo;
+import static java.util.Arrays.asList;
 
 /**
  * Signs a specified JAR file.
@@ -84,6 +94,8 @@ public class ASJarSigner implements PostConstruct {
 
     private static final String DEFAULT_DIGEST_ALGORITHM = "SHA1";
     private static final String DEFAULT_KEY_ALGORITHM = "RSA";
+    
+    private static final SecuritySupport securitySupport = SecuritySupport.getDefaultInstance();
 
 //    /** user-specified signing alias */
 //    private final String userAlias; // = System.getProperty(USER_SPECIFIED_ALIAS_PROPERTYNAME);
@@ -148,9 +160,27 @@ public class ASJarSigner implements PostConstruct {
         long duration = 0;
         synchronized(this) {
             try {
-                JarSigner jarSigner = new JarSigner(DEFAULT_DIGEST_ALGORITHM,
-                        DEFAULT_KEY_ALGORITHM);
-                jarSigner.signJar(unsignedJar, signedJar, alias, attrs, additionalContent);
+                Certificate[] certificates = null;
+                PrivateKey privateKey = null;
+                KeyStore[] keyStores = securitySupport.getKeyStores();
+                for (int i = 0; i < keyStores.length; i++) {
+                    privateKey = securitySupport.getPrivateKeyForAlias(alias, i);
+                    if (privateKey != null) {
+                        certificates = keyStores[i].getCertificateChain(alias);
+                    }
+                }
+                
+                CertPath certPath = CertificateFactory.getInstance("X.509").generateCertPath(asList(certificates));
+                
+                JarSigner signer = new JarSigner.Builder(privateKey, certPath)
+                        .digestAlgorithm(DEFAULT_DIGEST_ALGORITHM)
+                        .signatureAlgorithm(DEFAULT_KEY_ALGORITHM)
+                        .build();
+                
+                // TODO: add Attributes to Manifest and additionalContent
+                
+                signer.sign(new JarFile(unsignedJar), signedJar);
+               
             } catch (Throwable t) {
                 /*
                  *The jar signer will have written some information to System.out

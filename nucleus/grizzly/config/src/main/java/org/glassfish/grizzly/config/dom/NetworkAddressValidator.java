@@ -42,8 +42,8 @@ package org.glassfish.grizzly.config.dom;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 
 public class NetworkAddressValidator implements ConstraintValidator<NetworkAddress, String> {
     public void initialize(final NetworkAddress networkAddress) {

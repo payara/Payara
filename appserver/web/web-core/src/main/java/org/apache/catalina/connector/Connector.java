@@ -56,10 +56,22 @@
  * limitations under the License.
  */
 
-// Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates] 
+// Portions Copyright [2017-2022] [Payara Foundation and/or its affiliates]
 
 package org.apache.catalina.connector;
 
+import com.sun.appserv.ProxyHandler;
+import jakarta.servlet.http.HttpServletRequest;
+import org.apache.catalina.*;
+import org.apache.catalina.core.StandardEngine;
+import org.apache.catalina.net.ServerSocketFactory;
+import org.apache.catalina.util.LifecycleSupport;
+import org.glassfish.grizzly.http.server.HttpHandler;
+import org.glassfish.grizzly.http.server.util.Mapper;
+import org.glassfish.web.util.IntrospectionUtils;
+
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
 import java.lang.reflect.Constructor;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
@@ -68,26 +80,6 @@ import java.text.MessageFormat;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
-import javax.servlet.http.HttpServletRequest;
-
-import com.sun.appserv.ProxyHandler;
-import org.apache.catalina.Container;
-import org.apache.catalina.Context;
-import org.apache.catalina.Globals;
-import org.apache.catalina.Host;
-import org.apache.catalina.Lifecycle;
-import org.apache.catalina.LifecycleException;
-import org.apache.catalina.LifecycleListener;
-import org.apache.catalina.LogFacade;
-import org.apache.catalina.Service;
-import org.apache.catalina.core.StandardEngine;
-import org.apache.catalina.net.ServerSocketFactory;
-import org.apache.catalina.util.LifecycleSupport;
-import org.glassfish.grizzly.http.server.HttpHandler;
-import org.glassfish.web.util.IntrospectionUtils;
-import org.glassfish.grizzly.http.server.util.Mapper;
 
 /**
  * Implementation of a Coyote connector for Tomcat 5.x.
@@ -1729,40 +1721,7 @@ public class Connector
         }
     }
 
-    /**
-     * Sets the number of seconds after which SSL sessions expire and are
-     * removed from the SSL sessions cache.
-     */
-    public void setSslSessionTimeout(String timeout) {
-        setProperty("sslSessionTimeout", timeout);
-    }
 
-    public String getSslSessionTimeout() {
-        return getProperty("sslSessionTimeout");
-    }
-
-    /**
-     * Sets the number of seconds after which SSL3 sessions expire and are
-     * removed from the SSL sessions cache.
-     */
-    public void setSsl3SessionTimeout(String timeout) {
-        setProperty("ssl3SessionTimeout", timeout);
-    }
-
-    public String getSsl3SessionTimeout() {
-        return getProperty("ssl3SessionTimeout");
-    }
-
-    /**
-     * Sets the number of SSL sessions that may be cached
-     */
-    public void setSslSessionCacheSize(String cacheSize) {
-        setProperty("sslSessionCacheSize", cacheSize);
-    }
-
-    public String getSslSessionCacheSize() {
-        return getProperty("sslSessionCacheSize");
-    }
 
     /**
      * Gets the alias name of the keypair and supporting certificate chain

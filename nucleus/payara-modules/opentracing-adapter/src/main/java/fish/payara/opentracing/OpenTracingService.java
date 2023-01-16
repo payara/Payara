@@ -41,6 +41,8 @@ package fish.payara.opentracing;
 
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import io.opentracing.Tracer;
+import jakarta.annotation.PostConstruct;
+import jakarta.interceptor.InvocationContext;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
 import org.glassfish.api.invocation.ComponentInvocation;
@@ -53,8 +55,6 @@ import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.deployment.Deployment;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.annotation.PostConstruct;
-import javax.interceptor.InvocationContext;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Iterator;

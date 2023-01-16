@@ -40,10 +40,10 @@
 
 package slsbnicmt;
 
-import javax.annotation.Resource;
-import javax.ejb.Stateless;
-import javax.persistence.*;
-import javax.transaction.*;
+import jakarta.annotation.Resource;
+import jakarta.ejb.Stateless;
+import jakarta.persistence.*;
+import jakarta.transaction.*;
 
 @Stateless
 public class AnnotatedEJB {

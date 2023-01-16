@@ -69,8 +69,8 @@ public class JndiNamingObjectFactory
 
     /**
      * 
-     * @param name the name of the object; equivalent to the name value of a {@link javax.annotation.Resource} annotation
-     * @param jndiName the jndi name to lookup to get the object; equivalent to the lookup value of a {@link javax.annotation.Resource} annotation
+     * @param name the name of the object; equivalent to the name value of a {@link jakarta.annotation.Resource} annotation
+     * @param jndiName the jndi name to lookup to get the object; equivalent to the lookup value of a {@link jakarta.annotation.Resource} annotation
      * @param cacheResult whether the result may have been cached
      */
     public JndiNamingObjectFactory(String name, String jndiName, boolean cacheResult) {

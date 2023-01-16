@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,8 +39,6 @@
  */
 package fish.payara.nucleus.healthcheck.stuck;
 
-import fish.payara.nucleus.healthcheck.HealthCheckStatsProvider;
-import fish.payara.nucleus.healthcheck.HealthCheckResult;
 import fish.payara.monitoring.collect.MonitoringData;
 import fish.payara.monitoring.collect.MonitoringDataCollector;
 import fish.payara.monitoring.collect.MonitoringDataSource;
@@ -48,29 +46,28 @@ import fish.payara.monitoring.collect.MonitoringWatchCollector;
 import fish.payara.monitoring.collect.MonitoringWatchSource;
 import fish.payara.notification.healthcheck.HealthCheckResultEntry;
 import fish.payara.notification.healthcheck.HealthCheckResultStatus;
+import fish.payara.nucleus.healthcheck.HealthCheckResult;
+import fish.payara.nucleus.healthcheck.HealthCheckStatsProvider;
 import fish.payara.nucleus.healthcheck.HealthCheckStuckThreadExecutionOptions;
-import fish.payara.nucleus.healthcheck.preliminary.BaseHealthCheck;
 import fish.payara.nucleus.healthcheck.configuration.StuckThreadsChecker;
+import fish.payara.nucleus.healthcheck.preliminary.BaseHealthCheck;
+import jakarta.annotation.PostConstruct;
+import jakarta.inject.Inject;
+import org.glassfish.api.StartupRunLevel;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.jvnet.hk2.annotations.Service;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
-import static java.util.Arrays.asList;
+import java.util.Collections;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import org.glassfish.api.StartupRunLevel;
-import org.glassfish.hk2.runlevel.RunLevel;
-import org.jvnet.hk2.annotations.Service;
 
 /**
  * @since 4.1.2.173
@@ -79,14 +76,14 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service(name = "healthcheck-stuck")
 @RunLevel(StartupRunLevel.VAL)
-public class StuckThreadsHealthCheck
-        extends BaseHealthCheck<HealthCheckStuckThreadExecutionOptions, StuckThreadsChecker>
+public class StuckThreadsHealthCheck extends
+        BaseHealthCheck<HealthCheckStuckThreadExecutionOptions, StuckThreadsChecker>
         implements MonitoringDataSource, MonitoringWatchSource, HealthCheckStatsProvider {
 
     private final Map<String, Number> stuckThreadResult = new ConcurrentHashMap<>();
     private static final String STUCK_THREAD_COUNT = "count";
     private static final String STUCK_THREAD_MAX_DURATION = "maxDuration";
-    private static final Set<String> VALID_SUB_ATTRIBUTES = new HashSet<>(asList(STUCK_THREAD_COUNT, STUCK_THREAD_MAX_DURATION));
+    private static final Set<String> VALID_SUB_ATTRIBUTES = Set.of(STUCK_THREAD_COUNT, STUCK_THREAD_MAX_DURATION);
 
     @FunctionalInterface
     private interface StuckThreadConsumer {

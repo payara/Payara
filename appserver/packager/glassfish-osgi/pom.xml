@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>5.2023.1-SNAPSHOT</version>
+        <version>6.2023.2-SNAPSHOT</version>
     </parent>
     <artifactId>glassfish-osgi</artifactId>
     <name>Glassfish OSGi Support Package</name>
@@ -133,58 +133,6 @@
            <type>zip</type>
            <optional>true</optional>
        </dependency>        
-         <!-- Shared OSGi support for Java EE -->
-        <dependency>
-            <groupId>org.glassfish.fighterfish</groupId>
-            <artifactId>osgi-javaee-base</artifactId>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.fighterfish</groupId>
-            <artifactId>osgi-jpa</artifactId>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.fighterfish</groupId>
-            <artifactId>osgi-jpa-extension</artifactId>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.fighterfish</groupId>
-            <artifactId>osgi-jta</artifactId>
-            <optional>true</optional>
-        </dependency>
-        <dependency>        
-           <groupId>org.glassfish.fighterfish</groupId>
-           <artifactId>osgi-jdbc</artifactId>
-           <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.fighterfish</groupId>
-            <artifactId>osgi-cdi</artifactId>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.fighterfish</groupId>
-            <artifactId>osgi-ejb-container</artifactId>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.fighterfish</groupId>
-            <artifactId>osgi-web-container</artifactId>
-            <optional>true</optional>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.sun</groupId>
-                    <artifactId>tools</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.fighterfish</groupId>
-            <artifactId>osgi-ee-resources</artifactId>
-            <optional>true</optional>
-        </dependency>
         <dependency>
             <!-- Add the dependency here so that packager bundles this as well. 
                  This is needed by osgi-web-container to function correctly -->

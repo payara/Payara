@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2021] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -48,10 +48,10 @@ import org.jvnet.hk2.config.DuckTyped;
 import static org.glassfish.config.support.Constants.NAME_APP_REGEX;
 
 import java.beans.PropertyVetoException;
-import javax.validation.Payload;
+import jakarta.validation.Payload;
 
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 
 @ResourceNameConstraint(message="{resourcename.invalid.character}", payload=ResourcePool.class)
 public interface ResourcePool extends Resource, Payload {

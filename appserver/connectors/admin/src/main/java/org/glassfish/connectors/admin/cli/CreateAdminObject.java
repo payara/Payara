@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation]
+// Portions Copyright [2018-2021] [Payara Foundation]
 
 package org.glassfish.connectors.admin.cli;
 
@@ -59,8 +59,8 @@ import org.glassfish.resources.admin.cli.ResourceConstants;
 import org.glassfish.resourcebase.resources.api.ResourceStatus;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Inject;
-import javax.inject.Provider;
+import jakarta.inject.Inject;
+import jakarta.inject.Provider;
 import java.util.HashMap;
 import java.util.Properties;
 import java.util.logging.Level;

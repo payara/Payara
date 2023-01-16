@@ -45,8 +45,8 @@ import com.sun.enterprise.deployment.InjectionTarget;
 import com.sun.enterprise.deployment.xml.TagNames;
 import org.w3c.dom.Node;
 
-import javax.persistence.PersistenceContextType;
-import javax.persistence.SynchronizationType;
+import jakarta.persistence.PersistenceContextType;
+import jakarta.persistence.SynchronizationType;
 import java.util.Map;
 
 /**

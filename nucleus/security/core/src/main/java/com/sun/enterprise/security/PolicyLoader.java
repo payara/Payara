@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2022] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security;
 
 import static com.sun.enterprise.security.SecurityLoggerInfo.policyConfigFactoryNotDefined;
@@ -55,12 +55,11 @@ import static java.util.logging.Level.SEVERE;
 import static java.util.logging.Level.WARNING;
 import static org.glassfish.api.admin.ServerEnvironment.DEFAULT_INSTANCE_NAME;
 
-import java.security.Policy;
 import java.util.logging.Logger;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.inject.Singleton;
 
 import org.glassfish.hk2.api.IterableProvider;
 import org.jvnet.hk2.annotations.Service;
@@ -69,6 +68,14 @@ import org.jvnet.hk2.config.types.Property;
 import com.sun.enterprise.config.serverbeans.JaccProvider;
 import com.sun.enterprise.config.serverbeans.SecurityService;
 import com.sun.enterprise.util.i18n.StringManager;
+import java.lang.reflect.InvocationTargetException;
+import javassist.ClassPool;
+import javassist.CtClass;
+import static javassist.Modifier.PUBLIC;
+import javassist.util.proxy.MethodHandler;
+import javassist.util.proxy.ProxyFactory;
+import javassist.util.proxy.ProxyObject;
+import java.security.Policy;
 
 /**
  * Loads the default JACC Policy Provider into the system.
@@ -83,10 +90,13 @@ public class PolicyLoader {
     private static final Logger LOGGER = SecurityLoggerInfo.getLogger();
     private static final StringManager STRING_MANAGER = StringManager.getManager(PolicyLoader.class);
     
-    private static final String POLICY_PROVIDER_14 = "javax.security.jacc.policy.provider";
-    private static final String POLICY_PROVIDER_13 = "javax.security.jacc.auth.policy.provider";
-    private static final String POLICY_CONF_FACTORY = "javax.security.jacc.PolicyConfigurationFactory.provider";
+    private static final String POLICY_PROVIDER_14 = "jakarta.security.jacc.policy.provider";
+    private static final String POLICY_PROVIDER_13 = "jakarta.security.jacc.auth.policy.provider";
+    private static final String POLICY_CONF_FACTORY = "jakarta.security.jacc.PolicyConfigurationFactory.provider";
     private static final String POLICY_PROP_PREFIX = "com.sun.enterprise.jaccprovider.property.";
+
+    private static final String AUTH_PROXY_HANDLER = "com.sun.enterprise.security.AuthenticationProxyHandler";
+    private static final String DEFAULT_POLICY_PROVIDER = "fish.payara.security.jacc.provider.PolicyProviderImpl";
 
     @Inject
     @Named(DEFAULT_INSTANCE_NAME)
@@ -104,11 +114,11 @@ public class PolicyLoader {
      * The policy-provider element in domain.xml is consulted for the class to use.
      * 
      * <p>
-     * Note that if the <code>javax.security.jacc.policy.provider</code> system property is set it will override 
+     * Note that if the <code>jakarta.security.jacc.policy.provider</code> system property is set it will override 
      * the domain.xml configuration. This will normally not be the case in Payara.
      *
      * <P>
-     * The J2EE 1.3 property <code>javax.security.jacc.auth.policy.provider</code> is checked as a last resort. 
+     * The J2EE 1.3 property <code>jakarta.security.jacc.auth.policy.provider</code> is checked as a last resort. 
      * It should not be set in J2EE 1.4.
      */
     public void loadPolicy() {
@@ -241,12 +251,18 @@ public class PolicyLoader {
             System.setProperty(name, value);
         }
     }
-    
+
     private void installPolicyFromClassName(String policyClassName, boolean j2ee13) {
         try {
             LOGGER.log(INFO, SecurityLoggerInfo.policyLoading, policyClassName);
-
-            Object policyInstance = loadClass(policyClassName);
+            Object policyInstance;
+            if (System.getSecurityManager() == null
+                    || policyClassName.equals(DEFAULT_POLICY_PROVIDER)) {
+                policyInstance = loadClass(policyClassName);
+            } else {
+                policyInstance = loadPolicyAsProxy(policyClassName);
+            }
+            
             installPolicy14(policyInstance);
 
         } catch (Exception e) {
@@ -277,11 +293,48 @@ public class PolicyLoader {
     }
     
     
-    private Object loadClass(String policyClassName) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
-        return 
-            Thread.currentThread()
-                  .getContextClassLoader()
-                  .loadClass(policyClassName)
-                  .newInstance();
+    private Object loadClass(String policyClassName)
+            throws ClassNotFoundException, InstantiationException,
+            IllegalAccessException, NoSuchMethodException,
+            IllegalArgumentException, InvocationTargetException {
+        return Thread.currentThread()
+                .getContextClassLoader()
+                .loadClass(policyClassName)
+                .getDeclaredConstructor()
+                .newInstance();
     }
+
+    private Policy loadPolicyAsProxy(String javaPolicyClassName) throws Exception {
+
+        ClassPool pool = ClassPool.getDefault();
+        CtClass clazz = pool.get(javaPolicyClassName);
+        clazz.defrost();
+        clazz.setModifiers(PUBLIC);
+        Class targetClass = clazz.toClass(
+                Thread.currentThread()
+                        .getContextClassLoader()
+                        .loadClass(System.getProperty(POLICY_CONF_FACTORY)));
+
+        ProxyObject instance;
+        
+        ProxyFactory factory = new ProxyFactory();
+        factory.setSuperclass(targetClass);
+        instance = (ProxyObject) factory.createClass().getDeclaredConstructor().newInstance();
+
+        clazz = pool.get(AUTH_PROXY_HANDLER);
+        Class handlerClass = clazz.toClass(targetClass.getClassLoader(), targetClass.getProtectionDomain());
+        MethodHandler handler = (MethodHandler) handlerClass
+                .getDeclaredConstructor(Policy.class)
+                .newInstance(Policy.getPolicy());
+        instance.setHandler(handler);
+
+        if (!(instance instanceof Policy)) {
+            throw new RuntimeException(STRING_MANAGER.getString("enterprise.security.plcyload.not14"));
+        }
+
+        instance.toString();
+
+        return (Policy) instance;
+    }
+
 }

@@ -39,4 +39,4 @@
 #
 
 -exportcontents: org.glassfish.jms.injection; version=${project.osgi.version}
-Import-Package: javax.enterprise.inject;resolution:=optional, *
+Import-Package: jakarta.enterprise.inject;resolution:=optional, *

@@ -51,19 +51,19 @@ import javax.security.auth.callback.Callback;
  * @version %I%, %G%
  */
 public class SecretKeyCallback 
-        extends javax.security.auth.message.callback.SecretKeyCallback {
+        extends jakarta.security.auth.message.callback.SecretKeyCallback {
 
     /**
      * Marker interface for private key request types.
      */
     public static interface Request extends
-            javax.security.auth.message.callback.SecretKeyCallback.Request { };
+            jakarta.security.auth.message.callback.SecretKeyCallback.Request { };
 
     /**
      * Request type for secret keys that are identified via an alias.
      */
     public static class AliasRequest extends
-            javax.security.auth.message.callback.SecretKeyCallback.AliasRequest
+            jakarta.security.auth.message.callback.SecretKeyCallback.AliasRequest
             implements Request {
 
         /**

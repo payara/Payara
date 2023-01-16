@@ -52,11 +52,11 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.Async;
 import org.glassfish.deployment.autodeploy.AutoDeployer.AutodeploymentStatus;
 import org.glassfish.deployment.common.DeploymentUtils;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PostConstruct;
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 
 import org.glassfish.logging.annotation.LogMessageInfo;
 

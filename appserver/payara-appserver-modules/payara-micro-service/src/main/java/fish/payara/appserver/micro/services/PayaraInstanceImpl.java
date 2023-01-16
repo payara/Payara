@@ -53,8 +53,8 @@ import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
+import jakarta.annotation.PostConstruct;
+import jakarta.inject.Inject;
 
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.v3.services.impl.GrizzlyService;

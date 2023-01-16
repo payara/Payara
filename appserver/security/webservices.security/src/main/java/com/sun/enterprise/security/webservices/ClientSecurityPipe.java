@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.webservices;
 
 import static com.sun.enterprise.security.webservices.PipeConstants.SECURITY_PIPE;
@@ -51,10 +51,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.security.auth.Subject;
-import javax.security.auth.message.AuthStatus;
-import javax.security.auth.message.config.ClientAuthContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.ws.WebServiceException;
+import jakarta.security.auth.message.AuthStatus;
+import jakarta.security.auth.message.config.ClientAuthContext;
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.ws.WebServiceException;
 
 import com.sun.enterprise.security.jauth.jaspic.provider.PacketMapMessageInfo;
 import com.sun.enterprise.security.jauth.jaspic.provider.PacketMessageInfo;
@@ -138,7 +138,7 @@ public class ClientSecurityPipe extends AbstractFilterPipeImpl implements Secure
 
         PacketMessageInfo info = new PacketMapMessageInfo(request, new Packet());
 
-        info.getMap().put(javax.xml.ws.Endpoint.WSDL_SERVICE, helper.getProperty(PipeConstants.WSDL_SERVICE));
+        info.getMap().put(jakarta.xml.ws.Endpoint.WSDL_SERVICE, helper.getProperty(PipeConstants.WSDL_SERVICE));
 
         AuthStatus status = AuthStatus.SEND_SUCCESS;
 

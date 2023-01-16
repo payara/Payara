@@ -15,7 +15,7 @@
 <!--- Please describe how you tested these changes. Which test suites did you run?  -->
 
 ### Testing Environment
-<!--- Which OS, JDK, Maven version did you use? - for example "Zulu JDK 1.8_212 on Ubuntu 18.04 with Maven 3.6.0"-->
+<!--- Which OS, JDK, Maven version did you use? - for example "Zulu JDK 11.0.11 on Ubuntu 18.04 with Maven 3.6.0"-->
 
 ## Documentation
 <!-- Link documentation if a PR exists -->

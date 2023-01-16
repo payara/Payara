@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2021] Payara Foundation and/or affiliates
 
 package com.sun.ejb;
 
@@ -63,14 +63,13 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Predicate;
 
-import javax.ejb.EJBContext;
-import javax.ejb.Timer;
-import javax.interceptor.InvocationContext;
+import jakarta.ejb.EJBContext;
+import jakarta.ejb.Timer;
+import jakarta.interceptor.InvocationContext;
 import javax.naming.NameNotFoundException;
-import javax.transaction.Transaction;
-import javax.xml.rpc.handler.MessageContext;
-import javax.xml.soap.SOAPMessage;
-import javax.xml.ws.WebServiceContext;
+import jakarta.transaction.Transaction;
+import jakarta.xml.soap.SOAPMessage;
+import jakarta.xml.ws.WebServiceContext;
 
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.ResourceHandler;
@@ -205,13 +204,6 @@ public class EjbInvocation //
     private ClassLoader originalContextClassLoader;
 
     /**
-     * Used for web service invocations to hold SOAP message context.
-     * EJBs can access message context through SessionContext.
-     */
-	/* HARRY: JACC Related Changes */
-     public MessageContext messageContext;
-
-    /**
      * Used for JACC PolicyContextHandlers. The handler can query the container
      * back for parameters on the ejb. This is set during the method invocation
      * and is not available for preInvoke calls.
@@ -254,10 +246,6 @@ public class EjbInvocation //
 
     private boolean wasCancelCalled = false;
 
-    /**
-     * Used by container within JAXRPC handler processing code.
-     */
-    private Object webServiceTie;
     private Method webServiceMethod;
 
     // True if lock is currently held for this invocation
@@ -718,17 +706,6 @@ public class EjbInvocation //
         return getEjbSecurityManager().isCallerInRole(role);
     }
 
-    @Override
-    public void setWebServiceTie(Object tie) {
-        webServiceTie = tie;
-    }
-
-    @Override
-    public Object getWebServiceTie() {
-        return webServiceTie;
-    }
-
-    @Override
     public void setWebServiceMethod(Method method) {
         webServiceMethod = method;
     }
@@ -736,11 +713,6 @@ public class EjbInvocation //
     @Override
     public Method getWebServiceMethod() {
         return webServiceMethod;
-    }
-
-    @Override
-    public void setMessageContext(MessageContext msgContext) {
-       messageContext = msgContext;
     }
 
     @Override

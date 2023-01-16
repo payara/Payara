@@ -41,8 +41,8 @@ package fish.payara.microprofile.openapi.impl.rest.app.provider.writer;
 
 import static fish.payara.microprofile.openapi.rest.app.OpenApiApplication.APPLICATION_YAML;
 import fish.payara.microprofile.openapi.impl.rest.app.provider.ObjectMapperFactory;
-import javax.ws.rs.Produces;
-import javax.ws.rs.ext.Provider;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.ext.Provider;
 
 /**
  * Writes the YAML response to the stream.

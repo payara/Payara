@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.webservices;
 
 import java.security.PrivilegedActionException;
@@ -47,10 +47,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.security.auth.Subject;
-import javax.security.auth.message.AuthException;
-import javax.security.auth.message.AuthStatus;
-import javax.security.auth.message.config.ServerAuthContext;
-import javax.xml.ws.WebServiceException;
+import jakarta.security.auth.message.AuthException;
+import jakarta.security.auth.message.AuthStatus;
+import jakarta.security.auth.message.config.ServerAuthContext;
+import jakarta.xml.ws.WebServiceException;
 
 import com.sun.enterprise.security.jauth.jaspic.provider.PacketMapMessageInfo;
 import com.sun.enterprise.security.jauth.jaspic.provider.PacketMessageInfo;

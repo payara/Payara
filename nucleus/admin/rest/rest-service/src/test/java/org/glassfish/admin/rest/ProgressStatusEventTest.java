@@ -43,7 +43,7 @@ import com.sun.enterprise.admin.remote.reader.ProgressStatusEventJsonProprietary
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.MediaType;
 import org.glassfish.admin.rest.provider.ProgressStatusEventJsonProvider;
 import org.glassfish.api.admin.progress.ProgressStatusEvent;
 import org.glassfish.api.admin.progress.ProgressStatusEventComplete;

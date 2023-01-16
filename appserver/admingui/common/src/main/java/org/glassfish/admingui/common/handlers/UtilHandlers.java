@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2020] Payara Foundation and/or affiliates
+// Portions Copyright 2018-2022 Payara Foundation and/or affiliates
 
 /*
  * UtilHandlers.java
@@ -48,7 +48,6 @@
 
 package org.glassfish.admingui.common.handlers;
 
-import com.sun.enterprise.util.JDK;
 import com.sun.jsftemplating.annotation.Handler;
 import com.sun.jsftemplating.annotation.HandlerInput;
 import com.sun.jsftemplating.annotation.HandlerOutput;
@@ -58,6 +57,12 @@ import com.sun.jsftemplating.layout.descriptors.LayoutElement;
 import com.sun.jsftemplating.layout.descriptors.handler.HandlerContext;
 import com.sun.jsftemplating.layout.descriptors.handler.HandlerDefinition;
 import com.sun.jsftemplating.util.FileUtil;
+import jakarta.faces.component.UIViewRoot;
+import org.glassfish.admin.rest.utils.JsonUtil;
+import org.glassfish.admingui.common.util.GuiUtil;
+import org.glassfish.admingui.common.util.JSONUtil;
+import org.glassfish.admingui.common.util.RestUtil;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
@@ -76,11 +81,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
-import javax.faces.component.UIViewRoot;
-import org.glassfish.admin.rest.utils.JsonUtil;
-import org.glassfish.admingui.common.util.GuiUtil;
-import org.glassfish.admingui.common.util.JSONUtil;
-import org.glassfish.admingui.common.util.RestUtil;
 
 /**
  *
@@ -1162,14 +1162,6 @@ public class UtilHandlers {
             ch = it.next();
         }
         return builder.toString();
-    }
-
-    @Handler(id = "py.isTls13Supported",
-            output = {
-                @HandlerOutput(name = "result", type = Boolean.class)}
-    )
-    public static void isTls13Supported(HandlerContext handlerCtx) {
-        handlerCtx.setOutputValue("result", JDK.isTls13Supported() || JDK.isOpenJSSEFlagRequired());
     }
 
     private static final String PATH_SEPARATOR = "${path.separator}";

@@ -41,7 +41,7 @@
 
 package com.sun.enterprise.admin.monitor.stats;
 
-import javax.management.j2ee.statistics.Stats;
+import org.glassfish.j2ee.statistics.Stats;
 
 /** 
  * Statistical information relevant to a virtual server

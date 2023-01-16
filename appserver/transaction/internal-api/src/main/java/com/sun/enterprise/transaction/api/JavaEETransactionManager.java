@@ -42,12 +42,12 @@ package com.sun.enterprise.transaction.api;
 
 import java.util.List;
 
-import javax.transaction.*;
+import jakarta.transaction.*;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 import java.rmi.RemoteException;
-import javax.resource.spi.XATerminator;
-import javax.resource.spi.work.WorkException;
+import jakarta.resource.spi.XATerminator;
+import jakarta.resource.spi.work.WorkException;
 
 import org.jvnet.hk2.annotations.Contract;
 

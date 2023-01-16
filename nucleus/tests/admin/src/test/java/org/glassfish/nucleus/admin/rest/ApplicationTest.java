@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2020-2021] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.nucleus.admin.rest;
 
@@ -52,7 +52,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 import org.testng.annotations.Test;
 
 import static org.testng.AssertJUnit.*;

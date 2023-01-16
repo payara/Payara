@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2021] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.connectors;
 
@@ -45,7 +45,7 @@ import com.sun.enterprise.connectors.authentication.RuntimeSecurityMap;
 import com.sun.enterprise.deployment.ResourcePrincipal;
 import org.glassfish.resourcebase.resources.api.PoolInfo;
 
-import javax.resource.spi.ManagedConnectionFactory;
+import jakarta.resource.spi.ManagedConnectionFactory;
 import javax.security.auth.Subject;
 
 

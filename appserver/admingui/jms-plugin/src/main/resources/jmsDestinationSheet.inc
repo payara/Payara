@@ -66,7 +66,7 @@
         </sun:property>
 
         <sun:property id="resTypeProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.common.resType}"  >
-            <sun:dropDown id="resType" selected="#{pageSession.valueMap['resType']}" labels={"javax.jms.Topic"  "javax.jms.Queue"}  required="#{true}"/>
+            <sun:dropDown id="resType" selected="#{pageSession.valueMap['resType']}" labels={"jakarta.jms.Topic"  "jakarta.jms.Queue"}  required="#{true}"/>
         </sun:property>
 
         <sun:property id="deploymentOrder" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}"  rendered="#{edit}" label="$resource{i18n.common.resource.deploymentOrder}" helpText="$resource{i18n.common.resource.deploymentOrderHelp}">

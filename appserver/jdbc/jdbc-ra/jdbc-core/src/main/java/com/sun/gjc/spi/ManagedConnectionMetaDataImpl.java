@@ -37,13 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2021] Payara Foundation and/or affiliates
 
 package com.sun.gjc.spi;
 
 import com.sun.logging.LogDomains;
 
-import javax.resource.ResourceException;
+import jakarta.resource.ResourceException;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -54,7 +54,7 @@ import java.util.logging.Logger;
  * @author Evani Sai Surya Kiran
  * @version 1.0, 02/08/03
  */
-public class ManagedConnectionMetaDataImpl implements javax.resource.spi.ManagedConnectionMetaData {
+public class ManagedConnectionMetaDataImpl implements jakarta.resource.spi.ManagedConnectionMetaData {
 
     private java.sql.DatabaseMetaData dmd = null;
     private ManagedConnectionImpl mc;
@@ -140,7 +140,7 @@ public class ManagedConnectionMetaDataImpl implements javax.resource.spi.Managed
      * @throws <code>ResourceException</code>
      */
     public String getUserName() throws ResourceException {
-        javax.resource.spi.security.PasswordCredential pc = mc.getPasswordCredential();
+        jakarta.resource.spi.security.PasswordCredential pc = mc.getPasswordCredential();
         if (pc != null) {
             return pc.getUserName();
         }

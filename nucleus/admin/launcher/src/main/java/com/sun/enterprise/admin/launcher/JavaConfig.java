@@ -37,15 +37,21 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2019-2022 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.admin.launcher;
 
 import com.sun.enterprise.universal.glassfish.GFLauncherUtils;
-import static com.sun.enterprise.admin.launcher.GFLauncherConstants.*;
-import com.sun.enterprise.util.JDK;
-import java.io.*;
-import java.util.*;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
+import static com.sun.enterprise.admin.launcher.GFLauncherConstants.NATIVE_LIB_PREFIX;
+import static com.sun.enterprise.admin.launcher.GFLauncherConstants.NATIVE_LIB_SUFFIX;
 
 /**
  *
@@ -140,25 +146,23 @@ class JavaConfig {
             return empty;
         }
 
-        if (JDK.getMajor() >= 9) {
-            boolean serverMode = false;
-            String address = null;
-            for (String debugOption : debugOptions.split(",")) {
-                if (debugOption.startsWith("server")) {
-                    String[] serverAttr = debugOption.split("=");
-                    serverMode = serverAttr.length > 1 && serverAttr[1].equals("y");
-                }
-                if (debugOption.startsWith("address")) {
-                    String[] addressAttr = debugOption.split("=");
-                    if (addressAttr.length > 1) {
-                        address = addressAttr[1];
-                    }
+        boolean serverMode = false;
+        String address = null;
+        for (String debugOption : debugOptions.split(",")) {
+            if (debugOption.startsWith("server")) {
+                String[] serverAttr = debugOption.split("=");
+                serverMode = serverAttr.length > 1 && serverAttr[1].equals("y");
+            }
+            if (debugOption.startsWith("address")) {
+                String[] addressAttr = debugOption.split("=");
+                if (addressAttr.length > 1) {
+                    address = addressAttr[1];
                 }
             }
-            if (serverMode && address != null) {
-                if (address.split(":").length < 2) {
-                    debugOptions = debugOptions.replace("address=", "address=*:");
-                }
+        }
+        if (serverMode && address != null) {
+            if (address.split(":").length < 2) {
+                debugOptions = debugOptions.replace("address=", "address=*:");
             }
         }
 

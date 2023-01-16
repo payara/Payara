@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2017] Payara Foundation and/or affiliates
+//Portions Copyright [2017-2021] Payara Foundation and/or affiliates
 
 package org.glassfish.jms.admin.cli;
 
@@ -54,7 +54,7 @@ import com.sun.appserv.connectors.internal.api.ConnectorConstants;
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
 
-import javax.resource.spi.ResourceAdapter;
+import jakarta.resource.spi.ResourceAdapter;
 import javax.management.AttributeList;
 import javax.management.Attribute;
 import java.util.logging.Logger;

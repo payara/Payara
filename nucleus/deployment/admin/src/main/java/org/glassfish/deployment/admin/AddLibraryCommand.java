@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017-2019] Payara Foundation and/or affiliates
+ * Portions Copyright 2017-2022 Payara Foundation and/or affiliates
  */
 
 package org.glassfish.deployment.admin;
@@ -58,7 +58,7 @@ import org.jvnet.hk2.config.UnprocessedChangeEvents;
 import org.jvnet.hk2.annotations.Service;
 
 import org.glassfish.hk2.api.PerLookup;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.loader.CurrentBeforeParentClassLoader;
@@ -96,7 +96,7 @@ public class AddLibraryCommand implements AdminCommand {
     @Param(primary=true, multiple=true)
     File[] files = null;
 
-    @Param(optional=true, acceptableValues="common, ext, app")
+    @Param(optional=true, acceptableValues="common, app")
     String type = "common";
 
     @Inject
@@ -121,9 +121,7 @@ public class AddLibraryCommand implements AdminCommand {
 
         File libDir = env.getLibPath();
 
-        if (type.equals("ext")) {
-            libDir = new File(libDir, "ext");
-        } else if (type.equals("app")) {
+        if (type.equals("app")) {
             libDir = new File(libDir, "applibs");
         }
 

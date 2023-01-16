@@ -41,7 +41,7 @@
 
 package com.sun.enterprise.admin.monitor.registry;
 
-import javax.management.j2ee.statistics.*;
+import org.glassfish.j2ee.statistics.*;
 import com.sun.enterprise.admin.monitor.stats.*;
 
 /**
@@ -71,7 +71,7 @@ public interface MonitoringRegistry {
    
     /**
      * Registers the Stats implementation for EntityBeanStats
-     * @param entityBeanStats implementation of javax.management.j2ee.statistics.EntityBeanStats
+     * @param entityBeanStats implementation of org.glassfish.j2ee.statistics.EntityBeanStats
      * @param entityBeanName
      * @param moduleName
      * @param applicationName passing a null here would 
@@ -102,7 +102,7 @@ public interface MonitoringRegistry {
     /**
      * Registers the Stats implementation for StatelessSessionBeanStats
      * @param statelessSessionBeanStats implementation of 
-     * javax.management.j2ee.statistics.StatelessSessionBeanStats
+     * org.glassfish.j2ee.statistics.StatelessSessionBeanStats
      * @param statelessSessionBeanName
      * @param moduleName
      * @param applicationName  passing a null here would 
@@ -135,7 +135,7 @@ public interface MonitoringRegistry {
     /**
      * Registers the Stats implementation for StatefulSessionBeanStats
      * @param statefulSessionBeanStats  implementation of from 
-     * javax.management.j2ee.statistics.StatefulSessionBeanStats
+     * org.glassfish.j2ee.statistics.StatefulSessionBeanStats
      * @param statefulSessionBeanName
      * @param moduleName
      * @param applicationName  passing a null here would 
@@ -167,7 +167,7 @@ public interface MonitoringRegistry {
     /**
      * Registers the Stats implementation for MessageDrivenBeanStats
      * @param messageDrivenBeanStats  implementation of 
-     * javax.management.j2ee.statistics.MessageDrivenBeanStats
+     * org.glassfish.j2ee.statistics.MessageDrivenBeanStats
      * @param messageDrivenBeanName
      * @param moduleName
      * @param applicationName  passing a null here would 

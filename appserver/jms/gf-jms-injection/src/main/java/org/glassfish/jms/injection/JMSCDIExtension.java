@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2022] [Payara Foundation and/or its affiliates]
 package org.glassfish.jms.injection;
 
 import java.lang.annotation.Annotation;
@@ -46,14 +46,14 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
-import javax.enterprise.context.*;
-import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.event.Observes;
-import javax.enterprise.inject.Any;
-import javax.enterprise.inject.Default;
-import javax.enterprise.inject.spi.*;
-import javax.enterprise.util.AnnotationLiteral;
-import javax.transaction.TransactionScoped;
+import jakarta.enterprise.context.*;
+import jakarta.enterprise.context.spi.CreationalContext;
+import jakarta.enterprise.event.Observes;
+import jakarta.enterprise.inject.Any;
+import jakarta.enterprise.inject.Default;
+import jakarta.enterprise.inject.spi.*;
+import jakarta.enterprise.util.AnnotationLiteral;
+import jakarta.transaction.TransactionScoped;
 
 /*
  * This CDI portable extension can register JMSContext beans to be system-level
@@ -195,11 +195,6 @@ public class JMSCDIExtension implements Extension {
 
         @Override
         public boolean isAlternative() {
-            return false;
-        }
-
-        @Override
-        public boolean isNullable() {
             return false;
         }
 

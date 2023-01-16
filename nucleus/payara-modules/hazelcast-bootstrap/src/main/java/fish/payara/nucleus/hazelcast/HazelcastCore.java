@@ -39,10 +39,20 @@
  */
 package fish.payara.nucleus.hazelcast;
 
-import static java.lang.String.valueOf;
-
 import com.hazelcast.cache.impl.HazelcastServerCachingProvider;
-import com.hazelcast.config.*;
+import com.hazelcast.config.Config;
+import com.hazelcast.config.ExecutorConfig;
+import com.hazelcast.config.GlobalSerializerConfig;
+import com.hazelcast.config.InterfacesConfig;
+import com.hazelcast.config.JoinConfig;
+import com.hazelcast.config.KubernetesConfig;
+import com.hazelcast.config.MemberAddressProviderConfig;
+import com.hazelcast.config.MulticastConfig;
+import com.hazelcast.config.NetworkConfig;
+import com.hazelcast.config.PartitionGroupConfig;
+import com.hazelcast.config.ScheduledExecutorConfig;
+import com.hazelcast.config.SerializationConfig;
+import com.hazelcast.config.TcpIpConfig;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.internal.config.ConfigLoader;
@@ -50,10 +60,10 @@ import com.hazelcast.kubernetes.KubernetesProperties;
 import com.hazelcast.map.IMap;
 import com.hazelcast.nio.serialization.Serializer;
 import com.hazelcast.nio.serialization.StreamSerializer;
-import static com.hazelcast.spi.properties.ClusterProperty.WAIT_SECONDS_BEFORE_JOIN;
-
 import com.sun.enterprise.util.Utility;
 import fish.payara.nucleus.events.HazelcastEvents;
+import jakarta.annotation.PostConstruct;
+import jakarta.inject.Inject;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.admin.ServerEnvironment.Status;
@@ -67,7 +77,6 @@ import org.glassfish.internal.api.ServerContext;
 import org.glassfish.internal.deployment.Deployment;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigListener;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
@@ -75,22 +84,14 @@ import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.Transactions;
 import org.jvnet.hk2.config.UnprocessedChangeEvent;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
-import org.w3c.dom.Element;
 
-import javax.annotation.PostConstruct;
 import javax.cache.spi.CachingProvider;
-import javax.inject.Inject;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.Unmarshaller;
 import java.beans.PropertyChangeEvent;
-import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -102,6 +103,9 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+
+import static com.hazelcast.spi.properties.ClusterProperty.WAIT_SECONDS_BEFORE_JOIN;
+import static java.lang.String.valueOf;
 
 /**
  * The core class for using Hazelcast in Payara
@@ -302,6 +306,7 @@ public class HazelcastCore implements EventListener, ConfigListener {
             bootstrapHazelcast();
         }
     }
+
 
     private Config buildConfiguration() {
         Config config = new Config();
@@ -664,7 +669,7 @@ public class HazelcastCore implements EventListener, ConfigListener {
     }
 
     private void fillHazelcastConfigurationFromConfig(Config config,
-                                                   HazelcastRuntimeConfiguration configuration) {
+                                                      HazelcastRuntimeConfiguration configuration) {
         configuration.setClusterGroupName(config.getClusterName());
         configuration.setLicenseKey(config.getLicenseKey());
 
@@ -679,7 +684,7 @@ public class HazelcastCore implements EventListener, ConfigListener {
         InterfacesConfig interfacesConfig = nConfig.getInterfaces();
         if (interfacesConfig != null) {
             configuration.setInterface(
-                interfacesConfig.getInterfaces().stream().collect(Collectors.joining(",")));
+                    interfacesConfig.getInterfaces().stream().collect(Collectors.joining(",")));
         }
         JoinConfig joinConfig = nConfig.getJoin();
         if (joinConfig != null) {
@@ -701,7 +706,7 @@ public class HazelcastCore implements EventListener, ConfigListener {
     }
 
     private void fillSpecificHazelcastConfigFromConfig(Config config,
-                                                   HazelcastConfigSpecificConfiguration nodeConfig) {
+                                                       HazelcastConfigSpecificConfiguration nodeConfig) {
         NetworkConfig nConfig = config.getNetworkConfig();
         if(nConfig.getPublicAddress() != null && !nConfig.getPublicAddress().isEmpty()) {
             nodeConfig.setPublicAddress(nConfig.getPublicAddress());

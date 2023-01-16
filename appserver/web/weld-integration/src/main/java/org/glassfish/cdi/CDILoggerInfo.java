@@ -58,7 +58,7 @@ public class CDILoggerInfo {
     public static final String CDI_WELD_LOGMESSAGE_RESOURCE = "org.glassfish.cdi.LogMessages";
 
     @LoggerInfo(subsystem = "AS-CDI", description = "CDI", publish = true)
-    public static final String CDI_LOGGER_SUBSYSTEM_NAME = "javax.enterprise.inject.spi";
+    public static final String CDI_LOGGER_SUBSYSTEM_NAME = "jakarta.enterprise.inject.spi";
     private static final Logger CDI_LOGGER = Logger.getLogger(CDI_LOGGER_SUBSYSTEM_NAME, CDI_WELD_LOGMESSAGE_RESOURCE);
 
     public static Logger getLogger() {
@@ -213,7 +213,7 @@ public class CDILoggerInfo {
                      level = "WARNING")
     public static final String WELD_BOOTSTRAP_SHUTDOWN_EXCEPTION = CDI_LOGMSG_PREFIX + "-00036";
 
-    @LogMessageInfo( message = "javax.jms.MessageListener Class available, so need to fire PIT events to MDBs",
+    @LogMessageInfo( message = "jakarta.jms.MessageListener Class available, so need to fire PIT events to MDBs",
                      level = "FINE")
     public static final String JMS_MESSAGElISTENER_AVAILABLE = CDI_LOGMSG_PREFIX + "-00037";
 

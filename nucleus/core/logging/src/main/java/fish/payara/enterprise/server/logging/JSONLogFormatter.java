@@ -40,19 +40,28 @@
 package fish.payara.enterprise.server.logging;
 
 import com.sun.common.util.logging.GFLogRecord;
-import com.sun.enterprise.server.logging.*;
+import com.sun.enterprise.server.logging.CommonFormatter;
+import com.sun.enterprise.server.logging.ExcludeFieldsSupport;
+import com.sun.enterprise.server.logging.FormatterDelegate;
+import com.sun.enterprise.server.logging.LogEvent;
+import com.sun.enterprise.server.logging.LogEventBroadcaster;
+import com.sun.enterprise.server.logging.LogEventImpl;
+import com.sun.enterprise.server.logging.UniformLogFormatter;
+import jakarta.json.Json;
+import jakarta.json.JsonObjectBuilder;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.logging.ErrorManager;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import javax.json.Json;
-import javax.json.JsonObjectBuilder;
 
 /**
  * Class for converting a {@link LogRecord} to Json format

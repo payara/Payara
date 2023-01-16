@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2018] Payara Foundation and/or affiliates
+//Portions Copyright [2018-2021] Payara Foundation and/or affiliates
 package org.glassfish.web.admin.cli;
 
 import static org.glassfish.api.admin.CommandLock.LockType.NONE;
@@ -49,8 +49,8 @@ import static org.glassfish.config.support.CommandTarget.STANDALONE_INSTANCE;
 
 import java.util.List;
 
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;

@@ -37,21 +37,23 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2021] Payara Foundation and/or affiliates
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
 package org.glassfish.weld;
 
-import javax.enterprise.inject.spi.BeanManager;
-import javax.inject.Inject;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
-import javax.servlet.jsp.JspApplicationContext;
-import javax.servlet.jsp.JspFactory;
+import jakarta.enterprise.inject.spi.BeanManager;
+import jakarta.inject.Inject;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextListener;
+import jakarta.servlet.jsp.JspApplicationContext;
+import jakarta.servlet.jsp.JspFactory;
+
+import java.lang.reflect.Constructor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.apache.jasper.runtime.JspApplicationContextImpl;
+import org.glassfish.wasp.runtime.JspApplicationContextImpl;
 import org.glassfish.cdi.CDILoggerInfo;
 import org.jboss.weld.module.web.el.WeldELContextListener;
 
@@ -79,7 +81,8 @@ public class WeldContextListener implements ServletContextListener {
 
              try {
                  Class<?> weldClass = Class.forName("org.jboss.weld.module.web.el.WeldELContextListener");
-                 WeldELContextListener welcl = ( WeldELContextListener ) weldClass.newInstance();
+                 Constructor contructor = weldClass.getConstructor();
+                 WeldELContextListener welcl = ( WeldELContextListener ) contructor.newInstance();
                  jspAppContext.addELContextListener(welcl);
              } catch (Exception e) {
                  logger.log(Level.WARNING,

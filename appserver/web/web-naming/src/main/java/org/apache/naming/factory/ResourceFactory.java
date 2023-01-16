@@ -154,9 +154,9 @@ public class ResourceFactory
                     } catch(Throwable t) {
 
                     }
-                } else if (ref.getClassName().equals("javax.mail.Session")) {
+                } else if (ref.getClassName().equals("jakarta.mail.Session")) {
                     String javaxMailSessionFactoryClassName =
-                        System.getProperty("javax.mail.Session.Factory",
+                        System.getProperty("jakarta.mail.Session.Factory",
                                            "org.apache.naming.factory.MailSessionFactory");
                     try {
                         factory = (ObjectFactory) 

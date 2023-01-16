@@ -55,7 +55,7 @@ import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.glassfish.internal.api.InternalSystemAdministrator;
 import org.jvnet.hk2.testing.junit.HK2Runner;
 

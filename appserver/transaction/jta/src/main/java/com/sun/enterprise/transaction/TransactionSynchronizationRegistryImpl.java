@@ -40,16 +40,16 @@
 
 package com.sun.enterprise.transaction;
 
-import javax.transaction.Synchronization;
-import javax.transaction.Status;
-import javax.transaction.SystemException;
-import javax.transaction.RollbackException;
-import javax.transaction.TransactionManager;
-import javax.transaction.TransactionSynchronizationRegistry;
+import jakarta.transaction.Synchronization;
+import jakarta.transaction.Status;
+import jakarta.transaction.SystemException;
+import jakarta.transaction.RollbackException;
+import jakarta.transaction.TransactionManager;
+import jakarta.transaction.TransactionSynchronizationRegistry;
 
 import com.sun.enterprise.util.i18n.StringManager;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.ContractsProvided;
 

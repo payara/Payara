@@ -37,13 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2019-2021] [Payara Foundation and/or its affiliates]
 package org.glassfish.ejb.api;
 
 
 import java.lang.reflect.Method;
-import javax.ejb.EJBContext;
-import javax.xml.rpc.handler.MessageContext;
+import jakarta.ejb.EJBContext;
 
 /**
  * This interface provides access to the exported portions of the
@@ -109,24 +108,6 @@ public interface EJBInvocation {
      * @return true if the SecurityManager reports that the caller is in role
      */
    boolean isCallerInRole(String role);
-
-    /**
-     * Used by JAX-RPC pre/postHandler classes
-     *
-     * @param tie an instance of com.sun.xml.rpc.spi.runtime.Tie
-     */
-    void setWebServiceTie(Object tie);
-
-
-    /**
-     * Used for setting JAX-RPC message context.
-     */
-    void setMessageContext(MessageContext context);
-
-    /**
-     * @return instance of com.sun.xml.rpc.spi.runtime.Tie
-     */
-    Object getWebServiceTie();
 
     /**
      * @param method - web service endpoint method

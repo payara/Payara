@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2019-2021] [Payara Foundation and/or its affiliates]
 package org.glassfish.ejb.embedded;
 
 import java.io.File;
@@ -48,9 +48,9 @@ import java.util.logging.Level;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
-import javax.ejb.embeddable.EJBContainer;
-import javax.ejb.EJBException;
-import javax.transaction.TransactionManager;
+import jakarta.ejb.embeddable.EJBContainer;
+import jakarta.ejb.EJBException;
+import jakarta.transaction.TransactionManager;
 
 import com.sun.logging.LogDomains;
 import com.sun.ejb.containers.EjbContainerUtilImpl;

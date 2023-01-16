@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation]
+// Portions Copyright [2018-2021] [Payara Foundation]
 package com.sun.enterprise.web.accesslog;
 
 import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
@@ -48,11 +48,11 @@ import org.apache.catalina.Request;
 import org.apache.catalina.Response;
 import org.glassfish.web.LogFacade;
 
-import javax.servlet.ServletRequest;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.nio.CharBuffer;
 import java.text.SimpleDateFormat;
 import java.util.*;

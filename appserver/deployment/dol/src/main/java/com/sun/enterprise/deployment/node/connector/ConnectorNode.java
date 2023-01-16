@@ -74,6 +74,7 @@ public class ConnectorNode extends AbstractBundleNode<ConnectorDescriptor> {
     public static final String VERSION_15 = "1.5";
     public static final String VERSION_16 = "1.6";
     public static final String VERSION_17 = "1.7";
+    public static final String VERSION_20 = "2.0";
 
     private String specVersion;
 
@@ -94,8 +95,12 @@ public class ConnectorNode extends AbstractBundleNode<ConnectorDescriptor> {
     public final static String PUBLIC_DTD_ID = PUBLIC_DTD_ID_16;
     public final static String SYSTEM_ID = SYSTEM_ID_16;
     public final static String SCHEMA_ID_17 = "connector_1_7.xsd";
-    public final static String SCHEMA_ID = SCHEMA_ID_17;
-    public final static String SPEC_VERSION = VERSION_17;
+    
+    //connector2.0
+    public final static String SCHEMA_ID_20 = "connector_2_0.xsd";
+
+    public final static String SCHEMA_ID = SCHEMA_ID_20;
+    public final static String SPEC_VERSION = VERSION_20;
 
     private final static List<String> systemIDs = initSystemIDs();
 
@@ -351,6 +356,6 @@ public class ConnectorNode extends AbstractBundleNode<ConnectorDescriptor> {
      */
     @Override
     protected String getSchemaURL() {
-        return TagNames.JAVAEE_NAMESPACE + "/" + getSystemID();
+        return TagNames.JAKARTAEE_NAMESPACE + "/" + getSystemID();
     }
 }

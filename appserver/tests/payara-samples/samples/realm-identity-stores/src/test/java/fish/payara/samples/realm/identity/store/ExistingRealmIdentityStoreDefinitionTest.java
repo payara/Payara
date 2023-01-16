@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -49,8 +49,8 @@ import fish.payara.samples.realm.identity.store.common.PersonControllerClient;
 
 import java.net.URL;
 
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -65,8 +65,8 @@ import static fish.payara.samples.realm.identity.store.common.AuthoritiesConstan
 import static fish.payara.samples.realm.identity.store.common.AuthoritiesConstants.DEFAULT_PASSWORD;
 import static fish.payara.samples.realm.identity.store.common.AuthoritiesConstants.DEFAULT_USER;
 import static fish.payara.samples.realm.identity.store.common.PersonControllerClientHelper.getBasicPersonControllerClient;
-import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
+import static jakarta.ws.rs.core.Response.Status.CREATED;
+import static jakarta.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static org.jboss.shrinkwrap.api.ShrinkWrap.create;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
@@ -92,7 +92,7 @@ public class ExistingRealmIdentityStoreDefinitionTest {
                         PersonController.class,
                         AuthoritiesConstants.class
                 )
-                .addAsWebInfResource(EmptyAsset.INSTANCE, ArchivePaths.create("beans.xml"));
+                .addAsWebInfResource("all-beans.xml", "beans.xml");
     }
 
     @Before

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.ejb.persistent.timer;
 
@@ -53,17 +53,17 @@ import java.util.HashSet;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
-import javax.ejb.CreateException;
-import javax.ejb.FinderException;
-import javax.ejb.SessionContext;
-import javax.ejb.Stateless;
-import javax.ejb.TimerConfig;
+import jakarta.ejb.CreateException;
+import jakarta.ejb.FinderException;
+import jakarta.ejb.SessionContext;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TimerConfig;
 
-import javax.persistence.EntityManager;
-import javax.persistence.Query;
-import javax.persistence.PersistenceContext;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
+import jakarta.persistence.PersistenceContext;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import javax.naming.InitialContext;
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -315,7 +315,7 @@ public class TimerBean implements TimerLocal {
         // Only proceed with transactional semantics if this timer
         // is owned by the current server instance.  NOTE that this
         // will *ALWAYS* be the case for timers created from EJB
-        // applications via the javax.ejb.EJBTimerService.create methods.
+        // applications via the jakarta.ejb.EJBTimerService.create methods.
         //
         // For testing purposes, ejbCreate takes an ownerId parameter,
         // which allows us to easily simulate other server instances

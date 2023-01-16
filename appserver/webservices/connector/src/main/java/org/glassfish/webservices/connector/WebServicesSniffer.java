@@ -45,7 +45,7 @@ import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 import javax.enterprise.deploy.shared.ModuleType;
 
 import java.io.IOException;
@@ -58,8 +58,11 @@ import java.io.IOException;
 @Singleton
 public class WebServicesSniffer extends GenericSniffer {
 
-    private static final Class[]  handledAnnotations = new Class[] {javax.jws.WebService.class,
-            javax.xml.ws.WebServiceProvider.class, javax.xml.ws.WebServiceRef.class};
+    private static final Class[] handledAnnotations = new Class[]{
+        jakarta.jws.WebService.class,
+        jakarta.xml.ws.WebServiceProvider.class,
+        jakarta.xml.ws.WebServiceRef.class
+    };
 
     final String[] containers = {
         "org.glassfish.webservices.WebServicesContainer",

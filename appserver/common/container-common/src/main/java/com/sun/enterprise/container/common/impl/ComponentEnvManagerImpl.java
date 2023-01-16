@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2022 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2022] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.container.common.impl;
 
@@ -58,9 +59,7 @@ import org.glassfish.api.naming.JNDIBinding;
 import org.glassfish.api.naming.NamingObjectProxy;
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.deployment.common.JavaEEResourceType;
-import org.glassfish.hk2.api.ActiveDescriptor;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.javaee.services.CommonResourceProxy;
 import org.glassfish.javaee.services.JMSCFResourcePMProxy;
 import org.glassfish.resourcebase.resources.api.ResourceDeployer;
@@ -69,12 +68,12 @@ import org.jvnet.hk2.annotations.Service;
 import com.sun.enterprise.deployment.ResourceDescriptor;
 import com.sun.enterprise.deployment.util.DOLUtils;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import javax.naming.Context;
 import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
-import javax.transaction.TransactionManager;
-import javax.validation.*;
+import jakarta.transaction.TransactionManager;
+import jakarta.validation.*;
 import java.net.MalformedURLException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -316,6 +315,10 @@ public class ComponentEnvManagerImpl
         Set<ResourceDescriptor> jmscfdds = env.getResourceDescriptors(JavaEEResourceType.JMSCFDD);
         Set<ResourceDescriptor> msds =env.getResourceDescriptors(JavaEEResourceType.MSD);
         Set<ResourceDescriptor> jmsddds = env.getResourceDescriptors(JavaEEResourceType.JMSDD);
+        Set<ResourceDescriptor> medd = env.getResourceDescriptors(JavaEEResourceType.MEDD);
+        Set<ResourceDescriptor> mtfdd = env.getResourceDescriptors(JavaEEResourceType.MTFDD);
+        Set<ResourceDescriptor> msedd = env.getResourceDescriptors(JavaEEResourceType.MSEDD);
+        Set<ResourceDescriptor> csdd = env.getResourceDescriptors(JavaEEResourceType.CSDD);
         if(!(env instanceof ApplicationClientDescriptor)) {
             Set<ResourceDescriptor> cfdds = env.getResourceDescriptors(JavaEEResourceType.CFD);
             allDescriptors.addAll(cfdds);
@@ -332,6 +335,10 @@ public class ComponentEnvManagerImpl
         allDescriptors.addAll(jmscfdds);
         allDescriptors.addAll(msds);
         allDescriptors.addAll(jmsddds);
+        allDescriptors.addAll(medd);
+        allDescriptors.addAll(mtfdd);
+        allDescriptors.addAll(msedd);
+        allDescriptors.addAll(csdd);
 
         for (ResourceDescriptor descriptor : allDescriptors) {
 

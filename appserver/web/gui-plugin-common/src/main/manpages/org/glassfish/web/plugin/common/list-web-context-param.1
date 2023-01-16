@@ -82,13 +82,13 @@ EXAMPLES
            This example lists all servlet context-initialization parameters of
            the web application basic-ezcomp that have been set by using the
            set-web-context-param subcommand. Because no description was
-           specified when the javax.faces.PROJECT_STAGE parameter was set,
+           specified when the jakarta.faces.PROJECT_STAGE parameter was set,
            null is displayed instead of a description for this parameter.
 
                asadmin> list-web-context-param basic-ezcomp
-               javax.faces.STATE_SAVING_METHOD = client ignoreDescriptorItem=false
+               jakarta.faces.STATE_SAVING_METHOD = client ignoreDescriptorItem=false
                //The location where the application's state is preserved
-               javax.faces.PROJECT_STAGE = null ignoreDescriptorItem=true //null
+               jakarta.faces.PROJECT_STAGE = null ignoreDescriptorItem=true //null
 
                Command list-web-context-param executed successfully.
 

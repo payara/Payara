@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiiates
+// Portions Copyright [2018-2021] Payara Foundation and/or affiiates
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -60,15 +60,15 @@ import org.jvnet.hk2.config.*;
 import org.glassfish.api.admin.config.Named;
 import org.glassfish.api.admin.config.ReferenceContainer;
 
-import javax.inject.Inject;
-import javax.validation.Payload;
+import jakarta.inject.Inject;
+import jakarta.validation.Payload;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.validation.constraints.Pattern;
+import jakarta.validation.constraints.Pattern;
 
 /**
  * A cluster defines a homogeneous set of server instances that share the same

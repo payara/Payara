@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,6 +40,7 @@
 package fish.payara.nucleus.healthcheck.cpool;
 
 import com.sun.enterprise.config.serverbeans.*;
+import com.sun.enterprise.config.serverbeans.Module;
 import com.sun.enterprise.connectors.util.ResourcesUtil;
 import com.sun.enterprise.resource.pool.PoolManager;
 import com.sun.enterprise.resource.pool.PoolStatus;
@@ -63,12 +64,10 @@ import org.glassfish.resourcebase.resources.api.ResourceInfo;
 import org.glassfish.resourcebase.resources.util.ResourceUtil;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
+import jakarta.annotation.PostConstruct;
+import jakarta.inject.Inject;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import static java.util.Arrays.asList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -101,7 +100,7 @@ public class ConnectionPoolHealthCheck
     private static final String USED_CONNECTION = "usedConnection";
     private static final String FREE_CONNECTION = "freeConnection";
     private static final String TOTAL_CONNECTION = "totalConnection";
-    private static final Set<String> VALID_SUB_ATTRIBUTES = new HashSet<>(asList(USED_CONNECTION, FREE_CONNECTION, TOTAL_CONNECTION));
+    private static final Set<String> VALID_SUB_ATTRIBUTES = Set.of(USED_CONNECTION, FREE_CONNECTION, TOTAL_CONNECTION);
 
     @PostConstruct
     void postConstruct() {

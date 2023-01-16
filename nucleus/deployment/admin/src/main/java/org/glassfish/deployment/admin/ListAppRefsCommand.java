@@ -58,7 +58,7 @@ import org.glassfish.api.admin.RuntimeType;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import java.util.Collection;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.glassfish.hk2.api.PerLookup;
 import java.util.List;
 import org.glassfish.api.admin.AccessRequired;

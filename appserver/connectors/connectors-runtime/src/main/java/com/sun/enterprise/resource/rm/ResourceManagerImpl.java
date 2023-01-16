@@ -42,7 +42,7 @@ package com.sun.enterprise.resource.rm;
 
 import java.util.logging.*;
 
-import javax.transaction.*;
+import jakarta.transaction.*;
 
 import com.sun.logging.*;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;

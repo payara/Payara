@@ -40,11 +40,11 @@
 
 package myapp;
 
-import javax.persistence.*;
-import javax.transaction.*;
-import javax.annotation.*;
-import javax.servlet.*;
-import javax.servlet.http.*;
+import jakarta.persistence.*;
+import jakarta.transaction.*;
+import jakarta.annotation.*;
+import jakarta.servlet.*;
+import jakarta.servlet.http.*;
 import java.io.*;
 
 public class JpaServlet extends HttpServlet {

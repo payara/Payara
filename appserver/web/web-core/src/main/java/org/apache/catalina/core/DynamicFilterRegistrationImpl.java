@@ -43,7 +43,7 @@ package org.apache.catalina.core;
 import org.apache.catalina.LogFacade;
 import org.apache.catalina.deploy.FilterDef;
 
-import javax.servlet.FilterRegistration;
+import jakarta.servlet.FilterRegistration;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
 

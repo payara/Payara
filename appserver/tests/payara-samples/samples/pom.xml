@@ -45,7 +45,7 @@
     <parent>
         <groupId>fish.payara.samples</groupId>
         <artifactId>payara-samples</artifactId>
-        <version>5.2023.1-SNAPSHOT</version>
+        <version>6.2023.2-SNAPSHOT</version>
     </parent>
 
     <artifactId>payara-samples-profiled-tests</artifactId>
@@ -69,7 +69,8 @@
         <module>jaxrs-rolesallowed</module>
         <module>jaxrs-rolesallowed-servlet</module>
         <module>jaxws-security</module>
-        <module>jaxws-tracing</module>
+        <!--module>jaxws-tracing</module-->
+        <module>legacy-mode-empty-beans-xml</module>
         <module>microprofile-config</module>
         <module>microprofile-endpoints</module>
         <module>microprofile-healthcheck</module>
@@ -93,6 +94,7 @@
         <module>grpc</module>
         <module>grpc-ejb</module>
         <module>resources</module>
+        <module>concurrency</module>
         <module>reproducers</module>
     </modules>
 

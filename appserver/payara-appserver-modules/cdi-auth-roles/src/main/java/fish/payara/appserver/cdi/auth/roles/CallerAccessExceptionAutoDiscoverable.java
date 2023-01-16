@@ -1,7 +1,7 @@
 /*
  *   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *   Copyright (c) [2019] Payara Foundation and/or its affiliates.
+ *   Copyright (c) [2019-2021] Payara Foundation and/or its affiliates.
  *   All rights reserved.
  *
  *   The contents of this file are subject to the terms of either the GNU
@@ -40,10 +40,10 @@
  */
 package fish.payara.appserver.cdi.auth.roles;
 
-import javax.annotation.Priority;
-import javax.ws.rs.ConstrainedTo;
-import static javax.ws.rs.RuntimeType.SERVER;
-import javax.ws.rs.core.FeatureContext;
+import jakarta.annotation.Priority;
+import jakarta.ws.rs.ConstrainedTo;
+import static jakarta.ws.rs.RuntimeType.SERVER;
+import jakarta.ws.rs.core.FeatureContext;
 import static org.glassfish.internal.api.Globals.getDefaultHabitat;
 import org.glassfish.internal.deployment.Deployment;
 import static org.glassfish.jersey.internal.spi.AutoDiscoverable.DEFAULT_PRIORITY;

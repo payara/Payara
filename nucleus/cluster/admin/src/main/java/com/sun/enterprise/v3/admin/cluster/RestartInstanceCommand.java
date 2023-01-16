@@ -50,6 +50,8 @@ import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.util.OS;
 import com.sun.enterprise.util.ObjectAnalyzer;
 import com.sun.enterprise.util.StringUtils;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -58,15 +60,12 @@ import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Inject;
-import javax.inject.Named;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
  * @author bnevins
  */
 @Service(name = "restart-instance")
@@ -75,17 +74,17 @@ import java.util.logging.Logger;
 @I18n("restart.instance.command")
 @ExecuteOn(RuntimeType.DAS)
 @RestEndpoints({
-    @RestEndpoint(configBean = Domain.class,
-            opType = RestEndpoint.OpType.POST,
-            path = "_restart-instance",
-            description = "_restart-instance"),
-    @RestEndpoint(configBean = Server.class,
-            opType = RestEndpoint.OpType.POST,
-            path = "restart-instance",
-            description = "restart-instance",
-            params = {
-                @RestParam(name = "id", value = "$parent")
-            })
+        @RestEndpoint(configBean = Domain.class,
+                opType = RestEndpoint.OpType.POST,
+                path = "_restart-instance",
+                description = "_restart-instance"),
+        @RestEndpoint(configBean = Server.class,
+                opType = RestEndpoint.OpType.POST,
+                path = "restart-instance",
+                description = "restart-instance",
+                params = {
+                        @RestParam(name = "id", value = "$parent")
+                })
 })
 public class RestartInstanceCommand implements AdminCommand {
 
@@ -136,6 +135,8 @@ public class RestartInstanceCommand implements AdminCommand {
     private String oldPid;
 
     private AdminCommandContext context;
+
+    private static final long WAIT_TIME_MS = 600000; // 10 minutes
 
     @Override
     public void execute(AdminCommandContext ctx) {
@@ -191,6 +192,7 @@ public class RestartInstanceCommand implements AdminCommand {
         String noderef = instance.getNodeRef();
         Node node = nodes.getNode(noderef);
         String nodeDir = node.getNodeDirUnixStyle();
+
         command.add("_synchronize-instance");
         if (sync != null) {
             command.add("--sync");
@@ -210,10 +212,8 @@ public class RestartInstanceCommand implements AdminCommand {
         // Convert the command into a string representing the command a human should run.
         humanCommand = makeCommandHuman(command);
 
-
         String msg;
         String nodeHost;
-
 
         if (node != null) {
             nodeHost = node.getNodeHost();
@@ -295,7 +295,6 @@ public class RestartInstanceCommand implements AdminCommand {
 
     /**
      * return null if all went OK...
-     *
      */
     private void callInstance() throws CommandException {
         if (isError())
@@ -324,8 +323,7 @@ public class RestartInstanceCommand implements AdminCommand {
         try {
             rac = createRac(cmdName);
             rac.executeCommand(new ParameterMap());
-        }
-        catch (CommandException ex) {
+        } catch (CommandException ex) {
             // there is only one reason that _get-runtime-info would have a problem
             // namely if the instance isn't running.
             throw new InstanceNotRunningException();
@@ -399,7 +397,7 @@ public class RestartInstanceCommand implements AdminCommand {
         return rac.findPropertyInReport("pid");
     }
 
-    /* 
+    /*
      * The instance is not running -- so let's try to start it.
      * There is no good way to call a Command on ourself.  So use the
      * command directly.
@@ -410,8 +408,7 @@ public class RestartInstanceCommand implements AdminCommand {
         try {
             StartInstanceCommand sic = new StartInstanceCommand(habitat, instanceName, Boolean.parseBoolean(debug), env);
             sic.execute(context);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             // this is NOT normal!  start-instance communicates errors via the
             // reporter.  This catch should never happen.  It is here for robustness.
             // and especially for programmer/regression errors.

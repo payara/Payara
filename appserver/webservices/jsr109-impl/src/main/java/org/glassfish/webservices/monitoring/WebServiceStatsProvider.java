@@ -48,7 +48,7 @@ import org.glassfish.external.statistics.Stats;
 import org.glassfish.gmbal.*;
 import org.glassfish.webservices.deployment.DeployedEndpointData;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 import java.util.*;
 
 

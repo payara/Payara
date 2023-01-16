@@ -41,8 +41,8 @@ package com.sun.enterprise.container.common.impl;
 
 import com.sun.enterprise.transaction.api.SimpleResource;
 
-import javax.persistence.EntityManager;
-import javax.persistence.SynchronizationType;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.SynchronizationType;
 
 /**
  * Wraps a physical entity manager so that we can carry synchronization type of it.

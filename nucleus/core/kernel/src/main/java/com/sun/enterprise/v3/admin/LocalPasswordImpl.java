@@ -43,7 +43,7 @@ package com.sun.enterprise.v3.admin;
 import java.io.*;
 import java.security.SecureRandom;
 import java.util.logging.*;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.glassfish.api.admin.ServerEnvironment;
 
 import org.glassfish.hk2.api.PostConstruct;

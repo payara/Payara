@@ -55,13 +55,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 package org.apache.catalina.authenticator;
 
 import static java.text.MessageFormat.format;
-import static javax.servlet.http.HttpServletRequest.CLIENT_CERT_AUTH;
-import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
-import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
+import static jakarta.servlet.http.HttpServletRequest.CLIENT_CERT_AUTH;
+import static jakarta.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import static jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 import static org.apache.catalina.Globals.CERTIFICATES_ATTR;
 import static org.apache.catalina.Globals.SSL_CERTIFICATE_ATTR;
 import static org.apache.catalina.LogFacade.CANNOT_AUTHENTICATE_WITH_CREDENTIALS;
@@ -76,8 +76,8 @@ import java.io.IOException;
 import java.security.Principal;
 import java.security.cert.X509Certificate;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.catalina.HttpRequest;
 import org.apache.catalina.HttpResponse;

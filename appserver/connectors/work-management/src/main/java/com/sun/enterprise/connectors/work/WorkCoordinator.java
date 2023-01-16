@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2019] [Payara Foundation and/or its affiliates.]
+// Portions Copyright [2019-2021] [Payara Foundation and/or its affiliates.]
 
 package com.sun.enterprise.connectors.work;
 
@@ -52,15 +52,15 @@ import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.resource.ResourceException;
-import javax.resource.spi.ResourceAdapterAssociation;
-import javax.resource.spi.work.ExecutionContext;
-import javax.resource.spi.work.Work;
-import javax.resource.spi.work.WorkCompletedException;
-import javax.resource.spi.work.WorkEvent;
-import javax.resource.spi.work.WorkException;
-import javax.resource.spi.work.WorkListener;
-import javax.resource.spi.work.WorkRejectedException;
+import jakarta.resource.ResourceException;
+import jakarta.resource.spi.ResourceAdapterAssociation;
+import jakarta.resource.spi.work.ExecutionContext;
+import jakarta.resource.spi.work.Work;
+import jakarta.resource.spi.work.WorkCompletedException;
+import jakarta.resource.spi.work.WorkEvent;
+import jakarta.resource.spi.work.WorkException;
+import jakarta.resource.spi.work.WorkListener;
+import jakarta.resource.spi.work.WorkRejectedException;
 
 import org.glassfish.logging.annotation.LogMessageInfo;
 
@@ -84,7 +84,7 @@ public final class WorkCoordinator {
     private volatile int waitMode;
     private volatile int state = CREATED;
 
-    private final javax.resource.spi.work.Work work;
+    private final jakarta.resource.spi.work.Work work;
     private final long timeout;
     private long startTime;
     private final ExecutionContext ec;
@@ -114,7 +114,7 @@ public final class WorkCoordinator {
      *                 will be submitted
      * @param listener WorkListener object from the resource adapter.
      */
-    public WorkCoordinator(javax.resource.spi.work.Work work,
+    public WorkCoordinator(jakarta.resource.spi.work.Work work,
                            long timeout,
                            ExecutionContext ec,
                            WorkQueue queue,

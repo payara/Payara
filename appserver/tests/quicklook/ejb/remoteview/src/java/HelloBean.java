@@ -40,8 +40,8 @@
 
 package remoteview;
 
-import javax.ejb.*;
-import javax.annotation.*;
+import jakarta.ejb.*;
+import jakarta.annotation.*;
 import java.util.concurrent.Future;
 
 @Stateless(mappedName="HH")
@@ -101,13 +101,13 @@ public class HelloBean {
     }
 
     public void throwException(String exceptionType) {
-	if( exceptionType.equals("javax.ejb.EJBException") ) {
+	if( exceptionType.equals("jakarta.ejb.EJBException") ) {
 	    throw new EJBException(exceptionType);
-	} else if( exceptionType.equals("javax.ejb.ConcurrentAccessException") ) {
+	} else if( exceptionType.equals("jakarta.ejb.ConcurrentAccessException") ) {
 	    throw new ConcurrentAccessException(exceptionType);
-	} else if( exceptionType.equals("javax.ejb.ConcurrentAccessTimeoutException") ) {
+	} else if( exceptionType.equals("jakarta.ejb.ConcurrentAccessTimeoutException") ) {
 	    throw new ConcurrentAccessTimeoutException(exceptionType);
-	} else if( exceptionType.equals("javax.ejb.IllegalLoopbackException") ) {
+	} else if( exceptionType.equals("jakarta.ejb.IllegalLoopbackException") ) {
 	    throw new IllegalLoopbackException(exceptionType);
 	}
 

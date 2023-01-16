@@ -44,7 +44,7 @@ import javax.transaction.xa.Xid;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 
-import javax.resource.spi.XATerminator;
+import jakarta.resource.spi.XATerminator;
 
 import org.omg.CosTransactions.Vote;
 import org.omg.CosTransactions.HeuristicMixed;

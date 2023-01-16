@@ -37,21 +37,21 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2021] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.v3.admin.cluster;
 
 import java.io.*;
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import javax.xml.bind.*;
+import jakarta.xml.bind.*;
 
 import com.sun.enterprise.admin.util.InstanceStateService;
 import org.glassfish.api.admin.*;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.glassfish.hk2.api.PerLookup;
 
 import org.glassfish.api.I18n;
