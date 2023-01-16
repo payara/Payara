@@ -37,38 +37,62 @@
  *  only if the new code is made subject to such option by the copyright
  *  holder.
  */
-package fish.payara.security.oidc.client.eltests;
+package fish.payara.security.oidc.test;
 
-import fish.payara.security.annotations.OpenIdAuthenticationDefinition;
-import static fish.payara.security.oidc.server.OidcProvider.CLIENT_ID_VALUE;
-import static fish.payara.security.oidc.server.OidcProvider.CLIENT_SECRET_VALUE;
+import com.gargoylesoftware.htmlunit.WebClient;
+import fish.payara.samples.NotMicroCompatible;
+import fish.payara.samples.PayaraArquillianTestRunner;
+import static fish.payara.security.annotations.OpenIdAuthenticationDefinition.OPENID_MP_USE_SESSION;
+import fish.payara.security.oidc.client.defaulttests.SecuredPage;
+import fish.payara.security.oidc.server.OidcProvider;
 import java.io.IOException;
-import jakarta.annotation.security.DeclareRoles;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.HttpConstraint;
-import jakarta.servlet.annotation.ServletSecurity;
-import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import java.net.URL;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.OperateOnDeployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
+ *
  * @author Gaurav Gupta
  */
-@WebServlet("/Secured")
-@OpenIdAuthenticationDefinition(
-        providerURI = "#{openidConfigBeanEL.tokenEndpointURL}",
-        clientId = CLIENT_ID_VALUE,
-        clientSecret = CLIENT_SECRET_VALUE,
-        redirectURI = "${baseURL}/Callback"
-)
-@DeclareRoles("all")
-@ServletSecurity(@HttpConstraint(rolesAllowed = "all"))
-public class SecuredPageEL extends HttpServlet {
-    
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        response.getWriter().println("This is a secured web page");
+@NotMicroCompatible
+@RunWith(PayaraArquillianTestRunner.class)
+public class OpenIdDefaultRoleInUserInfoTest {
+
+    private WebClient webClient;
+
+    @OperateOnDeployment("openid-client")
+    @ArquillianResource
+    private URL base;
+
+    @Before
+    public void init() {
+        webClient = new WebClient();
     }
+
+    @Deployment(name = "openid-server")
+    public static WebArchive createServerDeployment() {
+        StringAsset mpConfig = new StringAsset(OidcProvider.ROLES_IN_USERINFO_KEY + "=" + Boolean.TRUE.toString());
+        return OpenIdTestUtil.createServerDeployment()
+                .addAsWebInfResource(mpConfig, "classes/META-INF/microprofile-config.properties");
+    }
+
+    @Deployment(name = "openid-client")
+    public static WebArchive createClientDeployment() {
+        WebArchive war = OpenIdTestUtil.createClientDefaultDeployment();
+        return war;
+    }
+
+    @Test
+    @RunAsClient
+    public void testOpenIdConnect() throws IOException {
+        OpenIdTestUtil.testOpenIdConnect(webClient, base);
+    }
+
 }

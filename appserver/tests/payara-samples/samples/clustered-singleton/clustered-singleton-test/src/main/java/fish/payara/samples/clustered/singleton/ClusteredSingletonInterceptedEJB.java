@@ -147,9 +147,9 @@ public class ClusteredSingletonInterceptedEJB implements InterceptedSingletonAPI
     @Timeout
     private void timeout() {
         log.info("Timer Action");
+        timerRan.setTimerRan(true);
         timerIntercepted = (ctx.getContextData().get(ClusteredInterceptor.AroundTimeoutKey) != null) ?
                 ctx.getContextData().get(ClusteredInterceptor.AroundTimeoutKey).equals(ClusteredInterceptor.AroundTimeoutValue)
                 : "".equals(ClusteredInterceptor.AroundTimeoutValue);
-        timerRan.setTimerRan(true);
     }
 }

@@ -65,7 +65,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import static org.valid4j.matchers.http.HttpResponseMatchers.hasStatus;
@@ -86,6 +85,7 @@ public class MultipleRealmIdentityStoreDefinitionTest {
 
     @Deployment(testable = false)
     public static WebArchive createDeployment() {
+        ServerOperations.setupContainerFileIdentityStore("new-file-realm");
         return create(WebArchive.class)
                 .addClasses(
                         MultipleRealmIdentityStoreAppConfig.class,
@@ -94,11 +94,6 @@ public class MultipleRealmIdentityStoreDefinitionTest {
                         AuthoritiesConstants.class
                 )
                 .addAsWebInfResource("all-beans.xml", "beans.xml");
-    }
-
-    @BeforeClass
-    public static void init() {
-        ServerOperations.setupContainerFileIdentityStore("new-file-realm");
     }
 
     @Before

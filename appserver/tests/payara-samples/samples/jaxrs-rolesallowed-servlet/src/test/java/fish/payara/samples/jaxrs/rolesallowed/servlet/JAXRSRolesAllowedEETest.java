@@ -24,7 +24,6 @@ import static jakarta.ws.rs.client.ClientBuilder.newClient;
 import static jakarta.ws.rs.core.MediaType.TEXT_PLAIN;
 import static org.jboss.shrinkwrap.api.ShrinkWrap.create;
 import static org.junit.Assert.assertTrue;
-import org.junit.BeforeClass;
 
 /**
  * This sample tests that we can install a custom JACC provider
@@ -40,6 +39,10 @@ public class JAXRSRolesAllowedEETest {
 
     @Deployment(testable = false)
     public static WebArchive createDeployment() {
+        if (ServerOperations.isServer()) {
+            ServerOperations.addUserToContainerIdentityStore("test", "a");
+        }
+
         WebArchive archive =
             create(WebArchive.class)
             .addAsWebInfResource((new File("src/main/webapp/WEB-INF", "web.xml")))
@@ -54,12 +57,6 @@ public class JAXRSRolesAllowedEETest {
         return archive;
     }
 
-    @BeforeClass
-    public static void init() {
-        if (ServerOperations.isServer()) {
-            ServerOperations.addUserToContainerIdentityStore("test", "a");
-        }
-    }
 
 
     @Test

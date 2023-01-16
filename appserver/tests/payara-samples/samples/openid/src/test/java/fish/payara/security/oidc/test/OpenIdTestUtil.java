@@ -39,7 +39,6 @@
  */
 package fish.payara.security.oidc.test;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.TextPage;
 import com.gargoylesoftware.htmlunit.WebClient;
 import fish.payara.security.oidc.client.Callback;
@@ -53,12 +52,8 @@ import java.net.URL;
 import jakarta.ws.rs.core.Response;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
-import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.fail;
 
 /**
  *
@@ -91,6 +86,7 @@ public class OpenIdTestUtil {
         return createClientDeployment().addClass(SecuredPage.class);
 
     }
+
 
     public static void testOpenIdConnect2Tenants(URL base, WebClient webClient1, WebClient webClient2) throws IOException {
         // authenticate first client with employee tenant
@@ -126,26 +122,4 @@ public class OpenIdTestUtil {
         assertEquals("This is an unsecured web page", unsecuredPage.getContent().trim());
     }
 
-    public static void testOpenIdConnect(WebClient webClient, URL base) throws IOException {
-        // unsecure page should be accessible for an unauthenticated user
-        TextPage unsecuredPage = (TextPage) webClient.getPage(base + "Unsecured");
-        assertEquals(Response.Status.OK.getStatusCode(), unsecuredPage.getWebResponse().getStatusCode());
-        assertEquals("This is an unsecured web page", unsecuredPage.getContent().trim());
-
-        // access to secured web page authenticates the user and instructs to redirect to the callback URL
-        TextPage securedPage = (TextPage) webClient.getPage(base + "Secured");
-        assertEquals(Response.Status.OK.getStatusCode(), securedPage.getWebResponse().getStatusCode());
-        assertEquals(String.format("%sCallback", base.getPath()), securedPage.getUrl().getPath());
-        
-        // access secured web page as an authenticated user
-        securedPage = (TextPage) webClient.getPage(base + "Secured");
-        assertEquals(Response.Status.OK.getStatusCode(), securedPage.getWebResponse().getStatusCode()); 
-        assertEquals("This is a secured web page", securedPage.getContent().trim());
-
-        // finally, access should still be allowed to an unsecured web page when already logged in
-        unsecuredPage = ((TextPage) webClient.getPage(base + "Unsecured"));
-        assertEquals(Response.Status.OK.getStatusCode(), unsecuredPage.getWebResponse().getStatusCode());
-        assertEquals("This is an unsecured web page", unsecuredPage.getContent().trim());
-    }
-    
 }

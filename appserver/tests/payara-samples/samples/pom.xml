@@ -2,7 +2,7 @@
 <!--
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-     Copyright (c) 2021-2022 Payara Foundation and/or its affiliates. All rights reserved.
+     Copyright (c) 2021 Payara Foundation and/or its affiliates. All rights reserved.
 
      The contents of this file are subject to the terms of either the GNU
      General Public License Version 2 only ("GPL") or the Common Development
@@ -53,11 +53,6 @@
 
     <name>Payara Samples - Parallel Tests Root</name>
 
-    <properties>
-        <grpc.version>1.43.1</grpc.version>
-        <protobuf.version>3.19.4</protobuf.version>
-    </properties>
-
     <modules>
         <module>payara-expression-config-properties</module>
         <module>clustered-singleton</module>
@@ -80,20 +75,17 @@
         <module>rolesPermitted</module>
         <module>realm-identity-stores</module>
         <module>jakartaee-namespace-transformer</module>
-        <module>http</module>
+        <!--module>http</module-->
         <module>logging</module>
         <module>ejb-http-remoting</module>
         <module>remote-ejb-tracing</module>
         <module>rolesallowed-unprotected-methods</module>
         <module>microprofile-rc-ft</module>
         <module>multiple-keystores</module>
-        <module>client-certificate-validator</module>
+        <!--module>client-certificate-validator</module-->
         <!-- Skip - this test needs to be run repeatedly for around 60 minutes to be effective -->
         <!--<module>corba-read-timeout</module>-->
-        <module>microprofile-rest-client</module>
-        <module>grpc</module>
-        <module>grpc-ejb</module>
-        <module>resources</module>
+        <!--module>microprofile-rest-client</module-->
         <module>concurrency</module>
         <module>reproducers</module>
     </modules>
