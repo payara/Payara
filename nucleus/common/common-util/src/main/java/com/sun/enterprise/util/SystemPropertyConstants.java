@@ -164,11 +164,11 @@ public class SystemPropertyConstants {
 
     public static final String KEYSTORE_PROPERTY = "javax.net.ssl.keyStore";
     public static final String JKS_KEYSTORE = System.getProperty("file.separator") + "config" + System.getProperty("file.separator")
-            + "keystore.jks";
+            + "keystore.p12";
 
     public static final String TRUSTSTORE_PROPERTY = "javax.net.ssl.trustStore";
     public static final String JKS_TRUSTSTORE = System.getProperty("file.separator") + "config" + System.getProperty("file.separator")
-            + "cacerts.jks";
+            + "cacerts.p12";
 
     public static final String ADMIN_REALM = "admin-realm";
     public static final String NSS_DB_PROPERTY = "com.sun.appserv.nss.db";

@@ -713,13 +713,13 @@ public class PEFileLayout
         return new File(getConfigRoot(), WSSSERVERCONFIG);
     }
 
-    public static final String KEYSTORE = "keystore.jks";
+    public static final String KEYSTORE = "keystore.p12";
     public File getKeyStore()
     {
         return new File(getConfigRoot(), KEYSTORE);
     }
 
-    public static final String TRUSTSTORE_TEMPLATE = "cacerts.jks";
+    public static final String TRUSTSTORE_TEMPLATE = "cacerts.p12";
     public File getTrustStoreTemplate()
     {
         return new File(getTemplatesDir(), TRUSTSTORE_TEMPLATE);
@@ -757,7 +757,7 @@ public class PEFileLayout
         return new File (getTemplatesDir(), KEYSTORE);
     }
 
-    public static final String TRUSTSTORE = "cacerts.jks";
+    public static final String TRUSTSTORE = "cacerts.p12";
     public File getTrustStore()
     {
         return new File(getConfigRoot(), TRUSTSTORE);
