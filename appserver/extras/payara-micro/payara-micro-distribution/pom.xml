@@ -106,10 +106,6 @@
                                     <property name="install.dir.name"
                                         value="${install.dir.name}" />
                                     <property name="product.name" value="${product.name}" />
-                                    
-                                    <property name="version.major" value="${major_version}"/>
-                                    <property name="version.minor" value="${minor_version}"/>
-                                    <property name="version.patch" value="${update_version}"/>
                                 </ant>
                             </tasks>
                         </configuration>
