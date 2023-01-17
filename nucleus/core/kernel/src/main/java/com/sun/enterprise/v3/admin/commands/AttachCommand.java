@@ -37,12 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2022] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.v3.admin.commands;
 
 import com.sun.enterprise.admin.remote.AdminCommandStateImpl;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import javax.inject.Inject;
 
+import com.sun.enterprise.v3.admin.JobManagerService;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -81,12 +83,34 @@ public class AttachCommand implements AdminCommand, AdminCommandListener {
 
     protected AdminCommandEventBroker eventBroker;
     protected Job attached;
+    
+    @Inject
+    JobManagerService registry;
 
     @Param(primary=true, optional=false, multiple=false)
     protected String jobID;
 
     @Override
     public void execute(AdminCommandContext context) {
+        eventBroker = context.getEventBroker();
+
+        attached = registry.get(jobID);
+        JobInfo jobInfo = null;
+        String jobName = null;
+
+        if (attached == null) {
+            //try for completed jobs
+            if (registry.getCompletedJobs(registry.getJobsFile()) != null) {
+                jobInfo = (JobInfo) registry.getCompletedJobForId(jobID);
+            }
+            if (jobInfo != null) {
+                jobName = jobInfo.jobName;
+            }
+
+        }
+
+        attach(attached,jobInfo,context,jobName);
+
     }
 
     @Override
@@ -101,6 +125,15 @@ public class AttachCommand implements AdminCommand, AdminCommandListener {
             }
         } else {
             eventBroker.fireEvent(name, event); //Forward
+        }
+    }
+
+
+    protected void purgeJob(String jobid) {
+        try {
+            registry.purgeJob(jobid);
+            registry.purgeCompletedJobForId(jobid);
+        } catch (Exception ex) {
         }
     }
 
@@ -151,6 +184,10 @@ public class AttachCommand implements AdminCommand, AdminCommandListener {
                     String commandUser = attached.getSubjectUsernames().get(0);
                     //In most cases if the user who attaches to the command is the same
                     //as one who started it then purge the job once it is completed
+                    if ((commandUser != null && commandUser.equals(attachedUser)) && attached.isOutboundPayloadEmpty())  {
+                        purgeJob(attached.getId());
+
+                    }
                     ar.setActionExitCode(attached.getActionReport().getActionExitCode());
                     ar.appendMessage(strings.getLocalString("attach.finished", "Command {0} executed with status {1}",attached.getName(),attached.getActionReport().getActionExitCode()));
                 }
@@ -161,6 +198,10 @@ public class AttachCommand implements AdminCommand, AdminCommandListener {
 
                 //In most cases if the user who attaches to the command is the same
                 //as one who started it then purge the job once it is completed
+                if (attachedUser!= null && attachedUser.equals( jobInfo.user)) {
+                    purgeJob(jobInfo.jobId);
+
+                }
                 ar.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                 ar.appendMessage(strings.getLocalString("attach.finished", "Command {0} executed{1}",jobName,jobInfo.exitCode));
             }
