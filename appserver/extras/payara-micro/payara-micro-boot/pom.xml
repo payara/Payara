@@ -71,6 +71,31 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>update-dynamic-glassfish-version-properties</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <replace token="@@@MAJOR_VERSION@@@" value="${major_version}" dir="${project.build.directory}/classes/MICRO-INF/domain/branding">
+                                    <include name="glassfish-version.properties"/>
+                                </replace>
+                                <replace token="@@@MINOR_VERSION@@@" value="${minor_version}" dir="${project.build.directory}/classes/MICRO-INF/domain/branding">
+                                    <include name="glassfish-version.properties"/>
+                                </replace>
+                                <replace token="@@@PATCH_VERSION@@@" value="${update_version}" dir="${project.build.directory}/classes/MICRO-INF/domain/branding">
+                                    <include name="glassfish-version.properties"/>
+                                </replace>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
     <dependencies>
