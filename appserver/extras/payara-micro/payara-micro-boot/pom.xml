@@ -88,7 +88,7 @@
                                 <replace token="@@@MINOR_VERSION@@@" value="${minor_version}" dir="${project.build.directory}/classes/MICRO-INF/domain/branding">
                                     <include name="glassfish-version.properties"/>
                                 </replace>
-                                <replace token="@@@PATCH_VERSION@@@" value="${update_version}" dir="${project.build.directory}/classes/MICRO-INF/domain/branding">
+                                <replace token="@@@UPDATE_VERSION@@@" value="${update_version}" dir="${project.build.directory}/classes/MICRO-INF/domain/branding">
                                     <include name="glassfish-version.properties"/>
                                 </replace>
                             </target>
