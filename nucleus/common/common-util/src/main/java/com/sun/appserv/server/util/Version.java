@@ -47,6 +47,7 @@ import java.io.FileFilter;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * This class provides static methods to make accessible the version as well as
@@ -143,11 +144,11 @@ public class Version {
      * Returns version
      */
     public static String getVersion() {
-        StringBuilder sb = new StringBuilder(getProductName());
-        sb.append(" ").append(getVersionPrefix());
-        sb.append(" ").append(getVersionNumber());
-        sb.append(" ").append(getVersionSuffix());
-        return sb.toString();
+        String[] versionComponents = {getProductName(), getVersionPrefix(), getVersionNumber(), getVersionSuffix()};
+        return Arrays.stream(versionComponents)
+                .filter(component -> !component.isEmpty())
+                .collect(Collectors.joining(" "))
+                .trim();
     }
 
     /**
