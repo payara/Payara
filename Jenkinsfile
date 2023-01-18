@@ -3,7 +3,7 @@
 @Library('PayaraTestLibrary') _
 
 PRTestPipeline {
-    jdk = 'zulu-8'
+    jdk = 'zulu-11'
     agent_label = 'PR-Test-Agent'
     test_suites = [[suite_name: 'Quicklook', suite_location: 'Payara'],
                    [suite_name: 'Payara-Samples', suite_location: 'Payara'],
