@@ -41,7 +41,7 @@
 package com.sun.enterprise.web.deploy;
 
 import com.sun.enterprise.deployment.EjbReferenceDescriptor;
-import org.apache.catalina.deploy.ContextLocalEjb;
+import org.apache.tomcat.util.descriptor.web.ContextLocalEjb;
 
 
 /**
@@ -50,7 +50,7 @@ import org.apache.catalina.deploy.ContextLocalEjb;
  * @author Jean-Francois Arcand
  */
 
-public class ContextLocalEjbDecorator extends ContextLocalEjb{
+public class ContextLocalEjbDecorator extends ContextLocalEjb {
                                           
      
     private EjbReferenceDescriptor decoree;
