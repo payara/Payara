@@ -41,14 +41,14 @@
 package com.sun.enterprise.web.deploy;
 
 import com.sun.enterprise.deployment.EjbReferenceDescriptor;
-import org.apache.catalina.deploy.ContextEjb;
+import org.apache.tomcat.util.descriptor.web.ContextEjb;
 
 /**
  * Decorator of class <code>org.apache.catalina.deploy.ContextEjb</code>
  *
  * @author Jean-Francois Arcand
  */
-public class ContextEjbDecorator extends ContextEjb{
+public class ContextEjbDecorator extends ContextEjb {
 
     private EjbReferenceDescriptor decoree;
     
