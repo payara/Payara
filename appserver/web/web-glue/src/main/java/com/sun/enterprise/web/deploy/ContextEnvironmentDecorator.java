@@ -41,7 +41,7 @@
 package com.sun.enterprise.web.deploy;
 
 import com.sun.enterprise.deployment.EnvironmentProperty;
-import org.apache.catalina.deploy.ContextEnvironment;
+import org.apache.tomcat.util.descriptor.web.ContextEnvironment;
 
 
 /**
