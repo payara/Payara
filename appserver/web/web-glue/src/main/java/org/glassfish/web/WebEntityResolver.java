@@ -44,7 +44,7 @@ import com.sun.enterprise.util.MapBuilder;
 import org.apache.catalina.startup.Constants;
 import org.glassfish.internal.api.ServerContext;
 import org.jvnet.hk2.annotations.ContractsProvided;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PostConstruct;
 import org.xml.sax.EntityResolver;

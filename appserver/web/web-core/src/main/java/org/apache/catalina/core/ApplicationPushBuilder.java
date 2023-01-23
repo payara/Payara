@@ -67,12 +67,12 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.Set;
 
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletRequestWrapper;
-import javax.servlet.SessionTrackingMode;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-import javax.servlet.http.PushBuilder;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletRequestWrapper;
+import jakarta.servlet.SessionTrackingMode;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.PushBuilder;
 
 import org.apache.catalina.Context;
 import org.apache.catalina.LogFacade;
@@ -84,7 +84,7 @@ import org.glassfish.grizzly.http.util.MimeHeaders;
 import org.glassfish.grizzly.http2.Http2Stream;
 
 /**
- * Implementation of javax.servlet.http.PushBuilder.
+ * Implementation of jakarta.servlet.http.PushBuilder.
  *
  * @author Shing Wai Chan
  */
@@ -194,7 +194,7 @@ public class ApplicationPushBuilder implements PushBuilder {
 
         // Cookies
         if (request.getCookies() != null) {
-            for (javax.servlet.http.Cookie c : request.getCookies()) {
+            for (jakarta.servlet.http.Cookie c : request.getCookies()) {
                 cookies.add(new Cookie(c.getName(), c.getValue()));
             }
         }

@@ -40,7 +40,7 @@
 
 package com.sun.enterprise.resource.recovery;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import javax.transaction.xa.XAResource;
 import java.util.Set;
 import java.util.List;

@@ -38,7 +38,7 @@
  * holder.
  *
  */
-//  Portions Copyright [2017-2018] Payara Foundation and/or affiliates
+//  Portions Copyright [2017-2021] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.rest.client.utils;
 
@@ -53,9 +53,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
-import javax.json.Json;
-import javax.json.JsonException;
-import javax.json.stream.JsonParser;
+import jakarta.json.Json;
+import jakarta.json.JsonException;
+import jakarta.json.stream.JsonParser;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamConstants;

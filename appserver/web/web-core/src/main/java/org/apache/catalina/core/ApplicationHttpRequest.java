@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2019-2020] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2021] Payara Foundation and/or affiliates
 
 package org.apache.catalina.core;
 
@@ -68,19 +68,19 @@ import org.apache.catalina.session.StandardSession;
 import org.apache.catalina.util.Enumerator;
 import org.apache.catalina.util.RequestUtil;
 
-import javax.servlet.AsyncContext;
-import javax.servlet.DispatcherType;
-import javax.servlet.RequestDispatcher;
-import javax.servlet.http.*;
+import jakarta.servlet.AsyncContext;
+import jakarta.servlet.DispatcherType;
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.http.*;
 import java.io.IOException;
 import java.util.*;
 // END GlassFish 896
 
 /**
- * Wrapper around a <code>javax.servlet.http.HttpServletRequest</code>
+ * Wrapper around a <code>jakarta.servlet.http.HttpServletRequest</code>
  * that transforms an application request object (which might be the original
  * one passed to a servlet, or might be based on the 2.3
- * <code>javax.servlet.http.HttpServletRequestWrapper</code> class)
+ * <code>jakarta.servlet.http.HttpServletRequestWrapper</code> class)
  * back into an internal <code>org.apache.catalina.HttpRequest</code>.
  *
  * @author Craig R. McClanahan
@@ -263,7 +263,7 @@ public class ApplicationHttpRequest extends HttpServletRequestWrapper {
             if (specialAttributes != null) {
                 value = specialAttributes.get(name);
             }
-            if (value == null && name.startsWith("javax.servlet.forward")) {
+            if (value == null && name.startsWith("jakarta.servlet.forward")) {
                 /*
                  * If it's a forward special attribute, and null, delegate
                  * to the wrapped request. This will allow access to the
@@ -1062,7 +1062,7 @@ public class ApplicationHttpRequest extends HttpServletRequestWrapper {
                 String current = parentEnumeration.nextElement();
                 if (!isSpecial(current) ||
                         (!dispatcherType.equals(DispatcherType.FORWARD) &&
-                        current.startsWith("javax.servlet.forward") &&
+                        current.startsWith("jakarta.servlet.forward") &&
                         getAttribute(current) != null)) {
                     result = current;
                 }

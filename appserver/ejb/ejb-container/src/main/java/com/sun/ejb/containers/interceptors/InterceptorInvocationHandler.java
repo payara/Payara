@@ -41,7 +41,7 @@
 package com.sun.ejb.containers.interceptors;
 
 import java.rmi.UnmarshalException;
-import javax.ejb.AccessLocalException;
+import jakarta.ejb.AccessLocalException;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;

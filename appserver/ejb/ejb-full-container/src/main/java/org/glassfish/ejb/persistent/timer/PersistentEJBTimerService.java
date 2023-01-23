@@ -58,12 +58,12 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.CreateException;
-import javax.ejb.EJBException;
-import javax.ejb.FinderException;
-import javax.ejb.TimerConfig;
+import jakarta.ejb.CreateException;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.FinderException;
+import jakarta.ejb.TimerConfig;
 import javax.sql.DataSource;
-import javax.transaction.TransactionManager;
+import jakarta.transaction.TransactionManager;
 
 import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
 import com.sun.ejb.containers.BaseContainer;
@@ -963,7 +963,7 @@ public class PersistentEJBTimerService extends NonPersistentEJBTimerService {
     }
 
     //
-    // Logic used by TimerWrapper for javax.ejb.Timer methods.
+    // Logic used by TimerWrapper for jakarta.ejb.Timer methods.
     //
 
     @Override

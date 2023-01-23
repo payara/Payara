@@ -45,7 +45,7 @@ import com.sun.enterprise.deployment.annotation.handlers.*;
 import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 
-import javax.resource.spi.*;
+import jakarta.resource.spi.*;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.reflect.Method;

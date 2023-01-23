@@ -40,14 +40,14 @@
     holder.
 
 -->
-<!-- Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>fish.payara.server.internal.core</groupId>
         <artifactId>core</artifactId>
-        <version>5.2023.1-SNAPSHOT</version>
+        <version>6.2023.2-SNAPSHOT</version>
     </parent>
     <artifactId>api-exporter-fragment</artifactId>
     <name>GlassFish API Exporter Module Fragment</name>
@@ -87,22 +87,22 @@
                                 -->
                                 <Import-Package>
                                     javax.accessibility; \
-                                    javax.activation; \
+                                    jakarta.activation; \
                                     javax.activity; \
-                                    javax.annotation; \
+                                    jakarta.annotation; \
                                     javax.annotation.processing; \
-                                    javax.annotation.security; \
-                                    javax.annotation.sql; \
+                                    jakarta.annotation.security; \
+                                    jakarta.annotation.sql; \
                                     javax.crypto; \
                                     javax.crypto.interfaces; \
                                     javax.crypto.spec; \
-                                    javax.decorator; \
-                                    javax.ejb; \
-                                    javax.ejb.embeddable; \
-                                    javax.ejb.spi; \
-                                    javax.el; \
-                                    javax.enterprise.context; \
-                                    javax.enterprise.context.spi; \
+                                    jakarta.decorator; \
+                                    jakarta.ejb; \
+                                    jakarta.ejb.embeddable; \
+                                    jakarta.ejb.spi; \
+                                    jakarta.el; \
+                                    jakarta.enterprise.context; \
+                                    jakarta.enterprise.context.spi; \
                                     javax.enterprise.deploy.model; \
                                     javax.enterprise.deploy.model.exceptions; \
                                     javax.enterprise.deploy.shared; \
@@ -111,28 +111,28 @@
                                     javax.enterprise.deploy.spi.exceptions; \
                                     javax.enterprise.deploy.spi.factories; \
                                     javax.enterprise.deploy.spi.status; \
-                                    javax.enterprise.event; \
-                                    javax.enterprise.inject; \
-                                    javax.enterprise.inject.spi; \
-                                    javax.enterprise.util; \
-                                    javax.faces; \
-                                    javax.faces.application; \
-                                    javax.faces.bean; \
-                                    javax.faces.component; \
-                                    javax.faces.component.behavior; \
-                                    javax.faces.component.html; \
-                                    javax.faces.component.visit; \
-                                    javax.faces.context; \
-                                    javax.faces.convert; \
-                                    javax.faces.el; \
-                                    javax.faces.event ; \
-                                    javax.faces.lifecycle; \
-                                    javax.faces.model; \
-                                    javax.faces.render; \
-                                    javax.faces.validator; \
-                                    javax.faces.view.facelets; \
-                                    javax.faces.webapp; \
-                                    javax.inject; \
+                                    jakarta.enterprise.event; \
+                                    jakarta.enterprise.inject; \
+                                    jakarta.enterprise.inject.spi; \
+                                    jakarta.enterprise.util; \
+                                    jakarta.faces; \
+                                    jakarta.faces.application; \
+                                    jakarta.faces.bean; \
+                                    jakarta.faces.component; \
+                                    jakarta.faces.component.behavior; \
+                                    jakarta.faces.component.html; \
+                                    jakarta.faces.component.visit; \
+                                    jakarta.faces.context; \
+                                    jakarta.faces.convert; \
+                                    jakarta.faces.el; \
+                                    jakarta.faces.event ; \
+                                    jakarta.faces.lifecycle; \
+                                    jakarta.faces.model; \
+                                    jakarta.faces.render; \
+                                    jakarta.faces.validator; \
+                                    jakarta.faces.view.facelets; \
+                                    jakarta.faces.webapp; \
+                                    jakarta.inject; \
                                     javax.imageio; \
                                     javax.imageio.event; \
                                     javax.imageio.metadata; \
@@ -140,19 +140,19 @@
                                     javax.imageio.plugins.jpeg; \
                                     javax.imageio.spi; \
                                     javax.imageio.stream; \
-                                    javax.interceptor; \
-                                    javax.jms; \
-                                    javax.jws; \
-                                    javax.jws.soap; \
+                                    jakarta.interceptor; \
+                                    jakarta.jms; \
+                                    jakarta.jws; \
+                                    jakarta.jws.soap; \
                                     javax.lang.model; \
                                     javax.lang.model.element; \
                                     javax.lang.model.type; \
                                     javax.lang.model.util; \
-                                    javax.mail; \
-                                    javax.mail.event; \
-                                    javax.mail.internet; \
-                                    javax.mail.search; \
-                                    javax.mail.util; \
+                                    jakarta.mail; \
+                                    jakarta.mail.event; \
+                                    jakarta.mail.internet; \
+                                    jakarta.mail.search; \
+                                    jakarta.mail.util; \
                                     javax.management; \
                                     javax.management.j2ee; \
                                     javax.management.j2ee.statistics; \
@@ -174,20 +174,20 @@
                                     javax.naming.spi; \
                                     javax.net; \
                                     javax.net.ssl; \
-                                    javax.persistence; \
-                                    javax.persistence.criteria; \
-                                    javax.persistence.metamodel; \
-                                    javax.persistence.spi; \
+                                    jakarta.persistence; \
+                                    jakarta.persistence.criteria; \
+                                    jakarta.persistence.metamodel; \
+                                    jakarta.persistence.spi; \
                                     javax.print; \
                                     javax.print.attribute; \
                                     javax.print.attribute.standard; \
                                     javax.print.event; \
-                                    javax.resource; \
-                                    javax.resource.cci; \
-                                    javax.resource.spi; \
-                                    javax.resource.spi.endpoint; \
-                                    javax.resource.spi.security; \
-                                    javax.resource.spi.work; \
+                                    jakarta.resource; \
+                                    jakarta.resource.cci; \
+                                    jakarta.resource.spi; \
+                                    jakarta.resource.spi.endpoint; \
+                                    jakarta.resource.spi.security; \
+                                    jakarta.resource.spi.work; \
                                     javax.rmi; \
                                     javax.rmi.CORBA; \
                                     javax.rmi.ssl; \
@@ -195,27 +195,27 @@
                                     javax.security.auth; \
                                     javax.security.auth.callback; \
                                     javax.security.auth.kerberos; \
-                                    javax.security.auth.message; \
-                                    javax.security.auth.message.callback; \
-                                    javax.security.auth.message.config; \
-                                    javax.security.auth.message.module; \
+                                    jakarta.authentication; \
+                                    jakarta.authentication.callback; \
+                                    jakarta.authentication.config; \
+                                    jakarta.authentication.module; \
                                     javax.security.auth.login; \
                                     javax.security.auth.spi; \
                                     javax.security.auth.x500; \
                                     javax.security.cert; \
-                                    javax.security.jacc; \
+                                    jakarta.authorization; \
                                     javax.security.sasl; \
-                                    javax.servlet; \
-                                    javax.servlet.annotation; \
-                                    javax.servlet.descriptor; \
-                                    javax.servlet.http; \
-                                    javax.servlet.jsp; \
-                                    javax.servlet.jsp.el; \
-                                    javax.servlet.jsp.jstl.core; \
-                                    javax.servlet.jsp.jstl.fmt; \
-                                    javax.servlet.jsp.jstl.sql; \
-                                    javax.servlet.jsp.jstl.tlv; \
-                                    javax.servlet.jsp.tagext; \
+                                    jakarta.servlet; \
+                                    jakarta.servlet.annotation; \
+                                    jakarta.servlet.descriptor; \
+                                    jakarta.servlet.http; \
+                                    jakarta.servlet.jsp; \
+                                    jakarta.servlet.jsp.el; \
+                                    jakarta.servlet.jsp.jstl.core; \
+                                    jakarta.servlet.jsp.jstl.fmt; \
+                                    jakarta.servlet.jsp.jstl.sql; \
+                                    jakarta.servlet.jsp.jstl.tlv; \
+                                    jakarta.servlet.jsp.tagext; \
                                     javax.sound.midi; \
                                     javax.sound.midi.spi; \
                                     javax.sound.sampled; \
@@ -242,22 +242,22 @@
                                     javax.swing.tree; \
                                     javax.swing.undo; \
                                     javax.tools; \
-                                    javax.transaction; \
-                                    javax.validation; \
-                                    javax.validation.bootstrap; \
-                                    javax.validation.constraints; \
-                                    javax.validation.groups; \
-                                    javax.validation.metadata; \
-                                    javax.validation.spi; \
-                                    javax.ws.rs; \
-                                    javax.ws.rs.core; \
-                                    javax.ws.rs.ext; \
-                                    javax.xml.bind; \
-                                    javax.xml.bind.annotation; \
-                                    javax.xml.bind.annotation.adapters; \
-                                    javax.xml.bind.attachment; \
-                                    javax.xml.bind.helpers; \
-                                    javax.xml.bind.util; \
+                                    jakarta.transaction; \
+                                    jakarta.validation; \
+                                    jakarta.validation.bootstrap; \
+                                    jakarta.validation.constraints; \
+                                    jakarta.validation.groups; \
+                                    jakarta.validation.metadata; \
+                                    jakarta.validation.spi; \
+                                    jakarta.ws.rs; \
+                                    jakarta.ws.rs.core; \
+                                    jakarta.ws.rs.ext; \
+                                    jakarta.xml.bind; \
+                                    jakarta.xml.bind.annotation; \
+                                    jakarta.xml.bind.annotation.adapters; \
+                                    jakarta.xml.bind.attachment; \
+                                    jakarta.xml.bind.helpers; \
+                                    jakarta.xml.bind.util; \
                                     javax.xml.crypto; \
                                     javax.xml.crypto.dom; \
                                     javax.xml.crypto.dsig; \
@@ -269,14 +269,7 @@
                                     javax.xml.parsers; \
                                     javax.xml.registry; \
                                     javax.xml.registry.infomodel; \
-                                    javax.xml.rpc; \
-                                    javax.xml.rpc.encoding; \
-                                    javax.xml.rpc.handler; \
-                                    javax.xml.rpc.handler.soap; \
-                                    javax.xml.rpc.holders; \
-                                    javax.xml.rpc.server; \
-                                    javax.xml.rpc.soap; \
-                                    javax.xml.soap; \
+                                    jakarta.xml.soap; \
                                     javax.xml.stream; javax.xml.stream.events; javax.xml.stream.util; \
                                     javax.xml.transform; \
                                     javax.xml.transform.dom; \
@@ -284,14 +277,14 @@
                                     javax.xml.transform.stax; \
                                     javax.xml.transform.stream; \
                                     javax.xml.validation; \
-                                    javax.xml.ws; \
-                                    javax.xml.ws.handler; \
-                                    javax.xml.ws.handler.soap; \
-                                    javax.xml.ws.http; \
-                                    javax.xml.ws.soap; \
-                                    javax.xml.ws.spi; \
-                                    javax.xml.ws.spi.http; \
-                                    javax.xml.ws.wsaddressing; \
+                                    jakarta.xml.ws; \
+                                    jakarta.xml.ws.handler; \
+                                    jakarta.xml.ws.handler.soap; \
+                                    jakarta.xml.ws.http; \
+                                    jakarta.xml.ws.soap; \
+                                    jakarta.xml.ws.spi; \
+                                    jakarta.xml.ws.spi.http; \
+                                    jakarta.xml.ws.wsaddressing; \
                                     javax.xml.xpath; \
                                     org.ietf.jgss; \
                                     org.omg.CORBA; \
@@ -325,6 +318,7 @@
                                     org.w3c.dom.bootstrap; \
                                     org.w3c.dom.events; \
                                     org.w3c.dom.ls; \
+                                    org.w3c.dom.views; \
                                     org.xml.sax; \
                                     org.xml.sax.ext; \
                                     org.xml.sax.helpers; \
@@ -344,9 +338,9 @@
                                     org.glassfish.hk2.security; \
                                     com.sun.faces.config; \
                                     com.sun.jersey.server.impl.container.servlet; \
-                                    org.apache.jasper.runtime; \
+                                    org.glassfish.wasp.runtime; \
                                     com.sun.xml.ws.transport.http.servlet; \
-                                    org.apache.jasper.servlet; \
+                                    org.glassfish.wasp.servlet; \
                                     resolution:=optional
                                 </Import-Package>
                             <Bundle-Description>${project.description}</Bundle-Description> 

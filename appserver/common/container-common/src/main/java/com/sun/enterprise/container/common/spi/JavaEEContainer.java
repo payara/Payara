@@ -42,8 +42,8 @@ package com.sun.enterprise.container.common.spi;
 
 import org.jvnet.hk2.annotations.Contract;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
 
 @Contract
 public interface JavaEEContainer {

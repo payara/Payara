@@ -43,7 +43,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 import static org.testng.AssertJUnit.*;
 import org.testng.annotations.Test;
 
@@ -68,7 +68,7 @@ public class JmsTest extends RestTestBase {
         Map<String, String> ccp_attrs = new HashMap<String, String>() {
             {
                 put("name", poolName);
-                put("connectiondefinition", "javax.jms.ConnectionFactory");
+                put("connectiondefinition", "jakarta.jms.ConnectionFactory");
                 put("raname", "jmsra");
             }
         };
@@ -139,7 +139,7 @@ public class JmsTest extends RestTestBase {
             {
                 put("id", jndiName);
                 put("raname", "jmsra");
-                put("restype", "javax.jms.Topic");
+                put("restype", "jakarta.jms.Topic");
             }
         };
 

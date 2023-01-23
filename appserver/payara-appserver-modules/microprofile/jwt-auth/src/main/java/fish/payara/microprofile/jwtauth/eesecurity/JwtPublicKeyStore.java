@@ -55,9 +55,10 @@ import java.util.Base64;
 import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
-import javax.enterprise.inject.spi.DeploymentException;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
+
+import jakarta.enterprise.inject.spi.DeploymentException;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 import static org.eclipse.microprofile.jwt.config.Names.VERIFIER_PUBLIC_KEY;
@@ -68,13 +69,12 @@ public class JwtPublicKeyStore {
     private static final Logger LOGGER = Logger.getLogger(JwtPublicKeyStore.class.getName());
     private static final String RSA_ALGORITHM = "RSA";
     private static final String EC_ALGORITHM = "EC";
-    
         
     private final Config config;
     private final Supplier<Optional<String>> cacheSupplier;
     private final Duration defaultCacheTTL;
     private String keyLocation = "/publicKey.pem";
-    
+
     /**
      * @param defaultCacheTTL Public key cache TTL 
      */

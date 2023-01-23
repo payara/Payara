@@ -816,12 +816,9 @@ public abstract class GFLauncher {
         List<File> prefixCP = javaConfig.getPrefixClasspath();
         List<File> suffixCP = javaConfig.getSuffixClasspath();
         List<File> profilerCP = profiler.getClasspath();
-        List<File> extCP = Collections.emptyList();
-        if (!jvmOptions.getCombinedMap().containsKey("java.ext.dirs")) {
-            extCP = Collections.singletonList(
-                    new File(info.getInstanceRootDir(), "lib/ext/*")
-            );
-        }
+        List<File> extCP = Collections.singletonList(
+                new File(info.getInstanceRootDir(), "lib/ext/*")
+        );
 
         // create a list of all the classpath pieces in the right order
         List<File> all = new ArrayList<File>();

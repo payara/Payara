@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.config.support;
 
@@ -61,7 +61,7 @@ import org.jvnet.hk2.config.ConfigPopulatorException;
 import org.jvnet.hk2.config.DomDocument;
 import org.jvnet.hk2.config.Populator;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLResolver;
 import javax.xml.stream.XMLStreamException;

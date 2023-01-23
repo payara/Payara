@@ -52,9 +52,9 @@ import org.glassfish.resourcebase.resources.api.ResourceInfo;
 import org.jvnet.hk2.annotations.Contract;
 
 import javax.naming.NamingException;
-import javax.resource.ResourceException;
-import javax.resource.spi.ManagedConnectionFactory;
-import javax.resource.spi.ResourceAdapterAssociation;
+import jakarta.resource.ResourceException;
+import jakarta.resource.spi.ManagedConnectionFactory;
+import jakarta.resource.spi.ResourceAdapterAssociation;
 import javax.security.auth.callback.CallbackHandler;
 import java.util.Hashtable;
 import java.util.List;

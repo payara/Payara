@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2021] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.resources.javamail.admin.cli;
@@ -57,8 +57,8 @@ import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.types.Property;
 
-import javax.inject.Inject;
-import javax.resource.ResourceException;
+import jakarta.inject.Inject;
+import jakarta.resource.ResourceException;
 import java.beans.PropertyVetoException;
 import java.util.HashMap;
 import java.util.Properties;

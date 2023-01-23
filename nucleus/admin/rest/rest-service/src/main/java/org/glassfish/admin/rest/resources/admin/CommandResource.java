@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates.]
+ * Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates.]
  */
 package org.glassfish.admin.rest.resources.admin;
 
@@ -58,11 +58,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.logging.Level;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import javax.security.auth.Subject;
-import javax.ws.rs.*;
-import javax.ws.rs.core.*;
-import javax.ws.rs.core.Response.ResponseBuilder;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.*;
+import jakarta.ws.rs.core.Response.ResponseBuilder;
 import org.glassfish.admin.rest.RestLogging;
 import org.glassfish.admin.rest.utils.SseCommandHelper;
 import org.glassfish.api.ActionReport;

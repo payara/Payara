@@ -37,11 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2021] [Payara Foundation]
 
 package org.glassfish.jts.admin.cli;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.glassfish.api.Param;
 import com.sun.enterprise.config.serverbeans.Server;

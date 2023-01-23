@@ -50,7 +50,7 @@ case "`uname`" in
 esac
 
 AS_INSTALL_LIB="$AS_INSTALL/modules"
-JAVAX_MAIL_JAR=$AS_INSTALL_LIB/jakarta.mail.jar
+jakarta.mail_JAR=$AS_INSTALL_LIB/jakarta.mail.jar
 . "${AS_INSTALL}/config/asenv.conf"
 JAVA=java
 
@@ -62,9 +62,4 @@ fi
 . $(dirname "$0")/jdkcheck
 checkEndorsedAvailable
 
-if [ $? -lt 9 ]
-then 
-    exec "$JAVA" $WSIMPORT_OPTS -Djava.endorsed.dirs="$AS_INSTALL_LIB/endorsed" -cp "$AS_INSTALL_LIB/webservices-osgi.jar:$AS_INSTALL_LIB/jakarta.xml.rpc-api.jar:$AS_INSTALL_LIB/jaxb-osgi.jar:$JAVAX_MAIL_JAR:$JAVA_HOME/lib/tools.jar" com.sun.xml.rpc.tools.wscompile.Main "$@"
-else
-    exec "$JAVA" $WSIMPORT_OPTS -cp "$AS_INSTALL_LIB/webservices-osgi.jar:$AS_INSTALL_LIB/jakarta.xml.rpc-api.jar:$AS_INSTALL_LIB/jaxb-osgi.jar:$JAVAX_MAIL_JAR:$JAVA_HOME/lib/tools.jar:$AS_INSTALL_LIB/jakarta.jws-api.jar:$AS_INSTALL_LIB/webservices-api-osgi.jar:$AS_INSTALL_LIB/jakarta.activation-api.jar" com.sun.xml.rpc.tools.wscompile.Main "$@"
-fi
+exec "$JAVA" $WSIMPORT_OPTS -cp "$AS_INSTALL_LIB/webservices-osgi.jar:$AS_INSTALL_LIB/jaxb-osgi.jar:$AS_INSTALL_LIB/jakarta.xml.bind-api.jar:$JAVAX_MAIL_JAR:$JAVA_HOME/lib/tools.jar:$AS_INSTALL_LIB/jakarta.jws-api.jar:$AS_INSTALL_LIB/webservices-api-osgi.jar:$AS_INSTALL_LIB/jakarta.activation-api.jar:$AS_INSTALL_LIB/jakarta.activation.jar" com.sun.xml.rpc.tools.wscompile.Main "$@"

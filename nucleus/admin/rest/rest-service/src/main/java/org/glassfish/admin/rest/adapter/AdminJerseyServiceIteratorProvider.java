@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2021] [Payara Foundation and/or its affiliates]
 package org.glassfish.admin.rest.adapter;
 
 import java.util.HashMap;
@@ -47,7 +48,6 @@ import java.util.ServiceConfigurationError;
 import org.glassfish.jersey.internal.ServiceFinder;
 import org.glassfish.jersey.internal.ServiceFinder.ServiceIteratorProvider;
 import org.glassfish.jersey.internal.spi.AutoDiscoverable;
-import org.glassfish.jersey.server.spi.ComponentProvider;
 
 /** Goal of this finder is to be fast and efficient.
  * It is hardcoded implementation.
@@ -67,10 +67,10 @@ public class AdminJerseyServiceIteratorProvider extends ServiceIteratorProvider 
                 "org.glassfish.jersey.server.filter.internal.ServerFiltersAutoDiscoverable",
 //                "org.glassfish.jersey.server.wadl.internal.WadlAutoDiscoverable"
         });
-        services.put(ComponentProvider.class.getName(), new String[] { 
+//        services.put(ServerComponentProvider.class.getName(), new String[] {
 //            "org.glassfish.jersey.gf.cdi.CdiComponentProvider", 
 //                "org.glassfish.jersey.gf.ejb.EjbComponentProvider"
-        });
+//        });
     }
     
     private static final ThreadLocal<Boolean> applyDefinedValues = new ThreadLocal<Boolean>() {

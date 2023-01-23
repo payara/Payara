@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2021] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.admin.rest.testing;
@@ -45,10 +45,10 @@ package org.glassfish.admin.rest.testing;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.Map;
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonValue;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonValue;
 
 import static org.glassfish.admin.rest.testing.Common.*;
 

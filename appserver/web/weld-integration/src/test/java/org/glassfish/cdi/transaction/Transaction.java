@@ -40,7 +40,7 @@
 
 package org.glassfish.cdi.transaction;
 
-import javax.transaction.*;
+import jakarta.transaction.*;
 import javax.transaction.xa.XAResource;
 
 /**
@@ -48,7 +48,7 @@ import javax.transaction.xa.XAResource;
  * Date: 12/18/12
  * Time: 11:50 AM
  */
-public class Transaction implements javax.transaction.Transaction {
+public class Transaction implements jakarta.transaction.Transaction {
     private static int counter;
     private int txid;
     public boolean isMarkedRollback;

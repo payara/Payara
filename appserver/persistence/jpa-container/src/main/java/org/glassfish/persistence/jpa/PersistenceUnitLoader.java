@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2021] [Payara Foundation]
 
 package org.glassfish.persistence.jpa;
 
@@ -49,11 +49,11 @@ import com.sun.logging.LogDomains;
 import org.glassfish.persistence.jpa.schemageneration.SchemaGenerationProcessor;
 import org.glassfish.persistence.jpa.schemageneration.SchemaGenerationProcessorFactory;
 
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.ValidationMode;
-import javax.persistence.spi.PersistenceUnitInfo;
-import javax.persistence.spi.PersistenceProvider;
-import javax.persistence.spi.PersistenceUnitTransactionType;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.ValidationMode;
+import jakarta.persistence.spi.PersistenceUnitInfo;
+import jakarta.persistence.spi.PersistenceProvider;
+import jakarta.persistence.spi.PersistenceUnitTransactionType;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
@@ -90,10 +90,10 @@ public class PersistenceUnitLoader {
     private static final String ECLIPSELINK_WEAVING_PROPERTY = "eclipselink.weaving"; // NOI18N
 
     /** Name of property used to specify validation mode */
-    private static final String VALIDATION_MODE_PROPERTY = "javax.persistence.validation.mode";
+    private static final String VALIDATION_MODE_PROPERTY = "jakarta.persistence.validation.mode";
 
     /** Name of property used to specify validator factory */
-    private static final String VALIDATOR_FACTORY = "javax.persistence.validation.factory";
+    private static final String VALIDATOR_FACTORY = "jakarta.persistence.validation.factory";
 
     private static final String DISABLE_UPGRADE_FROM_TOPLINK_ESSENTIALS = "org.glassfish.persistence.jpa.disable.upgrade.from.toplink.essentials";
 

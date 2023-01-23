@@ -46,13 +46,13 @@ import com.sun.enterprise.transaction.config.TransactionService;
 import com.sun.enterprise.transaction.spi.RecoveryResourceHandler;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import javax.naming.NamingException;
 import javax.naming.InitialContext;
 import javax.transaction.xa.XAResource;
-//import javax.jms.Session;
-//import javax.jms.JMSException;
+//import jakarta.jms.Session;
+//import jakarta.jms.JMSException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.*;
@@ -77,8 +77,8 @@ public class LegacyJmsRecoveryResourceHandler implements RecoveryResourceHandler
     @Inject
     private Resources resources;
 
-    static final String JMS_QUEUE_CONNECTION_FACTORY = "javax.jms.QueueConnectionFactory";
-    static final String JMS_TOPIC_CONNECTION_FACTORY = "javax.jms.TopicConnectionFactory";
+    static final String JMS_QUEUE_CONNECTION_FACTORY = "jakarta.jms.QueueConnectionFactory";
+    static final String JMS_TOPIC_CONNECTION_FACTORY = "jakarta.jms.TopicConnectionFactory";
 
     private static final Logger _logger = JMSLoggerInfo.getLogger();
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(LegacyJmsRecoveryResourceHandler.class);
@@ -183,13 +183,13 @@ public class LegacyJmsRecoveryResourceHandler implements RecoveryResourceHandler
                 boolean isQueue;
                 if (next instanceof ExternalJndiResource) {
                     Object objext = ic.lookup(jndiName);
-                    if (!(objext instanceof javax.jms.ConnectionFactory)) {
+                    if (!(objext instanceof jakarta.jms.ConnectionFactory)) {
                         throw new NamingException(localStrings.getLocalString("recovery.unexpected_objtype",
                         "Unexpected object type "+objext.getClass().getName()+" for "+ jndiName,
                         new Object[]{objext.getClass().getName(), jndiName}));
                     }
                     jmsXAConnectionFactory = wrapJMSConnectionFactoryObject(objext);
-                    isQueue = (objext instanceof javax.jms.QueueConnectionFactory);
+                    isQueue = (objext instanceof jakarta.jms.QueueConnectionFactory);
                 }
                 else {
                     jmsXAConnectionFactory = ic.lookup(getXAConnectionFactoryName(jndiName));

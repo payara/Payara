@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2021 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2022 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,11 +43,11 @@ package fish.payara.microprofile.jwtauth.eesecurity;
 import org.eclipse.microprofile.config.Config;
 import org.glassfish.grizzly.http.util.ContentType;
 
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
-import javax.json.JsonValue;
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonReader;
+import jakarta.json.JsonValue;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -110,7 +110,7 @@ public class JwtKeyStoreUtils {
 
         try {
             return readKeyFromURL(keyURL, defaultCacheTTL);
-        } catch(IOException ex) {
+        } catch (IOException ex) {
             throw new IllegalStateException("Failed to read key.", ex);
         }
     }
@@ -129,14 +129,13 @@ public class JwtKeyStoreUtils {
                     } else {
                         charset = Charset.forName(contentType.getCharacterEncoding());
                     }
-                } catch (IllegalCharsetNameException ex){
+                } catch (IllegalCharsetNameException ex) {
                     LOGGER.severe("Charset " + ex.getCharsetName() + " for remote key not supported, Cause: "
                             + ex.getMessage());
                 }
             }
 
         }
-
 
         // There's no guarantee that the response will contain at most one Cache-Control header and at most one max-age
         // directive. Here, we apply the smallest of all max-age directives.
@@ -146,11 +145,11 @@ public class JwtKeyStoreUtils {
                 .flatMap(headerValue -> Stream.of(headerValue.split(",")))
                 .filter(directive -> directive.trim().startsWith("max-age"))
                 .map(maxAgeDirective -> {
-                    String[] keyValue = maxAgeDirective.split("=",2);
-                    String maxAge = keyValue[keyValue.length-1];
+                    String[] keyValue = maxAgeDirective.split("=", 2);
+                    String maxAge = keyValue[keyValue.length - 1];
                     try {
                         return Duration.ofSeconds(Long.parseLong(maxAge));
-                    } catch(NumberFormatException e) {
+                    } catch (NumberFormatException e) {
                         return null;
                     }
                 })
@@ -159,7 +158,7 @@ public class JwtKeyStoreUtils {
                 .orElse(defaultCacheTTL);
 
         try (InputStream inputStream = urlConnection.getInputStream();
-             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, charset))){
+                BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, charset))) {
             String keyContents = reader.lines().collect(Collectors.joining(System.lineSeparator()));
             return CacheableString.from(keyContents, cacheTTL);
         }
@@ -173,7 +172,7 @@ public class JwtKeyStoreUtils {
             // if jwks is encoded
             byte[] jwksDecodedValue = Base64.getDecoder().decode(jwksValue);
             try (InputStream jwksStream = new ByteArrayInputStream(jwksDecodedValue);
-                 JsonReader reader = Json.createReader(jwksStream)) {
+                    JsonReader reader = Json.createReader(jwksStream)) {
                 jwks = reader.readObject();
             }
         }
@@ -195,4 +194,3 @@ public class JwtKeyStoreUtils {
         throw new IllegalStateException("No matching JWK for KeyID.");
     }
 }
-

@@ -41,9 +41,9 @@
 package sfulnoi;
 
 import java.io.*;
-import javax.servlet.*;
-import javax.servlet.http.*;
-import javax.ejb.EJB;
+import jakarta.servlet.*;
+import jakarta.servlet.http.*;
+import jakarta.ejb.EJB;
 
 public class SfulServlet extends HttpServlet {
    

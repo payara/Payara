@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2022 Payara Foundation and/or its affiliates
 package com.sun.gjc.spi;
 
 import com.sun.gjc.common.DataSourceObjectBuilder;
@@ -67,20 +67,14 @@ public abstract class JdbcObjectsFactory implements Serializable {
     }
 
     /**
-     * Returns JDBC Objet Factory for JDBC 3.0 or JDBC 4.0 depending upon the jdbc version<br>
-     * available in JDK.<br>
+     * Returns the Object Factory.
      *
      * @return JdbcObjectsFactory
      */
     public static JdbcObjectsFactory getInstance() {
-        boolean jdbc40 = DataSourceObjectBuilder.isJDBC40();
         JdbcObjectsFactory factory = null;
         try {
-            if (jdbc40) {
-                factory = (JdbcObjectsFactory) Class.forName("com.sun.gjc.spi.jdbc40.Jdbc40ObjectsFactory").newInstance();
-            } else {
-                factory = (JdbcObjectsFactory) Class.forName("com.sun.gjc.spi.jdbc30.Jdbc30ObjectsFactory").newInstance();
-            }
+            factory = (JdbcObjectsFactory) Class.forName("com.sun.gjc.spi.jdbc40.Jdbc40ObjectsFactory").newInstance();
         } catch (Exception e) {
             _logger.log(Level.WARNING, "jdbc.jdbc_factory_class_load_exception", e);
         }
@@ -95,7 +89,7 @@ public abstract class JdbcObjectsFactory implements Serializable {
      * @return DataSource
      */
     public abstract javax.sql.DataSource getDataSourceInstance(ManagedConnectionFactoryImpl mcfObject,
-                                                               javax.resource.spi.ConnectionManager cmObject);
+                                                               jakarta.resource.spi.ConnectionManager cmObject);
 
     /**
      * To get an instance of ConnectionHolder.<br>
@@ -109,7 +103,7 @@ public abstract class JdbcObjectsFactory implements Serializable {
      */
     public abstract ConnectionHolder getConnection(Connection conObject,
                                                    ManagedConnectionImpl mcObject,
-                                                   javax.resource.spi.ConnectionRequestInfo criObject,
+                                                   jakarta.resource.spi.ConnectionRequestInfo criObject,
                                                    boolean statementWrapping,
                                                    SQLTraceDelegator sqlTraceDelegator);
 

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2021] [Payara Foundation]
 package org.glassfish.security.services.config;
 
 import org.jvnet.hk2.config.Attribute;
@@ -46,7 +46,7 @@ import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.DuckTyped;
 import org.jvnet.hk2.config.Element;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 import java.beans.PropertyVetoException;
 import java.util.List;
 

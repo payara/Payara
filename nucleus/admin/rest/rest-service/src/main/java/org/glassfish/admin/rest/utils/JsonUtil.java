@@ -38,7 +38,7 @@
  * holder.
  * 
  */
-// Portions Copyright [2017-2019] Payara Foundation and/or affiliates
+// Portions Copyright [2017-2021] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.rest.utils;
 
@@ -54,8 +54,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import javax.json.*;
-import javax.json.JsonValue.ValueType;
+import jakarta.json.*;
+import jakarta.json.JsonValue.ValueType;
 import org.glassfish.admin.rest.composite.RestModel;
 import org.glassfish.admin.rest.composite.metadata.Confidential;
 import org.glassfish.admin.rest.model.ResponseBody;

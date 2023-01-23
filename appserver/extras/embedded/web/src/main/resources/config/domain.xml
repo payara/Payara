@@ -3,7 +3,7 @@
 <!--
    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-   Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
+   Copyright (c) [2017-2022] Payara Foundation and/or its affiliates. All rights reserved.
 
    The contents of this file are subject to the terms of either the GNU
    General Public License Version 2 only ("GPL") or the Common Development
@@ -92,12 +92,12 @@
             <iiop-service>
                 <orb use-thread-pool-ids="thread-pool-1" />
                 <iiop-listener address="0.0.0.0" port="3700" id="orb-listener-1" lazy-init="true" />
-                <ssl ssl3-enabled="false" />
+                <ssl />
                 <iiop-listener security-enabled="true" address="0.0.0.0" port="3820" id="SSL">
-                    <ssl ssl3-enabled="false" classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" cert-nickname="s1as" />
+                    <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" cert-nickname="s1as" />
                 </iiop-listener>
                 <iiop-listener security-enabled="true" address="0.0.0.0" port="3920" id="SSL_MUTUALAUTH">
-                    <ssl ssl3-enabled="false" classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" cert-nickname="s1as" client-auth-enabled="true" />
+                    <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" cert-nickname="s1as" client-auth-enabled="true" />
                 </iiop-listener>
             </iiop-service>
             <admin-service auth-realm-name="admin-realm" type="das-and-server" system-jmx-connector-name="system">
@@ -137,10 +137,7 @@
                     <property value="fileRealm" name="jaas-context" />
                 </auth-realm>
                 <auth-realm classname="com.sun.enterprise.security.auth.realm.certificate.CertificateRealm" name="certificate" />
-                <jacc-provider policy-configuration-factory-provider="com.sun.enterprise.security.provider.PolicyConfigurationFactoryImpl" policy-provider="com.sun.enterprise.security.provider.PolicyWrapper" name="default">
-                    <property value="${com.sun.aas.instanceRoot}/generated/policy" name="repository" />
-                </jacc-provider>
-                <jacc-provider policy-configuration-factory-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyConfigurationFactory" policy-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyProvider" name="simple" />
+                <jacc-provider policy-configuration-factory-provider="fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl" policy-provider="fish.payara.security.jacc.provider.PolicyProviderImpl" name="default"></jacc-provider>
                 <audit-module classname="com.sun.enterprise.security.ee.Audit" name="default">
                     <property value="false" name="auditOn" />
                 </audit-module>
@@ -199,8 +196,8 @@
                 <jvm-options>-Djava.security.policy=${com.sun.aas.instanceRoot}/config/server.policy</jvm-options>
                 <jvm-options>-Djavax.management.builder.initial=com.sun.enterprise.v3.admin.AppServerMBeanServerBuilder</jvm-options>
                 <jvm-options>-Dcom.sun.enterprise.security.httpsOutboundKeyAlias=s1as</jvm-options>
-                <jvm-options>-Djavax.net.ssl.keyStore=${com.sun.aas.instanceRoot}/config/keystore.jks</jvm-options>
-                <jvm-options>-Djavax.net.ssl.trustStore=${com.sun.aas.instanceRoot}/config/cacerts.jks</jvm-options>
+                <jvm-options>-Djavax.net.ssl.keyStore=${com.sun.aas.instanceRoot}/config/keystore.p12</jvm-options>
+                <jvm-options>-Djavax.net.ssl.trustStore=${com.sun.aas.instanceRoot}/config/cacerts.p12</jvm-options>
                 <jvm-options>-Djavax.xml.accessExternalSchema=all</jvm-options>
                 <jvm-options>-Djdbc.drivers=org.h2.Driver</jvm-options>
                 <jvm-options>-Djdk.corba.allowOutputStreamSubclass=true</jvm-options>
@@ -240,17 +237,10 @@
                 <jvm-options>-Dorg.jboss.weld.serialization.beanIdentifierIndexOptimization=false</jvm-options>
                 <jvm-options>-Dorg.glassfish.grizzly.DEFAULT_MEMORY_MANAGER=org.glassfish.grizzly.memory.HeapMemoryManager</jvm-options>
                 <jvm-options>-Dorg.glassfish.grizzly.nio.DefaultSelectorHandler.force-selector-spin-detection=true</jvm-options>
-                <jvm-options>[|8]-Djava.endorsed.dirs=${com.sun.aas.installRoot}/modules/endorsed${path.separator}${com.sun.aas.installRoot}/lib/endorsed</jvm-options>
-                <jvm-options>[|8]-Djava.ext.dirs=${com.sun.aas.javaRoot}/lib/ext${path.separator}${com.sun.aas.javaRoot}/jre/lib/ext${path.separator}${com.sun.aas.instanceRoot}/lib/ext</jvm-options>
                 <!-- Grizzly NPN Bootstrap compatible with used JDK version -->
-                <jvm-options>[1.8.0|1.8.0u120]-Xbootclasspath/p:${com.sun.aas.installRoot}/lib/grizzly-npn-bootstrap-1.6.jar</jvm-options>
-                <jvm-options>[1.8.0u121|1.8.0u160]-Xbootclasspath/p:${com.sun.aas.installRoot}/lib/grizzly-npn-bootstrap-1.7.jar</jvm-options>
-                <jvm-options>[1.8.0u161|1.8.0u190]-Xbootclasspath/p:${com.sun.aas.installRoot}/lib/grizzly-npn-bootstrap-1.8.jar</jvm-options>
-                <jvm-options>[1.8.0u191|1.8.0u250]-Xbootclasspath/p:${com.sun.aas.installRoot}/lib/grizzly-npn-bootstrap-1.8.1.jar</jvm-options>
-                <jvm-options>[1.8.0u251|]-Xbootclasspath/a:${com.sun.aas.installRoot}/lib/grizzly-npn-api.jar</jvm-options>
-                <jvm-options>[Azul-1.8.0u222|1.8.0u260]-XX:+UseOpenJSSE</jvm-options>
-                <!-- allow asadmin command enable-monitoring for JDK 9+ -->
-                <jvm-options>[9|]-Djdk.attach.allowAttachSelf=true</jvm-options>
+                <jvm-options>-Xbootclasspath/a:${com.sun.aas.installRoot}/lib/grizzly-npn-api.jar</jvm-options>
+                <!-- allow asadmin command enable-monitoring -->
+                <jvm-options>-Djdk.attach.allowAttachSelf=true</jvm-options>
             </java-config>
             <network-config>
                 <protocols>
@@ -258,13 +248,13 @@
                         <http default-virtual-server="server" max-connections="250">
                             <file-cache enabled="false"></file-cache>
                         </http>
-                        <ssl ssl3-enabled="false" />
+                        <ssl />
                     </protocol>
                     <protocol security-enabled="true" name="https-listener">
                         <http default-virtual-server="server" max-connections="250">
                             <file-cache enabled="false"></file-cache>
                         </http>
-                        <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" ssl3-enabled="false" cert-nickname="s1as"></ssl>
+                        <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" cert-nickname="s1as"></ssl>
                     </protocol>
                     <protocol name="admin-listener">
                         <http default-virtual-server="__asadmin" max-connections="250" encoded-slash-enabled="true">

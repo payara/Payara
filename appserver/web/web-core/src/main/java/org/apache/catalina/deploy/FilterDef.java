@@ -55,13 +55,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2021] Payara Foundation and/or affiliates
 
 package org.apache.catalina.deploy;
 
 import org.apache.catalina.util.Enumerator;
 
-import javax.servlet.Filter;
+import jakarta.servlet.Filter;
 import java.io.Serializable;
 import java.util.*;
 

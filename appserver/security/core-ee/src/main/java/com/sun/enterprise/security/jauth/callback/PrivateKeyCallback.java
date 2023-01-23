@@ -52,19 +52,19 @@ import javax.security.auth.x500.X500Principal;
  * @version %I%, %G%
  */
 public class PrivateKeyCallback 
-        extends javax.security.auth.message.callback.PrivateKeyCallback {
+        extends jakarta.security.auth.message.callback.PrivateKeyCallback {
 
     /**
      * Marker interface for private key request types.
      */
     public static interface Request extends
-            javax.security.auth.message.callback.PrivateKeyCallback.Request { };
+            jakarta.security.auth.message.callback.PrivateKeyCallback.Request { };
 
     /**
      * Request type for private keys that are identified via an alias.
      */
     public static class AliasRequest extends
-            javax.security.auth.message.callback.PrivateKeyCallback.AliasRequest
+            jakarta.security.auth.message.callback.PrivateKeyCallback.AliasRequest
             implements Request {
 
         /**
@@ -88,7 +88,7 @@ public class PrivateKeyCallback
      * Request type for private keys that are identified via a SubjectKeyID
      */
     public static class SubjectKeyIDRequest extends
-            javax.security.auth.message.callback.PrivateKeyCallback.SubjectKeyIDRequest
+            jakarta.security.auth.message.callback.PrivateKeyCallback.SubjectKeyIDRequest
             implements Request {
 
         /**
@@ -113,7 +113,7 @@ public class PrivateKeyCallback
      * issuer/serial number.
      */
     public static class IssuerSerialNumRequest extends
-           javax.security.auth.message.callback.PrivateKeyCallback.IssuerSerialNumRequest
+           jakarta.security.auth.message.callback.PrivateKeyCallback.IssuerSerialNumRequest
            implements Request {
 
         /**

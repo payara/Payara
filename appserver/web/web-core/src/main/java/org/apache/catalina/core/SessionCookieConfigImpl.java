@@ -37,33 +37,41 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
-
+// Portions Copyright [2019-2022] Payara Foundation and/or affiliates
 package org.apache.catalina.core;
 
 import org.apache.catalina.LogFacade;
-
+import static org.apache.catalina.core.Constants.COOKIE_DOMAIN_ATTR;
+import static org.apache.catalina.core.Constants.COOKIE_HTTP_ONLY_ATTR;
+import static org.apache.catalina.core.Constants.COOKIE_MAX_AGE_ATTR;
+import static org.apache.catalina.core.Constants.COOKIE_PATH_ATTR;
+import static org.apache.catalina.core.Constants.COOKIE_SECURE_ATTR;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
-import javax.servlet.SessionCookieConfig;
+import jakarta.servlet.SessionCookieConfig;
+import static java.lang.String.CASE_INSENSITIVE_ORDER;
+import java.util.Collections;
+import static java.util.Collections.unmodifiableMap;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
- * Class that may be used to configure various properties of cookies 
- * used for session tracking purposes.
+ * Class that may be used to configure various properties of cookies used for
+ * session tracking purposes.
  */
 public class SessionCookieConfigImpl implements SessionCookieConfig {
 
-    private String name;
-    private String domain;
-    private String path;
-    private String comment;
-    private boolean httpOnly = true;
-    private boolean secure;
+    private String name = DEFAULT_NAME;
     private final StandardContext ctx;
-    private int maxAge = -1;
+    private Map<String, String> attributes;
 
     private static final ResourceBundle rb = LogFacade.getLogger().getResourceBundle();
 
+    private static final boolean DEFAULT_HTTP_ONLY = false;
+    private static final int DEFAULT_MAX_AGE = -1;
+    private static final String DEFAULT_NAME = "JSESSIONID";
+    private static final boolean DEFAULT_SECURE = false;
+    private static final String RESERVED_CHAR = ";, ";
 
     /**
      * Constructor
@@ -72,212 +80,267 @@ public class SessionCookieConfigImpl implements SessionCookieConfig {
         this.ctx = ctx;
     }
 
-
     /**
      * @param name the cookie name to use
      *
-     * @throws IllegalStateException if the <tt>ServletContext</tt>
-     * from which this <tt>SessionCookieConfig</tt> was acquired has
-     * already been initialized
+     * @throws IllegalStateException if the <code>ServletContext</code> from
+     * which this <code>SessionCookieConfig</code> was acquired has already been
+     * initialized
      */
     @Override
     public void setName(String name) {
-        if (ctx.isContextInitializedCalled()) {
-            String msg = MessageFormat.format(rb.getString(LogFacade.SESSION_COOKIE_CONFIG_ALREADY_INIT),
-                                              new Object[] {"name", ctx.getName()});
-            throw new IllegalStateException(msg);
-        }
-
+        checkContextInitialized("name");
         this.name = name;
         ctx.setSessionCookieName(name);
     }
 
-
     /**
      * @return the cookie name set via {@link #setName}, or
-     * <tt>JSESSIONID</tt> if {@link #setName} was never called
+     * <code>JSESSIONID</code> if {@link #setName} was never called
      */
     @Override
     public String getName() {
         return name;
     }
 
-
     /**
      * @param domain the cookie domain to use
      *
-     * @throws IllegalStateException if the <tt>ServletContext</tt>
-     * from which this <tt>SessionCookieConfig</tt> was acquired has
-     * already been initialized
+     * @throws IllegalStateException if the <code>ServletContext</code> from
+     * which this <code>SessionCookieConfig</code> was acquired has already been
+     * initialized
      */
     @Override
     public void setDomain(String domain) {
-        if (ctx.isContextInitializedCalled()) {
-            String msg = MessageFormat.format(rb.getString(LogFacade.SESSION_COOKIE_CONFIG_ALREADY_INIT),
-                                              new Object[] {"dnmain", ctx.getName()});
-            throw new IllegalStateException(msg);
-        }
-
-        this.domain = domain;
+        checkContextInitialized("domain");
+        setAttribute(COOKIE_DOMAIN_ATTR, domain);
     }
-
 
     /**
      * @return the cookie domain set via {@link #setDomain}, or
-     * <tt>null</tt> if {@link #setDomain} was never called
+     * <code>null</code> if {@link #setDomain} was never called
      */
     @Override
     public String getDomain() {
-        return domain;
+        return getAttribute(COOKIE_DOMAIN_ATTR);
     }
-
 
     /**
      * @param path the cookie path to use
      *
-     * @throws IllegalStateException if the <tt>ServletContext</tt>
-     * from which this <tt>SessionCookieConfig</tt> was acquired has
-     * already been initialized
+     * @throws IllegalStateException if the <code>ServletContext</code> from
+     * which this <code>SessionCookieConfig</code> was acquired has already been
+     * initialized
      */
     @Override
     public void setPath(String path) {
-        if (ctx.isContextInitializedCalled()) {
-            String msg = MessageFormat.format(rb.getString(LogFacade.SESSION_COOKIE_CONFIG_ALREADY_INIT),
-                                              new Object[] {"path", ctx.getName()});
-            throw new IllegalStateException(msg);
-        }
-
-        this.path = path;
+        checkContextInitialized("path");
+        setAttribute(COOKIE_PATH_ATTR, path);
     }
 
-
     /**
-     * @return the cookie path set via {@link #setPath}, or the context
-     * path of the <tt>ServletContext</tt> from which this 
-     * <tt>SessionCookieConfig</tt> was acquired if {@link #setPath}
-     * was never called
+     * @return the cookie path set via {@link #setPath}, or the context path of
+     * the <code>ServletContext</code> from which this
+     * <code>SessionCookieConfig</code> was acquired if {@link #setPath} was
+     * never called
      */
     @Override
     public String getPath() {
-        return path;
+        return getAttribute(COOKIE_PATH_ATTR);
     }
-
 
     /**
      * @param comment the cookie comment to use
      *
-     * @throws IllegalStateException if the <tt>ServletContext</tt>
-     * from which this <tt>SessionCookieConfig</tt> was acquired has
-     * already been initialized
+     * @throws IllegalStateException if the <code>ServletContext</code> from
+     * which this <code>SessionCookieConfig</code> was acquired has already been
+     * initialized
      */
     @Override
+    @Deprecated
     public void setComment(String comment) {
-        if (ctx.isContextInitializedCalled()) {
-            String msg = MessageFormat.format(rb.getString(LogFacade.SESSION_COOKIE_CONFIG_ALREADY_INIT),
-                                              new Object[] {"comment", ctx.getName()});
-            throw new IllegalStateException(msg);
-        }
-
-        this.comment = comment;
+        checkContextInitialized("comment");
+        setAttribute(Constants.COOKIE_COMMENT_ATTR, comment);
     }
-
 
     /**
      * @return the cookie comment set via {@link #setComment}, or
-     * <tt>null</tt> if {@link #setComment} was never called
+     * <code>null</code> if {@link #setComment} was never called
      */
     @Override
+    @Deprecated
     public String getComment() {
-        return comment;
+        return getAttribute(Constants.COOKIE_COMMENT_ATTR);
     }
 
-
     /**
-     * @param httpOnly true if the session tracking cookies created
-     * on behalf of the <tt>ServletContext</tt> from which this
-     * <tt>SessionCookieConfig</tt> was acquired shall be marked as
+     * @param httpOnly true if the session tracking cookies created on behalf of
+     * the <code>ServletContext</code> from which this
+     * <code>SessionCookieConfig</code> was acquired shall be marked as
      * <i>HttpOnly</i>, false otherwise
      *
-     * @throws IllegalStateException if the <tt>ServletContext</tt>
-     * from which this <tt>SessionCookieConfig</tt> was acquired has
-     * already been initialized
+     * @throws IllegalStateException if the <code>ServletContext</code> from
+     * which this <code>SessionCookieConfig</code> was acquired has already been
+     * initialized
      */
     @Override
     public void setHttpOnly(boolean httpOnly) {
-        if (ctx.isContextInitializedCalled()) {
-            String msg = MessageFormat.format(rb.getString(LogFacade.SESSION_COOKIE_CONFIG_ALREADY_INIT),
-                                              new Object[] {"httpOnly", ctx.getName()});
-            throw new IllegalStateException(msg);
-        }
-
-        this.httpOnly = httpOnly;
+        checkContextInitialized("httpOnly");
+        setAttribute(COOKIE_HTTP_ONLY_ATTR, String.valueOf(httpOnly));
     }
-
 
     /**
      * @return true if the session tracking cookies created on behalf of the
-     * <tt>ServletContext</tt> from which this <tt>SessionCookieConfig</tt>
-     * was acquired will be marked as <i>HttpOnly</i>, false otherwise
+     * <code>ServletContext</code> from which this
+     * <code>SessionCookieConfig</code> was acquired will be marked as
+     * <i>HttpOnly</i>, false otherwise
      */
     @Override
     public boolean isHttpOnly() {
-        return httpOnly;
+        String value = getAttribute(COOKIE_HTTP_ONLY_ATTR);
+        return value == null ? DEFAULT_HTTP_ONLY : Boolean.parseBoolean(value);
     }
 
-
     /**
-     * @param secure true if the session tracking cookies created on
-     * behalf of the <tt>ServletContext</tt> from which this
-     * <tt>SessionCookieConfig</tt> was acquired shall be marked as
+     * @param secure true if the session tracking cookies created on behalf of
+     * the <code>ServletContext</code> from which this
+     * <code>SessionCookieConfig</code> was acquired shall be marked as
      * <i>secure</i> even if the request that initiated the corresponding
-     * session is using plain HTTP instead of HTTPS, and false if they
-     * shall be marked as <i>secure</i> only if the request that initiated
-     * the corresponding session was also secure
+     * session is using plain HTTP instead of HTTPS, and false if they shall be
+     * marked as <i>secure</i> only if the request that initiated the
+     * corresponding session was also secure
      *
-     * @throws IllegalStateException if the <tt>ServletContext</tt>
-     * from which this <tt>SessionCookieConfig</tt> was acquired has
-     * already been initialized
+     * @throws IllegalStateException if the <code>ServletContext</code> from
+     * which this <code>SessionCookieConfig</code> was acquired has already been
+     * initialized
      */
     @Override
     public void setSecure(boolean secure) {
-        if (ctx.isContextInitializedCalled()) {
-            String msg = MessageFormat.format(rb.getString(LogFacade.SESSION_COOKIE_CONFIG_ALREADY_INIT),
-                                              new Object[] {"secure", ctx.getName()});
-            throw new IllegalStateException(msg);
-        }
-
-        this.secure = secure;
+        checkContextInitialized("secure");
+        setAttribute(COOKIE_SECURE_ATTR, String.valueOf(secure));
     }
-
 
     /**
      * @return true if the session tracking cookies created on behalf of the
-     * <tt>ServletContext</tt> from which this <tt>SessionCookieConfig</tt>
-     * was acquired will be marked as <i>secure</i> even if the request
-     * that initiated the corresponding session is using plain HTTP
-     * instead of HTTPS, and false if they will be marked as <i>secure</i>
-     * only if the request that initiated the corresponding session was
-     * also secure
+     * <code>ServletContext</code> from which this
+     * <code>SessionCookieConfig</code> was acquired will be marked as
+     * <i>secure</i> even if the request that initiated the corresponding
+     * session is using plain HTTP instead of HTTPS, and false if they will be
+     * marked as <i>secure</i>
+     * only if the request that initiated the corresponding session was also
+     * secure
      */
     @Override
     public boolean isSecure() {
-        return secure;
+        String value = getAttribute(COOKIE_SECURE_ATTR);
+        return value == null ? DEFAULT_SECURE : Boolean.parseBoolean(value);
     }
 
     @Override
     public void setMaxAge(int maxAge) {
-        if (ctx.isContextInitializedCalled()) {
-            String msg = MessageFormat.format(rb.getString(LogFacade.SESSION_COOKIE_CONFIG_ALREADY_INIT),
-                                              new Object[] {"maxAge", ctx.getName()});
-            throw new IllegalStateException(msg);
-        }
-
-        this.maxAge = maxAge;
+        checkContextInitialized("maxAge");
+        setAttribute(COOKIE_MAX_AGE_ATTR, String.valueOf(maxAge));
     }
 
     @Override
     public int getMaxAge() {
-        return maxAge;
+        String value = getAttribute(COOKIE_MAX_AGE_ATTR);
+        return value == null ? DEFAULT_MAX_AGE : Integer.parseInt(value);
+    }
+
+    /**
+     * Sets the value for the given session cookie attribute.
+     *
+     * @param name Name of attribute to set, case insensitive
+     * @param value Value of attribute
+     *
+     * @throws IllegalStateException if the associated ServletContext has
+     * already been initialized
+     *
+     * @throws IllegalArgumentException If the attribute name is null or
+     * contains any characters not permitted for use in Cookie names.
+     *
+     * @throws NumberFormatException If the attribute is known to be numerical
+     * but the provided value cannot be parsed to a number.
+     */
+    @Override
+    public void setAttribute(String name, String value) {
+        checkContextInitialized("attribute");
+        if (name == null || name.isEmpty()) {
+            throw new IllegalArgumentException("attribute name cannot be null");
+        }
+        if (hasReservedCharacters(name)) {
+            throw new IllegalArgumentException("Invalid attribute name " + name);
+        }
+
+        if (COOKIE_MAX_AGE_ATTR.equalsIgnoreCase(name) && value != null) {
+            Integer.parseInt(value);
+        }
+        if (this.attributes == null) {
+            this.attributes = new TreeMap<>(CASE_INSENSITIVE_ORDER);
+        }
+        this.attributes.put(name, value);
+    }
+
+    /**
+     * Get the value for a given session cookie attribute.
+     *
+     * @param name Name of attribute
+     *
+     * @return Value of specified attribute
+     *
+     */
+    @Override
+    public String getAttribute(String name) {
+        if (this.attributes == null) {
+            return null;
+        }
+        return this.attributes.get(name);
+    }
+
+    /**
+     * Get all the session cookie attributes in case insensitive order
+     *
+     * @return A read-only Map of attributes.
+     *
+     */
+    @Override
+    public Map<String, String> getAttributes() {
+        if (this.attributes == null) {
+            Collections.emptyMap();
+        }
+        return unmodifiableMap(this.attributes);
+    }
+
+    /**
+     * Validate if the associated ServletContext has already been initialized
+     */
+    private void checkContextInitialized(String param) {
+        if (ctx.isContextInitializedCalled()) {
+            String msg = MessageFormat.format(
+                    rb.getString(LogFacade.SESSION_COOKIE_CONFIG_ALREADY_INIT),
+                    new Object[]{param, ctx.getName()}
+            );
+            throw new IllegalStateException(msg);
+        }
+    }
+
+    /*
+     * validate if the attribute name contains a reserved characters (semi-colon, comma and white space).
+     * 
+     * @param value the <code>String</code> to be tested
+     *
+     * @return <code>true</code> if the <code>String</code> contains a reserved character;
+     * <code>false</code> otherwise
+     */
+    private static boolean hasReservedCharacters(String value) {
+        for (int i = 0; i < value.length(); i++) {
+            char c = value.charAt(i);
+            if (RESERVED_CHAR.indexOf(c) != -1) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

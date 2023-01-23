@@ -45,7 +45,7 @@
  */
  
 package com.sun.jdo.api.persistence.support;
-import javax.transaction.*;
+import jakarta.transaction.*;
 
 /** The JDO Transaction interface is a sub-interface of the PersistenceManager
  * that deals with options and completion of transactions under user control.
@@ -54,7 +54,7 @@ import javax.transaction.*;
  * control should be used for the current transaction, and whether values
  * should be retained in JDO instances after transaction completion.
  *
- * <P>Transaction completion methods have the same semantics as javax.transaction
+ * <P>Transaction completion methods have the same semantics as jakarta.transaction
  * UserTransaction, and are valid only in the non-managed, non-distributed
  * transaction environment.
  * @author Craig Russell

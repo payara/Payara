@@ -55,25 +55,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2022] Payara Foundation and/or affiliates
 
 package org.apache.catalina.valves;
 
 
+import jakarta.ws.rs.WebApplicationException;
 import org.apache.catalina.HttpResponse;
 import org.apache.catalina.LogFacade;
 import org.apache.catalina.Logger;
 import org.apache.catalina.Request;
 import org.apache.catalina.Response;
+import org.apache.catalina.core.StandardWrapper;
 import org.apache.catalina.util.ServerInfo;
 import org.apache.catalina.util.StringManager;
 import org.glassfish.web.util.HtmlEntityEncoder;
 
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.Writer;
 import java.text.MessageFormat;
@@ -210,14 +212,17 @@ public class ErrorReportValve extends ValveBase {
             }
             // END IT 13858
 
-            /* GlassFish 6386229
-            if (sresponse instanceof HttpServletResponse)
-                ((HttpServletResponse) sresponse).sendError
-                    (HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            */
-            // START GlassFish 6386229
-            sresponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            // END GlassFish 6386229
+            // Fix for Core Profile CustomJsonbSerializationIT#testMissingClientSerializationWithCDIProvider test, which
+            // throws a WebApplicationException with a 400 error status while deserialising and expects to get said status
+            int errorCode = HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+            if (throwable instanceof ServletException) {
+                Throwable rootCause = StandardWrapper.getRootCause((ServletException) throwable);
+                if (rootCause instanceof WebApplicationException) {
+                    errorCode = ((WebApplicationException) rootCause).getResponse().getStatus();
+                }
+            }
+
+            sresponse.sendError(errorCode);
         }
 
         response.setSuspended(false);

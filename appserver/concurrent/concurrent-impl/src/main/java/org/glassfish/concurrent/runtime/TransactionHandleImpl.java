@@ -43,7 +43,7 @@ package org.glassfish.concurrent.runtime;
 
 import org.glassfish.enterprise.concurrent.spi.TransactionHandle;
 
-import javax.transaction.Transaction;
+import jakarta.transaction.Transaction;
 
 public class TransactionHandleImpl implements TransactionHandle {
 

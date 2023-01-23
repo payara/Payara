@@ -38,26 +38,26 @@
  * holder.
  */
 
-// Portions Copyright [2016-2018] [Payara Foundation]
+// Portions Copyright [2016-2021] [Payara Foundation]
 
 package org.glassfish.cdi.transaction;
 
 import static java.util.logging.Level.FINE;
-import static javax.transaction.Transactional.TxType.NOT_SUPPORTED;
+import static jakarta.transaction.Transactional.TxType.NOT_SUPPORTED;
 
 import java.util.logging.Logger;
 
-import javax.annotation.Priority;
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.Interceptor;
-import javax.interceptor.InvocationContext;
-import javax.transaction.Transaction;
-import javax.transaction.Transactional;
-import javax.transaction.TransactionalException;
+import jakarta.annotation.Priority;
+import jakarta.interceptor.AroundInvoke;
+import jakarta.interceptor.Interceptor;
+import jakarta.interceptor.InvocationContext;
+import jakarta.transaction.Transaction;
+import jakarta.transaction.Transactional;
+import jakarta.transaction.TransactionalException;
 
 /**
  * Transactional annotation Interceptor class for NotSupported transaction type, ie
- * javax.transaction.Transactional.TxType.NOT_SUPPORTED If called outside a transaction context,
+ * jakarta.transaction.Transactional.TxType.NOT_SUPPORTED If called outside a transaction context,
  * managed bean method execution will then continue outside a transaction context. If called inside
  * a transaction context, the current transaction context will be suspended, the managed bean method
  * execution will then continue outside a transaction context, and the previously suspended

@@ -43,7 +43,7 @@ import java.security.Principal;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 import javax.security.auth.Subject;
 import javax.security.auth.login.LoginException;
 

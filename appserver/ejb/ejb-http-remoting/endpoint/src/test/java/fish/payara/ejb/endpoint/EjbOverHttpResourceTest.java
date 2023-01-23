@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -55,17 +55,17 @@ import java.net.ServerSocket;
 import java.net.URI;
 import java.util.*;
 
-import javax.ejb.Remote;
-import javax.ejb.Stateless;
+import jakarta.ejb.Remote;
+import jakarta.ejb.Stateless;
 import javax.naming.NamingException;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.Application;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.UriBuilder;
+import jakarta.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.client.WebTarget;
+import jakarta.ws.rs.core.Application;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.UriBuilder;
 
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
@@ -356,7 +356,7 @@ public class EjbOverHttpResourceTest {
         Object argValues = isJavaObjectSerialisation() ? new byte[] { 42 } : Collections.singletonMap("foo", "bar");
         ErrorResponse response = invokeExpectError(mediaType, EJB_NAME, "add",
                 new String[] { int.class.getName(), int.class.getName() }, argValues);
-        assertEquals("javax.ws.rs.InternalServerErrorException", response.exceptionType);
+        assertEquals("jakarta.ws.rs.InternalServerErrorException", response.exceptionType);
         assertEquals("Failed to de-serialise method arguments from binary representation.", response.message);
     }
 

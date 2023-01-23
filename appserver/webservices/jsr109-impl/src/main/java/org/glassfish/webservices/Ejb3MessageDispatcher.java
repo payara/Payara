@@ -45,9 +45,9 @@ import java.io.IOException;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.ServletContext;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletContext;
 
 import com.sun.xml.ws.transport.http.servlet.ServletAdapter;
 import java.text.MessageFormat;

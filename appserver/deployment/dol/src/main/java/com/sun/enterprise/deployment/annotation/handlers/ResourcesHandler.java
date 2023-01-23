@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2020] Payara Foundation and/or affiliates
+// Portions Copyright [2020-2021] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment.annotation.handlers;
 
@@ -48,13 +48,13 @@ import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.annotation.Resource;
-import javax.annotation.Resources;
+import jakarta.annotation.Resource;
+import jakarta.annotation.Resources;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * This handler is responsible for handling javax.annotation.Resources
+ * This handler is responsible for handling jakarta.annotation.Resources
  *
  */
 @Service

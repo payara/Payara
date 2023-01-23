@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2021] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.v3.admin.listener;
 
@@ -53,7 +53,7 @@ import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.Changed.TYPE;
 import org.jvnet.hk2.config.types.Property;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.beans.PropertyChangeEvent;
 import java.util.*;
 import java.util.logging.Level;

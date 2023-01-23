@@ -46,7 +46,7 @@
 
 package com.sun.jdo.spi.persistence.support.sqlstore.ejb;
 
-import javax.ejb.*;
+import jakarta.ejb.*;
 
 import com.sun.jdo.api.persistence.support.PersistenceManager;
 import com.sun.jdo.api.persistence.support.PersistenceManagerFactory;
@@ -230,19 +230,19 @@ import com.sun.jdo.api.persistence.support.PersistenceManagerFactory;
      * This will guarantee that PersistenceManager is not bound to
      * any transaction.
      *
-     * @return javax.transaction.Transaction object representing 
+     * @return jakarta.transaction.Transaction object representing 
      * the suspended transaction.
      * Returns null if the calling thread is not associated
      * with a transaction.
      */
-    javax.transaction.Transaction suspendCurrentTransaction();
+    jakarta.transaction.Transaction suspendCurrentTransaction();
 
     /** Called from read-only beans to resume current transaction.
      * This will guarantee that the transaction continues to run after
      * read-only bean accessed its PersistenceManager.
      *
-     * @param tx - The javax.transaction.Transaction object that 
+     * @param tx - The jakarta.transaction.Transaction object that 
      * represents the transaction to be resumed.
      */
-    void resumeCurrentTransaction(javax.transaction.Transaction tx);
+    void resumeCurrentTransaction(jakarta.transaction.Transaction tx);
 }

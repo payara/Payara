@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2021] Payara Foundation and/or affiliates
 
 package org.glassfish.appclient.server.core;
 
@@ -49,6 +49,7 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.ApplicationClientDescriptor;
 import com.sun.enterprise.deployment.archivist.AppClientArchivist;
+import com.sun.enterprise.module.HK2Module;
 import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.logging.LogDomains;
 import java.util.HashMap;
@@ -57,8 +58,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.logging.Logger;
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.MetaData;
@@ -69,7 +70,7 @@ import org.glassfish.javaee.core.deployment.JavaEEDeployer;
 
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PostConstruct;
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.appclient.server.core.jws.JWSAdapterManager;
 import org.glassfish.appclient.server.core.jws.JavaWebStartInfo;

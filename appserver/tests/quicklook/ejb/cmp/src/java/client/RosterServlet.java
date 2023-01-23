@@ -38,7 +38,7 @@
  * holder.
  */
 
-//Portions Copyright [2020] [Payara Foundation and/or its affiliates]
+//Portions Copyright [2020-2021] [Payara Foundation and/or its affiliates]
 
 package client;
 
@@ -50,10 +50,10 @@ import java.util.Set;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.rmi.PortableRemoteObject;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import roster.Roster;
 import roster.RosterHome;
 import util.LeagueDetails;

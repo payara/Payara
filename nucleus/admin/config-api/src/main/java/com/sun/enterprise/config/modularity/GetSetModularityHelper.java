@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation] 
+// Portions Copyright [2016-2021] [Payara Foundation] 
 package com.sun.enterprise.config.modularity;
 
 import com.sun.enterprise.config.serverbeans.Config;
@@ -45,7 +45,7 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.config.support.Singleton;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.lang.reflect.Method;
 import java.util.Locale;
 import java.util.StringTokenizer;

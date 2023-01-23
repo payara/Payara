@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2019-2022] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.appclient.client.acc;
 
@@ -67,13 +67,13 @@ import java.util.Properties;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import javax.naming.NamingException;
-import javax.persistence.EntityManagerFactory;
+import jakarta.persistence.EntityManagerFactory;
 import javax.security.auth.callback.CallbackHandler;
 import javax.swing.SwingUtilities;
-import javax.transaction.Status;
-import javax.transaction.TransactionManager;
+import jakarta.transaction.Status;
+import jakarta.transaction.TransactionManager;
 import org.apache.naming.resources.DirContextURLStreamHandlerFactory;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
@@ -404,8 +404,7 @@ public class AppClientContainer {
 
         //This is required for us to enable interrupt jaxws service
         //creation calls
-        System.setProperty("javax.xml.ws.spi.Provider",
-                           "com.sun.enterprise.webservice.spi.ProviderImpl");
+        System.setProperty("jakarta.xml.ws.spi.Provider", "com.sun.xml.ws.spi.ProviderImpl");
         //InjectionManager's injectClass will be called from getMainMethod
 
 

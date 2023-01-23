@@ -37,15 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2021] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.nucleus.admin.rest;
 
 import java.util.HashMap;
 import java.util.Map;
-import javax.json.JsonObject;
-import javax.ws.rs.core.Response;
+import jakarta.json.JsonObject;
+import jakarta.ws.rs.core.Response;
 import static org.testng.AssertJUnit.*;
 import org.testng.annotations.Test;
 

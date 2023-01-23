@@ -44,8 +44,8 @@ import com.sun.enterprise.deployment.annotation.context.RarBundleContext;
 import com.sun.enterprise.deployment.annotation.handlers.*;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 
-import javax.resource.spi.ConnectionDefinitions;
-import javax.resource.spi.ConnectionDefinition;
+import jakarta.resource.spi.ConnectionDefinitions;
+import jakarta.resource.spi.ConnectionDefinition;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.util.logging.Level;

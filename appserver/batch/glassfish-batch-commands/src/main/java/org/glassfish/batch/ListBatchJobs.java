@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.batch;
 
@@ -56,12 +56,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.logging.Level;
-import javax.batch.operations.*;
-import javax.batch.runtime.JobExecution;
-import javax.inject.Inject;
+import jakarta.batch.operations.*;
+import jakarta.batch.runtime.JobExecution;
+import jakarta.inject.Inject;
 import javax.naming.InitialContext;
 import javax.sql.DataSource;
-import javax.validation.constraints.Min;
+import jakarta.validation.constraints.Min;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;

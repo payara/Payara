@@ -44,7 +44,7 @@ import com.sun.enterprise.resource.ResourceHandle;
 import com.sun.appserv.connectors.internal.api.PoolingException;
 import com.sun.logging.LogDomains;
 
-import javax.transaction.Transaction;
+import jakarta.transaction.Transaction;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 

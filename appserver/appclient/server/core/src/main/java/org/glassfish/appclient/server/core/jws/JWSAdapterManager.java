@@ -37,15 +37,34 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2022 Payara Foundation and/or its affiliates
 
 package org.glassfish.appclient.server.core.jws;
 
 import com.sun.enterprise.config.serverbeans.Config;
-import org.glassfish.orb.admin.config.IiopService;
 import com.sun.enterprise.deployment.ApplicationClientDescriptor;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.inject.Singleton;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.container.EndpointRegistrationException;
+import org.glassfish.api.container.RequestDispatcher;
+import org.glassfish.api.deployment.DeploymentContext;
+import org.glassfish.appclient.server.core.AppClientDeployer;
+import org.glassfish.appclient.server.core.AppClientServerApplication;
+import org.glassfish.appclient.server.core.jws.servedcontent.ASJarSigner;
+import org.glassfish.appclient.server.core.jws.servedcontent.AutoSignedContent;
+import org.glassfish.appclient.server.core.jws.servedcontent.DynamicContent;
+import org.glassfish.appclient.server.core.jws.servedcontent.SimpleDynamicContentImpl;
+import org.glassfish.appclient.server.core.jws.servedcontent.StaticContent;
+import org.glassfish.enterprise.iiop.api.GlassFishORBFactory;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.internal.api.ServerContext;
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.orb.admin.config.IiopService;
+import org.jvnet.hk2.annotations.Service;
+
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
@@ -62,26 +81,6 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.inject.Inject;
-import javax.inject.Named;
-import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.api.container.EndpointRegistrationException;
-import org.glassfish.api.container.RequestDispatcher;
-import org.glassfish.api.deployment.DeploymentContext;
-import org.glassfish.appclient.server.core.AppClientDeployer;
-import org.glassfish.appclient.server.core.AppClientServerApplication;
-import org.glassfish.appclient.server.core.jws.servedcontent.ASJarSigner;
-import org.glassfish.appclient.server.core.jws.servedcontent.AutoSignedContent;
-import org.glassfish.appclient.server.core.jws.servedcontent.DynamicContent;
-import org.glassfish.appclient.server.core.jws.servedcontent.SimpleDynamicContentImpl;
-import org.glassfish.appclient.server.core.jws.servedcontent.StaticContent;
-import org.glassfish.enterprise.iiop.api.GlassFishORBFactory;
-import org.glassfish.internal.api.ServerContext;
-
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.PostConstruct;
-import javax.inject.Singleton;
-import org.glassfish.logging.annotation.LogMessageInfo;
 
 /**
  * Handles all management of the HTTP adapters created to support Java Web
@@ -307,16 +306,6 @@ public class JWSAdapterManager implements PostConstruct {
 
     private synchronized File libDir() {
         return new File(new File(installRootURI), "lib");
-    }
-
-    static String publicExtensionHref(final ExtensionFileManager.Extension ext) {
-        return NamingConventions.JWSAPPCLIENT_SYSTEM_PREFIX + "/" + publicExtensionLookupURIText(ext);
-    }
-
-    static String publicExtensionLookupURIText(final ExtensionFileManager.Extension ext) {
-        return NamingConventions.JWSAPPCLIENT_EXT_INTRODUCER + "/" +
-                ext.getExtDirectoryNumber() + "/" +
-                ext.getFile().getName();
     }
 
     private AutoSignedContent systemJarSignedContent (

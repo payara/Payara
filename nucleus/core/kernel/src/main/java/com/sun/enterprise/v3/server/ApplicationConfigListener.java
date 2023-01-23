@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2022] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.v3.server;
 
@@ -57,8 +57,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.UndeployCommandParameters;
@@ -177,7 +177,8 @@ public class ApplicationConfigListener implements TransactionListener, PostConst
                     } else if (ServerTags.CONTEXT_ROOT.equals(propertyName)
                             || ServerTags.VIRTUAL_SERVERS.equals(propertyName)
                             || ServerTags.AVAILABILITY_ENABLED.equals(propertyName)
-                            || ServerTags.CDI_DEV_MODE_ENABLED_PROP.equals(propertyName)) {
+                            || ServerTags.CDI_DEV_MODE_ENABLED_PROP.equals(propertyName)
+                            || ServerTags.EMPTY_BEANS_XML_MODE_ALL_PROP.equals(propertyName)) {
                         // for other changes, reload the application
                         handleOtherAppConfigChanges(event.getSource(), appName);
                     }

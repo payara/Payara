@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2020] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2021] Payara Foundation and/or affiliates
 
 package com.sun.gjc.spi;
 
@@ -54,11 +54,11 @@ import java.util.Set;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.resource.ResourceException;
-import javax.resource.spi.ConfigProperty;
-import javax.resource.spi.ConnectionDefinition;
-import javax.resource.spi.ConnectionRequestInfo;
-import javax.resource.spi.security.PasswordCredential;
+import jakarta.resource.ResourceException;
+import jakarta.resource.spi.ConfigProperty;
+import jakarta.resource.spi.ConnectionDefinition;
+import jakarta.resource.spi.ConnectionRequestInfo;
+import jakarta.resource.spi.security.PasswordCredential;
 
 /**
  * Driver Manager <code>ManagedConnectionFactory</code> implementation for Generic JDBC Connector.
@@ -100,7 +100,7 @@ public class DMManagedConnectionFactory extends ManagedConnectionFactoryImpl {
      *                           satisfying this request
      */
     @Override
-    public javax.resource.spi.ManagedConnection createManagedConnection(javax.security.auth.Subject subject,
+    public jakarta.resource.spi.ManagedConnection createManagedConnection(javax.security.auth.Subject subject,
                                                                         ConnectionRequestInfo cxRequestInfo) throws ResourceException {
         logFine("In createManagedConnection");
         if (dsObjBuilder == null) {
@@ -160,7 +160,7 @@ public class DMManagedConnectionFactory extends ManagedConnectionFactoryImpl {
 
         } catch (java.sql.SQLException sqle) {
             _logger.log(Level.SEVERE, "jdbc.exc_create_mc", sqle);
-            throw new javax.resource.spi.ResourceAllocationException("The connection could not be allocated: " +
+            throw new jakarta.resource.spi.ResourceAllocationException("The connection could not be allocated: " +
                     sqle.getMessage());
         }
 

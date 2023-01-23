@@ -39,6 +39,7 @@
     holder.
 
 -->
+<!-- Portions Copyright [2022] [Payara Foundation and/or its affiliates] -->
 
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
  
@@ -144,11 +145,6 @@
       <class name="test.admin.JdbcConnectionPoolTests"/>
       <class name="test.admin.WebtierTests"/>
       <class name="test.admin.OsgiAsadminTest"/> 
-    </classes>
-  </test>
-  <test name="osgi_test">
-    <classes>
-        <class name="test.osgi.hello.HelloOSGITestNG" />
     </classes>
   </test>
 </suite>

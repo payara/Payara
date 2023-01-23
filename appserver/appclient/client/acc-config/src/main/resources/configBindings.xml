@@ -39,7 +39,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright [2018] Payara Foundation and/or affiliates
+    Portions Copyright [2018-2022] Payara Foundation and/or affiliates
 -->
 
 <!--
@@ -65,8 +65,8 @@
         print="java.lang.Boolean.toString"/>
 
     <conversion name="int" type="int"
-        parse="javax.xml.bind.DatatypeConverter.parseInt"
-        print="javax.xml.bind.DatatypeConverter.printInt"/>
+        parse="jakarta.xml.bind.DatatypeConverter.parseInt"
+        print="jakarta.xml.bind.DatatypeConverter.printInt"/>
 
     <conversion name="providerType" type="java.lang.String"
         parse="org.glassfish.appclient.client.acc.config.util.XML.parseProviderType" />
@@ -81,10 +81,6 @@
     </element>
 
     <element name="ssl" type="class">
-        <attribute name="ssl2-enabled" property="Ssl2Enabled" convert="boolean"/>
-        <attribute name="ssl3-enabled" property="Ssl3Enabled" convert="boolean"/>
-        <attribute name="tls-enabled" property="TlsEnabled" convert="boolean"/>
-        <attribute name="tls11-enabled" property="Tls11Enabled" convert="boolean"/>
         <attribute name="tls12-enabled" property="Tls12Enabled" convert="boolean"/>
         <attribute name="tls13-enabled" property="Tls13Enabled" convert="boolean"/>
         <attribute name="tls-rollback-enabled" property="TlsRollbackEnabled" convert="boolean"/>
@@ -151,7 +147,7 @@
             xmlType="BOOLEAN"
             javaType="boolean"
             parseMethod="org.glassfish.appclient.client.acc.XML.parseBoolean"
-            printMethod="javax.xml.bind.DatatypeConverter.printBoolean"
+            printMethod="jakarta.xml.bind.DatatypeConverter.printBoolean"
             />
 
   </bindings>

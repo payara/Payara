@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2017-2018] Payara Foundation and/or affiliates
+//Portions Copyright [2017-2021] Payara Foundation and/or affiliates
 
 package org.glassfish.jms.admin.cli;
 
@@ -56,8 +56,8 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.config.serverbeans.*;
 
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
 import javax.management.AttributeList;

@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2022] [Payara Foundation and/or its affiliates]
+
+// Portions Copyright 2022 Payara Foundation and/or its affiliates
 
 package org.glassfish.concurrent.admin;
 
@@ -59,7 +60,7 @@ import java.beans.PropertyVetoException;
 
 /**
  *
- * The managed executor service manager allows you to create and delete 
+ * The managed executor service manager allows you to create and delete
  * the managed-executor-service config element
  */
 @Service (name=ServerTags.MANAGED_EXECUTOR_SERVICE)
@@ -81,28 +82,21 @@ public class ManagedExecutorServiceManager extends ManagedExecutorServiceBaseMan
 
     @Override
     protected ResourceStatus isValid(Resources resources, boolean validateResourceRef, String target){
-        ResourceStatus superStatus = super.isValid(resources, validateResourceRef, target);
-
         if ("false".equals(useForkJoinPool)) {
-            try {
-                Integer.parseInt(maximumPoolSize);
-            } catch (NumberFormatException nfe) {
-                return new ResourceStatus(ResourceStatus.FAILURE, localStrings.getLocalString("maxsize.must.be.number", "Option maximumpoolsize must be a number."));
-            }
-
-            if (Integer.parseInt(corePoolSize) == 0
-                    && Integer.parseInt(maximumPoolSize) == 0) {
+            if (Integer.parseInt(corePoolSize) == 0 &&
+                    Integer.parseInt(maximumPoolSize) == 0) {
                 String msg = localStrings.getLocalString("coresize.maxsize.both.zero", "Options corepoolsize and maximumpoolsize cannot both have value 0.");
-                return new ResourceStatus(ResourceStatus.FAILURE, msg);
-            }
-
-            if (Integer.parseInt(corePoolSize) > Integer.parseInt(maximumPoolSize)) {
-                String msg = localStrings.getLocalString("coresize.biggerthan.maxsize", "Option corepoolsize cannot have a bigger value than option maximumpoolsize.");
                 return new ResourceStatus(ResourceStatus.FAILURE, msg);
             }
         }
 
-        return superStatus;
+        if (Integer.parseInt(corePoolSize) >
+                Integer.parseInt(maximumPoolSize)) {
+            String msg = localStrings.getLocalString("coresize.biggerthan.maxsize", "Option corepoolsize cannot have a bigger value than option maximumpoolsize.");
+            return new ResourceStatus(ResourceStatus.FAILURE, msg);
+        }
+
+        return super.isValid(resources, validateResourceRef, target);
     }
 
     protected ManagedExecutorServiceBase createConfigBean(Resources param, Properties properties) throws PropertyVetoException, TransactionFailure {

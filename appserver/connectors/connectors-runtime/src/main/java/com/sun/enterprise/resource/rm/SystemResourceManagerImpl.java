@@ -42,8 +42,8 @@ package com.sun.enterprise.resource.rm;
 
 import java.util.logging.*;
 
-import javax.transaction.Transaction;
-import javax.transaction.SystemException;
+import jakarta.transaction.Transaction;
+import jakarta.transaction.SystemException;
 
 import com.sun.logging.*;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;

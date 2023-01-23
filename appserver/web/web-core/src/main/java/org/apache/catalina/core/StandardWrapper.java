@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
 
 package org.apache.catalina.core;
 
@@ -66,7 +66,7 @@ import static java.util.Collections.unmodifiableMap;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINEST;
 import static java.util.logging.Level.INFO;
-import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+import static jakarta.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 import static org.apache.catalina.InstanceEvent.EventType.AFTER_DESTROY_EVENT;
 import static org.apache.catalina.InstanceEvent.EventType.AFTER_INIT_EVENT;
 import static org.apache.catalina.InstanceEvent.EventType.AFTER_SERVICE_EVENT;
@@ -121,17 +121,16 @@ import java.util.logging.Logger;
 import javax.management.Notification;
 import javax.management.NotificationBroadcasterSupport;
 import javax.management.ObjectName;
-import javax.servlet.Servlet;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.SingleThreadModel;
-import javax.servlet.UnavailableException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.Servlet;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.UnavailableException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import io.opentracing.Tracer;
 import org.apache.catalina.Container;
@@ -284,11 +283,6 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
     private Class <? extends Servlet> servletClass;
 
     /**
-     * Does this servlet implement the SingleThreadModel interface?
-     */
-    private volatile boolean singleThreadModel;
-
-    /**
      * Are we unloading our servlet instance at the moment?
      */
     private boolean unloading;
@@ -297,16 +291,6 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
      * Maximum number of STM instances.
      */
     private int maxInstances = 20;
-
-    /**
-     * Number of instances currently loaded for a STM servlet.
-     */
-    private int nInstances;
-
-    /**
-     * Stack containing the STM instances.
-     */
-    private Stack<Servlet> instancePool;
 
     /**
      * Wait time for servlet unload in ms.
@@ -373,7 +357,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
         openTracing = getDefaultHabitat().getService(OpenTracingService.class);
 
         // suppress PWC6117 file not found errors
-        Logger jspLog = Logger.getLogger("org.apache.jasper.servlet.JspServlet");
+        Logger jspLog = Logger.getLogger("org.glassfish.wasp.servlet.JspServlet");
         if (!(jspLog.getFilter() instanceof NotFoundErrorSupressionFilter)) {
             jspLog.setFilter(new NotFoundErrorSupressionFilter(jspLog.getFilter()));
         }
@@ -796,7 +780,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
      *
      * @return Array of names of the methods supported by the underlying
      * servlet
-     * @throws javax.servlet.ServletException
+     * @throws jakarta.servlet.ServletException
      */
     @Override
     public String[] getServletMethods() throws ServletException {
@@ -1154,68 +1138,35 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
             throw new ServletException(createMsg(CANNOT_ALLOCATE_SERVLET_EXCEPTION, getName()));
         }
 
-        // If not SingleThreadedModel, return the same instance every time
-        if (!singleThreadModel) {
-
-            // Load and initialize our instance if necessary
-            if (instance == null) {
-                // No instance. Instantiate and initialize
-                try {
-                    if (log.isLoggable(FINEST))
-                        log.log(FINEST, "Allocating non-STM instance");
-                    instance = loadServlet();
-                    initServlet(instance);
-                } catch (ServletException e) {
-                    throw e;
-                } catch (Throwable e) {
-                    throw new ServletException(createMsg(ERROR_ALLOCATE_SERVLET_INSTANCE_EXCEPTION), e);
+        // Load and initialize our instance if necessary
+        if (instance == null) {
+            // No instance. Instantiate and initialize
+            try {
+                if (log.isLoggable(FINEST)) {
+                    log.log(FINEST, "Allocating non-STM instance");
                 }
-            } else if (!instanceInitialized) {
-                /*
+                instance = loadServlet();
+                initServlet(instance);
+            } catch (ServletException e) {
+                throw e;
+            } catch (Throwable e) {
+                throw new ServletException(createMsg(ERROR_ALLOCATE_SERVLET_INSTANCE_EXCEPTION), e);
+            }
+        } else if (!instanceInitialized) {
+            /*
                  * Instance not yet initialized. This is the case
                  * when the instance was registered via
                  * ServletContext#addServlet
-                 */
-                initServlet(instance);
-            }
-
-            if (!singleThreadModel) {
-                if (log.isLoggable(FINEST))
-                    log.log(FINEST, "Returning non-STM instance");
-                countAllocated.incrementAndGet();
-                return (instance);
-            }
+             */
+            initServlet(instance);
         }
 
-        synchronized (instancePool) {
-
-            while (countAllocated.get() >= nInstances) {
-                // Allocate a new instance if possible, or else wait
-                if (nInstances < maxInstances) {
-                    try {
-                        Servlet servlet = loadServlet();
-                        initServlet(servlet);
-                        instancePool.push(servlet);
-                        nInstances++;
-                    } catch (ServletException e) {
-                        throw e;
-                    } catch (Throwable e) {
-                        throw new ServletException(createMsg(ERROR_ALLOCATE_SERVLET_INSTANCE_EXCEPTION), e);
-                    }
-                } else {
-                    try {
-                        instancePool.wait();
-                    } catch (InterruptedException e) {
-                        // Ignore
-                    }
-                }
-            }
-            if (log.isLoggable(Level.FINEST)) {
-                log.log(Level.FINEST, "Returning allocated STM instance");
-            }
-            countAllocated.incrementAndGet();
-            return instancePool.pop();
+        if (log.isLoggable(FINEST)) {
+            log.log(FINEST, "Returning non-STM instance");
         }
+        countAllocated.incrementAndGet();
+        return (instance);
+
     }
 
     /**
@@ -1228,19 +1179,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
      */
     @Override
     public void deallocate(Servlet servlet) throws ServletException {
-
-        // If not SingleThreadModel, no action is required
-        if (!singleThreadModel) {
-            countAllocated.decrementAndGet();
-            return;
-        }
-
-        // Unlock and free this instance
-        synchronized (instancePool) {
-            countAllocated.decrementAndGet();
-            instancePool.push(servlet);
-            instancePool.notifyAll();
-        }
+        countAllocated.decrementAndGet();
     }
 
     /**
@@ -1344,7 +1283,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
     private synchronized Servlet loadServlet() throws ServletException {
 
         // Nothing to do if we already have an instance or an instance pool
-        if (!singleThreadModel && instance != null) {
+        if (instance != null) {
             return instance;
         }
 
@@ -1378,13 +1317,6 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
         }
 
         classLoadTime = (int) (System.currentTimeMillis() -t1);
-
-        // Register our newly initialized instance
-        singleThreadModel = servlet instanceof SingleThreadModel;
-        if (singleThreadModel) {
-            if (instancePool == null)
-                instancePool = new Stack<Servlet>();
-        }
 
         if (notifyContainerListeners) {
             fireContainerEvent("load", this);
@@ -1512,7 +1444,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
      */
     private void initServlet(Servlet servlet) throws ServletException {
 
-        if (instanceInitialized && !singleThreadModel) {
+        if (instanceInitialized) {
             // Servlet has already been initialized
             return;
         }
@@ -1827,7 +1759,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
 
         // Nothing to do if we have never loaded the instance
         Servlet instance = this.instance;
-        if (!singleThreadModel && instance == null) {
+        if (instance == null) {
             return;
         }
 
@@ -1875,8 +1807,6 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
         } catch (Throwable t) {
             instanceSupport.fireInstanceEvent(AFTER_DESTROY_EVENT, instance, t);
             this.instance = null;
-            instancePool = null;
-            nInstances = 0;
             if (notifyContainerListeners) {
                 fireContainerEvent("unload", this);
             }
@@ -1889,38 +1819,6 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
 
         // Deregister the destroyed instance
         this.instance = null;
-
-        if (singleThreadModel && (instancePool != null)) {
-            try {
-                Thread.currentThread().setContextClassLoader(classLoader);
-                while (!instancePool.isEmpty()) {
-                    // START SJS WS 7.0 6236329
-                    if (executeUnderSubjectDoAs()) {
-                        // END OF SJS WS 7.0 6236329
-                        SecurityUtil.doAsPrivilege("destroy", instancePool.pop());
-                        SecurityUtil.remove(instance);
-                    } else {
-                        instancePool.pop().destroy();
-                    }
-                }
-            } catch (Throwable t) {
-                instancePool = null;
-                nInstances = 0;
-                unloading = false;
-                if (notifyContainerListeners) {
-                    fireContainerEvent("unload", this);
-                }
-                throw new ServletException(createMsg(DESTROY_SERVLET_EXCEPTION, getName()), t);
-            } finally {
-                // restore the context ClassLoader
-                Thread.currentThread().setContextClassLoader(oldCtxClassLoader);
-            }
-
-            instancePool = null;
-            nInstances = 0;
-        }
-
-        singleThreadModel = false;
 
         unloading = false;
 

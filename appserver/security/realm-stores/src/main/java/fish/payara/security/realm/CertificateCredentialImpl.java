@@ -41,9 +41,9 @@ package fish.payara.security.realm;
 
 import fish.payara.security.api.CertificateCredential;
 import java.security.cert.X509Certificate;
+import jakarta.security.enterprise.CallerPrincipal;
+import jakarta.security.enterprise.credential.AbstractClearableCredential;
 import javax.security.auth.x500.X500Principal;
-import javax.security.enterprise.CallerPrincipal;
-import javax.security.enterprise.credential.AbstractClearableCredential;
 
 /**
  *

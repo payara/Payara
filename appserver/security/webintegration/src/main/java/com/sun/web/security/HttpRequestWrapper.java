@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
+
 package com.sun.web.security;
 
 import java.io.BufferedReader;
@@ -51,16 +52,17 @@ import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 
-import javax.servlet.AsyncContext;
-import javax.servlet.DispatcherType;
-import javax.servlet.FilterChain;
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletInputStream;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.AsyncContext;
+import jakarta.servlet.DispatcherType;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.ServletConnection;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletInputStream;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import org.apache.catalina.Connector;
 import org.apache.catalina.Context;
 import org.apache.catalina.Host;
@@ -554,11 +556,6 @@ public class HttpRequestWrapper implements HttpRequest, ServletRequest {
     }
 
     @Override
-    public String getRealPath(String path) {
-        return servletRequest.getRealPath(path);
-    }
-
-    @Override
     public int getRemotePort() {
         return servletRequest.getRemotePort();
     }
@@ -616,6 +613,21 @@ public class HttpRequestWrapper implements HttpRequest, ServletRequest {
     @Override
     public long getContentLengthLong() {
         return servletRequest.getContentLengthLong();
+    }
+
+    @Override
+    public String getRequestId() {
+        return servletRequest.getRequestId();
+    }
+
+    @Override
+    public String getProtocolRequestId() {
+        return servletRequest.getProtocolRequestId();
+    }
+
+    @Override
+    public ServletConnection getServletConnection() {
+        return servletRequest.getServletConnection();
     }
 
 }

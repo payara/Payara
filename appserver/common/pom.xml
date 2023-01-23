@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-parent</artifactId>
-        <version>5.2023.1-SNAPSHOT</version>
+        <version>6.2023.2-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.server.internal.common</groupId>
     <artifactId>common</artifactId>
@@ -55,8 +55,8 @@
     <modules>
     	<module>stats77</module>
     	<module>amx-javaee</module>
-	<module>mejb</module>
-	<module>mejb-frag</module>    	
+<!--	<module>mejb</module>
+	<module>mejb-frag</module>    	-->
         <module>glassfish-ee-api</module>
         <module>annotation-framework</module>
         <module>container-common</module>

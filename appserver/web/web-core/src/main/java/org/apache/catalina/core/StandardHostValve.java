@@ -56,7 +56,7 @@
  * limitations under the License.
  */
 
-// Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2022] [Payara Foundation and/or its affiliates]
 
 package org.apache.catalina.core;
 
@@ -68,9 +68,9 @@ import org.apache.catalina.valves.ValveBase;
 import org.glassfish.web.valve.GlassFishValve;
 
 
-import javax.servlet.*;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.*;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.util.Locale;
 import java.util.logging.Level;
@@ -485,9 +485,7 @@ final class StandardHostValve
             Integer statusCodeObj = (Integer) hreq.getAttribute(
                 RequestDispatcher.ERROR_STATUS_CODE);
             int statusCode = statusCodeObj;
-            String message = (String) hreq.getAttribute(
-                RequestDispatcher.ERROR_MESSAGE);
-            hres.setStatus(statusCode, message);
+            hres.setStatus(statusCode);
 
             // Forward control to the specified location
             ServletContext servletContext =

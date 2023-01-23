@@ -37,16 +37,16 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.resource.rm;
 
-import javax.transaction.*;
-import javax.resource.spi.ManagedConnection;
+import jakarta.transaction.*;
+import jakarta.resource.spi.ManagedConnection;
 import java.util.logging.Level;
 import java.util.List;
 
-import javax.resource.ResourceException;
+import jakarta.resource.ResourceException;
 
 import com.sun.enterprise.connectors.ConnectorRuntime;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;

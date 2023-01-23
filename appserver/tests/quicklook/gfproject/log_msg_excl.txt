@@ -231,7 +231,7 @@ Hello
 Got message!!!
 Calling hello
 Successfully caught EJBException after  accessing removed SFSB
-javax.ejb.NoSuchObjectLocalException: The EJB does not exist. session-key: 
+jakarta.ejb.NoSuchObjectLocalException: The EJB does not exist. session-key: 
 Sending message
 message sent
 javax.management.InstanceNotFoundException: amx:pp=/J2EEDomain/J2EEServer\[eein1-with-a-very-very-very-long-name
@@ -267,7 +267,7 @@ Interceptor called for
 # http://java.net/jira/browse/GLASSFISH-12251
 Portable JNDI names for EJB 
 A system exception occurred during an invocation on EJB 
-javax.ejb.NoSuchObjectLocalException: The EJB does not exist. session-key: 
+jakarta.ejb.NoSuchObjectLocalException: The EJB does not exist. session-key: 
  Current thread done cleanup
 Glassfish-specific \(Non-portable\) JNDI names for EJB 
 StatefulContainerbuilder instantiated store

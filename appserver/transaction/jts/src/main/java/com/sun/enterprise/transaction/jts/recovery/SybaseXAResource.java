@@ -43,7 +43,7 @@
 package com.sun.enterprise.transaction.jts.recovery;
 
 import javax.transaction.xa.*;
-import javax.resource.ResourceException;
+import jakarta.resource.ResourceException;
 
 import com.sun.enterprise.transaction.api.XAResourceWrapper;
 import com.sun.enterprise.util.i18n.StringManager;

@@ -48,11 +48,11 @@ import com.sun.enterprise.resource.listener.ConnectionEventListener;
 import com.sun.enterprise.resource.pool.PoolManager;
 import com.sun.appserv.connectors.internal.api.PoolingException;
 
-import javax.resource.ResourceException;
-import javax.resource.spi.ConnectionEvent;
-import javax.resource.spi.ConnectionRequestInfo;
-import javax.resource.spi.ManagedConnection;
-import javax.resource.spi.ManagedConnectionFactory;
+import jakarta.resource.ResourceException;
+import jakarta.resource.spi.ConnectionEvent;
+import jakarta.resource.spi.ConnectionRequestInfo;
+import jakarta.resource.spi.ManagedConnection;
+import jakarta.resource.spi.ManagedConnectionFactory;
 import javax.security.auth.Subject;
 import java.util.logging.Level;
 

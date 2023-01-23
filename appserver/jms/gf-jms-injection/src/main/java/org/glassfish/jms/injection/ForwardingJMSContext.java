@@ -42,7 +42,7 @@ package org.glassfish.jms.injection;
 
 import java.io.Serializable;
 import java.util.Map;
-import javax.jms.*;
+import jakarta.jms.*;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 
 // Delegate all business methods to JMSContext API

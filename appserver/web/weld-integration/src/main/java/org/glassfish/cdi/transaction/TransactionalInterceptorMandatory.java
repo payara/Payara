@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016-2018] [Payara Foundation]
+// Portions Copyright [2016-2021] [Payara Foundation]
 
 package org.glassfish.cdi.transaction;
 
@@ -46,17 +46,17 @@ import static java.util.logging.Level.FINE;
 
 import java.util.logging.Logger;
 
-import javax.annotation.Priority;
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.Interceptor;
-import javax.interceptor.InvocationContext;
-import javax.transaction.TransactionRequiredException;
-import javax.transaction.Transactional;
-import javax.transaction.TransactionalException;
+import jakarta.annotation.Priority;
+import jakarta.interceptor.AroundInvoke;
+import jakarta.interceptor.Interceptor;
+import jakarta.interceptor.InvocationContext;
+import jakarta.transaction.TransactionRequiredException;
+import jakarta.transaction.Transactional;
+import jakarta.transaction.TransactionalException;
 
 /**
  * Transactional annotation Interceptor class for Mandatory transaction type, ie
- * javax.transaction.Transactional.TxType.MANDATORY If called outside a transaction context,
+ * jakarta.transaction.Transactional.TxType.MANDATORY If called outside a transaction context,
  * TransactionRequiredException will be thrown If called inside a transaction context, managed bean
  * method execution will then continue under that context.
  *
@@ -64,7 +64,7 @@ import javax.transaction.TransactionalException;
  */
 @Priority(Interceptor.Priority.PLATFORM_BEFORE + 200)
 @Interceptor
-@Transactional(javax.transaction.Transactional.TxType.MANDATORY)
+@Transactional(jakarta.transaction.Transactional.TxType.MANDATORY)
 public class TransactionalInterceptorMandatory extends TransactionalInterceptorBase {
 
     private static final long serialVersionUID = 1L;

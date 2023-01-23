@@ -47,13 +47,13 @@ import com.sun.enterprise.v3.admin.cluster.ClusterCommandHelper;
 import com.sun.enterprise.v3.admin.cluster.Strings;
 import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 import fish.payara.nucleus.executorservice.PayaraExecutorService;
+import jakarta.inject.Inject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Inject;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ScheduledFuture;
@@ -71,16 +71,16 @@ import java.util.logging.Logger;
 @CommandLock(CommandLock.LockType.NONE) // don't prevent _synchronize-files
 @PerLookup
 @RestEndpoints({
-    @RestEndpoint(configBean=DeploymentGroup.class,
-        opType=RestEndpoint.OpType.POST, 
-        path="restart-deployment-group", 
-        description="Restart Deployment Group",
-        params={
-            @RestParam(name="id", value="$parent")
-        })
+        @RestEndpoint(configBean = DeploymentGroup.class,
+                opType = RestEndpoint.OpType.POST,
+                path = "restart-deployment-group",
+                description = "Restart Deployment Group",
+                params = {
+                        @RestParam(name = "id", value = "$parent")
+                })
 })
 public class RestartDeploymentGroupCommand implements AdminCommand {
-    
+
     private static final String NL = System.lineSeparator();
 
     @Inject
@@ -173,9 +173,7 @@ public class RestartDeploymentGroupCommand implements AdminCommand {
 
             ParameterMap pm = new ParameterMap();
             pm.add("delay", delay);
-
             pm.add("timeout", String.valueOf(instanceTimeout));
-
             try {
                 // Run restart-instance against each instance in the Deployment Group
                 String commandName = "restart-instance";
@@ -241,10 +239,10 @@ public class RestartDeploymentGroupCommand implements AdminCommand {
                 if (delayVal > 0) {
                     Thread.sleep(delayVal);
                 }
-            } catch(InterruptedException e) {
+            } catch (InterruptedException e) {
                 //ignore
             }
         }
     }
-    
+
 }

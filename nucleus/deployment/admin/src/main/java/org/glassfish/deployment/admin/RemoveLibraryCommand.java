@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates]
 package org.glassfish.deployment.admin;
 
 import com.sun.enterprise.config.serverbeans.Domain;
@@ -55,7 +55,7 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.UnprocessedChangeEvent;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.util.ArrayList;

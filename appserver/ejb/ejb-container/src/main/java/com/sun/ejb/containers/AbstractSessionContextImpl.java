@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.containers;
 
@@ -46,10 +46,9 @@ import com.sun.ejb.EjbInvocation;
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.EjbSessionDescriptor;
 
-import javax.ejb.SessionContext;
-import javax.ejb.TimerService;
-import javax.transaction.UserTransaction;
-import javax.xml.rpc.handler.MessageContext;
+import jakarta.ejb.SessionContext;
+import jakarta.ejb.TimerService;
+import jakarta.transaction.UserTransaction;
 
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
@@ -108,20 +107,6 @@ public abstract class AbstractSessionContextImpl extends EJBContextImpl implemen
         }
 
         return ((BaseContainer) getContainer()).getUserTransaction();
-    }
-
-    @Override
-    public MessageContext getMessageContext() {
-        InvocationManager invManager = EjbContainerUtilImpl.getInstance().getInvocationManager();
-        try {
-            ComponentInvocation inv = invManager.getCurrentInvocation();
-            if (inv != null && isWebServiceInvocation(inv)) {
-                return ((EjbInvocation) inv).messageContext;
-            }
-        } catch (Exception e) {
-            throw new IllegalStateException("Could not get a message context.", e);
-        }
-        throw new IllegalStateException("Attempt to access MessageContext outside of a web service invocation");
     }
 
     @Override

@@ -46,8 +46,8 @@ import org.glassfish.api.deployment.archive.WritableArchive;
 import org.glassfish.deployment.common.ModuleDescriptor;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Inject;
-import javax.inject.Provider;
+import jakarta.inject.Inject;
+import jakarta.inject.Provider;
 import java.io.IOException;
 
 /**

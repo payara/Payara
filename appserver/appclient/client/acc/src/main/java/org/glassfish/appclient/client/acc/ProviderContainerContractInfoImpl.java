@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2022] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.appclient.client.acc;
 
@@ -50,9 +51,10 @@ import java.security.PrivilegedAction;
 import java.security.ProtectionDomain;
 import java.util.Collection;
 import java.util.HashSet;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.spi.ClassTransformer;
-import javax.validation.ValidatorFactory;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.spi.ClassTransformer;
+import jakarta.persistence.spi.TransformerException;
+import jakarta.validation.ValidatorFactory;
 
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
@@ -163,15 +165,20 @@ public class ProviderContainerContractInfoImpl extends ProviderContainerContract
             this.classLoader = classLoader;
         }
 
+        @Override
         public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
             /*
              * Do not even bother running the transformer unless the loader
              * loading the class is the ACC's class loader.
              */
-            return (loader.equals(classLoader) ?
-                persistenceTransformer.transform(loader, className,
-                    classBeingRedefined, protectionDomain, classfileBuffer)
-                : null);
+            try {
+                return (loader.equals(classLoader)
+                        ? persistenceTransformer.transform(loader, className,
+                                classBeingRedefined, protectionDomain, classfileBuffer)
+                        : null);
+            } catch (TransformerException ex) {
+                throw (IllegalClassFormatException) (new IllegalClassFormatException().initCause(ex));
+            }
         }
     }
 

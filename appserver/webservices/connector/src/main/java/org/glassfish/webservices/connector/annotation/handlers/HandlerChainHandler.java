@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.webservices.connector.annotation.handlers;
 
@@ -67,12 +67,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.jws.HandlerChain;
-import javax.jws.WebService;
+import jakarta.jws.HandlerChain;
+import jakarta.jws.WebService;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.ws.WebServiceProvider;
-import javax.xml.ws.WebServiceRef;
+import jakarta.xml.ws.WebServiceProvider;
+import jakarta.xml.ws.WebServiceRef;
 import org.glassfish.apf.*;
 import org.glassfish.apf.impl.HandlerProcessingResultImpl;
 import org.glassfish.deployment.common.Descriptor;
@@ -86,7 +86,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 /**
- * This handler takes care of the javax.jws.HandlerChain
+ * This handler takes care of the jakarta.jws.HandlerChain
  *
  * @author Jerome Dochez
  */
@@ -200,7 +200,7 @@ public class HandlerChainHandler extends AbstractHandler {
 
         if (!clientSideHandlerChain && (containers==null || containers.length==0)) {
             for(Annotation ann : annElem.getAnnotations()) {
-                if(ann.annotationType().getPackage().getName().startsWith("javax.ejb")) {
+                if(ann.annotationType().getPackage().getName().startsWith("jakarta.ejb")) {
                     // let EJB handlers handle this processing
                     return HandlerProcessingResultImpl.getDefaultResult(getAnnotationType(), ResultType.UNPROCESSED); 
                 }

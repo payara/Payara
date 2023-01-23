@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  * 
- * Portions Copyright [2016] [Payara Foundation]
+ * Portions Copyright [2016-2021] [Payara Foundation]
  */
 
 package com.sun.enterprise.config.serverbeans;
@@ -58,7 +58,7 @@ import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.TransactionFailure;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 
 @Configured

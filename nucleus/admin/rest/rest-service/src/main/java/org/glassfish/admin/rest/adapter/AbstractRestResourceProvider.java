@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2021] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.admin.rest.adapter;
@@ -58,8 +58,8 @@ import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.server.filter.CsrfProtectionFilter;
 
-import javax.ws.rs.core.Feature;
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Feature;
+import jakarta.ws.rs.core.MediaType;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;

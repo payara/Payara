@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 package com.sun.web.security.realmadapter;
 
 import static com.sun.enterprise.security.jaspic.config.HttpServletConstants.AUTH_TYPE;
@@ -50,8 +50,8 @@ import static java.lang.Boolean.TRUE;
 import static java.util.logging.Level.INFO;
 import static java.util.logging.Level.SEVERE;
 import static java.util.logging.Level.WARNING;
-import static javax.security.auth.message.AuthStatus.SUCCESS;
-import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+import static jakarta.security.auth.message.AuthStatus.SUCCESS;
+import static jakarta.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 import static org.apache.catalina.ContainerEvent.AFTER_AUTHENTICATION;
 import static org.apache.catalina.ContainerEvent.AFTER_LOGOUT;
 import static org.apache.catalina.ContainerEvent.AFTER_POST_AUTHENTICATION;
@@ -74,13 +74,13 @@ import java.util.function.Function;
 import java.util.logging.Logger;
 
 import javax.security.auth.Subject;
-import javax.security.auth.message.AuthException;
-import javax.security.auth.message.MessageInfo;
-import javax.security.auth.message.config.ServerAuthConfig;
-import javax.security.auth.message.config.ServerAuthContext;
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.security.auth.message.AuthException;
+import jakarta.security.auth.message.MessageInfo;
+import jakarta.security.auth.message.config.ServerAuthConfig;
+import jakarta.security.auth.message.config.ServerAuthContext;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.catalina.Authenticator;
 import org.apache.catalina.Container;
@@ -113,8 +113,8 @@ public class JaspicRealm {
      * name of system property that can be used to define corresponding default provider for system apps.
      */
     private static final String SYSTEM_HTTPSERVLET_SECURITY_PROVIDER = "system_httpservlet_security_provider";
-    private static final String SERVER_AUTH_CONTEXT = "__javax.security.auth.message.ServerAuthContext";
-    private static final String MESSAGE_INFO = "__javax.security.auth.message.MessageInfo";
+    private static final String SERVER_AUTH_CONTEXT = "__jakarta.security.auth.message.ServerAuthContext";
+    private static final String MESSAGE_INFO = "__jakarta.security.auth.message.MessageInfo";
 
     /**
      * The default JASPIC config provider for system apps if one has been set via a system property.

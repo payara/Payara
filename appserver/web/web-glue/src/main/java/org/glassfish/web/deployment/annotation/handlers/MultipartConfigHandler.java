@@ -47,13 +47,13 @@ import org.glassfish.web.deployment.descriptor.MultipartConfigDescriptor;
 import org.glassfish.apf.*;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.servlet.annotation.MultipartConfig;
-import javax.servlet.annotation.WebServlet;
+import jakarta.servlet.annotation.MultipartConfig;
+import jakarta.servlet.annotation.WebServlet;
 import java.lang.annotation.Annotation;
 
 /**
  * This handler is responsible in handling
- * javax.servlet.annotation.MultipartConfig.
+ * jakarta.servlet.annotation.MultipartConfig.
  *
  * @author Shing Wai Chan
  */

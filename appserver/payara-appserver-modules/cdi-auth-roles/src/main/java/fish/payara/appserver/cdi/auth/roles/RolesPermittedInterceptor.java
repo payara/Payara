@@ -1,7 +1,7 @@
 /*
  *   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *   Copyright (c) [2017-2020] Payara Foundation and/or its affiliates.
+ *   Copyright (c) [2017-2021] Payara Foundation and/or its affiliates.
  *   All rights reserved.
  *
  *   The contents of this file are subject to the terms of either the GNU
@@ -43,10 +43,10 @@ package fish.payara.appserver.cdi.auth.roles;
 import static fish.payara.cdi.auth.roles.LogicalOperator.AND;
 import static fish.payara.cdi.auth.roles.LogicalOperator.OR;
 import static java.util.Arrays.asList;
-import static javax.security.enterprise.AuthenticationStatus.NOT_DONE;
-import static javax.security.enterprise.AuthenticationStatus.SEND_FAILURE;
-import static javax.security.enterprise.AuthenticationStatus.SUCCESS;
-import static javax.security.enterprise.authentication.mechanism.http.AuthenticationParameters.withParams;
+import static jakarta.security.enterprise.AuthenticationStatus.NOT_DONE;
+import static jakarta.security.enterprise.AuthenticationStatus.SEND_FAILURE;
+import static jakarta.security.enterprise.AuthenticationStatus.SUCCESS;
+import static jakarta.security.enterprise.authentication.mechanism.http.AuthenticationParameters.withParams;
 import static org.glassfish.soteria.cdi.AnnotationELPProcessor.evalELExpression;
 import static org.glassfish.soteria.cdi.AnnotationELPProcessor.hasAnyELExpression;
 import static org.glassfish.soteria.cdi.CdiUtils.getAnnotation;
@@ -61,23 +61,23 @@ import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 
-import javax.annotation.Priority;
-import javax.el.ELProcessor;
-import javax.enterprise.inject.Intercepted;
-import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.Interceptor;
-import javax.interceptor.InvocationContext;
-import javax.security.enterprise.AuthenticationStatus;
-import javax.security.enterprise.SecurityContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.NotAuthorizedException;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
+import jakarta.annotation.Priority;
+import jakarta.el.ELProcessor;
+import jakarta.enterprise.inject.Intercepted;
+import jakarta.enterprise.inject.spi.Bean;
+import jakarta.enterprise.inject.spi.BeanManager;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.interceptor.AroundInvoke;
+import jakarta.interceptor.Interceptor;
+import jakarta.interceptor.InvocationContext;
+import jakarta.security.enterprise.AuthenticationStatus;
+import jakarta.security.enterprise.SecurityContext;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.ws.rs.NotAuthorizedException;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.Response;
 
 import fish.payara.cdi.auth.roles.CallerAccessException;
 import fish.payara.cdi.auth.roles.RolesPermitted;

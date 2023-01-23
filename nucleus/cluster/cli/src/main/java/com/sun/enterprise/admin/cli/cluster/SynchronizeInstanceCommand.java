@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2021] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.cli.cluster;
 
@@ -49,7 +49,7 @@ import java.text.DateFormat;
 import java.util.*;
 import java.util.logging.*;
 import java.util.zip.*;
-import javax.xml.bind.*;
+import jakarta.xml.bind.*;
 
 
 import org.jvnet.hk2.annotations.Service;

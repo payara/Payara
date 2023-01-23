@@ -54,7 +54,7 @@ import org.glassfish.api.admin.RestParam;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 /**
  * @author Jagadish Ramu

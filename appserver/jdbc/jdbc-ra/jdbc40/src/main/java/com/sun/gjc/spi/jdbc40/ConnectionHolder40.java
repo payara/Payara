@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2016-2020] [Payara Foundation and/or affiliates]
+ * Portions Copyright 2016-2022 Payara Foundation and/or affiliates
  */
 
 package com.sun.gjc.spi.jdbc40;
@@ -59,7 +59,7 @@ import java.util.concurrent.Executor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.resource.ResourceException;
+import jakarta.resource.ResourceException;
 
 
 /**
@@ -82,7 +82,6 @@ public class ConnectionHolder40 extends ConnectionHolder {
             StringManager.getManager(ManagedConnectionFactoryImpl.class);
 
     protected Properties defaultClientInfo;
-    protected boolean jdbc30Connection;
 
     /**
      * Connection wrapper given to application program
@@ -90,15 +89,11 @@ public class ConnectionHolder40 extends ConnectionHolder {
      * @param con           Connection that is wrapped
      * @param mc            ManagedConnection
      * @param cxRequestInfo Connection Request Information
-     * @param jdbc30Connection If the connection is a JDBC version 3.0 connection
      */
     public ConnectionHolder40(Connection con, ManagedConnectionImpl mc,
-                              javax.resource.spi.ConnectionRequestInfo cxRequestInfo,
-                              boolean jdbc30Connection) {
+                              jakarta.resource.spi.ConnectionRequestInfo cxRequestInfo) {
         super(con, mc, cxRequestInfo);
-        this.jdbc30Connection = jdbc30Connection;
-        if (!jdbc30Connection)
-            init();
+        init();
     }
 
     /**
@@ -589,19 +584,17 @@ public class ConnectionHolder40 extends ConnectionHolder {
             }
             return;
         }
-        if (!jdbc30Connection) {
-            try {
-                checkValidity();
-                if (isSupportClientInfo()) {
-                    if (defaultClientInfo == null) {
-                        setClientInfo(new Properties());
-                    } else {
-                        setClientInfo(defaultClientInfo);
-                    }
+        try {
+            checkValidity();
+            if (isSupportClientInfo()) {
+                if (defaultClientInfo == null) {
+                    setClientInfo(new Properties());
+                } else {
+                    setClientInfo(defaultClientInfo);
                 }
-            } catch (Exception e) {
-                _logger.log(Level.SEVERE, "jdbc.unable_to_set_client_info", e);
             }
+        } catch (Exception e) {
+            _logger.log(Level.SEVERE, "jdbc.unable_to_set_client_info", e);
         }
         super.close();
     }

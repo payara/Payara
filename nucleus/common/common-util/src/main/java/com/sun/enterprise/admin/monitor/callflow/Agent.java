@@ -191,28 +191,28 @@ public interface Agent {
     /**
      * This method is called the persistence container on a request processor
      * thread, before invoking a method	on the
-     * @see javax.persistence.EntityManager EntityManager interface
+     * @see jakarta.persistence.EntityManager EntityManager interface
      */
     public void	entityManagerMethodStart (EntityManagerMethod entityManagerMethod);
 
     /**
      * This method is called the persistence container on a request processor
      * thread, after invoking a	method on the
-     * @see javax.persistence.EntityManager EntityManager interface
+     * @see jakarta.persistence.EntityManager EntityManager interface
      */
     public void	entityManagerMethodEnd ();
 
     /**
      * This method is called the persistence container on a request processor
      * thread, before invoking a method	on the
-     * @see javax.persistence.Query Query interface
+     * @see jakarta.persistence.Query Query interface
      */
     public void	entityManagerQueryStart	(EntityManagerQueryMethod queryMethod);
 
     /**
      * This method is called the persistence container on a request processor
      * thread, after invoking a	method on the
-     * @see javax.persistence.Query Query interface
+     * @see jakarta.persistence.Query Query interface
      */
     public void	entityManagerQueryEnd ();
 

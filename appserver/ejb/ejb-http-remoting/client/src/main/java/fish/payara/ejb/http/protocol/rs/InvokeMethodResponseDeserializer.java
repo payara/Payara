@@ -1,7 +1,7 @@
 /*
  *    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2019-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *    The contents of this file are subject to the terms of either the GNU
  *    General Public License Version 2 only ("GPL") or the Common Development
@@ -42,10 +42,10 @@ package fish.payara.ejb.http.protocol.rs;
 
 import fish.payara.ejb.http.protocol.InvokeMethodResponse;
 
-import javax.json.bind.JsonbBuilder;
-import javax.json.bind.serializer.DeserializationContext;
-import javax.json.bind.serializer.JsonbDeserializer;
-import javax.json.stream.JsonParser;
+import jakarta.json.bind.JsonbBuilder;
+import jakarta.json.bind.serializer.DeserializationContext;
+import jakarta.json.bind.serializer.JsonbDeserializer;
+import jakarta.json.stream.JsonParser;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
@@ -68,6 +68,7 @@ public class InvokeMethodResponseDeserializer implements JsonbDeserializer<Invok
                 type = parser.getString();
             } else if (event == JsonParser.Event.KEY_NAME && parser.getString().equals("result")) {
                 Type resultClass = determineClass(type);
+                parser.next();
                 result = ctx.deserialize(resultClass, parser);
                 resultPresent = true;
             }

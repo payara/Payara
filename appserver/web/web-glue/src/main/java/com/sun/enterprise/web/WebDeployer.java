@@ -58,7 +58,7 @@ import org.glassfish.loader.util.ASClassLoaderUtil;
 import org.glassfish.web.LogFacade;
 import org.glassfish.web.jsp.JSPCompiler;
 import org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 
 import java.io.File;

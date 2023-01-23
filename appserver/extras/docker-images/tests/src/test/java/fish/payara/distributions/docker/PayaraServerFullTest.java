@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) 2019-2022 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -50,6 +50,7 @@ import java.util.stream.Collectors;
 
 import javax.net.ssl.SSLHandshakeException;
 
+import org.junit.Assert;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -83,7 +84,6 @@ public class PayaraServerFullTest {
         CONTAINER.followOutput(new Slf4jLogConsumer(LOG));
     }
 
-
     @Test
     public void testStartedServerEndpoints() throws Exception {
         assertTrue(CONTAINER.isRunning(), "server is running");
@@ -107,6 +107,12 @@ public class PayaraServerFullTest {
             assertThat("e.message", e.getMessage(),
                 containsString("unable to find valid certification path to requested target"));
         }
+    }
+
+    @Test
+    public void testOpenSslIsRemoved() throws IOException, InterruptedException {
+        String openSslVersionOutput = CONTAINER.execInContainer("/bin/sh","-c","openssl","version").getStderr();
+        assertTrue(openSslVersionOutput.contains("openssl: not found"));
     }
 
 

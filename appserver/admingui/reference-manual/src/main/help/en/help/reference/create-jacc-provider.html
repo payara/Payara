@@ -17,7 +17,7 @@
     SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
 
 -->
-<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2019-2022] [Payara Foundation and/or its affiliates] -->
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
@@ -147,15 +147,15 @@ options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> 
 <dt class="hdlist1"><code>--policyproviderclass</code></dt>
 <dd>
 <p>Specifies the fully qualified class name for the
-<code>javax.security.jacc.policy.provider</code> that implements the
+<code>jakarta.security.jacc.policy.provider</code> that implements the
 <code>java.security.Policy</code>.</p>
 </dd>
 <dt class="hdlist1"><code>--policyconfigfactoryclass</code></dt>
 <dd>
 <p>Specifies the fully qualified class name for the
-<code>javax.security.jacc.PolicyConfigurationFactory.provider</code> that
+<code>jakarta.security.jacc.PolicyConfigurationFactory.provider</code> that
 implements the provider-specific
-<code>javax.security.jacc.PolicyConfigurationFactory</code>.</p>
+<code>jakarta.security.jacc.PolicyConfigurationFactory</code>.</p>
 </dd>
 <dt class="hdlist1"><code>--property</code></dt>
 <dd>
@@ -230,8 +230,8 @@ in <code>domain.xml</code>.</p>
 <div class="listingblock">
 <div class="content">
 <pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; create-jacc-provider
---policyproviderclass com.sun.enterprise.security.provider.PolicyWrapper
---policyconfigfactoryclass com.sun.enterprise.security.provider.PolicyConfigurationFactoryImpl
+--policyproviderclass fish.payara.security.jacc.provider.PolicyProviderImpl
+--policyconfigfactoryclass fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl
 testJACC
 
 Command create-jacc-provider executed successfully.</code></pre>

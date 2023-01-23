@@ -42,7 +42,7 @@ package org.glassfish.security.services.commands;
 import java.beans.PropertyVetoException;
 import java.util.Properties;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.glassfish.security.services.config.SecurityConfiguration;
 

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2021] Payara Foundation and/or affiliates
 
 package myapp;
 
@@ -45,11 +45,11 @@ import java.io.*;
 import java.lang.reflect.Constructor;
 import java.net.*;
 
-import javax.servlet.*;
-import javax.servlet.http.*;
+import jakarta.servlet.*;
+import jakarta.servlet.http.*;
 import javax.sql.DataSource;
 import java.util.Map;
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import myapp.test.SimpleTest;
 import myapp.util.HtmlUtil;
 

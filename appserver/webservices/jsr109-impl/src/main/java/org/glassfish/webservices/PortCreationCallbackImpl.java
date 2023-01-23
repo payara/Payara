@@ -45,8 +45,8 @@ import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.xml.ws.Binding;
-import javax.xml.ws.soap.SOAPBinding;
+import jakarta.xml.ws.Binding;
+import jakarta.xml.ws.soap.SOAPBinding;
 
 import com.sun.xml.ws.api.client.ServiceInterceptor;
 import com.sun.xml.ws.developer.WSBindingProvider;

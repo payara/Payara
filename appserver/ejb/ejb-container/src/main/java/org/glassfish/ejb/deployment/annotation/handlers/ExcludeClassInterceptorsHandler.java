@@ -44,7 +44,7 @@ import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import javax.interceptor.ExcludeClassInterceptors;
+import jakarta.interceptor.ExcludeClassInterceptors;
 
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.deployment.annotation.context.EjbContext;
@@ -59,7 +59,7 @@ import org.jvnet.hk2.annotations.Service;
 
 /**
  * This handler is responsible for handling the 
- * javax.ejb.ExcludeClassInterceptors annotation.
+ * jakarta.ejb.ExcludeClassInterceptors annotation.
  *
  */
 @Service

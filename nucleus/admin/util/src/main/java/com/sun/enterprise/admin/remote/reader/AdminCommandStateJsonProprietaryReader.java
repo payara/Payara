@@ -38,7 +38,7 @@
  * holder.
  *
  */
-// Portions Copyright [2017-2018] Payara Foundation and/or affiliates
+// Portions Copyright [2017-2021] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.remote.reader;
 
@@ -52,10 +52,10 @@ import java.io.StringReader;
 import java.net.HttpURLConnection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.json.Json;
-import javax.json.JsonException;
-import javax.json.JsonObject;
-import javax.json.stream.JsonParser;
+import jakarta.json.Json;
+import jakarta.json.JsonException;
+import jakarta.json.JsonObject;
+import jakarta.json.stream.JsonParser;
 import org.glassfish.api.admin.AdminCommandState;
 
 /**

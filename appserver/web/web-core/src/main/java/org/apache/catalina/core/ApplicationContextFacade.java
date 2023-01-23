@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2022] Payara Foundation and/or affiliates
 
 package org.apache.catalina.core;
 
@@ -63,8 +63,8 @@ import org.apache.catalina.Globals;
 import org.apache.catalina.LogFacade;
 import org.apache.catalina.security.SecurityUtil;
 
-import javax.servlet.*;
-import javax.servlet.descriptor.JspConfigDescriptor;
+import jakarta.servlet.*;
+import jakarta.servlet.descriptor.JspConfigDescriptor;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -304,60 +304,6 @@ public final class ApplicationContextFacade
         }
     }
 
-
-    /**
-     * @deprecated As of Java Servlet API 2.1, with no direct replacement.
-     */
-    @Override
-    @Deprecated
-    public Servlet getServlet(String name)
-        throws ServletException {
-        if (SecurityUtil.isPackageProtectionEnabled()) {
-            try {
-                return (Servlet) invokeMethod(context, "getServlet", 
-                                              new Object[]{name});
-            } catch (Throwable t) {
-                if (t instanceof ServletException) {
-                    throw (ServletException) t;
-                }
-                return null;
-            }
-        } else {
-            return context.getServlet(name);
-        }
-    }
-
-
-    /**
-     * @deprecated As of Java Servlet API 2.1, with no direct replacement.
-     */
-    @Override
-    @SuppressWarnings("unchecked") // doPrivileged() returns the correct type
-    @Deprecated
-    public Enumeration<Servlet> getServlets() {
-        if (SecurityUtil.isPackageProtectionEnabled()) {
-            return (Enumeration<Servlet>) doPrivileged("getServlets", null);
-        } else {
-            return context.getServlets();
-        }
-    }
-
-
-    /**
-     * @deprecated As of Java Servlet API 2.1, with no direct replacement.
-     */
-    @Override
-    @SuppressWarnings("unchecked") // doPrivileged() returns the correct type
-    @Deprecated
-    public Enumeration<String> getServletNames() {
-        if (SecurityUtil.isPackageProtectionEnabled()) {
-            return (Enumeration<String>) doPrivileged("getServletNames", null);
-        } else {
-            return context.getServletNames();
-        }
-   }
-
-
     @Override
     public void log(String msg) {
         if (SecurityUtil.isPackageProtectionEnabled()) {
@@ -366,23 +312,6 @@ public final class ApplicationContextFacade
             context.log(msg);
         }
     }
-
-
-    /**
-     * @deprecated As of Java Servlet API 2.1, use
-     *  <code>log(String, Throwable)</code> instead
-     */
-    @Override
-    @Deprecated
-    public void log(Exception exception, String msg) {
-        if (SecurityUtil.isPackageProtectionEnabled()) {
-            doPrivileged("log", new Class[]{Exception.class, String.class}, 
-                         new Object[]{exception,msg});
-        } else {
-            context.log(exception, msg);
-        }
-    }
-
 
     @Override
     public void log(String message, Throwable throwable) {

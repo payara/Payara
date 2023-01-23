@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.concurrent.runtime;
 
@@ -51,7 +51,6 @@ import org.glassfish.concurrent.runtime.deployer.ContextServiceConfig;
 import org.glassfish.concurrent.runtime.deployer.ManagedExecutorServiceConfig;
 import org.glassfish.concurrent.runtime.deployer.ManagedScheduledExecutorServiceConfig;
 import org.glassfish.concurrent.runtime.deployer.ManagedThreadFactoryConfig;
-import org.glassfish.enterprise.concurrent.*;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.PreDestroy;
 import org.glassfish.internal.data.ApplicationRegistry;
@@ -59,14 +58,27 @@ import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.resourcebase.resources.api.ResourceInfo;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import java.util.*;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.naming.NamingException;
+import org.glassfish.enterprise.concurrent.AbstractManagedExecutorService;
+import org.glassfish.enterprise.concurrent.AbstractManagedThread;
+import org.glassfish.enterprise.concurrent.ContextServiceImpl;
+import org.glassfish.enterprise.concurrent.ManagedExecutorServiceImpl;
+import org.glassfish.enterprise.concurrent.ManagedScheduledExecutorServiceImpl;
+import org.glassfish.enterprise.concurrent.ManagedThreadFactoryImpl;
 import org.glassfish.enterprise.concurrent.spi.ContextHandle;
+import org.glassfish.resourcebase.resources.naming.ResourceNamingService;
 
 /**
  * This class provides API to create various Concurrency Utilities objects
@@ -79,13 +91,15 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
 
     private Map<String, ManagedExecutorServiceImpl> managedExecutorServiceMap;
     private Map<String, ManagedScheduledExecutorServiceImpl> managedScheduledExecutorServiceMap;
-    private Map<String, ContextServiceImpl> contextServiceMap;
+    private Map<String, ContextServiceImpl> contextServiceMap = new HashMap();
     private Map<String, ManagedThreadFactoryImpl> managedThreadFactoryMap;
 
     public static final String CONTEXT_INFO_CLASSLOADER = "Classloader";
     public static final String CONTEXT_INFO_JNDI = "JNDI";
     public static final String CONTEXT_INFO_SECURITY = "Security";
     public static final String CONTEXT_INFO_WORKAREA = "WorkArea";
+
+    public static final String CONTEXT_INFO_ALL = CONTEXT_INFO_CLASSLOADER + "," + CONTEXT_INFO_JNDI + "," + CONTEXT_INFO_SECURITY + "," + CONTEXT_INFO_WORKAREA;
 
     private ScheduledExecutorService internalScheduler;
     private static final Logger logger  = LogFacade.getLogger();
@@ -107,6 +121,9 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
 
     @Inject
     ComponentEnvManager compEnvMgr;
+
+    @Inject
+    private ResourceNamingService resourceNamingService;
 
     /**
      * Returns the ConcurrentRuntime instance.
@@ -163,12 +180,18 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
         if (contextServiceMap != null && contextServiceMap.containsKey(jndiName)) {
             return contextServiceMap.get(jndiName);
         }
-        ContextServiceImpl contextService = createContextService(config.getJndiName(),
-                config.getContextInfo(), config.getContextInfoEnabled(), false);
+        ContextServiceImpl contextService = createContextService(resource, config);
         if (contextServiceMap == null) {
             contextServiceMap = new HashMap();
         }
         contextServiceMap.put(jndiName, contextService);
+        return contextService;
+    }
+
+    public synchronized ContextServiceImpl createContextService(ResourceInfo resource, ContextServiceConfig config) {
+        ContextServiceImpl contextService = createContextServiceImpl(config.getJndiName(),
+                config.isContextInfoEnabledBoolean(), config.getPropagatedContexts(),
+                config.getClearedContexts(), config.getUchangedContexts());
         return contextService;
     }
 
@@ -180,38 +203,44 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
         }
     }
 
-    public synchronized ManagedExecutorServiceImpl getManagedExecutorService(ResourceInfo resource, ManagedExecutorServiceConfig config) {
+    public synchronized ManagedExecutorServiceImpl getManagedExecutorService(ResourceInfo resourceInfo, ManagedExecutorServiceConfig config) {
         String jndiName = config.getJndiName();
 
         if (managedExecutorServiceMap != null && managedExecutorServiceMap.containsKey(jndiName)) {
             return managedExecutorServiceMap.get(jndiName);
         }
 
-        ManagedThreadFactoryImpl managedThreadFactory = new ThreadFactoryWrapper(
-                config.getJndiName() + "-managedThreadFactory",
-                null,
-                config.getThreadPriority());
+        ContextServiceImpl contextService = prepareContextService(
+                createContextServiceName(config.getContext(), config.getJndiName()),
+                config.getContextInfo(),
+                config.isContextInfoEnabledBoolean(), true);
 
-        ManagedExecutorServiceImpl mes = new ManagedExecutorServiceImpl(config.getJndiName(),
-                managedThreadFactory,
-                config.getHungAfterSeconds() * 1000L, // in millseconds
-                config.isLongRunningTasks(),
-                config.getUseForkJoinPool(),
-                config.getCorePoolSize(),
-                config.getMaximumPoolSize(),
-                config.getKeepAliveSeconds(),
-                TimeUnit.SECONDS,
-                config.getThreadLifeTimeSeconds(),
-                config.getTaskQueueCapacity(),
-                createContextService(config.getJndiName() + "-contextservice",
-                        config.getContextInfo(), config.getContextInfoEnabled(), true),
-                AbstractManagedExecutorService.RejectPolicy.ABORT);
-
+        ManagedExecutorServiceImpl mes = createManagedExecutorService(resourceInfo, config, contextService);
         if (managedExecutorServiceMap == null) {
             managedExecutorServiceMap = new HashMap();
         }
 
         managedExecutorServiceMap.put(jndiName, mes);
+        return mes;
+    }
+
+    public synchronized ManagedExecutorServiceImpl createManagedExecutorService(ResourceInfo resourceInfo, ManagedExecutorServiceConfig config, ContextServiceImpl contextService) {
+        ManagedThreadFactoryImpl managedThreadFactory = new ThreadFactoryWrapper(
+                config.getJndiName() + "-managedThreadFactory",
+                null,
+                config.getThreadPriority());
+        ManagedExecutorServiceImpl mes = new ManagedExecutorServiceImpl(config.getJndiName(),
+                managedThreadFactory,
+                config.getHungAfterSeconds() * 1_000L, // in milliseconds
+                config.isLongRunningTasks(),
+                config.getUseForkJoinPool(),
+                config.getCorePoolSize(),
+                config.getMaximumPoolSize(),
+                config.getKeepAliveSeconds(), TimeUnit.SECONDS,
+                config.getThreadLifeTimeSeconds(),
+                config.getTaskQueueCapacity(),
+                contextService,
+                AbstractManagedExecutorService.RejectPolicy.ABORT);
 
         if (config.getHungAfterSeconds() > 0L && !config.isLongRunningTasks()) {
             scheduleInternalTimer();
@@ -238,6 +267,23 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
         if (managedScheduledExecutorServiceMap != null && managedScheduledExecutorServiceMap.containsKey(jndiName)) {
             return managedScheduledExecutorServiceMap.get(jndiName);
         }
+        ContextServiceImpl contextService = prepareContextService(createContextServiceName(config.getContext(), config.getJndiName()),
+                config.getContextInfo(), config.isContextInfoEnabledBoolean(), true);
+
+        ManagedScheduledExecutorServiceImpl mes = createManagedScheduledExecutorService(resource, config, contextService);
+
+        if (managedScheduledExecutorServiceMap == null) {
+            managedScheduledExecutorServiceMap = new HashMap();
+        }
+        managedScheduledExecutorServiceMap.put(jndiName, mes);
+        if (config.getHungAfterSeconds() > 0L && !config.isLongRunningTasks()) {
+            scheduleInternalTimer();
+        }
+        return mes;
+    }
+
+    public ManagedScheduledExecutorServiceImpl createManagedScheduledExecutorService(ResourceInfo resource,
+                                                                                     ManagedScheduledExecutorServiceConfig config, ContextServiceImpl contextService) {
         ManagedThreadFactoryImpl managedThreadFactory = new ThreadFactoryWrapper(
                 config.getJndiName() + "-managedThreadFactory",
                 null,
@@ -249,16 +295,8 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
                 config.getCorePoolSize(),
                 config.getKeepAliveSeconds(), TimeUnit.SECONDS,
                 config.getThreadLifeTimeSeconds(),
-                createContextService(config.getJndiName() + "-contextservice",
-                        config.getContextInfo(), config.getContextInfoEnabled(), true),
+                contextService,
                 AbstractManagedExecutorService.RejectPolicy.ABORT);
-        if (managedScheduledExecutorServiceMap == null) {
-            managedScheduledExecutorServiceMap = new HashMap();
-        }
-        managedScheduledExecutorServiceMap.put(jndiName, mes);
-        if (config.getHungAfterSeconds() > 0L && !config.isLongRunningTasks()) {
-            scheduleInternalTimer();
-        }
         return mes;
     }
 
@@ -279,14 +317,22 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
         if (managedThreadFactoryMap != null && managedThreadFactoryMap.containsKey(jndiName)) {
             return managedThreadFactoryMap.get(jndiName);
         }
-        ManagedThreadFactoryImpl managedThreadFactory = new ThreadFactoryWrapper(config.getJndiName(),
-                createContextService(config.getJndiName() + "-contextservice",
-                        config.getContextInfo(), config.getContextInfoEnabled(), true),
-                config.getThreadPriority());
+        String context = config.getContext();
+        ContextServiceImpl contextService = prepareContextService(createContextServiceName(context, config.getJndiName()),
+                config.getContextInfo(), config.isContextInfoEnabledBoolean(), true);
+
+        ManagedThreadFactoryImpl managedThreadFactory = createManagedThreadFactory(resource, config, contextService);
+
         if (managedThreadFactoryMap == null) {
             managedThreadFactoryMap = new HashMap();
         }
         managedThreadFactoryMap.put(jndiName, managedThreadFactory);
+        return managedThreadFactory;
+    }
+
+    public ManagedThreadFactoryImpl createManagedThreadFactory(ResourceInfo resource, ManagedThreadFactoryConfig config, ContextServiceImpl contextService) {
+        ManagedThreadFactoryImpl managedThreadFactory = new ThreadFactoryWrapper(config.getJndiName(), contextService,
+                config.getThreadPriority());
         return managedThreadFactory;
     }
 
@@ -302,63 +348,48 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
         }
     }
 
-    private ContextServiceImpl createContextService(
-            String jndiName,
-            String contextInfo,
-            String contextInfoEnabled,
-            boolean cleanupTransaction) {
-
-        boolean isContextInfoEnabled = Boolean.parseBoolean(contextInfoEnabled);
-
-        ContextSetupProviderImpl.CONTEXT_TYPE[] contextTypes
-                = parseContextInfo(contextInfo, isContextInfoEnabled);
-
-        ContextSetupProviderImpl contextSetupProvider
-                = new ContextSetupProviderImpl(
-                        invocationManager,
-                        deployment,
-                        compEnvMgr,
-                        applicationRegistry,
-                        applications,
-                        cleanupTransaction ? transactionManager : null, contextTypes
-                );
-
-        ContextServiceImpl contextService
-                = new ContextServiceImpl(
-                        jndiName,
-                        contextSetupProvider,
-                        new TransactionSetupProviderImpl(transactionManager)
-                );
+    /**
+     * Load cached context service or create a new one with default setup (propagate all).
+     */
+    private ContextServiceImpl prepareContextService(String contextServiceJndiName, String contextInfo, boolean contextInfoEnabled, boolean cleanupTransaction) {
+        ContextServiceImpl contextService = contextServiceMap.get(contextServiceJndiName);
+        if (contextService == null) {
+            // if the context service is not known, create it
+            Set<String> propagated = ContextServiceConfig.parseContextInfo(contextInfo, contextInfoEnabled);
+            Set<String> cleared = Collections.EMPTY_SET;
+            if (cleanupTransaction && !propagated.contains(ContextSetupProviderImpl.CONTEXT_TYPE_WORKAREA)) {
+                // pass the cleanup transaction in list of cleared handlers
+                cleared = Set.of(ContextSetupProviderImpl.CONTEXT_TYPE_WORKAREA);
+            }
+            contextService = createContextServiceImpl(contextServiceJndiName, contextInfoEnabled, propagated, cleared, Collections.EMPTY_SET);
+            contextServiceMap.put(contextServiceJndiName, contextService);
+        }
         return contextService;
     }
 
-    private ContextSetupProviderImpl.CONTEXT_TYPE[] parseContextInfo(String contextInfo, boolean isContextInfoEnabled) {
-        ArrayList<ContextSetupProviderImpl.CONTEXT_TYPE> contextTypeArray = new ArrayList<>();
-        ContextSetupProviderImpl.CONTEXT_TYPE[] contextTypes = new ContextSetupProviderImpl.CONTEXT_TYPE[] {};
-        if (contextInfo == null) {
-            // by default, if no context info is passed, we propagate all context types
-            contextTypeArray.add(ContextSetupProviderImpl.CONTEXT_TYPE.CLASSLOADING);
-            contextTypeArray.add(ContextSetupProviderImpl.CONTEXT_TYPE.NAMING);
-            contextTypeArray.add(ContextSetupProviderImpl.CONTEXT_TYPE.SECURITY);
-            contextTypeArray.add(ContextSetupProviderImpl.CONTEXT_TYPE.WORKAREA);
-            return contextTypeArray.toArray(contextTypes);
-        }
-        if (isContextInfoEnabled) {
-        StringTokenizer st = new StringTokenizer(contextInfo, ",", false);
-            while(st.hasMoreTokens()) {
-                String token = st.nextToken().trim();
-                if (CONTEXT_INFO_CLASSLOADER.equalsIgnoreCase(token)) {
-                    contextTypeArray.add(ContextSetupProviderImpl.CONTEXT_TYPE.CLASSLOADING);
-                } else if (CONTEXT_INFO_JNDI.equalsIgnoreCase(token)) {
-                    contextTypeArray.add(ContextSetupProviderImpl.CONTEXT_TYPE.NAMING);
-                } else if (CONTEXT_INFO_SECURITY.equalsIgnoreCase(token)) {
-                    contextTypeArray.add(ContextSetupProviderImpl.CONTEXT_TYPE.SECURITY);
-                } else if (CONTEXT_INFO_WORKAREA.equalsIgnoreCase(token)) {
-                    contextTypeArray.add(ContextSetupProviderImpl.CONTEXT_TYPE.WORKAREA);
-                }
-            }
-        }
-        return contextTypeArray.toArray(contextTypes);
+    private ContextServiceImpl createContextServiceImpl(String jndiName, boolean isContextInfoEnabled, Set<String> propagated, Set<String> cleared, Set<String> unchanged) {
+        ContextSetupProviderImpl contextSetupProvider
+                = new ContextSetupProviderImpl(
+                invocationManager,
+                deployment,
+                compEnvMgr,
+                applicationRegistry,
+                applications,
+                transactionManager,
+                propagated,
+                cleared,
+                unchanged
+        );
+
+        ContextServiceImpl contextService
+                = new ContextServiceImpl(
+                jndiName,
+                contextSetupProvider,
+                new TransactionSetupProviderImpl(transactionManager,
+                        unchanged.contains(ContextSetupProviderImpl.CONTEXT_TYPE_WORKAREA),
+                        cleared.contains(ContextSetupProviderImpl.CONTEXT_TYPE_WORKAREA))
+        );
+        return contextService;
     }
 
     private void scheduleInternalTimer() {
@@ -375,11 +406,41 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
                     1,
                     60, TimeUnit.SECONDS,
                     0L,
-                    createContextService(name + "-contextservice",
-                            CONTEXT_INFO_CLASSLOADER, "true", false),
+                    prepareContextService(createContextServiceName(null, name),
+                            CONTEXT_INFO_CLASSLOADER, true, false),
                     AbstractManagedExecutorService.RejectPolicy.ABORT);
             internalScheduler.scheduleAtFixedRate(new HungTasksLogger(), 1L, 1L, TimeUnit.MINUTES);
         }
+    }
+
+    /**
+     * Decide JNDI name of context service. Either it is specified or it is created from the owning object.
+     *
+     * @param configuredContextJndiName JNDI name specified (typically context parameter in annotation)
+     * @param parentObjectJndiName JNDI nam of ManagedExecutorService, ManagedThreadFactory etc. using the context service
+     * @return JNDI name for the context service to be stored in the JNDI tree.
+     */
+    public static String createContextServiceName(String configuredContextJndiName, String parentObjectJndiName) {
+        String contextServiceJndiName = configuredContextJndiName;
+        if (contextServiceJndiName == null) {
+            contextServiceJndiName = parentObjectJndiName + "-contextservice";
+        }
+        return contextServiceJndiName;
+    }
+
+    public ContextServiceImpl findOrCreateContextService(String configuredContextJndiName, String parentObjectJndiName, String applicationName, String moduleName) {
+        String contextOfResource = ConcurrentRuntime.createContextServiceName(
+                configuredContextJndiName,
+                parentObjectJndiName);
+        ResourceInfo contextResourceInfo = new ResourceInfo(contextOfResource, applicationName, moduleName);
+        ContextServiceImpl contextService;
+        try {
+            contextService = (ContextServiceImpl) resourceNamingService.lookup(contextResourceInfo, contextOfResource);
+        } catch (NamingException e) {
+            // not found, create a default one
+            contextService = prepareContextService(contextOfResource, CONTEXT_INFO_ALL, true, true);
+        }
+        return contextService;
     }
 
     /**
@@ -442,10 +503,10 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
             if (hungThreads != null) {
                 for (AbstractManagedThread hungThread: hungThreads) {
                     Object[] params = {hungThread.getTaskIdentityName(),
-                                       hungThread.getName(),
-                                       hungThread.getTaskRunTime(System.currentTimeMillis()) / 1000,
-                                       mtf.getHungTaskThreshold() / 1000,
-                                       mesName};
+                            hungThread.getName(),
+                            hungThread.getTaskRunTime(System.currentTimeMillis()) / 1000,
+                            mtf.getHungTaskThreshold() / 1000,
+                            mesName};
                     logger.log(Level.WARNING, LogFacade.UNRESPONSIVE_TASK, params);
                 }
             }

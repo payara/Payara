@@ -156,7 +156,7 @@ public class CurrentBeforeParentClassLoader extends URLClassLoader {
     }
     
     private boolean isAlwaysDelegate(String name) {
-        return name.startsWith("sun") || name.startsWith("javax");
+        return name.startsWith("sun") || name.startsWith("javax") || name.startsWith("jakarta");
     }
 
     @Override

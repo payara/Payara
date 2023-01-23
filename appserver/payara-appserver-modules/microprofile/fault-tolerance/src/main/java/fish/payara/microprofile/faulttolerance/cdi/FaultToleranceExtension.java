@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- *    Copyright (c) 2017-2021 Payara Foundation and/or its affiliates. All rights reserved.
+ *
+ *    Copyright (c) [2017-2022] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -42,6 +42,7 @@ package fish.payara.microprofile.faulttolerance.cdi;
 import fish.payara.microprofile.faulttolerance.FaultToleranceConfig;
 import fish.payara.microprofile.faulttolerance.policy.FaultTolerancePolicy;
 import fish.payara.microprofile.faulttolerance.service.FaultToleranceUtils;
+
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.faulttolerance.Asynchronous;
 import org.eclipse.microprofile.faulttolerance.Bulkhead;
@@ -51,26 +52,27 @@ import org.eclipse.microprofile.faulttolerance.FallbackHandler;
 import org.eclipse.microprofile.faulttolerance.Retry;
 import org.eclipse.microprofile.faulttolerance.Timeout;
 
-import javax.annotation.Priority;
-import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.event.Observes;
-import javax.enterprise.inject.spi.AfterBeanDiscovery;
-import javax.enterprise.inject.spi.AfterTypeDiscovery;
-import javax.enterprise.inject.spi.Annotated;
-import javax.enterprise.inject.spi.AnnotatedMethod;
-import javax.enterprise.inject.spi.AnnotatedType;
-import javax.enterprise.inject.spi.BeanAttributes;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.BeforeBeanDiscovery;
-import javax.enterprise.inject.spi.Extension;
-import javax.enterprise.inject.spi.InjectionPoint;
-import javax.enterprise.inject.spi.InjectionTarget;
-import javax.enterprise.inject.spi.InterceptionType;
-import javax.enterprise.inject.spi.Interceptor;
-import javax.enterprise.inject.spi.ProcessAnnotatedType;
-import javax.enterprise.inject.spi.WithAnnotations;
-import javax.enterprise.inject.spi.configurator.AnnotatedMethodConfigurator;
-import javax.interceptor.InvocationContext;
+import jakarta.annotation.Priority;
+import jakarta.enterprise.context.spi.CreationalContext;
+import jakarta.enterprise.event.Observes;
+import jakarta.enterprise.inject.spi.AfterBeanDiscovery;
+import jakarta.enterprise.inject.spi.AfterTypeDiscovery;
+import jakarta.enterprise.inject.spi.Annotated;
+import jakarta.enterprise.inject.spi.AnnotatedMethod;
+import jakarta.enterprise.inject.spi.AnnotatedType;
+import jakarta.enterprise.inject.spi.BeanAttributes;
+import jakarta.enterprise.inject.spi.BeanManager;
+import jakarta.enterprise.inject.spi.BeforeBeanDiscovery;
+import jakarta.enterprise.inject.spi.Extension;
+import jakarta.enterprise.inject.spi.InjectionPoint;
+import jakarta.enterprise.inject.spi.InjectionTarget;
+import jakarta.enterprise.inject.spi.InterceptionType;
+import jakarta.enterprise.inject.spi.Interceptor;
+import jakarta.enterprise.inject.spi.ProcessAnnotatedType;
+import jakarta.enterprise.inject.spi.WithAnnotations;
+import jakarta.enterprise.inject.spi.configurator.AnnotatedMethodConfigurator;
+import jakarta.enterprise.inject.spi.InjectionTargetFactory;
+import jakarta.interceptor.InvocationContext;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.time.temporal.ChronoUnit;
@@ -139,7 +141,7 @@ public class FaultToleranceExtension implements Extension {
     void enableInterceptor(@Observes AfterTypeDiscovery afterTypeDiscovery) {
         // Determine the priority of our interceptor
         int priority = ConfigProvider.getConfig().getOptionalValue(INTERCEPTOR_PRIORITY_PROPERTY,
-                Integer.class).orElse(javax.interceptor.Interceptor.Priority.PLATFORM_AFTER + 15);
+                Integer.class).orElse(jakarta.interceptor.Interceptor.Priority.PLATFORM_AFTER + 15);
 
         // Enable our interceptor since we're adding it programmatically rather than via annotation, adding it
         // at the appropriate index (since the list has already been sorted)
@@ -167,7 +169,7 @@ public class FaultToleranceExtension implements Extension {
 
             // If no priority annotation, assume APPLICATION
             int priorityAnnotationValue = priorityAnnotation != null ? priorityAnnotation.value() :
-                    javax.interceptor.Interceptor.Priority.APPLICATION;
+                    jakarta.interceptor.Interceptor.Priority.APPLICATION;
 
             // Check for a matching priority value, otherwise determine which way to move the search
             if (priorityAnnotationValue < priority) {
@@ -220,7 +222,8 @@ public class FaultToleranceExtension implements Extension {
             this.bm = bm;
             this.binding = binding;
             beanAttributes = bm.createBeanAttributes(at);
-            injectionTarget = bm.createInjectionTarget(at);
+            InjectionTargetFactory<FaultToleranceInterceptor> itf = bm.getInjectionTargetFactory(at);
+            injectionTarget = itf.createInjectionTarget(null);
         }
 
         @Override
@@ -246,11 +249,6 @@ public class FaultToleranceExtension implements Extension {
         @Override
         public Set<InjectionPoint> getInjectionPoints() {
             return injectionTarget.getInjectionPoints();
-        }
-
-        @Override
-        public boolean isNullable() {
-            return false;
         }
 
         @Override

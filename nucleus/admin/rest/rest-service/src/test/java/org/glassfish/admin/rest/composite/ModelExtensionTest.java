@@ -37,15 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2021] Payara Foundation and/or affiliates
  */
 package org.glassfish.admin.rest.composite;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.json.JsonException;
-import javax.json.JsonObject;
-import javax.ws.rs.GET;
+import jakarta.json.JsonException;
+import jakarta.json.JsonObject;
+import jakarta.ws.rs.GET;
 
 import org.glassfish.admin.rest.composite.metadata.Default;
 import org.glassfish.admin.rest.composite.metadata.DefaultsGenerator;

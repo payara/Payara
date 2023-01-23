@@ -37,19 +37,19 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates]
+ * Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates]
  */
 package org.glassfish.admin.rest.provider;
 
 import com.sun.enterprise.admin.report.ActionReporter;
 import java.lang.reflect.Type;
-import javax.json.Json;
-import javax.json.JsonException;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.ext.Provider;
+import jakarta.json.Json;
+import jakarta.json.JsonException;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.ext.Provider;
 import org.glassfish.api.admin.AdminCommandState;
 
 /**

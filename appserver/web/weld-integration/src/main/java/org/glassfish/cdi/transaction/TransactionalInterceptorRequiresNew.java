@@ -37,27 +37,27 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.cdi.transaction;
 
 import static java.util.logging.Level.FINE;
-import static javax.transaction.Status.STATUS_MARKED_ROLLBACK;
+import static jakarta.transaction.Status.STATUS_MARKED_ROLLBACK;
 
 import java.util.logging.Logger;
 
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.Interceptor;
-import javax.interceptor.InvocationContext;
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
-import javax.transaction.TransactionalException;
+import jakarta.interceptor.AroundInvoke;
+import jakarta.interceptor.Interceptor;
+import jakarta.interceptor.InvocationContext;
+import jakarta.transaction.Transaction;
+import jakarta.transaction.TransactionManager;
+import jakarta.transaction.TransactionalException;
 
 import com.sun.enterprise.transaction.TransactionManagerHelper;
 
 /**
  * Transactional annotation Interceptor class for RequiresNew transaction type, ie
- * javax.transaction.Transactional.TxType.REQUIRES_NEW If called outside a transaction context, a
+ * jakarta.transaction.Transactional.TxType.REQUIRES_NEW If called outside a transaction context, a
  * new JTA transaction will begin, the managed bean method execution will then continue inside this
  * transaction context, and the transaction will be committed. If called inside a transaction
  * context, the current transaction context will be suspended, a new JTA transaction will begin, the
@@ -66,9 +66,9 @@ import com.sun.enterprise.transaction.TransactionManagerHelper;
  *
  * @author Paul Parkinson
  */
-@javax.annotation.Priority(Interceptor.Priority.PLATFORM_BEFORE + 200)
+@jakarta.annotation.Priority(Interceptor.Priority.PLATFORM_BEFORE + 200)
 @Interceptor
-@javax.transaction.Transactional(javax.transaction.Transactional.TxType.REQUIRES_NEW)
+@jakarta.transaction.Transactional(jakarta.transaction.Transactional.TxType.REQUIRES_NEW)
 public class TransactionalInterceptorRequiresNew extends TransactionalInterceptorBase {
 
     private static final long serialVersionUID = 1L;

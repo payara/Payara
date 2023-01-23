@@ -1,7 +1,7 @@
 <!--
 
     Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
-    Portions Copyright &#169; [2017-2020] Payara Foundation and/or affiliates.
+    Portions Copyright &#169; [2017-2022] Payara Foundation and/or affiliates.
 
     This program and the accompanying materials are made available under the
     terms of the Eclipse Public License v. 2.0, which is available at
@@ -43,10 +43,6 @@
 <p>The SSL page opens.</p>
 </li>
 <li>
-<p>Select the SSL3 Enabled checkbox to enable SSL3.</p>
-<p>This option is enabled by default.</p>
-</li>
-<li>
 <p>Select the TLS Enabled checkbox to enable Transport Layer Security (TLS).</p>
 <p>This option is enabled by default.</p>
 </li>
@@ -59,7 +55,7 @@
 <p>In the certificate, the name format is <i>tokenname</i><code>:</code><i>nickname</i>. Including the <i>tokenname</i><code>:</code> part of the name in this attribute is optional.</p>
 </li>
 <li>
-<p>In the Key Store field, type the name of the keystore file (for example, <code>keystore.jks</code>).</p>
+<p>In the Key Store field, type the name of the keystore file (for example, <code>keystore.p12</code>).</p>
 </li>
 <li>
 <p>In the Trust Algorithm field, type the name of the trust management algorithm (for example, PKIX) to use for certification path validation.</p>
@@ -69,7 +65,7 @@
 <p>This field is used only if the Trust Algorithm field is set to PKIX. A value of 0 implies that the path can only contain a single certificate. A value of -1 implies that the path length is unconstrained (there is no maximum). Setting a value less than -1 causes an exception to be thrown.</p>
 </li>
 <li>
-<p>In the Trust Store field, type the name of the truststore file (for example, <code>cacerts.jks</code>).</p>
+<p>In the Trust Store field, type the name of the truststore file (for example, <code>cacerts.p12</code>).</p>
 </li>
 <li>
 <p>In the Cipher Suites area, specify the cipher suites to be used.</p>

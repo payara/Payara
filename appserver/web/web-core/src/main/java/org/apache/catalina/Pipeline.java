@@ -61,7 +61,7 @@ package org.apache.catalina;
 
 import org.glassfish.web.valve.GlassFishValve;
 
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
 
 /**

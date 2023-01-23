@@ -49,7 +49,7 @@ import org.junit.runner.RunWith;
 
 import static fish.payara.samples.ServerOperations.addUsersToContainerIdentityStore;
 import static java.util.Arrays.asList;
-import static javax.ws.rs.core.SecurityContext.BASIC_AUTH;
+import static jakarta.ws.rs.core.SecurityContext.BASIC_AUTH;
 
 /**
  * Calls an EJB bean from a remote server via ejb-invoker endpoint secured with

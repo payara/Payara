@@ -45,9 +45,9 @@ import com.sun.enterprise.container.common.spi.util.InjectionManager;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.container.Adapter;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Provider;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.inject.Provider;
 
 import org.glassfish.hk2.api.IterableProvider;
 import org.jvnet.hk2.annotations.Optional;

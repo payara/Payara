@@ -37,15 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2019-2021] [Payara Foundation and/or its affiliates]
 package org.glassfish.webservices;
 
-import static javax.xml.ws.handler.MessageContext.SERVLET_REQUEST;
-import static javax.xml.ws.handler.MessageContext.SERVLET_RESPONSE;
+import static jakarta.xml.ws.handler.MessageContext.SERVLET_REQUEST;
+import static jakarta.xml.ws.handler.MessageContext.SERVLET_RESPONSE;
 import static org.glassfish.webservices.monitoring.EndpointImpl.MESSAGE_ID;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.internal.api.Globals;

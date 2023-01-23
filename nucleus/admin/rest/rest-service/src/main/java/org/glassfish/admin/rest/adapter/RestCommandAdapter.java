@@ -39,7 +39,7 @@
  */
 package org.glassfish.admin.rest.adapter;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.glassfish.admin.restconnector.Constants;
 import org.glassfish.api.container.EndpointRegistrationException;
 import org.jvnet.hk2.annotations.Service;

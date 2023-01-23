@@ -48,7 +48,7 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.deployment.GenericSniffer;
 import org.glassfish.deployment.common.DeploymentUtils;
 import com.sun.enterprise.deployment.EarType;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import java.util.List;
 import java.util.ArrayList;

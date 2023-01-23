@@ -49,7 +49,7 @@ import java.util.logging.Level;
 import java.net.URISyntaxException;
 import java.net.URI;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.config.types.PropertyBag;
 import org.glassfish.api.admin.config.ApplicationName;

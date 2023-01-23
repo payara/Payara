@@ -37,14 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2021] Payara Foundation and/or affiliates
 
 package com.sun.gjc.spi;
 
-import javax.resource.ResourceException;
-import javax.resource.spi.ConnectionRequestInfo;
-import javax.resource.spi.ManagedConnection;
-import javax.resource.spi.ManagedConnectionFactory;
+import jakarta.resource.ResourceException;
+import jakarta.resource.spi.ConnectionRequestInfo;
+import jakarta.resource.spi.ManagedConnection;
+import jakarta.resource.spi.ManagedConnectionFactory;
 
 /**
  * ConnectionManager implementation for Generic JDBC Connector.
@@ -52,7 +52,7 @@ import javax.resource.spi.ManagedConnectionFactory;
  * @author Binod P.G
  * @version 1.0, 02/07/31
  */
-public class ConnectionManagerImplementation implements javax.resource.spi.ConnectionManager {
+public class ConnectionManagerImplementation implements jakarta.resource.spi.ConnectionManager {
 
     /**
      * Returns a <code>Connection </code> object to the <code>ConnectionFactory</code>

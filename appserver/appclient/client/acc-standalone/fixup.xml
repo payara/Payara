@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates] -->
 
 <project name="glassfish v3, app client library fix-up" default="fixup.library" basedir=".">
     <property name="mq.dir.path" value="../../mq"/>
@@ -80,7 +80,7 @@
             <replacefilter token="../modules/weld-environment-common.jar" value="../lib/appclient/weld-environment-common.jar"/>
 
             <!--
-                The javax.mail JAR will reference activation.jar, because it is
+                The jakarta.mail JAR will reference activation.jar, because it is
                 built to work with Java SE 1.4 and later. Prior to Java SE 6
                 activation was separate from the Java SE libraries and so
                 mail must refer to it explicitly.  But GlassFish requires 

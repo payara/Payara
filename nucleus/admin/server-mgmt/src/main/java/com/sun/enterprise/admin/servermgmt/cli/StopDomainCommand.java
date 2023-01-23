@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
+ * Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates]
  */
 package com.sun.enterprise.admin.servermgmt.cli;
 
@@ -51,7 +51,7 @@ import java.io.File;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.hk2.api.PerLookup;

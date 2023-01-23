@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2019-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,10 +42,10 @@ package fish.payara.samples.dynamic.roles.ejb;
 import fish.payara.cdi.auth.roles.RolesPermitted;
 import static fish.payara.samples.dynamic.roles.common.AuthoritiesConstants.ADMIN;
 import fish.payara.samples.dynamic.roles.common.Person;
-import javax.annotation.security.RolesAllowed;
-import javax.ejb.Stateless;
-import javax.inject.Named;
-import javax.validation.constraints.NotNull;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.ejb.Stateless;
+import jakarta.inject.Named;
+import jakarta.validation.constraints.NotNull;
 
 /**
  *

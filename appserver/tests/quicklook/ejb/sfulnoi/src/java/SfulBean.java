@@ -40,7 +40,7 @@
 
 package sfulnoi;
 
-import javax.ejb.Stateful;
+import jakarta.ejb.Stateful;
 
 @Stateful
 public class SfulBean {

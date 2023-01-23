@@ -43,6 +43,7 @@ package com.sun.enterprise.v3.admin.cluster;
 import com.sun.enterprise.admin.util.TimeoutParamDefaultCalculator;
 import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Domain;
+import jakarta.inject.Inject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.api.I18n;
@@ -51,22 +52,21 @@ import org.glassfish.api.admin.*;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Inject;
 import java.util.logging.Logger;
 
 @I18n("start.cluster.command")
 @Service(name = "start-cluster")
-@ExecuteOn(value={RuntimeType.DAS})
+@ExecuteOn(value = {RuntimeType.DAS})
 @CommandLock(CommandLock.LockType.NONE) // don't prevent _synchronize-files
 @PerLookup
 @RestEndpoints({
-    @RestEndpoint(configBean=Cluster.class,
-        opType=RestEndpoint.OpType.POST, 
-        path="start-cluster", 
-        description="Start Cluster",
-        params={
-            @RestParam(name="id", value="$parent")
-        })
+        @RestEndpoint(configBean = Cluster.class,
+                opType = RestEndpoint.OpType.POST,
+                path = "start-cluster",
+                description = "Start Cluster",
+                params = {
+                        @RestParam(name = "id", value = "$parent")
+                })
 })
 @Progress
 public class StartClusterCommand implements AdminCommand {
@@ -134,11 +134,9 @@ public class StartClusterCommand implements AdminCommand {
             ParameterMap map = new ParameterMap();
             map.add("timeout", String.valueOf(instanceTimeout));
             clusterHelper.setAdminTimeout(timeout * 1000);
-
             clusterHelper.runCommand(commandName, map, clusterName, context,
                     verbose);
-        }
-        catch (CommandException e) {
+        } catch (CommandException e) {
             String msg = e.getLocalizedMessage();
             logger.warning(msg);
             report.setActionExitCode(ExitCode.FAILURE);

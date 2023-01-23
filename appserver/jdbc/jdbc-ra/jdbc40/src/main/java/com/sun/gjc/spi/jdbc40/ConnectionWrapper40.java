@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2020] Payara Foundation and/or affiliates
+// Portions Copyright 2020-2022 Payara Foundation and/or affiliates
 
 package com.sun.gjc.spi.jdbc40;
 
@@ -58,12 +58,10 @@ public class ConnectionWrapper40 extends ConnectionHolder40 implements Connectio
      * @param con           Connection that is wrapped
      * @param mc            Managed Connection
      * @param cxRequestInfo Connection Request Info
-     * @param jdbc30Connection If the connection is a JDBC version 3.0 connection
      */
     public ConnectionWrapper40(Connection con, ManagedConnectionImpl mc,
-                               javax.resource.spi.ConnectionRequestInfo cxRequestInfo,
-                               boolean jdbc30Connection) {
-        super(con, mc, cxRequestInfo, jdbc30Connection);
+                               jakarta.resource.spi.ConnectionRequestInfo cxRequestInfo) {
+        super(con, mc, cxRequestInfo);
     }
 
     /**

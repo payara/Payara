@@ -387,7 +387,7 @@ public class GSSUtils {
             throw new GSSException(GSSException.DEFECTIVE_TOKEN);
 
         // add first two bytes to the MECH_OID_LEN
-        int oidlen = token[index+1] + 2;
+        int oidlen = token[index + 1] + 2;
         byte[] buf = new byte[oidlen];
 
         System.arraycopy(token, index, buf, 0, oidlen);

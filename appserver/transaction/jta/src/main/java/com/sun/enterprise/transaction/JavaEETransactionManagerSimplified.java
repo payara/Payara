@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates.]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates.]
 
 package com.sun.enterprise.transaction;
 
@@ -76,11 +76,11 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.ContractsProvided;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Inject;
-import javax.inject.Provider;
-import javax.resource.spi.XATerminator;
-import javax.resource.spi.work.WorkException;
-import javax.transaction.*;
+import jakarta.inject.Inject;
+import jakarta.inject.Provider;
+import jakarta.resource.spi.XATerminator;
+import jakarta.resource.spi.work.WorkException;
+import jakarta.transaction.*;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
@@ -95,7 +95,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Implementation of javax.transaction.TransactionManager interface.
+ * Implementation of jakarta.transaction.TransactionManager interface.
  * This class provides non-XA local transaction support and delegates
  * to implementation of the JavaEETransactionManagerDelegate for XA
  * or LAO optimization, and complete JTS implementation.
@@ -1291,7 +1291,7 @@ public class JavaEETransactionManagerSimplified
     }
 
     public TransactionAdminBean getTransactionAdminBean(Transaction tran)
-            throws javax.transaction.SystemException {
+            throws jakarta.transaction.SystemException {
 
         TransactionAdminBean tBean = null;
         if(tran instanceof JavaEETransaction){
@@ -1797,7 +1797,7 @@ public class JavaEETransactionManagerSimplified
     }
 
 /****************************************************************************/
-/** Implementation of javax.transaction.Synchronization *********************/
+/** Implementation of jakarta.transaction.Synchronization *********************/
 /****************************************************************************/
     private static class JTSSynchronization implements Synchronization {
         private final TransactionInternal jtsTx;

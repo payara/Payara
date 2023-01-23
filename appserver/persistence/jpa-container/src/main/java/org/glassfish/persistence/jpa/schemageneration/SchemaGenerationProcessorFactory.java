@@ -70,7 +70,7 @@ public class SchemaGenerationProcessorFactory {
         return useJPA21Processor ? new JPAStandardSchemaGenerationProcessor() : new EclipseLinkSchemaGenerationProcessor(providerClassName);
     }
 
-    private static final String STANDARD_SCHEMA_GENERATION_PREFIX = "javax.persistence.schema-generation";
+    private static final String STANDARD_SCHEMA_GENERATION_PREFIX = "jakarta.persistence.schema-generation";
 
     /**
      * @return true if the given <code>pud</code> contains a JPA standard property for schema generation

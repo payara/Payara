@@ -40,12 +40,9 @@
 // Portions Copyright [2018-2022] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.webservices;
 
-import static com.sun.enterprise.security.jauth.AuthConfig.SOAP;
 import static com.sun.enterprise.security.webservices.LogUtils.BASIC_AUTH_ERROR;
 import static com.sun.enterprise.security.webservices.LogUtils.CLIENT_CERT_ERROR;
 import static com.sun.enterprise.security.webservices.LogUtils.EJB_SEC_CONFIG_FAILURE;
-import static com.sun.enterprise.security.webservices.LogUtils.EXCEPTION_THROWN;
-import static com.sun.enterprise.security.webservices.LogUtils.SERVLET_SEC_CONFIG_FAILURE;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.SEVERE;
 import static java.util.logging.Level.WARNING;
@@ -56,21 +53,16 @@ import java.lang.ref.WeakReference;
 import java.security.Principal;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import javax.security.jacc.PolicyContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.xml.namespace.QName;
-import javax.xml.rpc.handler.HandlerInfo;
-import javax.xml.soap.SOAPMessage;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
+import jakarta.security.jacc.PolicyContext;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.xml.soap.SOAPMessage;
 
 import org.apache.catalina.util.Base64;
-import org.glassfish.webservices.Ejb2RuntimeEndpointInfo;
 import org.glassfish.webservices.EjbRuntimeEndpointInfo;
 import org.glassfish.webservices.SecurityService;
 import org.glassfish.webservices.WebServiceContextImpl;
@@ -86,18 +78,11 @@ import com.sun.enterprise.security.SecurityContext;
 import com.sun.enterprise.security.ee.audit.AppServerAuditManager;
 import com.sun.enterprise.security.jacc.context.PolicyContextHandlerImpl;
 import com.sun.enterprise.security.jauth.AuthConfig;
-import com.sun.enterprise.security.jauth.AuthException;
-import com.sun.enterprise.security.jauth.ServerAuthContext;
-import com.sun.enterprise.security.jauth.jaspic.provider.ClientAuthConfig;
 import com.sun.enterprise.security.jauth.jaspic.provider.ServerAuthConfig;
 import com.sun.enterprise.security.web.integration.WebPrincipal;
 import com.sun.enterprise.web.WebModule;
 import com.sun.web.security.RealmAdapter;
-import com.sun.xml.rpc.spi.runtime.SOAPMessageContext;
-import com.sun.xml.rpc.spi.runtime.StreamingHandler;
-import com.sun.xml.rpc.spi.runtime.SystemHandlerDelegate;
 import com.sun.xml.ws.assembler.metro.dev.ClientPipelineHook;
-
 
 /**
  *
@@ -198,11 +183,6 @@ public class SecurityServiceImpl implements SecurityService {
                 sendAuthenticationEvents(true, hreq.getRequestURI(), webPrincipal);
             }
 
-            if (epInfo instanceof Ejb2RuntimeEndpointInfo) {
-                // For JAXRPC based EJb endpoints the rest of the steps are not needed
-                return authenticated;
-            }
-
             // Setting userPrincipal in WSCtxt applies for JAXWS endpoints only
             epInfo.prepareInvocation(false);
             WebServiceContextImpl ctxt = (WebServiceContextImpl) epInfo.getWebServiceContext();
@@ -216,97 +196,6 @@ public class SecurityServiceImpl implements SecurityService {
             }
         }
         return authenticated;
-    }
-
-    @Override
-    public SystemHandlerDelegate getSecurityHandler(WebServiceEndpoint endpoint) {
-        if (!endpoint.hasAuthMethod()) {
-            try {
-                ServerAuthConfig config = ServerAuthConfig.getConfig(SOAP, endpoint.getMessageSecurityBinding(), null);
-                if (config != null) {
-                    return new ServletSystemHandlerDelegate(config, endpoint);
-                }
-            } catch (Exception e) {
-                _logger.log(SEVERE, SERVLET_SEC_CONFIG_FAILURE, e);
-            }
-        }
-        return null;
-    }
-
-    @Override
-    public HandlerInfo getMessageSecurityHandler(MessageSecurityBindingDescriptor binding, QName serviceName) {
-        HandlerInfo rvalue = null;
-        try {
-            ClientAuthConfig config = ClientAuthConfig.getConfig(SOAP, binding, null);
-            if (config != null) {
-                // get understood headers from auth module.
-                QName[] headers = config.getMechanisms();
-                Map properties = new HashMap();
-                properties.put(MessageLayerClientHandler.CLIENT_AUTH_CONFIG, config);
-                properties.put(javax.xml.ws.handler.MessageContext.WSDL_SERVICE, serviceName);
-                rvalue = new HandlerInfo(MessageLayerClientHandler.class, properties, headers);
-            }
-
-        } catch (Exception ex) {
-            _logger.log(SEVERE, EXCEPTION_THROWN, ex);
-            throw new RuntimeException(ex);
-        }
-
-        return rvalue;
-    }
-
-    @Override
-    public boolean validateRequest(Object serverAuthConfig, StreamingHandler implementor, SOAPMessageContext context) {
-        ServerAuthConfig authConfig = (ServerAuthConfig) serverAuthConfig;
-        if (authConfig == null) {
-            return true;
-        }
-
-        ServerAuthContext serverAuthContext = authConfig.getAuthContext(implementor, context.getMessage());
-        req.set(new WeakReference<SOAPMessage>(context.getMessage()));
-
-        if (serverAuthContext == null) {
-            return true;
-        }
-
-        try {
-            return WebServiceSecurity.validateRequest(context, serverAuthContext);
-        } catch (AuthException ex) {
-            _logger.log(SEVERE, EXCEPTION_THROWN, ex);
-
-            if (req.get() != null) {
-                req.get().clear();
-                req.set(null);
-            }
-
-            throw new RuntimeException(ex);
-        }
-    }
-
-    @Override
-    public void secureResponse(Object serverAuthConfig, StreamingHandler implementor, SOAPMessageContext msgContext) {
-        if (serverAuthConfig != null) {
-            ServerAuthConfig config = (ServerAuthConfig) serverAuthConfig;
-            SOAPMessage reqmsg = (req.get() != null) ? req.get().get() : msgContext.getMessage();
-
-            try {
-                ServerAuthContext serverAuthContext = config.getAuthContext(implementor, reqmsg);
-
-                if (serverAuthContext != null) {
-                    try {
-                        WebServiceSecurity.secureResponse(msgContext, serverAuthContext);
-                    } catch (AuthException ex) {
-                        _logger.log(SEVERE, EXCEPTION_THROWN, ex);
-                        throw new RuntimeException(ex);
-                    }
-                }
-            } finally {
-                if (req.get() != null) {
-                    req.get().clear();
-                    req.set(null);
-                }
-            }
-        }
     }
 
     @Override

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2022] Payara Foundation and/or affiliates
 
 package com.sun.appserv.connectors.internal.api;
 
@@ -572,7 +572,7 @@ public class ConnectorsUtil {
                 case DSD :
                     prefixPart1 = ConnectorConstants.RESOURCE_JNDINAME_PREFIX;
                     prefixPart2 = ConnectorConstants.DATASOURCE_DEFINITION_JNDINAME_PREFIX;
-                break;
+                    break;
                 case MSD :
                     prefixPart1 = ConnectorConstants.RESOURCE_JNDINAME_PREFIX;
                     prefixPart2 = ConnectorConstants.MAILSESSION_DEFINITION_JNDINAME_PREFIX;
@@ -604,6 +604,16 @@ public class ConnectorsUtil {
                 case AODD:
                     prefixPart1 = ConnectorConstants.RESOURCE_JNDINAME_PREFIX;
                     prefixPart2 = ConnectorConstants.ADMINISTERED_OBJECT_DEFINITION_JNDINAME_PREFIX;
+                    break;
+                case MEDD:
+                case MTFDD:
+                case MSEDD:
+                    prefixPart1 = ConnectorConstants.CONCURRENT_JNDINAME_PREFIX;
+                    prefixPart2 = "";
+                    break;
+                case CSDD:
+                    prefixPart1 = ConnectorConstants.CONCURRENT_JNDINAME_PREFIX;
+                    prefixPart2 = ConnectorConstants.CONCURRENT_CONTEXT_SERVICE_DEFINITION_JNDINAME_PREFIX;
                     break;
             }
         }

@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2021] Payara Foundation and/or affiliates
 
 package org.apache.catalina.core;
 
@@ -64,9 +64,9 @@ import org.apache.catalina.Request;
 import org.apache.catalina.Wrapper;
 import org.apache.catalina.deploy.FilterMap;
 
-import javax.servlet.DispatcherType;
-import javax.servlet.Servlet;
-import javax.servlet.ServletRequest;
+import jakarta.servlet.DispatcherType;
+import jakarta.servlet.Servlet;
+import jakarta.servlet.ServletRequest;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;

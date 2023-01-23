@@ -51,7 +51,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
 
-import javax.transaction.*;
+import jakarta.transaction.*;
 import javax.naming.InitialContext;
 
 

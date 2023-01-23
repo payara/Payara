@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2022 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,9 +41,9 @@ package fish.payara.security.jaspic;
 
 import java.util.Enumeration;
 import java.util.HashMap;
-import javax.security.auth.message.config.AuthConfigFactory;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextEvent;
+import jakarta.security.auth.message.config.AuthConfigFactory;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletContextEvent;
 
 /**
  * This is a helper class used to provide a simple mechanism to deploy a custom
@@ -77,7 +77,7 @@ public class JASPICWebListenerHelper {
        // enable a SAM to use them to initialise itself
        ServletContext sc = sce.getServletContext();
        Enumeration<String> names = sce.getServletContext().getInitParameterNames();
-       HashMap<String,String> samProperties = new HashMap<>();
+       HashMap<String,Object> samProperties = new HashMap<>();
        while(names.hasMoreElements()) {
            String name = names.nextElement();
            samProperties.put(name, sc.getInitParameter(name));

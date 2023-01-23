@@ -38,21 +38,18 @@
  * holder.
  */
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+// Portions Copyright 2022 Payara Foundation and/or its affiliates
 
 package org.glassfish.deployment.client;
 
-import java.util.Map;
-import java.util.Properties;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
+
+import java.util.Properties;
 
 /**
  *
@@ -92,7 +89,12 @@ public class DFDeploymentPropertiesTest {
         instance.setProperties(props);
 
         String storedProps = (String) instance.get(DFDeploymentProperties.PROPERTY);
-        assertEquals(storedProps, "keepSessions=true:foo=bar");
+        if (storedProps != null && !storedProps.equals("")) {
+            Assert.assertTrue("Properties didn't match!",
+                    storedProps.equals("keepSessions=true:foo=bar") || storedProps.equals("foo=bar:keepSessions=true"));
+        } else {
+            Assert.fail("No stored properties!");
+        }
     }
 
     /**
@@ -107,7 +109,7 @@ public class DFDeploymentPropertiesTest {
         expResult.setProperty("foo", "bar");
 
         Properties result = instance.getProperties();
-        assertEquals(expResult, result);
+        Assert.assertEquals(expResult, result);
     }
 
 

@@ -37,12 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 package com.sun.ejb.containers;
 
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
-import javax.transaction.Status;
+import jakarta.transaction.Status;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;

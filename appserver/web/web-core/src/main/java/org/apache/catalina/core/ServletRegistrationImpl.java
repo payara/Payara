@@ -37,12 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2021] Payara Foundation and/or affiliates
  */
 
 package org.apache.catalina.core;
 
-import javax.servlet.ServletRegistration;
+import jakarta.servlet.ServletRegistration;
 import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Map;

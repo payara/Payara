@@ -40,7 +40,7 @@
 
 package jaxwsfromwsdl.server;
 
-@javax.jws.WebService (endpointInterface="jaxwsfromwsdl.server.AddNumbersPortType")
+@jakarta.jws.WebService (endpointInterface="jaxwsfromwsdl.server.AddNumbersPortType")
 public class AddNumbersImpl{
     
     /**

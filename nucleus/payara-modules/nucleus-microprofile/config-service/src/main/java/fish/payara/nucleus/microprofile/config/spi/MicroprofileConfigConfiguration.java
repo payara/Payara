@@ -41,7 +41,7 @@ package fish.payara.nucleus.microprofile.config.spi;
 
 import java.util.List;
 
-import javax.validation.constraints.Min;
+import jakarta.validation.constraints.Min;
 
 import fish.payara.nucleus.microprofile.config.source.DirConfigSource;
 import org.eclipse.microprofile.config.Config;

@@ -37,25 +37,25 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017-2019] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2021] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.admin.rest.provider;
 
 import org.glassfish.admin.rest.results.GetResultList;
 import org.jvnet.hk2.config.Dom;
-import javax.json.Json;
-import javax.json.JsonException;
-import javax.json.JsonObjectBuilder;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.ext.Provider;
+import jakarta.json.Json;
+import jakarta.json.JsonException;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.ext.Provider;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
-import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonValue;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonValue;
 import org.glassfish.admin.rest.RestLogging;
 
 import static org.glassfish.admin.rest.provider.ProviderUtil.*;

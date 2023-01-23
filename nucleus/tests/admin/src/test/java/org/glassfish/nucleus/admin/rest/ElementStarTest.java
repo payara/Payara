@@ -42,7 +42,7 @@ package org.glassfish.nucleus.admin.rest;
 import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 import static org.testng.AssertJUnit.*;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;

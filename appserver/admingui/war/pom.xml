@@ -40,14 +40,14 @@
     holder.
 
 -->
-<!-- Portions Copyright [2016-2020] [Payara Foundation and/or affiliates] -->
+<!-- Portions Copyright [2016-2021] [Payara Foundation and/or affiliates] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>fish.payara.server.internal.admingui</groupId>
         <artifactId>admingui</artifactId>
-        <version>5.2023.1-SNAPSHOT</version>
+        <version>6.2023.2-SNAPSHOT</version>
     </parent>
     <artifactId>war</artifactId>
     <packaging>war</packaging>
@@ -75,7 +75,7 @@
                             <includeArtifactIds>
                                 commons-fileupload,commons-io,
                                 dojo-ajax-nodemo,json,prototype,
-                                webui-jsf,webui-jsf-suntheme
+                                woodstock-webui-jsf,woodstock-webui-jsf-suntheme
                             </includeArtifactIds>
                             <includeScope>provided</includeScope>
                         </configuration>
@@ -102,7 +102,8 @@
                     <archive>
                         <manifestEntries>
                             <Glassfish-require-services>org.glassfish.api.admingui.ConsoleProvider</Glassfish-require-services>
-                            <HK2-Import-Bundles>fish.payara.server.internal.admingui.console-common,org.glassfish.hk2.hk2,fish.payara.server.internal.admingui.console-plugin-service, fish.payara.server.internal.deployment.deployment-client, jakarta.servlet-api, javax.servlet.jsp-api, com.sun.el.javax.el, com.sun.jsftemplating, fish.payara.server.internal.admingui.dataprovider, com.sun.pkg.client  </HK2-Import-Bundles>
+                            <HK2-Import-Bundles>fish.payara.server.internal.admingui.console-common,org.glassfish.hk2.hk2,fish.payara.server.internal.admingui.console-plugin-service, fish.payara.server.internal.deployment.deployment-client,
+                                jakarta.servlet-api,jakarta.servlet.jsp-api,org.glassfish.expressly,fish.payara.server.internal.admingui.faces-compat,fish.payara.server.internal.admingui.dataprovider,com.sun.pkg.client</HK2-Import-Bundles>
                         </manifestEntries>
                     </archive>
                 </configuration>
@@ -126,19 +127,8 @@
         <!-- following provided scopes are to avoid maven-war-plugin's resolution of libs directory, -->
         <!-- because we need these dependencies in extra directory -->
         <dependency>
-            <groupId>commons-fileupload</groupId>
-            <artifactId>commons-fileupload</artifactId>
-        </dependency>
-        <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>fish.payara.server.internal.admingui</groupId>
-            <artifactId>dataprovider</artifactId>
-            <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
 
@@ -155,12 +145,14 @@
             <artifactId>prototype</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.sun.woodstock</groupId>
-            <artifactId>webui-jsf</artifactId>
+            <groupId>org.glassfish.woodstock</groupId>
+            <artifactId>woodstock-webui-jsf</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.sun.jsftemplating</groupId>
-            <artifactId>jsftemplating</artifactId>
+            <groupId>fish.payara.server.internal.admingui</groupId>
+            <artifactId>faces-compat</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 
@@ -173,8 +165,8 @@
             </activation>
             <dependencies>
                 <dependency>
-                    <groupId>com.sun.woodstock</groupId>
-                    <artifactId>webui-jsf-suntheme</artifactId>
+                    <groupId>org.glassfish.woodstock</groupId>
+                    <artifactId>woodstock-webui-jsf-suntheme</artifactId>
                 </dependency>
             </dependencies>
             <properties>
@@ -186,8 +178,8 @@
             <id>enterprise</id>
             <dependencies>
                 <dependency>
-                    <groupId>com.sun.woodstock</groupId>
-                    <artifactId>webui-jsf-suntheme</artifactId>
+                    <groupId>org.glassfish.woodstock</groupId>
+                    <artifactId>woodstock-webui-jsf-suntheme</artifactId>
                     <classifier>enterprise</classifier>
                 </dependency>
             </dependencies>

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.jaspic;
 
 import static com.sun.enterprise.deployment.runtime.common.MessageSecurityBindingDescriptor.AUTH_LAYER;
@@ -48,9 +48,9 @@ import static com.sun.enterprise.deployment.runtime.web.SunWebApp.HTTPSERVLET_SE
 import static com.sun.enterprise.security.common.AppservAccessController.doPrivileged;
 import static com.sun.enterprise.security.jaspic.config.GFServerConfigProvider.SOAP;
 import static com.sun.enterprise.security.jaspic.config.HttpServletConstants.WEB_BUNDLE;
-import static javax.security.auth.message.MessagePolicy.ProtectionPolicy.AUTHENTICATE_CONTENT;
-import static javax.security.auth.message.MessagePolicy.ProtectionPolicy.AUTHENTICATE_RECIPIENT;
-import static javax.security.auth.message.MessagePolicy.ProtectionPolicy.AUTHENTICATE_SENDER;
+import static jakarta.security.auth.message.MessagePolicy.ProtectionPolicy.AUTHENTICATE_CONTENT;
+import static jakarta.security.auth.message.MessagePolicy.ProtectionPolicy.AUTHENTICATE_RECIPIENT;
+import static jakarta.security.auth.message.MessagePolicy.ProtectionPolicy.AUTHENTICATE_SENDER;
 
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
@@ -59,8 +59,8 @@ import java.util.List;
 import java.util.Map;
 
 import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.message.MessagePolicy;
-import javax.security.auth.message.MessagePolicy.TargetPolicy;
+import jakarta.security.auth.message.MessagePolicy;
+import jakarta.security.auth.message.MessagePolicy.TargetPolicy;
 
 import org.glassfish.internal.api.Globals;
 

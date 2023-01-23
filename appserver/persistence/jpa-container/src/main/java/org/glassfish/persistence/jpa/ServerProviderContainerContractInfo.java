@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2022] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.persistence.jpa;
 
@@ -50,10 +51,11 @@ import org.glassfish.api.deployment.OpsParams;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.persistence.common.DatabaseConstants;
 
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.spi.ClassTransformer;
-import javax.validation.Validation;
-import javax.validation.ValidatorFactory;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.spi.ClassTransformer;
+import jakarta.persistence.spi.TransformerException;
+import jakarta.validation.Validation;
+import jakarta.validation.ValidatorFactory;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.security.ProtectionDomain;
@@ -90,12 +92,16 @@ public class ServerProviderContainerContractInfo extends ProviderContainerContra
        @Override
        public void addTransformer(final ClassTransformer transformer) {
            // Bridge between java.lang.instrument.ClassFileTransformer that DeploymentContext accepts
-           // and javax.persistence.spi.ClassTransformer that JPA supplies.
+           // and jakarta.persistence.spi.ClassTransformer that JPA supplies.
            deploymentContext.addTransformer(new ClassFileTransformer() {
                public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
                                        ProtectionDomain protectionDomain, byte[] classfileBuffer)
                        throws IllegalClassFormatException {
-                   return transformer.transform(loader, className, classBeingRedefined, protectionDomain, classfileBuffer);
+                   try {
+                       return transformer.transform(loader, className, classBeingRedefined, protectionDomain, classfileBuffer);
+                   } catch (TransformerException ex) {
+                       throw (IllegalClassFormatException) (new IllegalClassFormatException().initCause(ex));
+                   }
                }
            });
        }

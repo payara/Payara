@@ -42,7 +42,7 @@ package org.glassfish.ejb.deployment.annotation.handlers;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import javax.interceptor.AroundInvoke;
+import jakarta.interceptor.AroundInvoke;
 
 import com.sun.enterprise.deployment.EjbInterceptor;
 import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
@@ -56,7 +56,7 @@ import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 import org.jvnet.hk2.annotations.Service;
 
 /**
- * This handler is responsible for handling the javax.ejb.AroundInvoke attribute
+ * This handler is responsible for handling the jakarta.ejb.AroundInvoke attribute
  *
  */
 @Service

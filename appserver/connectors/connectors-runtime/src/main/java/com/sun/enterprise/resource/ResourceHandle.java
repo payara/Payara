@@ -47,10 +47,10 @@ import com.sun.logging.LogDomains;
 import com.sun.appserv.connectors.internal.api.PoolingException;
 import com.sun.enterprise.transaction.spi.TransactionalResource;
 
-import javax.resource.spi.ConnectionEventListener;
+import jakarta.resource.spi.ConnectionEventListener;
 import javax.security.auth.Subject;
 import javax.transaction.xa.XAResource;
-import javax.transaction.Transaction;
+import jakarta.transaction.Transaction;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
@@ -121,12 +121,12 @@ public class ResourceHandle implements
             supportsXAResource = true;
 
         if (resource instanceof
-                javax.resource.spi.LazyEnlistableManagedConnection) {
+                jakarta.resource.spi.LazyEnlistableManagedConnection) {
             supportsLazyEnlistment_ = true;
         }
 
         if (resource instanceof
-                javax.resource.spi.DissociatableManagedConnection) {
+                jakarta.resource.spi.DissociatableManagedConnection) {
             supportsLazyAssoc_ = true;
         }
     }
@@ -145,12 +145,12 @@ public class ResourceHandle implements
         supportsXAResource = supportsXA;
 
         if (resource instanceof
-                javax.resource.spi.LazyEnlistableManagedConnection) {
+                jakarta.resource.spi.LazyEnlistableManagedConnection) {
             supportsLazyEnlistment_ = true;
         }
 
         if (resource instanceof
-                javax.resource.spi.DissociatableManagedConnection) {
+                jakarta.resource.spi.DissociatableManagedConnection) {
             supportsLazyAssoc_ = true;
         }
     } */

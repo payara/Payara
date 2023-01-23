@@ -37,16 +37,16 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2019] Payara Foundation and/or affiliates.
+// Portions Copyright 2017-2022 Payara Foundation and/or affiliates.
 package com.sun.appserv;
 
-import com.sun.enterprise.util.JDK;
-import static java.util.logging.Level.WARNING;
+import com.sun.logging.LogDomains;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.URLClassLoader;
 import java.text.MessageFormat;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
@@ -54,8 +54,7 @@ import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.sun.logging.LogDomains;
-import java.util.Collection;
+import static java.util.logging.Level.WARNING;
 
 
 /**
@@ -73,12 +72,11 @@ public class ClassLoaderUtil {
     // ### Names of classes and fields of interest for closing the loader's jar files
     
     private static final String URLCLASSLOADER_UCP_FIELD_NAME = "ucp"; // URLClassPath reference
-    
-    private static final String URLCLASSPATH_JDK8_CLASS_NAME = "sun.misc.URLClassPath";
+
     private static final String URLCLASSPATH_JDK9_CLASS_NAME = "jdk.internal.loader.URLClassPath";
     
     private static final String URLCLASSPATH_LOADERS_FIELD_NAME = "loaders"; // ArrayList of URLClassPath.Loader 
-    private static final String URLCLASSPATH_URLS_FIELD_NAME = JDK.getMajor() < 11 ? "urls" : "unopenedUrls";
+    private static final String URLCLASSPATH_URLS_FIELD_NAME = "unopenedUrls";
     private static final String URLCLASSPATH_LMAP_FIELD_NAME = "lmap"; // HashMap of String -> URLClassPath.Loader
 
     private static final String URLCLASSPATH_JARLOADER_INNER_CLASS_NAME = "$JarLoader";
@@ -274,17 +272,12 @@ public class ClassLoaderUtil {
         
         Class<?> ucpCLass = null;
         String jarLoaderClass = null;
-                
+
         try {
-            ucpCLass = Class.forName(URLCLASSPATH_JDK8_CLASS_NAME, false, Thread.currentThread().getContextClassLoader());
-            jarLoaderClass = URLCLASSPATH_JDK8_CLASS_NAME + URLCLASSPATH_JARLOADER_INNER_CLASS_NAME;
-        } catch (ClassNotFoundException e) {
-            try {
-                ucpCLass = Class.forName(URLCLASSPATH_JDK9_CLASS_NAME, false, Thread.currentThread().getContextClassLoader());
-                jarLoaderClass = URLCLASSPATH_JDK9_CLASS_NAME + URLCLASSPATH_JARLOADER_INNER_CLASS_NAME;
-            } catch (ClassNotFoundException ee) {
-                // ignore for now will throw npe later
-            }
+            ucpCLass = Class.forName(URLCLASSPATH_JDK9_CLASS_NAME, false, Thread.currentThread().getContextClassLoader());
+            jarLoaderClass = URLCLASSPATH_JDK9_CLASS_NAME + URLCLASSPATH_JARLOADER_INNER_CLASS_NAME;
+        } catch (ClassNotFoundException ee) {
+            // ignore for now will throw npe later
         }
         
         loadersField = getField(ucpCLass, URLCLASSPATH_LOADERS_FIELD_NAME);

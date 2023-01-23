@@ -38,26 +38,26 @@
  * holder.
  */
 
-// Portions Copyright [2016-2018] [Payara Foundation]
+// Portions Copyright [2016-2021] [Payara Foundation]
 
 package org.glassfish.cdi.transaction;
 
 import static java.util.logging.Level.FINE;
-import static javax.transaction.Transactional.TxType.NEVER;
+import static jakarta.transaction.Transactional.TxType.NEVER;
 
 import java.util.logging.Logger;
 
-import javax.annotation.Priority;
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.Interceptor;
-import javax.interceptor.InvocationContext;
-import javax.transaction.InvalidTransactionException;
-import javax.transaction.Transactional;
-import javax.transaction.TransactionalException;
+import jakarta.annotation.Priority;
+import jakarta.interceptor.AroundInvoke;
+import jakarta.interceptor.Interceptor;
+import jakarta.interceptor.InvocationContext;
+import jakarta.transaction.InvalidTransactionException;
+import jakarta.transaction.Transactional;
+import jakarta.transaction.TransactionalException;
 
 /**
  * Transactional annotation Interceptor class for Never transaction type, ie
- * javax.transaction.Transactional.TxType.NEVER If called outside a transaction context, managed
+ * jakarta.transaction.Transactional.TxType.NEVER If called outside a transaction context, managed
  * bean method execution will then continue outside a transaction context. If called inside a
  * transaction context, InvalidTransactionException will be thrown
  *

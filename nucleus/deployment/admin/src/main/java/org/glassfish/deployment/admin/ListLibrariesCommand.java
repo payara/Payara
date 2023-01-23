@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates]
 package org.glassfish.deployment.admin;
 
 import org.glassfish.api.ActionReport;
@@ -54,7 +54,7 @@ import org.glassfish.api.admin.RestEndpoint;
 import org.jvnet.hk2.annotations.Service;
 
 import org.glassfish.hk2.api.PerLookup;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.config.serverbeans.Domain;

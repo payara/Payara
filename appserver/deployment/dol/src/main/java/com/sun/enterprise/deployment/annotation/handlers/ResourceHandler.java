@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017-2020] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2021] Payara Foundation and/or affiliates
  */
 
 package com.sun.enterprise.deployment.annotation.handlers;
@@ -52,12 +52,12 @@ import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
-import javax.inject.Inject;
-import javax.inject.Provider;
+import jakarta.inject.Inject;
+import jakarta.inject.Provider;
 
 import static com.sun.enterprise.util.StringUtils.ok;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.lang.annotation.ElementType;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -68,7 +68,7 @@ import java.util.ArrayList;
 import java.util.logging.Level;
 
 /**
- * This handler is responsible for handling the javax.annotation.Resource
+ * This handler is responsible for handling the jakarta.annotation.Resource
  * annotation.
  */
 @Service
@@ -299,13 +299,13 @@ public class ResourceHandler extends AbstractResourceHandler {
 
             WSDolSupport support  = wSDolSupportProvider.get(); 
             if (support!=null) {
-                webServiceContext = support.getType("javax.xml.ws.WebServiceContext");
+                webServiceContext = support.getType("jakarta.xml.ws.WebServiceContext");
             }
         }   catch(Exception e) {
             // we don't care, either we don't have the class, or the bundled is not installed
         }
-        if (resourceType.getName().equals("javax.jms.Queue") ||
-                resourceType.getName().equals("javax.jms.Topic")) {
+        if (resourceType.getName().equals("jakarta.jms.Queue") ||
+                resourceType.getName().equals("jakarta.jms.Topic")) {
             return getMessageDestinationReferenceDescriptors(
                                                     logicalName, rcContexts);
         } else if (envEntryTypes.containsKey(resourceType) ||
@@ -313,18 +313,18 @@ public class ResourceHandler extends AbstractResourceHandler {
             return getEnvironmentPropertyDescriptors(logicalName, rcContexts,
                                                     resourceAn);
         } else if (resourceType == javax.sql.DataSource.class ||
-                resourceType.getName().equals("javax.jms.ConnectionFactory") ||
-                resourceType.getName().equals("javax.jms.QueueConnectionFactory") ||
-                resourceType.getName().equals("javax.jms.TopicConnectionFactory") ||
+                resourceType.getName().equals("jakarta.jms.ConnectionFactory") ||
+                resourceType.getName().equals("jakarta.jms.QueueConnectionFactory") ||
+                resourceType.getName().equals("jakarta.jms.TopicConnectionFactory") ||
                 resourceType == webServiceContext ||
-                resourceType.getName().equals("javax.mail.Session") || 
+                resourceType.getName().equals("jakarta.mail.Session") || 
                 resourceType.getName().equals("java.net.URL") ||
-                resourceType.getName().equals("javax.resource.cci.ConnectionFactory") ||
+                resourceType.getName().equals("jakarta.resource.cci.ConnectionFactory") ||
                 resourceType == org.omg.CORBA_2_3.ORB.class || 
                 resourceType == org.omg.CORBA.ORB.class || 
-                resourceType.getName().equals("javax.jms.XAConnectionFactory") ||
-                resourceType.getName().equals("javax.jms.XAQueueConnectionFactory") ||
-                resourceType.getName().equals("javax.jms.XATopicConnectionFactory") || 
+                resourceType.getName().equals("jakarta.jms.XAConnectionFactory") ||
+                resourceType.getName().equals("jakarta.jms.XAQueueConnectionFactory") ||
+                resourceType.getName().equals("jakarta.jms.XATopicConnectionFactory") || 
                 DOLUtils.isRAConnectionFactory(habitat, resourceType.getName(), ((ResourceContainerContextImpl)rcContexts[0]).getAppFromDescriptor()) ) {
             return getResourceReferenceDescriptors(logicalName, rcContexts);
         } else {

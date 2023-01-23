@@ -38,14 +38,14 @@
  * holder.
  */
 
-// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2019-2021] [Payara Foundation and/or its affiliates]
 package org.glassfish.connectors.config.validators;
 
 import org.glassfish.connectors.config.ConnectorConnectionPool;
 import com.sun.enterprise.config.serverbeans.ResourcePool;
 
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 import org.glassfish.config.support.Constants;
 
 /**

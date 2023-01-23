@@ -41,8 +41,8 @@
 
 package com.sun.enterprise.admin.monitor.stats;
 
-import javax.management.j2ee.statistics.TimeStatistic;
-import javax.management.j2ee.statistics.Statistic;
+import org.glassfish.j2ee.statistics.TimeStatistic;
+import org.glassfish.j2ee.statistics.Statistic;
 
 
 /** An implementation of {@link MutableTimeStatistic} that eases the various

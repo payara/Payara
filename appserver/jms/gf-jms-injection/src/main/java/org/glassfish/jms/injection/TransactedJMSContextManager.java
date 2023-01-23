@@ -40,7 +40,7 @@
 
 package org.glassfish.jms.injection;
 
-import javax.transaction.TransactionScoped;
+import jakarta.transaction.TransactionScoped;
 
 @TransactionScoped
 public class TransactedJMSContextManager extends AbstractJMSContextManager {

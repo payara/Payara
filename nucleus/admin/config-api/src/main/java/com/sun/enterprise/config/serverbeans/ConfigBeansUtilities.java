@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions copyright [2017-2018] Payara Foundation and/or affiliates
+// Portions copyright [2017-2021] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -52,8 +52,8 @@ import java.io.StringWriter;
 import org.glassfish.api.admin.config.ApplicationName;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 
 /**
  * Bunch of utility methods for the new serverbeans config api based on jaxb

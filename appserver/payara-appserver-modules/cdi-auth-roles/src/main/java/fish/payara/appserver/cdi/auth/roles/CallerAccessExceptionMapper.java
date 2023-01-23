@@ -1,7 +1,7 @@
 /*
  *   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *   Copyright (c) [2019] Payara Foundation and/or its affiliates.
+ *   Copyright (c) [2019-2021] Payara Foundation and/or its affiliates.
  *   All rights reserved.
  *
  *   The contents of this file are subject to the terms of either the GNU
@@ -41,10 +41,10 @@
 package fish.payara.appserver.cdi.auth.roles;
 
 import fish.payara.cdi.auth.roles.CallerAccessException;
-import javax.ws.rs.core.Response;
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
-import javax.ws.rs.ext.ExceptionMapper;
-import javax.ws.rs.ext.Provider;
+import jakarta.ws.rs.core.Response;
+import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
+import jakarta.ws.rs.ext.ExceptionMapper;
+import jakarta.ws.rs.ext.Provider;
 
 /**
  *

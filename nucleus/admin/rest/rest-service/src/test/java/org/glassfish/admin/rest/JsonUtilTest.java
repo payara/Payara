@@ -37,14 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2021] Payara Foundation and/or affiliates
  */
 package org.glassfish.admin.rest;
 
 import java.util.Locale;
-import javax.json.JsonArray;
-import javax.json.JsonException;
-import javax.json.JsonObject;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonException;
+import jakarta.json.JsonObject;
 import org.glassfish.admin.rest.composite.CompositeUtil;
 import org.glassfish.admin.rest.model.BaseModel;
 import org.glassfish.admin.rest.utils.JsonUtil;

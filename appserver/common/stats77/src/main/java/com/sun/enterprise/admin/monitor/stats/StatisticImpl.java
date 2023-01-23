@@ -41,7 +41,7 @@
 
 package com.sun.enterprise.admin.monitor.stats;
 
-import javax.management.j2ee.statistics.Statistic;
+import org.glassfish.j2ee.statistics.Statistic;
 import java.io.Serializable;
 import com.sun.enterprise.util.i18n.StringManager;
 

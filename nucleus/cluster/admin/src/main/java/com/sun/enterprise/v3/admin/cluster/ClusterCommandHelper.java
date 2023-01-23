@@ -102,12 +102,12 @@ public class ClusterCommandHelper {
     /**
      * Loop through all instances in a cluster and execute a command for each one.
      *
-     * @param command The string of the command to run. The instance name will be used as the operand for the command.
-     * @param map A map of parameters to use for the command. May be null if no parameters. When the command is executed for
-     * a server instance, the instance name is set as the DEFAULT parameter (operand)
+     * @param command    The string of the command to run. The instance name will be used as the operand for the command.
+     * @param map        A map of parameters to use for the command. May be null if no parameters. When the command is executed for
+     *                   a server instance, the instance name is set as the DEFAULT parameter (operand)
      * @param targetName The name of the cluster or deployment group containing the instances to run the command against.
-     * @param context The AdminCommandContext to use when executing the command.
-     * @param verbose true for more verbose output
+     * @param context    The AdminCommandContext to use when executing the command.
+     * @param verbose    true for more verbose output
      * @return An ActionReport containing the results
      * @throws CommandException
      */
@@ -119,13 +119,13 @@ public class ClusterCommandHelper {
     /**
      * Loop through all instances in a cluster and execute a command for each one.
      *
-     * @param command The string of the command to run. The instance name will be used as the operand for the command.
-     * @param map A map of parameters to use for the command. May be null if no parameters. When the command is executed for
-     * a server instance, the instance name is set as the DEFAULT parameter (operand)
+     * @param command    The string of the command to run. The instance name will be used as the operand for the command.
+     * @param map        A map of parameters to use for the command. May be null if no parameters. When the command is executed for
+     *                   a server instance, the instance name is set as the DEFAULT parameter (operand)
      * @param targetName The name of the cluster or deployment group containing the instances to run the command against.
-     * @param context The AdminCommandContext to use when executing the command.
-     * @param verbose true for more verbose output
-     * @param rolling Whether calls should be serialized to help with rolling restarts
+     * @param context    The AdminCommandContext to use when executing the command.
+     * @param verbose    true for more verbose output
+     * @param rolling    Whether calls should be serialized to help with rolling restarts
      * @return An ActionReport containing the results
      * @throws CommandException
      */
@@ -194,10 +194,10 @@ public class ClusterCommandHelper {
             map = new ParameterMap();
         }
 
-        
+
         logger.info(String.format(
-            "Executing %s on %d instances using a thread pool of size %d: %s", command, nInstances, threadPoolSize,
-            serverListToString(targetServers)));
+                "Executing %s on %d instances using a thread pool of size %d: %s", command, nInstances, threadPoolSize,
+                serverListToString(targetServers)));
 
         progress.setTotalStepCount(nInstances);
         progress.progress(Strings.get("cluster.command.executing", command, Integer.toString(nInstances)));
@@ -241,7 +241,7 @@ public class ClusterCommandHelper {
             // This should never be the case
             adminTimeout = 57 * 1000;
         }
-        
+
         if (logger.isLoggable(FINE)) {
             logger.fine(String.format("Initial cluster command timeout: %d ms", adminTimeout));
         }
@@ -278,7 +278,7 @@ public class ClusterCommandHelper {
             if (logger.isLoggable(FINE)) {
                 logger.fine(String.format("Instance %d of %d (%s) has responded with %s", n + 1, nInstances, iname, instanceReport.getActionExitCode()));
             }
-            
+
             if (instanceReport.getActionExitCode() != SUCCESS) {
                 // Bummer, the command had an error. Log and save output
                 failureOccurred = true;
@@ -288,7 +288,7 @@ public class ClusterCommandHelper {
                 logger.severe(msg);
                 output.append(msg).append(NL);
                 msg = Strings.get("cluster.command.instancesFailed", command, iname);
-                
+
                 progress.progress(1, msg);
             } else {
                 // Command worked. Note that too.
@@ -411,11 +411,11 @@ public class ClusterCommandHelper {
         StringBuilder serverListBuilder = new StringBuilder();
         for (Server server : servers) {
             serverListBuilder.append(server.getNodeRef())
-                             .append(":")
-                             .append(server.getName())
-                             .append(" ");
+                    .append(":")
+                    .append(server.getName())
+                    .append(" ");
         }
-        
+
         return serverListBuilder.toString().trim();
     }
 
@@ -434,6 +434,7 @@ public class ClusterCommandHelper {
 
     /**
      * Set the timeout for ClusterCommandHelper
+     *
      * @param adminTimeout in milliseconds
      */
     public void setAdminTimeout(long adminTimeout) {

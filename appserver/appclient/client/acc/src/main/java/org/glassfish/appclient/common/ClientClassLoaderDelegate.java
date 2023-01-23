@@ -1,6 +1,5 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
  * Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
@@ -37,21 +36,21 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2022 Payara Foundation and/or its affiliates
+// Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license
 package org.glassfish.appclient.common;
 
-import static com.sun.enterprise.security.permissionsxml.GlobalPolicyUtil.checkRestriction;
-import static java.lang.System.getSecurityManager;
-import static org.glassfish.appclient.common.PermissionsUtil.getClientDeclaredPermissions;
-import static org.glassfish.appclient.common.PermissionsUtil.getClientEEPolicy;
-import static org.glassfish.appclient.common.PermissionsUtil.getClientRestrictPolicy;
+import com.sun.enterprise.security.integration.PermsHolder;
+import com.sun.enterprise.security.permissionsxml.GlobalPolicyUtil;
 
 import java.io.IOException;
 import java.net.URLClassLoader;
 import java.security.CodeSource;
 import java.security.PermissionCollection;
 
-import com.sun.enterprise.security.integration.PermsHolder;
+import static org.glassfish.appclient.common.PermissionsUtil.getClientDeclaredPermissions;
+import static org.glassfish.appclient.common.PermissionsUtil.getClientEEPolicy;
+import static org.glassfish.appclient.common.PermissionsUtil.getClientRestrictPolicy;
 
 public class ClientClassLoaderDelegate {
 
@@ -74,7 +73,7 @@ public class ClientClassLoaderDelegate {
     }
 
     private void processDeclaredPermissions() throws IOException {
-        if (getSecurityManager() == null) {
+        if (System.getSecurityManager() == null) {
             return;
         }
 
@@ -83,8 +82,8 @@ public class ClientClassLoaderDelegate {
         PermissionCollection eePc = getClientEEPolicy(classLoader);
         PermissionCollection eeRestriction = getClientRestrictPolicy(classLoader);
 
-        checkRestriction(eePc, eeRestriction);
-        checkRestriction(declaredPermissionCollection, eeRestriction);
+        GlobalPolicyUtil.checkRestriction(eePc, eeRestriction);
+        GlobalPolicyUtil.checkRestriction(declaredPermissionCollection, eeRestriction);
 
         permHolder = new PermsHolder(eePc, declaredPermissionCollection, eeRestriction);
     }

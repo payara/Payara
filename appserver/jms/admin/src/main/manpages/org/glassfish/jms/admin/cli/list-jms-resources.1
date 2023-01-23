@@ -20,9 +20,9 @@ OPTIONS
            Displays the help text for the subcommand.
 
        --restype
-           The JMS resource type can be javax.jms.Topic, javax.jms.Queue,
-           javax.jms.ConnectionFactory, javax.jms.TopicConnectionFactory, or
-           javax.jms.QueueConnectionFactory.
+           The JMS resource type can be jakarta.jms.Topic, jakarta.jms.Queue,
+           jakarta.jms.ConnectionFactory, jakarta.jms.TopicConnectionFactory, or
+           jakarta.jms.QueueConnectionFactory.
 
 OPERANDS
        target
@@ -55,10 +55,10 @@ EXAMPLES
                Command list-jms-resources executed successfully.
 
        Example 2, Listing JMS resources of a specified type
-           The following subcommand lists all javax.jms.ConnectionFactory
+           The following subcommand lists all jakarta.jms.ConnectionFactory
            resources.
 
-               asadmin> list-jms-resources --restype javax.jms.ConnectionFactory
+               asadmin> list-jms-resources --restype jakarta.jms.ConnectionFactory
                jms/ConnectionFactory
                jms/DurableConnectionFactory
                Command list-jms-resources executed successfully.

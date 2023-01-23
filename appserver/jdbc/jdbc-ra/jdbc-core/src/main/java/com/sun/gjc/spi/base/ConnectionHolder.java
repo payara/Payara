@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2021] Payara Foundation and/or affiliates
 
 package com.sun.gjc.spi.base;
 
@@ -47,7 +47,7 @@ import com.sun.gjc.spi.ManagedConnectionImpl;
 import com.sun.gjc.util.MethodExecutor;
 import com.sun.logging.LogDomains;
 
-import javax.resource.ResourceException;
+import jakarta.resource.ResourceException;
 import java.sql.*;
 import java.util.Map;
 import java.util.logging.Level;
@@ -75,12 +75,12 @@ public abstract class ConnectionHolder implements Connection {
 
     protected boolean active = false;
 
-    private javax.resource.spi.LazyAssociatableConnectionManager lazyAssocCm_;
-    private javax.resource.spi.LazyEnlistableConnectionManager lazyEnlistCm_;
+    private jakarta.resource.spi.LazyAssociatableConnectionManager lazyAssocCm_;
+    private jakarta.resource.spi.LazyEnlistableConnectionManager lazyEnlistCm_;
 
-    private javax.resource.spi.ConnectionRequestInfo cxReqInfo_;
+    private jakarta.resource.spi.ConnectionRequestInfo cxReqInfo_;
 
-    private javax.resource.spi.ManagedConnectionFactory mcf_;
+    private jakarta.resource.spi.ManagedConnectionFactory mcf_;
 
     protected int statementTimeout;
     protected boolean statementTimeoutEnabled;
@@ -115,7 +115,7 @@ public abstract class ConnectionHolder implements Connection {
      * @param con <code>java.sql.Connection</code> object.
      */
     public ConnectionHolder(Connection con, ManagedConnectionImpl mc,
-                            javax.resource.spi.ConnectionRequestInfo cxRequestInfo) {
+                            jakarta.resource.spi.ConnectionRequestInfo cxRequestInfo) {
         this.con = con;
         this.mc = mc;
         mcf_ = mc.getMcf();
@@ -871,13 +871,13 @@ public abstract class ConnectionHolder implements Connection {
     }
 
     public void setLazyAssociatableConnectionManager(
-            javax.resource.spi.LazyAssociatableConnectionManager cm) {
+            jakarta.resource.spi.LazyAssociatableConnectionManager cm) {
 
         lazyAssocCm_ = cm;
     }
 
     public void setLazyEnlistableConnectionManager(
-            javax.resource.spi.LazyEnlistableConnectionManager cm) {
+            jakarta.resource.spi.LazyEnlistableConnectionManager cm) {
 
         lazyEnlistCm_ = cm;
     }

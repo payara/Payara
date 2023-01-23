@@ -45,7 +45,7 @@ import org.glassfish.api.admin.JobCreator;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import javax.security.auth.Subject;
 import java.io.File;
 import org.glassfish.api.admin.ParameterMap;

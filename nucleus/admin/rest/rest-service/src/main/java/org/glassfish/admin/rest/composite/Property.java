@@ -40,7 +40,7 @@
 
 package org.glassfish.admin.rest.composite;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 import org.jvnet.hk2.annotations.Service;
 
 /**

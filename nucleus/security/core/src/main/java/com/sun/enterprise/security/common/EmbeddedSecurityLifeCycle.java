@@ -54,8 +54,8 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.internal.embedded.EmbeddedFileSystem;
 import org.glassfish.internal.embedded.EmbeddedLifecycle;
 import org.glassfish.internal.embedded.Server;
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 import org.jvnet.hk2.annotations.Service;
 
@@ -101,13 +101,13 @@ public class EmbeddedSecurityLifeCycle implements EmbeddedLifecycle {
             // extracted that way/
             FileUtils.getManagedFile("config" + File.separator + "login.conf", instanceRoot);
             FileUtils.getManagedFile("config" + File.separator + "server.policy", instanceRoot);
-            FileUtils.getManagedFile("config" + File.separator + "cacerts.jks", instanceRoot);
-            FileUtils.getManagedFile("config" + File.separator + "keystore.jks", instanceRoot);
+            FileUtils.getManagedFile("config" + File.separator + "cacerts.p12", instanceRoot);
+            FileUtils.getManagedFile("config" + File.separator + "keystore.p12", instanceRoot);
             String keystoreFile = null;
             String truststoreFile = null;
             try {
-                keystoreFile = Util.writeConfigFileToTempDir("keystore.jks").getAbsolutePath();
-                truststoreFile = Util.writeConfigFileToTempDir("cacerts.jks").getAbsolutePath();
+                keystoreFile = Util.writeConfigFileToTempDir("keystore.p12").getAbsolutePath();
+                truststoreFile = Util.writeConfigFileToTempDir("cacerts.p12").getAbsolutePath();
             } catch (IOException ex) {
                 _logger.log(Level.SEVERE, SecurityLoggerInfo.obtainingKeyAndTrustStoresError, ex);
             }

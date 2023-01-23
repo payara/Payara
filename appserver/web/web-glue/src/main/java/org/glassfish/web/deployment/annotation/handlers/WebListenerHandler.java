@@ -52,20 +52,20 @@ import org.glassfish.apf.HandlerProcessingResult;
 import org.glassfish.web.deployment.descriptor.AppListenerDescriptorImpl;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.servlet.ServletContextListener;
-import javax.servlet.ServletContextAttributeListener;
-import javax.servlet.ServletRequestListener;
-import javax.servlet.ServletRequestAttributeListener;
-import javax.servlet.annotation.WebListener;
-import javax.servlet.http.HttpSessionAttributeListener;
-import javax.servlet.http.HttpSessionIdListener;
-import javax.servlet.http.HttpSessionListener;
+import jakarta.servlet.ServletContextListener;
+import jakarta.servlet.ServletContextAttributeListener;
+import jakarta.servlet.ServletRequestListener;
+import jakarta.servlet.ServletRequestAttributeListener;
+import jakarta.servlet.annotation.WebListener;
+import jakarta.servlet.http.HttpSessionAttributeListener;
+import jakarta.servlet.http.HttpSessionIdListener;
+import jakarta.servlet.http.HttpSessionListener;
 import java.lang.annotation.Annotation;
 import java.util.logging.Level;
 
 /**
  * This handler is responsible in handling
- * javax.servlet.annotation.WebListener.
+ * jakarta.servlet.annotation.WebListener.
  *
  * @author Shing Wai Chan
  */
@@ -110,7 +110,7 @@ public class WebListenerHandler extends AbstractWebHandler {
             log(Level.SEVERE, ainfo,
                 localStrings.getLocalString(
                 "web.deployment.annotation.handlers.needtoimpllistenerinterface",
-                "The Class {0} having annotation javax.servlet.annotation.WebListener need to implement one of the following interfaces: javax.servlet.ServletContextLisener, javax.servlet.ServletContextAttributeListener, javax.servlet.ServletRequestListener, javax.servletServletRequestAttributeListener, javax.servlet.http.HttpSessionListener, javax.servlet.http.HttpSessionAttributeListener, javax.servlet.http.HttpSessionIdListener.",
+                "The Class {0} having annotation jakarta.servlet.annotation.WebListener need to implement one of the following interfaces: jakarta.servlet.ServletContextLisener, jakarta.servlet.ServletContextAttributeListener, jakarta.servlet.ServletRequestListener, jakarta.servletServletRequestAttributeListener, jakarta.servlet.http.HttpSessionListener, jakarta.servlet.http.HttpSessionAttributeListener, jakarta.servlet.http.HttpSessionIdListener.",
                 listenerClass.getName()));
             return getDefaultFailedResult();
         }

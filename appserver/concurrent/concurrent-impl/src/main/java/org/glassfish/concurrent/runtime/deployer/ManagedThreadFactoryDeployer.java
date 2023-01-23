@@ -57,8 +57,8 @@ import org.glassfish.resourcebase.resources.util.ResourceUtil;
 import org.glassfish.resources.naming.SerializableObjectRefAddr;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import javax.naming.NamingException;
 import javax.naming.RefAddr;
 import java.util.Collection;
@@ -99,7 +99,7 @@ public class ManagedThreadFactoryDeployer implements ResourceDeployer {
         ManagedThreadFactoryConfig config = new ManagedThreadFactoryConfig(ManagedThreadFactoryRes);
 
         javax.naming.Reference ref= new  javax.naming.Reference(
-                javax.enterprise.concurrent.ManagedThreadFactory.class.getName(),
+                jakarta.enterprise.concurrent.ManagedThreadFactory.class.getName(),
                 "org.glassfish.concurrent.runtime.deployer.ConcurrentObjectFactory",
                 null);
         RefAddr addr = new SerializableObjectRefAddr(ManagedThreadFactoryConfig.class.getName(), config);

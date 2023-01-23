@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2020-2021] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.jdbcruntime.config.validation;
 
@@ -45,7 +45,8 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import javax.validation.ConstraintViolationException;
+import jakarta.validation.ConstraintViolationException;
+
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.jdbc.config.JdbcResource;
 import org.glassfish.jdbcruntime.config.ConfigApiTest;

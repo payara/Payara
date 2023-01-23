@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2022] Payara Foundation and/or affiliates
 
 package org.apache.catalina.connector;
 
@@ -76,11 +76,13 @@ import java.util.*;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 
 import com.sun.appserv.ProxyHandler;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.UnsupportedCharsetException;
 import org.apache.catalina.Connector;
 import org.apache.catalina.Context;
 import org.apache.catalina.LogFacade;
@@ -92,6 +94,7 @@ import org.apache.catalina.security.SecurityUtil;
 import org.apache.catalina.util.CharsetMapper;
 import org.apache.catalina.util.RequestUtil;
 import org.glassfish.grizzly.http.util.CharChunk;
+import org.glassfish.grizzly.http.util.CookieHeaderGenerator;
 import org.glassfish.grizzly.http.util.CookieSerializerUtils;
 import org.glassfish.grizzly.http.util.CookieUtils;
 import org.glassfish.grizzly.http.util.FastHttpDateFormat;
@@ -782,27 +785,34 @@ public class Response
     @Override
     public PrintWriter getWriter() throws IOException {
 
-        if (usingOutputStream)
+        if (usingOutputStream) {
             throw new IllegalStateException(rb.getString(LogFacade.GET_OUTPUT_STREAM_BEEN_CALLED_EXCEPTION));
+        }
+        try {
+            /*
+             * If the response's character encoding has not been specified as
+             * described in <code>getCharacterEncoding</code> (i.e., the method
+             * just returns the default value <code>ISO-8859-1</code>),
+             * <code>getWriter</code> updates it to <code>ISO-8859-1</code>
+             * (with the effect that a subsequent call to getContentType() will
+             * include a charset=ISO-8859-1 component which will also be
+             * reflected in the Content-Type response header, thereby satisfying
+             * the Servlet spec requirement that containers must communicate the
+             * character encoding used for the servlet response's writer to the
+             * client).
+             */
+            setCharacterEncoding(getCharacterEncoding());
 
-        /*
-         * If the response's character encoding has not been specified as
-         * described in <code>getCharacterEncoding</code> (i.e., the method
-         * just returns the default value <code>ISO-8859-1</code>),
-         * <code>getWriter</code> updates it to <code>ISO-8859-1</code>
-         * (with the effect that a subsequent call to getContentType() will
-         * include a charset=ISO-8859-1 component which will also be
-         * reflected in the Content-Type response header, thereby satisfying
-         * the Servlet spec requirement that containers must communicate the
-         * character encoding used for the servlet response's writer to the
-         * client).
-         */
-        setCharacterEncoding(getCharacterEncoding());
-
-        usingWriter = true;
-        outputBuffer.checkConverter();
-        if (writer == null) {
-            writer = createWriter(outputBuffer);
+            usingWriter = true;
+            outputBuffer.checkConverter();
+            if (writer == null) {
+                writer = createWriter(outputBuffer);
+            }
+        } catch (UnsupportedCharsetException uce) {
+            UnsupportedEncodingException uee
+                    = new UnsupportedEncodingException(uce.getMessage());
+            uee.initCause(uce);
+            throw uee;
         }
         return writer;
 
@@ -828,9 +838,9 @@ public class Response
     @Override
     public void reset() {
 
-        if (included)
+        if (included) {
             return;     // Ignore any call from an included servlet
-
+        }
         coyoteResponse.reset();
         outputBuffer.reset();
         // reset Grizzly duplicated internal attributes
@@ -973,15 +983,15 @@ public class Response
                 while (index < len && Character.isWhitespace(type.charAt(index))) {
                     index++;
                 }
-                if (index+7 < len
+                if (index + 7 < len
                         && type.charAt(index) == 'c'
-                        && type.charAt(index+1) == 'h'
-                        && type.charAt(index+2) == 'a'
-                        && type.charAt(index+3) == 'r'
-                        && type.charAt(index+4) == 's'
-                        && type.charAt(index+5) == 'e'
-                        && type.charAt(index+6) == 't'
-                        && type.charAt(index+7) == '=') {
+                        && type.charAt(index + 1) == 'h'
+                        && type.charAt(index + 2) == 'a'
+                        && type.charAt(index + 3) == 'r'
+                        && type.charAt(index + 4) == 's'
+                        && type.charAt(index + 5) == 'e'
+                        && type.charAt(index + 6) == 't'
+                        && type.charAt(index + 7) == '=') {
                     isCharacterEncodingSet = true;
                 }
             }
@@ -1050,7 +1060,7 @@ public class Response
      */
     @Override
     public Collection<String> getHeaderNames() {
-        final Collection<String> result = new ArrayList<String>();
+        final Collection<String> result = new ArrayList<>();
         for (final String headerName : coyoteResponse.getResponse().getHeaders().names()) {
             result.add(headerName);
         }
@@ -1067,7 +1077,7 @@ public class Response
      */
     @Override
     public Collection<String> getHeaders(String name) {
-        final Collection<String> result = new ArrayList<String>();
+        final Collection<String> result = new ArrayList<>();
         for (final String headerValue : coyoteResponse.getResponse().getHeaders().values(name)) {
             result.add(headerValue);
         }
@@ -1109,7 +1119,8 @@ public class Response
     @Override
     public void reset(int status, String message) {
         reset();
-        setStatus(status, message);
+        setStatus(status);
+        coyoteResponse.setDetailMessage(HtmlEntityEncoder.encodeXSS(message));
     }
 
 
@@ -1132,39 +1143,8 @@ public class Response
         if (included)
             return;
 
-        /* GlassFish 898
-        final StringBuilder sb = new StringBuilder();
-        if (SecurityUtil.isPackageProtectionEnabled()) {
-            AccessController.doPrivileged(new PrivilegedAction<Void>() {
-                public Void run(){
-                    ServerCookie.appendCookieValue
-                        (sb, cookie.getVersion(), cookie.getName(), 
-                         cookie.getValue(), cookie.getPath(), 
-                         cookie.getDomain(), cookie.getComment(), 
-                         cookie.getMaxAge(), cookie.getSecure());
-                    return null;
-                }
-            });
-        } else {
-            ServerCookie.appendCookieValue
-                (sb, cookie.getVersion(), cookie.getName(), cookie.getValue(),
-                     cookie.getPath(), cookie.getDomain(), cookie.getComment(), 
-                     cookie.getMaxAge(), cookie.getSecure());
-        }
-        */
-        // START GlassFish 898
         String cookieValue = getCookieString(cookie);
-        // END GlassFish 898
-
-        // the header name is Set-Cookie for both "old" and v.1 ( RFC2109 )
-        // RFC2965 is not supported by browsers and the Servlet spec
-        // asks for 2109.
-        /* GlassFish 898
-        addHeader("Set-Cookie", sb.toString());
-        */
-        // START GlassFish 898
         addHeader("Set-Cookie", cookieValue);
-        // END GlassFish 898
     }
 
     /**
@@ -1327,23 +1307,6 @@ public class Response
 
     /**
      * Encode the session identifier associated with this response
-     * into the specified redirect URL, if necessary.
-     *
-     * @param url URL to be encoded
-     * @return encoded URL
-     *
-     * @deprecated As of Version 2.1 of the Java Servlet API, use
-     *  <code>encodeRedirectURL()</code> instead.
-     */
-    @Deprecated
-    @Override
-    public String encodeRedirectUrl(String url) {
-        return encodeRedirectURL(url);
-    }
-
-
-    /**
-     * Encode the session identifier associated with this response
      * into the specified URL, if necessary.
      *
      * @param url URL to be encoded
@@ -1373,23 +1336,6 @@ public class Response
             return url;
         }
     }
-
-
-    /**
-     * Encode the session identifier associated with this response
-     * into the specified URL, if necessary.
-     *
-     * @param url URL to be encoded
-     * @return encoded URL
-     *
-     * @deprecated As of Version 2.1 of the Java Servlet API, use
-     *  <code>encodeURL()</code> instead.
-     */
-    @Override
-    public String encodeUrl(String url) {
-        return encodeURL(url);
-    }
-
 
     /**
      * Apply URL Encoding to the given URL without adding session identifier
@@ -1665,23 +1611,6 @@ public class Response
      */
     @Override
     public void setStatus(int status) {
-        setStatus(status, null);
-    }
-
-
-    /**
-     * Set the HTTP status and message to be returned with this response.
-     *
-     * @param status The new HTTP status
-     * @param message The associated text message
-     *
-     * @deprecated As of Version 2.1 of the Java Servlet API, this method
-     *  has been deprecated due to the ambiguous meaning of the message
-     *  parameter.
-     */
-    @Override
-    public void setStatus(int status, String message) {
-
         if (isCommitted())
             return;
 
@@ -1692,7 +1621,6 @@ public class Response
         coyoteResponse.setStatus(status);
         // use encoding in GlassFish
         coyoteResponse.getResponse().setHtmlEncodingCustomReasonPhrase(false);
-        coyoteResponse.setDetailMessage(HtmlEntityEncoder.encodeXSS(message));
     }
 
 
@@ -2008,36 +1936,31 @@ public class Response
      * @return The cookie's string representation
      */
     protected String getCookieString(final Cookie cookie) {
-        String cookieValue = null;
-        final StringBuilder sb = new StringBuilder();
-
-        // TODO:  default these values for now.  update later.
-        final boolean versionOneStrictCompliance = CookieUtils.COOKIE_VERSION_ONE_STRICT_COMPLIANCE;
-        final boolean alwaysAddExpires = CookieUtils.ALWAYS_ADD_EXPIRES;
-        final boolean rfc6265Support = CookieUtils.RFC_6265_SUPPORT_ENABLED;
+        String cookieValue;
         if (SecurityUtil.isPackageProtectionEnabled()) {
-            cookieValue = AccessController.doPrivileged(
-                new PrivilegedAction<String>() {
-                    public String run(){
-                        CookieSerializerUtils.serializeServerCookie(
-                            sb, versionOneStrictCompliance, rfc6265Support,
-                            alwaysAddExpires, cookie.getName(),
-                            cookie.getValue(), cookie.getVersion(), cookie.getPath(),
-                            cookie.getDomain(), cookie.getComment(),
-                            cookie.getMaxAge(), cookie.getSecure(),
-                            cookie.isHttpOnly());
-                        return sb.toString();
-                    }
-                });
+            cookieValue = AccessController.doPrivileged((PrivilegedAction<String>) () -> {
+                return CookieHeaderGenerator.generateHeader(
+                        cookie.getName(),
+                        cookie.getValue(),
+                        cookie.getMaxAge(),
+                        cookie.getDomain(),
+                        cookie.getPath(),
+                        cookie.getSecure(),
+                        cookie.isHttpOnly(),
+                        cookie.getAttributes()
+                );
+            });
         } else {
-            CookieSerializerUtils.serializeServerCookie(
-                sb, versionOneStrictCompliance, rfc6265Support,
-                alwaysAddExpires, cookie.getName(),
-                cookie.getValue(), cookie.getVersion(), cookie.getPath(),
-                cookie.getDomain(), cookie.getComment(),
-                cookie.getMaxAge(), cookie.getSecure(),
-                cookie.isHttpOnly());
-            cookieValue = sb.toString();
+            cookieValue = CookieHeaderGenerator.generateHeader(
+                    cookie.getName(),
+                    cookie.getValue(),
+                    cookie.getMaxAge(),
+                    cookie.getDomain(),
+                    cookie.getPath(),
+                    cookie.getSecure(),
+                    cookie.isHttpOnly(),
+                    cookie.getAttributes()
+            );
         }
 
         return cookieValue;

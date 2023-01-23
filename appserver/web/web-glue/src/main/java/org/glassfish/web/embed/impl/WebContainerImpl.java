@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2022] Payara Foundation and/or affiliates
 
 package org.glassfish.web.embed.impl;
 
@@ -46,6 +46,8 @@ import com.sun.enterprise.web.ContextFacade;
 import com.sun.enterprise.web.EmbeddedWebContainer;
 import com.sun.enterprise.web.VirtualServerFacade;
 import com.sun.enterprise.web.WebConnector;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import org.apache.catalina.Container;
 import org.apache.catalina.Engine;
 import org.apache.catalina.core.StandardHost;
@@ -69,8 +71,6 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;
 
-import javax.inject.Inject;
-import javax.inject.Named;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.util.ArrayList;
@@ -310,17 +310,12 @@ public class WebContainerImpl implements WebContainer {
 
             if (sslConfig.getAlgorithms() != null) {
                 for (SslType sslType : sslConfig.getAlgorithms()) {
-                    if (sslType.equals(SslType.SSLv2)) {
-                        newSsl.setSsl2Enabled("true");
-                    }
-                    if (sslType.equals(SslType.SSLv3)) {
-                        newSsl.setSsl3Enabled("true");
-                    }
                     if (sslType.equals(SslType.TLS)) {
                         newSsl.setSsl3TlsCiphers("true");
                     }
                 }
             }
+
             if (sslConfig.getHandshakeTimeout() > 0) {
                 newSsl.setSSLInactivityTimeout(sslConfig.getHandshakeTimeout());
             }

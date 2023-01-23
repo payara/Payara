@@ -37,11 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2021] Payara Foundation and/or affiliates
  */
 package org.glassfish.admin.rest.composite;
 
-import javax.json.JsonException;
+import jakarta.json.JsonException;
 import org.glassfish.admin.rest.composite.metadata.RestResourceMetadata;
 import org.glassfish.admin.rest.composite.resource.DummiesResource;
 import org.glassfish.admin.rest.composite.resource.DummyResource;

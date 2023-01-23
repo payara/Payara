@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+ * Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates]
  */
 
 package org.glassfish.admingui.common.handlers;
@@ -59,7 +59,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
-import javax.ws.rs.core.MultivaluedHashMap;
+import jakarta.ws.rs.core.MultivaluedHashMap;
 
 import org.glassfish.admingui.common.util.GuiUtil;
 

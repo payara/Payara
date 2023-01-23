@@ -40,7 +40,7 @@
 
 package com.sun.ejb.containers;
 
-import javax.ejb.EJBLocalHome;
+import jakarta.ejb.EJBLocalHome;
 
 public interface GenericEJBLocalHome extends EJBLocalHome {
 

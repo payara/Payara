@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.ee;
 
 import java.util.*;
@@ -67,7 +67,7 @@ import com.sun.enterprise.deployment.WebComponentDescriptor;
 
 import org.glassfish.security.common.Role;
 import org.glassfish.deployment.common.SecurityRoleMapper;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import com.sun.appserv.security.AuditModule;
 

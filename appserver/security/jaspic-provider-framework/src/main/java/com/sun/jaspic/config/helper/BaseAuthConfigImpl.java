@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 package com.sun.jaspic.config.helper;
 
 import static java.util.logging.Level.FINE;
@@ -51,8 +51,8 @@ import java.util.logging.Logger;
 
 import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.message.AuthException;
-import javax.security.auth.message.MessageInfo;
+import jakarta.security.auth.message.AuthException;
+import jakarta.security.auth.message.MessageInfo;
 
 import com.sun.jaspic.config.delegate.MessagePolicyDelegate;
 
@@ -139,7 +139,7 @@ public abstract class BaseAuthConfigImpl {
         return Integer.valueOf(properties.hashCode());
     }
 
-    private <M> M getContextFromMap(Map<String, Map<Integer, M>> contextMap, String authContextID, Map<String, ?> properties) {
+    private <M> M getContextFromMap(Map<String, Map<Integer, M>> contextMap, String authContextID, Map<String, Object> properties) {
         M context = null;
 
         Map<Integer, M> internalMap = contextMap.get(authContextID);
@@ -158,7 +158,7 @@ public abstract class BaseAuthConfigImpl {
 
     @SuppressWarnings("unchecked")
     protected final <M> M getContext(Map<String, Map<Integer, M>> contextMap, String authContextID, Subject subject,
-            Map<String, ?> properties)
+            Map<String, Object> properties)
             throws AuthException {
 
         M context = null;
@@ -241,5 +241,5 @@ public abstract class BaseAuthConfigImpl {
      */
     protected abstract void initializeContextMap();
 
-    protected abstract <M> M createAuthContext(String authContextID, Map<String, ?> properties) throws AuthException;
+    protected abstract <M> M createAuthContext(String authContextID, Map<String, Object> properties) throws AuthException;
 }

@@ -45,7 +45,7 @@
  * <p>
  * JASPIC is the EE standard for taking care of the authentication aspects
  * of security. It allows for users to supply pluggable custom authentication mechanisms called SAMs
- * {@link javax.security.auth.message.module.ServerAuthModule}.
+ * {@link jakarta.security.auth.message.module.ServerAuthModule}.
  * 
  * <p>
  * Unlike Servlet or EE Security there are no default authentication mechanisms in JASPIC.
@@ -61,7 +61,7 @@
  * 
  * <p>
  * The pluggable authentication mechanisms are managed by the 
- * {@link javax.security.auth.message.config.AuthConfigFactory}. The Payara specific implementation of this is
+ * {@link jakarta.security.auth.message.config.AuthConfigFactory}. The Payara specific implementation of this is
  * {@link com.sun.enterprise.security.jaspic.config.GFAuthConfigFactory}, which is installed by
  * <code>com.sun.enterprise.security.ee.JavaEESecurityLifecycle</code>.
  *

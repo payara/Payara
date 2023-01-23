@@ -45,7 +45,7 @@
     <parent>
         <groupId>fish.payara.extras</groupId>
         <artifactId>extras</artifactId>
-        <version>5.2023.1-SNAPSHOT</version>
+        <version>6.2023.2-SNAPSHOT</version>
     </parent>
     <artifactId>docker-images</artifactId>
     <packaging>pom</packaging>
@@ -57,12 +57,11 @@
         <docker.noCache>true</docker.noCache>
 
         <docker.java.repository>azul/zulu-openjdk</docker.java.repository>
-        <docker.jdk8.tag>8u352</docker.jdk8.tag>
         <docker.jdk11.tag>11.0.17</docker.jdk11.tag>
         <docker.jdk17.tag>17.0.5</docker.jdk17.tag>
 
         <docker.payara.domainName>domain1</docker.payara.domainName>
-        <docker.payara.rootDirectoryName>payara5</docker.payara.rootDirectoryName>
+        <docker.payara.rootDirectoryName>payara6</docker.payara.rootDirectoryName>
 
         <docker.payara.repository>payara/${project.artifactId}</docker.payara.repository>
         <docker.payara.tag>${payara.version}</docker.payara.tag>
@@ -143,15 +142,15 @@
                                 </goals>
                                 <configuration>
                                     <target>
-                                        <copy file="src/main/docker/Dockerfile" toFile="target/antrun/Dockerfile.jdk8">
-                                            <filterset>
-                                                <filter token="docker.java.image" value="${docker.java.repository}:${docker.jdk8.tag}"/>
-                                            </filterset>
-                                        </copy>
                                         <copy file="src/main/docker/Dockerfile" toFile="target/antrun/Dockerfile.jdk11">
                                             <filterset>
                                                 <filter token="docker.java.image" value="${docker.java.repository}:${docker.jdk11.tag}"/>
-                                                <filter token="docker.payara.tag" value="${docker.payara.tag}-jdk11"/>
+                                            </filterset>
+                                        </copy>
+                                        <copy file="src/main/docker/Dockerfile" toFile="target/antrun/Dockerfile.jdk17">
+                                            <filterset>
+                                                <filter token="docker.java.image" value="${docker.java.repository}:${docker.jdk17.tag}"/>
+                                                <filter token="docker.payara.tag" value="${docker.payara.tag}-jdk17"/>
                                             </filterset>
                                         </copy>
                                     </target>
@@ -283,6 +282,46 @@
                                 </configuration>
                             </execution>
                         </executions>
+                        <configuration>
+                            <images>
+                                <image>
+                                    <name>${docker.payara.repository}</name>
+                                    <build>
+                                        <!-- On Windows with default setting ${*}, $PATH would get filtered as well -->
+                                        <filter>@</filter>
+                                        <tags>
+                                            <tag>${docker.payara.tag}</tag>
+                                        </tags>
+                                        <cleanup>none</cleanup>
+                                        <noCache>${docker.noCache}</noCache>
+                                        <dockerFile>${project.build.directory}/antrun/Dockerfile.jdk11</dockerFile>
+                                        <assembly>
+                                            <mode>tar</mode>
+                                            <descriptor>assembly.xml</descriptor>
+                                            <tarLongFileMode>gnu</tarLongFileMode>
+                                        </assembly>
+                                    </build>
+                                </image>
+                                <image>
+                                    <name>${docker.payara.repository}</name>
+                                    <build>
+                                        <!-- On Windows with default setting ${*}, $PATH would get filtered as well -->
+                                        <filter>@</filter>
+                                        <tags>
+                                            <tag>${docker.payara.tag}-jdk17</tag>
+                                        </tags>
+                                        <cleanup>none</cleanup>
+                                        <noCache>${docker.noCache}</noCache>
+                                        <dockerFile>${project.build.directory}/antrun/Dockerfile.jdk17</dockerFile>
+                                        <assembly>
+                                            <mode>tar</mode>
+                                            <descriptor>assembly.xml</descriptor>
+                                            <tarLongFileMode>gnu</tarLongFileMode>
+                                        </assembly>
+                                    </build>
+                                </image>
+                            </images>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>

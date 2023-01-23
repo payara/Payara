@@ -52,7 +52,7 @@ import org.glassfish.api.deployment.UndeployCommandParameters;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.glassfish.api.admin.AccessRequired;
 import org.jvnet.hk2.annotations.Service;
 

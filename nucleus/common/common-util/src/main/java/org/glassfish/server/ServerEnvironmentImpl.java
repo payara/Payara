@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.server;
 
@@ -54,7 +54,7 @@ import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.api.admin.ServerEnvironment;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 /**
  * Defines various global configuration for the running GlassFish instance.
@@ -355,12 +355,12 @@ public class ServerEnvironmentImpl implements ServerEnvironment, PostConstruct {
 
     @Override
     public File getJKS() {
-        return new File (getConfigDirPath(), "keystore.jks");
+        return new File (getConfigDirPath(), "keystore.p12");
     }
 
     @Override
     public File getTrustStore() {
-        return new File(getConfigDirPath(), "cacerts.jks");
+        return new File(getConfigDirPath(), "cacerts.p12");
     }
 
     private Status status=Status.starting;

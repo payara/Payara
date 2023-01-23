@@ -65,7 +65,7 @@ import org.junit.runner.RunWith;
  */
 @NotMicroCompatible
 @RunWith(PayaraArquillianTestRunner.class)
-@SincePayara("5.29.0")
+@SincePayara("5.2021.5")
 public class OpenIdELPerSessionInEarTest {
 
     private static final String TEST_RESOURCES_PREFIX = "elpersessiontests";

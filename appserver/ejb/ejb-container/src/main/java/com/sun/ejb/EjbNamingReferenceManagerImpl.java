@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb;
 
@@ -48,9 +48,9 @@ import com.sun.enterprise.deployment.EjbReferenceDescriptor;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
-import javax.inject.Provider;
+import jakarta.inject.Provider;
 import javax.naming.Context;
 import com.sun.enterprise.util.Utility;
 import org.omg.CORBA.ORB;
@@ -227,7 +227,7 @@ public class EjbNamingReferenceManagerImpl
 
         Object returnObject = ejbInv.context;
 
-        if (contextType.equals("javax.ejb.TimerService")) {
+        if (contextType.equals("jakarta.ejb.TimerService")) {
             returnObject = EJBTimerService.getEJBTimerServiceWrapper((EJBContextImpl) ejbInv.context);
         }
 

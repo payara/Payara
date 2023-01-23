@@ -53,7 +53,7 @@ import org.glassfish.deployment.common.DeploymentProperties;
 import org.glassfish.deployment.common.DeploymentUtils;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.config.support.PropertyResolver;
 import com.sun.enterprise.util.StringUtils;

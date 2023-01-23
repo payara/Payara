@@ -38,18 +38,18 @@
  * holder.
  */
 
-// Portions Copyright [2016-2019] [Payara Foundation and/or affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or affiliates]
 
 package org.glassfish.admin.rest.resources.custom;
 
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import org.glassfish.admin.rest.resources.TemplateCommandPostResource;
 import org.glassfish.api.admin.ParameterMap;
 import org.jvnet.hk2.config.Dom;

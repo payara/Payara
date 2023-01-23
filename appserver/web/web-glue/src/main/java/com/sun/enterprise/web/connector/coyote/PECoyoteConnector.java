@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2022] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.web.connector.coyote;
 
@@ -50,32 +50,26 @@ import com.sun.enterprise.web.connector.MapperListener;
 import com.sun.enterprise.web.connector.extension.GrizzlyConfig;
 import com.sun.enterprise.web.connector.grizzly.DummyConnectorLauncher;
 import com.sun.enterprise.web.pwc.connector.coyote.PwcCoyoteRequest;
-import org.glassfish.grizzly.config.dom.*;
-import org.glassfish.web.util.IntrospectionUtils;
+import jakarta.servlet.http.HttpServletRequest;
 import org.apache.catalina.*;
 import org.apache.catalina.connector.Connector;
+import org.glassfish.grizzly.config.dom.*;
 import org.glassfish.security.common.CipherInfo;
 import org.glassfish.web.LogFacade;
 import org.glassfish.web.admin.monitor.RequestProbeProvider;
+import org.glassfish.web.util.IntrospectionUtils;
 
 import javax.management.Notification;
-import javax.servlet.http.HttpServletRequest;
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Properties;
-import java.util.ResourceBundle;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import static org.glassfish.grizzly.config.dom.Ssl.SSL2;
-import static org.glassfish.grizzly.config.dom.Ssl.SSL2_HELLO;
-import static org.glassfish.grizzly.config.dom.Ssl.SSL3;
-import static org.glassfish.grizzly.config.dom.Ssl.TLS1;
-import static org.glassfish.grizzly.config.dom.Ssl.TLS11;
-import static org.glassfish.grizzly.config.dom.Ssl.TLS12;
-import static org.glassfish.grizzly.config.dom.Ssl.TLS13;
+
+import static org.glassfish.grizzly.config.dom.Ssl.*;
 
 public class PECoyoteConnector extends Connector {
 
@@ -1252,27 +1246,12 @@ public class PECoyoteConnector extends Connector {
 
         // ssl protocol variants
         List<String> sslProtocolsBuf = new ArrayList<>();
-        if (Boolean.valueOf(sslConfig.getSsl2Enabled())) {
-            sslProtocolsBuf.add(SSL2);
-        }
-        if (Boolean.valueOf(sslConfig.getSsl3Enabled())) {
-            sslProtocolsBuf.add(SSL3);
-        }
-        if (Boolean.valueOf(sslConfig.getTlsEnabled())) {
-            sslProtocolsBuf.add(TLS1);
-        }
-        if (Boolean.valueOf(sslConfig.getTls11Enabled())) {
-            sslProtocolsBuf.add(TLS11);
-        }
+
         if (Boolean.valueOf(sslConfig.getTls12Enabled())) {
             sslProtocolsBuf.add(TLS12);
         }
         if (Boolean.valueOf(sslConfig.getTls13Enabled())) {
             sslProtocolsBuf.add(TLS13);
-        }
-        if (Boolean.valueOf(sslConfig.getSsl3Enabled())
-                || Boolean.valueOf(sslConfig.getTlsEnabled())) {
-            sslProtocolsBuf.add(SSL2_HELLO);
         }
 
         if (sslProtocolsBuf.isEmpty()) {

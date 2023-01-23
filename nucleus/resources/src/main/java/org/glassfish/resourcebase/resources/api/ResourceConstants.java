@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2022] Payara Foundation and/or affiliates
 
 package org.glassfish.resourcebase.resources.api;
 
@@ -126,11 +126,11 @@ public interface ResourceConstants {
     /** resource type residing in an external JNDI repository */
     public static final String EXT_JNDI_RES_TYPE = "external-jndi-resource";
 
-    public static final String JMS_QUEUE = "javax.jms.Queue";
-    public static final String JMS_TOPIC = "javax.jms.Topic";
-    public static final String JMS_QUEUE_CONNECTION_FACTORY = "javax.jms.QueueConnectionFactory";
-    public static final String JMS_TOPIC_CONNECTION_FACTORY = "javax.jms.TopicConnectionFactory";
-    public static final String JMS_MESSAGE_LISTENER = "javax.jms.MessageListener";
+    public static final String JMS_QUEUE = "jakarta.jms.Queue";
+    public static final String JMS_TOPIC = "jakarta.jms.Topic";
+    public static final String JMS_QUEUE_CONNECTION_FACTORY = "jakarta.jms.QueueConnectionFactory";
+    public static final String JMS_TOPIC_CONNECTION_FACTORY = "jakarta.jms.TopicConnectionFactory";
+    public static final String JMS_MESSAGE_LISTENER = "jakarta.jms.MessageListener";
 
     //TODO should be refactored to non-resources module
     /**
@@ -142,6 +142,7 @@ public interface ResourceConstants {
     public static String JMS_CONNECTION_FACTORY_DEFINITION_JNDINAME_PREFIX = "__jms_connection_factory_definition/";
     public static String JMS_DESTINATION_DEFINITION_JNDINAME_PREFIX = "__jms_destination_definition/";
     public static String ADMINISTERED_OBJECT_DEFINITION_JNDINAME_PREFIX="__administered_object_definition/";
+    public static String CONCURRENT_CONTEXT_SERVICE_DEFINITION_JNDINAME_PREFIX = "__context_service_definition/";
 
     public static final String JAVA_SCOPE_PREFIX = "java:";
     public static final String JAVA_APP_SCOPE_PREFIX = "java:app/";

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2020] Payara Foundation and/or affiliates
+// Portions Copyright [2020-2021] Payara Foundation and/or affiliates
 
 package org.glassfish.ejb.deployment.annotation.handlers;
 
@@ -45,10 +45,10 @@ import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.reflect.Method;
 import java.util.logging.Level;
-import javax.ejb.MessageDriven;
-import javax.ejb.Schedule;
-import javax.ejb.Singleton;
-import javax.ejb.Stateless;
+import jakarta.ejb.MessageDriven;
+import jakarta.ejb.Schedule;
+import jakarta.ejb.Singleton;
+import jakarta.ejb.Stateless;
 
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.deployment.annotation.context.EjbContext;
@@ -61,7 +61,7 @@ import org.glassfish.ejb.deployment.descriptor.ScheduledTimerDescriptor;
 import org.jvnet.hk2.annotations.Service;
 
 /**
- * This handler is responsible for handling the javax.ejb.Schedule
+ * This handler is responsible for handling the jakarta.ejb.Schedule
  * annotation on methods of a Bean class. 
  *
  * @author Marina Vatkina

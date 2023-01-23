@@ -63,7 +63,7 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.server.ServerEnvironmentImpl;
 
 import org.jvnet.hk2.annotations.Service;
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 import org.jvnet.hk2.config.types.Property;
 
 /**
@@ -107,8 +107,8 @@ public class EmbeddedSecurityUtil implements EmbeddedSecurity {
             // For the embedded server case, will the system properties be set in case of multiple embedded instances?
             // Not sure - so obtain the other files from the usual locations instead of from the System properties
 
-            String keyStoreFileName = fromInstanceDir + File.separator + "config" + File.separator + "keystore.jks";
-            String trustStoreFileName = fromInstanceDir + File.separator + "config" + File.separator + "cacerts.jks";
+            String keyStoreFileName = fromInstanceDir + File.separator + "config" + File.separator + "keystore.p12";
+            String trustStoreFileName = fromInstanceDir + File.separator + "config" + File.separator + "cacerts.p12";
 
             fileNames.add(keyStoreFileName);
             fileNames.add(trustStoreFileName);

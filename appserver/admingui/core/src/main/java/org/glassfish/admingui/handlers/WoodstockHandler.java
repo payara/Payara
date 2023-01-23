@@ -47,7 +47,7 @@
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
  */
-// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates]
 package org.glassfish.admingui.handlers;
 
 import com.sun.enterprise.util.io.FileUtils;
@@ -60,9 +60,9 @@ import com.sun.webui.jsf.component.Calendar;
 import com.sun.webui.jsf.model.UploadedFile;
 import com.sun.webui.jsf.component.Hyperlink;
 
-import javax.faces.context.ExternalContext;
-import javax.faces.context.FacesContext;
-import javax.faces.model.SelectItem;
+import jakarta.faces.context.ExternalContext;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.model.SelectItem;
 import com.sun.webui.jsf.model.Option;
 import com.sun.webui.jsf.model.OptionGroup;
 import com.sun.webui.jsf.component.DropDown;
@@ -182,7 +182,10 @@ public class WoodstockHandler {
                     prefix = prefix + new SecureRandom().nextInt(100000);
                 }
                 tmpFile = File.createTempFile(prefix, suffix);
-                tmpFile.delete(); // remove the file as uploader fails, if it exists
+                FileUtils.deleteOnExit(tmpFile);
+
+                // org.apache.commons.io.FileUtils#moveTo requires non-existent destination file otherwise throws error
+                tmpFile.delete();
                 if (logger.isLoggable(Level.FINE)) {
                     logger.fine(GuiUtil.getCommonMessage("log.writeToTmpFile"));
                 }

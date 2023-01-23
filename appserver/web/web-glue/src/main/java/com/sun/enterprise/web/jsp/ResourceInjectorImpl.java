@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2021] [Payara Foundation]
 
 package com.sun.enterprise.web.jsp;
 
@@ -48,7 +48,7 @@ import org.glassfish.internal.api.ServerContext;
 import org.glassfish.jsp.api.ResourceInjector;
 import org.glassfish.web.LogFacade;
 
-import javax.servlet.jsp.tagext.JspTag;
+import jakarta.servlet.jsp.tagext.JspTag;
 import java.lang.String;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;

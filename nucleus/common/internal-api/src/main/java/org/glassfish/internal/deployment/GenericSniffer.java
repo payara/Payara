@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+//Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.internal.deployment;
 
@@ -45,7 +45,7 @@ import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.module.ModuleDefinition;
 import com.sun.enterprise.module.HK2Module;
 import java.io.ByteArrayOutputStream;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;

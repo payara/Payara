@@ -38,16 +38,11 @@
  * holder.
  */
 
-// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2022 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.admin.util;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.glassfish.grizzly.config.dom.Ssl.TLS1;
-import static org.glassfish.grizzly.config.dom.Ssl.TLS11;
-import static org.glassfish.grizzly.config.dom.Ssl.TLS12;
-import static org.glassfish.grizzly.config.dom.Ssl.TLS13;
-
+import javax.net.ssl.*;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -56,49 +51,45 @@ import java.util.Base64;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.TrustManager;
-
-import com.sun.enterprise.util.JDK;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.glassfish.grizzly.config.dom.Ssl.TLS12;
+import static org.glassfish.grizzly.config.dom.Ssl.TLS13;
 
 
 public final class HttpConnectorAddress {
 
     static final String HTTP_CONNECTOR = "http";
     static final String HTTPS_CONNECTOR = "https";
-    public static final String  AUTHORIZATION_KEY     = "Authorization";
+    public static final String AUTHORIZATION_KEY = "Authorization";
     private static final String AUTHORIZATION_TYPE = "Basic ";
-    private static final String DEFAULT_PROTOCOL = TLS12;
+    private static final String DEFAULT_PROTOCOL = TLS13;
 
     private String host;
-    private int    port;
+    private int port;
     private String path;
     private boolean secure;
-    private AuthenticationInfo  authInfo;
+    private AuthenticationInfo authInfo;
     private boolean interactive = true;
 
     private SSLSocketFactory sslSocketFactory;
 
     private static final Logger logger = AdminLoggerInfo.getLogger();
-    
+
     public HttpConnectorAddress() {
     }
 
     public HttpConnectorAddress(String host, int port) {
         this(host, port, false);
     }
-    
+
     /**
      * construct an address which indicates the host, port and
      * security attributes desired.
-     * @param host a host address
-     * @param port a port number
+     *
+     * @param host   a host address
+     * @param port   a port number
      * @param secure a boolean indication of whether the connection should be
-     *  secure (i.e. confidential) or not
+     *               secure (i.e. confidential) or not
      */
     public HttpConnectorAddress(String host, int port, boolean secure) {
         this(host, port, secure, null);
@@ -113,7 +104,7 @@ public final class HttpConnectorAddress {
     }
 
     public HttpConnectorAddress(String host, int port, boolean secure, String path,
-            SSLSocketFactory sslSocketFactory) {
+                                SSLSocketFactory sslSocketFactory) {
         this.host = host;
         this.port = port;
         this.secure = secure;
@@ -124,8 +115,9 @@ public final class HttpConnectorAddress {
 
     /**
      * Open a connection using the reciever and the given path
+     *
      * @param path the path to the required resource (path here is
-     * the portion after the <code>hostname:port</code> portion of a URL)
+     *             the portion after the <code>hostname:port</code> portion of a URL)
      * @return a connection to the required resource. The
      * connection returned may be a sub-class of
      * <code>URLConnection</code> including
@@ -137,18 +129,18 @@ public final class HttpConnectorAddress {
      * the server. This is a potential security hole, but is also a
      * usability enhancement.
      * @throws IOException if there's a problem in connecting to the
-     * resource
+     *                     resource
      */
     public URLConnection openConnection(String path) throws IOException {
         if (path == null || path.trim().length() == 0)
             path = this.path;
         final URLConnection cnx = this.openConnection(this.toURL(path));
-        if (! (cnx instanceof HttpsURLConnection)) {
+        if (!(cnx instanceof HttpsURLConnection)) {
             return cnx;
         }
 
         configureSSL((HttpsURLConnection) cnx);
-        
+
         return cnx;
     }
 
@@ -177,8 +169,8 @@ public final class HttpConnectorAddress {
     private SSLSocketFactory createAdminSSLSocketFactory(String alias, String protocol) {
         try {
             if (protocol == null) {
-                
-                /** 
+
+                /**
                  * PAYARA-542
                  * Check if the system property has been set to determine the
                  * HTTPS protocol to use, and set the protocol to be used to
@@ -188,51 +180,35 @@ public final class HttpConnectorAddress {
                 String clientHttpsProtocol = System.getProperty("fish.payara.clientHttpsProtocol");
                 if (clientHttpsProtocol != null) {
                     switch (clientHttpsProtocol) {
-                        case TLS1: protocol = TLS1;
-                                        logger.log(Level.FINE, 
-                                                AdminLoggerInfo.settingHttpsProtocol,
-                                                protocol);
-                                        break;
-                        
-                        case TLS11: protocol = TLS11;
-                                        logger.log(Level.FINE, 
-                                                AdminLoggerInfo.settingHttpsProtocol,
-                                                protocol);
-                                        break;
-                                        
-                        case TLS12: protocol = TLS12;
-                                        logger.log(Level.FINE,
-                                                AdminLoggerInfo.settingHttpsProtocol,
-                                                protocol);
-                                        break;
+                        case TLS12:
+                            protocol = TLS12;
+                            logger.log(Level.FINE,
+                                    AdminLoggerInfo.settingHttpsProtocol,
+                                    protocol);
+                            break;
 
-                        case TLS13: protocol = TLS13;
-                                        if (!JDK.isTls13Supported()) {
-                                            if (JDK.isOpenJSSEFlagRequired()) {
-                                                protocol = TLS13;
-                                            } else {
-                                                protocol = DEFAULT_PROTOCOL;
-                                            }
-                                        }
-                                        logger.log(Level.FINE, 
-                                                AdminLoggerInfo.settingHttpsProtocol,
-                                                protocol);
-                                        break;
-                        
-                        default:        protocol = DEFAULT_PROTOCOL;
-                                        String[] logParams = {protocol, clientHttpsProtocol};
-                                        
-                                        logger.log(Level.INFO, 
-                                                AdminLoggerInfo.unrecognisedHttpsProtocol, 
-                                                logParams);
-                                        break;
+                        case TLS13:
+                            protocol = TLS13;
+                            logger.log(Level.FINE,
+                                    AdminLoggerInfo.settingHttpsProtocol,
+                                    protocol);
+                            break;
+
+                        default:
+                            protocol = DEFAULT_PROTOCOL;
+                            String[] logParams = {protocol, clientHttpsProtocol};
+
+                            logger.log(Level.INFO,
+                                    AdminLoggerInfo.unrecognisedHttpsProtocol,
+                                    logParams);
+                            break;
                     }
                 } else {
                     protocol = DEFAULT_PROTOCOL;
                     logger.log(Level.FINE, AdminLoggerInfo.usingDefaultHttpsProtocol, protocol);
                 }
             }
-            
+
             SSLContext cntxt = SSLContext.getInstance(protocol);
             /*
              * Pass null for the array of KeyManagers.  That uses the default
@@ -241,7 +217,7 @@ public final class HttpConnectorAddress {
              */
             AsadminTrustManager atm = new AsadminTrustManager();
             atm.setInteractive(interactive);
-            cntxt.init(null, new TrustManager[] {atm}, null);
+            cntxt.init(null, new TrustManager[]{atm}, null);
 
             return cntxt.getSocketFactory();
         } catch (Exception e) {
@@ -252,8 +228,9 @@ public final class HttpConnectorAddress {
     /**
      * get the protocol prefix to be used for a connection for the
      * receiver
+     *
      * @return the protocol prefix - one of <code>http</code> or
-     *<code>https</code> depending upon the security setting.
+     * <code>https</code> depending upon the security setting.
      */
     public String getConnectorType() {
         return this.isSecure() ? HTTPS_CONNECTOR : HTTP_CONNECTOR;
@@ -297,7 +274,7 @@ public final class HttpConnectorAddress {
     public void setSecure(boolean secure) {
         this.secure = secure;
     }
-  
+
 
     /**
      * Indicate if the receiver represents a secure address
@@ -305,7 +282,7 @@ public final class HttpConnectorAddress {
     public boolean isSecure() {
         return secure;
     }
-    
+
     /**
      * Set the interactive mode for the connection.
      */
@@ -313,38 +290,38 @@ public final class HttpConnectorAddress {
         interactive = mode;
     }
 
-    public URL toURL(String path) throws MalformedURLException{
-        return new URL(getConnectorType(), getHost(), getPort(), 
+    public URL toURL(String path) throws MalformedURLException {
+        return new URL(getConnectorType(), getHost(), getPort(),
                 path == null ? "" : path);
     }
 
     public synchronized SSLSocketFactory getSSLSocketFactory() {
         return sslSocketFactory;
     }
-  
+
     private String getUser() {
         return authInfo != null ? authInfo.getUser() : "";
     }
 
     private char[] getPassword() {
         String password = authInfo != null ? authInfo.getPassword() : "";
-        
+
         return password != null ? password.toCharArray() : null;
     }
 
-    private URLConnection openConnection(URL url) throws IOException    {
+    private URLConnection openConnection(URL url) throws IOException {
         return this.setOptions(this.makeConnection(url));
     }
 
     private URLConnection makeConnection(URL url) throws IOException {
-        return ( url.openConnection() );
+        return (url.openConnection());
     }
 
     private URLConnection setOptions(URLConnection uc) {
         uc.setDoOutput(true);
         uc.setUseCaches(false);
         //uc.setRequestProperty("Content-type", "application/octet-stream");
-        uc.setRequestProperty("Connection", "Keep-Alive"); 
+        uc.setRequestProperty("Connection", "Keep-Alive");
         return this.setAuthentication(uc);
     }
 
@@ -369,22 +346,23 @@ public final class HttpConnectorAddress {
          */
         String user = getUser();
         char[] password = getPassword();
-        
-        return 
-            AUTHORIZATION_TYPE + 
-            getBase64Encoded(
-                (user == null ? "" : user) + 
-                ":" + 
-                (password == null ? "" : new String(password)))
-                .replaceAll(System.getProperty("line.separator"), "");
+
+        return
+                AUTHORIZATION_TYPE +
+                        getBase64Encoded(
+                                (user == null ? "" : user) +
+                                        ":" +
+                                        (password == null ? "" : new String(password)))
+                                .replaceAll(System.getProperty("line.separator"), "");
     }
-  
+
     private String getBase64Encoded(String clearString) {
         return new String(Base64.getMimeEncoder().encode(clearString.getBytes()), UTF_8);
     }
 
     public static class BasicHostnameVerifier implements HostnameVerifier {
         private final String host;
+
         public BasicHostnameVerifier(String host) {
             if (host == null)
                 throw new IllegalArgumentException("null host");

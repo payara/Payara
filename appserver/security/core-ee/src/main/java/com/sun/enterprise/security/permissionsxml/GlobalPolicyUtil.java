@@ -36,8 +36,10 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2022 Payara Foundation and/or its affiliates
+// Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license
 package com.sun.enterprise.security.permissionsxml;
 
 import static com.sun.enterprise.security.permissionsxml.GlobalPolicyUtil.PolicyType.EEGranted;
@@ -48,10 +50,14 @@ import static java.util.logging.Level.FINE;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.CodeSource;
+import java.security.NoSuchAlgorithmException;
 import java.security.Permission;
 import java.security.PermissionCollection;
+import java.security.Policy;
+import java.security.URIParameter;
 import java.security.cert.Certificate;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -63,8 +69,8 @@ import javax.xml.stream.XMLStreamException;
 import org.glassfish.api.deployment.DeploymentContext;
 
 import com.sun.logging.LogDomains;
-
-import sun.security.provider.PolicyFile;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  *
@@ -135,6 +141,14 @@ public class GlobalPolicyUtil {
 
     public static final String EAR_CLASS_LOADER = "org.glassfish.javaee.full.deployment.EarClassLoader";
 
+    // permissions needed by applications using java.desktop module defined in ${JDK_HOME}/lib/security/default.policy
+    private static final List<String> JDK_REQUIRED_PERMISSIONS = Arrays.asList(
+            "accessClassInPackage.com.sun.beans",
+            "accessClassInPackage.com.sun.beans.*", 
+            "accessClassInPackage.com.sun.java.swing.plaf.*", 
+            "accessClassInPackage.com.apple.*"
+    );
+    
     // Map recording the 'Java EE component type' to its code source URL
     private static final Map<CommponentType, String> CompTypeToCodeBaseMap = new HashMap<CommponentType, String>();
 
@@ -243,7 +257,7 @@ public class GlobalPolicyUtil {
 
         } catch (FileNotFoundException e) {
             // ignore: the permissions files not exist
-        } catch (IOException e) {
+        } catch (IOException | NoSuchAlgorithmException | URISyntaxException e) {
             logger.warning(e.getMessage());
             throw new RuntimeException(e);
         }
@@ -259,7 +273,8 @@ public class GlobalPolicyUtil {
         return new File(policyPath).getParent();
     }
 
-    private static void loadServerPolicy(PolicyType policyType) throws IOException {
+    private static void loadServerPolicy(PolicyType policyType) throws IOException, NoSuchAlgorithmException,
+            URISyntaxException {
         if (policyType == null) {
             return;
         }
@@ -302,7 +317,8 @@ public class GlobalPolicyUtil {
         if (logger.isLoggable(FINE)) {
             logger.fine("Loading policy from " + policyFileURL);
         }
-        PolicyFile pf = new PolicyFile(policyFileURL);
+
+        Policy pf = Policy.getInstance("JavaPolicy", new URIParameter(policyFileURL.toURI()));
 
         // EJB
         
@@ -396,12 +412,12 @@ public class GlobalPolicyUtil {
         Enumeration<Permission> checkEnum = toBeCheckedPC.elements();
         while (checkEnum.hasMoreElements()) {
             Permission permissions = checkEnum.nextElement();
-            if (containPC.implies(permissions)) {
+            if (!JDK_REQUIRED_PERMISSIONS.contains(permissions.getName())
+                    && containPC.implies(permissions)) {
                 throw new SecurityException("Restricted permission " + permissions + " is declared or implied in the " + containPC);
             }
         }
 
-        return;
     }
 
     /**

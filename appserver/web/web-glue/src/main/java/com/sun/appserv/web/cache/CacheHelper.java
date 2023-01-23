@@ -40,8 +40,8 @@
 
 package com.sun.appserv.web.cache;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.Map;
 
 /** CacheHelper interface is an user-extensible interface to customize: 

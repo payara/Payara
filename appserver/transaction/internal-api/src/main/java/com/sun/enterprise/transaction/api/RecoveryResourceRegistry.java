@@ -42,7 +42,7 @@ package com.sun.enterprise.transaction.api;
 
 import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 
 import java.util.*;
 

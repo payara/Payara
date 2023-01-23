@@ -51,7 +51,7 @@ import org.jvnet.hk2.annotations.Service;
  * @author sanjeeb.sahoo@oracle.com
  */
 @Service(name = RarType.ARCHIVE_TYPE)
-@javax.inject.Singleton
+@jakarta.inject.Singleton
 public class RarType extends ArchiveType {
     /**
      * same as what's returned by {@link javax.enterprise.deploy.shared.ModuleType#RAR#toString()}

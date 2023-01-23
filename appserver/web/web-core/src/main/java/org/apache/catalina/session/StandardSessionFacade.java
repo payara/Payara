@@ -55,14 +55,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2022] Payara Foundation and/or affiliates
 
 package org.apache.catalina.session;
 
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpSession;
-import javax.servlet.http.HttpSessionContext;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.HttpSession;
 import java.util.Enumeration;
 
 
@@ -147,29 +146,10 @@ public class StandardSessionFacade
     }
 
 
-    /**
-     * @deprecated
-     */
-    @Override
-    public HttpSessionContext getSessionContext() {
-        return session.getSessionContext();
-    }
-
-
     @Override
     public Object getAttribute(String name) {
         return session.getAttribute(name);
     }
-
-
-    /**
-     * @deprecated
-     */
-    @Override
-    public Object getValue(String name) {
-        return session.getAttribute(name);
-    }
-
 
     /**
      * @deprecated
@@ -179,42 +159,15 @@ public class StandardSessionFacade
         return session.getAttributeNames();
     }
 
-
-    @Override
-    public String[] getValueNames() {
-        return session.getValueNames();
-    }
-
-
     @Override
     public void setAttribute(String name, Object value) {
         session.setAttribute(name, value);
     }
 
-
-    /**
-     * @deprecated
-     */
-    @Override
-    public void putValue(String name, Object value) {
-        session.setAttribute(name, value);
-    }
-
-
     @Override
     public void removeAttribute(String name) {
         session.removeAttribute(name);
     }
-
-
-    /**
-     * @deprecated
-     */
-    @Override
-    public void removeValue(String name) {
-        session.removeAttribute(name);
-    }
-
 
     @Override
     public void invalidate() {

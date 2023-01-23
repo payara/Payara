@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2018] Payara Foundation and/or affiliates
+//Portions Copyright [2018-2021] Payara Foundation and/or affiliates
 
 package org.glassfish.jms.admin.cli;
 
@@ -58,7 +58,7 @@ import org.glassfish.connectors.config.ConnectorResource;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 import java.util.Enumeration;
@@ -111,11 +111,11 @@ public class CreateJMSResource implements AdminCommand {
     Domain domain;
     //ConnectorConnectionPool[] connPools;
 
-    private static final String QUEUE = "javax.jms.Queue";
-    private static final String TOPIC = "javax.jms.Topic";
-    private static final String QUEUE_CF = "javax.jms.QueueConnectionFactory";
-    private static final String TOPIC_CF = "javax.jms.TopicConnectionFactory";
-    private static final String UNIFIED_CF = "javax.jms.ConnectionFactory";
+    private static final String QUEUE = "jakarta.jms.Queue";
+    private static final String TOPIC = "jakarta.jms.Topic";
+    private static final String QUEUE_CF = "jakarta.jms.QueueConnectionFactory";
+    private static final String TOPIC_CF = "jakarta.jms.TopicConnectionFactory";
+    private static final String UNIFIED_CF = "jakarta.jms.ConnectionFactory";
     private static final String DEFAULT_JMS_ADAPTER = "jmsra";
     private static final String DEFAULT_OPERAND="DEFAULT";
     private static final String JNDINAME_APPENDER="-Connection-Pool";

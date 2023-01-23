@@ -64,10 +64,10 @@ import org.glassfish.internal.api.ServerContext;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import java.util.List;
 import org.glassfish.api.admin.ServerEnvironment;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.jvnet.hk2.annotations.Service;
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 
 /**
  * Basic implementation of audit manager.

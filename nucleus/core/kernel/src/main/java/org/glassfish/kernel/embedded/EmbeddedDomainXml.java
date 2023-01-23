@@ -43,8 +43,7 @@ package org.glassfish.kernel.embedded;
 import com.sun.enterprise.module.bootstrap.StartupContext;
 import com.sun.enterprise.v3.server.GFDomainXml;
 import org.glassfish.server.ServerEnvironmentImpl;
-
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import java.io.File;
 import java.io.IOException;

@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates]
 package org.glassfish.deployment.admin;
 
 import org.glassfish.api.ActionReport;
@@ -71,7 +71,7 @@ import org.glassfish.deployment.versioning.VersioningException;
 import org.glassfish.deployment.versioning.VersioningService;
 
 import org.glassfish.hk2.api.PerLookup;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.glassfish.api.admin.AccessRequired;
 import org.glassfish.api.admin.AccessRequired.AccessCheck;
 import org.glassfish.api.admin.AdminCommandSecurity;

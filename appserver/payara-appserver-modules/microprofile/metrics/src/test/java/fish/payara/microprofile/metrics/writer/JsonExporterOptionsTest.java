@@ -141,8 +141,7 @@ public class JsonExporterOptionsTest {
                 .withName(metricID.getName())
                 .withType(MetricType.GAUGE)
                 .build();
-        assertOutputEquals("\n" +
-                "{\n" +
+        assertOutputEquals("{\n" +
                 "    \"test3\": {\n" +
                 "        \"unit\": \"none\",\n" +
                 "        \"type\": \"gauge\"\n" +
@@ -158,8 +157,7 @@ public class JsonExporterOptionsTest {
                 .withName(metricID.getName())
                 .withType(MetricType.GAUGE)
                 .build();
-        assertOutputEquals("\n" +
-                "{\n" +
+        assertOutputEquals("{\n" +
                 "    \"test4\": {\n" +
                 "        \"unit\": \"none\",\n" +
                 "        \"type\": \"gauge\"\n" +

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2019-2021] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.web;
 
@@ -61,7 +61,7 @@ import org.glassfish.loader.util.ASClassLoaderUtil;
 import org.glassfish.hk2.api.ServiceLocator;
 
 import javax.naming.NamingException;
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 import java.net.URI;
 import java.util.Collection;
 import java.util.HashMap;

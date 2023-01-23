@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates]
 
 package com.sun.gjc.spi.jdbc40;
 
@@ -48,7 +48,7 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.sql.*;
 import java.util.logging.Level;
-import javax.resource.ResourceException;
+import jakarta.resource.ResourceException;
 
 /**
  * Wrapper for JDBC 4.0 CallableStatement

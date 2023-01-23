@@ -42,16 +42,16 @@ package com.sun.enterprise.deployment.annotation.introspection;
 
 
 import org.jvnet.hk2.annotations.Service;
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 
 import java.util.HashSet;
 import java.util.Set;
 
 /**
  * This class contains the following annotation type:
- * javax.ejb.Stateless
- * javax.ejb.Stateful
- * javax.ejb.MessageDriven
+ * jakarta.ejb.Stateless
+ * jakarta.ejb.Stateful
+ * jakarta.ejb.MessageDriven
  *
  * @author Qingqing Ouyang
  */
@@ -83,10 +83,10 @@ public class EjbComponentAnnotationScanner implements AnnotationScanner {
     
     private void init() {
         annotations = new HashSet();
-        annotations.add("Ljavax/ejb/Stateless;");
-        annotations.add("Ljavax/ejb/Stateful;");
-        annotations.add("Ljavax/ejb/MessageDriven;");
-        annotations.add("Ljavax/ejb/Singleton;");
+        annotations.add("Ljakarta/ejb/Stateless;");
+        annotations.add("Ljakarta/ejb/Stateful;");
+        annotations.add("Ljakarta/ejb/MessageDriven;");
+        annotations.add("Ljakarta/ejb/Singleton;");
     }
 
     @Override

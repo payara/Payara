@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) 2019-2020 Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) 2019-2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -45,11 +45,11 @@ import fish.payara.requesttracing.jaxrs.client.PayaraTracingServices;
 
 import java.util.logging.Logger;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Priority;
-import javax.ws.rs.Priorities;
-import javax.ws.rs.container.ResourceInfo;
-import javax.ws.rs.core.Context;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Priority;
+import jakarta.ws.rs.Priorities;
+import jakarta.ws.rs.container.ResourceInfo;
+import jakarta.ws.rs.core.Context;
 
 import org.glassfish.jersey.server.monitoring.ApplicationEvent;
 import org.glassfish.jersey.server.monitoring.ApplicationEventListener;

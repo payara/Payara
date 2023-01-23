@@ -52,7 +52,7 @@ import org.glassfish.logging.annotation.LoggerInfo;
 public class LogFacade {
     
     @LoggerInfo(subsystem = "BOOTSTRAP", description="Main bootstrap logger.")
-    public static final String BOOTSTRAP_LOGGER_NAME = "javax.enterprise.bootstrap";
+    public static final String BOOTSTRAP_LOGGER_NAME = "jakarta.enterprise.bootstrap";
 
     @LogMessagesResourceBundle()
     public static final String RB_NAME = "com.sun.enterprise.glassfish.bootstrap.LogMessages";

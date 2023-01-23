@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2020-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,20 +39,15 @@
  */
 package fish.payara.samples.http;
 
-import com.sun.enterprise.util.JDK;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import java.io.IOException;
-import java.lang.management.ManagementFactory;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import java.util.List;
 import javax.net.ssl.SSLContext;
 
 @WebServlet(value = "/hello")
@@ -68,23 +63,8 @@ public class TestServlet extends HttpServlet {
         resp.getOutputStream().print("\n"+response.getStatus());
     }
 
-    static boolean hasTLS13Support() {
-        List<String> jvmOptions = ManagementFactory.getRuntimeMXBean().getInputArguments();
-        boolean openJSSEOption = jvmOptions.contains("-XX:+UseOpenJSSE");
-        return JDK.isTls13Supported() || openJSSEOption && JDK.isOpenJSSEFlagRequired();
-    }
-
     static ClientBuilder newClientBuilder() {
         SSLContext sslContext = null;
-        try {
-            if (!hasTLS13Support()) {
-                sslContext = SSLContext.getInstance("TLSv1.2");
-                sslContext.init(null, null, null);
-            }
-        } catch (NoSuchAlgorithmException | KeyManagementException ex) {
-            throw new IllegalStateException(ex);
-        }
-
         ClientBuilder builder = ClientBuilder.newBuilder();
         if (sslContext != null) {
             builder.sslContext(sslContext);

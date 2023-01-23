@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *  Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2018-2021] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -51,8 +51,8 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
-import javax.inject.Inject;
-import javax.validation.constraints.Pattern;
+import jakarta.validation.constraints.Pattern;
+import jakarta.inject.Inject;
 
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.v3.services.impl.GrizzlyService;
@@ -81,7 +81,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ws.rs.ProcessingException;
+import jakarta.ws.rs.ProcessingException;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.config.support.PropertyResolver;
 import org.glassfish.config.support.TranslatedConfigView;

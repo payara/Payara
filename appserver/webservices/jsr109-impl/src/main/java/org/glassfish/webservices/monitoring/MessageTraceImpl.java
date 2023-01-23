@@ -104,17 +104,6 @@ public class MessageTraceImpl implements MessageTrace {
         return source;
     }
     
-    public void setMessageContext(com.sun.xml.rpc.spi.runtime.SOAPMessageContext soapMessageCtx) {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try {
-            soapMessageCtx.getMessage().writeTo(baos);
-        } catch(Exception e) {
-            WebServiceEngineImpl.sLogger.log(Level.WARNING, LogUtils.CANNOT_LOG_SOAPMSG, e.getMessage());
-        }
-
-        soapMessage = baos.toString();
-    }    
-    
     public void setMessageContext(SOAPMessageContext soapMessageCtx) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();        
         try {

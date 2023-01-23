@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2021] [Payara Foundation]
 
 package com.sun.enterprise.transaction;
 
@@ -49,7 +49,7 @@ import org.glassfish.api.invocation.ComponentInvocationHandler;
 import org.glassfish.api.invocation.InvocationException;
 
 import org.jvnet.hk2.annotations.Service;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.glassfish.hk2.api.ServiceLocator;
 
 @Service

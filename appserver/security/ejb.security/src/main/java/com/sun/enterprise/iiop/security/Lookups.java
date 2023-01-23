@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.iiop.security;
 
 import fish.payara.nucleus.cluster.PayaraCluster;
@@ -51,8 +51,8 @@ import org.glassfish.internal.api.Globals;
 
 import com.sun.enterprise.config.serverbeans.Servers;
 
-import javax.inject.Inject;
-import javax.inject.Provider;
+import jakarta.inject.Inject;
+import jakarta.inject.Provider;
 
 /**
  * This class is a local utility class to provide for hk2 lookups during runtime.

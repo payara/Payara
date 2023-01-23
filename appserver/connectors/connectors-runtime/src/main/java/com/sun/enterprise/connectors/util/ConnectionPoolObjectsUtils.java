@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2021] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.connectors.util;
 
@@ -55,8 +55,8 @@ import com.sun.logging.LogDomains;
 import org.glassfish.resourcebase.resources.api.PoolInfo;
 import org.jvnet.hk2.config.types.Property;
 
-import javax.resource.spi.ManagedConnectionFactory;
-import javax.resource.spi.security.PasswordCredential;
+import jakarta.resource.spi.ManagedConnectionFactory;
+import jakarta.resource.spi.security.PasswordCredential;
 import javax.security.auth.Subject;
 import java.lang.reflect.Method;
 import java.security.AccessController;
@@ -198,13 +198,13 @@ public final class ConnectionPoolObjectsUtils {
 
     /**
      * Return the interger representation container transaction support value equivalent to
-     * the javax.resource.spi.TransactionSupport enum value.
+     * the jakarta.resource.spi.TransactionSupport enum value.
      *
-     * @param mcfTS javax.resource.spi.TransactionSupport
+     * @param mcfTS jakarta.resource.spi.TransactionSupport
      * @return container equivalent value
      */
     public static int convertSpecTxSupportToContainerTxSupport(
-            javax.resource.spi.TransactionSupport.TransactionSupportLevel mcfTS) {
+            jakarta.resource.spi.TransactionSupport.TransactionSupportLevel mcfTS) {
         int containerEquivalentValue ;
         switch (mcfTS) {
             case LocalTransaction:

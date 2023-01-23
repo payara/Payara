@@ -44,8 +44,8 @@ import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.module.bootstrap.EarlyLogHandler;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.api.admin.config.ConfigurationUpgrade;
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;

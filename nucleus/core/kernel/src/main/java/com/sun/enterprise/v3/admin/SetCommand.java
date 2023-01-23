@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.v3.admin;
 
 import com.sun.enterprise.admin.util.ClusterOperationUtil;
@@ -76,7 +76,7 @@ import org.jvnet.hk2.config.WriteableView;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.tiger_types.Types;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.beans.PropertyVetoException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;

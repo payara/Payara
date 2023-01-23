@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
 package org.glassfish.weld.connector;
 
 import org.glassfish.api.deployment.DeploymentContext;
@@ -47,7 +47,7 @@ import org.glassfish.internal.deployment.GenericSniffer;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.enterprise.deploy.shared.ModuleType;
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Enumeration;
@@ -55,12 +55,12 @@ import java.util.Enumeration;
 /**
  * Implementation of the Sniffer for Weld.
  */
-@Service(name="weld")
+@Service(name = "weld")
 @Singleton
 public class WeldSniffer extends GenericSniffer {
 
   private static final String[] containers = { "org.glassfish.weld.WeldContainer" };
-
+  private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(WeldSniffer.class.getName());
 
   public WeldSniffer() {
     // We do not haGenericSniffer(String containerName, String appStigma, String urlPattern
@@ -84,13 +84,17 @@ public class WeldSniffer extends GenericSniffer {
     // a Weld archive
     if (isEntryPresent(archive, WeldUtils.WEB_INF)) {
       isWeldArchive = isArchiveCDIEnabled(context, archive, WeldUtils.WEB_INF_BEANS_XML) ||
-                      isArchiveCDIEnabled(context, archive, WeldUtils.WEB_INF_CLASSES_META_INF_BEANS_XML);
+              isArchiveCDIEnabled(context, archive, WeldUtils.WEB_INF_CLASSES_META_INF_BEANS_XML);
 
       if (!isWeldArchive) {
         // Check jars under WEB_INF/lib
         if (isEntryPresent(archive, WeldUtils.WEB_INF_LIB)) {
           isWeldArchive = scanLibDir(context, archive, WeldUtils.WEB_INF_LIB);
         }
+      }
+
+      if(!isWeldArchive) {
+        isWeldArchive = WeldUtils.hasExtension(archive);
       }
     }
 
@@ -103,7 +107,7 @@ public class WeldSniffer extends GenericSniffer {
     }
 
     // If stand-alone ejb-jar
-    if (!isWeldArchive && isArchiveCDIEnabled(context, archive, WeldUtils.META_INF_BEANS_XML) ) {
+    if (!isWeldArchive && isArchiveCDIEnabled(context, archive, WeldUtils.META_INF_BEANS_XML)) {
       isWeldArchive = true;
     }
 

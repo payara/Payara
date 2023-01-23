@@ -48,7 +48,7 @@ package com.sun.jdo.spi.persistence.support.ejb.cmp;
 
 import java.util.*;
 
-import javax.ejb.EJBLocalObject;
+import jakarta.ejb.EJBLocalObject;
 
 import com.sun.jdo.api.persistence.support.PersistenceManager;
 import com.sun.jdo.api.persistence.support.Transaction;

@@ -39,7 +39,7 @@
  */
 
 package jsfinjection;
-import javax.annotation.*;
+import jakarta.annotation.*;
 import javax.sql.DataSource;
 
 public class TestBean {

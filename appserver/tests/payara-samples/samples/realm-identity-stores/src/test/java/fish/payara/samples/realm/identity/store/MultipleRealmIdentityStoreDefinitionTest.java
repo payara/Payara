@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2019-2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -51,10 +51,10 @@ import fish.payara.samples.realm.identity.store.common.PersonController;
 import fish.payara.samples.realm.identity.store.common.PersonControllerClient;
 import static fish.payara.samples.realm.identity.store.common.PersonControllerClientHelper.getBasicPersonControllerClient;
 import java.net.URL;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
-import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response;
+import static jakarta.ws.rs.core.Response.Status.CREATED;
+import static jakarta.ws.rs.core.Response.Status.UNAUTHORIZED;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.ArchivePaths;
@@ -65,7 +65,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import static org.valid4j.matchers.http.HttpResponseMatchers.hasStatus;
@@ -86,6 +85,7 @@ public class MultipleRealmIdentityStoreDefinitionTest {
 
     @Deployment(testable = false)
     public static WebArchive createDeployment() {
+        ServerOperations.setupContainerFileIdentityStore("new-file-realm");
         return create(WebArchive.class)
                 .addClasses(
                         MultipleRealmIdentityStoreAppConfig.class,
@@ -93,12 +93,7 @@ public class MultipleRealmIdentityStoreDefinitionTest {
                         PersonController.class,
                         AuthoritiesConstants.class
                 )
-                .addAsWebInfResource(EmptyAsset.INSTANCE, ArchivePaths.create("beans.xml"));
-    }
-
-    @BeforeClass
-    public static void init() {
-        ServerOperations.setupContainerFileIdentityStore("new-file-realm");
+                .addAsWebInfResource("all-beans.xml", "beans.xml");
     }
 
     @Before

@@ -43,7 +43,7 @@ package org.glassfish.ejb.deployment.archivist;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import com.sun.ejb.containers.EjbContainerUtil;
 import com.sun.enterprise.deployment.Application;

@@ -77,7 +77,6 @@ public class MetricsWriterImpl implements MetricsWriter {
         this.getContextByName = getContextByName;
         this.globalTags = globalTags;
         this.healthCheckService = Globals.getDefaultBaseServiceLocator().getService(HealthCheckService.class);
-
     }
 
     @Override

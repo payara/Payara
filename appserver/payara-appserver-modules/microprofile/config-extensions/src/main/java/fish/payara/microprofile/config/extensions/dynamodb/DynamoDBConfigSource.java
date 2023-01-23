@@ -53,15 +53,15 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonException;
-import javax.json.JsonObject;
-import javax.json.JsonValue;
-import javax.json.stream.JsonParser;
-import javax.ws.rs.HttpMethod;
-import javax.ws.rs.ProcessingException;
-import javax.ws.rs.core.Response;
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonException;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonValue;
+import jakarta.json.stream.JsonParser;
+import jakarta.ws.rs.HttpMethod;
+import jakarta.ws.rs.ProcessingException;
+import jakarta.ws.rs.core.Response;
 
 import org.glassfish.config.support.TranslatedConfigView;
 import org.jvnet.hk2.annotations.Service;
@@ -69,7 +69,7 @@ import org.jvnet.hk2.annotations.Service;
 import fish.payara.microprofile.config.extensions.aws.client.AwsRequestBuilder;
 import fish.payara.nucleus.microprofile.config.source.extension.ConfiguredExtensionConfigSource;
 import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 @Service(name = "dynamodb-config-source")
 public class DynamoDBConfigSource extends ConfiguredExtensionConfigSource<DynamoDBConfigSourceConfiguration> {

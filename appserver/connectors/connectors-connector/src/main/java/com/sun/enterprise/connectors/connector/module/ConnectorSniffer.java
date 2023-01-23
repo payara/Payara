@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2021] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.connectors.connector.module;
 
@@ -52,7 +52,7 @@ import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.deployment.common.DeploymentUtils;
 
 import org.jvnet.hk2.annotations.Service;
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 
 import java.io.IOException;
 import java.util.logging.Logger;
@@ -61,7 +61,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.lang.annotation.Annotation;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 /**
  * Sniffer for detecting resource-adapter modules
@@ -79,7 +79,7 @@ public class ConnectorSniffer extends GenericSniffer {
     @Inject ServiceLocator locator;
 
     private static final Class[]  connectorAnnotations = new Class[] {
-            javax.resource.spi.Connector.class };
+            jakarta.resource.spi.Connector.class };
 
     public ConnectorSniffer() {
         super(ConnectorConstants.CONNECTOR_MODULE, "META-INF/ra.xml", null);

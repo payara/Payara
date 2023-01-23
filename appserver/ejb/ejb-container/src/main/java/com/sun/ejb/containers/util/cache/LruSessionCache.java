@@ -349,7 +349,7 @@ public class LruSessionCache
                     }
                 }
             } //end of sync
-        } catch (javax.ejb.EJBException ejbEx) {
+        } catch (jakarta.ejb.EJBException ejbEx) {
 	    //sfsbStoreMonitor.incrementActivationCount(false);
             remove(sessionKey);
             value = null;

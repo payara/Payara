@@ -39,8 +39,8 @@
  */
 package org.jvnet.hk2.config.types;
 
-import javax.inject.Named;
-import javax.inject.Singleton;
+import jakarta.inject.Named;
+import jakarta.inject.Singleton;
 
 import org.jvnet.hk2.annotations.Contract;
 

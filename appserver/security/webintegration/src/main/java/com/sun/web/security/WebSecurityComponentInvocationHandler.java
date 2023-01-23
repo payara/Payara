@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2021] [Payara Foundation]
 
 package com.sun.web.security;
 
@@ -51,11 +51,11 @@ import org.glassfish.api.invocation.InvocationException;
 import org.glassfish.api.invocation.InvocationManager;
 
 import org.jvnet.hk2.annotations.Service;
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 
 import static org.glassfish.api.invocation.ComponentInvocation.ComponentInvocationType.SERVLET_INVOCATION;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 @Service(name = "webSecurityCIH")
 @Singleton

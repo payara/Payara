@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2021] Payara Foundation and/or affiliates
 
 package com.sun.gjc.spi.base;
 
@@ -50,8 +50,8 @@ import com.sun.appserv.connectors.internal.api.ConnectorConstants;
 import com.sun.gjc.util.MethodExecutor;
 
 import javax.naming.Reference;
-import javax.resource.ResourceException;
-import javax.resource.spi.ConnectionManager;
+import jakarta.resource.ResourceException;
+import jakarta.resource.spi.ConnectionManager;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -66,7 +66,7 @@ import java.util.logging.Logger;
  * @version 1.0, 02/07/31
  */
 public abstract class AbstractDataSource implements javax.sql.DataSource, java.io.Serializable,
-        com.sun.appserv.jdbc.DataSource, javax.resource.Referenceable {
+        com.sun.appserv.jdbc.DataSource, jakarta.resource.Referenceable {
 
     protected ManagedConnectionFactoryImpl mcf;
     protected MethodExecutor executor = null;
@@ -309,13 +309,13 @@ public abstract class AbstractDataSource implements javax.sql.DataSource, java.i
     private ConnectionHolder.ConnectionType findConnectionType() {
         ConnectionHolder.ConnectionType cmType = ConnectionHolder.ConnectionType.STANDARD;
 
-        if (cm instanceof javax.resource.spi.LazyAssociatableConnectionManager) {
+        if (cm instanceof jakarta.resource.spi.LazyAssociatableConnectionManager) {
             if (!((com.sun.appserv.connectors.internal.spi.ConnectionManager) cm).
                     getJndiName().endsWith(ConnectorConstants.PM_JNDI_SUFFIX)) {
                 cmType = ConnectionHolder.ConnectionType.LAZY_ASSOCIATABLE;
             }
         } else if (cm instanceof
-                javax.resource.spi.LazyEnlistableConnectionManager) {
+                jakarta.resource.spi.LazyEnlistableConnectionManager) {
             if (!((com.sun.appserv.connectors.internal.spi.ConnectionManager) cm).
                     getJndiName().endsWith(ConnectorConstants.PM_JNDI_SUFFIX) &&
                     !((com.sun.appserv.connectors.internal.spi.ConnectionManager) cm).
@@ -335,7 +335,7 @@ public abstract class AbstractDataSource implements javax.sql.DataSource, java.i
         con.setConnectionType(conType_);
         if (conType_ == ConnectionHolder.ConnectionType.LAZY_ASSOCIATABLE) {
             con.setLazyAssociatableConnectionManager(
-                    (javax.resource.spi.LazyAssociatableConnectionManager) cm);
+                    (jakarta.resource.spi.LazyAssociatableConnectionManager) cm);
         } else if (conType_ == ConnectionHolder.ConnectionType.LAZY_ENLISTABLE) {
             if (isNonTx) {
                 //if this is a getNonTxConnection call on the DataSource, we
@@ -343,7 +343,7 @@ public abstract class AbstractDataSource implements javax.sql.DataSource, java.i
                 con.setConnectionType(ConnectionHolder.ConnectionType.STANDARD);
             } else {
                 con.setLazyEnlistableConnectionManager(
-                        (javax.resource.spi.LazyEnlistableConnectionManager) cm);
+                        (jakarta.resource.spi.LazyEnlistableConnectionManager) cm);
             }
         }
     }

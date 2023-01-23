@@ -44,6 +44,7 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.v3.admin.cluster.ClusterCommandHelper;
 import com.sun.enterprise.v3.admin.cluster.Strings;
 import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
+import jakarta.inject.Inject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -51,7 +52,6 @@ import org.glassfish.api.admin.*;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Inject;
 import java.util.logging.Logger;
 
 /**
@@ -64,21 +64,21 @@ import java.util.logging.Logger;
 @Service(name = "stop-deployment-group")
 @PerLookup
 @RestEndpoints({
-    @RestEndpoint(configBean=DeploymentGroup.class,
-        opType=RestEndpoint.OpType.POST, 
-        path="stop-deployment-group", 
-        description="Stop Deployment Group",
-        params={
-            @RestParam(name="id", value="$parent")
-        })
+        @RestEndpoint(configBean = DeploymentGroup.class,
+                opType = RestEndpoint.OpType.POST,
+                path = "stop-deployment-group",
+                description = "Stop Deployment Group",
+                params = {
+                        @RestParam(name = "id", value = "$parent")
+                })
 })
 @Progress
-public class StopDeploymentGroupCommand implements AdminCommand{
+public class StopDeploymentGroupCommand implements AdminCommand {
 
-    @Param(optional=false, primary=true)
+    @Param(optional = false, primary = true)
     private String deploymentGroup;
 
-    @Param(optional=true, defaultValue="false")
+    @Param(optional = true, defaultValue = "false")
     private boolean kill = false;
 
     @Inject

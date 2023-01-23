@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.webservices;
 
@@ -47,8 +47,8 @@ import com.sun.enterprise.deployment.WebComponentDescriptor;
 import com.sun.enterprise.web.WebModule;
 import org.glassfish.api.invocation.InvocationManager;
 
-import javax.xml.ws.EndpointReference;
-import javax.xml.ws.handler.MessageContext;
+import jakarta.xml.ws.EndpointReference;
+import jakarta.xml.ws.handler.MessageContext;
 import java.security.Principal;
 import java.util.Set;
 import java.util.Iterator;

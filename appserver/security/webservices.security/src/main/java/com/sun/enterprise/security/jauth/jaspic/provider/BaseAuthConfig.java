@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.jauth.jaspic.provider;
 
 import java.lang.reflect.Method;
@@ -49,16 +49,16 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.xml.namespace.QName;
-import javax.xml.soap.MimeHeaders;
-import javax.xml.soap.Name;
-import javax.xml.soap.SOAPBody;
-import javax.xml.soap.SOAPElement;
-import javax.xml.soap.SOAPEnvelope;
-import javax.xml.soap.SOAPException;
-import javax.xml.soap.SOAPMessage;
-import javax.xml.soap.SOAPPart;
-import javax.xml.ws.handler.MessageContext;
-import javax.xml.ws.handler.soap.SOAPMessageContext;
+import jakarta.xml.soap.MimeHeaders;
+import jakarta.xml.soap.Name;
+import jakarta.xml.soap.SOAPBody;
+import jakarta.xml.soap.SOAPElement;
+import jakarta.xml.soap.SOAPEnvelope;
+import jakarta.xml.soap.SOAPException;
+import jakarta.xml.soap.SOAPMessage;
+import jakarta.xml.soap.SOAPPart;
+import jakarta.xml.ws.handler.MessageContext;
+import jakarta.xml.ws.handler.soap.SOAPMessageContext;
 
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.deployment.runtime.common.MessageDescriptor;
@@ -66,7 +66,6 @@ import com.sun.enterprise.deployment.runtime.common.MessageSecurityDescriptor;
 import com.sun.enterprise.deployment.runtime.common.ProtectionDescriptor;
 import com.sun.enterprise.security.jauth.AuthPolicy;
 import com.sun.enterprise.security.webservices.LogUtils;
-import com.sun.xml.rpc.spi.runtime.StreamingHandler;
 
 /**
  * This class is the container's base interface to the AuthConfig subsystem to get AuthContext
@@ -341,73 +340,6 @@ public class BaseAuthConfig {
         return rvalue;
     }
 
-    private Object getExplicitContextForOpCode(StreamingHandler handler, int opcode) throws ClassNotFoundException, NoSuchMethodException {
-
-        Object rvalue = null;
-
-        synchronized (contextLock) {
-
-            if (contextsForOpcodes_ == null && defaultContext_ == null) {
-
-                // one time initialization of the opcode to authContext array.
-
-                boolean onePolicyForAll = onePolicy_;
-
-                Method m = null;
-                for (int i = 0; i == 0 || m != null; i++) {
-                    if (i == 0) {
-                        contextsForOpcodes_ = new ArrayList();
-                    }
-                    if (handler != null) {
-                        m = handler.getMethodForOpcode(i);
-                    }
-                    if (m != null) {
-                        Object o = getContextForMethod(m);
-                        contextsForOpcodes_.add(o);
-
-                        // if we find a method that is not covered by a method
-                        // descriptor (i.e. has an implicit nullPolicy),
-                        // then we switch off onePolicyForAll (note that
-                        // ServerAuthConfigs with one policy being the
-                        // null policy, are not constructed.
-
-                        if (o == null) {
-                            onePolicyForAll = false;
-                        }
-                    }
-                }
-                if (onePolicyForAll && contextsForOpcodes_.size() > 0) {
-                    defaultContext_ = contextsForOpcodes_.get(0);
-                }
-            }
-            if (defaultContext_ != null) {
-                rvalue = defaultContext_;
-                if (logger.isLoggable(Level.FINE)) {
-                    logger.log(Level.FINE, "WSS: ForOpCode returning default_context: {0}", rvalue);
-                }
-            }
-        }
-
-        if (rvalue == null) {
-            if (opcode >= 0 && opcode < contextsForOpcodes_.size()) {
-                rvalue = contextsForOpcodes_.get(opcode);
-            } else if (opcode < 0) {
-                // we don't know the opcode, so lets try to see if
-                // there is a policy that applies to all opcodes.
-                rvalue = getContextForMethod(null);
-            }
-        }
-        return rvalue;
-    }
-
-    protected Object getContextForOpCode(StreamingHandler handler, int opcode) throws ClassNotFoundException, NoSuchMethodException {
-        Object rvalue = getExplicitContextForOpCode(handler, opcode);
-        if (rvalue != null && rvalue instanceof ExplicitNull) {
-            rvalue = null;
-        }
-        return rvalue;
-    }
-
     private static String getOpName(SOAPMessage message) {
 
         String rvalue = null;
@@ -554,69 +486,6 @@ public class BaseAuthConfig {
             rvalue = getContextForMethod(null);
 
         }
-        return rvalue;
-    }
-
-    protected Object getContext(StreamingHandler handler, SOAPMessage message) {
-
-        Object rvalue = null;
-
-        synchronized (contextLock) {
-            if (defaultContext_ != null) {
-                rvalue = defaultContext_;
-            }
-        }
-
-        if (rvalue == null) {
-
-            if (handler == null) {
-
-                // lack of handler precludes mapping to opcode, so we will
-                // look for an opName based mapping.
-
-                rvalue = getContextForMessage(message);
-
-            } else {
-
-                int opCode = handler.getOpcodeForRequestMessage(message);
-
-                if (opCode == -1) {
-
-                    // msg body is encrypted, and the best we can do is try
-                    // to return a policy that applies to all opcodes.
-
-                    rvalue = getContextForMethod(null);
-
-                } else {
-
-                    try {
-                        rvalue = getExplicitContextForOpCode(handler, opCode);
-
-                        // if unable to get context by opcode
-                        // see if a context was defined for the opName.
-
-                        if (rvalue == null) {
-
-                            rvalue = getContextForMessage(message);
-
-                        }
-                    } catch (ClassNotFoundException cnfe) {
-                        throw new RuntimeException(cnfe);
-                    } catch (NoSuchMethodException nsme) {
-                        throw new RuntimeException(nsme);
-                    }
-                }
-            }
-        }
-
-        if (rvalue != null && rvalue instanceof ExplicitNull) {
-            rvalue = null;
-        }
-
-        if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, "WSS: getContext returning: {0}", rvalue);
-        }
-
         return rvalue;
     }
 

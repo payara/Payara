@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.deployment;
 
@@ -54,7 +54,7 @@ import com.sun.enterprise.util.io.FileUtils;
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.security.common.Role;
 
-import javax.persistence.EntityManagerFactory;
+import jakarta.persistence.EntityManagerFactory;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
@@ -645,7 +645,9 @@ public abstract class BundleDescriptor extends RootDeploymentDescriptor implemen
         return DEPLOYMENT_DESCRIPTOR_DIR;
     }
 
-
+    public String getRawModuleID() {
+        return moduleID;
+    }
     /**
      * @return the wsdl directory location inside the archive file
      */

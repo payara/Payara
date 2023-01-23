@@ -8,16 +8,14 @@ Here are a few short steps to get you started...
 
 Payara Server currently supports the following Java Virtual Machines:
 
-* Azul Zulu JDK: 8 (u162+), 11 (11.0.5u10+), 17 (17.34/17.0.3+)
-* Oracle JDK: 8 (u162+), 11 (11.0.5+), 17 (17.0.3+)
-* Amazon Corretto: 8, 11 (11.0.5+), 17 (17.0.3+)
-* Adopt Open JDK: 8, 11 (11.0.5+), 17 (17.0.3+)
-* Adopt Open JDK with Eclipse Open J9: 8, 11 (11.0.5+), 17 (17.0.3+)
-* Any other JVM based on OpenJDK 8u162+, 11.0.5+ or 17.0.3+
+* Azul Zulu JDK: 11 (11.0.5u10+), 17 (17.34/17.0.3+)
+* Oracle JDK: 11 (11.0.5+), 17 (17.0.3+)
+* Amazon Corretto: 11 (11.0.5+), 17 (17.0.3+)
+* Adopt Open JDK: 11 (11.0.5+), 17 (17.0.3+)
+* Adopt Open JDK with Eclipse Open J9: 11 (11.0.5+), 17 (17.0.3+)
+* Any other JVM based on OpenJDK 11.0.5+ or 17.0.3+
 
 The Payara Platform runs on the x64 and arm64 variants of the above JVMs.
-
-TLS 1.3 is supported on JDK 8 with Azul Platform Core 1.8.222+, Open JDK 8u262+ based builds and any future LTS releases of the JDK (11, 17, and so on).
 
 1. Installing Payara Server
 ===========================
@@ -33,8 +31,8 @@ The default domain called 'domain1' is already installed and preconfigured.
 The 'asadmin' command-line utility is used to control and manage Payara Server (start, stop, configure, deploy applications, etc.).
 
 To start Payara Server, just go in the directory where Payara Server is located and type:
-        On Unix: payara5/bin/asadmin start-domain
-        On Windows: payara5\bin\asadmin start-domain
+        On Unix: payara6/bin/asadmin start-domain
+        On Windows: payara6\bin\asadmin start-domain
 
 After a few seconds, Payara Server will be up and ready to accept requests. The default 'domain1' domain is configured to listen on port 8080. In your browser, go to http://localhost:8080 to see the default landing page.
 
@@ -45,8 +43,8 @@ To manage Payara Server, just go to web administration console: http://localhost
 =========================
 
 To stop Payara Server, just issue the following command:
-        On Unix: payara5/bin/asadmin stop-domain
-        On Windows: payara5\bin\asadmin stop-domain
+        On Unix: payara6/bin/asadmin stop-domain
+        On Windows: payara6\bin\asadmin stop-domain
 
 
 4. Where to go next?

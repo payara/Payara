@@ -54,7 +54,7 @@ import org.glassfish.logging.annotation.LoggerInfo;
 public class GrizzlyConfig {
 
     @LoggerInfo(subsystem = "NETCONFIG", description = "Network config", publish = false)
-    private static final String LOGGER_NAME = "javax.enterprise.network.config";
+    private static final String LOGGER_NAME = "jakarta.enterprise.network.config";
     
     private static final Logger LOGGER = Logger.getLogger(LOGGER_NAME);
     private final NetworkConfig config;

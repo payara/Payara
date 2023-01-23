@@ -37,12 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.webservices;
 
 import static java.util.logging.Level.WARNING;
-import static javax.xml.ws.http.HTTPBinding.HTTP_BINDING;
+import static jakarta.xml.ws.http.HTTPBinding.HTTP_BINDING;
 import static org.glassfish.webservices.LogUtils.SERVLET_ENDPOINT_FAILURE;
 
 import java.io.IOException;
@@ -54,13 +54,13 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.logging.Logger;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.xml.ws.WebServiceException;
-import javax.xml.ws.http.HTTPBinding;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.xml.ws.WebServiceException;
+import jakarta.xml.ws.http.HTTPBinding;
 
 import org.glassfish.external.probe.provider.annotations.Probe;
 import org.glassfish.external.probe.provider.annotations.ProbeParam;

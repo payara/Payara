@@ -39,7 +39,7 @@
  */
 package fish.payara.samples.resource.fish6238;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 import org.eclipse.microprofile.faulttolerance.CircuitBreaker;
 import org.eclipse.microprofile.faulttolerance.Fallback;
 

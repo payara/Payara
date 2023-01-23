@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2021] [Payara Foundation]
 
 package com.sun.enterprise.connectors.inbound;
 
@@ -49,9 +49,9 @@ import java.util.Set;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.inject.Inject;
-import javax.inject.Provider;
-import javax.resource.spi.ActivationSpec;
+import jakarta.inject.Inject;
+import jakarta.inject.Provider;
+import jakarta.resource.spi.ActivationSpec;
 import javax.transaction.xa.XAResource;
 
 import com.sun.appserv.connectors.internal.api.ConnectorConstants;
@@ -183,7 +183,7 @@ public class InboundRecoveryHandler implements RecoveryResourceHandler {
                     isSystemJmsRA = true;
                 }
 
-                javax.resource.spi.ResourceAdapter resourceAdapter = activeInboundRA
+                jakarta.resource.spi.ResourceAdapter resourceAdapter = activeInboundRA
                         .getResourceAdapter();
                 // activationSpecList represents the ActivationSpec[] that would be
                 // sent to the getXAResources() method.

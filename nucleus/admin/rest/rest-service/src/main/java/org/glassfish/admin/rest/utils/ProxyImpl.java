@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or affiliates]
 
 package org.glassfish.admin.rest.utils;
 
@@ -47,14 +47,14 @@ import java.net.URL;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
-import javax.ws.rs.core.UriInfo;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.client.WebTarget;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriBuilder;
+import jakarta.ws.rs.core.UriInfo;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
@@ -68,7 +68,7 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.SecureAdmin;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.security.ssl.SSLUtils;
-import javax.ws.rs.client.Invocation.Builder;
+import jakarta.ws.rs.client.Invocation.Builder;
 
 /**
  * @author Mitesh Meswani
@@ -93,7 +93,7 @@ public abstract class ProxyImpl implements Proxy {
                 
                 Response response = builder.get(Response.class); //TODO if the target server is down, we get ClientResponseException. Need to handle it
                 Response.Status status = Response.Status.fromStatusCode(response.getStatus());
-                if (status.getFamily() == javax.ws.rs.core.Response.Status.Family.SUCCESSFUL) {
+                if (status.getFamily() == jakarta.ws.rs.core.Response.Status.Family.SUCCESSFUL) {
                     String jsonDoc = response.readEntity(String.class);
                     Map responseMap = MarshallingUtils.buildMapFromDocument(jsonDoc);
                     Map resultExtraProperties = (Map) responseMap.get("extraProperties");

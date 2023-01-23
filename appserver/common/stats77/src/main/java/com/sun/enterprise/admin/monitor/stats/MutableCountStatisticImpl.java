@@ -41,8 +41,8 @@
 
 package com.sun.enterprise.admin.monitor.stats;
 
-import javax.management.j2ee.statistics.CountStatistic;
-import javax.management.j2ee.statistics.Statistic;
+import org.glassfish.j2ee.statistics.CountStatistic;
+import org.glassfish.j2ee.statistics.Statistic;
 
 /** An implementation of MutableCountStatistic that provides ways to change the state externally through mutators.
  * Convenience class that is useful for components that gather the statistical data.

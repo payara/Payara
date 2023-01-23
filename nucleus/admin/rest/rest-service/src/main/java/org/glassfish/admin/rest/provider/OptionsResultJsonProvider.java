@@ -38,23 +38,23 @@
  * holder.
  *
  */
-// Portions Copyright [2017-2018] Payara Foundation and/or affiliates
+// Portions Copyright [2017-2021] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.rest.provider;
 
 import org.glassfish.admin.rest.results.OptionsResult;
 
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.ext.Provider;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.ext.Provider;
 import java.util.Set;
 import java.util.logging.Level;
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonException;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonException;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 import org.glassfish.admin.rest.RestLogging;
 
 

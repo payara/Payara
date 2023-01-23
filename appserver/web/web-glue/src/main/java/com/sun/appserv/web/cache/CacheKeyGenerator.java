@@ -40,8 +40,8 @@
 
 package com.sun.appserv.web.cache;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.HttpServletRequest;
 
 /** CacheKeyGenerator: a helper interface to generate the key that is 
  *  used to cache this request.

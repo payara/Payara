@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation]
+// Portions Copyright [2016-2021] [Payara Foundation]
 
 package org.glassfish.deployment.admin;
 
@@ -68,8 +68,8 @@ import org.glassfish.deployment.common.DeploymentUtils;
 import com.sun.enterprise.deployment.deploy.shared.Util;
 import org.glassfish.deployment.versioning.VersioningUtils;
 import org.jvnet.hk2.annotations.Service;
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 
 import org.glassfish.hk2.api.PerLookup;
@@ -85,7 +85,7 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.v3.server.ApplicationLoaderService;
 import java.io.FileOutputStream;
 import java.util.Collection;
-import javax.inject.Provider;
+import jakarta.inject.Provider;
 import org.glassfish.api.admin.AccessRequired.AccessCheck;
 import org.glassfish.api.admin.AdminCommandSecurity;
 import org.glassfish.api.admin.RestEndpoint;

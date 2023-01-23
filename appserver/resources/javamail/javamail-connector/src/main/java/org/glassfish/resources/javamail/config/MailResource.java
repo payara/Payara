@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2021] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.resources.javamail.config;
@@ -62,7 +62,7 @@ import org.glassfish.api.admin.RestRedirect;
 
 import org.glassfish.quality.ToDo;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 import com.sun.enterprise.config.serverbeans.customvalidators.JavaClassName;
 
@@ -80,7 +80,7 @@ import com.sun.enterprise.config.serverbeans.customvalidators.JavaClassName;
 @ResourceTypeOrder(deploymentOrder= ResourceDeploymentOrder.MAIL_RESOURCE)
 @UniqueResourceNameConstraint(message="{resourcename.isnot.unique}", payload=MailResource.class)
 /**
- * The mail-resource element describes a javax.mail.Session resource 
+ * The mail-resource element describes a jakarta.mail.Session resource 
  */
 public interface MailResource extends ConfigBeanProxy, Resource, PropertyBag, BindableResource {
 

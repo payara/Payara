@@ -42,7 +42,7 @@ package com.sun.enterprise.web;
 
 import com.sun.appserv.ProxyHandler;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.Charset;
 import java.security.cert.CertificateException;

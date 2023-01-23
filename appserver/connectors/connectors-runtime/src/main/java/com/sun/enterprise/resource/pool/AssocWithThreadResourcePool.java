@@ -50,7 +50,7 @@ import com.sun.enterprise.resource.pool.resizer.AssocWithThreadPoolResizer;
 import com.sun.enterprise.resource.pool.resizer.Resizer;
 import org.glassfish.resourcebase.resources.api.PoolInfo;
 
-import javax.transaction.Transaction;
+import jakarta.transaction.Transaction;
 import java.util.Hashtable;
 
 /**

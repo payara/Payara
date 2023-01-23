@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.web.deployment.annotation.handlers;
 
@@ -57,9 +57,9 @@ import org.glassfish.web.deployment.descriptor.ServletFilterDescriptor;
 import org.glassfish.web.deployment.descriptor.ServletFilterMappingDescriptor;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.servlet.DispatcherType;
-import javax.servlet.annotation.WebFilter;
-import javax.servlet.annotation.WebInitParam;
+import jakarta.servlet.DispatcherType;
+import jakarta.servlet.annotation.WebFilter;
+import jakarta.servlet.annotation.WebInitParam;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -68,7 +68,7 @@ import java.util.logging.Level;
 
 /**
  * This handler is responsible in handling
- * javax.servlet.annotation.WebFilter.
+ * jakarta.servlet.annotation.WebFilter.
  *
  * @author Shing Wai Chan
  */
@@ -103,12 +103,12 @@ public class WebFilterHandler extends AbstractWebHandler {
             throws AnnotationProcessorException {
 
         Class filterClass = (Class)ainfo.getAnnotatedElement();
-        if (!javax.servlet.Filter.class.isAssignableFrom(filterClass)) {
+        if (!jakarta.servlet.Filter.class.isAssignableFrom(filterClass)) {
             log(Level.SEVERE, ainfo,
                 localStrings.getLocalString(
                 "web.deployment.annotation.handlers.needtoimpl",
                 "The Class {0} having annotation {1} need to implement the interface {2}.",
-                new Object[] { filterClass.getName(), WebFilter.class.getName(), javax.servlet.Filter.class.getName() }));
+                new Object[] { filterClass.getName(), WebFilter.class.getName(), jakarta.servlet.Filter.class.getName() }));
             return getDefaultFailedResult();
         }
 

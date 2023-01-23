@@ -58,7 +58,7 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 /**
  * List Password Aliases Command

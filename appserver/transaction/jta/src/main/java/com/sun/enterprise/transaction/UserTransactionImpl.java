@@ -48,7 +48,7 @@ import java.util.logging.*;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.transaction.*;
+import jakarta.transaction.*;
 
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.logging.LogDomains;
@@ -60,7 +60,7 @@ import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.internal.api.Globals;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.ContractsProvided;
@@ -68,7 +68,7 @@ import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
 
 /** 
- * This class implements javax.transaction.UserTransaction .
+ * This class implements jakarta.transaction.UserTransaction .
  * Its methods are called from TX_BEAN_MANAGED EJB code.
  * Most of its methods just delegate to the TransactionManager
  * after doing some EJB Container-related steps.

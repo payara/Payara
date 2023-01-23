@@ -47,7 +47,7 @@ package fish.payara.cluster;
 public enum DistributedLockType {
     /**
      * Inherits the distributed locking behavior of the annotated class to the extent possible,
-     * for example, @javax.ejb.Singleton classes are locked by default, so distributed locking
+     * for example, @jakarta.ejb.Singleton classes are locked by default, so distributed locking
      * would be performed on those
      */
     INHERIT,

@@ -52,7 +52,7 @@ public class RestClientLogging {
     @LogMessagesResourceBundle
     public static final String SHARED_LOGMESSAGE_RESOURCE = "org.glassfish.admin.rest.client.utils.LogMessages";
     @LoggerInfo(subsystem = "REST", description = "REST Client Logger", publish = true)
-    public static final String REST_CLIENT_LOGGER = "javax.enterprise.admin.rest.client";
+    public static final String REST_CLIENT_LOGGER = "jakarta.enterprise.admin.rest.client";
     public static final Logger logger = Logger.getLogger(REST_CLIENT_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
     @LogMessageInfo(
             message = "An unsupported encoding was requested: {0}.",

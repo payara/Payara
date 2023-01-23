@@ -52,7 +52,7 @@ public class Logging {
     @LogMessagesResourceBundle
     public static final String SHARED_LOGMESSAGE_RESOURCE = "org.glassfish.admin.restconnector.LogMessages";
     @LoggerInfo(subsystem = "RSTCN", description = "REST Connector Logger", publish = true)
-    public static final String REST_CONNECTOR_LOGGER = "javax.enterprise.admin.rest.connector";
+    public static final String REST_CONNECTOR_LOGGER = "jakarta.enterprise.admin.rest.connector";
     public static final Logger logger = Logger.getLogger(REST_CONNECTOR_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
     
     @LogMessageInfo(

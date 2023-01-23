@@ -37,14 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates]
 package org.glassfish.ejb.mdb.deployment.annotation.handlers;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.util.logging.Level;
-import javax.ejb.ActivationConfigProperty;
-import javax.ejb.MessageDriven;
+import jakarta.ejb.ActivationConfigProperty;
+import jakarta.ejb.MessageDriven;
 
 import com.sun.enterprise.deployment.DescriptorConstants;
 import org.glassfish.ejb.deployment.annotation.handlers.AbstractEjbHandler;
@@ -64,7 +64,7 @@ import org.glassfish.ejb.deployment.descriptor.runtime.IASEjbExtraDescriptors;
 import org.jvnet.hk2.annotations.Service;
 
 /**
- * This handler is responsible for handling the javax.ejb.MessageDriven
+ * This handler is responsible for handling the jakarta.ejb.MessageDriven
  *
  * @author Shing Wai Chan
  */
@@ -221,7 +221,7 @@ public class MessageDrivenHandler extends AbstractEjbHandler {
         // if it's still null, check whether it's defined through
         // deployment descriptor
         // note: the descriptor class has a default value 
-        // for the interface: javax.jms.MessageListener
+        // for the interface: jakarta.jms.MessageListener
         // so intfName after this set, will never be null
         if (intfName == null) {
             intfName = msgEjbDesc.getMessageListenerType();

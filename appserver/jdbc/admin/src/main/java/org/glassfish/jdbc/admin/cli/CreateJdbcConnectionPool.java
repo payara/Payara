@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright (c) 2020 Payara Foundation and/or affiliates
+// Portions Copyright (c) 2020-2021 Payara Foundation and/or affiliates
 
 package org.glassfish.jdbc.admin.cli;
 
@@ -54,7 +54,7 @@ import org.glassfish.resources.admin.cli.ResourceConstants;
 import org.glassfish.resourcebase.resources.api.ResourceStatus;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.util.HashMap;
 import java.util.Properties;
 

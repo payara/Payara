@@ -37,12 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2021] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.admin.rest.testing;
 
-import javax.json.JsonValue;
+import jakarta.json.JsonValue;
 
 public abstract class Value {
   abstract JsonValue getJsonValue() throws Exception;

@@ -41,7 +41,7 @@ package fish.payara.nucleus.microprofile.config.converters;
 
 import java.util.OptionalLong;
 
-import javax.annotation.Priority;
+import jakarta.annotation.Priority;
 
 import org.eclipse.microprofile.config.spi.Converter;
 

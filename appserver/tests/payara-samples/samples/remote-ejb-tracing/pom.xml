@@ -48,7 +48,7 @@
     <parent>
         <groupId>fish.payara.samples</groupId>
         <artifactId>payara-samples-profiled-tests</artifactId>
-        <version>5.2023.1-SNAPSHOT</version>
+        <version>6.2023.2-SNAPSHOT</version>
     </parent>
 
     <properties>
@@ -63,6 +63,12 @@
         </dependency>
 
         <!-- Make sure all dependencies are marked as optional so nothing is transitively pulled into the client test -->
+        <dependency>
+            <groupId>org.glassfish.jersey.inject</groupId>
+            <artifactId>jersey-hk2</artifactId>
+            <scope>test</scope>
+            <optional>true</optional>
+        </dependency>
         <dependency>
             <groupId>io.opentracing</groupId>
             <artifactId>opentracing-api</artifactId>
@@ -88,23 +94,23 @@
             <scope>test</scope>
             <exclusions>
                 <exclusion>
-                    <groupId>fish.payara.server.internal.packager</groupId>
+                    <groupId>fish.payara.server.core.packager</groupId>
                     <artifactId>ldapbp-repackaged</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId> fish.payara.server.internal.packager</groupId>
+                    <groupId>fish.payara.server.core.packager</groupId>
                     <artifactId>libpam4j-repackaged</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>fish.payara.server.internal.packager</groupId>
+                    <groupId>fish.payara.server.core.packager</groupId>
                     <artifactId>tiger-types</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>fish.payara.server.internal.packager</groupId>
+                    <groupId>fish.payara.server.core.packager</groupId>
                     <artifactId>jmxremote_optional-repackaged</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>fish.payara.server.internal.packager</groupId>
+                    <groupId>fish.payara.server.core.packager</groupId>
                     <artifactId>opentracing-repackaged</artifactId>
                 </exclusion>
             </exclusions>

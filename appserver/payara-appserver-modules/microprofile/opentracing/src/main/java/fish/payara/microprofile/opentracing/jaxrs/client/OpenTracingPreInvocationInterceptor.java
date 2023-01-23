@@ -43,7 +43,7 @@ import fish.payara.nucleus.requesttracing.domain.PropagationHeaders;
 import fish.payara.requesttracing.jaxrs.client.SpanPropagator;
 import org.glassfish.jersey.client.spi.PreInvocationInterceptor;
 
-import javax.ws.rs.client.ClientRequestContext;
+import jakarta.ws.rs.client.ClientRequestContext;
 
 /**
  * Interceptor to add SpanContext and HTTP HEADER for propagation to JAX-RS Client calls.

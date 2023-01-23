@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.jacc;
 
 import com.sun.enterprise.deployment.SecurityRoleDescriptor;
@@ -46,7 +46,7 @@ import com.sun.enterprise.deployment.WebComponentDescriptor;
 import com.sun.enterprise.deployment.web.*;
 import org.glassfish.security.common.Role;
 
-import javax.security.jacc.*;
+import jakarta.security.jacc.*;
 import java.security.Permission;
 import java.security.Permissions;
 import java.util.*;

@@ -58,7 +58,7 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import java.io.File;
 import com.sun.enterprise.config.serverbeans.MonitoringService;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 /**
  * @author Sreenivas Munnangi (3.0)

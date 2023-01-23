@@ -41,7 +41,7 @@
 package org.glassfish.ejb.deployment.annotation.handlers;
 
 import java.lang.annotation.Annotation;
-import javax.ejb.Timeout;
+import jakarta.ejb.Timeout;
 
 import com.sun.enterprise.deployment.annotation.context.EjbContext;
 import org.glassfish.apf.AnnotationHandlerFor;
@@ -51,7 +51,7 @@ import org.glassfish.apf.HandlerProcessingResult;
 import org.jvnet.hk2.annotations.Service;
 
 /**
- * This handler is responsible for handling the javax.ejb.Timeout attribute
+ * This handler is responsible for handling the jakarta.ejb.Timeout attribute
  *
  */
 @Service

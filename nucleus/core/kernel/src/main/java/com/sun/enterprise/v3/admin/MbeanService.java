@@ -43,7 +43,7 @@ package com.sun.enterprise.v3.admin;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import javax.management.InstanceNotFoundException;
 
 import org.glassfish.api.StartupRunLevel;

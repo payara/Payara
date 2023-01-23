@@ -41,8 +41,8 @@
 
 package com.sun.ejb.base.stats;
 
-import javax.management.j2ee.statistics.CountStatistic;
-import javax.management.j2ee.statistics.TimeStatistic;
+import org.glassfish.j2ee.statistics.CountStatistic;
+import org.glassfish.j2ee.statistics.TimeStatistic;
 
 import com.sun.ejb.spi.stats.MonitorableSFSBStoreManager;
 

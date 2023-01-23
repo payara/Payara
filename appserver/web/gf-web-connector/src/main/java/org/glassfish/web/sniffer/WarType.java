@@ -51,7 +51,7 @@ import org.jvnet.hk2.annotations.Service;
  * @author sanjeeb.sahoo@oracle.com
  */
 @Service(name = WarType.ARCHIVE_TYPE)
-@javax.inject.Singleton
+@jakarta.inject.Singleton
 public class WarType extends ArchiveType {
     /**
      * same as what's returned by {@link javax.enterprise.deploy.shared.ModuleType#WAR#toString()}

@@ -56,9 +56,9 @@ import com.sun.enterprise.deployment.xml.DeclaredPermissionsTagNames;
 
 public class PermissionsNode extends AbstractBundleNode<PermissionsDescriptor> {
 
-    public final static String SCHEMA_ID = "permissions_7.xsd";
-    public final static String SPEC_VERSION = "7";
-
+    public final static String SCHEMA_ID = "permissions_9.xsd";
+    public final static String SPEC_VERSION = "9";
+    
     private final static List<String> systemIDs = initSystemIDs();
 
     // The XML tag associated with this Node

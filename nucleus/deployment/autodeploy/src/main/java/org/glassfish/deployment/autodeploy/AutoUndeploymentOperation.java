@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2021] Payara Foundation and/or affiliates
 package org.glassfish.deployment.autodeploy;
 
 import static com.sun.enterprise.util.io.FileUtils.deleteFile;
@@ -49,8 +49,8 @@ import static org.glassfish.deployment.common.DeploymentProperties.DEFAULT_APP_N
 import java.io.File;
 import java.util.Properties;
 
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.deployment.autodeploy.AutoDeployer.AutodeploymentStatus;

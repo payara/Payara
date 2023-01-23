@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates]
 package org.glassfish.web.ha;
 
 import com.sun.enterprise.config.serverbeans.AvailabilityService;
@@ -45,9 +45,9 @@ import com.sun.enterprise.config.serverbeans.Config;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.security.common.HAUtil;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.jvnet.hk2.annotations.Optional;
-import javax.inject.Named;
+import jakarta.inject.Named;
 
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;

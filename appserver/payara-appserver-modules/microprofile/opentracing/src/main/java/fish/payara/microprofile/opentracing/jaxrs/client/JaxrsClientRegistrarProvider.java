@@ -41,7 +41,7 @@ package fish.payara.microprofile.opentracing.jaxrs.client;
 
 import java.util.concurrent.ExecutorService;
 
-import javax.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.client.ClientBuilder;
 
 import org.eclipse.microprofile.opentracing.ClientTracingRegistrarProvider;
 

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2021] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.connectors.deployment.annotation.handlers;
 
@@ -52,11 +52,11 @@ import org.glassfish.apf.*;
 import org.glassfish.apf.impl.HandlerProcessingResultImpl;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.resource.spi.AuthenticationMechanism;
-import javax.resource.spi.Connector;
-import javax.resource.spi.SecurityPermission;
-import javax.resource.spi.TransactionSupport;
-import javax.resource.spi.work.WorkContext;
+import jakarta.resource.spi.AuthenticationMechanism;
+import jakarta.resource.spi.Connector;
+import jakarta.resource.spi.SecurityPermission;
+import jakarta.resource.spi.TransactionSupport;
+import jakarta.resource.spi.work.WorkContext;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.List;
@@ -271,7 +271,7 @@ public class ConnectorAnnotationHandler extends AbstractHandler {
     }
 
     public static boolean isResourceAdapterClass(Class claz){
-        return javax.resource.spi.ResourceAdapter.class.isAssignableFrom(claz);
+        return jakarta.resource.spi.ResourceAdapter.class.isAssignableFrom(claz);
     }
 
     public static String convertStringArrayToStringBuilder(String[] stringArray) {

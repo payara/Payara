@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2019-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -62,7 +62,7 @@ import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 /**
  * Asadmin command for creating a Docker Node.
@@ -91,7 +91,7 @@ public class CreateNodeDockerCommand implements AdminCommand {
     @Param(name = NodeUtils.PARAM_NODEDIR, optional = true)
     String nodedir;
 
-    @Param(name = NodeUtils.PARAM_INSTALLDIR, optional = true, defaultValue = "/opt/payara/payara5")
+    @Param(name = NodeUtils.PARAM_INSTALLDIR, optional = true, defaultValue = "/opt/payara/payara6")
     String installdir;
 
     @Param(name = "dockerPasswordFile", alias = "dockerpasswordfile")

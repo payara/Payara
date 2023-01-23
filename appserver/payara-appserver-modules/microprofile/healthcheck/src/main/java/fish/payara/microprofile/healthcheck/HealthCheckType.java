@@ -42,7 +42,7 @@ package fish.payara.microprofile.healthcheck;
 import java.lang.annotation.Annotation;
 import java.util.Set;
 
-import javax.enterprise.util.AnnotationLiteral;
+import jakarta.enterprise.util.AnnotationLiteral;
 
 import org.eclipse.microprofile.health.Liveness;
 import org.eclipse.microprofile.health.Readiness;

@@ -40,8 +40,8 @@
 package org.glassfish.admin.restconnector;
 
 import com.sun.enterprise.config.serverbeans.Config;
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.container.Adapter;
 import org.jvnet.hk2.annotations.Service;

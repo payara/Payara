@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2019-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -50,9 +50,9 @@ import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.core.Configuration;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.core.Configuration;
 import java.net.URI;
 import java.net.URL;
 import java.security.KeyStore;
@@ -64,12 +64,12 @@ import java.util.logging.Logger;
 import static fish.payara.ejb.http.client.RemoteEJBContextFactory.*;
 import static java.util.concurrent.TimeUnit.MICROSECONDS;
 import java.util.logging.Level;
-import javax.ws.rs.client.ClientRequestFilter;
-import javax.ws.rs.client.ClientResponseFilter;
-import javax.ws.rs.core.Form;
-import static javax.ws.rs.core.SecurityContext.BASIC_AUTH;
-import static javax.ws.rs.core.SecurityContext.DIGEST_AUTH;
-import static javax.ws.rs.core.SecurityContext.FORM_AUTH;
+import jakarta.ws.rs.client.ClientRequestFilter;
+import jakarta.ws.rs.client.ClientResponseFilter;
+import jakarta.ws.rs.core.Form;
+import static jakarta.ws.rs.core.SecurityContext.BASIC_AUTH;
+import static jakarta.ws.rs.core.SecurityContext.DIGEST_AUTH;
+import static jakarta.ws.rs.core.SecurityContext.FORM_AUTH;
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 
 /**

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates.]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates.]
 
 package com.sun.enterprise.deployment.annotation.impl;
 
@@ -49,7 +49,7 @@ import java.util.zip.ZipException;
 import org.glassfish.apf.Scanner;
 import org.glassfish.apf.impl.JavaEEScanner;
 import org.glassfish.hk2.classmodel.reflect.*;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 
 import java.io.File;

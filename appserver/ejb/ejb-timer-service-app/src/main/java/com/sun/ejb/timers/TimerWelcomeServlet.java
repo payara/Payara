@@ -37,16 +37,16 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.timers;
 
 import java.io.*;
 import java.util.Set;
 
-import javax.servlet.*;
-import javax.ejb.*;
-import javax.servlet.http.*;
+import jakarta.servlet.*;
+import jakarta.ejb.*;
+import jakarta.servlet.http.*;
 
 import org.glassfish.ejb.persistent.timer.TimerLocal;
 import com.sun.ejb.containers.EJBTimerService;

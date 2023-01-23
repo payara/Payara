@@ -43,7 +43,7 @@ package org.glassfish.persistence.jpa;
 import org.glassfish.api.deployment.ApplicationContainer;
 import org.glassfish.api.deployment.ApplicationContext;
 
-import javax.persistence.EntityManagerFactory;
+import jakarta.persistence.EntityManagerFactory;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;

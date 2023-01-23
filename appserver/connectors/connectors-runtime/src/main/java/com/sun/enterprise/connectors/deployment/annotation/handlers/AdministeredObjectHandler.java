@@ -46,8 +46,8 @@ import com.sun.enterprise.deployment.ConnectorDescriptor;
 import com.sun.enterprise.deployment.AdminObject;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 
-import javax.resource.spi.AdministeredObject;
-import javax.resource.spi.ResourceAdapterAssociation;
+import jakarta.resource.spi.AdministeredObject;
+import jakarta.resource.spi.ResourceAdapterAssociation;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.List;

@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 package org.apache.catalina.connector;
 
 import fish.payara.nucleus.healthcheck.stuck.StuckThreadsStore;
@@ -75,8 +75,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.servlet.ReadListener;
-import javax.servlet.http.WebConnection;
+import jakarta.servlet.ReadListener;
+import jakarta.servlet.http.WebConnection;
 
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import org.apache.catalina.ContainerEvent;
@@ -96,7 +96,7 @@ import org.glassfish.tyrus.servlet.TyrusHttpUpgradeHandler;
  *
  * @author Remy Maucherat
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 public class InputBuffer extends Reader implements ByteInputChannel, CharChunk.CharInputChannel, CharChunk.CharOutputChannel {
 
     private static final Logger log = LogFacade.getLogger();
@@ -438,7 +438,6 @@ public class InputBuffer extends Reader implements ByteInputChannel, CharChunk.C
             } else {
                 oldCL = Thread.currentThread().getContextClassLoader();
             }
-
             try {
                 Context context = request.getContext();
                 ClassLoader newCL = context.getLoader().getClassLoader();

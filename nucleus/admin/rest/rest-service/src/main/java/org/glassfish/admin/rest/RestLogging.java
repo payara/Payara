@@ -53,7 +53,7 @@ public class RestLogging {
     @LogMessagesResourceBundle
     public static final String SHARED_LOGMESSAGE_RESOURCE = "org.glassfish.admin.rest.LogMessages";
     @LoggerInfo(subsystem = "REST", description = "Main REST Logger", publish = true)
-    public static final String REST_MAIN_LOGGER = "javax.enterprise.admin.rest";
+    public static final String REST_MAIN_LOGGER = "jakarta.enterprise.admin.rest";
     public static final Logger restLogger = Logger.getLogger(REST_MAIN_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
     @LogMessageInfo(
             message = "Listening to REST requests at context: {0}/domain.",

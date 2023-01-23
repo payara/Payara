@@ -88,7 +88,7 @@ public interface MessageBeanProtocolManager {
      * on message delivery.
      *
      * @param method One of the methods used to deliver messages, e.g.
-     *               onMessage method for javax.jms.MessageListener.
+     *               onMessage method for jakarta.jms.MessageListener.
      *               Note that if the <code>method</code> is not one 
      *               of the methods for message delivery, the behavior 
      *               of this method is not defined.

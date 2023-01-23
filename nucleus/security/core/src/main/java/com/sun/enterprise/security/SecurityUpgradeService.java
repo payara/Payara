@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2021] Payara Foudation and/or affiliates
+// Portions Copyright [2021-2022] Payara Foudation and/or affiliates
 
 package com.sun.enterprise.security;
 
@@ -49,7 +49,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.admin.config.ConfigurationUpgrade;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PostConstruct;
 import org.jvnet.hk2.config.ConfigSupport;
@@ -59,13 +59,13 @@ import org.jvnet.hk2.config.types.Property;
 
 
 /**
- *The only thing that needs to added Extra for SecurityService migration
- * is the addition of the new JACC provider. This would be required when
- * migrating from V2, for V3-Prelude it is already present.
+ * The only thing that needs to added Extra for SecurityService migration is the
+ * addition of the new JACC provider. This would be required when migrating from
+ * V2, for V3-Prelude it is already present.
  *
- * The rest of the security related upgrade is handled implicitly by the actions of the
- * upgrade service itself.
- * 
+ * The rest of the security related upgrade is handled implicitly by the actions
+ * of the upgrade service itself.
+ *
  */
 
 @Service
@@ -81,8 +81,6 @@ public class SecurityUpgradeService implements ConfigurationUpgrade, PostConstru
     private static final String DIR_CONFIG = "config";
     private static final String JKS = ".jks";
     private static final String NSS = ".db";
-  //  private static final String KEYSTORE = "keystore.jks";
-  //  private static final String TRUSTSTORE = "cacerts.jks";
 
     private static final String JDBC_REALM_CLASSNAME = "com.sun.enterprise.security.ee.auth.realm.jdbc.JDBCRealm";
     public static final String PARAM_DIGEST_ALGORITHM = "digest-algorithm";
@@ -101,12 +99,10 @@ public class SecurityUpgradeService implements ConfigurationUpgrade, PostConstru
         //Clear up the old policy files for applications
         String instanceRoot = env.getInstanceRoot().getAbsolutePath();
         File genPolicyDir = new File(instanceRoot, DIR_GENERATED_POLICY);
-        if(genPolicyDir != null) {
-            File[] applicationDirs = genPolicyDir.listFiles();
-            if(applicationDirs != null) {
-                for(File policyDir:applicationDirs) {
-                    deleteFile(policyDir);
-                }
+        File[] applicationDirs = genPolicyDir.listFiles();
+        if (applicationDirs != null) {
+            for (File policyDir : applicationDirs) {
+                deleteFile(policyDir);
             }
         }
 
@@ -127,14 +123,12 @@ public class SecurityUpgradeService implements ConfigurationUpgrade, PostConstru
                                 digestAlgoProp.setValue("MD5");
                             }
                         } else {
-                            ConfigSupport.apply(new SingleConfigCode<AuthRealm>() {
-                                public Object run(AuthRealm updatedAuthRealm) throws PropertyVetoException, TransactionFailure {
-                                    Property prop1 = updatedAuthRealm.createChild(Property.class);
-                                    prop1.setName(PARAM_DIGEST_ALGORITHM);
-                                    prop1.setValue("MD5");
-                                    updatedAuthRealm.getProperty().add(prop1);
-                                    return null;
-                                }
+                            ConfigSupport.apply(updatedAuthRealm -> {
+                                Property prop1 = updatedAuthRealm.createChild(Property.class);
+                                prop1.setName(PARAM_DIGEST_ALGORITHM);
+                                prop1.setValue("MD5");
+                                updatedAuthRealm.getProperty().add(prop1);
+                                return null;
                             }, authRealm);
                         }
                     }
@@ -185,22 +179,19 @@ public class SecurityUpgradeService implements ConfigurationUpgrade, PostConstru
         try {
             List<JaccProvider> jaccProviders = securityService.getJaccProvider();
             for (JaccProvider jacc : jaccProviders) {
-                if ("com.sun.enterprise.security.jacc.provider.SimplePolicyConfigurationFactory".equals(jacc.getPolicyConfigurationFactoryProvider())) {
+                if ("fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl".equals(jacc.getPolicyConfigurationFactoryProvider())) {
                     //simple policy provider already present
                     return;
                 }
             }
-            ConfigSupport.apply(new SingleConfigCode<SecurityService>() {
-                @Override
-                public Object run(SecurityService secServ) throws PropertyVetoException, TransactionFailure {
-                    JaccProvider jacc = secServ.createChild(JaccProvider.class);
-                    //add the simple provider to the domain's security service
-                    jacc.setName("simple");
-                    jacc.setPolicyConfigurationFactoryProvider("com.sun.enterprise.security.jacc.provider.SimplePolicyConfigurationFactory");
-                    jacc.setPolicyProvider("com.sun.enterprise.security.jacc.provider.SimplePolicyProvider");
-                    secServ.getJaccProvider().add(jacc);
-                    return secServ;
-                }
+            ConfigSupport.apply(secServ -> {
+                JaccProvider jacc = secServ.createChild(JaccProvider.class);
+                //add the simple provider to the domain's security service
+                jacc.setName("simple");
+                jacc.setPolicyConfigurationFactoryProvider("fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl");
+                jacc.setPolicyProvider("fish.payara.security.jacc.provider.PolicyProviderImpl");
+                secServ.getJaccProvider().add(jacc);
+                return secServ;
             }, securityService);
         } catch (TransactionFailure ex) {
             Logger.getAnonymousLogger().log(Level.SEVERE, null, ex);

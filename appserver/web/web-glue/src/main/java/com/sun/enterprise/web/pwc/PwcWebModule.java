@@ -138,7 +138,7 @@ public abstract class PwcWebModule extends StandardContext {
      * <tt>ServletContext</tt>.
      */
     @Override
-    public synchronized javax.servlet.SessionCookieConfig getSessionCookieConfig() {
+    public synchronized jakarta.servlet.SessionCookieConfig getSessionCookieConfig() {
         if (webSessionCookieConfig == null) {
             webSessionCookieConfig = new WebSessionCookieConfig(this);
         }

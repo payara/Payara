@@ -53,6 +53,7 @@ import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.cluster.windows.io.WindowsRemoteFile;
 import com.sun.enterprise.util.cluster.windows.process.WindowsException;
 import com.sun.enterprise.v3.admin.StopServer;
+import jakarta.inject.Inject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -67,7 +68,6 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.ServerContext;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -81,7 +81,7 @@ import java.util.logging.Logger;
  * Shutdown of an instance.
  * This command only runs on DAS.  It calls the instance and asks it to
  * kill itself
-
+ *
  * @author Byron Nevins
  */
 @Service(name = "stop-instance")
@@ -90,13 +90,13 @@ import java.util.logging.Logger;
 @I18n("stop.instance.command")
 @ExecuteOn(RuntimeType.DAS)
 @RestEndpoints({
-    @RestEndpoint(configBean=Server.class,
-        opType=RestEndpoint.OpType.POST,
-        path="stop-instance",
-        description="Stop Instance",
-        params={
-            @RestParam(name="id", value="$parent")
-        })
+        @RestEndpoint(configBean = Server.class,
+                opType = RestEndpoint.OpType.POST,
+                path = "stop-instance",
+                description = "Stop Instance",
+                params = {
+                        @RestParam(name = "id", value = "$parent")
+                })
 })
 public class StopInstanceCommand extends StopServer implements AdminCommand, PostConstruct {
 
@@ -165,7 +165,7 @@ public class StopInstanceCommand extends StopServer implements AdminCommand, Pos
                     env.getRuntimeType().toString());
         }
 
-        if(errorMessage == null && !kill) {
+        if (errorMessage == null && !kill) {
             errorMessage = pollForDeath();
         }
 
@@ -209,22 +209,22 @@ public class StopInstanceCommand extends StopServer implements AdminCommand, Pos
         // else can't check anything else.
         InstanceDirUtils insDU = new InstanceDirUtils(node, serverContext);
         // this should be replaced with method from Node config bean.
-        if (node.isLocal()){
+        if (node.isLocal()) {
             try {
-                pidFile = new File (insDU.getLocalInstanceDir(instance.getName()) , "config/pid");
-            } catch (java.io.IOException eio){
+                pidFile = new File(insDU.getLocalInstanceDir(instance.getName()), "config/pid");
+            } catch (java.io.IOException eio) {
                 // could not get the file name so can't see if it still exists.  Need to exit
                 return;
             }
-            if (pidFile.exists()){
-                    //server still not down completely, do we poll?
+            if (pidFile.exists()) {
+                //server still not down completely, do we poll?
                 errorMessage = pollForRealDeath("local");
             }
 
         } else if (node.getType().equals("SSH")) {
             try {
-                pidFile = new File (insDU.getLocalInstanceDir(instance.getName()) , "config/pid");
-            } catch (java.io.IOException eio){
+                pidFile = new File(insDU.getLocalInstanceDir(instance.getName()), "config/pid");
+            } catch (java.io.IOException eio) {
                 // could not get the file name so can't see if it still exists.  Need to exit
                 return;
             }
@@ -233,7 +233,7 @@ public class StopInstanceCommand extends StopServer implements AdminCommand, Pos
             launcher.init(node, logger);
             try {
                 ftpClient = launcher.getSFTPClient();
-                if (ftpClient.exists(pidFile.toString())){
+                if (ftpClient.exists(pidFile.toString())) {
                     // server still not down, do we poll?
                     errorMessage = pollForRealDeath("SSH");
                 }
@@ -250,10 +250,10 @@ public class StopInstanceCommand extends StopServer implements AdminCommand, Pos
                 info = new DcomInfo(node);
                 String path = info.getRemoteNodeRootDirectory() + "\\config\\pid";
                 wrf = new WindowsRemoteFile(info.getCredentials(), path);
-                if(wrf.exists())
+                if (wrf.exists())
                     errorMessage = pollForRealDeath("DCOM");
 
-            }catch (WindowsException ex) {
+            } catch (WindowsException ex) {
                 //could not get to other host
             }
         }
@@ -281,7 +281,6 @@ public class StopInstanceCommand extends StopServer implements AdminCommand, Pos
 
     /**
      * return null if all went OK...
-     *
      */
     private String callInstance() {
 
@@ -299,7 +298,7 @@ public class StopInstanceCommand extends StopServer implements AdminCommand, Pos
         if (port < 0)
             return Strings.get("stop.instance.noPort", instanceName);
 
-        if(!instance.isRunning())
+        if (!instance.isRunning())
             return null;
 
         try {
@@ -311,7 +310,7 @@ public class StopInstanceCommand extends StopServer implements AdminCommand, Pos
             ParameterMap map = new ParameterMap();
             map.add("force", Boolean.toString(force));
             rac.executeCommand(map);
-       } catch (Exception e) {
+        } catch (Exception e) {
             // The instance server may have died so fast we didn't have time to
             // get the (always successful!!) return data.  This is NOT AN ERROR!
             // see: http://java.net/jira/browse/GLASSFISH-19672
@@ -351,7 +350,7 @@ public class StopInstanceCommand extends StopServer implements AdminCommand, Pos
             logger.log(Level.FINE, "stop-instance: running {0} on {1}", new Object[]{humanCommand, nodeName});
 
         nodeUtils.runAdminCommandOnNode(node, command, context,
-                                        firstErrorMessage, humanCommand, null);
+                firstErrorMessage, humanCommand, null);
 
         ActionReport killreport = context.getActionReport();
         if (killreport.getActionExitCode() != ActionReport.ExitCode.SUCCESS) {

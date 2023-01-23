@@ -60,7 +60,7 @@ public final class EjbMessageBeanDescriptor extends EjbDescriptor
     private static LocalStringManagerImpl localStrings =
 	    new LocalStringManagerImpl(EjbMessageBeanDescriptor.class);
 
-    private String messageListenerType = "javax.jms.MessageListener";
+    private String messageListenerType = "jakarta.jms.MessageListener";
 
     // These are the method objects from the
     // *message-bean implementation class* that implement the
@@ -470,16 +470,16 @@ public final class EjbMessageBeanDescriptor extends EjbDescriptor
     @Override
     public boolean hasQueueDest() {
         return ( (destinationType != null) &&
-                 (destinationType.equals("javax.jms.Queue")) );
+                 (destinationType.equals("jakarta.jms.Queue")) );
     }
 
     /**
-     * Returns true if the destination type is of {@linkplain javax.jms.topic}
+     * Returns true if the destination type is of {@linkplain jakarta.jms.topic}
      * @return
      */
     public boolean hasTopicDest() {
         return ( (destinationType != null) &&
-                 (destinationType.equals("javax.jms.Topic")) );
+                 (destinationType.equals("jakarta.jms.Topic")) );
     }
 
     /**
@@ -497,7 +497,7 @@ public final class EjbMessageBeanDescriptor extends EjbDescriptor
 
     /**
      * Sets the destination type. This should be either
-     * "{@linkplain java.jms.Queue}" or "{@linkplain javax.jms.Topic}"
+     * "{@linkplain java.jms.Queue}" or "{@linkplain jakarta.jms.Topic}"
      * @param destType
      */
     public void setDestinationType(String destType) {
@@ -523,18 +523,18 @@ public final class EjbMessageBeanDescriptor extends EjbDescriptor
 
 
     /**
-     * Sets the destination type to be {@linkplain javax.jms.Queue}
+     * Sets the destination type to be {@linkplain jakarta.jms.Queue}
      */
     public void setHasQueueDest() {
-        destinationType = "javax.jms.Queue";
+        destinationType = "jakarta.jms.Queue";
         setHasDurableSubscription(false);
     }
 
     /**
-     * Sets the destination type to be {@linkplain javax.jms.Topic}
+     * Sets the destination type to be {@linkplain jakarta.jms.Topic}
      */
     public void setHasTopicDest() {
-        destinationType = "javax.jms.Topic";
+        destinationType = "jakarta.jms.Topic";
 
     }
 

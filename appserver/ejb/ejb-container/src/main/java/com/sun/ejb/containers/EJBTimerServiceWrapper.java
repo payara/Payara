@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.containers;
 
@@ -47,13 +47,13 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.io.Serializable;
-import javax.ejb.TimerService;
-import javax.ejb.Timer;
-import javax.ejb.TimerConfig;
-import javax.ejb.ScheduleExpression;
-import javax.ejb.EJBException;
-import javax.ejb.CreateException;
-import javax.ejb.EntityContext;
+import jakarta.ejb.TimerService;
+import jakarta.ejb.Timer;
+import jakarta.ejb.TimerConfig;
+import jakarta.ejb.ScheduleExpression;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.CreateException;
+import jakarta.ejb.EntityContext;
 
 /*
  * EJBTimerServiceWrappers is the application-level representation
@@ -290,7 +290,7 @@ public class EJBTimerServiceWrapper implements TimerService {
         } else {
             throw new IllegalStateException("EJBTimerService.createTimer can "
                 + "only be called from a timed object.  This EJB does not " 
-                + "implement javax.ejb.TimedObject");                 
+                + "implement jakarta.ejb.TimedObject");                 
         }
     }
 

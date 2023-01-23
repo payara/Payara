@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2019-2021] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.v3.admin.cluster;
 
@@ -57,7 +57,7 @@ import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.config.ReferenceContainer;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.config.support.CommandTarget;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;

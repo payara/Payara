@@ -43,7 +43,7 @@ package com.sun.enterprise.resource.rm;
 import com.sun.enterprise.resource.ResourceHandle;
 import com.sun.appserv.connectors.internal.api.PoolingException;
 
-import javax.transaction.Transaction;
+import jakarta.transaction.Transaction;
 
 /**
  * Interface definition for the Resource Manager. Depending on the

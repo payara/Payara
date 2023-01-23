@@ -53,9 +53,9 @@ import java.net.URISyntaxException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Provider;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.inject.Provider;
 
 import fish.payara.internal.api.DeployPreviousApplicationsRunLevel;
 import org.glassfish.api.ActionReport;

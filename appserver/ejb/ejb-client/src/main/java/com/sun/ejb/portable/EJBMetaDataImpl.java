@@ -41,7 +41,7 @@
 package com.sun.ejb.portable;
 
 import java.io.*;
-import javax.ejb.*;
+import jakarta.ejb.*;
 import javax.rmi.PortableRemoteObject;
 
 /**
@@ -51,7 +51,7 @@ import javax.rmi.PortableRemoteObject;
  *
  */
 
-public final class EJBMetaDataImpl implements javax.ejb.EJBMetaData, Serializable
+public final class EJBMetaDataImpl implements jakarta.ejb.EJBMetaData, Serializable
 {
     // for backward compatibility
     private static final long serialVersionUID = 5777657175353026918L;

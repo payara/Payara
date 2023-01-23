@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2020-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,10 +39,8 @@
  */
 package fish.payara.samples.http;
 
-import static fish.payara.samples.http.TestServlet.hasTLS13Support;
 import static fish.payara.samples.http.TestServlet.newClientBuilder;
 import org.junit.Assert;
-import org.junit.Assume;
 import org.junit.Test;
 
 import javax.net.SocketFactory;
@@ -51,9 +49,9 @@ import javax.net.ssl.SSLSocketFactory;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import static org.junit.Assert.assertNotEquals;
 
 /**
@@ -61,11 +59,10 @@ import static org.junit.Assert.assertNotEquals;
  * @author Alan Roth
  */
 public class TLSSupportTest {
-    private final List<String> SUPPORTED_SSL_PROTOCOLS = Arrays.asList("TLSv1", "TLSv1.1", "TLSv1.2", "TLSv1.3");
+    private final List<String> SUPPORTED_SSL_PROTOCOLS = Arrays.asList("TLSv1.2", "TLSv1.3");
 
     @Test
     public void when_socket_ssl_protocols_returned_expect_supported_tls_versions() throws IOException {
-        Assume.assumeTrue(hasTLS13Support());
         SocketFactory factory = SSLSocketFactory.getDefault();
         SSLSocket socket = (SSLSocket) factory.createSocket();
         socket.setEnabledProtocols(SUPPORTED_SSL_PROTOCOLS.stream().toArray(String[]::new));

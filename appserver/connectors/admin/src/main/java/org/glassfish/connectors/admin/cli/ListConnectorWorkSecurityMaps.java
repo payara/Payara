@@ -59,7 +59,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.api.admin.*;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 /**
  * List Connector Work Security Maps

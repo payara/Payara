@@ -97,7 +97,7 @@ grant {
 // Following grant block is only required by Connectors. If Connectors
 // are not in use the recommendation is to remove this grant.
 grant {
-        permission javax.security.auth.PrivateCredentialPermission "javax.resource.spi.security.PasswordCredential * \"*\"","read";
+        permission javax.security.auth.PrivateCredentialPermission "jakarta.resource.spi.security.PasswordCredential * \"*\"","read";
 };
 
 // Following grant block is only required for Reflection. If Reflection

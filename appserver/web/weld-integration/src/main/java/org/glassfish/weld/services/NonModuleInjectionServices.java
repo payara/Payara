@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2021] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.weld.services;
@@ -47,13 +47,14 @@ import com.sun.enterprise.container.common.spi.util.InjectionException;
 import com.sun.enterprise.container.common.spi.util.InjectionManager;
 import com.sun.enterprise.deployment.*;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 import org.jboss.weld.injection.spi.InjectionContext;
 import org.jboss.weld.injection.spi.InjectionServices;
 
-import javax.enterprise.inject.spi.*;
-import java.util.logging.Logger;
+import jakarta.enterprise.inject.spi.*;
 
 /**
  * The InjectionServices for a non-module bda (library or rar).  A non-module bda has no associated bundle so we
@@ -65,7 +66,7 @@ import java.util.logging.Logger;
 public class NonModuleInjectionServices implements InjectionServices {
 
     private InjectionManager injectionManager;
-    
+
     private static final Logger logger = Logger.getLogger(InjectionServicesImpl.class.getName());
 
     public NonModuleInjectionServices(InjectionManager injectionMgr) {
@@ -99,7 +100,7 @@ public class NonModuleInjectionServices implements InjectionServices {
     }
 
     @Override
-    public <T> void registerInjectionTarget(javax.enterprise.inject.spi.InjectionTarget<T> injectionTarget, AnnotatedType<T> annotatedType) {
+    public <T> void registerInjectionTarget(jakarta.enterprise.inject.spi.InjectionTarget<T> injectionTarget, AnnotatedType<T> annotatedType) {
     }
 
     @Override

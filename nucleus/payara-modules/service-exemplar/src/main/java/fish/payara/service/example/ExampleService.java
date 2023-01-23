@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Payara Foundation. All rights reserved.
+ * Copyright (c) 2016-2021 Payara Foundation. All rights reserved.
  *
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
@@ -23,9 +23,9 @@ import fish.payara.nucleus.store.ClusteredStore;
 import fish.payara.service.example.config.ExampleServiceConfiguration;
 import java.beans.PropertyChangeEvent;
 import java.util.logging.Logger;
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.annotation.PostConstruct;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener;

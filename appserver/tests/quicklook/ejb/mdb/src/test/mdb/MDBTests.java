@@ -86,9 +86,8 @@ public class MDBTests {
     public void runJMSAppTest(String mdbAppDir) throws Exception {
         String clientJar = cwd + File.separator + mdbAppDir + mdbApp + "Client.jar";
         String gfClientJar = GLASSFISH_HOME + File.separator + "lib" + File.separator + "gf-client.jar";
-        final String JDK_VERSION = System.getProperty("java.version");
         cmd = APPCLIENT
-                + (JDK_VERSION.startsWith("1.8") ? " " : " --add-opens=java.base/java.lang=ALL-UNNAMED ")
+                + " --add-opens=java.base/java.lang=ALL-UNNAMED "
                 + GLASSFISH_APPCLIENT_MAIN_CLASS_NAME
                 + " -client " + clientJar
                 + " -targetserver" + " localhost:3700"

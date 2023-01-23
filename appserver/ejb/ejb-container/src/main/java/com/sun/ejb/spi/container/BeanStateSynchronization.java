@@ -40,7 +40,7 @@
 
 package com.sun.ejb.spi.container;
 
-import javax.ejb.DuplicateKeyException;
+import jakarta.ejb.DuplicateKeyException;
 
 /**
  * There are cases where the container would need to interact with the 

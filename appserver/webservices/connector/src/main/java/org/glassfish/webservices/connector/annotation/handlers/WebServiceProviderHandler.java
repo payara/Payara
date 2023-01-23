@@ -71,13 +71,13 @@ import org.glassfish.webservices.node.WebServicesDescriptorNode;
 import org.jvnet.hk2.annotations.Service;
 
 /**
- * This annotation handler is responsible for processing the javax.jws.WebService 
+ * This annotation handler is responsible for processing the jakarta.jws.WebService 
  * annotation type.
  *
  * @author Jerome Dochez
  */
 @Service
-@AnnotationHandlerFor(javax.xml.ws.WebServiceProvider.class)
+@AnnotationHandlerFor(jakarta.xml.ws.WebServiceProvider.class)
 public class WebServiceProviderHandler extends AbstractHandler {
     
     private static final Logger conLogger = LogUtils.getLogger();
@@ -95,7 +95,7 @@ public class WebServiceProviderHandler extends AbstractHandler {
      */
     @Override
     public Class<? extends Annotation>[] getTypeDependencies() {
-        /*Class dependencies[] = { javax.ejb.Stateless.class };
+        /*Class dependencies[] = { jakarta.ejb.Stateless.class };
         return dependencies;*/
         return getEjbAndWebAnnotationTypes();
     }
@@ -134,21 +134,21 @@ public class WebServiceProviderHandler extends AbstractHandler {
         }
         
         // WebServiceProvider MUST implement the provider interface, let's check this
-        if (!javax.xml.ws.Provider.class.isAssignableFrom((Class) annElem)) {
+        if (!jakarta.xml.ws.Provider.class.isAssignableFrom((Class) annElem)) {
             AnnotationProcessorException ape = new AnnotationProcessorException(
-                    annElem.toString() + "does not implement the javax.xml.ws.Provider interface", annInfo);
+                    annElem.toString() + "does not implement the jakarta.xml.ws.Provider interface", annInfo);
             annInfo.getProcessingContext().getErrorHandler().error(ape);
             return HandlerProcessingResultImpl.getDefaultResult(getAnnotationType(), ResultType.FAILED);                                    
         }
     
         // let's get the main annotation of interest. 
-        javax.xml.ws.WebServiceProvider ann = (javax.xml.ws.WebServiceProvider) annInfo.getAnnotation();        
+        jakarta.xml.ws.WebServiceProvider ann = (jakarta.xml.ws.WebServiceProvider) annInfo.getAnnotation();        
         
         BundleDescriptor bundleDesc = null;
         
         try {
             // let's see the type of web service we are dealing with...
-            if (ejbProvider != null && ejbProvider.getType("javax.ejb.Stateless") != null) {
+            if (ejbProvider != null && ejbProvider.getType("jakarta.ejb.Stateless") != null) {
                 // this is an ejb !
                 if (annCtx instanceof EjbContext) {
                 EjbContext ctx = (EjbContext) annCtx;
@@ -197,8 +197,8 @@ public class WebServiceProviderHandler extends AbstractHandler {
 
         // Store binding type specified in Impl class
         String userSpecifiedBinding = null;
-        javax.xml.ws.BindingType bindingAnn = (javax.xml.ws.BindingType)
-                ((Class)annElem).getAnnotation(javax.xml.ws.BindingType.class);
+        jakarta.xml.ws.BindingType bindingAnn = (jakarta.xml.ws.BindingType)
+                ((Class)annElem).getAnnotation(jakarta.xml.ws.BindingType.class);
         if(bindingAnn != null) {
             userSpecifiedBinding = bindingAnn.value();
         }
@@ -283,13 +283,13 @@ public class WebServiceProviderHandler extends AbstractHandler {
         Class clz = (Class) annElem;
         Class serviceEndpointIntf = null;
         for (Class intf : clz.getInterfaces()) {
-            if (javax.xml.ws.Provider.class.isAssignableFrom(intf)) {
+            if (jakarta.xml.ws.Provider.class.isAssignableFrom(intf)) {
                 serviceEndpointIntf = intf;
                 break;
             }
         }
         if (serviceEndpointIntf==null) {
-            endpoint.setServiceEndpointInterface("javax.xml.ws.Provider"); 
+            endpoint.setServiceEndpointInterface("jakarta.xml.ws.Provider"); 
         } else {
             endpoint.setServiceEndpointInterface(serviceEndpointIntf.getName());
         }
@@ -358,8 +358,8 @@ public class WebServiceProviderHandler extends AbstractHandler {
      *
      */
     private boolean ignoreWebserviceAnnotations(AnnotatedElement annElem, AnnotatedElementHandler annCtx) {
-        javax.ejb.Stateless stateless = annElem.getAnnotation(javax.ejb.Stateless.class);
-        javax.xml.ws.WebServiceProvider webservice = annElem.getAnnotation(javax.xml.ws.WebServiceProvider.class);
+        jakarta.ejb.Stateless stateless = annElem.getAnnotation(jakarta.ejb.Stateless.class);
+        jakarta.xml.ws.WebServiceProvider webservice = annElem.getAnnotation(jakarta.xml.ws.WebServiceProvider.class);
         if ((stateless != null) && (webservice != null)
                 && ((annCtx instanceof WebBundleContext) || (annCtx instanceof WebComponentContext))) {
             return true;

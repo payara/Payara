@@ -52,7 +52,7 @@ import org.glassfish.web.deployment.runtime.*;
 import org.apache.catalina.deploy.FilterDef;
 import org.apache.catalina.deploy.FilterMap;
 
-import javax.servlet.DispatcherType;
+import jakarta.servlet.DispatcherType;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.logging.Level;

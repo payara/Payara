@@ -43,7 +43,7 @@ package com.sun.enterprise.transaction.jts;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import javax.transaction.xa.XAResource;
 
 import com.sun.enterprise.config.serverbeans.Config;

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2020] [Payara Foundation and/or affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or affiliates]
 
 package org.glassfish.jdbcruntime.deployment.annotation.handlers;
 
@@ -53,11 +53,11 @@ import org.glassfish.deployment.common.JavaEEResourceType;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.annotation.sql.DataSourceDefinition;
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.AroundTimeout;
-import javax.interceptor.Interceptor;
-import javax.interceptor.Interceptors;
+import jakarta.annotation.sql.DataSourceDefinition;
+import jakarta.interceptor.AroundInvoke;
+import jakarta.interceptor.AroundTimeout;
+import jakarta.interceptor.Interceptor;
+import jakarta.interceptor.Interceptors;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.*;

@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
 package org.apache.catalina.session;
 
@@ -66,10 +66,10 @@ import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.core.StandardHost;
 
 import javax.management.ObjectName;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.*;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.*;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;

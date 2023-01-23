@@ -135,12 +135,6 @@
                  value="${product.name}"/>
         <replace file="${domaindir}/branding/glassfish-version.properties" token="@@@BUILD_NUMBER@@@"
                  value="${build.number}"/>
-        <replace file="${domaindir}/branding/glassfish-version.properties" token="@@@MAJOR_VERSION@@@"
-                 value="${version.major}"/>
-        <replace file="${domaindir}/branding/glassfish-version.properties" token="@@@MINOR_VERSION@@@"
-                 value="${version.minor}"/>
-        <replace file="${domaindir}/branding/glassfish-version.properties" token="@@@PATCH_VERSION@@@"
-                 value="${version.patch}"/>
     </target>
 
     <target name="addSchemas">
@@ -205,7 +199,7 @@
         </unzip>
         <copy todir="${domaindir}">
             <fileset dir="${tempdir}/config">
-                <include name="*.jks"/>
+                <include name="*.p12"/>
                 <include name="keyfile"/>
             </fileset>
         </copy>

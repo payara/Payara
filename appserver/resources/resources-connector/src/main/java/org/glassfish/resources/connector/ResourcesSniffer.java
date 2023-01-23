@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2021] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.resources.connector;
@@ -51,7 +51,7 @@ import org.glassfish.resources.util.ResourceUtil;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.enterprise.deploy.shared.ModuleType;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import java.util.ArrayList;
 import java.util.List;

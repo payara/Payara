@@ -44,8 +44,8 @@ import java.util.*;
 import java.util.logging.*;
 import java.beans.PropertyChangeEvent;
 
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 import com.sun.enterprise.connectors.jms.config.JmsHost;
 import com.sun.enterprise.connectors.jms.config.JmsService;

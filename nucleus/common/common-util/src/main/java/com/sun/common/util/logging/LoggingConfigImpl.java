@@ -62,7 +62,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.glassfish.api.admin.FileMonitoring;
 import org.glassfish.server.ServerEnvironmentImpl;
 import org.jvnet.hk2.annotations.Contract;
@@ -176,7 +176,7 @@ public class LoggingConfigImpl implements LoggingConfig {
         // these are only accessible via the web-container name so all values should be the same
         props.setProperty("org.apache.catalina.level", value);
         props.setProperty("org.apache.coyote.level", value);
-        props.setProperty("org.apache.jasper.level", value);
+        props.setProperty("org.glassfish.wasp.level", value);
     }
 
     @Override

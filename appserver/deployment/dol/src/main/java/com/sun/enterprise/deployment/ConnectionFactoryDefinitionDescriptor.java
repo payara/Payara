@@ -41,7 +41,7 @@
 package com.sun.enterprise.deployment;
 
 import com.sun.enterprise.deployment.util.DOLUtils;
-import javax.resource.spi.TransactionSupport.TransactionSupportLevel;
+import jakarta.resource.spi.TransactionSupport.TransactionSupportLevel;
 
 import static org.glassfish.deployment.common.JavaEEResourceType.*;
 

@@ -48,7 +48,7 @@ import org.glassfish.web.deployment.descriptor.TagLibConfigurationDescriptor;
 import org.glassfish.web.deployment.xml.WebTagNames;
 import org.w3c.dom.Node;
 
-import javax.servlet.descriptor.*;
+import jakarta.servlet.descriptor.*;
 
 /**
  * This node represents the <jsp-config> element in a web application.

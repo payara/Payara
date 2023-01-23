@@ -76,7 +76,7 @@ public class LogFacade {
             "org.glassfish.web.loader.LogMessages";
 
     @LoggerInfo(subsystem="WEB", description="WEB Util Logger", publish=true)
-    private static final String WEB_UTIL_LOGGER = "javax.enterprise.web.util";
+    private static final String WEB_UTIL_LOGGER = "jakarta.enterprise.web.util";
 
     public static final Logger LOGGER =
             Logger.getLogger(WEB_UTIL_LOGGER, SHARED_LOGMESSAGE_RESOURCE);

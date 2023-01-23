@@ -47,9 +47,9 @@
     <Match>
         <Class name="org.glassfish.cdi.hk2.HK2IntegrationExtension"/>
         <Or>
-            <Method returns="void" name="injectionTargetObserver" params="javax.enterprise.inject.spi.ProcessInjectionTarget" />
-            <Method returns="void" name="afterDiscoveryObserver" params="javax.enterprise.inject.spi.AfterBeanDiscovery" />
-            <Method returns="void" name="afterDeploymentValidation" params="javax.enterprise.inject.spi.AfterDeploymentValidation" />
+            <Method returns="void" name="injectionTargetObserver" params="jakarta.enterprise.inject.spi.ProcessInjectionTarget" />
+            <Method returns="void" name="afterDiscoveryObserver" params="jakarta.enterprise.inject.spi.AfterBeanDiscovery" />
+            <Method returns="void" name="afterDeploymentValidation" params="jakarta.enterprise.inject.spi.AfterDeploymentValidation" />
         </Or>
         <Bug pattern="UPM_UNCALLED_PRIVATE_METHOD"/>
     </Match>

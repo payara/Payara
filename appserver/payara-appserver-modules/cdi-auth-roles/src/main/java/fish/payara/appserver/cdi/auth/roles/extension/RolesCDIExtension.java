@@ -1,7 +1,7 @@
 /*
  *   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *   Copyright (c) [2017-2019] Payara Foundation and/or its affiliates.
+ *   Copyright (c) [2017-2021] Payara Foundation and/or its affiliates.
  *   All rights reserved.
  *
  *   The contents of this file are subject to the terms of either the GNU
@@ -42,10 +42,10 @@ package fish.payara.appserver.cdi.auth.roles.extension;
 
 import fish.payara.appserver.cdi.auth.roles.RolesPermittedInterceptor;
 import fish.payara.cdi.auth.roles.RolesPermitted;
-import javax.enterprise.event.Observes;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.BeforeBeanDiscovery;
-import javax.enterprise.inject.spi.Extension;
+import jakarta.enterprise.event.Observes;
+import jakarta.enterprise.inject.spi.BeanManager;
+import jakarta.enterprise.inject.spi.BeforeBeanDiscovery;
+import jakarta.enterprise.inject.spi.Extension;
 
 /**
  * Extension to get the runtime to find the Roles Interceptor.

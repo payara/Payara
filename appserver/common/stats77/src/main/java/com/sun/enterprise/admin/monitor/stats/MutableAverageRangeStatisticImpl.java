@@ -41,8 +41,8 @@
 
 package com.sun.enterprise.admin.monitor.stats;
 
-import javax.management.j2ee.statistics.Statistic;
-import javax.management.j2ee.statistics.BoundedRangeStatistic;
+import org.glassfish.j2ee.statistics.Statistic;
+import org.glassfish.j2ee.statistics.BoundedRangeStatistic;
 
 /** An implementation of AverageRangeStatistic that provides ways to change the state externally through mutators.
  * Convenience class that is useful for components that gather the statistical data.

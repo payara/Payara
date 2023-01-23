@@ -52,7 +52,7 @@ import org.glassfish.deployment.common.SecurityRoleMapperFactory;
 import org.glassfish.ejb.api.EJBInvocation;
 import org.glassfish.resourcebase.resources.api.PoolInfo;
 
-import javax.ejb.EJBContext;
+import jakarta.ejb.EJBContext;
 import javax.security.auth.Subject;
 import java.security.Principal;
 import java.util.*;

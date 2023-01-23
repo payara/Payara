@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.ejb.deployment.annotation.handlers;
 
@@ -48,14 +48,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
-import javax.ejb.EJBHome;
-import javax.ejb.EJBLocalHome;
-import javax.ejb.Local;
-import javax.ejb.LocalBean;
-import javax.ejb.LocalHome;
-import javax.ejb.Remote;
-import javax.ejb.RemoteHome;
-import javax.ejb.Timeout;
+import jakarta.ejb.EJBHome;
+import jakarta.ejb.EJBLocalHome;
+import jakarta.ejb.Local;
+import jakarta.ejb.LocalBean;
+import jakarta.ejb.LocalHome;
+import jakarta.ejb.Remote;
+import jakarta.ejb.RemoteHome;
+import jakarta.ejb.Timeout;
 
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.deployment.annotation.context.EjbBundleContext;
@@ -334,12 +334,12 @@ public abstract class AbstractEjbHandler extends AbstractHandler {
         }
 
         if( (timeoutMethodDesc == null) && 
-            javax.ejb.TimedObject.class.isAssignableFrom(ejbClass) ) {
+            jakarta.ejb.TimedObject.class.isAssignableFrom(ejbClass) ) {
             // If the class implements the TimedObject interface, it must
             // be ejbTimeout.
             timeoutMethodDesc = new MethodDescriptor
                 ("ejbTimeout", "@Timeout method", 
-                 new String[] { "javax.ejb.Timer" }, 
+                 new String[] { "jakarta.ejb.Timer" }, 
                  MethodDescriptor.TIMER_METHOD);
         }
 
@@ -559,7 +559,7 @@ public abstract class AbstractEjbHandler extends AbstractHandler {
         // for @WebService on bean class
         boolean canDoWebServiceAnnCheck = false;
         try {
-            canDoWebServiceAnnCheck = (provider.getType("javax.jws.WebService") != null);
+            canDoWebServiceAnnCheck = (provider.getType("jakarta.jws.WebService") != null);
 
         } catch(Exception e) {
             log(Level.FINE, ainfo, e.getMessage());
@@ -569,7 +569,7 @@ public abstract class AbstractEjbHandler extends AbstractHandler {
             (clientInterfaces.size() == 0) &&
             !ejbDesc.hasWebServiceEndpointInterface() &&
             ( !canDoWebServiceAnnCheck ||
-              (ejbClass.getAnnotation(javax.jws.WebService.class) == null) ) ) {
+              (ejbClass.getAnnotation(jakarta.jws.WebService.class) == null) ) ) {
             ejbDesc.setLocalBean(true);
         }
         
@@ -610,7 +610,7 @@ public abstract class AbstractEjbHandler extends AbstractHandler {
         return ( (intf == java.io.Serializable.class) ||
                  (intf == java.io.Externalizable.class) ||
                  ( (intf.getPackage() != null) &&
-                   intf.getPackage().getName().equals("javax.ejb")) );
+                   intf.getPackage().getName().equals("jakarta.ejb")) );
     }
 
     protected void doDescriptionProcessing(String description,

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ejb-jar xmlns="http://xmlns.jcp.org/xml/ns/javaee"
-        version="3.2"
+<ejb-jar xmlns="https://jakarta.ee/xml/ns/jakartaee"
+        version="4.0"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/ejb-jar_3_2.xsd">
+        xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/ejb-jar_4_0.xsd">
     <enterprise-beans>
         <session>
             <ejb-name>ClusteredSingletonEjbXml1</ejb-name>

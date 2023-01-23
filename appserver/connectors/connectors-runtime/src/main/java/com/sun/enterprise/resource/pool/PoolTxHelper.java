@@ -47,8 +47,8 @@ import com.sun.enterprise.transaction.api.JavaEETransaction;
 import com.sun.logging.LogDomains;
 import org.glassfish.resourcebase.resources.api.PoolInfo;
 
-import javax.transaction.SystemException;
-import javax.transaction.Transaction;
+import jakarta.transaction.SystemException;
+import jakarta.transaction.Transaction;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -97,7 +97,7 @@ public class PoolTxHelper {
      * Remove the resource from book-keeping
      *
      * @param h ResourceHandle to be delisted
-     * @throws javax.transaction.SystemException when not able to delist the resource
+     * @throws jakarta.transaction.SystemException when not able to delist the resource
      */
     private void enforceDelistment(ResourceHandle h) throws SystemException {
         JavaEETransaction txn = (JavaEETransaction) ConnectorRuntime.getRuntime().getTransaction();

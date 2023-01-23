@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.ee;
 
 import static java.util.logging.Level.FINE;
@@ -46,9 +46,9 @@ import java.security.Policy;
 import java.util.Collection;
 import java.util.logging.Logger;
 
-import javax.security.jacc.PolicyConfiguration;
-import javax.security.jacc.PolicyConfigurationFactory;
-import javax.security.jacc.PolicyContextException;
+import jakarta.security.jacc.PolicyConfiguration;
+import jakarta.security.jacc.PolicyConfigurationFactory;
+import jakarta.security.jacc.PolicyContextException;
 
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.OpsParams;
@@ -144,7 +144,7 @@ public class SecurityUtil {
         } catch (java.lang.ClassNotFoundException cnfe) {
             throw new IASSecurityException(localStrings.getLocalString(
                 "enterprise.security.securityutil.classnotfound",
-                "Could not find PolicyConfigurationFactory class. Check javax.security.jacc.PolicyConfigurationFactory.provider property"));
+                "Could not find PolicyConfigurationFactory class. Check jakarta.security.jacc.PolicyConfigurationFactory.provider property"));
         } catch (PolicyContextException pce) {
             throw new IASSecurityException(pce.toString());
         }
@@ -256,8 +256,8 @@ public class SecurityUtil {
             throw new IASSecurityException(
                 localStrings.getLocalString(
                         "enterprise.security.securityutil.classnotfound",
-                        "Could not find PolicyConfigurationFactory class. Check javax.security.jacc.PolicyConfigurationFactory.provider property"));
-        } catch (javax.security.jacc.PolicyContextException pce) {
+                        "Could not find PolicyConfigurationFactory class. Check jakarta.security.jacc.PolicyConfigurationFactory.provider property"));
+        } catch (jakarta.security.jacc.PolicyContextException pce) {
             throw new IASSecurityException(pce.toString());
         }
         

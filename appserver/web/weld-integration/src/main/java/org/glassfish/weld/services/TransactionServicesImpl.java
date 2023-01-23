@@ -37,24 +37,24 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2021] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.weld.services;
 
-import static javax.transaction.Status.STATUS_ACTIVE;
-import static javax.transaction.Status.STATUS_COMMITTING;
-import static javax.transaction.Status.STATUS_MARKED_ROLLBACK;
-import static javax.transaction.Status.STATUS_PREPARED;
-import static javax.transaction.Status.STATUS_PREPARING;
-import static javax.transaction.Status.STATUS_ROLLING_BACK;
-import static javax.transaction.Status.STATUS_UNKNOWN;
+import static jakarta.transaction.Status.STATUS_ACTIVE;
+import static jakarta.transaction.Status.STATUS_COMMITTING;
+import static jakarta.transaction.Status.STATUS_MARKED_ROLLBACK;
+import static jakarta.transaction.Status.STATUS_PREPARED;
+import static jakarta.transaction.Status.STATUS_PREPARING;
+import static jakarta.transaction.Status.STATUS_ROLLING_BACK;
+import static jakarta.transaction.Status.STATUS_UNKNOWN;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.transaction.Synchronization;
-import javax.transaction.SystemException;
-import javax.transaction.UserTransaction;
+import jakarta.transaction.Synchronization;
+import jakarta.transaction.SystemException;
+import jakarta.transaction.UserTransaction;
 
 import org.glassfish.hk2.api.ServiceLocator;
 import org.jboss.weld.transaction.spi.TransactionServices;

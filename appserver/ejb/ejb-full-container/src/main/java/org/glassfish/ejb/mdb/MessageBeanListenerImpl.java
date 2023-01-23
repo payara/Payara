@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017-2018] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2021] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.ejb.mdb;
@@ -49,10 +49,10 @@ import fish.payara.nucleus.healthcheck.stuck.StuckThreadsStore;
 import fish.payara.notification.requesttracing.EventType;
 import java.lang.reflect.Method;
 import java.util.UUID;
-import javax.jms.Destination;
-import javax.jms.JMSException;
-import javax.jms.Queue;
-import javax.jms.Topic;
+import jakarta.jms.Destination;
+import jakarta.jms.JMSException;
+import jakarta.jms.Queue;
+import jakarta.jms.Topic;
 import org.glassfish.ejb.api.MessageBeanListener;
 import org.glassfish.ejb.mdb.MessageBeanContainer.MessageDeliveryType;
 import org.glassfish.internal.api.Globals;
@@ -111,7 +111,7 @@ public class MessageBeanListenerImpl implements MessageBeanListener {
             span.addSpanTag("Message Count", Long.toString(container_.getMessageCount()));
             span.addSpanTag("JNDI", container_.getEjbDescriptor().getJndiName());
             try {
-                javax.jms.Message msg = (javax.jms.Message) params[0];
+                jakarta.jms.Message msg = (jakarta.jms.Message) params[0];
                  span.addSpanTag("JMS Type",msg.getJMSType());               
                  span.addSpanTag("JMS CorrelationID",msg.getJMSCorrelationID());               
                  span.addSpanTag("JMS MessageID",msg.getJMSMessageID());               

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
 package org.glassfish.javaee.services;
 
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
@@ -50,7 +50,7 @@ import org.glassfish.resourcebase.resources.api.ResourceDeployer;
 import org.glassfish.resourcebase.resources.util.ResourceManagerFactory;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import javax.naming.Context;
 import javax.naming.NamingException;
 import java.io.Serializable;
@@ -95,7 +95,11 @@ public class CommonResourceProxy implements NamingObjectProxy.InitializationNami
                 throw ne;
             }
         }
-        return ic.lookup(actualResourceName);
+        Object obj = ic.lookup(actualResourceName);
+        if (obj instanceof JndiLookupNotifier) {
+            ((JndiLookupNotifier) obj).notifyJndiLookup();
+        }
+        return obj;
     }
 
     protected ResourceDeployer getResourceDeployer(Object resource) {

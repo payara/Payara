@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2019-2021] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -43,8 +43,8 @@ package fish.payara.ejb.http.admin;
 import static fish.payara.ejb.http.admin.Constants.DEFAULT_ENDPOINT;
 import static fish.payara.ejb.http.admin.Constants.DEFAULT_GROUP_NAME;
 import java.beans.PropertyVetoException;
-import javax.security.enterprise.identitystore.IdentityStore;
-import static javax.servlet.http.HttpServletRequest.BASIC_AUTH;
+import jakarta.security.enterprise.identitystore.IdentityStore;
+import static jakarta.servlet.http.HttpServletRequest.BASIC_AUTH;
 import org.glassfish.api.admin.config.ConfigExtension;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;

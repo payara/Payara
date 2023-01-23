@@ -39,7 +39,7 @@
  */
 
 package com.sun.enterprise.resource.listener;
-import javax.resource.spi.*;
+import jakarta.resource.spi.*;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import com.sun.logging.LogDomains;

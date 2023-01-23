@@ -91,6 +91,7 @@ public final class ExceptionUtil
     public static final Set<String> OVER_THE_WIRE_PACKAGE_PREFIXES = SetUtil.newUnmodifiableStringSet(
             "java.",
             "javax.",
+            "jakarta.",
             "org.omg.");
 
     public static boolean isAcceptableOverTheWire(final Throwable t)

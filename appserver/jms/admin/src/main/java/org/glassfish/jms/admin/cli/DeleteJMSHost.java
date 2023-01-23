@@ -53,7 +53,7 @@ import org.glassfish.config.support.TargetType;
 
 import java.beans.PropertyVetoException;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.glassfish.api.admin.*;
 import org.jvnet.hk2.annotations.Service;

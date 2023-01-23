@@ -43,8 +43,8 @@ package org.glassfish.ejb.deployment.annotation.handlers;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.logging.Level;
-import javax.ejb.BeforeCompletion;
-import javax.ejb.Stateful;
+import jakarta.ejb.BeforeCompletion;
+import jakarta.ejb.Stateful;
 
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.deployment.annotation.context.EjbContext;
@@ -56,7 +56,7 @@ import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
 import org.jvnet.hk2.annotations.Service;
 
 /**
- * This handler is responsible for handling the javax.ejb.BeforeCompletion
+ * This handler is responsible for handling the jakarta.ejb.BeforeCompletion
  * annotation on a Bean method.
  *
  * @author Marina Vatkina

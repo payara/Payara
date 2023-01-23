@@ -42,7 +42,7 @@ package org.glassfish.security.services.config;
 import java.util.List;
 
 import java.beans.PropertyVetoException;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Configured;

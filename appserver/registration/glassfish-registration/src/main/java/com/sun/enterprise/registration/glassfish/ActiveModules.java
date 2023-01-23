@@ -40,7 +40,7 @@
 
 package com.sun.enterprise.registration.glassfish;
 
-import com.sun.enterprise.module.Module;
+import com.sun.enterprise.module.HK2Module;
 import com.sun.enterprise.module.ModuleState;
 import com.sun.enterprise.module.ModulesRegistry;
 import java.util.logging.Level;

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.containers;
 
@@ -99,23 +99,23 @@ import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.ejb.ConcurrentAccessException;
-import javax.ejb.ConcurrentAccessTimeoutException;
-import javax.ejb.CreateException;
-import javax.ejb.EJBException;
-import javax.ejb.EJBObject;
-import javax.ejb.IllegalLoopbackException;
-import javax.ejb.NoSuchObjectLocalException;
-import javax.ejb.RemoveException;
-import javax.ejb.SessionBean;
-import javax.ejb.SessionSynchronization;
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.PersistenceContextType;
-import javax.persistence.SynchronizationType;
-import javax.transaction.Status;
-import javax.transaction.SystemException;
-import javax.transaction.Transaction;
+import jakarta.ejb.ConcurrentAccessException;
+import jakarta.ejb.ConcurrentAccessTimeoutException;
+import jakarta.ejb.CreateException;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.EJBObject;
+import jakarta.ejb.IllegalLoopbackException;
+import jakarta.ejb.NoSuchObjectLocalException;
+import jakarta.ejb.RemoveException;
+import jakarta.ejb.SessionBean;
+import jakarta.ejb.SessionSynchronization;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.PersistenceContextType;
+import jakarta.persistence.SynchronizationType;
+import jakarta.transaction.Status;
+import jakarta.transaction.SystemException;
+import jakarta.transaction.Transaction;
 
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.ejb.LogFacade;
@@ -138,7 +138,7 @@ import static com.sun.ejb.spi.sfsb.util.SFSBVersionManager.NO_VERSION;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINEST;
 import static java.util.logging.Level.WARNING;
-import static javax.persistence.SynchronizationType.SYNCHRONIZED;
+import static jakarta.persistence.SynchronizationType.SYNCHRONIZED;
 
 /**
  * This class provides container functionality specific to stateful
@@ -1087,10 +1087,10 @@ public final class StatefulSessionContainer
         ejbInv.method = removeMethod;
 
         // Method must be a remove method defined on one of :
-        // javax.ejb.EJBHome, javax.ejb.EJBObject, javax.ejb.EJBLocalHome,
-        // javax.ejb.EJBLocalObject
+        // jakarta.ejb.EJBHome, jakarta.ejb.EJBObject, jakarta.ejb.EJBLocalHome,
+        // jakarta.ejb.EJBLocalObject
         Class declaringClass = removeMethod.getDeclaringClass();
-        ejbInv.isHome = (declaringClass == javax.ejb.EJBHome.class) || (declaringClass == javax.ejb.EJBLocalHome.class);
+        ejbInv.isHome = (declaringClass == jakarta.ejb.EJBHome.class) || (declaringClass == jakarta.ejb.EJBLocalHome.class);
 
         try {
             preInvoke(ejbInv);
@@ -1859,9 +1859,9 @@ public final class StatefulSessionContainer
             try {
                 ContainerSynchronization cSync = ejbContainerUtilImpl.getContainerSync(context.getTransaction());
                 cSync.registerForTxCheckpoint((SessionContextImpl) context);
-            } catch (javax.transaction.RollbackException rollEx) {
+            } catch (jakarta.transaction.RollbackException rollEx) {
                 _logger.log(Level.WARNING, CANNOT_REGISTER_BEAN_FOR_CHECKPOINTING, rollEx);
-            } catch (javax.transaction.SystemException sysEx) {
+            } catch (jakarta.transaction.SystemException sysEx) {
                 _logger.log(Level.WARNING, CANNOT_REGISTER_BEAN_FOR_CHECKPOINTING, sysEx);
             }
         }
