@@ -139,7 +139,7 @@
         <servlet-api.version>6.0.0</servlet-api.version>
         <grizzly.version>4.0.0.payara-p1</grizzly.version>
         <jax-rs-api.impl.version>3.1.0</jax-rs-api.impl.version>
-        <jersey.version>3.1.0-M8.payara-p1</jersey.version>
+        <jersey.version>3.1.0.payara-p1</jersey.version>
         <jakarta.validation.version>3.0.1</jakarta.validation.version>
         <hibernate.validator.version>8.0.0.Final</hibernate.validator.version>
         <hibernate.validator-cdi.version>8.0.0.Final</hibernate.validator-cdi.version>
@@ -214,7 +214,7 @@
         <microprofile-jwt-auth.version>2.0</microprofile-jwt-auth.version>
         <microprofile-healthcheck.version>4.0.1</microprofile-healthcheck.version>
         <microprofile-metrics.version>4.0</microprofile-metrics.version>
-        <microprofile-rest-client.version>3.0</microprofile-rest-client.version>
+        <microprofile-rest-client.version>3.0.1</microprofile-rest-client.version>
         <microprofile-openapi.version>3.0</microprofile-openapi.version>
         <payara-arquillian-container.version>3.0.alpha6</payara-arquillian-container.version>
         <payara.security-connectors.version>3.0.alpha6</payara.security-connectors.version>
