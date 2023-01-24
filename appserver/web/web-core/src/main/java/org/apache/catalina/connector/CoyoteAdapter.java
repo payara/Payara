@@ -376,7 +376,7 @@ public class CoyoteAdapter extends HttpHandler {
                         if(!connector.getAllowTrace()) {
                             removeTraceMethod(response);
                         }
-                        hostValve.postInvoke(request, response); 
+                        hostValve.postInvoke(request, response);
                     }
                 }
             } finally {

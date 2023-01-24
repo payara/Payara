@@ -97,14 +97,14 @@ final class StandardContextValve
 
     private StandardContext context = null;
 
-
-    // ------------------------------------------------------------- Properties
-
     private static final Pattern PATTERN_META_INF = Pattern.compile("[.]{2}[/]?.*[/](META-INF[/].*|META-INF$)",
             Pattern.CASE_INSENSITIVE);
 
     private static final Pattern PATTERN_WEB_INF = Pattern.compile("[.]{2}[/]?.*[/](WEB-INF[/].*|WEB-INF$)",
             Pattern.CASE_INSENSITIVE);
+
+    // ------------------------------------------------------------- Properties
+
 
     /**
      * Return descriptive information about this Valve implementation.
@@ -140,7 +140,6 @@ final class StandardContextValve
      *
      * @param request Request to be processed
      * @param response Response to be produced
-     * @param valveContext Valve context used to forward to the next Valve
      *
      * @exception IOException if an input/output error occurred
      * @exception ServletException if a servlet error occurred
@@ -293,11 +292,11 @@ final class StandardContextValve
 
         String rv = path;
         // starts with a double-slash
-        if(rv.indexOf("//") == 0) {
+        if (rv.indexOf("//") == 0) {
             rv = rv.replace("//", "/");
         }
         // starts with dot-slash
-        if(rv.indexOf("./") == 0) {
+        if (rv.indexOf("./") == 0) {
             rv = rv.replaceFirst("./", "/");
         }
         // has ../*/WEB-INF/* or ../*/META-INF/*

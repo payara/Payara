@@ -95,6 +95,8 @@ import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import org.glassfish.grizzly.utils.Holder.LazyHolder;
+import static org.glassfish.grizzly.utils.Holder.lazyHolder;
 
 /**
  * Internal Payara Service for describing instances
@@ -142,7 +144,7 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
     private String instanceName;
     private String instanceGroup;
 
-    private InstanceDescriptorImpl me;
+    private final LazyHolder<InstanceDescriptorImpl> descriptor = lazyHolder(this::initialiseInstanceDescriptor);
 
     @Inject
     private ServerEnvironment environment;
@@ -155,13 +157,7 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
 
     @Inject
     private PayaraExecutorService executor;
-    
-    private synchronized InstanceDescriptorImpl getMyInstanceDescriptor() {
-        if (me == null) {
-            initialiseInstanceDescriptor();
-        }
-        return me;
-    }
+
 
     @Override
     public String getInstanceName() {
@@ -171,7 +167,7 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
     @Override
     public void setInstanceName(String instanceName) {
         this.instanceName = instanceName;
-        me.setInstanceName(instanceName);
+        descriptor.get().setInstanceName(instanceName);
     }
 
     @Override
@@ -248,32 +244,32 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
     @SuppressWarnings({"unchecked"})
     public void event(Event event) {
         if (event.is(EventTypes.SERVER_READY)) {
-            PayaraInternalEvent pie = new PayaraInternalEvent(PayaraInternalEvent.MESSAGE.ADDED, getMyInstanceDescriptor());
+            PayaraInternalEvent pie = new PayaraInternalEvent(PayaraInternalEvent.MESSAGE.ADDED, descriptor.get());
             ClusterMessage<PayaraInternalEvent> message = new ClusterMessage<>(pie);
             this.cluster.getEventBus().publish(INTERNAL_EVENTS_NAME, message);
 
             for (String appName : appRegistry.getAllApplicationNames()) {
-                getMyInstanceDescriptor().addApplication(new ApplicationDescriptorImpl(appRegistry.get(appName)));
+                descriptor.get().addApplication(new ApplicationDescriptorImpl(appRegistry.get(appName)));
             }
 
-            cluster.getClusteredStore().set(INSTANCE_STORE_NAME, myCurrentID, getMyInstanceDescriptor());
+            cluster.getClusteredStore().set(INSTANCE_STORE_NAME, myCurrentID, descriptor.get());
             executor.scheduleAtFixedRate(() -> {
-                getMyInstanceDescriptor().setLastHeartBeat(System.currentTimeMillis());
+                descriptor.get().setLastHeartBeat(System.currentTimeMillis());
                 if (myCurrentID != null) {
-                    cluster.getClusteredStore().set(INSTANCE_STORE_NAME, myCurrentID, getMyInstanceDescriptor());
+                    cluster.getClusteredStore().set(INSTANCE_STORE_NAME, myCurrentID, descriptor.get());
                 }
             }, 0, 5, TimeUnit.SECONDS);
         } // Adds the application to the clustered register of deployed applications
         else if (event.is(Deployment.APPLICATION_STARTED)) {
             if (event.hook() != null && event.hook() instanceof ApplicationInfo) {
                 ApplicationInfo applicationInfo = (ApplicationInfo) event.hook();
-                getMyInstanceDescriptor().addApplication(new ApplicationDescriptorImpl(applicationInfo));
+                descriptor.get().addApplication(new ApplicationDescriptorImpl(applicationInfo));
                 logger.log(Level.FINE, "App Loaded: {2}, Enabled: {0}, my ID: {1}", new Object[] { hazelcast.isEnabled(),
                     myCurrentID, applicationInfo.getName() });
-                cluster.getClusteredStore().set(INSTANCE_STORE_NAME, myCurrentID, getMyInstanceDescriptor());
+                cluster.getClusteredStore().set(INSTANCE_STORE_NAME, myCurrentID, descriptor.get());
             }
         }
-        // ensures the same application id is used when there is a deployment 
+        // ensures the same application id is used when there is a deployment
         // if the application id is in the cluster keyed by application name
         else if (event.is(Deployment.APPLICATION_PREPARED)) {
             if (event.hook() != null && event.hook() instanceof DeploymentContext) {
@@ -295,11 +291,11 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
         else if (event.is(Deployment.APPLICATION_UNLOADED)) {
             if (event.hook() != null && event.hook() instanceof ApplicationInfo) {
                 ApplicationInfo applicationInfo = (ApplicationInfo) event.hook();
-                getMyInstanceDescriptor().removeApplication(new ApplicationDescriptorImpl(applicationInfo));
-                cluster.getClusteredStore().set(INSTANCE_STORE_NAME, myCurrentID, getMyInstanceDescriptor());
+                descriptor.get().removeApplication(new ApplicationDescriptorImpl(applicationInfo));
+                cluster.getClusteredStore().set(INSTANCE_STORE_NAME, myCurrentID, descriptor.get());
             }
         } else if (event.is(HazelcastEvents.HAZELCAST_SHUTDOWN_STARTED)) {
-            PayaraInternalEvent pie = new PayaraInternalEvent(PayaraInternalEvent.MESSAGE.REMOVED, getMyInstanceDescriptor());
+            PayaraInternalEvent pie = new PayaraInternalEvent(PayaraInternalEvent.MESSAGE.REMOVED, descriptor.get());
             ClusterMessage<PayaraInternalEvent> message = new ClusterMessage<>(pie);
             this.cluster.getClusteredStore().remove(INSTANCE_STORE_NAME, myCurrentID);
             this.cluster.getEventBus().publish(INTERNAL_EVENTS_NAME, message);
@@ -307,7 +303,7 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
 
         // When Hazelcast is bootstrapped, update the instance descriptor with any new information
         if (event.is(HazelcastEvents.HAZELCAST_BOOTSTRAP_COMPLETE)) {
-            initialiseInstanceDescriptor();
+            descriptor.get();
             logger.log(Level.FINE, "Hz Bootstrap Complete, Enabled: {0}, my ID: {1}", new Object[] { hazelcast.isEnabled(), myCurrentID });
             // remove listener first
             cluster.getEventBus().removeMessageReceiver(INTERNAL_EVENTS_NAME, this);
@@ -318,7 +314,7 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
 
         // If the generated name had to be changed, update the instance descriptor with the new information
         if (event.is(HazelcastEvents.HAZELCAST_GENERATED_NAME_CHANGE)) {
-            initialiseInstanceDescriptor();
+            descriptor.get();
         }
     }
 
@@ -338,7 +334,7 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
     @Override
     public void publishCDIEvent(PayaraClusteredCDIEvent event) {
         if (event.getInstanceDescriptor() == null) {
-            event.setId(me);
+            event.setId(descriptor.get());
         }
         ClusterMessage<PayaraClusteredCDIEvent> message = new ClusterMessage<>(event);
         cluster.getEventBus().publish(CDI_EVENTS_NAME, message);
@@ -366,7 +362,7 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
 
     @Override
     public InstanceDescriptor getLocalDescriptor() {
-        return me;
+        return descriptor.get();
     }
 
     @Override
@@ -378,7 +374,7 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
         return result;
     }
 
-    private void initialiseInstanceDescriptor() {
+    private InstanceDescriptorImpl initialiseInstanceDescriptor() {
         boolean liteMember = false;
         int hazelcastPort = 5900;
         InetAddress hostname = null;
@@ -403,7 +399,7 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
         List<Integer> ports = new ArrayList<>();
         List<Integer> sslPorts = new ArrayList<>();
         int adminPort = 0;
-        for (NetworkListener networkListener : 
+        for (NetworkListener networkListener :
                 context.getConfigBean().getConfig().getNetworkConfig().getNetworkListeners().getNetworkListener()) {
 
             // Try and get the port. First get the port in the domain xml, then attempt to get the dynamic config port.
@@ -448,45 +444,43 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
 
         // Initialise the instance descriptor and set all of its attributes
         try {
+            InstanceDescriptorImpl instanceDescriptor = new InstanceDescriptorImpl(myCurrentID);
             // If Hazelcast is being rebooted dynamically, we don't want to lose the already registered applications
-            Collection<ApplicationDescriptor> deployedApplications = new ArrayList<>();
-            if (me != null) {
-                deployedApplications = me.getDeployedApplications();
-            }
-            me = new InstanceDescriptorImpl(myCurrentID);
-            me.setInstanceName(instanceName);
-            me.setInstanceGroup(instanceGroup);
+            Collection<ApplicationDescriptor> deployedApplications = instanceDescriptor.getDeployedApplications();
+            instanceDescriptor.setInstanceName(instanceName);
+            instanceDescriptor.setInstanceGroup(instanceGroup);
             for (int port : ports) {
-                me.addHttpPort(port);
+                instanceDescriptor.addHttpPort(port);
             }
 
             for (int sslPort : sslPorts) {
-                me.addHttpsPort(sslPort);
+                instanceDescriptor.addHttpsPort(sslPort);
             }
 
-            me.setAdminPort(adminPort);
-            me.setHazelcastPort(hazelcastPort);
-            me.setLiteMember(liteMember);
-            me.setInstanceType(instanceType);
+            instanceDescriptor.setAdminPort(adminPort);
+            instanceDescriptor.setHazelcastPort(hazelcastPort);
+            instanceDescriptor.setLiteMember(liteMember);
+            instanceDescriptor.setInstanceType(instanceType);
 
             if (hostname != null) {
-                me.setHostName(hostname);
+                instanceDescriptor.setHostName(hostname);
             }
 
-            // If there were some deployed applications from the previous instance descriptor, register them with the new 
+            // If there were some deployed applications from the previous instance descriptor, register them with the new
             // one
             if (!deployedApplications.isEmpty()) {
                 for (ApplicationDescriptor application : deployedApplications) {
-                    me.addApplication(application);
+                    instanceDescriptor.addApplication(application);
                 }
             }
 
             // Register the instance descriptor to the cluster if it's enabled
             if (cluster.isEnabled()) {
-                cluster.getClusteredStore().set(INSTANCE_STORE_NAME, myCurrentID, me);
+                cluster.getClusteredStore().set(INSTANCE_STORE_NAME, myCurrentID, instanceDescriptor);
             }
+            return instanceDescriptor;
         } catch (UnknownHostException ex) {
-            logger.log(Level.SEVERE, "Could not find local hostname", ex);
+            throw new RuntimeException(ex);
         }
     }
 

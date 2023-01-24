@@ -214,8 +214,8 @@ public class StaticGlassFishRuntime extends GlassFishRuntime {
         try {
             String[] configFiles = new String[]{"config/keyfile",
                     "config/server.policy",
-                    "config/cacerts.jks",
-                    "config/keystore.jks",
+                    "config/cacerts.p12",
+                    "config/keystore.p12",
                     "config/login.conf",
                     "config/logging.properties",
                     "config/loggingToFile.properties",

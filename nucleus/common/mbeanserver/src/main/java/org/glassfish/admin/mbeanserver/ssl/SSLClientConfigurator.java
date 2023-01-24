@@ -58,6 +58,8 @@ import java.util.logging.Logger;
 import static org.glassfish.grizzly.config.dom.Ssl.TLS12;
 import static org.glassfish.grizzly.config.dom.Ssl.TLS13;
 
+import static org.glassfish.grizzly.config.dom.Ssl.*;
+
 /**
  * This class is a utility class that would configure a client socket factory using
  * either the SSL defaults for GlassFish  or via params supplied.
@@ -458,7 +460,6 @@ public class SSLClientConfigurator {
                 tmpSSLArtifactsList.add(cipher.trim());
             }
         }
-
 
         final String[] ciphers = getJSSECiphers(tmpSSLArtifactsList);
         if (ciphers == null || ciphers.length == 0) {

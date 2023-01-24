@@ -39,15 +39,6 @@
  */
 package fish.payara.microprofile.jwtauth.jwt;
 
-import static java.util.Collections.singleton;
-
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import static java.util.stream.Collectors.toSet;
-
-import static java.util.stream.Collectors.toSet;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonNumber;
 import jakarta.json.JsonString;
@@ -55,6 +46,14 @@ import jakarta.json.JsonValue;
 import jakarta.security.enterprise.CallerPrincipal;
 import org.eclipse.microprofile.jwt.Claims;
 import org.eclipse.microprofile.jwt.JsonWebToken;
+
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import static java.util.Collections.singleton;
+import static java.util.stream.Collectors.toSet;
 
 /**
  * A default implementation of {@link JsonWebToken}.

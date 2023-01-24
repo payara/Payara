@@ -40,26 +40,28 @@
 package fish.payara.enterprise.server.logging;
 
 import com.sun.common.util.logging.GFLogRecord;
-import com.sun.enterprise.server.logging.*;
+import com.sun.enterprise.server.logging.CommonFormatter;
+import com.sun.enterprise.server.logging.ExcludeFieldsSupport;
+import com.sun.enterprise.server.logging.FormatterDelegate;
+import com.sun.enterprise.server.logging.LogEvent;
+import com.sun.enterprise.server.logging.LogEventBroadcaster;
+import com.sun.enterprise.server.logging.LogEventImpl;
+import com.sun.enterprise.server.logging.UniformLogFormatter;
+import jakarta.json.Json;
+import jakarta.json.JsonObjectBuilder;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.logging.ErrorManager;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import jakarta.json.Json;
-import jakarta.json.JsonObjectBuilder;
-import org.glassfish.api.VersionInfo;
-import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.internal.api.Globals;
-import org.jvnet.hk2.annotations.ContractsProvided;
-import org.jvnet.hk2.annotations.Service;
 
 /**
  * Class for converting a {@link LogRecord} to Json format
@@ -370,24 +372,7 @@ public class JSONLogFormatter extends CommonFormatter implements LogEventBroadca
                     }
                 }
             } else {
-                if (logMessage.contains("{0") && logMessage.contains("}")
-                        && null != record.getParameters()) {
-                    logMessage = MessageFormat
-                            .format(logMessage, record.getParameters());
-                } else {
-                    ResourceBundle bundle = getResourceBundle(record.getLoggerName());
-                    if (null != bundle) {
-                        try {
-                            logMessage = MessageFormat.format(bundle
-                                .getString(logMessage),
-                                record.getParameters());
-                        } catch (MissingResourceException ex) {
-                            // Leave logMessage as it is because it already has
-                            // an exception message
-                        }
-                    }
-                }
-
+                logMessage = UniformLogFormatter.formatLogMessage(logMessage, record, this::getResourceBundle);
                 StringBuilder logMessageBuilder = new StringBuilder();
                 logMessageBuilder.append(logMessage);
 

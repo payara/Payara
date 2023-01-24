@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 package org.glassfish.webservices;
 
 import java.net.URL;
@@ -61,6 +61,10 @@ import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.WebService;
 import com.sun.enterprise.deployment.WebServiceEndpoint;
 import com.sun.enterprise.deployment.WebServicesDescriptor;
+import java.net.MalformedURLException;
+import org.glassfish.internal.api.Globals;
+import org.glassfish.webservices.deployment.WebServiceGrizzlyListenerAdapter;
+import org.glassfish.webservices.deployment.WebServiceGrizzlyRestartListener;
 
 /**
  * This class implements the ApplicationContainer and will be used
@@ -73,18 +77,20 @@ import com.sun.enterprise.deployment.WebServicesDescriptor;
  * @author Bhakti Mehta
  */
 
-public class WebServicesApplication implements ApplicationContainer<Object> {
+public class WebServicesApplication implements ApplicationContainer<Object>, WebServiceGrizzlyRestartListener {
 
     private static final Logger logger = LogUtils.getLogger();
 
     private ArrayList<EjbEndpoint> ejbendpoints;
-    private ServletHandler httpHandler;
+    private final ServletHandler httpHandler;
     private final RequestDispatcher dispatcher;
-    private DeploymentContext deploymentCtx;
+    private final DeploymentContext deploymentCtx;
 
     private ClassLoader cl;
     private Application app;
-    private Set<String> publishedFiles;
+    private final Set<String> publishedFiles;
+    private String virtualServers;
+    private final WebServiceGrizzlyListenerAdapter grizzlyRestartListener;
 
     public WebServicesApplication(DeploymentContext context,  RequestDispatcher dispatcherString, Set<String> publishedFiles){
         this.deploymentCtx = context;
@@ -92,6 +98,8 @@ public class WebServicesApplication implements ApplicationContainer<Object> {
         this.ejbendpoints = getEjbEndpoints();
         this.httpHandler = new EjbWSAdapter();
         this.publishedFiles = publishedFiles;
+        this.grizzlyRestartListener = Globals.getDefaultHabitat()
+                .getService(WebServiceGrizzlyListenerAdapter.class);
     }
 
     @Override
@@ -101,38 +109,59 @@ public class WebServicesApplication implements ApplicationContainer<Object> {
 
     @Override
     public boolean start(ApplicationContext startupContext) throws Exception {
-
         cl = startupContext.getClassLoader();
+        app = deploymentCtx.getModuleMetaData(Application.class);
+        DeployCommandParameters commandParams = ((DeploymentContext) startupContext).getCommandParameters(DeployCommandParameters.class);
+        virtualServers = commandParams.virtualservers;
+        createEndpoints();
+        grizzlyRestartListener.addListener(this);
+        return true;
+    }
 
+    private void createEndpoints() {
         try {
-           app = deploymentCtx.getModuleMetaData(Application.class);
-
-            DeployCommandParameters commandParams = ((DeploymentContext)startupContext).getCommandParameters(DeployCommandParameters.class);
-            String virtualServers = commandParams.virtualservers;
+            if (app == null || cl == null) {
+                return;
+            }
             Iterator<EjbEndpoint> iter = ejbendpoints.iterator();
-            EjbEndpoint ejbendpoint = null;
-            while(iter.hasNext()) {
+            EjbEndpoint ejbendpoint;
+            while (iter.hasNext()) {
                 ejbendpoint = iter.next();
                 String contextRoot = ejbendpoint.contextRoot;
                 WebServerInfo wsi = new WsUtil().getWebServerInfoForDAS();
                 URL rootURL = wsi.getWebServerRootURL(ejbendpoint.isSecure);
                 dispatcher.registerEndpoint(contextRoot, httpHandler, this, virtualServers);
                 //Fix for issue 13107490 and 17648
-                if (wsi.getHttpVS() != null && wsi.getHttpVS().getPort()!=0) {
+                if (wsi.getHttpVS() != null && wsi.getHttpVS().getPort() != 0) {
                     logger.log(Level.INFO, LogUtils.EJB_ENDPOINT_REGISTRATION,
-                            new Object[] {app.getAppName(), rootURL + contextRoot});
+                            new Object[]{app.getAppName(), rootURL + contextRoot});
                 }
             }
 
+        } catch (EndpointRegistrationException | MalformedURLException e) {
+            logger.log(Level.SEVERE, LogUtils.ENDPOINT_REGISTRATION_ERROR, e.toString());
+        }
+    }
+
+    private boolean destroyEndpoints() {
+        try {
+            Iterator<EjbEndpoint> iter = ejbendpoints.iterator();
+            String contextRoot;
+            EjbEndpoint endpoint;
+            while(iter.hasNext()) {
+                endpoint = iter.next();
+                contextRoot = endpoint.contextRoot;
+                dispatcher.unregisterEndpoint(contextRoot);
+            }
         } catch (EndpointRegistrationException e) {
-            logger.log(Level.SEVERE,  LogUtils.ENDPOINT_REGISTRATION_ERROR, e.toString());
+            logger.log(Level.SEVERE, LogUtils.ENDPOINT_UNREGISTRATION_ERROR, e.toString());
+            return false;
         }
         return true;
     }
 
-
     private ArrayList<EjbEndpoint> getEjbEndpoints() {
-        ejbendpoints = new ArrayList<EjbEndpoint>();
+        ejbendpoints = new ArrayList<>();
 
         Application app = deploymentCtx.getModuleMetaData(Application.class);
 
@@ -158,20 +187,8 @@ public class WebServicesApplication implements ApplicationContainer<Object> {
 
     @Override
     public boolean stop(ApplicationContext stopContext) {
-        try {
-            Iterator<EjbEndpoint> iter = ejbendpoints.iterator();
-            String contextRoot;
-            EjbEndpoint endpoint;
-            while(iter.hasNext()) {
-                endpoint = iter.next();
-                contextRoot = endpoint.contextRoot;
-                dispatcher.unregisterEndpoint(contextRoot);
-            }
-        } catch (EndpointRegistrationException e) {
-            logger.log(Level.SEVERE,  LogUtils.ENDPOINT_UNREGISTRATION_ERROR ,e.toString());
-            return false;
-        }
-        return true;
+        grizzlyRestartListener.removeListener(this);
+        return destroyEndpoints();
     }
 
     @Override
@@ -191,6 +208,12 @@ public class WebServicesApplication implements ApplicationContainer<Object> {
 
     Application getApplication() {
         return app;
+    }
+
+    @Override
+    public void restartEndpoints() {
+        destroyEndpoints();
+        createEndpoints();
     }
 
     static class EjbEndpoint {

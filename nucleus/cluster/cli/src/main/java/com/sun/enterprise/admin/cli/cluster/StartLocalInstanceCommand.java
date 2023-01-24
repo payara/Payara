@@ -139,7 +139,6 @@ public class StartLocalInstanceCommand extends SynchronizeInstanceCommand implem
         if (timeout <= 0) {
             throw new CommandException("Timeout must be at least 1 second long.");
         }
-
     }
 
     @Override

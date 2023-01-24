@@ -56,9 +56,9 @@ import java.util.logging.Logger;
 
 /**
  * Starts all instances in a deployment group
- * 
- * @since 5.0
+ *
  * @author Steve Millidge (Payara Services Limited)
+ * @since 5.0
  */
 
 @I18n("start.dg.command")
@@ -77,7 +77,7 @@ import java.util.logging.Logger;
 })
 @Progress
 public class StartDeploymentGroupCommand implements AdminCommand {
-  
+
     @Inject
     private ServerEnvironment env;
 
@@ -98,7 +98,7 @@ public class StartDeploymentGroupCommand implements AdminCommand {
 
     @Param(optional = true, defaultCalculator = TimeoutParamDefaultCalculator.class)
     private int timeout;
-      
+
     @Override
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
@@ -136,7 +136,7 @@ public class StartDeploymentGroupCommand implements AdminCommand {
         try {
             // Run start-instance with timeout parameter against each instance in the Deployment Group
             String commandName = "start-instance";
-            
+
             ParameterMap parameterMap = new ParameterMap();
             parameterMap.add("timeout", String.valueOf(instanceTimeout));
             clusterHelper.setAdminTimeout(timeout * 1000);

@@ -103,13 +103,13 @@ public class ManagedExecutorServiceConfig extends BaseConfig  {
     public long getThreadLifeTimeSeconds() {
         return threadLifeTimeSeconds;
     }
+    
+    public boolean getUseForkJoinPool() {
+        return useForkJoinPool;
+    }
 
     public String getContext() {
         return context;
-    }
-
-    public boolean getUseForkJoinPool() {
-        return useForkJoinPool;
     }
 
     @Override

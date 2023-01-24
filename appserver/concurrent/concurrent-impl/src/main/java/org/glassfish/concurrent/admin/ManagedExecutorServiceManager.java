@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright 2022 Payara Foundation and/or its affiliates
+
 package org.glassfish.concurrent.admin;
 
 import com.sun.enterprise.config.serverbeans.Resources;
@@ -58,7 +60,7 @@ import java.beans.PropertyVetoException;
 
 /**
  *
- * The managed executor service manager allows you to create and delete 
+ * The managed executor service manager allows you to create and delete
  * the managed-executor-service config element
  */
 @Service (name=ServerTags.MANAGED_EXECUTOR_SERVICE)
@@ -89,12 +91,12 @@ public class ManagedExecutorServiceManager extends ManagedExecutorServiceBaseMan
         }
 
         if (Integer.parseInt(corePoolSize) >
-            Integer.parseInt(maximumPoolSize)) {
+                Integer.parseInt(maximumPoolSize)) {
             String msg = localStrings.getLocalString("coresize.biggerthan.maxsize", "Option corepoolsize cannot have a bigger value than option maximumpoolsize.");
             return new ResourceStatus(ResourceStatus.FAILURE, msg);
         }
 
-        return super.isValid(resources, validateResourceRef, target); 
+        return super.isValid(resources, validateResourceRef, target);
     }
 
     protected ManagedExecutorServiceBase createConfigBean(Resources param, Properties properties) throws PropertyVetoException, TransactionFailure {

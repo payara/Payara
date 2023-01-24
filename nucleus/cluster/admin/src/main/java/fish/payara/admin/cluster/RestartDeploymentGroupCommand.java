@@ -198,6 +198,7 @@ public class RestartDeploymentGroupCommand implements AdminCommand {
             ParameterMap instanceParameterMap = new ParameterMap();
             // Set the instance name as the operand for the commnd
             instanceParameterMap.set("DEFAULT", server.getName());
+            instanceParameterMap.add("timeout", String.valueOf(instanceTimeout));
 
             ActionReport instanceReport = runner.getActionReport("plain");
             instanceReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
@@ -218,6 +219,7 @@ public class RestartDeploymentGroupCommand implements AdminCommand {
             instanceParameterMap = new ParameterMap();
             // Set the instance name as the operand for the commnd
             instanceParameterMap.set("DEFAULT", server.getName());
+            instanceParameterMap.add("timeout", String.valueOf(instanceTimeout));
             instanceReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
             invocation = runner.getCommandInvocation(
                     "start-instance", instanceReport, context.getSubject());
