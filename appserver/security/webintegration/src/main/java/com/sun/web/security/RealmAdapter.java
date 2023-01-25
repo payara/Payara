@@ -68,7 +68,7 @@ import fish.payara.nucleus.requesttracing.RequestTracingService;
 import org.apache.catalina.*;
 import org.apache.catalina.authenticator.AuthenticatorBase;
 import org.apache.catalina.deploy.LoginConfig;
-import org.apache.catalina.deploy.SecurityConstraint;
+import org.apache.tomcat.util.descriptor.web.SecurityConstraint;
 import org.apache.catalina.realm.RealmBase;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.grizzly.config.dom.NetworkConfig;

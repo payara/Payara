@@ -46,12 +46,12 @@ import com.sun.enterprise.web.WebModule;
 
 import java.util.Enumeration;
 /**
- * Decorator of class <code>org.apache.catalina.deploy.SecurityConstraint</code>
+ * Decorator of class <code>org.apache.tomcat.util.descriptor.web.SecurityConstraint</code>
  *
  * @author Jean-Francois Arcand
  */
 public class SecurityConstraintDecorator 
-                    extends org.apache.catalina.deploy.SecurityConstraint {
+                    extends org.apache.tomcat.util.descriptor.web.SecurityConstraint {
 
     private SecurityConstraint securityConstraint;
     
