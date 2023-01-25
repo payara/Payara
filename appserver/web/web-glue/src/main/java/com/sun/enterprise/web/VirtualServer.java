@@ -2213,7 +2213,6 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
      * @return The network listener names with which this StandardHost is associated,
      * or null if this StandardHost has not been associated with any ports
      */
-    @Override
     public String[] getNetworkListenerNames() {
         return this.networkListenerNames.clone();
     }
