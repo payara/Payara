@@ -41,7 +41,8 @@
 package com.sun.enterprise.web.deploy;
 
 import com.sun.enterprise.deployment.web.WebResourceCollection;
-import org.apache.catalina.deploy.SecurityCollection;
+import org.apache.tomcat.util.descriptor.web.SecurityCollection;
+
 
 /**
  * Decorator of class <code>org.apache.catalina.deploy.SecurityCollection</code>
@@ -65,7 +66,7 @@ public class SecurityCollectionDecorator extends SecurityCollection {
         }                
 
         for (String httpMethodOmission: decoree.getHttpMethodOmissions()) {
-            addMethodOmission(httpMethodOmission);
+            addOmittedMethod(httpMethodOmission);
         }                
    }
 

@@ -594,7 +594,7 @@ public class TomcatDeploymentConfig {
         }
 
         // Check role names used in <security-constraint> elements
-        Iterator<org.apache.catalina.deploy.SecurityConstraint> iter =
+        Iterator<org.apache.tomcat.util.descriptor.web.SecurityConstraint> iter =
             webModule.getConstraints().iterator(); 
         while (iter.hasNext()) {
             String[] roles = iter.next().findAuthRoles();
