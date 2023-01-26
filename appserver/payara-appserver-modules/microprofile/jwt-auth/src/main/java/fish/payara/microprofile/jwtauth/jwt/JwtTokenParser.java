@@ -225,7 +225,7 @@ public class JwtTokenParser {
 
         String algName = encryptedJWT.getHeader().getAlgorithm().getName();
         if (!RSA_OAEP.getName().equals(algName) && !RSA_OAEP_256.getName().equals(algName)) {
-            throw new JWTProcessingException("RSA-OAEP and RSA-OAEP-256 algorithms are supported for JWT encryption, used " + algName);
+            throw new JWTProcessingException("Only RSA-OAEP and RSA-OAEP-256 algorithms are supported for JWT encryption, used " + algName);
         }
 
         try {
