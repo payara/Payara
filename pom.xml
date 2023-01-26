@@ -219,6 +219,8 @@
         <payara-arquillian-container.version>3.0.alpha6</payara-arquillian-container.version>
         <payara.security-connectors.version>3.0.alpha6</payara.security-connectors.version>
         <opentracing.version>0.33.0</opentracing.version>
+        <opentelemetry.version>1.22.0</opentelemetry.version>
+        <opentelemetry.alpha.version>1.22.0-alpha</opentelemetry.alpha.version>
         <h2db.version>2.1.212</h2db.version>
         <websocket-api.version>2.1.0</websocket-api.version>
         <concurrent-api.version>3.0.1</concurrent-api.version>
