@@ -70,6 +70,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 
 import static com.nimbusds.jose.JWEAlgorithm.RSA_OAEP;
+import static com.nimbusds.jose.JWEAlgorithm.RSA_OAEP_256;
 import static com.nimbusds.jose.JWSAlgorithm.ES256;
 import static com.nimbusds.jose.JWSAlgorithm.RS256;
 import static jakarta.json.Json.createObjectBuilder;
@@ -223,8 +224,8 @@ public class JwtTokenParser {
         }
 
         String algName = encryptedJWT.getHeader().getAlgorithm().getName();
-        if (!RSA_OAEP.getName().equals(algName)) {
-            throw new JWTProcessingException("Only RSA-OAEP algorithm is supported for JWT encryption, used " + algName);
+        if (!RSA_OAEP.getName().equals(algName) && !RSA_OAEP_256.getName().equals(algName)) {
+            throw new JWTProcessingException("RSA-OAEP and RSA-OAEP-256 algorithms are supported for JWT encryption, used " + algName);
         }
 
         try {
