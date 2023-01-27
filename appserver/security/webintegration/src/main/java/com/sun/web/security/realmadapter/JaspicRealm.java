@@ -452,7 +452,11 @@ public class JaspicRealm {
                         .authenticate(request, response, config);
             } else {
                 request.setAuthType(authType == null ? AuthenticatorProxy.PROXY_AUTH_TYPE : authType);
-                request.setUserPrincipal(webPrincipal);
+                // it is not completely sure the necessity of webPrincipal wrapping the custom principal while
+                // HttpServletRequest.getUserPrincipal() return the custom principal instead of webPrincipal
+                // therefore it is necessary to check and use custom principal if available
+                request.setUserPrincipal(webPrincipal.getCustomPrincipal() == null ?
+                        webPrincipal : webPrincipal.getCustomPrincipal());
             }
         } catch (LifecycleException le) {
             logger.log(SEVERE, "[Web-Security] unable to register session", le);
