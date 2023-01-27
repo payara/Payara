@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2011-2015 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2011-2023 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -215,7 +215,7 @@
         <microprofile-healthcheck.version>4.0.1</microprofile-healthcheck.version>
         <microprofile-metrics.version>4.0</microprofile-metrics.version>
         <microprofile-rest-client.version>3.0.1</microprofile-rest-client.version>
-        <microprofile-openapi.version>3.0</microprofile-openapi.version>
+        <microprofile-openapi.version>3.1</microprofile-openapi.version>
         <payara-arquillian-container.version>3.0.alpha6</payara-arquillian-container.version>
         <payara.security-connectors.version>3.0.alpha6</payara.security-connectors.version>
         <opentracing.version>0.33.0</opentracing.version>
