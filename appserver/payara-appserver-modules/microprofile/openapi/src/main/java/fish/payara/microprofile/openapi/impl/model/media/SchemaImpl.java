@@ -55,6 +55,7 @@ import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeI
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.readOnlyView;
 import fish.payara.microprofile.openapi.impl.rest.app.provider.ObjectMapperFactory;
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
@@ -268,8 +269,8 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
                 if (schemaClassModel.isInstanceOf(Schema.class.getName())) {
                     try {
                         Class<?> oneOfClass = context.getApplicationClassLoader().loadClass(schemaClassName);
-                        return (Schema) oneOfClass.newInstance();
-                    } catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
+                        return (Schema) oneOfClass.getDeclaredConstructor().newInstance();
+                    } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | NoSuchMethodException | SecurityException | InvocationTargetException ex) {
                         LOGGER.log(WARNING, "Unable to create Schema class instance.", ex);
                     }
                 }

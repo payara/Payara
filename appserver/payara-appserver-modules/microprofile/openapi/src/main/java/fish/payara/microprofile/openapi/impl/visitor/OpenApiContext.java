@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2022] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -63,6 +63,7 @@ import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.core.Application;
+import java.lang.reflect.InvocationTargetException;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.eclipse.microprofile.openapi.models.Operation;
 import org.eclipse.microprofile.openapi.models.PathItem;
@@ -186,7 +187,7 @@ public class OpenApiContext implements ApiContext {
                     mapping.put(key, resourceClasses);
                     try {
                         Class<?> clazz = appClassLoader.loadClass(classModel.getName());
-                        Application app = (Application) clazz.newInstance();
+                        Application app = (Application) clazz.getDeclaredConstructor().newInstance();
                         // Add all classes contained in the application
                         resourceClasses.addAll(app.getClasses()
                                 .stream()
@@ -195,7 +196,7 @@ public class OpenApiContext implements ApiContext {
                                 .map(allTypes::getBy)
                                 .filter(Objects::nonNull)
                                 .collect(toSet()));
-                    } catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
+                    } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | NoSuchMethodException | SecurityException | IllegalArgumentException | InvocationTargetException ex) {
                         LOGGER.log(WARNING, "Unable to initialise application class.", ex);
                     }
                 } else {

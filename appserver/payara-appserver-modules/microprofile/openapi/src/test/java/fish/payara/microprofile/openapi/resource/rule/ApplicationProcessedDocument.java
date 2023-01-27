@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -46,6 +46,7 @@ import fish.payara.microprofile.openapi.impl.processor.FilterProcessor;
 import fish.payara.microprofile.openapi.resource.classloader.ApplicationClassLoader;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import static java.util.Arrays.asList;
 import java.util.Collections;
@@ -80,10 +81,10 @@ public class ApplicationProcessedDocument {
             // Apply application processor
             new ApplicationProcessor(getTypes(), getApplicationTypes(extraClasses), appClassLoader).process(document, null);
             if (filter != null) {
-                new FilterProcessor(filter.newInstance()).process(document, null);
+                new FilterProcessor(filter.getDeclaredConstructor().newInstance()).process(document, null);
             }
             return document;
-        } catch (IOException | IllegalAccessException | InstantiationException | InterruptedException ex) {
+        } catch (IOException | IllegalAccessException | InstantiationException | InterruptedException | NoSuchMethodException | IllegalArgumentException | InvocationTargetException ex) {
             throw new AssertionError("Failed to build document.", ex);
         }
     }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,6 +41,7 @@ package fish.payara.microprofile.openapi.impl.processor;
 
 import fish.payara.microprofile.openapi.api.processor.OASProcessor;
 import fish.payara.microprofile.openapi.impl.config.OpenApiConfiguration;
+import java.lang.reflect.InvocationTargetException;
 import static java.util.logging.Level.WARNING;
 import java.util.logging.Logger;
 import org.eclipse.microprofile.openapi.OASModelReader;
@@ -63,9 +64,9 @@ public class ModelReaderProcessor implements OASProcessor {
     public OpenAPI process(OpenAPI api, OpenApiConfiguration config) {
         try {
             if (config.getModelReader() != null) {
-                reader = config.getModelReader().newInstance();
+                reader = config.getModelReader().getDeclaredConstructor().newInstance();
             }
-        } catch (InstantiationException | IllegalAccessException ex) {
+        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | SecurityException | InvocationTargetException ex) {
             LOGGER.log(WARNING, "Error creating OASModelReader instance.", ex);
         }
         if (reader != null) {
