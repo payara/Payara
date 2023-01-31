@@ -66,7 +66,7 @@ public class OpenApiConfiguration {
 
     private static final String MODEL_READER_KEY = "mp.openapi.model.reader";
     private static final String FILTER_KEY = "mp.openapi.filter";
-    private static final String SCAN_LIB_KEY = "mp.openapi.scan.lib";
+    private static final String SCAN_LIB_KEY = "mp.openapi.extensions.scan.lib";
     private static final String SCAN_DISABLE_KEY = "mp.openapi.scan.disable";
     private static final String SCAN_PACKAGES_KEY = "mp.openapi.scan.packages";
     private static final String SCAN_CLASSES_KEY = "mp.openapi.scan.classes";
