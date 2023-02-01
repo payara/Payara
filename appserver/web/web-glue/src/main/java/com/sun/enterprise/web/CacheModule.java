@@ -49,8 +49,8 @@ import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
 import com.sun.enterprise.deployment.runtime.web.SunWebApp;
 import org.glassfish.web.LogFacade;
 import org.glassfish.web.deployment.runtime.*;
-import org.apache.catalina.deploy.FilterDef;
-import org.apache.catalina.deploy.FilterMap;
+import org.apache.tomcat.util.descriptor.web.FilterDef;
+import org.apache.tomcat.util.descriptor.web.FilterMap;
 
 import jakarta.servlet.DispatcherType;
 import java.util.EnumSet;
@@ -195,7 +195,7 @@ public final class CacheModule {
             // setup the ias CachingFilter definition with the context
             FilterDef filterDef = new FilterDef();
             filterDef.setFilterName(filterName);
-            filterDef.setFilterClassName(CACHING_FILTER_CLASSNAME);
+            filterDef.setFilterClass(CACHING_FILTER_CLASSNAME);
 
             if (mapping.getServletName() != null) {
                 filterDef.addInitParameter("servletName",
@@ -210,22 +210,14 @@ public final class CacheModule {
 
             // setup the mapping for the specified servlet-name or url-pattern
             FilterMap filterMap = new FilterMap();
-            filterMap.setServletName(mapping.getServletName());
-            filterMap.setURLPattern(mapping.getURLPattern());
+            filterMap.addServletName(mapping.getServletName());
+            filterMap.addURLPattern(mapping.getURLPattern());
             String[] dispatchers = mapConfig.getDispatcher();
             if (dispatchers != null) {
-                EnumSet<DispatcherType> dispatcherTypes = null;
                 for (String dispatcher : dispatchers) {
                     // calls to FilterMap.setDispatcher are cumulative
-                    if (dispatcherTypes == null) {
-                        dispatcherTypes = EnumSet.of(
-                            Enum.valueOf(DispatcherType.class, dispatcher));
-                    } else {
-                        dispatcherTypes.add(
-                            Enum.valueOf(DispatcherType.class, dispatcher));
-                    }
+                    filterMap.setDispatcher(dispatcher);
                 }
-                filterMap.setDispatcherTypes(dispatcherTypes);
             }
             filterMap.setFilterName(filterName);
             app.addFilterMap(filterMap);
