@@ -37,11 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2023] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.web.deploy;
 
-import org.apache.catalina.deploy.ErrorPage;
-import org.apache.catalina.util.RequestUtil;
+import org.apache.tomcat.util.buf.UDecoder;
+import org.apache.tomcat.util.descriptor.web.ErrorPage;
 import org.glassfish.web.deployment.descriptor.ErrorPageDescriptor;
 
 /**
@@ -65,6 +66,6 @@ public class ErrorPageDecorator extends ErrorPage {
             setExceptionType(decoree.getExceptionType());
         }
 
-        setLocation(RequestUtil.urlDecode(decoree.getLocation()));
+        setLocation(UDecoder.URLDecode(decoree.getLocation(), null));
     }
 }
