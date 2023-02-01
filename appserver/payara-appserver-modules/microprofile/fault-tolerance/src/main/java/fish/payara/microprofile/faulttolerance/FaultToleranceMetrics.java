@@ -48,7 +48,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.LongSupplier;
 
 import org.eclipse.microprofile.faulttolerance.Asynchronous;
-import org.eclipse.microprofile.metrics.MetricType;
 import org.eclipse.microprofile.metrics.MetricUnits;
 import org.eclipse.microprofile.metrics.Tag;
 
@@ -84,7 +83,7 @@ public interface FaultToleranceMetrics {
      *         for the provided policy in case this has not been done already.
      */
     default FaultToleranceMetrics boundTo(FaultToleranceMethodContext context, FaultTolerancePolicy policy) {
-        if (policy.isMetricsEnabled) {
+        /*if (policy.isMetricsEnabled) {
             String[] fallbackTag = policy.isFallbackPresent()
                     ? new String[] {"fallback", "applied", "notApplied"}
                     : new String[] {"fallback", "notDefined"};
@@ -131,7 +130,7 @@ public interface FaultToleranceMetrics {
                     register("ft.bulkhead.executionsRunning", null, running::get);
                 }
             }
-        }
+        }*/
         return this;
     }
 
@@ -139,18 +138,6 @@ public interface FaultToleranceMetrics {
      * Generic (to be implemented/overridden)
      */
 
-    /**
-     * Registration:
-     *
-     * Registers a metric for each permutation of the tags. Infers unit from type.
-     *
-     * @param type {@link MetricType#COUNTER} (assumes no unit) or {@link MetricType#HISTOGRAM} (assumes {@link MetricUnits#NANOSECONDS})
-     * @param metric name of the metric(s)
-     * @param tags tag name and possible values
-     */
-    default void register(MetricType type, String metric, String[]... tags) {
-        //NOOP
-    }
 
     /**
      * Gauge registration:

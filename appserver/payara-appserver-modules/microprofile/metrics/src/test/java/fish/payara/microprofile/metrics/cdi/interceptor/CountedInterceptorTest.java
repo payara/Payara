@@ -99,7 +99,7 @@ public class CountedInterceptorTest {
     }
 
     @Test
-    @Counted(displayName = "displayName")
+    @Counted
     public void counterWithDisplayName() throws Exception {
         assertCounterIncrements();
     }

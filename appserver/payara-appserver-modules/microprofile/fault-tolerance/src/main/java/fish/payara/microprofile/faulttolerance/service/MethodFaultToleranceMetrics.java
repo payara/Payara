@@ -54,7 +54,6 @@ import org.eclipse.microprofile.metrics.Histogram;
 import org.eclipse.microprofile.metrics.Metadata;
 import org.eclipse.microprofile.metrics.MetricID;
 import org.eclipse.microprofile.metrics.MetricRegistry;
-import org.eclipse.microprofile.metrics.MetricType;
 import org.eclipse.microprofile.metrics.MetricUnits;
 import org.eclipse.microprofile.metrics.Tag;
 
@@ -116,20 +115,6 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
      * General Metrics
      */
 
-    @Override
-    public void register(MetricType type, String metric, String[]... tagsPermutations) {
-        if (type == MetricType.COUNTER) {
-            registerPermutations(tagsPermutations, tags ->
-                countersByMetricID.computeIfAbsent(withMethodTag(metric, tags),
-                    key -> registry.counter(key)));
-        } else if (type == MetricType.HISTOGRAM) {
-            registerPermutations(tagsPermutations, tags ->
-                histogramsByMetricID.computeIfAbsent(withMethodTag(metric, tags),
-                    key -> registry.histogram(withUnit(key, NANOSECONDS), key.getTagsAsArray())));
-        } else {
-            throw new UnsupportedOperationException("Only counter and histogram are supported but got: " + type);
-        }
-    }
 
     @Override
     public void register(String metric, String unit, LongSupplier gauge, String... tag) {
