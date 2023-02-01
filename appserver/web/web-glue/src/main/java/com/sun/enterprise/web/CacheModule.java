@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2023] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.web;
 
@@ -47,16 +48,17 @@ import com.sun.appserv.web.cache.mapping.Field;
 import com.sun.appserv.web.cache.mapping.ValueConstraint;
 import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
 import com.sun.enterprise.deployment.runtime.web.SunWebApp;
-import org.glassfish.web.LogFacade;
-import org.glassfish.web.deployment.runtime.*;
-import org.apache.tomcat.util.descriptor.web.FilterDef;
-import org.apache.tomcat.util.descriptor.web.FilterMap;
-
-import jakarta.servlet.DispatcherType;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.tomcat.util.descriptor.web.FilterDef;
+import org.apache.tomcat.util.descriptor.web.FilterMap;
+import org.glassfish.web.LogFacade;
+import org.glassfish.web.deployment.runtime.Cache;
+import org.glassfish.web.deployment.runtime.CacheHelper;
+import org.glassfish.web.deployment.runtime.DefaultHelper;
+import org.glassfish.web.deployment.runtime.SunWebAppImpl;
+import org.glassfish.web.deployment.runtime.WebProperty;
 
 /**
  * configures the cache for the application
