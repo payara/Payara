@@ -52,6 +52,7 @@ import org.glassfish.hk2.api.PreDestroy;
 import java.io.*;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
+import java.lang.ref.Cleaner;
 import java.net.*;
 import java.nio.file.Path;
 import java.security.*;
@@ -885,6 +886,7 @@ public class ASURLClassLoader extends CurrentBeforeParentClassLoader
          */
         public ProtectedJarFile(File file) throws IOException {
             super(file);
+            registerCloseEvent();
         }
 
         /**
@@ -920,17 +922,14 @@ public class ASURLClassLoader extends CurrentBeforeParentClassLoader
             super.close();
         }
 
-        /**
-         * @see java.lang.Object#finalize()
-         */
-        @Override
-        protected void finalize() throws IOException {
-            reallyClose();
-            try {
-                super.finalize();
-            } catch (Throwable t ) {
-                throw new IOException(t);
-            }
+        public final void registerCloseEvent() {
+            Cleaner.create().register(this, () -> {
+                try {
+                    reallyClose();
+                } catch (IOException ex) {
+                    _logger.log(Level.WARNING, null, ex);
+                }
+            });
         }
     }
 
@@ -1096,7 +1095,7 @@ public class ASURLClassLoader extends CurrentBeforeParentClassLoader
 
         /**
          * Constructs new FilteredInputStream which reports InputStreams not closed properly.
-         * When the garbage collector runs the finalizer.  If the stream is still open this class will
+         * When the garbage collector runs the cleaner.  If the stream is still open this class will
          * report a stack trace showing where the stream was opened.
          *
          * @param in - InputStream to be wrapped
@@ -1105,6 +1104,7 @@ public class ASURLClassLoader extends CurrentBeforeParentClassLoader
             super(in);
             throwable = new Throwable();
             getStreams().add(this);
+            registerStopEvent();
         }
 
         /**
@@ -1116,25 +1116,24 @@ public class ASURLClassLoader extends CurrentBeforeParentClassLoader
         }
 
         /**
-         * Invoked by Garbage Collector. If underlying InputStream was not closed properly,
+         * Callback invoked by Garbage Collector. If underlying InputStream was not closed properly,
          * the stack trace of the constructor will be logged!
          *
          * 'closed' is 'volatile', but it's a race condition to check it and how this code
          * relates to _close() is unclear.
          */
-        @Override
-        protected void finalize() throws Throwable {
-            if (!closed && this.in != null){
-                try {
-                    in.close();
+        public final void registerStopEvent() {
+            Cleaner.create().register(this, () -> {
+                if (!closed && this.in != null) {
+                    try {
+                        in.close();
+                    } catch (IOException ignored) {
+                        //Cannot do anything here.
+                    }
+                    //Well, give them a stack trace!
+                    report();
                 }
-                catch (IOException ignored){
-                    //Cannot do anything here.
-                }
-                //Well, give them a stack trace!
-                report();
-            }
-            super.finalize();
+            });
         }
 
         /**

@@ -50,7 +50,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.ref.Cleaner;
 import java.net.URI;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -306,6 +308,7 @@ public abstract class PayloadFilesManager {
                       logger),
                   report,
                   logger);
+            registerCleanupEvent();
         }
         /**
          * Creates a new PayloadFilesManager for temporary files.
@@ -336,10 +339,10 @@ public abstract class PayloadFilesManager {
             }
         }
 
-        @Override
-        protected void finalize() throws Throwable {
-            super.finalize();
-            cleanup();
+        public final void registerCleanupEvent() {
+            Cleaner.create().register(this, () -> {
+                cleanup();
+            });
         }
 
         @Override
