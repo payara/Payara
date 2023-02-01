@@ -71,27 +71,18 @@ import jakarta.enterprise.inject.spi.InjectionPoint;
 import org.eclipse.microprofile.metrics.Counter;
 import org.eclipse.microprofile.metrics.Histogram;
 import org.eclipse.microprofile.metrics.Metadata;
-import org.eclipse.microprofile.metrics.Meter;
-import org.eclipse.microprofile.metrics.MetricType;
 import org.eclipse.microprofile.metrics.MetricUnits;
-import org.eclipse.microprofile.metrics.SimpleTimer;
 import org.eclipse.microprofile.metrics.Tag;
 import org.eclipse.microprofile.metrics.Timer;
-import org.eclipse.microprofile.metrics.annotation.ConcurrentGauge;
 import org.eclipse.microprofile.metrics.annotation.Counted;
 import org.eclipse.microprofile.metrics.annotation.Gauge;
-import org.eclipse.microprofile.metrics.annotation.Metered;
 import org.eclipse.microprofile.metrics.annotation.Metric;
-import org.eclipse.microprofile.metrics.annotation.SimplyTimed;
 import org.eclipse.microprofile.metrics.annotation.Timed;
 import org.junit.Test;
 
-import fish.payara.microprofile.metrics.impl.ConcurrentGaugeImpl;
 import fish.payara.microprofile.metrics.impl.CounterImpl;
 import fish.payara.microprofile.metrics.impl.GaugeImpl;
 import fish.payara.microprofile.metrics.impl.HistogramImpl;
-import fish.payara.microprofile.metrics.impl.MeterImpl;
-import fish.payara.microprofile.metrics.impl.SimpleTimerImpl;
 import fish.payara.microprofile.metrics.impl.TimerImpl;
 import fish.payara.microprofile.metrics.test.TestUtils;
 
@@ -120,11 +111,8 @@ public class AnnotationReaderTest {
      */
 
     @Test
-    @ConcurrentGauge
     @Counted
-    @Metered
     @Timed
-    @SimplyTimed
     @Gauge(unit = MetricUnits.NONE)
     public void relativeInferredNameMethod() {
         // OBS "<this>" is substituted with canonical name of test class (shorthand for better readability)
@@ -132,11 +120,8 @@ public class AnnotationReaderTest {
     }
 
     @Test
-    @ConcurrentGauge(name = "localMethod")
     @Counted(name = "localMethod")
-    @Metered(name = "localMethod")
     @Timed(name = "localMethod")
-    @SimplyTimed(name = "localMethod")
     @Gauge(name = "localMethod", unit = MetricUnits.NONE)
     public void relativeGivenLocalNameMethod() {
         // OBS "<this>" is substituted with canonical name of test class (shorthand for better readability)
@@ -144,32 +129,23 @@ public class AnnotationReaderTest {
     }
 
     @Test
-    @ConcurrentGauge(absolute = true)
     @Counted(absolute = true)
-    @Metered(absolute = true)
     @Timed(absolute = true)
-    @SimplyTimed(absolute = true)
     @Gauge(absolute = true, unit = MetricUnits.NONE)
     public void absoluteInferredNameMethod() {
         assertNamed("absoluteInferredNameMethod");
     }
 
     @Test
-    @ConcurrentGauge(name = "localMethod", absolute = true)
     @Counted(name = "localMethod", absolute = true)
-    @Metered(name = "localMethod", absolute = true)
     @Timed(name = "localMethod", absolute = true)
-    @SimplyTimed(name = "localMethod", absolute = true)
     @Gauge(name = "localMethod", absolute = true, unit = MetricUnits.NONE)
     public void absoluteGivenLocalNameMethod() {
         assertNamed("localMethod");
     }
 
-    @ConcurrentGauge
     @Counted
-    @Metered
     @Timed
-    @SimplyTimed
     private static class BeanA {
         @SuppressWarnings("unused")
         void name() { /* signature not important here */ }
@@ -180,11 +156,8 @@ public class AnnotationReaderTest {
         assertNamed("<this>.BeanA.name", BeanA.class);
     }
 
-    @ConcurrentGauge(absolute = true)
     @Counted(absolute = true)
-    @Metered(absolute = true)
     @Timed(absolute = true)
-    @SimplyTimed(absolute = true)
     private static class BeanB {
         @SuppressWarnings("unused")
         void name() { /* signature not important here */ }
@@ -194,11 +167,8 @@ public class AnnotationReaderTest {
         assertNamed("BeanB.name", BeanB.class);
     }
 
-    @ConcurrentGauge(name = "contextMethod")
     @Counted(name = "contextMethod")
-    @Metered(name = "contextMethod")
     @Timed(name = "contextMethod")
-    @SimplyTimed(name = "contextMethod")
     private static class BeanC {
         @SuppressWarnings("unused")
         void name() { /* signature not important here */ }
@@ -208,11 +178,8 @@ public class AnnotationReaderTest {
         assertNamed(BeanC.class.getPackage().getName() + ".contextMethod.name", BeanC.class);
     }
 
-    @ConcurrentGauge(name = "contextMethod", absolute = true)
     @Counted(name = "contextMethod", absolute = true)
-    @Metered(name = "contextMethod", absolute = true)
     @Timed(name = "contextMethod", absolute = true)
-    @SimplyTimed(name = "contextMethod", absolute = true)
     private static class BeanD {
         @SuppressWarnings("unused")
         void name() { /* signature not important here */ }
@@ -227,11 +194,8 @@ public class AnnotationReaderTest {
      */
 
     private static class BeanE {
-        @ConcurrentGauge
         @Counted
-        @Metered
         @Timed
-        @SimplyTimed
         BeanE() { /* parameters not important here */ }
     }
     @Test
@@ -241,11 +205,8 @@ public class AnnotationReaderTest {
     }
 
     private static class BeanF {
-        @ConcurrentGauge(name = "localConstructor")
         @Counted(name = "localConstructor")
-        @Metered(name = "localConstructor")
         @Timed(name = "localConstructor")
-        @SimplyTimed(name = "localConstructor")
         BeanF() { /* parameters not important here */ }
     }
     @Test
@@ -255,11 +216,8 @@ public class AnnotationReaderTest {
     }
 
     private static class BeanG {
-        @ConcurrentGauge(absolute = true)
         @Counted(absolute = true)
-        @Metered(absolute = true)
         @Timed(absolute = true)
-        @SimplyTimed(absolute = true)
         BeanG() { /* parameters not important here */ }
     }
     @Test
@@ -268,11 +226,8 @@ public class AnnotationReaderTest {
     }
 
     private static class BeanH {
-        @ConcurrentGauge(name = "localConstructor", absolute = true)
         @Counted(name = "localConstructor", absolute = true)
-        @Metered(name = "localConstructor", absolute = true)
         @Timed(name = "localConstructor", absolute = true)
-        @SimplyTimed(name = "localConstructor", absolute = true)
         BeanH() { /* parameters not important here */ }
     }
     @Test
@@ -280,11 +235,8 @@ public class AnnotationReaderTest {
         assertNamed("localConstructor", BeanH.class);
     }
 
-    @ConcurrentGauge
     @Counted
-    @Metered
     @Timed
-    @SimplyTimed
     private static class BeanI {
         @SuppressWarnings("unused")
         BeanI() { /* signature not important here */ }
@@ -295,11 +247,8 @@ public class AnnotationReaderTest {
         assertNamed("<this>.BeanI.BeanI", BeanI.class);
     }
 
-    @ConcurrentGauge(absolute = true)
     @Counted(absolute = true)
-    @Metered(absolute = true)
     @Timed(absolute = true)
-    @SimplyTimed(absolute = true)
     private static class BeanJ {
         @SuppressWarnings("unused")
         BeanJ() { /* signature not important here */ }
@@ -309,11 +258,8 @@ public class AnnotationReaderTest {
         assertNamed("BeanJ.BeanJ", BeanJ.class);
     }
 
-    @ConcurrentGauge(name = "contextConstructor")
     @Counted(name = "contextConstructor")
-    @Metered(name = "contextConstructor")
     @Timed(name = "contextConstructor")
-    @SimplyTimed(name = "contextConstructor")
     private static class BeanK {
         @SuppressWarnings("unused")
         BeanK() { /* signature not important here */ }
@@ -323,11 +269,8 @@ public class AnnotationReaderTest {
         assertNamed(BeanK.class.getPackage().getName() + ".contextConstructor.BeanK", BeanK.class);
     }
 
-    @ConcurrentGauge(name = "contextConstructor", absolute = true)
     @Counted(name = "contextConstructor", absolute = true)
-    @Metered(name = "contextConstructor", absolute = true)
     @Timed(name = "contextConstructor", absolute = true)
-    @SimplyTimed(name = "contextConstructor", absolute = true)
     private static class BeanL {
         @SuppressWarnings("unused")
         BeanL() { /* signature not important here */ }
@@ -342,11 +285,8 @@ public class AnnotationReaderTest {
      * Test metric names for methods when annotated on super class
      */
 
-    @ConcurrentGauge
     @Counted
-    @Metered
     @Timed
-    @SimplyTimed
     private static class BeanMx { /* not important here */ }
     private static class BeanM extends BeanMx {
         @SuppressWarnings("unused")
@@ -358,11 +298,8 @@ public class AnnotationReaderTest {
         assertNamed("<this>.BeanM.name", BeanM.class);
     }
 
-    @ConcurrentGauge(absolute = true)
     @Counted(absolute = true)
-    @Metered(absolute = true)
     @Timed(absolute = true)
-    @SimplyTimed(absolute = true)
     private static class BeanNx { /* not important here */ }
     private static class BeanN extends BeanNx {
         @SuppressWarnings("unused")
@@ -373,11 +310,8 @@ public class AnnotationReaderTest {
         assertNamed("BeanN.name", BeanN.class);
     }
 
-    @ConcurrentGauge(name = "contextMethod")
     @Counted(name = "contextMethod")
-    @Metered(name = "contextMethod")
     @Timed(name = "contextMethod")
-    @SimplyTimed(name = "contextMethod")
     private static class BeanOx { /* not important here */ }
     private static class BeanO extends BeanOx {
         @SuppressWarnings("unused")
@@ -388,11 +322,8 @@ public class AnnotationReaderTest {
         assertNamed(BeanO.class.getPackage().getName() + ".contextMethod.name", BeanO.class);
     }
 
-    @ConcurrentGauge(name = "contextMethod", absolute = true)
     @Counted(name = "contextMethod", absolute = true)
-    @Metered(name = "contextMethod", absolute = true)
     @Timed(name = "contextMethod", absolute = true)
-    @SimplyTimed(name = "contextMethod", absolute = true)
     private static class BeanPX { /* not important here */ }
     private static class BeanP extends BeanPX {
         @SuppressWarnings("unused")
@@ -407,11 +338,8 @@ public class AnnotationReaderTest {
      * Test metric names for constructors when annotated on super class
      */
 
-    @ConcurrentGauge
     @Counted
-    @Metered
     @Timed
-    @SimplyTimed
     private static class BeanQx { /* not important here */ }
     private static class BeanQ extends BeanQx {
         @SuppressWarnings("unused")
@@ -423,11 +351,8 @@ public class AnnotationReaderTest {
         assertNamed("<this>.BeanQ.BeanQ", BeanQ.class);
     }
 
-    @ConcurrentGauge(absolute = true)
     @Counted(absolute = true)
-    @Metered(absolute = true)
     @Timed(absolute = true)
-    @SimplyTimed(absolute = true)
     private static class BeanRx { /* not important here */ }
     private static class BeanR extends BeanRx {
         @SuppressWarnings("unused")
@@ -438,11 +363,8 @@ public class AnnotationReaderTest {
         assertNamed("BeanR.BeanR", BeanR.class);
     }
 
-    @ConcurrentGauge(name = "contextConstructor")
     @Counted(name = "contextConstructor")
-    @Metered(name = "contextConstructor")
     @Timed(name = "contextConstructor")
-    @SimplyTimed(name = "contextConstructor")
     private static class BeanSx { /* not important here */ }
     private static class BeanS extends BeanSx {
         @SuppressWarnings("unused")
@@ -453,11 +375,8 @@ public class AnnotationReaderTest {
         assertNamed(BeanS.class.getPackage().getName() + ".contextConstructor.BeanS", BeanS.class);
     }
 
-    @ConcurrentGauge(name = "contextConstructor", absolute = true)
     @Counted(name = "contextConstructor", absolute = true)
-    @Metered(name = "contextConstructor", absolute = true)
     @Timed(name = "contextConstructor", absolute = true)
-    @SimplyTimed(name = "contextConstructor", absolute = true)
     private static class BeanTx { /* not important here */ }
     private static class BeanT extends BeanTx {
         @SuppressWarnings("unused")
@@ -595,32 +514,20 @@ public class AnnotationReaderTest {
 
 
     @Test
-    @Counted(name = "name", absolute = true, description = "description", displayName = "displayName",
+    @Counted(name = "name", absolute = true, description = "description",
         unit = "unit", tags = { "a=b", "c=d" })
-    @ConcurrentGauge(name = "name", absolute = true, description = "description", displayName = "displayName",
+    @Timed(name = "name", absolute = true, description = "description",
         unit = "unit", tags = { "a=b", "c=d" })
-    @Metered(name = "name", absolute = true, description = "description", displayName = "displayName",
-        unit = "unit", tags = { "a=b", "c=d" })
-    @Timed(name = "name", absolute = true, description = "description", displayName = "displayName",
-        unit = "unit", tags = { "a=b", "c=d" })
-    @SimplyTimed(name = "name", absolute = true, description = "description", displayName = "displayName",
-        unit = "unit", tags = { "a=b", "c=d" })
-    @Gauge(name = "name", absolute = true, description = "description", displayName = "displayName",
+    @Gauge(name = "name", absolute = true, description = "description",
         unit = "unit", tags = { "a=b", "c=d" })
     public void metadataFromMethod() {
         assertMetadata();
     }
 
     private static class BeanAK {
-        @Counted(name = "name", absolute = true, description = "description", displayName = "displayName",
+        @Counted(name = "name", absolute = true, description = "description",
             unit = "unit", tags = { "a=b", "c=d" })
-        @ConcurrentGauge(name = "name", absolute = true, description = "description", displayName = "displayName",
-            unit = "unit", tags = { "a=b", "c=d" })
-        @Metered(name = "name", absolute = true, description = "description", displayName = "displayName",
-            unit = "unit", tags = { "a=b", "c=d" })
-        @Timed(name = "name", absolute = true, description = "description", displayName = "displayName",
-            unit = "unit", tags = { "a=b", "c=d" })
-        @SimplyTimed(name = "name", absolute = true, description = "description", displayName = "displayName",
+        @Timed(name = "name", absolute = true, description = "description",
             unit = "unit", tags = { "a=b", "c=d" })
         BeanAK() { /* not important */ }
     }
@@ -648,27 +555,21 @@ public class AnnotationReaderTest {
      * @Metric is inferred to correct MetricType in Metadata
      */
 
-    private static Map<Class<?>, MetricType> getMetricInterfaceExpectedMapping() {
-        Map<Class<?>, MetricType> expected = new HashMap<>();
-        expected.put(Counter.class, MetricType.COUNTER);
-        expected.put(org.eclipse.microprofile.metrics.ConcurrentGauge.class, MetricType.CONCURRENT_GAUGE);
-        expected.put(Meter.class, MetricType.METERED);
-        expected.put(Timer.class, MetricType.TIMER);
-        expected.put(SimpleTimer.class, MetricType.SIMPLE_TIMER);
-        expected.put(Histogram.class, MetricType.HISTOGRAM);
-        expected.put(org.eclipse.microprofile.metrics.Gauge.class, MetricType.GAUGE);
+    private static Map<Class<?>, String> getMetricInterfaceExpectedMapping() {
+        Map<Class<?>, String> expected = new HashMap<>();
+        expected.put(Counter.class, Counter.class.getName());
+        expected.put(Timer.class, Timer.class.getName());
+        expected.put(Histogram.class, Histogram.class.getName());
+        expected.put(org.eclipse.microprofile.metrics.Gauge.class, Gauge.class.getName());
         return expected;
     }
 
-    private static Map<Class<?>, MetricType> getMetricImplementationExpectedMapping() {
-        Map<Class<?>, MetricType> expected = new HashMap<>();
-        expected.put(CounterImpl.class, MetricType.COUNTER);
-        expected.put(ConcurrentGaugeImpl.class, MetricType.CONCURRENT_GAUGE);
-        expected.put(MeterImpl.class, MetricType.METERED);
-        expected.put(TimerImpl.class, MetricType.TIMER);
-        expected.put(SimpleTimerImpl.class, MetricType.SIMPLE_TIMER);
-        expected.put(HistogramImpl.class, MetricType.HISTOGRAM);
-        expected.put(GaugeImpl.class, MetricType.GAUGE);
+    private static Map<Class<?>, String> getMetricImplementationExpectedMapping() {
+        Map<Class<?>, String> expected = new HashMap<>();
+        expected.put(CounterImpl.class, Counter.class.getName());
+        expected.put(TimerImpl.class, Timer.class.getName());
+        expected.put(HistogramImpl.class, Histogram.class.getName());
+        expected.put(GaugeImpl.class, Gauge.class.getName());
         return expected;
     }
 
@@ -677,13 +578,7 @@ public class AnnotationReaderTest {
         @Metric
         Counter counter;
         @Metric
-        org.eclipse.microprofile.metrics.ConcurrentGauge concurrentGauge;
-        @Metric
-        Meter meter;
-        @Metric
         Timer timer;
-        @Metric
-        SimpleTimer simpleTimer;
         @Metric
         Histogram histogram;
         @Metric
@@ -699,13 +594,7 @@ public class AnnotationReaderTest {
         @Metric
         CounterImpl counter;
         @Metric
-        ConcurrentGaugeImpl concurrentGauge;
-        @Metric
-        MeterImpl meter;
-        @Metric
         TimerImpl timer;
-        @Metric
-        SimpleTimerImpl simpleTimer;
         @Metric
         HistogramImpl histogram;
         @Metric
@@ -720,16 +609,16 @@ public class AnnotationReaderTest {
      * Helpers...
      */
 
-    private static <E extends AnnotatedElement & Member> void assertMetricType(Map<Class<?>, MetricType> expected,
+    private static <E extends AnnotatedElement & Member> void assertMetricType(Map<Class<?>, String> expected,
             E[] elements, Function<E, Class<?>> actualType) {
-        AnnotationReader<Metric> reader = AnnotationReader.METRIC;
+        AnnotationReader<Metric> reader = null;
         for (E element : elements) {
             if (!element.isSynthetic()) {
-                MetricType expectedType = expected.get(actualType.apply(element));
+                String expectedType = expected.get(actualType.apply(element));
                 Class<?> bean = element.getDeclaringClass();
-                assertEquals(expectedType, reader.metadata(bean, element).getTypeRaw());
-                assertEquals(expectedType, reader.metadata(TestUtils.fakeInjectionPointFor(element, element)).getTypeRaw());
-                assertEquals(expectedType, reader.metadata(TestUtils.fakeMemberOf(element, element)).getTypeRaw());
+                assertEquals(expectedType, reader.metadata(bean, element).getName());
+                assertEquals(expectedType, reader.metadata(TestUtils.fakeInjectionPointFor(element, element)).getName());
+                assertEquals(expectedType, reader.metadata(TestUtils.fakeMemberOf(element, element)).getName());
             }
         }
     }
@@ -757,7 +646,7 @@ public class AnnotationReaderTest {
         final Set<Class<?>> actualReads = new HashSet<>();
         for (AnnotationReader<?> reader : AnnotationReader.readers()) {
             if (reader.isPresent(bean, element)) {
-                assertData(reader.type(), bean, element, reader);
+                assertData(reader.getClass().getName(), bean, element, reader);
                 actualReads.add(reader.annotationType());
             }
         }
@@ -766,7 +655,7 @@ public class AnnotationReaderTest {
 
     private static final Tag[] expectedTags = new Tag[] { new Tag("a", "b"), new Tag("c", "d") };
 
-    private static <E extends AnnotatedElement & Member, A extends Annotation> void assertData(MetricType expected,
+    private static <E extends AnnotatedElement & Member, A extends Annotation> void assertData(String expected,
             Class<?> bean, E element, AnnotationReader<A> reader) {
         assertMetadataOverride(expected, reader.metadata(bean, element));
         assertMetadataOverride(expected, reader.metadata(TestUtils.fakeMemberOf(element, element)));
@@ -775,11 +664,10 @@ public class AnnotationReaderTest {
         assertArrayEquals(expectedTags, reader.tags(reader.annotation(point)));
     }
 
-    private static void assertMetadataOverride(MetricType expected, Metadata metadata) {
-        assertEquals(expected, metadata.getTypeRaw());
+    private static void assertMetadataOverride(String expected, Metadata metadata) {
+        assertEquals(expected, metadata.getName());
         assertEquals("name", metadata.getName());
         assertEquals("description", metadata.getDescription());
-        assertEquals("displayName", metadata.getDisplayName());
         assertEquals("unit", metadata.getUnit());
     }
 
@@ -848,9 +736,9 @@ public class AnnotationReaderTest {
     private static void assertNamed(String expected, Parameter param) {
         String msg = "wrong name for parameter " + param.getName() + ", ";
         InjectionPoint point = TestUtils.fakeInjectionPointFor(param);
-        assertEquals(msg, expected, AnnotationReader.METRIC.name(point));
-        assertEquals(msg, expected, AnnotationReader.METRIC.metricID(point).getName());
-        assertEquals(msg, expected, AnnotationReader.METRIC.metadata(point).getName());
+        assertEquals(msg, expected, null);
+        assertEquals(msg, expected, null);
+        assertEquals(msg, expected, null);
     }
 
     private static <E extends AnnotatedElement & Member, A extends Annotation> void assertNamed(String msg,
@@ -872,10 +760,6 @@ public class AnnotationReaderTest {
         assertEquals(msg, expected, reader.metricID(annotated).getName());
         assertEquals(msg, expected, reader.metadata(annotated).getName());
 
-        // additional test that any setup never leaves the Metadata with invalid type
-        assertNotEquals(MetricType.INVALID, reader.metadata(point).getTypeRaw());
-        assertNotEquals(MetricType.INVALID, reader.metadata(annotated).getTypeRaw());
-        assertNotEquals(MetricType.INVALID, reader.metadata(bean, element).getTypeRaw());
     }
 
 }

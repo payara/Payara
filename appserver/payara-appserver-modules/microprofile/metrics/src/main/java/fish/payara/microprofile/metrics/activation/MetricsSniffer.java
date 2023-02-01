@@ -73,9 +73,7 @@ public class MetricsSniffer extends MicroProfileSniffer {
         return new Class[] {
             // Search for Metrics annotations
             org.eclipse.microprofile.metrics.annotation.Counted.class,
-            org.eclipse.microprofile.metrics.annotation.ConcurrentGauge.class,
             org.eclipse.microprofile.metrics.annotation.Gauge.class,
-            org.eclipse.microprofile.metrics.annotation.Metered.class,
             org.eclipse.microprofile.metrics.annotation.Metric.class,
             org.eclipse.microprofile.metrics.annotation.Timed.class,
             org.eclipse.microprofile.metrics.annotation.RegistryType.class,

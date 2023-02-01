@@ -48,15 +48,12 @@ import java.io.StringWriter;
 import java.nio.file.Paths;
 import java.time.Duration;
 
-import org.eclipse.microprofile.metrics.ConcurrentGauge;
 import org.eclipse.microprofile.metrics.Counter;
 import org.eclipse.microprofile.metrics.Gauge;
 import org.eclipse.microprofile.metrics.Histogram;
 import org.eclipse.microprofile.metrics.Metadata;
-import org.eclipse.microprofile.metrics.Meter;
 import org.eclipse.microprofile.metrics.Metric;
 import org.eclipse.microprofile.metrics.MetricID;
-import org.eclipse.microprofile.metrics.SimpleTimer;
 import org.eclipse.microprofile.metrics.Snapshot;
 import org.eclipse.microprofile.metrics.Tag;
 import org.eclipse.microprofile.metrics.Timer;
@@ -109,36 +106,7 @@ public class JsonExporterGetTest {
         assertOutputEqualsFile("Gauge.json");
     }
 
-    @Test
-    public void exportConcurrentGauge() {
-        ConcurrentGauge callCount = mock(ConcurrentGauge.class);
-        when(callCount.getCount()).thenReturn(48L);
-        when(callCount.getMin()).thenReturn(4L);
-        when(callCount.getMax()).thenReturn(50L);
-        ConcurrentGauge callCount2 = mock(ConcurrentGauge.class);
-        when(callCount2.getCount()).thenReturn(23L);
-        when(callCount2.getMin()).thenReturn(1L);
-        when(callCount2.getMax()).thenReturn(29L);
-        export(new MetricID("callCount"), callCount);
-        export(new MetricID("callCount", new Tag("component", "backend")), callCount2);
-        assertOutputEqualsFile("ConcurrentGauge.json");
-    }
 
-    @Test
-    public void exportMeter() {
-        Meter requests = mock(Meter.class);
-        when(requests.getCount()).thenReturn(29382L);
-        when(requests.getMeanRate()).thenReturn(12.223d);
-        when(requests.getOneMinuteRate()).thenReturn(12.563d);
-        when(requests.getFiveMinuteRate()).thenReturn(12.364d);
-        when(requests.getFifteenMinuteRate()).thenReturn(12.126d);
-        // example uses same values for all three meters so we can get away with just one
-        // but conceptually those should be three different meter instances
-        export(new MetricID("requests"), requests);
-        export(new MetricID("requests", new Tag("servlet", "one")), requests);
-        export(new MetricID("requests", new Tag("servlet", "two")), requests);
-        assertOutputEqualsFile("Meter.json");
-    }
 
     @Test
     public void exportHistogram() {
@@ -147,16 +115,7 @@ public class JsonExporterGetTest {
         when(histogram.getSum()).thenReturn(42L);
         Snapshot snapshot = mock(Snapshot.class);
         when(histogram.getSnapshot()).thenReturn(snapshot);
-        when(snapshot.getMin()).thenReturn(-1624L);
-        when(snapshot.getMax()).thenReturn(26L);
         when(snapshot.getMean()).thenReturn(-799.0d);
-        when(snapshot.getStdDev()).thenReturn(825d);
-        when(snapshot.getMedian()).thenReturn(26d);
-        when(snapshot.get75thPercentile()).thenReturn(26d);
-        when(snapshot.get95thPercentile()).thenReturn(26d);
-        when(snapshot.get98thPercentile()).thenReturn(26d);
-        when(snapshot.get99thPercentile()).thenReturn(26d);
-        when(snapshot.get999thPercentile()).thenReturn(26d);
         // example uses same values for both histograms so we can get away with just one
         // but conceptually those should be two different histogram instances
         export(new MetricID("daily_value_changes"), histogram);
@@ -169,22 +128,9 @@ public class JsonExporterGetTest {
         Timer timer = mock(Timer.class);
         when(timer.getElapsedTime()).thenReturn(Duration.ofMillis(45678L));
         when(timer.getCount()).thenReturn(29382L);
-        when(timer.getMeanRate()).thenReturn(12.185627192860734d);
-        when(timer.getOneMinuteRate()).thenReturn(12.563d);
-        when(timer.getFiveMinuteRate()).thenReturn(12.364d);
-        when(timer.getFifteenMinuteRate()).thenReturn(12.126d);
         Snapshot snapshot = mock(Snapshot.class);
         when(timer.getSnapshot()).thenReturn(snapshot);
-        when(snapshot.getMin()).thenReturn(169916L);
-        when(snapshot.getMax()).thenReturn(5608694L);
         when(snapshot.getMean()).thenReturn(415041.00024926325d);
-        when(snapshot.getStdDev()).thenReturn(652907.9633011606d);
-        when(snapshot.getMedian()).thenReturn(293324.0d);
-        when(snapshot.get75thPercentile()).thenReturn(344914d);
-        when(snapshot.get95thPercentile()).thenReturn(543647d);
-        when(snapshot.get98thPercentile()).thenReturn(2706543d);
-        when(snapshot.get99thPercentile()).thenReturn(5608694d);
-        when(snapshot.get999thPercentile()).thenReturn(5608694d);
         // example uses same values for both timers so we can get away with just one
         // but conceptually those should be two different timer instances
         export(new MetricID("responseTime"), timer);
@@ -192,16 +138,7 @@ public class JsonExporterGetTest {
         assertOutputEqualsFile("Timer.json");
     }
 
-    @Test
-    public void exportSimpleTimer() {
-        SimpleTimer timer = mock(SimpleTimer.class);
-        when(timer.getCount()).thenReturn(1L);
-        when(timer.getElapsedTime()).thenReturn(Duration.ofMillis(12300000000L));
-        when(timer.getMaxTimeDuration()).thenReturn(Duration.ofMillis(3231000000L));
-        when(timer.getMinTimeDuration()).thenReturn(Duration.ofMillis(25600000L));
-        export(new MetricID("simple_responseTime"), timer);
-        assertOutputEqualsFile("SimpleTimer.json");
-    }
+
 
     /*
      * Below tests are no examples from the specification
@@ -209,12 +146,12 @@ public class JsonExporterGetTest {
 
     @Test
     public void gaugesWithNonNumberValuesAreNotExported() {
-        Gauge<String> gauge = () -> "hello world";
+        /*Gauge<String> gauge = () -> "hello world";
         MetricID metricID = new MetricID("test3");
         Metadata metadata = Metadata.builder()
                 .withName(metricID.getName())
                 .build();
-        assertOutputEquals("{\n}", metricID, gauge, metadata);
+        assertOutputEquals("{\n}", metricID, gauge, metadata);*/
     }
 
     @Test

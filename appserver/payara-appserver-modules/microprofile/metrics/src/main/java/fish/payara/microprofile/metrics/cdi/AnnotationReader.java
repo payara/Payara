@@ -65,15 +65,11 @@ import jakarta.enterprise.inject.spi.InjectionPoint;
 import org.eclipse.microprofile.metrics.Metadata;
 import org.eclipse.microprofile.metrics.MetricID;
 import org.eclipse.microprofile.metrics.MetricRegistry;
-import org.eclipse.microprofile.metrics.MetricType;
 import org.eclipse.microprofile.metrics.MetricUnits;
 import org.eclipse.microprofile.metrics.Tag;
-import org.eclipse.microprofile.metrics.annotation.ConcurrentGauge;
 import org.eclipse.microprofile.metrics.annotation.Counted;
 import org.eclipse.microprofile.metrics.annotation.Gauge;
-import org.eclipse.microprofile.metrics.annotation.Metered;
 import org.eclipse.microprofile.metrics.annotation.Metric;
-import org.eclipse.microprofile.metrics.annotation.SimplyTimed;
 import org.eclipse.microprofile.metrics.annotation.Timed;
 
 /**
@@ -128,106 +124,64 @@ public final class AnnotationReader<T extends Annotation> {
 
     private static final Map<Class<? extends Annotation>, AnnotationReader<?>> READERS_BY_ANNOTATION = new HashMap<>();
 
-    public static final AnnotationReader<ConcurrentGauge> CONCURRENT_GAUGE = new AnnotationReader<>(
-            ConcurrentGauge.class, MetricType.CONCURRENT_GAUGE,
-            ConcurrentGauge::name,
-            ConcurrentGauge::tags,
-            ConcurrentGauge::displayName,
-            ConcurrentGauge::description,
-            ConcurrentGauge::absolute,
-            ConcurrentGauge::unit);
+
 
     public static final AnnotationReader<Counted> COUNTED = new AnnotationReader<>(
-            Counted.class, MetricType.COUNTER,
+            Counted.class, Counted.class.getName(),
             Counted::name,
             Counted::tags,
-            Counted::displayName,
             Counted::description,
             Counted::absolute,
             Counted::unit);
 
     public static final AnnotationReader<Gauge> GAUGE = new AnnotationReader<>(
-            Gauge.class, MetricType.GAUGE,
+            Gauge.class, Gauge.class.getName(),
             Gauge::name,
             Gauge::tags,
-            Gauge::displayName,
             Gauge::description,
             Gauge::absolute,
             Gauge::unit);
 
-    public static final AnnotationReader<Metered> METERED = new AnnotationReader<>(
-            Metered.class, MetricType.METERED,
-            Metered::name,
-            Metered::tags,
-            Metered::displayName,
-            Metered::description,
-            Metered::absolute,
-            Metered::unit);
-
-    public static final AnnotationReader<Metric> METRIC = new AnnotationReader<>(
-            Metric.class, MetricType.INVALID,
-            Metric::name,
-            Metric::tags,
-            Metric::displayName,
-            Metric::description,
-            Metric::absolute,
-            Metric::unit);
 
     public static final AnnotationReader<Timed> TIMED = new AnnotationReader<>(
-            Timed.class, MetricType.TIMER,
+            Timed.class, Timed.class.getName(),
             Timed::name,
             Timed::tags,
-            Timed::displayName,
             Timed::description,
             Timed::absolute,
             Timed::unit);
-
-    public static final AnnotationReader<SimplyTimed> SIMPLY_TIMED = new AnnotationReader<>(
-            SimplyTimed.class, MetricType.SIMPLE_TIMER,
-            SimplyTimed::name,
-            SimplyTimed::tags,
-            SimplyTimed::displayName,
-            SimplyTimed::description,
-            SimplyTimed::absolute,
-            SimplyTimed::unit);
 
     private static void register(AnnotationReader<?> reader) {
         READERS_BY_ANNOTATION.put(reader.annotationType(), reader);
     }
 
     static {
-        register(CONCURRENT_GAUGE);
         register(COUNTED);
         register(GAUGE);
-        register(METERED);
-        register(METRIC);
-        register(SIMPLY_TIMED);
         register(TIMED);
     }
 
     private final Class<T> annotationType;
-    private final MetricType type;
+
+    private final String classNameType;
     private final Function<T, String> name;
     private final Function<T, String[]> tags;
-    private final Function<T, String> displayName;
     private final Function<T, String> description;
     private final Predicate<T> absolute;
     private final Function<T, String> unit;
 
-    private AnnotationReader(Class<T> annotationType, MetricType type,
+    private AnnotationReader(Class<T> annotationType, String classNameType,
             Function<T, String> name,
             Function<T, String[]> tags,
-            Function<T, String> displayName,
             Function<T, String> description,
             Predicate<T> absolute,
             Function<T, String> unit) {
         this.annotationType = annotationType;
+        this.classNameType = classNameType;
         this.name = name;
         this.tags = tags;
-        this.displayName = displayName;
         this.description = description;
         this.absolute = absolute;
-        this.type = type;
         this.unit = unit;
     }
 
@@ -237,50 +191,41 @@ public final class AnnotationReader<T extends Annotation> {
 
     /**
      * If this {@link AnnotationReader} reads {@link Metric} {@link Annotation} it can be associated with different
-     * {@link MetricType} so that the provided type is used when creating {@link Metadata} using the
+     * so that the provided type is used when creating {@link Metadata} using the
      * {@link AnnotationReader}.
      *
-     * @param type any {@link MetricType}
-     * @return A new {@link AnnotationReader} using the provided {@link MetricType}
+     * @param classNameType
+     * @return A new {@link AnnotationReader} using the provided
      * @throws IllegalStateException In case this method is called on {@link AnnotationReader} that is not reading
      *                               {@link Metric} {@link Annotation}.
      */
-    public AnnotationReader<T> asType(MetricType type) {
+    public AnnotationReader<T> asType(String classNameType) {
         if (this.annotationType != Metric.class) {
             throw new IllegalStateException("Only Metric reader can be typed!");
         }
-        return new AnnotationReader<>(annotationType, type, name, tags, displayName, description, absolute, unit);
+        return new AnnotationReader<>(annotationType, classNameType, name, tags, description, absolute, unit);
     }
 
     /**
-     * Infers the {@link MetricType} from the provided {@link org.eclipse.microprofile.metrics.Metric} {@link Class}. If
-     * this fails {@link MetricType#INVALID} is used.
+     * Infers the from the provided {@link org.eclipse.microprofile.metrics.Metric} {@link Class}. If
+     * this fails .
      *
      * @param genericType the actual type of the {@link org.eclipse.microprofile.metrics.Metric} as declared by a
      *                    {@link Member} or {@link Parameter}.
-     * @return A new {@link AnnotationReader} which uses the inferred {@link MetricType}
+     * @return A new {@link AnnotationReader} which uses the inferred
      * @throws IllegalArgumentException in case the given type does not implement any of the known metric types.
      */
     private AnnotationReader<T> asType(Type genericType) {
         Class<?> type = (Class<?>) (genericType instanceof Class
                 ? genericType
                 : ((java.lang.reflect.ParameterizedType) genericType).getRawType());
-        return asType(MetricType.from(type));
+        return asType(type.getName());
     }
 
     private AnnotationReader<T> asAutoType(Type genericType) {
-        return annotationType == Metric.class && type == MetricType.INVALID ? asType(genericType) : this;
+        return annotationType == Metric.class ? asType(genericType) : this;
     }
 
-    /**
-     * @return the {@link MetricType} used by this {@link AnnotationReader} when generating a {@link Metadata} object
-     *         any of the variants of the {@link #metadata(Annotation)} methods. Usually each {@link Annotation} is
-     *         associated with a particular {@link MetricType} but for {@link Metric} {@link Annotation} the type can be
-     *         changed using {@link #asType(Class)} methods.
-     */
-    public MetricType type() {
-        return type;
-    }
 
     /**
      * Returns the effective annotation for the provided bean and element.
@@ -323,7 +268,7 @@ public final class AnnotationReader<T extends Annotation> {
      *         {@link #annotationType()}, else false.
      */
     public <E extends Member & AnnotatedElement> boolean isPresent(Class<?> bean, E element) {
-        return type == MetricType.GAUGE
+        return classNameType == GAUGE.classNameType
                 ? element instanceof Method && element.isAnnotationPresent(annotationType)
                 : annotation(bean, element) != null;
     }
@@ -457,16 +402,6 @@ public final class AnnotationReader<T extends Annotation> {
     }
 
     /**
-     * Returns the metric display name as defined by the provided {@link Annotation}
-     *
-     * @param annotation source annotation to read, not {@code null}
-     * @return display name value of the provided source annotation
-     */
-    public String displayName(T annotation) {
-        return displayName.apply(annotation);
-    }
-
-    /**
      * Returns the metric description as defined by the provided {@link Annotation}
      *
      * @param annotation source annotation to read, not {@code null}
@@ -563,9 +498,7 @@ public final class AnnotationReader<T extends Annotation> {
     private Metadata metadata(T annotation, String name) {
         return Metadata.builder()
                 .withName(name)
-                .withDisplayName(displayName(annotation))
                 .withDescription(description(annotation))
-                .withType(type)
                 .withUnit(unit(annotation))
                 .build();
     }
@@ -594,8 +527,7 @@ public final class AnnotationReader<T extends Annotation> {
      */
     public boolean isReference(T annotation) {
         return unit(annotation).equals(MetricUnits.NONE)
-               && description(annotation).isEmpty()
-               && displayName(annotation).isEmpty();
+               && description(annotation).isEmpty();
     }
 
     /**

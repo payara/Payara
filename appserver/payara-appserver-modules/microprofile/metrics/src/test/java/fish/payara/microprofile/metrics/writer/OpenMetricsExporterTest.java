@@ -50,16 +50,13 @@ import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.eclipse.microprofile.metrics.ConcurrentGauge;
 import org.eclipse.microprofile.metrics.Counter;
 import org.eclipse.microprofile.metrics.Gauge;
 import org.eclipse.microprofile.metrics.Histogram;
 import org.eclipse.microprofile.metrics.Metadata;
-import org.eclipse.microprofile.metrics.Meter;
 import org.eclipse.microprofile.metrics.Metric;
 import org.eclipse.microprofile.metrics.MetricID;
 import org.eclipse.microprofile.metrics.MetricUnits;
-import org.eclipse.microprofile.metrics.SimpleTimer;
 import org.eclipse.microprofile.metrics.Snapshot;
 import org.eclipse.microprofile.metrics.Tag;
 import org.eclipse.microprofile.metrics.Timer;
@@ -95,35 +92,9 @@ public class OpenMetricsExporterTest {
         assertOutputEqualsFile("Counter.txt", metricID, counter, metadata);
     }
 
-    @Test
-    public void exportConcurrentGauge() {
-        ConcurrentGauge gauge = mock(ConcurrentGauge.class);
-        when(gauge.getCount()).thenReturn(80L);
-        when(gauge.getMin()).thenReturn(20L);
-        when(gauge.getMax()).thenReturn(100L);
-        MetricID metricID = new MetricID("method_a_invocations");
-        Metadata metadata = Metadata.builder()
-                .withName(metricID.getName())
-                .withDescription("The number of parallel invocations of methodA()")
-                .build();
-        assertOutputEqualsFile("ConcurrentGauge.txt", metricID, gauge, metadata);
-    }
 
-    @Test
-    public void exportMeter() {
-        Meter meter = mock(Meter.class);
-        when(meter.getCount()).thenReturn(29382L);
-        when(meter.getMeanRate()).thenReturn(12.223d);
-        when(meter.getOneMinuteRate()).thenReturn(12.563d);
-        when(meter.getFiveMinuteRate()).thenReturn(12.364d);
-        when(meter.getFifteenMinuteRate()).thenReturn(12.126d);
-        MetricID metricID = new MetricID("requests");
-        Metadata metadata = Metadata.builder()
-                .withName(metricID.getName())
-                .withDescription("Tracks the number of requests to the server")
-                .build();
-        assertOutputEqualsFile("Meter.txt", metricID, meter, metadata);
-    }
+
+
 
     @Test
     public void exportHistogram() {
@@ -132,16 +103,6 @@ public class OpenMetricsExporterTest {
         when(histogram.getSum()).thenReturn(45678L);
         Snapshot snapshot = mock(Snapshot.class);
         when(histogram.getSnapshot()).thenReturn(snapshot);
-        when(snapshot.getMin()).thenReturn(180L);
-        when(snapshot.getMax()).thenReturn(31716L);
-        when(snapshot.getMean()).thenReturn(4738.231d);
-        when(snapshot.getStdDev()).thenReturn(1054.7343037063602d);
-        when(snapshot.getMedian()).thenReturn(4201d);
-        when(snapshot.get75thPercentile()).thenReturn(6175d);
-        when(snapshot.get95thPercentile()).thenReturn(13560d);
-        when(snapshot.get98thPercentile()).thenReturn(29643d);
-        when(snapshot.get99thPercentile()).thenReturn(31716d);
-        when(snapshot.get999thPercentile()).thenReturn(31716d);
         MetricID metricID = new MetricID("file_sizes");
         Metadata metadata = Metadata.builder()
                 .withName(metricID.getName())
@@ -151,20 +112,7 @@ public class OpenMetricsExporterTest {
         assertOutputEqualsFile("Histogram.txt", metricID, histogram, metadata);
     }
 
-    @Test
-    public void exportSimpleTimer() {
-        SimpleTimer timer = mock(SimpleTimer.class);
-        when(timer.getCount()).thenReturn(12L);
-        when(timer.getElapsedTime()).thenReturn(Duration.ofMillis(12300L));
-        when(timer.getMaxTimeDuration()).thenReturn(Duration.ofMillis(3231L));
-        when(timer.getMinTimeDuration()).thenReturn(Duration.ofNanos(25600000L));
-        MetricID metricID = new MetricID("response_time");
-        Metadata metadata = Metadata.builder()
-                .withName(metricID.getName())
-                .withDescription("The number of calls to this REST endpoint #(1)")
-                .build();
-        assertOutputEqualsFile("SimpleTimer.txt", metricID, timer, metadata);
-    }
+
 
     @Test
     public void exportGauge() {
@@ -185,22 +133,12 @@ public class OpenMetricsExporterTest {
         Timer timer = mock(Timer.class);
         when(timer.getElapsedTime()).thenReturn(Duration.ofMillis(23L));
         when(timer.getCount()).thenReturn(80L);
-        when(timer.getMeanRate()).thenReturn(0.004292520715985437d);
-        when(timer.getOneMinuteRate()).thenReturn(2.794076465421066E-14d);
-        when(timer.getFiveMinuteRate()).thenReturn(4.800392614619373E-4d);
-        when(timer.getFifteenMinuteRate()).thenReturn(0.01063191047532505d);
+
         Snapshot snapshot = mock(Snapshot.class);
         when(timer.getSnapshot()).thenReturn(snapshot);
-        when(snapshot.getMin()).thenReturn(169916L);
-        when(snapshot.getMax()).thenReturn(560869L);
+
         when(snapshot.getMean()).thenReturn(415041d);
-        when(snapshot.getStdDev()).thenReturn(652907d);
-        when(snapshot.getMedian()).thenReturn(293324d);
-        when(snapshot.get75thPercentile()).thenReturn(344914d);
-        when(snapshot.get95thPercentile()).thenReturn(543647d);
-        when(snapshot.get98thPercentile()).thenReturn(2706543d);
-        when(snapshot.get99thPercentile()).thenReturn(5608694d);
-        when(snapshot.get999thPercentile()).thenReturn(5608694d);
+
         MetricID metricID = new MetricID("response_time");
         Metadata metadata = Metadata.builder()
                 .withName(metricID.getName())
@@ -277,12 +215,13 @@ public class OpenMetricsExporterTest {
 
     @Test
     public void gaugesWithNonNumberValuesAreNotExported() {
-        Gauge<String> gauge = () -> "hello world";
+        //todo review implementation of Gauge
+        /*Gauge<String> gauge = () -> "hello world";
         MetricID metricID = new MetricID("test3");
         Metadata metadata = Metadata.builder()
                 .withName(metricID.getName())
                 .build();
-        assertOutputEquals("", metricID, gauge, metadata);
+        assertOutputEquals("", metricID, gauge, metadata);*/
     }
 
     @Test

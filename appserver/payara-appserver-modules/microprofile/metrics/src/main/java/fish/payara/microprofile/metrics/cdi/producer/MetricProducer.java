@@ -42,31 +42,25 @@ package fish.payara.microprofile.metrics.cdi.producer;
 
 import fish.payara.microprofile.metrics.cdi.AnnotationReader;
 
+import fish.payara.microprofile.metrics.impl.*;
 import jakarta.enterprise.context.Dependent;
 import jakarta.enterprise.inject.Produces;
 import jakarta.enterprise.inject.spi.InjectionPoint;
 import jakarta.inject.Inject;
-import org.eclipse.microprofile.metrics.ConcurrentGauge;
 import org.eclipse.microprofile.metrics.Counter;
 import org.eclipse.microprofile.metrics.Gauge;
 import org.eclipse.microprofile.metrics.Histogram;
-import org.eclipse.microprofile.metrics.Meter;
 import org.eclipse.microprofile.metrics.MetricRegistry;
-import org.eclipse.microprofile.metrics.MetricType;
-import org.eclipse.microprofile.metrics.SimpleTimer;
 import org.eclipse.microprofile.metrics.Timer;
 import org.eclipse.microprofile.metrics.annotation.Metric;
 
 @Dependent
 public class MetricProducer {
 
-    private static final AnnotationReader<Metric> COUNTER = AnnotationReader.METRIC.asType(MetricType.COUNTER);
-    private static final AnnotationReader<Metric> CONCURRENT_GAUGE = AnnotationReader.METRIC.asType(MetricType.CONCURRENT_GAUGE);
-    private static final AnnotationReader<Metric> GAUGE = AnnotationReader.METRIC.asType(MetricType.GAUGE);
-    private static final AnnotationReader<Metric> HISTOGRAM = AnnotationReader.METRIC.asType(MetricType.HISTOGRAM);
-    private static final AnnotationReader<Metric> METER = AnnotationReader.METRIC.asType(MetricType.METERED);
-    private static final AnnotationReader<Metric> SIMPLE_TIMER = AnnotationReader.METRIC.asType(MetricType.SIMPLE_TIMER);
-    private static final AnnotationReader<Metric> TIMER = AnnotationReader.METRIC.asType(MetricType.TIMER);
+    private static final AnnotationReader<Metric> COUNTER = null;
+    private static final AnnotationReader<Metric> GAUGE = null;
+    private static final AnnotationReader<Metric> HISTOGRAM = null;
+    private static final AnnotationReader<Metric> TIMER = null;
 
     @Inject
     private MetricRegistry registry;
@@ -76,30 +70,16 @@ public class MetricProducer {
         return COUNTER.getOrRegister(ip, Counter.class, registry);
     }
 
-    @Produces
-    private ConcurrentGauge concurrentGauge(InjectionPoint ip) {
-        return CONCURRENT_GAUGE.getOrRegister(ip, ConcurrentGauge.class, registry);
-    }
 
     @SuppressWarnings("unchecked")
     @Produces
-    private <T> Gauge<T> gauge(InjectionPoint ip) {
+    private <T extends Number> Gauge<T> gauge(InjectionPoint ip) {
         return GAUGE.getOrRegister(ip, Gauge.class, registry);
     }
 
     @Produces
     private Histogram histogram(InjectionPoint ip) {
         return HISTOGRAM.getOrRegister(ip, Histogram.class, registry);
-    }
-
-    @Produces
-    private Meter meter(InjectionPoint ip) {
-        return METER.getOrRegister(ip, Meter.class, registry);
-    }
-
-    @Produces
-    private SimpleTimer simpleTimer(InjectionPoint ip) {
-        return SIMPLE_TIMER.getOrRegister(ip, SimpleTimer.class, registry);
     }
 
     @Produces

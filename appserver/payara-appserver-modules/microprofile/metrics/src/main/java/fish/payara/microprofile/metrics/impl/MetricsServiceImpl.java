@@ -69,9 +69,7 @@ import org.eclipse.microprofile.metrics.Metric;
 import org.eclipse.microprofile.metrics.MetricID;
 import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.eclipse.microprofile.metrics.MetricRegistry.Type;
-import org.eclipse.microprofile.metrics.MetricType;
 import org.eclipse.microprofile.metrics.MetricUnits;
-import org.eclipse.microprofile.metrics.SimpleTimer;
 import org.eclipse.microprofile.metrics.Timer;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
@@ -132,11 +130,10 @@ public class MetricsServiceImpl implements MetricsService, ConfigListener, Monit
 
     private static final class RegisteredMetric {
 
-        final Type scope;
+
         final MetricID id;
 
-        RegisteredMetric(Type scope, MetricID metric) {
-            this.scope = scope;
+        RegisteredMetric(MetricID metric) {
             this.id = metric;
         }
     }
@@ -185,7 +182,7 @@ public class MetricsServiceImpl implements MetricsService, ConfigListener, Monit
 
         @Override
         public void onRegistration(MetricID registered, MetricRegistry registry) {
-            newlyRegistered.add(new RegisteredMetric(registry.getType(), registered));
+            newlyRegistered.add(new RegisteredMetric(registered));
         }
 
         RegisteredMetric pollNewlyRegistered() {
@@ -266,9 +263,6 @@ public class MetricsServiceImpl implements MetricsService, ConfigListener, Monit
                     if (metric instanceof Counting) {
                         metricCollector.collect(toName(metricID, "Count"), ((Counting) metric).getCount());
                     }
-                    if (metric instanceof SimpleTimer) {
-                        metricCollector.collect(toName(metricID, "Duration"), ((SimpleTimer) metric).getElapsedTime().toMillis());
-                    }
                     if (metric instanceof Timer) {
                         metricCollector.collect(toName(metricID, "MaxDuration"), ((Timer) metric).getSnapshot().getMax());
                     }
@@ -287,16 +281,15 @@ public class MetricsServiceImpl implements MetricsService, ConfigListener, Monit
     }
 
     private static void processMetadataToAnnotations(MetricsContextImpl context, MonitoringDataCollector collector) {
-        RegisteredMetric metric = context.pollNewlyRegistered();
+        //TODO reimplement this
+       /* RegisteredMetric metric = context.pollNewlyRegistered();
         while (metric != null) {
-            MetricID metricID = metric.id;
-            Type scope = metric.scope;
             MetricRegistry registry = context.getRegistry(scope);
             MonitoringDataCollector metricCollector = tagCollector(context.getName(), metricID, collector);
             Metadata metadata = registry.getMetadata(metricID.getName());
             String suffix = "Count";
             String property = "Count";
-            boolean isGauge = metadata.getTypeRaw() == MetricType.GAUGE;
+            boolean isGauge = metadata.getName() == Gauge.class.getName();
             if (isGauge) {
                 suffix = getMetricUnitSuffix(metadata.unit());
                 property = "Value";
@@ -305,7 +298,7 @@ public class MetricsServiceImpl implements MetricsService, ConfigListener, Monit
             metricCollector.annotate(toName(metricID, suffix), 0, false,
                     metadataToAnnotations(context.getName(), scope, metadata, property));
             metric = context.pollNewlyRegistered();
-        }
+        }*/
     }
 
     private static String getMetricUnitSuffix(Optional<String> unit) {
@@ -329,9 +322,7 @@ public class MetricsServiceImpl implements MetricsService, ConfigListener, Monit
                 "App", contextName, //
                 "Scope", scope.getName(), //
                 "Name", metadata.getName(), //
-                "Type", metadata.getType(), //
                 "Unit", unit, //
-                "DisplayName", metadata.getDisplayName(), //
                 "Description", metadata.getDescription(), //
                 "Property", property, //
                 "BaseUnit", MetricUnitsUtils.baseUnit(unit), //
@@ -410,7 +401,6 @@ public class MetricsServiceImpl implements MetricsService, ConfigListener, Monit
      * Initialize metrics from the metrics.xml containing the base & vendor
      * metrics metadata.
      *
-     * @param metadataConfig
      */
     private void initMetadataConfig(List<MetricsMetadata> baseMetadataList, List<MetricsMetadata> vendorMetadataList, boolean isRetry) {
         if (!baseMetadataList.isEmpty()) {

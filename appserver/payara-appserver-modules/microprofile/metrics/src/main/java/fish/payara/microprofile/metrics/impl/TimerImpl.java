@@ -60,13 +60,12 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import jakarta.enterprise.inject.Vetoed;
 import org.eclipse.microprofile.metrics.Histogram;
-import org.eclipse.microprofile.metrics.Meter;
 import org.eclipse.microprofile.metrics.Snapshot;
 import org.eclipse.microprofile.metrics.Timer;
 
 /**
  * A timer metric which aggregates timing durations and provides duration
- * statistics, plus throughput statistics via {@link Meter}.
+ * statistics, plus throughput statistics via.
  *
  * The timer measures duration in nanoseconds.
  *
@@ -74,7 +73,6 @@ import org.eclipse.microprofile.metrics.Timer;
 @Vetoed
 public class TimerImpl implements Timer {
 
-    private final Meter meter;
     private final Histogram histogram;
     private final Clock clock;
 
@@ -115,7 +113,6 @@ public class TimerImpl implements Timer {
      * @param clock the {@link Clock} implementation the timer should use
      */
     public TimerImpl(Reservoir reservoir, Clock clock) {
-        this.meter = new MeterImpl(clock);
         this.clock = clock;
         this.histogram = new HistogramImpl(reservoir);
     }
@@ -191,25 +188,6 @@ public class TimerImpl implements Timer {
         return histogram.getCount();
     }
 
-    @Override
-    public double getFifteenMinuteRate() {
-        return meter.getFifteenMinuteRate();
-    }
-
-    @Override
-    public double getFiveMinuteRate() {
-        return meter.getFiveMinuteRate();
-    }
-
-    @Override
-    public double getMeanRate() {
-        return meter.getMeanRate();
-    }
-
-    @Override
-    public double getOneMinuteRate() {
-        return meter.getOneMinuteRate();
-    }
 
     @Override
     public Snapshot getSnapshot() {
@@ -219,7 +197,6 @@ public class TimerImpl implements Timer {
     private void update(long duration) {
         if (duration >= 0) {
             histogram.update(duration);
-            meter.mark();
         }
     }
 

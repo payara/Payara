@@ -47,8 +47,7 @@ import java.io.Writer;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.Duration;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Level;
 
 import jakarta.json.Json;
@@ -58,19 +57,15 @@ import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonWriter;
 import jakarta.json.stream.JsonGenerator;
 
-import org.eclipse.microprofile.metrics.ConcurrentGauge;
 import org.eclipse.microprofile.metrics.Counter;
 import org.eclipse.microprofile.metrics.Gauge;
 import org.eclipse.microprofile.metrics.Histogram;
 import org.eclipse.microprofile.metrics.Metadata;
-import org.eclipse.microprofile.metrics.Meter;
-import org.eclipse.microprofile.metrics.Metered;
 import org.eclipse.microprofile.metrics.Metric;
 import org.eclipse.microprofile.metrics.MetricID;
 import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.eclipse.microprofile.metrics.MetricUnits;
 import org.eclipse.microprofile.metrics.Sampling;
-import org.eclipse.microprofile.metrics.SimpleTimer;
 import org.eclipse.microprofile.metrics.Snapshot;
 import org.eclipse.microprofile.metrics.Tag;
 import org.eclipse.microprofile.metrics.Timer;
@@ -127,14 +122,6 @@ public class JsonExporter implements MetricExporter {
     }
 
     @Override
-    public void export(MetricID metricID, ConcurrentGauge gauge, Metadata metadata) {
-        completeOrUpdateGroup(metricID, metadata);
-        appendMember(metricID, "current", gauge.getCount());
-        appendMember(metricID, "min", gauge.getMin());
-        appendMember(metricID, "max", gauge.getMax());
-    }
-
-    @Override
     public void export(MetricID metricID, Gauge<?> gauge, Metadata metadata) {
         completeGroup(metricID, metadata);
         if (mode == Mode.OPTIONS) {
@@ -165,40 +152,50 @@ public class JsonExporter implements MetricExporter {
 
     private void exportSampling(MetricID metricID, Sampling sampling) {
         Snapshot snapshot = sampling.getSnapshot();
-        appendMember(metricID, "min", snapshot.getMin());
         appendMember(metricID, "max", snapshot.getMax());
         appendMember(metricID, "mean", snapshot.getMean());
-        appendMember(metricID, "stddev", snapshot.getStdDev());
-        appendMember(metricID, "p50", snapshot.getMedian());
-        appendMember(metricID, "p75", snapshot.get75thPercentile());
-        appendMember(metricID, "p95", snapshot.get95thPercentile());
-        appendMember(metricID, "p98", snapshot.get98thPercentile());
-        appendMember(metricID, "p99", snapshot.get99thPercentile());
-        appendMember(metricID, "p999", snapshot.get999thPercentile());
+
+        Snapshot.PercentileValue[] pencentileValues = snapshot.percentileValues();
+        Optional<Snapshot.PercentileValue> median = Arrays.stream(pencentileValues)
+                .filter(p -> p.getValue() == 0.5).findFirst();
+        Optional<Snapshot.PercentileValue> percentile75th = Arrays.stream(pencentileValues)
+                .filter(p -> p.getValue() == 0.75).findFirst();
+        Optional<Snapshot.PercentileValue> percentile95th = Arrays.stream(pencentileValues)
+                .filter(p -> p.getValue() == 0.95).findFirst();
+        Optional<Snapshot.PercentileValue> percentile98th = Arrays.stream(pencentileValues)
+                .filter(p -> p.getValue() == 0.98).findFirst();
+        Optional<Snapshot.PercentileValue> percentile99th = Arrays.stream(pencentileValues)
+                .filter(p -> p.getValue() == 0.99).findFirst();
+        Optional<Snapshot.PercentileValue> percentile999th = Arrays.stream(pencentileValues)
+                .filter(p -> p.getValue() == 0.999).findFirst();
+
+        if(median.isPresent()) {
+            appendMember(metricID, "p50", median.get().getPercentile());
+        }
+
+        if(percentile75th.isPresent()) {
+            appendMember(metricID, "p75", percentile75th.get().getPercentile());
+        }
+
+        if(percentile95th.isPresent()) {
+            appendMember(metricID, "p95", percentile95th.get().getPercentile());
+        }
+
+        if(percentile98th.isPresent()) {
+            appendMember(metricID, "p98", percentile98th.get().getPercentile());
+        }
+
+        if(percentile99th.isPresent()) {
+            appendMember(metricID, "p99", percentile99th.get().getPercentile());
+        }
+
+        if(percentile999th.isPresent()) {
+            appendMember(metricID, "p999", percentile999th.get().getPercentile());
+        }
+
     }
 
-    @Override
-    public void export(MetricID metricID, Meter meter, Metadata metadata) {
-        completeOrUpdateGroup(metricID, metadata);
-        exportMetered(metricID, meter);
-    }
 
-    private void exportMetered(MetricID metricID, Metered metered) {
-        appendMember(metricID, "count", metered.getCount());
-        appendMember(metricID, "meanRate", metered.getMeanRate());
-        appendMember(metricID, "oneMinRate", metered.getOneMinuteRate());
-        appendMember(metricID, "fiveMinRate", metered.getFiveMinuteRate());
-        appendMember(metricID, "fifteenMinRate", metered.getFifteenMinuteRate());
-    }
-
-    @Override
-    public void export(MetricID metricID, SimpleTimer timer, Metadata metadata) {
-        completeOrUpdateGroup(metricID, metadata);
-        appendMember(metricID, "count", timer.getCount());
-        appendMember(metricID, "elapsedTime", timer.getElapsedTime().toMillis());
-        appendMember(metricID, "maxTimeDuration", millisOrNull(timer.getMaxTimeDuration()));
-        appendMember(metricID, "minTimeDuration", millisOrNull(timer.getMinTimeDuration()));
-    }
 
     private static Long millisOrNull(Duration d) {
         return d == null ? null : d.toMillis();
@@ -208,7 +205,7 @@ public class JsonExporter implements MetricExporter {
     public void export(MetricID metricID, Timer timer, Metadata metadata) {
         completeOrUpdateGroup(metricID, metadata);
         appendMember(metricID, "elapsedTime", millisOrNull(timer.getElapsedTime()));
-        exportMetered(metricID, timer);
+        //exportMetered(metricID, timer);
         exportSampling(metricID, timer);
     }
 
@@ -227,18 +224,16 @@ public class JsonExporter implements MetricExporter {
         JsonObjectBuilder metadataObj = Json.createObjectBuilder();
         Metadata metadata = exportedBeforeMetadata;
         metadataObj.add("unit", metadata.unit().orElse(MetricUnits.NONE));
-        metadataObj.add("type", metadata.getTypeRaw().toString());
+
         if (metadata.description().isPresent()) {
             String desc = metadata.getDescription();
             if (!desc.isEmpty()) {
                 metadataObj.add("description", desc);
             }
         }
-        String displayName = metadata.getDisplayName();
+
         String name = exportedBefore.getName();
-        if (!displayName.isEmpty() && !displayName.equals(name)) {
-            metadataObj.add("displayName", displayName);
-        }
+
         if (tagsArray != null) {
             metadataObj.add("tags", tagsArray.build());
             tagsArray = null;

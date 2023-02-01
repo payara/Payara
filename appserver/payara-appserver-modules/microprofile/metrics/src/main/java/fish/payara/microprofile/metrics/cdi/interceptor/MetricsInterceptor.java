@@ -122,10 +122,7 @@ public class MetricsInterceptor {
 
     private <E extends Member & AnnotatedElement> void registerMetrics(Class<?> bean, E element, Object target) {
         register(bean, element, AnnotationReader.COUNTED, registry::counter);
-        register(bean, element, AnnotationReader.CONCURRENT_GAUGE, registry::concurrentGauge);
-        register(bean, element, AnnotationReader.METERED, registry::meter);
         register(bean, element, AnnotationReader.TIMED, registry::timer);
-        register(bean, element, AnnotationReader.SIMPLY_TIMED, registry::simpleTimer);
         register(bean, element, AnnotationReader.GAUGE, (metadata, tags) ->
             registry.gauge(metadata, new GaugeImpl<>((Method) element, target), tags));
     }

@@ -56,11 +56,8 @@ package fish.payara.microprofile.metrics.cdi.extension;
 
 import fish.payara.microprofile.metrics.cdi.MetricsAnnotationBinding;
 import fish.payara.microprofile.metrics.cdi.AnnotationReader;
-import fish.payara.microprofile.metrics.cdi.interceptor.ConcurrentGaugeInterceptor;
 import fish.payara.microprofile.metrics.cdi.interceptor.CountedInterceptor;
-import fish.payara.microprofile.metrics.cdi.interceptor.MeteredInterceptor;
 import fish.payara.microprofile.metrics.cdi.interceptor.MetricsInterceptor;
-import fish.payara.microprofile.metrics.cdi.interceptor.SimplyTimedInterceptor;
 import fish.payara.microprofile.metrics.cdi.interceptor.TimedInterceptor;
 import fish.payara.microprofile.metrics.cdi.producer.MetricProducer;
 import fish.payara.microprofile.metrics.cdi.producer.MetricRegistryProducer;
@@ -86,12 +83,8 @@ import jakarta.enterprise.util.AnnotationLiteral;
 import jakarta.enterprise.util.Nonbinding;
 import jakarta.interceptor.Interceptor;
 import org.eclipse.microprofile.metrics.Metadata;
-import org.eclipse.microprofile.metrics.MetricType;
-import org.eclipse.microprofile.metrics.annotation.ConcurrentGauge;
 import org.eclipse.microprofile.metrics.annotation.Counted;
 import org.eclipse.microprofile.metrics.annotation.Gauge;
-import org.eclipse.microprofile.metrics.annotation.Metered;
-import org.eclipse.microprofile.metrics.annotation.SimplyTimed;
 import org.eclipse.microprofile.metrics.annotation.Timed;
 
 public class MetricCDIExtension<E extends Member & AnnotatedElement> implements Extension {
@@ -108,30 +101,24 @@ public class MetricCDIExtension<E extends Member & AnnotatedElement> implements 
 
     void beforeBeanDiscovery(@Observes BeforeBeanDiscovery beforeBeanDiscovery, BeanManager manager) {
         addNonbindingAnnotation(Counted.class, beforeBeanDiscovery);
-        addNonbindingAnnotation(ConcurrentGauge.class, beforeBeanDiscovery);
-        addNonbindingAnnotation(Metered.class, beforeBeanDiscovery);
         addNonbindingAnnotation(Timed.class, beforeBeanDiscovery);
-        addNonbindingAnnotation(SimplyTimed.class, beforeBeanDiscovery);
         addNonbindingAnnotation(Gauge.class, beforeBeanDiscovery);
 //
         addAnnotatedType(CountedInterceptor.class, manager, beforeBeanDiscovery);
-        addAnnotatedType(ConcurrentGaugeInterceptor.class, manager, beforeBeanDiscovery);
-        addAnnotatedType(MeteredInterceptor.class, manager, beforeBeanDiscovery);
         addAnnotatedType(TimedInterceptor.class, manager, beforeBeanDiscovery);
         addAnnotatedType(MetricsInterceptor.class, manager, beforeBeanDiscovery);
-        addAnnotatedType(SimplyTimedInterceptor.class, manager, beforeBeanDiscovery);
 
         addAnnotatedType(MetricProducer.class, manager, beforeBeanDiscovery);
         addAnnotatedType(MetricRegistryProducer.class, manager, beforeBeanDiscovery);
     }
 
-    <T> void metricsAnnotations(@Observes @WithAnnotations({ Counted.class, ConcurrentGauge.class, Gauge.class,
-            Metered.class, Timed.class, SimplyTimed.class }) ProcessAnnotatedType<T> processAnnotatedType) {
+    <T> void metricsAnnotations(@Observes @WithAnnotations({ Counted.class, Gauge.class,
+            Timed.class}) ProcessAnnotatedType<T> processAnnotatedType) {
         processAnnotatedType.configureAnnotatedType().add(METRICS_ANNOTATION_BINDING);
     }
 
-    <T> void validateMetrics(@Observes @WithAnnotations({ Counted.class, ConcurrentGauge.class, Gauge.class,
-            Metered.class, Timed.class, SimplyTimed.class }) ProcessAnnotatedType<T> processAnnotatedType) {
+    <T> void validateMetrics(@Observes @WithAnnotations({ Counted.class, Gauge.class,
+            Timed.class }) ProcessAnnotatedType<T> processAnnotatedType) {
         AnnotatedType<?> annotatedType = processAnnotatedType.getAnnotatedType();
         List<AnnotatedCallable<?>> annotatedCallables = new ArrayList<>(annotatedType.getConstructors());
         annotatedCallables.addAll(annotatedType.getMethods());
@@ -148,9 +135,7 @@ public class MetricCDIExtension<E extends Member & AnnotatedElement> implements 
 
     private void validateAnnotated(E element, Class<?> bean) {
         for (AnnotationReader<?> reader : AnnotationReader.readers()) {
-            if (reader.type() != MetricType.INVALID) {
-                validateAnnotated(element, bean, reader);
-            }
+            validateAnnotated(element, bean, reader);
         }
     }
 
@@ -162,20 +147,19 @@ public class MetricCDIExtension<E extends Member & AnnotatedElement> implements 
         String name = metadata.getName();
         E existingElement = annotatedElements.putIfAbsent(name, element);
         Metadata existingMetadata = metadataMap.putIfAbsent(name, metadata);
-        if (null != existingElement && null != existingMetadata
-                && metadata.getTypeRaw() != existingMetadata.getTypeRaw()) {
+        if (null != existingElement && null != existingMetadata) {
             String errorMessage;
             if (element instanceof Constructor) {
-                errorMessage = String.format("Duplicate metric name[%s] found on elements [%s#%s] and [%s#%s]",
+                errorMessage = String.format("Duplicate metric name[%s] found on elements [%s] and [%s]",
                         name,
-                        existingElement, existingMetadata.getType(),
-                        element, metadata.getType()
+                        existingElement,
+                        element
                 );
             } else {
-                errorMessage = String.format("Duplicate metric name[%s] found on elements [%s.%s#%s] and [%s.%s#%s]",
+                errorMessage = String.format("Duplicate metric name[%s] found on elements [%s.%s] and [%s.%s]",
                         name,
-                        existingElement.getDeclaringClass().getName(), existingElement.getName(), existingMetadata.getType(),
-                        element.getDeclaringClass().getName(), element.getName(), metadata.getType()
+                        existingElement.getDeclaringClass().getName(), existingElement.getName(),
+                        element.getDeclaringClass().getName(), element.getName()
                 );
             }
             validationMessages.add(errorMessage);

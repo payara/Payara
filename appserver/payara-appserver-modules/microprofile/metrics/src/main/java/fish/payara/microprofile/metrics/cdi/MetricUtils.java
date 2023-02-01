@@ -44,16 +44,13 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
-import org.eclipse.microprofile.metrics.ConcurrentGauge;
 import org.eclipse.microprofile.metrics.Counter;
 import org.eclipse.microprofile.metrics.Gauge;
 import org.eclipse.microprofile.metrics.Histogram;
 import org.eclipse.microprofile.metrics.Metadata;
-import org.eclipse.microprofile.metrics.Meter;
 import org.eclipse.microprofile.metrics.Metric;
 import org.eclipse.microprofile.metrics.MetricID;
 import org.eclipse.microprofile.metrics.MetricRegistry;
-import org.eclipse.microprofile.metrics.SimpleTimer;
 import org.eclipse.microprofile.metrics.Tag;
 import org.eclipse.microprofile.metrics.Timer;
 
@@ -103,11 +100,8 @@ public final class MetricUtils<T extends Metric> {
 
     static {
         register(Counter.class, MetricRegistry::counter, MetricRegistry::counter, MetricRegistry::counter);
-        register(ConcurrentGauge.class, MetricRegistry::concurrentGauge, MetricRegistry::concurrentGauge, MetricRegistry::concurrentGauge);
         register(Histogram.class, MetricRegistry::histogram, MetricRegistry::histogram, MetricRegistry::histogram);
-        register(Meter.class, MetricRegistry::meter, MetricRegistry::meter, MetricRegistry::meter);
         register(Timer.class, MetricRegistry::timer, MetricRegistry::timer, MetricRegistry::timer);
-        register(SimpleTimer.class, MetricRegistry::simpleTimer, MetricRegistry::simpleTimer, MetricRegistry::simpleTimer);
         register(Gauge.class, MetricUtils::getGauge, MetricUtils::getGauge, MetricUtils::getGauge);
     }
 
@@ -155,7 +149,7 @@ public final class MetricUtils<T extends Metric> {
         return gauge != null ? gauge : new LazyGauge<>(() -> registry.getGauges().get(metricID));
     }
 
-    private static final class LazyGauge<T> implements Gauge<T> {
+    private static final class LazyGauge<T extends Number> implements Gauge<T> {
 
         private final AtomicReference<Gauge<T>> gauge = new AtomicReference<>();
         private final Supplier<Gauge<T>> lookup;
