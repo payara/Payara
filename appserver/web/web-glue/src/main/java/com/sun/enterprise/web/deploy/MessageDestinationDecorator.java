@@ -47,7 +47,7 @@ import org.apache.tomcat.util.descriptor.web.MessageDestination;
 
 
 /**
- * Decorator of class <code>org.apache.catalina.deploy.MessageDestination</code>
+ * Decorator of class <code>org.apache.tomcat.util.descriptor.web.MessageDestination</code>
  *
  * @author Jean-Francois Arcand
  */
