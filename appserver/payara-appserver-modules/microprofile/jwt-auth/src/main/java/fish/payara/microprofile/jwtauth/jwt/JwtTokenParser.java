@@ -56,6 +56,7 @@ import jakarta.json.JsonReader;
 import jakarta.json.JsonString;
 import jakarta.json.JsonValue;
 import org.eclipse.microprofile.jwt.Claims;
+import org.eclipse.microprofile.jwt.config.Names;
 
 import java.io.StringReader;
 import java.security.PrivateKey;
@@ -114,8 +115,9 @@ public class JwtTokenParser {
         this(Optional.empty(), Optional.empty(), Optional.empty());
     }
 
-    public JsonWebTokenImpl parse(String bearerToken, boolean encryptionRequired, JwtPublicKeyStore publicKeyStore,
-            String acceptedIssuer, JwtPrivateKeyStore privateKeyStore, Optional<Long> tokenAge, Optional<Long> allowedClockSkew) throws JWTProcessingException {
+    public JsonWebTokenImpl parse(String bearerToken, boolean encryptionRequired,
+                                  JwtPublicKeyStore publicKeyStore, String acceptedIssuer,
+                                  JwtPrivateKeyStore privateKeyStore, Map<String, Optional<String>> optionalConfigProps) throws JWTProcessingException {
         JsonWebTokenImpl jsonWebToken;
         try {
             rawToken = bearerToken;
@@ -147,9 +149,12 @@ public class JwtTokenParser {
                     // see JWT Auth 1.2, Requirements for accepting signed and encrypted tokens
                     throw new JWTProcessingException("JWT expected to be encrypted, mp.jwt.decrypt.key.location was defined!");
                 }
-                jsonWebToken = verifyAndParseSignedJWT(acceptedIssuer, publicKey, tokenAge, allowedClockSkew);
+                jsonWebToken = verifyAndParseSignedJWT(acceptedIssuer, publicKey,
+                        optionalConfigProps.get(Names.TOKEN_AGE).map(Long::valueOf), optionalConfigProps.get(Names.CLOCK_SKEW).map(Long::valueOf));
             } else {
-                jsonWebToken = verifyAndParseEncryptedJWT(acceptedIssuer, publicKey, privateKeyStore.getPrivateKey(keyId), tokenAge, allowedClockSkew);
+                jsonWebToken = verifyAndParseEncryptedJWT(acceptedIssuer, publicKey,
+                        privateKeyStore.getPrivateKey(keyId), optionalConfigProps.get(Names.TOKEN_AGE).map(Long::valueOf),
+                        optionalConfigProps.get(Names.CLOCK_SKEW).map(Long::valueOf), optionalConfigProps.get(Names.DECRYPTOR_KEY_ALGORITHM));
             }
         } catch (JWTProcessingException | ParseException ex) {
             throw new JWTProcessingException(ex);
@@ -226,7 +231,9 @@ public class JwtTokenParser {
         }
     }
 
-    private JsonWebTokenImpl verifyAndParseEncryptedJWT(String issuer, PublicKey publicKey, PrivateKey privateKey, Optional<Long> tokenAge, Optional<Long> allowedClockSkew) throws JWTProcessingException {
+    private JsonWebTokenImpl verifyAndParseEncryptedJWT(String issuer, PublicKey publicKey, PrivateKey privateKey,
+                                                        Optional<Long> tokenAge, Optional<Long> allowedClockSkew,
+                                                        Optional<String> keyAlgorithm) throws JWTProcessingException {
         if (encryptedJWT == null) {
             throw new IllegalStateException("EncryptedJWT not parsed");
         }
@@ -234,6 +241,11 @@ public class JwtTokenParser {
         String algName = encryptedJWT.getHeader().getAlgorithm().getName();
         if (!RSA_OAEP.getName().equals(algName) && !RSA_OAEP_256.getName().equals(algName)) {
             throw new JWTProcessingException("Only RSA-OAEP and RSA-OAEP-256 algorithms are supported for JWT encryption, used " + algName);
+        }
+
+        // validate algorithm on header vs mp key algorithm config property
+        if (keyAlgorithm.isPresent() && !algName.equals(keyAlgorithm.get())) {
+            throw new JWTProcessingException("Key algorithm configuration specified, thus only accept " + keyAlgorithm.get());
         }
 
         try {

@@ -52,8 +52,10 @@ import java.net.URL;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -86,9 +88,7 @@ public class SignedJWTIdentityStore implements IdentityStore {
 
     private final boolean isEncryptionRequired;
 
-    private final Optional<Long> tokenAge;
-
-    private final Optional<Long> allowedClockSkew;
+    private Map<String, Optional<String>> optionalConfigProperty;
 
     public SignedJWTIdentityStore() {
         config = ConfigProvider.getConfig();
@@ -114,15 +114,14 @@ public class SignedJWTIdentityStore implements IdentityStore {
 
         // Signing is required by default, it doesn't parse if not signed
         isEncryptionRequired = decryptKeyLocation.isPresent();
-        tokenAge = readConfigOptional(Names.TOKEN_AGE, properties, config).map(Long::valueOf); // mp.jwt.verify.token.age
-        allowedClockSkew = readConfigOptional(Names.CLOCK_SKEW, properties, config).map(Long::valueOf); // mp.jwt.verify.clock.skew
+        setOptionalConfigProperty(properties);
     }
 
     public CredentialValidationResult validate(SignedJWTCredential signedJWTCredential) {
         final JwtTokenParser jwtTokenParser = new JwtTokenParser(enabledNamespace, customNamespace, disableTypeVerification);
         try {
             JsonWebTokenImpl jsonWebToken = jwtTokenParser.parse(signedJWTCredential.getSignedJWT(),
-                    isEncryptionRequired, publicKeyStore, acceptedIssuer, privateKeyStore, tokenAge, allowedClockSkew);
+                    isEncryptionRequired, publicKeyStore, acceptedIssuer, privateKeyStore, optionalConfigProperty);
 
             // verifyAndParseEncryptedJWT audience
             final Set<String> recipientsOfThisJWT = jsonWebToken.getAudience();
@@ -205,5 +204,12 @@ public class SignedJWTIdentityStore implements IdentityStore {
             valueOpt = config.getOptionalValue(key, String.class);
         }
         return valueOpt;
+    }
+
+    private void setOptionalConfigProperty(Optional<Properties> properties) {
+        optionalConfigProperty = new HashMap<>();
+        optionalConfigProperty.put(Names.TOKEN_AGE, readConfigOptional(Names.TOKEN_AGE, properties, config)); // mp.jwt.verify.token.age
+        optionalConfigProperty.put(Names.CLOCK_SKEW, readConfigOptional(Names.CLOCK_SKEW, properties, config)); // mp.jwt.verify.clock.skew
+        optionalConfigProperty.put(Names.DECRYPTOR_KEY_ALGORITHM,  readConfigOptional(Names.DECRYPTOR_KEY_ALGORITHM, properties, config)); //mp.jwt.decrypt.key.algorithm
     }
 }
