@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2017-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -115,7 +115,7 @@ public class JwtTokenParser {
     }
 
     public JsonWebTokenImpl parse(String bearerToken, boolean encryptionRequired, JwtPublicKeyStore publicKeyStore,
-            String acceptedIssuer, JwtPrivateKeyStore privateKeyStore) throws JWTProcessingException {
+            String acceptedIssuer, JwtPrivateKeyStore privateKeyStore, Optional<Long> tokenAge, Optional<Long> allowedClockSkew) throws JWTProcessingException {
         JsonWebTokenImpl jsonWebToken;
         try {
             rawToken = bearerToken;
@@ -147,9 +147,9 @@ public class JwtTokenParser {
                     // see JWT Auth 1.2, Requirements for accepting signed and encrypted tokens
                     throw new JWTProcessingException("JWT expected to be encrypted, mp.jwt.decrypt.key.location was defined!");
                 }
-                jsonWebToken = verifyAndParseSignedJWT(acceptedIssuer, publicKey);
+                jsonWebToken = verifyAndParseSignedJWT(acceptedIssuer, publicKey, tokenAge, allowedClockSkew);
             } else {
-                jsonWebToken = verifyAndParseEncryptedJWT(acceptedIssuer, publicKey, privateKeyStore.getPrivateKey(keyId));
+                jsonWebToken = verifyAndParseEncryptedJWT(acceptedIssuer, publicKey, privateKeyStore.getPrivateKey(keyId), tokenAge, allowedClockSkew);
             }
         } catch (JWTProcessingException | ParseException ex) {
             throw new JWTProcessingException(ex);
@@ -157,7 +157,7 @@ public class JwtTokenParser {
         return jsonWebToken;
     }
 
-    private JsonWebTokenImpl verifyAndParseSignedJWT(String issuer, PublicKey publicKey) throws JWTProcessingException {
+    private JsonWebTokenImpl verifyAndParseSignedJWT(String issuer, PublicKey publicKey, Optional<Long> tokenAge, Optional<Long> allowedClockSkew) throws JWTProcessingException {
         if (signedJWT == null) {
             throw new IllegalStateException("No parsed SignedJWT.");
         }
@@ -174,42 +174,8 @@ public class JwtTokenParser {
 
             // Vendor - Process namespaced claims
             rawClaims = handleNamespacedClaims(rawClaims);
-
-            // MP-JWT 1.0 4.1 Minimum MP-JWT Required Claims
-            if (!checkRequiredClaimsPresent(rawClaims)) {
-                throw new JWTProcessingException("Not all required claims present");
-            }
-
-            // MP-JWT 1.0 4.1 upn - has fallbacks
             String callerPrincipalName = getCallerPrincipalName(rawClaims);
-            if (callerPrincipalName == null) {
-                throw new JWTProcessingException("One of upn, preferred_username or sub is required to be non null");
-            }
-
-            // MP-JWT 1.0 6.1 2
-            if (!checkIssuer(rawClaims, issuer)) {
-                throw new JWTProcessingException("Bad issuer");
-            }
-
-            if (!checkNotExpired(rawClaims)) {
-                throw new JWTProcessingException("JWT token expired");
-            }
-
-            // MP-JWT 1.0 6.1 2
-            try {
-                if (signAlgorithmName.equals(RS256)) {
-                    if (!signedJWT.verify(new RSASSAVerifier((RSAPublicKey) publicKey))) {
-                        throw new JWTProcessingException("Signature of the JWT token is invalid");
-                    }
-                } else {
-                    if (!signedJWT.verify(new ECDSAVerifier((ECPublicKey) publicKey))) {
-                        throw new JWTProcessingException("Signature of the JWT token is invalid");
-                    }
-                }
-            } catch (JOSEException ex) {
-                throw new JWTProcessingException("Exception during JWT signature validation", ex);
-            }
-
+            verifySignedJWT(issuer, rawClaims, signAlgorithmName, callerPrincipalName, publicKey, tokenAge, allowedClockSkew);
             rawClaims.put(
                     raw_token.name(),
                     createObjectBuilder().add("token", rawToken).build().get("token"));
@@ -218,7 +184,49 @@ public class JwtTokenParser {
         }
     }
 
-    private JsonWebTokenImpl verifyAndParseEncryptedJWT(String issuer, PublicKey publicKey, PrivateKey privateKey) throws JWTProcessingException {
+    private void verifySignedJWT(String issuer, Map<String, JsonValue> rawClaims,
+                                 JWSAlgorithm signAlgorithmName, String callerPrincipalName, PublicKey publicKey,
+                                 Optional<Long> tokenAge, Optional<Long> allowedClockSkew) throws JWTProcessingException {
+        // MP-JWT 1.0 4.1 Minimum MP-JWT Required Claims
+        if (!checkRequiredClaimsPresent(rawClaims)) {
+            throw new JWTProcessingException("Not all required claims present");
+        }
+
+        // MP-JWT 1.0 4.1 upn - has fallbacks
+        if (callerPrincipalName == null) {
+            throw new JWTProcessingException("One of upn, preferred_username or sub is required to be non null");
+        }
+
+        // MP-JWT 1.0 6.1 2
+        if (!checkIssuer(rawClaims, issuer)) {
+            throw new JWTProcessingException("Bad issuer");
+        }
+
+        if (!checkNotExpired(rawClaims, allowedClockSkew)) {
+            throw new JWTProcessingException("JWT token expired");
+        }
+
+        if (tokenAge.isPresent() && checkIsTokenAged(rawClaims, tokenAge.get(), allowedClockSkew)) {
+            throw new JWTProcessingException(String.format("The token age has exceeded %d seconds", tokenAge.get()));
+        }
+
+        // MP-JWT 1.0 6.1 2
+        try {
+            if (signAlgorithmName.equals(RS256)) {
+                if (!signedJWT.verify(new RSASSAVerifier((RSAPublicKey) publicKey))) {
+                    throw new JWTProcessingException("Signature of the JWT token is invalid");
+                }
+            } else {
+                if (!signedJWT.verify(new ECDSAVerifier((ECPublicKey) publicKey))) {
+                    throw new JWTProcessingException("Signature of the JWT token is invalid");
+                }
+            }
+        } catch (JOSEException ex) {
+            throw new JWTProcessingException("Exception during JWT signature validation", ex);
+        }
+    }
+
+    private JsonWebTokenImpl verifyAndParseEncryptedJWT(String issuer, PublicKey publicKey, PrivateKey privateKey, Optional<Long> tokenAge, Optional<Long> allowedClockSkew) throws JWTProcessingException {
         if (encryptedJWT == null) {
             throw new IllegalStateException("EncryptedJWT not parsed");
         }
@@ -240,7 +248,7 @@ public class JwtTokenParser {
             throw new JWTProcessingException("Unable to parse signed JWT.");
         }
 
-        return verifyAndParseSignedJWT(issuer, publicKey);
+        return verifyAndParseSignedJWT(issuer, publicKey, tokenAge, allowedClockSkew);
     }
 
     private Map<String, JsonValue> handleNamespacedClaims(Map<String, JsonValue> currentClaims) {
@@ -277,12 +285,25 @@ public class JwtTokenParser {
      * @param presentedClaims the claims from the JWT
      * @return if the JWT has expired
      */
-    private boolean checkNotExpired(Map<String, JsonValue> presentedClaims) {
-        final long currentTime = System.currentTimeMillis() / 1000;
+    private boolean checkNotExpired(Map<String, JsonValue> presentedClaims, Optional<Long> allowedClockSkew) {
+        long currentTime = System.currentTimeMillis() / 1000;
+        if (allowedClockSkew.isPresent()) {
+            currentTime -= allowedClockSkew.get();
+        }
         final long expiredTime = ((JsonNumber) presentedClaims.get(exp.name())).longValue();
         final long issueTime = ((JsonNumber) presentedClaims.get(iat.name())).longValue();
 
         return currentTime < expiredTime && issueTime < expiredTime;
+    }
+
+    private boolean checkIsTokenAged(Map<String, JsonValue> presentedClaims, long tokenAge, Optional<Long> allowedClockSkew) {
+        long currentTime = System.currentTimeMillis() / 1000;
+        if (allowedClockSkew.isPresent()) {
+            currentTime -= allowedClockSkew.get();
+        }
+        final long issueTime = ((JsonNumber) presentedClaims.get(iat.name())).longValue();
+
+        return currentTime - issueTime > tokenAge;
     }
 
     private boolean checkIssuer(Map<String, JsonValue> presentedClaims, String acceptedIssuer) {

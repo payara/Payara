@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2017-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -86,6 +86,10 @@ public class SignedJWTIdentityStore implements IdentityStore {
 
     private final boolean isEncryptionRequired;
 
+    private final Optional<Long> tokenAge;
+
+    private final Optional<Long> allowedClockSkew;
+
     public SignedJWTIdentityStore() {
         config = ConfigProvider.getConfig();
 
@@ -110,13 +114,15 @@ public class SignedJWTIdentityStore implements IdentityStore {
 
         // Signing is required by default, it doesn't parse if not signed
         isEncryptionRequired = decryptKeyLocation.isPresent();
+        tokenAge = readConfigOptional(Names.TOKEN_AGE, properties, config).map(Long::valueOf); // mp.jwt.verify.token.age
+        allowedClockSkew = readConfigOptional(Names.CLOCK_SKEW, properties, config).map(Long::valueOf); // mp.jwt.verify.clock.skew
     }
 
     public CredentialValidationResult validate(SignedJWTCredential signedJWTCredential) {
         final JwtTokenParser jwtTokenParser = new JwtTokenParser(enabledNamespace, customNamespace, disableTypeVerification);
         try {
             JsonWebTokenImpl jsonWebToken = jwtTokenParser.parse(signedJWTCredential.getSignedJWT(),
-                    isEncryptionRequired, publicKeyStore, acceptedIssuer, privateKeyStore);
+                    isEncryptionRequired, publicKeyStore, acceptedIssuer, privateKeyStore, tokenAge, allowedClockSkew);
 
             // verifyAndParseEncryptedJWT audience
             final Set<String> recipientsOfThisJWT = jsonWebToken.getAudience();
