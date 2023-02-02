@@ -37,12 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2023] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.web.deploy;
 
 import com.sun.enterprise.deployment.web.InitializationParameter;
 import com.sun.enterprise.deployment.web.ServletFilter;
-import org.apache.catalina.deploy.FilterDef;
+import org.apache.tomcat.util.descriptor.web.FilterDef;
 
 import java.util.Map;
 import java.util.Vector;
@@ -97,7 +98,7 @@ public class FilterDefDecorator extends FilterDef {
     }
 
     public void setFilterClassName(String filterClassName) {
-        super.setFilterClassName(filterClassName);
+        super.setFilterClass(filterClassName);
         decoree.setClassName(filterClassName);
     }
 
