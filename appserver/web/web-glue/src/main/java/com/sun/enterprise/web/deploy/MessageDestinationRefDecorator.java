@@ -37,15 +37,16 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2023] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.web.deploy;
 
 import com.sun.enterprise.deployment.MessageDestinationReferenceDescriptor;
-import org.apache.catalina.deploy.MessageDestinationRef;
+import org.apache.tomcat.util.descriptor.web.MessageDestinationRef;
 
 
 /**
- * Decorator of class <code>org.apache.catalina.deploy.MessageDestinationRef</code>
+ * Decorator of class <code>org.apache.tomcat.util.descriptor.web.MessageDestinationRef</code>
  *
  * @author Jean-Francois Arcand
  */
@@ -54,8 +55,7 @@ public final class MessageDestinationRefDecorator extends MessageDestinationRef 
 
     private MessageDestinationReferenceDescriptor decoree;
     
-    public MessageDestinationRefDecorator(
-                                MessageDestinationReferenceDescriptor decoree){
+    public MessageDestinationRefDecorator(MessageDestinationReferenceDescriptor decoree) {
         this.decoree = decoree;
     }
 
