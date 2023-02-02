@@ -210,6 +210,6 @@ public class SignedJWTIdentityStore implements IdentityStore {
         optionalConfigProperty = new HashMap<>();
         optionalConfigProperty.put(Names.TOKEN_AGE, readConfigOptional(Names.TOKEN_AGE, properties, config)); // mp.jwt.verify.token.age
         optionalConfigProperty.put(Names.CLOCK_SKEW, readConfigOptional(Names.CLOCK_SKEW, properties, config)); // mp.jwt.verify.clock.skew
-        optionalConfigProperty.put(Names.DECRYPTOR_KEY_ALGORITHM,  readConfigOptional(Names.DECRYPTOR_KEY_ALGORITHM, properties, config)); //mp.jwt.decrypt.key.algorithm
+        optionalConfigProperty.put(Names.DECRYPTOR_KEY_ALGORITHM, readConfigOptional(Names.DECRYPTOR_KEY_ALGORITHM, properties, config)); //mp.jwt.decrypt.key.algorithm
     }
 }
