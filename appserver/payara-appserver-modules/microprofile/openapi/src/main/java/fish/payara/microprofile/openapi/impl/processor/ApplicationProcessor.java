@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2022] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -1153,7 +1153,26 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     public void visitSecurityRequirements(AnnotationModel annotation, AnnotatedElement element, ApiContext context) {
         List<AnnotationModel> securityRequirements = annotation.getValue("value", List.class);
         if (securityRequirements != null) {
-            securityRequirements.forEach(securityRequirement -> visitSecurityRequirement(securityRequirement, element, context));
+            securityRequirements.forEach(securityRequirement ->
+                    visitSecurityRequirement(securityRequirement, element, context));
+        }
+    }
+
+    @Override
+    public void visitSecurityRequirementSet(AnnotationModel annotation, AnnotatedElement element, ApiContext context) {
+        List<AnnotationModel> securityRequirements = annotation.getValue("value", List.class);
+        if (securityRequirements != null) {
+            securityRequirements.forEach(securityRequirement ->
+                    visitSecurityRequirement(securityRequirement, element, context));
+        }
+    }
+
+    @Override
+    public void visitSecurityRequirementSets(AnnotationModel annotation, AnnotatedElement element, ApiContext context) {
+        List<AnnotationModel> securityRequirementSetList = annotation.getValue("value", List.class);
+        if (securityRequirementSetList != null) {
+            securityRequirementSetList.forEach(securityRequirementSet ->
+                    visitSecurityRequirementSet(securityRequirementSet, element, context));
         }
     }
 
