@@ -42,7 +42,7 @@ package org.glassfish.deployment.common;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.ref.Cleaner;
+import org.glassfish.hk2.utilities.CleanerFactory;
 import java.net.URI;
 import java.text.MessageFormat;
 import java.util.Arrays;
@@ -353,7 +353,7 @@ public class ClientArtifactsManager {
     }
 
     public final void registerCloseEvent() {
-        Cleaner.create().register(this, () -> {
+        CleanerFactory.create().register(this, () -> {
             if (!isArtifactSetConsumed) {
                 closeOpenedJARs();
             }

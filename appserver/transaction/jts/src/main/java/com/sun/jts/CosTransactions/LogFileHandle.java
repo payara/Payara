@@ -66,7 +66,7 @@ package com.sun.jts.CosTransactions;
 
 import com.sun.enterprise.util.i18n.StringManager;
 import java.io.*;
-import java.lang.ref.Cleaner;
+import org.glassfish.hk2.utilities.CleanerFactory;
 import java.sql.SQLException;
 
 /**This class encapsulates file I/O operations and the file handle.
@@ -227,8 +227,12 @@ class LogFileHandle {
     }
 
     public final void registerDestroyEvent() {
-        Cleaner.create().register(this, () -> {
-            destroy();
+        CleanerFactory.create().register(this, () -> {
+            try {
+                destroy();
+            } catch(LogException ex) {
+                // Ignore it
+            }
         });
     }
 

@@ -52,7 +52,7 @@ import com.sun.jdo.spi.persistence.support.sqlstore.ejb.EJBHelper;
 import com.sun.jdo.spi.persistence.utility.Linkable;
 import com.sun.jdo.spi.persistence.utility.logging.Logger;
 import com.sun.jdo.spi.persistence.support.sqlstore.LogHelperSQLStore;
-import java.lang.ref.Cleaner;
+import org.glassfish.hk2.utilities.CleanerFactory;
 
 
 import java.sql.*;
@@ -874,7 +874,7 @@ public class ConnectionImpl implements Connection, Linkable {
     }
 
     public final void registerCloseEvent() {
-        Cleaner.create().register(this, () -> {
+        CleanerFactory.create().register(this, () -> {
             try {
                 this.connection.close();
                 logger.finest("sqlstore.connectionimpl.finalize"); // NOI18N

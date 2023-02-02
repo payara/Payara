@@ -65,7 +65,7 @@ import org.apache.catalina.util.RequestUtil;
 
 import jakarta.servlet.http.Part;
 import java.io.*;
-import java.lang.ref.Cleaner;
+import org.glassfish.hk2.utilities.CleanerFactory;
 import java.nio.charset.Charset;
 import java.sql.SQLException;
 import java.util.*;
@@ -622,7 +622,7 @@ class PartItem
      * Removes the file contents from the temporary storage.
      */
     public final void registerCleanupEvent() {
-        Cleaner.create().register(this, () -> {
+        CleanerFactory.create().register(this, () -> {
             File outputFile = dfos.getFile();
 
             if (outputFile != null && outputFile.exists()) {

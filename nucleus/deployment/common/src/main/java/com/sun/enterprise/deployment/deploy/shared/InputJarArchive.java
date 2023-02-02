@@ -49,7 +49,7 @@ import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 
 import java.io.*;
-import java.lang.ref.Cleaner;
+import org.glassfish.hk2.utilities.CleanerFactory;
 import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -543,7 +543,7 @@ public class InputJarArchive extends JarArchive implements ReadableArchive {
         }
 
         public final void registerCloseEvent() {
-            Cleaner.create().register(this, () -> {
+            CleanerFactory.create().register(this, () -> {
                 close();
             });
         }

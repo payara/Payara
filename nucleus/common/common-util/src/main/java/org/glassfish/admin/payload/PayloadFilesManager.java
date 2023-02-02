@@ -50,7 +50,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.ref.Cleaner;
+import org.glassfish.hk2.utilities.CleanerFactory;
 import java.net.URI;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -340,7 +340,7 @@ public abstract class PayloadFilesManager {
         }
 
         public final void registerCleanupEvent() {
-            Cleaner.create().register(this, () -> {
+            CleanerFactory.create().register(this, () -> {
                 cleanup();
             });
         }

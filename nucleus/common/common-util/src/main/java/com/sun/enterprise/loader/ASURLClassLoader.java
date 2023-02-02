@@ -52,7 +52,7 @@ import org.glassfish.hk2.api.PreDestroy;
 import java.io.*;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
-import java.lang.ref.Cleaner;
+import org.glassfish.hk2.utilities.CleanerFactory;
 import java.net.*;
 import java.nio.file.Path;
 import java.security.*;
@@ -923,7 +923,7 @@ public class ASURLClassLoader extends CurrentBeforeParentClassLoader
         }
 
         public final void registerCloseEvent() {
-            Cleaner.create().register(this, () -> {
+            CleanerFactory.create().register(this, () -> {
                 try {
                     reallyClose();
                 } catch (IOException ex) {
@@ -1123,7 +1123,7 @@ public class ASURLClassLoader extends CurrentBeforeParentClassLoader
          * relates to _close() is unclear.
          */
         public final void registerStopEvent() {
-            Cleaner.create().register(this, () -> {
+            CleanerFactory.create().register(this, () -> {
                 if (!closed && this.in != null) {
                     try {
                         in.close();

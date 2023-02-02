@@ -53,7 +53,7 @@ import com.sun.jdo.spi.persistence.utility.Linkable;
 import com.sun.jdo.spi.persistence.support.sqlstore.utility.StringScanner;
 import com.sun.jdo.spi.persistence.utility.logging.Logger;
 import com.sun.jdo.spi.persistence.support.sqlstore.LogHelperSQLStore;
-import java.lang.ref.Cleaner;
+import org.glassfish.hk2.utilities.CleanerFactory;
 
 
 import java.sql.Connection;
@@ -1513,7 +1513,7 @@ public class ConnectionManager {
      *
      */
     public final void registerCloseEvent() {
-        Cleaner.create().register(this, () -> {
+        CleanerFactory.create().register(this, () -> {
             try {
                 shutDown();
             } catch (SQLException se) {
