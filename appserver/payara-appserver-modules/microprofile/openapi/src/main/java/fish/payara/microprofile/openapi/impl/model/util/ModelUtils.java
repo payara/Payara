@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2022] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -627,7 +627,8 @@ public final class ModelUtils {
         // For every field except the reference
         for (Field field : referee.getClass().getDeclaredFields()) {
             // Make the field accessible
-            boolean accessible = field.isAccessible();
+            Object objectToTestAccessibility = Modifier.isStatic(field.getModifiers()) ? null : referee;
+            boolean accessible = field.canAccess(objectToTestAccessibility);
             field.setAccessible(true);
             try {
                 Object currentValue = field.get(referee);
@@ -706,14 +707,14 @@ public final class ModelUtils {
                         }
                     } else if (fromValue instanceof Constructible) {
                         if (toValue == null) {
-                            f.set(to, fromValue.getClass().newInstance());
+                            f.set(to, fromValue.getClass().getDeclaredConstructor().newInstance());
                             toValue = f.get(to);
                         }
                         merge(fromValue, toValue, override);
                     } else {
                         f.set(to, mergeProperty(f.get(to), f.get(from), override));
                     }
-                } catch (IllegalArgumentException | IllegalAccessException | InstantiationException e) {
+                } catch (IllegalArgumentException | IllegalAccessException | InstantiationException | NoSuchMethodException | SecurityException | InvocationTargetException e) {
                     // Ignore errors
                 }
             }

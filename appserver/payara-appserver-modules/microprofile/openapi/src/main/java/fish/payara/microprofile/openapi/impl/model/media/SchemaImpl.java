@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2021] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2021-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -55,6 +55,7 @@ import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeI
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.readOnlyView;
 import fish.payara.microprofile.openapi.impl.rest.app.provider.ObjectMapperFactory;
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
@@ -183,6 +184,12 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
         from.setMaxProperties(annotation.getValue("maxProperties", Integer.class));
         from.setMinProperties(annotation.getValue("minProperties", Integer.class));
         from.setRequired(annotation.getValue("requiredProperties", List.class));
+        String additionalPropertiesAttr = annotation.getValue("additionalProperties", String.class);
+        if (Void.class.getName().equals(additionalPropertiesAttr)) {
+            // Void is used as default, e.g. not specified value
+            additionalPropertiesAttr = null;
+        }
+        from.setAdditionalPropertiesBoolean(additionalPropertiesAttr == null ? null : org.eclipse.microprofile.openapi.annotations.media.Schema.True.class.getName().equals(additionalPropertiesAttr));
 
         extractAnnotations(annotation, context, "properties", "name", SchemaImpl::createInstance, from::addProperty);
         for (Entry<String, Schema> property : from.getProperties().entrySet()) {
@@ -262,8 +269,8 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
                 if (schemaClassModel.isInstanceOf(Schema.class.getName())) {
                     try {
                         Class<?> oneOfClass = context.getApplicationClassLoader().loadClass(schemaClassName);
-                        return (Schema) oneOfClass.newInstance();
-                    } catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
+                        return (Schema) oneOfClass.getDeclaredConstructor().newInstance();
+                    } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | NoSuchMethodException | SecurityException | InvocationTargetException ex) {
                         LOGGER.log(WARNING, "Unable to create Schema class instance.", ex);
                     }
                 }
@@ -892,6 +899,12 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
         }
         if (from.getNot() != null) {
             to.setNot(from.getNot());
+        }
+        if (from.getAdditionalPropertiesBoolean() != null) {
+            to.setAdditionalPropertiesBoolean(mergeProperty(to.getAdditionalPropertiesBoolean(), from.getAdditionalPropertiesBoolean(), override));
+        }
+        if (from.getAdditionalPropertiesSchema() != null) {
+            to.setAdditionalPropertiesSchema(mergeProperty(to.getAdditionalPropertiesSchema(), from.getAdditionalPropertiesSchema(), override));
         }
         mergeImmutableList(from.getAnyOf(), to.getAnyOf(), to::setAnyOf);
         mergeImmutableList(from.getAllOf(), to.getAllOf(), to::setAllOf);
