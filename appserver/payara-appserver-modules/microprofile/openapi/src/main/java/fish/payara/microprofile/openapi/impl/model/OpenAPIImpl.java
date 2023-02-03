@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2022] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -49,11 +49,13 @@ import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.create
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.readOnlyView;
+
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.Set;
+
 import org.eclipse.microprofile.openapi.models.Components;
 import org.eclipse.microprofile.openapi.models.ExternalDocumentation;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
@@ -91,6 +93,7 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI, Clo
             from.setExternalDocs(ExternalDocumentationImpl.createInstance(externalDocs));
         }
         extractAnnotations(annotation, context, "security", SecurityRequirementImpl::createInstance, from::addSecurityRequirement);
+        extractAnnotations(annotation, context, "securitySets", SecurityRequirementImpl::createInstances, from::addSecurityRequirements);
         extractAnnotations(annotation, context, "servers", ServerImpl::createInstance, from::addServer);
         extractAnnotations(annotation, context, "tags", TagImpl::createInstance, from::addTag);
         AnnotationModel components = annotation.getValue("components", AnnotationModel.class);
@@ -99,7 +102,11 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI, Clo
         }
         return from;
     }
-    
+
+    private void addSecurityRequirements(List<SecurityRequirement> securityRequirements) {
+        securityRequirements.forEach(this::addSecurityRequirement);
+    }
+
     public final ApiContext getContext() {
         return context;
     }

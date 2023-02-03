@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,11 +44,13 @@ import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.readOn
 
 import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.eclipse.microprofile.openapi.models.security.SecurityRequirement;
 import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
 
@@ -117,4 +119,16 @@ public class SecurityRequirementImpl extends LinkedHashMap<String, List<String>>
         }
     }
 
+    public static <T> List<SecurityRequirement> createInstances(AnnotationModel annotationModel, ApiContext context) {
+        List<SecurityRequirement> securityRequirements = new ArrayList<>();
+        List<AnnotationModel> annotations = annotationModel.getValue("value", ArrayList.class);
+        for (AnnotationModel annotation : annotations) {
+            SecurityRequirement securityRequirement = new SecurityRequirementImpl();
+            String name = annotation.getValue("name", String.class);
+            List<String> scopes = annotation.getValue("scopes", List.class);
+            securityRequirement.addScheme(name, scopes != null ? scopes : Collections.emptyList());
+            securityRequirements.add(securityRequirement);
+        }
+        return securityRequirements;
+    }
 }
