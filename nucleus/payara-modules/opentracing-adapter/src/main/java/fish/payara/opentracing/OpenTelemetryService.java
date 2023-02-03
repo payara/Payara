@@ -39,37 +39,33 @@
  */
 package fish.payara.opentracing;
 
-import java.time.Instant;
-import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import fish.payara.notification.requesttracing.EventType;
-import fish.payara.notification.requesttracing.RequestTraceSpan;
 import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
-import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
-import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
-import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import jakarta.inject.Inject;
+import jakarta.inject.Provider;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
+import org.glassfish.hk2.api.ServiceHandle;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.deployment.Deployment;
 import org.jvnet.hk2.annotations.Service;
@@ -89,25 +85,31 @@ public class OpenTelemetryService implements EventListener {
 
     private static final Logger logger = Logger.getLogger(OpenTelemetryService.class.getName());
 
-    private static long NANOS_PER_SECOND = TimeUnit.SECONDS.toNanos(1);
-
     @Inject
     Events events;
 
+    // This service tends to be initialized also in ACC client, where request tracing is not available
+    // as well as this executor service.
     @Inject
-    PayaraExecutorService executorService;
+    Provider<PayaraExecutorService> executorServiceHandle;
 
     @Inject
-    private RequestTracingService requestTracingService;
+    private ServiceLocator locator;
+
 
     @PostConstruct
     void postConstruct() {
         if (events != null) {
             events.register(this);
         } else {
-            logger.log(Level.WARNING, "OpenTracing service not registered to Payara Events: "
+            logger.log(Level.WARNING, "OpenTelemetry service not registered to Payara Events: "
                     + "The Tracer for an application won't be removed upon undeployment");
         }
+    }
+
+    @PreDestroy
+    void stopAll() {
+        appTelemetries.values().forEach(OpenTelemetryAppInfo::shutdown);
     }
 
     @Override
@@ -132,6 +134,10 @@ public class OpenTelemetryService implements EventListener {
      */
     public Optional<Tracer> getTracer(String applicationName) {
         return get(applicationName, OpenTelemetryAppInfo::tracer);
+    }
+
+    public Optional<OpenTelemetrySdk> getSdk(String applicationName) {
+        return get(applicationName, OpenTelemetryAppInfo::sdk);
     }
 
     private <T> Optional<T> get(String applicationName, Function<OpenTelemetryAppInfo, T> getter) {
@@ -165,44 +171,95 @@ public class OpenTelemetryService implements EventListener {
         return get(applicationName, OpenTelemetryAppInfo::logger);
     }
 
+    /**
+     * Create new OpenTelemetry components for application. Shutdown previous ones if such already existed.
+     * @param applicationName
+     * @param configProperties
+     * @return
+     */
     public OpenTelemetrySdk initializeApplication(String applicationName, Map<String, String> configProperties) {
-        Supplier<Map<String, String>> supplier = configProperties == null ? () -> Map.of() : () -> configProperties;
-
-        AutoConfiguredOpenTelemetrySdk sdk = AutoConfiguredOpenTelemetrySdk.builder()
-                .setServiceClassLoader(Thread.currentThread().getContextClassLoader())
-
-                .addSpanExporterCustomizer((exporter, c) -> {
-                    if (isPayaraTracingEnabled()) {
-                        return SpanExporter.composite(exporter, new PayaraRequestTracingForwarder());
-                    } else {
-                        return exporter;
-                    }
-                })
-                .addPropertiesSupplier(supplier)
-                .addResourceCustomizer((resource, config) -> {
-                    if (resource.getAttributes().get(ResourceAttributes.SERVICE_NAME) == null) {
-                        // there are few more attributes to add later to identify domain, payara version, etc.
-                        return resource.toBuilder().put(ResourceAttributes.SERVICE_NAME, applicationName).build();
-                    } else {
-                        return resource;
-                    }
-                })
-                .build();
-        OpenTelemetryAppInfo previous = appTelemetries.put(applicationName, new OpenTelemetryAppInfo(sdk.getOpenTelemetrySdk()));
+        OpenTelemetrySdk sdk = initialize(applicationName, configProperties);
+        OpenTelemetryAppInfo previous = appTelemetries.put(applicationName, new OpenTelemetryAppInfo(sdk));
         if (previous != null) {
             previous.shutdown();
         }
-        ;
-        return sdk.getOpenTelemetrySdk();
+        return sdk;
     }
 
     /**
-     * Pass-through method that checks if Request Tracing is enabled.
+     * Set up SDK to be used by application. The SDK instance will be configured using auto-configuration using contents of provided
+     * Map, system properties and environment variables (in this precedence) if
+     * <ul>
+     *     <li>Request tracing is enabled, additionally passing spans onto Payara Reuest Tracing; or</li>
+     *     <li>Config properties contain {@code otel.sdk.disabled=false}; or</li>
+     *     <li>System properties contain that property, or environment contains key {@code OTEL_SDK_DISABLED=false}</li>
+     * </ul>
+     * Otherwise a Noop instance is configured.
+     *
+     * SDK instances are local to the class, global tracing is not installed.
+     *
+     * @link <a href="https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk-extensions/autoconfigure/README.md">Autoconfigure documentation</a>
+     * @param applicationName
+     * @param configProperties
+     * @return
+     */
+    private OpenTelemetrySdk initialize(String applicationName, Map<String,String> configProperties) {
+
+
+        if (isOtelEnabled(configProperties) || isPayaraTracingEnabled()) {
+            var props = new HashMap<String,String>(configProperties != null ? configProperties : Map.of());
+            props.putIfAbsent("otel.service.name", applicationName);
+            return AutoConfiguredOpenTelemetrySdk.builder()
+                    .setServiceClassLoader(Thread.currentThread().getContextClassLoader())
+                    .registerShutdownHook(false)
+                    .addSpanExporterCustomizer((exporter, c) -> {
+                        if (isPayaraTracingEnabled()) {
+                            ExecutorService es = executorServiceHandle.get().getUnderlyingExecutorService();
+                            return SpanExporter.composite(exporter,
+                                    new PayaraRequestTracingExporter(locator.getService(RequestTracingService.class), es));
+                        } else {
+                            return exporter;
+                        }
+                    })
+                    .addPropertiesSupplier(() -> props)
+                    .setResultAsGlobal(false)
+                    .build().getOpenTelemetrySdk();
+        } else {
+            // noop
+            return OpenTelemetrySdk.builder().build();
+        }
+    }
+
+    private boolean isOtelEnabled(Map<String, String> configProperties) {
+        boolean result = configProperties != null && !configProperties.isEmpty();
+        if (!result) {
+            result = "false".equalsIgnoreCase(System.getProperty("otel.sdk.disabled", "true"));
+        }
+        if (!result) {
+            result = "false".equalsIgnoreCase(System.getenv("OTEL_SDK_DISABLED"));
+        }
+        return result;
+    }
+
+    /**
+     * Very carefully ask whether Payara Request Tracing service is enabled.
+     * The method might be invoked way sooner than it is appropriate time for request tracing to start,
+     * or in environments where it is not supported (App Client).
      *
      * @return True if the Request Tracing Service is enabled
      */
     public boolean isPayaraTracingEnabled() {
-        return requestTracingService.isRequestTracingEnabled();
+        ServiceHandle<RequestTracingService> handle = locator.getServiceHandle(RequestTracingService.class);
+        return handle != null && handle.isActive() && handle.getService().isRequestTracingEnabled();
+    }
+
+    /**
+     * Initialize OpenTelemtry components for an application if they do not exist yet.
+     * @param appName
+     * @param properties
+     */
+    public void ensureAppInitialized(String appName, Map<String,String> properties) {
+        appTelemetries.computeIfAbsent(appName, (k) -> new OpenTelemetryAppInfo(initialize(appName, properties)));
     }
 
     static class OpenTelemetryAppInfo {
@@ -240,6 +297,10 @@ public class OpenTelemetryService implements EventListener {
             return this.logger;
         }
 
+        OpenTelemetrySdk sdk() {
+            return sdk;
+        }
+
         void shutdown() {
             // we need to shut it down properly. SDK providers offer both async shutdown meter as well as implement
             // Closeable, where shutdown is invoked in sync fashion. Let's be optimistic and start with async shutdown
@@ -255,52 +316,6 @@ public class OpenTelemetryService implements EventListener {
             if (logProvider != null) {
                 logProvider.shutdown();
             }
-        }
-    }
-
-    class PayaraRequestTracingForwarder implements SpanExporter {
-
-        @Override
-        public CompletableResultCode export(Collection<SpanData> collection) {
-            CompletableResultCode result = new CompletableResultCode();
-            executorService.submit(() -> {
-                try {
-                    collection.forEach(this::convert);
-                    result.succeed();
-                } catch (RuntimeException e) {
-                    logger.log(Level.WARNING, "Failed to export OpenTelemetry span to Payara Request Tracing", e);
-                    result.fail();
-                }
-            });
-            return result;
-        }
-
-
-        RequestTraceSpan convert(SpanData data) {
-            RequestTraceSpan result = new RequestTraceSpan(EventType.PROPAGATED_TRACE, data.getName());
-            result.getSpanContext().setTraceId(parseTraceId(data));
-            // we cannot set spanId
-            result.setStartInstant(Instant.ofEpochSecond(data.getStartEpochNanos() / NANOS_PER_SECOND, data.getStartEpochNanos() % NANOS_PER_SECOND));
-            result.setSpanDuration(data.getEndEpochNanos() - data.getStartEpochNanos());
-            data.getAttributes().forEach((key, value) -> result.addSpanTag(key.getKey(), value.toString()));
-            // exporter has no access to baggage, that goes to propagators only.
-            return result;
-        }
-
-        private UUID parseTraceId(SpanData data) {
-            long high = Long.parseLong(data.getTraceId().substring(0, 16), 16);
-            long low = Long.parseLong(data.getTraceId().substring(16), 16);
-            return new UUID(high, low);
-        }
-
-        @Override
-        public CompletableResultCode flush() {
-            return CompletableResultCode.ofSuccess();
-        }
-
-        @Override
-        public CompletableResultCode shutdown() {
-            return CompletableResultCode.ofSuccess();
         }
     }
 
