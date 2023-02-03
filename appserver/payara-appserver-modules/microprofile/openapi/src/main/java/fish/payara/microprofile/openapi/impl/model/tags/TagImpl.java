@@ -61,6 +61,7 @@ public class TagImpl extends ExtensibleImpl<Tag> implements Tag {
         TagImpl from = new TagImpl();
         from.setName(annotation.getValue("name", String.class));
         from.setDescription(annotation.getValue("description", String.class));
+        from.setExtensions(parseExtensions(annotation));
         AnnotationModel externalDocs = annotation.getValue("externalDocs", AnnotationModel.class);
         if (externalDocs != null) {
             from.setExternalDocs(ExternalDocumentationImpl.createInstance(externalDocs));

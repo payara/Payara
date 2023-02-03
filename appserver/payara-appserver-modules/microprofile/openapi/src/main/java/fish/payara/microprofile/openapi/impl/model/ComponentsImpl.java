@@ -83,6 +83,7 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
 
     public static Components createInstance(AnnotationModel annotation, ApiContext context) {
         Components from = new ComponentsImpl();
+        from.setExtensions(parseExtensions(annotation));
         extractAnnotations(annotation, context, "schemas", "name", SchemaImpl::createInstance, from::addSchema);
         extractAnnotations(annotation, context, "responses", "name", APIResponseImpl::createInstance, from::addResponse);
         extractAnnotations(annotation, context, "parameters", "name", ParameterImpl::createInstance, from::addParameter);

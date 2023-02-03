@@ -100,6 +100,7 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI, Clo
         if (components != null) {
             from.setComponents(ComponentsImpl.createInstance(components, context));
         }
+        from.setExtensions(parseExtensions(annotation));
         return from;
     }
 

@@ -42,11 +42,15 @@ package fish.payara.microprofile.openapi.impl.model.responses;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.readOnlyView;
 
 import fish.payara.microprofile.openapi.api.visitor.ApiContext;
+import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
+import static fish.payara.microprofile.openapi.impl.model.ExtensibleImpl.parseExtensions;
 import fish.payara.microprofile.openapi.impl.model.ExtensibleTreeMap;
+import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
 
 import java.util.Map;
 import org.eclipse.microprofile.openapi.models.responses.APIResponse;
 import org.eclipse.microprofile.openapi.models.responses.APIResponses;
+import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
 
 public class APIResponsesImpl extends ExtensibleTreeMap<APIResponse, APIResponses>
         implements APIResponses {
@@ -59,6 +63,17 @@ public class APIResponsesImpl extends ExtensibleTreeMap<APIResponse, APIResponse
 
     public APIResponsesImpl(Map<String, APIResponse> responses) {
         super(responses);
+    }
+
+    public static APIResponsesImpl createInstance(AnnotationModel annotation, ApiContext context) {
+        APIResponsesImpl from = new APIResponsesImpl();
+        from.setExtensions(parseExtensions(annotation));
+//        List<AnnotationModel> extensions = annotation.getValue("extensions", List.class);
+//        if (extensions != null) {
+//            extensions.stream().forEach(e -> from.addExtension(e.getValue("name", String.class), e.getValue("value", String.class)));
+//        }
+        ModelUtils.extractAnnotations(annotation, context, "responses", "responseCode", APIResponseImpl::createInstance, from::addAPIResponse);
+        return from;
     }
 
     @Override
@@ -100,6 +115,8 @@ public class APIResponsesImpl extends ExtensibleTreeMap<APIResponse, APIResponse
         if (from == null) {
             return;
         }
+        // process extensions attribute
+        ExtensibleImpl.merge(from, to, override);
         // Get the response name
         String responseName = null;
         if (from instanceof APIResponseImpl) {

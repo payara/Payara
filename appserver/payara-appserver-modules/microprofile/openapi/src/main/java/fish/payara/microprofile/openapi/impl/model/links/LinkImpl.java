@@ -82,6 +82,7 @@ public class LinkImpl extends ExtensibleImpl<Link> implements Link {
         }
         from.setRequestBody(annotation.getValue("requestBody", String.class));
         from.setDescription(annotation.getValue("description", String.class));
+        from.setExtensions(parseExtensions(annotation));
         String ref = annotation.getValue("ref", String.class);
         if (ref != null && !ref.isEmpty()) {
             from.setRef(ref);

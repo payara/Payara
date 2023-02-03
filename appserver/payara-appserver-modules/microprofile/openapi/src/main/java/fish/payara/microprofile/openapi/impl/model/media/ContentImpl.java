@@ -40,11 +40,13 @@
 package fish.payara.microprofile.openapi.impl.model.media;
 
 import fish.payara.microprofile.openapi.api.visitor.ApiContext;
+import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import fish.payara.microprofile.openapi.impl.model.examples.ExampleImpl;
 
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.readOnlyView;
+import java.util.HashMap;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -60,6 +62,8 @@ public class ContentImpl extends LinkedHashMap<String, MediaType> implements Con
 
     private static final long serialVersionUID = 1575356277308242221L;
 
+    private Map<String, Object> extensions = new HashMap<>(); // workaround as Content doesn't extend Extendable!
+
     public ContentImpl() {
         super();
     }
@@ -74,6 +78,7 @@ public class ContentImpl extends LinkedHashMap<String, MediaType> implements Con
         if (typeName == null || typeName.isEmpty()) {
             typeName = jakarta.ws.rs.core.MediaType.WILDCARD;
         }
+        from.setExtensions(ExtensibleImpl.parseExtensions(annotation));
         MediaType mediaType = new MediaTypeImpl();
         from.addMediaType(typeName, mediaType);
         extractAnnotations(annotation, context, "examples", "name", ExampleImpl::createInstance, mediaType::addExample);
@@ -160,6 +165,14 @@ public class ContentImpl extends LinkedHashMap<String, MediaType> implements Con
                 SchemaImpl.merge(fromMediaType.getSchema(), schema, true, context);
             }
         }
+    }
+
+    public Map<String, Object> getExtensions() {
+        return extensions;
+    }
+
+    public void setExtensions(Map<String, Object> extensions) {
+        this.extensions = extensions;
     }
 
 }

@@ -54,6 +54,7 @@ public class OAuthFlowsImpl extends ExtensibleImpl<OAuthFlows> implements OAuthF
 
     public static OAuthFlows createInstance(AnnotationModel annotation) {
         OAuthFlows from = new OAuthFlowsImpl();
+        from.setExtensions(parseExtensions(annotation));
         AnnotationModel implicitAnnotation = annotation.getValue("implicit", AnnotationModel.class);
         if (implicitAnnotation != null) {
             from.setImplicit(OAuthFlowImpl.createInstance(implicitAnnotation));

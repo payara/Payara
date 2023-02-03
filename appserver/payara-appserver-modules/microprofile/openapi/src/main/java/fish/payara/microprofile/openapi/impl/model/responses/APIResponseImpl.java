@@ -78,6 +78,7 @@ public class APIResponseImpl extends ExtensibleImpl<APIResponse> implements APIR
     public static APIResponseImpl createInstance(AnnotationModel annotation, ApiContext context) {
         APIResponseImpl from = new APIResponseImpl();
         from.setDescription(annotation.getValue("description", String.class));
+        from.setExtensions(parseExtensions(annotation));
         HeaderImpl.createInstances(annotation, context).forEach(from::addHeader);
 
         final List<ContentImpl> contents = createList();

@@ -59,6 +59,7 @@ public class InfoImpl extends ExtensibleImpl<Info> implements Info {
         Info from = new InfoImpl();
         from.setTitle(annotation.getValue("title", String.class));
         from.setDescription(annotation.getValue("description", String.class));
+        from.setExtensions(parseExtensions(annotation));
         from.setTermsOfService(annotation.getValue("termsOfService", String.class));
         AnnotationModel contact = annotation.getValue("contact", AnnotationModel.class);
         if (contact != null) {

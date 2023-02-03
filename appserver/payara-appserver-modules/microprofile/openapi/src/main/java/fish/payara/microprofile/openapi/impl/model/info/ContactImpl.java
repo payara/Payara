@@ -56,6 +56,7 @@ public class ContactImpl extends ExtensibleImpl<Contact> implements Contact {
         from.setName(annotation.getValue("name", String.class));
         from.setUrl(annotation.getValue("url", String.class));
         from.setEmail(annotation.getValue("email", String.class));
+        from.setExtensions(parseExtensions(annotation));
         return from;
     }
 

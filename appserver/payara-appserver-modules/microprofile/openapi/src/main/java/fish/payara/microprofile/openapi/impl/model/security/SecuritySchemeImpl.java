@@ -70,6 +70,7 @@ public class SecuritySchemeImpl extends ExtensibleImpl<SecurityScheme> implement
             from.setType(SecurityScheme.Type.valueOf(type.getValue()));
         }
         from.setDescription(annotation.getValue("description", String.class));
+        from.setExtensions(parseExtensions(annotation));
         from.setName(annotation.getValue("apiKeyName", String.class));
         String ref = annotation.getValue("ref", String.class);
         if (ref != null && !ref.isEmpty()) {

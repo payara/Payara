@@ -49,11 +49,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.eclipse.microprofile.openapi.models.Extensible;
+import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
 
 public abstract class ExtensibleImpl<T extends Extensible<T>> implements Extensible<T> {
 
@@ -97,6 +100,19 @@ public abstract class ExtensibleImpl<T extends Extensible<T>> implements Extensi
             LOGGER.log(Level.WARNING, "extension name not starting with `x-` cause invalid Open API documents: {0}", name);
         }
         return name;
+    }
+
+    public static Map<String, Object> parseExtensions(AnnotationModel annotation) {
+        List<AnnotationModel> extensions = annotation.getValue("extensions", List.class);
+        Map<String, Object> parsedExtensions = new HashMap<>();
+        if (extensions != null) {
+            for (AnnotationModel extension : extensions) {
+                String name = extension.getValue("name", String.class);
+                String value = extension.getValue("value", String.class);
+                parsedExtensions.put(name, value);
+            }
+        }
+        return parsedExtensions;
     }
 
     public static void merge(Extensible<?> from, Extensible<?> to, boolean override) {

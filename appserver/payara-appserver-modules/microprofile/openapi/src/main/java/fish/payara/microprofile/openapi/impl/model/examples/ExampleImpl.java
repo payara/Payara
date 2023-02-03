@@ -62,6 +62,7 @@ public class ExampleImpl extends ExtensibleImpl<Example> implements Example {
         from.setValue(annotation.getValue("value", Object.class));
         from.setExternalValue(annotation.getValue("externalValue", String.class));
         String ref = annotation.getValue("ref", String.class);
+        from.setExtensions(parseExtensions(annotation));
         if (ref != null && !ref.isEmpty()) {
             from.setRef(ref);
         }

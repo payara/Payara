@@ -49,7 +49,6 @@ import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.impl.model.callbacks.CallbackImpl;
 import fish.payara.microprofile.openapi.impl.model.parameters.ParameterImpl;
 import fish.payara.microprofile.openapi.impl.model.parameters.RequestBodyImpl;
-import fish.payara.microprofile.openapi.impl.model.responses.APIResponseImpl;
 import fish.payara.microprofile.openapi.impl.model.responses.APIResponsesImpl;
 import fish.payara.microprofile.openapi.impl.model.security.SecurityRequirementImpl;
 import fish.payara.microprofile.openapi.impl.model.servers.ServerImpl;
@@ -102,7 +101,16 @@ public class OperationImpl extends ExtensibleImpl<Operation> implements Operatio
         if (requestBody != null) {
             from.setRequestBody(RequestBodyImpl.createInstance(requestBody, context));
         }
-        extractAnnotations(annotation, context, "responses", "responseCode", APIResponseImpl::createInstance, from.responses::addAPIResponse);
+        //extractAnnotations(annotation, context, "responses", "responseCode", APIResponseImpl::createInstance, from.responses::addAPIResponse);
+        List<AnnotationModel> responses = annotation.getValue("responses", List.class);
+        if (responses != null) {
+            APIResponsesImpl apiResponsesImpl = APIResponsesImpl.createInstance(annotation, context);
+// FIXME: implement!
+//            for (AnnotationModel response : responses) {
+//                from.getResponses().addAPIResponse(response.getValue("responseCode", String.class), apiResponsesImpl);
+//            }
+        }
+        from.setExtensions(parseExtensions(annotation));
         extractAnnotations(annotation, context, "callbacks", "name", CallbackImpl::createInstance, from::addCallback);
         from.setDeprecated(annotation.getValue("deprecated", Boolean.class));
         extractAnnotations(annotation, context, "security", SecurityRequirementImpl::createInstance, from::addSecurityRequirement);

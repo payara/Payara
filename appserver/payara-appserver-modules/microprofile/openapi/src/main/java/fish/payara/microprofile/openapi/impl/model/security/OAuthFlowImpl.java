@@ -64,6 +64,7 @@ public class OAuthFlowImpl extends ExtensibleImpl<OAuthFlow> implements OAuthFlo
         from.setAuthorizationUrl(annotation.getValue("authorizationUrl", String.class));
         from.setTokenUrl(annotation.getValue("tokenUrl", String.class));
         from.setRefreshUrl(annotation.getValue("refreshUrl", String.class));
+        from.setExtensions(parseExtensions(annotation));
         List<AnnotationModel> scopesAnnotation = annotation.getValue("scopes", List.class);
         if (scopesAnnotation != null) {
             Map<String, String> scopes = createMap();

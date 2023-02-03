@@ -53,6 +53,7 @@ public class LicenseImpl extends ExtensibleImpl<License> implements License {
         License from = new LicenseImpl();
         from.setName(annotation.getValue("name", String.class));
         from.setUrl(annotation.getValue("url", String.class));
+        from.setExtensions(parseExtensions(annotation));
         return from;
     }
 

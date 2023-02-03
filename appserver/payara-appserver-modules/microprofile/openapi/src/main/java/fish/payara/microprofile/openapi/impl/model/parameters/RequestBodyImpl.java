@@ -63,6 +63,7 @@ public class RequestBodyImpl extends ExtensibleImpl<RequestBody> implements Requ
     public static RequestBodyImpl createInstance(AnnotationModel annotation, ApiContext context) {
         RequestBodyImpl from = new RequestBodyImpl();
         from.setDescription(annotation.getValue("description", String.class));
+        from.setExtensions(parseExtensions(annotation));
         from.setRequired(annotation.getValue("required", Boolean.class));
         String ref = annotation.getValue("ref", String.class);
         if (ref != null && !ref.isEmpty()) {

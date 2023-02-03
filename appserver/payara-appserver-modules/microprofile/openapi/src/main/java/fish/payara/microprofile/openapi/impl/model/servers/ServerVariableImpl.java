@@ -60,6 +60,7 @@ public class ServerVariableImpl extends ExtensibleImpl<ServerVariable> implement
     public static ServerVariable createInstance(AnnotationModel annotation, ApiContext context) {
         ServerVariable from = new ServerVariableImpl();
         from.setDescription(annotation.getValue("description", String.class));
+        from.setExtensions(parseExtensions(annotation));
         from.setDefaultValue(annotation.getValue("defaultValue", String.class));
         List<String> enumeration = annotation.getValue("enumeration", List.class);
         if (enumeration != null) {

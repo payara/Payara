@@ -99,6 +99,7 @@ public class HeaderImpl extends ExtensibleImpl<Header> implements Header {
         if (ref != null && !ref.isEmpty()) {
             from.setRef(ref);
         }
+        from.setExtensions(parseExtensions(annotation));
         from.setDescription(annotation.getValue("description", String.class));
         from.setRequired(annotation.getValue("required", Boolean.class));
         from.setDeprecated(annotation.getValue("deprecated", Boolean.class));

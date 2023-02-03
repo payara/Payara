@@ -52,6 +52,7 @@ public class ExternalDocumentationImpl extends ExtensibleImpl<ExternalDocumentat
         org.eclipse.microprofile.openapi.models.ExternalDocumentation from = new ExternalDocumentationImpl();
         from.setDescription(annotation.getValue("description", String.class));
         from.setUrl(annotation.getValue("url", String.class));
+        from.setExtensions(parseExtensions(annotation));
         return from;
     }
 

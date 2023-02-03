@@ -72,6 +72,7 @@ public class EncodingImpl extends ExtensibleImpl<Encoding> implements Encoding {
         }
         from.setExplode(annotation.getValue("explode", Boolean.class));
         from.setAllowReserved(annotation.getValue("allowReserved", Boolean.class));
+        from.setExtensions(parseExtensions(annotation));
 
         return from;
     }

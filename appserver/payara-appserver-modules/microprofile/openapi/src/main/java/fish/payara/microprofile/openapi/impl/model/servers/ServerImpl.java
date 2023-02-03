@@ -62,6 +62,7 @@ public class ServerImpl extends ExtensibleImpl<Server> implements Server {
     public static Server createInstance(AnnotationModel annotation, ApiContext context) {
         Server from = new ServerImpl();
         from.setDescription(annotation.getValue("description", String.class));
+        from.setExtensions(parseExtensions(annotation));
         from.setUrl(annotation.getValue("url", String.class));
         extractAnnotations(annotation, context, "variables", "name", ServerVariableImpl::createInstance, from::addVariable);
         return from;
