@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2023 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,10 +39,12 @@
  */
 package fish.payara.microprofile.metrics;
 
+import java.lang.annotation.*;
 import java.util.Set;
 
 import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.eclipse.microprofile.metrics.MetricRegistry.Type;
+import org.eclipse.microprofile.metrics.annotation.*;
 import org.jvnet.hk2.annotations.Contract;
 
 import fish.payara.microprofile.metrics.exception.NoSuchRegistryException;
@@ -136,18 +138,51 @@ public interface MetricsService {
          * @throws NoSuchRegistryException In case asking for a {@link MetricRegistry.Type#APPLICATION} registry in the
          *                                 server (global) context.
          */
-        MetricRegistry getRegistry(MetricRegistry.Type type) throws NoSuchRegistryException;
+        MetricRegistry getRegistry(RegistryScope scope) throws NoSuchRegistryException;
 
         default MetricRegistry getBaseRegistry() {
-            return getRegistry(Type.BASE);
+            return getRegistry(new RegistryScope(){
+
+                @Override
+                public Class<? extends Annotation> annotationType() {
+                    return RegistryScope.class;
+                }
+
+                @Override
+                public String scope() {
+                    return "base";
+                }
+            });
         }
 
         default MetricRegistry getVendorRegistry() {
-            return getRegistry(Type.VENDOR);
+            return getRegistry(new RegistryScope(){
+
+                @Override
+                public Class<? extends Annotation> annotationType() {
+                    return RegistryScope.class;
+                }
+
+                @Override
+                public String scope() {
+                    return "vendor";
+                }
+            });
         }
 
         default MetricRegistry getApplicationRegistry() throws NoSuchRegistryException {
-            return getRegistry(Type.APPLICATION);
+            return getRegistry(new RegistryScope(){
+
+                @Override
+                public Class<? extends Annotation> annotationType() {
+                    return RegistryScope.class;
+                }
+
+                @Override
+                public String scope() {
+                    return "application";
+                }
+            });
         }
     }
 

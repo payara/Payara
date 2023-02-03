@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2018-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -75,6 +75,7 @@ import org.eclipse.microprofile.metrics.MetricID;
 import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.eclipse.microprofile.metrics.Tag;
 import org.eclipse.microprofile.metrics.Timer;
+import org.eclipse.microprofile.metrics.annotation.*;
 
 /**
  * The MetricRegistry stores the metrics and metadata information
@@ -101,24 +102,21 @@ public class MetricRegistryImpl implements MetricRegistry {
         }
     }
 
+    private final RegistryScope registryScope;
     private final ConcurrentMap<String, MetricFamily<?>> metricsFamiliesByName = new ConcurrentHashMap<>();
     private final Clock clock;
     private final List<MetricRegistrationListener> listeners = new ArrayList<>();
 
     public MetricRegistryImpl() {
-        this.clock = new Clock() {
-            @Override
-            public long getTick() {
-                return 0;
-            }
-        };
+        registryScope =  null;
+        clock = null;
+    }
+    public MetricRegistryImpl(RegistryScope registryScope) {
+        this(registryScope, Clock.defaultClock());
     }
 
-    public MetricRegistryImpl(Type type) {
-        this(type, Clock.defaultClock());
-    }
-
-    public MetricRegistryImpl(Type type, Clock clock) {
+    public MetricRegistryImpl(RegistryScope registryScope, Clock clock) {
+        this.registryScope = registryScope;
         this.clock = clock;
     }
 
@@ -129,27 +127,27 @@ public class MetricRegistryImpl implements MetricRegistry {
 
     @Override
     public Counter counter(String name) {
-        return findMetricOrCreate(name, null, new Tag[0]);
+        return findMetricOrCreate(name, Counter.class.getTypeName(), new Tag[0]);
     }
 
     @Override
     public Counter counter(Metadata metadata) {
-        return findMetricOrCreate(metadata, null);
+        return findMetricOrCreate(metadata, Counter.class.getTypeName());
     }
 
     @Override
     public Counter counter(String name, Tag... tags) {
-        return findMetricOrCreate(name, null, tags);
+        return findMetricOrCreate(name, Counter.class.getTypeName(), tags);
     }
 
     @Override
     public Counter counter(Metadata metadata, Tag... tags) {
-        return findMetricOrCreate(metadata, null, tags);
+        return findMetricOrCreate(metadata, Counter.class.getTypeName(), tags);
     }
 
     @Override
     public Counter counter(MetricID metricID) {
-        return findMetricOrCreate(metricID.getName(), null, metricID.getTagsAsArray());
+        return findMetricOrCreate(metricID.getName(), Counter.class.getTypeName(), metricID.getTagsAsArray());
     }
 
     @Override
@@ -169,12 +167,12 @@ public class MetricRegistryImpl implements MetricRegistry {
 
     @Override
     public <T extends Number> Gauge<T> gauge(Metadata metadata, Supplier<T> supplier, Tag... tags) {
-        return findMetricOrCreate(metadata, null, tags);
+        return findMetricOrCreate(metadata, Gauge.class.getTypeName(), tags);
     }
 
     @Override
     public <T extends Number> Gauge<T> gauge(String name, Supplier<T> supplier, Tag... tags) {
-        return findMetricOrCreate(name, null, tags);
+        return findMetricOrCreate(name, Gauge.class.getTypeName(), createGauge(supplier), tags);
     }
 
     /**
@@ -390,11 +388,11 @@ public class MetricRegistryImpl implements MetricRegistry {
         return matches;
     }
 
-    private <T extends Metric> T findMetricOrCreate(String name, Tag... tags) {
-        return findMetricOrCreate(name, null, tags);
+    private <T extends Metric> T findMetricOrCreate(String name, String typeName,Tag... tags) {
+        return findMetricOrCreate(name, typeName, null, tags);
     }
 
-    private <T extends Metric> T findMetricOrCreate(String name, T metric, Tag... tags) {
+    private <T extends Metric> T findMetricOrCreate(String name, String typeName, T metric, Tag... tags) {
         checkNameIsNotNullOrEmpty(name);
         Metadata metadata = Metadata.builder()
                 .withName(name)
@@ -402,11 +400,11 @@ public class MetricRegistryImpl implements MetricRegistry {
         return findMetricOrCreate(metadata, true, metric, tags);
     }
 
-    private <T extends Metric> T findMetricOrCreate(Metadata metadata, Tag... tags) {
-        return findMetricOrCreate(metadata, null, tags);
+    private <T extends Metric> T findMetricOrCreate(Metadata metadata, String typeName, Tag... tags) {
+        return findMetricOrCreate(metadata, typeName, null, tags);
     }
 
-    private <T extends Metric> T findMetricOrCreate(Metadata metadata, T metric, Tag... tags) {
+    private <T extends Metric> T findMetricOrCreate(Metadata metadata, String typeName, T metric, Tag... tags) {
         return findMetricOrCreate(withType(metadata), false, metric, tags);
     }
 
@@ -455,7 +453,7 @@ public class MetricRegistryImpl implements MetricRegistry {
     private void notifyRegistrationListeners(MetricID metricID) {
         for (MetricRegistrationListener l : listeners) {
             try {
-                l.onRegistration(metricID, this);
+                l.onRegistration(metricID, registryScope);
             } catch (RuntimeException ex) {
                 LOGGER.log(Level.WARNING, "Registration listener threw exception:", ex);
             }
@@ -483,7 +481,6 @@ public class MetricRegistryImpl implements MetricRegistry {
         if(Counter.class.getName().equals(name)) {
             return new CounterImpl();
         }
-
         if(Gauge.class.getName().equals(name)) {
             throw new IllegalArgumentException(String.format("Unsupported operation for Gauge ['%s']", name));
         }

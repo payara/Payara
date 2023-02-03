@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2018-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -50,6 +50,7 @@ import fish.payara.microprofile.metrics.writer.MetricsWriterImpl;
 import fish.payara.microprofile.metrics.writer.OpenMetricsExporter;
 import java.io.IOException;
 import java.io.Writer;
+import java.lang.annotation.*;
 import java.util.Optional;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -77,6 +78,7 @@ import org.eclipse.microprofile.metrics.MetricRegistry.Type;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.metrics.Tag;
+import org.eclipse.microprofile.metrics.annotation.*;
 import org.glassfish.internal.api.Globals;
 
 public class MetricsResource extends HttpServlet {
@@ -124,9 +126,50 @@ public class MetricsResource extends HttpServlet {
                 MetricsWriter outputWriter = getOutputWriter(request, response, metricsService, contentType);
                 if (outputWriter != null) {
                     if (registryName != null && !registryName.isEmpty()) {
-                        Type scope;
+                        RegistryScope scope;
                         try {
-                            scope = Type.valueOf(registryName.toUpperCase());
+                            if(registryName.equals(Type.BASE.getName())) {
+                                scope = new RegistryScope(){
+
+                                    @Override
+                                    public Class<? extends Annotation> annotationType() {
+                                        return RegistryScope.class;
+                                    }
+
+                                    @Override
+                                    public String scope() {
+                                        return "base";
+                                    }
+                                };
+                            } else if(registryName.equals(Type.VENDOR.getName())) {
+                                scope = new RegistryScope(){
+
+                                    @Override
+                                    public Class<? extends Annotation> annotationType() {
+                                        return RegistryScope.class;
+                                    }
+
+                                    @Override
+                                    public String scope() {
+                                        return "vendor";
+                                    }
+                                };
+                            } else if(registryName.equals(Type.APPLICATION.getName())) {
+                                scope = new RegistryScope(){
+
+                                    @Override
+                                    public Class<? extends Annotation> annotationType() {
+                                        return RegistryScope.class;
+                                    }
+
+                                    @Override
+                                    public String scope() {
+                                        return "application";
+                                    }
+                                };
+                            } else {
+                                scope = null;
+                            }
                         } catch (RuntimeException ex) {
                             throw new NoSuchRegistryException(registryName);
                         }

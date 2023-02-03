@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -45,6 +45,7 @@ import fish.payara.microprofile.metrics.exception.NoSuchRegistryException;
 import java.io.IOException;
 
 import org.eclipse.microprofile.metrics.MetricRegistry.Type;
+import org.eclipse.microprofile.metrics.annotation.*;
 
 public interface MetricsWriter {
 
@@ -57,7 +58,7 @@ public interface MetricsWriter {
      * @throws NoSuchMetricException
      * @throws IOException
      */
-    public void write(Type scope, String metricName) throws NoSuchRegistryException, NoSuchMetricException, IOException;
+    public void write(RegistryScope scope, String metricName) throws NoSuchRegistryException, NoSuchMetricException, IOException;
 
     /**
      * Write the metrics that registered for the respective scope.
@@ -66,7 +67,7 @@ public interface MetricsWriter {
      * @throws NoSuchRegistryException
      * @throws IOException
      */
-    public void write(Type scope) throws NoSuchRegistryException, IOException;
+    public void write(RegistryScope scope) throws NoSuchRegistryException, IOException;
 
     /**
      * Write all the registered metrics

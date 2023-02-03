@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2018-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -41,8 +41,6 @@
 package fish.payara.microprofile.metrics.cdi.producer;
 
 import fish.payara.microprofile.metrics.cdi.AnnotationReader;
-
-import fish.payara.microprofile.metrics.impl.*;
 import jakarta.enterprise.context.Dependent;
 import jakarta.enterprise.inject.Produces;
 import jakarta.enterprise.inject.spi.InjectionPoint;
@@ -57,10 +55,12 @@ import org.eclipse.microprofile.metrics.annotation.Metric;
 @Dependent
 public class MetricProducer {
 
-    private static final AnnotationReader<Metric> COUNTER = null;
-    private static final AnnotationReader<Metric> GAUGE = null;
-    private static final AnnotationReader<Metric> HISTOGRAM = null;
-    private static final AnnotationReader<Metric> TIMER = null;
+
+    //todo this can be the way to get the Metric without using the MetricType class not available now
+    private static final AnnotationReader<Metric> COUNTER = AnnotationReader.METRIC.asType(Counter.class.getTypeName());
+    private static final AnnotationReader<Metric> GAUGE = AnnotationReader.METRIC.asType(Gauge.class.getTypeName());
+    private static final AnnotationReader<Metric> HISTOGRAM = AnnotationReader.METRIC.asType(Histogram.class.getTypeName());
+    private static final AnnotationReader<Metric> TIMER = AnnotationReader.METRIC.asType(Timer.class.getTypeName());
 
     @Inject
     private MetricRegistry registry;

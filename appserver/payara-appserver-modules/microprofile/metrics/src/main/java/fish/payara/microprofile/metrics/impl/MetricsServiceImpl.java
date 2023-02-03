@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2018-2022] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -41,6 +41,8 @@ package fish.payara.microprofile.metrics.impl;
 
 import static java.util.Collections.unmodifiableSet;
 import static org.eclipse.microprofile.metrics.MetricRegistry.Type.BASE;
+import static org.eclipse.microprofile.metrics.MetricRegistry.Type.VENDOR;
+import static org.eclipse.microprofile.metrics.MetricRegistry.Type.APPLICATION;
 import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.io.FileInputStream;
@@ -71,6 +73,7 @@ import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.eclipse.microprofile.metrics.MetricRegistry.Type;
 import org.eclipse.microprofile.metrics.MetricUnits;
 import org.eclipse.microprofile.metrics.Timer;
+import org.eclipse.microprofile.metrics.annotation.*;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.invocation.ComponentInvocation;
@@ -130,10 +133,11 @@ public class MetricsServiceImpl implements MetricsService, ConfigListener, Monit
 
     private static final class RegisteredMetric {
 
-
+        final RegistryScope scope;
         final MetricID id;
 
-        RegisteredMetric(MetricID metric) {
+        RegisteredMetric(RegistryScope scope, MetricID metric) {
+            this.scope = scope;
             this.id = metric;
         }
     }
@@ -152,9 +156,42 @@ public class MetricsServiceImpl implements MetricsService, ConfigListener, Monit
 
         public MetricsContextImpl(String name) {
             this.name = name;
-            this.base = new MetricRegistryImpl(BASE);
-            this.vendor = new MetricRegistryImpl(Type.VENDOR);
-            this.application = isServerContext() ? null : new MetricRegistryImpl(Type.APPLICATION);
+            this.base = new MetricRegistryImpl(new RegistryScope(){
+
+                @Override
+                public Class<? extends Annotation> annotationType() {
+                    return RegistryScope.class;
+                }
+
+                @Override
+                public String scope() {
+                    return "base";
+                }
+            });
+            this.vendor = new MetricRegistryImpl(new RegistryScope(){
+
+                @Override
+                public Class<? extends Annotation> annotationType() {
+                    return RegistryScope.class;
+                }
+
+                @Override
+                public String scope() {
+                    return "vendor";
+                }
+            });
+            this.application = isServerContext() ? null : new MetricRegistryImpl(new RegistryScope(){
+
+                @Override
+                public Class<? extends Annotation> annotationType() {
+                    return RegistryScope.class;
+                }
+
+                @Override
+                public String scope() {
+                    return "application";
+                }
+            });
             base.addListener(this);
             vendor.addListener(this);
             if (application != null)
@@ -167,22 +204,30 @@ public class MetricsServiceImpl implements MetricsService, ConfigListener, Monit
         }
 
         @Override
-        public MetricRegistryImpl getRegistry(Type type) throws NoSuchRegistryException {
-            switch (type) {
-            case BASE: return base;
-            case VENDOR: return vendor;
-            case APPLICATION:
-            default:
-                if (isServerContext()) {
-                    throw new NoSuchRegistryException("Server context does not have an application registry");
-                }
+        public MetricRegistryImpl getRegistry(RegistryScope scope) throws NoSuchRegistryException {
+            if (scope.scope().equals(BASE.getName())) {
+                return base;
+            }
+
+            if (scope.scope().equals(VENDOR.getName())) {
+                return vendor;
+            }
+
+            if (scope.scope().equals(APPLICATION.getName())) {
                 return application;
             }
+
+
+            if (isServerContext()) {
+                throw new NoSuchRegistryException("Server context does not have an application registry");
+            }
+            return application;
         }
 
+
         @Override
-        public void onRegistration(MetricID registered, MetricRegistry registry) {
-            newlyRegistered.add(new RegisteredMetric(registered));
+        public void onRegistration(MetricID registered, RegistryScope scope) {
+            newlyRegistered.add(new RegisteredMetric(scope, registered));
         }
 
         RegisteredMetric pollNewlyRegistered() {
@@ -281,10 +326,11 @@ public class MetricsServiceImpl implements MetricsService, ConfigListener, Monit
     }
 
     private static void processMetadataToAnnotations(MetricsContextImpl context, MonitoringDataCollector collector) {
-        //TODO reimplement this
-       /* RegisteredMetric metric = context.pollNewlyRegistered();
+       RegisteredMetric metric = context.pollNewlyRegistered();
         while (metric != null) {
-            MetricRegistry registry = context.getRegistry(scope);
+            MetricID metricID = metric.id;
+            RegistryScope registryScope = metric.scope;
+            MetricRegistry registry = context.getRegistry(registryScope);
             MonitoringDataCollector metricCollector = tagCollector(context.getName(), metricID, collector);
             Metadata metadata = registry.getMetadata(metricID.getName());
             String suffix = "Count";
@@ -296,9 +342,9 @@ public class MetricsServiceImpl implements MetricsService, ConfigListener, Monit
             }
             // Note that by convention an annotation with value 0 done before the series collected any value is considered permanent
             metricCollector.annotate(toName(metricID, suffix), 0, false,
-                    metadataToAnnotations(context.getName(), scope, metadata, property));
+                    metadataToAnnotations(context.getName(), registryScope, metadata, property));
             metric = context.pollNewlyRegistered();
-        }*/
+        }
     }
 
     private static String getMetricUnitSuffix(Optional<String> unit) {
@@ -316,11 +362,11 @@ public class MetricsServiceImpl implements MetricsService, ConfigListener, Monit
         return Character.toUpperCase(value.charAt(0)) + value.substring(1);
     }
 
-    private static String[] metadataToAnnotations(String contextName, MetricRegistry.Type scope, Metadata metadata, String property) {
+    private static String[] metadataToAnnotations(String contextName, RegistryScope registryScope, Metadata metadata, String property) {
         String unit = metadata.unit().orElse(MetricUnits.NONE);
         return new String[] {
                 "App", contextName, //
-                "Scope", scope.getName(), //
+                "Scope", registryScope.scope(), //
                 "Name", metadata.getName(), //
                 "Unit", unit, //
                 "Description", metadata.getDescription(), //

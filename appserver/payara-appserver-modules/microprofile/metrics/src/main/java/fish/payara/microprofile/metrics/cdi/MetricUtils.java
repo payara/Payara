@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2023 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -161,7 +161,5 @@ public final class MetricUtils<T extends Metric> {
             Gauge<T> lazy = gauge.updateAndGet(instance -> instance != null ? instance : lookup.get());
             return lazy == null ? null : lazy.getValue();
         }
-
-
     }
 }

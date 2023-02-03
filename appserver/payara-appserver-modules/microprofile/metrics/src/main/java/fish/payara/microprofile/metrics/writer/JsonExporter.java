@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2020-2021 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2023 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -70,6 +70,7 @@ import org.eclipse.microprofile.metrics.Snapshot;
 import org.eclipse.microprofile.metrics.Tag;
 import org.eclipse.microprofile.metrics.Timer;
 import org.eclipse.microprofile.metrics.MetricRegistry.Type;
+import org.eclipse.microprofile.metrics.annotation.*;
 
 /**
  * Writes {@link Metric}s according to the MicroPrfile Metrics 2.3 standard for JSON format as defined in <a href=
@@ -82,7 +83,7 @@ public class JsonExporter implements MetricExporter {
 
     public enum Mode { GET, OPTIONS }
 
-    private final MetricRegistry.Type scope;
+    private final RegistryScope scope;
     private final JsonWriter out;
     private final Mode mode;
     private final JsonObjectBuilder documentObj;
@@ -100,8 +101,8 @@ public class JsonExporter implements MetricExporter {
         return Json.createWriterFactory(singletonMap(JsonGenerator.PRETTY_PRINTING, prettyPrint)).createWriter(out);
     }
 
-    private JsonExporter(MetricRegistry.Type scope, JsonWriter out, Mode mode, JsonObjectBuilder documentObj,
-            JsonObjectBuilder scopeObj) {
+    private JsonExporter(RegistryScope scope, JsonWriter out, Mode mode, JsonObjectBuilder documentObj,
+                         JsonObjectBuilder scopeObj) {
         this.scope = scope;
         this.out = out;
         this.mode = mode;
@@ -110,7 +111,7 @@ public class JsonExporter implements MetricExporter {
     }
 
     @Override
-    public MetricExporter in(Type scope, boolean asNode) {
+    public MetricExporter in(RegistryScope scope, boolean asNode) {
         completeScope();
         return new JsonExporter(scope, out, mode, documentObj, asNode ? Json.createObjectBuilder() : null);
     }
@@ -246,7 +247,7 @@ public class JsonExporter implements MetricExporter {
         if (scopeObj != null) {
             JsonObject obj = scopeObj.build();
             if (obj.size() > 0) {
-                documentObj.add(scope.getName(), obj);
+                documentObj.add(scope.scope(), obj);
             }
         }
     }

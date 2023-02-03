@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2023 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -66,6 +66,7 @@ import org.eclipse.microprofile.metrics.Tag;
 import org.eclipse.microprofile.metrics.Timer;
 
 import org.eclipse.microprofile.metrics.MetricRegistry.Type;
+import org.eclipse.microprofile.metrics.annotation.*;
 
 /**
  * Writes {@link Metric}s according to the OpenMetrics standard as defined in <a href=
@@ -84,7 +85,7 @@ public class OpenMetricsExporter implements MetricExporter {
         counter, gauge, summary
     }
 
-    protected final Type scope;
+    protected final RegistryScope scope;
     protected final PrintWriter out;
     protected final Set<String> typeWrittenByGlobalName;
     protected final Set<String> helpWrittenByGlobalName;
@@ -93,7 +94,7 @@ public class OpenMetricsExporter implements MetricExporter {
         this(null, out instanceof PrintWriter ? (PrintWriter) out : new PrintWriter(out), new HashSet<>(), new HashSet<>());
     }
 
-    protected OpenMetricsExporter(Type scope, PrintWriter out, Set<String> typeWrittenByGlobalName,
+    protected OpenMetricsExporter(RegistryScope scope, PrintWriter out, Set<String> typeWrittenByGlobalName,
             Set<String> helpWrittenByGlobalName) {
         this.scope = scope;
         this.out = out;
@@ -102,7 +103,7 @@ public class OpenMetricsExporter implements MetricExporter {
     }
 
     @Override
-    public MetricExporter in(Type scope, boolean asNode) {
+    public MetricExporter in(RegistryScope scope, boolean asNode) {
         return new OpenMetricsExporter(scope, out, typeWrittenByGlobalName, helpWrittenByGlobalName);
     }
 
@@ -336,8 +337,8 @@ public class OpenMetricsExporter implements MetricExporter {
     private String globalName(MetricID metricID, String suffix) {
         String name = metricID.getName();
         return sanitizeMetricName(!suffix.isEmpty() && name.endsWith(suffix)
-                ? scope.getName() + '_' + name
-                : scope.getName() + '_' + name + suffix);
+                ? scope.scope() + '_' + name
+                : scope.scope() + '_' + name + suffix);
     }
 
     private static CharSequence escapeTagValue(String name) {

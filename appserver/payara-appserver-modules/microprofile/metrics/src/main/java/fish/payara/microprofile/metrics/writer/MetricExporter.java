@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2023 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -50,6 +50,7 @@ import org.eclipse.microprofile.metrics.Metric;
 import org.eclipse.microprofile.metrics.MetricID;
 import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.eclipse.microprofile.metrics.Timer;
+import org.eclipse.microprofile.metrics.annotation.*;
 
 /**
  * The {@link MetricExporter} is an abstraction for writing individual {@link Metric}s to an output.
@@ -72,9 +73,9 @@ public interface MetricExporter {
      *         unchanged and will continue to use its current scope. Both, this {@link MetricExporter} and the returned
      *         one will however share other internal state that is related to the output written so far.
      */
-    MetricExporter in(MetricRegistry.Type scope, boolean asNode);
+    MetricExporter in(RegistryScope scope, boolean asNode);
 
-    default MetricExporter in(MetricRegistry.Type scope) {
+    default MetricExporter in(RegistryScope scope) {
         return in(scope, true);
     }
 

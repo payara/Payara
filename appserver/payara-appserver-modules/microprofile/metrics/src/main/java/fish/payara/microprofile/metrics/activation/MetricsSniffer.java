@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2020-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2020-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -70,16 +70,16 @@ public class MetricsSniffer extends MicroProfileSniffer {
     @Override
     @SuppressWarnings("unchecked")
     public Class<? extends Annotation>[] getAnnotationTypes() {
-        return new Class[] {
-            // Search for Metrics annotations
-            org.eclipse.microprofile.metrics.annotation.Counted.class,
-            org.eclipse.microprofile.metrics.annotation.Gauge.class,
-            org.eclipse.microprofile.metrics.annotation.Metric.class,
-            org.eclipse.microprofile.metrics.annotation.Timed.class,
-            org.eclipse.microprofile.metrics.annotation.RegistryType.class,
-
-            // All JAX-RS applications are valid applications for Metrics
-            jakarta.ws.rs.Path.class
+        return new Class[]{
+                // Search for Metrics annotations
+                org.eclipse.microprofile.metrics.annotation.Counted.class,
+                org.eclipse.microprofile.metrics.annotation.Gauge.class,
+                org.eclipse.microprofile.metrics.annotation.Metric.class,
+                org.eclipse.microprofile.metrics.annotation.Timed.class,
+                org.eclipse.microprofile.metrics.annotation.RegistryType.class,
+                org.eclipse.microprofile.metrics.annotation.RegistryScope.class,
+                // All JAX-RS applications are valid applications for Metrics
+                jakarta.ws.rs.Path.class
         };
     }
 

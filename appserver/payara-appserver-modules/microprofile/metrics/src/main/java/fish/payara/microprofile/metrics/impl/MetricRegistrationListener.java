@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2023 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,6 +42,7 @@ package fish.payara.microprofile.metrics.impl;
 import org.eclipse.microprofile.metrics.Metric;
 import org.eclipse.microprofile.metrics.MetricID;
 import org.eclipse.microprofile.metrics.MetricRegistry;
+import org.eclipse.microprofile.metrics.annotation.*;
 
 /**
  * Allows to be notified when a new {@link Metric} is registered with a particular {@link MetricRegistryImpl}.
@@ -57,5 +58,5 @@ public interface MetricRegistrationListener {
      * @param registered ID of the newly registered {@link Metric}
      * @param registry The registry the new {@link Metric} was registered with
      */
-    void onRegistration(MetricID registered, MetricRegistry registry);
+    void onRegistration(MetricID registered, RegistryScope scope);
 }

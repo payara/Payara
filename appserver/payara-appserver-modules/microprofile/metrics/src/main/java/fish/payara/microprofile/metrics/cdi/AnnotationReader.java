@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2020-2021 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2023 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -151,6 +151,14 @@ public final class AnnotationReader<T extends Annotation> {
             Timed::absolute,
             Timed::unit);
 
+    public static final AnnotationReader<Metric> METRIC = new AnnotationReader<>(
+            Metric.class, Metric.class.getName(),
+            Metric::name,
+            Metric::tags,
+            Metric::description,
+            Metric::absolute,
+            Metric::unit);
+
     private static void register(AnnotationReader<?> reader) {
         READERS_BY_ANNOTATION.put(reader.annotationType(), reader);
     }
@@ -159,25 +167,26 @@ public final class AnnotationReader<T extends Annotation> {
         register(COUNTED);
         register(GAUGE);
         register(TIMED);
+        register(METRIC);
     }
 
     private final Class<T> annotationType;
 
-    private final String classNameType;
+    private final String nameType;
     private final Function<T, String> name;
     private final Function<T, String[]> tags;
     private final Function<T, String> description;
     private final Predicate<T> absolute;
     private final Function<T, String> unit;
 
-    private AnnotationReader(Class<T> annotationType, String classNameType,
+    private AnnotationReader(Class<T> annotationType, String nameType,
             Function<T, String> name,
             Function<T, String[]> tags,
             Function<T, String> description,
             Predicate<T> absolute,
             Function<T, String> unit) {
         this.annotationType = annotationType;
-        this.classNameType = classNameType;
+        this.nameType = nameType;
         this.name = name;
         this.tags = tags;
         this.description = description;
@@ -194,16 +203,16 @@ public final class AnnotationReader<T extends Annotation> {
      * so that the provided type is used when creating {@link Metadata} using the
      * {@link AnnotationReader}.
      *
-     * @param classNameType
+     * @param nameType
      * @return A new {@link AnnotationReader} using the provided
      * @throws IllegalStateException In case this method is called on {@link AnnotationReader} that is not reading
      *                               {@link Metric} {@link Annotation}.
      */
-    public AnnotationReader<T> asType(String classNameType) {
+    public AnnotationReader<T> asType(String nameType) {
         if (this.annotationType != Metric.class) {
             throw new IllegalStateException("Only Metric reader can be typed!");
         }
-        return new AnnotationReader<>(annotationType, classNameType, name, tags, description, absolute, unit);
+        return new AnnotationReader<>(annotationType, nameType, name, tags, description, absolute, unit);
     }
 
     /**
@@ -268,7 +277,7 @@ public final class AnnotationReader<T extends Annotation> {
      *         {@link #annotationType()}, else false.
      */
     public <E extends Member & AnnotatedElement> boolean isPresent(Class<?> bean, E element) {
-        return classNameType == GAUGE.classNameType
+        return nameType == GAUGE.nameType
                 ? element instanceof Method && element.isAnnotationPresent(annotationType)
                 : annotation(bean, element) != null;
     }
@@ -371,7 +380,7 @@ public final class AnnotationReader<T extends Annotation> {
      * the provided {@link InjectionPoint}. This does take into account that annotations might have been added or
      * removed at runtime.
      *
-     * @param point source {@link AnnotatedMember} for an annotated element having this {@link AnnotationReader}'s
+     * @param member point source {@link AnnotatedMember} for an annotated element having this {@link AnnotationReader}'s
      *              {@link #annotationType()}, not {@code null}
      * @return {@link MetricID} with full metric name as required by the MP specification
      * @throws IllegalArgumentException In case the provided {@link AnnotatedMember} isn't effectively annotated with
@@ -462,7 +471,7 @@ public final class AnnotationReader<T extends Annotation> {
      * the provided {@link InjectionPoint}. This does take into account that annotations might have been added or
      * removed at runtime.
      *
-     * @param point source {@link AnnotatedMember} for an annotated element having this {@link AnnotationReader}'s
+     * @param member point source {@link AnnotatedMember} for an annotated element having this {@link AnnotationReader}'s
      *              {@link #annotationType()}, not {@code null}
      * @return {@link Metadata} with full metric name as required by the MP specification
      * @throws IllegalArgumentException In case the provided {@link AnnotatedMember} isn't effectively annotated with
