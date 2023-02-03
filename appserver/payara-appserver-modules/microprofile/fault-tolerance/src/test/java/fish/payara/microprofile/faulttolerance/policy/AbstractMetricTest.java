@@ -39,6 +39,7 @@
  */
 package fish.payara.microprofile.faulttolerance.policy;
 
+import java.lang.annotation.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
@@ -52,6 +53,7 @@ import fish.payara.microprofile.faulttolerance.service.FaultToleranceServiceStub
 import fish.payara.microprofile.faulttolerance.service.FaultToleranceUtils;
 import fish.payara.microprofile.faulttolerance.service.MethodFaultToleranceMetrics;
 import fish.payara.microprofile.metrics.impl.MetricRegistryImpl;
+import org.eclipse.microprofile.metrics.annotation.*;
 
 /**
  * Base class for FT tests with {@link FaultToleranceMetrics} "enabled" using the actual implementation classes.
@@ -64,7 +66,18 @@ abstract class AbstractMetricTest extends AbstractRecordingTest {
 
     @Override
     protected FaultToleranceServiceStub createService() {
-        registry = new MetricRegistryImpl(Type.BASE);
+        registry = new MetricRegistryImpl(new RegistryScope(){
+
+            @Override
+            public Class<? extends Annotation> annotationType() {
+                return RegistryScope.class;
+            }
+
+            @Override
+            public String scope() {
+                return "base";
+            }
+        });
         return new FaultToleranceServiceStub() {
             @Override
             protected FaultToleranceMethodContext stubMethodContext(StubContext ctx) {

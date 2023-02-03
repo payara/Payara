@@ -63,14 +63,12 @@ import org.eclipse.microprofile.metrics.Histogram;
 import org.eclipse.microprofile.metrics.Metadata;
 import org.eclipse.microprofile.metrics.Metric;
 import org.eclipse.microprofile.metrics.MetricID;
-import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.eclipse.microprofile.metrics.MetricUnits;
 import org.eclipse.microprofile.metrics.Sampling;
 import org.eclipse.microprofile.metrics.Snapshot;
 import org.eclipse.microprofile.metrics.Tag;
 import org.eclipse.microprofile.metrics.Timer;
-import org.eclipse.microprofile.metrics.MetricRegistry.Type;
-import org.eclipse.microprofile.metrics.annotation.*;
+import org.eclipse.microprofile.metrics.annotation.RegistryScope;
 
 /**
  * Writes {@link Metric}s according to the MicroPrfile Metrics 2.3 standard for JSON format as defined in <a href=
@@ -206,7 +204,6 @@ public class JsonExporter implements MetricExporter {
     public void export(MetricID metricID, Timer timer, Metadata metadata) {
         completeOrUpdateGroup(metricID, metadata);
         appendMember(metricID, "elapsedTime", millisOrNull(timer.getElapsedTime()));
-        //exportMetered(metricID, timer);
         exportSampling(metricID, timer);
     }
 

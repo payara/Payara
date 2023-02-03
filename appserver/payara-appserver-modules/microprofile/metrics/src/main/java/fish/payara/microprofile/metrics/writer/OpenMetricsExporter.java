@@ -64,9 +64,7 @@ import org.eclipse.microprofile.metrics.Sampling;
 import org.eclipse.microprofile.metrics.Snapshot;
 import org.eclipse.microprofile.metrics.Tag;
 import org.eclipse.microprofile.metrics.Timer;
-
-import org.eclipse.microprofile.metrics.MetricRegistry.Type;
-import org.eclipse.microprofile.metrics.annotation.*;
+import org.eclipse.microprofile.metrics.annotation.RegistryScope;
 
 /**
  * Writes {@link Metric}s according to the OpenMetrics standard as defined in <a href=
@@ -86,6 +84,7 @@ public class OpenMetricsExporter implements MetricExporter {
     }
 
     protected final RegistryScope scope;
+
     protected final PrintWriter out;
     protected final Set<String> typeWrittenByGlobalName;
     protected final Set<String> helpWrittenByGlobalName;

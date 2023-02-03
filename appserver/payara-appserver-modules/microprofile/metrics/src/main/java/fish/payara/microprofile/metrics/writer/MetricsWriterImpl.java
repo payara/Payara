@@ -41,7 +41,7 @@ package fish.payara.microprofile.metrics.writer;
 
 import static java.lang.System.arraycopy;
 import java.io.IOException;
-import java.lang.annotation.*;
+import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -61,7 +61,7 @@ import fish.payara.microprofile.metrics.exception.NoSuchRegistryException;
 import fish.payara.microprofile.metrics.impl.MetricRegistryImpl;
 import fish.payara.nucleus.healthcheck.HealthCheckService;
 import fish.payara.nucleus.healthcheck.HealthCheckStatsProvider;
-import org.eclipse.microprofile.metrics.annotation.*;
+import org.eclipse.microprofile.metrics.annotation.RegistryScope;
 import org.glassfish.internal.api.Globals;
 
 public class MetricsWriterImpl implements MetricsWriter {

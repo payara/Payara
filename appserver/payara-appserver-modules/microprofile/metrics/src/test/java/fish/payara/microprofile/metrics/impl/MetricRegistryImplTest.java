@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) [2020] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2020-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -52,16 +52,13 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.lang.reflect.Method;
-import java.util.EnumSet;
-import java.util.HashSet;
+import java.lang.annotation.Annotation;
 import java.util.Map;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 import org.eclipse.microprofile.metrics.Counter;
-import org.eclipse.microprofile.metrics.Gauge;
 import org.eclipse.microprofile.metrics.Histogram;
 import org.eclipse.microprofile.metrics.Metadata;
 import org.eclipse.microprofile.metrics.MetadataBuilder;
@@ -70,7 +67,7 @@ import org.eclipse.microprofile.metrics.MetricFilter;
 import org.eclipse.microprofile.metrics.MetricID;
 import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.eclipse.microprofile.metrics.Tag;
-import org.eclipse.microprofile.metrics.MetricRegistry.Type;
+import org.eclipse.microprofile.metrics.annotation.RegistryScope;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -105,7 +102,18 @@ public class MetricRegistryImplTest {
         return Metadata.builder(FILLED).withName(name);
     }
 
-    private final MetricRegistry registry = new MetricRegistryImpl(Type.APPLICATION);
+    private final MetricRegistry registry = new MetricRegistryImpl(new RegistryScope(){
+
+        @Override
+        public Class<? extends Annotation> annotationType() {
+            return RegistryScope.class;
+        }
+
+        @Override
+        public String scope() {
+            return "application";
+        }
+    });
 
     @Before
     public void setUp() {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2023 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -46,6 +46,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.StringWriter;
+import java.lang.annotation.Annotation;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -60,7 +61,7 @@ import org.eclipse.microprofile.metrics.MetricUnits;
 import org.eclipse.microprofile.metrics.Snapshot;
 import org.eclipse.microprofile.metrics.Tag;
 import org.eclipse.microprofile.metrics.Timer;
-import org.eclipse.microprofile.metrics.MetricRegistry.Type;
+import org.eclipse.microprofile.metrics.annotation.RegistryScope;
 import org.junit.Test;
 
 /**
@@ -78,7 +79,18 @@ public class OpenMetricsExporterTest {
      * The actual output as written by the {@link OpenMetricsExporter}
      */
     private final StringWriter actual = new StringWriter();
-    private final MetricExporter exporter = new OpenMetricsExporter(actual).in(Type.APPLICATION);
+    private final MetricExporter exporter = new OpenMetricsExporter(actual).in(new RegistryScope(){
+
+        @Override
+        public Class<? extends Annotation> annotationType() {
+            return RegistryScope.class;
+        }
+
+        @Override
+        public String scope() {
+            return "application";
+        }
+    });
 
     @Test
     public void exportCounter() {
@@ -159,7 +171,18 @@ public class OpenMetricsExporterTest {
                 .withDescription("The average duration of foo requests during last 5 minutes")
                 .withUnit(MetricUnits.MILLISECONDS)
                 .build();
-        MetricExporter base = exporter.in(Type.BASE);
+        MetricExporter base = exporter.in(new RegistryScope(){
+
+            @Override
+            public Class<? extends Annotation> annotationType() {
+                return RegistryScope.class;
+            }
+
+            @Override
+            public String scope() {
+                return "base";
+            }
+        });
         base.export(fooValID, fooVal, fooValMetadata);
         Gauge<Long> barVal = mock(Gauge.class);
         when(barVal.getValue()).thenReturn(42L);
@@ -211,17 +234,6 @@ public class OpenMetricsExporterTest {
         exporter.export(metricID, histogram, metadata);
         String actualOutput = actual.getBuffer().toString();
         assertTrue(actualOutput.contains("application_test6_seconds{custom=\"tag-value\",quantile=\"0.5\"} 0"));
-    }
-
-    @Test
-    public void gaugesWithNonNumberValuesAreNotExported() {
-        //todo review implementation of Gauge
-        /*Gauge<String> gauge = () -> "hello world";
-        MetricID metricID = new MetricID("test3");
-        Metadata metadata = Metadata.builder()
-                .withName(metricID.getName())
-                .build();
-        assertOutputEquals("", metricID, gauge, metadata);*/
     }
 
     @Test

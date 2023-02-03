@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -149,6 +149,13 @@ public class WeightedSnapshot extends Snapshot {
 
     @Override
     public PercentileValue[] percentileValues() {
+        PercentileValue[] percentileValues = null;
+        if (values.length > 0 && quantiles.length > 0 && values.length == quantiles.length) {
+            percentileValues = new PercentileValue[values.length];
+            for (int i = 0; i < values.length; i++) {
+                percentileValues[i] = new PercentileValue(quantiles[i], values[i]);
+            }
+        }
         return new PercentileValue[0];
     }
 

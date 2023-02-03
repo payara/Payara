@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) [2020-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2020-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -47,7 +47,6 @@ import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toSet;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.fail;
 
 import java.lang.annotation.Annotation;
@@ -611,7 +610,7 @@ public class AnnotationReaderTest {
 
     private static <E extends AnnotatedElement & Member> void assertMetricType(Map<Class<?>, String> expected,
             E[] elements, Function<E, Class<?>> actualType) {
-        AnnotationReader<Metric> reader = null;
+        AnnotationReader<Metric> reader = AnnotationReader.METRIC;
         for (E element : elements) {
             if (!element.isSynthetic()) {
                 String expectedType = expected.get(actualType.apply(element));
@@ -736,9 +735,9 @@ public class AnnotationReaderTest {
     private static void assertNamed(String expected, Parameter param) {
         String msg = "wrong name for parameter " + param.getName() + ", ";
         InjectionPoint point = TestUtils.fakeInjectionPointFor(param);
-        assertEquals(msg, expected, null);
-        assertEquals(msg, expected, null);
-        assertEquals(msg, expected, null);
+        assertEquals(msg, expected, AnnotationReader.METRIC.name(point));
+        assertEquals(msg, expected, AnnotationReader.METRIC.metricID(point).getName());
+        assertEquals(msg, expected, AnnotationReader.METRIC.metadata(point).getName());
     }
 
     private static <E extends AnnotatedElement & Member, A extends Annotation> void assertNamed(String msg,

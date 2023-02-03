@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2018-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -39,13 +39,10 @@
  */
 package fish.payara.microprofile.metrics.jmx;
 
-import fish.payara.microprofile.metrics.healthcheck.HealthCheckCounter;
-import fish.payara.microprofile.metrics.healthcheck.HealthCheckGauge;
 import fish.payara.microprofile.metrics.healthcheck.ServiceExpression;
 import fish.payara.nucleus.healthcheck.HealthCheckStatsProvider;
 import java.util.ArrayList;
 import java.util.List;
-import static java.util.Objects.nonNull;
 import java.util.Set;
 import static java.util.logging.Level.INFO;
 import static java.util.logging.Level.SEVERE;
@@ -55,6 +52,8 @@ import jakarta.inject.Inject;
 import javax.management.MBeanAttributeInfo;
 import javax.management.ObjectName;
 import javax.management.openmbean.CompositeDataSupport;
+import org.eclipse.microprofile.metrics.Counter;
+import org.eclipse.microprofile.metrics.Gauge;
 import org.eclipse.microprofile.metrics.Metadata;
 import org.eclipse.microprofile.metrics.MetadataBuilder;
 import org.eclipse.microprofile.metrics.Metric;
@@ -115,38 +114,28 @@ public class MetricsMetadataHelper {
                         metricRegistry.getMetricIDs().contains(new MetricID(beanMetadata.getName(), tags.toArray(new Tag[tags.size()])))) {
                     continue;
                 }
-                Metric type;
                 if (beanMetadata.getMBean() != null) {
-                    MBeanExpression mBeanExpression = new MBeanExpression(beanMetadata.getMBean());
-                    /*switch (beanMetadata.getTypeRaw()) {
-                        case COUNTER:
-                            type = new MBeanCounterImpl(mBeanExpression);
-                            break;
-                        case GAUGE:
-                            type = new MBeanGuageImpl(mBeanExpression);
-                            break;
-                        default:
-                            throw new IllegalStateException("Unsupported type : " + beanMetadata);
-                    }*/
-                    //metricRegistry.register(beanMetadata, type, tags.toArray(new Tag[tags.size()]));
+                    if(beanMetadata.getName().equals(Counter.class.getName())) {
+                        metricRegistry.counter(beanMetadata, tags.toArray(new Tag[tags.size()]) );
+                    } else if(beanMetadata.getName().equals(Gauge.class.getName())) {
+                        metricRegistry.gauge(beanMetadata, null, tags.toArray(new Tag[tags.size()]));
+                    } else {
+                        throw new IllegalStateException("Unsupported type : " + beanMetadata);
+                    }
                 } else {
                     ServiceExpression expression = new ServiceExpression(beanMetadata.getService());
                     HealthCheckStatsProvider healthCheck = habitat.getService(HealthCheckStatsProvider.class, expression.getServiceId());
-                    /*if (healthCheck != null) {
-                        switch (beanMetadata.getTypeRaw()) {
-                            case COUNTER:
-                                type = new HealthCheckCounter(healthCheck, expression);
-                                break;
-                            case GAUGE:
-                                type = new HealthCheckGauge(healthCheck, expression);
-                                break;
-                            default:
-                                throw new IllegalStateException("Unsupported type : " + beanMetadata);
+                    if (healthCheck != null) {
+                        if (beanMetadata.getName().equals(Counter.class.getName())) {
+                            metricRegistry.counter(beanMetadata, tags.toArray(new Tag[tags.size()]));
+                        } else if (beanMetadata.getName().equals(Gauge.class.getName())) {
+                            metricRegistry.gauge(beanMetadata, null, tags.toArray(new Tag[tags.size()]));
+                        } else {
+                            throw new IllegalStateException("Unsupported type : " + beanMetadata);
                         }
-                        metricRegistry.register(beanMetadata, type, tags.toArray(new Tag[tags.size()]));
                     } else {
                         throw new IllegalStateException("Health-Check service not found : " + beanMetadata.getService());
-                    }*/
+                    }
                 }
             } catch (IllegalArgumentException ex) {
                 LOGGER.log(WARNING, ex.getMessage(), ex);
@@ -360,7 +349,7 @@ public class MetricsMetadataHelper {
                             newMetadataBuilder = newMetadataBuilder.withDescription((String) compositeData.get(subAttribute));
                         } else if ("name".equals(subAttribute)
                                 && compositeData.get(subAttribute) instanceof String) {
-                            //newMetadataBuilder = newMetadataBuilder.withDisplayName((String) compositeData.get(subAttribute));
+                            newMetadataBuilder = newMetadataBuilder.withName((String) compositeData.get(subAttribute));
                         } else if ("unit".equals(subAttribute)
                                 && compositeData.get(subAttribute) instanceof String
                                 && MetricUnits.NONE.equals(metadata.unit().orElse("none"))) {
@@ -405,18 +394,9 @@ public class MetricsMetadataHelper {
         }
         MetricsMetadata newMetaData =  new MetricsMetadata(
                 formatMetadata(metadata.getName(), key, attribute, subAttribute, instanceName),
-                formatMetadata(
-                        metadata.getName(),
-                        key,
-                        attribute,
-                        subAttribute,
-                         instanceName
-                ),
+                formatMetadata(metadata.getName(), key, attribute, subAttribute, instanceName),
                 formatMetadata(metadata.description().isPresent() ? metadata.getDescription() : metadata.getName(),
-                        key,
-                        attribute,
-                        subAttribute,
-                        instanceName),
+                        key, attribute, subAttribute, instanceName),
                 metadata.unit().orElse(null)
         );
         if(metadata.getMBean() != null) {

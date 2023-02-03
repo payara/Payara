@@ -28,11 +28,13 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
+import java.lang.annotation.*;
 import org.eclipse.microprofile.metrics.Counter;
 import org.eclipse.microprofile.metrics.MetricID;
 import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.eclipse.microprofile.metrics.Tag;
 import org.eclipse.microprofile.metrics.MetricRegistry.Type;
+import org.eclipse.microprofile.metrics.annotation.*;
 import org.junit.Test;
 
 import fish.payara.microprofile.metrics.impl.MetricRegistryImpl;
@@ -44,7 +46,18 @@ import fish.payara.microprofile.metrics.impl.MetricRegistryImpl;
  */
 public class MetricIDTest {
 
-    private MetricRegistry registry = new MetricRegistryImpl(Type.APPLICATION);
+    private MetricRegistry registry = new MetricRegistryImpl(new RegistryScope(){
+
+        @Override
+        public Class<? extends Annotation> annotationType() {
+            return RegistryScope.class;
+        }
+
+        @Override
+        public String scope() {
+            return "application";
+        }
+    });
 
     @SuppressWarnings({ "deprecation", "unused" })
     @Test

@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) [2020-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2020-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -43,7 +43,6 @@
 package fish.payara.microprofile.metrics.cdi.interceptor;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
@@ -51,13 +50,14 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
 import jakarta.interceptor.InvocationContext;
 
 import org.eclipse.microprofile.metrics.MetricRegistry;
-import org.eclipse.microprofile.metrics.MetricRegistry.Type;
 import org.eclipse.microprofile.metrics.Timer;
+import org.eclipse.microprofile.metrics.annotation.RegistryScope;
 import org.eclipse.microprofile.metrics.annotation.Timed;
 import org.junit.Test;
 
@@ -75,7 +75,18 @@ import fish.payara.microprofile.metrics.test.TestUtils;
 public class TimedInterceptorTest {
 
     private final InvocationContext context = mock(InvocationContext.class);
-    private final MetricRegistry registry = new MetricRegistryImpl(Type.APPLICATION);
+    private final MetricRegistry registry = new MetricRegistryImpl(new RegistryScope(){
+
+        @Override
+        public Class<? extends Annotation> annotationType() {
+            return RegistryScope.class;
+        }
+
+        @Override
+        public String scope() {
+            return "application";
+        }
+    });
 
     @Test
     @Timed

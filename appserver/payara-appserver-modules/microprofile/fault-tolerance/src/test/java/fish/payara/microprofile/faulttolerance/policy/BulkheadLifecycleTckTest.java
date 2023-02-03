@@ -1,5 +1,6 @@
 package fish.payara.microprofile.faulttolerance.policy;
 
+import java.lang.annotation.*;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
@@ -21,6 +22,7 @@ import fish.payara.microprofile.metrics.impl.MetricRegistryImpl;
 import org.eclipse.microprofile.faulttolerance.Bulkhead;
 import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.eclipse.microprofile.metrics.MetricRegistry.Type;
+import org.eclipse.microprofile.metrics.annotation.*;
 import org.junit.Test;
 
 import static org.awaitility.Awaitility.await;
@@ -48,7 +50,18 @@ public class BulkheadLifecycleTckTest extends AbstractRecordingTest {
         final Map<Object, AtomicReference<BlockingQueue<Thread>>> concurrentExecutionByMethodId = new ConcurrentHashMap<>();
         final Map<Object, AtomicInteger> waitingQueuePopulationByMethodId = new ConcurrentHashMap<>();
 
-        registry = new MetricRegistryImpl(Type.BASE);
+        registry = new MetricRegistryImpl(new RegistryScope(){
+
+            @Override
+            public Class<? extends Annotation> annotationType() {
+                return RegistryScope.class;
+            }
+
+            @Override
+            public String scope() {
+                return "base";
+            }
+        });
         return new FaultToleranceServiceStub() {
             @Override
             protected FaultToleranceMethodContext stubMethodContext(StubContext ctx) {

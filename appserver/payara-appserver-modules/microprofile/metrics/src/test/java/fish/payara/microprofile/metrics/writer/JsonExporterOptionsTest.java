@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2023 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,15 +43,16 @@ import static java.nio.file.Files.readAllBytes;
 import static org.junit.Assert.assertEquals;
 
 import java.io.StringWriter;
+import java.lang.annotation.Annotation;
 import java.nio.file.Paths;
 
 import org.eclipse.microprofile.metrics.Gauge;
 import org.eclipse.microprofile.metrics.Metadata;
 import org.eclipse.microprofile.metrics.Metric;
 import org.eclipse.microprofile.metrics.MetricID;
-import org.eclipse.microprofile.metrics.MetricRegistry.Type;
 import org.eclipse.microprofile.metrics.MetricUnits;
 import org.eclipse.microprofile.metrics.Tag;
+import org.eclipse.microprofile.metrics.annotation.RegistryScope;
 import org.junit.Test;
 
 import fish.payara.microprofile.metrics.writer.JsonExporter.Mode;
@@ -112,7 +113,18 @@ public class JsonExporterOptionsTest {
 
     @Test
     public void multipeRepositoriesAreGroupedByNameMetricOption() {
-        exporter = exporter.in(Type.BASE);
+        exporter = exporter.in(new RegistryScope(){
+
+            @Override
+            public Class<? extends Annotation> annotationType() {
+                return RegistryScope.class;
+            }
+
+            @Override
+            public String scope() {
+                return "base";
+            }
+        });
         Gauge<Long> fooVal = () -> 1L;
         MetricID fooValID = new MetricID("fooVal", new Tag("store", "webshop"));
         Metadata fooValMeta = Metadata.builder()
@@ -121,25 +133,20 @@ public class JsonExporterOptionsTest {
                 .withUnit(MetricUnits.MILLISECONDS)
                 .build();
         export(fooValID, fooVal, fooValMeta);
-        exporter = exporter.in(Type.APPLICATION);
+        exporter = exporter.in(new RegistryScope(){
+
+            @Override
+            public Class<? extends Annotation> annotationType() {
+                return RegistryScope.class;
+            }
+
+            @Override
+            public String scope() {
+                return "application";
+            }
+        });
         export(fooValID, fooVal, fooValMeta);
         assertOutputEqualsFile("Options3.json");
-    }
-
-    @Test
-    public void gaugesWithNonNumberValuesDoExportMetadata() {
-        //todo review implementation
-        /*Gauge<String> gauge = () -> "hello world";
-        MetricID metricID = new MetricID("test3");
-        Metadata metadata = Metadata.builder()
-                .withName(metricID.getName())
-                .build();
-        assertOutputEquals("{\n" +
-                "    \"test3\": {\n" +
-                "        \"unit\": \"none\",\n" +
-                "        \"type\": \"gauge\"\n" +
-                "    }\n" +
-                "}", metricID, gauge, metadata);*/
     }
 
     @Test

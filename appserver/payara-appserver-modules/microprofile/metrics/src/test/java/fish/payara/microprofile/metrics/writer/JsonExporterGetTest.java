@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2023 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -45,6 +45,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.StringWriter;
+import java.lang.annotation.Annotation;
 import java.nio.file.Paths;
 import java.time.Duration;
 
@@ -57,7 +58,7 @@ import org.eclipse.microprofile.metrics.MetricID;
 import org.eclipse.microprofile.metrics.Snapshot;
 import org.eclipse.microprofile.metrics.Tag;
 import org.eclipse.microprofile.metrics.Timer;
-import org.eclipse.microprofile.metrics.MetricRegistry.Type;
+import org.eclipse.microprofile.metrics.annotation.RegistryScope;
 import org.junit.Test;
 
 import fish.payara.microprofile.metrics.writer.JsonExporter.Mode;
@@ -146,12 +147,12 @@ public class JsonExporterGetTest {
 
     @Test
     public void gaugesWithNonNumberValuesAreNotExported() {
-        /*Gauge<String> gauge = () -> "hello world";
+        Gauge<Double> gauge = () -> 12.23;
         MetricID metricID = new MetricID("test3");
         Metadata metadata = Metadata.builder()
                 .withName(metricID.getName())
                 .build();
-        assertOutputEquals("{\n}", metricID, gauge, metadata);*/
+        assertOutputEquals("{\n}", metricID, gauge, metadata);
     }
 
     @Test
@@ -166,11 +167,33 @@ public class JsonExporterGetTest {
 
     @Test
     public void multipeRepositoriesAreGroupedByNameMetricOption() {
-        exporter = exporter.in(Type.BASE);
+        exporter = exporter.in(new RegistryScope(){
+
+            @Override
+            public Class<? extends Annotation> annotationType() {
+                return RegistryScope.class;
+            }
+
+            @Override
+            public String scope() {
+                return "base";
+            }
+        });
         Gauge<Long> fooVal = () -> 1L;
         MetricID fooValID = new MetricID("fooVal", new Tag("store", "webshop"));
         export(fooValID, fooVal);
-        exporter = exporter.in(Type.APPLICATION);
+        exporter = exporter.in(new RegistryScope(){
+
+            @Override
+            public Class<? extends Annotation> annotationType() {
+                return RegistryScope.class;
+            }
+
+            @Override
+            public String scope() {
+                return "application";
+            }
+        });
         export(fooValID, fooVal);
         assertOutputEquals("{\n" +
                 "    \"base\": {\n" +

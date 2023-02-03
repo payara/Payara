@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) [2020-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2020-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -63,9 +63,9 @@ import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.eclipse.microprofile.metrics.MetricUnits;
 import org.eclipse.microprofile.metrics.Tag;
 import org.eclipse.microprofile.metrics.Timer;
-import org.eclipse.microprofile.metrics.MetricRegistry.Type;
 import org.eclipse.microprofile.metrics.annotation.Counted;
 import org.eclipse.microprofile.metrics.annotation.Gauge;
+import org.eclipse.microprofile.metrics.annotation.RegistryScope;
 import org.eclipse.microprofile.metrics.annotation.Timed;
 import org.junit.Test;
 
@@ -83,7 +83,18 @@ import fish.payara.microprofile.metrics.test.TestUtils;
  */
 public class AnnotationReaderGetOrRegisterTest {
 
-    private final MetricRegistry registry = new MetricRegistryImpl(Type.APPLICATION, this::tick);
+    private final MetricRegistry registry = new MetricRegistryImpl(new RegistryScope(){
+
+        @Override
+        public Class<? extends Annotation> annotationType() {
+            return RegistryScope.class;
+        }
+
+        @Override
+        public String scope() {
+            return "application";
+        }
+    }, this::tick);
     private long clockTime;
 
     /**
@@ -134,8 +145,7 @@ public class AnnotationReaderGetOrRegisterTest {
     public void gaugeWithoutAnnotation() {
         String name = getClass().getCanonicalName() + ".gaugeWithoutAnnotation";
         org.eclipse.microprofile.metrics.Gauge<Long> gauge = () -> 1L;
-        //todo review register process
-        //registry.register(name, gauge);
+        registry.gauge(name, gauge, null);
         InjectionPoint point = testMethodAsInjectionPoint();
         org.eclipse.microprofile.metrics.Gauge<?> gauge2 = AnnotationReader.GAUGE.getOrRegister(point,
                 org.eclipse.microprofile.metrics.Gauge.class, registry);
@@ -149,7 +159,7 @@ public class AnnotationReaderGetOrRegisterTest {
         String name = getClass().getCanonicalName() + ".gaugeFromMetdadata";
         Metadata expected = Metadata.builder(annoated).withName(name).build();
         org.eclipse.microprofile.metrics.Gauge<Long> gauge = () -> 1L;
-        //registry.register(expected, gauge, new Tag("a", "b"), new Tag("c", "d"));
+        registry.gauge(expected, gauge, null, new Tag("a", "b"), new Tag("c", "d"));
         InjectionPoint point = testMethodAsInjectionPoint();
         org.eclipse.microprofile.metrics.Gauge<?> gauge2 = AnnotationReader.GAUGE.getOrRegister(point,
                 org.eclipse.microprofile.metrics.Gauge.class, registry);
@@ -181,13 +191,6 @@ public class AnnotationReaderGetOrRegisterTest {
             // with no annotation, done
             return;
         }
-        //assertEquals(reader.type(), metadata.getTypeRaw());
-        //String displayName = reader.displayName(annotation);
-        //if (displayName.isEmpty()) {
-          //  assertEquals(metricID.getName(), metadata.getDisplayName());
-        //} else {
-          //  assertEquals(displayName, metadata.getDisplayName());
-        //}
         String description = reader.description(annotation);
         if (description.isEmpty()) {
             assertFalse(metadata.description().isPresent());

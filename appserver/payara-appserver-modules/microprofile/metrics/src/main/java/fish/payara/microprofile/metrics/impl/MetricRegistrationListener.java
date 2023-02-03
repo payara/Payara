@@ -41,8 +41,7 @@ package fish.payara.microprofile.metrics.impl;
 
 import org.eclipse.microprofile.metrics.Metric;
 import org.eclipse.microprofile.metrics.MetricID;
-import org.eclipse.microprofile.metrics.MetricRegistry;
-import org.eclipse.microprofile.metrics.annotation.*;
+import org.eclipse.microprofile.metrics.annotation.RegistryScope;
 
 /**
  * Allows to be notified when a new {@link Metric} is registered with a particular {@link MetricRegistryImpl}.

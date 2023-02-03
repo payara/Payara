@@ -75,7 +75,7 @@ import org.eclipse.microprofile.metrics.MetricID;
 import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.eclipse.microprofile.metrics.Tag;
 import org.eclipse.microprofile.metrics.Timer;
-import org.eclipse.microprofile.metrics.annotation.*;
+import org.eclipse.microprofile.metrics.annotation.RegistryScope;
 
 /**
  * The MetricRegistry stores the metrics and metadata information
@@ -192,52 +192,52 @@ public class MetricRegistryImpl implements MetricRegistry {
 
     @Override
     public Histogram histogram(String name, Tag... tags) {
-        return findMetricOrCreate(name, null, tags);
+        return findMetricOrCreate(name, Histogram.class.getTypeName(), tags);
     }
 
     @Override
     public Histogram histogram(Metadata metadata, Tag... tags) {
-        return findMetricOrCreate(metadata, null, tags);
+        return findMetricOrCreate(metadata, Histogram.class.getTypeName(), tags);
     }
 
     @Override
     public Histogram histogram(String name) {
-        return findMetricOrCreate(name, null, new Tag[0]);
+        return findMetricOrCreate(name, Histogram.class.getTypeName(), new Tag[0]);
     }
 
     @Override
     public Histogram histogram(Metadata metadata) {
-         return findMetricOrCreate(metadata, null);
+         return findMetricOrCreate(metadata, Histogram.class.getTypeName());
     }
 
     @Override
     public Histogram histogram(MetricID metricID) {
-        return findMetricOrCreate(metricID.getName(), null, metricID.getTagsAsArray());
+        return findMetricOrCreate(metricID.getName(), Histogram.class.getTypeName(), metricID.getTagsAsArray());
     }
 
     @Override
     public Timer timer(String name, Tag... tags) {
-        return findMetricOrCreate(name, null, tags);
+        return findMetricOrCreate(name, Timer.class.getTypeName(), tags);
     }
 
     @Override
     public Timer timer(Metadata metadata, Tag... tags) {
-        return findMetricOrCreate(metadata, null, tags);
+        return findMetricOrCreate(metadata, Timer.class.getTypeName(), tags);
     }
 
     @Override
     public Timer timer(String name) {
-        return findMetricOrCreate(name, null, new Tag[0]);
+        return findMetricOrCreate(name, Timer.class.getTypeName(), new Tag[0]);
     }
 
     @Override
     public Timer timer(Metadata metadata) {
-        return findMetricOrCreate(metadata, null);
+        return findMetricOrCreate(metadata, Timer.class.getTypeName());
     }
 
     @Override
     public Timer timer(MetricID metricID) {
-        return findMetricOrCreate(metricID.getName(), null, metricID.getTagsAsArray());
+        return findMetricOrCreate(metricID.getName(), Timer.class.getTypeName(), metricID.getTagsAsArray());
     }
 
     @Override
@@ -334,7 +334,7 @@ public class MetricRegistryImpl implements MetricRegistry {
 
     @Override
     public String getScope() {
-        return null;
+        return registryScope.scope();
     }
 
     @Override

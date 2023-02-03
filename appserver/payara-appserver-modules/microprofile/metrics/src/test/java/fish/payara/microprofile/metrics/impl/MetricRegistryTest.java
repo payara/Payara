@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) [2020] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2020-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -50,6 +50,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
+import java.lang.annotation.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -60,8 +61,8 @@ import org.eclipse.microprofile.metrics.Metadata;
 import org.eclipse.microprofile.metrics.MetricFilter;
 import org.eclipse.microprofile.metrics.MetricID;
 import org.eclipse.microprofile.metrics.MetricRegistry;
-import org.eclipse.microprofile.metrics.MetricRegistry.Type;
 import org.eclipse.microprofile.metrics.Timer;
+import org.eclipse.microprofile.metrics.annotation.*;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -76,7 +77,18 @@ public class MetricRegistryTest {
     private static final Supplier<Long> GAUGE_SUPPLIER = () -> 42L;
     private static final Function<MetricRegistryTest, Long> GAUGE_FUNCTION = test -> 42L;
 
-    private final MetricRegistry registry = new MetricRegistryImpl(Type.APPLICATION);
+    private final MetricRegistry registry = new MetricRegistryImpl(new RegistryScope(){
+
+        @Override
+        public Class<? extends Annotation> annotationType() {
+            return RegistryScope.class;
+        }
+
+        @Override
+        public String scope() {
+            return "application";
+        }
+    });
 
     private static final MetricID COUNTER_ID = new MetricID("counter");
     private static final MetricID GAUGE_ID = new MetricID("gauge");
