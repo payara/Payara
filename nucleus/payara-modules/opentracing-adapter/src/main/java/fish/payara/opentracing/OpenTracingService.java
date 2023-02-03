@@ -110,7 +110,9 @@ public class OpenTracingService implements EventListener {
         if (event.is(Deployment.APPLICATION_UNLOADED)) {
             ApplicationInfo info = (ApplicationInfo) event.hook();
             Tracer tracer = tracers.remove(info.getName());
-            tracer.close();
+            if (tracer != null) {
+                tracer.close();
+            }
         }
     }
 

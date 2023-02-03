@@ -54,6 +54,7 @@ import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
@@ -207,27 +208,46 @@ public class OpenTelemetryService implements EventListener {
 
 
         if (isOtelEnabled(configProperties) || isPayaraTracingEnabled()) {
-            var props = new HashMap<String,String>(configProperties != null ? configProperties : Map.of());
-            props.putIfAbsent("otel.service.name", applicationName);
-            return AutoConfiguredOpenTelemetrySdk.builder()
-                    .setServiceClassLoader(Thread.currentThread().getContextClassLoader())
-                    .registerShutdownHook(false)
-                    .addSpanExporterCustomizer((exporter, c) -> {
-                        if (isPayaraTracingEnabled()) {
-                            ExecutorService es = executorServiceHandle.get().getUnderlyingExecutorService();
-                            return SpanExporter.composite(exporter,
-                                    new PayaraRequestTracingExporter(locator.getService(RequestTracingService.class), es));
-                        } else {
-                            return exporter;
-                        }
-                    })
-                    .addPropertiesSupplier(() -> props)
-                    .setResultAsGlobal(false)
-                    .build().getOpenTelemetrySdk();
+            var props = new HashMap<>(configProperties != null ? configProperties : Map.of());
+            addDefault(props,"otel.service.name", applicationName);
+            addDefault(props, "otel.metrics.exporter", "none");
+            try {
+                return AutoConfiguredOpenTelemetrySdk.builder()
+                        .setServiceClassLoader(Thread.currentThread().getContextClassLoader())
+                        .registerShutdownHook(false)
+                        .addSpanExporterCustomizer((exporter, c) -> {
+                            if (isPayaraTracingEnabled()) {
+                                ExecutorService es = executorServiceHandle.get().getUnderlyingExecutorService();
+                                return SpanExporter.composite(exporter,
+                                        new PayaraRequestTracingExporter(locator.getService(RequestTracingService.class), es));
+                            } else {
+                                return exporter;
+                            }
+                        })
+                        .addPropertiesSupplier(() -> props)
+                        .setResultAsGlobal(false)
+                        .build().getOpenTelemetrySdk();
+            } catch (ConfigurationException ce) {
+                logger.log(Level.SEVERE, "Failed to configure OpenTelemetry for "+applicationName+" using classlaoder "+Thread.currentThread().getContextClassLoader(), ce);
+                throw ce;
+            }
         } else {
             // noop
             return OpenTelemetrySdk.builder().build();
         }
+    }
+
+    private void addDefault(Map<String, String> props, String key, String value) {
+        if (props.containsKey(key)) {
+            return;
+        }
+        if (System.getProperty(key) != null) {
+            return;
+        }
+        if (System.getenv(key.toUpperCase().replace('.','_')) != null) {
+            return;
+        }
+        props.put(key, value);
     }
 
     private boolean isOtelEnabled(Map<String, String> configProperties) {

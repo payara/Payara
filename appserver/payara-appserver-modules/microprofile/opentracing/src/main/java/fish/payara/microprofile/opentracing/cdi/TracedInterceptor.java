@@ -138,7 +138,7 @@ public class TracedInterceptor implements Serializable {
         final String operationName = getOperationName(invocationContext, traced);
         Span parentSpan = tracer.activeSpan();
 
-        final Span span = tracer.buildSpan(operationName).start();
+        final Span span = tracer.buildSpan(operationName).asChildOf(parentSpan).start();
         try (Scope scope = tracer.scopeManager().activate(span)) {
             try {
                 return invocationContext.proceed();

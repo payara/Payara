@@ -1,0 +1,10 @@
+# OpenTelemetry samples
+
+So far there is no API to get server-managed OTEL traces beyond using OpenTracing APIs.
+
+Therefore there are no automated tests yet.
+OpenTracing part is exercised by other tests (such as Remote EJB tracing).
+
+The sample application just makes used of distributed OpenTelemetry APIs to create SDK on its own, either manual or in autoconfiguration mode.
+
+It is also possible to put implementations of e. g. exporters into `domaindir/lib` and have them discovered by the autoconfiguration sdk.

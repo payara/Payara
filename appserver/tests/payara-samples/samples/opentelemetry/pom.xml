@@ -51,6 +51,7 @@
         <version>6.2023.1-SNAPSHOT</version>
     </parent>
 
+    <name>Payara Samples - OpenTelemetry</name>
     <artifactId>opentelemetry</artifactId>
     <packaging>war</packaging>
 
