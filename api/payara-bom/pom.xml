@@ -138,19 +138,33 @@
                 <artifactId>jakarta.jakartaee-api</artifactId>
                 <version>${jakartaee.api.version}</version>
                 <scope>provided</scope>
+                <!-- https://github.com/eclipse-ee4j/jakartaee-api/issues/133 -->
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>jakarta.platform</groupId>
                 <artifactId>jakarta.jakartaee-web-api</artifactId>
-                <version>${jakarta-platform.version}</version>
+                <version>${jakartaee.api.version}</version>
                 <scope>provided</scope>
+                <!-- https://github.com/eclipse-ee4j/jakartaee-api/issues/133 -->
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <!-- Jakarta BOM. May be used in import scope by client instead of aggregate -->
             <dependency>
                 <groupId>jakarta.platform</groupId>
                 <artifactId>jakarta.jakartaee-bom</artifactId>
-                <version>${jakarta-platform.version}</version>
+                <version>${jakarta.api.version}</version>
                 <type>pom</type>
             </dependency>
 
