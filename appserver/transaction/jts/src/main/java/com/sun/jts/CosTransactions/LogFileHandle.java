@@ -66,6 +66,8 @@ package com.sun.jts.CosTransactions;
 
 import com.sun.enterprise.util.i18n.StringManager;
 import java.io.*;
+import org.glassfish.hk2.utilities.CleanerFactory;
+import java.sql.SQLException;
 
 /**This class encapsulates file I/O operations and the file handle.
  *
@@ -163,7 +165,7 @@ class LogFileHandle {
     LogFileHandle() {
         fhandle = null;
         fd      = null;                                                       //@MA
-
+        registerDestroyEvent();
     }
 
     /**Creates a new file handle for the given file.
@@ -189,16 +191,18 @@ class LogFileHandle {
         }
 
         // Change the OpenOptions to the format expected by CLOSE
-
-        if( (openOptions & OPEN_RDONLY) != 0 )
-            fileOpen(file,MODE_READONLY);
-        else
+        if ((openOptions & OPEN_RDONLY) != 0) {
+            fileOpen(file, MODE_READONLY);
+        } else {
             try {
-                fileOpen(file,MODE_READWRITEOLD);
-            } catch( LogException e ) {
-                if( (openOptions & OPEN_CREAT) != 0 )
-                    fileOpen(file,MODE_READWRITENEW);
+                fileOpen(file, MODE_READWRITEOLD);
+            } catch (LogException e) {
+                if ((openOptions & OPEN_CREAT) != 0) {
+                    fileOpen(file, MODE_READWRITENEW);
+                }
             }
+        }
+        registerDestroyEvent();
     }
 
     /**Destroys the FileHandle, closing the file, if open.
@@ -222,10 +226,14 @@ class LogFileHandle {
             fileClose();
     }
 
-    protected void finalize()
-        throws LogException {
-
-        destroy();
+    public final void registerDestroyEvent() {
+        CleanerFactory.create().register(this, () -> {
+            try {
+                destroy();
+            } catch(LogException ex) {
+                // Ignore it
+            }
+        });
     }
 
     /**Reads from the file.

@@ -42,6 +42,7 @@ package org.glassfish.deployment.common;
 
 import java.io.File;
 import java.io.IOException;
+import org.glassfish.hk2.utilities.CleanerFactory;
 import java.net.URI;
 import java.text.MessageFormat;
 import java.util.Arrays;
@@ -122,6 +123,10 @@ public class ClientArtifactsManager {
      * here.
      */
     private final Map<URI,JarFile> jarFiles = new HashMap<URI,JarFile>();
+
+    public ClientArtifactsManager() {
+        registerCloseEvent();
+    }
 
     /**
      * Retrieves the client artifacts store from the provided deployment 
@@ -347,12 +352,12 @@ public class ClientArtifactsManager {
         return MessageFormat.format(format, args);
     }
 
-    @Override
-    protected void finalize() throws Throwable {
-        super.finalize(); //To change body of generated methods, choose Tools | Templates.
-        if ( ! isArtifactSetConsumed) {
-            closeOpenedJARs();
-        }
+    public final void registerCloseEvent() {
+        CleanerFactory.create().register(this, () -> {
+            if (!isArtifactSetConsumed) {
+                closeOpenedJARs();
+            }
+        });
     }
 
     /**

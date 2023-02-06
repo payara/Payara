@@ -65,7 +65,9 @@ import org.apache.catalina.util.RequestUtil;
 
 import jakarta.servlet.http.Part;
 import java.io.*;
+import org.glassfish.hk2.utilities.CleanerFactory;
 import java.nio.charset.Charset;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -227,6 +229,7 @@ class PartItem
         this.requestCharEncoding = requestCharEncoding;
         this.sizeThreshold = multipart.getFileSizeThreshold();
         this.repository = multipart.getRepository();
+        registerCleanupEvent();
     }
 
 
@@ -618,14 +621,15 @@ class PartItem
     /**
      * Removes the file contents from the temporary storage.
      */
-    protected void finalize() {
-        File outputFile = dfos.getFile();
+    public final void registerCleanupEvent() {
+        CleanerFactory.create().register(this, () -> {
+            File outputFile = dfos.getFile();
 
-        if (outputFile != null && outputFile.exists()) {
-            deleteFile(outputFile);
-        }
+            if (outputFile != null && outputFile.exists()) {
+                deleteFile(outputFile);
+            }
+        });
     }
-
 
     /**
      * Creates and returns a {@link java.io.File File} representing a uniquely
