@@ -37,6 +37,8 @@
  */
 package fish.payara.admingui.extras.rest;
 
+import static org.glassfish.weld.WeldDeployer.DEV_MODE_PROPERTY;
+
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -327,8 +329,7 @@ public class PayaraRestApiHandlers {
                     }
                 }
                 if (!enabled) {
-                    // constant inlined because we cannot transitively depend on Faces 4, which weld-integration would bring
-                    result.put(componentName, Boolean.getBoolean("org.jboss.weld.development"));
+                    result.put(componentName, Boolean.getBoolean(DEV_MODE_PROPERTY));
                 }
             }
 

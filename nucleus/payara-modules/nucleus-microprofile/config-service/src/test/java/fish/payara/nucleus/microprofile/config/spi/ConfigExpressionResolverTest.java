@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2021-2022] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,18 +39,20 @@
  */
 package fish.payara.nucleus.microprofile.config.spi;
 
-import org.eclipse.microprofile.config.ConfigValue;
-import org.eclipse.microprofile.config.spi.ConfigSource;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.util.HashMap;
-import java.util.NoSuchElementException;
-
+import fish.payara.nucleus.microprofile.config.source.PropertiesConfigSource;
 import static fish.payara.nucleus.microprofile.config.spi.ConfigTestUtils.createSource;
 import static java.util.Collections.singleton;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+
+import java.util.HashMap;
+import java.util.NoSuchElementException;
+import java.util.Properties;
+
+import org.eclipse.microprofile.config.ConfigValue;
+import org.eclipse.microprofile.config.spi.ConfigSource;
+import org.junit.Before;
+import org.junit.Test;
 
 public class ConfigExpressionResolverTest {
     
@@ -123,7 +125,7 @@ public class ConfigExpressionResolverTest {
     }
 
     @Test(expected = NoSuchElementException.class)
-    public void testNonExistentReference() {
+    public void testNonExistantReference() {
         resolver.resolve("reference.not.found");
     }
 

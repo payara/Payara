@@ -73,13 +73,6 @@ public class DeployApplicationTest {
         assertEquals(TestServlet.RESPONSE_TEXT, download(HOST_NAME, server.getHttpPort()));
     }
 
-    @Test
-    public void deployApplicationInVanillaModeWithHazelcast() throws Exception {
-        assertNotNull(server);
-        server.start("--autobindhttp", "--nohazelcast", "--deploy", WAR_FILE.getAbsolutePath());
-        assertEquals(TestServlet.RESPONSE_TEXT, download(HOST_NAME, server.getHttpPort()));
-    }
-
     @After
     public void stopMicroInstance() {
         if (server != null) {

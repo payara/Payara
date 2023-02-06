@@ -38,7 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright [2018-2022] Payara Foundation and/or affiliates
+    Portions Copyright [2018] Payara Foundation and/or affiliates
 -->
 
 " <script type="text/javascript">
@@ -53,10 +53,22 @@
         var ephField = document.getElementById('#{cipherId}:EphemeralCiphersProp:ephemeralAddRemove').selectedValues.value; \
         var bitField = document.getElementById('#{cipherId}:OtherCiphersProp:otherAddRemove').selectedValues.value; \
         var eccField = document.getElementById('#{cipherId}:EccCiphersProp:eccAddRemove').selectedValues.value; \
+        var ssl3Prop = document.getElementById('#{sheetId}:SSL3Prop:SSL3').checked; \
+        if(document.getElementById('#{sheetId}:SSL2Prop:SSL2')) { \
+           var ssl2Prop = document.getElementById('#{sheetId}:SSL2Prop:SSL2').checked; \
+        } \
+        var tlsProp = document.getElementById('#{sheetId}:TLSProp:TLS').checked; \
+	var tls11Prop = document.getElementById('#{sheetId}:TLSProp11:TLS11').checked; \
 	var tls12Prop = document.getElementById('#{sheetId}:TLSProp12:TLS12').checked; \
         var tls13Prop = document.getElementById('#{sheetId}:TLSProp13:TLS13').checked; \
+        if (ssl3Prop || tlsProp || ssl2Prop) {   \
+            var result = checkForValue(getTextElement('#{sheetId}:CertNicknameProp:CertNickname'));  \
+            if(result != true){ \
+                return showAlert('$resource{i18n.msg.JS.ssl.errSslTlsCert}'); \
+            } \
+        } \
         if ((comField != '') || (ephField != '') || (bitField != '') || (eccField != '')){ \
-            if ((!tls12Prop) &&(!tls13Prop)) {   \
+            if ((!ssl3Prop) && (!tlsProp)&& (!tls11Prop) &&(!tls12Prop) &&(!tls13Prop)) {   \
                 return showAlert('$resource{i18n.msg.JS.ssl.errCiphersSelected}'); \
             } \
         } \

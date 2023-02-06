@@ -33,7 +33,6 @@
  only if the new code is made subject to such option by the copyright
  holder.
 -->
-<!--  Portions Copyright [2022] Payara Foundation and/or affiliates -->
 
 
 <!ENTITY % boolean "(yes | no | on | off | 1 | 0 | true | false)">
@@ -95,27 +94,46 @@
      cert-nickname nickname of the server certificate in the certificate database 
                    or the PKCS#11 token. In the certificate, the name format is
                    tokenname:nickname. Including the tokenname: part of the name 
-                   in this attribute is optional.
+                   in this attribute is optional. 
 
-    ssl3-tls-ciphers (optional) A space-separated list of the SSL3 ciphers used, with
-                     the prefix + to enable or - to disable, for example
+     ssl2-enabled  (optional) Determines whether SSL2 is enabled. 
+
+     ssl3-enabled  (optional) Determines whether SSL3 is enabled. 
+
+                   If both SSL2 and SSL3 are enabled for a virtual server, the server 
+                   tries SSL3 encryption first. If that fails, the server tries SSL2
+                   encryption. 
+
+    ssl2ciphers    (optional) A space-separated list of the SSL2 ciphers used, with 
+                   the prefix + to enable or - to disable, for example +rc4. Allowed 
+                   values are rc4, rc4export, rc2, rc2export, idea, des, desede3. 
+
+    ssl3-tls-ciphers (optional) A space-separated list of the SSL3 ciphers used, with 
+                     the prefix + to enable or - to disable, for example 
                      +SSL_RSA_WITH_RC4_128_MD5.
-                     Allowed SSL3/TLS values are SSL_RSA_WITH_RC4_128_MD5,
+                     Allowed SSL3/TLS values are SSL_RSA_WITH_RC4_128_MD5, 
                      SSL_RSA_WITH_3DES_EDE_CBC_SHA, SSL_RSA_WITH_DES_CBC_SHA,
                      SSL_RSA_EXPORT_WITH_RC4_40_MD5, SSL_RSA_WITH_NULL_MD5,
                      SSL_RSA_WITH_RC4_128_SHA,SSL_RSA_WITH_NULL_SHA
+
+
+    tls-enabled     (optional) Determines whether TLS is enabled. 
 
     tls-rollback-enabled  (optional) Determines whether TLS rollback is enabled. TLS 
                           rollback should be enabled for Microsoft Internet Explorer 
                           5.0 and 5.5. 
 
-    client-auth-enabled   (optional) Determines whether client authentication is
+    client-auth-enabled   (optional) Determines whether SSL3 client authentication is 
                           performed on every request, independent of ACL-based access 
                           control.
 --> 
 <!ELEMENT ssl EMPTY>
 <!ATTLIST ssl cert-nickname        CDATA    #IMPLIED
+              ssl2-enabled         CDATA    "false"
+              ssl2-ciphers         CDATA    #IMPLIED
+              ssl3-enabled         CDATA    "true"
               ssl3-tls-ciphers     CDATA    #IMPLIED
+              tls-enabled          CDATA    "true"
               tls-rollback-enabled CDATA    "true">
 
 <!-- Location and password to read the Certificate Database. iAS

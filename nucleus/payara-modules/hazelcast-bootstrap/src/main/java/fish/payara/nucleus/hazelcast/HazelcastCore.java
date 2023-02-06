@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2022] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,7 +42,16 @@ package fish.payara.nucleus.hazelcast;
 import static java.lang.String.valueOf;
 
 import com.hazelcast.cache.impl.HazelcastServerCachingProvider;
-import com.hazelcast.config.*;
+import com.hazelcast.config.Config;
+import com.hazelcast.config.ExecutorConfig;
+import com.hazelcast.config.GlobalSerializerConfig;
+import com.hazelcast.config.MemberAddressProviderConfig;
+import com.hazelcast.config.MulticastConfig;
+import com.hazelcast.config.NetworkConfig;
+import com.hazelcast.config.PartitionGroupConfig;
+import com.hazelcast.config.ScheduledExecutorConfig;
+import com.hazelcast.config.SerializationConfig;
+import com.hazelcast.config.TcpIpConfig;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.internal.config.ConfigLoader;
@@ -53,9 +62,6 @@ import com.hazelcast.nio.serialization.StreamSerializer;
 import static com.hazelcast.spi.properties.ClusterProperty.WAIT_SECONDS_BEFORE_JOIN;
 import com.sun.enterprise.util.Utility;
 import fish.payara.nucleus.events.HazelcastEvents;
-import jakarta.xml.bind.JAXBContext;
-import jakarta.xml.bind.JAXBElement;
-import jakarta.xml.bind.Unmarshaller;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.admin.ServerEnvironment.Status;
@@ -70,9 +76,6 @@ import org.glassfish.internal.deployment.Deployment;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigListener;
-import org.jvnet.hk2.config.ConfigSupport;
-import org.jvnet.hk2.config.SingleConfigCode;
-import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.Transactions;
 import org.jvnet.hk2.config.UnprocessedChangeEvent;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
@@ -80,12 +83,9 @@ import org.jvnet.hk2.config.UnprocessedChangeEvents;
 import jakarta.annotation.PostConstruct;
 import javax.cache.spi.CachingProvider;
 import jakarta.inject.Inject;
-import org.w3c.dom.Element;
-
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import java.beans.PropertyChangeEvent;
-import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -98,11 +98,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 /**
  * The core class for using Hazelcast in Payara
@@ -304,31 +301,25 @@ public class HazelcastCore implements EventListener, ConfigListener {
         }
     }
 
-
     private Config buildConfiguration() {
         Config config = new Config();
+
         String hazelcastFilePath = "";
+        URL serverConfigURL;
         try {
-            Boolean isChangeToDefault = Boolean.valueOf(configuration.getChangeToDefault());
-            hazelcastFilePath = System.getProperty("hazelcast.config");
-            if (hazelcastFilePath == null || hazelcastFilePath.isEmpty()) {
-                hazelcastFilePath = configuration.getHazelcastConfigurationFile();
-            }
+            serverConfigURL = new URL(context.getServerConfigURL());
+            File serverConfigFile = new File(serverConfigURL.getPath());
+            hazelcastFilePath = serverConfigFile.getParentFile().getAbsolutePath() + File.separator + configuration.getHazelcastConfigurationFile();
             File file = new File(hazelcastFilePath);
             if (file.exists()) {
-                Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO,
-                        "Loading Hazelcast configuration from file: {0}", hazelcastFilePath);
                 config = ConfigLoader.load(hazelcastFilePath);
                 if (config == null) {
-                    Logger.getLogger(HazelcastCore.class.getName()).log(Level.WARNING,
-                            "Hazelcast Core could not find configuration file {0} using default configuration",
-                            hazelcastFilePath);
+                    Logger.getLogger(HazelcastCore.class.getName()).log(Level.WARNING, "Hazelcast Core could not find configuration file {0} using default configuration", hazelcastFilePath);
                     config = new Config();
                 }
                 config.setClassLoader(clh.getCommonClassLoader());
                 if(ctxUtil == null) {
-                    Logger.getLogger(HazelcastCore.class.getName()).log(Level.WARNING,
-                            "Hazelcast Application Object Serialization Not Available");
+                    Logger.getLogger(HazelcastCore.class.getName()).log(Level.WARNING, "Hazelcast Application Object Serialization Not Available");
                 } else {
                     SerializationConfig serConfig = config.getSerializationConfig();
                     if (serConfig == null) {
@@ -344,38 +335,12 @@ public class HazelcastCore implements EventListener, ConfigListener {
                                 config.getSerializationConfig().getGlobalSerializerConfig().setImplementation(
                                         new PayaraHazelcastSerializer(ctxUtil, (StreamSerializer<?>) ser));
                             } else {
-                                Logger.getLogger(HazelcastCore.class.getName()).log(Level.WARNING,
-                                        "Global serializer is not StreamSerializer: {0}", ser.getClass().getName());
+                                Logger.getLogger(HazelcastCore.class.getName()).log(Level.WARNING, "Global serializer is not StreamSerializer: {0}", ser.getClass().getName());
                             }
                         }
                     }
                 }
-                final Config config1 = config;
-                ConfigSupport.apply(new SingleConfigCode<HazelcastRuntimeConfiguration>() {
-                    @Override
-                    public Object run(final HazelcastRuntimeConfiguration hazelcastRuntimeConfigurationProxy) {
-                        fillHazelcastConfigurationFromConfig(config1, hazelcastRuntimeConfigurationProxy);
-                        Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "Hazelcast general configuration filled from file");
-                        return null;
-                    }
-                }, configuration);
-                ConfigSupport.apply(new SingleConfigCode<HazelcastConfigSpecificConfiguration>() {
-                    @Override
-                    public Object run(final HazelcastConfigSpecificConfiguration hazelcastRuntimeConfigurationProxy) {
-                        fillSpecificHazelcastConfigFromConfig(config1, hazelcastRuntimeConfigurationProxy);
-                        Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "Hazelcast specific configuration created");
-                        return null;
-                    }
-                }, nodeConfig);
             } else { // there is no config override
-                if (isChangeToDefault) {
-                    try {
-                        fillConfigurationWithDefaults();
-                    } catch (TransactionFailure e) {
-                        Logger.getLogger(HazelcastCore.class.getName()).log(Level.SEVERE,
-                                "Hazelcast setting to default config exception: " + e.toString(), e);
-                    }
-                }
                 config.setClassLoader(clh.getCommonClassLoader());
 
                 // The below are to test split-brain scenario,
@@ -431,8 +396,6 @@ public class HazelcastCore implements EventListener, ConfigListener {
             Logger.getLogger(HazelcastCore.class.getName()).log(Level.WARNING, "Unable to parse server config URL", ex);
         } catch (IOException ex) {
             Logger.getLogger(HazelcastCore.class.getName()).log(Level.WARNING, "Hazelcast Core could not load configuration file " + hazelcastFilePath + " using default configuration", ex);
-        } catch (TransactionFailure ex) {
-            Logger.getLogger(HazelcastCore.class.getName()).log(Level.WARNING, "Hazelcast Configuration data could no be saved", ex);
         }
         return config;
     }
@@ -448,10 +411,6 @@ public class HazelcastCore implements EventListener, ConfigListener {
 
     private void buildNetworkConfiguration(Config config) throws NumberFormatException {
         NetworkConfig nConfig = config.getNetworkConfig();
-        String noClusterProp = nodeConfig.getClusteringEnabled();
-        if (noClusterProp != null && Boolean.parseBoolean(noClusterProp)) {
-            config.getNetworkConfig().getJoin().getAutoDetectionConfig().setEnabled(false);
-        }
         if (nodeConfig.getPublicAddress() != null && !nodeConfig.getPublicAddress().isEmpty()) {
             nConfig.setPublicAddress(nodeConfig.getPublicAddress());
         }
@@ -663,95 +622,5 @@ public class HazelcastCore implements EventListener, ConfigListener {
         // We want to return the value as it was at boot time here to prevent the server changing encryption behaviour
         // without a restart
         return datagridEncryptionValue;
-    }
-
-    private void fillHazelcastConfigurationFromConfig(Config config,
-                                                      HazelcastRuntimeConfiguration configuration) {
-        configuration.setClusterGroupName(config.getClusterName());
-        configuration.setLicenseKey(config.getLicenseKey());
-
-        if (env.isDas() && !env.isMicro()) {
-            configuration.setDasPort(String.valueOf(config.getNetworkConfig().getPort()));
-        } else {
-            configuration.setStartPort(String.valueOf(config.getNetworkConfig().getPort()));
-        }
-        configuration.setAutoIncrementPort(String.valueOf(config.getNetworkConfig().isPortAutoIncrement()));
-
-        NetworkConfig nConfig = config.getNetworkConfig();
-        InterfacesConfig interfacesConfig = nConfig.getInterfaces();
-        if (interfacesConfig != null) {
-            configuration.setInterface(
-                    interfacesConfig.getInterfaces().stream().collect(Collectors.joining(",")));
-        }
-        JoinConfig joinConfig = nConfig.getJoin();
-        if (joinConfig != null) {
-            TcpIpConfig tConfig = joinConfig.getTcpIpConfig();
-            if (tConfig != null && tConfig.isEnabled()) {
-                configuration.setTcpipMembers(tConfig.getMembers().stream().collect(Collectors.joining(",")));
-            }
-            MulticastConfig multicastConfig = joinConfig.getMulticastConfig();
-            if (multicastConfig != null && multicastConfig.isEnabled()) {
-                configuration.setMulticastGroup(multicastConfig.getMulticastGroup());
-                configuration.setMulticastPort(String.valueOf(multicastConfig.getMulticastPort()));
-            }
-            KubernetesConfig kubernetesConfig = joinConfig.getKubernetesConfig();
-            if (kubernetesConfig != null && kubernetesConfig.isEnabled()) {
-                configuration.setKubernetesNamespace(kubernetesConfig.getProperty(KubernetesProperties.NAMESPACE.key()));
-                configuration.setKubernetesServiceName(kubernetesConfig.getProperty(KubernetesProperties.SERVICE_NAME.key()));
-            }
-        }
-    }
-
-    private void fillSpecificHazelcastConfigFromConfig(Config config,
-                                                       HazelcastConfigSpecificConfiguration nodeConfig) {
-        NetworkConfig nConfig = config.getNetworkConfig();
-        if(nConfig.getPublicAddress() != null && !nConfig.getPublicAddress().isEmpty()) {
-            nodeConfig.setPublicAddress(nConfig.getPublicAddress());
-        }
-        nodeConfig.setLite(String.valueOf(config.isLiteMember()));
-        ExecutorConfig executorConfig = config.getExecutorConfig(CLUSTER_EXECUTOR_SERVICE_NAME);
-        nodeConfig.setExecutorPoolSize(String.valueOf(executorConfig.getPoolSize()));
-        nodeConfig.setExecutorQueueCapacity(String.valueOf(executorConfig.getQueueCapacity()));
-        ScheduledExecutorConfig scheduledExecutorConfig = config.getScheduledExecutorConfig(
-                SCHEDULED_CLUSTER_EXECUTOR_SERVICE_NAME);
-        nodeConfig.setScheduledExecutorPoolSize(String.valueOf(scheduledExecutorConfig.getPoolSize()));
-        nodeConfig.setScheduledExecutorQueueCapacity(String.valueOf(scheduledExecutorConfig.getCapacity()));
-    }
-
-    private void fillConfigurationWithDefaults() throws TransactionFailure {
-        ConfigSupport.apply(new SingleConfigCode<HazelcastRuntimeConfiguration>() {
-            @Override
-            public Object run(final HazelcastRuntimeConfiguration hazelcastRuntimeConfiguration) {
-                hazelcastRuntimeConfiguration.setChangeToDefault("false");
-                hazelcastRuntimeConfiguration.setClusterGroupName("development");
-                hazelcastRuntimeConfiguration.setLicenseKey("");
-                hazelcastRuntimeConfiguration.setDasPort("4900");
-                hazelcastRuntimeConfiguration.setStartPort("5900");
-                hazelcastRuntimeConfiguration.setAutoIncrementPort("true");
-                hazelcastRuntimeConfiguration.setInterface("");
-                hazelcastRuntimeConfiguration.setTcpipMembers("127.0.0.1:5900");
-                hazelcastRuntimeConfiguration.setMulticastGroup("224.2.2.3");
-                hazelcastRuntimeConfiguration.setMulticastPort("54327");
-                hazelcastRuntimeConfiguration.setKubernetesNamespace("default");
-                hazelcastRuntimeConfiguration.setKubernetesServiceName("");
-                Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO,
-                        "Hazelcast general configuration filled with defaults");
-                return null;
-            }
-        }, configuration);
-        ConfigSupport.apply(new SingleConfigCode<HazelcastConfigSpecificConfiguration>() {
-            @Override
-            public Object run(final HazelcastConfigSpecificConfiguration hazelcastConfigSpecificConfiguration) {
-                hazelcastConfigSpecificConfiguration.setPublicAddress("");
-                hazelcastConfigSpecificConfiguration.setLite("false");
-                hazelcastConfigSpecificConfiguration.setExecutorPoolSize("4");
-                hazelcastConfigSpecificConfiguration.setExecutorQueueCapacity("20");
-                hazelcastConfigSpecificConfiguration.setScheduledExecutorPoolSize("4");
-                hazelcastConfigSpecificConfiguration.setScheduledExecutorQueueCapacity("20");
-                Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO,
-                        "Hazelcast specific configuration filled with defaults");
-                return null;
-            }
-        }, nodeConfig);
     }
 }

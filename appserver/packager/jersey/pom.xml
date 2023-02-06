@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>6.2022.2-SNAPSHOT</version>
+        <version>6.2022.1.Alpha3-SNAPSHOT</version>
     </parent>
     
     <artifactId>jersey</artifactId>
@@ -131,6 +131,15 @@
             <activation>
                 <activeByDefault>true</activeByDefault>
             </activation>
+            <repositories>
+                <repository>
+                    <id>payara_eclipselinkrepo-release</id>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <url>https://raw.github.com/Payara/Payara_PatchedProjects/master/EclipseLink/2.5.2/releases</url>
+                </repository>
+            </repositories>
         </profile>
     </profiles>
 

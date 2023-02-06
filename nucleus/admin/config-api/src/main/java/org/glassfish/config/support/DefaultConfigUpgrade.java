@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2022] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2021] Payara Foundation and/or affiliates
 
 package org.glassfish.config.support;
 
@@ -507,10 +507,10 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
      *      <property name="jaas-context" value="fileRealm"/>
      *  </auth-realm>
      *  <auth-realm classname="com.sun.enterprise.security.auth.realm.certificate.CertificateRealm" name="certificate"/>
-     *  <jacc-provider policy-provider="fish.payara.security.jacc.provider.PolicyProviderImpl" name="default" policy-configuration-factory-provider="fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl">
+     *  <jacc-provider policy-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyProvider" name="default" policy-configuration-factory-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyConfigurationFactory">
      *      <property name="repository" value="${com.sun.aas.instanceRoot}/generated/policy"/>
      *  </jacc-provider>
-     *  <jacc-provider policy-provider="fish.payara.security.jacc.provider.PolicyProviderImpl" name="simple" policy-configuration-factory-provider="fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl"/>
+     *  <jacc-provider policy-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyProvider" name="simple" policy-configuration-factory-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyConfigurationFactory"/>
      *  <audit-module classname="com.sun.enterprise.security.Audit" name="default">
      *      <property name="auditOn" value="false"/>
      *  </audit-module>
@@ -625,10 +625,10 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
     /* Loop through all jacc-provider elements in the template and create JaccProvider config objects.
      * Cursor should already be at first jacc-provider START_ELEMENT.
      * from template:
-     * <jacc-provider policy-provider="fish.payara.security.jacc.provider.PolicyProviderImpl" name="default" policy-configuration-factory-provider="fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl">
+     * <jacc-provider policy-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyProvider" name="default" policy-configuration-factory-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyConfigurationFactory">
      *  <property name="repository" value="${com.sun.aas.instanceRoot}/generated/policy"/>
      * </jacc-provider>
-     * <jacc-provider policy-provider="fish.payara.security.jacc.provider.PolicyProviderImpl" name="simple" policy-configuration-factory-provider="fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl"/>
+     * <jacc-provider policy-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyProvider" name="simple" policy-configuration-factory-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyConfigurationFactory"/>
      */
     private void createJaccProvider(SecurityService ss) throws PropertyVetoException {
         while (!(parser.getEventType() == START_ELEMENT && parser.getLocalName().equals("audit-module"))) {
@@ -1006,7 +1006,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
      *      <http default-virtual-server="server">
      *      <file-cache/>
      *      </http>
-     *      <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" cert-nickname="s1as"/>
+     *      <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" ssl3-enabled="false" cert-nickname="s1as"/>
      *  </protocol>
      *  <protocol name="admin-listener">
      *      <http default-virtual-server="__asadmin" max-connections="250">
@@ -1127,7 +1127,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
         }
     }
 
-    /* <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" cert-nickname="s1as"/> */
+    /* <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" ssl3-enabled="false" cert-nickname="s1as"/> */
     private void createSsl(Protocol p) throws PropertyVetoException {
         while (!(parser.getEventType() == END_ELEMENT && parser.getLocalName().equals("protocol"))) {
             try {
@@ -1139,6 +1139,9 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                             String val = parser.getAttributeValue(i);
                             if (attr.equals("classname")) {
                                 ssl.setClassname(val);
+                            }
+                            if (attr.equals("ssl3-enabled")) {
+                                ssl.setSsl3Enabled(val);
                             }
                             if (attr.equals("cert-nickname")) {
                                 ssl.setCertNickname(val);

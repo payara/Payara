@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server.internal.tests</groupId>
         <artifactId>payara-tests</artifactId>
-        <version>6.2022.2-SNAPSHOT</version>
+        <version>6.2022.1.Alpha3-SNAPSHOT</version>
     </parent>
 
     <groupId>fish.payara.samples</groupId>
@@ -273,6 +273,21 @@
             </properties>
         </profile>
     </profiles>
+
+    <repositories>
+        <!-- omnifaces jacc-provider is not in any other repository -->
+        <repository>
+            <id>payara-eclipse</id>
+            <name>Payara Eclipse</name>
+            <url>https://raw.github.com/payara/Payara_PatchedProjects/eclipse</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 
     <dependencyManagement>
         <dependencies>

@@ -64,7 +64,6 @@ public class JspGroupDescriptor extends Descriptor
     private String defaultContentType = null;
     private String buffer = null;
     private String errorOnUndeclaredNamespace;
-    private String errorOnELNotFound;
 
     /**
      * Return the set of URL pattern aliases for this group.
@@ -260,22 +259,8 @@ public class JspGroupDescriptor extends Descriptor
         errorOnUndeclaredNamespace = value;
     }
 
-    @Override
     public String getErrorOnUndeclaredNamespace() {
         return errorOnUndeclaredNamespace;
-    }
-
-    /**
-     * set errorOnELNotFound
-     * @param value
-     */
-    public void setErrorELNotFound(String value) {
-        errorOnELNotFound = value;
-    }
-
-    @Override
-    public String getErrorOnELNotFound() {
-        return errorOnELNotFound;
     }
 
     /**
@@ -299,5 +284,4 @@ public class JspGroupDescriptor extends Descriptor
         toStringBuilder.append( "\n buffer: ").append(buffer);
         toStringBuilder.append( "\n errorOnUndeclaredNamespace: ").append(errorOnUndeclaredNamespace);
     }
-
 }

@@ -39,7 +39,6 @@
  */
 package fish.payara.nucleus.healthcheck.stuck;
 
-import fish.payara.nucleus.healthcheck.HealthCheckStatsProvider;
 import fish.payara.nucleus.healthcheck.HealthCheckResult;
 import fish.payara.monitoring.collect.MonitoringData;
 import fish.payara.monitoring.collect.MonitoringDataCollector;
@@ -63,10 +62,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
@@ -80,12 +75,7 @@ import org.jvnet.hk2.annotations.Service;
 @RunLevel(StartupRunLevel.VAL)
 public class StuckThreadsHealthCheck extends
         BaseHealthCheck<HealthCheckStuckThreadExecutionOptions, StuckThreadsChecker>
-        implements MonitoringDataSource, MonitoringWatchSource, HealthCheckStatsProvider {
-
-    private final Map<String, Number> stuckThreadResult = new ConcurrentHashMap<>();
-    private static final String STUCK_THREAD_COUNT = "count";
-    private static final String STUCK_THREAD_MAX_DURATION = "maxDuration";
-    private static final Set<String> VALID_SUB_ATTRIBUTES = Set.of(STUCK_THREAD_COUNT, STUCK_THREAD_MAX_DURATION);
+        implements MonitoringDataSource, MonitoringWatchSource {
 
     @FunctionalInterface
     private interface StuckThreadConsumer {
@@ -93,43 +83,14 @@ public class StuckThreadsHealthCheck extends
     }
 
     @Inject
-    private StuckThreadsStore stuckThreadsStore;
+    StuckThreadsStore stuckThreadsStore;
 
     @Inject
-    private StuckThreadsChecker checker;
+    StuckThreadsChecker checker;
 
     @PostConstruct
     void postConstruct() {
         postConstruct(this, StuckThreadsChecker.class);
-    }
-
-    @Override
-    public Object getValue(Class type, String attributeName, String subAttributeName) {
-        if (subAttributeName == null) {
-            throw new IllegalArgumentException("sub-attribute name is required");
-        }
-        if (!VALID_SUB_ATTRIBUTES.contains(subAttributeName)) {
-            throw new IllegalArgumentException("Invalid sub-attribute name, supported sub-attributes are " + VALID_SUB_ATTRIBUTES);
-        }
-        if (!Number.class.isAssignableFrom(type)) {
-            throw new IllegalArgumentException("sub-attribute type must be number");
-        }
-        return stuckThreadResult.getOrDefault(subAttributeName, 0);
-    }
-
-    @Override
-    public Set<String> getAttributes() {
-        return Collections.EMPTY_SET;
-    }
-
-    @Override
-    public Set<String> getSubAttributes() {
-        return VALID_SUB_ATTRIBUTES;
-    }
-
-    @Override
-    public boolean isEnabled() {
-       return this.getOptions() != null ? this.getOptions().isEnabled() : false;
     }
 
     @Override
@@ -165,8 +126,6 @@ public class StuckThreadsHealthCheck extends
         });
         collector.collect("StuckThreadDuration", maxDuration);
         collector.collect("StuckThreadCount", count);
-        stuckThreadResult.put(STUCK_THREAD_MAX_DURATION, maxDuration.get());
-        stuckThreadResult.put(STUCK_THREAD_COUNT, count.get());
     }
 
     @Override

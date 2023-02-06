@@ -33,7 +33,6 @@
  only if the new code is made subject to such option by the copyright
  holder.
 -->
-<!--  Portions Copyright [2022] Payara Foundation and/or affiliates -->
 
 
 <!ENTITY % boolean "(yes | no | on | off | 1 | 0 | true | false)">
@@ -91,8 +90,9 @@
             superuser privileges. Configuring an SSL listen socket to listen on 
             port 443 is recommended. 
 
-    security-enabled (optional) Determines whether the http listener runs SSL.
-                     The Security setting in the init.conf file globally enables or disables
+    security-enabled (optional) Determines whether the http listener runs SSL. You can 
+                     turn SSL2 or SSL3 on or off and set ciphers using an ssl element 
+                     The Security setting in the init.conf file globally enables or disables 
                      SSL by making certificates available to the server instance. Therefore, 
                      Security in init.conf must be on or security in server.xml does not work. 
 
@@ -136,26 +136,46 @@
      cert-nickname nickname of the server certificate in the certificate database 
                    or the PKCS#11 token. In the certificate, the name format is
                    tokenname:nickname. Including the tokenname: part of the name 
-                   in this attribute is optional.
+                   in this attribute is optional. 
 
-     ssl3-tls-ciphers (optional) A comma-separated list of the SSL3 ciphers used, with
+     ssl2-enabled  (optional) Determines whether SSL2 is enabled. 
+
+     ssl3-enabled  (optional) Determines whether SSL3 is enabled. 
+
+                   If both SSL2 and SSL3 are enabled for a virtual server, the server 
+                   tries SSL3 encryption first. If that fails, the server tries SSL2
+                   encryption. 
+
+     ssl2-ciphers  (optional) A comma-separated list of the SSL2 ciphers used, with 
+                   the prefix + to enable or - to disable, for example +rc4. Allowed 
+                   values are rc4, rc4export, rc2, rc2export, idea, des, desede3. 
+                   If no value is specified, all supported ciphers are assumed to 
+                   be enabled.
+
+     ssl3-tls-ciphers (optional) A comma-separated list of the SSL3 ciphers used, with 
                       the prefix + to enable or - to disable, for example +rsa_des_sha.
-                      Allowed SSL3 values are rsa_rc4_128_md5, rsa3des_sha, rsa_des_sha,
-                      rsa_rc4_40_md5, rsa_rc2_40_md5, rsa_null_md5. Allowed TLS values
-                      are rsa_des_56_sha, rsa_rc4_56_sha. If no value is specified,
+                      Allowed SSL3 values are rsa_rc4_128_md5, rsa3des_sha, rsa_des_sha, 
+                      rsa_rc4_40_md5, rsa_rc2_40_md5, rsa_null_md5. Allowed TLS values 
+                      are rsa_des_56_sha, rsa_rc4_56_sha. If no value is specified, 
                       all supported ciphers are assumed to be enabled.
+
+     tls-enabled     (optional) Determines whether TLS is enabled. 
 
      tls-rollback-enabled  (optional) Determines whether TLS rollback is enabled. TLS 
                            rollback should be enabled for Microsoft Internet Explorer 
                            5.0 and 5.5. 
  
-     client-auth-enabled   (optional) Determines whether client authentication is
+     client-auth-enabled   (optional) Determines whether SSL3 client authentication is 
                           performed on every request, independent of ACL-based access 
                           control.
 --> 
 <!ELEMENT ssl EMPTY>
 <!ATTLIST ssl cert-nickname        CDATA     #REQUIRED
+              ssl2-enabled         %boolean; "false"
+              ssl2-ciphers         CDATA     #IMPLIED
+              ssl3-enabled         %boolean; "true"
               ssl3-tls-ciphers     CDATA     #IMPLIED
+              tls-enabled          %boolean; "true"
               tls-rollback-enabled %boolean; "true"
               client-auth-enabled  %boolean; "false">
 

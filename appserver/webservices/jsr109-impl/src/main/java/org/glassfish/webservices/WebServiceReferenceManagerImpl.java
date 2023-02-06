@@ -37,7 +37,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2022] [Payara Foundation and/or its affiliates]
 package org.glassfish.webservices;
 
 import com.sun.enterprise.deployment.*;
@@ -489,9 +488,6 @@ public class WebServiceReferenceManagerImpl implements WebServiceReferenceManage
         }
 
         URL wsdl = desc.getWsdlFileUrl();
-        if (wsdl == null || wsdl.getPath() == null) {
-            return null;
-        }
         String wsdlPath = wsdl.getPath().trim();
         if (!wsdlPath.contains(WebServiceEndpoint.PUBLISHING_SUBCONTEXT)) {
             return null;

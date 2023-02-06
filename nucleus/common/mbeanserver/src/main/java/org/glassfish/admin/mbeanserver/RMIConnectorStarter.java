@@ -37,29 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.admin.mbeanserver;
 
-import org.glassfish.admin.mbeanserver.ssl.JMXMasterPasswordImpl;
-import org.glassfish.admin.mbeanserver.ssl.SSLClientConfigurator;
-import org.glassfish.admin.mbeanserver.ssl.SSLParams;
-import org.glassfish.admin.mbeanserver.ssl.SecureRMIServerSocketFactory;
-import org.glassfish.grizzly.config.dom.Ssl;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.logging.annotation.LogMessageInfo;
-
-import javax.management.MBeanServer;
-import javax.management.remote.JMXAuthenticator;
-import javax.management.remote.JMXConnectorServer;
-import javax.management.remote.JMXConnectorServerFactory;
-import javax.management.remote.JMXServiceURL;
-import javax.management.remote.rmi.RMIConnection;
-import javax.management.remote.rmi.RMIConnectorServer;
-import javax.management.remote.rmi.RMIJRMPServerImpl;
-import javax.net.ssl.SSLContext;
-import javax.rmi.ssl.SslRMIClientSocketFactory;
-import javax.security.auth.Subject;
 import java.io.File;
 import java.io.IOException;
 import java.net.*;
@@ -76,6 +57,24 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.management.MBeanServer;
+import javax.management.remote.JMXAuthenticator;
+import javax.management.remote.JMXConnectorServer;
+import javax.management.remote.JMXConnectorServerFactory;
+import javax.management.remote.JMXServiceURL;
+import javax.management.remote.rmi.RMIConnection;
+import javax.management.remote.rmi.RMIConnectorServer;
+import javax.management.remote.rmi.RMIJRMPServerImpl;
+import javax.net.ssl.SSLContext;
+import javax.rmi.ssl.SslRMIClientSocketFactory;
+import javax.security.auth.Subject;
+import org.glassfish.admin.mbeanserver.ssl.JMXMasterPasswordImpl;
+import org.glassfish.admin.mbeanserver.ssl.SSLClientConfigurator;
+import org.glassfish.admin.mbeanserver.ssl.SSLParams;
+import org.glassfish.admin.mbeanserver.ssl.SecureRMIServerSocketFactory;
+import org.glassfish.grizzly.config.dom.Ssl;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 /**
  * This class configures and starts the JMX RMI connector server using rmi_jrmp protocol.
@@ -418,9 +417,12 @@ final class RMIConnectorStarter extends ConnectorStarter {
         sslParams.setKeyStore(keyStore.getAbsolutePath());
         sslParams.setKeyStorePassword(keyStorePwd);
         sslParams.setKeyStoreType(keyStoreType);
+
+        sslParams.setSsl2Ciphers(sslConfig.getSsl2Ciphers());
+        sslParams.setSsl2Enabled(sslConfig.getSsl2Enabled());
+        sslParams.setSsl3Enabled(sslConfig.getSsl3Enabled());
         sslParams.setSsl3TlsCiphers(sslConfig.getSsl3TlsCiphers());
-        sslParams.setTls12Enabled(sslConfig.getTls12Enabled());
-        sslParams.setTls13Enabled(sslConfig.getTls13Enabled());
+        sslParams.setTlsEnabled(sslConfig.getTlsEnabled());
         sslParams.setTlsRollbackEnabled(sslConfig.getTlsRollbackEnabled());
         sslParams.setHstsEnabled(sslConfig.getHstsEnabled());
 

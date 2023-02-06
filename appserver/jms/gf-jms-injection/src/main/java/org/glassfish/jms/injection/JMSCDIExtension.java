@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2022] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.jms.injection;
 
 import java.lang.annotation.Annotation;
@@ -195,6 +195,11 @@ public class JMSCDIExtension implements Extension {
 
         @Override
         public boolean isAlternative() {
+            return false;
+        }
+
+        @Override
+        public boolean isNullable() {
             return false;
         }
 

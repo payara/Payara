@@ -39,7 +39,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright [2018-2022] Payara Foundation and/or affiliates
+    Portions Copyright [2018-2021] Payara Foundation and/or affiliates
 -->
 
 <!--
@@ -81,6 +81,10 @@
     </element>
 
     <element name="ssl" type="class">
+        <attribute name="ssl2-enabled" property="Ssl2Enabled" convert="boolean"/>
+        <attribute name="ssl3-enabled" property="Ssl3Enabled" convert="boolean"/>
+        <attribute name="tls-enabled" property="TlsEnabled" convert="boolean"/>
+        <attribute name="tls11-enabled" property="Tls11Enabled" convert="boolean"/>
         <attribute name="tls12-enabled" property="Tls12Enabled" convert="boolean"/>
         <attribute name="tls13-enabled" property="Tls13Enabled" convert="boolean"/>
         <attribute name="tls-rollback-enabled" property="TlsRollbackEnabled" convert="boolean"/>

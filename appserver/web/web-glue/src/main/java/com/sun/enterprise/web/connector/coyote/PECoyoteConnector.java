@@ -41,36 +41,44 @@
 
 package com.sun.enterprise.web.connector.coyote;
 
-import com.sun.appserv.ProxyHandler;
 import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
 import com.sun.enterprise.config.serverbeans.HttpService;
 import com.sun.enterprise.web.WebContainer;
-import com.sun.enterprise.web.WebModule;
-import com.sun.enterprise.web.connector.MapperListener;
 import com.sun.enterprise.web.connector.extension.GrizzlyConfig;
 import com.sun.enterprise.web.connector.grizzly.DummyConnectorLauncher;
 import com.sun.enterprise.web.pwc.connector.coyote.PwcCoyoteRequest;
-import jakarta.servlet.http.HttpServletRequest;
+import org.apache.catalina.connector.Request;
+import org.apache.catalina.connector.Response;
+import org.apache.tomcat.util.net.SSLHostConfig;
+import org.apache.tomcat.util.net.SSLHostConfigCertificate;
+import org.glassfish.grizzly.config.dom.*;
+import org.glassfish.grizzly.http.server.HttpHandler;
+import org.glassfish.grizzly.http.server.util.Mapper;
+import org.glassfish.web.util.IntrospectionUtils;
 import org.apache.catalina.*;
 import org.apache.catalina.connector.Connector;
-import org.glassfish.grizzly.config.dom.*;
 import org.glassfish.security.common.CipherInfo;
 import org.glassfish.web.LogFacade;
-import org.glassfish.web.admin.monitor.RequestProbeProvider;
-import org.glassfish.web.util.IntrospectionUtils;
 
-import javax.management.Notification;
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
+import java.io.*;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Properties;
+import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import static org.glassfish.grizzly.config.dom.Ssl.SSL2;
+import static org.glassfish.grizzly.config.dom.Ssl.SSL2_HELLO;
+import static org.glassfish.grizzly.config.dom.Ssl.SSL3;
+import static org.glassfish.grizzly.config.dom.Ssl.TLS1;
+import static org.glassfish.grizzly.config.dom.Ssl.TLS11;
+import static org.glassfish.grizzly.config.dom.Ssl.TLS12;
+import static org.glassfish.grizzly.config.dom.Ssl.TLS13;
 
-import static org.glassfish.grizzly.config.dom.Ssl.*;
-
+@Deprecated(forRemoval = true)
 public class PECoyoteConnector extends Connector {
 
     private static final String DEFAULT_KEYSTORE_TYPE = "JKS";
@@ -180,6 +188,7 @@ public class PECoyoteConnector extends Connector {
      */
     protected MapperListener mapperListener;
 
+    protected Mapper mapper;
 
     // --------------------------------------------- FileCache support --//
 
@@ -241,16 +250,21 @@ public class PECoyoteConnector extends Connector {
 
     private WebContainer webContainer;
 
-    private RequestProbeProvider requestProbeProvider;
+    private HttpHandler handler = null;
+
+    private String name;
+
+    private String defaultHost;
+
+    private String instanceName;
 
 
     /**
      * Constructor
      */
     public PECoyoteConnector(WebContainer webContainer) {
+        super(DUMMY_CONNECTOR_LAUNCHER);
         this.webContainer = webContainer;
-        requestProbeProvider = webContainer.getRequestProbeProvider();
-        setProtocolHandlerClassName(DUMMY_CONNECTOR_LAUNCHER);
     }
 
 
@@ -260,9 +274,7 @@ public class PECoyoteConnector extends Connector {
      */
     @Override
     public Request createRequest() {
-        PwcCoyoteRequest request = new PwcCoyoteRequest();
-        request.setConnector(this);
-        return request;
+        return new PwcCoyoteRequest(this);
     }
 
 
@@ -273,10 +285,7 @@ public class PECoyoteConnector extends Connector {
      */
     @Override
     public Response createResponse() {
-        PECoyoteResponse response = new PECoyoteResponse();
-        response.setConnector(this);
-        return response;
-
+        return new PECoyoteResponse();
     }
 
 
@@ -515,10 +524,11 @@ public class PECoyoteConnector extends Connector {
     }
 
     @Override
-    public void start() throws LifecycleException {
-        super.start();
+    public void startInternal() throws LifecycleException {
+        super.startInternal();
 
-        if( this.domain != null ) {
+        String domain = getDomainInternal();
+        if (domain != null) {
             if (!"admin-listener".equals(getName())) {
                 // See IT 8255
                 mapper.removeContext(getDefaultHost(), "");
@@ -529,13 +539,8 @@ public class PECoyoteConnector extends Connector {
             mapperListener.setNetworkListenerName(this.getName());
             mapperListener.setDefaultHost(getDefaultHost());
             // END S1AS 5000999
-            //mapperListener.setEngine( service.getContainer().getName() );
             mapperListener.setInstanceName(getInstanceName());
             mapperListener.init();
-            getService().getBroadcaster().addNotificationListener(mapperListener, mapperListener, null);
-            Notification notification =
-                    new Notification("chloe", this.getObjectName(), 0);
-            getService().getBroadcaster().sendNotification(notification);
         }
         if ( grizzlyMonitor != null ) {
             grizzlyMonitor.initConfig();
@@ -544,8 +549,8 @@ public class PECoyoteConnector extends Connector {
     }
 
     @Override
-    public void stop() throws LifecycleException {
-        super.stop();
+    public void stopInternal() throws LifecycleException {
+        super.stopInternal();
         if ( grizzlyMonitor != null ) {
             grizzlyMonitor.destroy();
             grizzlyMonitor=null;
@@ -711,71 +716,11 @@ public class PECoyoteConnector extends Connector {
      * Initialize this connector.
      */
     @Override
-    public void initialize() throws LifecycleException {
-        super.initialize();
+    public void initInternal() throws LifecycleException {
+        super.initInternal();
         mapperListener = new MapperListener(mapper, webContainer);
         // Set the monitoring.
-        grizzlyMonitor = new GrizzlyConfig(webContainer, domain, getPort());
-    }
-
-
-    /**
-     * Sets the truststore location of this connector.
-     *
-     * @param truststore The truststore location
-     */
-    public void setTruststore(String truststore) {
-        setProperty("truststore", truststore);
-    }
-
-
-    /**
-     * Gets the truststore location of this connector.
-     *
-     * @return The truststore location
-     */
-    public String getTruststore() {
-        return getProperty("truststore");
-    }
-
-
-    /**
-     * Sets the truststore type of this connector.
-     *
-     * @param type The truststore type
-     */
-    public void setTruststoreType(String type) {
-        setProperty("truststoreType", type);
-    }
-
-
-    /**
-     * Gets the truststore type of this connector.
-     *
-     * @return The truststore type
-     */
-    public String getTruststoreType() {
-        return getProperty("truststoreType");
-    }
-
-
-    /**
-     * Sets the keystore type of this connector.
-     *
-     * @param type The keystore type
-     */
-    public void setKeystoreType(String type) {
-        setProperty("keystoreType", type);
-    }
-
-
-    /**
-     * Gets the keystore type of this connector.
-     *
-     * @return The keystore type
-     */
-    public String getKeystoreType() {
-        return getProperty("keystoreType");
+        grizzlyMonitor = new GrizzlyConfig(webContainer, getDomainInternal(), getPort());
     }
 
 
@@ -894,7 +839,7 @@ public class PECoyoteConnector extends Connector {
         final Http http = listener.findHttpProtocol().getHttp();
 
         configureFileCache(http.getFileCache());
-        setMaxHttpHeaderSize(Integer.parseInt(http.getSendBufferSizeBytes()));
+        setProperty("maxHttpHeaderSize", http.getSendBufferSizeBytes());
         setDefaultHost(http.getDefaultVirtualServer());
         setEnableLookups(ConfigBeansUtilities.toBoolean(http.getDnsLookupEnabled()));
 
@@ -955,12 +900,8 @@ public class PECoyoteConnector extends Connector {
                 setSelectorReadThreadsCount(Integer.parseInt(
                     acceptorThreads));
             } catch (NumberFormatException nfe) {
-                _logger.log(Level.WARNING,
-                    LogFacade.INVALID_ACCEPTOR_THREADS,
-                    new Object[] {
-                        acceptorThreads,
-                        listener.getName(),
-                        Integer.toString(getMaxProcessors()) });
+                _logger.log(Level.WARNING, LogFacade.INVALID_ACCEPTOR_THREADS, new Object[] {acceptorThreads,
+                        listener.getName(), getProperty("maxThreads")});
             }
         }
 
@@ -1057,15 +998,13 @@ public class PECoyoteConnector extends Connector {
     public void configureThreadPool(ThreadPool pool){
         if (pool != null) {
             try {
-                setMaxProcessors(Integer.parseInt(
-                    pool.getMaxThreadPoolSize()));
+                setProperty("maxThreads", pool.getMaxThreadPoolSize());
             } catch (NumberFormatException ex) {
                 String msg = MessageFormat.format(_rb.getString(LogFacade.INVALID_THREAD_POOL_ATTRIBUTE), "max-thread-pool-size");
                 _logger.log(Level.WARNING, msg, ex);
             }
             try {
-                setMinProcessors(Integer.parseInt(
-                    pool.getMinThreadPoolSize()));
+                setProperty("minSpareThreads", pool.getMinThreadPoolSize());
             } catch (NumberFormatException ex) {
                 String msg = MessageFormat.format(_rb.getString(LogFacade.INVALID_THREAD_POOL_ATTRIBUTE), "min-thread-pool-size");
                 _logger.log(Level.WARNING, msg, ex);
@@ -1080,24 +1019,10 @@ public class PECoyoteConnector extends Connector {
         }
     }
 
-    /**
-     * Configure http-listener property.
-     * return true if the property exists and has been set.
-     */
-    public boolean configureHttpListenerProperty(String propName, String propValue)
-        throws NumberFormatException {
-        if ("proxyHandler".equals(propName)) {
-            setProxyHandler(propValue);
-            return true;
-        }
-        return false;
-    }
-
     public void configHttpProperties(Http http, Transport transport, Ssl ssl) {
         setAllowTrace(ConfigBeansUtilities.toBoolean(http.getTraceEnabled()));
-        setMaxKeepAliveRequests(Integer.parseInt(http.getMaxConnections()));
+        setProperty("maxKeepAliveRequests", http.getMaxConnections());
         setKeepAliveTimeoutInSeconds(Integer.parseInt(http.getTimeoutSeconds()));
-        setAuthPassthroughEnabled(ConfigBeansUtilities.toBoolean(http.getAuthPassThroughEnabled()));
         setMaxPostSize(Integer.parseInt(http.getMaxPostSizeBytes()));
         setMaxSavePostSize(Integer.parseInt(http.getMaxSavePostSizeBytes()));
         setProperty("compression", http.getCompression());
@@ -1115,8 +1040,11 @@ public class PECoyoteConnector extends Connector {
                 Boolean.valueOf(ConfigBeansUtilities.toBoolean(http.getCometSupportEnabled())).toString());
         setProperty("rcmSupport",
                 Boolean.valueOf(ConfigBeansUtilities.toBoolean(http.getRcmSupportEnabled())).toString());
-        setConnectionUploadTimeout(Integer.parseInt(http.getConnectionUploadTimeoutMillis()));
-        setDisableUploadTimeout(!ConfigBeansUtilities.toBoolean(http.getUploadTimeoutEnabled()));
+        setProperty("connectionUploadTimeout", http.getConnectionUploadTimeoutMillis());
+        // Get property as a boolean to convert "" to false, then reverse value due to enabled vs. disabled difference,
+        // and finally convert back to String
+        setProperty("disableUploadTimeout", Boolean.toString(
+                !ConfigBeansUtilities.toBoolean(http.getUploadTimeoutEnabled())));
         setURIEncoding(http.getUriEncoding());
         configSslOptions(ssl);
     }
@@ -1136,97 +1064,6 @@ public class PECoyoteConnector extends Connector {
     }
 
     /*
-     * Loads and instantiates the ProxyHandler implementation
-     * class with the specified name, and sets the instantiated
-     * ProxyHandler on this connector.
-     *
-     * @param className The ProxyHandler implementation class name
-     */
-    public void setProxyHandler(String className) {
-
-        Object handler = null;
-        try {
-            Class handlerClass = webContainer.loadCommonClass(className);
-            handler = handlerClass.newInstance();
-        } catch (Exception e) {
-            String msg = MessageFormat.format(_rb.getString(LogFacade.PROXY_HANDLER_CLASS_LOAD_ERROR), className);
-            _logger.log(Level.SEVERE, msg, e);
-        }
-        if (handler != null) {
-            if (!(handler instanceof ProxyHandler)) {
-                _logger.log(
-                    Level.SEVERE,
-                    LogFacade.PROXY_HANDLER_CLASS_INVALID,
-                    className);
-            } else {
-                setProxyHandler((ProxyHandler) handler);
-            }
-        }
-    }
-
-
-    /*
-     * Request/response related probe events
-     */
-
-    /**
-     * Fires probe event related to the fact that the given request has
-     * been entered the web container.
-     *
-     * @param request the request object
-     * @param host the virtual server to which the request was mapped
-     * @param context the Context to which the request was mapped
-     */
-    @Override
-    public void requestStartEvent(HttpServletRequest request, Host host,
-            Context context) {
-        if (requestProbeProvider != null) {
-            String appName = null;
-            if (context instanceof WebModule) {
-                appName = ((WebModule) context).getMonitoringNodeName();
-            }
-            String hostName = null;
-            if (host != null) {
-                hostName = host.getName();
-            }
-            requestProbeProvider.requestStartEvent(
-                appName, hostName,
-                request.getServerName(), request.getServerPort(),
-                request.getContextPath(), request.getServletPath());
-        }
-    };
-
-    /**
-     * Fires probe event related to the fact that the given request is about
-     * to exit from the web container.
-     *
-     * @param request the request object
-     * @param host the virtual server to which the request was mapped
-     * @param context the Context to which the request was mapped
-     * @param statusCode the response status code
-     */
-    @Override
-    public void requestEndEvent(HttpServletRequest request, Host host,
-            Context context, int statusCode) {
-        if (requestProbeProvider != null) {
-            String appName = null;
-            if (context instanceof WebModule) {
-                appName = ((WebModule) context).getMonitoringNodeName();
-            }
-            String hostName = null;
-            if (host != null) {
-                hostName = host.getName();
-            }
-            requestProbeProvider.requestEndEvent(
-                appName, hostName,
-                request.getServerName(), request.getServerPort(),
-                request.getContextPath(), request.getServletPath(),
-                statusCode, request.getMethod(), request.getRequestURI());
-        }
-    };
-
-
-    /*
      * Configures the SSL properties on this PECoyoteConnector from the
      * SSL config of the given HTTP listener.
      *
@@ -1239,9 +1076,11 @@ public class PECoyoteConnector extends Connector {
             return;
         }
 
+        SSLHostConfig sslHostConfig = new SSLHostConfig();
+
         // client-auth
         if (Boolean.valueOf(sslConfig.getClientAuthEnabled())) {
-            setClientAuth(true);
+            sslHostConfig.setCertificateVerification("required");
         }
 
         // ssl protocol variants
@@ -1272,13 +1111,16 @@ public class PECoyoteConnector extends Connector {
         if (sslProtocolsBuf.isEmpty()) {
             _logger.log(Level.WARNING, LogFacade.ALL_SSL_PROTOCOLS_DISABLED, listener.getName());
         } else {
-            setSslProtocols(String.join(", ", sslProtocolsBuf));
+            sslHostConfig.setEnabledProtocols(sslProtocolsBuf.toArray(new String[0]));
         }
 
         // cert-nickname
         String certNickname = sslConfig.getCertNickname();
         if (certNickname != null && certNickname.length() > 0) {
-            setKeyAlias(sslConfig.getCertNickname());
+            SSLHostConfigCertificate sslHostConfigCertificate = new SSLHostConfigCertificate(
+                    sslHostConfig, SSLHostConfigCertificate.Type.UNDEFINED);
+            sslHostConfigCertificate.setCertificateKeyAlias(sslConfig.getCertNickname());
+            sslHostConfig.addCertificate(sslHostConfigCertificate);
         }
 
         // ssl3-tls-ciphers
@@ -1290,9 +1132,11 @@ public class PECoyoteConnector extends Connector {
                     _logger.log(Level.FINE, LogFacade.ALL_CIPHERS_DISABLED, listener.getName());
                 }
             } else {
-                setCiphers(jsseCiphers);
+                sslHostConfig.setCiphers(jsseCiphers);
             }
         }
+
+        addSslHostConfig(sslHostConfig);
     }
 
 
@@ -1301,51 +1145,38 @@ public class PECoyoteConnector extends Connector {
      */
     private void configureKeysAndCerts() {
 
-        /*
-         * Keystore
-         */
+        // Keystore
         String prop = System.getProperty("javax.net.ssl.keyStore");
         String keyStoreType = System.getProperty("javax.net.ssl.keyStoreType", DEFAULT_KEYSTORE_TYPE);
 
         if (prop != null) {
-            // PE
-            setKeystoreFile(prop);
-            setKeystoreType(keyStoreType);
-        }
+            // For each SSLHostConfig, set the Certificate.certificateKeystoreFile and
+            // Certificate.certificateKeystoreType properties - these properties are set on the sslHostConfig itself,
+            // not on the SSLHostConfigCertificate object.
+            // Certificate.certificateKeystoreFile property used instead of the
+            // SSLHostConfigCertificate#setCertificateKeyStore method since that's specific to each individual
+            // SSLHostConfigCertificate
+            for (SSLHostConfig sslHostConfig : findSslHostConfigs()) {
+                Set<SSLHostConfigCertificate> sslHostConfigCertificates = sslHostConfig.getCertificates();
+                // Since the Certificate.certificateKeystoreFile and Certificate.certificateKeystoreType properties is
+                // set on the sslHostConfig itself, we can just grab the first certificate rather than iterating over
+                // all of them (setProperty on SSLHostConfig is not a public method)
+                if (!sslHostConfigCertificates.isEmpty()) {
+                    SSLHostConfigCertificate sslHostConfigCertificate = sslHostConfigCertificates.iterator().next();
+                    sslHostConfigCertificate.setCertificateKeystoreFile(prop);
+                    sslHostConfigCertificate.setCertificateKeystoreType(keyStoreType);
 
-        /*
-         * Get keystore password from password.conf file.
-         * Notice that JSSE, the underlying SSL implementation in PE,
-         * currently does not support individual key entry passwords
-         * that are different from the keystore password.
-         *
-        String ksPasswd = null;
-        try {
-            ksPasswd = PasswordConfReader.getKeyStorePassword();
-        } catch (IOException ioe) {
-            // Ignore
-        }
-        if (ksPasswd == null) {
-            ksPasswd = System.getProperty("javax.net.ssl.keyStorePassword");
-        }
-        if (ksPasswd != null) {
-            try {
-                connector.setKeystorePass(ksPasswd);
-            } catch (Exception e) {
-                _logger.log(Level.SEVERE,
-                    "pewebcontainer.http_listener_keystore_password_exception",
-                    e);
+                }
             }
-        }*/
+        }
 
-        /*
-	 * Truststore
-         */
+	    // Truststore
         prop = System.getProperty("javax.net.ssl.trustStore");
         if (prop != null) {
-            // PE
-            setTruststore(prop);
-            setTruststoreType(DEFAULT_TRUSTSTORE_TYPE);
+            for (SSLHostConfig sslHostConfig : findSslHostConfigs()) {
+                sslHostConfig.setTruststoreFile(prop);
+                sslHostConfig.setTruststoreType(DEFAULT_TRUSTSTORE_TYPE);
+            }
         }
     }
 
@@ -1453,6 +1284,75 @@ public class PECoyoteConnector extends Connector {
         }
 
         return jsseCipher;
+    }
+
+
+    /**
+     * Return the mapper.
+     */
+    public Mapper getMapper() {
+        return mapper;
+    }
+
+    /**
+     * Set the {@link Mapper}.
+     * @param mapper
+     */
+    public void setMapper(Mapper mapper){
+        this.mapper = mapper;
+    }
+
+    /**
+     * Set the <code>Adapter</code> used by this connector.
+     */
+    public void setHandler(HttpHandler handler){
+        this.handler = handler;
+    }
+
+    /**
+     * Get the <code>Adapter</code> used by this connector.
+     */
+    public HttpHandler getHandler(){
+        return handler;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    /**
+     * Gets the default host of this Connector.
+     *
+     * @return The default host of this Connector
+     */
+    public String getDefaultHost() {
+        return defaultHost;
+    }
+
+    /**
+     * Sets the default host for this Connector.
+     *
+     * @param defaultHost The default host for this Connector
+     */
+    public void setDefaultHost(String defaultHost) {
+        this.defaultHost = defaultHost;
+    }
+
+    /**
+     * Sets the instance name for this Connector.
+     *
+     * @param instanceName the instance name
+     */
+    public void setInstanceName(String instanceName) {
+        this.instanceName = instanceName;
+    }
+
+    public String getInstanceName() {
+        return instanceName;
     }
 }
 

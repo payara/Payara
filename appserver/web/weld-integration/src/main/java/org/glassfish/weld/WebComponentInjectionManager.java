@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017-2022] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2021] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.weld;
@@ -52,7 +52,6 @@ import jakarta.enterprise.inject.spi.AnnotatedType;
 import jakarta.enterprise.inject.spi.BeanManager;
 import jakarta.enterprise.inject.spi.InjectionTarget;
 
-import jakarta.enterprise.inject.spi.InjectionTargetFactory;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.jboss.weld.bootstrap.WeldBootstrap;
 import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
@@ -87,9 +86,8 @@ public class WebComponentInjectionManager<T> implements WebComponentDecorator<T>
             @SuppressWarnings("rawtypes")
             Class<T> clazz = (Class<T>) webComponent.getClass();
             AnnotatedType<T> annotatedType = beanManager.createAnnotatedType(clazz);
-            InjectionTargetFactory<T> itf = beanManager.getInjectionTargetFactory(annotatedType);
-            InjectionTarget<T> it = itf.createInjectionTarget(null);
-            it.inject(webComponent, ccontext);
+            InjectionTarget<T> injectionTarget = beanManager.createInjectionTarget(annotatedType);
+            injectionTarget.inject(webComponent, ccontext);
         }
     }
 }

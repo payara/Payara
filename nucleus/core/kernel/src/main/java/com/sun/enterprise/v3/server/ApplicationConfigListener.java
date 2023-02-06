@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.v3.server;
 
@@ -177,8 +177,7 @@ public class ApplicationConfigListener implements TransactionListener, PostConst
                     } else if (ServerTags.CONTEXT_ROOT.equals(propertyName)
                             || ServerTags.VIRTUAL_SERVERS.equals(propertyName)
                             || ServerTags.AVAILABILITY_ENABLED.equals(propertyName)
-                            || ServerTags.CDI_DEV_MODE_ENABLED_PROP.equals(propertyName)
-                            || ServerTags.EMPTY_BEANS_XML_MODE_ALL_PROP.equals(propertyName)) {
+                            || ServerTags.CDI_DEV_MODE_ENABLED_PROP.equals(propertyName)) {
                         // for other changes, reload the application
                         handleOtherAppConfigChanges(event.getSource(), appName);
                     }

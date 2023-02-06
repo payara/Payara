@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2022] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2021] Payara Foundation and/or affiliates
 
 /*
  * CommonHandlers.java
@@ -54,6 +54,7 @@ import com.sun.enterprise.config.serverbeans.ServerTags;
 import com.sun.jsftemplating.annotation.Handler;
 import com.sun.jsftemplating.annotation.HandlerInput;
 import com.sun.jsftemplating.annotation.HandlerOutput;
+import com.sun.jsftemplating.el.PageSessionResolver;
 import com.sun.jsftemplating.handlers.NavigationHandlers;
 import com.sun.jsftemplating.layout.descriptors.handler.HandlerContext;
 import com.sun.jsftemplating.util.Util;
@@ -845,9 +846,10 @@ public class CommonHandlers {
     private static String handleBareAttribute(FacesContext ctx, String url) {
 	// Get Page Session...
 	UIViewRoot root = ctx.getViewRoot();
-	Map<String, Serializable> pageSession = null;
+	Map<String, Serializable> pageSession =
+	    PageSessionResolver.getPageSession(ctx, root);
 	if (pageSession == null) {
-	    pageSession = createPageSession(ctx, root);
+	    pageSession = PageSessionResolver.createPageSession(ctx, root);
 	}
         String request = ctx.getExternalContext().getRequestParameterMap().get("bare");
 	if (request != null) {
@@ -899,14 +901,5 @@ public class CommonHandlers {
     }
 
     private static final int INDEX=0;
-
-    public static Map<String, Serializable> createPageSession(FacesContext ctx, UIViewRoot root) {
-        if (root == null) {
-            root = ctx.getViewRoot();
-        }
-        Map<String, Serializable> map = new HashMap<>(4);
-        root.getAttributes().put("_ps", map);
-        return map;
-    }
     
 }

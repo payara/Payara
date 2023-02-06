@@ -37,7 +37,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2022] Payara Foundation and/or affiliates
 
 package com.sun.mdb.client;
 
@@ -79,9 +78,7 @@ public class Client {
     public Client(String[] args) {
         
         if( args.length == 1 ) {
-            try {
-                numMessages = new Integer(args[0]).intValue();
-            } catch (NumberFormatException ex) {}
+            numMessages = new Integer(args[0]).intValue();
         }
 
     }

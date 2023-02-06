@@ -251,17 +251,6 @@ public class PayaraMicro implements PayaraMicroBoot {
     }
 
     @Override
-    public boolean isNoHazelcast() {
-        return wrappee.isNoHazelcast();
-    }
-
-    @Override
-    public PayaraMicroBoot setNoHazelcast(boolean noHazelcast) {
-        wrappee.setNoHazelcast(noHazelcast);
-        return this;
-    }
-
-    @Override
     public PayaraMicro setAccessLogDir(String filePath) {
         wrappee.setAccessLogDir(filePath);
         return this;

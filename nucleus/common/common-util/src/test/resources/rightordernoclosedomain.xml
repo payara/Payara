@@ -120,10 +120,10 @@
 
      <iiop-listener id="orb-listener-1" address="0.0.0.0" port="3700" enabled="true" security-enabled="false"/>
      <iiop-listener id="SSL" address="0.0.0.0" port="3820" security-enabled="true" enabled="true">
-     <ssl cert-nickname="s1as" client-auth-enabled="false" tls-enabled="true" tls-rollback-enabled="true"/>
+     <ssl cert-nickname="s1as" client-auth-enabled="false" ssl2-enabled="false" ssl3-enabled="true" tls-enabled="true" tls-rollback-enabled="true"/>
     </iiop-listener>
     <iiop-listener id="SSL_MUTUALAUTH" address="0.0.0.0" port="3920" security-enabled="true" enabled="true">
-     <ssl cert-nickname="s1as" client-auth-enabled="true" tls-enabled="true" tls-rollback-enabled="true"/>
+     <ssl cert-nickname="s1as" client-auth-enabled="true" ssl2-enabled="false" ssl3-enabled="true" tls-enabled="true" tls-rollback-enabled="true"/>
      </iiop-listener>
    </iiop-service>
    <admin-service system-jmx-connector-name="system" type="das-and-server">
@@ -161,7 +161,7 @@
     </auth-realm>
     <auth-realm name="certificate" classname="com.sun.enterprise.security.auth.realm.certificate.CertificateRealm">
     </auth-realm>
-    <jacc-provider name="default" policy-provider="fish.payara.security.jacc.provider.PolicyProviderImpl" policy-configuration-factory-provider="fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl"></jacc-provider>
+    <jacc-provider name="default" policy-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyProvider" policy-configuration-factory-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyConfigurationFactory"></jacc-provider>
     <audit-module name="default" classname="com.sun.enterprise.security.ee.Audit">
 	<property name="auditOn" value="false"/>
     </audit-module>

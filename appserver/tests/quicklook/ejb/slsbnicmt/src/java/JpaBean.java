@@ -51,7 +51,7 @@ import jakarta.persistence.Column;
 @Table(name="JPABEAN")
 public class JpaBean {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ID")
     private int id;
 

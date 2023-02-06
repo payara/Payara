@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2022 Payara Foundation and/or affiliates
+
 package org.glassfish.admingui.devtests;
 
 import org.junit.Test;
@@ -74,6 +74,8 @@ public class AdminServiceTest extends BaseSeleniumTestClass {
         clickAndWait("treeForm:tree:configurations:server-config:adminService:adminService_link", TRIGGER_EDIT_JMX_CONNECTOR);
         clickAndWait("form1:jmxConnectorTab:jmxSSLEdit", TRIGGER_SSL);
 
+        clearCheckbox("propertyForm:propertySheet:propertySheetSection:SSL3Prop:SSL3");
+        clearCheckbox("propertyForm:propertySheet:propertySheetSection:TLSProp:TLS");
         markCheckbox("propertyForm:propertySheet:propertySheetSection:ClientAuthProp:ClientAuth");
         setFieldValue("propertyForm:propertySheet:propertySheetSection:CertNicknameProp:CertNickname", nickname);
         setFieldValue("propertyForm:propertySheet:propertySheetSection:keystore:keystore", keystore);
@@ -89,6 +91,8 @@ public class AdminServiceTest extends BaseSeleniumTestClass {
         clickAndWait("treeForm:tree:configurations:server-config:adminService:adminService_link", TRIGGER_EDIT_JMX_CONNECTOR);
         clickAndWait("form1:jmxConnectorTab:jmxSSLEdit", TRIGGER_SSL);
 
+        assertEquals(false, isChecked("propertyForm:propertySheet:propertySheetSection:SSL3Prop:SSL3"));
+        assertEquals(false, isChecked("propertyForm:propertySheet:propertySheetSection:TLSProp:TLS"));
         assertEquals(true, isChecked("propertyForm:propertySheet:propertySheetSection:ClientAuthProp:ClientAuth"));
         assertEquals(nickname, getFieldValue("propertyForm:propertySheet:propertySheetSection:CertNicknameProp:CertNickname"));
         assertEquals(keystore, getFieldValue("propertyForm:propertySheet:propertySheetSection:keystore:keystore"));

@@ -37,8 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
-
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 package com.sun.web.security;
 
 import java.io.BufferedReader;
@@ -56,7 +55,6 @@ import jakarta.servlet.AsyncContext;
 import jakarta.servlet.DispatcherType;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.RequestDispatcher;
-import jakarta.servlet.ServletConnection;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletInputStream;
 import jakarta.servlet.ServletRequest;
@@ -556,6 +554,11 @@ public class HttpRequestWrapper implements HttpRequest, ServletRequest {
     }
 
     @Override
+    public String getRealPath(String path) {
+        return servletRequest.getRealPath(path);
+    }
+
+    @Override
     public int getRemotePort() {
         return servletRequest.getRemotePort();
     }
@@ -613,21 +616,6 @@ public class HttpRequestWrapper implements HttpRequest, ServletRequest {
     @Override
     public long getContentLengthLong() {
         return servletRequest.getContentLengthLong();
-    }
-
-    @Override
-    public String getRequestId() {
-        return servletRequest.getRequestId();
-    }
-
-    @Override
-    public String getProtocolRequestId() {
-        return servletRequest.getProtocolRequestId();
-    }
-
-    @Override
-    public ServletConnection getServletConnection() {
-        return servletRequest.getServletConnection();
     }
 
 }

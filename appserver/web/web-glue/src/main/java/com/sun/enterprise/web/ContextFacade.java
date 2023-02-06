@@ -37,7 +37,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2022] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.web;
 
 
@@ -195,8 +194,28 @@ public class ContextFacade extends WebModule {
     }
 
     @Override
+    public Servlet getServlet(String name) {
+        return context.getServlet(name);
+    }
+
+    @Override
+    public Enumeration<Servlet> getServlets() {
+        return context.getServlets();
+    }
+
+    @Override
+    public Enumeration<String> getServletNames() {
+        return context.getServletNames();
+    }
+
+    @Override
     public void log(String msg) {
         context.log(msg);
+    }
+
+    @Override
+    public void log(Exception exception, String msg) {
+        context.log(exception, msg);
     }
 
     @Override

@@ -72,11 +72,11 @@
     </classes>
   </test>
   
-  <!--test name="adminconsole_tests">
+  <test name="adminconsole_tests">
 	<classes>
 		<class name="test.admin.AdminConsoleTests"/>
 	</classes>
-  </test-->
+  </test>
   <test name="rest_tests">
     <classes>
         <class name="test.admin.RestTests"/>
@@ -87,11 +87,11 @@
        <class name="test.web.jsp.hello.HelloJSPTestNG" />
     </classes>
   </test>
-  <!--test name="jsf_hello_world">
+  <test name="jsf_hello_world">
     <classes>
        <class name="test.jsf.astrologer.JSFWebTestNG" />
     </classes>
-  </test-->
+  </test>
   <!--<test name="jsf_injection">
     <classes>
        <class name="test.web.jsfinjection.JSFInjectionTestNG" />

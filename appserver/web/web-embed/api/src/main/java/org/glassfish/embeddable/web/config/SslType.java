@@ -37,7 +37,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2022 Payara Foundation and/or its affiliates
 
 package org.glassfish.embeddable.web.config;
 
@@ -47,5 +46,7 @@ package org.glassfish.embeddable.web.config;
  * @author Rajiv Mordani
  */
 public enum SslType {
+    SSLv2,
+    SSLv3,
     TLS
 }

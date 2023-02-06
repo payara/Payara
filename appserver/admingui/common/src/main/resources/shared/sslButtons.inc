@@ -38,7 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright [2017-2022] Payara Foundation and/or affiliates
+    Portions Copyright [2017] Payara Foundation and/or affiliates
 -->
 
 <!-- sslButtons.inc -->

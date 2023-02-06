@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security;
 
 import static com.sun.enterprise.security.SecurityLoggerInfo.secServiceStartupEnter;
@@ -143,11 +143,6 @@ public class SecurityLifecycle implements  PostConstruct, PreDestroy {
              if (_logger.isLoggable(INFO)) {
                  _logger.log(INFO, secServiceStartupEnter);
              }
-
-            if (System.getProperty("simple.jacc.provider.JACCRoleMapper.class") == null) {
-                System.setProperty("simple.jacc.provider.JACCRoleMapper.class",
-                        "com.sun.enterprise.security.web.integration.GlassfishRoleMapper");
-            }
 
             policyLoader.loadPolicy();
 

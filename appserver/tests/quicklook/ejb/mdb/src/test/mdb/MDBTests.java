@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2022] Payara Foundation and/or affiliates
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package test.mdb;
 
@@ -86,9 +86,7 @@ public class MDBTests {
     public void runJMSAppTest(String mdbAppDir) throws Exception {
         String clientJar = cwd + File.separator + mdbAppDir + mdbApp + "Client.jar";
         String gfClientJar = GLASSFISH_HOME + File.separator + "lib" + File.separator + "gf-client.jar";
-        cmd = APPCLIENT
-                + " --add-opens=java.base/java.lang=ALL-UNNAMED "
-                + GLASSFISH_APPCLIENT_MAIN_CLASS_NAME
+        cmd = APPCLIENT + " " + GLASSFISH_APPCLIENT_MAIN_CLASS_NAME
                 + " -client " + clientJar
                 + " -targetserver" + " localhost:3700"
                 + " -name ejb-ejb30-hello-mdb-client"

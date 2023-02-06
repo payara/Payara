@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2022] [Payara Foundation and/or its affiliates.]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates.]
 
 package org.glassfish.concurrent.runtime;
 
@@ -52,8 +52,6 @@ import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.propagation.Format;
-import jakarta.enterprise.concurrent.spi.ThreadContextRestorer;
-import jakarta.enterprise.concurrent.spi.ThreadContextSnapshot;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.enterprise.concurrent.spi.ContextHandle;
 import org.glassfish.internal.data.ApplicationInfo;
@@ -62,7 +60,6 @@ import org.glassfish.internal.data.ApplicationRegistry;
 import javax.security.auth.Subject;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import org.glassfish.api.invocation.InvocationManager;
@@ -70,7 +67,6 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 
 public class InvocationContext implements ContextHandle {
-    static final long serialVersionUID = 5642415011655486579L;
 
     private transient ComponentInvocation invocation;
     private transient ClassLoader contextClassLoader;
@@ -78,18 +74,14 @@ public class InvocationContext implements ContextHandle {
     private transient Map spanContextMap;
     private boolean useTransactionOfExecutionThread;
 
-    private List<ThreadContextSnapshot> threadContextSnapshots;
-    private List<ThreadContextRestorer> threadContextRestorers;
+    static final long serialVersionUID = 5642415011655486579L;
 
     public InvocationContext(ComponentInvocation invocation, ClassLoader contextClassLoader, SecurityContext securityContext,
-            boolean useTransactionOfExecutionThread, List<ThreadContextSnapshot> threadContextSnapshots,
-            List<ThreadContextRestorer> threadContextRestorers) {
+                             boolean useTransactionOfExecutionThread) {
         this.invocation = invocation;
         this.contextClassLoader = contextClassLoader;
         this.securityContext = securityContext;
         this.useTransactionOfExecutionThread = useTransactionOfExecutionThread;
-        this.threadContextSnapshots = threadContextSnapshots;
-        this.threadContextRestorers = threadContextRestorers;
         saveTracingContext();
     }
 
@@ -163,18 +155,7 @@ public class InvocationContext implements ContextHandle {
     public Map getSpanContextMap() {
         return spanContextMap;
     }
-
-    public List<ThreadContextSnapshot> getThreadContextSnapshots() {
-        return threadContextSnapshots;
-    }
-
-    public List<ThreadContextRestorer> getThreadContextRestorers() {
-        return threadContextRestorers;
-    }
-
-    /**
-     * Used to make duplicate of the InvocationContext.
-     */
+    
     private void writeObject(java.io.ObjectOutputStream out) throws IOException {
         out.writeBoolean(useTransactionOfExecutionThread);
         // write values for invocation
@@ -208,13 +189,8 @@ public class InvocationContext implements ContextHandle {
         out.writeObject(principalName);
         out.writeBoolean(defaultSecurityContext);
         out.writeObject(subject);
-        out.writeObject(threadContextSnapshots);
-        out.writeObject(threadContextRestorers);
     }
 
-    /**
-     * Used to make duplicate of the InvocationContext.
-     */
     private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
         useTransactionOfExecutionThread = in.readBoolean();
         // reconstruct invocation
@@ -242,8 +218,6 @@ public class InvocationContext implements ContextHandle {
                 contextClassLoader = applicationInfo.getAppClassLoader();
             }
         }
-        threadContextSnapshots = (List<ThreadContextSnapshot>) in.readObject();
-        threadContextRestorers = (List<ThreadContextRestorer>) in.readObject();
     }
 
     private ComponentInvocation createComponentInvocation(String componentId, String appName, String moduleName) {

@@ -4,7 +4,7 @@
     <parent>
         <groupId>fish.payara.samples</groupId>
         <artifactId>payara-samples-profiled-tests</artifactId>
-        <version>6.2022.2-SNAPSHOT</version>
+        <version>6.2022.1.Alpha3-SNAPSHOT</version>
     </parent>
 
     <artifactId>rolesPermitted</artifactId>
@@ -60,11 +60,6 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.parsson</groupId>
-            <artifactId>jakarta.json</artifactId>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 

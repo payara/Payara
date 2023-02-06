@@ -39,7 +39,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright [2019-2022] [Payara Foundation and/or its affiliates]
+    Portions Copyright [2019-2021] [Payara Foundation and/or its affiliates]
 -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server.internal.security</groupId>
         <artifactId>nucleus-security</artifactId>
-        <version>6.2022.2-SNAPSHOT</version>
+        <version>6.2022.1.Alpha3-SNAPSHOT</version>
     </parent>
     <artifactId>security</artifactId>
     <packaging>glassfish-jar</packaging>
@@ -235,10 +235,6 @@
             <groupId>org.glassfish.annotations</groupId>
             <artifactId>logging-annotation-processor</artifactId>
             <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.javassist</groupId>
-            <artifactId>javassist</artifactId>
         </dependency>
     </dependencies>
 </project>

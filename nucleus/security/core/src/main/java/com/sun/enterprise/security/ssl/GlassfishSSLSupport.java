@@ -45,10 +45,9 @@ import org.glassfish.grizzly.ssl.SSLSupport;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
 import java.util.logging.Level;
-import java.security.cert.X509Certificate;
+import javax.security.cert.X509Certificate;
 import java.util.logging.Logger;
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLSession;
@@ -107,18 +106,18 @@ public class GlassfishSSLSupport implements SSLSupport {
     }
 
     @Override
-    public Certificate[] getPeerCertificates() throws IOException {
-        return getPeerCertificates(false);
+    public Object[] getPeerCertificateChain() throws IOException {
+        return getPeerCertificateChain(false);
     }
 
     @Override
-    public Certificate[] getPeerCertificates(boolean force) throws IOException {
+    public Object[] getPeerCertificateChain(boolean force) throws IOException {
         if (session == null) {
             return null;
         }
         
-        Certificate[] certs = null;
-        certs = session.getPeerCertificates();
+        X509Certificate[] certs = null;
+        certs = session.getPeerCertificateChain();
         if (certs == null) {
             certs = new X509Certificate[0];
         }
@@ -190,10 +189,10 @@ public class GlassfishSSLSupport implements SSLSupport {
         socket.startHandshake();
     }
 
-    private Certificate[] getX509Certs() {
-        Certificate certs[] = null;
+    private Object[] getX509Certs() {
+        X509Certificate certs[] = null;
         try {
-            certs = session.getPeerCertificates();
+            certs = session.getPeerCertificateChain();
         } catch (Throwable ex) {
             // Get rid of the warning in the logs when no Client-Cert is
             // available

@@ -37,9 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2022] Payara Foundation and/or affiliates
+// Portions Copyright [2018] Payara FOundatin and/or affiliates
 
 package com.sun.enterprise.admin.commands;
+
+import java.beans.PropertyVetoException;
 
 import com.sun.enterprise.config.serverbeans.AdminService;
 import com.sun.enterprise.config.serverbeans.Config;
@@ -47,34 +49,38 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.JmxConnector;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
-import jakarta.inject.Inject;
-import jakarta.inject.Named;
+import org.glassfish.grizzly.config.dom.NetworkConfig;
+import org.glassfish.grizzly.config.dom.Protocol;
+import org.glassfish.grizzly.config.dom.Protocols;
+import org.glassfish.grizzly.config.dom.Ssl;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
-import org.glassfish.grizzly.config.dom.*;
+import org.glassfish.grizzly.config.dom.NetworkListener;
+import org.glassfish.internal.api.Target;
+
+import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.internal.api.Target;
-import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 
-import java.beans.PropertyVetoException;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 /**
  * Create Ssl Command
  *
- * Usage: create-ssl --type [http-listener|iiop-listener|iiop-service|protocol] --certname cert_name
- * [--ssl3tlsciphers ssl3tlsciphers] [--tlsrollbackenabled=true] [--clientauthenabled=false]
- * [--target target(Default server)] [listener_id|protocol_id]
+ * Usage: create-ssl --type [http-listener|iiop-listener|iiop-service|protocol] --certname cert_name [--ssl2enabled=false]
+ * [--ssl2ciphers ssl2ciphers] [--ssl3enabled=true] [--ssl3tlsciphers ssl3tlsciphers] [--tlsenabled=true]
+ * [--tlsrollbackenabled=true] [--clientauthenabled=false] [--target target(Default server)] [listener_id|protocol_id]
  *
- * domain.xml element example &lt;ssl cert-nickname="s1as" client-auth-enabled="false"
- * tls-enabled="true" tls-rollback-enabled="true"/&gt;
+ * domain.xml element example &lt;ssl cert-nickname="s1as" client-auth-enabled="false" ssl2-enabled="false"
+ * ssl3-enabled="true" tls-enabled="true" tls-rollback-enabled="true"/&gt;
  *
  * @author Nandini Ektare
  */
@@ -115,32 +121,31 @@ public class CreateSsl implements AdminCommand {
     
     @Param(name = "certname", alias="certNickname")
     String certName;
-
     @Param(name = "type", acceptableValues = "network-listener, http-listener, iiop-listener, iiop-service, jmx-connector, protocol")
     String type;
-
+    @Param(name = "ssl2Enabled", optional = true, defaultValue = Ssl.SSL2_ENABLED + "")
+    Boolean ssl2Enabled;
+    @Param(name = "ssl2Ciphers", optional = true)
+    String ssl2ciphers;
+    @Param(name = "ssl3Enabled", optional = true, defaultValue = Ssl.SSL3_ENABLED + "")
+    Boolean ssl3Enabled;
     @Param(name = "ssl3TlsCiphers", optional = true)
     String ssl3tlsciphers;
-
+    @Param(name = "tlsEnabled", optional = true, defaultValue = Ssl.TLS_ENABLED + "")
+    Boolean tlsenabled;
     @Param(name = "tlsRollbackEnabled", optional = true, defaultValue = Ssl.TLS_ROLLBACK_ENABLED + "")
     Boolean tlsrollbackenabled;
-
     @Param(name = "clientAuthEnabled", optional = true, defaultValue = Ssl.CLIENT_AUTH_ENABLED + "")
     Boolean clientauthenabled;
-
     @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
     String target;
-
     @Param(name = "listener_id", primary = true, optional = true)
     public String listenerId;
-
     @Inject
     @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     public Config config;
-
     @Inject
     Domain domain;
-
     @Inject
     ServiceLocator habitat;
     private static final String GF_SSL_IMPL_NAME = "com.sun.enterprise.security.ssl.GlassfishSSLImpl";
@@ -187,8 +192,12 @@ public class CreateSsl implements AdminCommand {
     public void populateSslElement(Ssl newSsl) {
         newSsl.setCertNickname(certName);
         newSsl.setClientAuthEnabled(clientauthenabled.toString());
+        newSsl.setSsl2Ciphers(ssl2ciphers);
+        newSsl.setSsl2Enabled(ssl2Enabled.toString());
+        newSsl.setSsl3Enabled(ssl3Enabled.toString());
         newSsl.setSsl3TlsCiphers(ssl3tlsciphers);
         newSsl.setClassname(GF_SSL_IMPL_NAME);
+        newSsl.setTlsEnabled(tlsenabled.toString());
         newSsl.setTlsRollbackEnabled(tlsrollbackenabled.toString());
     }
 

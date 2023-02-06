@@ -139,7 +139,7 @@ public abstract class BaseAuthConfigImpl {
         return Integer.valueOf(properties.hashCode());
     }
 
-    private <M> M getContextFromMap(Map<String, Map<Integer, M>> contextMap, String authContextID, Map<String, Object> properties) {
+    private <M> M getContextFromMap(Map<String, Map<Integer, M>> contextMap, String authContextID, Map<String, ?> properties) {
         M context = null;
 
         Map<Integer, M> internalMap = contextMap.get(authContextID);
@@ -158,7 +158,7 @@ public abstract class BaseAuthConfigImpl {
 
     @SuppressWarnings("unchecked")
     protected final <M> M getContext(Map<String, Map<Integer, M>> contextMap, String authContextID, Subject subject,
-            Map<String, Object> properties)
+            Map<String, ?> properties)
             throws AuthException {
 
         M context = null;
@@ -241,5 +241,5 @@ public abstract class BaseAuthConfigImpl {
      */
     protected abstract void initializeContextMap();
 
-    protected abstract <M> M createAuthContext(String authContextID, Map<String, Object> properties) throws AuthException;
+    protected abstract <M> M createAuthContext(String authContextID, Map<String, ?> properties) throws AuthException;
 }

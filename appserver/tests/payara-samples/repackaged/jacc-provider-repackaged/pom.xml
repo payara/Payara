@@ -38,13 +38,12 @@
  *    only if the new code is made subject to such option by the copyright
  *    holder.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"> 
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>fish.payara.server.internal.tests</groupId>
         <artifactId>repackaged</artifactId>
-        <version>6.2022.2-SNAPSHOT</version>
+        <version>6.2022.1.Alpha3-SNAPSHOT</version>
     </parent>
     <groupId>org.omnifaces</groupId>
     <artifactId>jacc-provider-repackaged</artifactId>
@@ -150,11 +149,13 @@
             </build>
         </profile>
     </profiles>
-
-    <repositories>
+    
+        <repositories>
+        <!-- omnifaces jacc-provider is not in any other repository -->
         <repository>
-            <id>payara-nexus-artifacts</id>
-            <url>https://nexus.payara.fish/repository/payara-artifacts</url>
+            <id>payara-eclipse</id>
+            <name>Payara Eclipse</name>
+            <url>https://raw.github.com/payara/Payara_PatchedProjects/eclipse</url>
             <releases>
                 <enabled>true</enabled>
             </releases>

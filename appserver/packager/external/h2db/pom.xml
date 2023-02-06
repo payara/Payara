@@ -45,7 +45,7 @@
     <parent>
         <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>external</artifactId>
-        <version>6.2022.2-SNAPSHOT</version>
+        <version>6.2022.1.Alpha3-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>h2db-repackaged</artifactId>
@@ -66,8 +66,8 @@
                         <configuration>
                             <tasks>
                                 <resolveArtifact artifactId="h2db" property="h2db.zip" />
-                                <mkdir dir="target/classes/h2db" />
-				<unzip src="${h2db.zip}" dest="target/classes/h2db">
+                                <mkdir dir="target/classes/glassfish/h2db" />
+				<unzip src="${h2db.zip}" dest="target/classes/glassfish/h2db">
                                 </unzip>
                             </tasks>
                         </configuration>

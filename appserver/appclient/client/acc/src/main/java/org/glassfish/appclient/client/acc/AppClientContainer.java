@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2019-2021] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.appclient.client.acc;
 
@@ -404,7 +404,8 @@ public class AppClientContainer {
 
         //This is required for us to enable interrupt jaxws service
         //creation calls
-        System.setProperty("jakarta.xml.ws.spi.Provider", "com.sun.xml.ws.spi.ProviderImpl");
+        System.setProperty("jakarta.xml.ws.spi.Provider",
+                           "com.sun.enterprise.webservice.spi.ProviderImpl");
         //InjectionManager's injectClass will be called from getMainMethod
 
 

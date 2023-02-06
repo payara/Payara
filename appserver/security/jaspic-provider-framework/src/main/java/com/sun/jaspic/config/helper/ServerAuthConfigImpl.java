@@ -90,7 +90,7 @@ public class ServerAuthConfigImpl extends BaseAuthConfigImpl implements ServerAu
 
     @Override
     @SuppressWarnings("unchecked")
-    protected <M> M createAuthContext(String authContextID, Map<String, Object> properties) throws AuthException {
+    protected <M> M createAuthContext(String authContextID, Map<String, ?> properties) throws AuthException {
 
         if (!authContextHelperHelper.isProtected(new ServerAuthModule[0], authContextID)) {
             return null;

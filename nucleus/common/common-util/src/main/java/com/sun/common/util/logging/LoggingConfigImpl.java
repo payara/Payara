@@ -176,7 +176,7 @@ public class LoggingConfigImpl implements LoggingConfig {
         // these are only accessible via the web-container name so all values should be the same
         props.setProperty("org.apache.catalina.level", value);
         props.setProperty("org.apache.coyote.level", value);
-        props.setProperty("org.glassfish.wasp.level", value);
+        props.setProperty("org.apache.jasper.level", value);
     }
 
     @Override

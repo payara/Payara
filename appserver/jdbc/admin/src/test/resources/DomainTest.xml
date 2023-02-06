@@ -89,7 +89,7 @@
           <property name="jaas-context" value="fileRealm"></property>
         </auth-realm>
         <auth-realm classname="com.sun.enterprise.security.auth.realm.certificate.CertificateRealm" name="certificate"></auth-realm>
-        <jacc-provider policy-provider="fish.payara.security.jacc.provider.PolicyProviderImpl" name="default" policy-configuration-factory-provider="fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl"></jacc-provider>
+        <jacc-provider policy-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyProvider" name="default" policy-configuration-factory-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyConfigurationFactory"></jacc-provider>
         <audit-module classname="com.sun.enterprise.security.ee.Audit" name="default">
           <property name="auditOn" value="false"></property>
         </audit-module>
@@ -165,6 +165,7 @@
             <http header-buffer-length="8192" forced-response-type="text/plain; charset=iso-8859-1" default-virtual-server="server" max-connections="250" server-name="" default-response-type="text/plain; charset=iso-8859-1">
               <file-cache enabled="false"></file-cache>
             </http>
+            <ssl ssl2-enabled="true" cert-nickname="s1as" client-auth-enabled="true"></ssl>
           </protocol>
           <protocol name="admin-listener">
             <http header-buffer-length="8192" forced-response-type="text/plain; charset=iso-8859-1" default-virtual-server="__asadmin" max-connections="250" server-name="" default-response-type="text/plain; charset=iso-8859-1">

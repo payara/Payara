@@ -123,7 +123,7 @@ public class ModuleToLoggerNameMapper {
         {"synchronization",new String[] { "javax.ee.enterprise.system.tools.synchronization"} },
         {"web-container",  new String[] { LogDomains.WEB_LOGGER,
                                           "org.apache.catalina",
-                                          "org.apache.coyote","org.glassfish.wasp" 
+                                          "org.apache.coyote","org.apache.jasper" 
                                         } },
         {"group-management-service", new String[] { LogDomains.GMS_LOGGER} },
         {"node-agent",     new String[] { "javax.ee.enterprise.system.nodeagent" } },

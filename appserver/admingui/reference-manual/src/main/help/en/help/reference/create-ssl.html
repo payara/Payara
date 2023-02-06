@@ -17,7 +17,7 @@
     SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
 
 -->
-<!-- Portions Copyright [2019-2022] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
@@ -90,6 +90,8 @@ IIOP listener, or IIOP service</p>
 [--target target]
 --type listener_or_service_type
 --certname cert_name
+[--ssl2enabled={false|true}] [--ssl2ciphers ss12ciphers]
+[--ssl3enabled={true|false}] [--tlsenabled={true|false}]
 [--ssl3tlsciphers ssl3tlsciphers]
 [--tlsrollbackenabled={true|false}]
 [--clientauthenabled={false|true}]
@@ -190,6 +192,59 @@ the embedded <code>ssl</code> element is created in <code>domain.xml</code>.</p>
 the PKCS#11 token. The format of the name in the certificate is
 tokenname:nickname. For this property, the tokenname: is optional.</p>
 </dd>
+<dt class="hdlist1"><code>--ssl2enabled</code></dt>
+<dd>
+<p>Set this property to <code>true</code> to enable SSL2. The default value is
+<code>false</code>. If both SSL2 and SSL3 are enabled for a virtual server, the
+server tries SSL3 encryption first. In the event SSL3 encryption
+fails, the server then tries SSL2 encryption.</p>
+</dd>
+<dt class="hdlist1"><code>--ssl2ciphers</code></dt>
+<dd>
+<p>A comma-separated list of the SSL2 ciphers to be used. Ciphers not
+explicitly listed will be disabled for the target, even if those
+ciphers are available in the particular cipher suite you are using. If
+this option is not used, all supported ciphers are assumed to be
+enabled. Allowed values are:<br></p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>rc4</code></p>
+</li>
+<li>
+<p><code>rc4export</code></p>
+</li>
+<li>
+<p><code>rc2</code></p>
+</li>
+<li>
+<p><code>rc2export</code></p>
+</li>
+<li>
+<p><code>idea</code></p>
+</li>
+<li>
+<p><code>des</code></p>
+</li>
+<li>
+<p><code>desede3</code></p>
+</li>
+</ul>
+</div>
+</dd>
+<dt class="hdlist1"><code>--ssl3enabled</code></dt>
+<dd>
+<p>Set this property to <code>false</code> to disable SSL3. The default value is
+<code>true</code>. If both SSL2 and SSL3 are enabled for a virtual server, the
+server tries SSL3 encryption first. In the event SSL3 encryption
+fails, the server then tries SSL2 encryption.</p>
+</dd>
+<dt class="hdlist1"><code>--tlsenabled</code></dt>
+<dd>
+<p>Set this property to <code>false</code> to disable TLS. The default value is
+<code>true</code> It is good practice to enable TLS, which is a more secure
+version of SSL.</p>
+</dd>
 <dt class="hdlist1"><code>--ssl3tlsciphers</code></dt>
 <dd>
 <p>A comma-separated list of the SSL3 and/or TLS ciphers to be used.
@@ -231,7 +286,7 @@ only valid when <code>-tlsenabled</code>=<code>true</code>.</p>
 </dd>
 <dt class="hdlist1"><code>--clientauthenabled</code></dt>
 <dd>
-<p>Set to <code>true</code> if you want client authentication performed on
+<p>Set to <code>true</code> if you want SSL3 client authentication performed on
 every request independent of ACL-based access control. Default value
 is <code>false</code>.</p>
 </dd>

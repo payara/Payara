@@ -112,8 +112,7 @@ public enum RUNTIME_OPTION {
     hzinitialjoinwait(true, new IntegerValidator(0,100000)),
     contextroot(true),
     warmup(false),
-    hotdeploy(false),
-    nohazelcast(false);
+    hotdeploy(false);
 
     RUNTIME_OPTION(boolean hasValue) {
         this(hasValue, new Validator());

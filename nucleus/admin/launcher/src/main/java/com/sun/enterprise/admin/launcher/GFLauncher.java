@@ -76,6 +76,7 @@ public abstract class GFLauncher {
 
     private static final Pattern JAVA_VERSION_PATTERN = Pattern.compile(".* version \"([^\"\\-]+)(-.*)?\".*");
     private final List<String> commandLine = new ArrayList<String>();
+    private final List<String> jvmOptionsList = new ArrayList<String>();
     private final GFLauncherInfo info;
     private Map<String, String> asenvProps;
     private JavaConfig javaConfig;
@@ -226,6 +227,7 @@ public abstract class GFLauncher {
         GFLauncherLogger.addLogFileHandler(logFilename);
         setClasspath();
         setCommandLine();
+        setJvmOptions();
         logCommandLine();
         checkJDKVersion();
         // if no <network-config> element, we need to upgrade this domain
@@ -687,12 +689,22 @@ public abstract class GFLauncher {
         }
     }
 
+    void setJvmOptions() {
+        List<String> jvmOpts = getJvmOptions();
+        jvmOpts.clear();
+
+        if (jvmOptions != null) {
+            addIgnoreNull(jvmOpts, jvmOptions.toStringArray());
+        }
+
+    }
+
     /**
-     * Returns the Java Virtual Machine options (for testing)
+     * Returns the Java Virtual Machine options
      * @return 
      */
-    List<String> getJvmOptions() {
-        return jvmOptions.toStringArray();
+    public final List<String> getJvmOptions() {
+        return jvmOptionsList;
     }
 
     /**
@@ -816,13 +828,9 @@ public abstract class GFLauncher {
         List<File> prefixCP = javaConfig.getPrefixClasspath();
         List<File> suffixCP = javaConfig.getSuffixClasspath();
         List<File> profilerCP = profiler.getClasspath();
-        List<File> extCP = Collections.singletonList(
-                new File(info.getInstanceRootDir(), "lib/ext/*")
-        );
 
         // create a list of all the classpath pieces in the right order
         List<File> all = new ArrayList<File>();
-        all.addAll(extCP);
         all.addAll(prefixCP);
         all.addAll(profilerCP);
         all.addAll(mainCP);

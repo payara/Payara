@@ -105,7 +105,7 @@
           <property name="proxiedProtocols" value="ws/tcp"/>
         </http-listener>
         <http-listener acceptor-threads="1" address="0.0.0.0" blocking-enabled="false" default-virtual-server="server" enabled="true" family="inet" id="http-listener-2" port="8181" security-enabled="true" server-name="" xpowered-by="true">
-          <ssl cert-nickname="s1as" client-auth-enabled="false" tls-enabled="true" tls-rollback-enabled="true"/>
+          <ssl cert-nickname="s1as" client-auth-enabled="false" ssl2-enabled="false" ssl3-enabled="true" tls-enabled="true" tls-rollback-enabled="true"/>
         </http-listener>
         <http-listener acceptor-threads="1" address="0.0.0.0" blocking-enabled="false" default-virtual-server="__asadmin" enabled="true" family="inet" id="admin-listener" port="4848" security-enabled="false" server-name="" xpowered-by="true"/>
         <virtual-server hosts="${com.sun.aas.hostName}" http-listeners="http-listener-1,http-listener-2" id="server" log-file="${com.sun.aas.instanceRoot}/logs/server.log" state="on">
@@ -129,16 +129,16 @@
         <orb max-connections="1024" message-fragment-size="1024" use-thread-pool-ids="thread-pool-1"/>
         <iiop-listener address="0.0.0.0" enabled="true" id="orb-listener-1" port="3700" security-enabled="false"/>
         <iiop-listener address="0.0.0.0" enabled="true" id="SSL" port="3820" security-enabled="true">
-          <ssl cert-nickname="s1as" client-auth-enabled="false" tls-enabled="true" tls-rollback-enabled="true"/>
+          <ssl cert-nickname="s1as" client-auth-enabled="false" ssl2-enabled="false" ssl3-enabled="true" tls-enabled="true" tls-rollback-enabled="true"/>
         </iiop-listener>
         <iiop-listener address="0.0.0.0" enabled="true" id="SSL_MUTUALAUTH" port="3920" security-enabled="true">
-          <ssl cert-nickname="s1as" client-auth-enabled="true" tls-enabled="true" tls-rollback-enabled="true"/>
+          <ssl cert-nickname="s1as" client-auth-enabled="true" ssl2-enabled="false" ssl3-enabled="true" tls-enabled="true" tls-rollback-enabled="true"/>
         </iiop-listener>
       </iiop-service>
       <admin-service system-jmx-connector-name="system" type="das-and-server">
         <!-- The JSR 160 "system-jmx-connector" -->
         <jmx-connector accept-all="false" address="0.0.0.0" auth-realm-name="admin-realm" enabled="true" name="system" port="8686" protocol="rmi_jrmp" security-enabled="false">
-          <ssl cert-nickname="s1as" client-auth-enabled="false" tls-enabled="true" tls-rollback-enabled="true"/>
+          <ssl cert-nickname="s1as" client-auth-enabled="false" ssl2-enabled="false" ssl3-enabled="true" tls-enabled="true" tls-rollback-enabled="true"/>
         </jmx-connector>
         <!-- The JSR 160 "system-jmx-connector" -->
         <das-config admin-session-timeout-in-minutes="60" autodeploy-dir="${com.sun.aas.instanceRoot}/autodeploy" autodeploy-enabled="true" autodeploy-jsp-precompilation-enabled="false" autodeploy-polling-interval-in-seconds="2" autodeploy-verifier-enabled="false" deploy-xml-validation="full" dynamic-reload-enabled="true" dynamic-reload-poll-interval-in-seconds="2"/>
@@ -172,7 +172,7 @@
         </auth-realm>
         <auth-realm classname="com.sun.enterprise.security.auth.realm.certificate.CertificateRealm" name="certificate">
     </auth-realm>
-        <jacc-provider name="default" policy-configuration-factory-provider="fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl" policy-provider="fish.payara.security.jacc.provider.PolicyProviderImpl"></jacc-provider>
+        <jacc-provider name="default" policy-configuration-factory-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyConfigurationFactory" policy-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyProvider"></jacc-provider>
         <audit-module classname="com.sun.enterprise.security.ee.Audit" name="default">
           <property name="auditOn" value="false"/>
         </audit-module>

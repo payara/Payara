@@ -49,7 +49,7 @@
     <parent>
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-aggregator</artifactId>
-        <version>6.2022.2-SNAPSHOT</version>
+        <version>6.2022.1.Alpha3-SNAPSHOT</version>
     </parent>
 
     <artifactId>payara-nucleus-parent</artifactId>
@@ -93,6 +93,17 @@
                 <enabled>false</enabled>
             </snapshots>
         </pluginRepository>
+        <pluginRepository>
+            <id>payara-patched-externals</id>
+            <name>Payara Patched Externals</name>
+            <url>https://raw.github.com/payara/Payara_PatchedProjects/master</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </pluginRepository>
     </pluginRepositories>
 
     <properties>
@@ -111,7 +122,7 @@
         <maven.makepkgs.plugin.version>0.6.2</maven.makepkgs.plugin.version>
         <maven.jaxb2.plugin.version>0.14.0</maven.jaxb2.plugin.version>
         <maven.antlr.plugin.version>2.2</maven.antlr.plugin.version>
-        <maven.enforcer.plugin.version>3.1.0</maven.enforcer.plugin.version>
+        <maven.enforcer.plugin.version>3.0.0-M2</maven.enforcer.plugin.version>
         <maven.jaxws.plugin.version>2.5</maven.jaxws.plugin.version>
         <maven.apt.plugin.version>1.0-alpha-5</maven.apt.plugin.version>
         <maven.build.helper.plugin.version>3.0.0</maven.build.helper.plugin.version>
@@ -119,21 +130,21 @@
 
         <!-- Servlet -->
         <!-- Requires JDK8u161 or above-->
-        <grizzly.npn.api.version>2.0.0.payara-p1</grizzly.npn.api.version>
+        <grizzly.npn.api.version>2.0.0</grizzly.npn.api.version>
         <grizzly.npn.osgi.version>2.0.0</grizzly.npn.osgi.version>
 
         <!-- Other -->
         <hk2.plugin.version>3.0.2</hk2.plugin.version> <!-- May need patched-->
         <tiger.types.version>1.4.payara-p1</tiger.types.version>
 
-        <glassfish-corba.version>4.2.4.payara-p2</glassfish-corba.version>
+        <glassfish-corba.version>4.2.4</glassfish-corba.version>
         <saaj-api.version>1.4.0</saaj-api.version>
 
         <!-- Library for introspecting types with full generic information including resolving of field and method types. -->
         <classmate.version>1.5.0</classmate.version>
-        <jboss.logging.version>3.5.0.Final</jboss.logging.version>
+        <jboss.logging.version>3.4.2.Final</jboss.logging.version>
         <!-- Javassist (JAVA programming ASSISTant) makes Java bytecode manipulation simple. It is a class library for editing bytecodes in Java. -->
-        <javassist.version>3.29.2-GA</javassist.version>
+        <javassist.version>3.28.0-GA</javassist.version>
 
         <!-- A pure Java implementation of the SSH-2 protocol -->
         <trilead-ssh2.version>build-217-jenkins-16</trilead-ssh2.version>
@@ -146,24 +157,20 @@
 
         <commons-io.version>2.11.0</commons-io.version>
 
-        <mimepull.version>1.10.0</mimepull.version>
+        <mimepull.version>1.9.15</mimepull.version>
 
-        <!-- Apache Felix is an open source implementation of the OSGi Core Release 8 framework specification. -->
-        <org.apache.felix.main.version>7.0.5</org.apache.felix.main.version>
-        <org.apache.felix.webconsole.version>4.8.4</org.apache.felix.webconsole.version>
-        <org.apache.felix.eventadmin.version>1.6.4</org.apache.felix.eventadmin.version>
+        <!-- Apache Felix is an open source implementation of the OSGi Core Release 6 framework specification. -->
+        <org.apache.felix.main.version>6.0.2</org.apache.felix.main.version>
+        <org.apache.felix.webconsole.version>4.3.8</org.apache.felix.webconsole.version>
+        <org.apache.felix.eventadmin.version>1.5.0</org.apache.felix.eventadmin.version>
         <org.apache.felix.shell.version>1.4.3</org.apache.felix.shell.version>
-        <org.apache.felix.gogo.runtime.version>1.1.6</org.apache.felix.gogo.runtime.version>
-        <org.apache.felix.gogo.shell.version>1.1.4</org.apache.felix.gogo.shell.version>
-        <org.apache.felix.gogo.command.version>1.1.2</org.apache.felix.gogo.command.version>
-        <org.apache.felix.fileinstall.version>3.7.4.payara-p1</org.apache.felix.fileinstall.version>
-        <org.apache.felix.configadmin.version>1.9.24</org.apache.felix.configadmin.version>
-        <org.apache.felix.scr.version>2.1.30</org.apache.felix.scr.version>
+        <org.apache.felix.gogo.runtime.version>1.1.2</org.apache.felix.gogo.runtime.version>
+        <org.apache.felix.gogo.shell.version>1.1.2</org.apache.felix.gogo.shell.version>
+        <org.apache.felix.gogo.command.version>1.1.0</org.apache.felix.gogo.command.version>
+        <org.apache.felix.fileinstall.version>3.7.0.payara-p1</org.apache.felix.fileinstall.version>
+        <org.apache.felix.configadmin.version>1.9.14</org.apache.felix.configadmin.version>
+        <org.apache.felix.scr.version>2.1.14</org.apache.felix.scr.version>
         <org.apache.felix.bundlerepository.version>2.0.10</org.apache.felix.bundlerepository.version>
-
-        <!-- OSGi Promise and Function is required for Apache Felix scr -->
-        <org.osgi.util.promise.version>1.1.1</org.osgi.util.promise.version>
-        <org.osgi.util.function.version>1.1.0</org.osgi.util.function.version>
 
         <!-- Java Business Integration (JBI) is a specification for an approach to implementing a service-oriented architecture (SOA).  -->
         <glassfish-management-api.version>3.2.1-b002.payara-p1</glassfish-management-api.version>
@@ -184,7 +191,7 @@
         <nucleus.install.dir.name>nucleus</nucleus.install.dir.name>
         <ant.version>1.10.11</ant.version>
         <ant-launcher.version>1.10.11</ant-launcher.version>
-        <metainf-services.version>1.9</metainf-services.version>
+        <metainf-services.version>1.8</metainf-services.version>
 
         <!-- Debug / analysis -->
         <findbugs.skip>true</findbugs.skip>
@@ -781,17 +788,6 @@ Parent is ${project.parent}</echo>
                 <version>${org.apache.felix.bundlerepository.version}</version>
             </dependency>
 
-            <dependency> <!-- Required for org.apache.felix.scr-->
-                <groupId>org.osgi</groupId>
-                <artifactId>org.osgi.util.promise</artifactId>
-                <version>${org.osgi.util.promise.version}</version>
-            </dependency>
-            <dependency> <!-- Required for org.apache.felix.scr-->
-                <groupId>org.osgi</groupId>
-                <artifactId>org.osgi.util.function</artifactId>
-                <version>${org.osgi.util.function.version}</version>
-            </dependency>
-
             <dependency>
                 <groupId>org.jvnet.mimepull</groupId>
                 <artifactId>mimepull</artifactId>
@@ -963,12 +959,7 @@ Parent is ${project.parent}</echo>
             <dependency>
                 <groupId>org.eclipse.transformer</groupId>
                 <artifactId>org.eclipse.transformer.payara</artifactId>
-                <version>${payara.transformer.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>fish.payara.deployment.transformer</groupId>
-                <artifactId>deployment-transformer-api</artifactId>
-                <version>${payara.deployment.transformer.version}</version>
+                <version>${payara.transformer}</version>
             </dependency>
             <dependency>
                 <groupId>org.bouncycastle</groupId>

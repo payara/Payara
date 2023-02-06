@@ -37,9 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2019-2021] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.appclient;
 
+import com.sun.enterprise.security.ee.J2EESecurityManager;
 import com.sun.enterprise.security.SecurityServicesUtil;
 import com.sun.enterprise.security.UsernamePasswordStore;
 import com.sun.enterprise.security.appclient.integration.AppClientSecurityInfo;
@@ -48,25 +49,23 @@ import com.sun.enterprise.security.auth.login.LoginContextDriver;
 import com.sun.enterprise.security.common.ClientSecurityContext;
 import com.sun.enterprise.security.common.SecurityConstants;
 import com.sun.enterprise.security.common.Util;
-import com.sun.enterprise.security.ee.J2EESecurityManager;
-import com.sun.enterprise.security.integration.AppClientSSL;
 import com.sun.enterprise.security.jaspic.config.GFAuthConfigFactory;
+import com.sun.enterprise.security.integration.AppClientSSL;
 import com.sun.enterprise.security.ssl.SSLUtils;
 import com.sun.logging.LogDomains;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import jakarta.inject.Inject;
+import javax.security.auth.Subject;
+import javax.security.auth.callback.CallbackHandler;
 import jakarta.security.auth.message.config.AuthConfigFactory;
 import org.glassfish.appclient.client.acc.config.MessageSecurityConfig;
 import org.glassfish.appclient.client.acc.config.Security;
 import org.glassfish.appclient.client.acc.config.Ssl;
 import org.glassfish.appclient.client.acc.config.TargetServer;
-import org.glassfish.enterprise.iiop.api.IIOPSSLUtil;
 import org.jvnet.hk2.annotations.Service;
-
-import javax.security.auth.Subject;
-import javax.security.auth.callback.CallbackHandler;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.glassfish.enterprise.iiop.api.IIOPSSLUtil;
 
 /**
  *
@@ -193,7 +192,12 @@ public class AppClientSecurityInfoImpl implements AppClientSecurityInfo {
     private AppClientSSL convert(Ssl ssl) {
         AppClientSSL appSSL = new AppClientSSL();
         appSSL.setCertNickname(ssl.getCertNickname());
+        //appSSL.setClientAuthEnabled(ssl.isClientAuthEnabled());
+        appSSL.setSsl2Ciphers(ssl.getSsl2Ciphers());
+        appSSL.setSsl2Enabled(ssl.isSsl2Enabled());
+        appSSL.setSsl3Enabled(ssl.isSsl3Enabled());
         appSSL.setSsl3TlsCiphers(ssl.getSsl3TlsCiphers());
+        appSSL.setTlsEnabled(ssl.isTlsEnabled());
         appSSL.setTlsRollbackEnabled(ssl.isTlsRollbackEnabled());
         
         return appSSL;

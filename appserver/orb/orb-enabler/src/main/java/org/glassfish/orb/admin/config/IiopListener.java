@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.orb.admin.config;
 
@@ -150,7 +150,8 @@ public interface IiopListener extends ConfigBeanProxy, PropertyBag, Payload {
     /**
      * Gets the value of the securityEnabled property.
      *
-     * Determines whether the iiop listener runs SSL.
+     * Determines whether the iiop listener runs SSL. You can turn 
+     * SSL2 or SSL3 on or off and set ciphers using an ssl element
      * 
      * @return possible object is
      *         {@link String }
@@ -188,7 +189,8 @@ public interface IiopListener extends ConfigBeanProxy, PropertyBag, Payload {
     /**
      * Gets the value of the ssl property.
      *
-     * Specifies optional SSL configuration.
+     * Specifies optional SSL configuration. Note that the ssl2 ciphers are not
+     * supported for iiop, and therefore must be disabled
      * 
      * @return possible object is
      *         {@link Ssl }

@@ -43,7 +43,7 @@
     <parent>
         <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
         <artifactId>rest-monitoring-parent</artifactId>
-        <version>6.2022.2-SNAPSHOT</version>
+        <version>6.2022.1.Alpha3-SNAPSHOT</version>
     </parent>
     
     <artifactId>rest-monitoring-war</artifactId>
@@ -69,7 +69,7 @@
         <dependency>
             <groupId>jakarta.platform</groupId>
             <artifactId>jakarta.jakartaee-web-api</artifactId>
-            <version>${jakarta-platform.version}</version>
+            <version>9.0.0</version>
             <scope>provided</scope>
         </dependency>
 
@@ -129,7 +129,7 @@
                                 <artifactItem>
                                     <groupId>jakarta.platform</groupId>
                                     <artifactId>jakarta.jakartaee-web-api</artifactId>
-                                    <version>${jakarta-platform.version}</version>
+                                    <version>9.0.0</version>
                                 </artifactItem>
                             </artifactItems>
                         </configuration>

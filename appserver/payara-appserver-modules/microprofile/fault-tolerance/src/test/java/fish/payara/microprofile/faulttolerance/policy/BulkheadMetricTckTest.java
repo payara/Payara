@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2020-2022] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -48,7 +48,6 @@ import static org.junit.Assert.assertNotNull;
 
 import java.util.concurrent.Future;
 
-import java.util.concurrent.TimeUnit;
 import org.eclipse.microprofile.faulttolerance.Asynchronous;
 import org.eclipse.microprofile.faulttolerance.Bulkhead;
 import org.eclipse.microprofile.metrics.Counter;
@@ -107,18 +106,13 @@ public class BulkheadMetricTckTest extends AbstractMetricTest {
      */
     @Test(timeout = 3000)
     public void bulkheadMetricHistogramTest() {
-        final long delayMs = 100;
-        long beforeInitTimestamp = System.nanoTime();
         callMethodWithNewThreadAndWaitFor(commonWaiter);
         callMethodWithNewThreadAndWaitFor(commonWaiter);
-        // time spent during initialization of , it needs to be added to the expected time
         waitUntilPermitsAquired(2, 0);
 
         assertFurtherThreadThrowsBulkheadException(1);
 
-        long waitTimeForOneMethod = TimeUnit.NANOSECONDS.toMillis((System.nanoTime() - beforeInitTimestamp)) / 2 + delayMs;
-
-        waitSome(delayMs);
+        waitSome(100);
         commonWaiter.complete(null);
         waitUntilPermitsAquired(0, 0);
 
@@ -128,8 +122,8 @@ public class BulkheadMetricTckTest extends AbstractMetricTest {
 
         assertNotNull(executionTimes);
         assertEquals(2, executionTimes.getCount());
-        assertApproxMillis("Testing median, should be " + delayMs + " - " + waitTimeForOneMethod, delayMs, waitTimeForOneMethod, Math.round(snap.getMedian()));
-        assertApproxMillis("Testing mean of 2, should be " + delayMs + " - " + waitTimeForOneMethod, delayMs, waitTimeForOneMethod, Math.round(snap.getMean()));
+        assertApproxMillis(100, Math.round(snap.getMedian()));
+        assertApproxMillis(100, Math.round(snap.getMean()));
 
         // Now let's put some quick results through the bulkhead
         callMethodDirectly(null);
@@ -137,7 +131,7 @@ public class BulkheadMetricTckTest extends AbstractMetricTest {
 
         assertEquals(4, executionTimes.getCount());
         snap = executionTimes.getSnapshot();
-        assertApproxMillis("Testing mean of 4, should be " + (delayMs / 2) + " - " + (waitTimeForOneMethod / 2), delayMs / 2, waitTimeForOneMethod / 2, Math.round(snap.getMean()));
+        assertApproxMillis(50, Math.round(snap.getMean()));
     }
 
     @Bulkhead(2)
@@ -181,9 +175,9 @@ public class BulkheadMetricTckTest extends AbstractMetricTest {
         return bodyWaitThenReturnSuccessDirectly(waiter);
     }
 
-    private static void assertApproxMillis(String msg, long expectedMillis, long expectedMillisWithWait, long actualNanos) {
+    private static void assertApproxMillis(long expectedMillis, long actualNanos) {
         long millis = actualNanos / 1_000_000;
-        long max = Math.round(expectedMillisWithWait * 1.3);
-        assertThat(msg, millis, allOf(greaterThan(expectedMillis), lessThan(max)));
+        long error = Math.round(expectedMillis * 0.3);
+        assertThat(millis, allOf(greaterThan(expectedMillis), lessThan(expectedMillis+error)));
     }
 }

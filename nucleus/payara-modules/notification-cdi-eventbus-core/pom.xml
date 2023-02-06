@@ -44,7 +44,7 @@
     <parent>
         <groupId>fish.payara.server.internal.payara-modules</groupId>
         <artifactId>payara-nucleus-modules</artifactId>
-        <version>6.2022.2-SNAPSHOT</version>
+        <version>6.2022.1.Alpha3-SNAPSHOT</version>
     </parent>
     <artifactId>notification-cdi-eventbus-core</artifactId>
     <packaging>glassfish-jar</packaging>
@@ -69,11 +69,9 @@
             <version>${project.version}</version>
         </dependency>
 
-        <!-- EE10 TODO: CDI dependency does not belong in nucleus -->
         <dependency>
-            <groupId>jakarta.enterprise</groupId>
-            <artifactId>jakarta.enterprise.cdi-api</artifactId>
-            <version>${cdi-api.version}</version>
+            <groupId>jakarta.platform</groupId>
+            <artifactId>jakarta.jakartaee-api</artifactId>
         </dependency>
     </dependencies>
 </project>

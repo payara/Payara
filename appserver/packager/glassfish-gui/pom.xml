@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>6.2022.2-SNAPSHOT</version>
+        <version>6.2022.1.Alpha3-SNAPSHOT</version>
     </parent>
     <artifactId>glassfish-gui</artifactId>
     <name>Glassfish Admin GUI Package</name>
@@ -223,9 +223,8 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.admingui</groupId>
-            <artifactId>faces-compat</artifactId>
-            <version>${project.version}</version>
+            <groupId>org.glassfish.jsftemplating</groupId>
+            <artifactId>jsftemplating</artifactId>
             <scope>runtime</scope>
         </dependency>
     </dependencies>

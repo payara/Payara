@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2022] [Payara Foundation]
+// Portions Copyright [2016-2021] [Payara Foundation]
 package org.glassfish.web.admin.cli;
 
 import com.sun.enterprise.config.serverbeans.Config;
@@ -80,7 +80,7 @@ import org.glassfish.grizzly.config.dom.Ssl;
  * domain.xml element example
  *
  * <protocol name="http-listener-1"> <http max-connections="250" default-virtual-server="server" server-name="">
- * <file-cache enabled="false" /> </http> <ssl cert-nickname="s1as" /> </protocol>
+ * <file-cache enabled="false" /> </http> <ssl ssl3-enabled="false" cert-nickname="s1as" /> </protocol>
  *
  * @author Nandini Ektare
  */
@@ -163,6 +163,8 @@ public class CreateProtocol implements AdminCommand {
                 if (securityEnabled) {
                     Ssl ssl = newProtocol.createChild(Ssl.class);
                     ssl.setCertNickname("s1as");
+                    ssl.setSsl2Enabled("false");
+                    ssl.setSsl3Enabled("false");
                     newProtocol.setSsl(ssl);
                 }
                 return newProtocol;

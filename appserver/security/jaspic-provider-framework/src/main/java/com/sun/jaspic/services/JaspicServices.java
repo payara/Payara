@@ -71,11 +71,11 @@ public abstract class JaspicServices {
 
     protected String layer;
     protected String appCtxt;
-    protected Map<String, Object> map;
+    protected Map<String, ?> map;
     protected CallbackHandler callbackHandler;
     protected AuthConfigRegistrationWrapper listenerWrapper;
 
-    protected void init(String layer, String appContext, Map<String, Object> map, CallbackHandler callbackHandler, RegistrationWrapperRemover removerDelegate) {
+    protected void init(String layer, String appContext, Map<String, ?> map, CallbackHandler callbackHandler, RegistrationWrapperRemover removerDelegate) {
         this.layer = layer;
         this.appCtxt = appContext;
         this.map = map;

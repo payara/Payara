@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.v3.server;
 
@@ -45,7 +45,6 @@ import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.admin.report.HTMLActionReporter;
-import com.sun.enterprise.v3.bootstrap.BootCommandService;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -56,9 +55,8 @@ import java.util.logging.Logger;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.inject.Provider;
-
-import fish.payara.internal.api.DeployPreviousApplicationsRunLevel;
 import org.glassfish.api.ActionReport;
+import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.UndeployCommandParameters;
@@ -93,10 +91,11 @@ import org.jvnet.hk2.annotations.Service;
  *
  * @author Jerome Dochez
  */
+//@Priority(8) // low priority , should be started last
 @Service(name="ApplicationLoaderService")
-@RunLevel(value = DeployPreviousApplicationsRunLevel.VAL, mode = RunLevel.RUNLEVEL_MODE_NON_VALIDATING)
-// In the wake of the introduction of PostBootRunLevel and DeployPreviousApplicationsRunLevel, should this still be non-validating?
+@RunLevel( value=StartupRunLevel.VAL, mode=RunLevel.RUNLEVEL_MODE_NON_VALIDATING)
 public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestroy, org.glassfish.hk2.api.PostConstruct {
+//public class ApplicationLoaderService implements Startup, org.glassfish.hk2.api.PreDestroy, org.glassfish.hk2.api.PostConstruct {
 
     final Logger logger = KernelLoggerInfo.getLogger();
 
@@ -125,10 +124,6 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
 
     @Inject
     ApplicationRegistry appRegistry;
-
-    // Explicit dependency, boot command file can contain setup for already deployed applications
-    @Inject
-    private BootCommandService bootCommandService;
 
     @Inject
     Events events;
@@ -161,7 +156,6 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
      * Get a Deployer capable for each application found
      * Invoke the deployer load() method for each application.
      */
-    @Override
     public void postConstruct() {
 
         assert env!=null;
@@ -234,17 +228,12 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
                 app.containsSnifferType(ServerTags.CONNECTOR)) {
                 continue;
             }
-            ApplicationInfo appDeployment = deployment.get(app.getName());
-            if (appDeployment != null && appDeployment.isRunning()) {
-                // skip applications loaded via deploy in postbootcommand file
-                continue;
-            }
             // load the referenced enabled applications on this instance
             // and always (partially) load on DAS when application is
             // referenced by non-DAS target so the application
             // information is available on DAS
             if (Boolean.valueOf(app.getEnabled()) || loadAppOnDAS(app.getName())) {
-                DeploymentOrder.addApplicationDeployment(new ApplicationOrderInfo(app, appOrderInfoMap.get(app.getName()).intValue()));
+              DeploymentOrder.addApplicationDeployment(new ApplicationOrderInfo(app, appOrderInfoMap.get(app.getName()).intValue()));
             }
         }
 
@@ -342,7 +331,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
         }
         events.send(new Event<>(Deployment.ALL_APPLICATIONS_LOADED, null), false);
 
-        for (Deployment.ApplicationDeployment depl : appDeployments) {
+        for(Deployment.ApplicationDeployment depl : appDeployments) {
             deployment.initialize(depl.appInfo, depl.appInfo.getSniffers(), depl.context);
         }
 

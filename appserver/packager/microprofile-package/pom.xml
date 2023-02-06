@@ -43,7 +43,7 @@
     <parent>
         <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>6.2022.2-SNAPSHOT</version>
+        <version>6.2022.1.Alpha3-SNAPSHOT</version>
     </parent>
     
     <artifactId>microprofile-package</artifactId>
@@ -264,8 +264,9 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.eclipse.microprofile.opentracing</groupId>
-            <artifactId>microprofile-opentracing-api</artifactId>
+            <groupId>fish.payara.server.internal.packager</groupId>
+            <artifactId>microprofile-opentracing-repackaged</artifactId>
+            <version>${project.version}</version>
         </dependency>
         
         <!-- Admin MicroProfile Admin GUI -->

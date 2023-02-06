@@ -92,7 +92,7 @@ public class ClientAuthConfigImpl extends BaseAuthConfigImpl implements ClientAu
 
     @Override
     @SuppressWarnings("unchecked")
-    protected <M> M createAuthContext(String authContextID, Map<String, Object> properties) throws AuthException {
+    protected <M> M createAuthContext(String authContextID, Map<String, ?> properties) throws AuthException {
 
         if (!authContextHelper.isProtected(new ClientAuthModule[0], authContextID)) {
             return null;

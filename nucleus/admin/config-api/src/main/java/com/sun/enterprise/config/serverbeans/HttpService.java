@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2022] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2021] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -206,6 +206,15 @@ public interface HttpService extends ConfigBeanProxy, PropertyBag, ConfigExtensi
 
     @PropertyDesc(name="monitoring-cache-refresh-in-millis", defaultValue="5000", dataType=NonNegativeInteger.class,
         description="Specifies the interval between refreshes of the monitoring cache"),
+        
+    @PropertyDesc(name="ssl-cache-entries", defaultValue="10000", dataType=NonNegativeInteger.class,
+        description="Specifies the number of SSL sessions to be cached"),
+        
+    @PropertyDesc(name="ssl3-session-timeout", defaultValue="86400", dataType=NonNegativeInteger.class,
+        description="Specifies the interval at which SSL3 sessions are cached"),
+        
+    @PropertyDesc(name="ssl-session-timeout", defaultValue="100", dataType=NonNegativeInteger.class,
+        description="Specifies the interval at which SSL2 sessions are cached"),
 
     @PropertyDesc(name="recycle-objects", defaultValue="true", dataType=Boolean.class,
         description="Whether to recycle internal objects instead of using the VM garbage collector"),

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.concurrent.runtime;
 
@@ -59,11 +59,7 @@ import org.glassfish.internal.deployment.Deployment;
 
 import jakarta.enterprise.concurrent.ContextService;
 import jakarta.enterprise.concurrent.ManagedTask;
-import jakarta.enterprise.concurrent.spi.ThreadContextProvider;
-import jakarta.enterprise.concurrent.spi.ThreadContextRestorer;
-import jakarta.enterprise.concurrent.spi.ThreadContextSnapshot;
-import jakarta.transaction.Status;
-import jakarta.transaction.Transaction;
+import jakarta.transaction.*;
 import java.io.IOException;
 import java.util.Map;
 import java.util.logging.Level;
@@ -77,16 +73,6 @@ import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.Tracer.SpanBuilder;
 import io.opentracing.propagation.Format;
-import jakarta.enterprise.concurrent.ContextServiceDefinition;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ServiceLoader;
-import java.util.Set;
-import java.util.stream.Collectors;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.data.ApplicationRegistry;
 
@@ -104,37 +90,21 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
 
     static final long serialVersionUID = -1095988075917755802L;
 
-    // Predefined handlers for context propagation
-    // TODO: replace with ConcurrentRuntime.CONTEXT_INFO_* ?
-    public static final String CONTEXT_TYPE_CLASSLOADING = "CLASSLOADING"; // Concurrency 3.0: N/A
-    public static final String CONTEXT_TYPE_SECURITY = "SECURITY"; // Concurrency 3.0: SECURITY
-    public static final String CONTEXT_TYPE_NAMING = "NAMING"; // Concurrency 3.0: APPLICATION
-    public static final String CONTEXT_TYPE_WORKAREA = "WORKAREA"; // Concurrency 3.0: TRANSACTION
+    static enum CONTEXT_TYPE {CLASSLOADING, SECURITY, NAMING, WORKAREA}
 
-    // TODO: do we need these booleans if we have sets?
     private boolean classloading, security, naming, workArea;
-    private final Set<String> contextPropagate;
-    private final Set<String> contextClear;
-    private final Set<String> contextUnchanged;
-    private Map<String, ThreadContextProvider> allThreadContextProviders = null;
-    /**
-     * Points to the context, which contains ALL_REMAINING.
-     */
-    private final Set<String> allRemaining;
 
     private transient RequestTracingService requestTracing;
     private transient OpenTracingService openTracing;
     private transient StuckThreadsStore stuckThreads;
 
     public ContextSetupProviderImpl(InvocationManager invocationManager,
-            Deployment deployment,
-            ComponentEnvManager compEnvMgr,
-            ApplicationRegistry applicationRegistry,
-            Applications applications,
-            JavaEETransactionManager transactionManager,
-            Set<String> propagated,
-            Set<String> cleared,
-            Set<String> unchanged) {
+                                    Deployment deployment,
+                                    ComponentEnvManager compEnvMgr,
+                                    ApplicationRegistry applicationRegistry,
+                                    Applications applications,
+                                    JavaEETransactionManager transactionManager,
+                                    CONTEXT_TYPE... contextTypes) {
         this.invocationManager = invocationManager;
         this.deployment = deployment;
         this.compEnvMgr = compEnvMgr;
@@ -142,41 +112,20 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         this.applications = applications;
         this.transactionManager = transactionManager;
 
-        contextPropagate = new HashSet<>(propagated);
-        contextClear = new HashSet<>(cleared);
-        contextUnchanged = new HashSet<>(unchanged);
-
-        // process ALL_REMAINING
-        if (contextPropagate.contains(ContextServiceDefinition.ALL_REMAINING)) {
-            allRemaining = contextPropagate;
-        } else if (contextClear.contains(ContextServiceDefinition.ALL_REMAINING)) {
-            allRemaining = contextClear;
-        } else if (contextUnchanged.contains(ContextServiceDefinition.ALL_REMAINING)) {
-            allRemaining = contextUnchanged;
-        } else {
-            allRemaining = contextPropagate; // By default, propagate contexts
-        }
-
-        // put standard "providers" to Remaining if not specified
-        addToRemainingIfNotPresent(CONTEXT_TYPE_CLASSLOADING);
-        addToRemainingIfNotPresent(CONTEXT_TYPE_SECURITY);
-        addToRemainingIfNotPresent(CONTEXT_TYPE_NAMING);
-        addToRemainingIfNotPresent(CONTEXT_TYPE_WORKAREA);
-
         initialiseServices();
 
-        for (String contextType : contextPropagate) {
-            switch (contextType) {
-                case CONTEXT_TYPE_CLASSLOADING:
+        for (CONTEXT_TYPE contextType: contextTypes) {
+            switch(contextType) {
+                case CLASSLOADING:
                     classloading = true;
                     break;
-                case CONTEXT_TYPE_SECURITY:
+                case SECURITY:
                     security = true;
                     break;
-                case CONTEXT_TYPE_NAMING:
+                case NAMING:
                     naming = true;
                     break;
-                case CONTEXT_TYPE_WORKAREA:
+                case WORKAREA:;
                     workArea = true;
                     break;
             }
@@ -200,53 +149,13 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         if (security) {
             currentSecurityContext = SecurityContext.getCurrent();
         }
-
-        // TODO: put initialization of providers to better place; caching is a problem due to different classloaders
-        allThreadContextProviders = new HashMap<>();
-        for (ThreadContextProvider service : ServiceLoader.load(jakarta.enterprise.concurrent.spi.ThreadContextProvider.class, Utility.getClassLoader())) {
-            String serviceName = service.getThreadContextType();
-            if (contextPropagate.contains(serviceName) || contextClear.contains(serviceName) || contextUnchanged.contains(serviceName)) {
-                allThreadContextProviders.put(serviceName, service);
-            } else {
-                if (allRemaining != null) {
-                    allRemaining.add(serviceName);
-                    allThreadContextProviders.put(serviceName, service);
-                }
-            }
-        }
-        // check, if there is no unexpected provider name
-        Set<String> verifiedContextPropagate = filterVerifiedProviders(contextPropagate);
-        Set<String> verifiedContextClear = filterVerifiedProviders(contextClear);
-        Set<String> verifiedContextUnchanged = filterVerifiedProviders(contextUnchanged);
-
         ComponentInvocation currentInvocation = invocationManager.getCurrentInvocation();
         if (currentInvocation != null) {
-            if (verifiedContextPropagate.contains(CONTEXT_TYPE_NAMING)) {
-                savedInvocation = createComponentInvocation(currentInvocation);
-            }
-            if (verifiedContextClear.contains(CONTEXT_TYPE_NAMING)) {
-                savedInvocation = new ComponentInvocation();
-            }
+            savedInvocation = createComponentInvocation(currentInvocation);
         }
-        boolean useTransactionOfExecutionThread = (transactionManager == null && useTransactionOfExecutionThread(contextObjectProperties))
-                || verifiedContextUnchanged.contains(CONTEXT_TYPE_WORKAREA);
-
-        // store the snapshots of the current state
-        List<ThreadContextSnapshot> threadContextSnapshots = new ArrayList<>();
-        // remember values from propagate and clear lists
-        verifiedContextPropagate.stream()
-                .map((provider) -> allThreadContextProviders.get(provider))
-                .filter(snapshot -> snapshot != null) // ignore standard providers like CONTEXT_TYPE_CLASSLOADING
-                .map(snapshot -> snapshot.currentContext(contextObjectProperties))
-                .forEach(snapshot -> threadContextSnapshots.add(snapshot));
-        verifiedContextClear.stream()
-                .map((provider) -> allThreadContextProviders.get(provider))
-                .filter(snapshot -> snapshot != null)
-                .map(snapshot -> snapshot.clearedContext(contextObjectProperties))
-                .forEach(snapshot -> threadContextSnapshots.add(snapshot));
-
-        return new InvocationContext(savedInvocation, contextClassloader, currentSecurityContext, useTransactionOfExecutionThread,
-                threadContextSnapshots, Collections.EMPTY_LIST);
+        boolean useTransactionOfExecutionThread = transactionManager == null && useTransactionOfExecutionThread(contextObjectProperties);
+        // TODO - support workarea propagation
+        return new InvocationContext(savedInvocation, contextClassloader, currentSecurityContext, useTransactionOfExecutionThread);
     }
 
     @Override
@@ -258,23 +167,22 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         InvocationContext handle = (InvocationContext) contextHandle;
         String appName = null;
 
-        ComponentInvocation invocation = handle.getInvocation();
         ClassLoader backupClassLoader = null;
-        if (invocation != null) {
-            appName = invocation.getRegistrationName();
-            if (appName == null && invocation.getJNDIEnvironment() != null) {
-                appName = DOLUtils.getApplicationFromEnv((JndiNameEnvironment) invocation.getJNDIEnvironment()).getRegistrationName();
+        if (handle.getInvocation() != null) {
+            appName = handle.getInvocation().getRegistrationName();
+            if (appName == null && handle.getInvocation().getJNDIEnvironment() != null) {
+                appName = DOLUtils.getApplicationFromEnv((JndiNameEnvironment) handle.getInvocation().getJNDIEnvironment()).getRegistrationName();
             }
             if (appName == null) {
                 // try to get environment from component ID
-                if (invocation.getComponentId() != null && compEnvMgr != null) {
-                    JndiNameEnvironment currJndiEnv = compEnvMgr.getJndiNameEnvironment(invocation.getComponentId());
+                if (handle.getInvocation().getComponentId() != null && compEnvMgr != null) {
+                    JndiNameEnvironment currJndiEnv = compEnvMgr.getJndiNameEnvironment(handle.getInvocation().getComponentId());
                     if (currJndiEnv != null) {
                         com.sun.enterprise.deployment.Application appInfo = DOLUtils.getApplicationFromEnv(currJndiEnv);
                         if (appInfo != null) {
                             appName = appInfo.getRegistrationName();
                             // cache JNDI environment
-                            invocation.setJNDIEnvironment(currJndiEnv);
+                            handle.getInvocation().setJNDIEnvironment(currJndiEnv);
                             backupClassLoader = appInfo.getClassLoader();
                         }
                     }
@@ -288,25 +196,26 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         }
 
         ClassLoader resetClassLoader = null;
+        SecurityContext resetSecurityContext = null;
         if (handle.getContextClassLoader() != null) {
             resetClassLoader = Utility.setContextClassLoader(handle.getContextClassLoader());
-        } else if (backupClassLoader != null) {
+        }
+        else if(backupClassLoader != null) {
             resetClassLoader = Utility.setContextClassLoader(backupClassLoader);
         }
 
-        SecurityContext resetSecurityContext = null;
-        if (handle.getSecurityContext() != null && !contextUnchanged.contains(CONTEXT_TYPE_SECURITY)) {
+        if (handle.getSecurityContext() != null) {
             resetSecurityContext = SecurityContext.getCurrent();
             SecurityContext.setCurrent(handle.getSecurityContext());
         }
-
-        if (invocation != null) {
+        ComponentInvocation invocation = handle.getInvocation();
+        if (invocation != null && !handle.isUseTransactionOfExecutionThread()) {
             // Each invocation needs a ResourceTableKey that returns a unique hashCode for TransactionManager
             invocation.setResourceTableKey(new PairKey(invocation.getInstance(), Thread.currentThread()));
             invocationManager.preInvoke(invocation);
         }
         // Ensure that there is no existing transaction in the current thread
-        if (transactionManager != null && contextClear.contains(CONTEXT_TYPE_WORKAREA)) {
+        if (transactionManager != null) {
             transactionManager.clearThreadTx();
         }
 
@@ -314,20 +223,11 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
             startConcurrentContextSpan(invocation, handle);
         }
 
-        if (stuckThreads != null) {
+        if (stuckThreads != null){
             stuckThreads.registerThread(Thread.currentThread().getId());
         }
 
-        // execute thread contexts snapshots to begin
-        List<ThreadContextRestorer> restorers = Collections.EMPTY_LIST;
-        if (handle.getThreadContextSnapshots() != null) {
-            restorers = handle.getThreadContextSnapshots().stream()
-                    .map((ThreadContextSnapshot snapshot) -> snapshot.begin())
-                    .collect(Collectors.toList());
-        }
-
-        return new InvocationContext(invocation, resetClassLoader, resetSecurityContext, handle.isUseTransactionOfExecutionThread(),
-                Collections.EMPTY_LIST, restorers);
+        return new InvocationContext(invocation, resetClassLoader, resetSecurityContext, handle.isUseTransactionOfExecutionThread());
     }
 
     private void startConcurrentContextSpan(ComponentInvocation invocation, InvocationContext handle) {
@@ -376,22 +276,16 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
             return;
         }
         InvocationContext handle = (InvocationContext) contextHandle;
-
-        // execute thread contexts restorers to end
-        for (ThreadContextRestorer restorer : handle.getThreadContextRestorers()) {
-            restorer.endContext();
-        }
-
         if (handle.getContextClassLoader() != null) {
             Utility.setContextClassLoader(handle.getContextClassLoader());
         }
         if (handle.getSecurityContext() != null) {
             SecurityContext.setCurrent(handle.getSecurityContext());
         }
-        if (handle.getInvocation() != null) {
-            invocationManager.postInvoke(((InvocationContext) contextHandle).getInvocation());
+        if (handle.getInvocation() != null && !handle.isUseTransactionOfExecutionThread()) {
+            invocationManager.postInvoke(((InvocationContext)contextHandle).getInvocation());
         }
-        if (contextClear.contains(CONTEXT_TYPE_WORKAREA) && transactionManager != null) {
+        if (transactionManager != null) {
             // clean up after user if a transaction is still active
             // This is not required by the Concurrency spec
             Transaction transaction = transactionManager.getCurrentTransaction();
@@ -407,13 +301,13 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
                     Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, ex.toString());
                 }
             }
-            transactionManager.clearThreadTx();
+          transactionManager.clearThreadTx();
         }
 
         if (requestTracing != null && requestTracing.isRequestTracingEnabled()) {
             requestTracing.endTrace();
         }
-        if (stuckThreads != null) {
+        if (stuckThreads != null){
             stuckThreads.deregisterThread(Thread.currentThread().getId());
         }
     }
@@ -458,38 +352,6 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
             return executionProperties.get(ManagedTask.TRANSACTION);
         }
         return ManagedTask.SUSPEND;
-    }
-
-    private Set<String> filterVerifiedProviders(Set<String> providers) {
-        HashSet<String> filtered = new HashSet<>();
-        Iterator<String> providerIter = providers.iterator();
-        while (providerIter.hasNext()) {
-            String provider = providerIter.next();
-            switch (provider) {
-                case CONTEXT_TYPE_CLASSLOADING:
-                case CONTEXT_TYPE_SECURITY:
-                case CONTEXT_TYPE_NAMING:
-                case CONTEXT_TYPE_WORKAREA:
-                case ContextServiceDefinition.ALL_REMAINING:
-                    filtered.add(provider);
-                    break;
-                default:
-                    if (allThreadContextProviders.containsKey(provider)) {
-                        filtered.add(provider);
-                    } else {
-                        logger.log(Level.SEVERE, "Thread context provider ''{0}'' is not registered in WEB-APP/services/jakarta.enterprise.concurrent.spi.ThreadContextProvider and will be ignored!", provider);
-                    }
-                    break;
-            }
-        }
-         return filtered;
-    }
-
-    private void addToRemainingIfNotPresent(String contextType) {
-        if (!(contextPropagate.contains(contextType) || contextClear.contains(contextType) || contextUnchanged.contains(contextType))) {
-            // such context type is not present in any context
-            allRemaining.add(contextType);
-        }
     }
 
     private void writeObject(java.io.ObjectOutputStream out) throws IOException {
@@ -570,7 +432,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         try {
             this.stuckThreads = Globals.getDefaultHabitat().getService(StuckThreadsStore.class);
         } catch (NullPointerException ex) {
-            logger.log(Level.INFO, "Error retrieving Stuck Threads Store Healthcheck service "
+            logger.log(Level.INFO, "Error retrieving Stuck Threads Sore Healthcheck service "
                     + "during initialisation of Concurrent Context - NullPointerException", ex);
         }
         try {
@@ -579,7 +441,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
             logger.log(Level.INFO, "Error retrieving OpenTracing service "
                     + "during initialisation of Concurrent Context - NullPointerException", ex);
         }
-
+        
     }
 }
 

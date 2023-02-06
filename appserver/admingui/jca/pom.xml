@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server.internal.admingui</groupId>
         <artifactId>admingui</artifactId>
-        <version>6.2022.2-SNAPSHOT</version>
+        <version>6.2022.1.Alpha3-SNAPSHOT</version>
     </parent>
     <artifactId>console-jca-plugin</artifactId>
     <packaging>glassfish-jar</packaging>
@@ -85,9 +85,8 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.admingui</groupId>
-            <artifactId>faces-compat</artifactId>
-            <version>${project.version}</version>
+            <groupId>org.glassfish.jsftemplating</groupId>
+            <artifactId>jsftemplating</artifactId>
         </dependency>
     </dependencies>
 </project>

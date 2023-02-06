@@ -38,7 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright [2017-2022] [Payara Foundation and/or its affiliates]
+    Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 
 -->
 
@@ -147,8 +147,7 @@
 </ui:event>
 <sun:html id="html2">
 <sun:head id="propertyhead" title="$resource{i18nc.logViewer.PageTitle}" debug="false" parseOnLoad="false">
-	<h:outputScript name="jsf.js" library="jakarta.faces" target="head" />
-	<sun:script url="/resource/common/js/adminjsf.js" />
+    <sun:script url="/resource/common/js/adminjsf.js" />
 </sun:head>
 <sun:body onLoad="javascript: checkHiddenElements(); setFocusTableResults('#{hasResults}');" id="body3">
 <sun:form id="propertyForm">

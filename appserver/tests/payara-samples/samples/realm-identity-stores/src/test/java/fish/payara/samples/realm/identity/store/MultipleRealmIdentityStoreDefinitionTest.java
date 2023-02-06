@@ -93,7 +93,7 @@ public class MultipleRealmIdentityStoreDefinitionTest {
                         PersonController.class,
                         AuthoritiesConstants.class
                 )
-                .addAsWebInfResource("all-beans.xml", "beans.xml");
+                .addAsWebInfResource(EmptyAsset.INSTANCE, ArchivePaths.create("beans.xml"));
     }
 
     @Before

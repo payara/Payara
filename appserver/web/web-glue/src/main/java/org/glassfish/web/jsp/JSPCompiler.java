@@ -62,7 +62,7 @@ import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.WebComponentDescriptor;
 import com.sun.enterprise.deployment.web.InitializationParameter;
 import com.sun.enterprise.util.io.FileUtils;
-import org.glassfish.wasp.JspC;
+import org.apache.jasper.JspC;
 import org.glassfish.deployment.common.DeploymentException;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.loader.util.ASClassLoaderUtil;
@@ -281,6 +281,8 @@ public final class JSPCompiler {
                 jspc.setClassDebugInfo(Boolean.valueOf(pValue));
             } else if ("enablePooling".equals(pName)) {
                 jspc.setPoolingEnabled(Boolean.valueOf(pValue));
+            } else if ("ieClassId".equals(pName)) {
+                jspc.setIeClassId(pValue);
             } else if ("trimSpaces".equals(pName)) {
                 jspc.setTrimSpaces(Boolean.valueOf(pValue));
             } else if ("genStrAsCharArray".equals(pName)) {

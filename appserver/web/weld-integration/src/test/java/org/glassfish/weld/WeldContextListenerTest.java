@@ -41,7 +41,7 @@
 package org.glassfish.weld;
 
 import org.apache.catalina.core.StandardContext;
-import org.glassfish.wasp.runtime.JspApplicationContextImpl;
+import org.apache.jasper.runtime.JspApplicationContextImpl;
 import org.easymock.EasyMockSupport;
 
 import static junit.framework.Assert.*;

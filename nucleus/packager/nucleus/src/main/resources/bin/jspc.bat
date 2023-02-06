@@ -41,10 +41,10 @@ REM
 
 
 set AS_INSTALL_LIB=%~dp0..\modules
-set JSP_IMPL=%AS_INSTALL_LIB%\wasp.jar
-set EL_IMPL=%AS_INSTALL_LIB%\expressly.jar
+set JSP_IMPL=%AS_INSTALL_LIB%\jakarta.servlet.jsp.jar
+set EL_IMPL=%AS_INSTALL_LIB%\jakarta.el.jar
 set JSTL_IMPL=%AS_INSTALL_LIB%\jakarta.servlet.jsp.jstl.jar
 set AS_LIB=%~dp0..\lib
 set JAVAEE_API=%AS_LIB%\javaee.jar
 
-java -cp "%JSP_IMPL%;%JAVAEE_API%;%AS_LIB%" org.glassfish.wasp.JspC -sysClasspath "%JSP_IMPL%;%EL_IMPL%;%JSTL_IMPL%;%JAVAEE_API%;%AS_LIB%" -schemas "/schemas/" -dtds "/dtds/" %*
+java -cp "%JSP_IMPL%;%JAVAEE_API%;%AS_LIB%" org.apache.jasper.JspC -sysClasspath "%JSP_IMPL%;%EL_IMPL%;%JSTL_IMPL%;%JAVAEE_API%;%AS_LIB%" -schemas "/schemas/" -dtds "/dtds/" %*

@@ -38,7 +38,6 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright [2022] [Payara Foundation and/or its affiliates]
 -->
 
 <f:verbatim>
@@ -48,68 +47,52 @@
          var dcomSheet = document.getElementById(dcomSection);
          var dockerSheet = document.getElementById((dockerSection));
          if (type == 'CONFIG'){
-            sshSheet.style.display = 'none';
-            dcomSheet.style.display = 'none';
-            dockerSheet.style.display = 'none';
-            require(['webui/suntheme/common'], function (common) {
-                common.setVisible(sshDirId, false);
-            	common.setVisible(configDirId, true);	
-                common.setVisible(dockerDirId, false);
-            });
+             sshSheet.style.display = 'none';
+             dcomSheet.style.display = 'none';
+             dockerSheet.style.display = 'none';
+             webui.suntheme.common.setVisible(sshDirId, false);
+             webui.suntheme.common.setVisible(configDirId, true);
+             webui.suntheme.common.setVisible(dockerDirId, false)
 
-            if (installProp != null){
-                require(['webui/suntheme/common'], function (common) {
-                    common.setVisible(installProp, false);
-                    common.setVisible(archProp, false);
-                });
-            }
+             if (installProp != null){
+                 webui.suntheme.common.setVisible(installProp, false);
+                 webui.suntheme.common.setVisible(archProp, false);
+             }
          }
          if (type == 'SSH'){
-            sshSheet.style.display = 'block';
-            dcomSheet.style.display = 'none';
-            dockerSheet.style.display = 'none';
-            require(['webui/suntheme/common'], function (common) {
-                common.setVisible(sshDirId, true);
-                common.setVisible(configDirId, false);
-                common.setVisible(dockerDirId, false);
-            });
-            if(installProp != null){
-                require(['webui/suntheme/common'], function (common) {
-                    common.setVisible(installProp, true);
-                    common.setVisible(archProp, true);
-                });
-            }
+             sshSheet.style.display = 'block';
+             dcomSheet.style.display = 'none';
+             dockerSheet.style.display = 'none';
+             webui.suntheme.common.setVisible(sshDirId, true);
+             webui.suntheme.common.setVisible(configDirId, false);
+             webui.suntheme.common.setVisible(dockerDirId, false)
+             if(installProp != null){
+                 webui.suntheme.common.setVisible(installProp, true);
+                 webui.suntheme.common.setVisible(archProp, true);
+             }
          }
          if (type == 'DCOM'){
-            sshSheet.style.display = 'none';
-            dcomSheet.style.display = 'block';
-            dockerSheet.style.display = 'none';
-            require(['webui/suntheme/common'], function (common) {
-                common.setVisible(sshDirId, true);
-                common.setVisible(configDirId, false);
-                common.setVisible(dockerDirId, false);
-            });
-            if(installProp != null){
-            require(['webui/suntheme/common'], function (common) {
-                common.setVisible(installProp, true);
-                common.setVisible(archProp, true);
-            });
-            }
+             sshSheet.style.display = 'none';
+             dcomSheet.style.display = 'block';
+             dockerSheet.style.display = 'none';
+             webui.suntheme.common.setVisible(sshDirId, true);
+             webui.suntheme.common.setVisible(configDirId, false);
+             webui.suntheme.common.setVisible(dockerDirId, false)
+             if(installProp != null){
+                 webui.suntheme.common.setVisible(installProp, true);
+                 webui.suntheme.common.setVisible(archProp, true);
+             }
          }
         if (type == 'DOCKER'){
             sshSheet.style.display = 'none';
             dcomSheet.style.display = 'none';
             dockerSheet.style.display = 'block';
-            require(['webui/suntheme/common'], function (common) {
-                common.setVisible(sshDirId, false);
-                common.setVisible(configDirId, false);
-                common.setVisible(dockerDirId, true);
-            });
+            webui.suntheme.common.setVisible(sshDirId, false);
+            webui.suntheme.common.setVisible(configDirId, false);
+            webui.suntheme.common.setVisible(dockerDirId, true)
             if(installProp != null){
-            require(['webui/suntheme/common'], function (common) {
-                common.setVisible(installProp, false);
-                common.setVisible(archProp, false);
-            });
+                webui.suntheme.common.setVisible(installProp, false);
+                webui.suntheme.common.setVisible(archProp, false);
             }
         }
     }
@@ -262,25 +245,19 @@ function confirmEmptyPswd(ps1Id, emptyMsg) {
 
     function showTestDir(validateId, testdirId ){
         var ss = document.getElementById(validateId).checked;
-        require(['webui/suntheme/common'], function (common) {
-            if (ss){
-                common.setVisible(testdirId, true);
-            }else{
-                common.setVisible(testdirId, false);
-            }
-        });
+        if (ss){
+             webui.suntheme.common.setVisible(testdirId, true);
+        }else{
+            webui.suntheme.common.setVisible(testdirId, false);
+        }
     }
 
     function show(compId){
-        require(['webui/suntheme/common'], function (common) {
-            common.setVisible(compId, true);
-        });
+        webui.suntheme.common.setVisible(compId, true);
     }
 
     function hide(compId){
-        require(['webui/suntheme/common'], function (common) {
-            common.setVisible(compId, false);
-        });
+        webui.suntheme.common.setVisible(compId, false);
     }
 
     </script>

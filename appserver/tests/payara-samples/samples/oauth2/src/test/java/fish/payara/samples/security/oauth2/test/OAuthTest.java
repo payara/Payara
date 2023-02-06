@@ -94,7 +94,7 @@ public class OAuthTest {
                 .addClass(Callback.class)
                 .addClass(Endpoint.class)
                 .addClass(SecuredPage.class)
-                .addClass(UnsecuredPage.class).addAsWebInfResource("all-beans.xml", "beans.xml");
+                .addClass(UnsecuredPage.class).addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml"); 
         
         // Print out directory contents
         System.out.println(war.toString(true));
@@ -108,7 +108,7 @@ public class OAuthTest {
     public void runOAuthTest() throws IOException {
         String result = ((TextPage) webClient.getPage(base + "Unsecured")).getContent();
         assertEquals("This is an unsecured web page", result);
-
+        
         TextPage page= (TextPage) webClient.getPage(base + "Secured");
         assertEquals("/oauthtest/Callback", page.getUrl().getPath());
         assertNotEquals("null", page.getContent());

@@ -33,5 +33,5 @@ Describe a [SCCE](http://sscce.org/ "Short, Self-Contained, Correct Example") re
 ## Environment ##
 
 - **Distribution**: <!-- Server Full Profile / Server Web Profile / Micro / Embedded -->
-- **JDK Version**: <!-- 11/17 uXX - Oracle/IBM/OpenJDK -->
+- **JDK Version**: <!-- 6/7/8 uXX - Oracle/IBM/OpenJDK -->
 - **Operating System**: <!-- Windows / Linux / Mac -->

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2021-2022] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,13 +39,12 @@
  */
 package fish.payara.nucleus.microprofile.config.spi;
 
-import fish.payara.nucleus.microprofile.config.util.ConfigValueType;
-import org.eclipse.microprofile.config.spi.ConfigSource;
-import org.glassfish.config.support.TranslatedConfigView;
-
 import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
+
+import org.eclipse.microprofile.config.spi.ConfigSource;
+import org.glassfish.config.support.TranslatedConfigView;
 
 final class ConfigExpressionResolver {
 
@@ -54,9 +53,9 @@ final class ConfigExpressionResolver {
     private final boolean expansionEnabled;
 
     private final Set<String> resolvingExpressions;
-
+    
     private final String profile;
-
+    
     protected ConfigExpressionResolver(Iterable<ConfigSource> sources) {
         this(sources, true, null);
     }
@@ -64,7 +63,7 @@ final class ConfigExpressionResolver {
     protected ConfigExpressionResolver(Iterable<ConfigSource> sources, String profile) {
         this(sources, true, profile);
     }
-
+    
     protected ConfigExpressionResolver(Iterable<ConfigSource> sources, boolean expansionEnabled) {
         this(sources, expansionEnabled, null);
     }
@@ -77,18 +76,14 @@ final class ConfigExpressionResolver {
     }
 
     protected ConfigValueImpl resolve(String propertyName) {
-        return resolve(propertyName, null, ConfigValueType.NORMAL);
+        return resolve(propertyName, null);
     }
 
     protected ConfigValueImpl resolve(String propertyName, String propertyDefault) {
-        return resolve(propertyName, propertyDefault, ConfigValueType.NORMAL);
+        return resolve(propertyName, propertyDefault, false);
     }
 
-    protected ConfigValueImpl resolve(String propertyName, String propertyDefault, ConfigValueType type) {
-        return resolve(propertyName, propertyDefault, false, type);
-    }
-
-    private ConfigValueImpl resolve(String propertyName, String propertyDefault, boolean resolveDefault, ConfigValueType type) {
+    private ConfigValueImpl resolve(String propertyName, String propertyDefault, boolean resolveDefault) {
 
         String translated = TranslatedConfigView.expandConfigValue(propertyName);
         if (!translated.equals(propertyName)) {
@@ -98,9 +93,9 @@ final class ConfigExpressionResolver {
                     resolveExpression(translated),
                     "TranslatedConfigView",
                     0
-            );
+                );
         }
-
+        
         String profiledPropertyName = resolveExpression((profile == null ? "" : "%" + profile + ".") + propertyName);
 
         ConfigValueImpl result = getValue(profiledPropertyName);
@@ -112,33 +107,28 @@ final class ConfigExpressionResolver {
 
         if (result == null) {
             result = new ConfigValueImpl(profiledPropertyName, propertyDefault,
-                    resolveDefault ? resolveExpression(propertyDefault, type) : propertyDefault, null, 0);
+                    resolveDefault ? resolveExpression(propertyDefault) : propertyDefault, null, 0);
         }
         return result;
     }
-
+    
     private ConfigValueImpl getValue(String propertyName) {
         for (ConfigSource source : sources) {
             final String result = source.getValue(propertyName);
             if (result != null && !result.isEmpty()) {
                 return new ConfigValueImpl(
                     propertyName,
-                        result,
-                        resolveExpression(result),
-                        source.getName(),
-                        source.getOrdinal()
+                    result,
+                    resolveExpression(result),
+                    source.getName(),
+                    source.getOrdinal()
                 );
             }
         }
         return null;
     }
 
-
     private synchronized String resolveExpression(String expression) {
-        return resolveExpression(expression, ConfigValueType.NORMAL);
-    }
-
-    private synchronized String resolveExpression(String expression, ConfigValueType type) {
         if (expression == null) {
             return null;
         }
@@ -178,7 +168,7 @@ final class ConfigExpressionResolver {
 
             for (int i = 0; i < characters.length; i++) {
                 final char c = characters[i];
-
+                
                 // Configure the context if expression markers are found
                 if (c == ':' && bracketDepth == 1) {
                     // Start building the default (only accept colons outside of any nested expressions)
@@ -209,7 +199,7 @@ final class ConfigExpressionResolver {
                     result += c;
                 } else {
                     // If the expression has ended, resolve the expression
-                    final String resolvedExpression = resolve(expressionBuilder, expressionDefaultBuilder, true, type).getValue();
+                    final String resolvedExpression = resolve(expressionBuilder, expressionDefaultBuilder, true).getValue();
 
                     // Clear the buffers
                     expressionBuilder = "";
@@ -220,7 +210,7 @@ final class ConfigExpressionResolver {
                         result += resolvedExpression;
                     }
 
-                    if ((result.isEmpty() && !defaultValueFound) && type == ConfigValueType.NORMAL) {
+                    if (result.isEmpty() && !defaultValueFound) {
                         throw new NoSuchElementException("Unable to resolve expression " + expression);
                     }
                 }
