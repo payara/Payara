@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2022] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -84,6 +84,8 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponseSchema;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirements;
+import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirementsSet;
+import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirementsSets;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.security.SecuritySchemes;
 import org.eclipse.microprofile.openapi.annotations.servers.Server;
@@ -237,6 +239,8 @@ public class OpenApiWalker<E extends AnnotatedElement> implements ApiWalker {
             annotationVisitor.put(SecuritySchemes.class, visitor::visitSecuritySchemes);
             annotationVisitor.put(SecurityRequirement.class, visitor::visitSecurityRequirement);
             annotationVisitor.put(SecurityRequirements.class, visitor::visitSecurityRequirements);
+            annotationVisitor.put(SecurityRequirementsSet.class, visitor::visitSecurityRequirementSet);
+            annotationVisitor.put(SecurityRequirementsSets.class, visitor::visitSecurityRequirementSets);
 
             // JAX-RS response
             annotationVisitor.put(Produces.class, visitor::visitProduces);
@@ -268,6 +272,8 @@ public class OpenApiWalker<E extends AnnotatedElement> implements ApiWalker {
             annotationAlternatives.put(SecuritySchemes.class, SecurityScheme.class);
             annotationAlternatives.put(SecurityRequirement.class, SecurityRequirements.class);
             annotationAlternatives.put(SecurityRequirements.class, SecurityRequirement.class);
+            annotationAlternatives.put(SecurityRequirementsSet.class, SecurityRequirementsSets.class);
+            annotationAlternatives.put(SecurityRequirementsSets.class, SecurityRequirementsSet.class);
         }
         return annotationAlternatives;
     }
