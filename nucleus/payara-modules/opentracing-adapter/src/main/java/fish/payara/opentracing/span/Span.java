@@ -59,6 +59,7 @@ import org.glassfish.internal.api.Globals;
  * 
  * @author Andrew Pielage <andrew.pielage@payara.fish>
  */
+@Deprecated
 public class Span extends RequestTraceSpan implements io.opentracing.Span {
 
     private final String applicationName;

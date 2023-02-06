@@ -80,6 +80,7 @@ import java.util.logging.Logger;
  *
  * @author Andrew Pielage <andrew.pielage@payara.fish>
  */
+@Deprecated
 public class Tracer implements io.opentracing.Tracer {
 
     private final String applicationName;

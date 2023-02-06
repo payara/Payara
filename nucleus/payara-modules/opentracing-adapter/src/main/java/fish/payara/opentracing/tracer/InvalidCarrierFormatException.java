@@ -50,6 +50,7 @@ import io.opentracing.propagation.Format;
  * @author jonathan coustick
  * @since 5.183
  */
+@Deprecated
 public class InvalidCarrierFormatException extends IllegalArgumentException {
     
     private final Format format;

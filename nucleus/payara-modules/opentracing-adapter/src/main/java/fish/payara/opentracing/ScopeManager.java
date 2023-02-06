@@ -67,6 +67,7 @@ import io.opentracing.Span;
  * @since 5.183
  * @see io.opentracing.ScopeManager
  */
+@Deprecated
 public class ScopeManager implements io.opentracing.ScopeManager {
 
     ThreadLocal<OpenTracingScope> activeScope = new ThreadLocal<>();

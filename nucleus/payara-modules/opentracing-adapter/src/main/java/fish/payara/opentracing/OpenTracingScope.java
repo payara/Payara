@@ -65,6 +65,7 @@ import io.opentracing.Span;
  * @author jonathan coustick
  * @since 5.183
  */
+@Deprecated
 public class OpenTracingScope implements io.opentracing.Scope {
 
     private final Span currentSpan;

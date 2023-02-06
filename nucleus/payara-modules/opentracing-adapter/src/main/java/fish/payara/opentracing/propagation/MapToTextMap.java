@@ -48,6 +48,7 @@ import java.util.Map;
  *
  * @author andrew
  */
+@Deprecated
 public class MapToTextMap implements TextMap {
 
     private final Map<String, String> map;
