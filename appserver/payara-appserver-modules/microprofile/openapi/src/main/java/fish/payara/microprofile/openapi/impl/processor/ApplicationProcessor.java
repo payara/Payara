@@ -696,6 +696,10 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         if (context.getWorkingOperation() == null) {
             return;
         }
+        Boolean hidden = schemaAnnotation.getValue("hidden", Boolean.class);
+        if (hidden != null && hidden) {
+            return;
+        }
         // Check if it's a request body
         if (ModelUtils.isRequestBody(context, parameter)) {
             if (context.getWorkingOperation().getRequestBody() == null) {
@@ -794,6 +798,10 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         if (element instanceof MethodModel || element instanceof org.glassfish.hk2.classmodel.reflect.Parameter) {
             final RequestBody currentRequestBody = context.getWorkingOperation().getRequestBody();
             if (currentRequestBody != null) {
+                Boolean hidden = requestBodySchema.getValue("hidden", Boolean.class);
+                if (hidden != null && hidden) {
+                    return;
+                }
                 final String implementationClass = requestBodySchema.getValue("value", String.class);
                 final SchemaImpl schema = SchemaImpl.fromImplementation(implementationClass, context);
 
@@ -1183,9 +1191,11 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
         // Get the request body type of the method
         org.glassfish.hk2.classmodel.reflect.ParameterizedType bodyType = null;
+        int indexParam = 0;
         for (org.glassfish.hk2.classmodel.reflect.Parameter methodParam : method.getParameters()) {
             if (ModelUtils.isRequestBody(context, methodParam)) {
                 bodyType = methodParam;
+                indexParam = methodParam.getIndex();
                 break;
             }
         }
@@ -1194,7 +1204,16 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         }
 
         // Create the default request body with a wildcard mediatype
-        MediaType mediaType = new MediaTypeImpl().schema(createSchema(context, bodyType));
+        MediaType mediaType = new MediaTypeImpl();
+        AnnotationModel paramAnnotation = method.getParameter(indexParam).getAnnotation(org.eclipse.microprofile.openapi.annotations.media.Schema.class.getName());
+        Boolean hidden = false;
+        if (paramAnnotation != null) {
+            hidden = paramAnnotation.getValue("hidden", Boolean.class);
+        }
+        if (hidden == null || !hidden) {
+            mediaType.schema(createSchema(context, bodyType));
+        }
+
         requestBody.getContent().addMediaType(jakarta.ws.rs.core.MediaType.WILDCARD, mediaType);
 
         operation.setRequestBody(requestBody);
