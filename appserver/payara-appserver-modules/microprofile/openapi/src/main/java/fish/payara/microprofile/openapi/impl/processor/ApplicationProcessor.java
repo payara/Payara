@@ -441,27 +441,35 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         newParameter.setName(name);
         newParameter.setIn(in);
         newParameter.setRequired(required);
-        SchemaImpl schema = new SchemaImpl();
-        String defaultValue = getDefaultValueIfPresent(element);
 
-        if (element instanceof org.glassfish.hk2.classmodel.reflect.Parameter) {
-            org.glassfish.hk2.classmodel.reflect.Parameter parameter = (org.glassfish.hk2.classmodel.reflect.Parameter) element;
-            schema.setType(ModelUtils.getSchemaType(parameter.getTypeName(), context));
-        } else {
-            FieldModel field = (FieldModel) element;
-            schema.setType(ModelUtils.getSchemaType(field.getTypeName(), context));
+        Boolean isSchemaHidden = false;
+        AnnotationModel annotation = element.getAnnotation("org.eclipse.microprofile.openapi.annotations.media.Schema");
+        if (annotation != null) {
+            isSchemaHidden = annotation.getValue("hidden", Boolean.class);
         }
+        if (!isSchemaHidden) {
+            SchemaImpl schema = new SchemaImpl();
+            String defaultValue = getDefaultValueIfPresent(element);
 
-        if (schema.getType() == SchemaType.ARRAY) {
-            schema.setItems(getArraySchema(element, context));
-            if (defaultValue != null) {
-                schema.getItems().setDefaultValue(defaultValue);
+            if (element instanceof org.glassfish.hk2.classmodel.reflect.Parameter) {
+                org.glassfish.hk2.classmodel.reflect.Parameter parameter = (org.glassfish.hk2.classmodel.reflect.Parameter) element;
+                schema.setType(ModelUtils.getSchemaType(parameter.getTypeName(), context));
+            } else {
+                FieldModel field = (FieldModel) element;
+                schema.setType(ModelUtils.getSchemaType(field.getTypeName(), context));
             }
-        } else if (defaultValue != null) {
-            schema.setDefaultValue(defaultValue);
-        }
 
-        newParameter.setSchema(schema);
+            if (schema.getType() == SchemaType.ARRAY) {
+                schema.setItems(getArraySchema(element, context));
+                if (defaultValue != null) {
+                    schema.getItems().setDefaultValue(defaultValue);
+                }
+            } else if (defaultValue != null) {
+                schema.setDefaultValue(defaultValue);
+            }
+
+            newParameter.setSchema(schema);
+        }
 
         final Operation workingOperation = context.getWorkingOperation();
         if (workingOperation != null) {
@@ -1213,7 +1221,6 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         if (hidden == null || !hidden) {
             mediaType.schema(createSchema(context, bodyType));
         }
-
         requestBody.getContent().addMediaType(jakarta.ws.rs.core.MediaType.APPLICATION_JSON, mediaType);
 
         operation.setRequestBody(requestBody);
