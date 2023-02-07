@@ -1214,7 +1214,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             mediaType.schema(createSchema(context, bodyType));
         }
 
-        requestBody.getContent().addMediaType(jakarta.ws.rs.core.MediaType.WILDCARD, mediaType);
+        requestBody.getContent().addMediaType(jakarta.ws.rs.core.MediaType.APPLICATION_JSON, mediaType);
 
         operation.setRequestBody(requestBody);
         return requestBody;
