@@ -50,18 +50,7 @@ public class BulkheadLifecycleTckTest extends AbstractRecordingTest {
         final Map<Object, AtomicReference<BlockingQueue<Thread>>> concurrentExecutionByMethodId = new ConcurrentHashMap<>();
         final Map<Object, AtomicInteger> waitingQueuePopulationByMethodId = new ConcurrentHashMap<>();
 
-        registry = new MetricRegistryImpl(new RegistryScope(){
-
-            @Override
-            public Class<? extends Annotation> annotationType() {
-                return RegistryScope.class;
-            }
-
-            @Override
-            public String scope() {
-                return "base";
-            }
-        });
+        registry = new MetricRegistryImpl(Type.BASE);
         return new FaultToleranceServiceStub() {
             @Override
             protected FaultToleranceMethodContext stubMethodContext(StubContext ctx) {

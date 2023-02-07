@@ -46,8 +46,8 @@ import java.util.Collection;
 import java.util.Set;
 
 import org.eclipse.microprofile.metrics.Metadata;
+import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.eclipse.microprofile.metrics.Tag;
-import org.eclipse.microprofile.metrics.annotation.RegistryScope;
 
 public class FilteredMetricsExporter extends OpenMetricsExporter {
 
@@ -58,14 +58,14 @@ public class FilteredMetricsExporter extends OpenMetricsExporter {
         this.metricNames = metricNames;
     }
 
-    protected FilteredMetricsExporter(RegistryScope scope, PrintWriter out, Set<String> typeWrittenByGlobalName,
+    protected FilteredMetricsExporter(MetricRegistry.Type scope, PrintWriter out, Set<String> typeWrittenByGlobalName,
                                       Set<String> helpWrittenByGlobalName, Collection<String> metricNames) {
         super(scope, out, typeWrittenByGlobalName, helpWrittenByGlobalName);
         this.metricNames = metricNames;
     }
 
     @Override
-    public MetricExporter in(RegistryScope scope, boolean asNode) {
+    public MetricExporter in(MetricRegistry.Type scope, boolean asNode) {
         return new FilteredMetricsExporter(scope, out, typeWrittenByGlobalName, helpWrittenByGlobalName, metricNames);
     }
 

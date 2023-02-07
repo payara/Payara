@@ -43,16 +43,15 @@ import static java.nio.file.Files.readAllBytes;
 import static org.junit.Assert.assertEquals;
 
 import java.io.StringWriter;
-import java.lang.annotation.Annotation;
 import java.nio.file.Paths;
 
 import org.eclipse.microprofile.metrics.Gauge;
 import org.eclipse.microprofile.metrics.Metadata;
 import org.eclipse.microprofile.metrics.Metric;
 import org.eclipse.microprofile.metrics.MetricID;
+import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.eclipse.microprofile.metrics.MetricUnits;
 import org.eclipse.microprofile.metrics.Tag;
-import org.eclipse.microprofile.metrics.annotation.RegistryScope;
 import org.junit.Test;
 
 import fish.payara.microprofile.metrics.writer.JsonExporter.Mode;
@@ -113,18 +112,7 @@ public class JsonExporterOptionsTest {
 
     @Test
     public void multipeRepositoriesAreGroupedByNameMetricOption() {
-        exporter = exporter.in(new RegistryScope(){
-
-            @Override
-            public Class<? extends Annotation> annotationType() {
-                return RegistryScope.class;
-            }
-
-            @Override
-            public String scope() {
-                return "base";
-            }
-        });
+        exporter = exporter.in(MetricRegistry.Type.BASE);
         Gauge<Long> fooVal = () -> 1L;
         MetricID fooValID = new MetricID("fooVal", new Tag("store", "webshop"));
         Metadata fooValMeta = Metadata.builder()
@@ -133,18 +121,7 @@ public class JsonExporterOptionsTest {
                 .withUnit(MetricUnits.MILLISECONDS)
                 .build();
         export(fooValID, fooVal, fooValMeta);
-        exporter = exporter.in(new RegistryScope(){
-
-            @Override
-            public Class<? extends Annotation> annotationType() {
-                return RegistryScope.class;
-            }
-
-            @Override
-            public String scope() {
-                return "application";
-            }
-        });
+        exporter = exporter.in(MetricRegistry.Type.APPLICATION);
         export(fooValID, fooVal, fooValMeta);
         assertOutputEqualsFile("Options3.json");
     }

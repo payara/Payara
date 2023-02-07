@@ -50,14 +50,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
 import jakarta.interceptor.InvocationContext;
 
 import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.eclipse.microprofile.metrics.Timer;
-import org.eclipse.microprofile.metrics.annotation.RegistryScope;
 import org.eclipse.microprofile.metrics.annotation.Timed;
 import org.junit.Test;
 
@@ -75,18 +73,7 @@ import fish.payara.microprofile.metrics.test.TestUtils;
 public class TimedInterceptorTest {
 
     private final InvocationContext context = mock(InvocationContext.class);
-    private final MetricRegistry registry = new MetricRegistryImpl(new RegistryScope(){
-
-        @Override
-        public Class<? extends Annotation> annotationType() {
-            return RegistryScope.class;
-        }
-
-        @Override
-        public String scope() {
-            return "application";
-        }
-    });
+    private final MetricRegistry registry = new MetricRegistryImpl(MetricRegistry.Type.APPLICATION);
 
     @Test
     @Timed

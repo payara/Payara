@@ -75,7 +75,6 @@ import org.eclipse.microprofile.metrics.MetricID;
 import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.eclipse.microprofile.metrics.Tag;
 import org.eclipse.microprofile.metrics.Timer;
-import org.eclipse.microprofile.metrics.annotation.RegistryScope;
 
 /**
  * The MetricRegistry stores the metrics and metadata information
@@ -102,21 +101,21 @@ public class MetricRegistryImpl implements MetricRegistry {
         }
     }
 
-    private final RegistryScope registryScope;
+    private final Type type;
     private final ConcurrentMap<String, MetricFamily<?>> metricsFamiliesByName = new ConcurrentHashMap<>();
     private final Clock clock;
     private final List<MetricRegistrationListener> listeners = new ArrayList<>();
 
     public MetricRegistryImpl() {
-        registryScope =  null;
+        type =  null;
         clock = null;
     }
-    public MetricRegistryImpl(RegistryScope registryScope) {
-        this(registryScope, Clock.defaultClock());
+    public MetricRegistryImpl(Type type) {
+        this(type, Clock.defaultClock());
     }
 
-    public MetricRegistryImpl(RegistryScope registryScope, Clock clock) {
-        this.registryScope = registryScope;
+    public MetricRegistryImpl(Type type, Clock clock) {
+        this.type = type;
         this.clock = clock;
     }
 
@@ -334,7 +333,7 @@ public class MetricRegistryImpl implements MetricRegistry {
 
     @Override
     public String getScope() {
-        return registryScope.scope();
+        return null;
     }
 
     @Override
@@ -397,7 +396,7 @@ public class MetricRegistryImpl implements MetricRegistry {
         Metadata metadata = Metadata.builder()
                 .withName(name)
                 .build();
-        return findMetricOrCreate(metadata, true, metric, tags);
+        return findMetricOrCreate(metadata, true, typeName, tags);
     }
 
     private <T extends Metric> T findMetricOrCreate(Metadata metadata, String typeName, Tag... tags) {
@@ -405,19 +404,19 @@ public class MetricRegistryImpl implements MetricRegistry {
     }
 
     private <T extends Metric> T findMetricOrCreate(Metadata metadata, String typeName, T metric, Tag... tags) {
-        return findMetricOrCreate(withType(metadata), false, metric, tags);
+        return findMetricOrCreate(withType(metadata), false, typeName, tags);
     }
 
     @SuppressWarnings("unchecked")
-    private <T extends Metric> T findMetricOrCreate(Metadata metadata, boolean useExistingMetadata, T metric, Tag... tags) {
+    private <T extends Metric> T findMetricOrCreate(Metadata metadata, boolean useExistingMetadata, String metricType, Tag... tags) {
         MetricID metricID = new MetricID(metadata.getName(), tags);
         MetricFamily<?> family = metricsFamiliesByName.get(metricID.getName());
         if (family == null) {
-            return register(metadata, useExistingMetadata, metric, tags);
+            return register(metadata, useExistingMetadata, metricType, tags);
         }
         Metric existing = family.get(metricID);
         if (existing == null) {
-            return register(metadata, useExistingMetadata, metric, tags);
+            return register(metadata, useExistingMetadata, metricType, tags);
         }
         if (useExistingMetadata || !useExistingMetadata && !metadata.equals(family.metadata)) {
             throw new IllegalArgumentException(
@@ -428,7 +427,7 @@ public class MetricRegistryImpl implements MetricRegistry {
     }
 
     @SuppressWarnings("unchecked")
-    private <T extends Metric> T register(Metadata metadata, boolean useExistingMetadata, T metric, Tag... tags) {
+    private <T extends Metric> T register(Metadata metadata, boolean useExistingMetadata, String metricType, Tag... tags) {
         String name = metadata.getName();
         checkNameIsNotNullOrEmpty(name);
         if (useExistingMetadata) {
@@ -438,7 +437,7 @@ public class MetricRegistryImpl implements MetricRegistry {
             }
         }
         final Metadata newMetadata = metadata;
-        final T newMetric = metric != null ? metric : (T) createMetricInstance(newMetadata);
+        final T newMetric = (T) createMetricInstance(newMetadata, metricType);
         MetricFamily<T> family = (MetricFamily<T>) metricsFamiliesByName.computeIfAbsent(name,
                 key -> new MetricFamily<>(newMetadata));
         MetricID metricID = new MetricID(name, tags);
@@ -453,7 +452,7 @@ public class MetricRegistryImpl implements MetricRegistry {
     private void notifyRegistrationListeners(MetricID metricID) {
         for (MetricRegistrationListener l : listeners) {
             try {
-                l.onRegistration(metricID, registryScope);
+                l.onRegistration(metricID, type);
             } catch (RuntimeException ex) {
                 LOGGER.log(Level.WARNING, "Registration listener threw exception:", ex);
             }
@@ -475,21 +474,21 @@ public class MetricRegistryImpl implements MetricRegistry {
         }
     }
 
-    private Metric createMetricInstance(Metadata metadata) {
+    private Metric createMetricInstance(Metadata metadata, String metricType) {
         String name = MetricRegistry.name(metadata.getName());
 
-        if(Counter.class.getName().equals(name)) {
+        if(Counter.class.getName().equals(metricType)) {
             return new CounterImpl();
         }
-        if(Gauge.class.getName().equals(name)) {
+        if(Gauge.class.getName().equals(metricType)) {
             throw new IllegalArgumentException(String.format("Unsupported operation for Gauge ['%s']", name));
         }
 
-        if(Histogram.class.getName().equals(name)) {
+        if(Histogram.class.getName().equals(metricType)) {
             return new HistogramImpl();
         }
 
-        if(Timer.class.getName().equals(name)) {
+        if(Timer.class.getName().equals(metricType)) {
             return new TimerImpl(clock);
         }
 

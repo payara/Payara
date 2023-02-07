@@ -39,12 +39,10 @@
  */
 package fish.payara.microprofile.metrics;
 
-import java.lang.annotation.*;
 import java.util.Set;
 
 import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.eclipse.microprofile.metrics.MetricRegistry.Type;
-import org.eclipse.microprofile.metrics.annotation.*;
 import org.jvnet.hk2.annotations.Contract;
 
 import fish.payara.microprofile.metrics.exception.NoSuchRegistryException;
@@ -138,51 +136,18 @@ public interface MetricsService {
          * @throws NoSuchRegistryException In case asking for a {@link MetricRegistry.Type#APPLICATION} registry in the
          *                                 server (global) context.
          */
-        MetricRegistry getRegistry(RegistryScope scope) throws NoSuchRegistryException;
+        MetricRegistry getRegistry(MetricRegistry.Type type) throws NoSuchRegistryException;
 
         default MetricRegistry getBaseRegistry() {
-            return getRegistry(new RegistryScope(){
-
-                @Override
-                public Class<? extends Annotation> annotationType() {
-                    return RegistryScope.class;
-                }
-
-                @Override
-                public String scope() {
-                    return "base";
-                }
-            });
+            return getRegistry(Type.BASE);
         }
 
         default MetricRegistry getVendorRegistry() {
-            return getRegistry(new RegistryScope(){
-
-                @Override
-                public Class<? extends Annotation> annotationType() {
-                    return RegistryScope.class;
-                }
-
-                @Override
-                public String scope() {
-                    return "vendor";
-                }
-            });
+            return getRegistry(Type.VENDOR);
         }
 
         default MetricRegistry getApplicationRegistry() throws NoSuchRegistryException {
-            return getRegistry(new RegistryScope(){
-
-                @Override
-                public Class<? extends Annotation> annotationType() {
-                    return RegistryScope.class;
-                }
-
-                @Override
-                public String scope() {
-                    return "application";
-                }
-            });
+            return getRegistry(Type.APPLICATION);
         }
     }
 

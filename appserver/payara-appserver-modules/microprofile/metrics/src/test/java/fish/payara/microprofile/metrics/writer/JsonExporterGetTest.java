@@ -45,7 +45,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.StringWriter;
-import java.lang.annotation.Annotation;
 import java.nio.file.Paths;
 import java.time.Duration;
 
@@ -55,10 +54,10 @@ import org.eclipse.microprofile.metrics.Histogram;
 import org.eclipse.microprofile.metrics.Metadata;
 import org.eclipse.microprofile.metrics.Metric;
 import org.eclipse.microprofile.metrics.MetricID;
+import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.eclipse.microprofile.metrics.Snapshot;
 import org.eclipse.microprofile.metrics.Tag;
 import org.eclipse.microprofile.metrics.Timer;
-import org.eclipse.microprofile.metrics.annotation.RegistryScope;
 import org.junit.Test;
 
 import fish.payara.microprofile.metrics.writer.JsonExporter.Mode;
@@ -167,33 +166,11 @@ public class JsonExporterGetTest {
 
     @Test
     public void multipeRepositoriesAreGroupedByNameMetricOption() {
-        exporter = exporter.in(new RegistryScope(){
-
-            @Override
-            public Class<? extends Annotation> annotationType() {
-                return RegistryScope.class;
-            }
-
-            @Override
-            public String scope() {
-                return "base";
-            }
-        });
+        exporter = exporter.in(MetricRegistry.Type.BASE);
         Gauge<Long> fooVal = () -> 1L;
         MetricID fooValID = new MetricID("fooVal", new Tag("store", "webshop"));
         export(fooValID, fooVal);
-        exporter = exporter.in(new RegistryScope(){
-
-            @Override
-            public Class<? extends Annotation> annotationType() {
-                return RegistryScope.class;
-            }
-
-            @Override
-            public String scope() {
-                return "application";
-            }
-        });
+        exporter = exporter.in(MetricRegistry.Type.APPLICATION);
         export(fooValID, fooVal);
         assertOutputEquals("{\n" +
                 "    \"base\": {\n" +

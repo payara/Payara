@@ -59,12 +59,12 @@ import org.eclipse.microprofile.metrics.Histogram;
 import org.eclipse.microprofile.metrics.Metadata;
 import org.eclipse.microprofile.metrics.Metric;
 import org.eclipse.microprofile.metrics.MetricID;
+import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.eclipse.microprofile.metrics.MetricUnits;
 import org.eclipse.microprofile.metrics.Sampling;
 import org.eclipse.microprofile.metrics.Snapshot;
 import org.eclipse.microprofile.metrics.Tag;
 import org.eclipse.microprofile.metrics.Timer;
-import org.eclipse.microprofile.metrics.annotation.RegistryScope;
 
 /**
  * Writes {@link Metric}s according to the OpenMetrics standard as defined in <a href=
@@ -83,7 +83,7 @@ public class OpenMetricsExporter implements MetricExporter {
         counter, gauge, summary
     }
 
-    protected final RegistryScope scope;
+    protected final MetricRegistry.Type scope;
 
     protected final PrintWriter out;
     protected final Set<String> typeWrittenByGlobalName;
@@ -93,8 +93,8 @@ public class OpenMetricsExporter implements MetricExporter {
         this(null, out instanceof PrintWriter ? (PrintWriter) out : new PrintWriter(out), new HashSet<>(), new HashSet<>());
     }
 
-    protected OpenMetricsExporter(RegistryScope scope, PrintWriter out, Set<String> typeWrittenByGlobalName,
-            Set<String> helpWrittenByGlobalName) {
+    protected OpenMetricsExporter(MetricRegistry.Type scope, PrintWriter out, Set<String> typeWrittenByGlobalName,
+                                  Set<String> helpWrittenByGlobalName) {
         this.scope = scope;
         this.out = out;
         this.typeWrittenByGlobalName = typeWrittenByGlobalName;
@@ -102,7 +102,7 @@ public class OpenMetricsExporter implements MetricExporter {
     }
 
     @Override
-    public MetricExporter in(RegistryScope scope, boolean asNode) {
+    public MetricExporter in(MetricRegistry.Type scope, boolean asNode) {
         return new OpenMetricsExporter(scope, out, typeWrittenByGlobalName, helpWrittenByGlobalName);
     }
 
@@ -336,8 +336,8 @@ public class OpenMetricsExporter implements MetricExporter {
     private String globalName(MetricID metricID, String suffix) {
         String name = metricID.getName();
         return sanitizeMetricName(!suffix.isEmpty() && name.endsWith(suffix)
-                ? scope.scope() + '_' + name
-                : scope.scope() + '_' + name + suffix);
+                ? scope.getName() + '_' + name
+                : scope.getName() + '_' + name + suffix);
     }
 
     private static CharSequence escapeTagValue(String name) {

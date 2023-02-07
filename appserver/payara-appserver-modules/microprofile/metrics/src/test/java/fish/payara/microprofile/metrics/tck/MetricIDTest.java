@@ -46,18 +46,7 @@ import fish.payara.microprofile.metrics.impl.MetricRegistryImpl;
  */
 public class MetricIDTest {
 
-    private MetricRegistry registry = new MetricRegistryImpl(new RegistryScope(){
-
-        @Override
-        public Class<? extends Annotation> annotationType() {
-            return RegistryScope.class;
-        }
-
-        @Override
-        public String scope() {
-            return "application";
-        }
-    });
+    private MetricRegistry registry = new MetricRegistryImpl(Type.APPLICATION);
 
     @SuppressWarnings({ "deprecation", "unused" })
     @Test

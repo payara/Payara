@@ -66,18 +66,7 @@ abstract class AbstractMetricTest extends AbstractRecordingTest {
 
     @Override
     protected FaultToleranceServiceStub createService() {
-        registry = new MetricRegistryImpl(new RegistryScope(){
-
-            @Override
-            public Class<? extends Annotation> annotationType() {
-                return RegistryScope.class;
-            }
-
-            @Override
-            public String scope() {
-                return "base";
-            }
-        });
+        registry = new MetricRegistryImpl(Type.BASE);
         return new FaultToleranceServiceStub() {
             @Override
             protected FaultToleranceMethodContext stubMethodContext(StubContext ctx) {

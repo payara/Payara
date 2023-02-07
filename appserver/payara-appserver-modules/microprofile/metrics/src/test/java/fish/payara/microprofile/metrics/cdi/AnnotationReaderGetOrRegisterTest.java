@@ -83,18 +83,8 @@ import fish.payara.microprofile.metrics.test.TestUtils;
  */
 public class AnnotationReaderGetOrRegisterTest {
 
-    private final MetricRegistry registry = new MetricRegistryImpl(new RegistryScope(){
-
-        @Override
-        public Class<? extends Annotation> annotationType() {
-            return RegistryScope.class;
-        }
-
-        @Override
-        public String scope() {
-            return "application";
-        }
-    }, this::tick);
+    private final MetricRegistry registry = new MetricRegistryImpl(
+            MetricRegistry.Type.APPLICATION, this::tick);
     private long clockTime;
 
     /**

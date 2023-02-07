@@ -72,7 +72,6 @@ import org.eclipse.microprofile.metrics.MetricID;
 import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.eclipse.microprofile.metrics.MetricUnits;
 import org.eclipse.microprofile.metrics.Timer;
-import org.eclipse.microprofile.metrics.annotation.RegistryScope;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.invocation.ComponentInvocation;
@@ -132,10 +131,10 @@ public class MetricsServiceImpl implements MetricsService, ConfigListener, Monit
 
     private static final class RegisteredMetric {
 
-        final RegistryScope scope;
+        final MetricRegistry.Type scope;
         final MetricID id;
 
-        RegisteredMetric(RegistryScope scope, MetricID metric) {
+        RegisteredMetric(MetricRegistry.Type scope, MetricID metric) {
             this.scope = scope;
             this.id = metric;
         }
@@ -155,42 +154,9 @@ public class MetricsServiceImpl implements MetricsService, ConfigListener, Monit
 
         public MetricsContextImpl(String name) {
             this.name = name;
-            this.base = new MetricRegistryImpl(new RegistryScope(){
-
-                @Override
-                public Class<? extends Annotation> annotationType() {
-                    return RegistryScope.class;
-                }
-
-                @Override
-                public String scope() {
-                    return "base";
-                }
-            });
-            this.vendor = new MetricRegistryImpl(new RegistryScope(){
-
-                @Override
-                public Class<? extends Annotation> annotationType() {
-                    return RegistryScope.class;
-                }
-
-                @Override
-                public String scope() {
-                    return "vendor";
-                }
-            });
-            this.application = isServerContext() ? null : new MetricRegistryImpl(new RegistryScope(){
-
-                @Override
-                public Class<? extends Annotation> annotationType() {
-                    return RegistryScope.class;
-                }
-
-                @Override
-                public String scope() {
-                    return "application";
-                }
-            });
+            this.base = new MetricRegistryImpl(BASE);
+            this.vendor = new MetricRegistryImpl(VENDOR);
+            this.application = isServerContext() ? null : new MetricRegistryImpl(APPLICATION);
             base.addListener(this);
             vendor.addListener(this);
             if (application != null)
@@ -203,16 +169,16 @@ public class MetricsServiceImpl implements MetricsService, ConfigListener, Monit
         }
 
         @Override
-        public MetricRegistryImpl getRegistry(RegistryScope scope) throws NoSuchRegistryException {
-            if (scope.scope().equals(BASE.getName())) {
+        public MetricRegistryImpl getRegistry(MetricRegistry.Type type) throws NoSuchRegistryException {
+            if (type.name().equals(BASE.getName().toUpperCase())) {
                 return base;
             }
 
-            if (scope.scope().equals(VENDOR.getName())) {
+            if (type.name().equals(VENDOR.getName().toUpperCase())) {
                 return vendor;
             }
 
-            if (scope.scope().equals(APPLICATION.getName())) {
+            if (type.name().equals(APPLICATION.getName().toUpperCase())) {
                 return application;
             }
 
@@ -225,8 +191,8 @@ public class MetricsServiceImpl implements MetricsService, ConfigListener, Monit
 
 
         @Override
-        public void onRegistration(MetricID registered, RegistryScope scope) {
-            newlyRegistered.add(new RegisteredMetric(scope, registered));
+        public void onRegistration(MetricID registered, MetricRegistry.Type type) {
+            newlyRegistered.add(new RegisteredMetric(type, registered));
         }
 
         RegisteredMetric pollNewlyRegistered() {
@@ -328,8 +294,9 @@ public class MetricsServiceImpl implements MetricsService, ConfigListener, Monit
        RegisteredMetric metric = context.pollNewlyRegistered();
         while (metric != null) {
             MetricID metricID = metric.id;
-            RegistryScope registryScope = metric.scope;
-            MetricRegistry registry = context.getRegistry(registryScope);
+            //RegistryScope registryScope = metric.scope;
+            MetricRegistry.Type t = metric.scope;
+            MetricRegistry registry = context.getRegistry(t);
             MonitoringDataCollector metricCollector = tagCollector(context.getName(), metricID, collector);
             Metadata metadata = registry.getMetadata(metricID.getName());
             String suffix = "Count";
@@ -341,7 +308,7 @@ public class MetricsServiceImpl implements MetricsService, ConfigListener, Monit
             }
             // Note that by convention an annotation with value 0 done before the series collected any value is considered permanent
             metricCollector.annotate(toName(metricID, suffix), 0, false,
-                    metadataToAnnotations(context.getName(), registryScope, metadata, property));
+                    metadataToAnnotations(context.getName(), t, metadata, property));
             metric = context.pollNewlyRegistered();
         }
     }
@@ -361,11 +328,11 @@ public class MetricsServiceImpl implements MetricsService, ConfigListener, Monit
         return Character.toUpperCase(value.charAt(0)) + value.substring(1);
     }
 
-    private static String[] metadataToAnnotations(String contextName, RegistryScope registryScope, Metadata metadata, String property) {
+    private static String[] metadataToAnnotations(String contextName, MetricRegistry.Type type, Metadata metadata, String property) {
         String unit = metadata.unit().orElse(MetricUnits.NONE);
         return new String[] {
                 "App", contextName, //
-                "Scope", registryScope.scope(), //
+                "Scope", type.getName(), //
                 "Name", metadata.getName(), //
                 "Unit", unit, //
                 "Description", metadata.getDescription(), //

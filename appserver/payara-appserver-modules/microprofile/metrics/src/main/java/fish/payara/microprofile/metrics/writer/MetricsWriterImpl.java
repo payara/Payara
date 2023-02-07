@@ -41,7 +41,6 @@ package fish.payara.microprofile.metrics.writer;
 
 import static java.lang.System.arraycopy;
 import java.io.IOException;
-import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -82,7 +81,7 @@ public class MetricsWriterImpl implements MetricsWriter {
     }
 
     @Override
-    public void write(RegistryScope scope, String metricName)
+    public void write(Type scope, String metricName)
             throws NoSuchRegistryException, NoSuchMetricException {
         MetricExporter exporter = this.exporter.in(scope, false);
         writeMetricFamily(exporter, scope, metricName);
@@ -90,7 +89,7 @@ public class MetricsWriterImpl implements MetricsWriter {
     }
 
     @Override
-    public void write(RegistryScope scope) throws NoSuchRegistryException {
+    public void write(Type scope) throws NoSuchRegistryException {
         MetricExporter exporter = this.exporter.in(scope, false);
         writeRegistries(exporter, scope);
         exporter.exportComplete();
@@ -99,90 +98,24 @@ public class MetricsWriterImpl implements MetricsWriter {
     @Override
     public void write() throws IOException {
         MetricExporter exporter = this.exporter;
-        exporter = exporter.in(new RegistryScope(){
-
-            @Override
-            public Class<? extends Annotation> annotationType() {
-                return RegistryScope.class;
-            }
-
-            @Override
-            public String scope() {
-                return "base";
-            }
-        });
-        writeRegistries(exporter, new RegistryScope(){
-
-            @Override
-            public Class<? extends Annotation> annotationType() {
-                return RegistryScope.class;
-            }
-
-            @Override
-            public String scope() {
-                return "base";
-            }
-        });
-        exporter = exporter.in(new RegistryScope(){
-
-            @Override
-            public Class<? extends Annotation> annotationType() {
-                return RegistryScope.class;
-            }
-
-            @Override
-            public String scope() {
-                return "vendor";
-            }
-        });
-        writeRegistries(exporter, new RegistryScope(){
-
-            @Override
-            public Class<? extends Annotation> annotationType() {
-                return RegistryScope.class;
-            }
-
-            @Override
-            public String scope() {
-                return "vendor";
-            }
-        });
-        exporter = exporter.in(new RegistryScope(){
-
-            @Override
-            public Class<? extends Annotation> annotationType() {
-                return RegistryScope.class;
-            }
-
-            @Override
-            public String scope() {
-                return "application";
-            }
-        });
-        writeRegistries(exporter, new RegistryScope(){
-
-            @Override
-            public Class<? extends Annotation> annotationType() {
-                return RegistryScope.class;
-            }
-
-            @Override
-            public String scope() {
-                return "application";
-            }
-        });
+        exporter = exporter.in(Type.BASE);
+        writeRegistries(exporter, Type.BASE);
+        exporter = exporter.in(Type.VENDOR);
+        writeRegistries(exporter, Type.VENDOR);
+        exporter = exporter.in(Type.APPLICATION);
+        writeRegistries(exporter, Type.APPLICATION);
         exporter.exportComplete();
     }
 
-    private void writeRegistries(MetricExporter exporter, RegistryScope scope) {
+    private void writeRegistries(MetricExporter exporter, Type scope) {
         for (String metricName : allMetricNames(scope)) {
             writeMetricFamily(exporter, scope, metricName);
         }
     }
 
-    private void writeMetricFamily(MetricExporter exporter, RegistryScope scope, String metricName) {
+    private void writeMetricFamily(MetricExporter exporter, Type scope, String metricName) {
         for (String contextName : contextNames) {
-            MetricRegistry registry = getMetricsRegistry(contextName, scope);
+            MetricRegistryImpl registry = getMetricsRegistry(contextName, scope);
             if (registry != null && registry.getMetadata(metricName) != null) { // it has metrics with that name
                 writeMetricFamily(exporter, contextName, metricName, registry);
             }
@@ -190,7 +123,7 @@ public class MetricsWriterImpl implements MetricsWriter {
     }
 
     private void writeMetricFamily(MetricExporter exporter, String contextName, String metricName,
-            MetricRegistry registry) {
+            MetricRegistryImpl registry) {
         Metadata metadata = registry.getMetadata(metricName);
         for (Entry<MetricID, Metric> metric : registry.getMetrics().entrySet()) {
             MetricID metricID = metric.getKey();
@@ -220,12 +153,12 @@ public class MetricsWriterImpl implements MetricsWriter {
      * https://github.com/eclipse/microprofile-metrics/pull/548 adds needed methods to the API so they will be available
      * in the {@link MetricRegistry} interface in 3.0 and this cast can be removed.
      */
-    private MetricRegistry getMetricsRegistry(String contextName, RegistryScope registryScope) {
+    private MetricRegistryImpl getMetricsRegistry(String contextName, Type scope) {
         MetricsContext context = getContextByName.apply(contextName);
-        return registryScope.scope().equals(Type.APPLICATION.getName()) && context.isServerContext() ? null :  context.getRegistry(registryScope);
+        return scope == Type.APPLICATION && context.isServerContext() ? null : (MetricRegistryImpl) context.getRegistry(scope);
     }
 
-    private Set<String> allMetricNames(RegistryScope scope) {
+    private Set<String> allMetricNames(Type scope) {
         Set<String> allNames = new TreeSet<>();
         for (String contextName : contextNames) {
             MetricRegistry registry = getMetricsRegistry(contextName, scope);

@@ -73,18 +73,7 @@ import fish.payara.microprofile.metrics.test.TestUtils;
 public class CountedInterceptorTest {
 
     private final InvocationContext context = mock(InvocationContext.class);
-    private final MetricRegistry registry = new MetricRegistryImpl(new RegistryScope(){
-
-        @Override
-        public Class<? extends Annotation> annotationType() {
-            return RegistryScope.class;
-        }
-
-        @Override
-        public String scope() {
-            return "application";
-        }
-    });
+    private final MetricRegistry registry = new MetricRegistryImpl(MetricRegistry.Type.APPLICATION);
 
     @Test
     @Counted

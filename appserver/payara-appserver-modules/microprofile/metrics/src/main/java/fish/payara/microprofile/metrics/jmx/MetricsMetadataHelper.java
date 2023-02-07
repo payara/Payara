@@ -115,6 +115,7 @@ public class MetricsMetadataHelper {
                     continue;
                 }
                 if (beanMetadata.getMBean() != null) {
+                    MBeanExpression mBeanExpression = new MBeanExpression(beanMetadata.getMBean());
                     if(beanMetadata.getName().equals(Counter.class.getName())) {
                         metricRegistry.counter(beanMetadata, tags.toArray(new Tag[tags.size()]) );
                     } else if(beanMetadata.getName().equals(Gauge.class.getName())) {

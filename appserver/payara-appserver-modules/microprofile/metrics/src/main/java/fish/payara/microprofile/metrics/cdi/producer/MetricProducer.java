@@ -55,8 +55,6 @@ import org.eclipse.microprofile.metrics.annotation.Metric;
 @Dependent
 public class MetricProducer {
 
-
-    //todo this can be the way to get the Metric without using the MetricType class not available now
     private static final AnnotationReader<Metric> COUNTER = AnnotationReader.METRIC.asType(Counter.class.getTypeName());
     private static final AnnotationReader<Metric> GAUGE = AnnotationReader.METRIC.asType(Gauge.class.getTypeName());
     private static final AnnotationReader<Metric> HISTOGRAM = AnnotationReader.METRIC.asType(Histogram.class.getTypeName());

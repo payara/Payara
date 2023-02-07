@@ -52,7 +52,6 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.lang.annotation.Annotation;
 import java.util.Map;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -67,16 +66,10 @@ import org.eclipse.microprofile.metrics.MetricFilter;
 import org.eclipse.microprofile.metrics.MetricID;
 import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.eclipse.microprofile.metrics.Tag;
-import org.eclipse.microprofile.metrics.annotation.RegistryScope;
 import org.junit.Before;
 import org.junit.Test;
 
 import fish.payara.microprofile.metrics.TestConfig;
-import fish.payara.microprofile.metrics.impl.CounterImpl;
-import fish.payara.microprofile.metrics.impl.GaugeImpl;
-import fish.payara.microprofile.metrics.impl.HistogramImpl;
-import fish.payara.microprofile.metrics.impl.MetricRegistryImpl;
-import fish.payara.microprofile.metrics.impl.TimerImpl;
 
 /**
  * Tests the basic correctness of the {@link MetricRegistryImpl}.
@@ -102,18 +95,7 @@ public class MetricRegistryImplTest {
         return Metadata.builder(FILLED).withName(name);
     }
 
-    private final MetricRegistry registry = new MetricRegistryImpl(new RegistryScope(){
-
-        @Override
-        public Class<? extends Annotation> annotationType() {
-            return RegistryScope.class;
-        }
-
-        @Override
-        public String scope() {
-            return "application";
-        }
-    });
+    private final MetricRegistry registry = new MetricRegistryImpl(MetricRegistry.Type.APPLICATION);
 
     @Before
     public void setUp() {

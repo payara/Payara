@@ -50,7 +50,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
-import java.lang.annotation.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -62,7 +61,6 @@ import org.eclipse.microprofile.metrics.MetricFilter;
 import org.eclipse.microprofile.metrics.MetricID;
 import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.eclipse.microprofile.metrics.Timer;
-import org.eclipse.microprofile.metrics.annotation.*;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -77,18 +75,7 @@ public class MetricRegistryTest {
     private static final Supplier<Long> GAUGE_SUPPLIER = () -> 42L;
     private static final Function<MetricRegistryTest, Long> GAUGE_FUNCTION = test -> 42L;
 
-    private final MetricRegistry registry = new MetricRegistryImpl(new RegistryScope(){
-
-        @Override
-        public Class<? extends Annotation> annotationType() {
-            return RegistryScope.class;
-        }
-
-        @Override
-        public String scope() {
-            return "application";
-        }
-    });
+    private final MetricRegistry registry = new MetricRegistryImpl(MetricRegistry.Type.APPLICATION);
 
     private static final MetricID COUNTER_ID = new MetricID("counter");
     private static final MetricID GAUGE_ID = new MetricID("gauge");

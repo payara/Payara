@@ -50,7 +50,6 @@ import fish.payara.microprofile.metrics.writer.MetricsWriterImpl;
 import fish.payara.microprofile.metrics.writer.OpenMetricsExporter;
 import java.io.IOException;
 import java.io.Writer;
-import java.lang.annotation.Annotation;
 import java.util.Optional;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -78,7 +77,6 @@ import org.eclipse.microprofile.metrics.MetricRegistry.Type;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.metrics.Tag;
-import org.eclipse.microprofile.metrics.annotation.RegistryScope;
 import org.glassfish.internal.api.Globals;
 
 public class MetricsResource extends HttpServlet {
@@ -126,47 +124,14 @@ public class MetricsResource extends HttpServlet {
                 MetricsWriter outputWriter = getOutputWriter(request, response, metricsService, contentType);
                 if (outputWriter != null) {
                     if (registryName != null && !registryName.isEmpty()) {
-                        RegistryScope scope;
+                        Type scope;
                         try {
                             if(registryName.equals(Type.BASE.getName())) {
-                                scope = new RegistryScope(){
-
-                                    @Override
-                                    public Class<? extends Annotation> annotationType() {
-                                        return RegistryScope.class;
-                                    }
-
-                                    @Override
-                                    public String scope() {
-                                        return "base";
-                                    }
-                                };
+                                scope = Type.BASE;
                             } else if(registryName.equals(Type.VENDOR.getName())) {
-                                scope = new RegistryScope(){
-
-                                    @Override
-                                    public Class<? extends Annotation> annotationType() {
-                                        return RegistryScope.class;
-                                    }
-
-                                    @Override
-                                    public String scope() {
-                                        return "vendor";
-                                    }
-                                };
+                                scope = Type.VENDOR;
                             } else if(registryName.equals(Type.APPLICATION.getName())) {
-                                scope = new RegistryScope(){
-
-                                    @Override
-                                    public Class<? extends Annotation> annotationType() {
-                                        return RegistryScope.class;
-                                    }
-
-                                    @Override
-                                    public String scope() {
-                                        return "application";
-                                    }
-                                };
+                                scope = Type.APPLICATION;
                             } else {
                                 scope = null;
                             }
