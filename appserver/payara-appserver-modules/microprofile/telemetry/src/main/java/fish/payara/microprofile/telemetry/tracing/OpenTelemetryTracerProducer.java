@@ -43,7 +43,9 @@
 package fish.payara.microprofile.telemetry.tracing;
 
 import fish.payara.opentracing.OpenTelemetryService;
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.baggage.Baggage;
+import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -69,5 +71,17 @@ public class OpenTelemetryTracerProducer {
     @RequestScoped
     Baggage currentBaggage() {
         return Baggage.current();
+    }
+
+    @Produces
+    @RequestScoped
+    Span currentSpan() {
+        return Span.current();
+    }
+
+    @Produces
+    @ApplicationScoped
+    OpenTelemetry currentTelemetry() {
+        return openTelemetry.getCurrentSdk();
     }
 }

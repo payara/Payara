@@ -50,6 +50,7 @@ import java.util.logging.Logger;
 
 import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
@@ -105,6 +106,27 @@ public class OpenTelemetryService implements EventListener {
     @Inject
     ApplicationRegistry applicationRegistry;
 
+    public Tracer getCurrentTracer() {
+        String appName = initializeCurrentApplication();
+        return getTracer(appName).orElseThrow(() -> currentAppNotInitializedException(appName));
+    }
+
+    public void initializeCurrentApplication(Map<String, String> otelProps) {
+        initializeApplication(currentApplication(), otelProps);
+    }
+
+    /**
+     * Required when application registers CDI-based components.
+     */
+    public void shutdownCurrentApplication() {
+        shutdown(currentApplication());
+    }
+
+    public OpenTelemetry getCurrentSdk() {
+        var appName = initializeCurrentApplication();
+        return getSdk(appName).orElseThrow(() -> currentAppNotInitializedException(appName));
+    }
+
     @PostConstruct
     void postConstruct() {
         if (events != null) {
@@ -130,6 +152,23 @@ public class OpenTelemetryService implements EventListener {
         }
     }
 
+    private void shutdown(String appName) {
+        var appInfo = appTelemetries.remove(appName);
+        if (appInfo != null) {
+            appInfo.shutdown();
+        }
+    }
+
+    private String initializeCurrentApplication() {
+        var appName = currentApplication();
+        if (appName == null) {
+            throw new IllegalStateException("No application code is executing. Cannot determine current application scope");
+        }
+        // if no application-level initialization took place, initialize with defaults
+        ensureAppInitialized(appName, null);
+        return appName;
+    }
+
     /**
      * Return existing tracer for a given application.
      * <p>Because Telemetry SDKs are configurable per app, the tracer need to be explicitly created for an application</p>
@@ -137,29 +176,12 @@ public class OpenTelemetryService implements EventListener {
      * @param applicationName
      * @return
      */
-    public Optional<Tracer> getTracer(String applicationName) {
+    private Optional<Tracer> getTracer(String applicationName) {
         return get(applicationName, OpenTelemetryAppInfo::tracer);
     }
 
-    private <T> Optional<T> get(String applicationName, Function<OpenTelemetryAppInfo, T> getter) {
-        if (applicationName == null) {
-            return Optional.empty();
-        }
-        OpenTelemetryAppInfo appInfo = appTelemetries.get(applicationName);
-        if (appInfo == null) {
-            return Optional.empty();
-        }
-        return Optional.ofNullable(getter.apply(appInfo));
-    }
-
-    public Tracer getCurrentTracer() {
-        var appName = currentApplication();
-        if (appName == null) {
-            throw new IllegalStateException("No application code is executing. Cannot determine current application scope");
-        }
-        // if no application-level initialization took place, initialize with defaults
-        ensureAppInitialized(appName, null);
-        return getTracer(appName).orElseThrow(() -> new IllegalStateException("Application "+appName+" should have initialized, but it didn't"));
+    private static IllegalStateException currentAppNotInitializedException(String appName) {
+        return new IllegalStateException("Application " + appName + " should have initialized, but it didn't");
     }
 
     private String currentApplication() {
@@ -194,44 +216,25 @@ public class OpenTelemetryService implements EventListener {
         return appName;
     }
 
-    public Optional<OpenTelemetrySdk> getSdk(String applicationName) {
-        return get(applicationName, OpenTelemetryAppInfo::sdk);
+    /**
+     * Initialize OpenTelemtry components for an application if they do not exist yet.
+     *
+     * @param appName
+     * @param properties
+     */
+    void ensureAppInitialized(String appName, Map<String, String> properties) {
+        appTelemetries.computeIfAbsent(appName, (k) -> new OpenTelemetryAppInfo(createSdk(appName, properties)));
     }
 
-    /**
-     * Return Meter builder for given application
-     *
-     * @param applicationName
-     * @return
-     */
-    public Optional<Meter> getMeter(String applicationName) {
-        return get(applicationName, OpenTelemetryAppInfo::meter);
-    }
-
-    /**
-     * Return logger for given application.
-     *
-     * @param applicationName
-     * @return
-     */
-    public Optional<io.opentelemetry.api.logs.Logger> getLogger(String applicationName) {
-        return get(applicationName, OpenTelemetryAppInfo::logger);
-    }
-
-    /**
-     * Create new OpenTelemetry components for application. Shutdown previous ones if such already existed.
-     *
-     * @param applicationName
-     * @param configProperties
-     * @return
-     */
-    public OpenTelemetrySdk initializeApplication(String applicationName, Map<String, String> configProperties) {
-        OpenTelemetrySdk sdk = initialize(applicationName, configProperties);
-        OpenTelemetryAppInfo previous = appTelemetries.put(applicationName, new OpenTelemetryAppInfo(sdk));
-        if (previous != null) {
-            previous.shutdown();
+    private <T> Optional<T> get(String applicationName, Function<OpenTelemetryAppInfo, T> getter) {
+        if (applicationName == null) {
+            return Optional.empty();
         }
-        return sdk;
+        OpenTelemetryAppInfo appInfo = appTelemetries.get(applicationName);
+        if (appInfo == null) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(getter.apply(appInfo));
     }
 
     /**
@@ -252,7 +255,7 @@ public class OpenTelemetryService implements EventListener {
      * @link
      * <a href="https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk-extensions/autoconfigure/README.md">Autoconfigure documentation</a>
      */
-    private OpenTelemetrySdk initialize(String applicationName, Map<String, String> configProperties) {
+    private OpenTelemetrySdk createSdk(String applicationName, Map<String, String> configProperties) {
 
 
         if (isOtelEnabled(configProperties) || isPayaraTracingEnabled()) {
@@ -304,7 +307,7 @@ public class OpenTelemetryService implements EventListener {
      *
      * @return True if the Request Tracing Service is enabled
      */
-    public boolean isPayaraTracingEnabled() {
+    private boolean isPayaraTracingEnabled() {
         ServiceHandle<RequestTracingService> handle = locator.getServiceHandle(RequestTracingService.class);
         return handle != null && handle.isActive() && handle.getService().isRequestTracingEnabled();
     }
@@ -323,31 +326,44 @@ public class OpenTelemetryService implements EventListener {
     }
 
     /**
-     * Initialize OpenTelemtry components for an application if they do not exist yet.
+     * Return Meter builder for given application
      *
-     * @param appName
-     * @param properties
+     * @param applicationName
+     * @return
      */
-    public void ensureAppInitialized(String appName, Map<String, String> properties) {
-        appTelemetries.computeIfAbsent(appName, (k) -> new OpenTelemetryAppInfo(initialize(appName, properties)));
-    }
-
-    public void initializeCurrentApplication(Map<String, String> otelProps) {
-        initializeApplication(currentApplication(), otelProps);
+    private Optional<Meter> getMeter(String applicationName) {
+        return get(applicationName, OpenTelemetryAppInfo::meter);
     }
 
     /**
-     * Required when application registers CDI-based components.
+     * Return logger for given application.
+     *
+     * @param applicationName
+     * @return
      */
-    public void shutdownCurrentApplication() {
-        shutdown(currentApplication());
+    private Optional<io.opentelemetry.api.logs.Logger> getLogger(String applicationName) {
+        return get(applicationName, OpenTelemetryAppInfo::logger);
     }
 
-    private void shutdown(String appName) {
-        var appInfo = appTelemetries.remove(appName);
-        if (appInfo != null) {
-            appInfo.shutdown();
+    /**
+     * Create new OpenTelemetry components for application. Shutdown previous ones if such already existed.
+     *
+     * @param applicationName
+     * @param configProperties
+     * @return
+     */
+    private OpenTelemetrySdk initializeApplication(String applicationName, Map<String, String> configProperties) {
+        OpenTelemetrySdk sdk = createSdk(applicationName, configProperties);
+        OpenTelemetryAppInfo previous = appTelemetries.put(applicationName, new OpenTelemetryAppInfo(sdk));
+        if (previous != null) {
+            previous.shutdown();
         }
+        return sdk;
+    }
+
+
+    Optional<OpenTelemetrySdk> getSdk(String applicationName) {
+        return get(applicationName, OpenTelemetryAppInfo::sdk);
     }
 
     static class OpenTelemetryAppInfo {
