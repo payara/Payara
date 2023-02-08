@@ -251,19 +251,6 @@
             <artifactId>rest-client-ssl</artifactId>
             <version>${project.version}</version>
         </dependency>
-            
-
-        <!-- MicroProfile Rest Client Extensions-->
-        <dependency>
-            <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
-            <artifactId>microprofile-rest-client</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
-            <artifactId>rest-client-ssl</artifactId>
-            <version>${project.version}</version>
-        </dependency>
 
         <!-- OpenTracing -->
         <dependency>
@@ -274,10 +261,6 @@
             <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
             <artifactId>microprofile-opentracing</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.microprofile.opentracing</groupId>
-            <artifactId>microprofile-opentracing-api</artifactId>
         </dependency>
 
         <!-- Admin MicroProfile Admin GUI -->
