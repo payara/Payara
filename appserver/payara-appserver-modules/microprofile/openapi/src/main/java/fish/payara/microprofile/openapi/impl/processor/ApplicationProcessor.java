@@ -443,7 +443,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         newParameter.setRequired(required);
 
         Boolean isSchemaHidden = false;
-        AnnotationModel annotation = element.getAnnotation("org.eclipse.microprofile.openapi.annotations.media.Schema");
+        AnnotationModel annotation = element.getAnnotation(org.eclipse.microprofile.openapi.annotations.media.Schema.class.getName());
         if (annotation != null) {
             isSchemaHidden = annotation.getValue("hidden", Boolean.class);
         }
