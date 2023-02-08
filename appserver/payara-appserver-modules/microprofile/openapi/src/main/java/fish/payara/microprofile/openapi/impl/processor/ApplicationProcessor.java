@@ -747,7 +747,6 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         if (name != null && !name.isEmpty()
                 && value != null && !value.isEmpty()) {
             Object parsedValue = ExtensibleImpl.convertExtensionValue(value, parseValue);
-//            context.addExtension(name, parsedValue);
             if (element instanceof MethodModel) {
                 context.getWorkingOperation().addExtension(name, parsedValue);
             } else {
@@ -872,14 +871,11 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     @Override
     public void visitAPIResponses(AnnotationModel annotation, AnnotatedElement element, ApiContext context) {
         APIResponsesImpl from = APIResponsesImpl.createInstance(annotation, context);
-        List<AnnotationModel> extensions = annotation.getValue("extensions", List.class);
-        if (extensions != null && context.getWorkingOperation() != null) {
-            extensions.forEach(extension -> visitExtension(extension, element, context)); // FIXME: this must put he extension to APIResponse, not Operation!!!
-        }
         List<AnnotationModel> responses = annotation.getValue("value", List.class);
         if (responses != null) {
             responses.forEach(response -> visitAPIResponse(response, element, context));
         }
+        APIResponsesImpl.merge(from, context.getWorkingOperation().getResponses(), true, context);
     }
 
     @Override

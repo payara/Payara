@@ -68,10 +68,6 @@ public class APIResponsesImpl extends ExtensibleTreeMap<APIResponse, APIResponse
     public static APIResponsesImpl createInstance(AnnotationModel annotation, ApiContext context) {
         APIResponsesImpl from = new APIResponsesImpl();
         from.setExtensions(parseExtensions(annotation));
-//        List<AnnotationModel> extensions = annotation.getValue("extensions", List.class);
-//        if (extensions != null) {
-//            extensions.stream().forEach(e -> from.addExtension(e.getValue("name", String.class), e.getValue("value", String.class)));
-//        }
         ModelUtils.extractAnnotations(annotation, context, "responses", "responseCode", APIResponseImpl::createInstance, from::addAPIResponse);
         return from;
     }
@@ -115,8 +111,6 @@ public class APIResponsesImpl extends ExtensibleTreeMap<APIResponse, APIResponse
         if (from == null) {
             return;
         }
-        // process extensions attribute
-        ExtensibleImpl.merge(from, to, override);
         // Get the response name
         String responseName = null;
         if (from instanceof APIResponseImpl) {
@@ -130,8 +124,14 @@ public class APIResponsesImpl extends ExtensibleTreeMap<APIResponse, APIResponse
                 .getAPIResponses()
                 .getOrDefault(responseName, new APIResponseImpl());
         to.addAPIResponse(responseName, response);
+        // process extensions attribute
+        ExtensibleImpl.merge(from, response, override);
 
         APIResponseImpl.merge(from, response, override, context);
+    }
+
+    public static void merge(APIResponses from, APIResponses to, boolean override, ApiContext context) {
+        ExtensibleImpl.merge(from, to, override);
     }
 
 }

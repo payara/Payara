@@ -216,6 +216,7 @@ public class APIResponseImpl extends ExtensibleImpl<APIResponse> implements APIR
             return;
         }
         to.setDescription(mergeProperty(to.getDescription(), from.getDescription(), override));
+        ExtensibleImpl.merge(from, to, override);
         if (from.getContent() != null) {
             if (to.getContent() == null) {
                 to.setContent(new ContentImpl());
