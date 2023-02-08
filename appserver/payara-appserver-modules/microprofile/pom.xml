@@ -59,6 +59,7 @@ holder.
         <module>jwt-auth</module>
         <module>metrics</module>
         <module>openapi</module>
+        <module>telemetry</module>
         <module>opentracing</module>
         <!-- Extension of opentracing for Jax-ws, split out due to web distribution not having Jax-ws -->
         <module>opentracing-jaxws</module>
