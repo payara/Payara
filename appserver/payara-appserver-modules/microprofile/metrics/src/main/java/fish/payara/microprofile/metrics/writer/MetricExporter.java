@@ -50,7 +50,6 @@ import org.eclipse.microprofile.metrics.Metric;
 import org.eclipse.microprofile.metrics.MetricID;
 import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.eclipse.microprofile.metrics.Timer;
-import org.eclipse.microprofile.metrics.annotation.RegistryScope;
 
 /**
  * The {@link MetricExporter} is an abstraction for writing individual {@link Metric}s to an output.
@@ -88,23 +87,28 @@ public interface MetricExporter {
     void export(MetricID metricID, Timer timer, Metadata metadata);
 
     default void export(MetricID metricID, Metric metric, Metadata metadata) {
-        final String counterClassName = Counter.class.getName();
-        final String gaugeClassName = Gauge.class.getName();
-        final String histogramClassName = Histogram.class.getName();
-        final String timerClassName = Timer.class.getName();
-
-        if (counterClassName.equals(metric.getClass().getName())) {
+        if (Counter.class.isAssignableFrom(metric.getClass())) {
             export(metricID, (Counter) metric, metadata);
-        } else if (gaugeClassName.equals(metric.getClass().getName())) {
-            export(metricID, (Gauge<?>) metric, metadata);
-        } else if (histogramClassName.equals(metric.getClass().getName())) {
-            export(metricID, (Histogram) metric, metadata);
-        } else if (timerClassName.equals(metric.getClass().getName())) {
-            export(metricID, (Timer) metric, metadata);
-        } else {
-            LOGGER.log(Level.WARNING, "Metric type {0} for {1} is not supported",
-                    new Object[]{metric.getClass(), metricID});
+            return;
         }
+
+        if (Gauge.class.isAssignableFrom(metric.getClass())) {
+            export(metricID, (Gauge<?>) metric, metadata);
+            return;
+        }
+
+        if (Histogram.class.isAssignableFrom(metric.getClass())) {
+            export(metricID, (Histogram) metric, metadata);
+            return;
+        }
+
+        if (Timer.class.isAssignableFrom(metric.getClass())) {
+            export(metricID, (Timer) metric, metadata);
+            return;
+        }
+
+        LOGGER.log(Level.WARNING, "Metric type {0} for {1} is not supported",
+                    new Object[]{metric.getClass(), metricID});
     }
 
     void exportComplete();

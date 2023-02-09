@@ -54,7 +54,7 @@ public class MetricsMetadataTest {
     public void isValid_basic() {
         //todo review MetricsMetadata
         MetricsMetadata metadata = new MetricsMetadata("m", "name"
-                , "Display", "description");
+                , "Display", null, "description");
         List<XmlTag> tags = new ArrayList<>();
         tags.add(new XmlTag("test", "JUnit"));
         metadata.addTags(tags);
@@ -63,7 +63,7 @@ public class MetricsMetadataTest {
 
     @Test
     public void isValid_EmptyTag() {
-        MetricsMetadata metadata = new MetricsMetadata("m", "name", "Display", "description");
+        MetricsMetadata metadata = new MetricsMetadata("m", "name", "Display", null, "description");
         List<XmlTag> tags = new ArrayList<>();
         tags.add(new XmlTag("test", "JUnit"));
         metadata.addTags(tags);
@@ -75,7 +75,7 @@ public class MetricsMetadataTest {
         MetricsMetadata metadata = new MetricsMetadata("amx:type=jdbc-connection-pool-mon,pp=/mon/server-mon[local-instance],name=resources/%sPool/numconnfree#current"
                 , "jdbc.connection.pool.%s.pool.instance.free.connections"
                 , "Free Connections (Instance)"
-                , "The total number of free connections in the pool as of the last sampling");
+                ,null, "The total number of free connections in the pool as of the last sampling");
         List<XmlTag> tags = new ArrayList<>();
         metadata.addTags(tags);
         Assert.assertTrue(metadata.isValid());
@@ -86,7 +86,7 @@ public class MetricsMetadataTest {
         MetricsMetadata metadata = new MetricsMetadata("amx:type=jdbc-connection-pool-mon,pp=/mon/server-mon[local-instance],name=resources/%sPool/numconnfree#current"
                 , "jdbc.connection.pool.%s.pool.instance.free.connections"
                 , "Free Connections (Instance)"
-                , "The total number of free connections in the pool as of the last sampling");
+                ,null, "The total number of free connections in the pool as of the last sampling");
         List<XmlTag> tags = new ArrayList<>();
         tags.add(new XmlTag("test", "JUnit"));
         metadata.addTags(tags);
@@ -98,7 +98,7 @@ public class MetricsMetadataTest {
         MetricsMetadata metadata = new MetricsMetadata("amx:type=jdbc-connection-pool-mon,pp=/mon/server-mon[local-instance],name=resources/%sPool/numconnfree#current"
                 , "jdbc.connection.pool.instance.free.connections"
                 , "Free Connections (Instance)"
-                , "The total number of free connections in the pool as of the last sampling");
+                ,null, "The total number of free connections in the pool as of the last sampling");
         List<XmlTag> tags = new ArrayList<>();
         tags.add(new XmlTag("pool", "%s"));
         metadata.addTags(tags);
@@ -111,7 +111,7 @@ public class MetricsMetadataTest {
         MetricsMetadata metadata = new MetricsMetadata("amx:type=jdbc-connection-pool-mon,pp=/mon/server-mon[local-instance],name=resources/%sPool/numconnfree#current"
                 , "jdbc.connection.pool.%s.pool.instance.free.connections"
                 , "Free Connections (Instance)"
-                , "The total number of free connections in the pool as of the last sampling");
+                ,null, "The total number of free connections in the pool as of the last sampling");
         List<XmlTag> tags = new ArrayList<>();
         tags.add(new XmlTag("test", null));
         metadata.addTags(tags);
@@ -122,7 +122,7 @@ public class MetricsMetadataTest {
     public void isValid_Service() {
         MetricsMetadata metadata = new MetricsMetadata(
                 "jdbc.connection.pool.${attribute}.pool.instance.free.connections"
-                , "Free Connections (Instance)"
+                , "Free Connections (Instance)", null
                 , "The total number of free connections in the pool as of the last sampling");
         metadata.setService("healthcheck-cpool/${attribute}#freeConnection");
         List<XmlTag> tags = new ArrayList<>();

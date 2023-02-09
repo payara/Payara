@@ -79,12 +79,14 @@ public class MetricsMetadata implements Metadata {
     @XmlElement
     private String name;
 
-
     @XmlElement
     private String description;
 
     @XmlElement
     private String unit;
+
+    @XmlElement
+    private String type;
 
     @XmlTransient
     private Boolean valid;
@@ -99,21 +101,23 @@ public class MetricsMetadata implements Metadata {
     }
 
     public MetricsMetadata(Metadata metadata) {
-        this(null, metadata.getName(), metadata.description().orElse(null), metadata.unit().orElse(null));
+        this(null, metadata.getName(), metadata.description().orElse(null), null, metadata.unit().orElse(null));
     }
 
-    public MetricsMetadata(String mBean, String name, String description, String unit) {
+    public MetricsMetadata(String mBean, String name, String description, String type, String unit) {
         this();
+        this.type = type;
         this.mBean = mBean;
         this.name = name;
         this.description = description;
         this.unit = unit;
     }
 
-    public MetricsMetadata(String name, String description, String unit) {
+    public MetricsMetadata(String name, String description, String type, String unit) {
         this();
         this.name = name;
         this.description = description;
+        this.type = type;
         this.unit = unit;
     }
 
@@ -177,6 +181,14 @@ public class MetricsMetadata implements Metadata {
         return Optional.ofNullable(description);
     }
 
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
     private boolean validateMetadata() {
         boolean validationResult = true;
         MetricsMetadata metadata = this;
@@ -189,7 +201,10 @@ public class MetricsMetadata implements Metadata {
             LOGGER.log(WARNING, "'mbean' or 'service' property not defined in {0} metadata", metadata.getName());
             validationResult = false;
         }
-
+        if (isNull(metadata.getType())) {
+            LOGGER.log(WARNING, "'type' property not defined in {0} metadata", metadata.getName());
+            validationResult = false;
+        }
         if (nonNull(metadata.getName()) && nonNull(metadata.getMBean())) {
             for (String keyword : new String[]{SPECIFIER, KEY, ATTRIBUTE, SUB_ATTRIBUTE}) {
                 if (metadata.getName().contains(keyword) && !metadata.getMBean().contains(keyword)) {
@@ -260,6 +275,7 @@ public class MetricsMetadata implements Metadata {
                 .add("name='" + name + "'")
                 .add("description='" + description + "'")
                 .add("unit='" + unit + "'")
+                .add("type='"+ type + "'")
                 .add("valid=" + valid)
                 .add("tags=" + tags)
                 .toString();

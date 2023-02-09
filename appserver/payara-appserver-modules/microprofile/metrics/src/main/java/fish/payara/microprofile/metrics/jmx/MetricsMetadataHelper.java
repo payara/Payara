@@ -39,7 +39,10 @@
  */
 package fish.payara.microprofile.metrics.jmx;
 
+import fish.payara.microprofile.metrics.healthcheck.HealthCheckCounter;
+import fish.payara.microprofile.metrics.healthcheck.HealthCheckGauge;
 import fish.payara.microprofile.metrics.healthcheck.ServiceExpression;
+import fish.payara.microprofile.metrics.impl.MetricRegistryImpl;
 import fish.payara.nucleus.healthcheck.HealthCheckStatsProvider;
 import java.util.ArrayList;
 import java.util.List;
@@ -52,8 +55,6 @@ import jakarta.inject.Inject;
 import javax.management.MBeanAttributeInfo;
 import javax.management.ObjectName;
 import javax.management.openmbean.CompositeDataSupport;
-import org.eclipse.microprofile.metrics.Counter;
-import org.eclipse.microprofile.metrics.Gauge;
 import org.eclipse.microprofile.metrics.Metadata;
 import org.eclipse.microprofile.metrics.MetadataBuilder;
 import org.eclipse.microprofile.metrics.Metric;
@@ -76,6 +77,10 @@ public class MetricsMetadataHelper {
     public static final String ATTRIBUTE_SEPARATOR = "/";
     public static final String SUB_ATTRIBUTE_SEPARATOR = "#";
     public static final String INSTANCE = "${instance}";
+
+    public static final String GAUGE_METRIC_MBEAN_NAME = "gauge";
+
+    public static final String COUNTER_METRIC_MBEAN_NAME = "counter";
 
     private static final Logger LOGGER = Logger.getLogger(MetricsMetadataHelper.class.getName());
 
@@ -114,25 +119,43 @@ public class MetricsMetadataHelper {
                         metricRegistry.getMetricIDs().contains(new MetricID(beanMetadata.getName(), tags.toArray(new Tag[tags.size()])))) {
                     continue;
                 }
+                Metric type;
                 if (beanMetadata.getMBean() != null) {
                     MBeanExpression mBeanExpression = new MBeanExpression(beanMetadata.getMBean());
-                    if(beanMetadata.getName().equals(Counter.class.getName())) {
-                        metricRegistry.counter(beanMetadata, tags.toArray(new Tag[tags.size()]) );
-                    } else if(beanMetadata.getName().equals(Gauge.class.getName())) {
-                        metricRegistry.gauge(beanMetadata, null, tags.toArray(new Tag[tags.size()]));
-                    } else {
-                        throw new IllegalStateException("Unsupported type : " + beanMetadata);
+
+                    switch (beanMetadata.getType()) {
+                        case COUNTER_METRIC_MBEAN_NAME:
+                            type = new MBeanCounterImpl(mBeanExpression);
+                            break;
+                        case GAUGE_METRIC_MBEAN_NAME:
+                            type = new MBeanGuageImpl(mBeanExpression);
+                            break;
+                        default:
+                            throw new IllegalStateException("Unsupported type : " + beanMetadata);
                     }
+                    if (metricRegistry instanceof MetricRegistryImpl) {
+                        ((MetricRegistryImpl) metricRegistry).register(beanMetadata,
+                                beanMetadata.getType(), type, tags.toArray(new Tag[tags.size()]));
+                    }
+
                 } else {
                     ServiceExpression expression = new ServiceExpression(beanMetadata.getService());
                     HealthCheckStatsProvider healthCheck = habitat.getService(HealthCheckStatsProvider.class, expression.getServiceId());
                     if (healthCheck != null) {
-                        if (beanMetadata.getName().equals(Counter.class.getName())) {
-                            metricRegistry.counter(beanMetadata, tags.toArray(new Tag[tags.size()]));
-                        } else if (beanMetadata.getName().equals(Gauge.class.getName())) {
-                            metricRegistry.gauge(beanMetadata, null, tags.toArray(new Tag[tags.size()]));
-                        } else {
-                            throw new IllegalStateException("Unsupported type : " + beanMetadata);
+                        switch (beanMetadata.getType()) {
+                            case COUNTER_METRIC_MBEAN_NAME:
+                                type = new HealthCheckCounter(healthCheck, expression);
+                                metricRegistry.counter(beanMetadata, tags.toArray(new Tag[tags.size()]));
+                                break;
+                            case GAUGE_METRIC_MBEAN_NAME:
+                                type = new HealthCheckGauge(healthCheck, expression);
+                                break;
+                            default:
+                                throw new IllegalStateException("Unsupported type : " + beanMetadata);
+                        }
+                        if (metricRegistry instanceof MetricRegistryImpl) {
+                            ((MetricRegistryImpl) metricRegistry).register(beanMetadata,
+                                    beanMetadata.getType(), type, tags.toArray(new Tag[tags.size()]));
                         }
                     } else {
                         throw new IllegalStateException("Health-Check service not found : " + beanMetadata.getService());
@@ -397,9 +420,8 @@ public class MetricsMetadataHelper {
                 formatMetadata(metadata.getName(), key, attribute, subAttribute, instanceName),
                 formatMetadata(metadata.getName(), key, attribute, subAttribute, instanceName),
                 formatMetadata(metadata.description().isPresent() ? metadata.getDescription() : metadata.getName(),
-                        key, attribute, subAttribute, instanceName),
-                metadata.unit().orElse(null)
-        );
+                        key, attribute, subAttribute, instanceName), metadata.getType(),
+                metadata.unit().orElse(null));
         if(metadata.getMBean() != null) {
             newMetaData.setMBean(builder.toString());
         } else {

@@ -126,7 +126,7 @@ public class MetricRegistryImpl implements MetricRegistry {
 
     @Override
     public Counter counter(String name) {
-        return findMetricOrCreate(name, Counter.class.getTypeName(), new Tag[0]);
+        return findMetricOrCreate(name, Counter.class.getTypeName(), new CounterImpl(), new Tag[0]);
     }
 
     @Override
@@ -136,7 +136,7 @@ public class MetricRegistryImpl implements MetricRegistry {
 
     @Override
     public Counter counter(String name, Tag... tags) {
-        return findMetricOrCreate(name, Counter.class.getTypeName(), tags);
+        return findMetricOrCreate(name, Counter.class.getTypeName(), new CounterImpl(), tags);
     }
 
     @Override
@@ -146,7 +146,7 @@ public class MetricRegistryImpl implements MetricRegistry {
 
     @Override
     public Counter counter(MetricID metricID) {
-        return findMetricOrCreate(metricID.getName(), Counter.class.getTypeName(), metricID.getTagsAsArray());
+        return findMetricOrCreate(metricID.getName(), Counter.class.getTypeName(), new CounterImpl(), metricID.getTagsAsArray());
     }
 
     @Override
@@ -166,7 +166,7 @@ public class MetricRegistryImpl implements MetricRegistry {
 
     @Override
     public <T extends Number> Gauge<T> gauge(Metadata metadata, Supplier<T> supplier, Tag... tags) {
-        return findMetricOrCreate(metadata, Gauge.class.getTypeName(), tags);
+        return findMetricOrCreate(metadata, Gauge.class.getTypeName(), createGauge(supplier), tags);
     }
 
     @Override
@@ -191,17 +191,17 @@ public class MetricRegistryImpl implements MetricRegistry {
 
     @Override
     public Histogram histogram(String name, Tag... tags) {
-        return findMetricOrCreate(name, Histogram.class.getTypeName(), tags);
+        return findMetricOrCreate(name, Histogram.class.getTypeName(), new HistogramImpl(), tags);
     }
 
     @Override
     public Histogram histogram(Metadata metadata, Tag... tags) {
-        return findMetricOrCreate(metadata, Histogram.class.getTypeName(), tags);
+        return findMetricOrCreate(metadata, Histogram.class.getTypeName(),new HistogramImpl(), tags);
     }
 
     @Override
     public Histogram histogram(String name) {
-        return findMetricOrCreate(name, Histogram.class.getTypeName(), new Tag[0]);
+        return findMetricOrCreate(name, Histogram.class.getTypeName(), new HistogramImpl(), new Tag[0]);
     }
 
     @Override
@@ -211,12 +211,12 @@ public class MetricRegistryImpl implements MetricRegistry {
 
     @Override
     public Histogram histogram(MetricID metricID) {
-        return findMetricOrCreate(metricID.getName(), Histogram.class.getTypeName(), metricID.getTagsAsArray());
+        return findMetricOrCreate(metricID.getName(), Histogram.class.getTypeName(), new HistogramImpl(), metricID.getTagsAsArray());
     }
 
     @Override
     public Timer timer(String name, Tag... tags) {
-        return findMetricOrCreate(name, Timer.class.getTypeName(), tags);
+        return findMetricOrCreate(name, Timer.class.getTypeName(),  new TimerImpl(), tags);
     }
 
     @Override
@@ -226,7 +226,7 @@ public class MetricRegistryImpl implements MetricRegistry {
 
     @Override
     public Timer timer(String name) {
-        return findMetricOrCreate(name, Timer.class.getTypeName(), new Tag[0]);
+        return findMetricOrCreate(name, Timer.class.getTypeName(), new TimerImpl(), new Tag[0]);
     }
 
     @Override
@@ -236,7 +236,7 @@ public class MetricRegistryImpl implements MetricRegistry {
 
     @Override
     public Timer timer(MetricID metricID) {
-        return findMetricOrCreate(metricID.getName(), Timer.class.getTypeName(), metricID.getTagsAsArray());
+        return findMetricOrCreate(metricID.getName(), Timer.class.getTypeName(), new TimerImpl(), metricID.getTagsAsArray());
     }
 
     @Override
@@ -333,7 +333,7 @@ public class MetricRegistryImpl implements MetricRegistry {
 
     @Override
     public String getScope() {
-        return null;
+        return type.name();
     }
 
     @Override
@@ -387,8 +387,8 @@ public class MetricRegistryImpl implements MetricRegistry {
         return matches;
     }
 
-    private <T extends Metric> T findMetricOrCreate(String name, String typeName,Tag... tags) {
-        return findMetricOrCreate(name, typeName, null, tags);
+    private <T extends Metric> T findMetricOrCreateNew(String name, String typeName, T metric, Tag... tags) {
+        return findMetricOrCreate(name, typeName, metric, tags);
     }
 
     private <T extends Metric> T findMetricOrCreate(String name, String typeName, T metric, Tag... tags) {
@@ -396,7 +396,7 @@ public class MetricRegistryImpl implements MetricRegistry {
         Metadata metadata = Metadata.builder()
                 .withName(name)
                 .build();
-        return findMetricOrCreate(metadata, true, typeName, tags);
+        return findMetricOrCreate(metadata, true, typeName, metric, tags);
     }
 
     private <T extends Metric> T findMetricOrCreate(Metadata metadata, String typeName, Tag... tags) {
@@ -404,19 +404,19 @@ public class MetricRegistryImpl implements MetricRegistry {
     }
 
     private <T extends Metric> T findMetricOrCreate(Metadata metadata, String typeName, T metric, Tag... tags) {
-        return findMetricOrCreate(withType(metadata), false, typeName, tags);
+        return findMetricOrCreate(withType(metadata), false, typeName, metric, tags);
     }
 
     @SuppressWarnings("unchecked")
-    private <T extends Metric> T findMetricOrCreate(Metadata metadata, boolean useExistingMetadata, String metricType, Tag... tags) {
+    private <T extends Metric> T findMetricOrCreate(Metadata metadata, boolean useExistingMetadata, String metricType, T metric, Tag... tags) {
         MetricID metricID = new MetricID(metadata.getName(), tags);
         MetricFamily<?> family = metricsFamiliesByName.get(metricID.getName());
         if (family == null) {
-            return register(metadata, useExistingMetadata, metricType, tags);
+            return register(metadata, useExistingMetadata, metricType, metric, tags);
         }
         Metric existing = family.get(metricID);
         if (existing == null) {
-            return register(metadata, useExistingMetadata, metricType, tags);
+            return register(metadata, useExistingMetadata, metricType, metric, tags);
         }
         if (useExistingMetadata || !useExistingMetadata && !metadata.equals(family.metadata)) {
             throw new IllegalArgumentException(
@@ -426,8 +426,12 @@ public class MetricRegistryImpl implements MetricRegistry {
         return (T) existing;
     }
 
+    public <T extends Metric> T register(Metadata metadata, String metricType, T metric, Tag... tags) throws IllegalArgumentException {
+        return register(metadata, false, metricType, metric, tags);
+    }
+
     @SuppressWarnings("unchecked")
-    private <T extends Metric> T register(Metadata metadata, boolean useExistingMetadata, String metricType, Tag... tags) {
+    private <T extends Metric> T register(Metadata metadata, boolean useExistingMetadata, String metricType, T metric, Tag... tags) {
         String name = metadata.getName();
         checkNameIsNotNullOrEmpty(name);
         if (useExistingMetadata) {
@@ -437,7 +441,7 @@ public class MetricRegistryImpl implements MetricRegistry {
             }
         }
         final Metadata newMetadata = metadata;
-        final T newMetric = (T) createMetricInstance(newMetadata, metricType);
+        final T newMetric = metric != null ? metric:(T) createMetricInstance(newMetadata, metricType);
         MetricFamily<T> family = (MetricFamily<T>) metricsFamiliesByName.computeIfAbsent(name,
                 key -> new MetricFamily<>(newMetadata));
         MetricID metricID = new MetricID(name, tags);
@@ -452,7 +456,7 @@ public class MetricRegistryImpl implements MetricRegistry {
     private void notifyRegistrationListeners(MetricID metricID) {
         for (MetricRegistrationListener l : listeners) {
             try {
-                l.onRegistration(metricID, type);
+                l.onRegistration(metricID, this);
             } catch (RuntimeException ex) {
                 LOGGER.log(Level.WARNING, "Registration listener threw exception:", ex);
             }

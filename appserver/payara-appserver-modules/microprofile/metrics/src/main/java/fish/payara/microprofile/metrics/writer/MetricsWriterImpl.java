@@ -60,7 +60,6 @@ import fish.payara.microprofile.metrics.exception.NoSuchRegistryException;
 import fish.payara.microprofile.metrics.impl.MetricRegistryImpl;
 import fish.payara.nucleus.healthcheck.HealthCheckService;
 import fish.payara.nucleus.healthcheck.HealthCheckStatsProvider;
-import org.eclipse.microprofile.metrics.annotation.RegistryScope;
 import org.glassfish.internal.api.Globals;
 
 public class MetricsWriterImpl implements MetricsWriter {
@@ -125,7 +124,7 @@ public class MetricsWriterImpl implements MetricsWriter {
     private void writeMetricFamily(MetricExporter exporter, String contextName, String metricName,
             MetricRegistryImpl registry) {
         Metadata metadata = registry.getMetadata(metricName);
-        for (Entry<MetricID, Metric> metric : registry.getMetrics().entrySet()) {
+        for (Entry<MetricID, Metric> metric : registry.getMetrics(metricName).entrySet()) {
             MetricID metricID = metric.getKey();
             if (metric.getValue() instanceof HealthCheckStatsProvider
                     && (!((HealthCheckStatsProvider) metric.getValue()).isEnabled() || !healthCheckService.isEnabled())) {

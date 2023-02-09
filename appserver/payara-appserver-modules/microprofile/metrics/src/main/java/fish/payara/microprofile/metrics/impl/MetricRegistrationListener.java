@@ -57,5 +57,5 @@ public interface MetricRegistrationListener {
      * @param registered ID of the newly registered {@link Metric}
      * @param registry The registry the new {@link Metric} was registered with
      */
-    void onRegistration(MetricID registered, MetricRegistry.Type scope);
+    void onRegistration(MetricID registered, MetricRegistry registry);
 }

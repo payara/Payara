@@ -43,6 +43,7 @@ import static java.util.Collections.unmodifiableSet;
 import static org.eclipse.microprofile.metrics.MetricRegistry.Type.BASE;
 import static org.eclipse.microprofile.metrics.MetricRegistry.Type.VENDOR;
 import static org.eclipse.microprofile.metrics.MetricRegistry.Type.APPLICATION;
+
 import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.io.FileInputStream;
@@ -191,7 +192,20 @@ public class MetricsServiceImpl implements MetricsService, ConfigListener, Monit
 
 
         @Override
-        public void onRegistration(MetricID registered, MetricRegistry.Type type) {
+        public void onRegistration(MetricID registered, MetricRegistry registry) {
+            MetricRegistry.Type type = null;
+            if(registry.getScope().equals(BASE.getName().toUpperCase())) {
+                type = BASE;
+            }
+
+            if(registry.getScope().equals(VENDOR.getName().toUpperCase())) {
+                type = VENDOR;
+            }
+
+            if(registry.getScope().equals(APPLICATION.getName().toUpperCase())) {
+                type = APPLICATION;
+            }
+
             newlyRegistered.add(new RegisteredMetric(type, registered));
         }
 
