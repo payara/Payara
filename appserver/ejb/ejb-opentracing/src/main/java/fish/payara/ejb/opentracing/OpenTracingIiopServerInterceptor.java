@@ -54,6 +54,7 @@ import org.omg.PortableInterceptor.ServerRequestInterceptor;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInput;
+import java.util.logging.Logger;
 
 import static fish.payara.ejb.opentracing.OpenTracingIiopInterceptorFactory.OPENTRACING_IIOP_ID;
 import static fish.payara.opentracing.OpenTracingService.PAYARA_CORBA_RMI_TRACER_NAME;
@@ -66,9 +67,13 @@ import io.opentracing.Span;
  * @author Andrew Pielage <andrew.pielage@payara.fish>
  */
 public class OpenTracingIiopServerInterceptor extends LocalObject implements ServerRequestInterceptor {
+    private static final Logger LOGGER = Logger.getLogger(OpenTracingIiopServerInterceptor.class.getName());
 
     private OpenTracingService openTracingService;
     private Tracer tracer;
+
+    // Let's just guess that single request remain on the single thread as is not multiplexed
+    private ThreadLocal<Scope> currentScope = new ThreadLocal<>();
 
     public OpenTracingIiopServerInterceptor(OpenTracingService openTracingService) {
         this.openTracingService = openTracingService;
@@ -115,8 +120,13 @@ public class OpenTracingIiopServerInterceptor extends LocalObject implements Ser
             spanBuilder.asChildOf(spanContext);
         }
 
+
+        Scope previousScope = currentScope.get();
+        if (previousScope != null) {
+            LOGGER.warning("Overlapping traced RMI operations identified, please report");
+        }
         // Start the span and mark it as active
-        tracer.activateSpan(spanBuilder.start());
+        currentScope.set(tracer.activateSpan(spanBuilder.start()));
     }
 
     @Override
@@ -135,21 +145,18 @@ public class OpenTracingIiopServerInterceptor extends LocalObject implements Ser
     }
 
     private void closeScope() {
-        // Double check we have a tracer
-        if (!tracerAvailable()) {
+        if (tracer == null) {
             return;
         }
-
-        // Make sure active scope is closed - this is an entry point to the server so the currently active span
-        // **should** be the one started in receive_request
+        // Double check we have a tracer
+        Scope scope = currentScope.get();
+        if (scope != null) {
+            scope.close();
+            currentScope.remove();
+        }
         Span activeSpan = tracer.scopeManager().activeSpan();
         if (activeSpan != null) {
             activeSpan.finish();
-        }
-        if (tracer.scopeManager() instanceof ScopeManager) {
-            ScopeManager manager = (ScopeManager) tracer.scopeManager();
-            try (Scope activeScope = manager.activeScope()) {
-            }
         }
     }
 

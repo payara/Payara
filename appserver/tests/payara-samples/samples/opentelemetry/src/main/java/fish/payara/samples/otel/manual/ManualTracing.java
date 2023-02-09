@@ -124,6 +124,7 @@ public class ManualTracing {
         AutoConfiguredOpenTelemetrySdk sdk = AutoConfiguredOpenTelemetrySdk.builder()
                 .addPropertiesSupplier(() -> mpconfigProperties)
                 .setServiceClassLoader(Thread.currentThread().getContextClassLoader())
+                .setResultAsGlobal(false)
                 .build();
         tracer = sdk.getOpenTelemetrySdk().getTracer("fish.payara.opentelemetry");
     }

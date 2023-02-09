@@ -42,6 +42,7 @@ package fish.payara.samples.remote.ejb.tracing;
 import fish.payara.samples.NotMicroCompatible;
 import fish.payara.samples.PayaraArquillianTestRunner;
 import fish.payara.samples.remote.ejb.tracing.server.Ejb;
+import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.util.GlobalTracer;
@@ -78,15 +79,17 @@ public class RemoteEjbClientIT {
         contextProperties.setProperty(Context.INITIAL_CONTEXT_FACTORY, "com.sun.enterprise.naming.SerialInitContextFactory");
         contextProperties.setProperty("org.omg.CORBA.ORBInitialHost", "localhost");
         contextProperties.setProperty("org.omg.CORBA.ORBInitialPort", "3700");
+        // enable OpenTelemetry tracing so we get our OpenTracing instance
+        System.setProperty("otel.sdk.disabled", "false");
+
 
         Context context = new InitialContext(contextProperties);
         EjbRemote ejb = (EjbRemote) context.lookup(String.format("java:global%sEjb", uri.getPath()));
 
+
         Tracer tracer = GlobalTracer.get();
-        Span span = null;
-        try {
-            span = tracer.buildSpan("ExecuteEjb").start();
-            tracer.activateSpan(span);
+        Span span = tracer.buildSpan("ExecuteEjb").start();
+        try (Scope scope = tracer.activateSpan(span)) {
             span.setBaggageItem("Wibbles", "Wobbles");
             String baggageItems = ejb.annotatedMethod();
             Assert.assertTrue("Baggage items didn't match, received: " + baggageItems,
@@ -111,9 +114,7 @@ public class RemoteEjbClientIT {
                     && baggageItems.contains("Nibbles : Nabbles")
                     && baggageItems.contains("Bibbles : Babbles"));
         } finally {
-            if (span != null) {
-                span.finish();
-            }
+            span.finish();
         }
     }
 
@@ -123,23 +124,21 @@ public class RemoteEjbClientIT {
         contextProperties.setProperty(Context.INITIAL_CONTEXT_FACTORY, "com.sun.enterprise.naming.SerialInitContextFactory");
         contextProperties.setProperty("org.omg.CORBA.ORBInitialHost", "localhost");
         contextProperties.setProperty("org.omg.CORBA.ORBInitialPort", "3700");
+        // enable OpenTelemetry tracing so we get our OpenTracing instance
+        System.setProperty("otel.sdk.disabled", "false");
 
         Context context = new InitialContext(contextProperties);
         EjbRemote ejb = (EjbRemote) context.lookup(String.format("java:global%sEjb", uri.getPath()));
 
         Tracer tracer = GlobalTracer.get();
 
-        Span span = null;
-        try {
-            span = tracer.buildSpan("ExecuteEjb").start();
-            tracer.activateSpan(span);
+        Span span = tracer.buildSpan("ExecuteEjb").start();
+        try(Scope scope = tracer.activateSpan(span)) {
             String baggageItems = ejb.annotatedMethod();
             Assert.assertTrue("Baggage items didn't contain transaction ID, received: " + baggageItems,
                     baggageItems.contains("TX-ID"));
         } finally {
-            if (span != null) {
-                span.finish();
-            }
+            span.finish();
         }
     }
 
