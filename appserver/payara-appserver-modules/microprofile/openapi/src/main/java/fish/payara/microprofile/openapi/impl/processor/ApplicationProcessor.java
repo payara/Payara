@@ -356,16 +356,20 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             if (requestBody != null) {
                 // Find the wildcard return type
                 if (requestBody.getContent() != null
-                        && requestBody.getContent().getMediaType(jakarta.ws.rs.core.MediaType.WILDCARD) != null) {
-                    MediaType wildcardMedia = requestBody.getContent().getMediaType(jakarta.ws.rs.core.MediaType.WILDCARD);
+                        && requestBody.getContent().getMediaType(
+                                jakarta.ws.rs.core.MediaType.APPLICATION_JSON) != null) {
+                    MediaType jsonMedia = requestBody.getContent().getMediaType(
+                            jakarta.ws.rs.core.MediaType.APPLICATION_JSON);
 
                     // Copy the wildcard return type to the valid request body types
                     List<String> mediaTypes = consumes.getValue("value", List.class);
                     for (String mediaType : mediaTypes) {
-                        requestBody.getContent().addMediaType(getContentType(mediaType), wildcardMedia);
+                        requestBody.getContent().addMediaType(getContentType(mediaType), jsonMedia);
                     }
-                    // If there is an @Consumes, remove the wildcard
-                    requestBody.getContent().removeMediaType(jakarta.ws.rs.core.MediaType.WILDCARD);
+                    // If there is an @Consumes, removes the default
+                    if (!mediaTypes.contains(jakarta.ws.rs.core.MediaType.APPLICATION_JSON)) {
+                        requestBody.getContent().removeMediaType(jakarta.ws.rs.core.MediaType.APPLICATION_JSON);
+                    }
                 }
             }
         }
