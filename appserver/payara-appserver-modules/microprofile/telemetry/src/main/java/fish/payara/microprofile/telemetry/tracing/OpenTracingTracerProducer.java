@@ -43,6 +43,7 @@ package fish.payara.microprofile.telemetry.tracing;
 
 import fish.payara.opentracing.OpenTracingService;
 import io.opentracing.Tracer;
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.internal.api.Globals;
@@ -52,6 +53,7 @@ import org.glassfish.internal.api.Globals;
  * 
  * @author Andrew Pielage <andrew.pielage@payara.fish>
  */
+@ApplicationScoped
 public class OpenTracingTracerProducer {
     
     private OpenTracingService openTracing;
@@ -69,6 +71,7 @@ public class OpenTracingTracerProducer {
      * @return An OpenTracing tracer
      */
     @Produces
+    @ApplicationScoped
     public Tracer getTracer() {
         return openTracing.getTracer(openTracing.getApplicationName(
                 Globals.getDefaultBaseServiceLocator().getService(InvocationManager.class)));
