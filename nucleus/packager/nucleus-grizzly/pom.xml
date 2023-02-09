@@ -48,7 +48,7 @@
     <parent>
         <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>nucleus-packages</artifactId>
-        <version>6.2022.1.Alpha3-SNAPSHOT</version>
+        <version>6.2023.3-SNAPSHOT</version>
     </parent>
 
     <artifactId>nucleus-grizzly</artifactId>
@@ -62,7 +62,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>fish.payara.server.internal.grizzly</groupId>
+            <groupId>fish.payara.server.core.grizzly</groupId>
             <artifactId>nucleus-grizzly-all</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>

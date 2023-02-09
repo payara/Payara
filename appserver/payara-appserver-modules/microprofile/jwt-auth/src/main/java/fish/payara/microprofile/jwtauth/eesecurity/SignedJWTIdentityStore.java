@@ -180,7 +180,7 @@ public class SignedJWTIdentityStore implements IdentityStore {
         		.map(Duration::ofMillis)
         		.orElseGet( () -> Duration.ofMinutes(5));
     }
-
+    
     private Optional<String> readAudience(Optional<Properties> properties) {
         return properties.isPresent() ? Optional.ofNullable(properties.get().getProperty(Names.AUDIENCES)) : Optional.empty();
     }

@@ -43,7 +43,7 @@
     <parent>
         <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
         <artifactId>microprofile</artifactId>
-        <version>6.2022.1.Alpha3-SNAPSHOT</version>
+        <version>6.2023.3-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
     <artifactId>microprofile-metrics</artifactId>
@@ -74,7 +74,7 @@
             </executions>
             <configuration>
                 <sources>
-                    <source>src/main/java/fish/payara/microprofile/metrics/jmx/MBeanMetadataConfig.java</source>
+                    <source>src/main/java/fish/payara/microprofile/metrics/jmx/MetricsMetadataConfig.java</source>
                 </sources>
             </configuration>
             </plugin>
@@ -100,7 +100,7 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.web</groupId>
+            <groupId>fish.payara.server.core.web</groupId>
             <artifactId>web-glue</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -110,12 +110,12 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.common</groupId>
+            <groupId>fish.payara.server.core.common</groupId>
             <artifactId>internal-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.payara-modules</groupId>
+            <groupId>fish.payara.server.core.payara-modules</groupId>
             <artifactId>payara-executor-service</artifactId>
             <version>${project.version}</version>
         </dependency>

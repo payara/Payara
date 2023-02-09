@@ -46,20 +46,6 @@ import com.sun.enterprise.config.serverbeans.Server;
 import fish.payara.deployment.util.GAVConvertor;
 import fish.payara.deployment.util.JavaArchiveUtils;
 import fish.payara.deployment.util.URIUtils;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import jakarta.inject.Inject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
@@ -78,6 +64,15 @@ import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *

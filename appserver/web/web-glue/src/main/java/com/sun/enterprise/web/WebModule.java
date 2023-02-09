@@ -87,7 +87,7 @@ import org.apache.catalina.Valve;
 import org.apache.catalina.core.DefaultInstanceManager;
 import org.apache.catalina.deploy.NamingResourcesImpl;
 import org.apache.catalina.servlets.DefaultServlet;
-import org.apache.jasper.servlet.JspServlet;
+import org.glassfish.wasp.servlet.JspServlet;
 import org.apache.tomcat.InstanceManager;
 import org.apache.tomcat.util.descriptor.web.FilterMap;
 import org.glassfish.api.deployment.DeploymentContext;
@@ -1098,6 +1098,8 @@ public class WebModule extends PwcWebModule implements Context {
             setTldValidation(true);
         } else if("default-role-mapping".equalsIgnoreCase(name)) {
             wmInfo.getDescriptor().setDefaultGroupPrincipalMapping(ConfigBeansUtilities.toBoolean(value));
+        } else if("default-web-xml".equalsIgnoreCase(name)) {
+            vs.setDefaultWebXmlLocation(value);
         } else if(name.startsWith("valve_") ||
                 name.startsWith("listener_")) {
             // do nothing; these properties are dealt with
@@ -1491,28 +1493,8 @@ public class WebModule extends PwcWebModule implements Context {
     }
 
     @Override
-    public Servlet getServlet(String name) throws ServletException {
-        return getServletContext().getServlet(name);
-    }
-
-    @Override
-    public Enumeration<Servlet> getServlets() {
-        return getServletContext().getServlets();
-    }
-
-    @Override
-    public Enumeration<String> getServletNames() {
-        return getServletContext().getServletNames();
-    }
-
-    @Override
     public void log(String message) {
         getServletContext().log(message);
-    }
-
-    @Override
-    public void log(Exception exception, String message) {
-        getServletContext().log(exception, message);
     }
 
     @Override

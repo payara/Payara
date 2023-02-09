@@ -48,7 +48,7 @@
     <parent>
         <groupId>fish.payara.server.internal.concurrent</groupId>
         <artifactId>concurrent</artifactId>
-        <version>6.2022.1.Alpha3-SNAPSHOT</version>
+        <version>6.2023.3-SNAPSHOT</version>
     </parent>    
     <artifactId>concurrent-impl</artifactId>
     <packaging>glassfish-jar</packaging>
@@ -62,7 +62,7 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.admin</groupId>
+            <groupId>fish.payara.server.core.admin</groupId>
             <artifactId>config-api</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -76,32 +76,32 @@
             <artifactId>hk2</artifactId>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.common</groupId>
+            <groupId>fish.payara.server.core.common</groupId>
             <artifactId>glassfish-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.common</groupId>
+            <groupId>fish.payara.server.core.common</groupId>
             <artifactId>container-common</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.admin</groupId>
+            <groupId>fish.payara.server.core.admin</groupId>
             <artifactId>admin-util</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.resourcebase.resources</groupId>
+            <groupId>fish.payara.server.core.resourcebase.resources</groupId>
             <artifactId>nucleus-resources</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.resources</groupId>
+            <groupId>fish.payara.server.core.resources</groupId>
             <artifactId>resources-connector</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.connectors</groupId>
+            <groupId>fish.payara.server.core.connectors</groupId>
             <artifactId>connectors-internal-api</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -125,22 +125,22 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.admin</groupId>
+            <groupId>fish.payara.server.core.admin</groupId>
             <artifactId>monitoring-core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.payara-modules</groupId>
+            <groupId>fish.payara.server.core.payara-modules</groupId>
             <artifactId>requesttracing-core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.payara-modules</groupId>
+            <groupId>fish.payara.server.core.payara-modules</groupId>
             <artifactId>healthcheck-stuck</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.payara-modules</groupId>
+            <groupId>fish.payara.server.core.payara-modules</groupId>
             <artifactId>opentracing-adapter</artifactId>
             <version>${project.version}</version>
         </dependency>

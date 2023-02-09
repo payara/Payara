@@ -122,7 +122,7 @@
 
 [#|2012-10-19T15:27:30.058-0400|INFO|44.0|jakarta.enterprise.system.core.security.com.sun.enterprise.security|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674850058;_LevelValue=800;_MessageID=sec.service.startup.enter;|SEC1010: Entering Security Startup Service|#]
 
-[#|2012-10-19T15:27:30.061-0400|INFO|44.0|jakarta.enterprise.system.core.security.com.sun.enterprise.security|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674850061;_LevelValue=800;_MessageID=policy.loading;|SEC1143: Loading policy provider com.sun.enterprise.security.jacc.provider.SimplePolicyProvider.|#]
+[#|2012-10-19T15:27:30.061-0400|INFO|44.0|jakarta.enterprise.system.core.security.com.sun.enterprise.security|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674850061;_LevelValue=800;_MessageID=policy.loading;|SEC1143: Loading policy provider fish.payara.security.jacc.provider.SimplePolicyProvider.|#]
 
 [#|2012-10-19T15:27:30.140-0400|INFO|44.0|jakarta.enterprise.system.core.security.com.sun.enterprise.security|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674850140;_LevelValue=800;_MessageID=sec.service.startup.exit;|SEC1011: Security Service(s) Started Successfully|#]
 

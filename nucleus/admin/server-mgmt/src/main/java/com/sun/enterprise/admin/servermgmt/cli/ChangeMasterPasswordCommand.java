@@ -41,23 +41,20 @@
 
 package com.sun.enterprise.admin.servermgmt.cli;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-
 import com.sun.enterprise.admin.cli.CLICommand;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.util.io.DomainDirs;
-
+import jakarta.inject.Inject;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
-
-import jakarta.inject.Inject;
-
 import org.jvnet.hk2.annotations.Service;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * The change-master-password command.
@@ -120,13 +117,13 @@ public class ChangeMasterPasswordCommand extends CLICommand {
                 CHANGE_MASTER_PASSWORD_DAS);
                 return command.execute(argv);
             }
-
+            
             if (nodeDir != null) {
                 command = CLICommand.getCommand(habitat,
                 CHANGE_MASTER_PASSWORD_NODE);
                 return command.execute(argv);
             } else {
-
+                
                 // nodeDir is not specified and domainNameOrNodeName is not a domain.
                 // It could be a node
                 // We add defaultNodeDir parameter to args
@@ -136,7 +133,7 @@ public class ChangeMasterPasswordCommand extends CLICommand {
                 arguments.add(getDefaultNodesDirs().getAbsolutePath());
                 arguments.add(domainNameOrNodeName);
                 String[] newargs = (String[]) arguments.toArray(new String[arguments.size()]);
-
+                
                 command = CLICommand.getCommand(habitat,
                 CHANGE_MASTER_PASSWORD_NODE);
                 return command.execute(newargs);

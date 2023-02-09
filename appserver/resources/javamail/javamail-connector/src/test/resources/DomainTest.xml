@@ -103,7 +103,7 @@
           <property name="jaas-context" value="fileRealm" />
         </auth-realm>
         <auth-realm name="certificate" classname="com.sun.enterprise.security.auth.realm.certificate.CertificateRealm" />
-        <jacc-provider policy-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyProvider" name="default" policy-configuration-factory-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyConfigurationFactory"></jacc-provider>
+        <jacc-provider policy-provider="fish.payara.security.jacc.provider.SimplePolicyProvider" name="default" policy-configuration-factory-provider="fish.payara.security.jacc.provider.SimplePolicyConfigurationFactory"></jacc-provider>
         <audit-module name="default" classname="com.sun.enterprise.security.ee.Audit">
           <property name="auditOn" value="false" />
         </audit-module>
@@ -158,8 +158,8 @@
         <jvm-options>-Dsun.rmi.dgc.server.gcInterval=3600000</jvm-options>
         <jvm-options>-Dsun.rmi.dgc.client.gcInterval=3600000</jvm-options>
         <jvm-options>-Xmx512m</jvm-options>
-        <jvm-options>-Djavax.net.ssl.keyStore=${com.sun.aas.instanceRoot}/config/keystore.jks</jvm-options>
-        <jvm-options>-Djavax.net.ssl.trustStore=${com.sun.aas.instanceRoot}/config/cacerts.jks</jvm-options>
+        <jvm-options>-Djavax.net.ssl.keyStore=${com.sun.aas.instanceRoot}/config/keystore.p12</jvm-options>
+        <jvm-options>-Djavax.net.ssl.trustStore=${com.sun.aas.instanceRoot}/config/cacerts.p12</jvm-options>
         <jvm-options>
                     -Djava.ext.dirs=${com.sun.aas.javaRoot}/lib/ext${path.separator}${com.sun.aas.javaRoot}/jre/lib/ext${path.separator}${com.sun.aas.instanceRoot}/lib/ext${path.separator}${fish.payara.aas.h2Root}/bin
                 </jvm-options>

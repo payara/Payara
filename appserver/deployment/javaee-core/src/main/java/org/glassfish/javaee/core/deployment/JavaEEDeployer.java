@@ -113,7 +113,7 @@ public abstract class   JavaEEDeployer<T extends Container, U extends Applicatio
         // get the base module classpath
         // this includes the system classpath and deploy time lib libraries
         StringBuilder classpath = new StringBuilder
-            (ASClassLoaderUtil.getModuleClassPath(habitat, ctx));
+                (ASClassLoaderUtil.getModuleClassPath(habitat, ctx));
 
         try {
             // add the module dir
@@ -128,15 +128,15 @@ public abstract class   JavaEEDeployer<T extends Container, U extends Applicatio
             Application app = ctx.getModuleMetaData(Application.class);
             if (!app.isVirtual()) {
                 ReadableArchive parentArchive =
-                    ctx.getSource().getParentArchive();
+                        ctx.getSource().getParentArchive();
 
                 String compatProp = ctx.getAppProps().getProperty(
-                    DeploymentProperties.COMPATIBILITY);
+                        DeploymentProperties.COMPATIBILITY);
 
                 List<URL> earLibURLs =
-                    ASClassLoaderUtil.getAppLibDirLibrariesAsList(new File(
-                        parentArchive.getURI()), app.getLibraryDirectory(),
-                        compatProp);
+                        ASClassLoaderUtil.getAppLibDirLibrariesAsList(new File(
+                                        parentArchive.getURI()), app.getLibraryDirectory(),
+                                compatProp);
 
                 for (URL url : earLibURLs) {
                     classpath.append(Paths.get(url.toURI()).toString());
@@ -206,10 +206,10 @@ public abstract class   JavaEEDeployer<T extends Container, U extends Applicatio
             ((ExtendedDeploymentContext)dc).prepareScratchDirs();
 
 
-             //In jaxrpc it was required to run
-             //Wscompile to generate the artifacts for clients too.
-             //service-ref element can be in client in web.xml,  application-client.xml, sun-ejb-jar.xml
-             //Fix for issue 16015
+            //In jaxrpc it was required to run
+            //Wscompile to generate the artifacts for clients too.
+            //service-ref element can be in client in web.xml,  application-client.xml, sun-ejb-jar.xml
+            //Fix for issue 16015
             BundleDescriptor bundleDesc = dc.getModuleMetaData(BundleDescriptor.class);
             if (bundleDesc.hasWebServiceClients())     {
                 JAXRPCCodeGenFacade jaxrpcCodeGenFacade = jaxrpcCodeGenFacadeProvider.get();
@@ -218,7 +218,7 @@ public abstract class   JavaEEDeployer<T extends Container, U extends Applicatio
                 }
             }
             if (! dc.getCommandParameters(OpsParams.class).origin.isArtifactsPresent()) {
-                         // only generate artifacts when there is no artifacts present
+                // only generate artifacts when there is no artifacts present
 
                 generateArtifacts(dc);
             }
@@ -229,7 +229,7 @@ public abstract class   JavaEEDeployer<T extends Container, U extends Applicatio
         }
     }
 
-   /**
+    /**
      * Loads a previously prepared application in its execution environment and
      * return a ContractProvider instance that will identify this environment in
      * future communications with the application's container runtime.
@@ -249,7 +249,7 @@ public abstract class   JavaEEDeployer<T extends Container, U extends Applicatio
     }
 
     protected void generateArtifacts(DeploymentContext dc)
-        throws DeploymentException {
+            throws DeploymentException {
     }
 
     /**
@@ -265,7 +265,7 @@ public abstract class   JavaEEDeployer<T extends Container, U extends Applicatio
             Application app = getApplicationFromApplicationInfo(appName);
             if (app != null) {
                 context.addModuleMetaData(app);
-                   undeploymentVisitor.accept(app);
+                undeploymentVisitor.accept(app);
             }
         }
     }
@@ -286,7 +286,7 @@ public abstract class   JavaEEDeployer<T extends Container, U extends Applicatio
     }
 
     protected Application getApplicationFromApplicationInfo(
-        String appName) {
+            String appName) {
         ApplicationInfo appInfo = appRegistry.get(appName);
         if (appInfo == null) {
             return null;

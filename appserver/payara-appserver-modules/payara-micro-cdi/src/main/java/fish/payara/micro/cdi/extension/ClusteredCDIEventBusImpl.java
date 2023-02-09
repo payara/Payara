@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2021 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2022 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,7 +39,6 @@
  */
 package fish.payara.micro.cdi.extension;
 
-import com.sun.enterprise.util.Utility;
 import fish.payara.micro.cdi.Outbound;
 import fish.payara.micro.cdi.Inbound;
 import fish.payara.micro.cdi.ClusteredCDIEventBus;
@@ -87,9 +86,9 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
     private JavaEEContextUtil.Instance ctxUtil;
 
     private final static String INSTANCE_PROPERTY = "InstanceName";
-    
+
     private final static String EVENT_PROPERTY = "EventName";
-    
+
     @PostConstruct
     void postConstruct() {
         ctxUtil = Globals.getDefaultHabitat().getService(JavaEEContextUtil.class).currentInvocation();
@@ -120,7 +119,7 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
 
     @Override
     public void eventReceived(final PayaraClusteredCDIEvent event) {
-        
+
         // first check if the event is targetted at a specific instance
         String instanceName = event.getProperty(INSTANCE_PROPERTY);
         if (!(instanceName == null) && !(instanceName.length() == 0) ) {
@@ -150,7 +149,7 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
                         public String eventName() {
                             return event.getProperty(EVENT_PROPERTY);
                         }
-                        
+
                         @Override
                         public Class<? extends Annotation> annotationType() {
                             return Inbound.class;
@@ -167,7 +166,8 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
                         }
                     }
                     Annotation annotations[] = qualifiers.toArray(new Annotation[0]);
-                    bm.fireEvent(eventPayload,annotations);
+                    bm.getEvent().select(annotations).fire(eventPayload);
+                    // todo review what to do with this, Do I need to replace with something new?
                 } catch (IOException | ClassNotFoundException ex) {
                     Logger.getLogger(ClusteredCDIEventBusImpl.class.getName())
                             .log(ex.getCause() instanceof IllegalStateException ? Level.FINE : Level.INFO,
@@ -206,7 +206,7 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
     }
 
     private static final String ITEM_SEPARATOR = ",,,";  // 3 commas in case an instance name contains a comma
-    
+
     // the same could be done in one line just with String.join() in JDK8
     private static String serializeArray(String[] items) {
         StringBuilder sb = new StringBuilder();
@@ -221,7 +221,7 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
         }
         return sb.toString();
     }
-    
+
     private String[] deserializeToArray(String serializedItems) {
         return serializedItems.split(ITEM_SEPARATOR);
     }

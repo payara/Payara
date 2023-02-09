@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) 2020-2022 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -109,6 +109,11 @@ public class PayaraServerWebTest {
         }
     }
 
+    @Test
+    public void testOpenSslIsRemoved() throws IOException, InterruptedException {
+        String openSslVersionOutput = CONTAINER.execInContainer("/bin/sh","-c","openssl","version").getStderr();
+        assertTrue(openSslVersionOutput.contains("openssl: not found"));
+    }
 
     private String getPageContent(final URL url) throws IOException {
         final URLConnection conn = url.openConnection();

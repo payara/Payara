@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.ejb.deployment.annotation.handlers;
 
@@ -85,7 +85,7 @@ public class SingletonHandler extends AbstractEjbHandler {
      * @return boolean check for validity of EjbDescriptor
      */
     protected boolean isValidEjbDescriptor(EjbDescriptor ejbDesc,
-            Annotation annotation) {
+                                           Annotation annotation) {
         boolean isValid = EjbSessionDescriptor.TYPE.equals(ejbDesc.getType());
 
         if( isValid ) {
@@ -108,7 +108,7 @@ public class SingletonHandler extends AbstractEjbHandler {
      * @return a new EjbDescriptor
      */
     protected EjbDescriptor createEjbDescriptor(String elementName,
-            AnnotationInfo ainfo) throws AnnotationProcessorException {
+                                                AnnotationInfo ainfo) throws AnnotationProcessorException {
 
         AnnotatedElement ae = ainfo.getAnnotatedElement();
         Class ejbClass = (Class)ae;
@@ -171,7 +171,7 @@ public class SingletonHandler extends AbstractEjbHandler {
             desc.setClustered(true);
             desc.setClusteredKeyValue(clusteredAnnotation.keyName());
             desc.setDontCallPostConstructOnAttach(!clusteredAnnotation.callPostConstructOnAttach());
-            desc.setDontCallPreDestroyOnDetach(!clusteredAnnotation.callPreDestoyOnDetach());
+            desc.setDontCallPreDestroyOnDetach(!clusteredAnnotation.callPreDestroyOnDetach());
         }
     }
 }

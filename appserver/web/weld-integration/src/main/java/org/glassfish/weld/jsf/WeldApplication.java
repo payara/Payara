@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2022] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld.jsf;
 
@@ -55,22 +56,24 @@ import jakarta.servlet.jsp.JspFactory;
 
 import org.glassfish.weld.util.Util;
 
-import org.apache.jasper.runtime.JspApplicationContextImpl;
+import org.glassfish.wasp.runtime.JspApplicationContextImpl;
 
+
+@Deprecated
 public class WeldApplication extends ApplicationWrapper {
-   
+
     private final Application application;
     private ExpressionFactory expressionFactory;
-   
+
     public WeldApplication(Application application) {
         this.application = application;
         BeanManager beanManager = getBeanManager();
         if (beanManager != null) {
             application.addELContextListener(Util.<ELContextListener>newInstance(
-                "org.jboss.weld.module.web.el.WeldELContextListener"));
+                    "org.jboss.weld.module.web.el.WeldELContextListener"));
             application.addELResolver(beanManager.getELResolver());
             JspApplicationContext jspAppContext = JspFactory.getDefaultFactory().
-                getJspApplicationContext((ServletContext)FacesContext.getCurrentInstance().getExternalContext().getContext());
+                    getJspApplicationContext((ServletContext)FacesContext.getCurrentInstance().getExternalContext().getContext());
             this.expressionFactory = beanManager.wrapExpressionFactory(jspAppContext.getExpressionFactory());
             ((JspApplicationContextImpl)jspAppContext).setExpressionFactory(this.expressionFactory);
         }
@@ -87,9 +90,9 @@ public class WeldApplication extends ApplicationWrapper {
             BeanManager beanManager = getBeanManager();
             if (beanManager != null) {
                 this.expressionFactory = beanManager.wrapExpressionFactory(getWrapped().getExpressionFactory());
-          } else {
-              this.expressionFactory = getWrapped().getExpressionFactory(); 
-          }
+            } else {
+                this.expressionFactory = getWrapped().getExpressionFactory();
+            }
         }
         return expressionFactory;
     }

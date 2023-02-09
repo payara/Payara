@@ -48,7 +48,6 @@ import java.util.ServiceConfigurationError;
 import org.glassfish.jersey.internal.ServiceFinder;
 import org.glassfish.jersey.internal.ServiceFinder.ServiceIteratorProvider;
 import org.glassfish.jersey.internal.spi.AutoDiscoverable;
-//import org.glassfish.jersey.server.spi.ServerComponentProvider;
 
 /** Goal of this finder is to be fast and efficient.
  * It is hardcoded implementation.

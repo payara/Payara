@@ -46,6 +46,9 @@ import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
 import com.sun.enterprise.container.common.spi.util.InjectionException;
 import com.sun.enterprise.container.common.spi.util.InjectionManager;
 import com.sun.enterprise.deployment.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 import org.jboss.weld.injection.spi.InjectionContext;
@@ -64,6 +67,8 @@ public class NonModuleInjectionServices implements InjectionServices {
 
     private InjectionManager injectionManager;
 
+    private static final Logger logger = Logger.getLogger(InjectionServicesImpl.class.getName());
+
     public NonModuleInjectionServices(InjectionManager injectionMgr) {
         injectionManager = injectionMgr;
     }
@@ -81,7 +86,7 @@ public class NonModuleInjectionServices implements InjectionServices {
 
             if( componentEnv == null ) {
                 //throw new IllegalStateException("No valid EE environment for injection of " + targetClass);
-                System.err.println("No valid EE environment for injection of " + targetClass);
+                logger.log(Level.FINE, "No valid EE environment for injection of {0}. The methods that is missing the context is {1}", new Object[]{targetClass, injectionContext.getAnnotatedType().getMethods()});
                 injectionContext.proceed();
                 return;
             }

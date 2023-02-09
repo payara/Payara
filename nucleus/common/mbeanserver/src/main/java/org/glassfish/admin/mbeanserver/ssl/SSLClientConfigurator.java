@@ -58,6 +58,8 @@ import static org.glassfish.grizzly.config.dom.Ssl.SSL3;
 import static org.glassfish.grizzly.config.dom.Ssl.TLS1;
 import org.glassfish.logging.annotation.LogMessageInfo;
 
+import static org.glassfish.grizzly.config.dom.Ssl.*;
+
 /**
  * This class is a utility class that would configure a client socket factory using
  * either the SSL defaults for GlassFish  or via params supplied.
@@ -450,14 +452,6 @@ public class SSLClientConfigurator {
         if (ssl3Ciphers != null && ssl3Ciphers.length() > 0) {
             final String[] ssl3CiphersArray = ssl3Ciphers.split(",");
             for (final String cipher : ssl3CiphersArray) {
-                tmpSSLArtifactsList.add(cipher.trim());
-            }
-        }
-        // ssl2-tls-ciphers
-        final String ssl2Ciphers = sslParams.getSsl2Ciphers();
-        if (ssl2Ciphers != null && ssl2Ciphers.length() > 0) {
-            final String[] ssl2CiphersArray = ssl2Ciphers.split(",");
-            for (final String cipher : ssl2CiphersArray) {
                 tmpSSLArtifactsList.add(cipher.trim());
             }
         }

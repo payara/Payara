@@ -39,6 +39,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+    Portion Copyright 2022 Payara Foundation and/or affiliates
 -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
@@ -46,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server.internal.persistence.cmp</groupId>
         <artifactId>cmp</artifactId>
-        <version>6.2022.1.Alpha3-SNAPSHOT</version>
+        <version>6.2023.3-SNAPSHOT</version>
     </parent>
     <artifactId>cmp-support-ejb</artifactId>
     <packaging>glassfish-jar</packaging>
@@ -122,12 +123,12 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.deployment</groupId>
+            <groupId>fish.payara.server.core.deployment</groupId>
             <artifactId>deployment-common</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.common</groupId>
+            <groupId>fish.payara.server.core.common</groupId>
             <artifactId>common-util</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -144,7 +145,7 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.external</groupId>
-            <artifactId>schema2beans-repackaged</artifactId>
+            <artifactId>schema2beans</artifactId>
         </dependency>
     </dependencies>
     

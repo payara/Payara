@@ -40,22 +40,23 @@
     holder.
 
 -->
-<!-- Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2017-2022] [Payara Foundation and/or its affiliates] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"> <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>external</artifactId>
-        <version>6.2022.1.Alpha3-SNAPSHOT</version>
+        <version>6.2023.3-SNAPSHOT</version>
     </parent>
 
+    <groupId>fish.payara.server.core.packager</groupId>
     <artifactId>libpam4j-repackaged</artifactId>
     <name>libpam4j repackaged as a module</name>
     <description>libpam4j (Java binding for libpam.so) repackaged as a module</description>
 
     <properties>
-      <libpam4j.jna.version>4.5.2</libpam4j.jna.version>
+      <libpam4j.jna.version>${jna.version}</libpam4j.jna.version>
     </properties>
 
     <build>
@@ -123,6 +124,12 @@
             <groupId>org.kohsuke</groupId>
             <artifactId>libpam4j</artifactId>
             <version>1.11</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>net.java.dev.jna</groupId>
+            <artifactId>jna</artifactId>
+            <version>${libpam4j.jna.version}</version>
             <optional>true</optional>
         </dependency>
     </dependencies>

@@ -75,7 +75,7 @@ public class ClientAuthConfigImpl extends BaseAuthConfigImpl implements ClientAu
     private BaseAuthContextImpl authContextHelper;
 
     protected ClientAuthConfigImpl(String loggerName, EpochCarrier providerEpoch, BaseAuthContextImpl acHelper,
-            MessagePolicyDelegate mpDelegate, String layer, String appContext, CallbackHandler cbh) throws AuthException {
+                                   MessagePolicyDelegate mpDelegate, String layer, String appContext, CallbackHandler cbh) throws AuthException {
         super(loggerName, providerEpoch, mpDelegate, layer, appContext, cbh);
 
         this.authContextHelper = acHelper;
@@ -92,7 +92,7 @@ public class ClientAuthConfigImpl extends BaseAuthConfigImpl implements ClientAu
 
     @Override
     @SuppressWarnings("unchecked")
-    protected <M> M createAuthContext(String authContextID, Map<String, ?> properties) throws AuthException {
+    protected <M> M createAuthContext(String authContextID, Map<String, Object> properties) throws AuthException {
 
         if (!authContextHelper.isProtected(new ClientAuthModule[0], authContextID)) {
             return null;

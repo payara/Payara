@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2022] [Payara Foundation and/or its affiliates]
 package org.glassfish.webservices;
 
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
@@ -71,7 +71,6 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 import jakarta.inject.Inject;
-import jakarta.servlet.SingleThreadModel;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -146,7 +145,7 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer, We
             final List<URL> moduleCPUrls = ASClassLoaderUtil.getURLsFromClasspath(moduleCP, File.pathSeparator, null);
             final ClassLoader oldCl = Thread.currentThread().getContextClassLoader();
             URLClassLoader newCl = AccessController.doPrivileged(
-                (PrivilegedAction<URLClassLoader>) () -> new URLClassLoader(ASClassLoaderUtil.convertURLListToArray(moduleCPUrls), oldCl)
+                    (PrivilegedAction<URLClassLoader>) () -> new URLClassLoader(ASClassLoaderUtil.convertURLListToArray(moduleCPUrls), oldCl)
             );
 
             Thread.currentThread().setContextClassLoader(newCl);
@@ -415,7 +414,7 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer, We
      * @param schemaIncludes output param in which schema includes will be added
      */
     private void parseRelativeImports(URL wsdlFileUrl, Collection wsdlRelativeImports, Collection wsdlIncludes,
-            Collection schemaRelativeImports, Collection schemaIncludes) throws Exception {
+                                      Collection schemaRelativeImports, Collection schemaIncludes) throws Exception {
 
         // We will use our little parser rather than using JAXRPC's heavy weight WSDL parser
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();

@@ -75,7 +75,7 @@ public class ServerAuthConfigImpl extends BaseAuthConfigImpl implements ServerAu
     private BaseAuthContextImpl authContextHelperHelper;
 
     protected ServerAuthConfigImpl(String loggerName, EpochCarrier providerEpoch, BaseAuthContextImpl authContextHelper,
-            MessagePolicyDelegate policyDelegate, String layer, String appContext, CallbackHandler cbh) throws AuthException {
+                                   MessagePolicyDelegate policyDelegate, String layer, String appContext, CallbackHandler cbh) throws AuthException {
 
         super(loggerName, providerEpoch, policyDelegate, layer, appContext, cbh);
 
@@ -90,7 +90,7 @@ public class ServerAuthConfigImpl extends BaseAuthConfigImpl implements ServerAu
 
     @Override
     @SuppressWarnings("unchecked")
-    protected <M> M createAuthContext(String authContextID, Map<String, ?> properties) throws AuthException {
+    protected <M> M createAuthContext(String authContextID, Map<String, Object> properties) throws AuthException {
 
         if (!authContextHelperHelper.isProtected(new ServerAuthModule[0], authContextID)) {
             return null;

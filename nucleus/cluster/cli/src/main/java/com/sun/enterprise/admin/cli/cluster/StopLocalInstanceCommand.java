@@ -57,9 +57,9 @@ import java.util.logging.Level;
 
 /**
  * Stop a local server instance.
+ *
  * @author Bill Shannon
  * @author Byron Nevins
- *
  */
 @Service(name = "stop-local-instance")
 @PerLookup

@@ -84,5 +84,5 @@ public @interface Clustered {
      * and this singleton also exists on the other node. (not truly destroyed)
      * Default is true
      */
-    boolean callPreDestoyOnDetach () default true;
+    boolean callPreDestroyOnDetach () default true;
 }

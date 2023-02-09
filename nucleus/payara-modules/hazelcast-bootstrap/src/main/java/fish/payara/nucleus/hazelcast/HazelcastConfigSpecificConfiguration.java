@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2022 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -51,15 +51,19 @@ import org.jvnet.hk2.config.Configured;
 @Configured
 public interface HazelcastConfigSpecificConfiguration extends ConfigBeanProxy, ConfigExtension{
 
-    
+
     @Attribute(defaultValue = "true", dataType = Boolean.class)
     String getEnabled();
     public void setEnabled(String value);
-    
+
+    @Attribute(defaultValue = "true", dataType = Boolean.class)
+    String getClusteringEnabled();
+    public void setClusteringEnabled(String value);
+
     @Attribute(defaultValue = "", dataType = String.class)
     String getPublicAddress();
     public void setPublicAddress(String value);
-    
+
     @Attribute(defaultValue = "payara")
     String getMemberName();
     public void setMemberName(String value);
@@ -67,11 +71,11 @@ public interface HazelcastConfigSpecificConfiguration extends ConfigBeanProxy, C
     @Attribute(defaultValue = "MicroShoal")
     String getMemberGroup();
     public void setMemberGroup(String value);
-    
+
     @Attribute(defaultValue = "payara/Hazelcast")
     String getJNDIName();
     public void setJNDIName(String value);
-    
+
     @Attribute(defaultValue = "payara/CacheManager")
     String getCacheManagerJNDIName();
     public void setCacheManagerJNDIName(String value);
@@ -79,29 +83,29 @@ public interface HazelcastConfigSpecificConfiguration extends ConfigBeanProxy, C
     @Attribute(defaultValue = "payara/CachingProvider")
     String getCachingProviderJNDIName();
     public void setCachingProviderJNDIName(String value);
-    
+
     @Attribute(defaultValue = "4")
     String getExecutorPoolSize();
     public void setExecutorPoolSize(String value);
-    
+
     @Attribute(defaultValue = "20")
     String getExecutorQueueCapacity();
     public void setExecutorQueueCapacity(String value);
-    
+
     @Attribute(defaultValue = "4")
     String getScheduledExecutorPoolSize();
     public void setScheduledExecutorPoolSize(String value);
-    
+
     @Attribute(defaultValue = "20")
     String getScheduledExecutorQueueCapacity();
     public void setScheduledExecutorQueueCapacity(String value);
-        
+
     @Attribute(defaultValue = "false", dataType = Boolean.class)
     String getLite();
     public void setLite(String value);
-    
+
     @Attribute
     String getConfigSpecificDataGridStartPort();
     public void setConfigSpecificDataGridStartPort(String value);
-    
+
 }

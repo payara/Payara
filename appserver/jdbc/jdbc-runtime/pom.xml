@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server.internal.jdbc</groupId>
         <artifactId>jdbc</artifactId>
-        <version>6.2022.1.Alpha3-SNAPSHOT</version>
+        <version>6.2023.3-SNAPSHOT</version>
     </parent>
     
     <artifactId>jdbc-runtime</artifactId>
@@ -101,8 +101,8 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>jakarta.el</artifactId>
+            <groupId>org.glassfish.expressly</groupId>
+            <artifactId>expressly</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

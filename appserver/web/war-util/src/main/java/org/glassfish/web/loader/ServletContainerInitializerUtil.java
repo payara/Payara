@@ -577,7 +577,7 @@ public class ServletContainerInitializerUtil {
         return initializersList;
     }
 
-
+    
     private static Level getStandaloneWarningLevel(boolean isStandalone) {
         return isStandalone? Level.WARNING : Level.FINE;
     }

@@ -45,9 +45,10 @@ import org.glassfish.grizzly.ssl.SSLSupport;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
 import java.util.logging.Level;
-import javax.security.cert.X509Certificate;
+import java.security.cert.X509Certificate;
 import java.util.logging.Logger;
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLSession;
@@ -60,25 +61,25 @@ import javax.net.ssl.SSLSocket;
 public class GlassfishSSLSupport implements SSLSupport {
 
     private final static Logger logger = SecurityLoggerInfo.getLogger();
-    
+
     /**
      * A mapping table to determine the number of effective bits in the key
      * when using a cipher suite containing the specified cipher name.  The
      * underlying data came from the TLS Specification (RFC 2246), Appendix C.
      */
     private static final CipherData ciphers[] = {
-        new CipherData("_WITH_NULL_", 0),
-        new CipherData("_WITH_IDEA_CBC_", 128),
-        new CipherData("_WITH_RC2_CBC_40_", 40),
-        new CipherData("_WITH_RC4_40_", 40),
-        new CipherData("_WITH_RC4_128_", 128),
-        new CipherData("_WITH_DES40_CBC_", 40),
-        new CipherData("_WITH_DES_CBC_", 56),
-        new CipherData("_WITH_3DES_EDE_CBC_", 168),
-        new CipherData("_WITH_AES_128_", 128),
-        new CipherData("_WITH_AES_256_", 256)
+            new CipherData("_WITH_NULL_", 0),
+            new CipherData("_WITH_IDEA_CBC_", 128),
+            new CipherData("_WITH_RC2_CBC_40_", 40),
+            new CipherData("_WITH_RC4_40_", 40),
+            new CipherData("_WITH_RC4_128_", 128),
+            new CipherData("_WITH_DES40_CBC_", 40),
+            new CipherData("_WITH_DES_CBC_", 56),
+            new CipherData("_WITH_3DES_EDE_CBC_", 168),
+            new CipherData("_WITH_AES_128_", 128),
+            new CipherData("_WITH_AES_256_", 256)
     };
-    
+
     private final SSLSocket socket;
     private final SSLEngine engine;
     private SSLSession session;
@@ -106,22 +107,22 @@ public class GlassfishSSLSupport implements SSLSupport {
     }
 
     @Override
-    public Object[] getPeerCertificateChain() throws IOException {
-        return getPeerCertificateChain(false);
+    public Certificate[] getPeerCertificates() throws IOException {
+        return getPeerCertificates(false);
     }
 
     @Override
-    public Object[] getPeerCertificateChain(boolean force) throws IOException {
+    public Certificate[] getPeerCertificates(boolean force) throws IOException {
         if (session == null) {
             return null;
         }
-        
-        X509Certificate[] certs = null;
-        certs = session.getPeerCertificateChain();
+
+        Certificate[] certs = null;
+        certs = session.getPeerCertificates();
         if (certs == null) {
             certs = new X509Certificate[0];
         }
-        
+
         if (certs.length == 0 && force) {
             session.invalidate();
             handshake();
@@ -132,7 +133,7 @@ public class GlassfishSSLSupport implements SSLSupport {
                 session = socket.getSession();
             }
         }
-        
+
         return getX509Certs();
     }
 
@@ -141,7 +142,7 @@ public class GlassfishSSLSupport implements SSLSupport {
         if (session == null) {
             return null;
         }
-        
+
         Integer keySize = (Integer) session.getValue(KEY_SIZE_KEY);
         if (keySize == null) {
             int size = 0;
@@ -155,7 +156,7 @@ public class GlassfishSSLSupport implements SSLSupport {
             keySize = size;
             session.putValue(KEY_SIZE_KEY, keySize);
         }
-        
+
         return keySize;
     }
 
@@ -164,12 +165,12 @@ public class GlassfishSSLSupport implements SSLSupport {
         if (session == null) {
             return null;
         }
-        
+
         byte[] sessionId = session.getId();
         if (sessionId == null) {
             return null;
         }
-        
+
         StringBuilder Id = new StringBuilder();
         for (byte b : sessionId) {
             String digit = Integer.toHexString(b);
@@ -180,7 +181,7 @@ public class GlassfishSSLSupport implements SSLSupport {
             }
             Id.append(digit);
         }
-        
+
         return Id.toString();
     }
 
@@ -189,10 +190,10 @@ public class GlassfishSSLSupport implements SSLSupport {
         socket.startHandshake();
     }
 
-    private Object[] getX509Certs() {
-        X509Certificate certs[] = null;
+    private Certificate[] getX509Certs() {
+        Certificate certs[] = null;
         try {
-            certs = session.getPeerCertificateChain();
+            certs = session.getPeerCertificates();
         } catch (Throwable ex) {
             // Get rid of the warning in the logs when no Client-Cert is
             // available

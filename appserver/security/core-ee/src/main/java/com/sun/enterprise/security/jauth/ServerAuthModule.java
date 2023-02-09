@@ -78,9 +78,9 @@ public interface ServerAuthModule {
      * @param options administrative options.
      */
     void initialize(AuthPolicy requestPolicy,
-            AuthPolicy responsePolicy,
-            CallbackHandler handler,
-            Map options);
+                    AuthPolicy responsePolicy,
+                    CallbackHandler handler,
+                    Map options);
 
     /**
      * Authenticate a client request.
@@ -106,8 +106,8 @@ public interface ServerAuthModule {
      * @exception AuthException if the operation failed.
      */
     void validateRequest(AuthParam param,
-            Subject subject,
-            Map sharedState)
+                         Subject subject,
+                         Map sharedState)
             throws AuthException;
 
     /**
@@ -124,8 +124,8 @@ public interface ServerAuthModule {
      * @exception AuthException if the operation failed.
      */
     void secureResponse(AuthParam param,
-            Subject subject,
-            Map sharedState)
+                        Subject subject,
+                        Map sharedState)
             throws AuthException;
 
     /**

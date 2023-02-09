@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2022] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.sse.impl;
 
@@ -61,12 +62,12 @@ import java.util.logging.Logger;
  * @author Jitendra Kotamraju
  */
 public class ServerSentEventCdiExtension implements Extension {
-    
+
     private final Logger LOGGER = Logger.getLogger(ServerSentEventCdiExtension.class.getName());
 
     // path --> application
     private final Map<String, ServerSentEventApplication> applicationMap
-        = new HashMap<String, ServerSentEventApplication>();
+            = new HashMap<String, ServerSentEventApplication>();
 
     public Map<String, ServerSentEventApplication> getApplicationMap() {
         return applicationMap;
@@ -158,11 +159,6 @@ public class ServerSentEventCdiExtension implements Extension {
         }
 
         @Override
-        public boolean isNullable() {
-            return false;
-        }
-
-        @Override
         public Set<InjectionPoint> getInjectionPoints() {
             return Collections.emptySet();
         }
@@ -190,7 +186,7 @@ public class ServerSentEventCdiExtension implements Extension {
 
     @SuppressWarnings("UnusedDeclaration")
     <T> void processAnnotatedType(@Observes @WithAnnotations(ServerSentEvent.class) ProcessAnnotatedType<T> pat,
-            BeanManager beanManager) {
+                                  BeanManager beanManager) {
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.fine("scanning type: " + pat.getAnnotatedType().getJavaClass().getName());
         }
@@ -219,5 +215,6 @@ public class ServerSentEventCdiExtension implements Extension {
         path = path.trim();
         return path.startsWith("/") ? path : "/" + path;
     }
+
 
 }

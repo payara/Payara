@@ -101,7 +101,6 @@ public class StopDeploymentGroupCommand implements AdminCommand {
 
     @Override
     public void execute(AdminCommandContext context) {
-
         ActionReport report = context.getActionReport();
         Logger logger = context.getLogger();
 
@@ -140,6 +139,7 @@ public class StopDeploymentGroupCommand implements AdminCommand {
             map.add("kill", "true");
         }
         map.add("timeout", String.valueOf(instanceTimeout));
+
         try {
             // Run start-instance against each instance in the cluster
             String commandName = "stop-instance";

@@ -393,17 +393,14 @@ public class StopInstanceCommand extends StopServer implements AdminCommand, Pos
                     if (wrf == null || !wrf.exists())
                         return null;
                 }
-
                 // Fairly long interval between tries because checking over
                 // SSH is expensive.
                 Thread.sleep(5000);
             } catch (Exception e) {
                 // ignore
             }
-
         }
         return Strings.get("stop.instance.timeout.completely", instanceName);
-
     }
 
     private String makeCommandHuman(List<String> command) {

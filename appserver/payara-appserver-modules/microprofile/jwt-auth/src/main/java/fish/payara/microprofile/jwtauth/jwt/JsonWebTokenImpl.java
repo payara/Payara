@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2021 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2022 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,13 +39,6 @@
  */
 package fish.payara.microprofile.jwtauth.jwt;
 
-import static java.util.Collections.singleton;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import static java.util.stream.Collectors.toSet;
-
-import static java.util.stream.Collectors.toSet;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonNumber;
 import jakarta.json.JsonString;
@@ -53,6 +46,14 @@ import jakarta.json.JsonValue;
 import jakarta.security.enterprise.CallerPrincipal;
 import org.eclipse.microprofile.jwt.Claims;
 import org.eclipse.microprofile.jwt.JsonWebToken;
+
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import static java.util.Collections.singleton;
+import static java.util.stream.Collectors.toSet;
 
 /**
  * A default implementation of {@link JsonWebToken}.
@@ -62,6 +63,12 @@ import org.eclipse.microprofile.jwt.JsonWebToken;
 public class JsonWebTokenImpl extends CallerPrincipal implements JsonWebToken {
     
     private final Map<String, JsonValue> claims;
+
+    protected JsonWebTokenImpl() {
+        // for proxying request-scoped bean
+        super(null);
+        claims = Collections.EMPTY_MAP;
+    }
 
     public JsonWebTokenImpl(String callerName, Map<String, JsonValue> claims) {
         super(callerName);

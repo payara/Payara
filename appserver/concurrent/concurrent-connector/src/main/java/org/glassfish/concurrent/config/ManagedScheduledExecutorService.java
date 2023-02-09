@@ -64,8 +64,8 @@ import jakarta.validation.Payload;
 @Configured
 @ResourceConfigCreator(commandName="create-managed-scheduled-executor-service")
 @RestRedirects({
- @RestRedirect(opType = RestRedirect.OpType.POST, commandName = "create-managed-scheduled-executor-service"),
- @RestRedirect(opType = RestRedirect.OpType.DELETE, commandName = "delete-managed-scheduled-executor-service")
+        @RestRedirect(opType = RestRedirect.OpType.POST, commandName = "create-managed-scheduled-executor-service"),
+        @RestRedirect(opType = RestRedirect.OpType.DELETE, commandName = "delete-managed-scheduled-executor-service")
 })
 @ResourceTypeOrder(deploymentOrder=ResourceDeploymentOrder.MANAGED_SCHEDULED_EXECUTOR_SERVICE)
 @ReferenceConstraint(skipDuringCreation=true, payload=ManagedScheduledExecutorService.class)
@@ -79,7 +79,7 @@ public interface ManagedScheduledExecutorService extends ConfigBeanProxy,
 
     class Duck {
         public static String getIdentity(
-            ManagedScheduledExecutorService resource){
+                ManagedScheduledExecutorService resource){
             return resource.getJndiName();
         }
     }

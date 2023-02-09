@@ -50,6 +50,7 @@ import jakarta.ws.rs.PathParam;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+
 import org.junit.Test;
 
 /**

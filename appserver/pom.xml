@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2016-2023] [Payara Foundation and/or its affiliates] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
@@ -49,7 +49,7 @@
     <parent>
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-nucleus-parent</artifactId>
-        <version>6.2022.1.Alpha3-SNAPSHOT</version>
+        <version>6.2023.3-SNAPSHOT</version>
         <relativePath>../nucleus/pom.xml</relativePath>
     </parent>
 
@@ -62,10 +62,10 @@
         <jakarta.faces-spec.version>3.0.0</jakarta.faces-spec.version>
         <jsftemplating.version>3.0.0</jsftemplating.version>
         <jboss.classfilewriter.version>1.2.5.Final</jboss.classfilewriter.version>
-        <apache.bcel.version>6.5.0</apache.bcel.version>
+        <apache.bcel.version>6.7.0</apache.bcel.version>
         <!-- Java EE Security API -->
         <jakarta.security.enterprise-spec.version>1.0</jakarta.security.enterprise-spec.version>
-        <jna.version>5.2.0</jna.version>
+        <jna.version>5.12.1</jna.version>
 
         <!-- Application Server / Implementation -->
         <product.name>Payara Server</product.name>
@@ -76,26 +76,22 @@
         <production_domain_template>production-domain.jar</production_domain_template>
         <version_prefix />
         <version_suffix>#badassfish</version_suffix>
-        <major_version>6</major_version>
-        <minor_version>2022</minor_version>
-        <update_version>1.Alpha3-SNAPSHOT</update_version>
-        <install.dir.name>payara${major_version}</install.dir.name>
+        <install.dir.name>payara6</install.dir.name>
+
         <uc-pkg-client.version>1.122-57.2889</uc-pkg-client.version>
         <uc-pkg-bootstrap.version>1.122-57.2889</uc-pkg-bootstrap.version>
-        <dbschema.version>3.1.1</dbschema.version>
-        <dbschema.osgi.version>6.0</dbschema.osgi.version>
-        <schema2beans.version>3.1.1</schema2beans.version>
-        <schema2beans.osgi.version>5.5</schema2beans.osgi.version>
+        <dbschema.version>6.7</dbschema.version>
+        <schema2beans.version>6.7</schema2beans.version>
         <!-- Java API for XML Registries Resource Adapter -->
         <jaxr.version>JAXR_RA_20091012</jaxr.version>
-        <rest.monitoring.version>1.0.0-Beta</rest.monitoring.version>
 
-        <nimbus-jose-jwt.version>9.8.1</nimbus-jose-jwt.version>
-        <accessors-smart.version>2.4.2.payara-p1</accessors-smart.version>
-        <json-smart.version>2.4.7</json-smart.version>
+        <nimbus-jose-jwt.version>9.25</nimbus-jose-jwt.version>
+        <accessors-smart.version>2.4.8</accessors-smart.version>
+        <json-smart.version>2.4.8</json-smart.version>
         <reactor-core.version>3.4.4</reactor-core.version>
         <reactive-streams.version>1.0.3</reactive-streams.version>
         <jcip-annotations.version>1.0-1</jcip-annotations.version>
+        
         <!-- Yubico client validation version property -->
         <yubico-validation-client2.version>3.0.2.payara-p1</yubico-validation-client2.version>
         <dockerfile-maven-plugin.version>1.4.13</dockerfile-maven-plugin.version>
@@ -464,15 +460,15 @@
                         </spec>
                         <spec>
                             <artifact>
-                                <groupId>jakarta.el</groupId>
-                                <artifactId>jakarta.el-api</artifactId>
-                                <version>${jakarta.el-api.version}</version>
+                                <groupId>org.glassfish.expressly</groupId>
+                                <artifactId>expressly</artifactId>
+                                <version>${expressly.version}</version>
                             </artifact>
-                            <jarType>api</jarType>
-                            <specVersion>3.0</specVersion>
-                            <implVersion>${jakarta.el.version}</implVersion>
+                            <jarType>impl</jarType>
+                            <specVersion>5.0</specVersion>
+                            <implVersion>5.0.0</implVersion>
                             <apiPackage>jakarta.el</apiPackage>
-                            <implNamespace>com.sun.el</implNamespace>
+                            <implNamespace>org.glassfish.expressly</implNamespace>
                         </spec>
                     </specs>
                 </configuration>
@@ -565,12 +561,12 @@
             </dependency>
             <dependency>
                 <groupId>org.glassfish.external</groupId>
-                <artifactId>dbschema-repackaged</artifactId>
+                <artifactId>dbschema</artifactId>
                 <version>${dbschema.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.external</groupId>
-                <artifactId>schema2beans-repackaged</artifactId>
+                <artifactId>schema2beans</artifactId>
                 <version>${schema2beans.version}</version>
             </dependency>
             <dependency>
@@ -593,7 +589,7 @@
             <dependency>
                 <groupId>org.netbeans.external</groupId>
                 <artifactId>ddl</artifactId>
-                <version>RELEASE65</version>
+                <version>RELEASE82</version>
             </dependency>
 
             <dependency>

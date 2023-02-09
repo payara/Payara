@@ -54,7 +54,7 @@ public class AuthConfigFileFactory extends BaseAuthConfigFactory {
      * BaseAuthconfigFactory, that is basically a copy of this class, with a change to the third argument of the call to new
      * ResSToreFileParser. To ensure runtime use of the the associated regStore, make sure that the new subclass also
      * contains an implementation of the getRegStore method.
-     * 
+     *
      * <p>
      * As done within this class, use the locks defined in BaseAuthConfigFactory to serialize access to the regStore (both
      * within the class constructor, and within getRegStore)

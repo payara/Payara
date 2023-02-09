@@ -209,6 +209,7 @@ public class RestartInstanceCommand implements AdminCommand {
         }
 
         // Convert the command into a string representing the command a human should run.
+        // Convert the command into a string representing the command a human should run.
         humanCommand = makeCommandHuman(command);
 
         String msg;
@@ -309,7 +310,6 @@ public class RestartInstanceCommand implements AdminCommand {
             map.add("debug", debug);
         }
         rac.setReadTimeout(timeout * 1000);
-
         rac.executeCommand(map);
     }
 

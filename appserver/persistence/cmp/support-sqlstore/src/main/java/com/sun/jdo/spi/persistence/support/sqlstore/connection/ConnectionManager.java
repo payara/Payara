@@ -53,6 +53,7 @@ import com.sun.jdo.spi.persistence.utility.Linkable;
 import com.sun.jdo.spi.persistence.support.sqlstore.utility.StringScanner;
 import com.sun.jdo.spi.persistence.utility.logging.Logger;
 import com.sun.jdo.spi.persistence.support.sqlstore.LogHelperSQLStore;
+import org.glassfish.hk2.utilities.CleanerFactory;
 
 
 import java.sql.Connection;
@@ -822,6 +823,7 @@ public class ConnectionManager {
         this.busyList = null;
         this.xactConnections = null;
         this.initialized = false;
+        registerCloseEvent();
     }
 
     // --------------- Overloaded Constructors -----------------
@@ -1510,12 +1512,14 @@ public class ConnectionManager {
      * or rolledback.
      *
      */
-    protected void finalize() {
-        try {
-            shutDown();
-        } catch (SQLException se) {
-            ; // Ignore it.
-        }
+    public final void registerCloseEvent() {
+        CleanerFactory.create().register(this, () -> {
+            try {
+                shutDown();
+            } catch (SQLException se) {
+                // Ignore it.
+            }
+        });
     }
 
     // ----------- Public Methods to get and set properties --------------

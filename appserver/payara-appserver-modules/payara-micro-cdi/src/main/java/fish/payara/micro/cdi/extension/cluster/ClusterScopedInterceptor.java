@@ -108,7 +108,7 @@ public class ClusterScopedInterceptor implements Serializable {
         IAtomicLong count = clusteredLookup.getClusteredUsageCount();
         if (count.decrementAndGet() <= 0) {
             clusteredLookup.destroy();
-        } else if (!clusteredAnnotation.callPreDestoyOnDetach()) {
+        } else if (!clusteredAnnotation.callPreDestroyOnDetach()) {
             return null;
         }
 

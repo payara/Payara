@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2022] Payara Foundation and/or affiliates
 package org.glassfish.concurrent.runtime.deployer;
 
 import org.glassfish.concurrent.config.ManagedExecutorService;
@@ -49,23 +49,27 @@ public class ManagedExecutorServiceConfig extends BaseConfig  {
 
     private int hungAfterSeconds;
     private boolean longRunningTasks;
+    private boolean useForkJoinPool;
     private int threadPriority;
     private int corePoolSize;
     private long keepAliveSeconds;
     private int maximumPoolSize;
     private int taskQueueCapacity;
     private long threadLifeTimeSeconds;
+    private String context;
 
     public ManagedExecutorServiceConfig(ManagedExecutorService config) {
         super(config.getJndiName(), config.getContextInfo(), config.getContextInfoEnabled());
         hungAfterSeconds = parseInt(config.getHungAfterSeconds(), 0);
         longRunningTasks = Boolean.valueOf(config.getLongRunningTasks());
+        useForkJoinPool = Boolean.valueOf(config.getUseForkJoinPool());
         threadPriority = parseInt(config.getThreadPriority(), Thread.NORM_PRIORITY);
         corePoolSize = parseInt(config.getCorePoolSize(), 0);
         keepAliveSeconds = parseLong(config.getKeepAliveSeconds(), 60);
         maximumPoolSize = parseInt(config.getMaximumPoolSize(), Integer.MAX_VALUE);
         taskQueueCapacity = parseInt(config.getTaskQueueCapacity(), Integer.MAX_VALUE);
         threadLifeTimeSeconds = parseLong(config.getThreadLifetimeSeconds(), 0L);
+        context = config.getContext();
     }
 
     public int getHungAfterSeconds() {
@@ -98,6 +102,14 @@ public class ManagedExecutorServiceConfig extends BaseConfig  {
 
     public long getThreadLifeTimeSeconds() {
         return threadLifeTimeSeconds;
+    }
+
+    public boolean getUseForkJoinPool() {
+        return useForkJoinPool;
+    }
+
+    public String getContext() {
+        return context;
     }
 
     @Override

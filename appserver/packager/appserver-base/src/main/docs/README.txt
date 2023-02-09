@@ -1,4 +1,4 @@
-Thank you for downloading Payara Server 6.2022.1.Alpha3!
+Thank you for downloading Payara Server @@@FULL_VERSION@@@!
 
 Here are a few short steps to get you started...
 
@@ -8,14 +8,19 @@ Here are a few short steps to get you started...
 
 Payara Server currently supports the following Java Virtual Machines:
 
-* Oracle JDK 11 (11.0.5+)
-* Azul Zulu JDK 11 (11.0.5u10+)
-* OpenJDK 11 (11.0.5+)
+* Azul Zulu JDK: 11 (11.0.5u10+), 17 (17.34/17.0.3+)
+* Oracle JDK: 11 (11.0.5+), 17 (17.0.3+)
+* Amazon Corretto: 11 (11.0.5+), 17 (17.0.3+)
+* Adopt Open JDK: 11 (11.0.5+), 17 (17.0.3+)
+* Adopt Open JDK with Eclipse Open J9: 11 (11.0.5+), 17 (17.0.3+)
+* Any other JVM based on OpenJDK 11.0.5+ or 17.0.3+
+
+The Payara Platform runs on the x64 and arm64 variants of the above JVMs.
 
 1. Installing Payara Server
 ===========================
 
-Installing Payara Server is just a matter of unzipping the Payara Server archive in the desired directory. Since you are reading this, you have probably already unzipped Payara Server. If not, just type the following command in the directory where you want Payara Server to be installed: jar xvf payara-5.2021.3.zip
+Installing Payara Server is just a matter of unzipping the Payara Server archive in the desired directory. Since you are reading this, you have probably already unzipped Payara Server. If not, just type the following command in the directory where you want Payara Server to be installed: jar xvf payara-@@@FULL_VERSION@@@.zip
 
 The default domain called 'domain1' is already installed and preconfigured.
 
@@ -48,13 +53,13 @@ To stop Payara Server, just issue the following command:
 Open the following in your browser: https://docs.payara.fish/. It contains useful information such as the details about the Payara Project, links to the Payara Server Documentation, etc.
 
 
-Make sure to also check the Payara Server 5.2021.3 Release Notes as they contain important information: https://docs.payara.fish/docs/5.2021.3/release-notes/release-notes-2020-7.html
+Make sure to also check the Payara Server @@@FULL_VERSION@@@ Release Notes as they contain important information: https://docs.payara.fish/docs/@@@FULL_VERSION@@@/release-notes/release-notes-@@@MINOR_VERSION@@@-@@@UPDATE_VERSION@@@.html
 
 
 5. Documentation
 ================
 
-Payara Server 6.2022.1.Alpha3 Release Notes: https://docs.payara.fish/docs/6.2022.1.Alpha3/release-notes/release-notes-2022-1-Alpha3.html
+Payara Server @@@FULL_VERSION@@@ Release Notes: https://docs.payara.fish/docs/@@@FULL_VERSION@@@/release-notes/release-notes-@@@MINOR_VERSION@@@-@@@UPDATE_VERSION@@@.html
 
 Payara Server Documentation: https://docs.payara.fish/
 

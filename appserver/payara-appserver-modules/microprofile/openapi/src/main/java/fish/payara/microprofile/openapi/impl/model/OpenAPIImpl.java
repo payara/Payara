@@ -70,7 +70,7 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI {
     protected List<Tag> tags = createList();
     protected Paths paths = new PathsImpl();
     protected Components components = new ComponentsImpl();
-    
+
     private ApiContext context;
 
     public static OpenAPI createInstance(AnnotationModel annotation, ApiContext context) {
@@ -93,7 +93,7 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI {
         }
         return from;
     }
-    
+
     public final ApiContext getContext() {
         return context;
     }

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2022] Payara Foundation and/or its affiliates
 
 /*
  * CommonHandlers.java
@@ -189,6 +190,7 @@ public class WoodstockHandler {
                     logger.fine(GuiUtil.getCommonMessage("log.writeToTmpFile"));
                 }
                 uploadedFile.write(tmpFile);
+                FileUtils.deleteOnExit(tmpFile);
                 if (logger.isLoggable(Level.FINE)) {
                     logger.fine(GuiUtil.getCommonMessage("log.afterWriteToTmpFile"));
                 }

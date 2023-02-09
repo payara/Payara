@@ -37,21 +37,20 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2022] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.webservices;
 
 
-import jakarta.xml.ws.http.HTTPBinding;
-
-import com.sun.xml.ws.api.pipe.Pipe;
-import com.sun.xml.ws.assembler.metro.ServerPipelineHook;
-import com.sun.xml.ws.api.pipe.ServerPipeAssemblerContext;
-
 import com.sun.enterprise.deployment.WebServiceEndpoint;
 import com.sun.xml.ws.api.model.SEIModel;
 import com.sun.xml.ws.api.model.wsdl.WSDLPort;
+import com.sun.xml.ws.api.pipe.Pipe;
+import com.sun.xml.ws.api.pipe.ServerPipeAssemblerContext;
 import com.sun.xml.ws.api.server.WSEndpoint;
+import com.sun.xml.ws.assembler.metro.ServerPipelineHook;
 import com.sun.xml.ws.policy.PolicyMap;
+import jakarta.xml.ws.http.HTTPBinding;
 import org.jvnet.hk2.annotations.Contract;
 
 /**

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2022] [Payara Foundation and/or its affiliates]
 package com.sun.jaspic.config.factory;
 
 import static com.sun.jaspic.config.helper.JASPICLogManager.JASPIC_LOGGER;
@@ -63,10 +63,16 @@ import jakarta.security.auth.message.AuthException;
 import jakarta.security.auth.message.config.AuthConfigFactory;
 import jakarta.security.auth.message.config.AuthConfigProvider;
 import jakarta.security.auth.message.config.RegistrationListener;
+import jakarta.security.auth.message.module.ServerAuthModule;
+import jakarta.servlet.ServletContext;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import static org.glassfish.soteria.Utils.isEmpty;
+
 
 /**
  * This class implements methods in the abstract class AuthConfigFactory.
- * 
+ *
  * @author Shing Wai Chan
  */
 public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
@@ -84,13 +90,14 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
     private static Map<AuthConfigProvider, List<String>> providerToIdsMap;
 
     protected static final String CONF_FILE_NAME = "auth.conf";
+    private static final String CONTEXT_REGISTRATION_ID = "org.glassfish.security.message.registrationId";
 
     /**
      * Get a registered AuthConfigProvider from the factory.
      *
      * Get the provider of ServerAuthConfig and/or ClientAuthConfig objects registered for the identified message layer and
      * application context.
-     * 
+     *
      * <p>
      * All factories shall employ the following precedence rules to select the registered AuthConfigProvider that matches
      * (via matchConstructors) the layer and appContext arguments:
@@ -118,7 +125,7 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
      *
      * @return the implementation of the AuthConfigProvider interface registered at the factory for the layer and appContext
      * or null if no AuthConfigProvider is selected.
-     * 
+     *
      */
     @Override
     public AuthConfigProvider getConfigProvider(String layer, String appContext, RegistrationListener listener) {
@@ -174,7 +181,7 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
     @Override
     @SuppressWarnings("unchecked")
     public String registerConfigProvider(String className, @SuppressWarnings("rawtypes") Map properties, String layer, String appContext,
-            String description) {
+                                         String description) {
         tryCheckPermission(providerRegistrationSecurityPermission);
 
         return _register(_constructProvider(className, properties, null), properties, layer, appContext, description, true);
@@ -227,7 +234,7 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
     public String[] detachListener(RegistrationListener listener, String layer, String appContext) {
         tryCheckPermission(providerRegistrationSecurityPermission);
 
-        List<String> removedListenerIds = new ArrayList<String>();
+        List<String> removedListenerIds = new ArrayList<>();
         String registrationId = getRegistrationID(layer, appContext);
 
         doWriteLocked(() -> {
@@ -265,7 +272,7 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
             } else {
                 Collection<List<String>> collList = providerToIdsMap.values();
                 if (collList != null) {
-                    registrationIDs = new HashSet<String>();
+                    registrationIDs = new HashSet<>();
                     for (List<String> listIds : collList) {
                         if (listIds != null) {
                             registrationIDs.addAll(listIds);
@@ -378,7 +385,7 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
 
     /**
      * This API decomposes the given registration ID into layer and appContext.
-     * 
+     *
      * @param registrationId
      * @return a String array with layer and appContext
      */
@@ -434,7 +441,7 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
 
     // XXX need to update persistent state and notify effected listeners
     private String _register(AuthConfigProvider provider, Map<String, String> properties, String layer, String appContext,
-            String description, boolean persistent) {
+                             String description, boolean persistent) {
         String registrationId = getRegistrationID(layer, appContext);
         RegistrationContext registrationContext = new RegistrationContextImpl(layer, appContext, description, persistent);
 
@@ -448,7 +455,7 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
     }
 
     private Map<String, List<RegistrationListener>> register(AuthConfigProvider provider, Map<String, String> properties,
-            boolean persistent, String registrationId, RegistrationContext registrationContext) {
+                                                             boolean persistent, String registrationId, RegistrationContext registrationContext) {
         RegistrationContext previousRegistrationContext = idToRegistrationContextMap.get(registrationId);
         AuthConfigProvider previousProvider = idToProviderMap.get(registrationId);
 
@@ -560,10 +567,10 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
      * Initialize the static maps in a static method
      */
     private static void initializeMaps() {
-        idToProviderMap = new HashMap<String, AuthConfigProvider>();
-        idToRegistrationContextMap = new HashMap<String, RegistrationContext>();
-        idToRegistrationListenersMap = new HashMap<String, List<RegistrationListener>>();
-        providerToIdsMap = new HashMap<AuthConfigProvider, List<String>>();
+        idToProviderMap = new HashMap<>();
+        idToRegistrationContextMap = new HashMap<>();
+        idToRegistrationListenersMap = new HashMap<>();
+        providerToIdsMap = new HashMap<>();
     }
 
     private static String _loadRegistration(AuthConfigProvider provider, String layer, String appContext, String description) {
@@ -587,7 +594,7 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
 
         List<String> registrationIds = providerToIdsMap.get(provider);
         if (registrationIds == null) {
-            registrationIds = new ArrayList<String>();
+            registrationIds = new ArrayList<>();
             providerToIdsMap.put(provider, registrationIds);
         }
 
@@ -599,7 +606,7 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
     }
 
     private void _storeRegistration(RegistrationContext registrationContext, AuthConfigProvider configProvider,
-            Map<String, String> properties) {
+                                    Map<String, String> properties) {
         String className = null;
         if (configProvider != null) {
             className = configProvider.getClass().getName();
@@ -653,13 +660,13 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
      * a provider registration id that is more specific than the one being added or removed.
      */
     private static Map<String, List<RegistrationListener>> getEffectedListeners(String regisID) {
-        Map<String, List<RegistrationListener>> effectedListeners = new HashMap<String, List<RegistrationListener>>();
-        Set<String> listenerRegistrations = new HashSet<String>(idToRegistrationListenersMap.keySet());
+        Map<String, List<RegistrationListener>> effectedListeners = new HashMap<>();
+        Set<String> listenerRegistrations = new HashSet<>(idToRegistrationListenersMap.keySet());
 
         for (String listenerID : listenerRegistrations) {
             if (regIdImplies(regisID, listenerID)) {
                 if (!effectedListeners.containsKey(listenerID)) {
-                    effectedListeners.put(listenerID, new ArrayList<RegistrationListener>());
+                    effectedListeners.put(listenerID, new ArrayList<>());
                 }
                 effectedListeners.get(listenerID).addAll(idToRegistrationListenersMap.remove(listenerID));
             }
@@ -712,6 +719,35 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
                 for (RegistrationListener listener : listeners) {
                     listener.notify(dIds[0], dIds[1]);
                 }
+            }
+        }
+    }
+
+    @Override
+    public String registerServerAuthModule(ServerAuthModule sam, Object context) {
+        String registrationId = null;
+        if (context instanceof ServletContext) {
+            ServletContext servletContext = (ServletContext) context;
+
+            String appContext = servletContext.getVirtualServerName() + " " + servletContext.getContextPath();
+            registrationId = AccessController.doPrivileged((PrivilegedAction<String>) () -> registerConfigProvider(
+                    new DefaultAuthConfigProvider(sam),
+                    "HttpServlet",
+                    appContext,
+                    "Default authentication config provider"));
+
+            servletContext.setAttribute(CONTEXT_REGISTRATION_ID, registrationId);
+        }
+        return registrationId;
+    }
+
+    @Override
+    public void removeServerAuthModule(Object context) {
+        if (context instanceof ServletContext) {
+            ServletContext servletContext = (ServletContext) context;
+            String registrationId = (String) servletContext.getAttribute(CONTEXT_REGISTRATION_ID);
+            if (!isEmpty(registrationId)) {
+                AccessController.doPrivileged((PrivilegedAction<Boolean>) () -> removeRegistration(registrationId));
             }
         }
     }

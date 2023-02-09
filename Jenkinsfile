@@ -25,12 +25,12 @@ pipeline {
               }
             }
         }
-        stage('Build') {
+        stage('Build and Analysis') {
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Building SRC  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                withCredentials([usernameColonPassword(credentialsId: 'JenkinsNexusUser', variable: 'NEXUS_USER')]) {
-                    sh """mvn -B -V -ff -e clean install --strict-checksums -PQuickBuild \
-                    -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
+                withSonarQubeEnv(installationName: 'Payara-Testone', credentialsId: 'sonarqube-user-token') {
+                    sh """mvn -B -V -ff -e clean install sonar:sonar --strict-checksums -PQuickBuild \
+                    -Dsonar.projectKey=Payara-Testone -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
                     -Djavax.xml.accessExternalSchema=all -Dbuild.number=${payaraBuildNumber}"""
                 }
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#    Built SRC   *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
@@ -43,6 +43,13 @@ pipeline {
                 }
             }
         }
+//        stage('Quality Gate') {
+//            steps {
+//                timeout(time: 1, unit: 'HOURS') {
+//                    waitForQualityGate abortPipeline: true, credentialsId: 'sonarqube-user-token'
+//                }
+//            }
+//        }
         stage('Setup for Quicklook Tests') {
             steps {
                 sh "rm -f -v *.zip"
@@ -52,6 +59,7 @@ pipeline {
         stage('Run Quicklook Tests') {
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                sh """rm  ~/test\\|sa.mv.db  || true"""
                 sh """mvn -B -V -ff -e clean test --strict-checksums -Pall \
                 -Dglassfish.home=\"${pwd()}/appserver/distributions/payara/target/stage/payara6/glassfish\" \
                 -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \

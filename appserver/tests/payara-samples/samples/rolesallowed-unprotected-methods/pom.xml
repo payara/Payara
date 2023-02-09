@@ -48,7 +48,7 @@
     <parent>
         <groupId>fish.payara.samples</groupId>
         <artifactId>payara-samples-profiled-tests</artifactId>
-        <version>6.2022.1.Alpha3-SNAPSHOT</version>
+        <version>6.2023.3-SNAPSHOT</version>
     </parent>
 
     <properties>
@@ -76,7 +76,7 @@
             <scope>test</scope>
             <exclusions>
                 <exclusion>
-                    <groupId>fish.payara.server.internal.packager</groupId>
+                    <groupId>fish.payara.server.core.packager</groupId>
                     <artifactId>ldapbp-repackaged</artifactId>
                 </exclusion>
                 <exclusion>
@@ -84,15 +84,15 @@
                     <artifactId>libpam4j-repackaged</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>fish.payara.server.internal.packager</groupId>
+                    <groupId>fish.payara.server.core.packager</groupId>
                     <artifactId>tiger-types</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>fish.payara.server.internal.packager</groupId>
+                    <groupId>fish.payara.server.core.packager</groupId>
                     <artifactId>jmxremote_optional-repackaged</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>fish.payara.server.internal.packager</groupId>
+                    <groupId>fish.payara.server.core.packager</groupId>
                     <artifactId>opentracing-repackaged</artifactId>
                 </exclusion>
             </exclusions>

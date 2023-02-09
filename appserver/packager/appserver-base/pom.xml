@@ -45,7 +45,7 @@
     <parent>
         <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>6.2022.1.Alpha3-SNAPSHOT</version>
+        <version>6.2023.3-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>appserver-base</artifactId>
@@ -96,6 +96,34 @@
                                 </resource>
                             </resources>              
                         </configuration>            
+                    </execution>
+                </executions>
+            </plugin>
+             <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>update-readme-versions</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <replace token="@@@FULL_VERSION@@@" value="${project.version}" dir="${stage.dir}">
+                                    <include name="README.txt"/>
+                                </replace>
+                                <replace token="@@@MAJOR_VERSION@@@" value="${major_version}" dir="${stage.dir}">
+                                    <include name="README.txt"/>
+                                </replace>
+                                <replace token="@@@MINOR_VERSION@@@" value="${minor_version}" dir="${stage.dir}">
+                                    <include name="README.txt"/>
+                                </replace>
+                                <replace token="@@@UPDATE_VERSION@@@" value="${update_version}" dir="${stage.dir}">
+                                    <include name="README.txt"/>
+                                </replace>
+                            </target>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

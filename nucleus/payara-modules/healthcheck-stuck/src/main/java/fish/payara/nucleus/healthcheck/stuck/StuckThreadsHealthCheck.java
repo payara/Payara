@@ -39,7 +39,6 @@
  */
 package fish.payara.nucleus.healthcheck.stuck;
 
-import fish.payara.nucleus.healthcheck.HealthCheckResult;
 import fish.payara.monitoring.collect.MonitoringData;
 import fish.payara.monitoring.collect.MonitoringDataCollector;
 import fish.payara.monitoring.collect.MonitoringDataSource;
@@ -47,24 +46,28 @@ import fish.payara.monitoring.collect.MonitoringWatchCollector;
 import fish.payara.monitoring.collect.MonitoringWatchSource;
 import fish.payara.notification.healthcheck.HealthCheckResultEntry;
 import fish.payara.notification.healthcheck.HealthCheckResultStatus;
+import fish.payara.nucleus.healthcheck.HealthCheckResult;
+import fish.payara.nucleus.healthcheck.HealthCheckStatsProvider;
 import fish.payara.nucleus.healthcheck.HealthCheckStuckThreadExecutionOptions;
-import fish.payara.nucleus.healthcheck.preliminary.BaseHealthCheck;
 import fish.payara.nucleus.healthcheck.configuration.StuckThreadsChecker;
-
-import java.lang.management.ManagementFactory;
-import java.lang.management.ThreadInfo;
-import java.lang.management.ThreadMXBean;
-import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
-
+import fish.payara.nucleus.healthcheck.preliminary.BaseHealthCheck;
 import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
+
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadInfo;
+import java.lang.management.ThreadMXBean;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * @since 4.1.2.173
@@ -75,7 +78,12 @@ import org.jvnet.hk2.annotations.Service;
 @RunLevel(StartupRunLevel.VAL)
 public class StuckThreadsHealthCheck extends
         BaseHealthCheck<HealthCheckStuckThreadExecutionOptions, StuckThreadsChecker>
-        implements MonitoringDataSource, MonitoringWatchSource {
+        implements MonitoringDataSource, MonitoringWatchSource, HealthCheckStatsProvider {
+
+    private final Map<String, Number> stuckThreadResult = new ConcurrentHashMap<>();
+    private static final String STUCK_THREAD_COUNT = "count";
+    private static final String STUCK_THREAD_MAX_DURATION = "maxDuration";
+    private static final Set<String> VALID_SUB_ATTRIBUTES = Set.of(STUCK_THREAD_COUNT, STUCK_THREAD_MAX_DURATION);
 
     @FunctionalInterface
     private interface StuckThreadConsumer {
@@ -83,10 +91,10 @@ public class StuckThreadsHealthCheck extends
     }
 
     @Inject
-    StuckThreadsStore stuckThreadsStore;
+    private StuckThreadsStore stuckThreadsStore;
 
     @Inject
-    StuckThreadsChecker checker;
+    private StuckThreadsChecker checker;
 
     @PostConstruct
     void postConstruct() {
@@ -94,10 +102,39 @@ public class StuckThreadsHealthCheck extends
     }
 
     @Override
+    public Object getValue(Class type, String attributeName, String subAttributeName) {
+        if (subAttributeName == null) {
+            throw new IllegalArgumentException("sub-attribute name is required");
+        }
+        if (!VALID_SUB_ATTRIBUTES.contains(subAttributeName)) {
+            throw new IllegalArgumentException("Invalid sub-attribute name, supported sub-attributes are " + VALID_SUB_ATTRIBUTES);
+        }
+        if (!Number.class.isAssignableFrom(type)) {
+            throw new IllegalArgumentException("sub-attribute type must be number");
+        }
+        return stuckThreadResult.getOrDefault(subAttributeName, 0);
+    }
+
+    @Override
+    public Set<String> getAttributes() {
+        return Collections.EMPTY_SET;
+    }
+
+    @Override
+    public Set<String> getSubAttributes() {
+        return VALID_SUB_ATTRIBUTES;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return this.getOptions() != null ? this.getOptions().isEnabled() : false;
+    }
+
+    @Override
     protected HealthCheckResult doCheckInternal() {
         HealthCheckResult result = new HealthCheckResult();
         acceptStuckThreads((workStartedTime, timeWorkingInMillis, thresholdInMillis, info) ->
-            result.add(new HealthCheckResultEntry(HealthCheckResultStatus.WARNING, "Stuck Thread: " + info.toString())));
+                result.add(new HealthCheckResultEntry(HealthCheckResultStatus.WARNING, "Stuck Thread: " + info.toString())));
         return result;
     }
 
@@ -126,6 +163,8 @@ public class StuckThreadsHealthCheck extends
         });
         collector.collect("StuckThreadDuration", maxDuration);
         collector.collect("StuckThreadCount", count);
+        stuckThreadResult.put(STUCK_THREAD_MAX_DURATION, maxDuration.get());
+        stuckThreadResult.put(STUCK_THREAD_COUNT, count.get());
     }
 
     @Override
@@ -135,8 +174,8 @@ public class StuckThreadsHealthCheck extends
         }
         long thresholdInMillis = getThresholdInMillis();
         collector.watch("ns:health StuckThreadDuration", "Stuck Threads", "ms")
-            .red(thresholdInMillis, -30000L, false, null, null, false)
-            .green(-thresholdInMillis, 1, false, null, null, false);
+                .red(thresholdInMillis, -30000L, false, null, null, false)
+                .green(-thresholdInMillis, 1, false, null, null, false);
     }
 
     private static String composeStateText(ThreadInfo info) {
@@ -149,12 +188,12 @@ public class StuckThreadsHealthCheck extends
 
     private static String composeActionText(Thread.State state) {
         switch(state) {
-        case BLOCKED:
-            return "Blocked on ";
-        case WAITING:
-        case TIMED_WAITING:
-            return "Waiting on ";
-        default: return "Running ";
+            case BLOCKED:
+                return "Blocked on ";
+            case WAITING:
+            case TIMED_WAITING:
+                return "Waiting on ";
+            default: return "Running ";
         }
     }
 

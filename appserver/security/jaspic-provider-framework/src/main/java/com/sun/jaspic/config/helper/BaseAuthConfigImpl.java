@@ -76,7 +76,7 @@ public abstract class BaseAuthConfigImpl {
     private Lock instanceWriteLock = instanceReadWriteLock.writeLock();
 
     public BaseAuthConfigImpl(String loggerName, EpochCarrier providerEpoch, MessagePolicyDelegate mpDelegate, String layer,
-            String appContext, CallbackHandler cbh) throws AuthException {
+                              String appContext, CallbackHandler cbh) throws AuthException {
         this.loggerName = loggerName;
         this.providerEpoch = providerEpoch;
         this.policyDelegate = mpDelegate;
@@ -139,7 +139,7 @@ public abstract class BaseAuthConfigImpl {
         return Integer.valueOf(properties.hashCode());
     }
 
-    private <M> M getContextFromMap(Map<String, Map<Integer, M>> contextMap, String authContextID, Map<String, ?> properties) {
+    private <M> M getContextFromMap(Map<String, Map<Integer, M>> contextMap, String authContextID, Map<String, Object> properties) {
         M context = null;
 
         Map<Integer, M> internalMap = contextMap.get(authContextID);
@@ -158,7 +158,7 @@ public abstract class BaseAuthConfigImpl {
 
     @SuppressWarnings("unchecked")
     protected final <M> M getContext(Map<String, Map<Integer, M>> contextMap, String authContextID, Subject subject,
-            Map<String, ?> properties)
+                                     Map<String, Object> properties)
             throws AuthException {
 
         M context = null;
@@ -241,5 +241,5 @@ public abstract class BaseAuthConfigImpl {
      */
     protected abstract void initializeContextMap();
 
-    protected abstract <M> M createAuthContext(String authContextID, Map<String, ?> properties) throws AuthException;
+    protected abstract <M> M createAuthContext(String authContextID, Map<String, Object> properties) throws AuthException;
 }

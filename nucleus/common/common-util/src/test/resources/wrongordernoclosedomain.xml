@@ -149,7 +149,7 @@
     </auth-realm>
     <auth-realm name="certificate" classname="com.sun.enterprise.security.auth.realm.certificate.CertificateRealm">
     </auth-realm>
-    <jacc-provider name="default" policy-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyProvider" policy-configuration-factory-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyConfigurationFactory"></jacc-provider>
+    <jacc-provider name="default" policy-provider="fish.payara.security.jacc.provider.SimplePolicyProvider" policy-configuration-factory-provider="fish.payara.security.jacc.provider.SimplePolicyConfigurationFactory"></jacc-provider>
     <audit-module name="default" classname="com.sun.enterprise.security.ee.Audit">
 	<property name="auditOn" value="false"/>
     </audit-module>

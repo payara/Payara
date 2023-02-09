@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2014-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2014-2022] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -49,17 +49,21 @@ import org.jvnet.hk2.config.Configured;
  * @author Steve Millidge (Payara Foundation)
  */
 @Configured
-public interface HazelcastRuntimeConfiguration 
-    extends ConfigBeanProxy, DomainExtension {
-    
+public interface HazelcastRuntimeConfiguration
+        extends ConfigBeanProxy, DomainExtension {
+
+    @Attribute(defaultValue = "false", dataType = Boolean.class)
+    String getChangeToDefault();
+    public void setChangeToDefault(String value);
+
     @Attribute(defaultValue = "hazelcast-config.xml")
     String getHazelcastConfigurationFile();
     public void setHazelcastConfigurationFile(String value);
-    
+
     @Attribute(defaultValue = "true", dataType = Boolean.class)
     String getAutoIncrementPort();
     public void setAutoIncrementPort(String value);
-    
+
     @Attribute(defaultValue = "5900")
     String getStartPort();
     public void setStartPort(String value);
@@ -67,31 +71,31 @@ public interface HazelcastRuntimeConfiguration
     @Attribute(defaultValue = "")
     String getDASPublicAddress();
     public void setDASPublicAddress(String value);
-    
+
     @Attribute(defaultValue = "")
     String getDASBindAddress();
     public void setDASBindAddress(String value);
-    
+
     @Attribute(defaultValue = "4900")
     String getDasPort();
     public void setDasPort(String value);
-    
+
     @Attribute(defaultValue = "224.2.2.3")
     String getMulticastGroup();
     public void setMulticastGroup(String value);
-        
+
     @Attribute(defaultValue = "54327")
     String getMulticastPort();
     public void setMulticastPort(String value);
-    
+
     @Attribute(defaultValue = "127.0.0.1:5900")
     String getTcpipMembers();
     public void setTcpipMembers(String value);
-    
+
     @Attribute(defaultValue = "localhost:5900")
     String getDnsMembers();
     public void setDnsMembers(String value);
-    
+
     // valid discovery modes
     // domain
     // multicast
@@ -101,7 +105,7 @@ public interface HazelcastRuntimeConfiguration
     @Attribute(defaultValue = "domain")
     String getDiscoveryMode();
     public void setDiscoveryMode(String value);
-    
+
     @Attribute(defaultValue = "false", dataType = Boolean.class)
     String getGenerateNames();
     public void setGenerateNames(String value);
@@ -110,11 +114,11 @@ public interface HazelcastRuntimeConfiguration
     @Attribute(defaultValue = "")
     String getInterface();
     public void setInterface(String value);
-    
+
     @Attribute(defaultValue = "development")
     String getClusterGroupName();
     public void setClusterGroupName(String value);
-    
+
     @Attribute(defaultValue = "true", dataType = Boolean.class)
     String getHostAwarePartitioning();
     public void setHostAwarePartitioning(String value);

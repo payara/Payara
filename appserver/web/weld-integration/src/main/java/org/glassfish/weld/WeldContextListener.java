@@ -39,7 +39,7 @@
  *
  * Portions Copyright [2017-2021] Payara Foundation and/or affiliates
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
 package org.glassfish.weld;
 
 import jakarta.enterprise.inject.spi.BeanManager;
@@ -48,17 +48,19 @@ import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
 import jakarta.servlet.jsp.JspApplicationContext;
 import jakarta.servlet.jsp.JspFactory;
+
+import java.lang.reflect.Constructor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.apache.jasper.runtime.JspApplicationContextImpl;
+import org.glassfish.wasp.runtime.JspApplicationContextImpl;
 import org.glassfish.cdi.CDILoggerInfo;
 import org.jboss.weld.module.web.el.WeldELContextListener;
 
 /**
  * ServletContextListener implementation that ensures (for Weld applications)
  * the correct Weld EL Resolver and Weld EL Context Listener is used for JSP(s).
- */  
+ */
 public class WeldContextListener implements ServletContextListener {
 
     private Logger logger = Logger.getLogger(WeldContextListener.class.getName());
@@ -74,21 +76,22 @@ public class WeldContextListener implements ServletContextListener {
     public void contextInitialized(ServletContextEvent servletContextEvent) {
 
         if (beanManager != null) {
-             JspApplicationContext jspAppContext = getJspApplicationContext(servletContextEvent);
-             jspAppContext.addELResolver(beanManager.getELResolver());
+            JspApplicationContext jspAppContext = getJspApplicationContext(servletContextEvent);
+            jspAppContext.addELResolver(beanManager.getELResolver());
 
-             try {
-                 Class<?> weldClass = Class.forName("org.jboss.weld.module.web.el.WeldELContextListener");
-                 WeldELContextListener welcl = ( WeldELContextListener ) weldClass.newInstance();
-                 jspAppContext.addELContextListener(welcl);
-             } catch (Exception e) {
-                 logger.log(Level.WARNING,
-                            CDILoggerInfo.CDI_COULD_NOT_CREATE_WELDELCONTEXTlISTENER,
-                            new Object [] {e});
-             }
+            try {
+                Class<?> weldClass = Class.forName("org.jboss.weld.module.web.el.WeldELContextListener");
+                Constructor contructor = weldClass.getConstructor();
+                WeldELContextListener welcl = ( WeldELContextListener ) contructor.newInstance();
+                jspAppContext.addELContextListener(welcl);
+            } catch (Exception e) {
+                logger.log(Level.WARNING,
+                        CDILoggerInfo.CDI_COULD_NOT_CREATE_WELDELCONTEXTlISTENER,
+                        new Object [] {e});
+            }
 
-			((JspApplicationContextImpl) jspAppContext).setExpressionFactory(
-                beanManager.wrapExpressionFactory(jspAppContext.getExpressionFactory()));
+            ((JspApplicationContextImpl) jspAppContext).setExpressionFactory(
+                    beanManager.wrapExpressionFactory(jspAppContext.getExpressionFactory()));
         }
     }
 

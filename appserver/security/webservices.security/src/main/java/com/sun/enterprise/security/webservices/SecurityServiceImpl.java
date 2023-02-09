@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2022] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.webservices;
 
 import static com.sun.enterprise.security.webservices.LogUtils.BASIC_AUTH_ERROR;
@@ -91,7 +91,7 @@ import com.sun.xml.ws.assembler.metro.dev.ClientPipelineHook;
 @Service
 @Singleton
 public class SecurityServiceImpl implements SecurityService {
-    
+
     protected static final Logger _logger = LogUtils.getLogger();
 
     private static final String AUTHORIZATION_HEADER = "authorization";
@@ -205,13 +205,13 @@ public class SecurityServiceImpl implements SecurityService {
         if (securityContext == null) {
             return null;
         }
-        
+
         if (securityContext.didServerGenerateCredentials()) {
             if (isWeb) {
                 return null;
             }
         }
-        
+
         return securityContext.getCallerPrincipal();
     }
 
@@ -221,7 +221,7 @@ public class SecurityServiceImpl implements SecurityService {
             RealmAdapter realmAdapter = (RealmAdapter) webModule.getRealm();
             return realmAdapter.hasRole(servletName, principal, role);
         }
-        
+
         return false;
     }
 

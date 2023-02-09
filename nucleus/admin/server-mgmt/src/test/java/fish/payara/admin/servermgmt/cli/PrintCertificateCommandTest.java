@@ -57,6 +57,7 @@ import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.Security;
 import java.security.cert.Certificate;
@@ -99,9 +100,14 @@ import org.junit.runners.Parameterized.Parameters;
 @RunWith(Parameterized.class)
 public class PrintCertificateCommandTest {
 
-    private static final String ALIAS = "test";
+    private static final BouncyCastleProvider PROVIDER = new BouncyCastleProvider();
 
+    private static final String ALIAS = "test";
     private static final String KEYSTORE_PASSWORD = "changeit";
+
+    private static final String KS_TYPE_JKS = "JKS";
+    private static final String KS_TYPE_JCEKS = "JCEKS";
+    private static final String KS_TYPE_PKCS12 = "PKCS12";
 
     private static final File FILE_JKS = new File("target/pcct.jks");
     private static final File FILE_PKCS12 = new File("target/pcct.p12");
@@ -128,9 +134,9 @@ public class PrintCertificateCommandTest {
         final KeyPair keyPair = createKeyPair();
         final X509Certificate certificate = createSelfSignedCertificate(keyPair);
 
-        saveKeyStore(keyPair.getPrivate(), certificate, FILE_PKCS12, "PKCS12");
-        saveKeyStore(keyPair.getPrivate(), certificate, FILE_JKS, "JKS");
-        saveKeyStore(keyPair.getPrivate(), certificate, FILE_JCEKS, "JCEKS");
+        saveKeyStore(keyPair.getPrivate(), certificate, FILE_PKCS12, KS_TYPE_PKCS12);
+        saveKeyStore(keyPair.getPrivate(), certificate, FILE_JKS, KS_TYPE_JKS);
+        saveKeyStore(keyPair.getPrivate(), certificate, FILE_JCEKS, KS_TYPE_JCEKS);
         saveDer(certificate);
         savePem(certificate);
     }
@@ -221,7 +227,12 @@ public class PrintCertificateCommandTest {
     private static void saveKeyStore(final PrivateKey key, final X509Certificate certificate, //
         final File keystoreFile, final String keystoreType) throws Exception {
 
-        final KeyStore keystore = KeyStore.getInstance(keystoreType);
+        final KeyStore keystore;
+        if (KS_TYPE_PKCS12.equals(keystoreType)) {
+            keystore = KeyStore.getInstance(keystoreType, PROVIDER);
+        } else {
+            keystore = KeyStore.getInstance(keystoreType);
+        }
         keystore.load(null, null);
         keystore.setKeyEntry(ALIAS, key, "changeit".toCharArray(), new Certificate[] {certificate});
         try (final OutputStream os = new FileOutputStream(keystoreFile)) {
@@ -246,8 +257,8 @@ public class PrintCertificateCommandTest {
     }
 
 
-    private static KeyPair createKeyPair() throws NoSuchAlgorithmException {
-        final KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
+    private static KeyPair createKeyPair() throws NoSuchAlgorithmException, NoSuchProviderException {
+        final KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA", PROVIDER);
         kpg.initialize(2048);
         return kpg.generateKeyPair();
     }

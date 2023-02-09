@@ -140,7 +140,7 @@ public class ReplicatedWebMethodSessionStrategyBuilder extends BasePersistenceSt
 
     @SuppressWarnings("unchecked")
     private <T extends Storeable>  ReplicationWebEventPersistentManager<T> getReplicationWebEventPersistentManager() {
- 
+
         return rwepMgr;
     }
 }

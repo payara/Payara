@@ -137,7 +137,7 @@
                     <property value="fileRealm" name="jaas-context" />
                 </auth-realm>
                 <auth-realm classname="com.sun.enterprise.security.auth.realm.certificate.CertificateRealm" name="certificate" />
-                <jacc-provider policy-configuration-factory-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyConfigurationFactory" policy-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyProvider" name="default"></jacc-provider>
+                <jacc-provider policy-configuration-factory-provider="fish.payara.security.jacc.provider.SimplePolicyConfigurationFactory" policy-provider="fish.payara.security.jacc.provider.SimplePolicyProvider" name="default"></jacc-provider>
                 <audit-module classname="com.sun.enterprise.security.ee.Audit" name="default">
                     <property value="false" name="auditOn" />
                 </audit-module>
@@ -196,8 +196,8 @@
                 <jvm-options>-Djava.security.policy=${com.sun.aas.instanceRoot}/config/server.policy</jvm-options>
                 <jvm-options>-Djavax.management.builder.initial=com.sun.enterprise.v3.admin.AppServerMBeanServerBuilder</jvm-options>
                 <jvm-options>-Dcom.sun.enterprise.security.httpsOutboundKeyAlias=s1as</jvm-options>
-                <jvm-options>-Djavax.net.ssl.keyStore=${com.sun.aas.instanceRoot}/config/keystore.jks</jvm-options>
-                <jvm-options>-Djavax.net.ssl.trustStore=${com.sun.aas.instanceRoot}/config/cacerts.jks</jvm-options>
+                <jvm-options>-Djavax.net.ssl.keyStore=${com.sun.aas.instanceRoot}/config/keystore.p12</jvm-options>
+                <jvm-options>-Djavax.net.ssl.trustStore=${com.sun.aas.instanceRoot}/config/cacerts.p12</jvm-options>
                 <jvm-options>-Djavax.xml.accessExternalSchema=all</jvm-options>
                 <jvm-options>-Djdbc.drivers=org.h2.Driver</jvm-options>
                 <jvm-options>-Djdk.corba.allowOutputStreamSubclass=true</jvm-options>

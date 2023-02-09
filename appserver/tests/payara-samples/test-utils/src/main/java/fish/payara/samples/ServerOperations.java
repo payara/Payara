@@ -220,7 +220,7 @@ public class ServerOperations {
         if (runtimeType != RuntimeType.SERVER) {
             throw new IllegalStateException(ERR_MESSAGE_UNSUPPORTED);
         }
-        Path cacertsPath = getDomainPath("config/cacerts.jks");
+        Path cacertsPath = getDomainPath("config/cacerts.p12");
         if (!cacertsPath.toFile().exists()) {
             logger.severe("The container trust store at " + cacertsPath.toAbsolutePath() + " does not exists");
             logger.severe("Is the domain \"" + getDomainName() + "\" correct?");

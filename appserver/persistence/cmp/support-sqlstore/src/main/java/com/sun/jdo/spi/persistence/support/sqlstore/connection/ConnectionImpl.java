@@ -52,6 +52,7 @@ import com.sun.jdo.spi.persistence.support.sqlstore.ejb.EJBHelper;
 import com.sun.jdo.spi.persistence.utility.Linkable;
 import com.sun.jdo.spi.persistence.utility.logging.Logger;
 import com.sun.jdo.spi.persistence.support.sqlstore.LogHelperSQLStore;
+import org.glassfish.hk2.utilities.CleanerFactory;
 
 
 import java.sql.*;
@@ -142,6 +143,7 @@ public class ConnectionImpl implements Connection, Linkable {
         this.freePending = false;
         //		this.resource = null;
         this.connectionManager = connMgr;
+        registerCloseEvent();
     }
 
     //----------------------------------------------------------------------
@@ -871,13 +873,14 @@ public class ConnectionImpl implements Connection, Linkable {
         return buffer;
     }
 
-    protected void finalize() {
-        try {
-            this.connection.close();
-            logger.finest("sqlstore.connectionimpl.finalize"); // NOI18N
-        } catch (SQLException se) {
-            ;
-        }
+    public final void registerCloseEvent() {
+        CleanerFactory.create().register(this, () -> {
+            try {
+                this.connection.close();
+                logger.finest("sqlstore.connectionimpl.finalize"); // NOI18N
+            } catch (SQLException se) {
+            }
+        });
     }
 
     public void setSchema(String schema) throws SQLException {
