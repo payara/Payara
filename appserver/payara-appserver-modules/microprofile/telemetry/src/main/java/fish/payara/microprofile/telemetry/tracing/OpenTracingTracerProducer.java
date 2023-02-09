@@ -71,7 +71,8 @@ public class OpenTracingTracerProducer {
      * @return An OpenTracing tracer
      */
     @Produces
-    @ApplicationScoped
+    //TODO: Reenable once we get rid of opentracing-mock in OpenTracing TCK
+    //@ApplicationScoped
     public Tracer getTracer() {
         return openTracing.getTracer(openTracing.getApplicationName(
                 Globals.getDefaultBaseServiceLocator().getService(InvocationManager.class)));
