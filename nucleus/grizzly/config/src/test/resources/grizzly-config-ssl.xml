@@ -50,9 +50,9 @@
             <ssl cert-nickname="s1as"
             />
             <!--
-                             trust-store="target/test-classes/cacerts.p12"
+                             trust-store="target/test-classes/cacerts.jks"
                              trust-store-password="changeit"
-                             key-store="target/test-classes/keystore.p12"
+                             key-store="target/test-classes/keystore.jks"
                              key-store-password="changeit"
             -->
         </protocol>
@@ -60,9 +60,9 @@
             <http/>
             <ssl cert-nickname="s1as" allow-lazy-init="false"/>
             <!--
-                 trust-store="target/test-classes/cacerts.p12"
+                 trust-store="target/test-classes/cacerts.jks"
                  trust-store-password="changeit"
-                 key-store="target/test-classes/keystore.p12"
+                 key-store="target/test-classes/keystore.jks"
                  key-store-password="changeit"
 -->
         </protocol>

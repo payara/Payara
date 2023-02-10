@@ -44,13 +44,13 @@
 # Portions Copyright [2016-2020] [Payara Foundation]
 domain.xml
 admin-keyfile
-cacerts.p12
+cacerts.jks
 client-jnlp-config.properties
 default-web.xml
 domain-passwords
 glassfish-acc.xml
 keyfile
-keystore.p12
+keystore.jks
 login.conf
 server.policy
 sun-acc.xml

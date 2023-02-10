@@ -55,9 +55,9 @@ import static com.sun.enterprise.util.StringUtils.ok;
 public class CertificateManagementDomainConfigUtils {
 
     public static final String DEFAULT_KEYSTORE = "${com.sun.aas.instanceRoot}"
-            + File.separator + "config" + File.separator + "keystore.p12";
+            + File.separator + "config" + File.separator + "keystore.jks";
     public static final String DEFAULT_TRUSTSTORE = "${com.sun.aas.instanceRoot}"
-            + File.separator + "config" + File.separator + "cacerts.p12";
+            + File.separator + "config" + File.separator + "cacerts.jks";
 
     /**
      * Determines and returns the key store.

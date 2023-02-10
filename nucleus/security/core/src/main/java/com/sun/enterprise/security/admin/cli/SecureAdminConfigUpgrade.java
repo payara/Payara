@@ -349,7 +349,7 @@ public class SecureAdminConfigUpgrade extends SecureAdminUpgradeHelper implement
          * cause the in-memory copies to reload.
          */
         final File keyStoreFile = serverEnv.getJKS();
-        final File trustStoreFile = new File(serverEnv.getConfigDirPath(), "cacerts.p12");
+        final File trustStoreFile = new File(serverEnv.getConfigDirPath(), "cacerts.jks");
         final String pw = masterPassword();
 
         ProcessManager pm = new ProcessManager(new String[]{
