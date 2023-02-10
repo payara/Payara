@@ -37,6 +37,7 @@
 # only if the new code is made subject to such option by the copyright
 # holder.
 #
+#Portions Copyright [2022] [Payara Foundation and/or its affiliates.]
 
 # work around bug in 'bnd' that doesn't import generics eg List<MonitoringItem>
 Import-Package: \
@@ -53,4 +54,5 @@ Import-Package: \
     com.sun.enterprise.config.modularity.customization; \
     com.sun.enterprise.config.modularity.parser; \
     fish.payara.enterprise.config.serverbeans; \
+    fish.payara.boot.runtime; \
     org.glassfish.config.support; version=${project.osgi.version}

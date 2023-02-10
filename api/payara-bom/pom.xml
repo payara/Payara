@@ -764,9 +764,9 @@
                 <version>${istack-commons-runtime.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.eclipse.angus</groupId>
+		<groupId>org.eclipse.angus</groupId>
                 <artifactId>angus-activation</artifactId>
-                <version>${angus.activation.version}</version>
+		<version>${angus.activation.version}</version>
             </dependency>
 
             <!-- Other libraries -->

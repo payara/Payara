@@ -37,35 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
 package org.glassfish.grizzly.config;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import jakarta.inject.Provider;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLServerSocketFactory;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.grizzly.config.dom.Protocol;
 import org.glassfish.grizzly.config.dom.Ssl;
-import static org.glassfish.grizzly.config.dom.Ssl.SSL2;
-import static org.glassfish.grizzly.config.dom.Ssl.SSL2_HELLO;
-import static org.glassfish.grizzly.config.dom.Ssl.SSL3;
-import static org.glassfish.grizzly.config.dom.Ssl.TLS1;
-import static org.glassfish.grizzly.config.dom.Ssl.TLS11;
-import static org.glassfish.grizzly.config.dom.Ssl.TLS12;
-import static org.glassfish.grizzly.config.dom.Ssl.TLS13;
 import org.glassfish.grizzly.config.ssl.SSLImplementation;
 import org.glassfish.grizzly.config.ssl.ServerSocketFactory;
 import org.glassfish.grizzly.localization.LogMessages;
@@ -73,6 +51,18 @@ import org.glassfish.grizzly.ssl.SSLContextConfigurator;
 import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
 import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLServerSocketFactory;
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static org.glassfish.grizzly.config.dom.Ssl.TLS12;
+import static org.glassfish.grizzly.config.dom.Ssl.TLS13;
 
 /**
  * @author oleksiys
@@ -185,27 +175,11 @@ public class SSLConfigurator extends SSLEngineConfigurator {
 //                    needClientAuth = true;
 //                }
                 // ssl protocol variants
-                if (Boolean.parseBoolean(ssl.getSsl2Enabled())) {
-                    tmpSSLArtifactsList.add(SSL2);
-                }
-                if (Boolean.parseBoolean(ssl.getSsl3Enabled())) {
-                    tmpSSLArtifactsList.add(SSL3);
-                }
-                if (Boolean.parseBoolean(ssl.getTlsEnabled())) {
-                    tmpSSLArtifactsList.add(TLS1);
-                }
-                if (Boolean.parseBoolean(ssl.getTls11Enabled())) {
-                    tmpSSLArtifactsList.add(TLS11);
-                }
                 if (Boolean.parseBoolean(ssl.getTls12Enabled())) {
                     tmpSSLArtifactsList.add(TLS12);
                 }
                 if (Boolean.parseBoolean(ssl.getTls13Enabled())) {
                     tmpSSLArtifactsList.add(TLS13);
-                }
-                if (Boolean.parseBoolean(ssl.getSsl3Enabled())
-                        || Boolean.parseBoolean(ssl.getTlsEnabled())) {
-                    tmpSSLArtifactsList.add(SSL2_HELLO);
                 }
                 if (tmpSSLArtifactsList.isEmpty()) {
                     logEmptyWarning(ssl, "WEB0307: All SSL protocol variants disabled for network-listener {0},"
@@ -229,14 +203,6 @@ public class SSLConfigurator extends SSLEngineConfigurator {
                 if (ssl3Ciphers != null && ssl3Ciphers.length() > 0) {
                     final String[] ssl3CiphersArray = ssl3Ciphers.split(",");
                     for (final String cipher : ssl3CiphersArray) {
-                        tmpSSLArtifactsList.add(cipher.trim());
-                    }
-                }
-                // ssl2-tls-ciphers
-                final String ssl2Ciphers = ssl.getSsl2Ciphers();
-                if (ssl2Ciphers != null && ssl2Ciphers.length() > 0) {
-                    final String[] ssl2CiphersArray = ssl2Ciphers.split(",");
-                    for (final String cipher : ssl2CiphersArray) {
                         tmpSSLArtifactsList.add(cipher.trim());
                     }
                 }
@@ -581,9 +547,6 @@ public class SSLConfigurator extends SSLEngineConfigurator {
      * CipherInfo.
      */
     private static final class CipherInfo {
-
-        private static final short SSL2 = 0x1;
-        private static final short SSL3 = 0x2;
         private static final short TLS = 0x4;
         // The old names mapped to the standard names as existed
         private static final String[][] OLD_CIPHER_MAPPING = {
@@ -615,7 +578,7 @@ public class SSLConfigurator extends SSLEngineConfigurator {
                 String nonStdName = OLD_CIPHER_MAPPING[i][0];
                 String stdName = OLD_CIPHER_MAPPING[i][1];
                 ciphers.put(nonStdName,
-                        new CipherInfo(nonStdName, stdName, (short) (SSL3 | TLS)));
+                        new CipherInfo(nonStdName, stdName, TLS));
             }
         }
 
@@ -640,7 +603,7 @@ public class SSLConfigurator extends SSLEngineConfigurator {
             try {
                 for (int i = 0, len = supportedCiphers.length; i < len; i++) {
                     String s = supportedCiphers[i];
-                    ciphers.put(s, new CipherInfo(s, s, (short) (SSL3 | TLS)));
+                    ciphers.put(s, new CipherInfo(s, s, TLS));
                 }
             } finally {
                 ciphersLock.writeLock().unlock();
@@ -662,16 +625,6 @@ public class SSLConfigurator extends SSLEngineConfigurator {
 
         public String getCipherName() {
             return cipherName;
-        }
-
-        @SuppressWarnings({"UnusedDeclaration"})
-        public boolean isSSL2() {
-            return (protocolVersion & SSL2) == SSL2;
-        }
-
-        @SuppressWarnings({"UnusedDeclaration"})
-        public boolean isSSL3() {
-            return (protocolVersion & SSL3) == SSL3;
         }
 
         @SuppressWarnings({"UnusedDeclaration"})

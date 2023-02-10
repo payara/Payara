@@ -85,7 +85,7 @@ public class JAASAuthContextHelper extends BaseAuthContextImpl {
     private Constructor<?>[] constructors;
 
     public JAASAuthContextHelper(String loggerName, boolean returnNullContexts, ExtendedConfigFile jaasConfig, Map<String, ?> properties,
-                                 String appContext) throws AuthException {
+            String appContext) throws AuthException {
         super(loggerName, returnNullContexts);
         this.jaasConfig = jaasConfig;
         this.appContext = appContext;
@@ -170,7 +170,7 @@ public class JAASAuthContextHelper extends BaseAuthContextImpl {
 
     /**
      * This implementation does not depend on authContextID
-     *
+     * 
      * @param <M>
      * @param template
      * @param authContextID (ignored by this context system)
@@ -192,7 +192,7 @@ public class JAASAuthContextHelper extends BaseAuthContextImpl {
 
     /**
      * this implementation does not depend on authContextID
-     *
+     * 
      * @param <M>
      * @param template
      * @param authContextID (ignored by this context system)

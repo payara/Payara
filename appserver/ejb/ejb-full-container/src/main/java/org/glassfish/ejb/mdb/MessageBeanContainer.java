@@ -896,6 +896,7 @@ public final class MessageBeanContainer extends BaseContainer implements Message
     public void startApplication(boolean deploy) {
         super.startApplication(deploy);
 
+
         // Start delivery of messages to message bean instances.
         try {
 

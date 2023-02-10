@@ -208,6 +208,11 @@
 <target name="initprop" >
     <echo message="H2 Database Location : ${h2.home}" />
     <property name="ips.h2" value="${glassfish.home}/../h2db"/>
-    <property name="db.class.path" value="${h2.home}/bin/h2.jar:${ips.h2}/bin/h2.jar"/>
+    <path id="db.class.path">
+        <fileset dir="${ips.h2}/bin">
+            <include name="h2*.jar"/>
+        </fileset>
+    </path>
+    <pathconvert property="db.class.path" refid="db.class.path"/>
 </target>
 </project>

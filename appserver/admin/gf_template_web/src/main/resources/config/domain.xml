@@ -95,12 +95,12 @@
       <iiop-service>
         <orb use-thread-pool-ids="thread-pool-1" />
         <iiop-listener address="0.0.0.0" port="%%%ORB_LISTENER_PORT%%%" id="orb-listener-1" lazy-init="true" />
-        <ssl ssl3-enabled="false" />
+        <ssl />
         <iiop-listener security-enabled="true" address="0.0.0.0" port="%%%ORB_SSL_PORT%%%" id="SSL">
-          <ssl ssl3-enabled="false" classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" cert-nickname="s1as" />
+          <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" cert-nickname="s1as" />
         </iiop-listener>
         <iiop-listener security-enabled="true" address="0.0.0.0" port="%%%ORB_MUTUALAUTH_PORT%%%" id="SSL_MUTUALAUTH">
-          <ssl ssl3-enabled="false" classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" cert-nickname="s1as" client-auth-enabled="true" />
+          <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" cert-nickname="s1as" client-auth-enabled="true" />
         </iiop-listener>
       </iiop-service>
       <admin-service auth-realm-name="admin-realm" type="das-and-server" system-jmx-connector-name="system">
@@ -142,7 +142,7 @@
         <auth-realm classname="com.sun.enterprise.security.auth.realm.certificate.CertificateRealm" name="certificate">
           <property value="true" name="certificate-validation"/>
         </auth-realm>
-        <jacc-provider policy-configuration-factory-provider="fish.payara.security.jacc.provider.SimplePolicyConfigurationFactory" policy-provider="fish.payara.security.jacc.provider.SimplePolicyProvider" name="default"></jacc-provider>
+        <jacc-provider policy-configuration-factory-provider="fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl" policy-provider="fish.payara.security.jacc.provider.PolicyProviderImpl" name="default"></jacc-provider>
         <audit-module classname="com.sun.enterprise.security.ee.Audit" name="default">
           <property value="false" name="auditOn" />
         </audit-module>
@@ -210,6 +210,7 @@
         <jvm-options>[17|]--add-exports=java.base/sun.net.www=ALL-UNNAMED</jvm-options>
         <jvm-options>[17|]--add-exports=java.base/sun.security.util=ALL-UNNAMED</jvm-options>
         <jvm-options>[17|]--add-opens=java.base/java.lang.invoke=ALL-UNNAMED</jvm-options>
+        <jvm-options>[17|]--add-opens=java.desktop/java.beans=ALL-UNNAMED</jvm-options>
         <jvm-options>[17|]--add-exports=jdk.naming.dns/com.sun.jndi.dns=ALL-UNNAMED</jvm-options>
         <jvm-options>-Xmx512m</jvm-options>
         <jvm-options>-XX:NewRatio=2</jvm-options>
@@ -278,13 +279,13 @@
             <http default-virtual-server="server" max-connections="250">
               <file-cache enabled="false"></file-cache>
             </http>
-            <ssl ssl3-enabled="false" />
+            <ssl />
           </protocol>
           <protocol security-enabled="true" name="http-listener-2">
             <http default-virtual-server="server" max-connections="250">
               <file-cache enabled="false"></file-cache>
             </http>
-            <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" ssl3-enabled="false" cert-nickname="s1as"></ssl>
+            <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" cert-nickname="s1as"></ssl>
           </protocol>
           <protocol name="admin-listener">
             <http default-virtual-server="__asadmin" max-connections="250" encoded-slash-enabled="true">
@@ -319,12 +320,12 @@
       <iiop-service>
         <orb use-thread-pool-ids="thread-pool-1" />
         <iiop-listener port="${IIOP_LISTENER_PORT}" id="orb-listener-1" address="0.0.0.0" />
-        <ssl ssl3-enabled="false" />
+        <ssl />
         <iiop-listener port="${IIOP_SSL_LISTENER_PORT}" id="SSL" address="0.0.0.0" security-enabled="true">
-          <ssl ssl3-enabled="false" classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" cert-nickname="s1as" />
+          <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" cert-nickname="s1as" />
         </iiop-listener>
         <iiop-listener port="${IIOP_SSL_MUTUALAUTH_PORT}" id="SSL_MUTUALAUTH" address="0.0.0.0" security-enabled="true">
-          <ssl ssl3-enabled="false" classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" cert-nickname="s1as" client-auth-enabled="true" />
+          <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" cert-nickname="s1as" client-auth-enabled="true" />
         </iiop-listener>
       </iiop-service>
       <admin-service system-jmx-connector-name="system" type="server">
@@ -361,7 +362,7 @@
         <auth-realm classname="com.sun.enterprise.security.auth.realm.certificate.CertificateRealm" name="certificate">
           <property value="true" name="certificate-validation"/>
         </auth-realm>
-        <jacc-provider policy-configuration-factory-provider="fish.payara.security.jacc.provider.SimplePolicyConfigurationFactory" policy-provider="fish.payara.security.jacc.provider.SimplePolicyProvider" name="default"></jacc-provider>
+        <jacc-provider policy-configuration-factory-provider="fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl" policy-provider="fish.payara.security.jacc.provider.PolicyProviderImpl" name="default"></jacc-provider>
         <audit-module classname="com.sun.enterprise.security.ee.Audit" name="default">
           <property value="false" name="auditOn" />
         </audit-module>
@@ -439,6 +440,7 @@
         <jvm-options>[17|]--add-exports=java.base/sun.net.www=ALL-UNNAMED</jvm-options>
         <jvm-options>[17|]--add-exports=java.base/sun.security.util=ALL-UNNAMED</jvm-options>
         <jvm-options>[17|]--add-opens=java.base/java.lang.invoke=ALL-UNNAMED</jvm-options>
+        <jvm-options>[17|]--add-opens=java.desktop/java.beans=ALL-UNNAMED</jvm-options>
         <jvm-options>-Xmx512m</jvm-options>
         <jvm-options>-XX:NewRatio=2</jvm-options>
         <jvm-options>-XX:+UnlockDiagnosticVMOptions</jvm-options>
@@ -503,13 +505,13 @@
             <http default-virtual-server="server">
               <file-cache />
             </http>
-            <ssl ssl3-enabled="false" />
+            <ssl />
           </protocol>
           <protocol security-enabled="true" name="http-listener-2">
             <http default-virtual-server="server">
               <file-cache />
             </http>
-            <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" ssl3-enabled="false" cert-nickname="s1as" />
+            <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" cert-nickname="s1as" />
           </protocol>
           <protocol name="admin-listener">
             <http default-virtual-server="__asadmin" max-connections="250">
@@ -520,7 +522,7 @@
             <http default-virtual-server="__asadmin" encoded-slash-enabled="true">
               <file-cache></file-cache>
             </http>
-            <ssl client-auth="want" ssl3-enabled="false" classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" cert-nickname="glassfish-instance" renegotiate-on-client-auth-want="false"></ssl>
+            <ssl client-auth="want" classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" cert-nickname="glassfish-instance" renegotiate-on-client-auth-want="false"></ssl>
           </protocol>
           <protocol name="admin-http-redirect">
             <http-redirect secure="true"></http-redirect>

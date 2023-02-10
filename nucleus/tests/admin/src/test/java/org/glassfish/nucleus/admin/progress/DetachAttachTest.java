@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2022] [Payara Foundation and/or its affiliates]
 package org.glassfish.nucleus.admin.progress;
 
 import java.util.ArrayList;
@@ -66,7 +67,6 @@ public class DetachAttachTest {
     @AfterTest
     public void cleanUp() throws Exception {
         nadmin("stop-domain");
-        JobManagerTest.deleteJobsFile();
         nadmin("start-domain");
     }
     

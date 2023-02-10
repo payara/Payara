@@ -108,7 +108,7 @@
           <property value="fileRealm" name="jaas-context" />
         </auth-realm>
         <auth-realm classname="com.sun.enterprise.security.auth.realm.certificate.CertificateRealm" name="certificate" />
-        <jacc-provider policy-configuration-factory-provider="fish.payara.security.jacc.provider.SimplePolicyConfigurationFactory" policy-provider="fish.payara.security.jacc.provider.SimplePolicyProvider" name="default"></jacc-provider>
+        <jacc-provider policy-configuration-factory-provider="fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl" policy-provider="fish.payara.security.jacc.provider.PolicyProviderImpl" name="default"></jacc-provider>
         <message-security-config auth-layer="SOAP">
           <provider-config provider-id="XWS_ClientProvider" class-name="com.sun.xml.wss.provider.ClientSecurityAuthModule" provider-type="client">
             <request-policy auth-source="content" />
@@ -202,13 +202,13 @@
             <http default-virtual-server="server" max-connections="250">
               <file-cache enabled="false"></file-cache>
             </http>
-            <ssl ssl3-enabled="false" />
+            <ssl />
           </protocol>
           <protocol security-enabled="true" name="http-listener-2">
             <http default-virtual-server="server" max-connections="250">
               <file-cache enabled="false"></file-cache>
             </http>
-            <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" ssl3-enabled="false" cert-nickname="s1as"></ssl>
+            <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" cert-nickname="s1as"></ssl>
           </protocol>
           <protocol name="admin-listener">
             <http default-virtual-server="__asadmin" max-connections="250" encoded-slash-enabled="true" >
@@ -258,7 +258,7 @@
                  <property name="jaas-context" value="fileRealm" />
              </auth-realm>
              <auth-realm classname="com.sun.enterprise.security.auth.realm.certificate.CertificateRealm" name="certificate" />
-             <jacc-provider policy-provider="fish.payara.security.jacc.provider.SimplePolicyProvider" name="default" policy-configuration-factory-provider="fish.payara.security.jacc.provider.SimplePolicyConfigurationFactory"></jacc-provider>
+             <jacc-provider policy-provider="fish.payara.security.jacc.provider.PolicyProviderImpl" name="default" policy-configuration-factory-provider="fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl"></jacc-provider>
              <message-security-config auth-layer="SOAP">
                  <provider-config provider-type="client" provider-id="XWS_ClientProvider" class-name="com.sun.xml.wss.provider.ClientSecurityAuthModule">
                      <request-policy auth-source="content" />
@@ -348,14 +348,14 @@
                      <http default-virtual-server="server">
                          <file-cache />
                      </http>
-                     <ssl ssl3-enabled="false" />
+                     <ssl />
                  </protocol>
 
                  <protocol security-enabled="true" name="sec-admin-listener">
                      <http default-virtual-server="__asadmin" encoded-slash-enabled="true">
                        <file-cache></file-cache>
                      </http>
-                     <ssl client-auth="want" ssl3-enabled="false" classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" cert-nickname="glassfish-instance" renegotiate-on-client-auth-want="false"></ssl>
+                     <ssl client-auth="want" classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" cert-nickname="glassfish-instance" renegotiate-on-client-auth-want="false"></ssl>
                  </protocol>
 
                  <protocol name="admin-http-redirect">
@@ -373,7 +373,7 @@
                      <http default-virtual-server="server">
                          <file-cache />
                      </http>
-                     <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" ssl3-enabled="false" cert-nickname="s1as" />
+                     <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" cert-nickname="s1as" />
                  </protocol>
 
                  <protocol name="admin-listener">

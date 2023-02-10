@@ -338,9 +338,9 @@
                                     org.glassfish.hk2.security; \
                                     com.sun.faces.config; \
                                     com.sun.jersey.server.impl.container.servlet; \
-                                    org.apache.jasper.runtime; \
+                                    org.glassfish.wasp.runtime; \
                                     com.sun.xml.ws.transport.http.servlet; \
-                                    org.apache.jasper.servlet; \
+                                    org.glassfish.wasp.servlet; \
                                     resolution:=optional
                                 </Import-Package>
                             <Bundle-Description>${project.description}</Bundle-Description> 

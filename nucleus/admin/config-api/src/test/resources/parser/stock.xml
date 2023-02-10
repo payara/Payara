@@ -104,7 +104,7 @@
           <property value="fileRealm" name="jaas-context" />
         </auth-realm>
         <auth-realm classname="com.sun.enterprise.security.auth.realm.certificate.CertificateRealm" name="certificate" />
-        <jacc-provider policy-configuration-factory-provider="fish.payara.security.jacc.provider.SimplePolicyConfigurationFactory" policy-provider="fish.payara.security.jacc.provider.SimplePolicyProvider" name="default"></jacc-provider>
+        <jacc-provider policy-configuration-factory-provider="fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl" policy-provider="fish.payara.security.jacc.provider.PolicyProviderImpl" name="default"></jacc-provider>
         <audit-module classname="com.sun.enterprise.security.ee.Audit" name="default">
           <property value="false" name="auditOn" />
         </audit-module>
@@ -195,7 +195,7 @@
             <http default-virtual-server="server" max-connections="250">
               <file-cache enabled="false"></file-cache>
             </http>
-            <ssl ssl3-enabled="false" cert-nickname="s1as"></ssl>
+            <ssl cert-nickname="s1as"></ssl>
           </protocol>
           <protocol name="admin-listener">
             <http default-virtual-server="__asadmin" max-connections="250" encoded-slash-enabled="true" >
@@ -258,7 +258,7 @@
                  <property name="jaas-context" value="fileRealm" />
              </auth-realm>
              <auth-realm classname="com.sun.enterprise.security.auth.realm.certificate.CertificateRealm" name="certificate" />
-             <jacc-provider policy-provider="fish.payara.security.jacc.provider.SimplePolicyProvider" name="default" policy-configuration-factory-provider="fish.payara.security.jacc.provider.SimplePolicyConfigurationFactory"></jacc-provider>
+             <jacc-provider policy-provider="fish.payara.security.jacc.provider.PolicyProviderImpl" name="default" policy-configuration-factory-provider="fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl"></jacc-provider>
              <audit-module classname="com.sun.enterprise.security.ee.Audit" name="default">
                  <property name="auditOn" value="false" />
              </audit-module>
@@ -335,7 +335,7 @@
                      <http default-virtual-server="server">
                          <file-cache />
                      </http>
-                     <ssl ssl3-enabled="false" cert-nickname="s1as" />
+                     <ssl cert-nickname="s1as" />
                  </protocol>
                  <protocol name="admin-listener">
                      <http default-virtual-server="__asadmin" max-connections="250">

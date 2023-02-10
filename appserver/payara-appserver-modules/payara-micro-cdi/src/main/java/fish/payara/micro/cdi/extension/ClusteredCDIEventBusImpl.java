@@ -86,9 +86,9 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
     private JavaEEContextUtil.Instance ctxUtil;
 
     private final static String INSTANCE_PROPERTY = "InstanceName";
-
+    
     private final static String EVENT_PROPERTY = "EventName";
-
+    
     @PostConstruct
     void postConstruct() {
         ctxUtil = Globals.getDefaultHabitat().getService(JavaEEContextUtil.class).currentInvocation();
@@ -119,7 +119,7 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
 
     @Override
     public void eventReceived(final PayaraClusteredCDIEvent event) {
-
+        
         // first check if the event is targetted at a specific instance
         String instanceName = event.getProperty(INSTANCE_PROPERTY);
         if (!(instanceName == null) && !(instanceName.length() == 0) ) {
@@ -149,7 +149,7 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
                         public String eventName() {
                             return event.getProperty(EVENT_PROPERTY);
                         }
-
+                        
                         @Override
                         public Class<? extends Annotation> annotationType() {
                             return Inbound.class;
@@ -206,7 +206,7 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
     }
 
     private static final String ITEM_SEPARATOR = ",,,";  // 3 commas in case an instance name contains a comma
-
+    
     // the same could be done in one line just with String.join() in JDK8
     private static String serializeArray(String[] items) {
         StringBuilder sb = new StringBuilder();
@@ -221,7 +221,7 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
         }
         return sb.toString();
     }
-
+    
     private String[] deserializeToArray(String serializedItems) {
         return serializedItems.split(ITEM_SEPARATOR);
     }

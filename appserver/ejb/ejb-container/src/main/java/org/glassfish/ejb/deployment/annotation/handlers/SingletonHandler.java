@@ -85,7 +85,7 @@ public class SingletonHandler extends AbstractEjbHandler {
      * @return boolean check for validity of EjbDescriptor
      */
     protected boolean isValidEjbDescriptor(EjbDescriptor ejbDesc,
-                                           Annotation annotation) {
+            Annotation annotation) {
         boolean isValid = EjbSessionDescriptor.TYPE.equals(ejbDesc.getType());
 
         if( isValid ) {
@@ -108,7 +108,7 @@ public class SingletonHandler extends AbstractEjbHandler {
      * @return a new EjbDescriptor
      */
     protected EjbDescriptor createEjbDescriptor(String elementName,
-                                                AnnotationInfo ainfo) throws AnnotationProcessorException {
+            AnnotationInfo ainfo) throws AnnotationProcessorException {
 
         AnnotatedElement ae = ainfo.getAnnotatedElement();
         Class ejbClass = (Class)ae;

@@ -437,14 +437,28 @@ public interface PayaraMicroBoot {
      */
     PayaraMicroBoot setMinHttpThreads(int minHttpThreads);
 
-    /**
+  /**
+   * Indicated whether clustering is enabled
+   *
+   * @return
+   */
+    boolean isNoHazelcast();
+
+  /**
      * Enables or disables clustering before bootstrap
      *
-     * @param noCluster set to true to disable clustering
+     * @param noHazelcast set to true to disable clustering
      * @return
      */
-    PayaraMicroBoot setNoCluster(boolean noCluster);
+    PayaraMicroBoot setNoHazelcast(boolean noHazelcast);
 
+  /**
+   * Enables or disables clustering before bootstrap
+   *
+   * @param noCluster set to true to disable clustering
+   * @return
+   */
+  PayaraMicroBoot setNoCluster(boolean noCluster);
     /**
      * Set whether the logo should be generated on boot
      *
@@ -501,7 +515,7 @@ public interface PayaraMicroBoot {
     /**
      * Sets the instance group name
      *
-     * @param instanceGroup The instance group name
+     * @param groupName The instance group name
      * @return
      */
     PayaraMicroBoot setInstanceGroup(String groupName);

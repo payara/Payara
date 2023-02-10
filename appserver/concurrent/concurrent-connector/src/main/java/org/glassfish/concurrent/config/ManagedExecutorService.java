@@ -65,15 +65,15 @@ import java.beans.PropertyVetoException;
 @Configured
 @ResourceConfigCreator(commandName="create-managed-executor-service")
 @RestRedirects({
-        @RestRedirect(opType = RestRedirect.OpType.POST, commandName = "create-managed-executor-service"),
-        @RestRedirect(opType = RestRedirect.OpType.DELETE, commandName = "delete-managed-executor-service")
+ @RestRedirect(opType = RestRedirect.OpType.POST, commandName = "create-managed-executor-service"),
+ @RestRedirect(opType = RestRedirect.OpType.DELETE, commandName = "delete-managed-executor-service")
 })
 @ResourceTypeOrder(deploymentOrder=ResourceDeploymentOrder.MANAGED_EXECUTOR_SERVICE)
 @ReferenceConstraint(skipDuringCreation=true, payload=ManagedExecutorService.class)
 @UniqueResourceNameConstraint(message="{resourcename.isnot.unique}", payload=ManagedExecutorService.class)
 @CustomConfiguration(baseConfigurationFileName = "managed-executor-service-conf.xml")
 public interface ManagedExecutorService extends ConfigBeanProxy, Resource,
-        BindableResource, ConcurrencyResource, ManagedExecutorServiceBase,
+        BindableResource, ConcurrencyResource, ManagedExecutorServiceBase, 
         Payload {
 
     /**

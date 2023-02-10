@@ -105,7 +105,7 @@ Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
                 <notifier>eventbus-notifier</notifier>
             </monitoring-service-configuration>
             <microprofile-metrics-configuration></microprofile-metrics-configuration>
-            <security-service activate-default-principal-to-role-mapping="true" jacc="simple">
+            <security-service activate-default-principal-to-role-mapping="true">
                 <auth-realm classname="com.sun.enterprise.security.auth.realm.file.FileRealm" name="admin-realm">
                     <property value="${com.sun.aas.instanceRoot}/config/admin-keyfile" name="file" />
                     <property value="fileRealm" name="jaas-context" />
@@ -115,7 +115,7 @@ Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
                     <property value="fileRealm" name="jaas-context" />
                 </auth-realm>
                 <auth-realm classname="com.sun.enterprise.security.auth.realm.certificate.CertificateRealm" name="certificate" />
-                <jacc-provider policy-configuration-factory-provider="fish.payara.security.jacc.provider.SimplePolicyConfigurationFactory" policy-provider="fish.payara.security.jacc.provider.SimplePolicyProvider" name="default"></jacc-provider>
+                <jacc-provider policy-configuration-factory-provider="fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl" policy-provider="fish.payara.security.jacc.provider.PolicyProviderImpl" name="default"></jacc-provider>
                 <audit-module classname="com.sun.enterprise.security.ee.Audit" name="default">
                     <property value="false" name="auditOn" />
                 </audit-module>
@@ -180,7 +180,7 @@ Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
                         <http default-virtual-server="server" xpowered-by="false" comet-support-enabled="true" max-connections="250">
                             <file-cache enabled="false"></file-cache>
                         </http>
-                        <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" ssl3-enabled="false" cert-nickname="s1as"></ssl>
+                        <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" cert-nickname="s1as"></ssl>
                     </protocol>
                 </protocols>
                 <network-listeners>

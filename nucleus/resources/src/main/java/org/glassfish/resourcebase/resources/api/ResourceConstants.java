@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2022] Payara Foundation and/or affiliates
 
 package org.glassfish.resourcebase.resources.api;
 
@@ -142,6 +142,7 @@ public interface ResourceConstants {
     public static String JMS_CONNECTION_FACTORY_DEFINITION_JNDINAME_PREFIX = "__jms_connection_factory_definition/";
     public static String JMS_DESTINATION_DEFINITION_JNDINAME_PREFIX = "__jms_destination_definition/";
     public static String ADMINISTERED_OBJECT_DEFINITION_JNDINAME_PREFIX="__administered_object_definition/";
+    public static String CONCURRENT_CONTEXT_SERVICE_DEFINITION_JNDINAME_PREFIX = "__context_service_definition/";
 
     public static final String JAVA_SCOPE_PREFIX = "java:";
     public static final String JAVA_APP_SCOPE_PREFIX = "java:app/";

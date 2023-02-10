@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2021] Payara Foundation and/or affiliates
+// Portions Copyright [2021-2022] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.mbeanserver.ssl;
 
@@ -50,7 +50,6 @@ import java.io.File;
  * keystore type = JKS
  * truststore type = JKS
  * protocol = TLS
- * ssl3 Enabled = true
  * tls Enabled= true
  * It also picks up the value of keystore, keystore password, truststore , trustore password from
  * system properties.
@@ -81,11 +80,9 @@ public class SSLParams {
     private String clientAuthEnabled;
     private String clientAuth;
     private String crlFile;
-    private String ssl2Ciphers;
-    private Boolean ssl2Enabled = false;
-    private Boolean ssl3Enabled = true;
     private String ssl3TlsCiphers;
-    private Boolean tlsEnabled=true;
+    private Boolean tls12Enabled=true;
+    private Boolean tls13Enabled=true;
     private Boolean tlsRollBackEnabled=false;
     private Boolean hstsEnabled = false;
     private Boolean hstsSubDomains = false;
@@ -185,7 +182,7 @@ public class SSLParams {
     }
 
     /**
-     * Determines whether SSL3 client authentication is performed on every request, independent of ACL-based access
+     * Determines whether client authentication is performed on every request, independent of ACL-based access
      * control.
      */
 
@@ -260,46 +257,6 @@ public class SSLParams {
         keyStore = new File(location);
     }
 
-
-    /**
-     * A comma-separated list of the SSL2 ciphers used, with the prefix + to enable or - to disable, for example +rc4.
-     * Allowed values are rc4, rc4export, rc2, rc2export, idea, des, desede3. If no value is specified, all supported
-     * ciphers are assumed to be enabled. NOT Used in PE
-     */
-
-    public String getSsl2Ciphers() {
-        return ssl2Ciphers;
-    }
-
-    public void setSsl2Ciphers(String ssl2Ciphers) {
-        this.ssl2Ciphers = ssl2Ciphers;
-    }
-
-    /**
-     * Determines whether SSL2 is enabled. NOT Used in PE. SSL2 is not supported by either iiop or web-services. When
-     * this element is used as a child of the iiop-listener element then the only allowed value for this attribute is
-     * "false".
-     */
-    public Boolean getSsl2Enabled() {
-        return ssl2Enabled;
-    }
-
-    public void setSsl2Enabled(String ssl2Enabled) {
-        this.ssl2Enabled = Boolean.parseBoolean(ssl2Enabled);
-    }
-
-    /**
-     * Determines whether SSL3 is enabled. If both SSL2 and SSL3 are enabled for a virtual server, the server tries SSL3
-     * encryption first. If that fails, the server tries SSL2 encryption.
-     */
-    public Boolean getSsl3Enabled() {
-        return ssl3Enabled;
-    }
-
-    public void setSsl3Enabled(String ssl3Enabled) {
-        this.ssl3Enabled = Boolean.parseBoolean(ssl3Enabled);
-    }
-
     /**
      * A comma-separated list of the SSL3 ciphers used, with the prefix + to enable or - to disable, for example
      * +SSL_RSA_WITH_RC4_128_MD5. Allowed SSL3/TLS values are those that are supported by the JVM for the given security
@@ -315,17 +272,26 @@ public class SSLParams {
     }
 
     /**
-     * Determines whether TLS is enabled.
+     * Determines whether TLSv1.2 is enabled.
      */
-
-    public Boolean getTlsEnabled() {
-        return tlsEnabled;
+    public Boolean getTls12Enabled() {
+        return tls12Enabled;
     }
 
-    public void setTlsEnabled(String tlsEnabled) {
-        this.tlsEnabled = Boolean.parseBoolean(tlsEnabled);
+    public void setTls12Enabled(String tls12Enabled) {
+        this.tls12Enabled = Boolean.parseBoolean(tls12Enabled);
     }
 
+    /**
+     * Determines whether TLSv1.3 is enabled.
+     */
+    public Boolean getTls13Enabled() {
+        return tls13Enabled;
+    }
+
+    public void setTls13Enabled(String tls13Enabled) {
+        this.tls13Enabled = Boolean.parseBoolean(tls13Enabled);
+    }
 
     /**
      * Determines whether TLS rollback is enabled. TLS rollback should be enabled for Microsoft Internet Explorer 5.0

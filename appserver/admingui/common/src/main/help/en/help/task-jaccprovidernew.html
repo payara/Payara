@@ -16,7 +16,7 @@
     SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
 
 -->
-<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2019-2022] [Payara Foundation and/or its affiliates] -->
 
 <p><a id="task-jaccprovidernew" name="task-jaccprovidernew"></a><a id="GHCOM00200" name="GHCOM00200"></a></p>
 
@@ -47,11 +47,11 @@
 </li>
 <li>
 <p>In the Policy Configuration field, type the name of the class that implements the policy configuration factory.</p>
-<p>The <code>default</code> provider uses <code>fish.payara.security.jacc.provider.SimplePolicyConfigurationFactory</code>. The <code>simple</code> provider uses <code>fish.payara.security.jacc.provider.SimplePolicyConfigurationFactory</code>.</p>
+<p>The <code>default</code> provider uses <code>fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl</code>. The <code>simple</code> provider uses <code>fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl</code>.</p>
 </li>
 <li>
 <p>In the Policy Provider field, type the name of the class that implements the policy factory.</p>
-<p>The <code>default</code> provider uses <code>fish.payara.security.jacc.provider.SimplePolicyProvider</code>. The <code>simple</code> provider uses <code>fish.payara.security.jacc.provider.SimplePolicyProvider</code>.</p>
+<p>The <code>default</code> provider uses <code>fish.payara.security.jacc.provider.PolicyProviderImpl</code>. The <code>simple</code> provider uses <code>fish.payara.security.jacc.provider.PolicyProviderImpl</code>.</p>
 </li>
 <li>
 <p>In the Additional Properties section, specify additional properties.</p>

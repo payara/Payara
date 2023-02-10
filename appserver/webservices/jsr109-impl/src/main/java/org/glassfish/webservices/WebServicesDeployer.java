@@ -145,7 +145,7 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer, We
             final List<URL> moduleCPUrls = ASClassLoaderUtil.getURLsFromClasspath(moduleCP, File.pathSeparator, null);
             final ClassLoader oldCl = Thread.currentThread().getContextClassLoader();
             URLClassLoader newCl = AccessController.doPrivileged(
-                    (PrivilegedAction<URLClassLoader>) () -> new URLClassLoader(ASClassLoaderUtil.convertURLListToArray(moduleCPUrls), oldCl)
+                (PrivilegedAction<URLClassLoader>) () -> new URLClassLoader(ASClassLoaderUtil.convertURLListToArray(moduleCPUrls), oldCl)
             );
 
             Thread.currentThread().setContextClassLoader(newCl);
@@ -414,7 +414,7 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer, We
      * @param schemaIncludes output param in which schema includes will be added
      */
     private void parseRelativeImports(URL wsdlFileUrl, Collection wsdlRelativeImports, Collection wsdlIncludes,
-                                      Collection schemaRelativeImports, Collection schemaIncludes) throws Exception {
+            Collection schemaRelativeImports, Collection schemaIncludes) throws Exception {
 
         // We will use our little parser rather than using JAXRPC's heavy weight WSDL parser
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();

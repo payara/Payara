@@ -62,12 +62,12 @@ import java.util.logging.Logger;
  * @author Jitendra Kotamraju
  */
 public class ServerSentEventCdiExtension implements Extension {
-
+    
     private final Logger LOGGER = Logger.getLogger(ServerSentEventCdiExtension.class.getName());
 
     // path --> application
     private final Map<String, ServerSentEventApplication> applicationMap
-            = new HashMap<String, ServerSentEventApplication>();
+        = new HashMap<String, ServerSentEventApplication>();
 
     public Map<String, ServerSentEventApplication> getApplicationMap() {
         return applicationMap;
@@ -186,7 +186,7 @@ public class ServerSentEventCdiExtension implements Extension {
 
     @SuppressWarnings("UnusedDeclaration")
     <T> void processAnnotatedType(@Observes @WithAnnotations(ServerSentEvent.class) ProcessAnnotatedType<T> pat,
-                                  BeanManager beanManager) {
+            BeanManager beanManager) {
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.fine("scanning type: " + pat.getAnnotatedType().getJavaClass().getName());
         }

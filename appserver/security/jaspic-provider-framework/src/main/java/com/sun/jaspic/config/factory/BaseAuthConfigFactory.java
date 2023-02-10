@@ -72,7 +72,7 @@ import static org.glassfish.soteria.Utils.isEmpty;
 
 /**
  * This class implements methods in the abstract class AuthConfigFactory.
- *
+ * 
  * @author Shing Wai Chan
  */
 public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
@@ -97,7 +97,7 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
      *
      * Get the provider of ServerAuthConfig and/or ClientAuthConfig objects registered for the identified message layer and
      * application context.
-     *
+     * 
      * <p>
      * All factories shall employ the following precedence rules to select the registered AuthConfigProvider that matches
      * (via matchConstructors) the layer and appContext arguments:
@@ -125,7 +125,7 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
      *
      * @return the implementation of the AuthConfigProvider interface registered at the factory for the layer and appContext
      * or null if no AuthConfigProvider is selected.
-     *
+     * 
      */
     @Override
     public AuthConfigProvider getConfigProvider(String layer, String appContext, RegistrationListener listener) {
@@ -181,7 +181,7 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
     @Override
     @SuppressWarnings("unchecked")
     public String registerConfigProvider(String className, @SuppressWarnings("rawtypes") Map properties, String layer, String appContext,
-                                         String description) {
+            String description) {
         tryCheckPermission(providerRegistrationSecurityPermission);
 
         return _register(_constructProvider(className, properties, null), properties, layer, appContext, description, true);
@@ -385,7 +385,7 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
 
     /**
      * This API decomposes the given registration ID into layer and appContext.
-     *
+     * 
      * @param registrationId
      * @return a String array with layer and appContext
      */
@@ -441,7 +441,7 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
 
     // XXX need to update persistent state and notify effected listeners
     private String _register(AuthConfigProvider provider, Map<String, String> properties, String layer, String appContext,
-                             String description, boolean persistent) {
+            String description, boolean persistent) {
         String registrationId = getRegistrationID(layer, appContext);
         RegistrationContext registrationContext = new RegistrationContextImpl(layer, appContext, description, persistent);
 
@@ -455,7 +455,7 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
     }
 
     private Map<String, List<RegistrationListener>> register(AuthConfigProvider provider, Map<String, String> properties,
-                                                             boolean persistent, String registrationId, RegistrationContext registrationContext) {
+            boolean persistent, String registrationId, RegistrationContext registrationContext) {
         RegistrationContext previousRegistrationContext = idToRegistrationContextMap.get(registrationId);
         AuthConfigProvider previousProvider = idToProviderMap.get(registrationId);
 
@@ -606,7 +606,7 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
     }
 
     private void _storeRegistration(RegistrationContext registrationContext, AuthConfigProvider configProvider,
-                                    Map<String, String> properties) {
+            Map<String, String> properties) {
         String className = null;
         if (configProvider != null) {
             className = configProvider.getClass().getName();

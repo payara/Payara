@@ -59,7 +59,7 @@
     <name>Payara Appserver Parent Project</name>
 
     <properties>
-        <jakarta.faces-spec.version>3.0.0</jakarta.faces-spec.version>
+        <jakarta.faces-spec.version>4.0.0</jakarta.faces-spec.version>
         <jsftemplating.version>3.0.0</jsftemplating.version>
         <jboss.classfilewriter.version>1.2.5.Final</jboss.classfilewriter.version>
         <apache.bcel.version>6.7.0</apache.bcel.version>
@@ -152,8 +152,9 @@
                 <artifactId>spec-version-maven-plugin</artifactId>
                 <version>1.2</version>
                 <configuration>
+                    <!--suppress UnresolvedMavenProperty -->
                     <dir>${stage.dir}/${install.dir.name}/glassfish/modules</dir>
-                    <excludes>jakarta.inject-api.jar,jakarta.servlet.jsp.jstl.jar,jakarta.servlet.jsp.jar,jakarta.enterprise.concurrent.jar, jakarta.persistence.jar</excludes>
+                    <excludes>jakarta.inject-api.jar,jakarta.servlet.jsp.jstl.jar,wasp.jar,jakarta.enterprise.concurrent.jar, jakarta.persistence.jar</excludes>
 		    <specs>
 			<!-- Activation-API -->
 			<spec>
@@ -504,8 +505,8 @@
                         <artifactId>jakarta.faces-api</artifactId>
                     </exclusion>
                     <exclusion>
-                        <groupId>jakarta.el</groupId>
-                        <artifactId>jakarta.el-api</artifactId>
+                        <groupId>org.glassfish.expressly</groupId>
+                        <artifactId>expressly</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>com.sun.woodstock.dependlibs</groupId>

@@ -292,15 +292,15 @@ public class AppClientContainer {
     }
 
     void prepareSecurity(final TargetServer[] targetServers,
-                         final List<MessageSecurityConfig> msgSecConfigs,
-                         final Properties containerProperties,
-                         final ClientCredential clientCredential,
-                         final CallbackHandler callerSuppliedCallbackHandler,
-                         final URLClassLoader classLoader,
-                         final boolean isTextAuth) throws InstantiationException,
-            IllegalAccessException, InjectionException, ClassNotFoundException,
-            IOException,
-            SAXParseException {
+            final List<MessageSecurityConfig> msgSecConfigs,
+            final Properties containerProperties,
+            final ClientCredential clientCredential,
+            final CallbackHandler callerSuppliedCallbackHandler,
+            final URLClassLoader classLoader,
+            final boolean isTextAuth) throws InstantiationException,
+                IllegalAccessException, InjectionException, ClassNotFoundException,
+                IOException,
+                SAXParseException {
         secHelper.init(targetServers, msgSecConfigs, containerProperties, clientCredential,
                 callerSuppliedCallbackHandler, classLoader, client.getDescriptor(classLoader),
                 isTextAuth);
@@ -314,7 +314,7 @@ public class AppClientContainer {
         this.builder = builder;
     }
 
-    public void prepare(final Instrumentation inst) throws NamingException,
+    public void prepare(final Instrumentation inst) throws NamingException, 
             IOException, InstantiationException, IllegalAccessException,
             InjectionException, ClassNotFoundException, SAXParseException,
             NoSuchMethodException, UserError {
@@ -326,14 +326,14 @@ public class AppClientContainer {
         clientMainClassSetting = ClientMainClassSetting.set(client.getMainClass());
 
     }
-
+    
     void processPermissions() throws IOException {
         //need to process the permissions files
         if (classLoader instanceof ACCClassLoader) {
             ((ACCClassLoader)classLoader).processDeclaredPermissions();
         }
     }
-
+    
     protected Class loadClass(final String className) throws ClassNotFoundException {
         return Class.forName(className, true, classLoader);
     }
@@ -341,7 +341,7 @@ public class AppClientContainer {
     protected ClassLoader getClassLoader() {
         return classLoader;
     }
-
+    
     /**
      * Gets the ACC ready so the main class can run.
      * This can be followed, immediately or after some time, by either an
@@ -351,7 +351,7 @@ public class AppClientContainer {
      *
      * @throws java.lang.Exception
      */
-    private void completePreparation(final Instrumentation inst) throws
+    private void completePreparation(final Instrumentation inst) throws 
             NamingException, IOException, InstantiationException,
             IllegalAccessException, InjectionException, ClassNotFoundException,
             SAXParseException, NoSuchMethodException, UserError {
@@ -374,16 +374,16 @@ public class AppClientContainer {
          * be skipped.
          */
         cleanup = Cleanup.arrangeForShutdownCleanup(logger, habitat, desc);
-
+        
         /*
          * Allow pre-destroy handling to work on the main class during clean-up.
          */
-        cleanup.setInjectionManager(injectionManager,
+        cleanup.setInjectionManager(injectionManager, 
                 clientMainClassSetting.clientMainClass);
 
         /*
          * If this app client contains persistence unit refs, then initialize
-         * the PU handling.
+         * the PU handling.  
          */
         Collection<? extends PersistenceUnitDescriptor> referencedPUs = desc.findReferencedPUs();
         if (referencedPUs != null && ! referencedPUs.isEmpty()) {
@@ -458,11 +458,11 @@ public class AppClientContainer {
         Map<Thread,StackTraceElement[]> threads = java.security.AccessController.doPrivileged(
                 new java.security.PrivilegedAction<Map<Thread,StackTraceElement[]>>() {
 
-                    @Override
-                    public Map<Thread, StackTraceElement[]> run() {
-                        return Thread.getAllStackTraces();
-                    }
-                });
+            @Override
+            public Map<Thread, StackTraceElement[]> run() {
+                return Thread.getAllStackTraces();
+            }
+        });
 
         logger.fine("Checking for EDT thread...");
         for (Map.Entry<Thread,StackTraceElement[]> entry : threads.entrySet()) {
@@ -471,7 +471,7 @@ public class AppClientContainer {
             if (frames.length > 0) {
                 StackTraceElement last = frames[frames.length - 1];
                 if (last.getClassName().equals("java.awt.EventDispatchThread") &&
-                        last.getMethodName().equals("run")) {
+                    last.getMethodName().equals("run")) {
                     logger.log(Level.FINE, "Thread {0} seems to be the EDT", entry.getKey().toString());
                     return true;
                 }
@@ -513,14 +513,14 @@ public class AppClientContainer {
             logger.fine(sb.toString());
         }
     }
-
+    
     private Method getMainMethod() throws NoSuchMethodException,
-            ClassNotFoundException, IOException, SAXParseException,
-            InjectionException, UserError {
-        // determine the main method using reflection
-        // verify that it is public static void and takes
-        // String[] as the only argument
-        Method result = null;
+           ClassNotFoundException, IOException, SAXParseException,
+           InjectionException, UserError {
+	    // determine the main method using reflection
+	    // verify that it is public static void and takes
+	    // String[] as the only argument
+	    Method result = null;
 
         result = clientMainClassSetting.getClientMainClass(
                 classLoader,
@@ -529,27 +529,27 @@ public class AppClientContainer {
                 componentId,
                 this,
                 client.getDescriptor(classLoader)).getMethod("main",
-                new Class[] { String[].class } );
+                    new Class[] { String[].class } );
 
-        // check modifiers: public static
-        int modifiers = result.getModifiers ();
-        if (!Modifier.isPublic (modifiers) ||
-                !Modifier.isStatic (modifiers))  {
-            final String err = MessageFormat.format(logger.getResourceBundle().
-                    getString("appclient.notPublicOrNotStatic"), (Object[]) null);
-            throw new NoSuchMethodException(err);
-        }
+	    // check modifiers: public static
+	    int modifiers = result.getModifiers ();
+	    if (!Modifier.isPublic (modifiers) ||
+		!Modifier.isStatic (modifiers))  {
+		    final String err = MessageFormat.format(logger.getResourceBundle().
+                            getString("appclient.notPublicOrNotStatic"), (Object[]) null);
+	    	    throw new NoSuchMethodException(err);
+	    }
 
-        // check return type and exceptions
-        if (!result.getReturnType().equals (Void.TYPE)) {
-            final String err = MessageFormat.format(logger.getResourceBundle().
-                    getString("appclient.notVoid"), (Object[]) null);
-            throw new NoSuchMethodException(err);
-        }
+	    // check return type and exceptions
+	    if (!result.getReturnType().equals (Void.TYPE)) {
+                final String err = MessageFormat.format(logger.getResourceBundle().
+                        getString("appclient.notVoid"), (Object[]) null);
+                throw new NoSuchMethodException(err);
+	    }
         return result;
     }
 
-
+    
     /**
      * Stops the app client container.
      * <p>
@@ -604,12 +604,12 @@ public class AppClientContainer {
         }
 
         static Class getClientMainClass(final ClassLoader loader,
-                                        InjectionManager injectionManager,
-                                        InvocationManager invocationManager,
-                                        String componentId,
-                                        AppClientContainer container,
-                                        ApplicationClientDescriptor acDesc) throws ClassNotFoundException,
-                InjectionException, UserError {
+                InjectionManager injectionManager,
+                InvocationManager invocationManager,
+                String componentId,
+                AppClientContainer container,
+                ApplicationClientDescriptor acDesc) throws ClassNotFoundException,
+                    InjectionException, UserError {
             if (clientMainClass == null) {
                 if (clientMainClassName == null) {
                     throw new IllegalStateException("neither client main class nor its class name has been set");
@@ -627,7 +627,7 @@ public class AppClientContainer {
                     acDesc.getModuleName(),
                     acDesc.getApplication().getRegistrationName()
             );
-
+            
             invocationManager.preInvoke(ci);
             InjectionException injExc = null;
             if ( ! isInjected) {
@@ -646,7 +646,7 @@ public class AppClientContainer {
                         while (t != null && ! isAuthError) {
                             isAuthError = t instanceof org.omg.CORBA.NO_PERMISSION;
                             t = t.getCause();
-                        }
+                        }                        
                         if (isAuthError) {
                             injExc = ie;
                             container.secHelper.clearClientSecurityContext();
@@ -662,7 +662,7 @@ public class AppClientContainer {
                      * Throw a user error which the ACC will display nicely.
                      */
                     if (injExc.getCause() != null &&
-                            injExc.getCause() instanceof NamingException) {
+                        injExc.getCause() instanceof NamingException) {
                         final NamingException ne = (NamingException) injExc.getCause();
                         final String expl = ne.getExplanation();
                         final String msg = MessageFormat.format(
@@ -723,7 +723,7 @@ public class AppClientContainer {
     }
 
     void setClientMainClass(final Class clientMainClass) {
-        clientMainClassSetting = ClientMainClassSetting.set(clientMainClass);
+       clientMainClassSetting = ClientMainClassSetting.set(clientMainClass);
     }
 
     /**
@@ -734,14 +734,14 @@ public class AppClientContainer {
     private static void prepareURLStreamHandling() {
         // Set the HTTPS URL stream handler.
         java.security.AccessController.doPrivileged(new
-                                                            java.security.PrivilegedAction() {
-                                                                @Override
-                                                                public Object run() {
-                                                                    URL.setURLStreamHandlerFactory(new
-                                                                            DirContextURLStreamHandlerFactory());
-                                                                    return null;
-                                                                }
-                                                            });
+                                       java.security.PrivilegedAction() {
+                @Override
+                public Object run() {
+                    URL.setURLStreamHandlerFactory(new
+                                       DirContextURLStreamHandlerFactory());
+                    return null;
+                }
+            });
     }
 
     void setClassLoader(ACCClassLoader classLoader) {
@@ -757,15 +757,15 @@ public class AppClientContainer {
         public AppClientContainer newContainer(URI archiveURI) throws Exception, UserError;
 
         public AppClientContainer newContainer(URI archiveURI,
-                                               CallbackHandler callbackHandler,
-                                               String mainClassName,
-                                               String appName) throws Exception, UserError;
+                CallbackHandler callbackHandler,
+                String mainClassName,
+                String appName) throws Exception, UserError;
 
         public AppClientContainer newContainer(URI archiveURI,
-                                               CallbackHandler callbackHandler,
-                                               String mainClassName,
-                                               String appName,
-                                               boolean isTextAuth) throws Exception, UserError;
+                CallbackHandler callbackHandler,
+                String mainClassName,
+                String appName,
+                boolean isTextAuth) throws Exception, UserError;
 
 
 
@@ -783,7 +783,7 @@ public class AppClientContainer {
 
         public List<MessageSecurityConfig> getMessageSecurityConfig();
 
-        /**
+       /**
          * Sets the optional authentication realm for the ACC.
          * <p>
          * Each specific realm will determine which properties should be set in the
@@ -826,7 +826,7 @@ public class AppClientContainer {
          * @param username username valid in the default realm on the server
          * @param password password valid in the default realm on the server for the username
          * @return the <code>Builder</code> instance
-         */
+        */
         public Builder clientCredentials(final String user, final char[] password);
 
         public ClientCredential getClientCredential();
@@ -916,7 +916,7 @@ public class AppClientContainer {
         private ManagedBeanManager managedBeanMgr;
 
         static Cleanup arrangeForShutdownCleanup(final Logger logger,
-                                                 final ServiceLocator habitat, final ApplicationClientDescriptor appDesc) {
+                final ServiceLocator habitat, final ApplicationClientDescriptor appDesc) {
             final Cleanup cu = new Cleanup(logger, habitat, appDesc);
             cu.enable();
             return cu;
@@ -955,15 +955,15 @@ public class AppClientContainer {
 
         void disable() {
             java.security.AccessController.doPrivileged(
-                    new java.security.PrivilegedAction() {
+                new java.security.PrivilegedAction() {
 
-                        @Override
-                        public Object run() {
-                            Runtime.getRuntime().removeShutdownHook(cleanupThread);
-                            return null;
-                        }
+                    @Override
+                    public Object run() {
+                        Runtime.getRuntime().removeShutdownHook(cleanupThread);
+                        return null;
                     }
-            );
+                }
+                    );
         }
 
         /**
@@ -1012,7 +1012,7 @@ public class AppClientContainer {
                 cleanedUp = true;
             } // End if -- cleanup required
         }
-
+        
         private void cleanupEMFs() {
             try {
                 if (emfs != null) {
@@ -1066,8 +1066,8 @@ public class AppClientContainer {
                 if(appClient != null && appClient.getServiceReferenceDescriptors() != null) {
                     // Cleanup client pipe line, if there were service references
                     for (Object desc: appClient.getServiceReferenceDescriptors()) {
-                        ClientPipeCloser.getInstance()
-                                .cleanupClientPipe((ServiceReferenceDescriptor)desc);
+                         ClientPipeCloser.getInstance()
+                            .cleanupClientPipe((ServiceReferenceDescriptor)desc);
                     }
                 }
             } catch (Throwable t) {
@@ -1081,7 +1081,7 @@ public class AppClientContainer {
                         habitat.getServiceHandle(TransactionManager.class);
                 if (inhabitant != null && inhabitant.isActive()) {
                     TransactionManager txmgr = inhabitant.getService();
-                    if (txmgr.getStatus() == Status.STATUS_ACTIVE
+                    if (txmgr.getStatus() == Status.STATUS_ACTIVE 
                             || txmgr.getStatus() == Status.STATUS_MARKED_ROLLBACK) {
                         txmgr.rollback();
                     }

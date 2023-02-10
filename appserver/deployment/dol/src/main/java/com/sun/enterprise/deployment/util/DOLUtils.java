@@ -160,7 +160,7 @@ public class DOLUtils {
     private static final String IGNORE_WLSDD = "ignore.wlsdd";
 
     private static final String ID_SEPARATOR = "_";
-    private static final String[] SYSTEM_PACKAGES = {"com.sun.", "org.glassfish.", "org.apache.jasper.", "fish.payara.", "com.ibm.jbatch.",
+    private static final String[] SYSTEM_PACKAGES = {"com.sun.", "org.glassfish.", "org.glassfish.wasp.", "fish.payara.", "com.ibm.jbatch.",
                             "org.hibernate.validator.", "org.jboss.weld.", "com.ctc.wstx.", "java.", "javax.", "jakarta."};
     private static final String[] SYSTEM_RESOURCES = {"META-INF/services/javax.", "META-INF/services/jakarta.", "META-INF/services/org.glassfish.", "META-INF/services/java."};
 

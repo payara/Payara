@@ -82,8 +82,8 @@ public class InvocationContext implements ContextHandle {
     private List<ThreadContextRestorer> threadContextRestorers;
 
     public InvocationContext(ComponentInvocation invocation, ClassLoader contextClassLoader, SecurityContext securityContext,
-                             boolean useTransactionOfExecutionThread, List<ThreadContextSnapshot> threadContextSnapshots,
-                             List<ThreadContextRestorer> threadContextRestorers) {
+            boolean useTransactionOfExecutionThread, List<ThreadContextSnapshot> threadContextSnapshots,
+            List<ThreadContextRestorer> threadContextRestorers) {
         this.invocation = invocation;
         this.contextClassLoader = contextClassLoader;
         this.securityContext = securityContext;
@@ -95,20 +95,20 @@ public class InvocationContext implements ContextHandle {
 
     private void saveTracingContext() {
         ServiceLocator serviceLocator = Globals.getDefaultBaseServiceLocator();
-
+        
         if (serviceLocator != null) {
             RequestTracingService requestTracing = serviceLocator.getService(RequestTracingService.class);
             OpenTracingService openTracing = serviceLocator.getService(OpenTracingService.class);
-
+            
             // Check that there's actually a trace running
             if (requestTracing != null && requestTracing.isRequestTracingEnabled()
                     && requestTracing.isTraceInProgress() && openTracing != null) {
-
+                
                 Tracer tracer = openTracing.getTracer(openTracing.getApplicationName(
                         serviceLocator.getService(InvocationManager.class)));
-
+                
                 SpanContext spanContext = null;
-
+                
                 // Check if there's an active Span running
                 Span activeSpan = tracer.activeSpan();
                 if (activeSpan != null) {
@@ -117,33 +117,33 @@ public class InvocationContext implements ContextHandle {
                         ((RequestTraceSpan) activeSpan).setTraceId(requestTracing.getConversationID());
                     } catch (ClassCastException cce) {
                         Logger.getLogger(InvocationContext.class).log(
-                                Level.FINE,
-                                "ClassCastException caught converting Span",
+                                Level.FINE, 
+                                "ClassCastException caught converting Span", 
                                 cce);
                     }
-
+                    
                     spanContext = activeSpan.context();
                 } else {
                     // Create a new span context using the starting span as a parent - the request tracing service doesn't
                     // know about unfinished spans so we can't get the actual parent with the current impl
                     spanContext = new RequestTraceSpanContext(
-                            requestTracing.getConversationID(),
+                            requestTracing.getConversationID(), 
                             requestTracing.getStartingTraceID());
                 }
-
+                
                 // Check to see if we're using the mock tracer to prevent ClassCastExceptions
                 try {
                     tracer.inject(spanContext, Format.Builtin.TEXT_MAP, new MapToTextMap(spanContextMap = new HashMap()));
                 } catch (ClassCastException cce) {
                     Logger.getLogger(InvocationContext.class).log(
-                            Level.FINE,
-                            "ClassCastException caught injecting SpanContext",
+                            Level.FINE, 
+                            "ClassCastException caught injecting SpanContext", 
                             cce);
                 }
-            }
-        }
+            }   
+        }    
     }
-
+    
     public ComponentInvocation getInvocation() {
         return invocation;
     }
@@ -159,7 +159,7 @@ public class InvocationContext implements ContextHandle {
     public boolean isUseTransactionOfExecutionThread() {
         return useTransactionOfExecutionThread;
     }
-
+    
     public Map getSpanContextMap() {
         return spanContextMap;
     }

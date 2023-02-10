@@ -153,6 +153,12 @@
             <version>${project.version}</version>
             <type>zip</type>
             <optional>true</optional>
+            <exclusions>
+                <exclusion>
+                    <groupId>fish.payara.server.internal.admingui</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.packager</groupId>
@@ -160,6 +166,12 @@
             <version>${project.version}</version>
             <type>zip</type>
             <optional>true</optional>
+            <exclusions>
+                <exclusion>
+                    <groupId>fish.payara.server.internal.admingui</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.packager</groupId>
@@ -181,6 +193,12 @@
             <version>${project.version}</version>
             <type>zip</type>
             <optional>true</optional>
+            <exclusions>
+                <exclusion>
+                    <groupId>fish.payara.server.internal.admingui</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.packager</groupId>
@@ -188,6 +206,12 @@
             <version>${project.version}</version>
             <type>zip</type>
             <optional>true</optional>
+            <exclusions>
+                <exclusion>
+                    <groupId>fish.payara.server.internal.admingui</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.packager</groupId>
@@ -237,6 +261,12 @@
             <version>${project.version}</version>
             <type>zip</type>
             <optional>true</optional>
+            <exclusions>
+                <exclusion>
+                    <groupId>fish.payara.server.internal.admingui</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.packager</groupId>
@@ -265,6 +295,12 @@
             <version>${project.version}</version>
             <type>zip</type>
             <optional>true</optional>
+            <exclusions>
+                <exclusion>
+                    <groupId>fish.payara.server.internal.admingui</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.packager</groupId>
@@ -315,6 +351,12 @@
             <version>${project.version}</version>
             <type>zip</type>
             <optional>true</optional>
+            <exclusions>
+                <exclusion>
+                    <groupId>fish.payara.server.internal.admingui</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.packager</groupId>

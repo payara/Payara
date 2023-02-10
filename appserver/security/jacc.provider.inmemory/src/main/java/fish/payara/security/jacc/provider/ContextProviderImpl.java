@@ -52,12 +52,12 @@ public class ContextProviderImpl implements ContextProvider {
         this.factory = factory;
         this.policy = policy;
     }
-
+    
     @Override
     public PolicyConfigurationFactory getPolicyConfigurationFactory() {
         return factory;
     }
-
+  
     @Override
     public Policy getPolicy() {
         return policy;

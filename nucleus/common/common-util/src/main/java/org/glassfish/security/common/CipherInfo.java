@@ -41,9 +41,9 @@
 
 package org.glassfish.security.common;
 
+import javax.net.ssl.SSLServerSocketFactory;
 import java.util.HashMap;
 import java.util.Map;
-import javax.net.ssl.SSLServerSocketFactory;
 
 /**
  * This class represents the information associated to ciphers. It also maintains a HashMap from configName to
@@ -52,9 +52,7 @@ import javax.net.ssl.SSLServerSocketFactory;
  * @author Shing Wai Chan
  */
 public class CipherInfo {
-    
-    private static final short SSL2 = 0x1;
-    private static final short SSL3 = 0x2;
+
     private static final short TLS = 0x4;
 
     // The old names mapped to the standard names as existed
@@ -85,7 +83,7 @@ public class CipherInfo {
         for (int i = 0; i < len; i++) {
             String nonStdName = OLD_CIPHER_MAPPING[i][0];
             String stdName = OLD_CIPHER_MAPPING[i][1];
-            ciphers.put(nonStdName, new CipherInfo(nonStdName, stdName, (short) (SSL3 | TLS)));
+            ciphers.put(nonStdName, new CipherInfo(nonStdName, stdName, TLS));
         }
 
         SSLServerSocketFactory factory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
@@ -93,7 +91,7 @@ public class CipherInfo {
         len = supportedCiphers.length;
         for (int i = 0; i < len; i++) {
             String s = supportedCiphers[i];
-            ciphers.put(s, new CipherInfo(s, s, (short) (SSL3 | TLS)));
+            ciphers.put(s, new CipherInfo(s, s, TLS));
         }
     }
 
@@ -118,14 +116,6 @@ public class CipherInfo {
 
     public String getCipherName() {
         return cipherName;
-    }
-
-    public boolean isSSL2() {
-        return (protocolVersion & SSL2) == SSL2;
-    }
-
-    public boolean isSSL3() {
-        return (protocolVersion & SSL3) == SSL3;
     }
 
     public boolean isTLS() {

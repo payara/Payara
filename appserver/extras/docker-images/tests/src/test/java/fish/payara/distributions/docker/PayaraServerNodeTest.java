@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) 2019-2022 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -86,7 +86,7 @@ public class PayaraServerNodeTest {
         .withEnv("PAYARA_DAS_HOST", "host.testcontainers.internal")
         .withEnv("PAYARA_DAS_PORT", Integer.toString(DAS.getMappedPort(DAS_ADMIN_PORT)))
         .withEnv("DOCKER_CONTAINER_IP", "host.testcontainers.internal") //
-        .withStartupTimeout(Duration.ofSeconds(30));
+        .withStartupTimeout(Duration.ofSeconds(60));
 
     @BeforeAll
     public static void initDAS() throws Exception {

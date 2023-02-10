@@ -66,8 +66,8 @@ import java.beans.PropertyVetoException;
 @Configured
 @ResourceConfigCreator(commandName="create-managed-thread-factory")
 @RestRedirects({
-        @RestRedirect(opType = RestRedirect.OpType.POST, commandName = "create-managed-thread-factory"),
-        @RestRedirect(opType = RestRedirect.OpType.DELETE, commandName = "delete-managed-thread-factory")
+ @RestRedirect(opType = RestRedirect.OpType.POST, commandName = "create-managed-thread-factory"),
+ @RestRedirect(opType = RestRedirect.OpType.DELETE, commandName = "delete-managed-thread-factory")
 })
 @ResourceTypeOrder(deploymentOrder=ResourceDeploymentOrder.MANAGED_THREAD_FACTORY)
 @ReferenceConstraint(skipDuringCreation=true, payload=ManagedThreadFactory.class)
@@ -108,7 +108,7 @@ public interface ManagedThreadFactory extends ConfigBeanProxy, Resource,
      * @param value allowed object is {@link String }
      */
     void setContext(String value) throws PropertyVetoException;
-
+    
     @DuckTyped
     String getIdentity();
 

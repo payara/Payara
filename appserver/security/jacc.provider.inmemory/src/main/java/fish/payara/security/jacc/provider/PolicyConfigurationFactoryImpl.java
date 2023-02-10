@@ -65,52 +65,52 @@ import org.jvnet.hk2.annotations.Service;
 @ContractsProvided({ PolicyConfigurationFactoryImpl.class, PolicyConfigurationFactory.class })
 public class PolicyConfigurationFactoryImpl extends SimplePolicyConfigurationFactory implements JaccConfigurationFactory {
 
-
+    
     private static Logger logger = Logger.getLogger(SECURITY_LOGGER);
     private Map<String, String> applicationToPolicyContextIdMap = new ConcurrentHashMap<String, String>();
 
     // Map of ContextId -> ContextProvider (per context PolicyConfigurationFactory and Policy)
     private Map<String, ContextProvider> contextToContextProviderMap = new ConcurrentHashMap<>();
-
-
+    
+    
     // Map of ContextId -> PolicyConfiguration
     private Map<String, PolicyConfiguration> contextToConfigurationMap = new ConcurrentHashMap<>();
-
+    
     private Permission setPolicyPermission;
-
+    
     private static PolicyConfigurationFactoryImpl singleton;
 
     public PolicyConfigurationFactoryImpl() {
         singleton = this;
     }
-
+    
     static PolicyConfigurationFactoryImpl getInstance() {
         return singleton;
     }
-
+    
     @Override
     public void registerContextProvider(String applicationContextId, PolicyConfigurationFactory factory, Policy policy) {
         checkSetPolicyPermission();
-
+        
         try {
             String policyContextId = applicationToPolicyContextIdMap.get(applicationContextId);
             if (policyContextId == null) {
                 throw new IllegalStateException(
-                        "No policyContextId available for applicationContextId " + applicationContextId +
-                                " Is this JaccConfigurationFactory instance used by the container?");
+                        "No policyContextId available for applicationContextId " + applicationContextId + 
+                        " Is this JaccConfigurationFactory instance used by the container?");
             }
-
+            
             if (inService(policyContextId)) {
                 throw new IllegalStateException("Context :" + policyContextId + " already has an active global provider");
             }
-
+        
             ContextProvider contextProvider = contextToContextProviderMap.get(policyContextId);
             if (contextProvider != null && contextProvider.getPolicyConfigurationFactory().inService(policyContextId)) {
                 throw new IllegalStateException("Context :" + policyContextId + " already has an active context (per app) provider");
             }
-
+            
             contextToContextProviderMap.put(policyContextId, new ContextProviderImpl(factory, policy));
-
+            
         } catch (PolicyContextException e) {
             throw new IllegalStateException(e);
         }
@@ -118,14 +118,14 @@ public class PolicyConfigurationFactoryImpl extends SimplePolicyConfigurationFac
 
     @Override
     public void addContextIdMapping(String applicationContextId, String policyContextId) {
-        applicationToPolicyContextIdMap.put(applicationContextId, policyContextId);
+         applicationToPolicyContextIdMap.put(applicationContextId, policyContextId);
     }
 
     @Override
     public boolean removeContextIdMappingByPolicyContextId(String policyContextId) {
         return applicationToPolicyContextIdMap.entrySet().removeIf(e -> e.getValue().equals(policyContextId));
     }
-
+    
     @Override
     public ContextProvider getContextProviderByPolicyContextId(String policyContextId) {
         return contextToContextProviderMap.get(policyContextId);
@@ -133,9 +133,9 @@ public class PolicyConfigurationFactoryImpl extends SimplePolicyConfigurationFac
 
     @Override
     public ContextProvider removeContextProviderByPolicyContextId(String policyContextId) {
-        return contextToContextProviderMap.remove(policyContextId);
+          return contextToContextProviderMap.remove(policyContextId);
     }
-
+    
     protected List<PolicyConfiguration> getPolicyConfigurations() {
         return new ArrayList<>(contextToConfigurationMap.values());
     }
@@ -144,7 +144,7 @@ public class PolicyConfigurationFactoryImpl extends SimplePolicyConfigurationFac
         return contextToConfigurationMap.remove(contextID);
     }
 
-
+    
     /**
      * This method is used to obtain an instance of the provider specific class that implements the PolicyConfiguration
      * interface that corresponds to the identified policy context within the provider. The methods of the
@@ -163,7 +163,7 @@ public class PolicyConfigurationFactoryImpl extends SimplePolicyConfigurationFac
      * To preserve the invariant that there be at most one PolicyConfiguration object for a given policy context, it may be
      * necessary for this method to be thread safe.
      * <P>
-     *
+     * 
      * @param contextID A String identifying the policy context whose PolicyConfiguration interface is to be returned. The
      * value passed to this parameter must not be null.
      * <P>
@@ -199,12 +199,12 @@ public class PolicyConfigurationFactoryImpl extends SimplePolicyConfigurationFac
         contextToConfigurationMap.put(contextId, policyConfiguration);
         return policyConfiguration;
     }
-
+        
     /**
      * This method determines if the identified policy context exists with state "inService" in the Policy provider
      * associated with the factory.
      * <P>
-     *
+     * 
      * @param contextID A string identifying a policy context
      *
      * @return true if the identified policy context exists within the provider and its state is "inService", false
@@ -220,25 +220,25 @@ public class PolicyConfigurationFactoryImpl extends SimplePolicyConfigurationFac
     @Override
     public boolean inService(String contextId) throws PolicyContextException {
         checkSetPolicyPermission();
-
+        
         ContextProvider contextProvider = contextToContextProviderMap.get(contextId);
-
+        
         if (contextProvider != null) {
             return contextProvider.getPolicyConfigurationFactory().inService(contextId);
         }
-
+        
         return super.inService(contextId);
-
+        
     }
 
     protected List<PolicyConfiguration> getPolicyConfigurationImpls() {
         return new ArrayList<>(contextToConfigurationMap.values());
     }
-
+    
     protected PolicyConfiguration removePolicyConfigurationImpl(String contextID) {
         return contextToConfigurationMap.remove(contextID);
     }
-
+    
     protected void checkSetPolicyPermission() {
         SecurityManager securityManager = System.getSecurityManager();
         if (securityManager != null) {

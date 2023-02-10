@@ -91,7 +91,7 @@ import com.sun.xml.ws.assembler.metro.dev.ClientPipelineHook;
 @Service
 @Singleton
 public class SecurityServiceImpl implements SecurityService {
-
+    
     protected static final Logger _logger = LogUtils.getLogger();
 
     private static final String AUTHORIZATION_HEADER = "authorization";
@@ -205,13 +205,13 @@ public class SecurityServiceImpl implements SecurityService {
         if (securityContext == null) {
             return null;
         }
-
+        
         if (securityContext.didServerGenerateCredentials()) {
             if (isWeb) {
                 return null;
             }
         }
-
+        
         return securityContext.getCallerPrincipal();
     }
 
@@ -221,7 +221,7 @@ public class SecurityServiceImpl implements SecurityService {
             RealmAdapter realmAdapter = (RealmAdapter) webModule.getRealm();
             return realmAdapter.hasRole(servletName, principal, role);
         }
-
+        
         return false;
     }
 

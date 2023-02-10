@@ -69,9 +69,11 @@
             <version>${project.version}</version>
         </dependency>
 
+        <!-- EE10 TODO: CDI dependency does not belong in nucleus -->
         <dependency>
-            <groupId>jakarta.platform</groupId>
-            <artifactId>jakarta.jakartaee-api</artifactId>
+            <groupId>jakarta.enterprise</groupId>
+            <artifactId>jakarta.enterprise.cdi-api</artifactId>
+            <version>${cdi-api.version}</version>
         </dependency>
     </dependencies>
 </project>

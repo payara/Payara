@@ -75,7 +75,7 @@ public class ServerAuthConfigImpl extends BaseAuthConfigImpl implements ServerAu
     private BaseAuthContextImpl authContextHelperHelper;
 
     protected ServerAuthConfigImpl(String loggerName, EpochCarrier providerEpoch, BaseAuthContextImpl authContextHelper,
-                                   MessagePolicyDelegate policyDelegate, String layer, String appContext, CallbackHandler cbh) throws AuthException {
+            MessagePolicyDelegate policyDelegate, String layer, String appContext, CallbackHandler cbh) throws AuthException {
 
         super(loggerName, providerEpoch, policyDelegate, layer, appContext, cbh);
 

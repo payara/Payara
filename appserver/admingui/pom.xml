@@ -151,6 +151,7 @@
         <module>rest-monitoring-plugin</module>
         <module>microprofile-console-plugin</module>
         <module>microprofile-console-plugin-l10n</module>
+        <module>faces-compat</module>
     </modules>
 
     <properties>
@@ -178,6 +179,30 @@
               </execution>
             </executions>
           </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>no-direct-faces-dependency</id>
+                        <inherited>true</inherited>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <bannedDependencies>
+                                    <excludes>
+                                        <exclude>org.glassfish:jakarta.faces</exclude>
+                                        <exclude>org.glassfish.jsftemplating:*</exclude>
+                                    </excludes>
+                                </bannedDependencies>
+                            </rules>
+                            <fail>true</fail>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
         <resources>
           <resource>
@@ -204,7 +229,7 @@
             <dependency>
                 <groupId>org.glassfish.woodstock</groupId>
                 <artifactId>woodstock-webui-jsf-suntheme</artifactId>
-                <version>${woodstock-jsf.version}</version>
+                <version>${woodstock-jsf-suntheme.version}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>

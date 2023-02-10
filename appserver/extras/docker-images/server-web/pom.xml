@@ -24,6 +24,7 @@
         <dependency>
             <groupId>fish.payara.distributions</groupId>
             <artifactId>payara-web</artifactId>
+            <version>${payara.version}</version>
             <type>zip</type>
             <scope>provided</scope>
         </dependency>

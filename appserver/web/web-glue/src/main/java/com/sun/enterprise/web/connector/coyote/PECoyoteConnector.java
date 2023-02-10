@@ -47,20 +47,29 @@ import com.sun.enterprise.web.WebContainer;
 import com.sun.enterprise.web.connector.extension.GrizzlyConfig;
 import com.sun.enterprise.web.connector.grizzly.DummyConnectorLauncher;
 import com.sun.enterprise.web.pwc.connector.coyote.PwcCoyoteRequest;
+import org.apache.catalina.LifecycleException;
+import org.apache.catalina.connector.Connector;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
+import org.apache.catalina.mapper.MapperListener;
 import org.apache.tomcat.util.net.SSLHostConfig;
 import org.apache.tomcat.util.net.SSLHostConfigCertificate;
-import org.glassfish.grizzly.config.dom.*;
+import org.glassfish.grizzly.config.dom.FileCache;
+import org.glassfish.grizzly.config.dom.Http;
+import org.glassfish.grizzly.config.dom.NetworkListener;
+import org.glassfish.grizzly.config.dom.Ssl;
+import org.glassfish.grizzly.config.dom.ThreadPool;
+import org.glassfish.grizzly.config.dom.Transport;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.util.Mapper;
-import org.glassfish.web.util.IntrospectionUtils;
-import org.apache.catalina.*;
-import org.apache.catalina.connector.Connector;
 import org.glassfish.security.common.CipherInfo;
 import org.glassfish.web.LogFacade;
+import org.glassfish.web.util.IntrospectionUtils;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -70,11 +79,7 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import static org.glassfish.grizzly.config.dom.Ssl.SSL2;
-import static org.glassfish.grizzly.config.dom.Ssl.SSL2_HELLO;
-import static org.glassfish.grizzly.config.dom.Ssl.SSL3;
-import static org.glassfish.grizzly.config.dom.Ssl.TLS1;
-import static org.glassfish.grizzly.config.dom.Ssl.TLS11;
+
 import static org.glassfish.grizzly.config.dom.Ssl.TLS12;
 import static org.glassfish.grizzly.config.dom.Ssl.TLS13;
 
@@ -1085,27 +1090,12 @@ public class PECoyoteConnector extends Connector {
 
         // ssl protocol variants
         List<String> sslProtocolsBuf = new ArrayList<>();
-        if (Boolean.valueOf(sslConfig.getSsl2Enabled())) {
-            sslProtocolsBuf.add(SSL2);
-        }
-        if (Boolean.valueOf(sslConfig.getSsl3Enabled())) {
-            sslProtocolsBuf.add(SSL3);
-        }
-        if (Boolean.valueOf(sslConfig.getTlsEnabled())) {
-            sslProtocolsBuf.add(TLS1);
-        }
-        if (Boolean.valueOf(sslConfig.getTls11Enabled())) {
-            sslProtocolsBuf.add(TLS11);
-        }
+
         if (Boolean.valueOf(sslConfig.getTls12Enabled())) {
             sslProtocolsBuf.add(TLS12);
         }
         if (Boolean.valueOf(sslConfig.getTls13Enabled())) {
             sslProtocolsBuf.add(TLS13);
-        }
-        if (Boolean.valueOf(sslConfig.getSsl3Enabled())
-                || Boolean.valueOf(sslConfig.getTlsEnabled())) {
-            sslProtocolsBuf.add(SSL2_HELLO);
         }
 
         if (sslProtocolsBuf.isEmpty()) {

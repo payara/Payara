@@ -62,7 +62,7 @@ import org.jvnet.hk2.config.types.PropertyBag;
  */
 @Configured
 public interface Http extends ConfigBeanProxy, PropertyBag {
-    boolean AUTH_PASS_THROUGH_ENABLED = false;
+
     boolean CHUNKING_ENABLED = true;
     boolean COMET_SUPPORT_ENABLED = false;
     boolean ENCODED_SLASH_ENABLED = false;

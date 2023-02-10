@@ -88,7 +88,6 @@
                 failonerror="false"
                 keep="${keep}"
                 extension="${extension}"
-                xendorsed="true"
                 destdir="${build.classes.home}"
                 wsdl="${client.wsdl}"
                 package="${client.package}">

@@ -2,7 +2,7 @@
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  *    Copyright (c) [2017-2022] Payara Foundation and/or its affiliates. All rights reserved.
- *
+ * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
  *     and Distribution License("CDDL") (collectively, the "License").  You
@@ -11,20 +11,20 @@
  *     https://github.com/payara/Payara/blob/master/LICENSE.txt
  *     See the License for the specific
  *     language governing permissions and limitations under the License.
- *
+ * 
  *     When distributing the software, include this License Header Notice in each
  *     file and include the License file at glassfish/legal/LICENSE.txt.
- *
+ * 
  *     GPL Classpath Exception:
  *     The Payara Foundation designates this particular file as subject to the "Classpath"
  *     exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  *     file that accompanied this code.
- *
+ * 
  *     Modifications:
  *     If applicable, add the following below the License Header, with the fields
  *     enclosed by brackets [] replaced by your own identifying information:
  *     "Portions Copyright [year] [name of copyright owner]"
- *
+ * 
  *     Contributor(s):
  *     If you wish your version of this file to be governed by only the CDDL or
  *     only the GPL Version 2, indicate your decision by adding "[Contributor]
@@ -85,7 +85,7 @@ import java.util.Set;
 
 /**
  * CDI Extension that does the setup for FT interceptor handling.
- *
+ * 
  * @author Andrew Pielage
  * @author Jan Bernitt (2.0)
  */
@@ -98,11 +98,11 @@ public class FaultToleranceExtension implements Extension {
     }
 
     /**
-     *
+     * 
      * @param processAnnotatedType type currently processed
      */
     <T> void processAnnotatedType(@Observes @WithAnnotations({ Asynchronous.class, Bulkhead.class, CircuitBreaker.class,
-            Fallback.class, Retry.class, Timeout.class }) ProcessAnnotatedType<T> processAnnotatedType) throws Exception {
+        Fallback.class, Retry.class, Timeout.class }) ProcessAnnotatedType<T> processAnnotatedType) throws Exception {
 
         // TODO: To support alternative asynchronous annotations we need to add FT Asynchronous annotation.
         Class<? extends Annotation>[] alternativeAsynchronousAnnotations = getAlternativeAsynchronousAnnotations();
@@ -133,8 +133,8 @@ public class FaultToleranceExtension implements Extension {
                 FaultToleranceConfig.ALTERNATIVE_ASYNCHRONOUS_ANNNOTATIONS_PROPERTY, String.class);
         return alternativeAsynchronousAnnotationNames.isPresent()
                 ? FaultToleranceUtils.toClassArray(alternativeAsynchronousAnnotationNames.get(),
-                FaultToleranceConfig.ALTERNATIVE_ASYNCHRONOUS_ANNNOTATIONS_PROPERTY,
-                FaultToleranceConfig.NO_ALTERNATIVE_ANNOTATIONS)
+                        FaultToleranceConfig.ALTERNATIVE_ASYNCHRONOUS_ANNNOTATIONS_PROPERTY,
+                        FaultToleranceConfig.NO_ALTERNATIVE_ANNOTATIONS)
                 : FaultToleranceConfig.NO_ALTERNATIVE_ANNOTATIONS;
     }
 

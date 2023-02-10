@@ -51,7 +51,7 @@
     </parent>
     <groupId>fish.payara.server.core.hk2</groupId>
     <artifactId>hk2-config</artifactId>
-
+    
     <name>HK2 configuration module</name>
     <description>${project.name}</description>
     <packaging>glassfish-jar</packaging>
@@ -60,7 +60,7 @@
         <jakarta.validation.version.upperbound>4</jakarta.validation.version.upperbound>
         <hibernate.validator.version.upperbound>9</hibernate.validator.version.upperbound>
     </properties>
-
+    
     <build>
         <plugins>
             <plugin>
@@ -158,10 +158,10 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.expressly</groupId>
-            <artifactId>expressly</artifactId>
-            <scope>test</scope>
-        </dependency>
+          <groupId>org.glassfish.expressly</groupId>
+          <artifactId>expressly</artifactId>
+          <scope>test</scope>
+       </dependency>
     </dependencies>
     <profiles>
         <profile>

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2023] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.web;
 
@@ -68,47 +68,23 @@ import com.sun.enterprise.v3.services.impl.GrizzlyService;
 import com.sun.enterprise.web.logger.FileLoggerHandlerFactory;
 import com.sun.enterprise.web.pluggable.WebContainerFeatureFactory;
 import com.sun.enterprise.web.reconfig.WebConfigListener;
-
 import com.sun.web.server.WebContainerListener;
 import fish.payara.appserver.web.core.CatalinaWebStack;
 import fish.payara.nucleus.hotdeploy.ApplicationState;
 import fish.payara.nucleus.hotdeploy.HotDeployService;
-
-import java.io.File;
-import java.net.BindException;
-import java.net.MalformedURLException;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
-import java.text.MessageFormat;
-import java.util.*;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.imageio.ImageIO;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
-
-import javax.management.Notification;
-import javax.naming.NamingException;
-
 import jakarta.servlet.jsp.JspFactory;
-
 import org.apache.catalina.Container;
 import org.apache.catalina.Context;
 import org.apache.catalina.Engine;
 import org.apache.catalina.Host;
 import org.apache.catalina.LifecycleException;
-import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.Realm;
-import org.apache.catalina.connector.Connector;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.startup.Bootstrap;
 import org.apache.catalina.startup.ContextConfig;
-import org.apache.catalina.util.RequestUtil;
-import org.apache.jasper.runtime.JspFactoryImpl;
-import org.apache.jasper.xmlparser.ParserUtils;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.DeploymentContext;
@@ -135,6 +111,8 @@ import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.grizzly.ContextMapper;
 import org.glassfish.internal.grizzly.V3Mapper;
+import org.glassfish.wasp.runtime.JspFactoryImpl;
+import org.glassfish.wasp.xmlparser.ParserUtils;
 import org.glassfish.web.LogFacade;
 import org.glassfish.web.admin.monitor.HttpServiceStatsProviderBootstrap;
 import org.glassfish.web.admin.monitor.JspProbeProvider;
@@ -154,6 +132,30 @@ import org.jvnet.hk2.config.ObservableBean;
 import org.jvnet.hk2.config.Transactions;
 import org.jvnet.hk2.config.types.Property;
 import org.xml.sax.EntityResolver;
+
+import javax.imageio.ImageIO;
+import javax.naming.NamingException;
+import java.io.File;
+import java.net.BindException;
+import java.net.MalformedURLException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Optional;
+import java.util.OptionalInt;
+import java.util.Properties;
+import java.util.ResourceBundle;
+import java.util.Set;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static com.sun.enterprise.deployment.WebBundleDescriptor.AFTER_SERVLET_CONTEXT_INITIALIZED_EVENT;
 import static com.sun.enterprise.util.StringUtils.parseStringList;
@@ -181,7 +183,33 @@ import static org.glassfish.internal.deployment.Deployment.ALL_APPLICATIONS_PROC
 import static org.glassfish.internal.deployment.Deployment.DEPLOYMENT_FAILURE;
 import static org.glassfish.internal.deployment.Deployment.DISABLE_START;
 import static org.glassfish.internal.deployment.Deployment.UNDEPLOYMENT_FAILURE;
-import static org.glassfish.web.LogFacade.*;
+import static org.glassfish.web.LogFacade.CANNOT_UPDATE_NON_EXISTENCE_VS;
+import static org.glassfish.web.LogFacade.DEFAULT_WEB_MODULE_CONFLICT;
+import static org.glassfish.web.LogFacade.DEFAULT_WEB_MODULE_ERROR;
+import static org.glassfish.web.LogFacade.DISABLE_WEB_MODULE_ERROR;
+import static org.glassfish.web.LogFacade.DUPLICATE_CONTEXT_ROOT;
+import static org.glassfish.web.LogFacade.DUPLICATE_HOST_NAME;
+import static org.glassfish.web.LogFacade.EXCEPTION_DURING_DESTROY;
+import static org.glassfish.web.LogFacade.EXCEPTION_SET_SCHEMAS_DTDS_LOCATION;
+import static org.glassfish.web.LogFacade.HTTP_LISTENER_CREATED;
+import static org.glassfish.web.LogFacade.INVALID_ENCODED_CONTEXT_ROOT;
+import static org.glassfish.web.LogFacade.LISTENER_REFERENCED_BY_HOST_NOT_EXIST;
+import static org.glassfish.web.LogFacade.LOADING_WEB_MODULE;
+import static org.glassfish.web.LogFacade.LOAD_WEB_MODULE_ERROR;
+import static org.glassfish.web.LogFacade.MUST_NOT_DISABLE;
+import static org.glassfish.web.LogFacade.UNABLE_TO_SET_CONTEXT_ROOT;
+import static org.glassfish.web.LogFacade.UNABLE_TO_START_WEB_CONTAINER;
+import static org.glassfish.web.LogFacade.UNABLE_TO_STOP_WEB_CONTAINER;
+import static org.glassfish.web.LogFacade.VIRTUAL_SERVER_CREATED;
+import static org.glassfish.web.LogFacade.VIRTUAL_SERVER_INVALID_DOCROOT;
+import static org.glassfish.web.LogFacade.VIRTUAL_SERVER_LOADED_DEFAULT_WEB_MODULE;
+import static org.glassfish.web.LogFacade.VIRTUAL_SERVER_SET_JK_LISTENER_NAME;
+import static org.glassfish.web.LogFacade.VIRTUAL_SERVER_SET_LISTENER_NAME;
+import static org.glassfish.web.LogFacade.VS_UPDATED_NETWORK_LISTENERS;
+import static org.glassfish.web.LogFacade.WEB_CONTAINER_NOT_STARTED;
+import static org.glassfish.web.LogFacade.WEB_MODULE_LOADING;
+import static org.glassfish.web.LogFacade.WEB_MODULE_NOT_LOADED_NO_VIRTUAL_SERVERS;
+import static org.glassfish.web.LogFacade.WEB_MODULE_NOT_LOADED_TO_VS;
 
 /**
  * Web container service

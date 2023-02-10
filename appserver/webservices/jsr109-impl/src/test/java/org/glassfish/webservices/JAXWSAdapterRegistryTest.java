@@ -99,16 +99,16 @@ public class JAXWSAdapterRegistryTest {
                 }
             });
         }
-
+        
         for (int i = 0; i < size; i++) ts[i].start();
-
+        
         for (int i = 0; i < size; i++) {
             try {
                 ts[i].join();
             } catch (InterruptedException ex) {
             }
         }
-
+        
         for (int i = 0; i < size; i++) {
             Adapter a = registry.getAdapter(contextRoot, urlPattern + i, urlPattern + i);
             Assert.assertNotNull("No adapter for '" + contextRoot + urlPattern + i + "'", a);

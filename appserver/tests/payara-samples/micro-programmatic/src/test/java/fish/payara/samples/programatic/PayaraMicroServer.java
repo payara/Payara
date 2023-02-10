@@ -112,7 +112,7 @@ public final class PayaraMicroServer {
      */
     public void start() {
         if (!isStarted()) {
-            start("--port", "" + defaultHttpPort, "--autobindhttp", "--nocluster");
+            start("--port", "" + defaultHttpPort, "--autobindhttp", "--nohazelcast");
         }
     }
 

@@ -168,11 +168,11 @@ public class APIClassLoaderServiceImpl implements PostConstruct {
             return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
                 @Override
                 public ClassLoader run() {
-                    return ClassLoader.getSystemClassLoader().getParent();
+                    return ClassLoader.getSystemClassLoader();
                 }
             });        
         } else {
-            return ClassLoader.getSystemClassLoader().getParent();
+            return ClassLoader.getSystemClassLoader();
         }
     }
 

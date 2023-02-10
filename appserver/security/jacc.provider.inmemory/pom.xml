@@ -57,11 +57,11 @@
 
     <name>A Pluggable InMemory JACC Provider</name>
     <description>
-        This module implements a JACC provider (authorization module) that uses in-memory
-        storage to put the Permissions instances in that are received from the JACC parser.
-
-        This module is pluggable by the end-user and uses the standard JACC SPI to facilitate
-        this pluggability, but the implementation is partially Payara specific.
+    	This module implements a JACC provider (authorization module) that uses in-memory
+    	storage to put the Permissions instances in that are received from the JACC parser.
+    	
+    	This module is pluggable by the end-user and uses the standard JACC SPI to facilitate
+    	this pluggability, but the implementation is partially Payara specific.
     </description>
 
     <developers>
@@ -74,7 +74,7 @@
             </roles>
         </developer>
     </developers>
-
+    
     <build>
         <sourceDirectory>src/main/java</sourceDirectory>
         <resources>
@@ -86,14 +86,14 @@
             </resource>
         </resources>
     </build>
-
+    
     <dependencies>
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>internal-api</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
+                <dependency>
             <groupId>fish.payara.api</groupId>
             <artifactId>payara-api</artifactId>
         </dependency>

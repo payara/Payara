@@ -39,6 +39,7 @@
     holder.
 
 -->
+<!--  Portions Copyright [2022] Payara Foundation and/or affiliates -->
 
 <network-config>
     <protocols>

@@ -119,16 +119,16 @@ public class InjectionServicesImpl implements InjectionServices {
      * Checks if the specified class is annotated with @Interceptor
      * @see jakarta.interceptor.Interceptor
      * @param beanClass
-     * @return
+     * @return 
      */
     private boolean isInterceptor( Class beanClass ) {
-        final Set<String> annos = Collections.singleton(jakarta.interceptor.Interceptor.class.getName());
-        boolean res = false;
-        while ( !res && beanClass != Object.class ) {
-            res = WeldUtils.hasValidAnnotation( beanClass, annos, null );
-            beanClass  = beanClass.getSuperclass();
-        }
-        return res;
+      final Set<String> annos = Collections.singleton(jakarta.interceptor.Interceptor.class.getName());
+      boolean res = false;
+      while ( !res && beanClass != Object.class ) {
+        res = WeldUtils.hasValidAnnotation( beanClass, annos, null );
+        beanClass  = beanClass.getSuperclass();
+      }
+      return res;
     }
 
     @Override
@@ -157,11 +157,11 @@ public class InjectionServicesImpl implements InjectionServices {
 
             if ( isInterceptor( targetClass )
                     && (componentEnv != null && !componentEnv.equals(injectionEnv)) ) {
-                // Resources injected into interceptors must come from the environment in which the interceptor is
-                // intercepting, not the environment in which the interceptor resides (for everything else!)
-                // Must use the injectionEnv to get the injection info to determine where in jndi to look for the objects to inject.
-                // must use the current jndi component env to lookup the objects to inject
-                injectionManager.inject( targetClass, target, injectionEnv, null, false );
+              // Resources injected into interceptors must come from the environment in which the interceptor is
+              // intercepting, not the environment in which the interceptor resides (for everything else!)
+              // Must use the injectionEnv to get the injection info to determine where in jndi to look for the objects to inject.
+              // must use the current jndi component env to lookup the objects to inject
+              injectionManager.inject( targetClass, target, injectionEnv, null, false );
             } else {
                 if (annotatedType instanceof BackedAnnotatedType) {
                     BackedAnnotatedType backedAnnotatedType = ((BackedAnnotatedType) annotatedType);
@@ -181,47 +181,47 @@ public class InjectionServicesImpl implements InjectionServices {
                     return;
                 }
 
-                // Perform EE-style injection on the target.  Skip PostConstruct since
-                // in this case 299 impl is responsible for calling it.
+              // Perform EE-style injection on the target.  Skip PostConstruct since
+              // in this case 299 impl is responsible for calling it.
 
-                if( componentEnv instanceof EjbDescriptor ) {
+              if( componentEnv instanceof EjbDescriptor ) {
 
-                    EjbDescriptor ejbDesc = (EjbDescriptor) componentEnv;
+                EjbDescriptor ejbDesc = (EjbDescriptor) componentEnv;
 
-                    if( containerServices.isEjbManagedObject(ejbDesc, targetClass)) {
-                        injectionEnv = componentEnv;
-                    } else {
-
-                        if( bundleContext instanceof EjbBundleDescriptor ) {
-
-                            // Check if it's a @ManagedBean class within an ejb-jar.  In that case,
-                            // special handling is needed to locate the EE env dependencies
-                            mbDesc = bundleContext.getManagedBeanByBeanClass(targetClassName);
-                        }
-                    }
-                }
-
-                if( mbDesc != null ) {
-                    injectionManager.injectInstance(target, mbDesc.getGlobalJndiName(), false);
+                if( containerServices.isEjbManagedObject(ejbDesc, targetClass)) {
+                  injectionEnv = componentEnv;
                 } else {
-                    if( injectionEnv instanceof EjbBundleDescriptor ) {
 
-                        // CDI-style managed bean that doesn't have @ManagedBean annotation but
-                        // is injected within the context of an ejb.  Need to explicitly
-                        // set the environment of the ejb bundle.
-                        if ( target == null ) {
-                            injectionManager.injectClass(targetClass, compEnvManager.getComponentEnvId(injectionEnv),false);
-                        } else {
-                            injectionManager.injectInstance(target, compEnvManager.getComponentEnvId(injectionEnv),false);
-                        }
-                    } else {
-                        if ( target == null ) {
-                            injectionManager.injectClass(targetClass, injectionEnv, false);
-                        } else {
-                            injectionManager.injectInstance(target, injectionEnv, false);
-                        }
-                    }
+                  if( bundleContext instanceof EjbBundleDescriptor ) {
+
+                    // Check if it's a @ManagedBean class within an ejb-jar.  In that case,
+                    // special handling is needed to locate the EE env dependencies
+                    mbDesc = bundleContext.getManagedBeanByBeanClass(targetClassName);
+                  }
                 }
+              }
+
+              if( mbDesc != null ) {
+                injectionManager.injectInstance(target, mbDesc.getGlobalJndiName(), false);
+              } else {
+                if( injectionEnv instanceof EjbBundleDescriptor ) {
+
+                  // CDI-style managed bean that doesn't have @ManagedBean annotation but
+                  // is injected within the context of an ejb.  Need to explicitly
+                  // set the environment of the ejb bundle.
+                  if ( target == null ) {
+                    injectionManager.injectClass(targetClass, compEnvManager.getComponentEnvId(injectionEnv),false);
+                  } else {
+                    injectionManager.injectInstance(target, compEnvManager.getComponentEnvId(injectionEnv),false);
+                  }
+                } else {
+                  if ( target == null ) {
+                    injectionManager.injectClass(targetClass, injectionEnv, false);
+                  } else {
+                    injectionManager.injectInstance(target, injectionEnv, false);
+                  }
+                }
+              }
 
             }
 
@@ -267,10 +267,10 @@ public class InjectionServicesImpl implements InjectionServices {
     }
 
     /**
-     *
+     * 
      * @param annotatedClass
      * @param annotatedField
-     * @param injectionResources
+     * @param injectionResources 
      */
     private void validateEjbProducer( Class annotatedClass,
                                       AnnotatedField annotatedField,
@@ -278,8 +278,8 @@ public class InjectionServicesImpl implements InjectionServices {
         EJB ejbAnnotation = annotatedField.getAnnotation(EJB.class);
         if ( ejbAnnotation != null ) {
             String lookupName = getLookupName(annotatedClass,
-                    annotatedField,
-                    injectionResources);
+                                              annotatedField,
+                                              injectionResources);
 
             EjbDescriptor foundEjb = null;
             Collection<EjbDescriptor> ejbs = deployment.getDeployedEjbs();
@@ -310,8 +310,8 @@ public class InjectionServicesImpl implements InjectionServices {
         Resource resourceAnnotation = annotatedField.getAnnotation(Resource.class);
         if ( resourceAnnotation != null ) {
             String lookupName = getLookupName(annotatedClass,
-                    annotatedField,
-                    injectionResources);
+                                              annotatedField,
+                                              injectionResources);
             if ( lookupName.equals( "java:comp/BeanManager" ) ) {
                 validateResourceClass(annotatedField, BeanManager.class);
             } else {
@@ -320,7 +320,7 @@ public class InjectionServicesImpl implements InjectionServices {
                     for (com.sun.enterprise.deployment.InjectionTarget target : injectionCapable.getInjectionTargets()) {
                         if( target.isFieldInjectable() ) {  // make sure it's a field and not a method
                             if ( annotatedClass.getName().equals(target.getClassName() ) &&
-                                    target.getFieldName().equals( annotatedField.getJavaMember().getName() ) ) {
+                                target.getFieldName().equals( annotatedField.getJavaMember().getName() ) ) {
                                 String type = injectionCapable.getInjectResourceType();
                                 try {
                                     Class clazz = Class.forName( type, false, annotatedClass.getClassLoader() );
@@ -352,21 +352,21 @@ public class InjectionServicesImpl implements InjectionServices {
                 if ( serviceClass != null ) {
                     if ( ! jakarta.xml.ws.Service.class.isAssignableFrom(serviceClass)) {
                         throw new DefinitionException( "The type of the injection point " +
-                                annotatedField.getJavaMember().getName() +
-                                " is an interface: " +
-                                annotatedField.getJavaMember().getType().getName() +
-                                ".  The @WebSreviceRef value of " +
-                                serviceClass +
-                                " is not assignable from " +
-                                jakarta.xml.ws.Service.class.getName());
+                                                       annotatedField.getJavaMember().getName() +
+                                                       " is an interface: " +
+                                                       annotatedField.getJavaMember().getType().getName() +
+                                                       ".  The @WebSreviceRef value of " +
+                                                       serviceClass +
+                                                       " is not assignable from " +
+                                                       jakarta.xml.ws.Service.class.getName());
                     }
                 }
             } else {
                 throw new DefinitionException( "The type of the injection point " +
-                        annotatedField.getJavaMember().getName() +
-                        " is " +
-                        annotatedField.getJavaMember().getType().getName() +
-                        ".  This type is invalid for a field annotated with @WebSreviceRef");
+                                                   annotatedField.getJavaMember().getName() +
+                                                   " is " +
+                                                   annotatedField.getJavaMember().getType().getName() +
+                                                   ".  This type is invalid for a field annotated with @WebSreviceRef");
             }
         }
     }
@@ -375,13 +375,13 @@ public class InjectionServicesImpl implements InjectionServices {
      * Make sure that the annotated field can be assigned the resource that is to be injected.
      * Otherwise, this throws a {@link DefinitionException}
      * @param annotatedField
-     * @param resourceClass
+     * @param resourceClass 
      */
     private void validateResourceClass(AnnotatedField annotatedField, Class resourceClass) {
         if ( ! annotatedField.getJavaMember().getType().isAssignableFrom( resourceClass ) ) {
             throwProducerDefinitionExeption( annotatedField.getJavaMember().getName(),
-                    annotatedField.getJavaMember().getType().getName(),
-                    resourceClass.getName() );
+                                             annotatedField.getJavaMember().getType().getName(),
+                                             resourceClass.getName() );
         }
     }
 
@@ -389,12 +389,12 @@ public class InjectionServicesImpl implements InjectionServices {
                                                   String annotatedFieldType,
                                                   String resourceClassName ) {
         throw new DefinitionException( "The type of the injection point " +
-                annotatedFieldName +
-                " is " +
-                annotatedFieldType +
-                ".  The type of the physical resource is " +
-                resourceClassName +
-                " They are incompatible. ");
+                                       annotatedFieldName +
+                                       " is " +
+                                       annotatedFieldType +
+                                       ".  The type of the physical resource is " +
+                                       resourceClassName +
+                                       " They are incompatible. ");
     }
 
     private String getComponentEnvName( Class annotatedClass, String fieldName, List<InjectionCapable> injectionResources ) {
@@ -402,7 +402,7 @@ public class InjectionServicesImpl implements InjectionServices {
             for (com.sun.enterprise.deployment.InjectionTarget target : injectionCapable.getInjectionTargets()) {
                 if( target.isFieldInjectable() ) {  // make sure it's a field and not a method
                     if ( annotatedClass.getName().equals(target.getClassName() ) &&
-                            target.getFieldName().equals( fieldName ) ) {
+                         target.getFieldName().equals( fieldName ) ) {
                         String name = injectionCapable.getComponentEnvName();
                         if ( ! name.startsWith("java:") ) {
                             name = "java:comp/env/" + name;
@@ -424,7 +424,7 @@ public class InjectionServicesImpl implements InjectionServices {
      * @param annotatedClass
      * @param annotatedField
      * @param injectionResources
-     * @return
+     * @return 
      */
     private String getLookupName( Class annotatedClass, AnnotatedField annotatedField, List<InjectionCapable> injectionResources ) {
         String lookupName = null;
@@ -447,8 +447,8 @@ public class InjectionServicesImpl implements InjectionServices {
 
         if ( lookupName == null || lookupName.trim().length() == 0 ) {
             lookupName = getComponentEnvName( annotatedClass,
-                    annotatedField.getJavaMember().getName(),
-                    injectionResources );
+                                              annotatedField.getJavaMember().getName(),
+                                              injectionResources );
         }
         return lookupName;
     }
@@ -460,7 +460,7 @@ public class InjectionServicesImpl implements InjectionServices {
      * @param lookup
      * @param mappedName
      * @param name
-     * @return
+     * @return 
      */
     private String getJndiName( String lookup, String mappedName, String name ) {
         String jndiName = lookup;

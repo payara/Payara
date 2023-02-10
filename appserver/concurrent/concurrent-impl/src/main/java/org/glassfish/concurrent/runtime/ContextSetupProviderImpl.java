@@ -127,14 +127,14 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
     private transient StuckThreadsStore stuckThreads;
 
     public ContextSetupProviderImpl(InvocationManager invocationManager,
-                                    Deployment deployment,
-                                    ComponentEnvManager compEnvMgr,
-                                    ApplicationRegistry applicationRegistry,
-                                    Applications applications,
-                                    JavaEETransactionManager transactionManager,
-                                    Set<String> propagated,
-                                    Set<String> cleared,
-                                    Set<String> unchanged) {
+            Deployment deployment,
+            ComponentEnvManager compEnvMgr,
+            ApplicationRegistry applicationRegistry,
+            Applications applications,
+            JavaEETransactionManager transactionManager,
+            Set<String> propagated,
+            Set<String> cleared,
+            Set<String> unchanged) {
         this.invocationManager = invocationManager;
         this.deployment = deployment;
         this.compEnvMgr = compEnvMgr;
@@ -484,7 +484,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
                     break;
             }
         }
-        return filtered;
+         return filtered;
     }
 
     private void addToRemainingIfNotPresent(String contextType) {

@@ -48,7 +48,7 @@ public class DefaultServerAuthContext implements ServerAuthContext {
 
     @Override
     public AuthStatus validateRequest(MessageInfo messageInfo, Subject clientSubject, Subject serviceSubject)
-            throws AuthException {
+        throws AuthException {
         return sam.validateRequest(messageInfo, clientSubject, serviceSubject);
     }
 

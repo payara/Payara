@@ -127,14 +127,14 @@ public class StuckThreadsHealthCheck extends
 
     @Override
     public boolean isEnabled() {
-        return this.getOptions() != null ? this.getOptions().isEnabled() : false;
+       return this.getOptions() != null ? this.getOptions().isEnabled() : false;
     }
 
     @Override
     protected HealthCheckResult doCheckInternal() {
         HealthCheckResult result = new HealthCheckResult();
         acceptStuckThreads((workStartedTime, timeWorkingInMillis, thresholdInMillis, info) ->
-                result.add(new HealthCheckResultEntry(HealthCheckResultStatus.WARNING, "Stuck Thread: " + info.toString())));
+            result.add(new HealthCheckResultEntry(HealthCheckResultStatus.WARNING, "Stuck Thread: " + info.toString())));
         return result;
     }
 
@@ -174,8 +174,8 @@ public class StuckThreadsHealthCheck extends
         }
         long thresholdInMillis = getThresholdInMillis();
         collector.watch("ns:health StuckThreadDuration", "Stuck Threads", "ms")
-                .red(thresholdInMillis, -30000L, false, null, null, false)
-                .green(-thresholdInMillis, 1, false, null, null, false);
+            .red(thresholdInMillis, -30000L, false, null, null, false)
+            .green(-thresholdInMillis, 1, false, null, null, false);
     }
 
     private static String composeStateText(ThreadInfo info) {
@@ -188,12 +188,12 @@ public class StuckThreadsHealthCheck extends
 
     private static String composeActionText(Thread.State state) {
         switch(state) {
-            case BLOCKED:
-                return "Blocked on ";
-            case WAITING:
-            case TIMED_WAITING:
-                return "Waiting on ";
-            default: return "Running ";
+        case BLOCKED:
+            return "Blocked on ";
+        case WAITING:
+        case TIMED_WAITING:
+            return "Waiting on ";
+        default: return "Running ";
         }
     }
 

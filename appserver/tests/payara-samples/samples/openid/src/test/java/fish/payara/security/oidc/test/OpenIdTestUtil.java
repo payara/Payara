@@ -68,7 +68,7 @@ public class OpenIdTestUtil {
                 .addClass(OidcProvider.class)
                 .addClass(ApplicationConfig.class)
                 .addAsResource("openid-configuration.json")
-                .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+                .addAsWebInfResource("all-beans.xml", "beans.xml");
         return war;
     }
 
@@ -78,7 +78,7 @@ public class OpenIdTestUtil {
                 .addClass(Callback.class)
                 .addClass(UnsecuredPage.class)
                 .addClass(GetUserName.class)
-                .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+                .addAsWebInfResource("all-beans.xml", "beans.xml");
         return war;
     }
 

@@ -445,7 +445,7 @@ public class HazelcastCore implements EventListener, ConfigListener {
             throw new IllegalStateException("either serialization config or ctxUtil is null");
         }
         serConfig.setGlobalSerializerConfig(new GlobalSerializerConfig().setImplementation(
-                        new PayaraHazelcastSerializer(ctxUtil, null))
+                new PayaraHazelcastSerializer(ctxUtil, null))
                 .setOverrideJavaSerialization(true));
     }
 
@@ -461,7 +461,7 @@ public class HazelcastCore implements EventListener, ConfigListener {
 
         if (!configuration.getInterface().isEmpty()) {
             // add an interfaces configuration
-            String[] interfaceNames = configuration.getInterface().split(",");
+           String[] interfaceNames = configuration.getInterface().split(",");
             for (String interfaceName : interfaceNames) {
                 nConfig.getInterfaces().addInterface(interfaceName.trim());
             }

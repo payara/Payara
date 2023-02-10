@@ -92,17 +92,6 @@
                 <enabled>false</enabled>
             </snapshots>
         </pluginRepository>
-        <pluginRepository>
-            <id>payara-patched-externals</id>
-            <name>Payara Patched Externals</name>
-            <url>https://raw.github.com/payara/Payara_PatchedProjects/master</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </pluginRepository>
     </pluginRepositories>
 
     <properties>
@@ -134,14 +123,14 @@
         <hk2.plugin.version>3.0.2</hk2.plugin.version> <!-- May need patched-->
         <tiger.types.version>1.4.payara-p1</tiger.types.version>
 
-        <glassfish-corba.version>4.2.4</glassfish-corba.version>
+        <glassfish-corba.version>4.2.4.payara-p2</glassfish-corba.version>
         <saaj-api.version>1.4.0</saaj-api.version>
 
         <!-- Library for introspecting types with full generic information including resolving of field and method types. -->
         <classmate.version>1.5.0</classmate.version>
-        <jboss.logging.version>3.4.2.Final</jboss.logging.version>
+        <jboss.logging.version>3.5.0.Final</jboss.logging.version>
         <!-- Javassist (JAVA programming ASSISTant) makes Java bytecode manipulation simple. It is a class library for editing bytecodes in Java. -->
-        <javassist.version>3.28.0-GA</javassist.version>
+        <javassist.version>3.29.2-GA</javassist.version>
 
         <!-- A pure Java implementation of the SSH-2 protocol -->
         <trilead-ssh2.version>build-217-jenkins-16</trilead-ssh2.version>
@@ -154,12 +143,12 @@
 
         <commons-io.version>2.11.0</commons-io.version>
 
-        <mimepull.version>1.9.15</mimepull.version>
+        <mimepull.version>1.10.0</mimepull.version>
 
-        <!-- Apache Felix is an open source implementation of the OSGi Core Release 6 framework specification. -->
-        <org.apache.felix.main.version>6.0.2</org.apache.felix.main.version>
-        <org.apache.felix.webconsole.version>4.3.8</org.apache.felix.webconsole.version>
-        <org.apache.felix.eventadmin.version>1.5.0</org.apache.felix.eventadmin.version>
+        <!-- Apache Felix is an open source implementation of the OSGi Core Release 8 framework specification. -->
+        <org.apache.felix.main.version>7.0.5</org.apache.felix.main.version>
+        <org.apache.felix.webconsole.version>4.8.4</org.apache.felix.webconsole.version>
+        <org.apache.felix.eventadmin.version>1.6.4</org.apache.felix.eventadmin.version>
         <org.apache.felix.shell.version>1.4.3</org.apache.felix.shell.version>
         <org.apache.felix.gogo.runtime.version>1.1.6</org.apache.felix.gogo.runtime.version>
         <org.apache.felix.gogo.shell.version>1.1.4</org.apache.felix.gogo.shell.version>
@@ -787,6 +776,17 @@ Parent is ${project.parent}</echo>
                 <groupId>org.apache.felix</groupId> <!-- Bundle repository service. -->
                 <artifactId>org.apache.felix.bundlerepository</artifactId>
                 <version>${org.apache.felix.bundlerepository.version}</version>
+            </dependency>
+
+            <dependency> <!-- Required for org.apache.felix.scr-->
+                <groupId>org.osgi</groupId>
+                <artifactId>org.osgi.util.promise</artifactId>
+                <version>${org.osgi.util.promise.version}</version>
+            </dependency>
+            <dependency> <!-- Required for org.apache.felix.scr-->
+                <groupId>org.osgi</groupId>
+                <artifactId>org.osgi.util.function</artifactId>
+                <version>${org.osgi.util.function.version}</version>
             </dependency>
 
             <dependency>

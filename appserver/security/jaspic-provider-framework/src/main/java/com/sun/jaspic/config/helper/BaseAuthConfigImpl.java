@@ -76,7 +76,7 @@ public abstract class BaseAuthConfigImpl {
     private Lock instanceWriteLock = instanceReadWriteLock.writeLock();
 
     public BaseAuthConfigImpl(String loggerName, EpochCarrier providerEpoch, MessagePolicyDelegate mpDelegate, String layer,
-                              String appContext, CallbackHandler cbh) throws AuthException {
+            String appContext, CallbackHandler cbh) throws AuthException {
         this.loggerName = loggerName;
         this.providerEpoch = providerEpoch;
         this.policyDelegate = mpDelegate;
@@ -158,7 +158,7 @@ public abstract class BaseAuthConfigImpl {
 
     @SuppressWarnings("unchecked")
     protected final <M> M getContext(Map<String, Map<Integer, M>> contextMap, String authContextID, Subject subject,
-                                     Map<String, Object> properties)
+            Map<String, Object> properties)
             throws AuthException {
 
         M context = null;
