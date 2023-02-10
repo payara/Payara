@@ -121,7 +121,7 @@ public class RestClientSslContextAliasListenerTest {
 
     public KeyStore getKeyStore() throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException, URISyntaxException {
         KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
-        URL resource = getClass().getClassLoader().getResource("keystore.p12");
+        URL resource = getClass().getClassLoader().getResource("keystore.jks");
         FileInputStream keyStoreFile = new FileInputStream(new File(resource.toURI()));
         keyStore.load(keyStoreFile, "changeit".toCharArray());
         return keyStore;

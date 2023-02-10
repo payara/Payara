@@ -114,7 +114,7 @@
              <resource>
                 <directory>src/main/resources</directory>
                 <includes>
-                    <include>**/*.p12</include>
+                    <include>**/*.jks</include>
                 </includes>
             </resource>
              <resource>
