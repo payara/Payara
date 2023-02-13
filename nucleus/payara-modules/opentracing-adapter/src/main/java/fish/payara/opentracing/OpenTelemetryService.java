@@ -40,10 +40,12 @@
 package fish.payara.opentracing;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -51,15 +53,21 @@ import java.util.logging.Logger;
 import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+import io.opentelemetry.sdk.trace.samplers.Sampler;
+import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import jakarta.inject.Inject;
@@ -91,11 +99,6 @@ public class OpenTelemetryService implements EventListener {
 
     @Inject
     Events events;
-
-    // This service tends to be initialized also in ACC client, where request tracing is not available
-    // as well as this executor service.
-    @Inject
-    Provider<PayaraExecutorService> executorServiceHandle;
 
     @Inject
     ServiceLocator locator;
@@ -266,22 +269,21 @@ public class OpenTelemetryService implements EventListener {
                 return AutoConfiguredOpenTelemetrySdk.builder()
                         .setServiceClassLoader(Thread.currentThread().getContextClassLoader())
                         .registerShutdownHook(false)
-                        .addSpanExporterCustomizer((exporter, c) -> {
-                            if (isPayaraTracingEnabled()) {
-                                ExecutorService es = executorServiceHandle.get().getUnderlyingExecutorService();
-                                return SpanExporter.composite(exporter,
-                                        new PayaraRequestTracingExporter(locator.getService(RequestTracingService.class), es));
-                            } else {
-                                return exporter;
-                            }
+                        .addTracerProviderCustomizer((builder, config) -> {
+                          if (isPayaraTracingEnabled()) {
+                              return builder.addSpanProcessor(new PayaraRequestTracingProcessor(locator.getService(RequestTracingService.class)));
+                          } else {
+                              return builder;
+                          }
                         })
                         .addPropertiesSupplier(() -> props)
                         .setResultAsGlobal(false)
                         .build().getOpenTelemetrySdk();
             } catch (ConfigurationException ce) {
                 logger.log(Level.SEVERE, "Failed to configure OpenTelemetry for " + applicationName + " using classlaoder "
-                        + Thread.currentThread().getContextClassLoader(), ce);
-                throw ce;
+                        + Thread.currentThread().getContextClassLoader() +" will revert to no-op", ce);
+                // Do not prevent application from working when things go awry in telemetry config
+                return OpenTelemetrySdk.builder().build();
             }
         } else {
             // noop

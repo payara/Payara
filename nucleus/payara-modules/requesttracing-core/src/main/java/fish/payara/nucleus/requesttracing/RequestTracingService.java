@@ -433,7 +433,7 @@ public class RequestTracingService implements EventListener, ConfigListener, Mon
                 && requestEventStore.getTrace().getTraceSpans().getFirst().equals(requestEvent);
     }
 
-    private boolean shouldStartTrace() {
+    public  boolean shouldStartTrace() {
         if (!isRequestTracingEnabled()) {
             return false;
         }
@@ -469,6 +469,15 @@ public class RequestTracingService implements EventListener, ConfigListener, Mon
         }
         requestEventStore.endTrace(timestampMillis);
         processTraceEnd();
+    }
+
+
+    public void processSpan(RequestTraceSpan finishedSpan) {
+        if (!isRequestTracingEnabled()) {
+            return;
+        }
+        requestEventStore.storeEvent(finishedSpan, 0);
+        requestEventStore.endTrace(finishedSpan.getTimeOccured()+finishedSpan.getSpanDuration());
     }
 
     private void processTraceEnd() {
@@ -636,6 +645,7 @@ public class RequestTracingService implements EventListener, ConfigListener, Mon
             trace = uncollectedTraces.poll();
         }
     }
+
 
     private static String collectTrace(MonitoringDataCollector tracingCollector, RequestTrace trace, long threshold) {
         try {

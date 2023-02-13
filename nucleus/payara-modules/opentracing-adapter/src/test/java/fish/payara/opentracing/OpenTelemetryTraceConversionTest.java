@@ -51,9 +51,9 @@ import static org.junit.Assert.assertEquals;
 public class OpenTelemetryTraceConversionTest {
     @Test
     public void testLargeNegativeNumber() {
-        long result = PayaraRequestTracingExporter.parseUnsignedHex("bf0cf4c8ddd9ae8b", 0, 0);
+        long result = PayaraRequestTracingProcessor.parseUnsignedHex("bf0cf4c8ddd9ae8b", 0, 0);
         assertEquals(0xbf0cf4c8ddd9ae8bL, result);
-        result = PayaraRequestTracingExporter.parseUnsignedHex("bf0cf4c8ddd9ae8bbf0cf4c8ddd9ae8b", 16, 0);
+        result = PayaraRequestTracingProcessor.parseUnsignedHex("bf0cf4c8ddd9ae8bbf0cf4c8ddd9ae8b", 16, 0);
         assertEquals(0xbf0cf4c8ddd9ae8bL, result);
     }
 
@@ -77,6 +77,6 @@ public class OpenTelemetryTraceConversionTest {
     }
 
     private void test(long high, long low, String input) {
-        assertEquals(new UUID(high, low), PayaraRequestTracingExporter.parseTraceId(input));
+        assertEquals(new UUID(high, low), PayaraRequestTracingProcessor.parseTraceId(input));
     }
 }

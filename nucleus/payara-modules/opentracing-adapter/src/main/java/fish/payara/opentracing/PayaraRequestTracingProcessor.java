@@ -43,59 +43,114 @@
 package fish.payara.opentracing;
 
 import java.time.Instant;
-import java.util.Collection;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import fish.payara.notification.requesttracing.EventType;
 import fish.payara.notification.requesttracing.RequestTraceSpan;
+import fish.payara.notification.requesttracing.RequestTraceSpanLog;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
-import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.sdk.trace.ReadWriteSpan;
+import io.opentelemetry.sdk.trace.ReadableSpan;
+import io.opentelemetry.sdk.trace.SpanProcessor;
+import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.export.SpanExporter;
 
-class PayaraRequestTracingExporter implements SpanExporter {
-    private static final Logger LOGGER = Logger.getLogger(PayaraRequestTracingExporter.class.getName());
-
-    private static final long NANOS_PER_SECOND = TimeUnit.SECONDS.toNanos(1);
-
+/**
+ * Maps OpenTelemetry spans to Payara Tracing Spans.
+ * The models are quite different, OTEL one being much more precise. In order to keep Payara Tracing running, we feed it
+ * with following data:
+ * <ul>
+ *     <li>Sampled root spans, and propagated spans are created as root spans in tracing service.</li>
+ *     <li>Payara spans are created with parent reference to OTEL spans</li>
+ *     <li>non-root spans are traced as "request spans", which should make them included in current trace</li>
+ *
+ * </ul>
+ */
+public class PayaraRequestTracingProcessor implements SpanProcessor {
     private final RequestTracingService requestTracingService;
 
-    private final ExecutorService executorService;
+    private ConcurrentMap<ReadableSpan, RequestTraceSpan> rootInProgressSpans = new ConcurrentHashMap<>();
 
-    public PayaraRequestTracingExporter(RequestTracingService requestTracingService, ExecutorService payaraExecutorService) {
+    public PayaraRequestTracingProcessor(RequestTracingService requestTracingService) {
         this.requestTracingService = requestTracingService;
-        this.executorService = payaraExecutorService;
     }
 
     @Override
-    public CompletableResultCode export(Collection<SpanData> collection) {
-        CompletableResultCode result = new CompletableResultCode();
-        this.executorService.submit(() -> {
-            try {
-                collection.forEach((data) -> requestTracingService.traceSpan(convert(data)));
-                result.succeed();
-            } catch (RuntimeException e) {
-                LOGGER.log(Level.WARNING, "Failed to export OpenTelemetry span to Payara Request Tracing", e);
-                result.fail();
+    public void onStart(Context parentContext, ReadWriteSpan span) {
+        if (span.getSpanContext().isSampled()) {
+            // we notify about starting root and propagated spans.
+            if (span.getParentSpanContext().isValid()) {
+                if (span.getParentSpanContext().isRemote()) {
+                    var payaraSpan = createSpan(span, EventType.PROPAGATED_TRACE);
+                    rootInProgressSpans.put(span, payaraSpan);
+                    requestTracingService.startTrace(payaraSpan);
+                }
+            } else {
+                  var payaraSpan = createSpan(span, EventType.TRACE_START);
+                  requestTracingService.traceSpan(payaraSpan);
             }
-        });
-        return result;
+        }
     }
 
-    RequestTraceSpan convert(SpanData data) {
-        RequestTraceSpan result = new RequestTraceSpan(EventType.PROPAGATED_TRACE, data.getName());
-        result.getSpanContext().setTraceId(parseTraceId(data));
-        // we cannot set spanId
+    private static RequestTraceSpan createSpan(ReadableSpan span, EventType type) {
+        return new RequestTraceSpan(type, span.getName(), parseTraceId(span.getSpanContext().getTraceId()),
+                parseTraceId(span.getSpanContext().getSpanId()), RequestTraceSpan.SpanContextRelationshipType.ChildOf);
+    }
+
+    @Override
+    public boolean isStartRequired() {
+        return true;
+    }
+
+    @Override
+    public void onEnd(ReadableSpan span) {
+        if (!span.getSpanContext().isSampled()) {
+            return;
+        }
+        // some of the data are only visible upon export
+        var data = span.toSpanData();
+        var payaraSpan = rootInProgressSpans.remove(span);
+        if (payaraSpan == null) {
+            payaraSpan = createTraceSpan(data);
+        }
+        fill(data, payaraSpan);
+        requestTracingService.traceSpan(payaraSpan, TimeUnit.NANOSECONDS.toMillis(data.getEndEpochNanos()));
+    }
+
+    @Override
+    public boolean isEndRequired() {
+        return true;
+    }
+
+    private static final long NANOS_PER_SECOND = TimeUnit.SECONDS.toNanos(1);
+
+    private RequestTraceSpan fill(SpanData data, RequestTraceSpan result) {
         result.setStartInstant(Instant.ofEpochSecond(
                 data.getStartEpochNanos() / NANOS_PER_SECOND,
                 data.getStartEpochNanos() % NANOS_PER_SECOND));
+        result.setTraceEndTime(Instant.ofEpochSecond(data.getStartEpochNanos() / NANOS_PER_SECOND,
+                data.getStartEpochNanos() % NANOS_PER_SECOND));
         result.setSpanDuration(data.getEndEpochNanos() - data.getStartEpochNanos());
         data.getAttributes().forEach((key, value) -> result.addSpanTag(key.getKey(), value.toString()));
+        data.getEvents().forEach(ev -> result.addSpanLog(convert(ev)));
         // exporter has no access to baggage, that goes to propagators only.
+        return result;
+    }
+
+    private RequestTraceSpan createTraceSpan(SpanData data) {
+        RequestTraceSpan result = new RequestTraceSpan(EventType.PROPAGATED_TRACE, data.getName(), parseTraceId(data),
+                parseTraceId(data.getSpanId()), RequestTraceSpan.SpanContextRelationshipType.ChildOf);
+        return result;
+    }
+
+    private RequestTraceSpanLog convert(EventData ev) {
+        var result = new RequestTraceSpanLog(TimeUnit.NANOSECONDS.toMillis(ev.getEpochNanos()), ev.getName());
+        ev.getAttributes().forEach((k, v) -> result.addLogEntry(k.getKey(), String.valueOf(v)));
         return result;
     }
 
@@ -127,15 +182,5 @@ class PayaraRequestTracingExporter implements SpanExporter {
             result |= digit << shift;
         }
         return result;
-    }
-
-    @Override
-    public CompletableResultCode flush() {
-        return CompletableResultCode.ofSuccess();
-    }
-
-    @Override
-    public CompletableResultCode shutdown() {
-        return CompletableResultCode.ofSuccess();
     }
 }
