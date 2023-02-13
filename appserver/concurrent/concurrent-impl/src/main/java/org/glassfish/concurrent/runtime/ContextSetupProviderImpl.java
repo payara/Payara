@@ -87,6 +87,8 @@ import java.util.List;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.data.ApplicationRegistry;
 
@@ -338,23 +340,17 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         SpanBuilder builder = tracer.buildSpan("executeConcurrentContext");
 
         // Check for propagated span
-        if (handle.getSpanContextMap() != null) {
-            SpanContext spanContext = tracer.extract(Format.Builtin.TEXT_MAP, new MapToTextMap(handle.getSpanContextMap()));
-            builder.asChildOf(spanContext);
+        if (handle.getParentTraceContext() != null) {
+            builder.asChildOf(handle.getParentTraceContext());
 
             // Check for the presence of a propagated parent operation name
-            try {
-                String operationName = ((RequestTraceSpanContext) spanContext).getBaggageItems().get("operation.name");
-                if (operationName != null) {
-                    builder.withTag("Parent Operation Name", operationName);
-                }
-            } catch (ClassCastException cce) {
-                logger.log(Level.FINE, "ClassCastException caught converting Span Context", cce);
-            }
+            StreamSupport.stream(handle.getParentTraceContext().baggageItems().spliterator(), false)
+                    .filter(e -> "operation.name".equals(e.getKey()))
+                    .forEach(e -> builder.withTag("Parent Operation Name", e.getValue()));
         }
 
         if (invocation != null) {
-            builder = builder.withTag("App Name", invocation.getAppName())
+            builder.withTag("App Name", invocation.getAppName())
                     .withTag("Component ID", invocation.getComponentId())
                     .withTag("Module Name", invocation.getModuleName());
 

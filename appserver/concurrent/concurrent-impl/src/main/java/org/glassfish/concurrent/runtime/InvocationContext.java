@@ -41,17 +41,11 @@
 
 package org.glassfish.concurrent.runtime;
 
-import com.hazelcast.logging.Logger;
 import com.sun.enterprise.security.SecurityContext;
-import fish.payara.notification.requesttracing.RequestTraceSpan;
-import fish.payara.notification.requesttracing.RequestTraceSpanContext;
-import fish.payara.opentracing.propagation.MapToTextMap;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.opentracing.OpenTracingService;
-import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
-import io.opentracing.propagation.Format;
 import jakarta.enterprise.concurrent.spi.ThreadContextRestorer;
 import jakarta.enterprise.concurrent.spi.ThreadContextSnapshot;
 import org.glassfish.api.invocation.ComponentInvocation;
@@ -61,10 +55,8 @@ import org.glassfish.internal.data.ApplicationRegistry;
 
 import javax.security.auth.Subject;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
+
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
@@ -75,11 +67,12 @@ public class InvocationContext implements ContextHandle {
     private transient ComponentInvocation invocation;
     private transient ClassLoader contextClassLoader;
     private transient SecurityContext securityContext;
-    private transient Map spanContextMap;
     private boolean useTransactionOfExecutionThread;
 
     private List<ThreadContextSnapshot> threadContextSnapshots;
     private List<ThreadContextRestorer> threadContextRestorers;
+
+    private transient SpanContext parentTraceContext;
 
     public InvocationContext(ComponentInvocation invocation, ClassLoader contextClassLoader, SecurityContext securityContext,
             boolean useTransactionOfExecutionThread, List<ThreadContextSnapshot> threadContextSnapshots,
@@ -107,38 +100,9 @@ public class InvocationContext implements ContextHandle {
                 Tracer tracer = openTracing.getTracer(openTracing.getApplicationName(
                         serviceLocator.getService(InvocationManager.class)));
                 
-                SpanContext spanContext = null;
-                
-                // Check if there's an active Span running
-                Span activeSpan = tracer.activeSpan();
-                if (activeSpan != null) {
-                    // The traceId is likely incorrect at this point as it initialises as a random UUID
-                    try {
-                        ((RequestTraceSpan) activeSpan).setTraceId(requestTracing.getConversationID());
-                    } catch (ClassCastException cce) {
-                        Logger.getLogger(InvocationContext.class).log(
-                                Level.FINE, 
-                                "ClassCastException caught converting Span", 
-                                cce);
-                    }
-                    
-                    spanContext = activeSpan.context();
-                } else {
-                    // Create a new span context using the starting span as a parent - the request tracing service doesn't
-                    // know about unfinished spans so we can't get the actual parent with the current impl
-                    spanContext = new RequestTraceSpanContext(
-                            requestTracing.getConversationID(), 
-                            requestTracing.getStartingTraceID());
-                }
-                
-                // Check to see if we're using the mock tracer to prevent ClassCastExceptions
-                try {
-                    tracer.inject(spanContext, Format.Builtin.TEXT_MAP, new MapToTextMap(spanContextMap = new HashMap()));
-                } catch (ClassCastException cce) {
-                    Logger.getLogger(InvocationContext.class).log(
-                            Level.FINE, 
-                            "ClassCastException caught injecting SpanContext", 
-                            cce);
+                var currentSpan = tracer.activeSpan();
+                if (currentSpan != null) {
+                    this.parentTraceContext = currentSpan.context();
                 }
             }   
         }    
@@ -160,8 +124,8 @@ public class InvocationContext implements ContextHandle {
         return useTransactionOfExecutionThread;
     }
     
-    public Map getSpanContextMap() {
-        return spanContextMap;
+    SpanContext getParentTraceContext() {
+        return parentTraceContext;
     }
 
     public List<ThreadContextSnapshot> getThreadContextSnapshots() {
