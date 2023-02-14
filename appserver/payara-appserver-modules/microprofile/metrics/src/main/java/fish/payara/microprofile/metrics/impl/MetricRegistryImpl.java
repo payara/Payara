@@ -39,12 +39,14 @@
  */
 package fish.payara.microprofile.metrics.impl;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -58,6 +60,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import jakarta.enterprise.inject.Vetoed;
+import java.util.stream.Stream;
 import org.eclipse.microprofile.metrics.Counter;
 import org.eclipse.microprofile.metrics.Gauge;
 import org.eclipse.microprofile.metrics.Histogram;
@@ -442,6 +445,7 @@ public class MetricRegistryImpl implements MetricRegistry {
         }
         final Metadata newMetadata = metadata;
         final T newMetric = metric != null ? metric:(T) createMetricInstance(newMetadata, metricType);
+        tags = setScopeTagForMetric(tags);
         MetricFamily<T> family = (MetricFamily<T>) metricsFamiliesByName.computeIfAbsent(name,
                 key -> new MetricFamily<>(newMetadata));
         MetricID metricID = new MetricID(name, tags);
@@ -451,6 +455,28 @@ public class MetricRegistryImpl implements MetricRegistry {
         T current = family.metrics.computeIfAbsent(metricID, key -> newMetric);
         notifyRegistrationListeners(metricID);
         return current;
+    }
+
+    private Tag[] setScopeTagForMetric(Tag... tags) {
+        Tag[] tArray = new Tag[1];
+        if(this.getScope().equals(BASE_SCOPE.toUpperCase())) {
+            Tag t = new Tag("mp_scope", BASE_SCOPE);
+            tArray[0] = t;
+        }
+
+        if(this.getScope().equals(VENDOR_SCOPE.toUpperCase())) {
+            Tag t = new Tag("mp_scope", VENDOR_SCOPE);
+            tArray[0] = t;
+        }
+
+        if(this.getScope().equals(APPLICATION_SCOPE.toUpperCase())) {
+            Tag t = new Tag("mp_scope", APPLICATION_SCOPE);
+            tArray[0] = t;
+        }
+        Tag[] mergeArray = Stream.concat(Arrays.stream(tags),
+                Arrays.stream(tArray)).
+                toArray(v -> (Tag[])Array.newInstance(tags.getClass().getComponentType(), v));
+        return mergeArray;
     }
 
     private void notifyRegistrationListeners(MetricID metricID) {

@@ -51,6 +51,7 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -151,6 +152,8 @@ public class MetricsServiceImpl implements MetricsService, ConfigListener, Monit
         private final MetricRegistryImpl base;
         private final MetricRegistryImpl vendor;
         private final MetricRegistryImpl application;
+
+        private final Map<String, MetricRegistryImpl> customRegistriesCollection = new HashMap<>();
         private final Queue<RegisteredMetric> newlyRegistered = new ConcurrentLinkedQueue<>();
 
         public MetricsContextImpl(String name) {
@@ -170,7 +173,12 @@ public class MetricsServiceImpl implements MetricsService, ConfigListener, Monit
         }
 
         @Override
-        public MetricRegistryImpl getRegistry(MetricRegistry.Type type) throws NoSuchRegistryException {
+        public MetricRegistry getRegistry(String registryName) throws NoSuchRegistryException {
+            return customRegistriesCollection.get(registryName);
+        }
+
+        @Override
+        public MetricRegistry getRegistry(MetricRegistry.Type type) throws NoSuchRegistryException {
             if (type.name().equals(BASE.getName().toUpperCase())) {
                 return base;
             }

@@ -425,6 +425,7 @@ public class MetricsMetadataHelper {
         if(metadata.getMBean() != null) {
             newMetaData.setMBean(builder.toString());
         } else {
+            newMetaData.setMBean(null);
             newMetaData.setService(builder.toString());
         }
         for (XmlTag oldTag: metadata.getTags()) {

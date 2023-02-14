@@ -138,6 +138,8 @@ public interface MetricsService {
          */
         MetricRegistry getRegistry(MetricRegistry.Type type) throws NoSuchRegistryException;
 
+        MetricRegistry getRegistry(String registryName) throws NoSuchRegistryException;
+
         default MetricRegistry getBaseRegistry() {
             return getRegistry(Type.BASE);
         }
@@ -148,6 +150,10 @@ public interface MetricsService {
 
         default MetricRegistry getApplicationRegistry() throws NoSuchRegistryException {
             return getRegistry(Type.APPLICATION);
+        }
+
+        default MetricRegistry getCustomRegistry(String registryName) throws NoSuchRegistryException {
+            return getRegistry(registryName);
         }
     }
 

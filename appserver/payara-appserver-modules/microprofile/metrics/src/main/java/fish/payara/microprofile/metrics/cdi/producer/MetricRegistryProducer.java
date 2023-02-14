@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2018-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -49,6 +49,8 @@ import org.eclipse.microprofile.metrics.MetricRegistry;
 import static org.eclipse.microprofile.metrics.MetricRegistry.Type.APPLICATION;
 import static org.eclipse.microprofile.metrics.MetricRegistry.Type.BASE;
 import static org.eclipse.microprofile.metrics.MetricRegistry.Type.VENDOR;
+
+import org.eclipse.microprofile.metrics.annotation.RegistryScope;
 import org.eclipse.microprofile.metrics.annotation.RegistryType;
 import org.glassfish.internal.api.Globals;
 
@@ -69,18 +71,21 @@ public class MetricRegistryProducer {
 
     @Produces
     @RegistryType(type = BASE)
+    @RegistryScope(scope = MetricRegistry.BASE_SCOPE)
     public MetricRegistry getBaseRegistry() {
         return getContext().getBaseRegistry();
     }
 
     @Produces
     @RegistryType(type = APPLICATION)
+    @RegistryScope(scope = MetricRegistry.APPLICATION_SCOPE)
     public MetricRegistry getApplicationRegistry() {
         return getContext().getApplicationRegistry();
     }
 
     @Produces
     @RegistryType(type = VENDOR)
+    @RegistryScope(scope = MetricRegistry.VENDOR_SCOPE)
     public MetricRegistry getVendorRegistry() {
         return getContext().getVendorRegistry();
     }

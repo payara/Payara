@@ -336,8 +336,8 @@ public class OpenMetricsExporter implements MetricExporter {
     private String globalName(MetricID metricID, String suffix) {
         String name = metricID.getName();
         return sanitizeMetricName(!suffix.isEmpty() && name.endsWith(suffix)
-                ? scope.getName() + '_' + name
-                : scope.getName() + '_' + name + suffix);
+                ? name
+                : name + suffix);
     }
 
     private static CharSequence escapeTagValue(String name) {

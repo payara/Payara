@@ -140,7 +140,7 @@ public class MetricsWriterImpl implements MetricsWriter {
             if (!contextName.isEmpty()) {
                 Tag[] tagsWithoutApp = metricID.getTagsAsArray();
                 Tag[] tags = Arrays.copyOf(tagsWithoutApp, tagsWithoutApp.length + 1);
-                tags[tagsWithoutApp.length] = new Tag("_app", contextName);
+                tags[tagsWithoutApp.length] = new Tag("mp_app", contextName);
                 metricID = new MetricID(metricName, tags);
             }
             exporter.export(metricID, metric.getValue(), metadata);

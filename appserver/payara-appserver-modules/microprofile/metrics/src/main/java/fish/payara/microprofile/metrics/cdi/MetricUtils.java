@@ -78,6 +78,10 @@ public final class MetricUtils<T extends Metric> {
 
     private static final Map<Class<? extends Metric>, MetricUtils<?>> TYPES = new HashMap<>();
 
+    public static final String TAG_METRIC_MP_SCOPE_NAME = "mp_scope";
+
+    public static final String TAG_METRIC_MP_APP_NAME = "mp_app";
+
     private final ByJust<String, T> byName;
     private final By<String, Tag[], T> byNameAndTags;
     private final By<Metadata, Tag[], T> byMetadataAndTags;
