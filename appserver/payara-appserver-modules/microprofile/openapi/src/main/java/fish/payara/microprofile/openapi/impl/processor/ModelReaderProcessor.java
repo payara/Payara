@@ -66,7 +66,8 @@ public class ModelReaderProcessor implements OASProcessor {
             if (config.getModelReader() != null) {
                 reader = config.getModelReader().getDeclaredConstructor().newInstance();
             }
-        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | SecurityException | InvocationTargetException ex) {
+        } catch (InstantiationException | IllegalAccessException
+                | NoSuchMethodException | SecurityException | InvocationTargetException ex) {
             LOGGER.log(WARNING, "Error creating OASModelReader instance.", ex);
         }
         if (reader != null) {

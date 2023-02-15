@@ -92,7 +92,8 @@ public class FilterProcessor implements OASProcessor {
             if (filter == null && config.getFilter() != null) {
                 filter = config.getFilter().getDeclaredConstructor().newInstance();
             }
-        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | SecurityException | InvocationTargetException ex) {
+        } catch (InstantiationException | IllegalAccessException
+                | NoSuchMethodException | SecurityException | InvocationTargetException ex) {
             LOGGER.log(WARNING, "Error creating OASFilter instance.", ex);
         }
         if (filter != null) {
