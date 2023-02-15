@@ -59,6 +59,7 @@ import org.eclipse.microprofile.openapi.OASModelReader;
 import org.glassfish.hk2.classmodel.reflect.Type;
 
 import fish.payara.microprofile.openapi.impl.model.media.SchemaImpl;
+import java.util.Optional;
 
 public class OpenApiConfiguration {
 
@@ -140,34 +141,6 @@ public class OpenApiConfiguration {
      */
     public boolean getScanLib() {
         return scanLib;
-    }
-
-    /**
-     * @return a whitelist of packages to scan in the application.
-     */
-    public List<String> getScanPackages() {
-        return scanPackages;
-    }
-
-    /**
-     * @return a whitelist of classes to scan in the application.
-     */
-    public List<String> getScanClasses() {
-        return scanClasses;
-    }
-
-    /**
-     * @return a blacklist of packages to not scan in the application.
-     */
-    public List<String> getExcludePackages() {
-        return scanExcludePackages;
-    }
-
-    /**
-     * @return a blacklist of classes to not scan in the application.
-     */
-    public List<String> getExcludeClasses() {
-        return scanExcludeClasses;
     }
 
     /**
@@ -281,19 +254,56 @@ public class OpenApiConfiguration {
      */
     public Set<Type> getValidClasses(Collection<Type> types) {
         return types.stream()
-                // If scan classes are specified, check that the class is in the list
-                .filter(type -> scanClasses.isEmpty() || scanClasses.contains(type.getName()))
-                // If exclude classes are specified, check that the class is not the list
-                .filter(type -> scanExcludeClasses.isEmpty() || !scanExcludeClasses.contains(type.getName()))
-                // If scan packages are specified, check that the class package starts with one
-                // in the list
-                .filter(type -> scanPackages.isEmpty()
-                        || scanPackages.stream().anyMatch(pkg -> type.getName().startsWith(pkg)))
-                // If exclude packages are specified, check that the class package doesn't start
-                // with any in the list
-                .filter(clazz -> scanExcludePackages.isEmpty()
-                        || scanExcludePackages.stream().noneMatch(pkg -> clazz.getName().startsWith(pkg)))
+                .filter(type -> checkValidity(type.getName()))
                 .collect(toSet());
+    }
+
+    /**
+     * Follow the OpenApi rules for scan inclusions and exclusions.
+     *
+     * @param type Class name to be checked
+     * @return true if the files is to be scanned
+     */
+    private boolean checkValidity(String type) {
+        // A class is not scanned if it's listed in mp.openapi.scan.exclude.classes
+        if (scanExcludeClasses.contains(type)) {
+            return false;
+        }
+        // A class is scanned if it's listed in mp.openapi.scan.classes
+        if (scanClasses.contains(type)) {
+            return true;
+        }
+        // A class is not scanned if its package, or any of its parent packages
+        // are listed in mp.openapi.scan.exclude.packages, unless a more
+        // complete package or parent package is listed in
+        // mp.openapi.scan.packages
+        Optional<String> mostSpecificInclude = scanPackages.stream()
+                .filter(pkg -> type.startsWith(pkg))
+                // find longest, e.g. most specific package
+                .sorted((p1, p2) -> p2.length() - p1.length())
+                .findFirst();
+        Optional<String> mostSpecificExclude = scanExcludePackages.stream()
+                .filter(pkg -> type.startsWith(pkg))
+                // find longest, e.g. most specific package
+                .sorted((p1, p2) -> p2.length() - p1.length())
+                .findFirst();
+        if (mostSpecificExclude.isPresent()) {
+            if (mostSpecificInclude.isPresent()
+                    && mostSpecificInclude.get().length() > mostSpecificExclude.get().length()) {
+                // more specific include found, overrides exclude, do nothing now
+            } else {
+                // most specific exclude
+                return false;
+            }
+        }
+        // A class is scanned if its package or any of its parent packages are
+        // listed in mp.openapi.scan.packages
+        if (mostSpecificInclude.isPresent()) {
+            return true;
+        }
+        // A class is scanned if mp.openapi.scan.classes and
+        // mp.openapi.scan.packages are both empty or not set
+        return scanClasses.isEmpty() && scanPackages.isEmpty();
     }
 
     // static Config API convenience methods
@@ -324,7 +334,7 @@ public class OpenApiConfiguration {
         final String[] array = config.getValue(propertyName, String[].class);
         if (array != null) {
             for (String item : array) {
-                instance.add(item);
+                instance.add(item.strip()); // Strip because MP TCK uses ", " as separator for array properties
             }
         }
         return instance;
