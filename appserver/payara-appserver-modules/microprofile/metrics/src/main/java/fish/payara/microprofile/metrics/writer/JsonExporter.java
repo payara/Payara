@@ -65,12 +65,10 @@ import org.eclipse.microprofile.metrics.Histogram;
 import org.eclipse.microprofile.metrics.Metadata;
 import org.eclipse.microprofile.metrics.Metric;
 import org.eclipse.microprofile.metrics.MetricID;
-import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.eclipse.microprofile.metrics.MetricUnits;
 import org.eclipse.microprofile.metrics.Sampling;
 import org.eclipse.microprofile.metrics.Snapshot;
 import org.eclipse.microprofile.metrics.Tag;
-import org.eclipse.microprofile.metrics.Timer;
 import org.eclipse.microprofile.metrics.Timer;
 
 /**
@@ -84,7 +82,7 @@ public class JsonExporter implements MetricExporter {
 
     public enum Mode { GET, OPTIONS }
 
-    private final MetricRegistry.Type scope;
+    private final String scope;
     private final JsonWriter out;
     private final Mode mode;
     private final JsonObjectBuilder documentObj;
@@ -102,7 +100,7 @@ public class JsonExporter implements MetricExporter {
         return Json.createWriterFactory(singletonMap(JsonGenerator.PRETTY_PRINTING, prettyPrint)).createWriter(out);
     }
 
-    private JsonExporter(MetricRegistry.Type scope, JsonWriter out, Mode mode, JsonObjectBuilder documentObj,
+    private JsonExporter(String scope, JsonWriter out, Mode mode, JsonObjectBuilder documentObj,
                          JsonObjectBuilder scopeObj) {
         this.scope = scope;
         this.out = out;
@@ -112,7 +110,7 @@ public class JsonExporter implements MetricExporter {
     }
 
     @Override
-    public MetricExporter in(MetricRegistry.Type scope, boolean asNode) {
+    public MetricExporter in(String scope, boolean asNode) {
         completeScope();
         return new JsonExporter(scope, out, mode, documentObj, asNode ? Json.createObjectBuilder() : null);
     }
@@ -247,7 +245,7 @@ public class JsonExporter implements MetricExporter {
         if (scopeObj != null) {
             JsonObject obj = scopeObj.build();
             if (obj.size() > 0) {
-                documentObj.add(scope.getName(), obj);
+                documentObj.add(scope, obj);
             }
         }
     }

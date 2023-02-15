@@ -59,7 +59,6 @@ import org.eclipse.microprofile.metrics.Histogram;
 import org.eclipse.microprofile.metrics.Metadata;
 import org.eclipse.microprofile.metrics.Metric;
 import org.eclipse.microprofile.metrics.MetricID;
-import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.eclipse.microprofile.metrics.MetricUnits;
 import org.eclipse.microprofile.metrics.Sampling;
 import org.eclipse.microprofile.metrics.Snapshot;
@@ -83,7 +82,7 @@ public class OpenMetricsExporter implements MetricExporter {
         counter, gauge, summary
     }
 
-    protected final MetricRegistry.Type scope;
+    protected final String scope;
 
     protected final PrintWriter out;
     protected final Set<String> typeWrittenByGlobalName;
@@ -93,7 +92,7 @@ public class OpenMetricsExporter implements MetricExporter {
         this(null, out instanceof PrintWriter ? (PrintWriter) out : new PrintWriter(out), new HashSet<>(), new HashSet<>());
     }
 
-    protected OpenMetricsExporter(MetricRegistry.Type scope, PrintWriter out, Set<String> typeWrittenByGlobalName,
+    protected OpenMetricsExporter(String scope, PrintWriter out, Set<String> typeWrittenByGlobalName,
                                   Set<String> helpWrittenByGlobalName) {
         this.scope = scope;
         this.out = out;
@@ -102,7 +101,7 @@ public class OpenMetricsExporter implements MetricExporter {
     }
 
     @Override
-    public MetricExporter in(MetricRegistry.Type scope, boolean asNode) {
+    public MetricExporter in(String scope, boolean asNode) {
         return new OpenMetricsExporter(scope, out, typeWrittenByGlobalName, helpWrittenByGlobalName);
     }
 

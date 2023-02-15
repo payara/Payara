@@ -95,7 +95,7 @@ public class MetricRegistryImplTest {
         return Metadata.builder(FILLED).withName(name);
     }
 
-    private final MetricRegistry registry = new MetricRegistryImpl(MetricRegistry.Type.APPLICATION);
+    private final MetricRegistry registry = new MetricRegistryImpl(MetricRegistry.APPLICATION_SCOPE);
 
     @Before
     public void setUp() {

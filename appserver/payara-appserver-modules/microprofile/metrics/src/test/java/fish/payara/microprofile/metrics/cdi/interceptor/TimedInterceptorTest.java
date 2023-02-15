@@ -73,7 +73,7 @@ import fish.payara.microprofile.metrics.test.TestUtils;
 public class TimedInterceptorTest {
 
     private final InvocationContext context = mock(InvocationContext.class);
-    private final MetricRegistry registry = new MetricRegistryImpl(MetricRegistry.Type.APPLICATION);
+    private final MetricRegistry registry = new MetricRegistryImpl(MetricRegistry.APPLICATION_SCOPE);
 
     @Test
     @Timed

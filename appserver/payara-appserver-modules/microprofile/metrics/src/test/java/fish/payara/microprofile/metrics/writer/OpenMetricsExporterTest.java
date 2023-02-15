@@ -78,7 +78,7 @@ public class OpenMetricsExporterTest {
      * The actual output as written by the {@link OpenMetricsExporter}
      */
     private final StringWriter actual = new StringWriter();
-    private final MetricExporter exporter = new OpenMetricsExporter(actual).in(MetricRegistry.Type.APPLICATION);
+    private final MetricExporter exporter = new OpenMetricsExporter(actual).in(MetricRegistry.APPLICATION_SCOPE);
 
     @Test
     public void exportCounter() {
@@ -159,7 +159,7 @@ public class OpenMetricsExporterTest {
                 .withDescription("The average duration of foo requests during last 5 minutes")
                 .withUnit(MetricUnits.MILLISECONDS)
                 .build();
-        MetricExporter base = exporter.in(MetricRegistry.Type.BASE);
+        MetricExporter base = exporter.in(MetricRegistry.BASE_SCOPE);
         base.export(fooValID, fooVal, fooValMetadata);
         Gauge<Long> barVal = mock(Gauge.class);
         when(barVal.getValue()).thenReturn(42L);

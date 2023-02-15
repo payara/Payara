@@ -118,14 +118,14 @@ public class MetricsResource extends HttpServlet {
                 MetricsWriter outputWriter = getOutputWriter(request, response, metricsService, contentType);
                 if (outputWriter != null) {
                     if (scopeParameter != null && !scopeParameter.isEmpty()) {
-                        Type scope;
+                        String scope;
                         try {
                             if(scopeParameter.equals(MetricRegistry.BASE_SCOPE)) {
-                                scope = Type.BASE;
+                                scope = MetricRegistry.BASE_SCOPE;
                             } else if(scopeParameter.equals(MetricRegistry.VENDOR_SCOPE)) {
-                                scope = Type.VENDOR;
+                                scope = MetricRegistry.VENDOR_SCOPE;
                             } else if(scopeParameter.equals(MetricRegistry.APPLICATION_SCOPE)) {
-                                scope = Type.APPLICATION;
+                                scope = MetricRegistry.APPLICATION_SCOPE;
                             } else {
                                 scope = null;
                             }

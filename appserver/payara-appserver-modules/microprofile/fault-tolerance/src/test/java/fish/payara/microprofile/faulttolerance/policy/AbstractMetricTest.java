@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2023 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,12 +39,10 @@
  */
 package fish.payara.microprofile.faulttolerance.policy;
 
-import java.lang.annotation.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
 import org.eclipse.microprofile.metrics.MetricRegistry;
-import org.eclipse.microprofile.metrics.MetricRegistry.Type;
 
 import fish.payara.microprofile.faulttolerance.FaultToleranceMethodContext;
 import fish.payara.microprofile.faulttolerance.FaultToleranceMetrics;
@@ -53,7 +51,6 @@ import fish.payara.microprofile.faulttolerance.service.FaultToleranceServiceStub
 import fish.payara.microprofile.faulttolerance.service.FaultToleranceUtils;
 import fish.payara.microprofile.faulttolerance.service.MethodFaultToleranceMetrics;
 import fish.payara.microprofile.metrics.impl.MetricRegistryImpl;
-import org.eclipse.microprofile.metrics.annotation.*;
 
 /**
  * Base class for FT tests with {@link FaultToleranceMetrics} "enabled" using the actual implementation classes.
@@ -66,7 +63,7 @@ abstract class AbstractMetricTest extends AbstractRecordingTest {
 
     @Override
     protected FaultToleranceServiceStub createService() {
-        registry = new MetricRegistryImpl(Type.BASE);
+        registry = new MetricRegistryImpl(MetricRegistry.BASE_SCOPE);
         return new FaultToleranceServiceStub() {
             @Override
             protected FaultToleranceMethodContext stubMethodContext(StubContext ctx) {

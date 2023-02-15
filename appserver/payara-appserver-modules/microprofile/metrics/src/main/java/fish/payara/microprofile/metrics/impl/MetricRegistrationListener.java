@@ -41,7 +41,6 @@ package fish.payara.microprofile.metrics.impl;
 
 import org.eclipse.microprofile.metrics.Metric;
 import org.eclipse.microprofile.metrics.MetricID;
-import org.eclipse.microprofile.metrics.MetricRegistry;
 
 /**
  * Allows to be notified when a new {@link Metric} is registered with a particular {@link MetricRegistryImpl}.
@@ -57,5 +56,5 @@ public interface MetricRegistrationListener {
      * @param registered ID of the newly registered {@link Metric}
      * @param registry The registry the new {@link Metric} was registered with
      */
-    void onRegistration(MetricID registered, MetricRegistry registry);
+    void onRegistration(MetricID registered, String scope);
 }

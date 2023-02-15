@@ -80,7 +80,7 @@ public class MetricsWriterImpl implements MetricsWriter {
     }
 
     @Override
-    public void write(Type scope, String metricName)
+    public void write(String scope, String metricName)
             throws NoSuchRegistryException, NoSuchMetricException {
         MetricExporter exporter = this.exporter.in(scope, false);
         writeMetricFamily(exporter, scope, metricName);
@@ -88,7 +88,7 @@ public class MetricsWriterImpl implements MetricsWriter {
     }
 
     @Override
-    public void write(Type scope) throws NoSuchRegistryException {
+    public void write(String scope) throws NoSuchRegistryException {
         MetricExporter exporter = this.exporter.in(scope, false);
         writeRegistries(exporter, scope);
         exporter.exportComplete();
@@ -97,22 +97,22 @@ public class MetricsWriterImpl implements MetricsWriter {
     @Override
     public void write() throws IOException {
         MetricExporter exporter = this.exporter;
-        exporter = exporter.in(Type.BASE);
-        writeRegistries(exporter, Type.BASE);
-        exporter = exporter.in(Type.VENDOR);
-        writeRegistries(exporter, Type.VENDOR);
-        exporter = exporter.in(Type.APPLICATION);
-        writeRegistries(exporter, Type.APPLICATION);
+        exporter = exporter.in(MetricRegistry.BASE_SCOPE);
+        writeRegistries(exporter, MetricRegistry.BASE_SCOPE);
+        exporter = exporter.in(MetricRegistry.VENDOR_SCOPE);
+        writeRegistries(exporter, MetricRegistry.VENDOR_SCOPE);
+        exporter = exporter.in(MetricRegistry.APPLICATION_SCOPE);
+        writeRegistries(exporter, MetricRegistry.APPLICATION_SCOPE);
         exporter.exportComplete();
     }
 
-    private void writeRegistries(MetricExporter exporter, Type scope) {
+    private void writeRegistries(MetricExporter exporter, String scope) {
         for (String metricName : allMetricNames(scope)) {
             writeMetricFamily(exporter, scope, metricName);
         }
     }
 
-    private void writeMetricFamily(MetricExporter exporter, Type scope, String metricName) {
+    private void writeMetricFamily(MetricExporter exporter, String scope, String metricName) {
         for (String contextName : contextNames) {
             MetricRegistryImpl registry = getMetricsRegistry(contextName, scope);
             if (registry != null && registry.getMetadata(metricName) != null) { // it has metrics with that name
@@ -152,12 +152,13 @@ public class MetricsWriterImpl implements MetricsWriter {
      * https://github.com/eclipse/microprofile-metrics/pull/548 adds needed methods to the API so they will be available
      * in the {@link MetricRegistry} interface in 3.0 and this cast can be removed.
      */
-    private MetricRegistryImpl getMetricsRegistry(String contextName, Type scope) {
+    private MetricRegistryImpl getMetricsRegistry(String contextName, String scope) {
         MetricsContext context = getContextByName.apply(contextName);
-        return scope == Type.APPLICATION && context.isServerContext() ? null : (MetricRegistryImpl) context.getRegistry(scope);
+        return scope.equals(MetricRegistry.APPLICATION_SCOPE) && context.isServerContext() ? null :
+                (MetricRegistryImpl) context.getOrCreateRegistry(scope);
     }
 
-    private Set<String> allMetricNames(Type scope) {
+    private Set<String> allMetricNames(String scope) {
         Set<String> allNames = new TreeSet<>();
         for (String contextName : contextNames) {
             MetricRegistry registry = getMetricsRegistry(contextName, scope);

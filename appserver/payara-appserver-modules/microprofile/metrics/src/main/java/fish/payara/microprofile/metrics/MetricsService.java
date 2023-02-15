@@ -42,7 +42,6 @@ package fish.payara.microprofile.metrics;
 import java.util.Set;
 
 import org.eclipse.microprofile.metrics.MetricRegistry;
-import org.eclipse.microprofile.metrics.MetricRegistry.Type;
 import org.jvnet.hk2.annotations.Contract;
 
 import fish.payara.microprofile.metrics.exception.NoSuchRegistryException;
@@ -127,34 +126,20 @@ public interface MetricsService {
             return SERVER_CONTEXT_NAME.equals(getName());
         }
 
-        /**
-         * Access a {@link MetricRegistry} of this context. Each context has one instance of each type except the server
-         * context does not have an application type registry.
-         *
-         * @param type the type of {@link MetricRegistry} to access
-         * @return the {@link MetricRegistry} instance for the type in this context
-         * @throws NoSuchRegistryException In case asking for a {@link MetricRegistry.Type#APPLICATION} registry in the
-         *                                 server (global) context.
-         */
-        MetricRegistry getRegistry(MetricRegistry.Type type) throws NoSuchRegistryException;
-
-        MetricRegistry getRegistry(String registryName) throws NoSuchRegistryException;
+        MetricRegistry getOrCreateRegistry(String registryName) throws NoSuchRegistryException;
 
         default MetricRegistry getBaseRegistry() {
-            return getRegistry(Type.BASE);
+            return getOrCreateRegistry(MetricRegistry.BASE_SCOPE);
         }
 
         default MetricRegistry getVendorRegistry() {
-            return getRegistry(Type.VENDOR);
+            return getOrCreateRegistry(MetricRegistry.VENDOR_SCOPE);
         }
 
         default MetricRegistry getApplicationRegistry() throws NoSuchRegistryException {
-            return getRegistry(Type.APPLICATION);
+            return getOrCreateRegistry(MetricRegistry.APPLICATION_SCOPE);
         }
 
-        default MetricRegistry getCustomRegistry(String registryName) throws NoSuchRegistryException {
-            return getRegistry(registryName);
-        }
     }
 
 }

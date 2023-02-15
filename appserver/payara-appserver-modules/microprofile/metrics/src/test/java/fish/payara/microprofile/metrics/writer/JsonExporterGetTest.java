@@ -166,11 +166,11 @@ public class JsonExporterGetTest {
 
     @Test
     public void multipeRepositoriesAreGroupedByNameMetricOption() {
-        exporter = exporter.in(MetricRegistry.Type.BASE);
+        exporter = exporter.in(MetricRegistry.BASE_SCOPE);
         Gauge<Long> fooVal = () -> 1L;
         MetricID fooValID = new MetricID("fooVal", new Tag("store", "webshop"));
         export(fooValID, fooVal);
-        exporter = exporter.in(MetricRegistry.Type.APPLICATION);
+        exporter = exporter.in(MetricRegistry.APPLICATION_SCOPE);
         export(fooValID, fooVal);
         assertOutputEquals("{\n" +
                 "    \"base\": {\n" +

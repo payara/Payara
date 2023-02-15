@@ -57,7 +57,7 @@ public interface MetricsWriter {
      * @throws NoSuchMetricException
      * @throws IOException
      */
-    public void write(MetricRegistry.Type scope, String metricName) throws NoSuchRegistryException, NoSuchMetricException, IOException;
+    public void write(String scope, String metricName) throws NoSuchRegistryException, NoSuchMetricException, IOException;
 
     /**
      * Write the metrics that registered for the respective scope.
@@ -66,7 +66,7 @@ public interface MetricsWriter {
      * @throws NoSuchRegistryException
      * @throws IOException
      */
-    public void write(MetricRegistry.Type scope) throws NoSuchRegistryException, IOException;
+    public void write(String scope) throws NoSuchRegistryException, IOException;
 
     /**
      * Write all the registered metrics

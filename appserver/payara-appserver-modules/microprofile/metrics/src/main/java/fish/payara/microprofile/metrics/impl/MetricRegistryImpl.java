@@ -104,21 +104,23 @@ public class MetricRegistryImpl implements MetricRegistry {
         }
     }
 
-    private final Type type;
+    private final String scope;
     private final ConcurrentMap<String, MetricFamily<?>> metricsFamiliesByName = new ConcurrentHashMap<>();
     private final Clock clock;
     private final List<MetricRegistrationListener> listeners = new ArrayList<>();
 
     public MetricRegistryImpl() {
-        type =  null;
-        clock = null;
-    }
-    public MetricRegistryImpl(Type type) {
-        this(type, Clock.defaultClock());
+        this.scope = null;
+        this.clock = null;
     }
 
-    public MetricRegistryImpl(Type type, Clock clock) {
-        this.type = type;
+    public MetricRegistryImpl(String registryScope) {
+        scope =  registryScope;
+        clock = null;
+    }
+
+    public MetricRegistryImpl(String type, Clock clock) {
+        this.scope = type;
         this.clock = clock;
     }
 
@@ -336,7 +338,7 @@ public class MetricRegistryImpl implements MetricRegistry {
 
     @Override
     public String getScope() {
-        return type.name();
+        return scope;
     }
 
     @Override
@@ -482,7 +484,7 @@ public class MetricRegistryImpl implements MetricRegistry {
     private void notifyRegistrationListeners(MetricID metricID) {
         for (MetricRegistrationListener l : listeners) {
             try {
-                l.onRegistration(metricID, this);
+                l.onRegistration(metricID, scope);
             } catch (RuntimeException ex) {
                 LOGGER.log(Level.WARNING, "Registration listener threw exception:", ex);
             }

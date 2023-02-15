@@ -112,7 +112,7 @@ public class JsonExporterOptionsTest {
 
     @Test
     public void multipeRepositoriesAreGroupedByNameMetricOption() {
-        exporter = exporter.in(MetricRegistry.Type.BASE);
+        exporter = exporter.in(MetricRegistry.BASE_SCOPE);
         Gauge<Long> fooVal = () -> 1L;
         MetricID fooValID = new MetricID("fooVal", new Tag("store", "webshop"));
         Metadata fooValMeta = Metadata.builder()
@@ -121,7 +121,7 @@ public class JsonExporterOptionsTest {
                 .withUnit(MetricUnits.MILLISECONDS)
                 .build();
         export(fooValID, fooVal, fooValMeta);
-        exporter = exporter.in(MetricRegistry.Type.APPLICATION);
+        exporter = exporter.in(MetricRegistry.APPLICATION_SCOPE);
         export(fooValID, fooVal, fooValMeta);
         assertOutputEqualsFile("Options3.json");
     }

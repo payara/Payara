@@ -45,6 +45,7 @@ import fish.payara.microprofile.metrics.MetricsService.MetricsContext;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
+import jakarta.enterprise.inject.spi.InjectionPoint;
 import org.eclipse.microprofile.metrics.MetricRegistry;
 import static org.eclipse.microprofile.metrics.MetricRegistry.Type.APPLICATION;
 import static org.eclipse.microprofile.metrics.MetricRegistry.Type.BASE;
@@ -64,28 +65,36 @@ public class MetricRegistryProducer {
         metricsService = Globals.getDefaultBaseServiceLocator().getService(MetricsService.class);
     }
 
+    //@Produces
+    //public MetricRegistry getDefaultRegistry() {
+      //  return getApplicationRegistry();
+    //}
+
     @Produces
-    public MetricRegistry getDefaultRegistry() {
-        return getApplicationRegistry();
+    public MetricRegistry getMetricRegistry(InjectionPoint injectionPoint) {
+        RegistryScope registryScope = injectionPoint.getAnnotated().getAnnotation(RegistryScope.class);
+        if(registryScope == null) {
+            return getApplicationRegistry();
+        } else {
+            String customScope = registryScope.scope();
+            return getContext().getOrCreateRegistry(customScope);
+        }
     }
 
     @Produces
     @RegistryType(type = BASE)
-    @RegistryScope(scope = MetricRegistry.BASE_SCOPE)
     public MetricRegistry getBaseRegistry() {
         return getContext().getBaseRegistry();
     }
 
     @Produces
     @RegistryType(type = APPLICATION)
-    @RegistryScope(scope = MetricRegistry.APPLICATION_SCOPE)
     public MetricRegistry getApplicationRegistry() {
         return getContext().getApplicationRegistry();
     }
 
     @Produces
     @RegistryType(type = VENDOR)
-    @RegistryScope(scope = MetricRegistry.VENDOR_SCOPE)
     public MetricRegistry getVendorRegistry() {
         return getContext().getVendorRegistry();
     }

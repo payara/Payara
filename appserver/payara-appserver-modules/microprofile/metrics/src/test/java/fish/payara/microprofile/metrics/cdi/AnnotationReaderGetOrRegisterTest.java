@@ -65,7 +65,6 @@ import org.eclipse.microprofile.metrics.Tag;
 import org.eclipse.microprofile.metrics.Timer;
 import org.eclipse.microprofile.metrics.annotation.Counted;
 import org.eclipse.microprofile.metrics.annotation.Gauge;
-import org.eclipse.microprofile.metrics.annotation.RegistryScope;
 import org.eclipse.microprofile.metrics.annotation.Timed;
 import org.junit.Test;
 
@@ -84,7 +83,7 @@ import fish.payara.microprofile.metrics.test.TestUtils;
 public class AnnotationReaderGetOrRegisterTest {
 
     private final MetricRegistry registry = new MetricRegistryImpl(
-            MetricRegistry.Type.APPLICATION, this::tick);
+            MetricRegistry.APPLICATION_SCOPE, this::tick);
     private long clockTime;
 
     /**

@@ -75,7 +75,7 @@ public class MetricRegistryTest {
     private static final Supplier<Long> GAUGE_SUPPLIER = () -> 42L;
     private static final Function<MetricRegistryTest, Long> GAUGE_FUNCTION = test -> 42L;
 
-    private final MetricRegistry registry = new MetricRegistryImpl(MetricRegistry.Type.APPLICATION);
+    private final MetricRegistry registry = new MetricRegistryImpl(MetricRegistry.APPLICATION_SCOPE);
 
     private static final MetricID COUNTER_ID = new MetricID("counter");
     private static final MetricID GAUGE_ID = new MetricID("gauge");

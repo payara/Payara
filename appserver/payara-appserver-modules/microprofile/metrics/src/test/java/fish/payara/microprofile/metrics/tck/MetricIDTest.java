@@ -1,6 +1,6 @@
 /*
  **********************************************************************
- * Copyright (c) 2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2019-2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICES file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -28,13 +28,10 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
-import java.lang.annotation.*;
 import org.eclipse.microprofile.metrics.Counter;
 import org.eclipse.microprofile.metrics.MetricID;
 import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.eclipse.microprofile.metrics.Tag;
-import org.eclipse.microprofile.metrics.MetricRegistry.Type;
-import org.eclipse.microprofile.metrics.annotation.*;
 import org.junit.Test;
 
 import fish.payara.microprofile.metrics.impl.MetricRegistryImpl;
@@ -46,7 +43,7 @@ import fish.payara.microprofile.metrics.impl.MetricRegistryImpl;
  */
 public class MetricIDTest {
 
-    private MetricRegistry registry = new MetricRegistryImpl(Type.APPLICATION);
+    private MetricRegistry registry = new MetricRegistryImpl(MetricRegistry.APPLICATION_SCOPE);
 
     @SuppressWarnings({ "deprecation", "unused" })
     @Test
