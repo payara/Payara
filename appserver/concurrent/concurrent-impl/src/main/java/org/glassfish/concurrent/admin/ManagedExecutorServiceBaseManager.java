@@ -139,7 +139,6 @@ public abstract class ManagedExecutorServiceBaseManager implements ResourceManag
     protected ResourceStatus isValid(Resources resources, boolean validateResourceRef, String target) {
         ResourceStatus status;
 
-
         if (jndiName == null) {
             String msg = localStrings.getLocalString("managed.executor.service.noJndiName", "No JNDI name defined for managed executor service.");
             if (getResourceType().equals(ServerTags.MANAGED_SCHEDULED_EXECUTOR_SERVICE)) {
@@ -153,7 +152,13 @@ public abstract class ManagedExecutorServiceBaseManager implements ResourceManag
             clazz = ManagedScheduledExecutorService.class;
         }
         status = resourcesHelper.validateBindableResourceForDuplicates(resources, jndiName, validateResourceRef, target, clazz);
-        
+
+        try {
+            Integer.parseInt(corePoolSize);
+        } catch (NumberFormatException nfe) {
+            return new ResourceStatus(ResourceStatus.FAILURE, localStrings.getLocalString("coresize.must.be.number", "Option corepoolsize must be a number."));
+        }
+
         return status;
     }
 

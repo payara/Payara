@@ -40,15 +40,17 @@
     holder.
 
 -->
-<!--"Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates]" -->
+<!--"Portions Copyright [2017-2022] [Payara Foundation and/or its affiliates]" -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>fish.payara.server.internal.core</groupId>
         <artifactId>nucleus-core</artifactId>
-        <version>6.2022.2-SNAPSHOT</version>
+        <version>6.2023.3-SNAPSHOT</version>
     </parent>
+    
+    <groupId>fish.payara.server.core.nucleus</groupId>
     <artifactId>api-exporter</artifactId>
     <packaging>glassfish-jar</packaging>
     <name>GlassFish API Exporter Module</name>

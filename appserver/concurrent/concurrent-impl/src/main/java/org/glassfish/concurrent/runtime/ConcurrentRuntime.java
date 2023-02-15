@@ -238,7 +238,7 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
                 config.getMaximumPoolSize(),
                 config.getKeepAliveSeconds(), TimeUnit.SECONDS,
                 config.getThreadLifeTimeSeconds(),
-                config.getTaskQueueCapacity(), 
+                config.getTaskQueueCapacity(),
                 contextService,
                 AbstractManagedExecutorService.RejectPolicy.ABORT);
 
@@ -283,7 +283,7 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
     }
 
     public ManagedScheduledExecutorServiceImpl createManagedScheduledExecutorService(ResourceInfo resource,
-            ManagedScheduledExecutorServiceConfig config, ContextServiceImpl contextService) {
+                                                                                     ManagedScheduledExecutorServiceConfig config, ContextServiceImpl contextService) {
         ManagedThreadFactoryImpl managedThreadFactory = new ThreadFactoryWrapper(
                 config.getJndiName() + "-managedThreadFactory",
                 null,
@@ -370,25 +370,25 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
     private ContextServiceImpl createContextServiceImpl(String jndiName, boolean isContextInfoEnabled, Set<String> propagated, Set<String> cleared, Set<String> unchanged) {
         ContextSetupProviderImpl contextSetupProvider
                 = new ContextSetupProviderImpl(
-                        invocationManager,
-                        deployment,
-                        compEnvMgr,
-                        applicationRegistry,
-                        applications,
-                        transactionManager,
-                        propagated,
-                        cleared,
-                        unchanged
-                );
+                invocationManager,
+                deployment,
+                compEnvMgr,
+                applicationRegistry,
+                applications,
+                transactionManager,
+                propagated,
+                cleared,
+                unchanged
+        );
 
         ContextServiceImpl contextService
                 = new ContextServiceImpl(
-                        jndiName,
-                        contextSetupProvider,
-                        new TransactionSetupProviderImpl(transactionManager,
-                                unchanged.contains(ContextSetupProviderImpl.CONTEXT_TYPE_WORKAREA),
-                                cleared.contains(ContextSetupProviderImpl.CONTEXT_TYPE_WORKAREA))
-                );
+                jndiName,
+                contextSetupProvider,
+                new TransactionSetupProviderImpl(transactionManager,
+                        unchanged.contains(ContextSetupProviderImpl.CONTEXT_TYPE_WORKAREA),
+                        cleared.contains(ContextSetupProviderImpl.CONTEXT_TYPE_WORKAREA))
+        );
         return contextService;
     }
 
@@ -421,7 +421,7 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
      * @return JNDI name for the context service to be stored in the JNDI tree.
      */
     public static String createContextServiceName(String configuredContextJndiName, String parentObjectJndiName) {
-        String contextServiceJndiName = configuredContextJndiName; 
+        String contextServiceJndiName = configuredContextJndiName;
         if (contextServiceJndiName == null) {
             contextServiceJndiName = parentObjectJndiName + "-contextservice";
         }
@@ -503,10 +503,10 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
             if (hungThreads != null) {
                 for (AbstractManagedThread hungThread: hungThreads) {
                     Object[] params = {hungThread.getTaskIdentityName(),
-                                       hungThread.getName(),
-                                       hungThread.getTaskRunTime(System.currentTimeMillis()) / 1000,
-                                       mtf.getHungTaskThreshold() / 1000,
-                                       mesName};
+                            hungThread.getName(),
+                            hungThread.getTaskRunTime(System.currentTimeMillis()) / 1000,
+                            mtf.getHungTaskThreshold() / 1000,
+                            mesName};
                     logger.log(Level.WARNING, LogFacade.UNRESPONSIVE_TASK, params);
                 }
             }

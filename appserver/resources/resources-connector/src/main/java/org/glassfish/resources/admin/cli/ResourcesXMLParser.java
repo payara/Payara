@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2022] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.resources.admin.cli;
 
@@ -45,19 +45,45 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.i18n.StringManager;
 import org.glassfish.api.I18n;
 import org.glassfish.resources.api.Resource;
-import org.w3c.dom.*;
-import org.xml.sax.*;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 import org.xml.sax.ext.LexicalHandler;
 
-import javax.xml.parsers.*;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -120,6 +146,7 @@ public class ResourcesXMLParser implements EntityResolver
     private static final String publicID_ges31 = "GlassFish.org//DTD GlassFish Application Server 3.1 Resource Definitions";
     private static final String publicId_py4 = "Payara.fish//DTD Payara Server 4 Resource Definitions";
 
+    private static final String DTD_1_7 = "payara-resources_1_7.dtd";
     private static final String DTD_1_6 = "payara-resources_1_6.dtd";
     private static final String DTD_1_5 = "glassfish-resources_1_5.dtd";
     private static final String DTD_1_4 = "sun-resources_1_4.dtd";
@@ -130,6 +157,7 @@ public class ResourcesXMLParser implements EntityResolver
 
     private static final List<String> systemIDs = Collections.unmodifiableList(
             Arrays.asList(
+                    DTD_1_7,
                     DTD_1_6,
                     DTD_1_5,
                     DTD_1_4,
@@ -367,6 +395,12 @@ public class ResourcesXMLParser implements EntityResolver
                 else if (nodeName.equalsIgnoreCase(org.glassfish.resources.api.Resource.CONNECTOR_WORK_SECURITY_MAP))
                 {
                     generateWorkSecurityMap(nextKid, scope);
+                } else if (nodeName.equalsIgnoreCase(org.glassfish.resources.api.Resource.MANAGED_EXECUTOR_SERVICE)) {
+                    generateManagedExecutorService(nextKid, scope);
+                } else if (nodeName.equalsIgnoreCase(org.glassfish.resources.api.Resource.MANAGED_SCHEDULED_EXECUTOR_SERVICE)) {
+                    generateManagedScheduledExecutorService(nextKid, scope);
+                } else if (nodeName.equalsIgnoreCase(org.glassfish.resources.api.Resource.MANAGED_THREAD_FACTORY)) {
+                    generateManagedThreadFactory(nextKid, scope);
                 }
             }
         }
@@ -697,6 +731,236 @@ public class ResourcesXMLParser implements EntityResolver
 
         //debug strings
         printResourceElements(jdbcResource);
+    }
+
+    /**
+     * Generate the ManagedExecutorService resource
+     */
+    private void generateManagedExecutorService(Node nextKid, String scope) throws Exception {
+        NamedNodeMap attributes = nextKid.getAttributes();
+        if (attributes == null) {
+            return;
+        }
+
+        Resource managedExecutorServiceResource = new org.glassfish.resources.api.Resource(org.glassfish.resources.api.Resource.MANAGED_EXECUTOR_SERVICE);
+
+        Node jndiNameNode = attributes.getNamedItem(JNDI_NAME);
+        String jndiName = getScopedName(jndiNameNode.getNodeValue(), scope);
+        managedExecutorServiceResource.setAttribute(JNDI_NAME, jndiName);
+        Node corePoolSizeNode = attributes.getNamedItem(CORE_POOL_SIZE);
+        if (corePoolSizeNode != null) {
+            String corePoolSizeValue = corePoolSizeNode.getNodeValue();
+            managedExecutorServiceResource.setAttribute(CORE_POOL_SIZE, corePoolSizeValue);
+        }
+        Node maxPoolSizeNode = attributes.getNamedItem(MAXIMUM_POOL_SIZE);
+        if (maxPoolSizeNode != null) {
+            String maxPoolSizeValue = maxPoolSizeNode.getNodeValue();
+            managedExecutorServiceResource.setAttribute(MAXIMUM_POOL_SIZE, maxPoolSizeValue);
+        }
+        Node contextInfoNode = attributes.getNamedItem(CONTEXT_INFO);
+        if (contextInfoNode != null) {
+            String contextInfoValue = contextInfoNode.getNodeValue();
+            managedExecutorServiceResource.setAttribute(CONTEXT_INFO, contextInfoValue);
+        }
+        Node contextInfoEnabledNode = attributes.getNamedItem(CONTEXT_INFO_ENABLED);
+        if (contextInfoEnabledNode != null) {
+            String contextInfoEnabledValue = contextInfoEnabledNode.getNodeValue();
+            managedExecutorServiceResource.setAttribute(CONTEXT_INFO_ENABLED, contextInfoEnabledValue);
+        }
+        Node enabledNode = attributes.getNamedItem(ENABLED);
+        if (enabledNode != null) {
+            String enabledValue = enabledNode.getNodeValue();
+            managedExecutorServiceResource.setAttribute(ENABLED, enabledValue);
+        }
+        Node threadpriorityNode = attributes.getNamedItem(THREAD_PRIORITY);
+        if (threadpriorityNode != null) {
+            String threadpriorityValue = threadpriorityNode.getNodeValue();
+            managedExecutorServiceResource.setAttribute(THREAD_PRIORITY, threadpriorityValue);
+        }
+        Node longrunningstasksNode = attributes.getNamedItem(LONG_RUNNING_TASKS);
+        if (longrunningstasksNode != null) {
+            String longrunningstasksValue = longrunningstasksNode.getNodeValue();
+            managedExecutorServiceResource.setAttribute(LONG_RUNNING_TASKS, longrunningstasksValue);
+        }
+        Node hungaftersecondsNode = attributes.getNamedItem(HUNG_AFTER_SECONDS);
+        if (hungaftersecondsNode != null) {
+            String hungaftersecondsValue = hungaftersecondsNode.getNodeValue();
+            managedExecutorServiceResource.setAttribute(HUNG_AFTER_SECONDS, hungaftersecondsValue);
+        }
+        Node keepalivesecondsNode = attributes.getNamedItem(KEEP_ALIVE_SECONDS);
+        if (keepalivesecondsNode != null) {
+            String keepalivesecondsValue = keepalivesecondsNode.getNodeValue();
+            managedExecutorServiceResource.setAttribute(KEEP_ALIVE_SECONDS, keepalivesecondsValue);
+        }
+        Node threadlifetimesecondsNode = attributes.getNamedItem(THREAD_LIFETIME_SECONDS);
+        if (threadlifetimesecondsNode != null) {
+            String threadlifetimesecondsValue = threadlifetimesecondsNode.getNodeValue();
+            managedExecutorServiceResource.setAttribute(THREAD_LIFETIME_SECONDS, threadlifetimesecondsValue);
+        }
+        Node taskqueuecapacityNode = attributes.getNamedItem(TASK_QUEUE_CAPACITY);
+        if (taskqueuecapacityNode != null) {
+            String taskqueuecapacityValue = taskqueuecapacityNode.getNodeValue();
+            managedExecutorServiceResource.setAttribute(TASK_QUEUE_CAPACITY, taskqueuecapacityValue);
+        }
+
+        NodeList children = nextKid.getChildNodes();
+        //get description
+        if (children != null) {
+            for (int ii = 0; ii < children.getLength(); ii++) {
+                if (children.item(ii).getNodeName().equals("description")) {
+                    if (children.item(ii).getFirstChild() != null) {
+                        managedExecutorServiceResource.setDescription(
+                                children.item(ii).getFirstChild().getNodeValue());
+                    }
+                }
+            }
+        }
+
+        vResources.add(managedExecutorServiceResource);
+        resourceMap.put(managedExecutorServiceResource, nextKid);
+
+        //debug strings
+        printResourceElements(managedExecutorServiceResource);
+    }
+
+    /**
+     * Generate the ManagedScheduledExecutorService resource
+     */
+    private void generateManagedScheduledExecutorService(Node nextKid, String scope) throws Exception {
+        NamedNodeMap attributes = nextKid.getAttributes();
+        if (attributes == null) {
+            return;
+        }
+
+        Resource managedScheduledExecutorServiceResource = new org.glassfish.resources.api.Resource(org.glassfish.resources.api.Resource.MANAGED_SCHEDULED_EXECUTOR_SERVICE);
+
+        Node jndiNameNode = attributes.getNamedItem(JNDI_NAME);
+        String jndiName = getScopedName(jndiNameNode.getNodeValue(), scope);
+        managedScheduledExecutorServiceResource.setAttribute(JNDI_NAME, jndiName);
+        Node corePoolSizeNode = attributes.getNamedItem(CORE_POOL_SIZE);
+        if (corePoolSizeNode != null) {
+            String corePoolSizeValue = corePoolSizeNode.getNodeValue();
+            managedScheduledExecutorServiceResource.setAttribute(CORE_POOL_SIZE, corePoolSizeValue);
+        }
+        Node contextInfoNode = attributes.getNamedItem(CONTEXT_INFO);
+        if (contextInfoNode != null) {
+            String contextInfoValue = contextInfoNode.getNodeValue();
+            managedScheduledExecutorServiceResource.setAttribute(CONTEXT_INFO, contextInfoValue);
+        }
+        Node contextInfoEnabledNode = attributes.getNamedItem(CONTEXT_INFO_ENABLED);
+        if (contextInfoEnabledNode != null) {
+            String contextInfoEnabledValue = contextInfoEnabledNode.getNodeValue();
+            managedScheduledExecutorServiceResource.setAttribute(CONTEXT_INFO_ENABLED, contextInfoEnabledValue);
+        }
+        Node enabledNode = attributes.getNamedItem(ENABLED);
+        if (enabledNode != null) {
+            String enabledValue = enabledNode.getNodeValue();
+            managedScheduledExecutorServiceResource.setAttribute(ENABLED, enabledValue);
+        }
+        Node threadpriorityNode = attributes.getNamedItem(THREAD_PRIORITY);
+        if (threadpriorityNode != null) {
+            String threadpriorityValue = threadpriorityNode.getNodeValue();
+            managedScheduledExecutorServiceResource.setAttribute(THREAD_PRIORITY, threadpriorityValue);
+        }
+        Node longrunningstasksNode = attributes.getNamedItem(LONG_RUNNING_TASKS);
+        if (longrunningstasksNode != null) {
+            String longrunningstasksValue = longrunningstasksNode.getNodeValue();
+            managedScheduledExecutorServiceResource.setAttribute(LONG_RUNNING_TASKS, longrunningstasksValue);
+        }
+        Node hungaftersecondsNode = attributes.getNamedItem(HUNG_AFTER_SECONDS);
+        if (hungaftersecondsNode != null) {
+            String hungaftersecondsValue = hungaftersecondsNode.getNodeValue();
+            managedScheduledExecutorServiceResource.setAttribute(HUNG_AFTER_SECONDS, hungaftersecondsValue);
+        }
+        Node keepalivesecondsNode = attributes.getNamedItem(KEEP_ALIVE_SECONDS);
+        if (keepalivesecondsNode != null) {
+            String keepalivesecondsValue = keepalivesecondsNode.getNodeValue();
+            managedScheduledExecutorServiceResource.setAttribute(KEEP_ALIVE_SECONDS, keepalivesecondsValue);
+        }
+        Node threadlifetimesecondsNode = attributes.getNamedItem(THREAD_LIFETIME_SECONDS);
+        if (threadlifetimesecondsNode != null) {
+            String threadlifetimesecondsValue = threadlifetimesecondsNode.getNodeValue();
+            managedScheduledExecutorServiceResource.setAttribute(THREAD_LIFETIME_SECONDS, threadlifetimesecondsValue);
+        }
+
+        NodeList children = nextKid.getChildNodes();
+        //get description
+        if (children != null) {
+            for (int ii = 0; ii < children.getLength(); ii++) {
+                if (children.item(ii).getNodeName().equals("description")) {
+                    if (children.item(ii).getFirstChild() != null) {
+                        managedScheduledExecutorServiceResource.setDescription(
+                                children.item(ii).getFirstChild().getNodeValue());
+                    }
+                }
+            }
+        }
+
+        vResources.add(managedScheduledExecutorServiceResource);
+        resourceMap.put(managedScheduledExecutorServiceResource, nextKid);
+
+        //debug strings
+        printResourceElements(managedScheduledExecutorServiceResource);
+    }
+
+    /**
+     * Generate the ManagedThreadFactory resource
+     */
+    private void generateManagedThreadFactory(Node nextKid, String scope) throws Exception {
+        NamedNodeMap attributes = nextKid.getAttributes();
+        if (attributes == null) {
+            return;
+        }
+
+        Resource managedThreadFactoryResource = new org.glassfish.resources.api.Resource(org.glassfish.resources.api.Resource.MANAGED_THREAD_FACTORY);
+
+        Node jndiNameNode = attributes.getNamedItem(JNDI_NAME);
+        String jndiName = getScopedName(jndiNameNode.getNodeValue(), scope);
+        managedThreadFactoryResource.setAttribute(JNDI_NAME, jndiName);
+        Node corePoolSizeNode = attributes.getNamedItem(CORE_POOL_SIZE);
+        if (corePoolSizeNode != null) {
+            String corePoolSizeValue = corePoolSizeNode.getNodeValue();
+            managedThreadFactoryResource.setAttribute(CORE_POOL_SIZE, corePoolSizeValue);
+        }
+        Node contextInfoNode = attributes.getNamedItem(CONTEXT_INFO);
+        if (contextInfoNode != null) {
+            String contextInfoValue = contextInfoNode.getNodeValue();
+            managedThreadFactoryResource.setAttribute(CONTEXT_INFO, contextInfoValue);
+        }
+        Node contextInfoEnabledNode = attributes.getNamedItem(CONTEXT_INFO_ENABLED);
+        if (contextInfoEnabledNode != null) {
+            String contextInfoEnabledValue = contextInfoEnabledNode.getNodeValue();
+            managedThreadFactoryResource.setAttribute(CONTEXT_INFO_ENABLED, contextInfoEnabledValue);
+        }
+        Node enabledNode = attributes.getNamedItem(ENABLED);
+        if (enabledNode != null) {
+            String enabledValue = enabledNode.getNodeValue();
+            managedThreadFactoryResource.setAttribute(ENABLED, enabledValue);
+        }
+        Node threadpriorityNode = attributes.getNamedItem(THREAD_PRIORITY);
+        if (threadpriorityNode != null) {
+            String threadpriorityValue = threadpriorityNode.getNodeValue();
+            managedThreadFactoryResource.setAttribute(THREAD_PRIORITY, threadpriorityValue);
+        }
+
+        NodeList children = nextKid.getChildNodes();
+        //get description
+        if (children != null) {
+            for (int ii = 0; ii < children.getLength(); ii++) {
+                if (children.item(ii).getNodeName().equals("description")) {
+                    if (children.item(ii).getFirstChild() != null) {
+                        managedThreadFactoryResource.setDescription(
+                                children.item(ii).getFirstChild().getNodeValue());
+                    }
+                }
+            }
+        }
+
+        vResources.add(managedThreadFactoryResource);
+        resourceMap.put(managedThreadFactoryResource, nextKid);
+
+        //debug strings
+        printResourceElements(managedThreadFactoryResource);
     }
 
     /**
@@ -1606,7 +1870,7 @@ public class ResourcesXMLParser implements EntityResolver
             }else if(publicId.contains(publicID_ges31)){
                 dtdFileName = DTD_1_5;
             } else if (publicId.contains(publicId_py4)) {
-                dtdFileName = DTD_1_6;
+                dtdFileName = DTD_1_7;
             }
         }
 

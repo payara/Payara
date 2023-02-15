@@ -2651,7 +2651,7 @@ public class WebappClassLoader
      * class loader or any class loader where this loader is a parent class
      * loader. Whilst {@link ResourceBundle#clearCache()} could be used there
      * are complications around the
-     * {@link org.glassfish.wasp.servlet.JasperLoader} that mean a reflection
+     * {@link org.glassfish.wasp.servlet.WaspLoader} that mean a reflection
      * based approach is more likely to be complete.
      *
      * The ResourceBundle is using WeakReferences so it shouldn't be pinning the

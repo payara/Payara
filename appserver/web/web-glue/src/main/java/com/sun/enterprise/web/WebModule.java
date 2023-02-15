@@ -37,88 +37,59 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.web;
 
-import static com.sun.enterprise.security.ee.SecurityUtil.getContextID;
-import static com.sun.enterprise.web.Constants.DEPLOYMENT_CONTEXT_ATTRIBUTE;
-import static com.sun.enterprise.web.Constants.ENABLE_HA_ATTRIBUTE;
-import static com.sun.enterprise.web.Constants.IS_DISTRIBUTABLE_ATTRIBUTE;
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.text.MessageFormat.format;
-import static java.util.logging.Level.WARNING;
-import static org.glassfish.web.LogFacade.UNABLE_TO_RESTORE_SESSIONS_DURING_REDEPLOY;
-import static org.glassfish.web.LogFacade.UNABLE_TO_SAVE_SESSIONS_DURING_REDEPLOY;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
-import java.lang.reflect.Method;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.EventListener;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.ResourceBundle;
-import java.util.Set;
-import java.util.Vector;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import jakarta.annotation.security.DeclareRoles;
-import jakarta.annotation.security.RunAs;
+import com.sun.enterprise.config.serverbeans.Application;
+import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
+import com.sun.enterprise.config.serverbeans.ServerTags;
+import com.sun.enterprise.container.common.spi.util.JavaEEIOUtils;
+import com.sun.enterprise.deployment.WebBundleDescriptor;
+import com.sun.enterprise.deployment.WebComponentDescriptor;
+import com.sun.enterprise.deployment.WebServiceEndpoint;
+import com.sun.enterprise.deployment.WebServicesDescriptor;
+import com.sun.enterprise.deployment.runtime.web.SunWebApp;
+import com.sun.enterprise.deployment.web.LoginConfiguration;
+import com.sun.enterprise.deployment.web.SecurityConstraint;
+import com.sun.enterprise.deployment.web.ServletFilterMapping;
+import com.sun.enterprise.deployment.web.UserDataConstraint;
+import com.sun.enterprise.deployment.web.WebResourceCollection;
+import com.sun.enterprise.security.integration.RealmInitializer;
+import com.sun.enterprise.web.deploy.LoginConfigDecorator;
+import com.sun.enterprise.web.pwc.PwcWebModule;
+import com.sun.enterprise.web.session.PersistenceType;
+import com.sun.enterprise.web.session.SessionCookieConfig;
+import com.sun.web.security.RealmAdapter;
+import fish.payara.jacc.JaccConfigurationFactory;
+import fish.payara.web.WebModuleInstanceManager;
+import fish.payara.web.WebModuleValve;
 import jakarta.security.jacc.PolicyConfigurationFactory;
 import jakarta.security.jacc.PolicyContextException;
 import jakarta.servlet.Filter;
+import jakarta.servlet.FilterRegistration;
 import jakarta.servlet.HttpMethodConstraintElement;
+import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.Servlet;
 import jakarta.servlet.ServletContainerInitializer;
 import jakarta.servlet.ServletContext;
-import jakarta.servlet.ServletContextListener;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRegistration;
 import jakarta.servlet.ServletSecurityElement;
-import jakarta.servlet.annotation.MultipartConfig;
-import jakarta.servlet.annotation.ServletSecurity;
-import jakarta.servlet.http.HttpSession;
-import jakarta.servlet.http.HttpUpgradeHandler;
-
+import jakarta.servlet.SessionTrackingMode;
+import jakarta.servlet.annotation.HandlesTypes;
 import org.apache.catalina.Container;
 import org.apache.catalina.ContainerListener;
-import org.apache.catalina.InstanceListener;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleListener;
-import org.apache.catalina.Loader;
-import org.apache.catalina.Pipeline;
 import org.apache.catalina.Realm;
 import org.apache.catalina.Valve;
-import org.apache.catalina.Wrapper;
-import org.apache.catalina.core.DynamicServletRegistrationImpl;
-import org.apache.catalina.core.ServletRegistrationImpl;
-import org.apache.catalina.core.StandardContext;
-import org.apache.catalina.core.StandardPipeline;
-import org.apache.catalina.core.StandardWrapper;
-import org.apache.catalina.deploy.FilterMaps;
-import org.apache.catalina.loader.WebappLoader;
+import org.apache.catalina.core.DefaultInstanceManager;
+import org.apache.catalina.deploy.NamingResourcesImpl;
 import org.apache.catalina.servlets.DefaultServlet;
-import org.apache.catalina.session.StandardManager;
 import org.glassfish.wasp.servlet.JspServlet;
+import org.apache.tomcat.InstanceManager;
+import org.apache.tomcat.util.descriptor.web.FilterMap;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.embeddable.web.Context;
 import org.glassfish.embeddable.web.config.FormLoginConfig;
@@ -126,7 +97,6 @@ import org.glassfish.embeddable.web.config.LoginConfig;
 import org.glassfish.embeddable.web.config.SecurityConfig;
 import org.glassfish.embeddable.web.config.TransportGuarantee;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.hk2.classmodel.reflect.Types;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.security.common.Role;
 import org.glassfish.web.LogFacade;
@@ -140,7 +110,6 @@ import org.glassfish.web.deployment.descriptor.LoginConfigurationImpl;
 import org.glassfish.web.deployment.descriptor.SecurityConstraintImpl;
 import org.glassfish.web.deployment.descriptor.UserDataConstraintImpl;
 import org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl;
-import org.glassfish.web.deployment.descriptor.WebComponentDescriptorImpl;
 import org.glassfish.web.deployment.descriptor.WebResourceCollectionImpl;
 import org.glassfish.web.deployment.runtime.CookieProperties;
 import org.glassfish.web.deployment.runtime.LocaleCharsetInfo;
@@ -152,33 +121,33 @@ import org.glassfish.web.deployment.runtime.SunWebAppImpl;
 import org.glassfish.web.deployment.runtime.WebProperty;
 import org.glassfish.web.deployment.runtime.WebPropertyContainer;
 import org.glassfish.web.loader.ServletContainerInitializerUtil;
-import org.glassfish.web.valve.GlassFishValve;
 import org.jvnet.hk2.config.types.Property;
 
-import com.sun.enterprise.config.serverbeans.Application;
-import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
-import com.sun.enterprise.config.serverbeans.ServerTags;
-import com.sun.enterprise.container.common.spi.util.JavaEEIOUtils;
-import com.sun.enterprise.deployment.RunAsIdentityDescriptor;
-import com.sun.enterprise.deployment.WebBundleDescriptor;
-import com.sun.enterprise.deployment.WebComponentDescriptor;
-import com.sun.enterprise.deployment.WebServiceEndpoint;
-import com.sun.enterprise.deployment.WebServicesDescriptor;
-import com.sun.enterprise.deployment.runtime.web.SunWebApp;
-import com.sun.enterprise.deployment.web.LoginConfiguration;
-import com.sun.enterprise.deployment.web.SecurityConstraint;
-import com.sun.enterprise.deployment.web.ServletFilterMapping;
-import com.sun.enterprise.deployment.web.UserDataConstraint;
-import com.sun.enterprise.deployment.web.WebResourceCollection;
-import com.sun.enterprise.security.integration.RealmInitializer;
-import com.sun.enterprise.util.StringUtils;
-import com.sun.enterprise.web.deploy.LoginConfigDecorator;
-import com.sun.enterprise.web.pwc.PwcWebModule;
-import com.sun.enterprise.web.session.PersistenceType;
-import com.sun.enterprise.web.session.SessionCookieConfig;
-import com.sun.web.security.RealmAdapter;
+import java.io.InputStream;
+import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.text.MessageFormat;
+import java.util.Base64;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.EventListener;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.ResourceBundle;
+import java.util.Set;
+import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import fish.payara.jacc.JaccConfigurationFactory;
+import static com.sun.enterprise.security.ee.SecurityUtil.getContextID;
+import static com.sun.enterprise.web.Constants.DEPLOYMENT_CONTEXT_ATTRIBUTE;
+import static com.sun.enterprise.web.Constants.ENABLE_HA_ATTRIBUTE;
+import static com.sun.enterprise.web.Constants.IS_DISTRIBUTABLE_ATTRIBUTE;
 
 /**
  * Class representing a web module for use by the Application Server.
@@ -216,14 +185,6 @@ public class WebModule extends PwcWebModule implements Context {
 
     private WebContainer webContainer;
 
-    private final Map<String,AdHocServletInfo> adHocPaths;
-    private boolean hasAdHocPaths;
-
-    private final Map<String,AdHocServletInfo> adHocSubtrees;
-    private boolean hasAdHocSubtrees;
-
-    private final StandardPipeline adHocPipeline;
-
     // File encoding of static resources
     private String fileEncoding;
 
@@ -259,6 +220,20 @@ public class WebModule extends PwcWebModule implements Context {
 
     private final ServiceLocator services;
 
+    private WebModuleValve webModuleValve;
+
+    // Originally from forked StandardContext
+    protected boolean directoryDeployed = false;
+
+    // Originally from forked StandardContext, refers to option in weblogic.xml
+    protected boolean showArchivedRealPathEnabled = true;
+
+    private boolean available = true;
+
+    private String engineName;
+
+    private String jvmRoute;
+
     /**
      * Constructor.
      */
@@ -269,13 +244,19 @@ public class WebModule extends PwcWebModule implements Context {
     public WebModule(ServiceLocator services) {
         super();
         this.services = services;
-        this.adHocPaths = new HashMap<>();
-        this.adHocSubtrees = new HashMap<>();
+    }
 
-        this.adHocPipeline = new StandardPipeline(this);
-        this.adHocPipeline.setBasic(new AdHocContextValve(this));
+    public boolean isAvailable() {
+        return available;
+    }
 
-        notifyContainerListeners = false;
+    public void setAvailable(boolean available) {
+        this.available = available;
+    }
+
+    @Override
+    public InstanceManager createInstanceManager() {
+        return new WebModuleInstanceManager(this);
     }
 
 
@@ -470,60 +451,6 @@ public class WebModule extends PwcWebModule implements Context {
     }
 
     /**
-     * Creates an ObjectInputStream that provides special deserialization
-     * logic for classes that are normally not serializable (such as
-     * javax.naming.Context).
-     */
-    @Override
-    public ObjectInputStream createObjectInputStream(InputStream is)
-            throws IOException {
-
-        ObjectInputStream ois = null;
-
-        Loader loader = getLoader();
-        if (loader != null) {
-            ClassLoader classLoader = loader.getClassLoader();
-            if (classLoader != null) {
-                try {
-                    ois = javaEEIOUtils.createObjectInputStream(
-                        is, true, classLoader, getUniqueId());
-                } catch (Exception e) {
-                    logger.log(Level.SEVERE,
-                            LogFacade.CREATE_CUSTOM_OBJECT_INTPUT_STREAM_ERROR, e);
-                }
-            }
-        }
-
-        if (ois == null) {
-            ois = new ObjectInputStream(is);
-        }
-
-        return ois;
-    }
-
-    /**
-     * Creates an ObjectOutputStream that provides special serialization
-     * logic for classes that are normally not serializable (such as
-     * javax.naming.Context).
-     */
-    @Override
-    public ObjectOutputStream createObjectOutputStream(OutputStream os)
-            throws IOException {
-
-        ObjectOutputStream oos = null;
-
-        try {
-            oos = javaEEIOUtils.createObjectOutputStream(os, true);
-        } catch (IOException ioe) {
-            logger.log(Level.SEVERE,
-                    LogFacade.CREATE_CUSTOM_BOJECT_OUTPUT_STREAM_ERROR, ioe);
-            oos = new ObjectOutputStream(os);
-        }
-
-        return oos;
-    }
-
-    /**
      * Set to <code>true</code> when the default-web.xml has been read for
      * this module.
      */
@@ -568,11 +495,21 @@ public class WebModule extends PwcWebModule implements Context {
         }
     }
 
+    @Override
+    public synchronized void initInternal() throws LifecycleException {
+        super.initInternal();
+
+        // Add our valve here instead of during construction, since we may want to perform lookup using the
+        // ServiceLocator obtained from the ServerContext, which would be null during construction
+        webModuleValve = new WebModuleValve(this);
+        getPipeline().addValve(webModuleValve);
+    }
+
     /**
      * Starts this web module.
      */
     @Override
-    public synchronized void start() throws LifecycleException {
+    public synchronized void startInternal() throws LifecycleException {
         // Get interestList of ServletContainerInitializers present, if any.
         List<Object> orderingList = null;
         boolean hasOthers = false;
@@ -595,7 +532,13 @@ public class WebModule extends PwcWebModule implements Context {
             ServletContainerInitializerUtil.getServletContainerInitializers(
                 webFragmentMap, orderingList, hasOthers,
                 wmInfo.getAppClassLoader(), servletInitializersEnabled);
-        setServletContainerInitializerInterestList(allInitializers);
+
+        for (ServletContainerInitializer initializer : allInitializers) {
+            // Check if getInterestList is required here - config of servletContainerInitializers interest list
+            // is also done in ContextConfig#processServletContainerInitializers which gets called in response to
+            // LifeCycle.CONFIGURE_START_EVENT which gets fired during super.startInternal
+            addServletContainerInitializer(initializer, getInterestList(initializer));
+        }
 
         DeploymentContext dc = getWebModuleConfig().getDeploymentContext();
         if (dc != null) {
@@ -604,8 +547,7 @@ public class WebModule extends PwcWebModule implements Context {
         }
         if (webBundleDescriptor != null) {
             showArchivedRealPathEnabled = webBundleDescriptor.isShowArchivedRealPathEnabled();
-            servletReloadCheckSecs = webBundleDescriptor.getServletReloadCheckSecs();
-            	String reqEncoding = webBundleDescriptor.getRequestCharacterEncoding();
+            String reqEncoding = webBundleDescriptor.getRequestCharacterEncoding();
 			if (reqEncoding != null) {
 				setRequestCharacterEncoding(reqEncoding);
 			}
@@ -616,7 +558,7 @@ public class WebModule extends PwcWebModule implements Context {
         }
 
         // Start and register Tomcat mbeans
-        super.start();
+        super.startInternal();
 
         // Configure catalina listeners and valves. This can only happen
         // after this web module has been started, in order to be able to
@@ -624,18 +566,54 @@ public class WebModule extends PwcWebModule implements Context {
         configureValves();
         configureCatalinaProperties();
         webModuleStartedEvent();
-        if (directoryListing) {
-            setDirectoryListing(directoryListing);
-        }
 
         hasStarted = true;
+    }
+
+    /**
+     * Creates a Set of the classes that a given {@link ServletContainerInitializer} has expressed interest in via
+     * {@link HandlesTypes}
+     *
+     * @param initializer The {@link ServletContainerInitializer} to scan
+     *
+     * @return A {@link Set} of classes that the given {@link ServletContainerInitializer} has expressed interest in
+     * via {@link HandlesTypes}
+     */
+    public static Set<Class<?>> getInterestList(ServletContainerInitializer initializer) {
+        Class<? extends ServletContainerInitializer> sciClass = initializer.getClass();
+        HandlesTypes ann = sciClass.getAnnotation(HandlesTypes.class);
+
+        if (ann == null) {
+            return null;
+        }
+
+        Class[] interestedClasses = ann.value();
+        if (interestedClasses == null || interestedClasses.length == 0) {
+            return null;
+        }
+
+        Set<Class<?>> interestSet = new HashSet<>();
+        for (Class interestedClass : interestedClasses) {
+            interestSet.add(interestedClass);
+        }
+
+        return interestSet;
+    }
+
+    @Override
+    public String getRealPath(String path) {
+        if (!(showArchivedRealPathEnabled || directoryDeployed)) {
+            return null;
+        }
+
+        return super.getRealPath(path);
     }
 
     /**
      * Stops this web module.
      */
     @Override
-    public void stop() throws LifecycleException {
+    public void stopInternal() throws LifecycleException {
         // Unregister monitoring mbeans only if this web module was
         // successfully started, because if stop() is called during an
         // aborted start(), no monitoring mbeans will have been registered
@@ -645,16 +623,17 @@ public class WebModule extends PwcWebModule implements Context {
         }
 
         // Stop and unregister Tomcat mbeans
-        super.stop(getWebContainer().isShutdown());
+        super.stopInternal();
     }
 
     @Override
-    protected void contextListenerStart() {
+    public boolean listenerStart() {
         logger.finest("contextListenerStart()");
         ServletContext servletContext = getServletContext();
         WebBundleDescriptor bundleDescriptor = getWebBundleDescriptor();
         JaccConfigurationFactory jaccConfigurationFactory = getJaccConfigurationFactory();
 
+        boolean ok = false;
         try {
             // For JSF injection
             servletContext.setAttribute(
@@ -678,18 +657,16 @@ public class WebModule extends PwcWebModule implements Context {
                     ENABLE_HA_ATTRIBUTE,
                     webContainer.getServerConfigLookup().calculateWebAvailabilityEnabledFromConfig(this));
 
-            super.contextListenerStart();
+            ok = super.listenerStart();
         } finally {
             servletContext.removeAttribute(DEPLOYMENT_CONTEXT_ATTRIBUTE);
             servletContext.removeAttribute(IS_DISTRIBUTABLE_ATTRIBUTE);
             servletContext.removeAttribute(ENABLE_HA_ATTRIBUTE);
         }
 
-        servletRegisMap.values()
-                       .stream()
-                       .filter(DynamicWebServletRegistrationImpl.class::isInstance)
-                       .map(DynamicWebServletRegistrationImpl.class::cast)
-                       .forEach(DynamicWebServletRegistrationImpl::postProcessAnnotations);
+        if (!ok) {
+            return ok;
+        }
 
         if (jaccConfigurationFactory != null && bundleDescriptor != null) {
             if (jaccConfigurationFactory.getContextProviderByPolicyContextId(getContextID(bundleDescriptor)) != null) {
@@ -698,6 +675,8 @@ public class WebModule extends PwcWebModule implements Context {
         }
 
         webContainer.afterServletContextInitializedEvent(bundleDescriptor);
+
+        return ok;
     }
 
     private String getAppContextId(ServletContext servletContext) {
@@ -716,60 +695,6 @@ public class WebModule extends PwcWebModule implements Context {
         }
 
         return null;
-    }
-
-    @Override
-    protected Types getTypes() {
-        if (wmInfo.getDeploymentContext()!=null) {
-            return wmInfo.getDeploymentContext().getTransientAppMetaData(Types.class.getName(), Types.class);
-        } else {
-            return null;
-        }
-    }
-
-    @Override
-    protected void callServletContainerInitializers()
-            throws LifecycleException {
-        WebComponentInvocation inv = new WebComponentInvocation(this);
-        try {
-            webContainer.getInvocationManager().preInvoke(inv);
-            super.callServletContainerInitializers();
-        }
-        finally {
-            webContainer.getInvocationManager().postInvoke(inv);
-        }
-        if (!isJsfApplication() && !contextListeners.isEmpty()) {
-            /*
-             * Remove any JSF related ServletContextListeners from
-             * non-JSF apps.
-             * This can be done reliably only after all
-             * ServletContainerInitializers have been invoked, because
-             * system-wide ServletContainerInitializers may be invoked in
-             * any order, and it is only after JSF's FacesInitializer has
-             * been invoked that isJsfApplication(), which checks for the
-             * existence of a mapping to the FacesServlet in the app, may
-             * be used reliably because such mapping would have been added
-             * by JSF's FacesInitializer. See also IT 10223
-             */
-            ArrayList<ServletContextListener> listeners =
-                new ArrayList<>(contextListeners);
-            String listenerClassName = null;
-            for (ServletContextListener listener : listeners) {
-                if (listener instanceof
-                        StandardContext.RestrictedServletContextListener) {
-                    listenerClassName = ((StandardContext.RestrictedServletContextListener) listener).getNestedListener().getClass().getName();
-                } else {
-                    listenerClassName = listener.getClass().getName();
-                }
-                /*
-                 * TBD: Retrieve listener class name from JSF's TldProvider
-                 */
-                if ("com.sun.faces.config.ConfigureListener".equals(
-                        listenerClassName)) {
-                    contextListeners.remove(listener);
-                }
-            }
-        }
     }
 
     /**
@@ -800,241 +725,6 @@ public class WebModule extends PwcWebModule implements Context {
     }
 
     /**
-     * Indicates whether this web module contains any ad-hoc paths.
-     *
-     * An ad-hoc path is a servlet path that is mapped to a servlet
-     * not declared in the web module's deployment descriptor.
-     *
-     * A web module all of whose mappings are for ad-hoc paths is called an
-     * ad-hoc web module.
-     *
-     * @return true if this web module contains any ad-hoc paths, false
-     * otherwise
-     */
-    @Override
-    public boolean hasAdHocPaths() {
-        return this.hasAdHocPaths;
-    }
-
-    /**
-     * Indicates whether this web module contains any ad-hoc subtrees.
-     *
-     * @return true if this web module contains any ad-hoc subtrees, false
-     * otherwise
-     */
-    public boolean hasAdHocSubtrees() {
-        return this.hasAdHocSubtrees;
-    }
-
-    /*
-     * Adds the given ad-hoc path and subtree, along with information about
-     * the servlet that will be responsible for servicing it, to this web
-     * module.
-     *
-     * @param path The ad-hoc path to add
-     * @param subtree The ad-hoc subtree path to add
-     * @param servletInfo Information about the servlet that is responsible
-     * for servicing the given ad-hoc path
-     */
-    void addAdHocPathAndSubtree(String path,
-                                String subtree,
-                                AdHocServletInfo servletInfo) {
-
-        if (path == null && subtree == null) {
-            return;
-        }
-
-        Wrapper adHocWrapper = (Wrapper)
-            findChild(servletInfo.getServletName());
-        if (adHocWrapper == null) {
-            adHocWrapper = createAdHocWrapper(servletInfo);
-            addChild(adHocWrapper);
-        }
-
-        if (path != null) {
-            adHocPaths.put(path, servletInfo);
-            hasAdHocPaths = true;
-        }
-
-        if (subtree != null) {
-            adHocSubtrees.put(subtree, servletInfo);
-            hasAdHocSubtrees = true;
-        }
-    }
-
-    /*
-     * Adds the given ad-hoc path to servlet mappings to this web module.
-     *
-     * @param newPaths Mappings of ad-hoc paths to the servlets responsible
-     * for servicing them
-     */
-    void addAdHocPaths(Map<String, AdHocServletInfo> newPaths) {
-
-        if (newPaths == null || newPaths.isEmpty()) {
-            return;
-        }
-        for (Map.Entry<String, AdHocServletInfo> entry : newPaths.entrySet()) {
-            AdHocServletInfo servletInfo = entry.getValue();
-            Wrapper adHocWrapper = (Wrapper)
-                findChild(servletInfo.getServletName());
-            if(adHocWrapper == null) {
-                adHocWrapper = createAdHocWrapper(servletInfo);
-                addChild(adHocWrapper);
-            }
-            adHocPaths.put(entry.getKey(), servletInfo);
-        }
-
-        hasAdHocPaths = true;
-    }
-
-    /*
-     * Adds the given ad-hoc subtree path to servlet mappings to this web
-     * module.
-     *
-     * @param newSubtrees Mappings of ad-hoc subtree paths to the servlets
-     * responsible for servicing them
-     */
-    void addAdHocSubtrees(Map<String, AdHocServletInfo> newSubtrees) {
-
-        if (newSubtrees == null || newSubtrees.isEmpty()) {
-            return;
-        }
-        for (Map.Entry<String, AdHocServletInfo> entry : newSubtrees.entrySet()) {
-            AdHocServletInfo servletInfo = entry.getValue();
-            Wrapper adHocWrapper = (Wrapper)findChild(servletInfo.getServletName());
-            if(adHocWrapper == null) {
-                adHocWrapper = createAdHocWrapper(servletInfo);
-                addChild(adHocWrapper);
-            }
-            adHocSubtrees.put(entry.getKey(), servletInfo);
-        }
-
-        hasAdHocSubtrees = true;
-    }
-
-    /*
-     * Gets the ad-hoc path to servlet mappings managed by this web module.
-     *
-     * @return The ad-hoc path to servlet mappings managed by this web
-     * module.
-     */
-    Map<String, AdHocServletInfo> getAdHocPaths() {
-        return adHocPaths;
-    }
-
-    /*
-     * Gets the ad-hoc subtree path to servlet mappings managed by this
-     * web module.
-     *
-     * @return The ad-hoc subtree path to servlet mappings managed by
-     * this web module.
-     */
-    Map<String, AdHocServletInfo> getAdHocSubtrees() {
-        return adHocSubtrees;
-    }
-
-    /**
-     * Returns the name of the ad-hoc servlet responsible for servicing the
-     * given path.
-     *
-     * @param path The path whose associated ad-hoc servlet is needed
-     *
-     * @return The name of the ad-hoc servlet responsible for servicing the
-     * given path, or null if the given path does not represent an ad-hoc
-     * path
-     */
-    @Override
-    public String getAdHocServletName(String path) {
-
-        if (!hasAdHocPaths() && !hasAdHocSubtrees()) {
-            return null;
-        }
-
-        AdHocServletInfo servletInfo = null;
-
-        // Check if given path matches any of the ad-hoc paths (exact match)
-        if (path == null) {
-            servletInfo = adHocPaths.get("");
-        } else {
-            servletInfo = adHocPaths.get(path);
-        }
-
-        // Check if given path starts with any of the ad-hoc subtree paths
-        if (servletInfo == null && path != null && hasAdHocSubtrees()) {
-            for (Entry<String,AdHocServletInfo> entry : adHocSubtrees.entrySet()) {
-                String adHocSubtree = entry.getKey();
-                if(path.startsWith(adHocSubtree)) {
-                    servletInfo = entry.getValue();
-                    break;
-                }
-            }
-        }
-
-        if (servletInfo != null) {
-            return servletInfo.getServletName();
-        } else {
-            return null;
-        }
-    }
-
-    /*
-     * Removes the given ad-hoc path from this web module.
-     *
-     * @param path The ad-hoc path to remove
-     */
-    void removeAdHocPath(String path) {
-        if (path == null) {
-            return;
-        }
-        adHocPaths.remove(path);
-        if (adHocPaths.isEmpty()) {
-            this.hasAdHocPaths = false;
-        }
-    }
-
-    /*
-     * Removes the given ad-hoc path from this web module.
-     *
-     * @param subtree The ad-hoc subtree to remove
-     */
-    void removeAdHocSubtree(String subtree) {
-        if (subtree == null) {
-            return;
-        }
-        adHocSubtrees.remove(subtree);
-        if (adHocSubtrees.isEmpty()) {
-            this.hasAdHocSubtrees = false;
-        }
-    }
-
-    /**
-     * Adds the given valve to this web module's ad-hoc pipeline.
-     *
-     * @param valve The valve to add
-     */
-    public void addAdHocValve(GlassFishValve valve) {
-        adHocPipeline.addValve(valve);
-    }
-
-    /**
-     * Removes the given valve from this web module's ad-hoc pipeline.
-     *
-     * @param valve The valve to remove
-     */
-    public void removeAdHocValve(GlassFishValve valve) {
-        adHocPipeline.removeValve(valve);
-    }
-
-    /**
-     * Gets this web module's ad-hoc pipeline.
-     *
-     * @return This web module's ad-hoc pipeline
-     */
-    public Pipeline getAdHocPipeline() {
-        return adHocPipeline;
-    }
-
-    /**
      * Sets the file encoding of all static resources of this web module.
      *
      * @param enc The file encoding of static resources of this web module
@@ -1061,50 +751,13 @@ public class WebModule extends PwcWebModule implements Context {
      */
     @SuppressWarnings({"unchecked"})
     void addFilterMap(ServletFilterMapping sfm) {
+        FilterMap filterMap = new FilterMap();
+        filterMap.setFilterName(sfm.getName());
 
-        FilterMaps filterMaps = new FilterMaps();
-        filterMaps.setFilterName(sfm.getName());
-        filterMaps.setDispatcherTypes(sfm.getDispatchers());
-
-        List<String> servletNames = sfm.getServletNames();
-        if (servletNames != null) {
-            for(String servletName : servletNames) {
-                filterMaps.addServletName(servletName);
-            }
-        }
-
-        List<String> urlPatterns = sfm.getUrlPatterns();
-        if (urlPatterns != null) {
-            for(String urlPattern : urlPatterns) {
-                filterMaps.addURLPattern(urlPattern);
-            }
-        }
-
-        addFilterMaps(filterMaps);
-    }
-
-    /**
-     * Creates an ad-hoc servlet wrapper from the given ad-hoc servlet info.
-     *
-     * @param servletInfo Ad-hoc servlet info from which to generate
-     * ad-hoc servlet wrapper
-     *
-     * @return The generated ad-hoc servlet wrapper
-     */
-    private Wrapper createAdHocWrapper(AdHocServletInfo servletInfo) {
-
-        Wrapper adHocWrapper = new StandardWrapper();
-        adHocWrapper.setServletClassName(
-            servletInfo.getServletClass().getName());
-        adHocWrapper.setName(servletInfo.getServletName());
-        Map<String,String> initParams = servletInfo.getServletInitParams();
-        if (initParams != null && !initParams.isEmpty()) {
-            for(Map.Entry<String,String> entry : initParams.entrySet()) {
-                adHocWrapper.addInitParameter(entry.getKey(), entry.getValue());
-            }
-        }
-
-        return adHocWrapper;
+        sfm.getServletNames().forEach(servletName -> filterMap.addServletName(servletName));
+        sfm.getUrlPatterns().forEach(urlPattern -> filterMap.addURLPattern(urlPattern));
+        sfm.getDispatchers().forEach(dispatcherType -> filterMap.setDispatcher(dispatcherType.name()));
+        addFilterMap(filterMap);
     }
 
     /**
@@ -1178,8 +831,6 @@ public class WebModule extends PwcWebModule implements Context {
         Object valve = loadInstance(className);
         if (valve instanceof Valve) {
             super.addValve((Valve) valve);
-        } else if (valve instanceof GlassFishValve) {
-            super.addValve((GlassFishValve) valve);
         } else {
             logger.log(Level.WARNING, LogFacade.VALVE_CLASS_NAME_NO_VALVE,
                        className);
@@ -1211,8 +862,7 @@ public class WebModule extends PwcWebModule implements Context {
         if (valve == null) {
             return;
         }
-        if (!(valve instanceof GlassFishValve) &&
-                !(valve instanceof Valve)) {
+        if (!(valve instanceof Valve)) {
             logger.log(Level.WARNING, LogFacade.VALVE_CLASS_NAME_NO_VALVE,
                        className);
             return;
@@ -1250,8 +900,6 @@ public class WebModule extends PwcWebModule implements Context {
         }
         if (valve instanceof Valve) {
             super.addValve((Valve) valve);
-        } else if (valve instanceof GlassFishValve) {
-            super.addValve((GlassFishValve) valve);
         }
     }
 
@@ -1271,8 +919,6 @@ public class WebModule extends PwcWebModule implements Context {
             addContainerListener((ContainerListener)listener);
         } else if (listener instanceof LifecycleListener ){
             addLifecycleListener((LifecycleListener)listener);
-        } else if (listener instanceof InstanceListener){
-            addInstanceListener(listenerName);
         } else {
             logger.log(Level.SEVERE, LogFacade.INVALID_LISTENER,
                 new Object[] {listenerName, getName()});
@@ -1315,8 +961,7 @@ public class WebModule extends PwcWebModule implements Context {
     void setStandalone(boolean isStandalone) {
         this.isStandalone = isStandalone;
     }
-
-    @Override
+    
     protected boolean isStandalone() {
         return isStandalone;
     }
@@ -1363,76 +1008,6 @@ public class WebModule extends PwcWebModule implements Context {
      */
     void setServerContext(ServerContext serverContext) {
         this.serverContext = serverContext;
-    }
-
-    /**
-     * Sets the alternate docroots of this web module from the given
-     * "alternatedocroot_" properties.
-     */
-    void setAlternateDocBases(List <Property> props) {
-
-        if (props == null) {
-            return;
-        }
-
-        for (Property prop : props) {
-            parseAlternateDocBase(prop.getName(), prop.getValue());
-        }
-    }
-
-    void parseAlternateDocBase(String propName, String propValue) {
-
-        if (propName == null || propValue == null) {
-            logger.log(Level.WARNING, LogFacade.ALTERNATE_DOC_BASE_NULL_PROPERTY_NAME_VALVE);
-            return;
-        }
-
-        if (!propName.startsWith("alternatedocroot_")) {
-            return;
-        }
-
-        /*
-         * Validate the prop value
-         */
-        String urlPattern = null;
-        String docBase = null;
-
-        int fromIndex = propValue.indexOf(ALTERNATE_FROM);
-        int dirIndex = propValue.indexOf(ALTERNATE_DOCBASE);
-
-        if (fromIndex < 0 || dirIndex < 0) {
-            logger.log(
-                Level.WARNING,
-                LogFacade.ALTERNATE_DOC_BASE_MISSING_PATH_OR_URL_PATTERN,
-                propValue);
-            return;
-        }
-
-        if (fromIndex > dirIndex) {
-            urlPattern = propValue.substring(
-                fromIndex + ALTERNATE_FROM.length());
-            docBase = propValue.substring(
-                dirIndex + ALTERNATE_DOCBASE.length(),
-                fromIndex);
-        } else {
-            urlPattern = propValue.substring(
-                fromIndex + ALTERNATE_FROM.length(),
-                dirIndex);
-            docBase = propValue.substring(
-                dirIndex + ALTERNATE_DOCBASE.length());
-        }
-
-        urlPattern = urlPattern.trim();
-        if (!validateURLPattern(urlPattern)) {
-            logger.log(Level.WARNING,
-                       LogFacade.ALTERNATE_DOC_BASE_ILLEGAL_URL_PATTERN,
-                       urlPattern);
-            return;
-        }
-
-        docBase = docBase.trim();
-
-        addAlternateDocBase(urlPattern, docBase);
     }
 
     List<URI> getDeployAppLibs() {
@@ -1506,19 +1081,6 @@ public class WebModule extends PwcWebModule implements Context {
         } else if("crossContextAllowed".equalsIgnoreCase(name)) {
             final boolean crossContext = Boolean.parseBoolean(value);
             setCrossContext(crossContext);
-        } else if("allowLinking".equalsIgnoreCase(name)) {
-            final boolean allowLinking = ConfigBeansUtilities.toBoolean(value);
-            setAllowLinking(allowLinking);
-            // START S1AS8PE 4817642
-        } else if("reuseSessionID".equalsIgnoreCase(name)) {
-            final boolean reuse = ConfigBeansUtilities.toBoolean(value);
-            setReuseSessionID(reuse);
-            if (reuse) {
-                String msg = rb.getString(LogFacade.SESSION_IDS_REUSED);
-                msg = MessageFormat.format(msg, contextPath, vs.getID());
-                logger.log(Level.WARNING, msg);
-            }
-            // END S1AS8PE 4817642
         } else if("useResponseCTForHeaders".equalsIgnoreCase(name)) {
             if("true".equalsIgnoreCase(value)) {
                 setResponseCTForHeaders();
@@ -1526,30 +1088,18 @@ public class WebModule extends PwcWebModule implements Context {
         } else if("encodeCookies".equalsIgnoreCase(name)) {
             final boolean flag = ConfigBeansUtilities.toBoolean(value);
             setEncodeCookies(flag);
-            // START RIMOD 4642650
         } else if("relativeRedirectAllowed".equalsIgnoreCase(name)) {
             final boolean relativeRedirect = ConfigBeansUtilities.toBoolean(value);
-            setAllowRelativeRedirect(relativeRedirect);
-            // END RIMOD 4642650
+            setUseRelativeRedirects(relativeRedirect);
         } else if("fileEncoding".equalsIgnoreCase(name)) {
             setFileEncoding(value);
         } else if("enableTldValidation".equalsIgnoreCase(name)
             && ConfigBeansUtilities.toBoolean(value)) {
             setTldValidation(true);
-        } else if("enableTldNamespaceAware".equalsIgnoreCase(name)
-            && ConfigBeansUtilities.toBoolean(value)) {
-            setTldNamespaceAware(true);
-        } else if("securePagesWithPragma".equalsIgnoreCase(name)) {
-            final boolean securePagesWithPragma = ConfigBeansUtilities.toBoolean(value);
-            setSecurePagesWithPragma(securePagesWithPragma);
-        } else if("useMyFaces".equalsIgnoreCase(name)) {
-            setUseMyFaces(ConfigBeansUtilities.toBoolean(value));
-        } else if("useBundledJsf".equalsIgnoreCase(name)) {
-            setUseMyFaces(ConfigBeansUtilities.toBoolean(value));
         } else if("default-role-mapping".equalsIgnoreCase(name)) {
             wmInfo.getDescriptor().setDefaultGroupPrincipalMapping(ConfigBeansUtilities.toBoolean(value));
-        } else if(name.startsWith("alternatedocroot_")) {
-            parseAlternateDocBase(name, value);
+        } else if("default-web-xml".equalsIgnoreCase(name)) {
+            vs.setDefaultWebXmlLocation(value);
         } else if(name.startsWith("valve_") ||
                 name.startsWith("listener_")) {
             // do nothing; these properties are dealt with
@@ -1634,140 +1184,6 @@ public class WebModule extends PwcWebModule implements Context {
     }
 
     /**
-     * Configure the class loader for the web module based on the
-     * settings in sun-web.xml's class-loader element (if any).
-     */
-    Loader configureLoader(SunWebApp bean) {
-
-        org.glassfish.web.deployment.runtime.ClassLoader clBean = null;
-
-        WebappLoader loader = new V3WebappLoader(wmInfo.getAppClassLoader());
-
-        loader.setUseMyFaces(isUseMyFaces());
-
-        if (bean != null) {
-            clBean = ((SunWebAppImpl)bean).getClassLoader();
-        }
-        if (clBean != null) {
-            configureLoaderAttributes(loader, clBean);
-            configureLoaderProperties(loader, clBean);
-        } else {
-            loader.setDelegate(true);
-        }
-
-        // START S1AS 6178005
-        String stubPath = wmInfo.getStubPath();
-        if (stubPath != null && stubPath.length() > 0) {
-            if (stubPath.charAt(0) != '/') {
-                stubPath = "/" + stubPath;
-            }
-            loader.addRepository("file:" + stubPath + File.separator);
-        }
-        // END S1AS 6178005
-
-        // START PE 4985680
-        /**
-         * Adds the given package name to the list of packages that may
-         * always be overriden, regardless of whether they belong to a
-         * protected namespace
-         */
-        String packagesName =
-                System.getProperty("com.sun.enterprise.overrideablejavaxpackages");
-
-        if (packagesName != null) {
-            List<String> overridablePackages =
-                    StringUtils.parseStringList(packagesName, " ,");
-            for(String overridablePackage : overridablePackages) {
-                loader.addOverridablePackage(overridablePackage);
-            }
-        }
-        // END PE 4985680
-
-        setLoader(loader);
-
-        return loader;
-    }
-
-    /**
-     * Saves all active sessions to the given deployment context, so they
-     * can be restored following a redeployment.
-     *
-     * @param props the deployment context properties to which to save the
-     * sessions
-     */
-    void saveSessions(Properties props) {
-        if (props == null) {
-            return;
-        }
-
-        StandardManager manager = (StandardManager) getManager();
-        if (manager == null) {
-            return;
-        }
-
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try {
-            manager.writeSessions(baos, false);
-            props.setProperty(getObjectName(), new String(encoder.encode(baos.toByteArray()), UTF_8));
-        } catch (Exception ex) {
-            logger.log(WARNING, format(rb.getString(UNABLE_TO_SAVE_SESSIONS_DURING_REDEPLOY), getName()), ex);
-        }
-    }
-
-    /**
-     * Loads any sessions that were stored in the given deployment context
-     * prior to a redeployment of this web module.
-     *
-     * @param deploymentProperties the deployment context properties from
-     * which to load the sessions
-     */
-    void loadSessions(Properties deploymentProperties) {
-        if (deploymentProperties == null) {
-            return;
-        }
-
-        StandardManager manager = (StandardManager) getManager();
-        if (manager == null) {
-            return;
-        }
-
-        String sessions = deploymentProperties.getProperty(getObjectName());
-        if (sessions != null) {
-            try {
-                manager.readSessions(new ByteArrayInputStream(decoder.decode(sessions)));
-            } catch (Exception ex) {
-                logger.log(WARNING, format(rb.getString(UNABLE_TO_RESTORE_SESSIONS_DURING_REDEPLOY), getName()), ex);
-            }
-            deploymentProperties.remove(getObjectName());
-        }
-    }
-
-    /**
-     * Loads and instantiates the listener with the specified classname.
-     *
-     * @param loader the classloader to use
-     * @param listenerClassName the fully qualified classname to instantiate
-     *
-     * @return the instantiated listener
-     *
-     * @throws Exception if the specified classname fails to be loaded or
-     * instantiated
-     */
-    @Override
-    protected EventListener loadListener(ClassLoader loader,
-                                         String listenerClassName)
-            throws Exception {
-        try {
-            return super.loadListener(loader, listenerClassName);
-        } catch (Exception e) {
-            if (WS_SERVLET_CONTEXT_LISTENER.equals(listenerClassName)) {
-                logger.log(Level.WARNING, LogFacade.MISSING_METRO, e);
-            }
-            throw e;
-        }
-    }
-
-    /**
      * Create and configure the session manager for this web application
      * according to the persistence type specified.
      *
@@ -1795,120 +1211,6 @@ public class WebModule extends PwcWebModule implements Context {
         configureSessionManager(smBean, wbd, wmInfo);
         configureSession(sessionPropsBean, wbd);
         configureCookieProperties(cookieBean);
-    }
-
-    /**
-     * Configures the given classloader with its attributes specified in
-     * sun-web.xml.
-     *
-     * @param loader The classloader to configure
-     * @param clBean The class-loader info from sun-web.xml
-     */
-    private void configureLoaderAttributes(
-            Loader loader,
-            org.glassfish.web.deployment.runtime.ClassLoader clBean) {
-
-        String value = clBean.getAttributeValue(
-                org.glassfish.web.deployment.runtime.ClassLoader.DELEGATE);
-
-        /*
-         * The DOL will *always* return a value: If 'delegate' has not been
-         * configured in sun-web.xml, its default value will be returned,
-         * which is FALSE in the case of sun-web-app_2_2-0.dtd and
-         * sun-web-app_2_3-0.dtd, and TRUE in the case of
-         * sun-web-app_2_4-0.dtd.
-         */
-        boolean delegate = ConfigBeansUtilities.toBoolean(value);
-        loader.setDelegate(delegate);
-        if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, LogFacade.SETTING_DELEGATE, new Object[]{getPath(), delegate});
-        }
-
-        // Get any extra paths to be added to the class path of this
-        // class loader
-        value = clBean.getAttributeValue(
-                org.glassfish.web.deployment.runtime.ClassLoader.EXTRA_CLASS_PATH);
-        if (value != null) {
-            // Parse the extra classpath into its ':' and ';' separated
-            // components. Ignore ':' as a separator if it is preceded by
-            // '\'
-            String[] pathElements = value.split(";|((?<!\\\\):)");
-            if (pathElements != null) {
-                for (String path : pathElements) {
-                    path = path.replace("\\:", ":");
-                    if (logger.isLoggable(Level.FINE)) {
-                        logger.log(Level.FINE, LogFacade.ADDING_CLASSPATH, new Object[]{getPath(), path});
-                    }
-
-                    try {
-                        URL url = new URL(path);
-                        loader.addRepository(path);
-                    } catch (MalformedURLException mue1) {
-                        // Not a URL, interpret as file
-                        File file = new File(path);
-                        // START GlassFish 904
-                        if (!file.isAbsolute()) {
-                            // Resolve relative extra class path to the
-                            // context's docroot
-                            file = new File(getDocBase(), path);
-                        }
-                        // END GlassFish 904
-
-                        try {
-                            URL url = file.toURI().toURL();
-                            loader.addRepository(url.toString());
-                        } catch (MalformedURLException mue2) {
-                            String msg = rb.getString(LogFacade.CLASSPATH_ERROR);
-                            Object[] params = { path };
-                            msg = MessageFormat.format(msg, params);
-                            logger.log(Level.SEVERE, msg, mue2);
-                        }
-                    }
-                }
-            }
-        }
-
-        value = clBean.getAttributeValue(
-                org.glassfish.web.deployment.runtime.ClassLoader.DYNAMIC_RELOAD_INTERVAL);
-        if (value != null) {
-            // Log warning if dynamic-reload-interval is specified
-            // in sun-web.xml since it is not supported
-            logger.log(Level.WARNING, LogFacade.DYNAMIC_RELOAD_INTERVAL);
-        }
-    }
-
-    /**
-     * Configures the given classloader with its properties specified in
-     * sun-web.xml.
-     *
-     * @param loader The classloader to configure
-     * @param clBean The class-loader info from sun-web.xml
-     */
-    private void configureLoaderProperties(
-            Loader loader,
-            org.glassfish.web.deployment.runtime.ClassLoader clBean) {
-
-        String name = null;
-        String value = null;
-
-        WebProperty[] props = clBean.getWebProperty();
-        if (props == null || props.length == 0) {
-            return;
-        }
-        for(WebProperty prop : props) {
-            name = prop.getAttributeValue(WebProperty.NAME);
-            value = prop.getAttributeValue(WebProperty.VALUE);
-            if(name == null || value == null) {
-                throw new IllegalArgumentException(rb.getString(LogFacade.NULL_WEB_MODULE_PROPERTY));
-            }
-            if("ignoreHiddenJarFiles".equalsIgnoreCase(name)) {
-                loader.setIgnoreHiddenJarFiles(ConfigBeansUtilities.toBoolean(value));
-            } else {
-                Object[] params = {name, value};
-                logger.log(Level.WARNING, LogFacade.INVALID_PROPERTY,
-                    params);
-            }
-        }
     }
 
     /**
@@ -1948,35 +1250,6 @@ public class WebModule extends PwcWebModule implements Context {
             webContainer.getServerConfigLookup());
     }
 
-    @Override
-    protected ServletRegistrationImpl createServletRegistrationImpl(
-            StandardWrapper wrapper) {
-        return new WebServletRegistrationImpl(wrapper, this);
-    }
-
-    @Override
-    protected ServletRegistrationImpl createDynamicServletRegistrationImpl(
-            StandardWrapper wrapper) {
-        return new DynamicWebServletRegistrationImpl(wrapper, this);
-    }
-
-    @Override
-    protected void removePatternFromServlet(Wrapper wrapper, String pattern) {
-        super.removePatternFromServlet(wrapper, pattern);
-        WebBundleDescriptor wbd = getWebBundleDescriptor();
-        if (wbd == null) {
-            throw new IllegalStateException(
-                "Missing WebBundleDescriptor for " + getName());
-        }
-        WebComponentDescriptor wcd =
-            wbd.getWebComponentByCanonicalName(wrapper.getName());
-        if (wcd == null) {
-            throw new IllegalStateException(
-                "Missing WebComponentDescriptor for " + wrapper.getName());
-        }
-        wcd.removeUrlPattern(pattern);
-    }
-
     /**
      * Configure the properties of the session, such as the timeout,
      * whether to force URL rewriting etc.
@@ -2006,8 +1279,6 @@ public class WebModule extends PwcWebModule implements Context {
                     }
                 } else if("enableCookies".equalsIgnoreCase(name)) {
                     setCookies(ConfigBeansUtilities.toBoolean(value));
-                } else if("enableURLRewriting".equalsIgnoreCase(name)) {
-                    setEnableURLRewriting(ConfigBeansUtilities.toBoolean(value));
                 } else {
                     if (logger.isLoggable(Level.INFO)) {
                         logger.log(Level.INFO, LogFacade.PROP_NOT_YET_SUPPORTED, name);
@@ -2024,14 +1295,14 @@ public class WebModule extends PwcWebModule implements Context {
         //web.xml setting has precedence if it exists
         //ignore if the value is the 30 min default
         if (webXmlTimeoutSeconds != -1 && webXmlTimeoutSeconds != 1800) {
-            getManager().setMaxInactiveIntervalSeconds(webXmlTimeoutSeconds);
+            setSessionTimeout(webXmlTimeoutSeconds);
         } else {
             /*
              * Do not override Tomcat default, unless 'timeoutSeconds' was
              * specified in sun-web.xml
              */
             if (timeoutConfigured) {
-                getManager().setMaxInactiveIntervalSeconds(timeoutSeconds);
+                setSessionTimeout(webXmlTimeoutSeconds);
             }
         }
     }
@@ -2086,72 +1357,6 @@ public class WebModule extends PwcWebModule implements Context {
         }
     }
 
-    /**
-     * Instantiates the given Servlet class.
-     *
-     * @return the new Servlet instance
-     */
-    @Override
-    protected <T extends Servlet> T createServletInstance(Class<T> clazz)
-            throws Exception {
-        if (DefaultServlet.class.equals(clazz) ||
-                JspServlet.class.equals(clazz) ||
-                webContainer == null) {
-            // Container-provided servlets, skip injection
-            return super.createServletInstance(clazz);
-        } else {
-            return webContainer.createServletInstance(this, clazz);
-        }
-    }
-
-    /**
-     * Instantiates the given Filter class.
-     *
-     * @return the new Filter instance
-     */
-    @Override
-    protected <T extends Filter> T createFilterInstance(Class<T> clazz)
-            throws Exception {
-        if (webContainer != null) {
-            return webContainer.createFilterInstance(this, clazz);
-        } else {
-            return super.createFilterInstance(clazz);
-        }
-    }
-
-    /**
-     * Instantiates the given EventListener class.
-     *
-     * @return the new EventListener instance
-     */
-    @Override
-    public <T extends EventListener> T createListenerInstance(
-                Class<T> clazz) throws Exception {
-        if (webContainer != null) {
-            return webContainer.createListenerInstance(this, clazz);
-        } else {
-            return super.createListenerInstance(clazz);
-        }
-    }
-
-    /**
-     * Create an instance of a given class.
-     *
-     * @param clazz
-     *
-     * @return an instance of the given class
-     * @throws Exception
-     */
-    @Override
-    public <T extends HttpUpgradeHandler> T createHttpUpgradeHandlerInstance(Class<T> clazz) throws Exception {
-        if (webContainer != null) {
-            return webContainer.createHttpUpgradeHandlerInstance(this, clazz);
-        } else {
-            return super.createHttpUpgradeHandlerInstance(clazz);
-        }
-    }
-
-
     /*
      * Servlet related probe events
      */
@@ -2181,69 +1386,297 @@ public class WebModule extends PwcWebModule implements Context {
      * HTTP session related probe events
      */
 
+    /**
+     * Commented out for now - This monitoring was reliant on direct instrumentation of Catalina, which if we're
+     *      not patching in needs completely reworking using {@link org.apache.catalina.SessionListener}
+
+//    public void sessionCreatedEvent(HttpSession session) {
+//        sessionProbeProvider.sessionCreatedEvent(session.getId(),
+//            monitoringNodeName, vsId);
+//    }
+//
+//    public void sessionDestroyedEvent(HttpSession session) {
+//        sessionProbeProvider.sessionDestroyedEvent(session.getId(),
+//            monitoringNodeName, vsId);
+//    }
+//
+//    public void sessionRejectedEvent(int maxSessions) {
+//        sessionProbeProvider.sessionRejectedEvent(maxSessions,
+//            monitoringNodeName, vsId);
+//    }
+//
+//    public void sessionExpiredEvent(HttpSession session) {
+//        sessionProbeProvider.sessionExpiredEvent(session.getId(),
+//            monitoringNodeName, vsId);
+//    }
+//
+//    public void sessionPersistedStartEvent(HttpSession session) {
+//        sessionProbeProvider.sessionPersistedStartEvent(session.getId(),
+//            monitoringNodeName, vsId);
+//    }
+//
+//    public void sessionPersistedEndEvent(HttpSession session) {
+//        sessionProbeProvider.sessionPersistedEndEvent(session.getId(),
+//            monitoringNodeName, vsId);
+//    }
+//
+//    public void sessionActivatedStartEvent(HttpSession session) {
+//        sessionProbeProvider.sessionActivatedStartEvent(session.getId(),
+//            monitoringNodeName, vsId);
+//    }
+//
+//    public void sessionActivatedEndEvent(HttpSession session) {
+//        sessionProbeProvider.sessionActivatedEndEvent(session.getId(),
+//            monitoringNodeName, vsId);
+//    }
+//
+//    public void sessionPassivatedStartEvent(HttpSession session) {
+//        sessionProbeProvider.sessionPassivatedStartEvent(session.getId(),
+//            monitoringNodeName, vsId);
+//    }
+//
+//    public void sessionPassivatedEndEvent(HttpSession session) {
+//        sessionProbeProvider.sessionPassivatedEndEvent(session.getId(),
+//            monitoringNodeName, vsId);
+//    }
+     *
+     */
+
     @Override
-    public void sessionCreatedEvent(HttpSession session) {
-        sessionProbeProvider.sessionCreatedEvent(session.getId(),
-            monitoringNodeName, vsId);
+    public String getContextPath() {
+        return getServletContext().getContextPath();
     }
 
     @Override
-    public void sessionDestroyedEvent(HttpSession session) {
-        sessionProbeProvider.sessionDestroyedEvent(session.getId(),
-            monitoringNodeName, vsId);
+    public ServletContext getContext(String uriPath) {
+        return getServletContext().getContext(uriPath);
     }
 
     @Override
-    public void sessionRejectedEvent(int maxSessions) {
-        sessionProbeProvider.sessionRejectedEvent(maxSessions,
-            monitoringNodeName, vsId);
+    public int getMajorVersion() {
+        return getServletContext().getMajorVersion();
     }
 
     @Override
-    public void sessionExpiredEvent(HttpSession session) {
-        sessionProbeProvider.sessionExpiredEvent(session.getId(),
-            monitoringNodeName, vsId);
+    public int getMinorVersion() {
+        return getServletContext().getMinorVersion();
     }
 
     @Override
-    public void sessionPersistedStartEvent(HttpSession session) {
-        sessionProbeProvider.sessionPersistedStartEvent(session.getId(),
-            monitoringNodeName, vsId);
+    public String getMimeType(String file) {
+        return getServletContext().getMimeType(file);
     }
 
     @Override
-    public void sessionPersistedEndEvent(HttpSession session) {
-        sessionProbeProvider.sessionPersistedEndEvent(session.getId(),
-            monitoringNodeName, vsId);
+    public Set<String> getResourcePaths(String path) {
+        return getServletContext().getResourcePaths(path);
     }
 
     @Override
-    public void sessionActivatedStartEvent(HttpSession session) {
-        sessionProbeProvider.sessionActivatedStartEvent(session.getId(),
-            monitoringNodeName, vsId);
+    public URL getResource(String path) throws MalformedURLException {
+        return getServletContext().getResource(path);
     }
 
     @Override
-    public void sessionActivatedEndEvent(HttpSession session) {
-        sessionProbeProvider.sessionActivatedEndEvent(session.getId(),
-            monitoringNodeName, vsId);
+    public InputStream getResourceAsStream(String path) {
+        return getServletContext().getResourceAsStream(path);
     }
 
     @Override
-    public void sessionPassivatedStartEvent(HttpSession session) {
-        sessionProbeProvider.sessionPassivatedStartEvent(session.getId(),
-            monitoringNodeName, vsId);
+    public RequestDispatcher getRequestDispatcher(String path) {
+        return getServletContext().getRequestDispatcher(path);
     }
 
     @Override
-    public void sessionPassivatedEndEvent(HttpSession session) {
-        sessionProbeProvider.sessionPassivatedEndEvent(session.getId(),
-            monitoringNodeName, vsId);
+    public RequestDispatcher getNamedDispatcher(String name) {
+        return getServletContext().getNamedDispatcher(name);
+    }
+
+    @Override
+    public void log(String message) {
+        getServletContext().log(message);
+    }
+
+    @Override
+    public void log(String message, Throwable throwable) {
+        getServletContext().log(message, throwable);
+    }
+
+    @Override
+    public String getServerInfo() {
+        return getServletContext().getServerInfo();
+    }
+
+    @Override
+    public String getInitParameter(String name) {
+        return getServletContext().getInitParameter(name);
+    }
+
+    @Override
+    public Enumeration<String> getInitParameterNames() {
+        return getServletContext().getInitParameterNames();
+    }
+
+    @Override
+    public boolean setInitParameter(String name, String value) {
+        return getServletContext().setInitParameter(name, value);
+    }
+
+    @Override
+    public Object getAttribute(String name) {
+        return getServletContext().getAttribute(name);
+    }
+
+    @Override
+    public Enumeration<String> getAttributeNames() {
+        return getServletContext().getAttributeNames();
+    }
+
+    @Override
+    public void setAttribute(String name, Object value) {
+        getServletContext().setAttribute(name, value);
+    }
+
+    @Override
+    public void removeAttribute(String name) {
+        getServletContext().removeAttribute(name);
+    }
+
+    @Override
+    public String getServletContextName() {
+        return getServletContext().getServletContextName();
+    }
+
+    @Override
+    public ServletRegistration.Dynamic addServlet(String servletName, String className) {
+        return getServletContext().addServlet(servletName, className);
+    }
+
+    @Override
+    public ServletRegistration.Dynamic addServlet(String servletName, Servlet servlet) {
+        return getServletContext().addServlet(servletName, servlet);
+    }
+
+    @Override
+    public ServletRegistration.Dynamic addServlet(String servletName, Class<? extends Servlet> servletClass) {
+        return getServletContext().addServlet(servletName, servletClass);
+    }
+
+    @Override
+    public ServletRegistration.Dynamic addJspFile(String jspName, String jspFile) {
+        return getServletContext().addJspFile(jspName, jspFile);
+    }
+
+    @Override
+    public <T extends Servlet> T createServlet(Class<T> servletClass) throws ServletException {
+        if (DefaultServlet.class.equals(servletClass) || JspServlet.class.equals(servletClass) ||
+                webContainer == null) {
+            // Container-provided servlets, skip injection
+            return getServletContext().createServlet(servletClass);
+        }
+
+        try {
+            return (T) getInstanceManager().newInstance(servletClass);
+        } catch (Exception exception) {
+            // Log and rethrow as ServletException
+            logger.log(Level.SEVERE, LogFacade.EXCEPTION_CREATING_SERVLET_INSTANCE);
+            throw new ServletException(exception);
+        }
+    }
+
+    @Override
+    public ServletRegistration getServletRegistration(String servletName) {
+        return getServletContext().getServletRegistration(servletName);
+    }
+
+    @Override
+    public Map<String, ? extends ServletRegistration> getServletRegistrations() {
+        return getServletContext().getServletRegistrations();
+    }
+
+    @Override
+    public FilterRegistration.Dynamic addFilter(String filterName, String className) {
+        return getServletContext().addFilter(filterName, className);
+    }
+
+    @Override
+    public FilterRegistration.Dynamic addFilter(String filterName, Filter filter) {
+        return getServletContext().addFilter(filterName, filter);
+    }
+
+    @Override
+    public FilterRegistration.Dynamic addFilter(String filterName, Class<? extends Filter> filterClass) {
+        return getServletContext().addFilter(filterName, filterClass);
+    }
+
+    @Override
+    public <T extends Filter> T createFilter(Class<T> filterClass) throws ServletException {
+        if (webContainer == null) {
+            return getServletContext().createFilter(filterClass);
+        }
+
+        try {
+            return (T) getInstanceManager().newInstance(filterClass);
+        } catch (Exception exception) {
+            // Log and rethrow as ServletException
+            logger.log(Level.SEVERE, LogFacade.EXCEPTION_CREATING_FILTER_INSTANCE);
+            throw new ServletException(exception);
+        }
+    }
+
+    @Override
+    public FilterRegistration getFilterRegistration(String filterName) {
+        return getServletContext().getFilterRegistration(filterName);
+    }
+
+    @Override
+    public Map<String, ? extends FilterRegistration> getFilterRegistrations() {
+        return getServletContext().getFilterRegistrations();
+    }
+
+    @Override
+    public void setSessionTrackingModes(Set<SessionTrackingMode> sessionTrackingModes) {
+        getServletContext().setSessionTrackingModes(sessionTrackingModes);
+    }
+
+    @Override
+    public Set<SessionTrackingMode> getDefaultSessionTrackingModes() {
+        return getServletContext().getDefaultSessionTrackingModes();
+    }
+
+    @Override
+    public Set<SessionTrackingMode> getEffectiveSessionTrackingModes() {
+        return getServletContext().getEffectiveSessionTrackingModes();
+    }
+
+    @Override
+    public void addListener(String className) {
+        getServletContext().addListener(className);
+    }
+
+    @Override
+    public <T extends EventListener> T createListener(Class<T> listenerClass) throws ServletException {
+        if (webContainer == null) {
+            return getServletContext().createListener(listenerClass);
+        }
+
+        try {
+            return (T) getInstanceManager().newInstance(listenerClass);
+        } catch (Exception exception) {
+            // Log and rethrow as ServletException
+            logger.log(Level.SEVERE, LogFacade.EXCEPTION_CREATING_LISTENER_INSTANCE);
+            throw new ServletException(exception);
+        }
+    }
+
+    @Override
+    public ClassLoader getClassLoader() {
+        return getServletContext().getClassLoader();
     }
 
     @Override
     public void declareRoles(String... roleNames) {
-        super.declareRoles(roleNames);
+        getServletContext().declareRoles(roleNames);
         WebBundleDescriptor bundleDescriptor = getWebBundleDescriptor();
 
         for (String roleName : roleNames) {
@@ -2251,6 +1684,11 @@ public class WebModule extends PwcWebModule implements Context {
         }
 
         bundleDescriptor.setPolicyModified(true);
+    }
+
+    @Override
+    public String getVirtualServerName() {
+        return getServletContext().getVirtualServerName();
     }
 
 
@@ -2305,6 +1743,26 @@ public class WebModule extends PwcWebModule implements Context {
     @Override
     public SecurityConfig getSecurityConfig() {
         return config;
+    }
+
+    @Override
+    public <T extends EventListener> void addListener(T t) {
+        getServletContext().addListener(t);
+    }
+
+    @Override
+    public void addListener(Class<? extends EventListener> listenerClass) {
+        getServletContext().addListener(listenerClass);
+    }
+
+    @Override
+    public void setDirectoryListing(boolean directoryListing) {
+        throw new UnsupportedOperationException("No longer supported - unused within Payara");
+    }
+
+    @Override
+    public boolean isDirectoryListing() {
+        throw new UnsupportedOperationException("No longer supported - unused within Payara");
     }
 
     @Override
@@ -2387,296 +1845,50 @@ public class WebModule extends PwcWebModule implements Context {
         }
 
         if (pipeline != null) {
-            GlassFishValve basic = pipeline.getBasic();
+            Valve basic = pipeline.getBasic();
             if ((basic != null) && (basic instanceof java.net.Authenticator)) {
-                removeValve(basic);
+                getPipeline().removeValve((basic));
             }
-            GlassFishValve valves[] = pipeline.getValves();
-            for (GlassFishValve valve : valves) {
+            Valve valves[] = pipeline.getValves();
+            for (Valve valve : valves) {
                 if (valve instanceof java.net.Authenticator) {
-                    removeValve(valve);
+                    getPipeline().removeValve((valve));
                 }
             }
         }
 
+        Realm realm = getRealm();
         if (realm != null && realm instanceof RealmInitializer) {
             ((RealmInitializer) realm).initializeRealm(
                     this.getWebBundleDescriptor(),
                     false,
                     ((VirtualServer)parent).getAuthRealmName());
-            ((RealmInitializer)realm).setVirtualServer(getParent());
-            ((RealmInitializer)realm).updateWebSecurityManager();
+            ((RealmInitializer) realm).setVirtualServer(getParent());
+            ((RealmInitializer) realm).updateWebSecurityManager();
             setRealm(realm);
         }
     }
 
-    @Override
     public long getUniqueId() {
         com.sun.enterprise.deployment.Application app = wmInfo.getDescriptor().getApplication();
         return app != null? app.getUniqueId() : 0L;
     }
-}
 
-class V3WebappLoader extends WebappLoader {
 
-    final ClassLoader cl;
 
-    V3WebappLoader(ClassLoader cl) {
-        this.cl = cl;
+    public void setEngineName(String name) {
+        this.engineName = name;
     }
 
-    @Override
-    protected ClassLoader createClassLoader() throws Exception {
-        return cl;
+    public void setJvmRoute(String jvmRoute) {
+        this.jvmRoute = jvmRoute;
     }
 
-    /**
-     * Stops the nested classloader
-     */
-    @Override
-    public void stopNestedClassLoader() {
-        // Do nothing. The nested (Webapp)ClassLoader is stopped in
-        // WebApplication.stop()
-    }
-}
-
-/**
- * Implementation of jakarta.servlet.ServletRegistration whose addMapping also
- * updates the WebBundleDescriptor from the deployment backend.
- */
-class WebServletRegistrationImpl extends ServletRegistrationImpl {
-
-    public WebServletRegistrationImpl(StandardWrapper wrapper,
-                                      StandardContext context) {
-        super(wrapper, context);
+    public String getEngineName() {
+        return engineName;
     }
 
-    @Override
-    public Set<String> addMapping(String... urlPatterns) {
-        Set<String> conflicts = super.addMapping(urlPatterns);
-        if (conflicts.isEmpty() && urlPatterns != null &&
-                urlPatterns.length > 0) {
-            /*
-             * Propagate the new mappings to the underlying
-             * WebBundleDescriptor provided by the deployment backend,
-             * so that corresponding security constraints may be calculated
-             * by the security subsystem, which uses the
-             * WebBundleDescriptor as its input
-             */
-            WebBundleDescriptor wbd = ((WebModule) getContext()).getWebBundleDescriptor();
-            if (wbd == null) {
-                throw new IllegalStateException(
-                    "Missing WebBundleDescriptor for " + getContext().getName());
-            }
-            WebComponentDescriptor wcd =
-                wbd.getWebComponentByCanonicalName(getName());
-            if (wcd == null) {
-                throw new IllegalStateException(
-                    "Missing WebComponentDescriptor for " + getName());
-            }
-            for (String urlPattern : urlPatterns) {
-                wcd.addUrlPattern(urlPattern);
-            }
-        }
-        return conflicts;
-    }
-}
-
-/**
- * Implementation of ServletRegistration.Dynamic whose addMapping also
- * updates the WebBundleDescriptor from the deployment backend.
- */
-class DynamicWebServletRegistrationImpl
-        extends DynamicServletRegistrationImpl {
-
-    private final WebBundleDescriptor wbd;
-    private WebComponentDescriptor wcd;
-    private final WebModule webModule;
-
-    private String runAsRoleName = null;
-    private ServletSecurityElement servletSecurityElement = null;
-
-    public DynamicWebServletRegistrationImpl(StandardWrapper wrapper,
-                                             WebModule webModule) {
-        super(wrapper, webModule);
-        this.webModule = webModule;
-        wbd = webModule.getWebBundleDescriptor();
-        if (wbd == null) {
-            throw new IllegalStateException(
-                "Missing WebBundleDescriptor for " +
-                getContext().getName());
-        }
-        wbd.setPolicyModified(true);
-        wcd = wbd.getWebComponentByCanonicalName(wrapper.getName());
-        if (wcd == null) {
-            /*
-             * Servlet not present in the WebBundleDescriptor provided
-             * by the deployment backend, which means we are dealing with
-             * the dynamic registration for a programmtically added Servlet,
-             * as opposed to the dynamic registration for a Servlet with a
-             * preliminary declaration (that is, one without any class name).
-             *
-             * Propagate the new Servlet to the WebBundleDescriptor, so that
-             * corresponding security constraints may be calculated by the
-             * security subsystem, which uses the WebBundleDescriptor as its
-             * input.
-             */
-            wcd = new WebComponentDescriptorImpl();
-            wcd.setName(wrapper.getName());
-            wcd.setCanonicalName(wrapper.getName());
-            wbd.addWebComponentDescriptor(wcd);
-            String servletClassName = wrapper.getServletClassName();
-            if (servletClassName != null) {
-                Class<? extends Servlet> clazz = wrapper.getServletClass();
-                if (clazz == null) {
-                    if (wrapper.getServlet() != null) {
-                        clazz = wrapper.getServlet().getClass();
-                    } else {
-                        try {
-                            clazz = loadServletClass(servletClassName);
-                        } catch(Exception ex) {
-                            throw new IllegalArgumentException(ex);
-                        }
-                    }
-                    wrapper.setServletClass(clazz);
-                }
-                processServletAnnotations(clazz, wbd, wcd, wrapper);
-            } else if (wrapper.getJspFile() == null) {
-                // Should never happen
-                throw new RuntimeException(
-                    "Programmatic servlet registration without any " +
-                    "supporting servlet class or jsp file");
-            }
-        }
-    }
-
-    @Override
-    public Set<String> addMapping(String... urlPatterns) {
-        Set<String> conflicts = super.addMapping(urlPatterns);
-        if (conflicts.isEmpty() && urlPatterns != null &&
-                urlPatterns.length > 0) {
-            /*
-             * Propagate the new mappings to the underlying
-             * WebBundleDescriptor provided by the deployment backend,
-             * so that corresponding security constraints may be calculated
-             * by the security subsystem, which uses the
-             * WebBundleDescriptor as its input
-             */
-            for (String urlPattern : urlPatterns) {
-                wcd.addUrlPattern(urlPattern);
-            }
-        }
-        return conflicts;
-    }
-
-    @Override
-    public void setRunAsRole(String roleName) {
-        super.setRunAsRole(roleName);
-        // postpone processing as we can only setRunAsIdentity in WebComponentDescriptor once
-        this.runAsRoleName = roleName;
-    }
-
-    @Override
-    public Set<String> setServletSecurity(ServletSecurityElement constraint) {
-        this.servletSecurityElement = constraint;
-
-        Set<String> conflictUrls = new HashSet<>(wcd.getUrlPatternsSet());
-        conflictUrls.removeAll(ServletSecurityHandler.getUrlPatternsWithoutSecurityConstraint(wcd));
-        conflictUrls.addAll(super.setServletSecurity(constraint));
-        return conflictUrls;
-    }
-
-    /**
-     * Completes preliminary servlet registration by loading the class with
-     * the given name and scanning it for servlet annotations
-     */
-    @Override
-    protected void setServletClassName(String className) {
-        super.setServletClassName(className);
-        try {
-            Class <? extends Servlet> clazz = loadServletClass(className);
-            super.setServletClass(clazz);
-            processServletAnnotations(clazz, wbd, wcd, wrapper);
-        } catch(Exception ex) {
-            throw new IllegalArgumentException(ex);
-        }
-    }
-
-    /**
-     * Completes preliminary servlet registration by scanning the supplied
-     * servlet class for servlet annotations
-     */
-    @Override
-    protected void setServletClass(Class <? extends Servlet> clazz) {
-        super.setServletClass(clazz);
-        processServletAnnotations(clazz, wbd, wcd, wrapper);
-    }
-
-    private void processServletAnnotations(
-            Class <? extends Servlet> clazz,
-            WebBundleDescriptor webBundleDescriptor,
-            WebComponentDescriptor wcd, StandardWrapper wrapper) {
-
-        // Process DeclareRoles annotation
-        if (clazz.isAnnotationPresent(DeclareRoles.class)) {
-            DeclareRoles declareRoles = clazz.getAnnotation(DeclareRoles.class);
-            for (String roleName : declareRoles.value()) {
-                webBundleDescriptor.addRole(new Role(roleName));
-                webModule.declareRoles(roleName);
-            }
-        }
-        // Process MultipartConfig annotation
-        if (clazz.isAnnotationPresent(MultipartConfig.class)) {
-            MultipartConfig mpConfig = clazz.getAnnotation(MultipartConfig.class);
-            wrapper.setMultipartLocation(mpConfig.location());
-            wrapper.setMultipartMaxFileSize(mpConfig.maxFileSize());
-            wrapper.setMultipartMaxRequestSize(mpConfig.maxRequestSize());
-            wrapper.setMultipartFileSizeThreshold(
-                mpConfig.fileSizeThreshold());
-        }
-    }
-
-    void postProcessAnnotations() {
-        Class<? extends Servlet> clazz = wrapper.getServletClass();
-		if (clazz == null) {
-			return;
-		}
-
-        // Process RunAs
-        if (wcd.getRunAsIdentity() == null) {
-            String roleName = runAsRoleName;
-            if (roleName == null && clazz.isAnnotationPresent(RunAs.class)) {
-                RunAs runAs = clazz.getAnnotation(RunAs.class);
-                roleName = runAs.value();
-            }
-            if (roleName != null) {
-                super.setRunAsRole(roleName);
-
-                wbd.addRole(new Role(roleName));
-                RunAsIdentityDescriptor runAsDesc =
-                    new RunAsIdentityDescriptor();
-                runAsDesc.setRoleName(roleName);
-                wcd.setRunAsIdentity(runAsDesc);
-            }
-        }
-
-        // Process ServletSecurity
-        ServletSecurityElement ssElement = servletSecurityElement;
-        if (servletSecurityElement == null &&
-                clazz.isAnnotationPresent(ServletSecurity.class)) {
-            ServletSecurity servletSecurity = clazz.getAnnotation(ServletSecurity.class);
-            ssElement = new ServletSecurityElement(servletSecurity);
-        }
-        if (ssElement != null) {
-            webModule.processServletSecurityElement(
-                    ssElement, wbd, wcd);
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    private Class<? extends Servlet> loadServletClass(String className)
-            throws ClassNotFoundException {
-        return (Class <? extends Servlet>)
-                ctx.getLoader().getClassLoader().loadClass(className);
+    public String getJvmRoute() {
+        return jvmRoute;
     }
 }

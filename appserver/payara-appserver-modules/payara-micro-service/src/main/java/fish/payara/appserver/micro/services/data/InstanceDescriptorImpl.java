@@ -17,11 +17,14 @@
  */
 package fish.payara.appserver.micro.services.data;
 
-import static java.lang.Boolean.TRUE;
-import static jakarta.json.stream.JsonGenerator.PRETTY_PRINTING;
 import fish.payara.micro.data.ApplicationDescriptor;
 import fish.payara.micro.data.InstanceDescriptor;
 import fish.payara.micro.data.ModuleDescriptor;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonWriter;
 import org.glassfish.internal.data.ApplicationInfo;
 
 import java.io.StringWriter;
@@ -32,6 +35,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -39,14 +43,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import jakarta.json.Json;
-import jakarta.json.JsonArrayBuilder;
-import jakarta.json.JsonObject;
-import jakarta.json.JsonObjectBuilder;
-import jakarta.json.JsonWriter;
-
+import java.util.Set;
 import java.util.UUID;
+
+import static jakarta.json.stream.JsonGenerator.PRETTY_PRINTING;
+import static java.lang.Boolean.TRUE;
 
 /**
  *
@@ -58,8 +59,8 @@ public class InstanceDescriptorImpl implements InstanceDescriptor {
 
     private final UUID memberUUID;
     private String instanceName;
-    private final List<Integer> httpPorts;
-    private final List<Integer> httpsPorts;
+    private final Set<Integer> httpPorts;
+    private final Set<Integer> httpsPorts;
     private InetAddress hostName;
     private Map<String, ApplicationDescriptor> deployedApplications;
     private boolean liteMember;
@@ -72,8 +73,8 @@ public class InstanceDescriptorImpl implements InstanceDescriptor {
     public InstanceDescriptorImpl(UUID uuid) throws UnknownHostException {
         hostName = InetAddress.getLocalHost();
         memberUUID = uuid;
-        httpPorts = new ArrayList<>();
-        httpsPorts = new ArrayList<>();
+        httpPorts = new LinkedHashSet<>();
+        httpsPorts = new LinkedHashSet<>();
         heartBeatTS = System.currentTimeMillis();
     }
 
@@ -116,7 +117,7 @@ public class InstanceDescriptorImpl implements InstanceDescriptor {
      */
     @Override
     public List<Integer> getHttpPorts() {
-        return httpPorts;
+        return Collections.unmodifiableList(new ArrayList<>(httpPorts));
     }
 
     /**
@@ -157,7 +158,7 @@ public class InstanceDescriptorImpl implements InstanceDescriptor {
      */
     @Override
     public List<Integer> getHttpsPorts() {
-        return httpsPorts;
+        return Collections.unmodifiableList(new ArrayList<>(httpsPorts));
     }
 
     /**

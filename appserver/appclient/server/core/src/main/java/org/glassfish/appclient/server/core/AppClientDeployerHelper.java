@@ -83,24 +83,6 @@ import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipException;
-import jakarta.inject.Inject;
-import org.glassfish.api.admin.ProcessEnvironment;
-import org.glassfish.api.deployment.DeployCommandParameters;
-import org.glassfish.api.deployment.DeploymentContext;
-import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.glassfish.api.deployment.archive.WritableArchive;
-import org.glassfish.appclient.server.core.jws.JavaWebStartInfo;
-import org.glassfish.appclient.server.core.jws.servedcontent.ASJarSigner;
-import org.glassfish.appclient.server.core.jws.servedcontent.DynamicContent;
-import org.glassfish.appclient.server.core.jws.servedcontent.FixedContent;
-import org.glassfish.appclient.server.core.jws.servedcontent.StaticContent;
-import org.glassfish.appclient.server.core.jws.servedcontent.TokenHelper;
-import org.glassfish.deployment.common.Artifacts;
-import org.glassfish.deployment.common.DeploymentUtils;
-import org.glassfish.deployment.versioning.VersioningSyntaxException;
-import org.glassfish.deployment.versioning.VersioningUtils;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.internal.api.ServerContext;
 
 /**
  * Encapsulates the details of generating the required JAR file(s),

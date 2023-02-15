@@ -76,7 +76,7 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI, Clo
     protected Paths paths = new PathsImpl();
     protected Map<String, Set<String>> endpoints = createOrderedMap();
     protected Components components = new ComponentsImpl();
-    
+
     private ApiContext context;
 
     public static OpenAPI createInstance(AnnotationModel annotation, ApiContext context) {
@@ -99,7 +99,7 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI, Clo
         }
         return from;
     }
-    
+
     public final ApiContext getContext() {
         return context;
     }

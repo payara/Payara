@@ -40,14 +40,14 @@
     holder.
 
 -->
-<!-- Portions Copyright [2017-2021] [Payara Foundation] -->
+<!-- Portions Copyright [2017-2022] [Payara Foundation] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <parent>
         <groupId>fish.payara.server.internal.transaction</groupId>
         <artifactId>transaction</artifactId>
-        <version>6.2022.2-SNAPSHOT</version>
+        <version>6.2023.3-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>jts</artifactId>
@@ -98,7 +98,7 @@
             <artifactId>jakarta.resource-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.transaction</groupId>
+            <groupId>fish.payara.server.core.transaction</groupId>
             <artifactId>transaction-internal-api</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -108,17 +108,17 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.common</groupId>
+            <groupId>fish.payara.server.core.common</groupId>
             <artifactId>glassfish-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.common</groupId>
+            <groupId>fish.payara.server.core.common</groupId>
             <artifactId>common-util</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.admin</groupId>
+            <groupId>fish.payara.server.core.admin</groupId>
             <artifactId>config-api</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
@@ -140,7 +140,7 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.orb</groupId>
+            <groupId>fish.payara.server.core.orb</groupId>
             <artifactId>orb-connector</artifactId>
             <version>${project.parent.version}</version>
             <optional>true</optional>

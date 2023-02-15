@@ -218,11 +218,11 @@ public class JspGroupDescriptor extends Descriptor
     }
 
     public String getPageEncoding() {
-	return pageEncoding;
+        return pageEncoding;
     }
 
     public void setPageEncoding(String encoding) {
-	pageEncoding = encoding;
+        pageEncoding = encoding;
     }
 
     /**

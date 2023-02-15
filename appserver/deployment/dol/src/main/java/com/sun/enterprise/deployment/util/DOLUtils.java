@@ -163,7 +163,7 @@ public class DOLUtils {
     private static final String[] SYSTEM_PACKAGES = {"com.sun.", "org.glassfish.", "org.glassfish.wasp.", "fish.payara.", "com.ibm.jbatch.",
                             "org.hibernate.validator.", "org.jboss.weld.", "com.ctc.wstx.", "java.", "javax.", "jakarta."};
     private static final String[] SYSTEM_RESOURCES = {"META-INF/services/javax.", "META-INF/services/jakarta.", "META-INF/services/org.glassfish.", "META-INF/services/java."};
-    
+
     /** no need to creates new DOLUtils */
     private DOLUtils() {
     }
@@ -782,7 +782,7 @@ public class DOLUtils {
                     continue;
                 if (namespace.equals(TagNames.JAKARTAEE_NAMESPACE))
                     continue;
-                if (namespace.equals(W3C_XML_SCHEMA)) 
+                if (namespace.equals(W3C_XML_SCHEMA))
                     continue;
                 sb.append(namespace);
                 sb.append(" ");

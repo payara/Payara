@@ -23,7 +23,7 @@ party licensors listed.
 ****************************************
 
 ---------------------------------------------------
-Accessors Smart 2.4.2
+Accessors Smart 2.4.8
 Apache Ant 1.10.9
 Apache BCEL 6.6.1
 Apache Felix OSGI 7.x

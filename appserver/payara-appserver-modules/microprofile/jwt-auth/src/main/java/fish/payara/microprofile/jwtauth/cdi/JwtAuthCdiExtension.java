@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2021 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2022 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,14 +41,7 @@ package fish.payara.microprofile.jwtauth.cdi;
 
 import fish.payara.microprofile.jwtauth.eesecurity.JWTAuthenticationMechanism;
 import fish.payara.microprofile.jwtauth.eesecurity.SignedJWTIdentityStore;
-import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import jakarta.annotation.security.RolesAllowed;
-import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.context.SessionScoped;
 import jakarta.enterprise.event.Observes;
 import jakarta.enterprise.inject.spi.AfterBeanDiscovery;
@@ -67,6 +60,14 @@ import org.eclipse.microprofile.auth.LoginConfig;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.jwt.Claim;
+
+import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import static org.eclipse.microprofile.jwt.Claims.UNKNOWN;
 import static org.eclipse.microprofile.jwt.config.Names.VERIFIER_PUBLIC_KEY;
 import static org.eclipse.microprofile.jwt.config.Names.VERIFIER_PUBLIC_KEY_LOCATION;
@@ -91,13 +92,14 @@ public class JwtAuthCdiExtension implements Extension {
 
     public void register(@Observes BeforeBeanDiscovery beforeBean, BeanManager beanManager) {
         beforeBean.addAnnotatedType(beanManager.createAnnotatedType(InjectionPointGenerator.class), "JWT InjectionPointGenerator ");
+        beforeBean.addAnnotatedType(beanManager.createAnnotatedType(JsonWebTokenProducer.class), JsonWebTokenProducer.class.getName());
     }
     
     /**
      * This method tries to find the LoginConfig annotation and if does flags that fact.
      * 
      */
-    public <T> void findLoginConfigAnnotation(@Observes ProcessBean<T> eventIn, BeanManager beanManager) {
+    public <T> void findLoginConfigAnnotation(@Observes ProcessBean<T> eventIn) {
         
         ProcessBean<T> event = eventIn; // JDK8 u60 workaround
         
@@ -112,7 +114,7 @@ public class JwtAuthCdiExtension implements Extension {
      * declared later on. 
      * 
      */
-    public <T> void findRoles(@Observes ProcessManagedBean<T> eventIn, BeanManager beanManager) {
+    public <T> void findRoles(@Observes ProcessManagedBean<T> eventIn) {
         
         ProcessManagedBean<T> event = eventIn; // JDK8 u60 workaround
         
@@ -133,7 +135,7 @@ public class JwtAuthCdiExtension implements Extension {
         
     }
     
-    public <T> void checkInjectIntoRightScope(@Observes ProcessInjectionTarget<T> eventIn, BeanManager beanManager) {
+    public <T> void checkInjectIntoRightScope(@Observes ProcessInjectionTarget<T> eventIn) {
 
         ProcessInjectionTarget<T> event = eventIn; // JDK8 u60 workaround
         
@@ -163,7 +165,7 @@ public class JwtAuthCdiExtension implements Extension {
         }
     }
    
-    public void installMechanismIfNeeded(@Observes AfterBeanDiscovery eventIn, BeanManager beanManager) {
+    public void installMechanismIfNeeded(@Observes AfterBeanDiscovery eventIn) {
 
         AfterBeanDiscovery afterBeanDiscovery = eventIn; // JDK8 u60 workaround
 

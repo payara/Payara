@@ -49,39 +49,39 @@ import java.security.ProtectionDomain;
 
 /**
  * An implementation of the <code>ProxyServices</code> Service.
- * 
- * This implementation uses the thread context classloader (the application 
+ *
+ * This implementation uses the thread context classloader (the application
  * classloader) as the classloader for loading the bean proxies. The classloader
  * that loaded the Bean must be used to load and define the bean proxy to handle
- * Beans with package-private constructor as discussed in WELD-737. 
- *  
+ * Beans with package-private constructor as discussed in WELD-737.
+ *
  * Weld proxies today have references to some internal weld implementation classes
- * such as javassist and org.jboss.weld.proxy.* packages. These classes are 
+ * such as javassist and org.jboss.weld.proxy.* packages. These classes are
  * temporarily re-exported through the weld-integration-fragment bundle so that
  * when the bean proxies when loaded using the application classloader will have
  * visibility to these internal implementation classes.
- * 
+ *
  * As a fix for WELD-737, Weld may use the Bean's classloader rather than asking
- * the ProxyServices service implementation. Weld also plans to remove the 
+ * the ProxyServices service implementation. Weld also plans to remove the
  * dependencies of the bean proxy on internal implementation classes. When that
- * happens we can remove the weld-integration-fragment workaround and the 
+ * happens we can remove the weld-integration-fragment workaround and the
  * ProxyServices implementation
- *  
+ *
  * @author Sivakumar Thyagarajan
  */
 public class ProxyServicesImpl implements ProxyServices {
-    
+
     ClassLoaderHierarchy clh;
-    
+
     public ProxyServicesImpl(ServiceLocator services) {
         clh = services.getService(ClassLoaderHierarchy.class);
     }
-    
+
     /**
      * Gets the ClassLoader associated with the Bean. Weld generates Proxies
      * for Beans from an application/BDA and for certain API artifacts such as
      * <code>UserTransaction</code>.
-     * 
+     *
      * @param proxiedBeanType
      * @return
      */
@@ -94,7 +94,7 @@ public class ProxyServicesImpl implements ProxyServices {
         //Check if this is an application classloader
         boolean isAppCL = isApplicationClassLoader(prxCL);
         if (!isAppCL) {
-            prxCL = _getClassLoader(); 
+            prxCL = _getClassLoader();
             //fall back to the old behaviour of using TCL to get the application
             //or module classloader. We return this classloader for non-application
             //Beans, as Weld Proxies requires other Weld support classes (such as
@@ -104,7 +104,7 @@ public class ProxyServicesImpl implements ProxyServices {
     }
 
     /**
-     * Check if the ClassLoader of the Bean type being proxied is a 
+     * Check if the ClassLoader of the Bean type being proxied is a
      * GlassFish application ClassLoader. The current logic checks if
      * the common classloader appears as a parent in the classloader hierarchy
      * of the Bean's classloader.
@@ -125,7 +125,7 @@ public class ProxyServicesImpl implements ProxyServices {
         ClassLoader tcl = Thread.currentThread().getContextClassLoader();
         return tcl;
     }
-    
+
     public Class<?> loadClass(Class<?> originalClass, String classBinaryName) throws ClassNotFoundException {
         return _getClassLoader().loadClass(classBinaryName);
     }
@@ -140,7 +140,7 @@ public class ProxyServicesImpl implements ProxyServices {
                                 ProtectionDomain protectionDomain) throws ClassFormatError {
         ClassLoader cl = getClassLoaderforBean(originalClass);
         if(protectionDomain == null) {
-           return defineClass(cl, className, classBytes, off, len);
+            return defineClass(cl, className, classBytes, off, len);
         }
         return defineClass(cl, className, classBytes, off, len, protectionDomain);
     }

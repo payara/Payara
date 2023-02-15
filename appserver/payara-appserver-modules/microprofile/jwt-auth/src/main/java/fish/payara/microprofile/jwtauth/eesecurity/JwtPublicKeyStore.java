@@ -74,6 +74,7 @@ public class JwtPublicKeyStore {
     private final Supplier<Optional<String>> cacheSupplier;
     private final Duration defaultCacheTTL;
     private String keyLocation = "/publicKey.pem";
+
     /**
      * @param defaultCacheTTL Public key cache TTL 
      */

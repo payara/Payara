@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.distributions</groupId>
         <artifactId>distributions</artifactId>
-        <version>6.2022.2-SNAPSHOT</version>
+        <version>6.2023.3-SNAPSHOT</version>
     </parent>
     <artifactId>payara-web-ml</artifactId>
     <name>Payara Web Multi-Language Distribution</name>
@@ -76,12 +76,12 @@
                             <goal>run</goal>
                         </goals>
                         <configuration>
-                            <tasks>
+                            <target>
                                 <property name="distribution"
                                           value="payara-web-ml"/>
                                 <ant antfile="../distributions.xml"
                                      target="set-distribution"/>
-                            </tasks>
+                            </target>
                         </configuration>
                     </execution>
                 </executions>

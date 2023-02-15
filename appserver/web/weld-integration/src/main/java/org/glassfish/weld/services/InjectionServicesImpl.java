@@ -165,7 +165,7 @@ public class InjectionServicesImpl implements InjectionServices {
             } else {
                 if (annotatedType instanceof BackedAnnotatedType) {
                     BackedAnnotatedType backedAnnotatedType = ((BackedAnnotatedType) annotatedType);
-                    //Added condition to skip printing logs when the TransactionScopedCDIEventHelperImpl is tried
+                    // Added condition to skip printing logs when the TransactionScopedCDIEventHelperImpl is tried
                     // to be used for the TransactionalScoped CDI Bean
                     if (componentEnv == null && availableAnnotatedType.test(backedAnnotatedType)
                             && isTransactionExtension.test(backedAnnotatedType.getIdentifier())) {

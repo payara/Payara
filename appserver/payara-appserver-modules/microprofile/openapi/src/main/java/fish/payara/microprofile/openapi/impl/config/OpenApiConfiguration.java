@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -66,7 +66,7 @@ public class OpenApiConfiguration {
 
     private static final String MODEL_READER_KEY = "mp.openapi.model.reader";
     private static final String FILTER_KEY = "mp.openapi.filter";
-    private static final String SCAN_LIB_KEY = "mp.openapi.scan.lib";
+    private static final String SCAN_LIB_KEY = "mp.openapi.extensions.scan.lib";
     private static final String SCAN_DISABLE_KEY = "mp.openapi.scan.disable";
     private static final String SCAN_PACKAGES_KEY = "mp.openapi.scan.packages";
     private static final String SCAN_CLASSES_KEY = "mp.openapi.scan.classes";

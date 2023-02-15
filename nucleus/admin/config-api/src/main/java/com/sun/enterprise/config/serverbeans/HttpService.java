@@ -222,7 +222,7 @@ public interface HttpService extends ConfigBeanProxy, PropertyBag, ConfigExtensi
     @PropertyDesc(name="use-nio-direct-bytebuffer", defaultValue="true", dataType=Boolean.class,
         description="Controls whether the NIO direct ByteBuffer is used. In a limited resource environment, " +
             "it might be faster to use non-direct Java's ByteBuffer by setting a value of false"),
-
+        
     @PropertyDesc(name="bufferSize", defaultValue="4096", dataType=NonNegativeInteger.class,
         description="Size in bytes of the buffer to be provided for input streams created by HTTP listeners"),
 

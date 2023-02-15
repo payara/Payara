@@ -44,7 +44,7 @@
     <parent>
         <groupId>fish.payara.api</groupId>
         <artifactId>api-parent</artifactId>
-        <version>6.2022.2-SNAPSHOT</version>
+        <version>6.2023.3-SNAPSHOT</version>
     </parent>
 
     <artifactId>payara-bom</artifactId>
@@ -58,59 +58,65 @@
             <dependency>
                 <groupId>fish.payara.distributions</groupId>
                 <artifactId>payara</artifactId>
-                <version>${payara.version}</version>
+                <version>${project.version}</version>
                 <type>zip</type>
             </dependency>
 
             <dependency>
                 <groupId>fish.payara.distributions</groupId>
                 <artifactId>payara-web</artifactId>
-                <version>${payara.version}</version>
+                <version>${project.version}</version>
                 <type>zip</type>
             </dependency>
 
             <dependency>
                 <groupId>fish.payara.distributions</groupId>
                 <artifactId>payara-ml</artifactId>
-                <version>${payara.version}</version>
+                <version>${project.version}</version>
                 <type>zip</type>
             </dependency>
 
             <dependency>
                 <groupId>fish.payara.distributions</groupId>
                 <artifactId>payara-web-ml</artifactId>
-                <version>${payara.version}</version>
+                <version>${project.version}</version>
                 <type>zip</type>
             </dependency>
 
             <dependency>
                 <groupId>fish.payara.extras</groupId>
                 <artifactId>ejb-http-client</artifactId>
-                <version>${payara.version}</version>
+                <version>${project.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>fish.payara.extras</groupId>
                 <artifactId>payara-embedded-web</artifactId>
-                <version>${payara.version}</version>
+                <version>${project.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>fish.payara.extras</groupId>
                 <artifactId>payara-embedded-all</artifactId>
-                <version>${payara.version}</version>
+                <version>${project.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>fish.payara.extras</groupId>
                 <artifactId>payara-micro</artifactId>
-                <version>${payara.version}</version>
+                <version>${project.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>fish.payara.api</groupId>
                 <artifactId>payara-api</artifactId>
-                <version>${payara.version}</version>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.security.connectors</groupId>
+                <artifactId>security-connectors-api</artifactId>
+                <version>${payara.security-connectors.version}</version>
             </dependency>
 
             <dependency>
@@ -122,7 +128,7 @@
             <dependency>
                 <groupId>fish.payara.server.appclient</groupId>
                 <artifactId>payara-client</artifactId>
-                <version>${payara.version}</version>
+                <version>${project.version}</version>
             </dependency>
 
             <!-- APIs -->
@@ -819,10 +825,6 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-
-    <properties>
-        <payara.version>${project.version}</payara.version>
-    </properties>
 
     <build>
         <plugins>

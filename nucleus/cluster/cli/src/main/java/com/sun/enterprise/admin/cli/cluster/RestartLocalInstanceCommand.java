@@ -140,6 +140,7 @@ public class RestartLocalInstanceCommand extends SynchronizeInstanceCommand {
         }
 
         waitForRestart(oldServerPid, (timeout * 1000));
+
         return 0;
     }
 
@@ -204,7 +205,6 @@ public class RestartLocalInstanceCommand extends SynchronizeInstanceCommand {
         if (!dir.isDirectory()) {
             throw new CommandException(Strings.get("Instance.noSuchInstance"));
         }
-
     }
 
     /**

@@ -1,0 +1,43 @@
+name: Enhancement Request
+description: Propose a new minor enhancement for the Payara Platform
+title: "Enhancement: "
+labels: [ "Status: Open", "Type: Enhancement" ]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Brief Summary
+      description: |
+        Describe clearly and concisely a summary of your enhancement request
+    validations:
+      required: true
+  - type: textarea
+    id: expected-outcome
+    attributes:
+      label: Expected Outcome
+      description: |
+        Provide a detailed summary of how your proposed enhancement should work
+    validations:
+      required: true
+  - type: textarea
+    id: current-outcome
+    attributes:
+      label: Current Outcome
+      description: |
+        Explain the drawbacks and disadvantages of the current feature set that is targeted by the proposed enhancement
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives
+      description: |
+        Describe any alternative solutions or workarounds that you've considered that supply the expected outcome
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: |
+        Describe any additional details that you think are needed to contextualize your proposed enhancement
