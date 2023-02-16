@@ -1507,10 +1507,11 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
             if (container instanceof StandardContext) {
                 StandardContext context = (StandardContext) container;
                 for (Valve valve : context.getPipeline().getValves()) {
-                    if (valve instanceof AuthenticatorBase) {
-                        ((AuthenticatorBase) valve).setSingleSignOn(sso);
-                        break;
-                    }
+                    // TODO: Catalina doesn't support changing sso at runtime, AuthenticatorBase will pick up sso from the pipeline at start.
+//                    if (valve instanceof AuthenticatorBase) {
+//                        ((AuthenticatorBase) valve).setSingleSignOn(sso);
+//                        break;
+//                    }
                 }
             }
         }
