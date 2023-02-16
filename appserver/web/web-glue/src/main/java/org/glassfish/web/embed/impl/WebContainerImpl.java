@@ -45,24 +45,19 @@ import com.sun.enterprise.config.serverbeans.HttpService;
 import com.sun.enterprise.web.ContextFacade;
 import com.sun.enterprise.web.EmbeddedWebContainer;
 import com.sun.enterprise.web.VirtualServerFacade;
-import com.sun.enterprise.web.WebConnector;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import org.apache.catalina.Container;
 import org.apache.catalina.Engine;
-import org.apache.catalina.core.StandardHost;
 import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.api.container.Sniffer;
 import org.glassfish.embeddable.GlassFishException;
 import org.glassfish.embeddable.web.*;
 import org.glassfish.embeddable.web.config.SslConfig;
 import org.glassfish.embeddable.web.config.SslType;
 import org.glassfish.embeddable.web.config.WebContainerConfig;
 import org.glassfish.grizzly.config.dom.*;
-import org.glassfish.hk2.api.ActiveDescriptor;
 import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.internal.embedded.Port;
 import org.glassfish.internal.embedded.Ports;
@@ -76,7 +71,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -87,8 +81,10 @@ import java.util.logging.Logger;
  * and virtual servers, and the registration of static and dynamic
  * web resources into the URI namespace.
  *
+ * @deprecated This class is not used in any for of distribution rather a form of custom embedded setup
  * @author Amy Roh
  */
+@Deprecated(forRemoval = true)
 @Service
 @ContractsProvided({WebContainerImpl.class, WebContainer.class})
 public class WebContainerImpl implements WebContainer {
@@ -119,8 +115,6 @@ public class WebContainerImpl implements WebContainer {
 
     private WebContainerConfig config;
 
-    private EmbeddedWebContainer embedded;
-
     private Engine engine = null;
 
     private boolean initialized = false;
@@ -138,53 +132,7 @@ public class WebContainerImpl implements WebContainer {
 
 
     private void init() {
-
-        if (initialized) {
-            return;
-        }
-
-        if (config == null) {
-            // use default settings
-            config = new WebContainerConfig();
-        }
-
-        container = habitat.getServiceHandle(org.glassfish.api.container.Container.class,
-                "com.sun.enterprise.web.WebContainer");
-        if (container == null) {
-            log.severe("Cannot find webcontainer implementation");
-            return;
-        }
-
-        ActiveDescriptor<?> activeDescriptor = habitat.getBestDescriptor(
-                BuilderHelper.createContractFilter("com.sun.enterprise.web.EmbeddedWebContainer"));
-        if (activeDescriptor == null) {
-            log.severe("Cannot find embedded implementation");
-            return;
-        }
-        embeddedInhabitant = habitat.getServiceHandle(activeDescriptor);
-
-        try {
-
-            webContainer = (com.sun.enterprise.web.WebContainer) container.getService();
-            embedded = (EmbeddedWebContainer) embeddedInhabitant.getService();
-
-            if ((webContainer == null) || (embedded == null)) {
-                log.severe("Cannot find webcontainer implementation");
-                return;
-            }
-
-            engine = webContainer.getEngine();
-            if (engine == null) {
-                log.severe("Cannot find engine implementation");
-                return;
-            }
-
-            initialized = true;
-
-        } catch (Exception e) {
-            log.severe("Init exception " + e.getMessage());
-        }
-
+        throw new UnsupportedOperationException("Embedded containers are no longer supported in Payara 6");
     }
 
     private void bind(Port port, WebListener webListener, String vsId) {
@@ -454,9 +402,6 @@ public class WebContainerImpl implements WebContainer {
         try {
 
             VirtualServer vs = getVirtualServer(config.getVirtualServerId());
-            if (vs != null) {
-                ((StandardHost)vs).setDefaultWebXmlLocation(config.getDefaultWebXml().getPath());
-            }
 
             com.sun.enterprise.config.serverbeans.VirtualServer vsBean =
                 httpService.getVirtualServerByName(config.getVirtualServerId());
@@ -490,24 +435,14 @@ public class WebContainerImpl implements WebContainer {
             EmbeddedWebArchivist archivist = habitat.<EmbeddedWebArchivist>getService(EmbeddedWebArchivist.class);
             archivist.setDefaultWebXml(config.getDefaultWebXml());
 
-            embedded.setDirectoryListing(config.getListings());
 
             WebListener listener = getWebListener(config.getListenerName());
             if (listener == null) {
                 listener = getWebListener(config.getPort());
                 if (listener == null) {
-                    boolean found = false;
-                    for (Map.Entry entry : webContainer.getConnectorMap().entrySet()) {
-                        if (((WebConnector)entry.getValue()).getPort() == config.getPort()) {
-                            found = true;
-                            log.info("Port "+config.getPort()+" is already configured");
-                        }
-                    }
-                    if (!found) {
-                        listener = createWebListener(config.getListenerName(), HttpListener.class);
-                        listener.setPort(config.getPort());
-                        addWebListener(listener, config.getVirtualServerId());
-                    }
+                    listener = createWebListener(config.getListenerName(), HttpListener.class);
+                    listener.setPort(config.getPort());
+                    addWebListener(listener, config.getVirtualServerId());
                 }
             } else {
                 if (listener.getPort() != config.getPort()) {
@@ -518,23 +453,6 @@ public class WebContainerImpl implements WebContainer {
         }  catch (Exception ex) {
             ex.printStackTrace();
         }
-
-    }
-
-    /**
-     * Returns the list of sniffers associated with this embedded container
-     * @return list of sniffers
-     */
-    public List<Sniffer> getSniffers() {
-
-        List<Sniffer> sniffers = new ArrayList<Sniffer>();
-        sniffers.add(habitat.<Sniffer>getService(Sniffer.class, "web"));
-        sniffers.add(habitat.<Sniffer>getService(Sniffer.class, "weld"));
-        Sniffer security = habitat.getService(Sniffer.class, "Security");
-        if (security!=null) {
-            sniffers.add(security);
-        }
-        return sniffers;
 
     }
 
