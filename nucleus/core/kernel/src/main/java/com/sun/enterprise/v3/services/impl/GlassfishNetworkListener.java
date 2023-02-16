@@ -54,6 +54,7 @@ import com.sun.enterprise.v3.services.impl.monitor.FileCacheMonitor;
 import com.sun.enterprise.v3.services.impl.monitor.GrizzlyMonitoring;
 import com.sun.enterprise.v3.services.impl.monitor.KeepAliveMonitor;
 import com.sun.enterprise.v3.services.impl.monitor.ThreadPoolMonitor;
+import fish.payara.nucleus.requesttracing.store.RequestTraceStoreFactory;
 import org.glassfish.grizzly.Buffer;
 import org.glassfish.grizzly.config.GenericGrizzlyListener;
 import org.glassfish.grizzly.config.dom.Http;
@@ -72,6 +73,7 @@ import org.glassfish.grizzly.http.server.ServerFilterConfiguration;
 import org.glassfish.grizzly.http.server.filecache.FileCache;
 import org.glassfish.grizzly.http.server.util.Mapper;
 import org.glassfish.grizzly.http.util.Header;
+import org.glassfish.grizzly.http.util.HeaderValue;
 import org.glassfish.grizzly.threadpool.ThreadPoolConfig;
 import org.glassfish.grizzly.utils.DelayedExecutor;
 import org.glassfish.hk2.api.DynamicConfiguration;
@@ -464,10 +466,6 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
                 response.addHeader(Header.XPoweredBy, xPoweredBy);
             }
 
-            if (this.cookieSameSiteValue != null) {
-                response.addHeader(Header.SetCookie, "SameSite=" + this.cookieSameSiteValue);
-            }
-
             return result;
         }
 
@@ -482,6 +480,18 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
             // Set response "X-Frame-Options" header
             if (!httpHeader.containsHeader(xFrameOptionsHeader) && xFrameOptions != null) {
                 httpHeader.addHeader(xFrameOptionsHeader, xFrameOptions);
+            }
+
+            if (this.cookieSameSiteValue != null && httpHeader instanceof HttpResponsePacket) {
+                final HttpResponsePacket response = (HttpResponsePacket) httpHeader;
+                final HttpRequestPacket request = response.getRequest();
+                String cookieHeader = request.getHeader(Header.Cookie);
+                if (cookieHeader != null) {
+                    String[] cookies = cookieHeader.split(";");
+                    for (String cookie : cookies) {
+                        response.addHeader(Header.SetCookie, cookie.trim() + "; HttpOnly; SameSite=" + this.cookieSameSiteValue);
+                    }
+                }
             }
         }
     }
