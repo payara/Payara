@@ -37,24 +37,44 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2022-2023] Payara Foundation and/or affiliates
 package com.sun.enterprise.web;
 
 
-import java.io.*;
-import java.net.*;
-import java.text.MessageFormat;
-import java.util.*;
-import jakarta.servlet.*;
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterRegistration;
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.Servlet;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletContextAttributeListener;
+import jakarta.servlet.ServletContextListener;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRegistration;
+import jakarta.servlet.ServletRequestAttributeListener;
+import jakarta.servlet.ServletRequestListener;
+import jakarta.servlet.SessionCookieConfig;
+import jakarta.servlet.SessionTrackingMode;
 import jakarta.servlet.descriptor.JspConfigDescriptor;
 import jakarta.servlet.http.HttpSessionAttributeListener;
 import jakarta.servlet.http.HttpSessionIdListener;
 import jakarta.servlet.http.HttpSessionListener;
-
-import org.apache.catalina.core.*;
-import org.apache.catalina.deploy.FilterDef;
-import org.apache.catalina.deploy.FilterMap;
-import org.glassfish.embeddable.web.Context;
+import java.io.File;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.EventListener;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.apache.catalina.core.ApplicationFilterRegistration;
+import org.apache.catalina.core.ApplicationServletRegistration;
+import org.apache.catalina.core.StandardWrapper;
+import org.apache.tomcat.util.descriptor.web.FilterDef;
+import org.apache.tomcat.util.descriptor.web.FilterMap;
 import org.glassfish.embeddable.web.config.SecurityConfig;
 import org.glassfish.web.LogFacade;
 
@@ -262,8 +282,7 @@ public class ContextFacade extends WebModule {
     }
 
     @Override
-    public ServletRegistration.Dynamic addServlet(
-            String servletName, String className) {
+    public ServletRegistration.Dynamic addServlet(String servletName, String className) {
         if (context != null) {
             return context.addServlet(servletName, className);
         } else {
@@ -271,59 +290,42 @@ public class ContextFacade extends WebModule {
         }
     }
 
-    /*
-    public Servlet findServlet(String name) {
-        if (name == null)
-            return (null);
-        synchronized (servlets) {       // Required by post-start changes
-            return servlets.get(name);
-        }
-    }*/
-
-    public ServletRegistration.Dynamic addServletFacade(String servletName,
-            String className) {
+    public ServletRegistration.Dynamic addServletFacade(String servletName, String className) {
         if (servletName == null || className == null) {
             throw new NullPointerException("Null servlet instance or name");
         }
-
-        DynamicServletRegistrationImpl regis =
-                (DynamicServletRegistrationImpl)
-                        servletRegisMap.get(servletName);
-        if (regis == null) {
+        ApplicationServletRegistration servletRegis = (ApplicationServletRegistration) context.getServletRegistration(servletName);
+        if (servletRegis == null) {
             StandardWrapper wrapper = new StandardWrapper();
             wrapper.setName(servletName);
-            wrapper.setServletClassName(className);
+            wrapper.setServletClass(className);
 
-            regis = (DynamicServletRegistrationImpl)
-                    createDynamicServletRegistrationImpl(wrapper);
+            servletRegis = (ApplicationServletRegistration) createDynamicServletRegistrationImpl(wrapper);
 
-            DynamicServletRegistrationImpl tmpRegis =
-                    (DynamicServletRegistrationImpl)
-                            servletRegisMap.putIfAbsent(servletName, regis);
-            if (tmpRegis != null) {
-                regis = tmpRegis;
+            ApplicationServletRegistration tmpServletRegis =
+                    (ApplicationServletRegistration) context.addServlet(servletName, servletRegis.getClassName());
+
+            if (tmpServletRegis != null) {
+                servletRegis = tmpServletRegis;
             }
             servlets.put(servletName, className);
         }
 
-        return regis;
+        return servletRegis;
     }
 
     public Map<String, String[]> getServletMappings() {
         return servletMappings;
     }
 
-    protected ServletRegistrationImpl createServletRegistrationImpl(
-            StandardWrapper wrapper) {
-        return new ServletRegistrationImpl(wrapper, this);
+    protected ServletRegistration createServletRegistrationImpl(StandardWrapper wrapper) {
+        return new ApplicationServletRegistration(wrapper, this);
     }
-    protected ServletRegistrationImpl createDynamicServletRegistrationImpl(
-            StandardWrapper wrapper) {
-        return new DynamicServletRegistrationImpl(wrapper, this);
+    protected ServletRegistration.Dynamic createDynamicServletRegistrationImpl(StandardWrapper wrapper) {
+        return new ApplicationServletRegistration(wrapper, this);
     }
 
-    public ServletRegistration.Dynamic addServlet(String servletName,
-            Class <? extends Servlet> servletClass) {
+    public ServletRegistration.Dynamic addServlet(String servletName, Class <? extends Servlet> servletClass) {
         if (context != null) {
             return context.addServlet(servletName, servletClass);
         } else {
@@ -331,8 +333,7 @@ public class ContextFacade extends WebModule {
         }
     }
 
-    public ServletRegistration.Dynamic addServlet(
-            String servletName, Servlet servlet) {
+    public ServletRegistration.Dynamic addServlet(String servletName, Servlet servlet) {
         if (context != null) {
             return context.addServlet(servletName, servlet);
         } else {
@@ -340,29 +341,25 @@ public class ContextFacade extends WebModule {
         }
     }
 
-    @Override
-    public Set<String> addServletMapping(String name,
-                                         String[] urlPatterns) {
+    public Set<String> addServletMapping(String name, String[] urlPatterns) {
         servletMappings.put(name, urlPatterns);
         return servletMappings.keySet();
     }
 
-    public <T extends Servlet> T createServlet(Class<T> clazz)
-            throws ServletException {
+    public <T extends Servlet> T createServlet(Class<T> clazz) throws ServletException {
         if (context != null) {
             return context.createServlet(clazz);
         } else {
             try {
-                return createServletInstance(clazz);
+                return super.createServlet(clazz);
             } catch (Throwable t) {
-                throw new ServletException("Unable to create Servlet from " +
-                        "class " + clazz.getName(), t);
+                throw new ServletException("Unable to create Servlet from class " + clazz.getName(), t);
             }
         }
     }
 
     public ServletRegistration getServletRegistration(String servletName) {
-        return servletRegisMap.get(servletName);
+        return context.getServletRegistration(servletName);
     }
 
     public Map<String, ? extends ServletRegistration> getServletRegistrations() {
@@ -381,30 +378,23 @@ public class ContextFacade extends WebModule {
         return urlPatternFilterMappings;
     }
 
-    public FilterRegistration.Dynamic addFilterFacade(
-            String filterName, String className) {
-        DynamicFilterRegistrationImpl regis =
-                (DynamicFilterRegistrationImpl) filterRegisMap.get(
-                        filterName);
-        FilterDef filterDef = null;
-        if (null == regis) {
+    public FilterRegistration.Dynamic addFilterFacade(String filterName, String className) {
+        FilterDef filterDef = context.findFilterDef(filterName);
+        if (null == filterDef) {
             filterDef = new FilterDef();
-        } else {
-            filterDef = regis.getFilterDefinition();
         }
         filterDef.setFilterName(filterName);
-        filterDef.setFilterClassName(className);
+        filterDef.setFilterClass(className);
 
-        regis = new DynamicFilterRegistrationImpl(filterDef, this);
-        filterRegisMap.put(filterDef.getFilterName(), regis);
+        ApplicationFilterRegistration appFilterRegis = new ApplicationFilterRegistration(filterDef, this);
+        context.addFilterDef(filterDef);
         filters.put(filterName, className);
 
-        return regis;
+        return appFilterRegis;
     }
 
     @Override
-    public FilterRegistration.Dynamic addFilter(
-            String filterName, String className) {
+    public FilterRegistration.Dynamic addFilter(String filterName, String className) {
         if (context != null) {
             return context.addFilter(filterName, className);
         } else {
@@ -413,16 +403,19 @@ public class ContextFacade extends WebModule {
     }
 
     @Override
-    public void addFilterMap(FilterMap filterMap, boolean isMatchAfter) {
-        if (filterMap.getServletName() != null) {
-            servletNameFilterMappings.put(filterMap.getFilterName(), filterMap.getServletName());
-        } else if (filterMap.getURLPattern() != null) {
-            urlPatternFilterMappings.put(filterMap.getFilterName(), filterMap.getURLPattern());
+    public void addFilterMap(FilterMap filterMap) {
+        if (filterMap.getServletNames() != null) {
+            for (String servletName : filterMap.getServletNames()) {
+                servletNameFilterMappings.put(filterMap.getFilterName(), servletName);
+            }
+        } else if (filterMap.getURLPatterns() != null) {
+            for (String urlPattern : filterMap.getURLPatterns()) {
+                urlPatternFilterMappings.put(filterMap.getFilterName(), urlPattern);
+            }
         }
     }
 
-    public FilterRegistration.Dynamic addFilter(
-            String filterName, Filter filter) {
+    public FilterRegistration.Dynamic addFilter(String filterName, Filter filter) {
         if (context != null) {
             return context.addFilter(filterName, filter);
         } else {
@@ -430,8 +423,7 @@ public class ContextFacade extends WebModule {
         }
     }
 
-    public FilterRegistration.Dynamic addFilter(String filterName,
-            Class <? extends Filter> filterClass) {
+    public FilterRegistration.Dynamic addFilter(String filterName, Class <? extends Filter> filterClass) {
         if (context != null) {
             return context.addFilter(filterName, filterClass);
         } else {
@@ -439,13 +431,12 @@ public class ContextFacade extends WebModule {
         }
     }
 
-    public <T extends Filter> T createFilter(Class<T> clazz)
-            throws ServletException {
+    public <T extends Filter> T createFilter(Class<T> clazz) throws ServletException {
         if (context != null) {
             return context.createFilter(clazz);
         } else {
             try {
-                return createFilterInstance(clazz);
+                return super.createFilter(clazz);
             } catch (Throwable t) {
                 throw new ServletException("Unable to create Filter from " +
                         "class " + clazz.getName(), t);
@@ -454,7 +445,7 @@ public class ContextFacade extends WebModule {
     }
 
     public FilterRegistration getFilterRegistration(String filterName) {
-        return filterRegisMap.get(filterName);
+        return context.getFilterRegistration(filterName);
     }
 
     public Map<String, ? extends FilterRegistration> getFilterRegistrations() {
@@ -505,8 +496,7 @@ public class ContextFacade extends WebModule {
         }
     }
 
-    public <T extends EventListener> T createListener(Class<T> clazz)
-            throws ServletException {
+    public <T extends EventListener> T createListener(Class<T> clazz) throws ServletException {
         if (context != null) {
             return context.createListener(clazz);
         } else {
@@ -522,7 +512,7 @@ public class ContextFacade extends WebModule {
                 throw new IllegalArgumentException(msg);
             }
             try {
-                return createListenerInstance(clazz);
+                return super.createListener(clazz);
             } catch (Throwable t) {
                 throw new ServletException(t);
             }
