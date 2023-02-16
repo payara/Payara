@@ -78,6 +78,9 @@ import jakarta.interceptor.InvocationContext;
 import org.eclipse.microprofile.metrics.Metadata;
 import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.eclipse.microprofile.metrics.Tag;
+import org.eclipse.microprofile.metrics.annotation.Counted;
+import org.eclipse.microprofile.metrics.annotation.Gauge;
+import org.eclipse.microprofile.metrics.annotation.Timed;
 import org.glassfish.internal.api.Globals;
 
 @Interceptor
@@ -101,7 +104,7 @@ public class MetricsInterceptor {
         MetricsService metricsService = Globals.getDefaultBaseServiceLocator().getService(MetricsService.class);
         if (metricsService.isEnabled()) {
             Class<?> beanClass = bean.getBeanClass();
-            registerMetrics(beanClass, context.getConstructor(), context.getTarget());
+            registerMetrics(beanClass, context.getConstructor(), context.getTarget(), metricsService);
 
             target = context.proceed();
 
@@ -109,7 +112,7 @@ public class MetricsInterceptor {
             do {
                 for (Method method : type.getDeclaredMethods()) {
                     if (!method.isSynthetic() && !Modifier.isPrivate(method.getModifiers())) {
-                        registerMetrics(beanClass, method, context.getTarget());
+                        registerMetrics(beanClass, method, context.getTarget(), metricsService);
                     }
                 }
                 type = type.getSuperclass();
@@ -120,11 +123,45 @@ public class MetricsInterceptor {
         return target;
     }
 
-    private <E extends Member & AnnotatedElement> void registerMetrics(Class<?> bean, E element, Object target) {
-        register(bean, element, AnnotationReader.COUNTED, registry::counter);
-        register(bean, element, AnnotationReader.TIMED, registry::timer);
-        register(bean, element, AnnotationReader.GAUGE, (metadata, tags) ->
-            registry.gauge(metadata, new GaugeImpl<>((Method) element, target), tags));
+    private <E extends Member & AnnotatedElement> void registerMetrics(Class<?> bean, E element, Object target, MetricsService metricsService) {
+        //review here if correct scope is selected
+        Timed timedAnnotation = element.getAnnotation(Timed.class);
+        Counted countedAnnotation = element.getAnnotation(Counted.class);
+        Gauge gaugeAnnotation = element.getAnnotation(Gauge.class);
+
+        if(timedAnnotation != null) {
+            String scope = timedAnnotation.scope();
+            if(scope != null) {
+                final MetricRegistry metricRegistry = metricsService.getContext(true).getOrCreateRegistry(scope);
+                register(bean, element, AnnotationReader.TIMED, metricRegistry::timer);
+            } else {
+                register(bean, element, AnnotationReader.TIMED, registry::timer);
+            }
+        }
+
+        if(countedAnnotation != null) {
+            String scope = countedAnnotation.scope();
+
+            if(scope != null) {
+                final MetricRegistry metricRegistry = metricsService.getContext(true).getOrCreateRegistry(scope);
+                register(bean, element, AnnotationReader.COUNTED, metricRegistry::counter);
+            } else {
+                register(bean, element, AnnotationReader.COUNTED, registry::counter);
+            }
+        }
+
+        if(gaugeAnnotation != null) {
+            String scope = gaugeAnnotation.scope();
+
+            if(scope != null) {
+                final MetricRegistry metricRegistry = metricsService.getContext(true).getOrCreateRegistry(scope);
+                register(bean, element, AnnotationReader.GAUGE, (metadata, tags) ->
+                        metricRegistry.gauge(metadata, new GaugeImpl<>((Method) element, target), tags));
+            } else {
+                register(bean, element, AnnotationReader.GAUGE, (metadata, tags) ->
+                        registry.gauge(metadata, new GaugeImpl<>((Method) element, target), tags));
+            }
+        }
     }
 
     private static <E extends Member & AnnotatedElement, T extends Annotation> void register(Class<?> bean, E element,
