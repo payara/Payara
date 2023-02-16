@@ -41,6 +41,7 @@ package fish.payara.microprofile.metrics.cdi;
 
 import static java.util.Arrays.asList;
 
+import fish.payara.microprofile.metrics.MetricsService;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Constructor;
@@ -73,6 +74,7 @@ import org.eclipse.microprofile.metrics.annotation.Counted;
 import org.eclipse.microprofile.metrics.annotation.Gauge;
 import org.eclipse.microprofile.metrics.annotation.Metric;
 import org.eclipse.microprofile.metrics.annotation.Timed;
+import org.glassfish.internal.api.Globals;
 
 /**
  * Utility that allows reading the different MP metrics {@link Annotation}s from different annotated abstractions
@@ -134,7 +136,8 @@ public final class AnnotationReader<T extends Annotation> {
             Counted::tags,
             Counted::description,
             Counted::absolute,
-            Counted::unit);
+            Counted::unit,
+            Counted::scope);
 
     public static final AnnotationReader<Gauge> GAUGE = new AnnotationReader<>(
             Gauge.class, Gauge.class.getName(),
@@ -142,7 +145,8 @@ public final class AnnotationReader<T extends Annotation> {
             Gauge::tags,
             Gauge::description,
             Gauge::absolute,
-            Gauge::unit);
+            Gauge::unit,
+            Gauge::scope);
 
 
     public static final AnnotationReader<Timed> TIMED = new AnnotationReader<>(
@@ -151,7 +155,8 @@ public final class AnnotationReader<T extends Annotation> {
             Timed::tags,
             Timed::description,
             Timed::absolute,
-            Timed::unit);
+            Timed::unit,
+            Timed::scope);
 
     public static final AnnotationReader<Metric> METRIC = new AnnotationReader<>(
             Metric.class, Metric.class.getName(),
@@ -159,7 +164,8 @@ public final class AnnotationReader<T extends Annotation> {
             Metric::tags,
             Metric::description,
             Metric::absolute,
-            Metric::unit);
+            Metric::unit,
+            Metric::scope);
 
     private static void register(AnnotationReader<?> reader) {
         READERS_BY_ANNOTATION.put(reader.annotationType(), reader);
@@ -181,12 +187,14 @@ public final class AnnotationReader<T extends Annotation> {
     private final Predicate<T> absolute;
     private final Function<T, String> unit;
 
+    private final Function<T, String> scope;
+
     private AnnotationReader(Class<T> annotationType, String nameType,
             Function<T, String> name,
             Function<T, String[]> tags,
             Function<T, String> description,
             Predicate<T> absolute,
-            Function<T, String> unit) {
+            Function<T, String> unit, Function<T, String> scope) {
         this.annotationType = annotationType;
         this.nameType = nameType;
         this.name = name;
@@ -194,6 +202,7 @@ public final class AnnotationReader<T extends Annotation> {
         this.description = description;
         this.absolute = absolute;
         this.unit = unit;
+        this.scope = scope;
     }
 
     public Class<T> annotationType() {
@@ -214,7 +223,7 @@ public final class AnnotationReader<T extends Annotation> {
         if (this.annotationType != Metric.class) {
             throw new IllegalStateException("Only Metric reader can be typed!");
         }
-        return new AnnotationReader<>(annotationType, nameType, name, tags, description, absolute, unit);
+        return new AnnotationReader<>(annotationType, nameType, name, tags, description, absolute, unit, scope);
     }
 
     /**
@@ -432,6 +441,10 @@ public final class AnnotationReader<T extends Annotation> {
         return unit.apply(annotation);
     }
 
+    public String scope(T annotation){
+        return scope.apply(annotation);
+    }
+
     /**
      * Returns the metric absolute flag as defined by the provided {@link Annotation}
      *
@@ -565,10 +578,20 @@ public final class AnnotationReader<T extends Annotation> {
             String name = MetricRegistry.name(point.getMember().getDeclaringClass().getCanonicalName(), localName(point.getMember()));
             return MetricUtils.getOrRegisterByName(registry, metric, name);
         }
+        registry = validateCustomScope(annotation, registry);
         if (isReference(annotation)) {
             return MetricUtils.getOrRegisterByNameAndTags(registry, metric, name(point), tags(annotation));
         }
         return MetricUtils.getOrRegisterByMetadataAndTags(registry, metric, metadata(point), tags(annotation));
+    }
+
+    public MetricRegistry validateCustomScope(T annotation, MetricRegistry registry) {
+        String scope = scope(annotation);
+        if(scope != null) {
+            MetricsService metricsService= Globals.getDefaultBaseServiceLocator().getService(MetricsService.class);
+            return metricsService.getContext(true).getOrCreateRegistry(scope);
+        }
+        return registry;
     }
 
     private <R> R compute(InjectionPoint point, BiFunction<T, String, R> func) {

@@ -41,6 +41,7 @@
 package fish.payara.microprofile.metrics.rest;
 
 import fish.payara.microprofile.metrics.MetricsService;
+import fish.payara.microprofile.metrics.exception.NoSuchMetricException;
 import fish.payara.microprofile.metrics.exception.NoSuchRegistryException;
 import fish.payara.microprofile.metrics.writer.MetricsWriter;
 import fish.payara.microprofile.metrics.writer.MetricsWriterImpl;
@@ -70,7 +71,6 @@ import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 import static jakarta.ws.rs.core.MediaType.TEXT_PLAIN;
 
 import org.eclipse.microprofile.metrics.MetricRegistry;
-import org.eclipse.microprofile.metrics.MetricRegistry.Type;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.metrics.Tag;
@@ -109,6 +109,7 @@ public class MetricsResource extends HttpServlet {
         metricsService.refresh();
 
         String scopeParameter = request.getParameter("scope") != null ? request.getParameter("scope"): null;
+        String metricName = request.getParameter("name") != null ? request.getParameter("name") : null;
 
         try {
             String contentType = getContentType(request, response);
@@ -127,17 +128,14 @@ public class MetricsResource extends HttpServlet {
                             } else if(scopeParameter.equals(MetricRegistry.APPLICATION_SCOPE)) {
                                 scope = MetricRegistry.APPLICATION_SCOPE;
                             } else {
-                                scope = null;
+                                scope = scopeParameter;
                             }
                         } catch (RuntimeException ex) {
                             throw new NoSuchRegistryException(scopeParameter);
                         }
-                        /*if (metricName != null && !metricName.isEmpty()) {
+                        if(scope != null && metricName != null) {
                             outputWriter.write(scope, metricName);
                         } else {
-
-                        }*/
-                        if(scope != null) {
                             outputWriter.write(scope);
                         }
                     } else {
@@ -147,10 +145,9 @@ public class MetricsResource extends HttpServlet {
             }
         } catch (NoSuchRegistryException ex) {
             response.sendError(SC_NOT_FOUND, String.format("[%s] registry not found", scopeParameter));
-        }
-        /*catch (NoSuchMetricException ex) {
+        } catch (NoSuchMetricException ex) {
             response.sendError(SC_NOT_FOUND, String.format("[%s] metric not found", metricName));
-        }*/
+        }
     }
 
     @SuppressWarnings("resource")
@@ -159,21 +156,11 @@ public class MetricsResource extends HttpServlet {
         Writer writer = response.getWriter();
         String method = request.getMethod();
         if (GET.equalsIgnoreCase(method)) {
-            /*if (APPLICATION_JSON.equals(contentType)) {
-                return new MetricsWriterImpl(new JsonExporter(writer, Mode.GET, true),
-                    service.getContextNames(), service::getContext, getGlobalTags());
-            }*/
             if (TEXT_PLAIN.equals(contentType)) {
                 return new MetricsWriterImpl(new OpenMetricsExporter(writer),
                     service.getContextNames(), service::getContext, getGlobalTags());
             }
         }
-        /*if (OPTIONS.equalsIgnoreCase(method)) {
-            if (APPLICATION_JSON.equals(contentType)) {
-                return new MetricsWriterImpl(new JsonExporter(writer, Mode.OPTIONS, true),
-                        service.getContextNames(), service::getContext, getGlobalTags());
-            }
-        }*/
         return null;
     }
 

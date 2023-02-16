@@ -208,6 +208,11 @@ public class MetricsServiceImpl implements MetricsService, ConfigListener, Monit
         RegisteredMetric pollNewlyRegistered() {
             return newlyRegistered.poll();
         }
+
+        @Override
+        public ConcurrentMap<String, MetricRegistry> getRegistries() {
+            return registries;
+        }
     }
 
     private final Map<String, MetricsContextImpl> contextByName = new ConcurrentHashMap<>();

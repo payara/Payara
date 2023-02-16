@@ -45,12 +45,12 @@ import java.util.Arrays;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
 import org.eclipse.microprofile.metrics.Metadata;
 import org.eclipse.microprofile.metrics.Metric;
 import org.eclipse.microprofile.metrics.MetricID;
 import org.eclipse.microprofile.metrics.MetricRegistry;
-import org.eclipse.microprofile.metrics.MetricRegistry.Type;
 
 import org.eclipse.microprofile.metrics.Tag;
 
@@ -97,12 +97,14 @@ public class MetricsWriterImpl implements MetricsWriter {
     @Override
     public void write() throws IOException {
         MetricExporter exporter = this.exporter;
-        exporter = exporter.in(MetricRegistry.BASE_SCOPE);
-        writeRegistries(exporter, MetricRegistry.BASE_SCOPE);
-        exporter = exporter.in(MetricRegistry.VENDOR_SCOPE);
-        writeRegistries(exporter, MetricRegistry.VENDOR_SCOPE);
-        exporter = exporter.in(MetricRegistry.APPLICATION_SCOPE);
-        writeRegistries(exporter, MetricRegistry.APPLICATION_SCOPE);
+        for (String contextName : contextNames) {
+            MetricsContext context = getContextByName.apply(contextName);
+            ConcurrentMap<String, MetricRegistry> registries = context.getRegistries();
+            for(String scope:registries.keySet()) {
+                exporter = exporter.in(scope);
+                writeRegistries(exporter, scope);
+            }
+        }
         exporter.exportComplete();
     }
 

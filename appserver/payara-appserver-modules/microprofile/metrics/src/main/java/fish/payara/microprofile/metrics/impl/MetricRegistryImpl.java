@@ -461,18 +461,17 @@ public class MetricRegistryImpl implements MetricRegistry {
 
     private Tag[] setScopeTagForMetric(Tag... tags) {
         Tag[] tArray = new Tag[1];
-        if(this.getScope().equals(BASE_SCOPE.toUpperCase())) {
+        if(this.getScope().equals(BASE_SCOPE)) {
             Tag t = new Tag("mp_scope", BASE_SCOPE);
             tArray[0] = t;
-        }
-
-        if(this.getScope().equals(VENDOR_SCOPE.toUpperCase())) {
+        } else if(this.getScope().equals(VENDOR_SCOPE)) {
             Tag t = new Tag("mp_scope", VENDOR_SCOPE);
             tArray[0] = t;
-        }
-
-        if(this.getScope().equals(APPLICATION_SCOPE.toUpperCase())) {
+        } else if(this.getScope().equals(APPLICATION_SCOPE)) {
             Tag t = new Tag("mp_scope", APPLICATION_SCOPE);
+            tArray[0] = t;
+        } else if(this.getScope() != null) {
+            Tag t = new Tag("mp_scope", this.getScope());
             tArray[0] = t;
         }
         Tag[] mergeArray = Stream.concat(Arrays.stream(tags),

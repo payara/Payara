@@ -41,6 +41,7 @@ package fish.payara.microprofile.metrics;
 
 import java.util.Set;
 
+import java.util.concurrent.ConcurrentMap;
 import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.jvnet.hk2.annotations.Contract;
 
@@ -139,6 +140,8 @@ public interface MetricsService {
         default MetricRegistry getApplicationRegistry() throws NoSuchRegistryException {
             return getOrCreateRegistry(MetricRegistry.APPLICATION_SCOPE);
         }
+
+        ConcurrentMap<String, MetricRegistry> getRegistries();
 
     }
 
