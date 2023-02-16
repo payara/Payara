@@ -181,11 +181,6 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
     private static final String ON = "on";
 
     /**
-     * The descriptive information about this implementation.
-     */
-    private static final String _info = "com.sun.enterprise.web.VirtualServer/1.0";
-
-    /**
      * The logger to use for logging this virtual server
      */
     private static final Logger DEFAULT_LOGGER = LogFacade.getLogger();

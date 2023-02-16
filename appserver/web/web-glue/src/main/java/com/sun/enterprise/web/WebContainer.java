@@ -279,10 +279,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
     private JavaEEIOUtils javaEEIOUtils;
 
     @Inject
-    @org.jvnet.hk2.annotations.Optional
-    private JCDIService cdiService;
-
-    @Inject
     @Named(DEFAULT_INSTANCE_NAME)
     private Config serverConfig;
 
@@ -2460,33 +2456,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
     private WebContainerFeatureFactory getWebContainerFeatureFactory() {
         String featureFactoryName = (serverConfigLookup.calculateWebAvailabilityEnabledFromConfig() ? "ha" : "pe");
         return webContainerFeatureFactory = serviceLocator.getService(WebContainerFeatureFactory.class, featureFactoryName);
-    }
-
-    // originally EmbeddedWebContainer
-    /**
-     * Creates a virtual server.
-     *
-     * @param vsID Virtual server id
-     * @param vsBean Bean corresponding to virtual-server element in domain.xml
-     * @param vsDocroot Virtual server docroot
-     * @param vsMimeMap Virtual server MIME mappings
-     *
-     * @return The generated virtual server instance
-     */
-    private Host createHost(
-            String vsID,
-            com.sun.enterprise.config.serverbeans.VirtualServer vsBean,
-            String vsDocroot,
-            String vsLogFile,
-            MimeMap vsMimeMap) {
-
-        VirtualServer vs = new VirtualServer();
-        vs.setFileLoggerHandlerFactory(fileLoggerHandlerFactory);
-
-        vs.configure(vsID, vsBean, vsDocroot, vsLogFile, vsMimeMap,
-                logServiceFile, logLevel);
-
-        return vs;
     }
 
     /**
