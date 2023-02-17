@@ -270,7 +270,8 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
                     try {
                         Class<?> oneOfClass = context.getApplicationClassLoader().loadClass(schemaClassName);
                         return (Schema) oneOfClass.getDeclaredConstructor().newInstance();
-                    } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | NoSuchMethodException | SecurityException | InvocationTargetException ex) {
+                    } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
+                            | NoSuchMethodException | SecurityException | InvocationTargetException ex) {
                         LOGGER.log(WARNING, "Unable to create Schema class instance.", ex);
                     }
                 }

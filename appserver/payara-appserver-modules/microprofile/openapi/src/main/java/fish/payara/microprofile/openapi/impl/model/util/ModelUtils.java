@@ -714,7 +714,8 @@ public final class ModelUtils {
                     } else {
                         f.set(to, mergeProperty(f.get(to), f.get(from), override));
                     }
-                } catch (IllegalArgumentException | IllegalAccessException | InstantiationException | NoSuchMethodException | SecurityException | InvocationTargetException e) {
+                } catch (IllegalArgumentException | IllegalAccessException | InstantiationException
+                        | NoSuchMethodException | SecurityException | InvocationTargetException e) {
                     // Ignore errors
                 }
             }

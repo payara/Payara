@@ -196,7 +196,9 @@ public class OpenApiContext implements ApiContext {
                                 .map(allTypes::getBy)
                                 .filter(Objects::nonNull)
                                 .collect(toSet()));
-                    } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | NoSuchMethodException | SecurityException | IllegalArgumentException | InvocationTargetException ex) {
+                    } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
+                            | NoSuchMethodException | IllegalArgumentException
+                            | SecurityException | InvocationTargetException ex) {
                         LOGGER.log(WARNING, "Unable to initialise application class.", ex);
                     }
                 } else {
