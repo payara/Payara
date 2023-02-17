@@ -40,6 +40,7 @@
 
 package fish.payara.requesttracing.jaxrs.client;
 
+import fish.payara.opentracing.OpenTelemetryService;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -65,6 +66,8 @@ public final class PayaraTracingServices {
 
     private final InvocationManager invocationManager;
     private final Deployment deployment;
+    
+    private final OpenTelemetryService openTelemetryService;
 
     /**
      * Initialise the tracing services if they are available.
@@ -78,6 +81,7 @@ public final class PayaraTracingServices {
         openTracingService = getFromServiceHandle(baseServiceLocator, OpenTracingService.class);
         invocationManager = getFromServiceHandle(baseServiceLocator, InvocationManager.class);
         deployment = getFromServiceHandle(baseServiceLocator, Deployment.class);
+        openTelemetryService = getFromServiceHandle(baseServiceLocator, OpenTelemetryService.class);
     }
 
     /**
@@ -106,6 +110,17 @@ public final class PayaraTracingServices {
     public OpenTracingService getOpenTracingService() {
         if (isTracingAvailable()) {
             return openTracingService;
+        }
+        return null;
+    }
+
+    /**
+     * @return {@link OpenTracingService}, or null if the HK2 service couldn't be
+     *         initialised.
+     */
+    public OpenTelemetryService getOpenTelemetryService() {
+        if (isTracingAvailable()) {
+            return openTelemetryService;
         }
         return null;
     }
