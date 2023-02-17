@@ -248,9 +248,8 @@ public class OpenApiConfiguration {
 
     /**
      * @param types the list of classes to filter.
-     * @return a filtered list of classes, using {@link #getScanClasses()},
-     *         {@link #getExcludeClasses()}, {@link #getScanPackages()} and
-     *         {@link #getExcludePackages()}.
+     * @return a filtered list of classes, using scanClasses,
+     *         scanExcludeClasses, scanPackages and scanExcludePackages.
      */
     public Set<Type> getValidClasses(Collection<Type> types) {
         return types.stream()
