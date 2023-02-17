@@ -160,9 +160,9 @@ public final class MetricUtils<T extends Metric> {
 
     @SuppressWarnings("unchecked")
     private static Gauge<?> getGauge(MetricRegistry registry, String name, Tag[] tags) {
-        MetricID metricID = new MetricID(name, tags);
-        Gauge<?> gauge = registry.getGauges().get(metricID);
-        return gauge != null ? gauge : new LazyGauge<>(() -> registry.getGauges().get(metricID));
+        MetricID complementedMetricID = MetricUtils.validateAndComplementTags(new MetricID(name, tags));
+        Gauge<?> gauge = registry.getGauges().get(complementedMetricID);
+        return gauge != null ? gauge : new LazyGauge<>(() -> registry.getGauges().get(complementedMetricID));
     }
 
     private static final class LazyGauge<T extends Number> implements Gauge<T> {
