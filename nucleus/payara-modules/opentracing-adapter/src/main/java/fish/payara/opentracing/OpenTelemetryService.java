@@ -39,39 +39,29 @@
  */
 package fish.payara.opentracing;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.Meter;
-import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
-import io.opentelemetry.sdk.trace.data.LinkData;
-import io.opentelemetry.sdk.trace.export.SpanExporter;
-import io.opentelemetry.sdk.trace.samplers.Sampler;
-import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import jakarta.inject.Inject;
-import jakarta.inject.Provider;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
 import org.glassfish.api.invocation.ComponentInvocation;
@@ -368,6 +358,14 @@ public class OpenTelemetryService implements EventListener {
         return get(applicationName, OpenTelemetryAppInfo::sdk);
     }
 
+    public Optional<OpenTelemetrySdk> getSdkDependency(String applicationName, Runnable shutdownListener) {
+        return get(applicationName, appInfo -> {
+            appInfo.addShutdownListener(shutdownListener);
+            return appInfo.sdk();
+        });
+
+    }
+
     static class OpenTelemetryAppInfo {
 
         private final OpenTelemetrySdk sdk;
@@ -377,6 +375,8 @@ public class OpenTelemetryService implements EventListener {
         private Meter meter;
 
         private io.opentelemetry.api.logs.Logger logger;
+
+        private List<Runnable> shutdownListeners;
 
         OpenTelemetryAppInfo(OpenTelemetrySdk sdk) {
             this.sdk = sdk;
@@ -407,7 +407,18 @@ public class OpenTelemetryService implements EventListener {
             return sdk;
         }
 
-        void shutdown() {
+        synchronized void addShutdownListener(Runnable listener) {
+            if (shutdownListeners == null) {
+                // we don't expect many listeners
+                shutdownListeners = new ArrayList<>(2);
+            }
+            shutdownListeners.add(listener);
+        }
+
+        synchronized void shutdown() {
+            if (shutdownListeners != null) {
+                shutdownListeners.forEach(Runnable::run);
+            }
             // we need to shut it down properly. SDK providers offer both async shutdown meter as well as implement
             // Closeable, where shutdown is invoked in sync fashion. Let's be optimistic and start with async shutdown
             SdkTracerProvider tracerProvider = this.sdk.getSdkTracerProvider();

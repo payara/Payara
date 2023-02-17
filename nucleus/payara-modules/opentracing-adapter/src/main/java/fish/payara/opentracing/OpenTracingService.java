@@ -39,15 +39,6 @@
  */
 package fish.payara.opentracing;
 
-import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.ServiceLoader;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import io.opentelemetry.opentracingshim.OpenTracingShim;
 import io.opentracing.Tracer;
@@ -66,6 +57,13 @@ import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.deployment.Deployment;
 import org.jvnet.hk2.annotations.Service;
+
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Service class for the OpenTracing integration.
@@ -147,7 +145,7 @@ public class OpenTracingService implements EventListener {
             }
             // create default implementation (env / system property based) for the application
             otel.ensureAppInitialized(appName, null);
-            return otel.getSdk(applicationName).map(OpenTracingShim::createTracerShim).orElse(NoopTracerFactory.create());
+            return otel.getSdkDependency(applicationName, () -> tracers.remove(applicationName)).map(OpenTracingShim::createTracerShim).orElse(NoopTracerFactory.create());
         });
 
         return tracer;
