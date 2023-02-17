@@ -112,12 +112,11 @@ public class MetricRegistryImpl implements MetricRegistry {
 
     public MetricRegistryImpl() {
         this.scope = null;
-        this.clock = null;
+        this.clock = Clock.defaultClock();
     }
 
     public MetricRegistryImpl(String registryScope) {
-        scope =  registryScope;
-        clock = null;
+        this(registryScope, Clock.defaultClock());
     }
 
     public MetricRegistryImpl(String type, Clock clock) {
