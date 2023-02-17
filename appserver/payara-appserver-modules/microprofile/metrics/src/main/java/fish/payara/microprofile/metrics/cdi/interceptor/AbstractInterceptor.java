@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2018-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -41,8 +41,9 @@
 package fish.payara.microprofile.metrics.cdi.interceptor;
 
 import fish.payara.microprofile.metrics.MetricsService;
-import fish.payara.microprofile.metrics.cdi.AnnotationReader;
 
+import fish.payara.microprofile.metrics.cdi.AnnotationReader;
+import fish.payara.microprofile.metrics.cdi.MetricUtils;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Member;
 import java.util.function.BiFunction;
@@ -80,6 +81,7 @@ import org.glassfish.internal.api.Globals;
     }
 
     public <T extends Metric> T getMetric(MetricID metricID, Class<T> metricType) {
+        metricID = MetricUtils.validateAndComplementTags(metricID);
         initService();
         return metricsContext.getApplicationRegistry().getMetric(metricID, metricType);
     }
@@ -121,5 +123,7 @@ import org.glassfish.internal.api.Globals;
     }
 
     protected abstract <E extends Member & AnnotatedElement> Object applyInterceptor(InvocationContext context, E element) throws Exception;
+
+
 
 }

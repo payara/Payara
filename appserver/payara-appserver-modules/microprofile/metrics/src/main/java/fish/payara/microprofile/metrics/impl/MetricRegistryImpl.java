@@ -39,6 +39,7 @@
  */
 package fish.payara.microprofile.metrics.impl;
 
+import fish.payara.microprofile.metrics.cdi.MetricUtils;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -226,7 +227,7 @@ public class MetricRegistryImpl implements MetricRegistry {
 
     @Override
     public Timer timer(Metadata metadata, Tag... tags) {
-        return findMetricOrCreate(metadata, Timer.class.getTypeName(), tags);
+        return findMetricOrCreate(metadata, Timer.class.getTypeName(), null, tags);
     }
 
     @Override
@@ -246,21 +247,25 @@ public class MetricRegistryImpl implements MetricRegistry {
 
     @Override
     public Counter getCounter(MetricID metricID) {
+        metricID = MetricUtils.validateAndComplementTags(metricID);
         return getMetric(metricID, Counter.class);
     }
 
     @Override
     public Gauge<?> getGauge(MetricID metricID) {
+        metricID = MetricUtils.validateAndComplementTags(metricID);
         return getMetric(metricID, Gauge.class);
     }
 
     @Override
     public Histogram getHistogram(MetricID metricID) {
+        metricID = MetricUtils.validateAndComplementTags(metricID);
         return getMetric(metricID, Histogram.class);
     }
 
     @Override
     public Timer getTimer(MetricID metricID) {
+        metricID = MetricUtils.validateAndComplementTags(metricID);
         return getMetric(metricID, Timer.class);
     }
 

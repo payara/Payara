@@ -41,6 +41,7 @@ package fish.payara.microprofile.metrics.cdi;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
@@ -126,6 +127,17 @@ public final class MetricUtils<T extends Metric> {
         return (T) getOrRegister(metric).byMetadataAndTags.apply(registry, metadata, tags);
     }
 
+    public static MetricID validateAndComplementTags(MetricID metricID) {
+        Map<String, String> tags =metricID.getTags();
+        Optional<String> optionalKey = tags.keySet().stream().filter(k -> k.equals("mp_scope")).findAny();
+        if(!optionalKey.isPresent()) {
+            Tag t = new Tag("mp_scope", "application");
+            MetricID newMetricID = new MetricID(metricID.getName(), t);
+            return newMetricID;
+        }
+        return metricID;
+    }
+
     private static <T extends Metric> MetricUtils<?> getOrRegister(Class<T> metric) {
         MetricUtils<?> getOrRegister = TYPES.get(metric);
         if (getOrRegister == null) {
@@ -166,4 +178,6 @@ public final class MetricUtils<T extends Metric> {
             return lazy == null ? null : lazy.getValue();
         }
     }
+
+
 }
