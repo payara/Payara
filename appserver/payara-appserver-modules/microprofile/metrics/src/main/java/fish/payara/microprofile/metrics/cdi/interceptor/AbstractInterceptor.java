@@ -72,7 +72,7 @@ import org.glassfish.internal.api.Globals;
     protected static <E extends Member & AnnotatedElement, M extends Metric> M apply(E element,
             Class<?> bean, AnnotationReader<?> reader, Class<M> metricType, BiFunction<MetricID, Class<M>, M> loader) {
         MetricID metricID = reader.metricID(bean, element);
-        metricID = MetricUtils.validateAndComplementTags(metricID);
+        //metricID = MetricUtils.validateAndComplementTags(metricID);
         M metric = loader.apply(metricID, metricType);
         if (metric == null) {
             throw new IllegalStateException(
@@ -82,7 +82,7 @@ import org.glassfish.internal.api.Globals;
     }
 
     public <T extends Metric> T getMetric(MetricID metricID, Class<T> metricType) {
-        metricID = MetricUtils.validateAndComplementTags(metricID);
+        //metricID = MetricUtils.validateAndComplementTags(metricID);
         initService();
         return metricsContext.getApplicationRegistry().getMetric(metricID, metricType);
     }

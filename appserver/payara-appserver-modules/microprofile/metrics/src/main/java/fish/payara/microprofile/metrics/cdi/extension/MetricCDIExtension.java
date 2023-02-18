@@ -147,7 +147,7 @@ public class MetricCDIExtension<E extends Member & AnnotatedElement> implements 
         String name = metadata.getName();
         E existingElement = annotatedElements.putIfAbsent(name, element);
         Metadata existingMetadata = metadataMap.putIfAbsent(name, metadata);
-        if (null != existingElement && null != existingMetadata) {
+        /*if (null != existingElement && null != existingMetadata) {
             String errorMessage;
             if (element instanceof Constructor) {
                 errorMessage = String.format("Duplicate metric name[%s] found on elements [%s] and [%s]",
@@ -163,7 +163,7 @@ public class MetricCDIExtension<E extends Member & AnnotatedElement> implements 
                 );
             }
             validationMessages.add(errorMessage);
-        }
+        }*/
     }
 
     void validationError(@Observes AfterBeanDiscovery afterBeanDiscovery){

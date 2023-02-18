@@ -39,12 +39,12 @@
  */
 package fish.payara.microprofile.metrics.cdi;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.lang.reflect.*;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
+import java.util.stream.*;
 import org.eclipse.microprofile.metrics.Counter;
 import org.eclipse.microprofile.metrics.Gauge;
 import org.eclipse.microprofile.metrics.Histogram;
@@ -127,15 +127,36 @@ public final class MetricUtils<T extends Metric> {
         return (T) getOrRegister(metric).byMetadataAndTags.apply(registry, metadata, tags);
     }
 
-    public static MetricID validateAndComplementTags(MetricID metricID) {
+    public static MetricID validateAndComplementTags(MetricID metricID, String scope) {
         Map<String, String> tags =metricID.getTags();
         Optional<String> optionalKey = tags.keySet().stream().filter(k -> k.equals("mp_scope")).findAny();
         if(!optionalKey.isPresent()) {
-            Tag t = new Tag("mp_scope", "application");
+            Tag t = new Tag("mp_scope", scope);
             MetricID newMetricID = new MetricID(metricID.getName(), t);
             return newMetricID;
         }
         return metricID;
+    }
+
+    public static Tag[] setScopeTagForMetric(String scope, Tag... tags) {
+        Tag[] tArray = new Tag[1];
+        if(scope.equals(MetricRegistry.BASE_SCOPE)) {
+            Tag t = new Tag("mp_scope", MetricRegistry.BASE_SCOPE);
+            tArray[0] = t;
+        } else if(scope.equals(MetricRegistry.VENDOR_SCOPE)) {
+            Tag t = new Tag("mp_scope", MetricRegistry.VENDOR_SCOPE);
+            tArray[0] = t;
+        } else if(scope.equals(MetricRegistry.APPLICATION_SCOPE)) {
+            Tag t = new Tag("mp_scope", MetricRegistry.APPLICATION_SCOPE);
+            tArray[0] = t;
+        } else if(scope != null) {
+            Tag t = new Tag("mp_scope", scope);
+            tArray[0] = t;
+        }
+        Tag[] mergeArray = Stream.concat(Arrays.stream(tags),
+                        Arrays.stream(tArray)).
+                toArray(v -> (Tag[]) Array.newInstance(tags.getClass().getComponentType(), v));
+        return mergeArray;
     }
 
     private static <T extends Metric> MetricUtils<?> getOrRegister(Class<T> metric) {
@@ -160,7 +181,7 @@ public final class MetricUtils<T extends Metric> {
 
     @SuppressWarnings("unchecked")
     private static Gauge<?> getGauge(MetricRegistry registry, String name, Tag[] tags) {
-        MetricID complementedMetricID = MetricUtils.validateAndComplementTags(new MetricID(name, tags));
+        MetricID complementedMetricID = new MetricID(name, tags);//MetricUtils.validateAndComplementTags();
         Gauge<?> gauge = registry.getGauges().get(complementedMetricID);
         return gauge != null ? gauge : new LazyGauge<>(() -> registry.getGauges().get(complementedMetricID));
     }

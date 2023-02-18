@@ -40,6 +40,8 @@
 package fish.payara.microprofile.metrics.writer;
 
 import static java.lang.System.arraycopy;
+
+import fish.payara.microprofile.metrics.cdi.*;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map.Entry;
@@ -143,8 +145,9 @@ public class MetricsWriterImpl implements MetricsWriter {
                 Tag[] tagsWithoutApp = metricID.getTagsAsArray();
                 Tag[] tags = Arrays.copyOf(tagsWithoutApp, tagsWithoutApp.length + 1);
                 tags[tagsWithoutApp.length] = new Tag("mp_app", contextName);
-                metricID = new MetricID(metricName, tags);
             }
+            Tag[] addingScope = MetricUtils.setScopeTagForMetric(registry.getScope(),metricID.getTagsAsArray());
+            metricID = new MetricID(metricID.getName(), addingScope);
             exporter.export(metricID, metric.getValue(), metadata);
         }
     }

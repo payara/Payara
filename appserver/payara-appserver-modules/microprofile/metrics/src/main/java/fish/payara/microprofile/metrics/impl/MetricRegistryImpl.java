@@ -246,25 +246,25 @@ public class MetricRegistryImpl implements MetricRegistry {
 
     @Override
     public Counter getCounter(MetricID metricID) {
-        metricID = MetricUtils.validateAndComplementTags(metricID);
+        //metricID = MetricUtils.validateAndComplementTags(metricID);
         return getMetric(metricID, Counter.class);
     }
 
     @Override
     public Gauge<?> getGauge(MetricID metricID) {
-        metricID = MetricUtils.validateAndComplementTags(metricID);
+        //metricID = MetricUtils.validateAndComplementTags(metricID);
         return getMetric(metricID, Gauge.class);
     }
 
     @Override
     public Histogram getHistogram(MetricID metricID) {
-        metricID = MetricUtils.validateAndComplementTags(metricID);
+        //metricID = MetricUtils.validateAndComplementTags(metricID);
         return getMetric(metricID, Histogram.class);
     }
 
     @Override
     public Timer getTimer(MetricID metricID) {
-        metricID = MetricUtils.validateAndComplementTags(metricID);
+        //metricID = MetricUtils.validateAndComplementTags(metricID);
         return getMetric(metricID, Timer.class);
     }
 
@@ -451,7 +451,7 @@ public class MetricRegistryImpl implements MetricRegistry {
         }
         final Metadata newMetadata = metadata;
         final T newMetric = metric != null ? metric:(T) createMetricInstance(newMetadata, metricType);
-        tags = setScopeTagForMetric(tags);
+        //tags = setScopeTagForMetric(tags);
         MetricFamily<T> family = (MetricFamily<T>) metricsFamiliesByName.computeIfAbsent(name,
                 key -> new MetricFamily<>(newMetadata));
         MetricID metricID = new MetricID(name, tags);
@@ -461,27 +461,6 @@ public class MetricRegistryImpl implements MetricRegistry {
         T current = family.metrics.computeIfAbsent(metricID, key -> newMetric);
         notifyRegistrationListeners(metricID);
         return current;
-    }
-
-    private Tag[] setScopeTagForMetric(Tag... tags) {
-        Tag[] tArray = new Tag[1];
-        if(this.getScope().equals(BASE_SCOPE)) {
-            Tag t = new Tag("mp_scope", BASE_SCOPE);
-            tArray[0] = t;
-        } else if(this.getScope().equals(VENDOR_SCOPE)) {
-            Tag t = new Tag("mp_scope", VENDOR_SCOPE);
-            tArray[0] = t;
-        } else if(this.getScope().equals(APPLICATION_SCOPE)) {
-            Tag t = new Tag("mp_scope", APPLICATION_SCOPE);
-            tArray[0] = t;
-        } else if(this.getScope() != null) {
-            Tag t = new Tag("mp_scope", this.getScope());
-            tArray[0] = t;
-        }
-        Tag[] mergeArray = Stream.concat(Arrays.stream(tags),
-                Arrays.stream(tArray)).
-                toArray(v -> (Tag[])Array.newInstance(tags.getClass().getComponentType(), v));
-        return mergeArray;
     }
 
     private void notifyRegistrationListeners(MetricID metricID) {
