@@ -65,11 +65,6 @@ public class MetricRegistryProducer {
         metricsService = Globals.getDefaultBaseServiceLocator().getService(MetricsService.class);
     }
 
-    //@Produces
-    //public MetricRegistry getDefaultRegistry() {
-      //  return getApplicationRegistry();
-    //}
-
     @Produces
     public MetricRegistry getMetricRegistry(InjectionPoint injectionPoint) {
         RegistryScope registryScope = injectionPoint.getAnnotated().getAnnotation(RegistryScope.class);

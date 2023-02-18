@@ -65,6 +65,7 @@ import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Set;
 import java.util.function.BiConsumer;
 
 import jakarta.annotation.Priority;
@@ -105,6 +106,8 @@ public class MetricsInterceptor {
         if (metricsService.isEnabled()) {
             Class<?> beanClass = bean.getBeanClass();
             registerMetrics(beanClass, context.getConstructor(), context.getTarget(), metricsService);
+            registerFromStereotypes(bean.getStereotypes(), beanClass, context.getConstructor(),
+                    context.getTarget(), metricsService);
 
             target = context.proceed();
 
@@ -113,6 +116,8 @@ public class MetricsInterceptor {
                 for (Method method : type.getDeclaredMethods()) {
                     if (!method.isSynthetic() && !Modifier.isPrivate(method.getModifiers())) {
                         registerMetrics(beanClass, method, context.getTarget(), metricsService);
+                        registerFromStereotypes(bean.getStereotypes(), beanClass, method,
+                                context.getTarget(), metricsService);
                     }
                 }
                 type = type.getSuperclass();
@@ -121,6 +126,51 @@ public class MetricsInterceptor {
             target = context.proceed();
         }
         return target;
+    }
+
+    private <E extends Member & AnnotatedElement> void registerFromStereotypes(Set<Class<? extends Annotation>> stereotypes,
+                                                                               Class<?> bean,E element, Object target,
+                                                                               MetricsService metricsService) {
+        for (Class<? extends Annotation> a : stereotypes) {
+            Annotation[] array = a.getAnnotations();
+            for (Annotation annotation: array) {
+                if(annotation.annotationType().isAssignableFrom(Timed.class)) {
+                    Timed timedAnnotation = (Timed) annotation;
+                    if(timedAnnotation.scope() != null) {
+                        final MetricRegistry metricRegistry = metricsService.getContext(true)
+                                .getOrCreateRegistry(timedAnnotation.scope());
+                        register(bean, element, AnnotationReader.TIMED, metricRegistry::timer);
+                    } else {
+                        register(bean, element, AnnotationReader.TIMED, registry::timer);
+                    }
+                }
+
+                if(annotation.annotationType().isAssignableFrom(Counted.class)) {
+                    Counted countedAnnotation = (Counted) annotation;
+                    if(countedAnnotation.scope() != null) {
+                        final MetricRegistry metricRegistry = metricsService.getContext(true)
+                                .getOrCreateRegistry(countedAnnotation.scope());
+                        register(bean, element, AnnotationReader.COUNTED, metricRegistry::counter);
+                    } else {
+                        register(bean, element, AnnotationReader.COUNTED, registry::counter);
+                    }
+                }
+
+                if(annotation.annotationType().isAssignableFrom(Gauge.class)) {
+                    Gauge gaugeAnnotation = (Gauge) annotation;
+                    if(gaugeAnnotation.scope() != null) {
+                        final MetricRegistry metricRegistry = metricsService.getContext(true)
+                                .getOrCreateRegistry(gaugeAnnotation.scope());
+                        register(bean, element, AnnotationReader.GAUGE, (metadata, tags) ->
+                                metricRegistry.gauge(metadata, new GaugeImpl<>((Method) element, target), tags));
+                    } else {
+                        register(bean, element, AnnotationReader.GAUGE, (metadata, tags) ->
+                                registry.gauge(metadata, new GaugeImpl<>((Method) element, target), tags));
+                    }
+                }
+            }
+        }
+
     }
 
     private <E extends Member & AnnotatedElement> void registerMetrics(Class<?> bean, E element, Object target, MetricsService metricsService) {
