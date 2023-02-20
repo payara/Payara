@@ -74,6 +74,7 @@ public class OpenTracingIiopServerInterceptor extends LocalObject implements Ser
 
     // Let's just guess that single request remain on the single thread as is not multiplexed
     private ThreadLocal<Scope> currentScope = new ThreadLocal<>();
+    private ThreadLocal<Span> currentSpan = new ThreadLocal<>();
 
     public OpenTracingIiopServerInterceptor(OpenTracingService openTracingService) {
         this.openTracingService = openTracingService;
@@ -126,7 +127,9 @@ public class OpenTracingIiopServerInterceptor extends LocalObject implements Ser
             LOGGER.warning("Overlapping traced RMI operations identified, please report");
         }
         // Start the span and mark it as active
-        currentScope.set(tracer.activateSpan(spanBuilder.start()));
+        Span currentSpan = spanBuilder.start();
+        currentScope.set(tracer.activateSpan(currentSpan));
+        this.currentSpan.set(currentSpan);
     }
 
     @Override
@@ -154,9 +157,10 @@ public class OpenTracingIiopServerInterceptor extends LocalObject implements Ser
             scope.close();
             currentScope.remove();
         }
-        Span activeSpan = tracer.scopeManager().activeSpan();
+        Span activeSpan = currentSpan.get();
         if (activeSpan != null) {
             activeSpan.finish();
+            currentSpan.remove();
         }
     }
 
