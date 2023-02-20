@@ -875,7 +875,9 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         if (responses != null) {
             responses.forEach(response -> visitAPIResponse(response, element, context));
         }
-        APIResponsesImpl.merge(from, context.getWorkingOperation().getResponses(), true, context);
+        if (context.getWorkingOperation() != null) {
+            APIResponsesImpl.merge(from, context.getWorkingOperation().getResponses(), true, context);
+        }
     }
 
     @Override

@@ -164,6 +164,9 @@ public class ContentImpl extends LinkedHashMap<String, MediaType> implements Con
                 Schema schema = toMediaType.getSchema();
                 SchemaImpl.merge(fromMediaType.getSchema(), schema, true, context);
             }
+
+            // extensions
+            ExtensibleImpl.merge(fromMediaType, toMediaType, override);
         }
     }
 
