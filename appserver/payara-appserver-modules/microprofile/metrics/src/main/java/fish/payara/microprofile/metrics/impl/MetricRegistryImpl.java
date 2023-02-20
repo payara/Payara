@@ -62,12 +62,7 @@ import java.util.logging.Logger;
 
 import jakarta.enterprise.inject.Vetoed;
 import java.util.stream.Stream;
-import org.eclipse.microprofile.metrics.Counter;
-import org.eclipse.microprofile.metrics.Gauge;
-import org.eclipse.microprofile.metrics.Histogram;
-import org.eclipse.microprofile.metrics.Metadata;
-import org.eclipse.microprofile.metrics.Metric;
-import org.eclipse.microprofile.metrics.MetricFilter;
+import org.eclipse.microprofile.metrics.*;
 
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
@@ -75,10 +70,6 @@ import static java.util.Collections.unmodifiableMap;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.stream.Collectors.toMap;
 import static org.eclipse.microprofile.metrics.MetricFilter.ALL;
-import org.eclipse.microprofile.metrics.MetricID;
-import org.eclipse.microprofile.metrics.MetricRegistry;
-import org.eclipse.microprofile.metrics.Tag;
-import org.eclipse.microprofile.metrics.Timer;
 
 /**
  * The MetricRegistry stores the metrics and metadata information
@@ -221,7 +212,7 @@ public class MetricRegistryImpl implements MetricRegistry {
 
     @Override
     public Timer timer(String name, Tag... tags) {
-        return findMetricOrCreate(name, Timer.class.getTypeName(),  new TimerImpl(), tags);
+        return findMetricOrCreate(name, Timer.class.getTypeName(),  null, tags);
     }
 
     @Override
@@ -231,7 +222,7 @@ public class MetricRegistryImpl implements MetricRegistry {
 
     @Override
     public Timer timer(String name) {
-        return findMetricOrCreate(name, Timer.class.getTypeName(), new TimerImpl(), new Tag[0]);
+        return findMetricOrCreate(name, Timer.class.getTypeName(), null, new Tag[0]);
     }
 
     @Override
@@ -241,7 +232,7 @@ public class MetricRegistryImpl implements MetricRegistry {
 
     @Override
     public Timer timer(MetricID metricID) {
-        return findMetricOrCreate(metricID.getName(), Timer.class.getTypeName(), new TimerImpl(), metricID.getTagsAsArray());
+        return findMetricOrCreate(metricID.getName(), Timer.class.getTypeName(), null, metricID.getTagsAsArray());
     }
 
     @Override
@@ -402,9 +393,17 @@ public class MetricRegistryImpl implements MetricRegistry {
 
     private <T extends Metric> T findMetricOrCreate(String name, String typeName, T metric, Tag... tags) {
         checkNameIsNotNullOrEmpty(name);
-        Metadata metadata = Metadata.builder()
-                .withName(name)
-                .build();
+        Metadata metadata = null;
+        if(Timer.class.getTypeName().equals(typeName)) {
+            metadata = Metadata.builder()
+                    .withName(name)
+                    .withUnit(MetricUnits.SECONDS)
+                    .build();
+        } else {
+            metadata = Metadata.builder()
+                    .withName(name)
+                    .build();
+        }
         return findMetricOrCreate(metadata, true, typeName, metric, tags);
     }
 
@@ -427,11 +426,11 @@ public class MetricRegistryImpl implements MetricRegistry {
         if (existing == null) {
             return register(metadata, useExistingMetadata, metricType, metric, tags);
         }
-        if (useExistingMetadata || !useExistingMetadata && !metadata.equals(family.metadata)) {
+        /*if (useExistingMetadata || !useExistingMetadata && !metadata.equals(family.metadata)) {
             throw new IllegalArgumentException(
                     String.format("Tried to lookup a metric with conflicting metadata, looup is %s, existing is %s",
                             metadata.toString(), family.metadata.toString()));
-        }
+        }*/
         return (T) existing;
     }
 
