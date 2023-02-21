@@ -48,10 +48,11 @@ import org.glassfish.jersey.internal.spi.ForcedAutoDiscoverable;
  * AutoDiscoverable that registers the {@link OpenTelemetryApplicationEventListener}.
  *
  */
-public class JerseyOpenTracingAutoDiscoverable implements ForcedAutoDiscoverable {
+public class JerseyOpenTelemetryAutoDiscoverable implements ForcedAutoDiscoverable {
 
     @Override
     public void configure(FeatureContext context) {
+        context.property("payara.otel.spanname", true);
         // Only register for application deployments (not the admin console)
         final Deployment deployment = new PayaraTracingServices().getDeployment();
         if (deployment == null || deployment.getCurrentDeploymentContext() == null) {

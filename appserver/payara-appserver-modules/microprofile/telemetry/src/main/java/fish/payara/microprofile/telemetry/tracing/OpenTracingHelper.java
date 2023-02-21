@@ -44,6 +44,8 @@ import jakarta.enterprise.inject.spi.CDI;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ResourceInfo;
+import jakarta.ws.rs.core.Configuration;
+import jakarta.ws.rs.core.Context;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.opentracing.Traced;
@@ -62,8 +64,11 @@ public class OpenTracingHelper {
 
     private final ResourceInfo resourceInfo;
 
-    public OpenTracingHelper(final ResourceInfo resourceInfo) {
+    private final Configuration configuration;
+
+    public OpenTracingHelper(final ResourceInfo resourceInfo, final Configuration configuration) {
         this.resourceInfo = resourceInfo;
+        this.configuration = configuration;
     }
 
     /**
@@ -116,9 +121,18 @@ public class OpenTracingHelper {
                         operationName += "/" + methodLevelAnnotation.value();
                     }
                 }
-
                 return operationName;
             }
+        }
+
+        // define span name for OpenTelemetry only
+        if (!resourceInfo.getResourceClass().getPackage().getName().contains("opentracing")
+                && configuration.hasProperty("payara.otel.spanname")
+                && ((Boolean) configuration.getProperty("payara.otel.spanname")) == true) {
+            var requestPath = request.getUriInfo().getBaseUri().getPath();
+            return requestPath.substring(0, requestPath.length() - 1)
+                    + (resourceInfo.getResourceMethod().getAnnotation(Path.class) == null
+                    ? "" : resourceInfo.getResourceMethod().getAnnotation(Path.class).value());
         }
 
         // If we haven't returned by now, just go with the default ("class-method")

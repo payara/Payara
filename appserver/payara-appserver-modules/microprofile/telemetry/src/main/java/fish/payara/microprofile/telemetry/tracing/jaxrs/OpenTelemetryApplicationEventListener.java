@@ -46,6 +46,7 @@ import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Priority;
 import jakarta.ws.rs.Priorities;
 import jakarta.ws.rs.container.ResourceInfo;
+import jakarta.ws.rs.core.Configuration;
 import jakarta.ws.rs.core.Context;
 import org.glassfish.jersey.server.monitoring.ApplicationEvent;
 import org.glassfish.jersey.server.monitoring.ApplicationEventListener;
@@ -65,6 +66,8 @@ public class OpenTelemetryApplicationEventListener implements ApplicationEventLi
     @Context
     private ResourceInfo resourceInfo;
 
+    @Context
+    private Configuration configuration;
 
     /**
      * Initialization of internal services.
@@ -87,11 +90,11 @@ public class OpenTelemetryApplicationEventListener implements ApplicationEventLi
     @Override
     public RequestEventListener onRequest(final RequestEvent event) {
         LOG.finer(() -> "onRequest(event.type=" + event.getType() + ")");
-        if (!isRequestTracingInProgress()) {
-            LOG.finest("isRequestTracingInProgress() returned false, nothing to do.");
-            return null;
-        }
-        return new OpenTelemetryRequestEventListener(this.resourceInfo, this.openTelemetryService);
+//        if (!isRequestTracingInProgress()) {
+//            LOG.finest("isRequestTracingInProgress() returned false, nothing to do.");
+//            return null;
+//        }
+        return new OpenTelemetryRequestEventListener(this.resourceInfo, this.openTelemetryService, this.configuration);
     }
 
 

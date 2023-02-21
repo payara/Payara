@@ -52,9 +52,9 @@ import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import jakarta.ws.rs.container.ResourceInfo;
+import jakarta.ws.rs.core.Configuration;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
-import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.opentracing.Traced;
 import org.glassfish.jersey.server.ContainerRequest;
 import org.glassfish.jersey.server.ContainerResponse;
@@ -63,7 +63,6 @@ import org.glassfish.jersey.server.monitoring.RequestEventListener;
 
 import java.net.MalformedURLException;
 import java.util.Arrays;
-import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -80,10 +79,11 @@ public class OpenTelemetryRequestEventListener implements RequestEventListener {
     private OpenTracingHelper openTracingHelper;
 
     public OpenTelemetryRequestEventListener(final ResourceInfo resourceInfo,
-                                           final OpenTelemetryService openTelemetryService) {
+                                             final OpenTelemetryService openTelemetryService,
+                                             final Configuration configuration) {
         this.resourceInfo = resourceInfo;
         this.openTelemetryService = openTelemetryService;
-        this.openTracingHelper = new OpenTracingHelper(this.resourceInfo);
+        this.openTracingHelper = new OpenTracingHelper(this.resourceInfo, configuration);
     }
 
     @Override
@@ -132,14 +132,6 @@ public class OpenTelemetryRequestEventListener implements RequestEventListener {
         return event.getUriInfo() == null ? "<unknown>" : event.getUriInfo().getPath();
     }
 
-    private Span getAlreadyActiveSpan() {
-        final Span activeSpan = Span.current();
-        if (activeSpan == null) {
-            throw new IllegalStateException("Active span is null, something closed it.");
-        }
-        return activeSpan;
-    }
-
     private void onException(final RequestEvent event, final Span activeSpan) {
         LOG.fine(() -> "onException(event=" + event.getType() + ")");
         checkActiveSpan(activeSpan);
@@ -165,7 +157,6 @@ public class OpenTelemetryRequestEventListener implements RequestEventListener {
         // If the response status is an error, add error information to the span
         if (statusInfo.getFamily() == Response.Status.Family.CLIENT_ERROR
                 || statusInfo.getFamily() == Response.Status.Family.SERVER_ERROR) {
-            activeSpan.setStatus(StatusCode.ERROR, event.getException().getMessage());
             activeSpan.setAttribute("error", true);
             // If there's an attached exception, add it to the span
             if (response.hasEntity() && response.getEntity() instanceof Throwable) {
@@ -173,6 +164,7 @@ public class OpenTelemetryRequestEventListener implements RequestEventListener {
                 activeSpan.setAttribute(SemanticAttributes.EXCEPTION_TYPE, Throwable.class.getName());
                 activeSpan.addEvent(SemanticAttributes.EXCEPTION_EVENT_NAME,
                         Attributes.of(SemanticAttributes.EXCEPTION_MESSAGE, event.getException().getMessage()));
+                activeSpan.setStatus(StatusCode.ERROR, event.getException().getMessage());
             }
         }
     }
@@ -201,10 +193,14 @@ public class OpenTelemetryRequestEventListener implements RequestEventListener {
         final Tracer tracer = openTelemetryService.getCurrentTracer();
 
         // Create a Span and instrument it with details about the request
+        var queryParam = requestContext.getUriInfo().getRequestUri().getQuery() == null
+                ? "" : "?" + requestContext.getUriInfo().getRequestUri().getQuery();
         final SpanBuilder spanBuilder = tracer.spanBuilder(operationName)
                 .setSpanKind(SpanKind.SERVER)
                 .setAttribute(SemanticAttributes.HTTP_METHOD, requestContext.getMethod())
                 .setAttribute(SemanticAttributes.HTTP_URL, toString(requestContext.getUriInfo()))
+                .setAttribute(SemanticAttributes.HTTP_TARGET,
+                        requestContext.getUriInfo().getRequestUri().getPath() + queryParam)
                 .setAttribute("component", "jaxrs");
 
         // If there was a context injected into the tracer, add it as a parent of the new span
