@@ -63,7 +63,7 @@ public abstract class ExtensibleImpl<T extends Extensible<T>> implements Extensi
     private static final Logger LOGGER = Logger.getLogger(ExtensibleImpl.class.getName());
 
     @JsonIgnore
-    protected Map<String, Object> extensions = createMap();
+    protected Map<String, Object> extensions = null; // null means not specified, empty map means specified empty extensions
 
     @Override
     public Map<String, Object> getExtensions() {
@@ -104,8 +104,9 @@ public abstract class ExtensibleImpl<T extends Extensible<T>> implements Extensi
 
     public static Map<String, Object> parseExtensions(AnnotationModel annotation) {
         List<AnnotationModel> extensions = annotation.getValue("extensions", List.class);
-        Map<String, Object> parsedExtensions = new HashMap<>();
+        Map<String, Object> parsedExtensions = null;
         if (extensions != null) {
+            parsedExtensions = new HashMap<>();
             for (AnnotationModel extension : extensions) {
                 String name = extension.getValue("name", String.class);
                 String value = extension.getValue("value", String.class);
@@ -119,11 +120,17 @@ public abstract class ExtensibleImpl<T extends Extensible<T>> implements Extensi
         if (from == null) {
             return;
         }
-        if (to.getExtensions() == null) {
-            to.setExtensions(createMap());
-        }
-        if (from.getExtensions().isEmpty()) {
+        if (from.getExtensions() == null) {
             return;
+        }
+        if (from.getExtensions().isEmpty() && to.getExtensions() == null) {
+            // from has empty extensions, but existing(!), copy this information to to
+            to.setExtensions(createMap());
+            return;
+        }
+        if (to.getExtensions() == null) {
+            // we will copy values, prepare extensions, if they don't exist
+            to.setExtensions(createMap());
         }
         for (String extensionName : from.getExtensions().keySet()) {
             Object value = mergeProperty(
