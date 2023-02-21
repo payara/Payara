@@ -108,6 +108,8 @@ public class MetricsInterceptor {
             registerMetrics(beanClass, context.getConstructor(), context.getTarget(), metricsService);
             registerFromStereotypes(bean.getStereotypes(), beanClass, context.getConstructor(),
                     context.getTarget(), metricsService);
+            registerFromParentType(beanClass, beanClass.getSuperclass(), context.getConstructor(),
+                    context.getTarget(), metricsService);
 
             target = context.proceed();
 
@@ -117,6 +119,8 @@ public class MetricsInterceptor {
                     if (!method.isSynthetic() && !Modifier.isPrivate(method.getModifiers())) {
                         registerMetrics(beanClass, method, context.getTarget(), metricsService);
                         registerFromStereotypes(bean.getStereotypes(), beanClass, method,
+                                context.getTarget(), metricsService);
+                        registerFromParentType(beanClass, beanClass.getSuperclass(), method,
                                 context.getTarget(), metricsService);
                     }
                 }
@@ -128,6 +132,40 @@ public class MetricsInterceptor {
         return target;
     }
 
+    private <E extends Member & AnnotatedElement> void registerFromParentType(Class<?> bean,
+                                                                              Class<?> superClassBean, E element,
+                                                                              Object target, MetricsService metricsService) {
+        for (Annotation annotation: superClassBean.getAnnotations()) {
+            if(annotation.annotationType().isAssignableFrom(Timed.class)) {
+                registerTimedMetric((Timed) annotation, bean, element, metricsService);
+                //review methods
+                for (Method method : superClassBean.getDeclaredMethods()) {
+                    if (!method.isSynthetic() && !Modifier.isPrivate(method.getModifiers())) {
+                        registerTimedMetric((Timed) annotation, bean, element, metricsService);
+                    }
+                }
+            }
+
+            if(annotation.annotationType().isAssignableFrom(Counted.class)) {
+                registerCountedMetric((Counted) annotation, bean, element, metricsService);
+                for (Method method : superClassBean.getDeclaredMethods()) {
+                    if (!method.isSynthetic() && !Modifier.isPrivate(method.getModifiers())) {
+                        registerCountedMetric((Counted) annotation, bean, element, metricsService);
+                    }
+                }
+            }
+
+            if(annotation.annotationType().isAssignableFrom(Gauge.class)) {
+                registerGaugeMetric((Gauge) annotation, bean,element, target, metricsService);
+                for (Method method : superClassBean.getDeclaredMethods()) {
+                    if (!method.isSynthetic() && !Modifier.isPrivate(method.getModifiers())) {
+                        registerGaugeMetric((Gauge) annotation, bean, element, target, metricsService);
+                    }
+                }
+            }
+        }
+    }
+
     private <E extends Member & AnnotatedElement> void registerFromStereotypes(Set<Class<? extends Annotation>> stereotypes,
                                                                                Class<?> bean,E element, Object target,
                                                                                MetricsService metricsService) {
@@ -135,38 +173,15 @@ public class MetricsInterceptor {
             Annotation[] array = a.getAnnotations();
             for (Annotation annotation: array) {
                 if(annotation.annotationType().isAssignableFrom(Timed.class)) {
-                    Timed timedAnnotation = (Timed) annotation;
-                    if(timedAnnotation.scope() != null) {
-                        final MetricRegistry metricRegistry = metricsService.getContext(true)
-                                .getOrCreateRegistry(timedAnnotation.scope());
-                        register(bean, element, AnnotationReader.TIMED, metricRegistry::timer);
-                    } else {
-                        register(bean, element, AnnotationReader.TIMED, registry::timer);
-                    }
+                    registerTimedMetric((Timed) annotation, bean, element, metricsService);
                 }
 
                 if(annotation.annotationType().isAssignableFrom(Counted.class)) {
-                    Counted countedAnnotation = (Counted) annotation;
-                    if(countedAnnotation.scope() != null) {
-                        final MetricRegistry metricRegistry = metricsService.getContext(true)
-                                .getOrCreateRegistry(countedAnnotation.scope());
-                        register(bean, element, AnnotationReader.COUNTED, metricRegistry::counter);
-                    } else {
-                        register(bean, element, AnnotationReader.COUNTED, registry::counter);
-                    }
+                    registerCountedMetric((Counted) annotation, bean, element, metricsService);
                 }
 
                 if(annotation.annotationType().isAssignableFrom(Gauge.class)) {
-                    Gauge gaugeAnnotation = (Gauge) annotation;
-                    if(gaugeAnnotation.scope() != null) {
-                        final MetricRegistry metricRegistry = metricsService.getContext(true)
-                                .getOrCreateRegistry(gaugeAnnotation.scope());
-                        register(bean, element, AnnotationReader.GAUGE, (metadata, tags) ->
-                                metricRegistry.gauge(metadata, new GaugeImpl<>((Method) element, target), tags));
-                    } else {
-                        register(bean, element, AnnotationReader.GAUGE, (metadata, tags) ->
-                                registry.gauge(metadata, new GaugeImpl<>((Method) element, target), tags));
-                    }
+                    registerGaugeMetric((Gauge) annotation, bean,element, target, metricsService);
                 }
             }
         }
@@ -174,43 +189,57 @@ public class MetricsInterceptor {
     }
 
     private <E extends Member & AnnotatedElement> void registerMetrics(Class<?> bean, E element, Object target, MetricsService metricsService) {
-        //review here if correct scope is selected
         Timed timedAnnotation = element.getAnnotation(Timed.class);
         Counted countedAnnotation = element.getAnnotation(Counted.class);
         Gauge gaugeAnnotation = element.getAnnotation(Gauge.class);
 
         if(timedAnnotation != null) {
-            String scope = timedAnnotation.scope();
-            if(scope != null) {
-                final MetricRegistry metricRegistry = metricsService.getContext(true).getOrCreateRegistry(scope);
-                register(bean, element, AnnotationReader.TIMED, metricRegistry::timer);
-            } else {
-                register(bean, element, AnnotationReader.TIMED, registry::timer);
-            }
+            registerTimedMetric(timedAnnotation, bean, element, metricsService);
         }
 
         if(countedAnnotation != null) {
-            String scope = countedAnnotation.scope();
-
-            if(scope != null) {
-                final MetricRegistry metricRegistry = metricsService.getContext(true).getOrCreateRegistry(scope);
-                register(bean, element, AnnotationReader.COUNTED, metricRegistry::counter);
-            } else {
-                register(bean, element, AnnotationReader.COUNTED, registry::counter);
-            }
+            registerCountedMetric(countedAnnotation, bean, element, metricsService);
         }
 
         if(gaugeAnnotation != null) {
-            String scope = gaugeAnnotation.scope();
+            registerGaugeMetric(gaugeAnnotation, bean, element, target, metricsService);
+        }
+    }
 
-            if(scope != null) {
-                final MetricRegistry metricRegistry = metricsService.getContext(true).getOrCreateRegistry(scope);
-                register(bean, element, AnnotationReader.GAUGE, (metadata, tags) ->
-                        metricRegistry.gauge(metadata, new GaugeImpl<>((Method) element, target), tags));
-            } else {
-                register(bean, element, AnnotationReader.GAUGE, (metadata, tags) ->
-                        registry.gauge(metadata, new GaugeImpl<>((Method) element, target), tags));
-            }
+    private <E extends Member & AnnotatedElement> void registerTimedMetric(Timed timedAnnotation, Class<?> bean,
+                                                                           E element, MetricsService metricsService) {
+        String scope = timedAnnotation.scope();
+        if(scope != null) {
+            final MetricRegistry metricRegistry = metricsService.getContext(true).getOrCreateRegistry(scope);
+            register(bean, element, AnnotationReader.TIMED, metricRegistry::timer);
+        } else {
+            register(bean, element, AnnotationReader.TIMED, registry::timer);
+        }
+    }
+
+    private <E extends Member & AnnotatedElement> void registerCountedMetric(Counted countedAnnotation, Class<?> bean,
+                                                                           E element, MetricsService metricsService) {
+        String scope = countedAnnotation.scope();
+        if(scope != null) {
+            final MetricRegistry metricRegistry = metricsService.getContext(true).getOrCreateRegistry(scope);
+            register(bean, element, AnnotationReader.COUNTED, metricRegistry::counter);
+        } else {
+            register(bean, element, AnnotationReader.COUNTED, registry::counter);
+        }
+    }
+
+    private <E extends Member & AnnotatedElement> void registerGaugeMetric(Gauge gaugeAnnotation,
+                                                                           Class<?> bean, E element,
+                                                                           Object target, MetricsService metricsService) {
+        String scope = gaugeAnnotation.scope();
+
+        if(scope != null) {
+            final MetricRegistry metricRegistry = metricsService.getContext(true).getOrCreateRegistry(scope);
+            register(bean, element, AnnotationReader.GAUGE, (metadata, tags) ->
+                    metricRegistry.gauge(metadata, new GaugeImpl<>((Method) element, target), tags));
+        } else {
+            register(bean, element, AnnotationReader.GAUGE, (metadata, tags) ->
+                    registry.gauge(metadata, new GaugeImpl<>((Method) element, target), tags));
         }
     }
 

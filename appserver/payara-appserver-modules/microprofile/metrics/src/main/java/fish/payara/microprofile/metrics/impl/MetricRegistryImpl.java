@@ -39,10 +39,7 @@
  */
 package fish.payara.microprofile.metrics.impl;
 
-import fish.payara.microprofile.metrics.cdi.MetricUtils;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -61,8 +58,17 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import jakarta.enterprise.inject.Vetoed;
-import java.util.stream.Stream;
-import org.eclipse.microprofile.metrics.*;
+import org.eclipse.microprofile.metrics.Counter;
+import org.eclipse.microprofile.metrics.Gauge;
+import org.eclipse.microprofile.metrics.Histogram;
+import org.eclipse.microprofile.metrics.Metadata;
+import org.eclipse.microprofile.metrics.Metric;
+import org.eclipse.microprofile.metrics.MetricFilter;
+import org.eclipse.microprofile.metrics.MetricID;
+import org.eclipse.microprofile.metrics.MetricRegistry;
+import org.eclipse.microprofile.metrics.MetricUnits;
+import org.eclipse.microprofile.metrics.Tag;
+import org.eclipse.microprofile.metrics.Timer;
 
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
@@ -237,25 +243,21 @@ public class MetricRegistryImpl implements MetricRegistry {
 
     @Override
     public Counter getCounter(MetricID metricID) {
-        //metricID = MetricUtils.validateAndComplementTags(metricID);
         return getMetric(metricID, Counter.class);
     }
 
     @Override
     public Gauge<?> getGauge(MetricID metricID) {
-        //metricID = MetricUtils.validateAndComplementTags(metricID);
         return getMetric(metricID, Gauge.class);
     }
 
     @Override
     public Histogram getHistogram(MetricID metricID) {
-        //metricID = MetricUtils.validateAndComplementTags(metricID);
         return getMetric(metricID, Histogram.class);
     }
 
     @Override
     public Timer getTimer(MetricID metricID) {
-        //metricID = MetricUtils.validateAndComplementTags(metricID);
         return getMetric(metricID, Timer.class);
     }
 
@@ -426,11 +428,6 @@ public class MetricRegistryImpl implements MetricRegistry {
         if (existing == null) {
             return register(metadata, useExistingMetadata, metricType, metric, tags);
         }
-        /*if (useExistingMetadata || !useExistingMetadata && !metadata.equals(family.metadata)) {
-            throw new IllegalArgumentException(
-                    String.format("Tried to lookup a metric with conflicting metadata, looup is %s, existing is %s",
-                            metadata.toString(), family.metadata.toString()));
-        }*/
         return (T) existing;
     }
 
