@@ -74,16 +74,13 @@ public class FileStrategyBuilder extends BasePersistenceStrategyBuilder {
         FileStore store = new FileStore();
         store.setDirectory(directory);
         mgr.setStore(store);
-        
-        //START OF 6364900
-        mgr.setSessionLocker(new PESessionLocker(ctx));
-        //END OF 6364900        
 
         ctx.setManager(mgr);
 
-        if(!((StandardContext)ctx).isSessionTimeoutOveridden()) {
-            mgr.setMaxInactiveInterval(sessionMaxInactiveInterval);
-        }
+        // extra attribute driving HA replication expiration. Not in anymore
+//        if(!((StandardContext)ctx).isSessionTimeoutOveridden()) {
+//            mgr.setMaxInactiveInterval(sessionMaxInactiveInterval);
+//        }
 
         // Special code for Java Server Faces
         if (ctx.findParameter(JSF_HA_ENABLED) == null) {

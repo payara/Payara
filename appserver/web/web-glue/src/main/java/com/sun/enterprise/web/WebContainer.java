@@ -82,6 +82,7 @@ import org.apache.catalina.Engine;
 import org.apache.catalina.Host;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.Realm;
+import org.apache.catalina.connector.Request;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.startup.Bootstrap;
 import org.apache.catalina.startup.ContextConfig;
@@ -212,7 +213,11 @@ import static org.glassfish.web.LogFacade.WEB_MODULE_NOT_LOADED_NO_VIRTUAL_SERVE
 import static org.glassfish.web.LogFacade.WEB_MODULE_NOT_LOADED_TO_VS;
 
 /**
- * Web container service
+ * Web container is representation of running catalina stack in Payara.
+ * All interaction with Catalina flows over this service. In particular it should also drive lifecycle of any tomcat
+ * components the server might need, and don't hand them away unmanaged.
+ *
+ * To the outside it presents itself as set of HttpHandlers to be bound to respective Grizzly HTTP adapters.
  *
  * @author jluehe
  * @author amyroh
@@ -274,10 +279,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
     private JavaEEIOUtils javaEEIOUtils;
 
     @Inject
-    @org.jvnet.hk2.annotations.Optional
-    private JCDIService cdiService;
-
-    @Inject
     @Named(DEFAULT_INSTANCE_NAME)
     private Config serverConfig;
 
@@ -298,8 +299,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
     private LoggingRuntime loggingRuntime;
 
     private String instanceName;
-
-    private WebConnector jkConnector;
 
     private String logLevel = "INFO";
 
@@ -410,6 +409,9 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
     private CatalinaWebStack stack;
 
 
+    /**
+     * Configure and boot Catalina.
+     */
     @Override
     public void postConstruct() {
 
@@ -720,10 +722,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         return invocationMgr;
     }
 
-    public WebConnector getJkConnector() {
-        return jkConnector;
-    }
-
     /**
      * Use an network-listener subelements and creates a corresponding Tomcat Connector for each.
      *
@@ -741,7 +739,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         }
 
         int port = grizzlyService.getRealPort(listener);
-        WebConnector connector;
 
         checkHostnameUniqueness(listener.getName(), httpService);
 
@@ -1011,15 +1008,10 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
 
         HashSet<NetworkListener> httpListeners = new HashSet<>();
         for (String listener : listeners) {
-            boolean found = false;
-            for (NetworkListener httpListener : serverConfig.getNetworkConfig().getNetworkListeners().getNetworkListener()) {
-                if (httpListener.getName().equals(listener)) {
-                    httpListeners.add(httpListener);
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) {
+            var httpListener = serverConfig.getNetworkConfig().getNetworkListener(listener);
+            if (httpListener != null) {
+                httpListeners.add(httpListener);
+            } else {
                 logger.log(SEVERE, format(rb.getString(LISTENER_REFERENCED_BY_HOST_NOT_EXIST), listener, virtualServer.getName()));
             }
         }
@@ -1037,7 +1029,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
      * @param listeners The http listeners with which the given virtual server is associated
      */
     protected void configureHostPortNumbers(VirtualServer virtualServer, HashSet<NetworkListener> listeners) {
-        boolean addJkListenerName = jkConnector != null && !virtualServer.getName().equalsIgnoreCase(ADMIN_VS);
 
         List<String> listenerNames = new ArrayList<>();
         for (NetworkListener listener : listeners) {
@@ -1048,13 +1039,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
                 if (virtualServer.getName().equalsIgnoreCase(ADMIN_VS)) {
                     throw new IllegalArgumentException(format(rb.getString(MUST_NOT_DISABLE), listener.getName(), virtualServer.getName()));
                 }
-            }
-        }
-
-        if (addJkListenerName && (!listenerNames.contains(jkConnector.getName()))) {
-            listenerNames.add(jkConnector.getName());
-            if (logger.isLoggable(FINE)) {
-                logger.log(FINE, VIRTUAL_SERVER_SET_JK_LISTENER_NAME, new Object[] { virtualServer.getID(), jkConnector.getName() });
             }
         }
 
@@ -1616,12 +1600,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
      * The given default path corresponds to the context path of one of the web contexts deployed on the virtual server that
      * has been designated as the virtual server's new default-web-module.
      *
-     * @param virtualServer The virtual server to update
-     *
-     * @param ports The port numbers of the HTTP listeners with which the given virtual server is associated
-     *
-     * @param defaultContextPath The context path of the web module that has been designated as the virtual server's new
-     * default web module, or null if the virtual server no longer has any default-web-module
      */
 
     protected void updateDefaultWebModule(VirtualServer virtualServer, String[] listenerNames,
@@ -1666,24 +1644,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         return serverConfigLookup;
     }
 
-    /**
-     * Returns the folder where library files are to be found
-     *
-     * @return
-     */
-    File getLibPath() {
-        return instance.getLibPath();
-    }
-
-    /**
-     * The application id for this web module HERCULES:add
-     *
-     * @param webModule
-     * @return
-     */
-    public String getApplicationId(WebModule webModule) {
-        return webModule.getID();
-    }
 
     /**
      * Return the Absolute path for location where all the deployed standalone modules are stored for this Server Instance.
@@ -2094,16 +2054,12 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         // new listener config
         HashSet<NetworkListener> networkListeners = new HashSet<>();
         if (oldListenerList != null) {
-            for (String listener : oldListeners) {
+            for (String listener : oldListenerList) {
                 boolean found = false;
-                for (NetworkListener httpListener : serverConfig.getNetworkConfig().getNetworkListeners().getNetworkListener()) {
-                    if (httpListener.getName().equals(listener)) {
-                        networkListeners.add(httpListener);
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found) {
+                var httpListener = serverConfig.getNetworkConfig().getNetworkListener(listener);
+                if (httpListener != null) {
+                    networkListeners.add(httpListener);
+                } else {
                     String msg = rb.getString(LogFacade.LISTENER_REFERENCED_BY_HOST_NOT_EXIST);
                     msg = MessageFormat.format(msg, listener, virtualServer.getName());
                     logger.log(Level.SEVERE, msg);
@@ -2271,7 +2227,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
             // that does not declare any admin-listener, in which case the
             // admin-related webapps are accessible on http-listener-1.
             if (networkListener.findHttpProtocol().getHttp().getDefaultVirtualServer().equals(org.glassfish.api.web.Constants.ADMIN_VS)
-                    || "http-listener-1".equals(networkListener.getName()) && connectorMap.get("admin-listener") == null) {
+                    || "http-listener-1".equals(networkListener.getName()) && !hasNetworkListener("admin-listener")) {
                 return;
             }
 
@@ -2320,6 +2276,10 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
                 }
             }
         }
+    }
+
+    private boolean hasNetworkListener(String listenerName) {
+        return serverConfig.getNetworkConfig().getNetworkListener(listenerName) != null;
     }
 
     /**
@@ -2496,33 +2456,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
     private WebContainerFeatureFactory getWebContainerFeatureFactory() {
         String featureFactoryName = (serverConfigLookup.calculateWebAvailabilityEnabledFromConfig() ? "ha" : "pe");
         return webContainerFeatureFactory = serviceLocator.getService(WebContainerFeatureFactory.class, featureFactoryName);
-    }
-
-    // originally EmbeddedWebContainer
-    /**
-     * Creates a virtual server.
-     *
-     * @param vsID Virtual server id
-     * @param vsBean Bean corresponding to virtual-server element in domain.xml
-     * @param vsDocroot Virtual server docroot
-     * @param vsMimeMap Virtual server MIME mappings
-     *
-     * @return The generated virtual server instance
-     */
-    private Host createHost(
-            String vsID,
-            com.sun.enterprise.config.serverbeans.VirtualServer vsBean,
-            String vsDocroot,
-            String vsLogFile,
-            MimeMap vsMimeMap) {
-
-        VirtualServer vs = new VirtualServer();
-        vs.setFileLoggerHandlerFactory(fileLoggerHandlerFactory);
-
-        vs.configure(vsID, vsBean, vsDocroot, vsLogFile, vsMimeMap,
-                logServiceFile, logLevel);
-
-        return vs;
     }
 
     /**

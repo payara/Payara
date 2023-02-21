@@ -181,11 +181,6 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
     private static final String ON = "on";
 
     /**
-     * The descriptive information about this implementation.
-     */
-    private static final String _info = "com.sun.enterprise.web.VirtualServer/1.0";
-
-    /**
      * The logger to use for logging this virtual server
      */
     private static final Logger DEFAULT_LOGGER = LogFacade.getLogger();
@@ -1512,10 +1507,11 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
             if (container instanceof StandardContext) {
                 StandardContext context = (StandardContext) container;
                 for (Valve valve : context.getPipeline().getValves()) {
-                    if (valve instanceof AuthenticatorBase) {
-                        ((AuthenticatorBase) valve).setSingleSignOn(sso);
-                        break;
-                    }
+                    // TODO: Catalina doesn't support changing sso at runtime, AuthenticatorBase will pick up sso from the pipeline at start.
+//                    if (valve instanceof AuthenticatorBase) {
+//                        ((AuthenticatorBase) valve).setSingleSignOn(sso);
+//                        break;
+//                    }
                 }
             }
         }
@@ -2278,6 +2274,11 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
 
     // ---------------------------------------------------------- Nested Classes
 
+    /**
+     * All access logging should be facilitated through catalina's logAccess methods, even failed requests.
+     * We are not capable of translating Grizzly packet to catalina request (moreover a failed one) at this point.
+     */
+    @Deprecated(forRemoval = true)
     private final class HttpProbeImpl extends HttpProbe.Adapter {
 
         boolean accessLoggingEnabled = false;
@@ -2298,41 +2299,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
 
         @Override
         public void onErrorEvent(Connection connection, HttpPacket packet, Throwable error) {
-            if (accessLoggingEnabled) {
-                if (packet instanceof HttpRequestPacket) {
 
-                    HttpRequestPacket requestPacket = (HttpRequestPacket) packet;
-                    HttpResponsePacket responsePacket = requestPacket.getResponse();
-
-                    // 400 should be hardcoded since the response status isn't available for bad requests
-                    responsePacket.setStatus(HttpStatus.BAD_REQUEST_400);
-
-                    org.glassfish.grizzly.http.server.Request request = org.glassfish.grizzly.http.server.Request.create();
-                    org.glassfish.grizzly.http.server.Response response = request.getResponse();
-
-                    request.initialize(/* response, */ requestPacket, FilterChainContext.create(connection), null);
-                    response.initialize(request, responsePacket, FilterChainContext.create(connection), null, null);
-
-                    Response res = new Response();
-                    res.setCoyoteResponse(response);
-
-                    WebConnector connector = webContainer.getConnectorMap().get(listener.getName());
-                    if (connector != null) {
-                        Request req = new Request();
-                        req.setCoyoteRequest(request);
-                        req.setConnector(connector);
-                        try {
-                            accessLogValve.postInvoke(req, res);
-                        } catch (IOException ex) {
-                            _logger.log(SEVERE, UNABLE_RECONFIGURE_ACCESS_LOG, ex);
-                        }
-                    } else {
-                        _logger.log(SEVERE, UNABLE_RECONFIGURE_ACCESS_LOG);
-                    }
-                } else {
-                    _logger.log(SEVERE, UNABLE_RECONFIGURE_ACCESS_LOG);
-                }
-            }
         }
 
     }

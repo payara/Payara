@@ -43,6 +43,7 @@ package com.sun.enterprise.web;
 import com.sun.enterprise.util.uuid.UuidGenerator;
 import com.sun.enterprise.web.session.PersistenceType;
 import org.apache.catalina.Context;
+import org.apache.catalina.SessionIdGenerator;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.session.StandardManager;
 import org.glassfish.web.LogFacade;
@@ -82,20 +83,16 @@ public class MemoryStrategyBuilder extends BasePersistenceStrategyBuilder {
 
         mgr.setMaxActiveSessions(maxSessions);
 
-        // START OF 6364900
-        mgr.setSessionLocker(new PESessionLocker(ctx));
-        // END OF 6364900        
-
         ctx.setManager(mgr);
 
         // START CR 6275709
         if (sessionIdGeneratorClassname != null &&
                 sessionIdGeneratorClassname.length() > 0) {
             try {
-                UuidGenerator generator = (UuidGenerator)
+                SessionIdGenerator generator = (SessionIdGenerator)
                     serverConfigLookup.loadClass(
                         sessionIdGeneratorClassname).newInstance();
-                mgr.setUuidGenerator(generator);
+                mgr.setSessionIdGenerator(generator);
             } catch (Exception ex) {
                 String msg = _rb.getString(LogFacade.UNABLE_TO_LOAD_SESSION_UUID_GENERATOR);
                 msg = MessageFormat.format(msg, sessionIdGeneratorClassname);
@@ -103,9 +100,10 @@ public class MemoryStrategyBuilder extends BasePersistenceStrategyBuilder {
             }
         }
         // END CR 6275709
-        
-        if (!((StandardContext)ctx).isSessionTimeoutOveridden()) {
-            mgr.setMaxInactiveInterval(sessionMaxInactiveInterval); 
-        }        
+
+        // HA replication attribute unavailable, needs to go somewhere else.
+//        if (!((StandardContext)ctx).isSessionTimeoutOveridden()) {
+//            mgr.setMaxInactiveInterval(sessionMaxInactiveInterval);
+//        }
     }    
 }

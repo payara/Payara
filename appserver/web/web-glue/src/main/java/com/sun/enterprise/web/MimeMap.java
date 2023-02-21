@@ -49,7 +49,9 @@ import java.util.Iterator;
 
 /**
  * Class representing the parsed mime mapping file of a mime element.
+ * @deprecated Does not seem to be actively used anywhere
  */
+@Deprecated
 public class MimeMap implements Serializable {
    
     private static final String MIME_TYPE = "type=";

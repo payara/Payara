@@ -42,12 +42,10 @@
 
 package com.sun.enterprise.security.web;
 
-import java.security.Principal;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicLong;
-
 import org.apache.catalina.authenticator.SingleSignOnEntry;
-import org.apache.catalina.authenticator.SingleSignOnSessionKey;
+
+import java.security.Principal;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class PayaraSingleSignOnEntry extends SingleSignOnEntry {
 
