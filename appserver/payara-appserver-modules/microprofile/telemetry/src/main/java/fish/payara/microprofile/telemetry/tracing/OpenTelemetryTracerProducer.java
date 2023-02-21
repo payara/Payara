@@ -1,8 +1,9 @@
 /*
+ *
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- *  Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
- * 
+ *
+ *  Copyright (c) 2023 Payara Foundation and/or its affiliates. All rights reserved.
+ *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
  *  and Distribution License("CDDL") (collectively, the "License").  You
@@ -11,23 +12,20 @@
  *  https://github.com/payara/Payara/blob/master/LICENSE.txt
  *  See the License for the specific
  *  language governing permissions and limitations under the License.
- * 
- *  When distributing the software, include this License Header Notice in each
- *  file and include the License.
- * 
+ *
  *  When distributing the software, include this License Header Notice in each
  *  file and include the License file at glassfish/legal/LICENSE.txt.
- * 
+ *
  *  GPL Classpath Exception:
  *  The Payara Foundation designates this particular file as subject to the "Classpath"
  *  exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  *  file that accompanied this code.
- * 
+ *
  *  Modifications:
  *  If applicable, add the following below the License Header, with the fields
  *  enclosed by brackets [] replaced by your own identifying information:
  *  "Portions Copyright [year] [name of copyright owner]"
- * 
+ *
  *  Contributor(s):
  *  If you wish your version of this file to be governed by only the CDDL or
  *  only the GPL Version 2, indicate your decision by adding "[Contributor]
@@ -39,48 +37,51 @@
  *  and therefore, elected the GPL Version 2 license, then the option applies
  *  only if the new code is made subject to such option by the copyright
  *  holder.
+ *
  */
-package fish.payara.opentracing.tracer;
 
-import io.opentracing.propagation.Format;
+package fish.payara.microprofile.telemetry.tracing;
 
-/**
- * Exception thrown if the {@link Format} is not supported by the Carrier,
- * or Payara does not support the carrier.
- * @author jonathan coustick
- * @since 5.183
- */
-@Deprecated
-public class InvalidCarrierFormatException extends IllegalArgumentException {
-    
-    private final Format format;
-    private final Object carrier;
-    
-    public InvalidCarrierFormatException(Format invalidFormat, Object carrierClass){
-        super();
-        this.format = invalidFormat;
-        this.carrier = carrierClass;
+import fish.payara.opentracing.OpenTelemetryService;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.baggage.Baggage;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Context;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.RequestScoped;
+import jakarta.enterprise.inject.Produces;
+import org.glassfish.internal.api.Globals;
+
+@ApplicationScoped
+public class OpenTelemetryTracerProducer {
+    private final OpenTelemetryService openTelemetry;
+
+    public OpenTelemetryTracerProducer() {
+        openTelemetry = Globals.getDefaultBaseServiceLocator().getService(OpenTelemetryService.class);
     }
-    
-    @Override
-    public String getMessage(){
-        return "Carrier class" + carrier.getClass().toString() + "does not support Format" + format.getClass().toString();
+
+    @Produces
+    @ApplicationScoped
+    Tracer createTracer() {
+        return openTelemetry.getCurrentTracer();
     }
-    
-    /**
-     * Returns the format that is not supported by the carrier
-     * @return 
-     */
-    public Format getFormat(){
-        return format;
+
+    @Produces
+    @RequestScoped
+    Baggage currentBaggage() {
+        return Baggage.current();
     }
-    
-    /**
-     * Returns the carrier class;
-     * @return 
-     */
-    public Object getCarrierClass(){
-        return carrier;
+
+    @Produces
+    @RequestScoped
+    Span currentSpan() {
+        return Span.current();
     }
-    
+
+    @Produces
+    @ApplicationScoped
+    OpenTelemetry currentTelemetry() {
+        return openTelemetry.getCurrentSdk();
+    }
 }

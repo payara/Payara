@@ -1,8 +1,9 @@
 /*
+ *
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- *  Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
- * 
+ *
+ *  Copyright (c) 2023 Payara Foundation and/or its affiliates. All rights reserved.
+ *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
  *  and Distribution License("CDDL") (collectively, the "License").  You
@@ -11,23 +12,20 @@
  *  https://github.com/payara/Payara/blob/master/LICENSE.txt
  *  See the License for the specific
  *  language governing permissions and limitations under the License.
- * 
- *  When distributing the software, include this License Header Notice in each
- *  file and include the License.
- * 
+ *
  *  When distributing the software, include this License Header Notice in each
  *  file and include the License file at glassfish/legal/LICENSE.txt.
- * 
+ *
  *  GPL Classpath Exception:
  *  The Payara Foundation designates this particular file as subject to the "Classpath"
  *  exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  *  file that accompanied this code.
- * 
+ *
  *  Modifications:
  *  If applicable, add the following below the License Header, with the fields
  *  enclosed by brackets [] replaced by your own identifying information:
  *  "Portions Copyright [year] [name of copyright owner]"
- * 
+ *
  *  Contributor(s):
  *  If you wish your version of this file to be governed by only the CDDL or
  *  only the GPL Version 2, indicate your decision by adding "[Contributor]
@@ -39,48 +37,43 @@
  *  and therefore, elected the GPL Version 2 license, then the option applies
  *  only if the new code is made subject to such option by the copyright
  *  holder.
+ *
  */
-package fish.payara.opentracing.tracer;
+package fish.payara.microprofile.telemetry.tracing;
 
-import io.opentracing.propagation.Format;
+import fish.payara.opentracing.OpenTracingService;
+import io.opentracing.Tracer;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Produces;
+import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.internal.api.Globals;
 
 /**
- * Exception thrown if the {@link Format} is not supported by the Carrier,
- * or Payara does not support the carrier.
- * @author jonathan coustick
- * @since 5.183
+ * Producer class for OpenTracing Tracers.
+ * 
+ * @author Andrew Pielage <andrew.pielage@payara.fish>
  */
-@Deprecated
-public class InvalidCarrierFormatException extends IllegalArgumentException {
+@ApplicationScoped
+public class OpenTracingTracerProducer {
     
-    private final Format format;
-    private final Object carrier;
+    private OpenTracingService openTracing;
     
-    public InvalidCarrierFormatException(Format invalidFormat, Object carrierClass){
-        super();
-        this.format = invalidFormat;
-        this.carrier = carrierClass;
-    }
-    
-    @Override
-    public String getMessage(){
-        return "Carrier class" + carrier.getClass().toString() + "does not support Format" + format.getClass().toString();
+    /**
+     * Constructor that initialises the OpenTracing HK2 service variable.
+     */
+    public OpenTracingTracerProducer() {
+        openTracing = Globals.getDefaultBaseServiceLocator().getService(OpenTracingService.class);
     }
     
     /**
-     * Returns the format that is not supported by the carrier
-     * @return 
+     * Gets a Tracer object for injection into the application.
+     * 
+     * @return An OpenTracing tracer
      */
-    public Format getFormat(){
-        return format;
+    @Produces
+    @ApplicationScoped
+    public Tracer getTracer() {
+        return openTracing.getTracer(openTracing.getApplicationName(
+                Globals.getDefaultBaseServiceLocator().getService(InvocationManager.class)));
     }
-    
-    /**
-     * Returns the carrier class;
-     * @return 
-     */
-    public Object getCarrierClass(){
-        return carrier;
-    }
-    
 }

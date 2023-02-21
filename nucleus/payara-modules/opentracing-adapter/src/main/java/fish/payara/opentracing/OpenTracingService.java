@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2018-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -39,15 +39,6 @@
  */
 package fish.payara.opentracing;
 
-import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.ServiceLoader;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import io.opentelemetry.opentracingshim.OpenTracingShim;
 import io.opentracing.Tracer;
@@ -66,6 +57,13 @@ import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.deployment.Deployment;
 import org.jvnet.hk2.annotations.Service;
+
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Service class for the OpenTracing integration.
@@ -142,32 +140,15 @@ public class OpenTracingService implements EventListener {
         // Double-checked locking - potentially naughty
         Tracer tracer = tracers.computeIfAbsent(applicationName, (appName) -> {
             // required for direct interaction with OpenTracing, i. e. in MP TCK
-            Tracer installedTracer = findTracerViaServiceLoader();
-            if (installedTracer != null) {
-                return installedTracer;
-            }
             if (otel == null) {
                 return null;
             }
             // create default implementation (env / system property based) for the application
             otel.ensureAppInitialized(appName, null);
-            return otel.getSdk(applicationName).map(OpenTracingShim::createTracerShim).orElse(NoopTracerFactory.create());
+            return otel.getSdkDependency(applicationName, () -> tracers.remove(applicationName)).map(OpenTracingShim::createTracerShim).orElse(NoopTracerFactory.create());
         });
 
         return tracer;
-    }
-
-    private Tracer findTracerViaServiceLoader() {
-        try {
-            ServiceLoader<Tracer> tracerLoader = ServiceLoader.load(Tracer.class);
-            Iterator<Tracer> loadedTracer = tracerLoader.iterator();
-            if (loadedTracer.hasNext()) {
-                return loadedTracer.next();
-            }
-        } catch (NoClassDefFoundError ex) {
-            logger.log(Level.SEVERE, "Unable to find Tracer implementation", ex);
-        }
-        return null;
     }
 
     /**
