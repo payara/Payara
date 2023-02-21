@@ -47,6 +47,7 @@ import org.apache.catalina.Context;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
+import org.glassfish.grizzly.http.server.Constants;
 import org.glassfish.web.LogFacade;
 
 import jakarta.servlet.http.Cookie;
@@ -59,6 +60,8 @@ import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.glassfish.grizzly.config.dom.Http;
 
 /**
  * Customized version of the Tomcat 5 CoyoteRequest
@@ -156,6 +159,10 @@ public class PwcCoyoteRequest extends Request {
             cookie.setSecure(false);
         } else {
             cookie.setSecure(isSecure());
+        }
+        String cookieSameSiteValue = System.getProperty("cookieSameSiteValue");
+        if (cookieSameSiteValue != null) {
+            cookie.setAttribute(Constants.COOKIE_SAME_SITE_ATTR, cookieSameSiteValue);
         }
     }
     

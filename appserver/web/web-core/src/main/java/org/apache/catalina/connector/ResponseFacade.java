@@ -64,6 +64,7 @@ import org.apache.catalina.LogFacade;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
+import org.glassfish.grizzly.http.server.Constants;
 
 import static java.security.AccessController.doPrivileged;
 import static org.apache.catalina.LogFacade.NULL_RESPONSE_OBJECT;
@@ -417,6 +418,11 @@ public class ResponseFacade
 
         if (isCommitted()) {
             return;
+        }
+
+        String cookieSameSiteValue = System.getProperty("cookieSameSiteValue");
+        if (cookieSameSiteValue != null) {
+            cookie.setAttribute(Constants.COOKIE_SAME_SITE_ATTR, cookieSameSiteValue);
         }
 
         response.addCookie(cookie);

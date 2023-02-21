@@ -72,8 +72,10 @@ import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.ServerFilterConfiguration;
 import org.glassfish.grizzly.http.server.filecache.FileCache;
 import org.glassfish.grizzly.http.server.util.Mapper;
+import org.glassfish.grizzly.http.util.DataChunk;
 import org.glassfish.grizzly.http.util.Header;
 import org.glassfish.grizzly.http.util.HeaderValue;
+import org.glassfish.grizzly.http.util.MimeHeaders;
 import org.glassfish.grizzly.threadpool.ThreadPoolConfig;
 import org.glassfish.grizzly.utils.DelayedExecutor;
 import org.glassfish.hk2.api.DynamicConfiguration;
@@ -439,7 +441,11 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
             }
 
             if (cookieSameSiteEnabled) {
-                this.cookieSameSiteValue = cookieSameSiteValue;
+                if ("None".equals(cookieSameSiteValue)) {
+                    this.cookieSameSiteValue = cookieSameSiteValue + "; Secure";
+                } else {
+                    this.cookieSameSiteValue = cookieSameSiteValue;
+                }
             } else {
                 this.cookieSameSiteValue = null;
             }
@@ -484,14 +490,14 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
 
             if (this.cookieSameSiteValue != null && httpHeader instanceof HttpResponsePacket) {
                 final HttpResponsePacket response = (HttpResponsePacket) httpHeader;
-                final HttpRequestPacket request = response.getRequest();
-                String cookieHeader = request.getHeader(Header.Cookie);
-                if (cookieHeader != null) {
-                    String[] cookies = cookieHeader.split(";");
-                    for (String cookie : cookies) {
-                        response.addHeader(Header.SetCookie, cookie.trim() + "; HttpOnly; SameSite=" + this.cookieSameSiteValue);
+                MimeHeaders headers = response.getHeaders();
+                for (int i = 0; i < headers.size(); i++) {
+                    if (headers.getName(i).toString().equals("Set-Cookie")) {
+                        DataChunk value = headers.getValue(i);
+                        value.setString(value + ";SameSite=" + this.cookieSameSiteValue);
                     }
                 }
+                System.setProperty("cookieSameSiteValue", cookieSameSiteValue);
             }
         }
     }
