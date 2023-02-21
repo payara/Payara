@@ -89,7 +89,9 @@ public final class PayaraTracingServices {
      *         initialised, or false if the services are not available.
      */
     public boolean isTracingAvailable() {
-        return requestTracingService != null && openTracingService != null;
+        return requestTracingService != null
+                && openTracingService != null
+                && openTelemetryService != null;
     }
 
     /**

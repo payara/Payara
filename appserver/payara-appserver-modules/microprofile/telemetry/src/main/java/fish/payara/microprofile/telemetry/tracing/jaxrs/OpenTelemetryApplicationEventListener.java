@@ -90,10 +90,10 @@ public class OpenTelemetryApplicationEventListener implements ApplicationEventLi
     @Override
     public RequestEventListener onRequest(final RequestEvent event) {
         LOG.finer(() -> "onRequest(event.type=" + event.getType() + ")");
-//        if (!isRequestTracingInProgress()) {
-//            LOG.finest("isRequestTracingInProgress() returned false, nothing to do.");
-//            return null;
-//        }
+        if (!isRequestTracingInProgress()) {
+            LOG.finest("isRequestTracingInProgress() returned false, nothing to do.");
+            return null;
+        }
         return new OpenTelemetryRequestEventListener(this.resourceInfo, this.openTelemetryService, this.configuration);
     }
 

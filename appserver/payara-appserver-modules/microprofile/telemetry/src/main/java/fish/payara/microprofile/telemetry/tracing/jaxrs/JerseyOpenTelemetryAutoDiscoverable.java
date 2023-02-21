@@ -46,12 +46,14 @@ import org.glassfish.jersey.internal.spi.ForcedAutoDiscoverable;
 
 /**
  * AutoDiscoverable that registers the {@link OpenTelemetryApplicationEventListener}.
- *
+ * FISH-6971 This class remain unused until we enable jax-rs on client side of OpenTelemetry function
+ * to enable this class add it to {@code META-INF/services/org.glassfish.jersey.internal.spi.ForcedAutoDiscoverable}
  */
 public class JerseyOpenTelemetryAutoDiscoverable implements ForcedAutoDiscoverable {
 
     @Override
     public void configure(FeatureContext context) {
+        // this property to flag the span name definition for OpenTelemetry
         context.property("payara.otel.spanname", true);
         // Only register for application deployments (not the admin console)
         final Deployment deployment = new PayaraTracingServices().getDeployment();
