@@ -425,10 +425,14 @@ public class MetricRegistryImpl implements MetricRegistry {
             return register(metadata, useExistingMetadata, metricType, metric, tags);
         }
         Metric existing = family.get(metricID);
-        if (existing == null) {
+        if(family != null && existing == null) {
+            throw new IllegalArgumentException(
+                    String.format("Tried to lookup a metric id with conflicting tags,  %s", metricID.toString()));
+        } else if(existing != null) {
+            return (T) existing;
+        } else {
             return register(metadata, useExistingMetadata, metricType, metric, tags);
         }
-        return (T) existing;
     }
 
     public <T extends Metric> T register(Metadata metadata, String metricType, T metric, Tag... tags) throws IllegalArgumentException {
