@@ -358,7 +358,7 @@ public final class AnnotationReader<T extends Annotation> {
      * @return tags value of the provided source annotation
      */
     public Tag[] tags(T annotation) {
-        return validateTags(tagsFromString(tags.apply(annotation)));
+        return tagsFromString(tags.apply(annotation));
     }
 
     /**
@@ -734,16 +734,5 @@ public final class AnnotationReader<T extends Annotation> {
             throw new IllegalArgumentException("invalid tag: " + tag + ", tags must be in the form key=value");
         }
         return new Tag(tag.substring(0, splitIndex), tag.substring(splitIndex + 1));
-    }
-
-    public static Tag[] validateTags(Tag[] tags) {
-        Optional<Tag> result = Arrays.stream(tags)
-                .filter(t -> t.getTagName().equals(MetricUtils.TAG_METRIC_MP_SCOPE_NAME)
-                        || t.getTagName().equals(MetricUtils.TAG_METRIC_MP_APP_NAME)).findFirst();
-        if(result.isPresent()) {
-            throw new IllegalArgumentException("invalid tags: " + tags +
-                    ", tags must not contain following reserved tag names: mp_scope and mp_app");
-        }
-        return tags;
     }
 }

@@ -39,7 +39,9 @@
  */
 package fish.payara.microprofile.metrics.impl;
 
+import fish.payara.microprofile.metrics.cdi.MetricUtils;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -420,6 +422,7 @@ public class MetricRegistryImpl implements MetricRegistry {
 
     @SuppressWarnings("unchecked")
     private <T extends Metric> T findMetricOrCreate(Metadata metadata, boolean useExistingMetadata, String metricType, T metric, Tag... tags) {
+        validateTags(tags);
         MetricID metricID = new MetricID(metadata.getName(), tags);
         MetricFamily<?> family = metricsFamiliesByName.get(metricID.getName());
         if (family == null) {
@@ -427,13 +430,37 @@ public class MetricRegistryImpl implements MetricRegistry {
         }
         Metric existing = family.get(metricID);
         if(family != null && existing == null) {
-            throw new IllegalArgumentException(
-                    String.format("Tried to lookup a metric id with conflicting tags,  %s", metricID.toString()));
+            if(hasDifferentTags(metricID)) {
+                return register(metadata, useExistingMetadata, metricType, metric, tags);
+            } else {
+                throw new IllegalArgumentException(
+                        String.format("Tried to lookup a metric id with conflicting tags,  %s", metricID.toString()));
+            }
         } else if(existing != null) {
             return (T) existing;
         } else {
             return register(metadata, useExistingMetadata, metricType, metric, tags);
         }
+    }
+
+    public boolean hasDifferentTags(MetricID metricID) {
+        Optional<MetricID> optionalMetricID = getMetrics(metricID.getName()).keySet().stream()
+                .filter(m -> m.getTags().size() == metricID.getTags().size())
+                .filter(m -> m.getTagsAsString().equals(metricID.getTagsAsString())).findAny();
+        if(optionalMetricID.isPresent()) {
+            return false;
+        }
+        return true;
+    }
+    public static Tag[] validateTags(Tag[] tags) {
+        Optional<Tag> result = Arrays.stream(tags)
+                .filter(t -> t.getTagName().equals(MetricUtils.TAG_METRIC_MP_SCOPE_NAME)
+                        || t.getTagName().equals(MetricUtils.TAG_METRIC_MP_APP_NAME)).findFirst();
+        if(result.isPresent()) {
+            throw new IllegalArgumentException("invalid tags: " + tags +
+                    ", tags must not contain following reserved tag names: mp_scope and mp_app");
+        }
+        return tags;
     }
 
     public <T extends Metric> T register(Metadata metadata, String metricType, T metric, Tag... tags) throws IllegalArgumentException {
