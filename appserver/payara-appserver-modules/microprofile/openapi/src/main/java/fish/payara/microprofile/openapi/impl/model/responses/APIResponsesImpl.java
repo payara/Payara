@@ -68,7 +68,7 @@ public class APIResponsesImpl extends ExtensibleTreeMap<APIResponse, APIResponse
     public static APIResponsesImpl createInstance(AnnotationModel annotation, ApiContext context) {
         APIResponsesImpl from = new APIResponsesImpl();
         from.setExtensions(parseExtensions(annotation));
-        ModelUtils.extractAnnotations(annotation, context, "responses", "responseCode", APIResponseImpl::createInstance, from::addAPIResponse);
+        ModelUtils.extractAnnotations(annotation, context, "value", "responseCode", APIResponseImpl::createInstance, from::addAPIResponse);
         return from;
     }
 
