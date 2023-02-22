@@ -99,9 +99,7 @@ public class OpenTelemetryApplicationEventListener implements ApplicationEventLi
 
 
     private boolean isRequestTracingInProgress() {
-        // TODO: requestTracing.isTraceInProgress should not be used. At this point is probably too early to do
-        // Span.currentSpan().isRecording(), we need a new pattern for this.
-        return requestTracing != null && requestTracing.isRequestTracingEnabled();
+        return this.openTelemetryService.isEnabled();
     }
 }
 

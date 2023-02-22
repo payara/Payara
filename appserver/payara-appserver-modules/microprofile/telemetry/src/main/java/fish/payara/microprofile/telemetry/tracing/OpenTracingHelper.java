@@ -181,6 +181,8 @@ public class OpenTracingHelper {
                 var uriInfo = request.getUriInfo();
                 var result = new StringBuilder();
                 result.append(uriInfo.getBaseUri().getPath());
+                // strip / at end
+                trimTrailingSlash(result);
                 SpanStrategy.appendTemplate(resourceInfo, uriInfo, result);
                 return result.toString();
             }
@@ -235,25 +237,35 @@ public class OpenTracingHelper {
             }
         };
 
+        private static void trimTrailingSlash(StringBuilder result) {
+            if (result.length() > 1 && result.charAt(result.length() -1) == '/')  {
+                result.setLength(result.length() - 1);
+            }
+        }
+
         private static void appendTemplate(ResourceInfo resourceInfo, UriInfo uriInfo, StringBuilder result) {
             if (uriInfo.getMatchedResources().size() == 1) {
                 // simple matching of single method. But I might just use the other method for everything.
                 var classRoute = resourceInfo.getResourceClass().getAnnotation(Path.class);
-                var methodRoute = resourceInfo.getResourceClass().getAnnotation(Path.class);
-                if (classRoute != null) {
+                var methodRoute = resourceInfo.getResourceMethod().getAnnotation(Path.class);
+                if (classRoute != null && !"/".equals(classRoute.value())) {
                     result.append(classRoute.value());
                 }
-                if (methodRoute != null) {
+                if (methodRoute != null && !"/".equals(methodRoute.value())) {
                     result.append(methodRoute.value());
                 }
             } else if (uriInfo instanceof ExtendedUriInfo) {
                 var templates = ((ExtendedUriInfo) uriInfo).getMatchedTemplates();
-                templates.stream()
-                        .map(t -> t.getTemplate())
-                        .filter(s -> !s.equals("/"))
-                        .forEach(result::append);
+                // "Entries are ordered in reverse request URI matching order, with the root resource URI template last."
+                for(int i = templates.size()-1;i >= 0; i--) {
+                    var template = templates.get(i).getTemplate();
+                    if ("/".equals(template)) {
+                        continue;
+                    }
+                    result.append(template);
+                }
             } else {
-                // non jersey runtime?
+                // Shouldn't happen, as we use Jersey. Unless some classpath magic happened.
                 result.append("*");
             }
         }
