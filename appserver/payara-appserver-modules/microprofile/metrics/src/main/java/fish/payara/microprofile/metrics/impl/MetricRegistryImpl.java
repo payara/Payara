@@ -44,6 +44,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -426,13 +427,27 @@ public class MetricRegistryImpl implements MetricRegistry {
         }
         Metric existing = family.get(metricID);
         if(family != null && existing == null) {
-            throw new IllegalArgumentException(
-                    String.format("Tried to lookup a metric id with conflicting tags,  %s", metricID.toString()));
+            if(hasDifferentTags(metricID)) {
+                return register(metadata, useExistingMetadata, metricType, metric, tags);
+            } else {
+                throw new IllegalArgumentException(
+                        String.format("Tried to lookup a metric id with conflicting tags,  %s", metricID.toString()));
+            }
         } else if(existing != null) {
             return (T) existing;
         } else {
             return register(metadata, useExistingMetadata, metricType, metric, tags);
         }
+    }
+
+    public boolean hasDifferentTags(MetricID metricID) {
+        Optional<MetricID> optionalMetricID = getMetrics(metricID.getName()).keySet().stream()
+                .filter(m -> m.getTags().size() == metricID.getTags().size())
+                .filter(m -> m.getTagsAsString().equals(metricID.getTagsAsString())).findAny();
+        if(optionalMetricID.isPresent()) {
+            return false;
+        }
+        return true;
     }
 
     public <T extends Metric> T register(Metadata metadata, String metricType, T metric, Tag... tags) throws IllegalArgumentException {
