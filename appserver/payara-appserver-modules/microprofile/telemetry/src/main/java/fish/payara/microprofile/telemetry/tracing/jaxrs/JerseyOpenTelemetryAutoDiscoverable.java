@@ -53,8 +53,6 @@ public class JerseyOpenTelemetryAutoDiscoverable implements ForcedAutoDiscoverab
 
     @Override
     public void configure(FeatureContext context) {
-        // this property to flag the span name definition for OpenTelemetry
-        context.property("payara.otel.spanname", true);
         // Only register for application deployments (not the admin console)
         final Deployment deployment = new PayaraTracingServices().getDeployment();
         if (deployment == null || deployment.getCurrentDeploymentContext() == null) {

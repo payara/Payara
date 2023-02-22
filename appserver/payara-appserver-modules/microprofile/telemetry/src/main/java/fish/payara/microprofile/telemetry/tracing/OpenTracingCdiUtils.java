@@ -128,8 +128,6 @@ public class OpenTracingCdiUtils {
         // Account for Stereotypes
         Queue<Annotation> annotations = new LinkedList<>(asList(annotatedClass.getAnnotations()));
 
-        A annotation = null;
-
         // Loop over each individual annotation
         while (!annotations.isEmpty()) {
             Annotation a = annotations.remove();
@@ -137,8 +135,7 @@ public class OpenTracingCdiUtils {
             // Check if this is the annotation we're looking for
             if (a.annotationType().equals(annotationClass)) {
                 LOG.log(FINER, "Annotation was found in a stereotype");
-                annotation = annotationClass.cast(a);
-                break;
+                return annotationClass.cast(a);
             }
 
             // If the found annotation is a stereotype, get the individual annotations and add them to the list
@@ -148,7 +145,7 @@ public class OpenTracingCdiUtils {
             }
         }
 
-        return annotation;
+        return null;
     }
 
     /**

@@ -52,7 +52,6 @@ import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import jakarta.ws.rs.container.ResourceInfo;
-import jakarta.ws.rs.core.Configuration;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
 import org.eclipse.microprofile.opentracing.Traced;
@@ -79,11 +78,10 @@ public class OpenTelemetryRequestEventListener implements RequestEventListener {
     private OpenTracingHelper openTracingHelper;
 
     public OpenTelemetryRequestEventListener(final ResourceInfo resourceInfo,
-                                             final OpenTelemetryService openTelemetryService,
-                                             final Configuration configuration) {
+                                             final OpenTelemetryService openTelemetryService) {
         this.resourceInfo = resourceInfo;
         this.openTelemetryService = openTelemetryService;
-        this.openTracingHelper = new OpenTracingHelper(this.resourceInfo, configuration);
+        this.openTracingHelper = new OpenTracingHelper(this.resourceInfo);
     }
 
     @Override
@@ -110,7 +108,7 @@ public class OpenTelemetryRequestEventListener implements RequestEventListener {
             }
 
             final Span activeSpan = Span.current();
-            if (activeSpan == null) {
+            if (!activeSpan.isRecording()) {
                 LOG.finest(() -> "Could not find any active span, nothing to do.");
                 return;
             }
@@ -171,11 +169,6 @@ public class OpenTelemetryRequestEventListener implements RequestEventListener {
 
     private void finish(final RequestEvent event, final Span activeSpan) {
         LOG.fine(() -> "finish(event=" + event.getType() + ")");
-        checkActiveSpan(activeSpan);
-        if (!activeSpan.getSpanContext().isValid()) {
-            LOG.finest("Active span is invalid, nothing to do.");
-            return;
-        }
         activeSpan.end();
         Object scopeObj = event.getContainerRequest().getProperty(Scope.class.getName());
         if(scopeObj !=null && scopeObj instanceof Scope){
@@ -193,15 +186,17 @@ public class OpenTelemetryRequestEventListener implements RequestEventListener {
         final Tracer tracer = openTelemetryService.getCurrentTracer();
 
         // Create a Span and instrument it with details about the request
-        var queryParam = requestContext.getUriInfo().getRequestUri().getQuery() == null
-                ? "" : "?" + requestContext.getUriInfo().getRequestUri().getQuery();
+        var queryParam = requestContext.getRequestUri().getQuery() == null
+                ? "" : "?" + requestContext.getRequestUri().getQuery();
         final SpanBuilder spanBuilder = tracer.spanBuilder(operationName)
                 .setSpanKind(SpanKind.SERVER)
                 .setAttribute(SemanticAttributes.HTTP_METHOD, requestContext.getMethod())
-                .setAttribute(SemanticAttributes.HTTP_URL, toString(requestContext.getUriInfo()))
+                .setAttribute(SemanticAttributes.HTTP_URL, requestContext.getRequestUri().toString())
                 .setAttribute(SemanticAttributes.HTTP_TARGET,
                         requestContext.getUriInfo().getRequestUri().getPath() + queryParam)
                 .setAttribute("component", "jaxrs");
+
+        openTracingHelper.augmentSpan(requestContext, spanBuilder);
 
         // If there was a context injected into the tracer, add it as a parent of the new span
         var spanContext = findSpanContext(requestContext);

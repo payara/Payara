@@ -39,18 +39,24 @@
  */
 package fish.payara.microprofile.telemetry.tracing;
 
+import io.opentelemetry.api.trace.SpanBuilder;
 import jakarta.enterprise.inject.spi.BeanManager;
 import jakarta.enterprise.inject.spi.CDI;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ResourceInfo;
-import jakarta.ws.rs.core.Configuration;
-import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.UriInfo;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
+import org.eclipse.microprofile.config.ConfigValue;
+import org.eclipse.microprofile.config.spi.ConfigSource;
+import org.eclipse.microprofile.config.spi.Converter;
 import org.eclipse.microprofile.opentracing.Traced;
 import org.glassfish.jersey.server.ContainerRequest;
+import org.glassfish.jersey.server.ExtendedUriInfo;
 
+import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -61,20 +67,20 @@ import java.util.logging.Logger;
 public class OpenTracingHelper {
 
     private static final Logger LOG = Logger.getLogger(OpenTracingHelper.class.getName());
+    public static final String SPAN_CONVENTION_MP_KEY = "payara.telemetry.span-convention";
 
     private final ResourceInfo resourceInfo;
+    private final Config mpConfig;
 
-    private final Configuration configuration;
-
-    public OpenTracingHelper(final ResourceInfo resourceInfo, final Configuration configuration) {
+    public OpenTracingHelper(final ResourceInfo resourceInfo) {
         this.resourceInfo = resourceInfo;
-        this.configuration = configuration;
+        this.mpConfig = getConfig();
     }
 
     /**
      * Determines the operation name of the span based on the given ContainerRequestContext and Traced annotation.
      *
-     * @param request the ContainerRequestContext object for this request
+     * @param request          the ContainerRequestContext object for this request
      * @param tracedAnnotation the Traced annotation object for this request
      * @return the name to use as the span's operation name
      */
@@ -92,53 +98,174 @@ public class OpenTracingHelper {
             }
             return operationName;
         }
-        final Config config = getConfig();
+        // TODO: OpenTelemetry @WithSpan
+
+        SpanStrategy naming = determineSpanStrategy();
+
+        return naming.determineSpanName(request, resourceInfo);
+    }
+
+    private SpanStrategy determineSpanStrategy() {
         // Determine if an operation name provider has been given
-        final Optional<String> operationNameProviderOptional = config == null
-                ? Optional.empty()
-                : config.getOptionalValue("mp.opentracing.server.operation-name-provider", String.class);
-        if (operationNameProviderOptional.isPresent()) {
-            final String operationNameProvider = operationNameProviderOptional.get();
+        final Optional<String> operationNameProviderOptional = mpConfig.getOptionalValue("mp.opentracing.server.operation-name-provider", String.class);
 
-            final Path classLevelAnnotation = resourceInfo.getResourceClass().getAnnotation(Path.class);
-            final Path methodLevelAnnotation = resourceInfo.getResourceMethod().getAnnotation(Path.class);
+        if (Optional.of("http-path").equals(operationNameProviderOptional)) {
+            return SpanStrategy.OPENTRACING_PATH;
+        }
 
-            // If the provider is set to "http-path" and the class-level @Path annotation is actually present
-            if (operationNameProvider.equals("http-path") && classLevelAnnotation != null) {
-                String operationName = request.getMethod() + ":";
+        if (Optional.of("class-method").equals(operationNameProviderOptional)) {
+            return SpanStrategy.OPENTRACING_CLASS_METHOD;
+        }
 
-                if (classLevelAnnotation.value().startsWith("/")) {
-                    operationName += classLevelAnnotation.value();
-                } else {
-                    operationName += "/" + classLevelAnnotation.value();
-                }
-
-                // If the method-level @Path annotation is present, use its value
-                if (methodLevelAnnotation != null) {
-                    if (methodLevelAnnotation.value().startsWith("/")) {
-                        operationName += methodLevelAnnotation.value();
-                    } else {
-                        operationName += "/" + methodLevelAnnotation.value();
-                    }
-                }
-                return operationName;
+        var vendorCompatibilitySetting = mpConfig.getOptionalValue(SPAN_CONVENTION_MP_KEY, String.class);
+        if (vendorCompatibilitySetting.isPresent()) {
+            switch (vendorCompatibilitySetting.get().toLowerCase()) {
+                case "opentracing-http-path":
+                    return SpanStrategy.OPENTRACING_PATH;
+                case "opentracing-class-method":
+                    return SpanStrategy.OPENTRACING_CLASS_METHOD;
+                case "opentelemetry":
+                    return SpanStrategy.OTEL_SEM_CONV;
+                case "microprofile-telemetry":
+                    return SpanStrategy.OTEL_MP_TCK;
+                default:
+                    LOG.fine(() -> "Unsupported value of " + SPAN_CONVENTION_MP_KEY + ": " + vendorCompatibilitySetting.get());
             }
         }
 
-        // define span name for OpenTelemetry only
-        if (!resourceInfo.getResourceClass().getPackage().getName().contains("opentracing")
-                && configuration.hasProperty("payara.otel.spanname")
-                && ((Boolean) configuration.getProperty("payara.otel.spanname")) == true) {
-            var requestPath = request.getUriInfo().getBaseUri().getPath();
-            return requestPath.substring(0, requestPath.length() - 1)
-                    + (resourceInfo.getResourceMethod().getAnnotation(Path.class) == null
-                    ? "" : resourceInfo.getResourceMethod().getAnnotation(Path.class).value());
+        // TODO: Remove after TCK runners are updated with span convention setting
+        if (resourceInfo.getResourceClass().getPackageName().startsWith("org.eclipse.microprofile.opentracing.tck")) {
+            return SpanStrategy.OPENTRACING_CLASS_METHOD;
         }
 
-        // If we haven't returned by now, just go with the default ("class-method")
-        return request.getMethod() + ":"
-                + resourceInfo.getResourceClass().getCanonicalName() + "."
-                + resourceInfo.getResourceMethod().getName();
+        // similar dirty hack for opentelemetry TCK
+        if (resourceInfo.getResourceClass().getPackageName().startsWith("org.eclipse.microprofile.telemetry.tracing.tck")) {
+            return SpanStrategy.OTEL_MP_TCK;
+        }
+        return SpanStrategy.OTEL_SEM_CONV;
+    }
+
+    public void augmentSpan(ContainerRequest requestContext, SpanBuilder spanBuilder) {
+        determineSpanStrategy().augmentSpan(requestContext, spanBuilder);
+    }
+
+    /**
+     * Strategy for naming spans.
+     */
+    enum SpanStrategy {
+        /**
+         * As defined by HTTP semantic conventions
+         *
+         * @see <a href="https://opentelemetry.io/docs/reference/specification/trace/semantic_conventions/http/#http-server">Spec</a>
+         */
+        OTEL_SEM_CONV {
+            @Override
+            String determineSpanName(ContainerRequestContext request, ResourceInfo resourceInfo) {
+                var uriInfo = request.getUriInfo();
+                var result = new StringBuilder();
+                result.append(request.getMethod()).append(" ")
+                        .append(uriInfo.getBaseUri().getPath());
+                appendTemplate(resourceInfo, uriInfo, result);
+                return result.toString();
+            }
+        },
+
+        /**
+         * As defined by MP OpenTelemetry Tracing, which is not following semantic conventions
+         *
+         * @see <a href="https://github.com/eclipse/microprofile-telemetry/blob/main/tracing/tck/src/main/java/org/eclipse/microprofile/telemetry/tracing/tck/rest/RestSpanTest.java">Test Case</a>
+         */
+        OTEL_MP_TCK {
+            @Override
+            String determineSpanName(ContainerRequestContext request, ResourceInfo resourceInfo) {
+                var uriInfo = request.getUriInfo();
+                var result = new StringBuilder();
+                result.append(uriInfo.getBaseUri().getPath());
+                SpanStrategy.appendTemplate(resourceInfo, uriInfo, result);
+                return result.toString();
+            }
+        },
+
+        /**
+         * Opentracing Class-Method
+         *
+         * @see <a href="https://download.eclipse.org/microprofile/microprofile-opentracing-2.0/microprofile-opentracing-spec-2.0.html#server-span-name">MP spec</a>
+         */
+        OPENTRACING_CLASS_METHOD {
+            @Override
+            String determineSpanName(ContainerRequestContext request, ResourceInfo resourceInfo) {
+                return request.getMethod() + ":"
+                        + resourceInfo.getResourceClass().getCanonicalName() + "."
+                        + resourceInfo.getResourceMethod().getName();
+            }
+        },
+        /**
+         * OpenTracing HTTP path
+         *
+         * @see <a href="https://download.eclipse.org/microprofile/microprofile-opentracing-2.0/microprofile-opentracing-spec-2.0.html#server-span-name">MP spec</a>
+         */
+        OPENTRACING_PATH {
+            @Override
+            String determineSpanName(ContainerRequestContext request, ResourceInfo resourceInfo) {
+                final Path classLevelAnnotation = resourceInfo.getResourceClass().getAnnotation(Path.class);
+                final Path methodLevelAnnotation = resourceInfo.getResourceMethod().getAnnotation(Path.class);
+
+                // If the provider is set to "http-path" and the class-level @Path annotation is actually present
+                if (classLevelAnnotation != null) {
+                    String operationName = request.getMethod() + ":";
+
+                    if (classLevelAnnotation.value().startsWith("/")) {
+                        operationName += classLevelAnnotation.value();
+                    } else {
+                        operationName += "/" + classLevelAnnotation.value();
+                    }
+
+                    // If the method-level @Path annotation is present, use its value
+                    if (methodLevelAnnotation != null) {
+                        if (methodLevelAnnotation.value().startsWith("/")) {
+                            operationName += methodLevelAnnotation.value();
+                        } else {
+                            operationName += "/" + methodLevelAnnotation.value();
+                        }
+                    }
+                    return operationName;
+                } else {
+                    return OPENTRACING_CLASS_METHOD.determineSpanName(request, resourceInfo);
+                }
+            }
+        };
+
+        private static void appendTemplate(ResourceInfo resourceInfo, UriInfo uriInfo, StringBuilder result) {
+            if (uriInfo.getMatchedResources().size() == 1) {
+                // simple matching of single method. But I might just use the other method for everything.
+                var classRoute = resourceInfo.getResourceClass().getAnnotation(Path.class);
+                var methodRoute = resourceInfo.getResourceClass().getAnnotation(Path.class);
+                if (classRoute != null) {
+                    result.append(classRoute.value());
+                }
+                if (methodRoute != null) {
+                    result.append(methodRoute.value());
+                }
+            } else if (uriInfo instanceof ExtendedUriInfo) {
+                var templates = ((ExtendedUriInfo) uriInfo).getMatchedTemplates();
+                templates.stream()
+                        .map(t -> t.getTemplate())
+                        .filter(s -> !s.equals("/"))
+                        .forEach(result::append);
+            } else {
+                // non jersey runtime?
+                result.append("*");
+            }
+        }
+
+
+        abstract String determineSpanName(ContainerRequestContext request, ResourceInfo resourceInfo);
+
+        void augmentSpan(ContainerRequest requestContext, SpanBuilder spanBuilder) {
+            if (this == OPENTRACING_CLASS_METHOD || this == OPENTRACING_PATH) {
+                spanBuilder.setAttribute("span.kind", "server");
+            }
+        }
     }
 
     /**
@@ -182,20 +309,17 @@ public class OpenTracingHelper {
             return false;
         }
 
-        final Config config = getConfig();
-        if (config != null) {
-            // If a skip pattern property has been given, check if any of them match the method
-            final Optional<String> skipPatternOptional = config.getOptionalValue("mp.opentracing.server.skip-pattern",
-                    String.class);
-            if (skipPatternOptional.isPresent()) {
-                final String skipPatterns = skipPatternOptional.get();
+        // If a skip pattern property has been given, check if any of them match the method
+        final Optional<String> skipPatternOptional = mpConfig.getOptionalValue("mp.opentracing.server.skip-pattern",
+                String.class);
+        if (skipPatternOptional.isPresent()) {
+            final String skipPatterns = skipPatternOptional.get();
 
-                final String[] splitSkipPatterns = skipPatterns.split("\\|");
+            final String[] splitSkipPatterns = skipPatterns.split("\\|");
 
-                for (final String skipPattern : splitSkipPatterns) {
-                    if (uriPath.matches(skipPattern)) {
-                        return false;
-                    }
+            for (final String skipPattern : splitSkipPatterns) {
+                if (uriPath.matches(skipPattern)) {
+                    return false;
                 }
             }
         }
@@ -232,8 +356,44 @@ public class OpenTracingHelper {
         try {
             return ConfigProvider.getConfig();
         } catch (final IllegalArgumentException ex) {
-            LOG.log(Level.CONFIG, "No config could be found", ex);
-            return null;
+            return EMPTY_CONFIG;
         }
     }
+
+    static final Config EMPTY_CONFIG = new Config() {
+        @Override
+        public <T> T getValue(String s, Class<T> aClass) {
+            throw new NoSuchElementException("Empty config");
+        }
+
+        @Override
+        public ConfigValue getConfigValue(String s) {
+            throw new NoSuchElementException("Empty Config");
+        }
+
+        @Override
+        public <T> Optional<T> getOptionalValue(String s, Class<T> aClass) {
+            return Optional.empty();
+        }
+
+        @Override
+        public Iterable<String> getPropertyNames() {
+            return List.of();
+        }
+
+        @Override
+        public Iterable<ConfigSource> getConfigSources() {
+            return List.of();
+        }
+
+        @Override
+        public <T> Optional<Converter<T>> getConverter(Class<T> aClass) {
+            return Optional.empty();
+        }
+
+        @Override
+        public <T> T unwrap(Class<T> aClass) {
+            return null;
+        }
+    };
 }

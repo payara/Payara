@@ -94,12 +94,14 @@ public class OpenTelemetryApplicationEventListener implements ApplicationEventLi
             LOG.finest("isRequestTracingInProgress() returned false, nothing to do.");
             return null;
         }
-        return new OpenTelemetryRequestEventListener(this.resourceInfo, this.openTelemetryService, this.configuration);
+        return new OpenTelemetryRequestEventListener(this.resourceInfo, this.openTelemetryService);
     }
 
 
     private boolean isRequestTracingInProgress() {
-        return requestTracing != null && requestTracing.isRequestTracingEnabled() && requestTracing.isTraceInProgress();
+        // TODO: requestTracing.isTraceInProgress should not be used. At this point is probably too early to do
+        // Span.currentSpan().isRecording(), we need a new pattern for this.
+        return requestTracing != null && requestTracing.isRequestTracingEnabled();
     }
 }
 
