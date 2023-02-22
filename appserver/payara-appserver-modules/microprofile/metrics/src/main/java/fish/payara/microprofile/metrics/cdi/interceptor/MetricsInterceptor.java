@@ -159,7 +159,7 @@ public class MetricsInterceptor {
             if(annotation.annotationType().isAssignableFrom(Gauge.class)) {
                 registerGaugeMetric((Gauge) annotation, bean,element, target, metricsService);
                 for (Method method : superClassBean.getDeclaredMethods()) {
-                    if (!method.isSynthetic() && !Modifier.isPrivate(method.getModifiers())) {
+                    if (!method.isSynthetic()) {
                         registerGaugeMetric((Gauge) annotation, bean, element, target, metricsService);
                     }
                 }
@@ -183,11 +183,11 @@ public class MetricsInterceptor {
         Counted countedAnnotation = element.getAnnotation(Counted.class);
         Gauge gaugeAnnotation = element.getAnnotation(Gauge.class);
 
-        if(timedAnnotation != null) {
+        if(timedAnnotation != null && !isMethodPrivate(element)) {
             registerTimedMetric(timedAnnotation, bean, element, metricsService);
         }
 
-        if(countedAnnotation != null) {
+        if(countedAnnotation != null && !isMethodPrivate(element)) {
             registerCountedMetric(countedAnnotation, bean, element, metricsService);
         }
 
@@ -202,14 +202,21 @@ public class MetricsInterceptor {
         }
     }
 
+    private <E extends Member & AnnotatedElement> boolean isMethodPrivate(E element) {
+        if(element instanceof Method && Modifier.isPrivate(((Method)element).getModifiers())){
+            return true;
+        }
+        return false;
+    }
+
     private <E extends Member & AnnotatedElement> void registerFromAnnotation(Annotation annotation,Class<?> bean,
                                                                               E element, Object target,
                                                                               MetricsService metricsService ) {
-        if(annotation.annotationType().isAssignableFrom(Timed.class)) {
+        if(annotation.annotationType().isAssignableFrom(Timed.class) && !isMethodPrivate(element)) {
             registerTimedMetric((Timed) annotation, bean, element, metricsService);
         }
 
-        if(annotation.annotationType().isAssignableFrom(Counted.class)) {
+        if(annotation.annotationType().isAssignableFrom(Counted.class) && !isMethodPrivate(element)) {
             registerCountedMetric((Counted) annotation, bean, element, metricsService);
         }
 
