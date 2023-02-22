@@ -838,7 +838,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             } else if (element instanceof ClassModel) {
                 // this is fine, class-based annotation is reflected in methods as well
             } else {
-                LOGGER.warning("Unrecognised @APIResponse annotation position at: " + element.shortDesc());
+                LOGGER.warning(() -> "Unrecognised @APIResponse annotation position at: " + element.shortDesc());
             }
             return;
         }
