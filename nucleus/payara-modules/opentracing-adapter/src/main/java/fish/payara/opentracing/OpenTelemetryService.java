@@ -366,6 +366,11 @@ public class OpenTelemetryService implements EventListener {
 
     }
 
+    public boolean isEnabled() {
+        String application = currentApplication();
+        return application != null && appTelemetries.containsKey(application) || isPayaraTracingEnabled();
+    }
+
     static class OpenTelemetryAppInfo {
 
         private final OpenTelemetrySdk sdk;
