@@ -50,9 +50,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import fish.payara.nucleus.requesttracing.RequestTracingService;
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.api.trace.TracerProvider;
+import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
@@ -128,6 +131,7 @@ public class OpenTelemetryService implements EventListener {
             logger.log(Level.WARNING, "OpenTelemetry service not registered to Payara Events: "
                     + "The Tracer for an application won't be removed upon undeployment");
         }
+        GlobalOpenTelemetry.set(new GlobalTelemetry());
     }
 
     @PreDestroy
@@ -438,6 +442,19 @@ public class OpenTelemetryService implements EventListener {
             if (logProvider != null) {
                 logProvider.shutdown();
             }
+        }
+    }
+
+    class GlobalTelemetry implements OpenTelemetry {
+
+        @Override
+        public TracerProvider getTracerProvider() {
+            return get(currentApplication(), appInfo -> appInfo.sdk().getTracerProvider()).orElse(TracerProvider.noop());
+        }
+
+        @Override
+        public ContextPropagators getPropagators() {
+            return get(currentApplication(), appInfo -> appInfo.sdk().getPropagators()).orElse(ContextPropagators.noop());
         }
     }
 
