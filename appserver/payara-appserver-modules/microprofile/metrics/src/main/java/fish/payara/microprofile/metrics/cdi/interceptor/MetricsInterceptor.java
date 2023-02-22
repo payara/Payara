@@ -172,20 +172,9 @@ public class MetricsInterceptor {
         for (Class<? extends Annotation> a : stereotypes) {
             Annotation[] array = a.getAnnotations();
             for (Annotation annotation: array) {
-                if(annotation.annotationType().isAssignableFrom(Timed.class)) {
-                    registerTimedMetric((Timed) annotation, bean, element, metricsService);
-                }
-
-                if(annotation.annotationType().isAssignableFrom(Counted.class)) {
-                    registerCountedMetric((Counted) annotation, bean, element, metricsService);
-                }
-
-                if(annotation.annotationType().isAssignableFrom(Gauge.class)) {
-                    registerGaugeMetric((Gauge) annotation, bean,element, target, metricsService);
-                }
+                registerFromAnnotation(annotation, bean, element, target, metricsService);
             }
         }
-
     }
 
     private <E extends Member & AnnotatedElement> void registerMetrics(Class<?> bean, E element, Object target, MetricsService metricsService) {
@@ -203,6 +192,28 @@ public class MetricsInterceptor {
 
         if(gaugeAnnotation != null) {
             registerGaugeMetric(gaugeAnnotation, bean, element, target, metricsService);
+        }
+
+        if(timedAnnotation == null && countedAnnotation == null && gaugeAnnotation == null) {
+            for (Annotation annotation: bean.getAnnotations()) {
+                registerFromAnnotation(annotation, bean, element, target, metricsService);
+            }
+        }
+    }
+
+    private <E extends Member & AnnotatedElement> void registerFromAnnotation(Annotation annotation,Class<?> bean,
+                                                                              E element, Object target,
+                                                                              MetricsService metricsService ) {
+        if(annotation.annotationType().isAssignableFrom(Timed.class)) {
+            registerTimedMetric((Timed) annotation, bean, element, metricsService);
+        }
+
+        if(annotation.annotationType().isAssignableFrom(Counted.class)) {
+            registerCountedMetric((Counted) annotation, bean, element, metricsService);
+        }
+
+        if(annotation.annotationType().isAssignableFrom(Gauge.class)) {
+            registerGaugeMetric((Gauge) annotation, bean,element, target, metricsService);
         }
     }
 
