@@ -41,6 +41,7 @@ package fish.payara.microprofile.telemetry.tracing.jaxrs;
 
 import fish.payara.microprofile.telemetry.tracing.OpenTracingHelper;
 import fish.payara.opentracing.OpenTelemetryService;
+import fish.payara.opentracing.PropagationHelper;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
@@ -170,11 +171,10 @@ public class OpenTelemetryRequestEventListener implements RequestEventListener {
     private void finish(final RequestEvent event, final Span activeSpan) {
         LOG.fine(() -> "finish(event=" + event.getType() + ")");
         activeSpan.end();
-        Object scopeObj = event.getContainerRequest().getProperty(Scope.class.getName());
-        if(scopeObj !=null && scopeObj instanceof Scope){
-            try(Scope scope = (Scope)scopeObj) {
-                event.getContainerRequest().removeProperty(Scope.class.getName());
-            }
+        Object scopeObj = event.getContainerRequest().getProperty(PropagationHelper.class.getName());
+        if(scopeObj !=null && scopeObj instanceof PropagationHelper){
+            ((PropagationHelper) scopeObj).close();
+            event.getContainerRequest().removeProperty(Scope.class.getName());
         }
         LOG.finest("Finished.");
     }
@@ -199,14 +199,13 @@ public class OpenTelemetryRequestEventListener implements RequestEventListener {
         openTracingHelper.augmentSpan(requestContext, spanBuilder);
 
         // If there was a context injected into the tracer, add it as a parent of the new span
-        var spanContext = findSpanContext(requestContext);
-        spanBuilder.setParent(spanContext);
+        var spanContext = extractContext(requestContext);
         // Start the span and continue on to the targeted method
         // please make sure to close the scope
-        final Span span = spanBuilder.startSpan();
-        final Scope scope = span.makeCurrent();
 
-        requestContext.setProperty(Scope.class.getName(), scope);
+        final Span span = spanBuilder.startSpan();
+
+        requestContext.setProperty(PropagationHelper.class.getName(), PropagationHelper.start(span, spanContext));
         LOG.fine(() -> "Request tracing enabled for request=" + requestContext.getRequest() + " on uri=" + toString(requestContext.getUriInfo()));
     }
 
@@ -218,7 +217,7 @@ public class OpenTelemetryRequestEventListener implements RequestEventListener {
         }
     }
 
-    private Context findSpanContext(ContainerRequest request) {
+    private Context extractContext(ContainerRequest request) {
         // get the propagator from OTel SDK and
         return openTelemetryService.getCurrentSdk().getPropagators().getTextMapPropagator().extract(Context.current(),
                 request, new TextMapGetter<ContainerRequest>() {
