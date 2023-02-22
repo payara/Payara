@@ -127,6 +127,17 @@ public final class MetricUtils<T extends Metric> {
         return (T) getOrRegister(metric).byMetadataAndTags.apply(registry, metadata, tags);
     }
 
+    public static MetricID validateAndComplementTags(MetricID metricID, String scope) {
+        Map<String, String> tags =metricID.getTags();
+        Optional<String> optionalKey = tags.keySet().stream().filter(k -> k.equals("mp_scope")).findAny();
+        if(!optionalKey.isPresent()) {
+            Tag t = new Tag("mp_scope", scope);
+            MetricID newMetricID = new MetricID(metricID.getName(), t);
+            return newMetricID;
+        }
+        return metricID;
+    }
+
     public static Tag[] setScopeTagForMetric(String scope, Tag... tags) {
         Tag[] tArray = new Tag[1];
         if(scope.equals(MetricRegistry.BASE_SCOPE)) {
