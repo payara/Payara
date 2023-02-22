@@ -136,10 +136,5 @@
             <groupId>org.glassfish.expressly</groupId>
             <artifactId>expressly</artifactId>
         </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.admingui</groupId>
-            <artifactId>faces-compat</artifactId>
-            <version>${project.version}</version>
-        </dependency>
     </dependencies>
 </project>
