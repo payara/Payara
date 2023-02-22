@@ -116,7 +116,8 @@ public class MetricsInterceptor {
             Class<?> type = beanClass;
             do {
                 for (Method method : type.getDeclaredMethods()) {
-                    if (!method.isSynthetic() && !Modifier.isPrivate(method.getModifiers())) {
+                    //for gouge should we need to consider private methods, wait for answer
+                    if (!method.isSynthetic()) { //&& !Modifier.isPrivate(method.getModifiers())) {
                         registerMetrics(beanClass, method, context.getTarget(), metricsService);
                         registerFromStereotypes(bean.getStereotypes(), beanClass, method,
                                 context.getTarget(), metricsService);
