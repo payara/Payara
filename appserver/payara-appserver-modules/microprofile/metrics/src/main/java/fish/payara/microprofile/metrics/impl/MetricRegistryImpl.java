@@ -427,27 +427,13 @@ public class MetricRegistryImpl implements MetricRegistry {
         }
         Metric existing = family.get(metricID);
         if(family != null && existing == null) {
-            if(hasDifferentTags(metricID)) {
-                return register(metadata, useExistingMetadata, metricType, metric, tags);
-            } else {
-                throw new IllegalArgumentException(
-                        String.format("Tried to lookup a metric id with conflicting tags,  %s", metricID.toString()));
-            }
+            throw new IllegalArgumentException(
+                    String.format("Tried to lookup a metric id with conflicting tags,  %s", metricID.toString()));
         } else if(existing != null) {
             return (T) existing;
         } else {
             return register(metadata, useExistingMetadata, metricType, metric, tags);
         }
-    }
-
-    public boolean hasDifferentTags(MetricID metricID) {
-        Optional<MetricID> optionalMetricID = getMetrics(metricID.getName()).keySet().stream()
-                .filter(m -> m.getTags().size() == metricID.getTags().size())
-                .filter(m -> m.getTagsAsString().equals(metricID.getTagsAsString())).findAny();
-        if(optionalMetricID.isPresent()) {
-            return false;
-        }
-        return true;
     }
 
     public <T extends Metric> T register(Metadata metadata, String metricType, T metric, Tag... tags) throws IllegalArgumentException {
@@ -534,6 +520,13 @@ public class MetricRegistryImpl implements MetricRegistry {
         Metric metric = family.get(metricID);
         if (metric != null && !ofType.isAssignableFrom(metric.getClass())) {
             throw new IllegalArgumentException("Invalid metric type : " + ofType);
+        }
+        if(metric == null) {
+            Optional<Entry<MetricID, Metric>> metricOptional =
+                    this.getMetrics().entrySet().stream().filter(e -> e.getKey().getName().equals(metricID.getName())).findAny();
+            if(metricOptional.isPresent()) {
+                metric = metricOptional.get().getValue();
+            }
         }
         return (T) metric;
     }
