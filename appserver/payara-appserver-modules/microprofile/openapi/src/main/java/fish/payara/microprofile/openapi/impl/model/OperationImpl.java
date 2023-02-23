@@ -105,10 +105,6 @@ public class OperationImpl extends ExtensibleImpl<Operation> implements Operatio
         List<AnnotationModel> responses = annotation.getValue("responses", List.class);
         if (responses != null) {
             APIResponsesImpl apiResponsesImpl = APIResponsesImpl.createInstance(annotation, context);
-// FIXME: implement!
-//            for (AnnotationModel response : responses) {
-//                from.getResponses().addAPIResponse(response.getValue("responseCode", String.class), apiResponsesImpl);
-//            }
         }
         from.setExtensions(parseExtensions(annotation));
         extractAnnotations(annotation, context, "callbacks", "name", CallbackImpl::createInstance, from::addCallback);
