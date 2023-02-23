@@ -200,6 +200,7 @@ public class OpenTelemetryRequestEventListener implements RequestEventListener {
 
         // If there was a context injected into the tracer, add it as a parent of the new span
         var spanContext = extractContext(requestContext);
+        spanBuilder.setParent(spanContext);
         // Start the span and continue on to the targeted method
         // please make sure to close the scope
 
