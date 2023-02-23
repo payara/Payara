@@ -452,15 +452,16 @@ public class MetricRegistryImpl implements MetricRegistry {
         }
         return true;
     }
-    public static Tag[] validateTags(Tag[] tags) {
-        Optional<Tag> result = Arrays.stream(tags)
-                .filter(t -> t.getTagName().equals(MetricUtils.TAG_METRIC_MP_SCOPE_NAME)
-                        || t.getTagName().equals(MetricUtils.TAG_METRIC_MP_APP_NAME)).findFirst();
-        if(result.isPresent()) {
-            throw new IllegalArgumentException("invalid tags: " + tags +
-                    ", tags must not contain following reserved tag names: mp_scope and mp_app");
+    public static void validateTags(Tag[] tags) {
+        if(tags != null) {
+            Optional<Tag> result = Arrays.stream(tags)
+                    .filter(t -> t.getTagName().equals(MetricUtils.TAG_METRIC_MP_SCOPE_NAME)
+                            || t.getTagName().equals(MetricUtils.TAG_METRIC_MP_APP_NAME)).findFirst();
+            if (result.isPresent()) {
+                throw new IllegalArgumentException("invalid tags: " + tags +
+                        ", tags must not contain following reserved tag names: mp_scope and mp_app");
+            }
         }
-        return tags;
     }
 
     public <T extends Metric> T register(Metadata metadata, String metricType, T metric, Tag... tags) throws IllegalArgumentException {
