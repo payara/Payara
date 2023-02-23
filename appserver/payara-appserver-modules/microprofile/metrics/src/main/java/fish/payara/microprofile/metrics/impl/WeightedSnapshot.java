@@ -150,13 +150,39 @@ public class WeightedSnapshot extends Snapshot {
     @Override
     public PercentileValue[] percentileValues() {
         PercentileValue[] percentileValues = null;
-        if (values.length > 0 && quantiles.length > 0 && values.length == quantiles.length) {
-            percentileValues = new PercentileValue[values.length];
-            for (int i = 0; i < values.length; i++) {
-                percentileValues[i] = new PercentileValue(quantiles[i], values[i]);
+        double[] percentiles = {0.5, 0.75, 0.95, 0.98, 0.99, 0.999};
+        if(values.length > 0 && quantiles.length > 0 && values.length == quantiles.length) {
+            percentileValues = new PercentileValue[percentiles.length];
+            for (int i = 0; i < percentiles.length; i++) {
+                percentileValues[i] = new PercentileValue(percentiles[i], getValue(percentiles[i]));
             }
         }
-        return new PercentileValue[0];
+        return percentileValues == null ? new PercentileValue[0] : percentileValues;
+    }
+
+    private double getValue(double quantile) {
+        if (quantile < 0.0 || quantile > 1.0 || Double.isNaN(quantile)) {
+            throw new IllegalArgumentException(quantile + " is not in [0..1]");
+        }
+
+        if (values.length == 0) {
+            return 0.0;
+        }
+
+        int posx = Arrays.binarySearch(quantiles, quantile);
+        if (posx < 0) {
+            posx = ((-posx) - 1) - 1;
+        }
+
+        if (posx < 1) {
+            return values[0];
+        }
+
+        if (posx >= values.length) {
+            return values[values.length - 1];
+        }
+
+        return values[posx];
     }
 
 
