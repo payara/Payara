@@ -46,7 +46,6 @@ import fish.payara.microprofile.openapi.impl.model.examples.ExampleImpl;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.readOnlyView;
-import java.util.HashMap;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -62,7 +61,7 @@ public class ContentImpl extends LinkedHashMap<String, MediaType> implements Con
 
     private static final long serialVersionUID = 1575356277308242221L;
 
-    private Map<String, Object> extensions = new HashMap<>(); // workaround as Content doesn't extend Extendable!
+    private Map<String, Object> extensions = null; // workaround as Content doesn't extend Extendable!
 
     public ContentImpl() {
         super();
