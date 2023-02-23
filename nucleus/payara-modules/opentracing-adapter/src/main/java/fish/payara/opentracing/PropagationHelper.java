@@ -43,28 +43,62 @@
 package fish.payara.opentracing;
 
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 
 /**
- * Helper for the most usual propagation scenario
+ * Helper for the most usual propagation scenarios.
  */
-public class PropagationHelper implements AutoCloseable {
+public class PropagationHelper implements Scope {
     private final Span span;
     private final Context propagatedContext;
     private Scope spanScope;
     private Scope contextScope;
+
+    private boolean singleThreaded = true;
+
+    private boolean errorReported;
 
     private PropagationHelper(Span span, Context propagatedContext) {
         this.span = span;
         this.propagatedContext = propagatedContext;
     }
 
+    /**
+     * The most usual constellation where we wrap context and span execution synchronously.
+     * Span and Context gets installed and then finished upon closing of returned {@code PropagationHelper},
+     * as well as Span gets ended with OK status at the end.
+     * @param span
+     * @param spanContext
+     * @return
+     */
     public static PropagationHelper start(Span span, Context spanContext) {
-        return new PropagationHelper(span, spanContext).start();
+        return new PropagationHelper(span, spanContext).start(true);
     }
 
-    public PropagationHelper start() {
+    /**
+     * Start initial processing of a request that will continue processing in multiple threads.
+     * Span and Context gets
+     * @param span
+     * @param spanContext
+     * @return
+     */
+    public static PropagationHelper startMultiThreaded(Span span, Context spanContext) {
+        return new PropagationHelper(span, spanContext).start(false);
+    }
+
+    /**
+     * Install span and context as current for partial execution. Span is not finished upon closing this scope
+     * and it needs to be ended explicitly via {@link #end()} method.
+     * @return Scope to use in try-with-resources
+     */
+    public Scope localScope() {
+        return new LocalScope();
+    }
+
+    private PropagationHelper start(boolean singleThreaded) {
+        this.singleThreaded = singleThreaded;
         if (propagatedContext != null) {
             this.contextScope = propagatedContext.makeCurrent();
         }
@@ -72,14 +106,64 @@ public class PropagationHelper implements AutoCloseable {
         return this;
     }
 
+    /**
+     * End the span successfully. Should not be used in single-threaded scenario.
+     *
+     */
+    public void end() {
+        span.setStatus(StatusCode.OK);
+        span.end();
+    }
+
+    /**
+     * End the span with an error. Can be used in both single and multi-threaded
+     * scenarios. Ending span twice in single threaded scenario is prevented.
+     * @param error
+     */
+    public void end(Throwable error) {
+        if (error == null) {
+            end();
+        } else {
+            errorReported = true;
+            span.setStatus(StatusCode.ERROR, error.getMessage());
+            span.recordException(error);
+        }
+    }
+
     @Override
     public void close() {
         if (spanScope != null) {
             spanScope.close();
+            spanScope = null;
         }
         if (contextScope != null) {
             contextScope.close();
+            contextScope = null;
         }
-        span.end();
+        if (singleThreaded && !errorReported) {
+            end();
+        }
+    }
+
+    public class LocalScope implements Scope {
+        private final Scope localContext;
+
+        private final Scope localSpan;
+
+        private LocalScope() {
+            if (propagatedContext != null) {
+                this.localContext = propagatedContext.makeCurrent();
+            } else {
+                this.localContext = null;
+            }
+            this.localSpan = span.makeCurrent();
+        }
+        @Override
+        public void close() {
+            if (localContext != null) {
+                localContext.close();
+            }
+            this.localSpan.close();
+        }
     }
 }
