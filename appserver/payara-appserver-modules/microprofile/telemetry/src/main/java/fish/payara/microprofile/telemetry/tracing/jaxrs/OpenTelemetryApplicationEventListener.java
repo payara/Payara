@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) 2019-2021 Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -37,43 +37,37 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package fish.payara.microprofile.opentracing.jaxrs;
+package fish.payara.microprofile.telemetry.tracing.jaxrs;
 
 import fish.payara.nucleus.requesttracing.RequestTracingService;
-import fish.payara.opentracing.OpenTracingService;
+import fish.payara.opentracing.OpenTelemetryService;
 import fish.payara.requesttracing.jaxrs.client.PayaraTracingServices;
-
-import java.util.logging.Logger;
-
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Priority;
 import jakarta.ws.rs.Priorities;
 import jakarta.ws.rs.container.ResourceInfo;
+import jakarta.ws.rs.core.Configuration;
 import jakarta.ws.rs.core.Context;
-
 import org.glassfish.jersey.server.monitoring.ApplicationEvent;
 import org.glassfish.jersey.server.monitoring.ApplicationEventListener;
 import org.glassfish.jersey.server.monitoring.RequestEvent;
 import org.glassfish.jersey.server.monitoring.RequestEventListener;
 
-/**
- * {@link ApplicationEventListener} for configuring the {@link OpenTracingRequestEventListener}
- * instances for tracked requests.
- *
- * @author David Matejcek
- */
-@Priority(Priorities.HEADER_DECORATOR - 500)
-public class OpenTracingApplicationEventListener implements ApplicationEventListener {
+import java.util.logging.Logger;
 
-    private static final Logger LOG = Logger.getLogger(OpenTracingApplicationEventListener.class.getName());
+@Priority(Priorities.HEADER_DECORATOR - 500)
+public class OpenTelemetryApplicationEventListener implements ApplicationEventListener {
+
+    private static final Logger LOG = Logger.getLogger(OpenTelemetryApplicationEventListener.class.getName());
 
     private RequestTracingService requestTracing;
-    private OpenTracingService openTracing;
-    private String applicationName;
+    private OpenTelemetryService openTelemetryService;
 
     @Context
     private ResourceInfo resourceInfo;
 
+    @Context
+    private Configuration configuration;
 
     /**
      * Initialization of internal services.
@@ -83,8 +77,7 @@ public class OpenTracingApplicationEventListener implements ApplicationEventList
         LOG.finest("postConstruct()");
         final PayaraTracingServices payaraTracingServices = new PayaraTracingServices();
         this.requestTracing = payaraTracingServices.getRequestTracingService();
-        this.openTracing = payaraTracingServices.getOpenTracingService();
-        this.applicationName = payaraTracingServices.getApplicationName();
+        this.openTelemetryService = payaraTracingServices.getOpenTelemetryService();
     }
 
 
@@ -101,11 +94,12 @@ public class OpenTracingApplicationEventListener implements ApplicationEventList
             LOG.finest("isRequestTracingInProgress() returned false, nothing to do.");
             return null;
         }
-        return new OpenTracingRequestEventListener(this.applicationName, this.resourceInfo, this.openTracing);
+        return new OpenTelemetryRequestEventListener(this.resourceInfo, this.openTelemetryService);
     }
 
 
     private boolean isRequestTracingInProgress() {
-        return requestTracing != null && requestTracing.isRequestTracingEnabled() && requestTracing.isTraceInProgress();
+        return this.openTelemetryService.isEnabled();
     }
 }
+

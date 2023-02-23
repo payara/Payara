@@ -45,13 +45,24 @@ package fish.payara.microprofile.telemetry.tracing;
 import fish.payara.opentracing.OpenTelemetryService;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.baggage.Baggage;
+import io.opentelemetry.api.baggage.BaggageBuilder;
+import io.opentelemetry.api.baggage.BaggageEntry;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.enterprise.inject.Produces;
 import org.glassfish.internal.api.Globals;
+
+import java.time.Instant;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.function.BiConsumer;
 
 @ApplicationScoped
 public class OpenTelemetryTracerProducer {
@@ -68,20 +79,184 @@ public class OpenTelemetryTracerProducer {
     }
 
     @Produces
-    @RequestScoped
     Baggage currentBaggage() {
-        return Baggage.current();
+        // baggage is very sensitive to time when it is created, it is ultimately the best just use Baggage.current()
+        // for every invocation.
+        return FORWARDED_BAGGAGE;
     }
 
     @Produces
-    @RequestScoped
     Span currentSpan() {
-        return Span.current();
+        // span is also very sensitive to invocation vs creation time, so we forward to current as well
+        return FORWARDED_SPAN;
     }
 
     @Produces
     @ApplicationScoped
     OpenTelemetry currentTelemetry() {
         return openTelemetry.getCurrentSdk();
+    }
+
+    private static final Baggage FORWARDED_BAGGAGE = new ForwardedBaggage();
+
+    static class ForwardedBaggage implements Baggage {
+        @Override
+        public int size() {
+            return Baggage.current().size();
+        }
+
+        @Override
+        public void forEach(BiConsumer<? super String, ? super BaggageEntry> consumer) {
+            Baggage.current().forEach(consumer);
+        }
+
+        @Override
+        public Map<String, BaggageEntry> asMap() {
+            return Baggage.current().asMap();
+        }
+
+        @Override
+        public String getEntryValue(String entryKey) {
+            return Baggage.current().getEntryValue(entryKey);
+        }
+
+        @Override
+        public BaggageBuilder toBuilder() {
+            return Baggage.current().toBuilder();
+        }
+
+        @Override
+        public Context storeInContext(Context context) {
+            return Baggage.current().storeInContext(context);
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return Baggage.current().isEmpty();
+        }
+    }
+
+    private static final Span FORWARDED_SPAN = new ForwardedSpan();
+
+    static class ForwardedSpan implements Span {
+        @Override
+        public Span setAttribute(String key, String value) {
+            return Span.current().setAttribute(key, value);
+        }
+
+        @Override
+        public Span setAttribute(String key, long value) {
+            return Span.current().setAttribute(key, value);
+        }
+
+        @Override
+        public Span setAttribute(String key, double value) {
+            return Span.current().setAttribute(key, value);
+        }
+
+        @Override
+        public Span setAttribute(String key, boolean value) {
+            return Span.current().setAttribute(key, value);
+        }
+
+        @Override
+        public <T> Span setAttribute(AttributeKey<T> key, T value) {
+            return Span.current().setAttribute(key, value);
+        }
+
+        @Override
+        public Span setAttribute(AttributeKey<Long> key, int value) {
+            return Span.current().setAttribute(key, value);
+        }
+
+        @Override
+        public Span setAllAttributes(Attributes attributes) {
+            return Span.current().setAllAttributes(attributes);
+        }
+
+        @Override
+        public Span addEvent(String name) {
+            return Span.current().addEvent(name);
+        }
+
+        @Override
+        public Span addEvent(String name, long timestamp, TimeUnit unit) {
+            return Span.current().addEvent(name, timestamp, unit);
+        }
+
+        @Override
+        public Span addEvent(String name, Instant timestamp) {
+            return Span.current().addEvent(name, timestamp);
+        }
+
+        @Override
+        public Span addEvent(String name, Attributes attributes) {
+            return Span.current().addEvent(name, attributes);
+        }
+
+        @Override
+        public Span addEvent(String name, Attributes attributes, long timestamp, TimeUnit unit) {
+            return Span.current().addEvent(name, attributes, timestamp, unit);
+        }
+
+        @Override
+        public Span addEvent(String name, Attributes attributes, Instant timestamp) {
+            return Span.current().addEvent(name, attributes, timestamp);
+        }
+
+        @Override
+        public Span setStatus(StatusCode statusCode) {
+            return Span.current().setStatus(statusCode);
+        }
+
+        @Override
+        public Span setStatus(StatusCode statusCode, String description) {
+            return Span.current().setStatus(statusCode, description);
+        }
+
+        @Override
+        public Span recordException(Throwable exception) {
+            return Span.current().recordException(exception);
+        }
+
+        @Override
+        public Span recordException(Throwable exception, Attributes additionalAttributes) {
+            return Span.current().recordException(exception, additionalAttributes);
+        }
+
+        @Override
+        public Span updateName(String name) {
+            return Span.current().updateName(name);
+        }
+
+        @Override
+        public void end() {
+            Span.current().end();
+        }
+
+        @Override
+        public void end(long timestamp, TimeUnit unit) {
+            Span.current().end(timestamp, unit);
+        }
+
+        @Override
+        public void end(Instant timestamp) {
+            Span.current().end(timestamp);
+        }
+
+        @Override
+        public SpanContext getSpanContext() {
+            return Span.current().getSpanContext();
+        }
+
+        @Override
+        public boolean isRecording() {
+            return Span.current().isRecording();
+        }
+
+        @Override
+        public Context storeInContext(Context context) {
+            return Span.current().storeInContext(context);
+        }
     }
 }
