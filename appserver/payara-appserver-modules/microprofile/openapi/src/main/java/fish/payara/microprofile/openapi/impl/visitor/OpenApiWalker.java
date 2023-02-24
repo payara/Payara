@@ -156,6 +156,7 @@ public class OpenApiWalker<E extends AnnotatedElement> implements ApiWalker {
         for (Class<? extends Annotation> annotationClass : getAnnotationVisitor(visitor).keySet()) {
             VisitorFunction<AnnotationModel, E> annotationFunction = getAnnotationVisitor(visitor).get(annotationClass);
             Class<? extends Annotation> alternative = getAnnotationAlternatives().get(annotationClass);
+
             // If it's just the one annotation class
             // Check the element
             if (annotations.isAnnotationPresent(annotationClass, element)) {
@@ -173,6 +174,13 @@ public class OpenApiWalker<E extends AnnotatedElement> implements ApiWalker {
                         }
                     }
                 } else {
+                    // if annotation requires merging from both class and method (like APIResponse(s) does, call class first
+                    if (element instanceof MethodModel && (annotationClass == APIResponse.class || annotationClass == APIResponses.class)) {
+                        if (annotations.isAnnotationPresent(annotationClass)) {
+                            annotationFunction.apply(annotations.getAnnotation(annotationClass), element, context);
+                        }
+                    }
+                    // process the annotation by its function
                     annotationFunction.apply(annotations.getAnnotation(annotationClass, element), element, context);
                 }
             } else if (element instanceof MethodModel && annotations.isAnnotationPresent(annotationClass)
