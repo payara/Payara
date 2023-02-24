@@ -112,7 +112,7 @@ public class OpenMetricsExporter implements MetricExporter {
 
     @Override
     public void export(MetricID metricID, Counter counter, Metadata metadata) {
-        String total = globalName(metricID, "_total");
+        String total = globalName(metricID, metadata, "_total");
         appendTYPE(total, OpenMetricsType.counter);
         appendHELP(total, metadata);
         appendValue(total, metricID.getTagsAsArray(), counter.getCount());
@@ -146,11 +146,12 @@ public class OpenMetricsExporter implements MetricExporter {
     private void exportSampling(MetricID metricID, Sampling sampling, LongSupplier count, Supplier<Number> sum, Metadata metadata) {
         Tag[] tags = metricID.getTagsAsArray();
         Snapshot snapshot = sampling.getSnapshot();
-        String mean = globalName(metricID, "_mean", metadata);
+        String mean = globalName(metricID, metadata,"_mean");
         appendTYPE(mean, OpenMetricsType.gauge);
         appendValue(mean, tags, scaleToBaseUnit(snapshot.getMean(), metadata));
-        String max = globalName(metricID, "_max", metadata);
+        String max = globalName(metricID, metadata, "_max");
         appendTYPE(max, OpenMetricsType.gauge);
+        appendHELP(max, metadata);
         appendValue(max, tags, scaleToBaseUnit(snapshot.getMax(), metadata));
         String summary = globalName(metricID, metadata);
         appendTYPE(summary, OpenMetricsType.summary);
@@ -159,53 +160,49 @@ public class OpenMetricsExporter implements MetricExporter {
         appendValue(globalName(metricID, metadata, "_sum"), tags, sum.get());
         Snapshot.PercentileValue[] pencentileValues = snapshot.percentileValues();
         Optional<Snapshot.PercentileValue> median = Arrays.stream(pencentileValues)
-                .filter(p -> p.getValue() == 0.5).findFirst();
+                .filter(p -> p.getPercentile() == 0.5).findFirst();
         Optional<Snapshot.PercentileValue> percentile75th = Arrays.stream(pencentileValues)
-                .filter(p -> p.getValue() == 0.75).findFirst();
+                .filter(p -> p.getPercentile() == 0.75).findFirst();
         Optional<Snapshot.PercentileValue> percentile95th = Arrays.stream(pencentileValues)
-                .filter(p -> p.getValue() == 0.95).findFirst();
+                .filter(p -> p.getPercentile() == 0.95).findFirst();
         Optional<Snapshot.PercentileValue> percentile98th = Arrays.stream(pencentileValues)
-                .filter(p -> p.getValue() == 0.98).findFirst();
+                .filter(p -> p.getPercentile() == 0.98).findFirst();
         Optional<Snapshot.PercentileValue> percentile99th = Arrays.stream(pencentileValues)
-                .filter(p -> p.getValue() == 0.99).findFirst();
+                .filter(p -> p.getPercentile() == 0.99).findFirst();
         Optional<Snapshot.PercentileValue> percentile999th = Arrays.stream(pencentileValues)
-                .filter(p -> p.getValue() == 0.999).findFirst();
+                .filter(p -> p.getPercentile() == 0.999).findFirst();
 
 
         if(median.isPresent()) {
             appendValue(summary, tags("quantile", "0.5", tags),
-                    scaleToBaseUnit(median.get().getPercentile(), metadata));
+                    scaleToBaseUnit(median.get().getValue(), metadata));
         }
 
         if(percentile75th.isPresent()) {
             appendValue(summary, tags("quantile", "0.75", tags),
-                    scaleToBaseUnit(percentile75th.get().getPercentile(), metadata));
+                    scaleToBaseUnit(percentile75th.get().getValue(), metadata));
         }
 
         if(percentile95th.isPresent()) {
             appendValue(summary, tags("quantile", "0.95", tags),
-                    scaleToBaseUnit(percentile95th.get().getPercentile(), metadata));
+                    scaleToBaseUnit(percentile95th.get().getValue(), metadata));
         }
 
         if(percentile98th.isPresent()) {
             appendValue(summary, tags("quantile", "0.98", tags),
-                    scaleToBaseUnit(percentile98th.get().getPercentile(), metadata));
+                    scaleToBaseUnit(percentile98th.get().getValue(), metadata));
         }
 
         if(percentile99th.isPresent()) {
             appendValue(summary, tags("quantile", "0.99", tags),
-                    scaleToBaseUnit(percentile99th.get().getPercentile(), metadata));
+                    scaleToBaseUnit(percentile99th.get().getValue(), metadata));
         }
 
         if(percentile999th.isPresent()) {
             appendValue(summary, tags("quantile", "0.999", tags),
-                    scaleToBaseUnit(percentile999th.get().getPercentile(), metadata));
+                    scaleToBaseUnit(percentile999th.get().getValue(), metadata));
         }
     }
-
-
-
-
 
     @Override
     public void export(MetricID metricID, Timer timer, Metadata metadata) {
@@ -221,19 +218,11 @@ public class OpenMetricsExporter implements MetricExporter {
     }
 
     protected void appendHELP(String globalName, Metadata metadata) {
-        if (helpWrittenByGlobalName.contains(globalName)) {
-            return;
+        if(!helpWrittenByGlobalName.contains(globalName)) {
+            helpWrittenByGlobalName.add(globalName);
         }
-        helpWrittenByGlobalName.add(globalName);
         Optional<String> description = metadata.description();
-        if (!description.isPresent()) {
-            return;
-        }
-        String text = description.get();
-        if (text.isEmpty()) {
-            return;
-        }
-        out.append("# HELP ").append(globalName).append(' ').append(text).append('\n');
+        out.append("# HELP ").append(globalName).append(' ').append(description.isPresent() ? description.get(): "").append('\n');
     }
 
     protected void appendValue(String globalName, Tag[] tags, Number value) {
@@ -314,12 +303,10 @@ public class OpenMetricsExporter implements MetricExporter {
         case MetricUnits.KILOBITS:
         case MetricUnits.MEGABITS:
         case MetricUnits.GIGABITS:
-        case MetricUnits.KIBIBITS:
         case MetricUnits.MEBIBITS:
         case MetricUnits.GIBIBITS:
         case MetricUnits.KILOBYTES:
         case MetricUnits.MEGABYTES:
-        case MetricUnits.GIGABYTES:
             return globalName(metricID, infix + "_bytes" + suffix);
         case MetricUnits.PERCENT:
             return globalName(metricID, infix + "_ratio" + suffix);
@@ -327,6 +314,8 @@ public class OpenMetricsExporter implements MetricExporter {
             return globalName(metricID, infix + "_per_second" + suffix);
         case MetricUnits.NONE:
             return globalName(metricID, infix + suffix);
+        case MetricUnits.KIBIBITS:
+        case MetricUnits.GIGABYTES:
         default:
             return globalName(metricID, infix + "_" + unit + suffix);
         }

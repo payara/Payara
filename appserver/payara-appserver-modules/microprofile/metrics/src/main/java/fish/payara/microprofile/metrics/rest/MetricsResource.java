@@ -54,6 +54,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import static fish.payara.microprofile.Constants.EMPTY_STRING;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
@@ -110,6 +111,14 @@ public class MetricsResource extends HttpServlet {
 
         String scopeParameter = request.getParameter("scope") != null ? request.getParameter("scope"): null;
         String metricName = request.getParameter("name") != null ? request.getParameter("name") : null;
+        String pathInfo = request.getPathInfo() != null ? request.getPathInfo().substring(1) : EMPTY_STRING;
+        String[] pathInfos = pathInfo.split("/");
+        boolean availableScope = true;
+
+        if(!pathInfo.isEmpty() && pathInfos.length > 0) {
+            response.sendError(SC_NOT_FOUND, "Not available paths to consume");
+            return;
+        }
 
         try {
             String contentType = getContentType(request, response);
@@ -133,6 +142,21 @@ public class MetricsResource extends HttpServlet {
                         } catch (RuntimeException ex) {
                             throw new NoSuchRegistryException(scopeParameter);
                         }
+
+                        for(String name:metricsService.getContextNames()){
+                            Optional<String> availableScopeOptional = metricsService.getContext(name)
+                                    .getRegistries().keySet().stream().filter(k -> k.equals(scope)).findAny();
+                            if(!availableScopeOptional.isPresent()) {
+                                availableScope = false;
+                            } else {
+                                availableScope = true;
+                            }
+                        }
+
+                        if(!availableScope) {
+                            response.sendError(SC_NOT_FOUND, "Not available scope to consume");
+                        }
+
                         if(scope != null && metricName != null) {
                             outputWriter.write(scope, metricName);
                         } else {
