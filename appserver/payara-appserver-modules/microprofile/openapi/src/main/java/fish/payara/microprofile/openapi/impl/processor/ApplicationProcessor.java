@@ -835,8 +835,10 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
                 final MethodModel methodModel = (MethodModel) element;
                 final String exceptionType = methodModel.getParameter(0).getTypeName();
                 mapException(context, exceptionType, apiResponse);
+            } else if (element instanceof ClassModel) {
+                // this is fine, class-based annotation is reflected in methods as well
             } else {
-                LOGGER.warning("Unrecognised annotation position at: " + element.shortDesc());
+                LOGGER.warning(() -> "Unrecognised @APIResponse annotation position at: " + element.shortDesc());
             }
             return;
         }
@@ -868,9 +870,13 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
     @Override
     public void visitAPIResponses(AnnotationModel annotation, AnnotatedElement element, ApiContext context) {
+        APIResponsesImpl from = APIResponsesImpl.createInstance(annotation, context);
         List<AnnotationModel> responses = annotation.getValue("value", List.class);
         if (responses != null) {
             responses.forEach(response -> visitAPIResponse(response, element, context));
+        }
+        if (context.getWorkingOperation() != null) {
+            APIResponsesImpl.merge(from, context.getWorkingOperation().getResponses(), true, context);
         }
     }
 

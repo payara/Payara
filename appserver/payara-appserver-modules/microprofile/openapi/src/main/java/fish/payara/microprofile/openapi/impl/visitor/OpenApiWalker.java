@@ -42,6 +42,7 @@ package fish.payara.microprofile.openapi.impl.visitor;
 import fish.payara.microprofile.openapi.api.visitor.ApiVisitor;
 import fish.payara.microprofile.openapi.api.visitor.ApiVisitor.VisitorFunction;
 import fish.payara.microprofile.openapi.api.visitor.ApiWalker;
+import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import fish.payara.microprofile.openapi.impl.model.media.SchemaImpl;
 import java.lang.annotation.Annotation;
 import java.util.Comparator;
@@ -155,6 +156,7 @@ public class OpenApiWalker<E extends AnnotatedElement> implements ApiWalker {
         for (Class<? extends Annotation> annotationClass : getAnnotationVisitor(visitor).keySet()) {
             VisitorFunction<AnnotationModel, E> annotationFunction = getAnnotationVisitor(visitor).get(annotationClass);
             Class<? extends Annotation> alternative = getAnnotationAlternatives().get(annotationClass);
+
             // If it's just the one annotation class
             // Check the element
             if (annotations.isAnnotationPresent(annotationClass, element)) {
@@ -172,6 +174,13 @@ public class OpenApiWalker<E extends AnnotatedElement> implements ApiWalker {
                         }
                     }
                 } else {
+                    // if annotation requires merging from both class and method (like APIResponse(s) does, call class first
+                    if (element instanceof MethodModel && (annotationClass == APIResponse.class || annotationClass == APIResponses.class)) {
+                        if (annotations.isAnnotationPresent(annotationClass)) {
+                            annotationFunction.apply(annotations.getAnnotation(annotationClass), element, context);
+                        }
+                    }
+                    // process the annotation by its function
                     annotationFunction.apply(annotations.getAnnotation(annotationClass, element), element, context);
                 }
             } else if (element instanceof MethodModel && annotations.isAnnotationPresent(annotationClass)
@@ -180,6 +189,31 @@ public class OpenApiWalker<E extends AnnotatedElement> implements ApiWalker {
                 if (context.getPath() != null) {
                     annotationFunction.apply(annotations.getAnnotation(annotationClass), element, context);
                 }
+            }
+        }
+        // at the end, propagate @Extension defined on method to the @APIResponses (see javadoc of propagateExtension).
+        if (element instanceof MethodModel && annotations.isAnnotationPresent(Extension.class, element)) {
+            OpenApiContext methodContext = new OpenApiContext(context, element);
+            propagateExtension(methodContext);
+        }
+    }
+
+    /**
+     * Propagate @Extension from method-level down to @APIResponses as required
+     * by MP OpenApi TCK (testExtensionPlacement,
+     * <verbatim><code>
+     * vr.body(opPath + ".responses.'503'", hasEntry(equalTo(X_OPERATION_EXT),
+     * equalTo(TEST_OPERATION_EXT)));
+     * </code></verbatim>
+     *
+     * This is nonsense, when this test will be removed, remove also this
+     * method!
+     */
+    private void propagateExtension(OpenApiContext methodContext) {
+        for (org.eclipse.microprofile.openapi.models.responses.APIResponse apiResponse : methodContext.getWorkingOperation().getResponses().getAPIResponses().values()) {
+            if (apiResponse.getExtensions() == null) {
+                // only if empty
+                ExtensibleImpl.merge(methodContext.getWorkingOperation(), apiResponse, true);
             }
         }
     }

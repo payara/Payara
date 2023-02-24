@@ -100,6 +100,7 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI, Clo
         if (components != null) {
             from.setComponents(ComponentsImpl.createInstance(components, context));
         }
+        from.setExtensions(parseExtensions(annotation));
         return from;
     }
 
@@ -297,6 +298,7 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI, Clo
             }
             ExternalDocumentationImpl.merge(from.getExternalDocs(), to.getExternalDocs(), override);
         }
+        ExtensibleImpl.merge(from, to, override);
         // Handle @SecurityRequirement
         if (from.getSecurity() != null) {
             for (SecurityRequirement requirement : from.getSecurity()) {
@@ -348,6 +350,7 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI, Clo
         clonedObj.setTags(new ArrayList<>(this.tags));
         clonedObj.setPaths(new PathsImpl(this.paths.getPathItems()));
         clonedObj.setComponents(this.components);
+        clonedObj.setExtensions(this.extensions);
         ((OpenAPIImpl) clonedObj).setEndpoints(new TreeMap<>(this.getEndpoints()));
         return clonedObj;
     }

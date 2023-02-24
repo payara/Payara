@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -83,6 +83,7 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
 
     public static Components createInstance(AnnotationModel annotation, ApiContext context) {
         Components from = new ComponentsImpl();
+        from.setExtensions(parseExtensions(annotation));
         extractAnnotations(annotation, context, "schemas", "name", SchemaImpl::createInstance, from::addSchema);
         extractAnnotations(annotation, context, "responses", "name", APIResponseImpl::createInstance, from::addResponse);
         extractAnnotations(annotation, context, "parameters", "name", ParameterImpl::createInstance, from::addParameter);

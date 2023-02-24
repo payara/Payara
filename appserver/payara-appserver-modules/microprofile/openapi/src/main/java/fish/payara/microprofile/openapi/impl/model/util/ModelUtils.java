@@ -531,7 +531,7 @@ public final class ModelUtils {
     public static <T> void extractAnnotations(
             AnnotationModel annotationModel,
             ApiContext context,
-            String type,
+            String parameterName,
             String key,
             BiFunction<AnnotationModel, ApiContext, T> factory,
             BiConsumer<String, T> wrapperAddFunction) {
@@ -539,7 +539,7 @@ public final class ModelUtils {
         if (wrapperAddFunction == null) {
             throw new IllegalArgumentException("null wrapperAddFunction. This is required to modify OpenAPI documents");
         }
-        List<AnnotationModel> annotations = annotationModel.getValue(type, List.class);
+        List<AnnotationModel> annotations = annotationModel.getValue(parameterName, List.class);
         if (annotations != null) {
             for (AnnotationModel annotation : annotations) {
                 wrapperAddFunction.accept(

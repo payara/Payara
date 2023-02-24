@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,11 +42,15 @@ package fish.payara.microprofile.openapi.impl.model.responses;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.readOnlyView;
 
 import fish.payara.microprofile.openapi.api.visitor.ApiContext;
+import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
+import static fish.payara.microprofile.openapi.impl.model.ExtensibleImpl.parseExtensions;
 import fish.payara.microprofile.openapi.impl.model.ExtensibleTreeMap;
+import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
 
 import java.util.Map;
 import org.eclipse.microprofile.openapi.models.responses.APIResponse;
 import org.eclipse.microprofile.openapi.models.responses.APIResponses;
+import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
 
 public class APIResponsesImpl extends ExtensibleTreeMap<APIResponse, APIResponses>
         implements APIResponses {
@@ -59,6 +63,13 @@ public class APIResponsesImpl extends ExtensibleTreeMap<APIResponse, APIResponse
 
     public APIResponsesImpl(Map<String, APIResponse> responses) {
         super(responses);
+    }
+
+    public static APIResponsesImpl createInstance(AnnotationModel annotation, ApiContext context) {
+        APIResponsesImpl from = new APIResponsesImpl();
+        from.setExtensions(parseExtensions(annotation));
+        ModelUtils.extractAnnotations(annotation, context, "value", "responseCode", APIResponseImpl::createInstance, from::addAPIResponse);
+        return from;
     }
 
     @Override
@@ -113,8 +124,14 @@ public class APIResponsesImpl extends ExtensibleTreeMap<APIResponse, APIResponse
                 .getAPIResponses()
                 .getOrDefault(responseName, new APIResponseImpl());
         to.addAPIResponse(responseName, response);
+        // process extensions attribute
+        ExtensibleImpl.merge(from, response, override);
 
         APIResponseImpl.merge(from, response, override, context);
+    }
+
+    public static void merge(APIResponses from, APIResponses to, boolean override, ApiContext context) {
+        ExtensibleImpl.merge(from, to, override);
     }
 
 }
