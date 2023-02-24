@@ -250,23 +250,17 @@ public class MetricsResource extends HttpServlet {
 
     static Optional<String> parseMetricsAcceptHeader(String accept) {
         String[] acceptFormats = accept.split(",");
-        double qJsonValue = 0;
         double qTextFormat = 0;
         for (String format : acceptFormats) {
             if (format.contains(TEXT_PLAIN) || format.contains(MediaType.WILDCARD) || format.contains("text/*")) {
                 qTextFormat = parseQValue(format);
-            } else if (format.contains(APPLICATION_JSON) || format.contains(APPLICATION_WILDCARD)) {
-                qJsonValue = parseQValue(format);
-            } // else { no other formats supported by Payara, ignored }
+            }
         }
 
-        // if neither JSON or plain text are supported
-        if (qJsonValue == 0 && qTextFormat == 0) {
+        if (qTextFormat == 0) {
             return Optional.empty();
         }
-        if (qJsonValue > qTextFormat) {
-            return Optional.of(MediaType.APPLICATION_JSON);
-        }
+
         return Optional.of(MediaType.TEXT_PLAIN);
     }
 
@@ -301,20 +295,6 @@ public class MetricsResource extends HttpServlet {
      */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        processRequest(request, response);
-    }
-
-    /**
-     * Handles the HTTP <code>OPTIONS</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    @Override
-    protected void doOptions(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         processRequest(request, response);
     }

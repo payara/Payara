@@ -156,6 +156,11 @@ public class WeightedSnapshot extends Snapshot {
             for (int i = 0; i < percentiles.length; i++) {
                 percentileValues[i] = new PercentileValue(percentiles[i], getValue(percentiles[i]));
             }
+        } else {
+            percentileValues = new PercentileValue[percentiles.length];
+            for (int i = 0; i < percentiles.length; i++) {
+                percentileValues[i] = new PercentileValue(percentiles[i], 0);
+            }
         }
         return percentileValues == null ? new PercentileValue[0] : percentileValues;
     }
