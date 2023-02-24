@@ -236,11 +236,6 @@ public class MetricsResource extends HttpServlet {
             return null;
 
         case OPTIONS:
-            if (accept.contains(APPLICATION_JSON) || accept.contains(APPLICATION_WILDCARD)) {
-                return APPLICATION_JSON;
-            }
-            response.sendError(SC_NOT_ACCEPTABLE, String.format("[%s] not acceptable", accept));
-            return null;
         default:
             response.sendError(SC_METHOD_NOT_ALLOWED, String.format("HTTP method [%s] not allowed", method));
         }
@@ -299,4 +294,18 @@ public class MetricsResource extends HttpServlet {
         processRequest(request, response);
     }
 
+    /**
+     * Handles the HTTP <code>OPTIONS</code> method.
+     *
+     * @param request servlet request
+     * @param response servlet response
+     * @throws ServletException if a servlet-specific error occurs
+     * @throws IOException if an I/O error occurs
+     */
+    @Override
+    protected void doOptions(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        String method = request.getMethod();
+        response.sendError(SC_METHOD_NOT_ALLOWED, String.format("HTTP method [%s] not allowed", method));
+    }
 }
