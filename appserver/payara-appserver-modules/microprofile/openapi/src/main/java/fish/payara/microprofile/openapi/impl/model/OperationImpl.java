@@ -57,6 +57,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import fish.payara.microprofile.openapi.impl.model.responses.APIResponseImpl;
 
 import org.eclipse.microprofile.openapi.models.ExternalDocumentation;
 import org.eclipse.microprofile.openapi.models.Operation;
@@ -101,11 +102,7 @@ public class OperationImpl extends ExtensibleImpl<Operation> implements Operatio
         if (requestBody != null) {
             from.setRequestBody(RequestBodyImpl.createInstance(requestBody, context));
         }
-        //extractAnnotations(annotation, context, "responses", "responseCode", APIResponseImpl::createInstance, from.responses::addAPIResponse);
-        List<AnnotationModel> responses = annotation.getValue("responses", List.class);
-        if (responses != null) {
-            APIResponsesImpl apiResponsesImpl = APIResponsesImpl.createInstance(annotation, context);
-        }
+        extractAnnotations(annotation, context, "responses", "responseCode", APIResponseImpl::createInstance, from.responses::addAPIResponse);
         from.setExtensions(parseExtensions(annotation));
         extractAnnotations(annotation, context, "callbacks", "name", CallbackImpl::createInstance, from::addCallback);
         from.setDeprecated(annotation.getValue("deprecated", Boolean.class));
