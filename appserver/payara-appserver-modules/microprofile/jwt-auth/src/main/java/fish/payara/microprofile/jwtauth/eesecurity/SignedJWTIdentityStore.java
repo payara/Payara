@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2017-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -52,8 +52,10 @@ import java.net.URL;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -86,6 +88,8 @@ public class SignedJWTIdentityStore implements IdentityStore {
 
     private final boolean isEncryptionRequired;
 
+    private Map<String, Optional<String>> optionalConfigProperty;
+
     public SignedJWTIdentityStore() {
         config = ConfigProvider.getConfig();
 
@@ -110,13 +114,14 @@ public class SignedJWTIdentityStore implements IdentityStore {
 
         // Signing is required by default, it doesn't parse if not signed
         isEncryptionRequired = decryptKeyLocation.isPresent();
+        setOptionalConfigProperty(properties);
     }
 
     public CredentialValidationResult validate(SignedJWTCredential signedJWTCredential) {
         final JwtTokenParser jwtTokenParser = new JwtTokenParser(enabledNamespace, customNamespace, disableTypeVerification);
         try {
             JsonWebTokenImpl jsonWebToken = jwtTokenParser.parse(signedJWTCredential.getSignedJWT(),
-                    isEncryptionRequired, publicKeyStore, acceptedIssuer, privateKeyStore);
+                    isEncryptionRequired, publicKeyStore, acceptedIssuer, privateKeyStore, optionalConfigProperty);
 
             // verifyAndParseEncryptedJWT audience
             final Set<String> recipientsOfThisJWT = jsonWebToken.getAudience();
@@ -199,5 +204,12 @@ public class SignedJWTIdentityStore implements IdentityStore {
             valueOpt = config.getOptionalValue(key, String.class);
         }
         return valueOpt;
+    }
+
+    private void setOptionalConfigProperty(Optional<Properties> properties) {
+        optionalConfigProperty = new HashMap<>();
+        optionalConfigProperty.put(Names.TOKEN_AGE, readConfigOptional(Names.TOKEN_AGE, properties, config)); // mp.jwt.verify.token.age
+        optionalConfigProperty.put(Names.CLOCK_SKEW, readConfigOptional(Names.CLOCK_SKEW, properties, config)); // mp.jwt.verify.clock.skew
+        optionalConfigProperty.put(Names.DECRYPTOR_KEY_ALGORITHM, readConfigOptional(Names.DECRYPTOR_KEY_ALGORITHM, properties, config)); //mp.jwt.decrypt.key.algorithm
     }
 }

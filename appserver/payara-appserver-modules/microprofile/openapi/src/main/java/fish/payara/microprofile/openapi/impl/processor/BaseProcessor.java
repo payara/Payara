@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -76,6 +76,8 @@ public class BaseProcessor implements OASProcessor {
 
         // Set the OpenAPI version if it hasn't been set
         if (api.getOpenapi() == null) {
+            // FIXME: change to 3.1.0 when MP TCK is upgraded
+            // api.setOpenapi("3.1.0");
             api.setOpenapi("3.0.0");
         }
 

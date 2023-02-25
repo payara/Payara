@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -78,6 +78,7 @@ public class APIResponseImpl extends ExtensibleImpl<APIResponse> implements APIR
     public static APIResponseImpl createInstance(AnnotationModel annotation, ApiContext context) {
         APIResponseImpl from = new APIResponseImpl();
         from.setDescription(annotation.getValue("description", String.class));
+        from.setExtensions(parseExtensions(annotation));
         HeaderImpl.createInstances(annotation, context).forEach(from::addHeader);
 
         final List<ContentImpl> contents = createList();
@@ -96,6 +97,10 @@ public class APIResponseImpl extends ExtensibleImpl<APIResponse> implements APIR
         extractAnnotations(annotation, context, "content", ContentImpl::createInstance, contents::add);
         for (ContentImpl content : contents) {
             content.getMediaTypes().forEach(from.content::addMediaType);
+            // copy extensions down to media types
+            if (content.getExtensions() != null) {
+                content.getExtensions().forEach((extKey, extValue) -> content.getMediaTypes().forEach((mtKey, mtValue) -> from.content.getMediaType(mtKey).addExtension(extKey, extValue)));
+            }
         }
 
         extractAnnotations(annotation, context, "links", "name", LinkImpl::createInstance, from::addLink);
@@ -215,6 +220,7 @@ public class APIResponseImpl extends ExtensibleImpl<APIResponse> implements APIR
             return;
         }
         to.setDescription(mergeProperty(to.getDescription(), from.getDescription(), override));
+        ExtensibleImpl.merge(from, to, override);
         if (from.getContent() != null) {
             if (to.getContent() == null) {
                 to.setContent(new ContentImpl());

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2018-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -37,22 +37,19 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package fish.payara.microprofile.opentracing.jaxrs;
+package fish.payara.microprofile.telemetry.tracing.jaxrs;
 
+import fish.payara.requesttracing.jaxrs.client.PayaraTracingServices;
 import jakarta.ws.rs.core.FeatureContext;
-
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.jersey.internal.spi.ForcedAutoDiscoverable;
 
-import fish.payara.requesttracing.jaxrs.client.PayaraTracingServices;
-
 /**
- * AutoDiscoverable that registers the {@link OpenTracingApplicationEventListener}.
- *
- * @author Andrew Pielage <andrew.pielage@payara.fish>
- * @author David Matejcek
+ * AutoDiscoverable that registers the {@link OpenTelemetryApplicationEventListener}.
+ * FISH-6971 This class remain unused until we enable jax-rs on client side of OpenTelemetry function
+ * to enable this class add it to {@code META-INF/services/org.glassfish.jersey.internal.spi.ForcedAutoDiscoverable}
  */
-public class JerseyOpenTracingAutoDiscoverable implements ForcedAutoDiscoverable {
+public class JerseyOpenTelemetryAutoDiscoverable implements ForcedAutoDiscoverable {
 
     @Override
     public void configure(FeatureContext context) {
@@ -62,8 +59,8 @@ public class JerseyOpenTracingAutoDiscoverable implements ForcedAutoDiscoverable
             return;
         }
 
-        if (!context.getConfiguration().isRegistered(OpenTracingApplicationEventListener.class)) {
-            context.register(OpenTracingApplicationEventListener.class);
+        if (!context.getConfiguration().isRegistered(OpenTelemetryApplicationEventListener.class)) {
+            context.register(OpenTelemetryApplicationEventListener.class);
         }
     }
 }

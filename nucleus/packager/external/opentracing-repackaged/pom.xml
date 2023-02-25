@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
- Copyright (c) 2018-2022 Payara Foundation and/or its affiliates. All rights reserved.
+ Copyright (c) 2018-2023 Payara Foundation and/or its affiliates. All rights reserved.
 
  The contents of this file are subject to the terms of either the GNU
  General Public License Version 2 only ("GPL") or the Common Development
@@ -72,7 +72,10 @@
                 <artifactId>maven-bundle-plugin</artifactId>
                 <configuration>
                     <instructions>
-                        <Export-Package>io.opentracing,io.opentracing.propagation,io.opentracing.tag,io.opentracing.log,io.opentracing.util</Export-Package>
+                        <Export-Package>
+                            io.opentracing,
+                            io.opentracing.*
+                        </Export-Package>
                         <Private-Package>*</Private-Package>
                         <Include-Resource>META-INF/hk2-locator/=target/classes/META-INF/hk2-locator/</Include-Resource>
                     </instructions>

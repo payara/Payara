@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2019-2022] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2019-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -50,7 +50,10 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 /**
@@ -70,6 +73,16 @@ public class SchemaExampleTest extends OpenApiApplicationTest {
     public static class User {
         @Schema(example = "bobSm37")
         String password;
+    }
+
+    @Schema(additionalProperties = Schema.True.class, maxProperties = 2)
+    public static class WithAdditionalProperties {
+        String data;
+    }
+
+    @Schema(additionalProperties = Schema.False.class)
+    public static class WithoutAdditionalProperties {
+        String data;
     }
 
     /**
@@ -96,5 +109,26 @@ public class SchemaExampleTest extends OpenApiApplicationTest {
         assertEquals(false,
                 JsonUtils.hasPath(root, "components.schemas.SchemaExample.properties.notFriendlyName".split("\\.")));
         assertNotNull(JsonUtils.path(root,"components.schemas.SchemaExample.properties.friendly_name"));
+    }
+
+    @Test
+    public void schemaWithAdditionalProperties() {
+        ObjectNode root = getOpenAPIJson();
+        assertNotNull(JsonUtils.path(root, "components.schemas.WithAdditionalProperties"));
+        assertTrue(JsonUtils.path(root, "components.schemas.WithAdditionalProperties.additionalProperties").asBoolean());
+    }
+
+    @Test
+    public void schemaWithoutAdditionalProperties() {
+        ObjectNode root = getOpenAPIJson();
+        assertNotNull(JsonUtils.path(root, "components.schemas.WithoutAdditionalProperties"));
+        assertFalse(JsonUtils.path(root, "components.schemas.WithoutAdditionalProperties.additionalProperties").asBoolean());
+    }
+
+    @Test
+    public void schemaWithNoAdditionalProperties() {
+        ObjectNode root = getOpenAPIJson();
+        assertNotNull(JsonUtils.path(root, "components.schemas.User"));
+        assertNull(JsonUtils.path(root, "components.schemas.User").findValue("additionalProperties")); // if not specified, the additionalProperties is not displayed in the generated openapi
     }
 }

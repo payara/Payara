@@ -58,6 +58,7 @@ import jakarta.ws.rs.client.ClientResponseFilter;
 import jakarta.ws.rs.core.MultivaluedMap;
 import jakarta.ws.rs.core.Response.Status.Family;
 import jakarta.ws.rs.core.Response.StatusType;
+
 import java.io.IOException;
 import java.util.AbstractMap;
 import java.util.Collections;
@@ -109,52 +110,46 @@ public class JaxrsClientRequestTracingFilter implements ClientRequestFilter, Cli
                     }
                 }
             }
-
-            // ***** OpenTracing Instrumentation *****
-            // Check if we should trace this client call
-            if (shouldTrace(requestContext)) {
-                // Get or create the tracer instance for this application
-                final Tracer tracer = payaraTracingServices.getActiveTracer();
-
-                // Build a span with the required MicroProfile Opentracing tags
-                SpanBuilder spanBuilder = tracer.buildSpan(requestContext.getMethod())
-                        .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CLIENT)
-                        .withTag(Tags.HTTP_METHOD.getKey(), requestContext.getMethod())
-                        .withTag(Tags.HTTP_URL.getKey(), requestContext.getUri().toURL().toString())
-                        .withTag(Tags.COMPONENT.getKey(), "jaxrs");
-
-                // Get the propagated span context from the request if present
-                // This is required to account for asynchronous client requests
-                SpanContext parentSpanContext = (SpanContext) requestContext.getProperty(
-                        PropagationHeaders.OPENTRACING_PROPAGATED_SPANCONTEXT);
-                if (parentSpanContext != null) {
-                    spanBuilder.asChildOf(parentSpanContext);
-                } else {
-                    parentSpanContext = SpanPropagator.propagatedContext();
-                    if (parentSpanContext != null) {
-                        spanBuilder.asChildOf(parentSpanContext);
-                    }
-                }
-
-                // If there is a propagated span context, set it as a parent of the new span
-                parentSpanContext = tracer.extract(Format.Builtin.HTTP_HEADERS,
-                        new MultivaluedMapToTextMap(requestContext.getHeaders()));
-                if (parentSpanContext != null) {
-                    spanBuilder.asChildOf(parentSpanContext);
-                }
-
-                // Start the span and mark it as active
-                Span span = spanBuilder.start();
-                Scope scope = tracer.activateSpan(span);
-                requestContext.setProperty(Scope.class.getName(), scope);
-
-                // Inject the active span context for propagation
-                tracer.inject(
-                        span.context(),
-                        Format.Builtin.HTTP_HEADERS,
-                        new MultivaluedMapToTextMap(requestContext.getHeaders()));
-            }
         }
+
+        // ***** OpenTracing Instrumentation *****
+        // Check if we should trace this client call
+        if (payaraTracingServices.getOpenTelemetryService().isEnabled() && shouldTrace(requestContext)) {
+            // Get or create the tracer instance for this application
+            final Tracer tracer = payaraTracingServices.getActiveTracer();
+
+            // Build a span with the required MicroProfile Opentracing tags
+            SpanBuilder spanBuilder = tracer.buildSpan(requestContext.getMethod())
+                    .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CLIENT)
+                    .withTag(Tags.HTTP_METHOD.getKey(), requestContext.getMethod())
+                    .withTag(Tags.HTTP_URL.getKey(), requestContext.getUri().toURL().toString())
+                    .withTag(Tags.COMPONENT.getKey(), "jaxrs");
+
+            // Get the propagated span context from the request if present
+            // This is required to account for asynchronous client requests
+            SpanContext parentSpanContext = (SpanContext) requestContext.getProperty(
+                    PropagationHeaders.OPENTRACING_PROPAGATED_SPANCONTEXT);
+            if (parentSpanContext != null) {
+                spanBuilder.asChildOf(parentSpanContext);
+            } else {
+                parentSpanContext = SpanPropagator.propagatedContext();
+                if (parentSpanContext != null) {
+                    spanBuilder.asChildOf(parentSpanContext);
+                }
+            }
+
+            // Start the span and mark it as active
+            Span span = spanBuilder.start();
+            Scope scope = tracer.activateSpan(span);
+            requestContext.setProperty(Scope.class.getName(), scope);
+
+            // Inject the active span context for propagation
+            tracer.inject(
+                    span.context(),
+                    Format.Builtin.HTTP_HEADERS,
+                    new MultivaluedMapToTextMap(requestContext.getHeaders()));
+        }
+
     }
 
     // After method invocation
@@ -163,7 +158,7 @@ public class JaxrsClientRequestTracingFilter implements ClientRequestFilter, Cli
         final PayaraTracingServices payaraTracingServices = new PayaraTracingServices();
         final RequestTracingService requestTracing = payaraTracingServices.getRequestTracingService();
         // If request tracing is enabled, and there's a trace actually in progress, add info about method
-        if (requestTracing != null && requestTracing.isRequestTracingEnabled() && shouldTrace(requestContext)) {
+        if (requestContext.hasProperty(Scope.class.getName())) {
             // Get the active span from the application's tracer instance
             Span activeSpan = payaraTracingServices.getActiveTracer().scopeManager().activeSpan();
             if (activeSpan == null) {
@@ -243,7 +238,7 @@ public class JaxrsClientRequestTracingFilter implements ClientRequestFilter, Cli
         private Map.Entry<String, List<Object>> mapEntry;
         private Iterator<Object> mapEntryIterator;
 
-        public MultiValuedMapStringIterator(Set<Map.Entry<String, List<Object>>> entrySet){
+        public MultiValuedMapStringIterator(Set<Map.Entry<String, List<Object>>> entrySet) {
             mapIterator = entrySet.iterator();
         }
 
