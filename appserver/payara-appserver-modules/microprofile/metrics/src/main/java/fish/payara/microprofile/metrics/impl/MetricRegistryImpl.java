@@ -61,6 +61,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import jakarta.enterprise.inject.Vetoed;
+import java.util.stream.Collectors;
 import org.eclipse.microprofile.metrics.Counter;
 import org.eclipse.microprofile.metrics.Gauge;
 import org.eclipse.microprofile.metrics.Histogram;
@@ -430,7 +431,7 @@ public class MetricRegistryImpl implements MetricRegistry {
         }
         Metric existing = family.get(metricID);
         if(family != null && existing == null) {
-            if(hasDifferentTags(metricID)) {
+            if(hasDifferentTagNames(metricID)) {
                 return register(metadata, useExistingMetadata, metricType, metric, tags);
             } else {
                 throw new IllegalArgumentException(
@@ -443,12 +444,24 @@ public class MetricRegistryImpl implements MetricRegistry {
         }
     }
 
-    public boolean hasDifferentTags(MetricID metricID) {
-        Optional<MetricID> optionalMetricID = getMetrics(metricID.getName()).keySet().stream()
-                .filter(m -> m.getTags().size() == metricID.getTags().size())
-                .filter(m -> m.getTagsAsString().equals(metricID.getTagsAsString())).findAny();
-        if(optionalMetricID.isPresent()) {
+    public boolean hasDifferentTagNames(MetricID metricID) {
+        Optional<MetricID> optSameNameDifferentTags = getMetrics(metricID.getName()).keySet().stream()
+                .filter(m -> m.getTags().size() != metricID.getTags().size()).findAny();
+        if(optSameNameDifferentTags.isPresent()) {
             return false;
+        }
+        Optional<MetricID> optSameNameSameTagsDifferentContent = getMetrics(metricID.getName()).keySet().stream()
+                .filter(m -> m.getTags().size() == metricID.getTags().size())
+                .filter(m -> !m.getTagsAsString().equals(metricID.getTagsAsString())).findAny();
+        if(optSameNameSameTagsDifferentContent.isPresent()) {
+            List<MetricID> metrics = getMetrics(metricID.getName()).keySet().stream()
+                    .filter(m -> m.getTags().size() == metricID.getTags().size()).collect(Collectors.toList());
+            for(Tag t : metricID.getTagsAsArray()) {
+                Optional<MetricID> result = metrics.stream().filter(m -> m.getTags().containsKey(t.getTagName())).findAny();
+                if(result.isEmpty()){
+                    return false;
+                }
+            }
         }
         return true;
     }
@@ -480,7 +493,6 @@ public class MetricRegistryImpl implements MetricRegistry {
         }
         final Metadata newMetadata = metadata;
         final T newMetric = metric != null ? metric:(T) createMetricInstance(newMetadata, metricType);
-        //tags = setScopeTagForMetric(tags);
         MetricFamily<T> family = (MetricFamily<T>) metricsFamiliesByName.computeIfAbsent(name,
                 key -> new MetricFamily<>(newMetadata));
         MetricID metricID = new MetricID(name, tags);
