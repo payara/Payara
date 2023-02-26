@@ -163,6 +163,9 @@ public class PwcCoyoteRequest extends Request {
         String cookieSameSiteValue = System.getProperty("cookieSameSiteValue");
         if (cookieSameSiteValue != null) {
             cookie.setAttribute(Constants.COOKIE_SAME_SITE_ATTR, cookieSameSiteValue);
+            if ("None".equals(cookieSameSiteValue)) {
+                cookie.setAttribute(Constants.COOKIE_SECURE_ATTR, "true");
+            }
         }
     }
     
