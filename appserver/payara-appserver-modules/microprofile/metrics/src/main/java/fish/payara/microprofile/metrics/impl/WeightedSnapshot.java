@@ -162,7 +162,7 @@ public class WeightedSnapshot extends Snapshot {
                 percentileValues[i] = new PercentileValue(percentiles[i], 0);
             }
         }
-        return percentileValues == null ? new PercentileValue[0] : percentileValues;
+        return percentileValues;
     }
 
     private double getValue(double quantile) {

@@ -39,12 +39,14 @@
  */
 package fish.payara.microprofile.metrics.cdi;
 
-import java.lang.reflect.*;
-import java.util.*;
+import java.lang.reflect.Array;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
-import java.util.stream.*;
+import java.util.stream.Stream;
 import org.eclipse.microprofile.metrics.Counter;
 import org.eclipse.microprofile.metrics.Gauge;
 import org.eclipse.microprofile.metrics.Histogram;
@@ -127,6 +129,12 @@ public final class MetricUtils<T extends Metric> {
         return (T) getOrRegister(metric).byMetadataAndTags.apply(registry, metadata, tags);
     }
 
+    /**
+     * This method will add the mp_scope to indicate scope of the metric if not available
+     * @param scope the scope associated with the metric
+     * @param tags current tags available for the metric
+     * @return array of tags including the mp_scope tag
+     */
     public static Tag[] setScopeTagForMetric(String scope, Tag... tags) {
         Tag[] tArray = new Tag[1];
         if(scope.equals(MetricRegistry.BASE_SCOPE)) {

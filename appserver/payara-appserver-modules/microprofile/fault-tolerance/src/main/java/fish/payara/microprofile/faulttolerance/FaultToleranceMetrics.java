@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2023 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -48,11 +48,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.LongSupplier;
 
 import org.eclipse.microprofile.faulttolerance.Asynchronous;
-import org.eclipse.microprofile.metrics.MetricUnits;
-import org.eclipse.microprofile.metrics.Tag;
 
 import fish.payara.microprofile.faulttolerance.policy.FaultTolerancePolicy;
 import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState;
+import org.eclipse.microprofile.metrics.Counter;
+import org.eclipse.microprofile.metrics.Histogram;
+import org.eclipse.microprofile.metrics.MetricUnits;
+import org.eclipse.microprofile.metrics.Tag;
 
 /**
  * Encodes the specifics of the FT metrics names using default methods while decoupling rest of the implementation from
@@ -83,11 +85,11 @@ public interface FaultToleranceMetrics {
      *         for the provided policy in case this has not been done already.
      */
     default FaultToleranceMetrics boundTo(FaultToleranceMethodContext context, FaultTolerancePolicy policy) {
-        /*if (policy.isMetricsEnabled) {
+        if (policy.isMetricsEnabled) {
             String[] fallbackTag = policy.isFallbackPresent()
                     ? new String[] {"fallback", "applied", "notApplied"}
                     : new String[] {"fallback", "notDefined"};
-            register(MetricType.COUNTER, "ft.invocations.total", new String[][]{
+            register(Counter.class.getTypeName(), "ft.invocations.total", new String[][]{
                 {"result", "valueReturned", "exceptionThrown"}, fallbackTag});
             if (policy.isRetryPresent()) {
                 List<String> retryResultTag = new ArrayList<>(asList("retryResult", "valueReturned", "exceptionNotRetryable"));
@@ -97,40 +99,40 @@ public interface FaultToleranceMetrics {
                 if (policy.retry.isMaxDurationSet()) {
                     retryResultTag.add("maxDurationReached");
                 }
-                register(MetricType.COUNTER, "ft.retry.calls.total", new String[][]{
+                register(Counter.class.getTypeName(), "ft.retry.calls.total", new String[][]{
                     {"retried", "true", "false"}, retryResultTag.toArray(new String[0])});
-                register(MetricType.COUNTER, "ft.retry.retries.total");
+                register(Counter.class.getTypeName(), "ft.retry.retries.total");
             }
             if (policy.isTimeoutPresent()) {
-                register(MetricType.COUNTER, "ft.timeout.calls.total", new String[][] {
+                register(Counter.class.getTypeName(), "ft.timeout.calls.total", new String[][] {
                     {"timedOut", "true", "false"}});
-                register(MetricType.HISTOGRAM, "ft.timeout.executionDuration");
+                register(Histogram.class.getTypeName(), "ft.timeout.executionDuration");
             }
             if (policy.isCircuitBreakerPresent()) {
-                register(MetricType.COUNTER, "ft.circuitbreaker.calls.total", new String[][] {
+                register(Counter.class.getTypeName(), "ft.circuitbreaker.calls.total", new String[][] {
                     {"circuitBreakerResult", "success", "failure", "circuitBreakerOpen"}});
                 CircuitBreakerState state = context.getState();
                 register("ft.circuitbreaker.state.total", MetricUnits.NANOSECONDS, state::nanosOpen, "state", "open");
                 register("ft.circuitbreaker.state.total", MetricUnits.NANOSECONDS, state::nanosHalfOpen, "state", "halfOpen");
                 register("ft.circuitbreaker.state.total", MetricUnits.NANOSECONDS, state::nanosClosed, "state", "closed");
-                register(MetricType.COUNTER, "ft.circuitbreaker.opened.total");
+                register(Counter.class.getTypeName(), "ft.circuitbreaker.opened.total");
             }
             if (policy.isBulkheadPresent()) {
-                register(MetricType.COUNTER, "ft.bulkhead.calls.total", new String[][] {
+                register(Counter.class.getTypeName(), "ft.bulkhead.calls.total", new String[][] {
                     {"bulkheadResult", "accepted", "rejected"}});
-                register(MetricType.HISTOGRAM, "ft.bulkhead.runningDuration");
+                register(Histogram.class.getTypeName(), "ft.bulkhead.runningDuration");
                 if (policy.isAsynchronous()) {
                     BlockingQueue<Thread> running = context.getConcurrentExecutions();
                     register("ft.bulkhead.executionsRunning", null, running::size);
                     AtomicInteger queuingOrRunning = context.getQueuingOrRunningPopulation();
                     register("ft.bulkhead.executionsWaiting", null, () -> Math.max(0, queuingOrRunning.get() - policy.bulkhead.value));
-                    register(MetricType.HISTOGRAM, "ft.bulkhead.waitingDuration");
+                    register(Histogram.class.getTypeName(), "ft.bulkhead.waitingDuration");
                 } else {
                     AtomicInteger running = context.getQueuingOrRunningPopulation();
                     register("ft.bulkhead.executionsRunning", null, running::get);
                 }
             }
-        }*/
+        }
         return this;
     }
 
@@ -148,6 +150,19 @@ public interface FaultToleranceMetrics {
      * @param tag tag name and value if the gauge uses a tag
      */
     default void register(String metric, String unit, LongSupplier gauge, String... tag) {
+        //NOOP
+    }
+
+    /**
+     * Registration:
+     *
+     * Registers a metric for each permutation of the tags. Infers unit from type.
+     *
+     * @param type {@link MetricType#COUNTER} (assumes no unit) or {@link MetricType#HISTOGRAM} (assumes {@link MetricUnits#NANOSECONDS})
+     * @param metric name of the metric(s)
+     * @param tags tag name and possible values
+     */
+    default void register(String metricType, String metric, String[]... tags) {
         //NOOP
     }
 

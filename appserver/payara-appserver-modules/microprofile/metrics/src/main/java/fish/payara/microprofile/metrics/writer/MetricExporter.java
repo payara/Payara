@@ -48,7 +48,6 @@ import org.eclipse.microprofile.metrics.Histogram;
 import org.eclipse.microprofile.metrics.Metadata;
 import org.eclipse.microprofile.metrics.Metric;
 import org.eclipse.microprofile.metrics.MetricID;
-import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.eclipse.microprofile.metrics.Timer;
 
 /**
@@ -67,7 +66,7 @@ public interface MetricExporter {
     /**
      * Creates a new {@link MetricExporter} with the provided scope.
      *
-     * @param scope the scope to use in the export, most likely on of the {@link MetricRegistry.Type}s
+     * @param scope the scope to use in the export
      * @return A new instance of this {@link MetricExporter} with the provided scope set, this instance is kept
      *         unchanged and will continue to use its current scope. Both, this {@link MetricExporter} and the returned
      *         one will however share other internal state that is related to the output written so far.

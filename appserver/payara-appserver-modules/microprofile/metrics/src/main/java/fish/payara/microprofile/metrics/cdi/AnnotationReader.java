@@ -51,10 +51,8 @@ import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -179,7 +177,6 @@ public final class AnnotationReader<T extends Annotation> {
     }
 
     private final Class<T> annotationType;
-
     private final String nameType;
     private final Function<T, String> name;
     private final Function<T, String[]> tags;
@@ -211,10 +208,9 @@ public final class AnnotationReader<T extends Annotation> {
 
     /**
      * If this {@link AnnotationReader} reads {@link Metric} {@link Annotation} it can be associated with different
-     * so that the provided type is used when creating {@link Metadata} using the
-     * {@link AnnotationReader}.
+     * metric class name type using the {@link AnnotationReader}.
      *
-     * @param nameType
+     * @param nameType String representing the type class of the metric
      * @return A new {@link AnnotationReader} using the provided
      * @throws IllegalStateException In case this method is called on {@link AnnotationReader} that is not reading
      *                               {@link Metric} {@link Annotation}.
@@ -227,8 +223,7 @@ public final class AnnotationReader<T extends Annotation> {
     }
 
     /**
-     * Infers the from the provided {@link org.eclipse.microprofile.metrics.Metric} {@link Class}. If
-     * this fails .
+     * Infers the {@link org.eclipse.microprofile.metrics.Metric} {@link Class},  from the provided generic Type
      *
      * @param genericType the actual type of the {@link org.eclipse.microprofile.metrics.Metric} as declared by a
      *                    {@link Member} or {@link Parameter}.
@@ -391,7 +386,7 @@ public final class AnnotationReader<T extends Annotation> {
      * the provided {@link InjectionPoint}. This does take into account that annotations might have been added or
      * removed at runtime.
      *
-     * @param member point source {@link AnnotatedMember} for an annotated element having this {@link AnnotationReader}'s
+     * @param point source {@link AnnotatedMember} for an annotated element having this {@link AnnotationReader}'s
      *              {@link #annotationType()}, not {@code null}
      * @return {@link MetricID} with full metric name as required by the MP specification
      * @throws IllegalArgumentException In case the provided {@link AnnotatedMember} isn't effectively annotated with
@@ -441,6 +436,11 @@ public final class AnnotationReader<T extends Annotation> {
         return unit.apply(annotation);
     }
 
+    /**
+     * Returns the scope as defined by the provided {@Link Annotation}
+     * @param annotation source annotation to read, not {@code null}
+     * @return scope of the provided source annotation
+     */
     public String scope(T annotation){
         return scope.apply(annotation);
     }
@@ -486,7 +486,7 @@ public final class AnnotationReader<T extends Annotation> {
      * the provided {@link InjectionPoint}. This does take into account that annotations might have been added or
      * removed at runtime.
      *
-     * @param member point source {@link AnnotatedMember} for an annotated element having this {@link AnnotationReader}'s
+     * @param point source {@link AnnotatedMember} for an annotated element having this {@link AnnotationReader}'s
      *              {@link #annotationType()}, not {@code null}
      * @return {@link Metadata} with full metric name as required by the MP specification
      * @throws IllegalArgumentException In case the provided {@link AnnotatedMember} isn't effectively annotated with
@@ -585,6 +585,12 @@ public final class AnnotationReader<T extends Annotation> {
         return MetricUtils.getOrRegisterByMetadataAndTags(registry, metric, metadata(point), tags(annotation));
     }
 
+    /**
+     * This method validates if this annotation is associated with custom scope and returns the corresponding registry
+     * @param annotation source annotation to read, not {@code null}
+     * @param registry current reference of the MetricRegistry
+     * @return the corresponding registry associated for this scope
+     */
     public MetricRegistry validateCustomScope(T annotation, MetricRegistry registry) {
         String scope = scope(annotation);
         if(scope != null) {

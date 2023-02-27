@@ -393,10 +393,6 @@ public class MetricRegistryImpl implements MetricRegistry {
         return matches;
     }
 
-    private <T extends Metric> T findMetricOrCreateNew(String name, String typeName, T metric, Tag... tags) {
-        return findMetricOrCreate(name, typeName, metric, tags);
-    }
-
     private <T extends Metric> T findMetricOrCreate(String name, String typeName, T metric, Tag... tags) {
         checkNameIsNotNullOrEmpty(name);
         Metadata metadata = null;
@@ -431,7 +427,7 @@ public class MetricRegistryImpl implements MetricRegistry {
         }
         Metric existing = family.get(metricID);
         if(family != null && existing == null) {
-            if(hasDifferentTagNames(metricID)) {
+            if(hasSameTagNames(metricID)) {
                 return register(metadata, useExistingMetadata, metricType, metric, tags);
             } else {
                 throw new IllegalArgumentException(
@@ -444,7 +440,12 @@ public class MetricRegistryImpl implements MetricRegistry {
         }
     }
 
-    public boolean hasDifferentTagNames(MetricID metricID) {
+    /**
+     * This method will check if there is an available metric with the same tag names
+     * @param metricID used to search an available metric
+     * @return boolean indicating if there is an available Metric with same or different tag names
+     */
+    private boolean hasSameTagNames(MetricID metricID) {
         Optional<MetricID> optSameNameDifferentTags = getMetrics(metricID.getName()).keySet().stream()
                 .filter(m -> m.getTags().size() != metricID.getTags().size()).findAny();
         if(optSameNameDifferentTags.isPresent()) {
@@ -465,6 +466,12 @@ public class MetricRegistryImpl implements MetricRegistry {
         }
         return true;
     }
+
+    /**
+     * This method validates if the mp_scope and the mp_app tag names are used for the metric.
+     * If that is the case this will throw an IllegalArgumentException indicating that those are reserved tag names
+     * @param tags the array of available tags for the metric before to be created
+     */
     public static void validateTags(Tag[] tags) {
         if(tags != null) {
             Optional<Tag> result = Arrays.stream(tags)
@@ -547,7 +554,7 @@ public class MetricRegistryImpl implements MetricRegistry {
             return new TimerImpl(clock);
         }
 
-        return null;
+        throw new IllegalArgumentException("Invalid metric type : "+metricType);
     }
 
     @Override

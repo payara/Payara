@@ -54,7 +54,7 @@ public interface MetricRegistrationListener {
      * Notifies the listener when new {@link Metric} is registered.
      *
      * @param registered ID of the newly registered {@link Metric}
-     * @param registry The registry the new {@link Metric} was registered with
+     * @param scope associated where the new {@link Metric} was registered with
      */
     void onRegistration(MetricID registered, String scope);
 }

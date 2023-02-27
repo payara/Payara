@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2020-2022] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2020-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,9 +43,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.lessThan;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
+import java.util.Arrays;
+import java.util.Optional;
 import java.util.concurrent.Future;
 
 import java.util.concurrent.TimeUnit;
@@ -57,6 +57,7 @@ import org.eclipse.microprofile.metrics.Histogram;
 import org.eclipse.microprofile.metrics.MetricID;
 import org.eclipse.microprofile.metrics.Snapshot;
 import org.eclipse.microprofile.metrics.Tag;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -92,8 +93,8 @@ public class BulkheadMetricTckTest extends AbstractMetricTest {
                 new Tag("method", methodName),
                 new Tag("fallback", "notDefined"),
                 new Tag("result", "exceptionThrown")));
-        assertEquals(4, successfulInvocations.getCount());
-        assertEquals(1, failedInvocations.getCount());
+        Assert.assertEquals(4, successfulInvocations.getCount());
+        Assert.assertEquals(1, failedInvocations.getCount());
     }
 
     @Asynchronous
@@ -125,17 +126,19 @@ public class BulkheadMetricTckTest extends AbstractMetricTest {
         Histogram executionTimes = registry.getHistogram(new MetricID("ft.bulkhead.runningDuration",
                 new Tag("method", "fish.payara.microprofile.faulttolerance.policy.BulkheadMetricTckTest.bulkheadMetricHistogramTest_Method")));
         Snapshot snap = executionTimes.getSnapshot();
-
-        assertNotNull(executionTimes);
-        assertEquals(2, executionTimes.getCount());
-        //assertApproxMillis("Testing median, should be " + delayMs + " - " + waitTimeForOneMethod, delayMs, waitTimeForOneMethod, Math.round(snap.getMedian()));
+        Snapshot.PercentileValue[] percentile = snap.percentileValues();
+        Optional<Snapshot.PercentileValue> optPercentileMedian = Arrays.stream(percentile).filter(p -> p.getPercentile() == 0.5).findAny();
+        Assert.assertNotNull(executionTimes);
+        Assert.assertEquals(2, executionTimes.getCount());
+        Assert.assertTrue(optPercentileMedian.isPresent());
+        assertApproxMillis("Testing median, should be " + delayMs + " - " + waitTimeForOneMethod, delayMs, waitTimeForOneMethod, Math.round(optPercentileMedian.get().getValue()));
         assertApproxMillis("Testing mean of 2, should be " + delayMs + " - " + waitTimeForOneMethod, delayMs, waitTimeForOneMethod, Math.round(snap.getMean()));
 
         // Now let's put some quick results through the bulkhead
         callMethodDirectly(null);
         callMethodDirectly(null);
 
-        assertEquals(4, executionTimes.getCount());
+        Assert.assertEquals(4, executionTimes.getCount());
         snap = executionTimes.getSnapshot();
         assertApproxMillis("Testing mean of 4, should be " + (delayMs / 2) + " - " + (waitTimeForOneMethod / 2), delayMs / 2, waitTimeForOneMethod / 2, Math.round(snap.getMean()));
     }
@@ -162,18 +165,18 @@ public class BulkheadMetricTckTest extends AbstractMetricTest {
         @SuppressWarnings("unchecked")
         Gauge<Long> excutionsRunning = (Gauge<Long>) registry.getGauge(new MetricID("ft.bulkhead.executionsRunning",
                 new Tag("method", methodName)));
-        assertNotNull(excutionsRunning);
-        assertEquals(0, excutionsRunning.getValue().intValue());
+        Assert.assertNotNull(excutionsRunning);
+        Assert.assertEquals(0, excutionsRunning.getValue().intValue());
         Counter acceptedCalls = registry.getCounter(new MetricID("ft.bulkhead.calls.total",
                 new Tag("method", methodName),
                 new Tag("bulkheadResult", "accepted")));
-        assertNotNull(acceptedCalls);
-        assertEquals(2, acceptedCalls.getCount());
+        Assert.assertNotNull(acceptedCalls);
+        Assert.assertEquals(2, acceptedCalls.getCount());
         Counter rejectedCalls = registry.getCounter(new MetricID("ft.bulkhead.calls.total",
                 new Tag("method", methodName),
                 new Tag("bulkheadResult", "rejected")));
-        assertNotNull(rejectedCalls);
-        assertEquals(1, rejectedCalls.getCount());
+        Assert.assertNotNull(rejectedCalls);
+        Assert.assertEquals(1, rejectedCalls.getCount());
     }
 
     @Bulkhead(2)

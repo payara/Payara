@@ -309,7 +309,6 @@ public class MetricsServiceImpl implements MetricsService, ConfigListener, Monit
        RegisteredMetric metric = context.pollNewlyRegistered();
         while (metric != null) {
             MetricID metricID = metric.id;
-            //RegistryScope registryScope = metric.scope;
             MetricRegistry registry = context.getOrCreateRegistry(metric.scope);
             MonitoringDataCollector metricCollector = tagCollector(context.getName(), metricID, collector);
             Metadata metadata = registry.getMetadata(metricID.getName());
