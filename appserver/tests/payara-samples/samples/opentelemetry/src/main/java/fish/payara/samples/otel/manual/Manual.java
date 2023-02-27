@@ -42,34 +42,12 @@
 
 package fish.payara.samples.otel.manual;
 
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.StatusCode;
-import io.opentelemetry.context.Scope;
-import jakarta.enterprise.context.Dependent;
-import jakarta.inject.Inject;
-import jakarta.servlet.ServletContextEvent;
-import jakarta.servlet.ServletContextListener;
-import jakarta.servlet.annotation.WebListener;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
-@WebListener
-@Dependent
-public class InitializeOtel implements ServletContextListener {
+import jakarta.inject.Qualifier;
 
-    @Inject
-    ManualTracing tracing;
-
-    @Override
-    public void contextInitialized(ServletContextEvent sce) {
-        tracing.initOtel();
-
-        Span span = tracing.getTracer().spanBuilder("otel init").startSpan();
-        try(Scope scope = span.makeCurrent()) {
-            span.addEvent("ApplicationStarted");
-        } finally {
-            span.setStatus(StatusCode.OK);
-            span.end();
-        }
-    }
-
-
+@Qualifier
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Manual {
 }

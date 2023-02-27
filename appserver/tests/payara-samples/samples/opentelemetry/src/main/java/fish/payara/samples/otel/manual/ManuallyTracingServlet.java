@@ -61,7 +61,7 @@ import jakarta.servlet.http.HttpServletResponse;
 @WebServlet("/manual/*")
 @Dependent
 public class ManuallyTracingServlet extends HttpServlet {
-    @Inject
+    @Inject @Manual
     Span span;
 
     @Override

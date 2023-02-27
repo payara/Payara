@@ -133,13 +133,13 @@ public class ManualTracing {
         return tracer;
     }
 
-    @Produces
+    @Produces @Manual
     @RequestScoped
     Span makeSpan() {
         return tracer.spanBuilder("request").startSpan();
     }
 
-    void endSpan(@Disposes Span span) {
+    void endSpan(@Disposes @Manual Span span) {
         span.end();
     }
 }
