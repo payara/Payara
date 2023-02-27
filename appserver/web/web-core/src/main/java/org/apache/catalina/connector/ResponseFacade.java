@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2019-2022] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2023] Payara Foundation and/or affiliates
 
 package org.apache.catalina.connector;
 
@@ -64,6 +64,7 @@ import org.apache.catalina.LogFacade;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
+import org.glassfish.grizzly.http.server.Constants;
 
 import static java.security.AccessController.doPrivileged;
 import static org.apache.catalina.LogFacade.NULL_RESPONSE_OBJECT;

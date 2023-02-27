@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2019-2022] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2023] Payara Foundation and/or affiliates
 
 package org.apache.catalina.connector;
 
@@ -1160,7 +1160,11 @@ public class Response
         String name = cookie.getName();
         final String headername = "Set-Cookie";
         final String startsWith = name + "=";
-        final String cookieString = getCookieString(cookie);
+        String cookieString = getCookieString(cookie);
+        String cookieSameSiteValue = ((org.apache.catalina.connector.Connector) connector).getProperty("sameSiteValue");
+        if (cookieSameSiteValue != null) {
+            cookieString += ";SameSite=" + cookieSameSiteValue + ("None".equals(cookieSameSiteValue) ? ";Secure" : "");
+        }
         boolean set = false;
         MimeHeaders headers = coyoteResponse.getResponse().getHeaders();
         int n = headers.size();

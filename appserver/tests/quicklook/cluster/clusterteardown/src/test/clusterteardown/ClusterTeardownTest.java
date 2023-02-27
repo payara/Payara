@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2023] [Payara Foundation and/or its affiliates]
 package test.clusterteardown;
 
 import com.sun.appserv.test.AdminBaseDevTest;
@@ -63,8 +63,8 @@ public class ClusterTeardownTest extends AdminBaseDevTest {
     // previously deleteInstanceTest would never say boo no matter what happened...
     @Test
     public void deleteInstanceTest() throws Exception {
-        AsadminReturn ar1 = asadminWithOutput("stop-local-instance", "--node", "localhost-" + domain, "--kill", i1name);
-        AsadminReturn ar2 = asadminWithOutput("stop-local-instance", "--node", "localhost-" + domain, "--kill", i2name);
+        AsadminReturn ar1 = asadminWithOutput("stop-local-instance", "--node", "localhost-" + domain, "--kill", "--timeout=100", i1name);
+        AsadminReturn ar2 = asadminWithOutput("stop-local-instance", "--node", "localhost-" + domain, "--kill", "--timeout=100", i2name);
         AsadminReturn ar3 = asadminWithOutput("delete-local-instance", "--node", "localhost-" + domain, i1name);
         AsadminReturn ar4 = asadminWithOutput("delete-local-instance", "--node", "localhost-" + domain, i2name);
 
