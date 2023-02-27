@@ -41,7 +41,7 @@ package fish.payara.microprofile.telemetry.tracing.jaxrs;
 
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.opentracing.OpenTelemetryService;
-import fish.payara.requesttracing.jaxrs.client.PayaraTracingServices;
+import fish.payara.microprofile.telemetry.tracing.jaxrs.client.PayaraTracingServices;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Priority;
 import jakarta.ws.rs.Priorities;

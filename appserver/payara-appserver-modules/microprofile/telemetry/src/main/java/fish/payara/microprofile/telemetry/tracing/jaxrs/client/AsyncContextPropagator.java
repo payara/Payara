@@ -37,27 +37,64 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package fish.payara.microprofile.telemetry.tracing.jaxrs;
+package fish.payara.microprofile.telemetry.tracing.jaxrs.client;
 
-import fish.payara.microprofile.telemetry.tracing.jaxrs.client.PayaraTracingServices;
-import jakarta.ws.rs.core.FeatureContext;
-import org.glassfish.internal.deployment.Deployment;
-import org.glassfish.jersey.internal.spi.ForcedAutoDiscoverable;
+import fish.payara.opentracing.PropagationHelper;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.context.Context;
+import org.eclipse.microprofile.rest.client.ext.AsyncInvocationInterceptor;
+import org.eclipse.microprofile.rest.client.ext.AsyncInvocationInterceptorFactory;
 
-/**
- * AutoDiscoverable that registers the {@link OpenTelemetryApplicationEventListener}.
- */
-public class JerseyOpenTelemetryAutoDiscoverable implements ForcedAutoDiscoverable {
+public class AsyncContextPropagator implements AsyncInvocationInterceptor {
+
+    private PropagationHelper propagationHelper;
+
+    private Context context;
+
+    private Span span;
+
+    private Exception e;
 
     @Override
-    public void configure(FeatureContext context) {
-        // Only register for application deployments (not the admin console)
-        final Deployment deployment = new PayaraTracingServices().getDeployment();
-        if (deployment == null || deployment.getCurrentDeploymentContext() == null) {
-            return;
+    public void prepareContext() {
+        span = Span.current();
+        context = Context.current();
+//        try (var propagationHelper = PropagationHelper.startMultiThreaded(span, context)) {
+//            this.propagationHelper = propagationHelper;
+//            singleThreaded = false;
+//        } catch (Exception e) {
+//            this.e = e;
+//        }
+
+    }
+
+    @Override
+    public void applyContext() {
+        try (var propagationHelper = PropagationHelper.startMultiThreaded(span, context)) {
+            this.propagationHelper = propagationHelper;
+        } catch (Exception e) {
+            this.e = e;
         }
-        if (!context.getConfiguration().isRegistered(OpenTelemetryApplicationEventListener.class)) {
-            context.register(OpenTelemetryApplicationEventListener.class);
+//        // install span and context as current for partial execution
+//        try(var ignore = propagationHelper.localScope()) {
+//            // no-op. do nothing else here, as the context has already been applied
+//        } catch (Exception e) {
+//            this.e = e;
+//        }
+
+    }
+
+    @Override
+    public void removeContext() {
+        // end the span with OK or ERROR status depending on whether an error was reported
+        propagationHelper.end(e);
+    }
+
+    static class Factory implements AsyncInvocationInterceptorFactory {
+
+        @Override
+        public AsyncInvocationInterceptor newInterceptor() {
+            return new AsyncContextPropagator();
         }
     }
 }

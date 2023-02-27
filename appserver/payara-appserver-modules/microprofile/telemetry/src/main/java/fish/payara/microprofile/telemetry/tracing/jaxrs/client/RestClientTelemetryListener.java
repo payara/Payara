@@ -1,7 +1,7 @@
 /*
  *    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2019-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *    The contents of this file are subject to the terms of either the GNU
  *    General Public License Version 2 only ("GPL") or the Common Development
@@ -37,33 +37,26 @@
  *    only if the new code is made subject to such option by the copyright
  *    holder.
  */
-package fish.payara.microprofile.opentracing.jaxrs.client;
+package fish.payara.microprofile.telemetry.tracing.jaxrs.client;
 
-import java.util.concurrent.ExecutorService;
+import fish.payara.microprofile.telemetry.tracing.OpenTracingHelper;
+import org.eclipse.microprofile.rest.client.RestClientBuilder;
+import org.eclipse.microprofile.rest.client.spi.RestClientListener;
 
-import jakarta.ws.rs.client.ClientBuilder;
+import java.util.logging.Logger;
 
-import org.eclipse.microprofile.opentracing.ClientTracingRegistrarProvider;
+public class RestClientTelemetryListener implements RestClientListener {
 
-/**
- * A no-op {@link ClientTracingRegistrarProvider}.
- *
- * Client tracing is enabled globally in Payara
- * @author jonathan coustick
- * @since 5.183
- */
-public class JaxrsClientRegistrarProvider implements ClientTracingRegistrarProvider {
+    static final String REST_CLIENT_INVOKED_METHOD = "org.eclipse.microprofile.rest.client.invokedMethod";
+
+    private static final Logger logger = Logger.getLogger(RestClientTelemetryListener.class.getName());
 
     @Override
-    public ClientBuilder configure(ClientBuilder clientBuilder) {
-        // Add pre-invocation interceptor to Jersey client to attach expected propagation header and span context
-        return clientBuilder.register(OpenTracingPreInvocationInterceptor.class);
-    }
+    public void onNewClient(Class<?> aClass, RestClientBuilder restClientBuilder) {
+//        restClientBuilder.register(new AsyncContextPropagator.Factory());
 
-    @Override
-    public ClientBuilder configure(ClientBuilder clientBuilder, ExecutorService executorService) {
-        clientBuilder.executorService(executorService);
-        return configure(clientBuilder);
+        // OpenTracing mandates respecting setting of @Traced annotation on the class
+        restClientBuilder.property(JaxrsClientRequestTelemetryFilter.REQUEST_CONTEXT_TRACING_PREDICATE,
+                new TracedMethodFilter(OpenTracingHelper.getConfig(), aClass));
     }
-
 }

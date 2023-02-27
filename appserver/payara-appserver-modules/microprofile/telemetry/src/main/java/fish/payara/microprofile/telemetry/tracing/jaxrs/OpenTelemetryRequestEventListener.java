@@ -49,7 +49,6 @@ import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import jakarta.ws.rs.container.ResourceInfo;
@@ -174,7 +173,7 @@ public class OpenTelemetryRequestEventListener implements RequestEventListener {
         Object scopeObj = event.getContainerRequest().getProperty(PropagationHelper.class.getName());
         if(scopeObj !=null && scopeObj instanceof PropagationHelper){
             ((PropagationHelper) scopeObj).close();
-            event.getContainerRequest().removeProperty(Scope.class.getName());
+            event.getContainerRequest().removeProperty(PropagationHelper.class.getName());
         }
         LOG.finest("Finished.");
     }
@@ -196,7 +195,7 @@ public class OpenTelemetryRequestEventListener implements RequestEventListener {
                         requestContext.getUriInfo().getRequestUri().getPath() + queryParam)
                 .setAttribute("component", "jaxrs");
 
-        openTracingHelper.augmentSpan(requestContext, spanBuilder);
+        openTracingHelper.augmentSpan(spanBuilder);
 
         // If there was a context injected into the tracer, add it as a parent of the new span
         var spanContext = extractContext(requestContext);

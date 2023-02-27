@@ -145,8 +145,8 @@ public class OpenTracingHelper {
         return SpanStrategy.OTEL_SEM_CONV;
     }
 
-    public void augmentSpan(ContainerRequest requestContext, SpanBuilder spanBuilder) {
-        determineSpanStrategy().augmentSpan(requestContext, spanBuilder);
+    public void augmentSpan(SpanBuilder spanBuilder) {
+        determineSpanStrategy().augmentSpan(spanBuilder);
     }
 
     /**
@@ -274,7 +274,7 @@ public class OpenTracingHelper {
 
         abstract String determineSpanName(ContainerRequestContext request, ResourceInfo resourceInfo);
 
-        void augmentSpan(ContainerRequest requestContext, SpanBuilder spanBuilder) {
+        void augmentSpan(SpanBuilder spanBuilder) {
             if (this == OPENTRACING_CLASS_METHOD || this == OPENTRACING_PATH) {
                 spanBuilder.setAttribute("span.kind", "server");
             }
@@ -365,7 +365,7 @@ public class OpenTracingHelper {
      *
      * @return the Config object for this request, or null if no config could be found
      */
-    private Config getConfig() {
+    public static Config getConfig() {
         try {
             return ConfigProvider.getConfig();
         } catch (final IllegalArgumentException ex) {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) 2021 Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -37,23 +37,20 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package fish.payara.microprofile.opentracing.jaxrs.client;
+package fish.payara.microprofile.telemetry.tracing.jaxrs.client;
 
 import fish.payara.nucleus.requesttracing.domain.PropagationHeaders;
-import fish.payara.requesttracing.jaxrs.client.SpanPropagator;
+import io.opentelemetry.context.Context;
+import jakarta.ws.rs.client.ClientRequestContext;
 import org.glassfish.jersey.client.spi.PreInvocationInterceptor;
 
-import jakarta.ws.rs.client.ClientRequestContext;
-
 /**
- * Interceptor to add SpanContext and HTTP HEADER for propagation to JAX-RS Client calls.
+ * This class is an implementation of the PreInvocationInterceptor interface that propagates telemetry span context
+ * to client request context before invocation.This is the key to enable async client request
  */
-public class OpenTracingPreInvocationInterceptor implements PreInvocationInterceptor {
-
+public class OpenTelemetryPreInvocationInterceptor implements PreInvocationInterceptor {
     @Override
-    public void beforeRequest(ClientRequestContext requestContext) {
-        // If there is an active span, add its context to the request as a property so it can be picked up by the filter
-        requestContext.setProperty(PropagationHeaders.OPENTRACING_PROPAGATED_SPANCONTEXT, SpanPropagator.activeContext());
+    public void beforeRequest(ClientRequestContext clientRequestContext) {
+        clientRequestContext.setProperty(PropagationHeaders.TELEMETRY_PROPAGATED_SPANCONTEXT, Context.current());
     }
-
 }

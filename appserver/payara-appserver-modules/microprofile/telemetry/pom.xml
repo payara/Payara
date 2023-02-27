@@ -102,5 +102,9 @@
             <groupId>org.jboss.weld</groupId>
             <artifactId>weld-api</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.eclipse.microprofile.rest.client</groupId>
+            <artifactId>microprofile-rest-client-api</artifactId>
+        </dependency>
     </dependencies>
 </project>
