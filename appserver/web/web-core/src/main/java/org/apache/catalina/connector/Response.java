@@ -1160,7 +1160,11 @@ public class Response
         String name = cookie.getName();
         final String headername = "Set-Cookie";
         final String startsWith = name + "=";
-        final String cookieString = getCookieString(cookie);
+        String cookieString = getCookieString(cookie);
+        String cookieSameSiteValue = ((org.apache.catalina.connector.Connector) connector).getProperty("sameSiteValue");
+        if (cookieSameSiteValue != null) {
+            cookieString += ";SameSite=" + cookieSameSiteValue + ("None".equals(cookieSameSiteValue) ? ";Secure" : "");
+        }
         boolean set = false;
         MimeHeaders headers = coyoteResponse.getResponse().getHeaders();
         int n = headers.size();

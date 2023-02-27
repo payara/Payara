@@ -420,11 +420,6 @@ public class ResponseFacade
             return;
         }
 
-        String cookieSameSiteValue = System.getProperty("cookieSameSiteValue");
-        if (cookieSameSiteValue != null) {
-            cookie.setAttribute(Constants.COOKIE_SAME_SITE_ATTR, cookieSameSiteValue);
-        }
-
         response.addCookie(cookie);
     }
 

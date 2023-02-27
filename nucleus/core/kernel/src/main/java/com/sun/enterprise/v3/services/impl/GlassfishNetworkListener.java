@@ -494,7 +494,6 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
                                 ("None".equals(this.cookieSameSiteValue) ? ";Secure" : ""));
                     }
                 }
-                System.setProperty("cookieSameSiteValue", cookieSameSiteValue);
             }
         }
     }

@@ -40,14 +40,17 @@
 
 package com.sun.enterprise.web.pwc.connector.coyote;
 
+import com.sun.enterprise.web.EmbeddedWebContainer;
 import com.sun.enterprise.web.pwc.PwcWebModule;
 import com.sun.enterprise.web.session.WebSessionCookieConfig;
 import com.sun.enterprise.web.session.WebSessionCookieConfig.CookieSecureType;
+import jakarta.inject.Inject;
 import org.apache.catalina.Context;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.glassfish.grizzly.http.server.Constants;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.web.LogFacade;
 
 import jakarta.servlet.http.Cookie;
@@ -159,13 +162,6 @@ public class PwcCoyoteRequest extends Request {
             cookie.setSecure(false);
         } else {
             cookie.setSecure(isSecure());
-        }
-        String cookieSameSiteValue = System.getProperty("cookieSameSiteValue");
-        if (cookieSameSiteValue != null) {
-            cookie.setAttribute(Constants.COOKIE_SAME_SITE_ATTR, cookieSameSiteValue);
-            if ("None".equals(cookieSameSiteValue)) {
-                cookie.setAttribute(Constants.COOKIE_SECURE_ATTR, "true");
-            }
         }
     }
     
