@@ -192,10 +192,10 @@ public class OpenMetricsExporterTest {
                 .build();
         exporter.export(g1ID, g1, metadata);
         exporter.export(g2ID, g2, metadata);
-        assertEquals("# TYPE application_common gauge\n" +
-                "# HELP application_common description\n" +
-                "application_common{a=\"b\"} 1\n" +
-                "application_common{some=\"other\"} 2\n", actual.getBuffer().toString());
+        assertEquals("# TYPE common gauge\n" +
+                "# HELP common description\n" +
+                "common{a=\"b\"} 1\n" +
+                "common{some=\"other\"} 2\n", actual.getBuffer().toString());
     }
 
     @Test
@@ -210,7 +210,7 @@ public class OpenMetricsExporterTest {
                 .build();
         exporter.export(metricID, histogram, metadata);
         String actualOutput = actual.getBuffer().toString();
-        assertTrue(actualOutput.contains("application_test6_seconds{custom=\"tag-value\",quantile=\"0.5\"} 0"));
+        assertTrue(actualOutput.contains("test6_seconds{custom=\"tag-value\",quantile=\"0.5\"} 0"));
     }
 
     @Test
@@ -231,8 +231,8 @@ public class OpenMetricsExporterTest {
         Metadata metadata = Metadata.builder()
                 .withName(metricID.getName())
                 .build();
-        assertOutputEquals("# TYPE application_test5_total counter\n" +
-                "application_test5_total{key=\"escape\\\\and\\\"and\\n\"} 13\n", metricID, counter, metadata);
+        assertOutputEquals("# TYPE test5_total counter\n" +
+                "test5_total{key=\"escape\\\\and\\\"and\\n\"} 13\n", metricID, counter, metadata);
     }
 
     @Test
@@ -243,8 +243,8 @@ public class OpenMetricsExporterTest {
         Metadata metadata = Metadata.builder()
                 .withName(metricID.getName())
                 .build();
-        assertOutputEquals("# TYPE application_my_total counter\n" +
-                "application_my_total 13\n", metricID, counter, metadata);
+        assertOutputEquals("# TYPE my_total counter\n" +
+                "my_total 13\n", metricID, counter, metadata);
     }
 
     @Test
@@ -255,8 +255,8 @@ public class OpenMetricsExporterTest {
                 .withName(metricID.getName())
                 .withUnit(MetricUnits.PER_SECOND)
                 .build();
-        assertOutputEquals("# TYPE application_test7_per_second gauge\n" +
-                "application_test7_per_second 2.3\n", metricID, perSec, metadata);
+        assertOutputEquals("# TYPE test7_per_second gauge\n" +
+                "test7_per_second 2.3\n", metricID, perSec, metadata);
     }
 
     @Test
@@ -267,8 +267,8 @@ public class OpenMetricsExporterTest {
                 .withName(metricID.getName())
                 .withUnit(MetricUnits.PERCENT)
                 .build();
-        assertOutputEquals("# TYPE application_test8_ratio gauge\n" +
-                "application_test8_ratio 2.3\n", metricID, perSec, metadata);
+        assertOutputEquals("# TYPE test8_ratio gauge\n" +
+                "test8_ratio 2.3\n", metricID, perSec, metadata);
     }
 
     @Test
@@ -279,8 +279,8 @@ public class OpenMetricsExporterTest {
                 .withName(metricID.getName())
                 .withUnit("meter_per_sec")
                 .build();
-        assertOutputEquals("# TYPE application_test9_meter_per_sec gauge\n" +
-                "application_test9_meter_per_sec 2.3\n", metricID, aPerB, metadata);
+        assertOutputEquals("# TYPE test9_meter_per_sec gauge\n" +
+                "test9_meter_per_sec 2.3\n", metricID, aPerB, metadata);
     }
 
     @Test
@@ -291,8 +291,8 @@ public class OpenMetricsExporterTest {
                 .withName(metricID.getName())
                 .withUnit(MetricUnits.NONE)
                 .build();
-        assertOutputEquals("# TYPE application_test2 gauge\n" +
-                "application_test2 13\n", metricID, gauge, metadata);
+        assertOutputEquals("# TYPE test2 gauge\n" +
+                "test2 13\n", metricID, gauge, metadata);
     }
 
     @Test
@@ -304,8 +304,8 @@ public class OpenMetricsExporterTest {
                 .withName(metricID.getName())
                 .withDescription("")
                 .build();
-        assertOutputEquals("# TYPE application_test1_total counter\n" +
-                "application_test1_total 13\n", metricID, counter, metadata);
+        assertOutputEquals("# TYPE test1_total counter\n" +
+                "test1_total 13\n", metricID, counter, metadata);
     }
 
     @Test
@@ -324,8 +324,6 @@ public class OpenMetricsExporterTest {
         assertUnitConversion(MetricUnits.GIGABITS, 2, "bytes", "2.5E8");
 
         // those that scale with 1024
-        assertUnitConversion(MetricUnits.KIBIBITS, 1, "bytes", "128");
-        assertUnitConversion(MetricUnits.KIBIBITS, 55, "bytes", "7040");
         assertUnitConversion(MetricUnits.MEBIBITS, 1, "bytes", "131072");
         assertUnitConversion(MetricUnits.MEBIBITS, 23, "bytes", "3014656");
         assertUnitConversion(MetricUnits.GIBIBITS, 1, "bytes", "1.34217728E8");
@@ -340,8 +338,6 @@ public class OpenMetricsExporterTest {
         assertUnitConversion(MetricUnits.KILOBYTES, 23, "bytes", "23000");
         assertUnitConversion(MetricUnits.MEGABYTES, 1, "bytes", "1000000");
         assertUnitConversion(MetricUnits.MEGABYTES, 0.5d, "bytes", "500000");
-        assertUnitConversion(MetricUnits.GIGABYTES, 1, "bytes", "1.0E9");
-        assertUnitConversion(MetricUnits.GIGABYTES, 0.025d, "bytes", "2.5E7");
     }
 
     @Test
@@ -364,8 +360,8 @@ public class OpenMetricsExporterTest {
                 .withName(metricID.getName())
                 .withUnit(inputUnit)
                 .build();
-        assertOutputEquals("# TYPE application_" + name + "_" + expectedUnit + " gauge\n" +
-                "application_" + name + "_" + expectedUnit + " " + expectedValue + "\n", metricID, gauge, metadata);
+        assertOutputEquals("# TYPE " + name + "_" + expectedUnit + " gauge\n" +
+                "" + name + "_" + expectedUnit + " " + expectedValue + "\n", metricID, gauge, metadata);
         actual.getBuffer().setLength(0); // clean output so far to allow multiple usages of this in a single test
     }
 

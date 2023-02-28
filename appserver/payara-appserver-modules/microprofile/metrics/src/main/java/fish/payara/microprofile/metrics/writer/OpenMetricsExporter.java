@@ -222,7 +222,14 @@ public class OpenMetricsExporter implements MetricExporter {
             helpWrittenByGlobalName.add(globalName);
         }
         Optional<String> description = metadata.description();
-        out.append("# HELP ").append(globalName).append(' ').append(description.isPresent() ? description.get(): "").append('\n');
+        if (!description.isPresent()) {
+            return;
+        }
+        String text = description.get();
+        if(text.isEmpty()) {
+            return;
+        }
+        out.append("# HELP ").append(globalName).append(' ').append(text).append('\n');
     }
 
     protected void appendValue(String globalName, Tag[] tags, Number value) {

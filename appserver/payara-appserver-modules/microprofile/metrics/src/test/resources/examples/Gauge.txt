@@ -1,3 +1,3 @@
-# TYPE application_cost_dollars gauge
-# HELP application_cost_dollars The running cost of the server in dollars.
-application_cost_dollars 80
+# TYPE cost_dollars gauge
+# HELP cost_dollars The running cost of the server in dollars.
+cost_dollars 80
