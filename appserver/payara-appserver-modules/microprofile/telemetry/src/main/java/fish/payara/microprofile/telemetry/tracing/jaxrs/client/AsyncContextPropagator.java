@@ -42,52 +42,49 @@ package fish.payara.microprofile.telemetry.tracing.jaxrs.client;
 import fish.payara.opentracing.PropagationHelper;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.context.Scope;
 import org.eclipse.microprofile.rest.client.ext.AsyncInvocationInterceptor;
 import org.eclipse.microprofile.rest.client.ext.AsyncInvocationInterceptorFactory;
 
+/**
+ * An implementation of the {@link AsyncInvocationInterceptor} interface that propagates OpenTelemetry
+ * {@link io.opentelemetry.api.trace.Span} and {@link io.opentelemetry.context.Context}
+ * across asynchronous invocation boundaries.
+ */
 public class AsyncContextPropagator implements AsyncInvocationInterceptor {
 
-    private PropagationHelper propagationHelper;
+    private PropagationHelper helper;
 
-    private Context context;
+    private Scope scope;
 
-    private Span span;
-
-    private Exception e;
-
+    /**
+     * Prepares the context for propagation by starting the PropagationHelper object.
+     */
     @Override
     public void prepareContext() {
-        span = Span.current();
-        context = Context.current();
-//        try (var propagationHelper = PropagationHelper.startMultiThreaded(span, context)) {
-//            this.propagationHelper = propagationHelper;
-//            singleThreaded = false;
-//        } catch (Exception e) {
-//            this.e = e;
-//        }
-
+        this.helper = PropagationHelper.startMultiThreaded(Span.current(), Context.current());
     }
 
+    /**
+     * Applies the propagated context and span to the current thread's context and span using a local scope.
+     */
     @Override
     public void applyContext() {
-        try (var propagationHelper = PropagationHelper.startMultiThreaded(span, context)) {
-            this.propagationHelper = propagationHelper;
-        } catch (Exception e) {
-            this.e = e;
-        }
-//        // install span and context as current for partial execution
-//        try(var ignore = propagationHelper.localScope()) {
-//            // no-op. do nothing else here, as the context has already been applied
-//        } catch (Exception e) {
-//            this.e = e;
-//        }
-
+        this.scope = helper.localScope();
     }
 
+    /**
+     * Removes the propagated context and span from the current thread's context and span.
+     */
     @Override
     public void removeContext() {
-        // end the span with OK or ERROR status depending on whether an error was reported
-        propagationHelper.end(e);
+        if (this.scope != null) {
+            this.scope.close();
+        }
+
+        if (this.helper != null) {
+            this.helper.close();
+        }
     }
 
     static class Factory implements AsyncInvocationInterceptorFactory {

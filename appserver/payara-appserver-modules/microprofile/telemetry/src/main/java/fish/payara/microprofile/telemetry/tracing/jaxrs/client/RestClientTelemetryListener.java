@@ -53,8 +53,7 @@ public class RestClientTelemetryListener implements RestClientListener {
 
     @Override
     public void onNewClient(Class<?> aClass, RestClientBuilder restClientBuilder) {
-//        restClientBuilder.register(new AsyncContextPropagator.Factory());
-
+        restClientBuilder.register(new AsyncContextPropagator.Factory());
         // OpenTracing mandates respecting setting of @Traced annotation on the class
         restClientBuilder.property(JaxrsClientRequestTelemetryFilter.REQUEST_CONTEXT_TRACING_PREDICATE,
                 new TracedMethodFilter(OpenTracingHelper.getConfig(), aClass));

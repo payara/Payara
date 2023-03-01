@@ -111,8 +111,10 @@ public class PropagationHelper implements Scope {
      *
      */
     public void end() {
-        span.setStatus(StatusCode.OK);
-        span.end();
+        if (!errorReported) {
+            span.end();
+            span.setStatus(StatusCode.OK);
+        }
     }
 
     /**
