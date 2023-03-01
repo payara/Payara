@@ -25,14 +25,12 @@ pipeline {
               }
             }
         }
-        stage('Build and Analysis') {
+        stage('Build') {
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Building SRC  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                withSonarQubeEnv(installationName: 'Payara-Testone', credentialsId: 'sonarqube-user-token') {
-                    sh """mvn -B -V -ff -e clean install sonar:sonar --strict-checksums -PQuickBuild \
-                    -Dsonar.projectKey=Payara-Testone -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
+                sh """mvn -B -V -ff -e clean install --strict-checksums -PQuickBuild \
+                    -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
                     -Djavax.xml.accessExternalSchema=all -Dbuild.number=${payaraBuildNumber}"""
-                }
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#    Built SRC   *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
