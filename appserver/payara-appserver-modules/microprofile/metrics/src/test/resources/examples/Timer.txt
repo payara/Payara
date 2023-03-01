@@ -1,26 +1,15 @@
-# TYPE response_time_rate_per_second gauge
-response_time_rate_per_second 0.004292520715985437
-# TYPE response_time_one_min_rate_per_second gauge
-response_time_one_min_rate_per_second 2.794076465421066E-14
-# TYPE response_time_five_min_rate_per_second gauge
-response_time_five_min_rate_per_second 4.800392614619373E-4
-# TYPE response_time_fifteen_min_rate_per_second gauge
-response_time_fifteen_min_rate_per_second 0.01063191047532505
-# TYPE response_time_mean_seconds gauge
-response_time_mean_seconds 4.15041E-4
-# TYPE response_time_max_seconds gauge
-response_time_max_seconds 5.608690E-4
-# TYPE response_time_min_seconds gauge
-response_time_min_seconds 1.69916E-4
-# TYPE response_time_stddev_seconds gauge
-response_time_stddev_seconds 6.52907E-4
+# TYPE response_time_seconds_mean gauge
+response_time_seconds_mean 4.15041E-4
+# TYPE response_time_seconds_max gauge
+# HELP response_time_seconds_max Server response time for /index.html
+response_time_seconds_max 0
 # TYPE response_time_seconds summary
 # HELP response_time_seconds Server response time for /index.html
 response_time_seconds_count 80
 response_time_seconds_sum 0.023
-response_time_seconds{quantile="0.5"} 2.93324E-4
-response_time_seconds{quantile="0.75"} 3.44914E-4
-response_time_seconds{quantile="0.95"} 5.436470E-4
-response_time_seconds{quantile="0.98"} 0.002706543
-response_time_seconds{quantile="0.99"} 0.005608694
-response_time_seconds{quantile="0.999"} 0.005608694
+response_time_seconds{quantile="0.5"} 0
+response_time_seconds{quantile="0.75"} 0
+response_time_seconds{quantile="0.95"} 0
+response_time_seconds{quantile="0.98"} 0
+response_time_seconds{quantile="0.99"} 0
+response_time_seconds{quantile="0.999"} 0

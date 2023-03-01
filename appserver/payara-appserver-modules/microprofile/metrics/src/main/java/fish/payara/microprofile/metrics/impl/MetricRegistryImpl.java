@@ -569,13 +569,26 @@ public class MetricRegistryImpl implements MetricRegistry {
             throw new IllegalArgumentException("Invalid metric type : " + ofType);
         }
         if(metric == null) {
-            Optional<Entry<MetricID, Metric>> metricOptional =
-                    this.getMetrics().entrySet().stream().filter(e -> e.getKey().getName().equals(metricID.getName())).findAny();
-            if(metricOptional.isPresent()) {
-                metric = metricOptional.get().getValue();
-            }
+            metric = verifyMetrics(metricID, family);
         }
         return (T) metric;
+    }
+    
+    public <T extends Metric> T verifyMetrics(MetricID metricID, MetricFamily<?> family) {
+        Metric m = null;
+        List<MetricID> metricList =
+                this.getMetrics().entrySet().stream()
+                        .filter(e -> e.getKey().getName().equals(metricID.getName()))
+                        .filter(e -> e.getKey().getTags().size() == metricID.getTags().size())
+                        .map(e -> e.getKey()).collect(Collectors.toList());
+        if (metricList.size() > 0) {
+            Optional<MetricID> metricOptional = metricList.stream()
+                    .filter(l -> l.getTags().equals(metricID.getTags())).findAny();
+            if (metricOptional.isPresent()) {
+                m = family.get(metricOptional.get());
+            }
+        }
+        return (T) m;
     }
 
     @SuppressWarnings("unchecked")

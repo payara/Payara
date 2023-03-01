@@ -52,18 +52,19 @@ public class MetricIDTest {
         Tag tagEarth = new Tag("planet", "earth");
         Tag tagRed = new Tag("colour", "red");
         Tag tagBlue = new Tag("colour", "blue");
+        Tag tagGreen = new Tag("colour", "green");
 
         String counterName = "org.eclipse.microprofile.metrics.tck.MetricIDTest.counterColour";
 
-        Counter counterColour = registry.counter(counterName);
+        Counter counterGreen = registry.counter(counterName,tagEarth, tagGreen);
         Counter counterRed = registry.counter(counterName,tagEarth,tagRed);
         Counter counterBlue = registry.counter(counterName,tagEarth,tagBlue);
 
-        MetricID counterColourMID = new MetricID(counterName);
+        MetricID counterColourMID = new MetricID(counterName, tagEarth, tagGreen);
         MetricID counterRedMID = new MetricID(counterName, tagEarth,tagRed);
-        MetricID counterBlueMID = new MetricID(counterName, tagEarth,tagRed);
+        MetricID counterBlueMID = new MetricID(counterName, tagEarth,tagBlue);
 
-        //check multi-dimensional metrics are registered
+        //check metrics are registered
         assertThat("Counter is not registered correctly", registry.getCounter(counterColourMID), notNullValue());
         assertThat("Counter is not registered correctly", registry.getCounter(counterRedMID), notNullValue());
         assertThat("Counter is not registered correctly", registry.getCounter(counterBlueMID), notNullValue());

@@ -103,6 +103,7 @@ public class OpenMetricsExporterTest {
         when(histogram.getSum()).thenReturn(45678L);
         Snapshot snapshot = mock(Snapshot.class);
         when(histogram.getSnapshot()).thenReturn(snapshot);
+        when(snapshot.percentileValues()).thenReturn(getPercentilesArray());
         MetricID metricID = new MetricID("file_sizes");
         Metadata metadata = Metadata.builder()
                 .withName(metricID.getName())
@@ -138,6 +139,7 @@ public class OpenMetricsExporterTest {
         when(timer.getSnapshot()).thenReturn(snapshot);
 
         when(snapshot.getMean()).thenReturn(415041d);
+        when(snapshot.percentileValues()).thenReturn(getPercentilesArray());
 
         MetricID metricID = new MetricID("response_time");
         Metadata metadata = Metadata.builder()
@@ -146,6 +148,16 @@ public class OpenMetricsExporterTest {
                 .withUnit(MetricUnits.NANOSECONDS)
                 .build();
         assertOutputEqualsFile("Timer.txt", metricID, timer, metadata);
+    }
+
+    public Snapshot.PercentileValue[] getPercentilesArray() {
+        Snapshot.PercentileValue[] percentileValues = null;
+        double[] percentiles = {0.5, 0.75, 0.95, 0.98, 0.99, 0.999};
+        percentileValues = new Snapshot.PercentileValue[percentiles.length];
+        for (int i = 0; i < percentiles.length; i++) {
+            percentileValues[i] = new Snapshot.PercentileValue(percentiles[i], 0);
+        }
+        return percentileValues;
     }
 
     @Test
@@ -159,7 +171,7 @@ public class OpenMetricsExporterTest {
                 .withDescription("The average duration of foo requests during last 5 minutes")
                 .withUnit(MetricUnits.MILLISECONDS)
                 .build();
-        MetricExporter base = exporter.in(MetricRegistry.BASE_SCOPE);
+        MetricExporter base = exporter.in(MetricRegistry.APPLICATION_SCOPE);
         base.export(fooValID, fooVal, fooValMetadata);
         Gauge<Long> barVal = mock(Gauge.class);
         when(barVal.getValue()).thenReturn(42L);
@@ -195,6 +207,7 @@ public class OpenMetricsExporterTest {
         assertEquals("# TYPE common gauge\n" +
                 "# HELP common description\n" +
                 "common{a=\"b\"} 1\n" +
+                "# HELP common description\n"+
                 "common{some=\"other\"} 2\n", actual.getBuffer().toString());
     }
 
@@ -203,6 +216,7 @@ public class OpenMetricsExporterTest {
         Histogram histogram = mock(Histogram.class);
         Snapshot snapshot = mock(Snapshot.class);
         when(histogram.getSnapshot()).thenReturn(snapshot);
+        when(snapshot.percentileValues()).thenReturn(getPercentilesArray());
         MetricID metricID = new MetricID("test6", new Tag("custom", "tag-value"));
         Metadata metadata = Metadata.builder()
                 .withName(metricID.getName())
@@ -232,7 +246,7 @@ public class OpenMetricsExporterTest {
                 .withName(metricID.getName())
                 .build();
         assertOutputEquals("# TYPE test5_total counter\n" +
-                "test5_total{key=\"escape\\\\and\\\"and\\n\"} 13\n", metricID, counter, metadata);
+                "# HELP test5_total \n"+"test5_total{key=\"escape\\\\and\\\"and\\n\"} 13\n", metricID, counter, metadata);
     }
 
     @Test
@@ -244,7 +258,7 @@ public class OpenMetricsExporterTest {
                 .withName(metricID.getName())
                 .build();
         assertOutputEquals("# TYPE my_total counter\n" +
-                "my_total 13\n", metricID, counter, metadata);
+                "# HELP my_total \n"+"my_total 13\n", metricID, counter, metadata);
     }
 
     @Test
@@ -256,7 +270,7 @@ public class OpenMetricsExporterTest {
                 .withUnit(MetricUnits.PER_SECOND)
                 .build();
         assertOutputEquals("# TYPE test7_per_second gauge\n" +
-                "test7_per_second 2.3\n", metricID, perSec, metadata);
+                "# HELP test7_per_second \n"+"test7_per_second 2.3\n", metricID, perSec, metadata);
     }
 
     @Test
@@ -268,7 +282,7 @@ public class OpenMetricsExporterTest {
                 .withUnit(MetricUnits.PERCENT)
                 .build();
         assertOutputEquals("# TYPE test8_ratio gauge\n" +
-                "test8_ratio 2.3\n", metricID, perSec, metadata);
+                "# HELP test8_ratio \n"+"test8_ratio 2.3\n", metricID, perSec, metadata);
     }
 
     @Test
@@ -280,7 +294,7 @@ public class OpenMetricsExporterTest {
                 .withUnit("meter_per_sec")
                 .build();
         assertOutputEquals("# TYPE test9_meter_per_sec gauge\n" +
-                "test9_meter_per_sec 2.3\n", metricID, aPerB, metadata);
+                "# HELP test9_meter_per_sec \n"+"test9_meter_per_sec 2.3\n", metricID, aPerB, metadata);
     }
 
     @Test
@@ -292,7 +306,7 @@ public class OpenMetricsExporterTest {
                 .withUnit(MetricUnits.NONE)
                 .build();
         assertOutputEquals("# TYPE test2 gauge\n" +
-                "test2 13\n", metricID, gauge, metadata);
+                "# HELP test2 \n"+"test2 13\n", metricID, gauge, metadata);
     }
 
     @Test
@@ -305,7 +319,7 @@ public class OpenMetricsExporterTest {
                 .withDescription("")
                 .build();
         assertOutputEquals("# TYPE test1_total counter\n" +
-                "test1_total 13\n", metricID, counter, metadata);
+                "# HELP test1_total \n"+"test1_total 13\n", metricID, counter, metadata);
     }
 
     @Test
@@ -361,7 +375,7 @@ public class OpenMetricsExporterTest {
                 .withUnit(inputUnit)
                 .build();
         assertOutputEquals("# TYPE " + name + "_" + expectedUnit + " gauge\n" +
-                "" + name + "_" + expectedUnit + " " + expectedValue + "\n", metricID, gauge, metadata);
+                "# HELP "+ name + "_" + expectedUnit+" \n" + name + "_" + expectedUnit + " " + expectedValue + "\n", metricID, gauge, metadata);
         actual.getBuffer().setLength(0); // clean output so far to allow multiple usages of this in a single test
     }
 
