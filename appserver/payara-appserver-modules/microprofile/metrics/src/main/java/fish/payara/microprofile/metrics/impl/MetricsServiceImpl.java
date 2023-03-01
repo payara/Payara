@@ -407,12 +407,8 @@ public class MetricsServiceImpl implements MetricsService, ConfigListener, Monit
         // Could be constant but placed it in method as it is a workaround until fixed in JVM.
         // TODO Make this check dependent on the JDK version (as it hopefully will get solved in the future) -> Azul fix request made.
         String mbeanSystemCPULoad = "java.lang:type=OperatingSystem/SystemCpuLoad";
-        long count = metadataConfig.getBaseMetadata().stream()
-                .map(MetricsMetadata::getMBean)
-                .filter(mbeanSystemCPULoad::equalsIgnoreCase)
-                .count();
 
-        count += metadataConfig.getVendorMetadata().stream()
+        long count = metadataConfig.getVendorMetadata().stream()
                 .map(MetricsMetadata::getMBean)
                 .filter(mbeanSystemCPULoad::equalsIgnoreCase)
                 .count();
@@ -427,13 +423,7 @@ public class MetricsServiceImpl implements MetricsService, ConfigListener, Monit
      * metrics metadata.
      *
      */
-    private void initMetadataConfig(List<MetricsMetadata> baseMetadataList, List<MetricsMetadata> vendorMetadataList, boolean isRetry) {
-        if (!baseMetadataList.isEmpty()) {
-            unresolvedBaseMetadataList = helper.registerMetadata(
-                    getContext(MetricsContext.SERVER_CONTEXT_NAME).getBaseRegistry(),
-                    baseMetadataList,
-                    isRetry);
-        }
+    private void initMetadataConfig(List<MetricsMetadata> vendorMetadataList, boolean isRetry) {
         if (!vendorMetadataList.isEmpty()) {
             unresolvedVendorMetadataList = helper.registerMetadata(
                     getContext(MetricsContext.SERVER_CONTEXT_NAME).getVendorRegistry(),
@@ -449,10 +439,10 @@ public class MetricsServiceImpl implements MetricsService, ConfigListener, Monit
     @Override
     public void refresh() {
         // Initialise the metadata lists if they haven't yet
-        if (unresolvedBaseMetadataList == null || unresolvedVendorMetadataList == null) {
+        if (unresolvedVendorMetadataList == null) {
             bootstrap();
         } else {
-            initMetadataConfig(unresolvedBaseMetadataList, unresolvedVendorMetadataList, true);
+            initMetadataConfig(unresolvedVendorMetadataList, true);
         }
     }
 
@@ -465,9 +455,7 @@ public class MetricsServiceImpl implements MetricsService, ConfigListener, Monit
             try {
                 InputStream userMetrics = new FileInputStream(metricsResource);
                 MetricsMetadataConfig extraConfig = JAXB.unmarshal(userMetrics, MetricsMetadataConfig.class);
-                config.addBaseMetadata(extraConfig.getBaseMetadata());
                 config.addVendorMetadata(extraConfig.getVendorMetadata());
-
             } catch (FileNotFoundException ex) {
                 //ignore
             }
@@ -542,7 +530,8 @@ public class MetricsServiceImpl implements MetricsService, ConfigListener, Monit
     private void bootstrap() {
         MetricsMetadataConfig metadataConfig = getConfig();
         checkSystemCpuLoadIssue(metadataConfig); // PAYARA 2938
-        initMetadataConfig(metadataConfig.getBaseMetadata(), metadataConfig.getVendorMetadata(), false);
+        //removing processing of base metrics
+        initMetadataConfig( metadataConfig.getVendorMetadata(), false);
     }
     
     @Override

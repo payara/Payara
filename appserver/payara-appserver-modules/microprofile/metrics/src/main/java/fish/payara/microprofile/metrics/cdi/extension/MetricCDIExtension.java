@@ -145,8 +145,8 @@ public class MetricCDIExtension<E extends Member & AnnotatedElement> implements 
         }
         Metadata metadata = reader.metadata(bean, element);
         String name = metadata.getName();
-        E existingElement = annotatedElements.putIfAbsent(name, element);
-        Metadata existingMetadata = metadataMap.putIfAbsent(name, metadata);
+        annotatedElements.putIfAbsent(name, element);
+        metadataMap.putIfAbsent(name, metadata);
     }
 
     void validationError(@Observes AfterBeanDiscovery afterBeanDiscovery){

@@ -41,7 +41,6 @@ package fish.payara.microprofile.metrics.cdi;
 
 import static java.util.Arrays.asList;
 
-import fish.payara.microprofile.metrics.MetricsService;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Constructor;
@@ -578,26 +577,10 @@ public final class AnnotationReader<T extends Annotation> {
             String name = MetricRegistry.name(point.getMember().getDeclaringClass().getCanonicalName(), localName(point.getMember()));
             return MetricUtils.getOrRegisterByName(registry, metric, name);
         }
-        registry = validateCustomScope(annotation, registry);
         if (isReference(annotation)) {
             return MetricUtils.getOrRegisterByNameAndTags(registry, metric, name(point), tags(annotation));
         }
         return MetricUtils.getOrRegisterByMetadataAndTags(registry, metric, metadata(point), tags(annotation));
-    }
-
-    /**
-     * This method validates if this annotation is associated with custom scope and returns the corresponding registry
-     * @param annotation source annotation to read, not {@code null}
-     * @param registry current reference of the MetricRegistry
-     * @return the corresponding registry associated for this scope
-     */
-    public MetricRegistry validateCustomScope(T annotation, MetricRegistry registry) {
-        String scope = scope(annotation);
-        if(scope != null) {
-            MetricsService metricsService= Globals.getDefaultBaseServiceLocator().getService(MetricsService.class);
-            return metricsService.getContext(true).getOrCreateRegistry(scope);
-        }
-        return registry;
     }
 
     private <R> R compute(InjectionPoint point, BiFunction<T, String, R> func) {
