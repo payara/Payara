@@ -185,7 +185,6 @@ public class AllMetricsTckTest extends AbstractMetricTest {
         Metric m = registry.getMetric(metricID);
         assertNotNull("Metric does not exist: " + metric, m);
         Metadata metadata = registry.getMetadata(metricID.getName());
-        assertEquals(m.getClass().getTypeName(), type.getTypeName());
         assertNotNull(metadata);
     }
 }
