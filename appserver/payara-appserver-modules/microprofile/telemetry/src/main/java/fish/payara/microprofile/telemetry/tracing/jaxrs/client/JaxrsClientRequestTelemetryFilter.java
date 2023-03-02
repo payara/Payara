@@ -51,7 +51,6 @@ import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.context.Scope;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import jakarta.ws.rs.client.ClientRequestContext;
 import jakarta.ws.rs.client.ClientRequestFilter;
@@ -127,10 +126,7 @@ public class JaxrsClientRequestTelemetryFilter implements ClientRequestFilter, C
             if (parentSpanContext != null) {
                 spanBuilder.setParent(parentSpanContext);
             } else {
-                parentSpanContext = Context.current();
-                if (parentSpanContext != null) {
-                    spanBuilder.setParent(parentSpanContext);
-                }
+                spanBuilder.setParent(Context.current());
             }
 
             // Start the span and mark it as active
