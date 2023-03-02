@@ -148,33 +148,27 @@ public class JaxrsClientRequestTelemetryFilter implements ClientRequestFilter, C
         // If request tracing is enabled, and there's a trace actually in progress, add info about method
         if (requestContext.hasProperty(PropagationHelper.class.getName())) {
             // Get the active span from the application's tracer instance
-            Span activeSpan = Span.current();
+            var helper = (PropagationHelper)requestContext.getProperty(PropagationHelper.class.getName());
+            Span activeSpan = helper.span();
             if (!activeSpan.isRecording()) {
                 Logger.getLogger(JaxrsClientRequestTelemetryFilter.class.getName()).log(Level.FINEST, "Could not find any active span, nothing to do.");
                 return;
             }
 
-            try {
-                // Get the response status and add it to the active span
-                Response.StatusType statusInfo = responseContext.getStatusInfo();
-                activeSpan.setAttribute(SemanticAttributes.HTTP_STATUS_CODE, statusInfo.getStatusCode());
+            // Get the response status and add it to the active span
+            Response.StatusType statusInfo = responseContext.getStatusInfo();
+            activeSpan.setAttribute(SemanticAttributes.HTTP_STATUS_CODE, statusInfo.getStatusCode());
 
-                // If the response status is an error, add error info to the active span
-                if (statusInfo.getFamily() == Response.Status.Family.CLIENT_ERROR || statusInfo.getFamily() == Response.Status.Family.SERVER_ERROR) {
-                    activeSpan.setAttribute("error", true);
-                    activeSpan.setStatus(StatusCode.ERROR);
-                    activeSpan.addEvent(SemanticAttributes.EXCEPTION_EVENT_NAME,
-                            Attributes.of(SemanticAttributes.EXCEPTION_TYPE, statusInfo.getFamily().name()));
-                }
-            } finally {
-                activeSpan.end();
-                Object scopeObj = requestContext.getProperty(PropagationHelper.class.getName());
-                if (scopeObj != null && scopeObj instanceof Scope) {
-                    try (Scope scope = (Scope) scopeObj) {
-                        requestContext.removeProperty(PropagationHelper.class.getName());
-                    }
-                }
+            // If the response status is an error, add error info to the active span
+            if (statusInfo.getFamily() == Response.Status.Family.CLIENT_ERROR || statusInfo.getFamily() == Response.Status.Family.SERVER_ERROR) {
+                activeSpan.setAttribute("error", true);
+                activeSpan.setStatus(StatusCode.ERROR);
+                activeSpan.addEvent(SemanticAttributes.EXCEPTION_EVENT_NAME,
+                        Attributes.of(SemanticAttributes.EXCEPTION_TYPE, statusInfo.getFamily().name()));
             }
+            helper.end();
+            helper.close();
+            requestContext.removeProperty(PropagationHelper.class.getName());
         }
     }
 
