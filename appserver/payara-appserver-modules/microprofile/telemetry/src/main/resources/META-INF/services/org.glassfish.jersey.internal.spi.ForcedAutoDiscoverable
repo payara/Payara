@@ -41,3 +41,4 @@
 #
 
 fish.payara.microprofile.telemetry.tracing.jaxrs.JerseyOpenTelemetryAutoDiscoverable
+fish.payara.microprofile.telemetry.tracing.jaxrs.client.JaxrsClientRequestTracingDiscoverable

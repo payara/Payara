@@ -97,6 +97,10 @@ public class PropagationHelper implements Scope {
         return new LocalScope();
     }
 
+    public Span span() {
+        return this.span;
+    }
+
     private PropagationHelper start(boolean singleThreaded) {
         this.singleThreaded = singleThreaded;
         if (propagatedContext != null) {
@@ -111,8 +115,10 @@ public class PropagationHelper implements Scope {
      *
      */
     public void end() {
-        span.setStatus(StatusCode.OK);
-        span.end();
+        if (!errorReported) {
+            span.end();
+            span.setStatus(StatusCode.OK);
+        }
     }
 
     /**

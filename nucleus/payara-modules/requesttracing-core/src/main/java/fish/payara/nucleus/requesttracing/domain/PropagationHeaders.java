@@ -50,5 +50,7 @@ public class PropagationHeaders {
     public static final String PROPAGATED_PARENT_ID = "Payara-Tracing-ParentId";
     public static final String PROPAGATED_RELATIONSHIP_TYPE = "Payara-Tracing-RelationshipType";
     public static final String OPENTRACING_PROPAGATED_SPANCONTEXT = "Payara-Tracing-OpenTracing-SpanContext";
+
+    public static final String TELEMETRY_PROPAGATED_SPANCONTEXT = "Payara-Telemetry-Tracing-SpanContext";
     
 }

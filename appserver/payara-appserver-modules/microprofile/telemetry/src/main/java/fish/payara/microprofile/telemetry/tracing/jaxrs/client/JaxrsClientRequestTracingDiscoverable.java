@@ -37,27 +37,20 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package fish.payara.microprofile.telemetry.tracing.jaxrs;
+package fish.payara.microprofile.telemetry.tracing.jaxrs.client;
 
-import fish.payara.microprofile.telemetry.tracing.jaxrs.client.PayaraTracingServices;
+import jakarta.ws.rs.ConstrainedTo;
+import jakarta.ws.rs.RuntimeType;
 import jakarta.ws.rs.core.FeatureContext;
-import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.jersey.internal.spi.ForcedAutoDiscoverable;
 
-/**
- * AutoDiscoverable that registers the {@link OpenTelemetryApplicationEventListener}.
- */
-public class JerseyOpenTelemetryAutoDiscoverable implements ForcedAutoDiscoverable {
-
+@ConstrainedTo(RuntimeType.CLIENT)
+public class JaxrsClientRequestTracingDiscoverable implements ForcedAutoDiscoverable {
     @Override
     public void configure(FeatureContext context) {
-        // Only register for application deployments (not the admin console)
-        final Deployment deployment = new PayaraTracingServices().getDeployment();
-        if (deployment == null || deployment.getCurrentDeploymentContext() == null) {
-            return;
-        }
-        if (!context.getConfiguration().isRegistered(OpenTelemetryApplicationEventListener.class)) {
-            context.register(OpenTelemetryApplicationEventListener.class);
+        context.register(JaxrsClientRequestTelemetryFilter.class);
+        if (!context.getConfiguration().isRegistered(OpenTelemetryPreInvocationInterceptor.class)) {
+            context.register(OpenTelemetryPreInvocationInterceptor.class);
         }
     }
 }

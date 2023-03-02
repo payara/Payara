@@ -37,27 +37,61 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package fish.payara.microprofile.telemetry.tracing.jaxrs;
+package fish.payara.microprofile.telemetry.tracing.jaxrs.client;
 
-import fish.payara.microprofile.telemetry.tracing.jaxrs.client.PayaraTracingServices;
-import jakarta.ws.rs.core.FeatureContext;
-import org.glassfish.internal.deployment.Deployment;
-import org.glassfish.jersey.internal.spi.ForcedAutoDiscoverable;
+import fish.payara.opentracing.PropagationHelper;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.context.Scope;
+import org.eclipse.microprofile.rest.client.ext.AsyncInvocationInterceptor;
+import org.eclipse.microprofile.rest.client.ext.AsyncInvocationInterceptorFactory;
 
 /**
- * AutoDiscoverable that registers the {@link OpenTelemetryApplicationEventListener}.
+ * An implementation of the {@link AsyncInvocationInterceptor} interface that propagates OpenTelemetry
+ * {@link io.opentelemetry.api.trace.Span} and {@link io.opentelemetry.context.Context}
+ * across asynchronous invocation boundaries.
  */
-public class JerseyOpenTelemetryAutoDiscoverable implements ForcedAutoDiscoverable {
+public class AsyncContextPropagator implements AsyncInvocationInterceptor {
 
+    private PropagationHelper helper;
+
+    private Scope scope;
+
+    /**
+     * Prepares the context for propagation by starting the PropagationHelper object.
+     */
     @Override
-    public void configure(FeatureContext context) {
-        // Only register for application deployments (not the admin console)
-        final Deployment deployment = new PayaraTracingServices().getDeployment();
-        if (deployment == null || deployment.getCurrentDeploymentContext() == null) {
-            return;
+    public void prepareContext() {
+        this.helper = PropagationHelper.startMultiThreaded(Span.current(), Context.current());
+    }
+
+    /**
+     * Applies the propagated context and span to the current thread's context and span using a local scope.
+     */
+    @Override
+    public void applyContext() {
+        this.scope = helper.localScope();
+    }
+
+    /**
+     * Removes the propagated context and span from the current thread's context and span.
+     */
+    @Override
+    public void removeContext() {
+        if (this.scope != null) {
+            this.scope.close();
         }
-        if (!context.getConfiguration().isRegistered(OpenTelemetryApplicationEventListener.class)) {
-            context.register(OpenTelemetryApplicationEventListener.class);
+
+        if (this.helper != null) {
+            this.helper.close();
+        }
+    }
+
+    static class Factory implements AsyncInvocationInterceptorFactory {
+
+        @Override
+        public AsyncInvocationInterceptor newInterceptor() {
+            return new AsyncContextPropagator();
         }
     }
 }

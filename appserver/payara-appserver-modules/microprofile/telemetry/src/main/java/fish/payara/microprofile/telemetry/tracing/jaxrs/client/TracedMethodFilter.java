@@ -1,7 +1,7 @@
 /*
  *    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2019-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2019-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *    The contents of this file are subject to the terms of either the GNU
  *    General Public License Version 2 only ("GPL") or the Common Development
@@ -38,14 +38,7 @@
  *    holder.
  */
 
-package fish.payara.microprofile.opentracing.jaxrs.client;
-
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.Function;
-import java.util.function.Predicate;
+package fish.payara.microprofile.telemetry.tracing.jaxrs.client;
 
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
@@ -55,9 +48,15 @@ import jakarta.ws.rs.PATCH;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.client.ClientRequestContext;
-
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.opentracing.Traced;
+
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
  * Checks whether REST Client invoked method should be traced according to configuration and class annotations.
@@ -76,7 +75,7 @@ class TracedMethodFilter implements Predicate<ClientRequestContext> {
 
     @Override
     public boolean test(ClientRequestContext clientRequestContext) {
-        Object invokedMethod = clientRequestContext.getProperty(RestClientTracingListener.REST_CLIENT_INVOKED_METHOD);
+        Object invokedMethod = clientRequestContext.getProperty(RestClientTelemetryListener.REST_CLIENT_INVOKED_METHOD);
         if (invokedMethod instanceof Method) {
             return test((Method) invokedMethod);
         } else {
