@@ -87,6 +87,8 @@ public class OpenMetricsExporter implements MetricExporter {
     protected final PrintWriter out;
     protected final Set<String> typeWrittenByGlobalName;
     protected final Set<String> helpWrittenByGlobalName;
+    
+    private static final String GC_TOTAL_ID = "gc_total";
 
     public OpenMetricsExporter(Writer out) {
         this(null, out instanceof PrintWriter ? (PrintWriter) out : new PrintWriter(out), new HashSet<>(), new HashSet<>());
@@ -115,7 +117,7 @@ public class OpenMetricsExporter implements MetricExporter {
         String total = globalName(metricID, metadata, "_total");
         appendTYPE(total, OpenMetricsType.counter);
         appendHELP(total, metadata);
-        appendValue(total, metricID.getTagsAsArray(), scaleToBaseUnit(counter.getCount(), metadata));
+        appendValue(total, metricID.getTagsAsArray(), scaleToBaseUnit((double)counter.getCount(), metadata));
     }
 
     @Override
@@ -228,7 +230,11 @@ public class OpenMetricsExporter implements MetricExporter {
     protected void appendValue(String globalName, Tag[] tags, Number value) {
         out.append(globalName);
         out.append(tagsToString(tags));
-        out.append(' ').append(value == null ? "NaN" : roundValue(value)).append('\n');
+        if(globalName.equals(GC_TOTAL_ID)) {
+            out.append(' ').append(value.toString()).append('\n');
+        } else {
+            out.append(' ').append(value == null ? "NaN" : roundValue(value)).append('\n');
+        }
     }
 
     private void appendValue(String globalName, Tag[] tags, long value) {
