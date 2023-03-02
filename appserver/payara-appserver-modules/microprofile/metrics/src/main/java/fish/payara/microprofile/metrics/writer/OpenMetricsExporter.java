@@ -115,7 +115,7 @@ public class OpenMetricsExporter implements MetricExporter {
         String total = globalName(metricID, metadata, "_total");
         appendTYPE(total, OpenMetricsType.counter);
         appendHELP(total, metadata);
-        appendValue(total, metricID.getTagsAsArray(), counter.getCount());
+        appendValue(total, metricID.getTagsAsArray(), scaleToBaseUnit(counter.getCount(), metadata));
     }
 
     @Override
@@ -323,7 +323,7 @@ public class OpenMetricsExporter implements MetricExporter {
 
     private String globalName(MetricID metricID, String suffix) {
         String name = metricID.getName();
-        return sanitizeMetricName(!suffix.isEmpty() && name.endsWith(suffix)
+        return sanitizeMetricName(!suffix.isEmpty() && (name.endsWith(suffix) || name.contains(".total"))
                 ? name
                 : name + suffix);
     }
