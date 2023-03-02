@@ -143,19 +143,18 @@ public class MetricRegistryImplTest {
         Metadata metadata = withNameAnd(name).build();
         Counter counter = registry.counter(metadata);
         assertSame(counter, registry.counter(metadata));
-        assertNotSame(counter, registry.counter(metadata, SOME_TAG));
     }
 
     @Test
-    public void counterByMetaThrowsExceptionWhenMetadataIsDifferent() {
-        assertException("Tried to lookup a metric with conflicting metadata, looup is ...",
+    public void counterByMetaThrowsExceptionWhenTagsAreDifferent() {
+        assertException("Tried to lookup a metric id with conflicting tags...",
             name -> registry.counter(withName(name)),
-            name -> registry.counter(withNameAnd(name).build()));
+            name -> registry.counter(withNameAnd(name).build(), SOME_TAG));
     }
 
     @Test
     public void findOrCreateThrowsExceptionWhenExistingMetadataIsNotSameType() {
-        assertException("Metric ['%s'] type['histogram'] does not match with existing type['counter']",
+        assertException("Metric ['%s'] type['Histogram'] does not match with existing type['Counter']",
             name -> registry.counter(withName(name)),
             name -> registry.histogram(withName(name), SOME_TAG));
     }
@@ -169,6 +168,8 @@ public class MetricRegistryImplTest {
         Tag ac = new Tag("a", "c");
         MetricID metricAb = new MetricID(name, ab);
         MetricID metricAc = new MetricID(name, ac);
+        registry.timer(metricAb);
+        registry.timer(metricAc);
         assertEquals(2, registry.getTimers().size());
         Map<MetricID, Metric> metrics = registry.getMetrics((metricID, metric) -> metricID.getName().equals(name));
         assertEquals(2, metrics.size());
@@ -181,8 +182,11 @@ public class MetricRegistryImplTest {
 
     @Test
     public void registerByMetadataAllowsToReuseAsLongAsMetadataIsSame() {
-        Histogram h1 = new HistogramImpl();
-        assertSame(h1, registry.getHistograms().values().iterator().next());
+        Histogram h1 = registry.histogram(withName("myhistogram"));
+        Histogram h2 = registry.histogram(withName("myhistogram"));
+        Histogram toCompare = registry.getHistograms().values().iterator().next();
+        assertSame(h1, toCompare);
+        assertSame(h2, toCompare);
     }
 
 
@@ -205,12 +209,12 @@ public class MetricRegistryImplTest {
         registry.timer(nextName(), new Tag("x", "z"));
         registry.histogram(nextName(), new Tag("x", "y"));
         registry.timer(nextName(), new Tag("h", "i"));
-        assertEquals(5, registry.getNames().size());
-        registry.removeMatching((id, metric) -> id.getTags().containsValue("y"));
         assertEquals(3, registry.getNames().size());
+        registry.removeMatching((id, metric) -> id.getTags().containsValue("y"));
+        assertEquals(2, registry.getNames().size());
         assertEquals(2, registry.getTimers().size());
         registry.removeMatching((id, metric) -> id.getTags().containsKey("x"));
-        assertEquals(2, registry.getNames().size());
+        assertEquals(1, registry.getNames().size());
         registry.removeMatching(MetricFilter.ALL);
         assertEquals(0, registry.getNames().size());
     }

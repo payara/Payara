@@ -130,7 +130,9 @@ public class MetricsResource extends HttpServlet {
                     if (scopeParameter != null && !scopeParameter.isEmpty()) {
                         String scope;
                         try {
-                            if(scopeParameter.equals(MetricRegistry.VENDOR_SCOPE)) {
+                            if(scopeParameter.equals(MetricRegistry.BASE_SCOPE)) {
+                                scope = MetricRegistry.BASE_SCOPE;
+                            } else if(scopeParameter.equals(MetricRegistry.VENDOR_SCOPE)) {
                                 scope = MetricRegistry.VENDOR_SCOPE;
                             } else if(scopeParameter.equals(MetricRegistry.APPLICATION_SCOPE)) {
                                 scope = MetricRegistry.APPLICATION_SCOPE;

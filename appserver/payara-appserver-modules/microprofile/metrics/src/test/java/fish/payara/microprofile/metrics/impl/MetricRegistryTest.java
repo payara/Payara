@@ -268,12 +268,12 @@ public class MetricRegistryTest {
 
     @Test
     public void getNames() {
-        assertEquals(7, registry.getNames().size());
+        assertEquals(4, registry.getNames().size());
     }
 
     @Test
     public void getMetricIDs() {
-        assertEquals(7, registry.getMetricIDs().size());
+        assertEquals(4, registry.getMetricIDs().size());
     }
 
     @Test
@@ -310,43 +310,43 @@ public class MetricRegistryTest {
 
     @Test
     public void getMetrics() {
-        assertEquals(7, registry.getMetrics().size());
+        assertEquals(4, registry.getMetrics().size());
     }
 
     @Test
     public void getMetricsByFilter() {
-        assertEquals(7, registry.getMetrics(MetricFilter.ALL).size());
+        assertEquals(4, registry.getMetrics(MetricFilter.ALL).size());
         assertEquals(0, registry.getMetrics((metricID, metric) -> false).size());
     }
 
     @Test
     public void getMetadata() {
-        assertEquals(7, registry.getMetadata().size());
+        assertEquals(4, registry.getMetadata().size());
     }
 
     @Test
     public void removeByName() {
        assertTrue(registry.remove(COUNTER_ID.getName()));
        assertNull(registry.getCounter(COUNTER_ID));
-       assertEquals(6, registry.getNames().size());
+       assertEquals(3, registry.getNames().size());
        assertFalse(registry.remove(COUNTER_ID.getName()));
-       assertEquals(5, registry.getNames().size());
+       assertEquals(3, registry.getNames().size());
 
        assertTrue(registry.remove(GAUGE_ID.getName()));
        assertNull(registry.getGauge(GAUGE_ID));
-       assertEquals(4, registry.getNames().size());
+       assertEquals(2, registry.getNames().size());
        assertFalse(registry.remove(GAUGE_ID.getName()));
 
        assertTrue(registry.remove(HISTOGRAM_ID.getName()));
        assertNull(registry.getHistogram(HISTOGRAM_ID));
-       assertEquals(3, registry.getNames().size());
+       assertEquals(1, registry.getNames().size());
        assertFalse(registry.remove(HISTOGRAM_ID.getName()));
 
-       assertEquals(2, registry.getNames().size());
+       assertEquals(1, registry.getNames().size());
 
        assertTrue(registry.remove(TIMER_ID.getName()));
        assertNull(registry.getTimer(TIMER_ID));
-       assertEquals(1, registry.getNames().size());
+       assertEquals(0, registry.getNames().size());
        assertFalse(registry.remove(TIMER_ID.getName()));
 
        assertEquals(0, registry.getNames().size());
@@ -356,27 +356,27 @@ public class MetricRegistryTest {
     public void removeByMetricID() {
        assertTrue(registry.remove(COUNTER_ID));
        assertNull(registry.getCounter(COUNTER_ID));
-       assertEquals(6, registry.getNames().size());
+       assertEquals(3, registry.getNames().size());
        assertFalse(registry.remove(COUNTER_ID));
 
-       assertEquals(5, registry.getNames().size());
+       assertEquals(3, registry.getNames().size());
 
 
        assertTrue(registry.remove(GAUGE_ID));
        assertNull(registry.getGauge(GAUGE_ID));
-       assertEquals(4, registry.getNames().size());
+       assertEquals(2, registry.getNames().size());
        assertFalse(registry.remove(GAUGE_ID));
 
        assertTrue(registry.remove(HISTOGRAM_ID));
        assertNull(registry.getHistogram(HISTOGRAM_ID));
-       assertEquals(3, registry.getNames().size());
+       assertEquals(1, registry.getNames().size());
        assertFalse(registry.remove(HISTOGRAM_ID));
 
-       assertEquals(2, registry.getNames().size());
+       assertEquals(1, registry.getNames().size());
 
        assertTrue(registry.remove(TIMER_ID));
        assertNull(registry.getTimer(TIMER_ID));
-       assertEquals(1, registry.getNames().size());
+       assertEquals(0, registry.getNames().size());
        assertFalse(registry.remove(TIMER_ID));
 
        assertEquals(0, registry.getNames().size());
@@ -385,7 +385,7 @@ public class MetricRegistryTest {
     @Test
     public void removeMatchingByFilter() {
         registry.removeMatching((metricID, metric) -> metricID.equals(COUNTER_ID));
-        assertEquals(6, registry.getMetricIDs().size());
+        assertEquals(3, registry.getMetricIDs().size());
         assertNull(registry.getMetric(COUNTER_ID));
         assertNotNull(registry.getMetric(GAUGE_ID));
         assertNotNull(registry.getMetric(HISTOGRAM_ID));

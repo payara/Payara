@@ -55,6 +55,8 @@ import jakarta.inject.Inject;
 import javax.management.MBeanAttributeInfo;
 import javax.management.ObjectName;
 import javax.management.openmbean.CompositeDataSupport;
+import org.eclipse.microprofile.metrics.Counter;
+import org.eclipse.microprofile.metrics.Gauge;
 import org.eclipse.microprofile.metrics.Metadata;
 import org.eclipse.microprofile.metrics.MetadataBuilder;
 import org.eclipse.microprofile.metrics.Metric;
@@ -135,7 +137,7 @@ public class MetricsMetadataHelper {
                     }
                     if (metricRegistry instanceof MetricRegistryImpl) {
                         ((MetricRegistryImpl) metricRegistry).register(beanMetadata,
-                                beanMetadata.getType(), type, tags.toArray(new Tag[tags.size()]));
+                                getInterfaceType(beanMetadata.getType()), type, tags.toArray(new Tag[tags.size()]));
                     }
 
                 } else {
@@ -155,7 +157,7 @@ public class MetricsMetadataHelper {
                         }
                         if (metricRegistry instanceof MetricRegistryImpl) {
                             ((MetricRegistryImpl) metricRegistry).register(beanMetadata,
-                                    beanMetadata.getType(), type, tags.toArray(new Tag[tags.size()]));
+                                    getInterfaceType(beanMetadata.getType()), type, tags.toArray(new Tag[tags.size()]));
                         }
                     } else {
                         throw new IllegalStateException("Health-Check service not found : " + beanMetadata.getService());
@@ -166,6 +168,17 @@ public class MetricsMetadataHelper {
             }
         }
         return unresolvedMetadataList;
+    }
+    
+    public String getInterfaceType(String type) {
+        if(type.equals(COUNTER_METRIC_MBEAN_NAME)) {
+            return Counter.class.getTypeName();
+        }
+        
+        if(type.equals(GAUGE_METRIC_MBEAN_NAME)) {
+            return Gauge.class.getTypeName();
+        }
+        return null;
     }
 
     /**

@@ -48,9 +48,25 @@ import java.util.concurrent.CopyOnWriteArrayList;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class MetricsMetadataConfig {
 
+    @XmlElementWrapper(name = "base")
+    @XmlElement(name = "metadata")
+    private final List<MetricsMetadata> baseMetadata = new CopyOnWriteArrayList<>();
     @XmlElementWrapper(name = "vendor")
     @XmlElement(name = "metadata")
     private final List<MetricsMetadata> vendorMetadata = new CopyOnWriteArrayList<>();
+
+    public List<MetricsMetadata> getBaseMetadata() {
+        return baseMetadata;
+    }
+
+    public void setBaseMetadata(List<MetricsMetadata> baseMetadata) {
+        this.baseMetadata.clear();
+        this.addBaseMetadata(baseMetadata);
+    }
+
+    public void addBaseMetadata(List<MetricsMetadata> baseMetadata) {
+        this.baseMetadata.addAll(baseMetadata);
+    }
 
     public List<MetricsMetadata> getVendorMetadata() {
         return vendorMetadata;

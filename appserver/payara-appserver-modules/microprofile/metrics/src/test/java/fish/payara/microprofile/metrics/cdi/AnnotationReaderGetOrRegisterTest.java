@@ -55,6 +55,7 @@ import java.util.concurrent.TimeUnit;
 
 import jakarta.enterprise.inject.spi.InjectionPoint;
 
+import java.util.function.Function;
 import org.eclipse.microprofile.metrics.Counter;
 import org.eclipse.microprofile.metrics.Metadata;
 import org.eclipse.microprofile.metrics.Metric;
@@ -134,11 +135,13 @@ public class AnnotationReaderGetOrRegisterTest {
     public void gaugeWithoutAnnotation() {
         String name = getClass().getCanonicalName() + ".gaugeWithoutAnnotation";
         org.eclipse.microprofile.metrics.Gauge<Long> gauge = () -> 1L;
-        registry.gauge(name, gauge, null);
+        Double d = new Double(gauge.getValue());
+        Function<Double, Number> func = v -> d.doubleValue();
+        org.eclipse.microprofile.metrics.Gauge<Number> g = registry.gauge(name, d , func);
         InjectionPoint point = testMethodAsInjectionPoint();
         org.eclipse.microprofile.metrics.Gauge<?> gauge2 = AnnotationReader.GAUGE.getOrRegister(point,
                 org.eclipse.microprofile.metrics.Gauge.class, registry);
-        assertSame(gauge, gauge2);
+        assertSame(g, gauge2);
     }
 
     @Test
@@ -148,12 +151,15 @@ public class AnnotationReaderGetOrRegisterTest {
         String name = getClass().getCanonicalName() + ".gaugeFromMetdadata";
         Metadata expected = Metadata.builder(annoated).withName(name).build();
         org.eclipse.microprofile.metrics.Gauge<Long> gauge = () -> 1L;
-        registry.gauge(expected, gauge, null, new Tag("a", "b"), new Tag("c", "d"));
+        Double d = new Double(gauge.getValue());
+        Function<Double, Number> func = v -> d.doubleValue();
+        org.eclipse.microprofile.metrics.Gauge<Number> g = registry
+                .gauge(expected, d, func, new Tag("a", "b"), new Tag("c", "d"));
         InjectionPoint point = testMethodAsInjectionPoint();
         org.eclipse.microprofile.metrics.Gauge<?> gauge2 = AnnotationReader.GAUGE.getOrRegister(point,
                 org.eclipse.microprofile.metrics.Gauge.class, registry);
         assertNotNull(gauge2);
-        assertSame(gauge, gauge2);
+        assertSame(g, gauge2);
     }
 
     private <T extends Metric, A extends Annotation> void assertGetsOrRegisters(AnnotationReader<A> reader,

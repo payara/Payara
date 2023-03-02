@@ -426,20 +426,18 @@ public class MetricRegistryImpl implements MetricRegistry {
             return register(metadata, useExistingMetadata, metricType, metric, tags);
         }
         Metric existing = family.get(metricID);
-        if(family != null && existing == null) {
-            if(hasSameTagNames(metricID)) {
+        if(existing == null) {
+            checkSameType(metricID, metricType, family.metrics);
+            if((useExistingMetadata && hasSameTagNames(metricID)) || hasSameTagNames(metricID)) {
                 return register(metadata, useExistingMetadata, metricType, metric, tags);
             } else {
                 throw new IllegalArgumentException(
                         String.format("Tried to lookup a metric id with conflicting tags,  %s", metricID.toString()));
             }
-        } else if(existing != null) {
-            return (T) existing;
-        } else {
-            return register(metadata, useExistingMetadata, metricType, metric, tags);
         }
+        return (T) existing;
     }
-
+    
     /**
      * This method will check if there is an available metric with the same tag names
      * @param metricID used to search an available metric
@@ -504,6 +502,7 @@ public class MetricRegistryImpl implements MetricRegistry {
                 key -> new MetricFamily<>(newMetadata));
         MetricID metricID = new MetricID(name, tags);
         if (family.metadata != newMetadata) {
+            checkSameType(metricID, metricType, family.metrics);
             checkReusableMetadata(name, newMetadata, family.metadata);
         }
         T current = family.metrics.computeIfAbsent(metricID, key -> newMetric);
@@ -534,6 +533,29 @@ public class MetricRegistryImpl implements MetricRegistry {
                   existingMetadata.toString(), newMetadata.toString()
           ));
         }
+    }
+
+    public <T extends Metric> void checkSameType(MetricID metricID, String metricType, ConcurrentMap<MetricID, ?> metrics) {
+        Optional<Class<?>> optResult = Optional.empty();
+        Optional<Class<?>[]> interfacesArrayOpt = metrics.values().stream().map(c -> c.getClass().getInterfaces()).findAny();
+        if(interfacesArrayOpt.isPresent()) {
+            optResult = Arrays.stream(interfacesArrayOpt.get()).filter(i->!i.getTypeName().contains(Supplier.class.getName()))
+                    .filter(i->!i.getTypeName().equals(metricType)).findAny();
+        }
+        if(optResult.isPresent()) {
+            throw new IllegalArgumentException(String.format(
+                    "Metric ['%s'] type['%s'] does not match with existing type['%s']",
+                    metricID.getName(), getMetricClassName(metricType), getMetricClassName(optResult.get().getName())
+            ));
+        }
+    }
+    
+    public String getMetricClassName(String name) {
+        String[] parts = name.split("\\.");
+        if(parts != null && parts.length > 0) {
+            return parts[parts.length -1];
+        }
+        return name;
     }
 
     private Metric createMetricInstance(Metadata metadata, String metricType) {
