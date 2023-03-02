@@ -40,36 +40,40 @@
  *
  */
 
-package fish.payara.samples.otel.manual;
+package fish.payara.samples.otel.spanname;
 
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.StatusCode;
-import io.opentelemetry.context.Scope;
-import jakarta.enterprise.context.Dependent;
-import jakarta.inject.Inject;
-import jakarta.servlet.ServletContextEvent;
-import jakarta.servlet.ServletContextListener;
-import jakarta.servlet.annotation.WebListener;
+import java.util.Map;
 
-@WebListener
-@Dependent
-public class InitializeOtel implements ServletContextListener {
+import fish.payara.samples.PayaraArquillianTestRunner;
+import org.assertj.core.api.Assertions;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
-    @Inject
-    ManualTracing tracing;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 
-    @Override
-    public void contextInitialized(ServletContextEvent sce) {
-        tracing.initOtel();
-
-        Span span = tracing.getTracer().spanBuilder("otel init").startSpan();
-        try(Scope scope = span.makeCurrent()) {
-            span.addEvent("ApplicationStarted");
-        } finally {
-            span.setStatus(StatusCode.OK);
-            span.end();
+@RunWith(Arquillian.class)
+public class OpenTelemetrySpanNamingIT extends AbstractSpanNameTest {
+    public static class SpanConfig extends Conf {
+        public SpanConfig() {
+            super(Map.of(SPAN_NAMING_KEY, "opentelemetry"));
         }
     }
+    @Deployment
+    public static WebArchive deployment() {
+        return configSource(base(), SpanConfig.class);
+    }
 
+    @Test
+    public void testSpanName() {
+        var response = target(null).request().get();
+        assertEquals(200, response.getStatus());
+        var spans = exporter.getSpans();
 
+        var expected = "GET " + baseUri.getPath() + "jaxrs/async/compute";
+        assertThat(spans).describedAs("Expecting span name of "+expected).anySatisfy(span -> assertThat(span.getName()).isEqualTo(expected));
+    }
 }

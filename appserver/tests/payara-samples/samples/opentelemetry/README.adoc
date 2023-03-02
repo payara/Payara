@@ -1,10 +1,15 @@
 # OpenTelemetry samples
 
-So far there is no API to get server-managed OTEL traces beyond using OpenTracing APIs.
-
-Therefore there are no automated tests yet.
-OpenTracing part is exercised by other tests (such as Remote EJB tracing).
+Some of telemetry features are exercised by other tests (such as Remote EJB tracing).
 
 The sample application just makes used of distributed OpenTelemetry APIs to create SDK on its own, either manual or in autoconfiguration mode.
 
 It is also possible to put implementations of e. g. exporters into `domaindir/lib` and have them discovered by the autoconfiguration sdk.
+
+Tests validate custom configuration of span naming strategy by means of setting property `payara.telemetry.span-convention`.
+
+To observe the traces deploy the resulting application manually and start Jaeger docker image with
+
+```
+docker run --name jaeger -e COLLECTOR_OTLP_ENABLED=true -p 16686:16686 -p 4317:4317 -p 4318:4318 jaegertracing/all-in-one:latest
+```

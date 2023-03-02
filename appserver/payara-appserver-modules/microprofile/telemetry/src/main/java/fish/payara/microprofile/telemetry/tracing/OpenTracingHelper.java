@@ -165,6 +165,7 @@ public class OpenTracingHelper {
                 var result = new StringBuilder();
                 result.append(request.getMethod()).append(" ")
                         .append(uriInfo.getBaseUri().getPath());
+                SpanStrategy.trimTrailingSlash(result);
                 appendTemplate(resourceInfo, uriInfo, result);
                 return result.toString();
             }

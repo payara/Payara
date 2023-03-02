@@ -40,36 +40,12 @@
  *
  */
 
-package fish.payara.samples.otel.manual;
+package fish.payara.samples.otel;
 
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.StatusCode;
-import io.opentelemetry.context.Scope;
-import jakarta.enterprise.context.Dependent;
-import jakarta.inject.Inject;
-import jakarta.servlet.ServletContextEvent;
-import jakarta.servlet.ServletContextListener;
-import jakarta.servlet.annotation.WebListener;
+import jakarta.ws.rs.ApplicationPath;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.core.Application;
 
-@WebListener
-@Dependent
-public class InitializeOtel implements ServletContextListener {
-
-    @Inject
-    ManualTracing tracing;
-
-    @Override
-    public void contextInitialized(ServletContextEvent sce) {
-        tracing.initOtel();
-
-        Span span = tracing.getTracer().spanBuilder("otel init").startSpan();
-        try(Scope scope = span.makeCurrent()) {
-            span.addEvent("ApplicationStarted");
-        } finally {
-            span.setStatus(StatusCode.OK);
-            span.end();
-        }
-    }
-
-
+@ApplicationPath("/jaxrs")
+public class JaxrsApp extends Application {
 }
