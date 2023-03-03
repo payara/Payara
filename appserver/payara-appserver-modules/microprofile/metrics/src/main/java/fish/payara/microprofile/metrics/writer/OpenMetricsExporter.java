@@ -89,6 +89,8 @@ public class OpenMetricsExporter implements MetricExporter {
     protected final Set<String> helpWrittenByGlobalName;
     
     private static final String GC_TOTAL_ID = "gc_total";
+    
+    private static final String GC_TIME_SECONDS_TOTAL_ID = "gc_time_seconds_total";
 
     public OpenMetricsExporter(Writer out) {
         this(null, out instanceof PrintWriter ? (PrintWriter) out : new PrintWriter(out), new HashSet<>(), new HashSet<>());
@@ -230,7 +232,7 @@ public class OpenMetricsExporter implements MetricExporter {
     protected void appendValue(String globalName, Tag[] tags, Number value) {
         out.append(globalName);
         out.append(tagsToString(tags));
-        if(globalName.equals(GC_TOTAL_ID)) {
+        if(globalName.equals(GC_TOTAL_ID) || globalName.equals(GC_TIME_SECONDS_TOTAL_ID)) {
             out.append(' ').append(value.toString()).append('\n');
         } else {
             out.append(' ').append(value == null ? "NaN" : roundValue(value)).append('\n');
