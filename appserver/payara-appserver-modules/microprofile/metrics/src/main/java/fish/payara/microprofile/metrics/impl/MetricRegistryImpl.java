@@ -578,6 +578,11 @@ public class MetricRegistryImpl implements MetricRegistry {
 
         throw new IllegalArgumentException("Invalid metric type : "+metricType);
     }
+    
+    @SuppressWarnings("unchecked")
+    public <T extends Metric> T getMetricCustomScope(MetricID metricID, Class<T> ofType, String scope) {
+        return this.getMetric(metricID, ofType);
+    }
 
     @Override
     @SuppressWarnings("unchecked")

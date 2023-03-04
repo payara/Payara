@@ -73,7 +73,7 @@ import fish.payara.microprofile.metrics.test.TestUtils;
 public class TimedInterceptorTest {
 
     private final InvocationContext context = mock(InvocationContext.class);
-    private final MetricRegistry registry = new MetricRegistryImpl(MetricRegistry.APPLICATION_SCOPE);
+    private final MetricRegistryImpl registry = new MetricRegistryImpl(MetricRegistry.APPLICATION_SCOPE);
 
     @Test
     @Timed
@@ -148,14 +148,14 @@ public class TimedInterceptorTest {
         AnnotationReader<Timed> reader = AnnotationReader.TIMED;
         Timer timer = MetricUtils.getOrRegisterByMetadataAndTags(registry, Timer.class,
                 reader.metadata(bean, element), reader.tags(reader.annotation(bean, element)));
-        TimedInterceptor.proceedTimed(context, element, bean, registry::getMetric);
+        TimedInterceptor.proceedTimed(context, element, bean, registry::getMetricCustomScope);
         assertEquals(expectedStartCount + 1, timer.getCount());
-        TimedInterceptor.proceedTimed(context, element, bean, registry::getMetric);
+        TimedInterceptor.proceedTimed(context, element, bean, registry::getMetricCustomScope);
         assertEquals(expectedStartCount + 2, timer.getCount());
         verify(context, times(2)).proceed();
         // now test error when it does not exist
         try {
-            TimedInterceptor.proceedTimed(context, element, bean, (metricId, type) -> null);
+            TimedInterceptor.proceedTimed(context, element, bean, (metricId, type, string) -> null);
             fail("Expected a IllegalStateException because the metric does not exist");
         } catch (IllegalStateException ex) {
             assertEquals("No Timer with ID [" + reader.metricID(bean, element)
@@ -165,7 +165,7 @@ public class TimedInterceptorTest {
         // test a annotated method that throws an exception
         when(context.proceed()).thenThrow(new RuntimeException("Error in method"));
         try {
-            TimedInterceptor.proceedTimed(context, element, bean, registry::getMetric);
+            TimedInterceptor.proceedTimed(context, element, bean, registry::getMetricCustomScope);
             fail("Expected a RuntimeException");
         } catch (RuntimeException ex) {
             assertEquals("Error in method", ex.getMessage());
