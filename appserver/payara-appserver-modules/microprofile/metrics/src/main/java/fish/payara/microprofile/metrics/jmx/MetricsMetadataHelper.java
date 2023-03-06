@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2018-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -42,10 +42,10 @@ package fish.payara.microprofile.metrics.jmx;
 import fish.payara.microprofile.metrics.healthcheck.HealthCheckCounter;
 import fish.payara.microprofile.metrics.healthcheck.HealthCheckGauge;
 import fish.payara.microprofile.metrics.healthcheck.ServiceExpression;
+import fish.payara.microprofile.metrics.impl.MetricRegistryImpl;
 import fish.payara.nucleus.healthcheck.HealthCheckStatsProvider;
 import java.util.ArrayList;
 import java.util.List;
-import static java.util.Objects.nonNull;
 import java.util.Set;
 import static java.util.logging.Level.INFO;
 import static java.util.logging.Level.SEVERE;
@@ -55,6 +55,8 @@ import jakarta.inject.Inject;
 import javax.management.MBeanAttributeInfo;
 import javax.management.ObjectName;
 import javax.management.openmbean.CompositeDataSupport;
+import org.eclipse.microprofile.metrics.Counter;
+import org.eclipse.microprofile.metrics.Gauge;
 import org.eclipse.microprofile.metrics.Metadata;
 import org.eclipse.microprofile.metrics.MetadataBuilder;
 import org.eclipse.microprofile.metrics.Metric;
@@ -77,6 +79,10 @@ public class MetricsMetadataHelper {
     public static final String ATTRIBUTE_SEPARATOR = "/";
     public static final String SUB_ATTRIBUTE_SEPARATOR = "#";
     public static final String INSTANCE = "${instance}";
+
+    public static final String GAUGE_METRIC_MBEAN_NAME = "gauge";
+
+    public static final String COUNTER_METRIC_MBEAN_NAME = "counter";
 
     private static final Logger LOGGER = Logger.getLogger(MetricsMetadataHelper.class.getName());
 
@@ -118,32 +124,41 @@ public class MetricsMetadataHelper {
                 Metric type;
                 if (beanMetadata.getMBean() != null) {
                     MBeanExpression mBeanExpression = new MBeanExpression(beanMetadata.getMBean());
-                    switch (beanMetadata.getTypeRaw()) {
-                        case COUNTER:
+
+                    switch (beanMetadata.getType()) {
+                        case COUNTER_METRIC_MBEAN_NAME:
                             type = new MBeanCounterImpl(mBeanExpression);
                             break;
-                        case GAUGE:
+                        case GAUGE_METRIC_MBEAN_NAME:
                             type = new MBeanGuageImpl(mBeanExpression);
                             break;
                         default:
                             throw new IllegalStateException("Unsupported type : " + beanMetadata);
                     }
-                    metricRegistry.register(beanMetadata, type, tags.toArray(new Tag[tags.size()]));
+                    if (metricRegistry instanceof MetricRegistryImpl) {
+                        ((MetricRegistryImpl) metricRegistry).register(beanMetadata,
+                                getInterfaceType(beanMetadata.getType()), type, tags.toArray(new Tag[tags.size()]));
+                    }
+
                 } else {
                     ServiceExpression expression = new ServiceExpression(beanMetadata.getService());
                     HealthCheckStatsProvider healthCheck = habitat.getService(HealthCheckStatsProvider.class, expression.getServiceId());
                     if (healthCheck != null) {
-                        switch (beanMetadata.getTypeRaw()) {
-                            case COUNTER:
+                        switch (beanMetadata.getType()) {
+                            case COUNTER_METRIC_MBEAN_NAME:
                                 type = new HealthCheckCounter(healthCheck, expression);
+                                metricRegistry.counter(beanMetadata, tags.toArray(new Tag[tags.size()]));
                                 break;
-                            case GAUGE:
+                            case GAUGE_METRIC_MBEAN_NAME:
                                 type = new HealthCheckGauge(healthCheck, expression);
                                 break;
                             default:
                                 throw new IllegalStateException("Unsupported type : " + beanMetadata);
                         }
-                        metricRegistry.register(beanMetadata, type, tags.toArray(new Tag[tags.size()]));
+                        if (metricRegistry instanceof MetricRegistryImpl) {
+                            ((MetricRegistryImpl) metricRegistry).register(beanMetadata,
+                                    getInterfaceType(beanMetadata.getType()), type, tags.toArray(new Tag[tags.size()]));
+                        }
                     } else {
                         throw new IllegalStateException("Health-Check service not found : " + beanMetadata.getService());
                     }
@@ -153,6 +168,17 @@ public class MetricsMetadataHelper {
             }
         }
         return unresolvedMetadataList;
+    }
+    
+    public String getInterfaceType(String type) {
+        if(type.equals(COUNTER_METRIC_MBEAN_NAME)) {
+            return Counter.class.getTypeName();
+        }
+        
+        if(type.equals(GAUGE_METRIC_MBEAN_NAME)) {
+            return Gauge.class.getTypeName();
+        }
+        return null;
     }
 
     /**
@@ -359,9 +385,8 @@ public class MetricsMetadataHelper {
                                 && metadata.description().isPresent()) {
                             newMetadataBuilder = newMetadataBuilder.withDescription((String) compositeData.get(subAttribute));
                         } else if ("name".equals(subAttribute)
-                                && compositeData.get(subAttribute) instanceof String
-                                && metadata.getDisplayName() == null) {
-                            newMetadataBuilder = newMetadataBuilder.withDisplayName((String) compositeData.get(subAttribute));
+                                && compositeData.get(subAttribute) instanceof String) {
+                            newMetadataBuilder = newMetadataBuilder.withName((String) compositeData.get(subAttribute));
                         } else if ("unit".equals(subAttribute)
                                 && compositeData.get(subAttribute) instanceof String
                                 && MetricUnits.NONE.equals(metadata.unit().orElse("none"))) {
@@ -405,33 +430,15 @@ public class MetricsMetadataHelper {
             builder.append(subAttribute);
         }
         MetricsMetadata newMetaData =  new MetricsMetadata(
-                formatMetadata(
-                        metadata.getName(),
-                        key,
-                        attribute,
-                        subAttribute,
-                        instanceName
-                ),
-                formatMetadata(
-                        nonNull(metadata.getDisplayName()) ? metadata.getDisplayName() : metadata.getName(),
-                        key,
-                        attribute,
-                        subAttribute,
-                         instanceName
-                ),
-                formatMetadata(
-                        metadata.description().isPresent() ? metadata.getDescription() : metadata.getName(),
-                        key,
-                        attribute,
-                        subAttribute,
-                        instanceName
-                ),
-                metadata.getTypeRaw(),
-                metadata.unit().orElse(null)
-        );
+                formatMetadata(metadata.getName(), key, attribute, subAttribute, instanceName),
+                formatMetadata(metadata.getName(), key, attribute, subAttribute, instanceName),
+                formatMetadata(metadata.description().isPresent() ? metadata.getDescription() : metadata.getName(),
+                        key, attribute, subAttribute, instanceName), metadata.getType(),
+                metadata.unit().orElse(null));
         if(metadata.getMBean() != null) {
             newMetaData.setMBean(builder.toString());
         } else {
+            newMetaData.setMBean(null);
             newMetaData.setService(builder.toString());
         }
         for (XmlTag oldTag: metadata.getTags()) {

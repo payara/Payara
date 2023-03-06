@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) [2020-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2020-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -54,7 +54,6 @@ import jakarta.interceptor.InvocationContext;
 
 import org.eclipse.microprofile.metrics.Counter;
 import org.eclipse.microprofile.metrics.MetricRegistry;
-import org.eclipse.microprofile.metrics.MetricRegistry.Type;
 import org.eclipse.microprofile.metrics.annotation.Counted;
 import org.junit.Test;
 
@@ -72,7 +71,7 @@ import fish.payara.microprofile.metrics.test.TestUtils;
 public class CountedInterceptorTest {
 
     private final InvocationContext context = mock(InvocationContext.class);
-    private final MetricRegistry registry = new MetricRegistryImpl(Type.APPLICATION);
+    private final MetricRegistryImpl registry = new MetricRegistryImpl(MetricRegistry.APPLICATION_SCOPE);
 
     @Test
     @Counted
@@ -99,7 +98,7 @@ public class CountedInterceptorTest {
     }
 
     @Test
-    @Counted(displayName = "displayName")
+    @Counted
     public void counterWithDisplayName() throws Exception {
         assertCounterIncrements();
     }
@@ -151,14 +150,15 @@ public class CountedInterceptorTest {
         AnnotationReader<Counted> reader = AnnotationReader.COUNTED;
         Counter counter = MetricUtils.getOrRegisterByMetadataAndTags(registry, Counter.class,
                 reader.metadata(bean, element), reader.tags(reader.annotation(bean, element)));
-        CountedInterceptor.proceedCounted(context, element, bean, registry::getMetric);
+        
+        CountedInterceptor.proceedCounted(context, element, bean, registry::getMetricCustomScope);
         assertEquals(expectedStartCount + 1, counter.getCount());
-        CountedInterceptor.proceedCounted(context, element, bean, registry::getMetric);
+        CountedInterceptor.proceedCounted(context, element, bean, registry::getMetricCustomScope);
         assertEquals(expectedStartCount + 2, counter.getCount());
         verify(context, times(expectedStartCount + 2)).proceed();
         // now test error when it does not exist
         try {
-            CountedInterceptor.proceedCounted(context, element, bean, (metricId, type) -> null);
+            CountedInterceptor.proceedCounted(context, element, bean, (metricId, type, scope) -> null);
             fail("Expected a IllegalStateException because the metric does not exist");
         } catch (IllegalStateException ex) {
             assertEquals("No Counter with ID [" + reader.metricID(bean, element)

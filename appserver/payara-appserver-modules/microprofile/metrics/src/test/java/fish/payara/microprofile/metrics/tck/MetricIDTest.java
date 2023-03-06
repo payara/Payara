@@ -1,6 +1,6 @@
 /*
  **********************************************************************
- * Copyright (c) 2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2019-2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICES file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -32,7 +32,6 @@ import org.eclipse.microprofile.metrics.Counter;
 import org.eclipse.microprofile.metrics.MetricID;
 import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.eclipse.microprofile.metrics.Tag;
-import org.eclipse.microprofile.metrics.MetricRegistry.Type;
 import org.junit.Test;
 
 import fish.payara.microprofile.metrics.impl.MetricRegistryImpl;
@@ -44,7 +43,7 @@ import fish.payara.microprofile.metrics.impl.MetricRegistryImpl;
  */
 public class MetricIDTest {
 
-    private MetricRegistry registry = new MetricRegistryImpl(Type.APPLICATION);
+    private MetricRegistry registry = new MetricRegistryImpl(MetricRegistry.APPLICATION_SCOPE);
 
     @SuppressWarnings({ "deprecation", "unused" })
     @Test
@@ -53,18 +52,19 @@ public class MetricIDTest {
         Tag tagEarth = new Tag("planet", "earth");
         Tag tagRed = new Tag("colour", "red");
         Tag tagBlue = new Tag("colour", "blue");
+        Tag tagGreen = new Tag("colour", "green");
 
         String counterName = "org.eclipse.microprofile.metrics.tck.MetricIDTest.counterColour";
 
-        Counter counterColour = registry.counter(counterName);
+        Counter counterGreen = registry.counter(counterName,tagEarth, tagGreen);
         Counter counterRed = registry.counter(counterName,tagEarth,tagRed);
         Counter counterBlue = registry.counter(counterName,tagEarth,tagBlue);
 
-        MetricID counterColourMID = new MetricID(counterName);
+        MetricID counterColourMID = new MetricID(counterName, tagEarth, tagGreen);
         MetricID counterRedMID = new MetricID(counterName, tagEarth,tagRed);
-        MetricID counterBlueMID = new MetricID(counterName, tagEarth,tagRed);
+        MetricID counterBlueMID = new MetricID(counterName, tagEarth,tagBlue);
 
-        //check multi-dimensional metrics are registered
+        //check metrics are registered
         assertThat("Counter is not registered correctly", registry.getCounter(counterColourMID), notNullValue());
         assertThat("Counter is not registered correctly", registry.getCounter(counterRedMID), notNullValue());
         assertThat("Counter is not registered correctly", registry.getCounter(counterBlueMID), notNullValue());

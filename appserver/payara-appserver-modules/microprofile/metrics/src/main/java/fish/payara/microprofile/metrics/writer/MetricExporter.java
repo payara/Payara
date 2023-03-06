@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2023 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,17 +42,12 @@ package fish.payara.microprofile.metrics.writer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.eclipse.microprofile.metrics.ConcurrentGauge;
 import org.eclipse.microprofile.metrics.Counter;
 import org.eclipse.microprofile.metrics.Gauge;
 import org.eclipse.microprofile.metrics.Histogram;
 import org.eclipse.microprofile.metrics.Metadata;
-import org.eclipse.microprofile.metrics.Meter;
 import org.eclipse.microprofile.metrics.Metric;
 import org.eclipse.microprofile.metrics.MetricID;
-import org.eclipse.microprofile.metrics.MetricRegistry;
-import org.eclipse.microprofile.metrics.MetricType;
-import org.eclipse.microprofile.metrics.SimpleTimer;
 import org.eclipse.microprofile.metrics.Timer;
 
 /**
@@ -71,45 +66,48 @@ public interface MetricExporter {
     /**
      * Creates a new {@link MetricExporter} with the provided scope.
      *
-     * @param scope the scope to use in the export, most likely on of the {@link MetricRegistry.Type}s
+     * @param scope the scope to use in the export
      * @return A new instance of this {@link MetricExporter} with the provided scope set, this instance is kept
      *         unchanged and will continue to use its current scope. Both, this {@link MetricExporter} and the returned
      *         one will however share other internal state that is related to the output written so far.
      */
-    MetricExporter in(MetricRegistry.Type scope, boolean asNode);
+    MetricExporter in(String scope, boolean asNode);
 
-    default MetricExporter in(MetricRegistry.Type scope) {
+    default MetricExporter in(String scope) {
         return in(scope, true);
     }
 
     void export(MetricID metricID, Counter counter, Metadata metadata);
 
-    void export(MetricID metricID, ConcurrentGauge gauge, Metadata metadata);
-
     void export(MetricID metricID, Gauge<?> gauge, Metadata metadata);
 
     void export(MetricID metricID, Histogram histogram, Metadata metadata);
 
-    void export(MetricID metricID, Meter meter, Metadata metadata);
-
-    void export(MetricID metricID, SimpleTimer timer, Metadata metadata);
-
     void export(MetricID metricID, Timer timer, Metadata metadata);
 
     default void export(MetricID metricID, Metric metric, Metadata metadata) {
-        switch (MetricType.from(metric.getClass())) {
-        case COUNTER: export(metricID, (Counter) metric, metadata); break;
-        case CONCURRENT_GAUGE: export(metricID, (ConcurrentGauge) metric, metadata); break;
-        case GAUGE: export(metricID, (Gauge<?>) metric, metadata); break;
-        case HISTOGRAM: export(metricID, (Histogram) metric, metadata); break;
-        case METERED: export(metricID, (Meter) metric, metadata); break;
-        case SIMPLE_TIMER: export(metricID, (SimpleTimer) metric, metadata); break;
-        case TIMER: export(metricID, (Timer) metric, metadata); break;
-        case INVALID:
-        default:
-            LOGGER.log(Level.WARNING, "Metric type {0} for {1} is not supported",
-                    new Object[] { metric.getClass(), metricID });
+        if (Counter.class.isAssignableFrom(metric.getClass())) {
+            export(metricID, (Counter) metric, metadata);
+            return;
         }
+
+        if (Gauge.class.isAssignableFrom(metric.getClass())) {
+            export(metricID, (Gauge<?>) metric, metadata);
+            return;
+        }
+
+        if (Histogram.class.isAssignableFrom(metric.getClass())) {
+            export(metricID, (Histogram) metric, metadata);
+            return;
+        }
+
+        if (Timer.class.isAssignableFrom(metric.getClass())) {
+            export(metricID, (Timer) metric, metadata);
+            return;
+        }
+
+        LOGGER.log(Level.WARNING, "Metric type {0} for {1} is not supported",
+                    new Object[]{metric.getClass(), metricID});
     }
 
     void exportComplete();
