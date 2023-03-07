@@ -50,6 +50,7 @@ import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapGetter;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import jakarta.ws.rs.container.ResourceInfo;
 import jakarta.ws.rs.core.Response;
@@ -97,12 +98,13 @@ public class OpenTelemetryRequestEventListener implements RequestEventListener {
             if (requestEvent.getType() == RequestEvent.Type.REQUEST_MATCHED) {
                 // FISH-6971 still using Traced temporarily till further refactoring
                 final Traced tracedAnnotation = openTracingHelper.getTracedAnnotation();
+                final WithSpan withSpanAnnotation = openTracingHelper.getWithSpanAnnotation();
                 final ContainerRequest requestContext = requestEvent.getContainerRequest();
                 if (!openTracingHelper.canTrace(requestContext, tracedAnnotation)) {
                     LOG.finest(() -> "canTrace(...) returned false, nothing to do.");
                     return;
                 }
-                final String operationName = openTracingHelper.determineOperationName(requestContext, tracedAnnotation);
+                final String operationName = openTracingHelper.determineOperationName(requestContext, tracedAnnotation, withSpanAnnotation);
                 onIncomingRequest(requestEvent, operationName);
                 return;
             }
