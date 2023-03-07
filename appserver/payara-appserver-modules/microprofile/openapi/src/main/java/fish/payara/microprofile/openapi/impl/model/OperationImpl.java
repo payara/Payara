@@ -352,6 +352,7 @@ public class OperationImpl extends ExtensibleImpl<Operation> implements Operatio
         to.setOperationId(mergeProperty(to.getOperationId(), from.getOperationId(), override));
         to.setSummary(mergeProperty(to.getSummary(), from.getSummary(), override));
         to.setDescription(mergeProperty(to.getDescription(), from.getDescription(), override));
+        to.setExtensions(mergeProperty(to.getExtensions(), from.getExtensions(), override));
         to.setDeprecated(mergeProperty(to.getDeprecated(), from.getDeprecated(), override));
     }
 

@@ -83,6 +83,7 @@ public class LicenseImpl extends ExtensibleImpl<License> implements License {
         }
         to.setName(mergeProperty(to.getName(), from.getName(), override));
         to.setUrl(mergeProperty(to.getUrl(), from.getUrl(), override));
+        to.setExtensions(mergeProperty(to.getExtensions(), from.getExtensions(), override));
     }
 
 }

@@ -118,6 +118,7 @@ public class OAuthFlowsImpl extends ExtensibleImpl<OAuthFlows> implements OAuthF
         if (from == null) {
             return;
         }
+        to.setExtensions(mergeProperty(to.getExtensions(), from.getExtensions(), override));
         if (from.getPassword() != null) {
             OAuthFlow flow = new OAuthFlowImpl();
             OAuthFlowImpl.merge(from.getPassword(), flow, override);

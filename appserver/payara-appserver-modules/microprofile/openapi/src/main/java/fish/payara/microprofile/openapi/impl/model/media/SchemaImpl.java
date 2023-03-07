@@ -201,7 +201,6 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
         }
 
         from.setDescription(annotation.getValue("description", String.class));
-        from.setExtensions(parseExtensions(annotation));
         from.setFormat(annotation.getValue("format", String.class));
         from.setNullable(annotation.getValue("nullable", Boolean.class));
         from.setReadOnly(annotation.getValue("readOnly", Boolean.class));
@@ -821,6 +820,7 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
         }
         to.setDefaultValue(mergeProperty(to.getDefaultValue(), from.getDefaultValue(), override));
         to.setTitle(mergeProperty(to.getTitle(), from.getTitle(), override));
+        to.setExtensions(mergeProperty(to.getExtensions(), from.getExtensions(), override));
         if (from.getMultipleOf() != null && from.getMultipleOf().compareTo(BigDecimal.ZERO) > 0) {
             to.setMultipleOf(mergeProperty(to.getMultipleOf(),
                     from.getMultipleOf().stripTrailingZeros(), override));

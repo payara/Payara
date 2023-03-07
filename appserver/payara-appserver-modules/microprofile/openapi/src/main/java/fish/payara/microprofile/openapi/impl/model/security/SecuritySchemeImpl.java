@@ -195,6 +195,7 @@ public class SecuritySchemeImpl extends ExtensibleImpl<SecurityScheme> implement
 
         to.setName(mergeProperty(to.getName(), from.getName(), override));
         to.setDescription(mergeProperty(to.getDescription(), from.getDescription(), override));
+        to.setExtensions(mergeProperty(to.getExtensions(), from.getExtensions(), override));
         to.setScheme(mergeProperty(to.getScheme(), from.getScheme(), override));
         to.setBearerFormat(mergeProperty(to.getBearerFormat(), from.getBearerFormat(), override));
         to.setOpenIdConnectUrl(mergeProperty(to.getOpenIdConnectUrl(), from.getOpenIdConnectUrl(), override));

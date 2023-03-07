@@ -122,7 +122,6 @@ public class ContentImpl extends LinkedHashMap<String, MediaType> implements Con
         if (from == null) {
             return;
         }
-
         for (Map.Entry<String, MediaType> fromEntry : from.getMediaTypes().entrySet()) {
 
             final String typeName = fromEntry.getKey();

@@ -130,6 +130,7 @@ public class ExampleImpl extends ExtensibleImpl<Example> implements Example {
         to.setDescription(mergeProperty(to.getDescription(), from.getDescription(), override));
         to.setValue(mergeProperty(to.getValue(), from.getValue(), override));
         to.setExternalValue(mergeProperty(to.getExternalValue(), from.getExternalValue(), override));
+        to.setExtensions(mergeProperty(to.getExtensions(), from.getExtensions(), override));
     }
 
     public static void merge(String exampleName, Example example, Map<String, Example> examples, boolean override) {

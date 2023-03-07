@@ -46,6 +46,7 @@ import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import static fish.payara.microprofile.openapi.impl.model.ExtensibleImpl.parseExtensions;
 import fish.payara.microprofile.openapi.impl.model.ExtensibleTreeMap;
 import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
 
 import java.util.Map;
 import org.eclipse.microprofile.openapi.models.responses.APIResponse;
@@ -111,6 +112,7 @@ public class APIResponsesImpl extends ExtensibleTreeMap<APIResponse, APIResponse
         if (from == null) {
             return;
         }
+        to.setExtensions(mergeProperty(to.getExtensions(), from.getExtensions(), override));
         // Get the response name
         String responseName = null;
         if (from instanceof APIResponseImpl) {
