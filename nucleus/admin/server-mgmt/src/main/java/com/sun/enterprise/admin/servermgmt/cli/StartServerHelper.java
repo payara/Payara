@@ -301,7 +301,7 @@ public class StartServerHelper {
 
     private boolean checkPorts() {
         String err = adminPortInUse();
-        err = validateAdditionPortsForConnection();
+        err = validateAdditionalPortsForConnection();
 
         if (err != null) {
             //incrementing level of severity when ports are used
@@ -344,7 +344,7 @@ public class StartServerHelper {
      * This method will validate configuration ports for each host on this StartServer configuration
      * @return String error message if some port is used by another instance
      */
-    private String validateAdditionPortsForConnection() {
+    private String validateAdditionalPortsForConnection() {
         List<HostAndPort> list = info.getAdminAddresses();
         String host = null;
         if(list.size() > 0) {
