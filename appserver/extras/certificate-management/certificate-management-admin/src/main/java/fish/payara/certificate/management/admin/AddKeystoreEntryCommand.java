@@ -124,14 +124,13 @@ public class AddKeystoreEntryCommand extends AbstractRemoteCertificateManagement
         }
 
         try {
-            StringBuilder output = new StringBuilder();
+            StringBuilder stringBuilder = new StringBuilder();
 
-            nodeRunner.runAdminCommandOnNode(node, output,
-                    createAddToStoreCommand("add-to-keystore", node, new File(fileToAdd), alias), context);
+            nodeRunner.runAdminCommandOnNode(node, stringBuilder,
+                    createAddToStoreCommand("add-to-keystore", node, new File(filePath), alias), context);
 
-            String outputStr = output.toString();
-            if (outputStr.contains("Command add-to-keystore failed")) {
-                throw new CommandException(outputStr);
+            if (stringBuilder.toString().contains("Command add-to-keystore failed")) {
+                throw new CommandException();
             }
         } catch (SSHCommandExecutionException | ProcessManagerException e) {
             throw new CommandException(e);
