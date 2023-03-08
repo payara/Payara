@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2020] Payara Foundation and/or Affiliates
+// Portions Copyright [2017-2023] Payara Foundation and/or Affiliates
 
 package com.sun.enterprise.admin.servermgmt.cli;
 
@@ -47,20 +47,23 @@ import static com.sun.enterprise.util.net.NetUtils.isRunning;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.logging.Level.FINER;
 
+import com.sun.enterprise.admin.launcher.GFLauncher;
+import com.sun.enterprise.admin.launcher.GFLauncherException;
+import com.sun.enterprise.admin.launcher.GFLauncherInfo;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
+import java.util.stream.Collectors;
 import org.glassfish.api.admin.CommandException;
 
 import com.sun.enterprise.admin.cli.CLIConstants;
 import com.sun.enterprise.admin.cli.CLIUtil;
 import com.sun.enterprise.admin.cli.Environment;
-import com.sun.enterprise.admin.launcher.GFLauncher;
-import com.sun.enterprise.admin.launcher.GFLauncherException;
-import com.sun.enterprise.admin.launcher.GFLauncherInfo;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.universal.process.ProcessUtils;
 import com.sun.enterprise.util.HostAndPort;
@@ -93,6 +96,8 @@ public class StartServerHelper {
     // only set when actively trouble-shooting or investigating...
     private static final  boolean DEBUG_MESSAGES_ON = false;
     private static final LocalStringsImpl STRINGS = new LocalStringsImpl(StartServerHelper.class);
+    
+    private static final String PROPS_PORT_NAME = "_PORT";
 
     public StartServerHelper(Logger logger0, boolean terse0,
             ServerDirs serverDirs0, GFLauncher launcher0,
@@ -296,9 +301,11 @@ public class StartServerHelper {
 
     private boolean checkPorts() {
         String err = adminPortInUse();
+        err = validateAdditionPortsForConnection();
 
         if (err != null) {
-            logger.warning(err);
+            //incrementing level of severity when ports are used
+            logger.severe(err);
             return false;
         }
 
@@ -330,6 +337,29 @@ public class StartServerHelper {
             }
         }
 
+        return null;
+    }
+
+    /**
+     * This method will validate configuration ports for each host on this StartServer configuration
+     * @return String error message if some port is used by another instance
+     */
+    private String validateAdditionPortsForConnection() {
+        List<HostAndPort> list = info.getAdminAddresses();
+        String host = null;
+        if(list.size() > 0) {
+            for (HostAndPort addr : list) {
+                host = addr.getHost();
+                Map<String, String> propsFromXMl = this.launcher.getSysPropsFromXml();
+                Set<Map.Entry<String, String>> setOfPorts = propsFromXMl.entrySet().stream()
+                        .filter(e -> e.getKey().contains(PROPS_PORT_NAME)).collect(Collectors.toSet());
+                for (Map.Entry<String, String> e: setOfPorts) {
+                    if(!NetUtils.isPortFree(host, Integer.parseInt(e.getValue()))) {
+                        return STRINGS.get("Port in use for an instance", Integer.parseInt(e.getValue()));
+                    }
+                }
+            }
+        }
         return null;
     }
 
