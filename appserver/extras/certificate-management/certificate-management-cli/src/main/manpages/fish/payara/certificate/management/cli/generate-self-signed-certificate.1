@@ -11,6 +11,7 @@ SYNOPSIS
            [--node node-name] [--nodedir node-dir]
            [--target instance-name] [--listener listener-name]
            [alternativenames (type:value)[;type:value]*]
+           [--reload={true|false}]
            --distinguishedname
            alias
 
@@ -70,6 +71,10 @@ OPTIONS
            The subject alternative names to add to the generated certificate.
            Takes the form of a semi-colon separated list of type:value. If no
            type is given, it is assumed to be DNS.
+
+       --reload
+            If true then the HTTP listeners are restarted after the certificates
+            are removed.
 
        --distinguishedname, --dn
            The distinguished name to use when generating the certificate.
