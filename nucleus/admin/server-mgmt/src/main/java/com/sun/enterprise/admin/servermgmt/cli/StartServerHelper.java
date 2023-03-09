@@ -306,7 +306,6 @@ public class StartServerHelper {
         err = validateAdditionalPortsForConnection();
 
         if (err != null) {
-            //incrementing level of severity when ports are used
             logger.severe(err);
             return false;
         }
@@ -358,7 +357,7 @@ public class StartServerHelper {
                                 && e.getKey().contains(PROPS_PORT_NAME)).collect(Collectors.toSet());
                 for (Map.Entry<String, String> e: setOfPorts) {
                     if(!NetUtils.isPortFree(host, Integer.parseInt(e.getValue()))) {
-                        return STRINGS.get("Port in use for an instance", Integer.parseInt(e.getValue()));
+                        return String.format("Port %d is in use", Integer.parseInt(e.getValue()));
                     }
                 }
             }
