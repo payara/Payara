@@ -112,7 +112,6 @@ public class APIResponsesImpl extends ExtensibleTreeMap<APIResponse, APIResponse
         if (from == null) {
             return;
         }
-        to.setExtensions(mergeProperty(to.getExtensions(), from.getExtensions(), override));
         // Get the response name
         String responseName = null;
         if (from instanceof APIResponseImpl) {

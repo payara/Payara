@@ -123,6 +123,7 @@ public class ServerImpl extends ExtensibleImpl<Server> implements Server {
         }
         to.setUrl(mergeProperty(to.getUrl(), from.getUrl(), override));
         to.setDescription(mergeProperty(to.getDescription(), from.getDescription(), override));
+        to.setExtensions(mergeProperty(to.getExtensions(), from.getExtensions(), override));
         if (from.getVariables() != null) {
             for (String serverVariableName : from.getVariables().keySet()) {
                 merge(
@@ -143,6 +144,7 @@ public class ServerImpl extends ExtensibleImpl<Server> implements Server {
         org.eclipse.microprofile.openapi.models.servers.ServerVariable variable = new ServerVariableImpl();
         variable.setDefaultValue(mergeProperty(variable.getDefaultValue(), from.getDefaultValue(), override));
         variable.setDescription(mergeProperty(variable.getDescription(), from.getDescription(), override));
+        variable.setExtensions(mergeProperty(variable.getExtensions(), from.getExtensions(), override));
         if (from.getEnumeration()!= null && !from.getEnumeration().isEmpty()) {
             if (variable.getEnumeration() == null) {
                 variable.setEnumeration(createList());

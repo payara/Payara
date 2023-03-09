@@ -336,7 +336,6 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI, Clo
                 toImpl.setEndpoints(ModelUtils.buildEndpoints(toImpl.getEndpoints(), root, paths));
             }
         }
-        to.setExtensions(mergeProperty(to.getExtensions(), from.getExtensions(), override));
     }
 
     @Override

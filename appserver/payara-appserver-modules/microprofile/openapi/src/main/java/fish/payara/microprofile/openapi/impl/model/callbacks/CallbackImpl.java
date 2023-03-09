@@ -40,6 +40,7 @@
 package fish.payara.microprofile.openapi.impl.model.callbacks;
 
 import fish.payara.microprofile.openapi.api.visitor.ApiContext;
+import static fish.payara.microprofile.openapi.impl.model.ExtensibleImpl.parseExtensions;
 import fish.payara.microprofile.openapi.impl.model.ExtensibleTreeMap;
 import fish.payara.microprofile.openapi.impl.model.OperationImpl;
 import fish.payara.microprofile.openapi.impl.model.PathItemImpl;
@@ -49,6 +50,7 @@ import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.create
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.getHttpMethod;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.getOrCreateOperation;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.readOnlyView;
 import java.util.List;
 import java.util.Map;
@@ -70,6 +72,7 @@ public class CallbackImpl extends ExtensibleTreeMap<PathItem, Callback> implemen
 
     public static Callback createInstance(AnnotationModel annotation, ApiContext context) {
         CallbackImpl from = new CallbackImpl();
+        from.setExtensions(parseExtensions(annotation));
         String ref = annotation.getValue("ref", String.class);
         if (ref != null && !ref.isEmpty()) {
             from.setRef(ref);
@@ -150,6 +153,7 @@ public class CallbackImpl extends ExtensibleTreeMap<PathItem, Callback> implemen
         if (from == null) {
             return;
         }
+        to.setExtensions(mergeProperty(to.getExtensions(), from.getExtensions(), override));
         if (from.getRef()!= null && !from.getRef().isEmpty()) {
             applyReference(to, from.getRef());
             return;
