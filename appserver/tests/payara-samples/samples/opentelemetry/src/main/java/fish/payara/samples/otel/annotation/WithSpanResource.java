@@ -39,59 +39,39 @@
  *  holder.
  *
  */
-package fish.payara.samples.otel;
+package fish.payara.samples.otel.annotation;
 
-import io.opentelemetry.api.trace.SpanKind;
-import io.opentelemetry.instrumentation.annotations.SpanAttribute;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
-import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-@ApplicationScoped
-public class SpanBean {
+@RequestScoped
+@Path("/withSpan")
+public class WithSpanResource {
 
-    private static final Logger LOG = Logger.getLogger(SpanBean.class.getName());
+    private static final Logger LOG = Logger.getLogger(WithSpanResource.class.getName());
 
     @Inject
-    SpanChildBean spanChildBean;
+    SpanBean spanBean;
 
-    @WithSpan
-    public void span() {
-        LOG.log(Level.INFO, "invoking span");
-    }
-
-    @WithSpan("definedName")
-    public void spanName() {
-        LOG.log(Level.INFO, "invoking spanName");
-    }
-
-    @WithSpan(kind = SpanKind.SERVER)
-    public void spanKind() {
-        LOG.log(Level.INFO, "invoking spanKind");
+    @Path("/span")
+    @GET
+    public String getSpan() {
+        LOG.log(Level.INFO, "getSpan()");
+        spanBean.span();
+        return "OK";
     }
 
     @WithSpan
-    public void spanArgs(@SpanAttribute(value = "customStringAttribute") String attr1,
-                           @SpanAttribute(value = "customBooleanAttribute") boolean attr2,
-                           @SpanAttribute(value = "customIntegerAttribute") int attr3,
-                           String ignored) {
-        LOG.log(Level.INFO, "invoking spanArgs with spanAttribute");
-    }
-
-    @WithSpan
-    public void spanChild() {
-        LOG.log(Level.INFO, "invoking spanChild");
-        spanChildBean.spanChild();
-    }
-
-    @ApplicationScoped
-    public static class SpanChildBean {
-        @WithSpan
-        public void spanChild() {
-
-        }
+    @Path("/spanDirectAnnotated")
+    @GET
+    public String getSpanAnnotatedOnDirectMethod() {
+        LOG.log(Level.INFO, "getSpanAnnotatedOnDirectMethod()");
+        return "OK";
     }
 }
