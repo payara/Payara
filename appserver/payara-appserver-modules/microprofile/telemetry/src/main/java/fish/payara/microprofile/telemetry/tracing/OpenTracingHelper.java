@@ -104,16 +104,13 @@ public class OpenTracingHelper {
         // TODO: OpenTelemetry @WithSpan
         if (withSpanAnnotation != null) {
             var operationName = OpenTracingCdiUtils.getConfigOverrideValue(
-                    WithSpan.class, "operationName", resourceInfo, String.class).orElse(withSpanAnnotation.value());
+                    WithSpan.class, "value", resourceInfo, String.class).orElse(withSpanAnnotation.value());
 
+            // By default, the span name will be <className>.<methodName>,
+            // unless a name is provided as an argument to the annotation.
             if (operationName.equals("")) {
-                var uriInfo = request.getUriInfo();
-                var result = new StringBuilder();
-                result.append(uriInfo.getBaseUri().getPath());
-                // strip / at end
-                SpanStrategy.trimTrailingSlash(result);
-                SpanStrategy.appendTemplate(resourceInfo, uriInfo, result);
-                return result.toString();
+                return resourceInfo.getResourceClass().getCanonicalName() + "."
+                        + resourceInfo.getResourceMethod().getName();
             }
             return operationName;
         }
