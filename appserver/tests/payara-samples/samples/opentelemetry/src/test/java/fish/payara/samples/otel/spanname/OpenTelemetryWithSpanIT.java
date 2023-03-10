@@ -41,8 +41,8 @@
  */
 package fish.payara.samples.otel.spanname;
 
-import fish.payara.samples.otel.SpanBean;
-import fish.payara.samples.otel.WithSpanResource;
+import fish.payara.samples.otel.annotation.SpanBean;
+import fish.payara.samples.otel.annotation.WithSpanResource;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanKind;
@@ -92,7 +92,7 @@ public class OpenTelemetryWithSpanIT extends AbstractSpanNameTest {
     public void testWithSpanShouldCreateSpan() {
         spanBean.span();
         var spans = exporter.getSpans();
-        var expected = "fish.payara.samples.otel.SpanBean.span";
+        var expected = "fish.payara.samples.otel.annotation.SpanBean.span";
         assertEquals(1, spans.size());
         assertThat(spans).describedAs("Expecting span name of "+expected).anySatisfy(span -> assertThat(span.getName()).isEqualTo(expected));
     }
@@ -134,8 +134,8 @@ public class OpenTelemetryWithSpanIT extends AbstractSpanNameTest {
         spanBean.spanChild();
         var spans = exporter.getSpans();
         assertEquals(2, spans.size());
-        assertEquals("fish.payara.samples.otel.SpanBean.SpanChildBean.spanChild", spans.get(0).getName());
-        assertEquals("fish.payara.samples.otel.SpanBean.spanChild", spans.get(1).getName());
+        assertEquals("fish.payara.samples.otel.annotation.SpanBean.SpanChildBean.spanChild", spans.get(0).getName());
+        assertEquals("fish.payara.samples.otel.annotation.SpanBean.spanChild", spans.get(1).getName());
         assertEquals(spans.get(0).getParentSpanId(), spans.get(1).getSpanId());
     }
 
@@ -144,7 +144,7 @@ public class OpenTelemetryWithSpanIT extends AbstractSpanNameTest {
         var response = target(null, "withSpan", "span").request().get();
         assertEquals(200, response.getStatus());
         var spans = exporter.getSpans();
-        var expected = "fish.payara.samples.otel.SpanBean.span";
+        var expected = "fish.payara.samples.otel.annotation.SpanBean.span";
         assertEquals("Expecting 3 span exists, which are 1 from @WithSpan of SpanBean, 2 and 3 from JAXRS server and client"
                 , 3, spans.size());
         assertThat(spans).describedAs("Expecting span name of "+expected).anySatisfy(span -> assertThat(span.getName()).isEqualTo(expected));
@@ -157,7 +157,7 @@ public class OpenTelemetryWithSpanIT extends AbstractSpanNameTest {
         var spans = exporter.getSpans();
         assertEquals("Expecting have 2 spans from JAXRS which are SERVER and CLIENT kind without having span started by @WithSpan"
                 , 2, spans.size());
-        var expected = "fish.payara.samples.otel.WithSpanResource.getSpanAnnotatedOnDirectMethod";
+        var expected = "fish.payara.samples.otel.annotation.WithSpanResource.getSpanAnnotatedOnDirectMethod";
         assertThat(spans).describedAs("Expecting span name of "+expected).anySatisfy(span -> assertThat(span.getName()).isEqualTo(expected));
     }
 }
