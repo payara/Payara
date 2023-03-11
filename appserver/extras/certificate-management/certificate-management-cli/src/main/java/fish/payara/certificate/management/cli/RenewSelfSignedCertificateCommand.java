@@ -40,92 +40,105 @@
 package fish.payara.certificate.management.cli;
 
 import com.sun.enterprise.admin.cli.CLICommand;
-import com.sun.enterprise.admin.cli.CLIConstants;
 import com.sun.enterprise.admin.cli.Environment;
 import com.sun.enterprise.admin.cli.ProgramOptions;
 import com.sun.enterprise.admin.servermgmt.KeystoreManager;
 import com.sun.enterprise.admin.servermgmt.RepositoryException;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import fish.payara.certificate.management.CertificateManagementKeytoolCommands;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
-import java.util.logging.Logger;
-
 /**
- * CLI command for generating self-signed certificates and placing them in an instance or listener's key
- * and trust stores.
+ * Replaces all self-signed certificates with new ones that have the same alias and dname.
  *
- * @author Andrew Pielage
+ * These new certificates WILL have different fingerprints to the old ones.
+ *
+ * @author jonathan coustick
+ * @since 5.21.0
  */
-@Service(name = "generate-self-signed-certificate")
+@Service(name = "renew-self-signed-certificates")
 @PerLookup
-public class GenerateSelfSignedCertificateCommand extends AbstractCertManagementCommand {
+public class RenewSelfSignedCertificateCommand extends AbstractCertManagementCommand {
 
-    private static final Logger logger = Logger.getLogger(CLICommand.class.getPackage().getName());
+    private static final Logger LOGGER = Logger.getLogger(RenewSelfSignedCertificateCommand.class.getPackage().getName());
 
-    @Param(name = "distinguishedname", alias = "dn")
-    private String dn;
-
-    @Param(name = "alternativenames", optional = true, alias = "altnames", separator = ';')
-    private String[] altnames;
-    
-    @Param(name="reload", optional=true)
+    @Param(name = "reload", optional = true)
     private boolean reload;
 
-    @Param(name = "alias", primary = true)
-    private String alias;
-
-    @Override
-    protected void validate() throws CommandException {
-        userArgAlias = alias;
-        super.validate();
-    }
+    private KeyStore store;
 
     @Override
     protected int executeCommand() throws CommandException {
         // If we're targetting an instance that isn't the DAS, use a different command
         if (target != null && !target.equals(SystemPropertyConstants.DAS_SERVER_NAME)) {
-            GenerateSelfSignedCertificateLocalInstanceCommand localInstanceCommand =
-                    new GenerateSelfSignedCertificateLocalInstanceCommand(programOpts, env);
+            RenewSelfSignedCertificateLocalInstanceCommand localInstanceCommand =
+                    new RenewSelfSignedCertificateLocalInstanceCommand(programOpts, env);
             localInstanceCommand.validate();
             return localInstanceCommand.executeCommand();
         }
-
-        // Parse the location of the key and trust stores, and the passwords required to access them
+        
+        
         parseKeyAndTrustStores();
 
-        // Run keytool command to generate self-signed cert and place in keystore
         try {
-            addToKeystore();
-        } catch (CommandException ce) {
-            return CLIConstants.ERROR;
+            store = KeyStore.getInstance(KeyStore.getDefaultType());
+            store.load(new FileInputStream(keystore), keystorePassword);
+        } catch (KeyStoreException | IOException | CertificateException | NoSuchAlgorithmException ex) {
+            LOGGER.log(Level.SEVERE, null, ex);
+            return ERROR;
         }
 
-        try {
-            addToTruststore();
-        } catch (CommandException ce) {
-            return CLIConstants.WARNING;
+        List<X509Certificate> certificates = findSelfSignedCerts();
+        for (X509Certificate cert : certificates) {
+            if (renewCertificate(cert) == ERROR) {
+                    return ERROR;
+            }
         }
+
         if (reload) {
             restartHttpListeners();
         }
 
-        return CLIConstants.SUCCESS;
+        return SUCCESS;
     }
 
-    /**
-     * Generates a self-signed certificate and adds it to the target key store
-     *
-     * @throws CommandException If there's an issue adding the certificate to the key store
-     */
-    private void addToKeystore() throws CommandException {
+    private List<X509Certificate> findSelfSignedCerts() {
+        ArrayList<X509Certificate> selfSignedCerts = new ArrayList<>();
+        try {
+            Enumeration<String> aliases = store.aliases();
+            while (aliases.hasMoreElements()) {
+                X509Certificate cert = (X509Certificate) store.getCertificate(aliases.nextElement());
+                if (cert.getIssuerX500Principal().equals(cert.getSubjectX500Principal())) {
+                    selfSignedCerts.add(cert);
+                }
+
+            }
+        } catch (KeyStoreException ex) {
+            Logger.getLogger(RenewSelfSignedCertificateCommand.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return selfSignedCerts;
+    }
+
+    private void addToKeystore(String dname, String alias, File keyStore) throws CommandException {
         // Run keytool command to generate self-signed cert
         KeystoreManager.KeytoolExecutor keytoolExecutor = new KeystoreManager.KeytoolExecutor(
-                CertificateManagementKeytoolCommands.constructGenerateCertKeytoolCommand(keystore, keystorePassword,
-                        userArgAlias, dn, altnames), 60);
+                CertificateManagementKeytoolCommands.constructGenerateCertKeytoolCommand(keyStore, keystorePassword, alias, dname, new String[0]), 60);
 
         try {
             keytoolExecutor.execute("certNotCreated", keystore);
@@ -137,12 +150,7 @@ public class GenerateSelfSignedCertificateCommand extends AbstractCertManagement
         }
     }
 
-    /**
-     * Adds the self-signed certificate to the target trust store
-     *
-     * @throws CommandException If there's an issue adding the certificate to the trust store
-     */
-    private void addToTruststore() throws CommandException {
+    private void addToTruststore(String alias) throws CommandException {
         KeystoreManager manager = new KeystoreManager();
         try {
             manager.copyCert(keystore, truststore, alias, new String(masterPassword()));
@@ -154,12 +162,9 @@ public class GenerateSelfSignedCertificateCommand extends AbstractCertManagement
         }
     }
 
-    /**
-     * Local instance (non-DAS) version of the parent command. Not intended for use as a standalone CLI command.
-     */
-    private class GenerateSelfSignedCertificateLocalInstanceCommand extends AbstractLocalInstanceCertManagementCommand {
+    private class RenewSelfSignedCertificateLocalInstanceCommand extends AbstractLocalInstanceCertManagementCommand {
 
-        public GenerateSelfSignedCertificateLocalInstanceCommand(ProgramOptions programOpts, Environment env) {
+        public RenewSelfSignedCertificateLocalInstanceCommand(ProgramOptions programOpts, Environment env) {
             super(programOpts, env);
         }
 
@@ -167,45 +172,44 @@ public class GenerateSelfSignedCertificateCommand extends AbstractCertManagement
         protected int executeCommand() throws CommandException {
             parseKeyAndTrustStores();
 
-            // If the target is not the DAS and is configured to use the default key or trust store, sync with the
-            // DAS instead
-            if (checkDefaultKeyOrTrustStore()) {
-                logger.warning("The target instance is using the default key or trust store, any new certificates"
-                        + " added directly to instance stores would be lost upon next sync.");
-
-                if (!alreadySynced) {
-                    logger.warning("Syncing with the DAS instead of generating a new certificate");
-                    synchronizeInstance();
-                }
-
-                if (defaultKeystore && defaultTruststore) {
-                    // Do nothing
-                } else if (defaultKeystore) {
-                    logger.info("Please add self-signed certificate to truststore manually using the add-to-truststore command");
-                } else {
-                    logger.info("Please add self-signed certificate to keystore manually using the add-to-keystore command");
-
-                }
-
-                return CLIConstants.WARNING;
-            }
-
-            // Run keytool command to generate self-signed cert and place in keystore
             try {
-                addToKeystore();
-            } catch (CommandException ce) {
-                return CLIConstants.ERROR;
+                store = KeyStore.getInstance(KeyStore.getDefaultType());
+                store.load(new FileInputStream(keystore), keystorePassword);
+            } catch (KeyStoreException | IOException | CertificateException | NoSuchAlgorithmException ex) {
+                LOGGER.log(Level.SEVERE, null, ex);
+                return ERROR;
             }
 
-            try {
-                addToTruststore();
-            } catch (CommandException ce) {
-                return CLIConstants.WARNING;
+            List<X509Certificate> certificates = findSelfSignedCerts();
+            for (X509Certificate cert : certificates) {
+                if (renewCertificate(cert) == ERROR) {
+                    return ERROR;
+                }
             }
+
             if (reload) {
                 restartHttpListeners();
             }
-            return CLIConstants.SUCCESS;
+
+            return SUCCESS;
         }
     }
+    
+    private int renewCertificate(X509Certificate cert) {
+        try {
+            String alias = store.getCertificateAlias(cert);
+            userArgAlias = alias;
+            String dname = cert.getSubjectX500Principal().getName();
+
+            removeFromKeyStore(); //Remove old entry from keystore
+            removeFromTrustStore(); //Remove old entry from truststore
+            addToKeystore(dname, alias, keystore); //create new entry
+            addToTruststore(alias); //Add new entry to truststore
+            return SUCCESS;
+        } catch (KeyStoreException | CommandException ex) {
+            LOGGER.log(Level.SEVERE, "Error renewing certificate", ex);
+            return ERROR;
+        }
+    }
+
 }

@@ -11,6 +11,7 @@ SYNOPSIS
            [--node node-name] [--nodedir node-dir]
            [--target instance-name] [--listener listener-name]
            [alternativenames (type:value)[;type:value]*]
+           [--reload={true|false}]
            --distinguishedname
            alias
 
@@ -36,7 +37,8 @@ OPTIONS
 
        --domainname, --domain_name
            The unique name of the domain to add the certificate to. This operand
-           is optional, defaulting to domain1 if not provided.
+           is optional, defaulting to domain1 if not provided or if there is only
+           one domain existing then it will use that domain.
 
        --domaindir
            The domain root directory, which contains the directory of the
@@ -69,6 +71,10 @@ OPTIONS
            The subject alternative names to add to the generated certificate.
            Takes the form of a semi-colon separated list of type:value. If no
            type is given, it is assumed to be DNS.
+
+       --reload
+            If true then the HTTP listeners are restarted after the certificates
+            are removed.
 
        --distinguishedname, --dn
            The distinguished name to use when generating the certificate.

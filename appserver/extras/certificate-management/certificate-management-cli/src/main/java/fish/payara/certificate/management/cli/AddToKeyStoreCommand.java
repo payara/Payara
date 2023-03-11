@@ -44,12 +44,16 @@ import com.sun.enterprise.admin.cli.CLIConstants;
 import com.sun.enterprise.admin.cli.Environment;
 import com.sun.enterprise.admin.cli.ProgramOptions;
 import com.sun.enterprise.util.SystemPropertyConstants;
+import java.io.BufferedReader;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -66,6 +70,9 @@ public class AddToKeyStoreCommand extends AbstractCertManagementCommand {
 
     @Param(name = "file")
     private File file;
+    
+    @Param(name="reload", optional=true)
+    private boolean reload;
 
     @Param(name = "alias", primary = true)
     private String alias;
@@ -88,6 +95,27 @@ public class AddToKeyStoreCommand extends AbstractCertManagementCommand {
 
         parseKeyStore();
         addToKeyStore(file);
+        
+        if (file.getName().matches(".*\\.(cer|cert|crt|pem)")) {
+            try (FileReader fileReader = new FileReader(file)) {
+                try (BufferedReader reader = new BufferedReader(fileReader)) {
+                    boolean includesPrivateKey = reader.lines().anyMatch((t) -> {
+                        return t.contains("-----BEGIN RSA PRIVATE KEY-----");
+                    });
+                    if (!includesPrivateKey) {
+                        logger.warning("This certificate cannot be used by a HTTP listener as it does not contain a private key");
+                        return CLIConstants.WARNING;
+                    }
+                    
+                }
+            } catch (IOException ex) {
+                Logger.getLogger(AddToKeyStoreCommand.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
+        if (reload) {
+            restartHttpListeners();
+        }
 
         return CLIConstants.SUCCESS;
     }
@@ -98,6 +126,7 @@ public class AddToKeyStoreCommand extends AbstractCertManagementCommand {
             super(programOpts, env);
         }
 
+        @Override
         protected int executeCommand() throws CommandException {
             parseKeyStore();
 
@@ -116,7 +145,9 @@ public class AddToKeyStoreCommand extends AbstractCertManagementCommand {
             }
 
             addToKeyStore(file);
-
+            if (reload) {
+                restartHttpListeners();
+            }
             return CLIConstants.SUCCESS;
         }
     }

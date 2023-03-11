@@ -62,7 +62,10 @@ import java.util.logging.Logger;
 public class RemoveFromTrustStoreCommand extends AbstractCertManagementCommand {
 
 
-    private static final Logger logger = Logger.getLogger(CLICommand.class.getPackage().getName());
+    private static final Logger LOGGER = Logger.getLogger(CLICommand.class.getPackage().getName());
+    
+    @Param(name="reload", optional=true)
+    private boolean reload;
 
     @Param(name = "alias", primary = true)
     private String alias;
@@ -86,6 +89,10 @@ public class RemoveFromTrustStoreCommand extends AbstractCertManagementCommand {
         parseTrustStore();
         removeFromTrustStore();
 
+        if (reload) {
+            restartHttpListeners();
+        }
+        
         return CLIConstants.SUCCESS;
     }
 
@@ -95,17 +102,18 @@ public class RemoveFromTrustStoreCommand extends AbstractCertManagementCommand {
             super(programOpts, env);
         }
 
+        @Override
         protected int executeCommand() throws CommandException {
             parseTrustStore();
 
             // If the target is not the DAS and is configured to use the default trust store, sync with the
             // DAS instead
             if (checkDefaultTrustStore()) {
-                logger.warning("The target instance is using the default trust store, any new certificates"
+                LOGGER.warning("The target instance is using the default trust store, any new certificates"
                         + " removed directly from instance stores would be lost upon next sync.");
 
                 if (!alreadySynced) {
-                    logger.warning("Syncing with the DAS instead of generating a new certificate");
+                    LOGGER.warning("Syncing with the DAS instead of generating a new certificate");
                     synchronizeInstance();
                 }
 
@@ -113,6 +121,9 @@ public class RemoveFromTrustStoreCommand extends AbstractCertManagementCommand {
             }
 
             removeFromTrustStore();
+            if (reload) {
+                restartHttpListeners();
+            }
 
             return CLIConstants.SUCCESS;
         }

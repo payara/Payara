@@ -42,6 +42,7 @@ package fish.payara.certificate.management.cli;
 import com.sun.enterprise.admin.cli.Environment;
 import com.sun.enterprise.admin.cli.ProgramOptions;
 import com.sun.enterprise.admin.cli.cluster.SynchronizeInstanceCommand;
+import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
 import com.sun.enterprise.admin.servermgmt.KeystoreManager;
 import com.sun.enterprise.admin.servermgmt.RepositoryException;
 import com.sun.enterprise.admin.servermgmt.cli.LocalDomainCommand;
@@ -62,6 +63,7 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
+import java.util.logging.Level;
 
 /**
  * Parent class from which other certificate management commands can extend. Contains the common methods and params.
@@ -84,6 +86,7 @@ public abstract class AbstractCertManagementCommand extends LocalDomainCommand {
 
     @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
     protected String target;
+    
 
     protected String userArgAlias;
 
@@ -337,6 +340,16 @@ public abstract class AbstractCertManagementCommand extends LocalDomainCommand {
             out.flush();
         }
     }
+    
+    protected void restartHttpListeners() {
+        try {
+            RemoteCLICommand restartListenersCommand = new RemoteCLICommand("restart-http-listeners", programOpts, env);
+            restartListenersCommand.execute();
+        } catch (CommandException ex) {
+            //This will occur if the domain isn't running
+            logger.log(Level.FINE, "HTTP Listeners could not be restarted", ex);
+        }
+    }
 
     /**
      * Parent class for the local instance version of certificate management commands to inherit from.
@@ -478,7 +491,6 @@ public abstract class AbstractCertManagementCommand extends LocalDomainCommand {
 
             return defaultTruststore;
         }
-
 
     }
 }
