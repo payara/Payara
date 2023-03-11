@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-/*Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
+/*Portions Copyright 2016-2023 Payara Foundation and/or its affiliates
 /*
  * Common utility
  */
@@ -2049,7 +2049,7 @@ admingui.deploy = {
 
     populateDirAndAppName : function(fileChooserId, dirPathId, appNameId, typeId, dropDownProp, contextRootId, extensionId, appTypeString){
         var fc = document.getElementById(fileChooserId).getSelectionValue();
-        window.opener.getTextElement(dirPathId).value = fc;
+        window.opener.document.getElementById(dirPathId).value = fc;
         //for redeploy, there is no dropdown for app type, there is no need to fill in any field.
         if (dropDownProp != ""){
             admingui.deploy.setFieldValue(appNameId, fc, dropDownProp, typeId, contextRootId, extensionId, window.opener, appTypeString);
