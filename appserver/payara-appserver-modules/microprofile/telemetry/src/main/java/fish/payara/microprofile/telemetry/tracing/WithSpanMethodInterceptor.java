@@ -51,6 +51,7 @@ import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.annotations.SpanAttribute;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
+import io.opentelemetry.instrumentation.api.annotation.support.MethodSpanAttributesExtractor;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import jakarta.enterprise.inject.spi.BeanManager;
 import jakarta.interceptor.AroundInvoke;
@@ -64,7 +65,7 @@ import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
 import org.glassfish.api.invocation.InvocationManager;
 
-import java.lang.reflect.Parameter;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -102,11 +103,13 @@ public class WithSpanMethodInterceptor {
 
         // Get the WithSpan annotation present on the method
         final WithSpan withSpan = OpenTracingCdiUtils.getAnnotation(bm, WithSpan.class, invocationContext);
+        var builder = Attributes.builder();
+        extractSpanAttributes(invocationContext, builder);
         // If we *have* been told to, get the application's Tracer instance and start an active span.
         SpanBuilder spanBuilder = openTelemetryService.getCurrentTracer()
                 .spanBuilder(getWithSpanValue(invocationContext, withSpan))
                 .setSpanKind(getWithSpanKind(invocationContext, withSpan))
-                .setAllAttributes(getSpanAttributes(invocationContext));
+                .setAllAttributes(builder.build());
         spanBuilder.setParent(Context.current());
         final var span = spanBuilder.startSpan();
         try (var ignore = PropagationHelper.start(span, Context.current())) {
@@ -195,32 +198,25 @@ public class WithSpanMethodInterceptor {
     }
 
     /**
-     * Extracts the {@link SpanAttribute} annotated parameters from the intercepted method
-     * and returns them as a set of attributes.
      *
-     * @param invocationContext the context of the intercepted method invocation
-     * @return a set of attributes extracted from the {@link SpanAttribute} annotated parameters
+     * Extracts span attributes from the given {@code invocationContext} and adds them to the given {@code builder}.
+     * Uses a {@code MethodSpanAttributesExtractor} to retrieve the attributes from the method signature and annotations
+     * on its parameters.
+     * @param invocationContext the invocation context to extract the span attributes from
+     * @param builder the attributes builder to add the extracted attributes to
      */
-    private Attributes getSpanAttributes(final InvocationContext invocationContext) {
-        AttributesBuilder builder = Attributes.builder();
-        Parameter[] parameters = invocationContext.getMethod().getParameters();
-        Object[] values = invocationContext.getParameters();
-        for (int i = 0; i < parameters.length; i++) {
-            Parameter param = parameters[i];
-            SpanAttribute spanAttribute = param.getAnnotation(SpanAttribute.class);
-            String key = null;
-            if (spanAttribute != null && !(key = spanAttribute.value().trim()).isEmpty()) {
-                if (values[i] instanceof Long) {
-                    builder.put(key, (Long) values[i]);
-                } else if (values[i] instanceof Integer) {
-                    builder.put(key, (Integer) values[i]);
-                } else if (values[i] instanceof Boolean) {
-                    builder.put(key, (Boolean) values[i]);
-                } else {
-                    builder.put(key, (String) values[i]);
-                }
-            }
-        }
-        return builder.build();
+    private void extractSpanAttributes(final InvocationContext invocationContext, final AttributesBuilder builder) {
+        MethodSpanAttributesExtractor<InvocationContext, Void> extractor = MethodSpanAttributesExtractor
+                .newInstance(
+                        InvocationContext::getMethod,
+                        (m, p) -> Arrays.stream(m.getParameters())
+                                .map(v -> {
+                                    SpanAttribute spanAttribute = v.getAnnotation(SpanAttribute.class);
+                                    // we ignore unspecified argument name (compiled with -parameter) or spanAttribute value
+                                    var name = v.isNamePresent() ? v.getName() : null;
+                                    return spanAttribute != null ? spanAttribute.value().trim() : name;
+                                }).toArray(String[]::new),
+                        InvocationContext::getParameters);
+        extractor.onStart(builder, Context.current(), invocationContext);
     }
 }

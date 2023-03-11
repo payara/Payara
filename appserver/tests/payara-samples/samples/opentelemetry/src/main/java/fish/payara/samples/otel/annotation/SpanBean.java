@@ -75,9 +75,10 @@ public class SpanBean {
 
     @WithSpan
     public void spanArgs(@SpanAttribute(value = "customStringAttribute") String attr1,
-                           @SpanAttribute(value = "customBooleanAttribute") boolean attr2,
-                           @SpanAttribute(value = "customIntegerAttribute") int attr3,
-                           String ignored) {
+                         @SpanAttribute(value = "customBooleanAttribute") boolean attr2,
+                         @SpanAttribute(value = "customIntegerAttribute") int attr3,
+                         @SpanAttribute String woSpanAttributeValue,
+                         String noName) {
         LOG.log(Level.INFO, "invoking spanArgs with spanAttribute");
     }
 

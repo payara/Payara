@@ -312,6 +312,12 @@
                 <version>${opentelemetry.version}</version>
                 <scope>provided</scope>
             </dependency>
+            <dependency>
+                <groupId>io.opentelemetry.instrumentation</groupId>
+                <artifactId>opentelemetry-instrumentation-annotations-support</artifactId>
+                <version>${opentelemetry.alpha.version}</version>
+                <scope>provided</scope>
+            </dependency>
 
             <dependency>
                 <groupId>io.opentracing</groupId>

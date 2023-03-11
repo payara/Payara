@@ -117,11 +117,12 @@ public class OpenTelemetryWithSpanIT extends AbstractSpanNameTest {
 
     @Test
     public void testWithSpanAttributeShouldCreateSpan() {
-        spanBean.spanArgs("stringAttr", true, 2, "ignored");
+        spanBean.spanArgs("stringAttr", true, 2, "noAttributeName", "noName");
         var spans = exporter.getSpans();
         assertEquals(1, spans.size());
         spans.stream().forEachOrdered(span -> {
             Attributes attrs = span.getAttributes();
+            // as per spec, only add if only SpanAttribute value is specified
             assertEquals(3, attrs.size());
             assertEquals("stringAttr", attrs.get(AttributeKey.stringKey("customStringAttribute")));
             assertEquals(true, attrs.get(AttributeKey.booleanKey("customBooleanAttribute")));
