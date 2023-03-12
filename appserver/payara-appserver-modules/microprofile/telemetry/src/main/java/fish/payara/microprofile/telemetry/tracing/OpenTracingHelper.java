@@ -101,7 +101,6 @@ public class OpenTracingHelper {
             }
             return operationName;
         }
-        // TODO: OpenTelemetry @WithSpan
         if (withSpanAnnotation != null) {
             var operationName = OpenTracingCdiUtils.getConfigOverrideValue(
                     WithSpan.class, "value", resourceInfo, String.class).orElse(withSpanAnnotation.value());
