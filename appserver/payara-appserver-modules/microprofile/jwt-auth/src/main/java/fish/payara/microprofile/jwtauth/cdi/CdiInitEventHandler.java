@@ -47,6 +47,7 @@ import fish.payara.microprofile.jwtauth.jwt.JWTInjectableType;
 import fish.payara.microprofile.jwtauth.jwt.JsonWebTokenImpl;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.context.Dependent;
+import jakarta.enterprise.context.RequestScoped;
 import jakarta.enterprise.context.spi.CreationalContext;
 import jakarta.enterprise.inject.spi.AfterBeanDiscovery;
 import jakarta.enterprise.inject.spi.Bean;
@@ -58,23 +59,24 @@ import jakarta.json.JsonObject;
 import jakarta.json.JsonString;
 import jakarta.json.JsonStructure;
 import jakarta.json.JsonValue;
+import jakarta.security.enterprise.SecurityContext;
 import jakarta.security.enterprise.authentication.mechanism.http.HttpAuthenticationMechanism;
 import jakarta.security.enterprise.identitystore.IdentityStore;
-import org.eclipse.microprofile.auth.LoginConfig;
-import org.eclipse.microprofile.jwt.Claim;
-import org.eclipse.microprofile.jwt.ClaimValue;
-import org.glassfish.common.util.PayaraCdiProducer;
-import org.glassfish.soteria.cdi.CdiUtils;
-
 import java.lang.annotation.Annotation;
+import java.security.Principal;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
-
 import static java.util.stream.Collectors.toSet;
+import org.eclipse.microprofile.auth.LoginConfig;
+import org.eclipse.microprofile.jwt.Claim;
+import org.eclipse.microprofile.jwt.ClaimValue;
+import org.eclipse.microprofile.jwt.JsonWebToken;
+import org.glassfish.common.util.PayaraCdiProducer;
+import org.glassfish.soteria.cdi.CdiUtils;
 
 /**
  * This class contains most of the actual logic from CdiExtension. Places in a
