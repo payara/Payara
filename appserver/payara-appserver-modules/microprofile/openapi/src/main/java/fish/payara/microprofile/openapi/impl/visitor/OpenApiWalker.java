@@ -323,7 +323,7 @@ public class OpenApiWalker<E extends AnnotatedElement> implements ApiWalker {
                         if (schemaImpl.getImplementation() != null) {
                             String[] implQualified = schemaImpl.getImplementation().split("\\.");
                             org.eclipse.microprofile.openapi.models.media.Schema from = context.getApi().getComponents().getSchemas().get(implQualified[implQualified.length - 1]);
-                            SchemaImpl.merge(from, schemaImpl, true, context);
+                            SchemaImpl.merge(from, schemaImpl, false, context);
                         }
                     }
                 }
@@ -339,7 +339,7 @@ public class OpenApiWalker<E extends AnnotatedElement> implements ApiWalker {
                                 if (schema.getImplementation() != null) {
                                     String[] implQualified = schema.getImplementation().split("\\.");
                                     org.eclipse.microprofile.openapi.models.media.Schema from = context.getApi().getComponents().getSchemas().get(implQualified[implQualified.length - 1]);
-                                    SchemaImpl.merge(from, schema, true, context);
+                                    SchemaImpl.merge(from, schema, false, context);
                                     schema.setImplementation(null);
                                 }
                             }
