@@ -71,6 +71,15 @@
             <artifactId>opentracing-api</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>io.opentelemetry</groupId>-->
+<!--            <artifactId>opentelemetry-semconv</artifactId>-->
+<!--        </dependency>-->
     </dependencies>
     
 </project>

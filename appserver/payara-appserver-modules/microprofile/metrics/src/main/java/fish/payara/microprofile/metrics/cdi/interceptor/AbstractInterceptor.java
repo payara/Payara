@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2018-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -41,14 +41,13 @@
 package fish.payara.microprofile.metrics.cdi.interceptor;
 
 import fish.payara.microprofile.metrics.MetricsService;
-import fish.payara.microprofile.metrics.cdi.AnnotationReader;
 
+import fish.payara.microprofile.metrics.cdi.AnnotationReader;
+import jakarta.enterprise.inject.spi.Bean;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Member;
-import java.util.function.BiFunction;
 
 import jakarta.enterprise.inject.Intercepted;
-import jakarta.enterprise.inject.spi.Bean;
 import jakarta.inject.Inject;
 import jakarta.interceptor.AroundConstruct;
 import jakarta.interceptor.AroundInvoke;
@@ -57,6 +56,7 @@ import jakarta.interceptor.InvocationContext;
 
 import org.eclipse.microprofile.metrics.Metric;
 import org.eclipse.microprofile.metrics.MetricID;
+import org.eclipse.microprofile.metrics.annotation.*;
 import org.glassfish.internal.api.Globals;
 
 /* package-private */ abstract class AbstractInterceptor {
@@ -69,9 +69,21 @@ import org.glassfish.internal.api.Globals;
     private MetricsService.MetricsContext metricsContext;
 
     protected static <E extends Member & AnnotatedElement, M extends Metric> M apply(E element,
-            Class<?> bean, AnnotationReader<?> reader, Class<M> metricType, BiFunction<MetricID, Class<M>, M> loader) {
+            Class<?> bean, AnnotationReader<?> reader, Class<M> metricType, 
+                                                                                     ThreeFunctionResolver<MetricID, Class<M>, String,M> loader) {
         MetricID metricID = reader.metricID(bean, element);
-        M metric = loader.apply(metricID, metricType);
+        Timed timedAnnotation = element.getAnnotation(Timed.class);
+        Counted countedAnnotation = element.getAnnotation(Counted.class);
+        String scope = null;
+        if(timedAnnotation != null) {
+            scope = timedAnnotation.scope();
+        }
+        
+        if(countedAnnotation != null) {
+            scope = countedAnnotation.scope();
+        }
+        
+        M metric = loader.apply(metricID, metricType, scope);
         if (metric == null) {
             throw new IllegalStateException(
                     "No " + metricType.getSimpleName() + " with ID [" + metricID + "] found in application registry");
@@ -79,8 +91,11 @@ import org.glassfish.internal.api.Globals;
         return metric;
     }
 
-    public <T extends Metric> T getMetric(MetricID metricID, Class<T> metricType) {
+    public <T extends Metric> T getMetric(MetricID metricID, Class<T> metricType, String scope) {
         initService();
+        if(scope != null) {
+            return metricsContext.getOrCreateRegistry(scope).getMetric(metricID, metricType);
+        }
         return metricsContext.getApplicationRegistry().getMetric(metricID, metricType);
     }
 
@@ -121,5 +136,7 @@ import org.glassfish.internal.api.Globals;
     }
 
     protected abstract <E extends Member & AnnotatedElement> Object applyInterceptor(InvocationContext context, E element) throws Exception;
+
+
 
 }

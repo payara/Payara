@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2022] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -88,6 +88,7 @@ public class ParameterImpl extends ExtensibleImpl<Parameter> implements Paramete
             from.setIn(In.valueOf(inEnum.getValue()));
         }
         from.setDescription(annotation.getValue("description", String.class));
+        from.setExtensions(parseExtensions(annotation));
         from.setRequired(annotation.getValue("required", Boolean.class));
         from.setDeprecated(annotation.getValue("deprecated", Boolean.class));
         from.setAllowEmptyValue(annotation.getValue("allowEmptyValue", Boolean.class));

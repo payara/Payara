@@ -50,5 +50,11 @@
 
     <artifactId>multiple-keystore</artifactId>
     <name>Payara Samples - Payara - Multiple Keystores</name>
-
+    <dependencies>
+        <dependency>
+            <groupId>fish.payara.samples</groupId>
+            <artifactId>samples-test-utils</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 </project>

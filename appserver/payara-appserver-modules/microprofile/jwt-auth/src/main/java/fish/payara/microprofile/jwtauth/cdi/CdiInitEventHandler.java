@@ -85,6 +85,8 @@ import static java.util.stream.Collectors.toSet;
  */
 public class CdiInitEventHandler {
 
+    private final static JsonWebTokenImpl emptyJsonWebToken = new JsonWebTokenImpl(null, Collections.emptyMap());
+
     public static void installAuthenticationMechanism(AfterBeanDiscovery afterBeanDiscovery) {
 
         afterBeanDiscovery.addBean(new PayaraCdiProducer<IdentityStore>()
@@ -100,6 +102,14 @@ public class CdiInitEventHandler {
                 .types(Object.class, HttpAuthenticationMechanism.class, JWTAuthenticationMechanism.class)
                 .addToId("mechanism " + LoginConfig.class)
                 .create(e -> new JWTAuthenticationMechanism()));
+
+        // MP-JWT 1.0 7.1.1. Injection of JsonWebToken
+        afterBeanDiscovery.addBean(new PayaraCdiProducer<JsonWebToken>()
+                .scope(RequestScoped.class)
+                .beanClass(JsonWebToken.class)
+                .types(Object.class, JsonWebToken.class)
+                .addToId("token " + LoginConfig.class)
+                .create(e -> getJsonWebToken()));
 
         // MP-JWT 1.0 7.1.2
         for (JWTInjectableType injectableType : computeTypes()) {
@@ -222,8 +232,17 @@ public class CdiInitEventHandler {
     }
 
     public static JsonWebTokenImpl getJsonWebToken() {
-        JsonWebTokenImpl jsonWebToken = CdiUtils.getBeanReference(JsonWebTokenImpl.class);
-        return jsonWebToken;
+        SecurityContext context = CdiUtils.getBeanReference(SecurityContext.class);
+        Principal principal = context.getCallerPrincipal();
+        if (principal instanceof JsonWebTokenImpl) {
+            return (JsonWebTokenImpl) principal;
+        } else {
+            Set<JsonWebTokenImpl> principals = context.getPrincipalsByType(JsonWebTokenImpl.class);
+            if (!principals.isEmpty()) {
+                return principals.iterator().next();
+            }
+        }
+        return emptyJsonWebToken;
     }
 
     public static String getClaimName(Claim claim) {

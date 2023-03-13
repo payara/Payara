@@ -51,7 +51,6 @@ public class MetricsMetadataConfig {
     @XmlElementWrapper(name = "base")
     @XmlElement(name = "metadata")
     private final List<MetricsMetadata> baseMetadata = new CopyOnWriteArrayList<>();
-
     @XmlElementWrapper(name = "vendor")
     @XmlElement(name = "metadata")
     private final List<MetricsMetadata> vendorMetadata = new CopyOnWriteArrayList<>();

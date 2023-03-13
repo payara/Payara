@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2018-2022] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -40,7 +40,7 @@
 package fish.payara.microprofile.metrics.impl;
 
 import static java.util.Collections.unmodifiableSet;
-import static org.eclipse.microprofile.metrics.MetricRegistry.Type.BASE;
+
 import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.io.FileInputStream;
@@ -56,6 +56,7 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Logger;
 
 import jakarta.annotation.PostConstruct;
@@ -68,10 +69,7 @@ import org.eclipse.microprofile.metrics.Metadata;
 import org.eclipse.microprofile.metrics.Metric;
 import org.eclipse.microprofile.metrics.MetricID;
 import org.eclipse.microprofile.metrics.MetricRegistry;
-import org.eclipse.microprofile.metrics.MetricRegistry.Type;
-import org.eclipse.microprofile.metrics.MetricType;
 import org.eclipse.microprofile.metrics.MetricUnits;
-import org.eclipse.microprofile.metrics.SimpleTimer;
 import org.eclipse.microprofile.metrics.Timer;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
@@ -132,10 +130,10 @@ public class MetricsServiceImpl implements MetricsService, ConfigListener, Monit
 
     private static final class RegisteredMetric {
 
-        final Type scope;
+        final String scope;
         final MetricID id;
 
-        RegisteredMetric(Type scope, MetricID metric) {
+        RegisteredMetric(String scope, MetricID metric) {
             this.scope = scope;
             this.id = metric;
         }
@@ -151,13 +149,15 @@ public class MetricsServiceImpl implements MetricsService, ConfigListener, Monit
         private final MetricRegistryImpl base;
         private final MetricRegistryImpl vendor;
         private final MetricRegistryImpl application;
+
+        private final ConcurrentMap<String, MetricRegistry> registries = new ConcurrentHashMap<>();
         private final Queue<RegisteredMetric> newlyRegistered = new ConcurrentLinkedQueue<>();
 
         public MetricsContextImpl(String name) {
             this.name = name;
-            this.base = new MetricRegistryImpl(BASE);
-            this.vendor = new MetricRegistryImpl(Type.VENDOR);
-            this.application = isServerContext() ? null : new MetricRegistryImpl(Type.APPLICATION);
+            this.base = (MetricRegistryImpl) getOrCreateRegistry(MetricRegistry.BASE_SCOPE);
+            this.vendor = (MetricRegistryImpl)getOrCreateRegistry(MetricRegistry.VENDOR_SCOPE);
+            this.application = isServerContext() ? null : (MetricRegistryImpl)getOrCreateRegistry(MetricRegistry.APPLICATION_SCOPE);
             base.addListener(this);
             vendor.addListener(this);
             if (application != null)
@@ -169,27 +169,49 @@ public class MetricsServiceImpl implements MetricsService, ConfigListener, Monit
             return name;
         }
 
-        @Override
-        public MetricRegistryImpl getRegistry(Type type) throws NoSuchRegistryException {
-            switch (type) {
-            case BASE: return base;
-            case VENDOR: return vendor;
-            case APPLICATION:
-            default:
-                if (isServerContext()) {
-                    throw new NoSuchRegistryException("Server context does not have an application registry");
-                }
-                return application;
-            }
+        public MetricRegistry add(String name, MetricRegistry registry) {
+            return registries.putIfAbsent(name, registry);
         }
 
         @Override
-        public void onRegistration(MetricID registered, MetricRegistry registry) {
-            newlyRegistered.add(new RegisteredMetric(registry.getType(), registered));
+        public MetricRegistry getOrCreateRegistry(String registryName) throws NoSuchRegistryException {
+            MetricRegistry registry = registries.get(registryName);
+            if(registry == null) {
+                MetricRegistry created = new MetricRegistryImpl(registryName);
+                MetricRegistry referenced = add(registryName, created);
+                if(referenced == null) {
+                    return created;
+                }
+                return referenced;
+            }
+            return registry;
+        }
+
+        @Override
+        public void onRegistration(MetricID registered, String scope) {
+            String type = null;
+            if(scope.equals(MetricRegistry.BASE_SCOPE)) {
+                type = MetricRegistry.BASE_SCOPE;
+            }
+
+            if(scope.equals(MetricRegistry.VENDOR_SCOPE)) {
+                type = MetricRegistry.VENDOR_SCOPE;
+            }
+
+            if(scope.equals(MetricRegistry.APPLICATION_SCOPE)) {
+                type = MetricRegistry.APPLICATION_SCOPE;
+            }
+
+            newlyRegistered.add(new RegisteredMetric(type, registered));
         }
 
         RegisteredMetric pollNewlyRegistered() {
             return newlyRegistered.poll();
+        }
+
+        @Override
+        public ConcurrentMap<String, MetricRegistry> getRegistries() {
+            return registries;
         }
     }
 
@@ -266,9 +288,6 @@ public class MetricsServiceImpl implements MetricsService, ConfigListener, Monit
                     if (metric instanceof Counting) {
                         metricCollector.collect(toName(metricID, "Count"), ((Counting) metric).getCount());
                     }
-                    if (metric instanceof SimpleTimer) {
-                        metricCollector.collect(toName(metricID, "Duration"), ((SimpleTimer) metric).getElapsedTime().toMillis());
-                    }
                     if (metric instanceof Timer) {
                         metricCollector.collect(toName(metricID, "MaxDuration"), ((Timer) metric).getSnapshot().getMax());
                     }
@@ -287,23 +306,22 @@ public class MetricsServiceImpl implements MetricsService, ConfigListener, Monit
     }
 
     private static void processMetadataToAnnotations(MetricsContextImpl context, MonitoringDataCollector collector) {
-        RegisteredMetric metric = context.pollNewlyRegistered();
+       RegisteredMetric metric = context.pollNewlyRegistered();
         while (metric != null) {
             MetricID metricID = metric.id;
-            Type scope = metric.scope;
-            MetricRegistry registry = context.getRegistry(scope);
+            MetricRegistry registry = context.getOrCreateRegistry(metric.scope);
             MonitoringDataCollector metricCollector = tagCollector(context.getName(), metricID, collector);
             Metadata metadata = registry.getMetadata(metricID.getName());
             String suffix = "Count";
             String property = "Count";
-            boolean isGauge = metadata.getTypeRaw() == MetricType.GAUGE;
+            boolean isGauge = metadata.getName() == Gauge.class.getName();
             if (isGauge) {
                 suffix = getMetricUnitSuffix(metadata.unit());
                 property = "Value";
             }
             // Note that by convention an annotation with value 0 done before the series collected any value is considered permanent
             metricCollector.annotate(toName(metricID, suffix), 0, false,
-                    metadataToAnnotations(context.getName(), scope, metadata, property));
+                    metadataToAnnotations(context.getName(), metric.scope, metadata, property));
             metric = context.pollNewlyRegistered();
         }
     }
@@ -323,15 +341,13 @@ public class MetricsServiceImpl implements MetricsService, ConfigListener, Monit
         return Character.toUpperCase(value.charAt(0)) + value.substring(1);
     }
 
-    private static String[] metadataToAnnotations(String contextName, MetricRegistry.Type scope, Metadata metadata, String property) {
+    private static String[] metadataToAnnotations(String contextName, String scope, Metadata metadata, String property) {
         String unit = metadata.unit().orElse(MetricUnits.NONE);
         return new String[] {
                 "App", contextName, //
-                "Scope", scope.getName(), //
+                "Scope", scope, //
                 "Name", metadata.getName(), //
-                "Type", metadata.getType(), //
                 "Unit", unit, //
-                "DisplayName", metadata.getDisplayName(), //
                 "Description", metadata.getDescription(), //
                 "Property", property, //
                 "BaseUnit", MetricUnitsUtils.baseUnit(unit), //
@@ -391,6 +407,7 @@ public class MetricsServiceImpl implements MetricsService, ConfigListener, Monit
         // Could be constant but placed it in method as it is a workaround until fixed in JVM.
         // TODO Make this check dependent on the JDK version (as it hopefully will get solved in the future) -> Azul fix request made.
         String mbeanSystemCPULoad = "java.lang:type=OperatingSystem/SystemCpuLoad";
+
         long count = metadataConfig.getBaseMetadata().stream()
                 .map(MetricsMetadata::getMBean)
                 .filter(mbeanSystemCPULoad::equalsIgnoreCase)
@@ -410,7 +427,6 @@ public class MetricsServiceImpl implements MetricsService, ConfigListener, Monit
      * Initialize metrics from the metrics.xml containing the base & vendor
      * metrics metadata.
      *
-     * @param metadataConfig
      */
     private void initMetadataConfig(List<MetricsMetadata> baseMetadataList, List<MetricsMetadata> vendorMetadataList, boolean isRetry) {
         if (!baseMetadataList.isEmpty()) {
@@ -452,7 +468,6 @@ public class MetricsServiceImpl implements MetricsService, ConfigListener, Monit
                 MetricsMetadataConfig extraConfig = JAXB.unmarshal(userMetrics, MetricsMetadataConfig.class);
                 config.addBaseMetadata(extraConfig.getBaseMetadata());
                 config.addVendorMetadata(extraConfig.getVendorMetadata());
-
             } catch (FileNotFoundException ex) {
                 //ignore
             }
@@ -527,6 +542,7 @@ public class MetricsServiceImpl implements MetricsService, ConfigListener, Monit
     private void bootstrap() {
         MetricsMetadataConfig metadataConfig = getConfig();
         checkSystemCpuLoadIssue(metadataConfig); // PAYARA 2938
+        //removing processing of base metrics
         initMetadataConfig(metadataConfig.getBaseMetadata(), metadataConfig.getVendorMetadata(), false);
     }
     

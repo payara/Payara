@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2019-2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2023 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -54,7 +54,6 @@ import org.eclipse.microprofile.metrics.Histogram;
 import org.eclipse.microprofile.metrics.Metadata;
 import org.eclipse.microprofile.metrics.MetricID;
 import org.eclipse.microprofile.metrics.MetricRegistry;
-import org.eclipse.microprofile.metrics.MetricType;
 import org.eclipse.microprofile.metrics.MetricUnits;
 import org.eclipse.microprofile.metrics.Tag;
 
@@ -116,20 +115,6 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
      * General Metrics
      */
 
-    @Override
-    public void register(MetricType type, String metric, String[]... tagsPermutations) {
-        if (type == MetricType.COUNTER) {
-            registerPermutations(tagsPermutations, tags ->
-                countersByMetricID.computeIfAbsent(withMethodTag(metric, tags),
-                    key -> registry.counter(key)));
-        } else if (type == MetricType.HISTOGRAM) {
-            registerPermutations(tagsPermutations, tags ->
-                histogramsByMetricID.computeIfAbsent(withMethodTag(metric, tags),
-                    key -> registry.histogram(withUnit(key, NANOSECONDS), key.getTagsAsArray())));
-        } else {
-            throw new UnsupportedOperationException("Only counter and histogram are supported but got: " + type);
-        }
-    }
 
     @Override
     public void register(String metric, String unit, LongSupplier gauge, String... tag) {
@@ -138,6 +123,21 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
             registry.gauge(key, () -> gauge.getAsLong());
         } else {
             registry.gauge(withUnit(key, unit), () -> gauge.getAsLong(), key.getTagsAsArray());
+        }
+    }
+
+    @Override
+    public void register(String metricType, String metric, String[]... tagsPermutations) {
+        if (metricType.equals(Counter.class.getTypeName())) {
+            registerPermutations(tagsPermutations, tags ->
+                    countersByMetricID.computeIfAbsent(withMethodTag(metric, tags),
+                            key -> registry.counter(key)));
+        } else if (metricType.equals(Histogram.class.getTypeName())) {
+            registerPermutations(tagsPermutations, tags ->
+                    histogramsByMetricID.computeIfAbsent(withMethodTag(metric, tags),
+                            key -> registry.histogram(withUnit(key, NANOSECONDS), key.getTagsAsArray())));
+        } else {
+            throw new UnsupportedOperationException("Only counter and histogram are supported but got: " + metricType);
         }
     }
 

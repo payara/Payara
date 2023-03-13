@@ -77,7 +77,11 @@
             <version>10.0.0</version>
             <scope>provided</scope>
         </dependency>
-
+        <dependency>
+            <groupId>org.jboss.arquillian.junit</groupId>
+            <artifactId>arquillian-junit-container</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
 </project>

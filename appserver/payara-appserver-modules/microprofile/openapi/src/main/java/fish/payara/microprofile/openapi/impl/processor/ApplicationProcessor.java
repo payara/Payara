@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2022] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -356,16 +356,20 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             if (requestBody != null) {
                 // Find the wildcard return type
                 if (requestBody.getContent() != null
-                        && requestBody.getContent().getMediaType(jakarta.ws.rs.core.MediaType.WILDCARD) != null) {
-                    MediaType wildcardMedia = requestBody.getContent().getMediaType(jakarta.ws.rs.core.MediaType.WILDCARD);
+                        && requestBody.getContent().getMediaType(
+                                jakarta.ws.rs.core.MediaType.APPLICATION_JSON) != null) {
+                    MediaType jsonMedia = requestBody.getContent().getMediaType(
+                            jakarta.ws.rs.core.MediaType.APPLICATION_JSON);
 
                     // Copy the wildcard return type to the valid request body types
                     List<String> mediaTypes = consumes.getValue("value", List.class);
                     for (String mediaType : mediaTypes) {
-                        requestBody.getContent().addMediaType(getContentType(mediaType), wildcardMedia);
+                        requestBody.getContent().addMediaType(getContentType(mediaType), jsonMedia);
                     }
-                    // If there is an @Consumes, remove the wildcard
-                    requestBody.getContent().removeMediaType(jakarta.ws.rs.core.MediaType.WILDCARD);
+                    // If there is an @Consumes, removes the default
+                    if (!mediaTypes.contains(jakarta.ws.rs.core.MediaType.APPLICATION_JSON)) {
+                        requestBody.getContent().removeMediaType(jakarta.ws.rs.core.MediaType.APPLICATION_JSON);
+                    }
                 }
             }
         }
@@ -441,27 +445,35 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         newParameter.setName(name);
         newParameter.setIn(in);
         newParameter.setRequired(required);
-        SchemaImpl schema = new SchemaImpl();
-        String defaultValue = getDefaultValueIfPresent(element);
 
-        if (element instanceof org.glassfish.hk2.classmodel.reflect.Parameter) {
-            org.glassfish.hk2.classmodel.reflect.Parameter parameter = (org.glassfish.hk2.classmodel.reflect.Parameter) element;
-            schema.setType(ModelUtils.getSchemaType(parameter.getTypeName(), context));
-        } else {
-            FieldModel field = (FieldModel) element;
-            schema.setType(ModelUtils.getSchemaType(field.getTypeName(), context));
+        Boolean isSchemaHidden = false;
+        AnnotationModel annotation = element.getAnnotation(org.eclipse.microprofile.openapi.annotations.media.Schema.class.getName());
+        if (annotation != null) {
+            isSchemaHidden = annotation.getValue("hidden", Boolean.class);
         }
+        if (!isSchemaHidden) {
+            SchemaImpl schema = new SchemaImpl();
+            String defaultValue = getDefaultValueIfPresent(element);
 
-        if (schema.getType() == SchemaType.ARRAY) {
-            schema.setItems(getArraySchema(element, context));
-            if (defaultValue != null) {
-                schema.getItems().setDefaultValue(defaultValue);
+            if (element instanceof org.glassfish.hk2.classmodel.reflect.Parameter) {
+                org.glassfish.hk2.classmodel.reflect.Parameter parameter = (org.glassfish.hk2.classmodel.reflect.Parameter) element;
+                schema.setType(ModelUtils.getSchemaType(parameter.getTypeName(), context));
+            } else {
+                FieldModel field = (FieldModel) element;
+                schema.setType(ModelUtils.getSchemaType(field.getTypeName(), context));
             }
-        } else if (defaultValue != null) {
-            schema.setDefaultValue(defaultValue);
-        }
 
-        newParameter.setSchema(schema);
+            if (schema.getType() == SchemaType.ARRAY) {
+                schema.setItems(getArraySchema(element, context));
+                if (defaultValue != null) {
+                    schema.getItems().setDefaultValue(defaultValue);
+                }
+            } else if (defaultValue != null) {
+                schema.setDefaultValue(defaultValue);
+            }
+
+            newParameter.setSchema(schema);
+        }
 
         final Operation workingOperation = context.getWorkingOperation();
         if (workingOperation != null) {
@@ -696,6 +708,10 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         if (context.getWorkingOperation() == null) {
             return;
         }
+        Boolean hidden = schemaAnnotation.getValue("hidden", Boolean.class);
+        if (hidden != null && hidden) {
+            return;
+        }
         // Check if it's a request body
         if (ModelUtils.isRequestBody(context, parameter)) {
             if (context.getWorkingOperation().getRequestBody() == null) {
@@ -794,6 +810,10 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         if (element instanceof MethodModel || element instanceof org.glassfish.hk2.classmodel.reflect.Parameter) {
             final RequestBody currentRequestBody = context.getWorkingOperation().getRequestBody();
             if (currentRequestBody != null) {
+                Boolean hidden = requestBodySchema.getValue("hidden", Boolean.class);
+                if (hidden != null && hidden) {
+                    return;
+                }
                 final String implementationClass = requestBodySchema.getValue("value", String.class);
                 final SchemaImpl schema = SchemaImpl.fromImplementation(implementationClass, context);
 
@@ -815,8 +835,10 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
                 final MethodModel methodModel = (MethodModel) element;
                 final String exceptionType = methodModel.getParameter(0).getTypeName();
                 mapException(context, exceptionType, apiResponse);
+            } else if (element instanceof ClassModel) {
+                // this is fine, class-based annotation is reflected in methods as well
             } else {
-                LOGGER.warning("Unrecognised annotation position at: " + element.shortDesc());
+                LOGGER.warning(() -> "Unrecognised @APIResponse annotation position at: " + element.shortDesc());
             }
             return;
         }
@@ -848,9 +870,13 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
     @Override
     public void visitAPIResponses(AnnotationModel annotation, AnnotatedElement element, ApiContext context) {
+        APIResponsesImpl from = APIResponsesImpl.createInstance(annotation, context);
         List<AnnotationModel> responses = annotation.getValue("value", List.class);
         if (responses != null) {
             responses.forEach(response -> visitAPIResponse(response, element, context));
+        }
+        if (context.getWorkingOperation() != null) {
+            APIResponsesImpl.merge(from, context.getWorkingOperation().getResponses(), true, context);
         }
     }
 
@@ -1153,7 +1179,26 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     public void visitSecurityRequirements(AnnotationModel annotation, AnnotatedElement element, ApiContext context) {
         List<AnnotationModel> securityRequirements = annotation.getValue("value", List.class);
         if (securityRequirements != null) {
-            securityRequirements.forEach(securityRequirement -> visitSecurityRequirement(securityRequirement, element, context));
+            securityRequirements.forEach(securityRequirement ->
+                    visitSecurityRequirement(securityRequirement, element, context));
+        }
+    }
+
+    @Override
+    public void visitSecurityRequirementSet(AnnotationModel annotation, AnnotatedElement element, ApiContext context) {
+        List<AnnotationModel> securityRequirements = annotation.getValue("value", List.class);
+        if (securityRequirements != null) {
+            securityRequirements.forEach(securityRequirement ->
+                    visitSecurityRequirement(securityRequirement, element, context));
+        }
+    }
+
+    @Override
+    public void visitSecurityRequirementSets(AnnotationModel annotation, AnnotatedElement element, ApiContext context) {
+        List<AnnotationModel> securityRequirementSetList = annotation.getValue("value", List.class);
+        if (securityRequirementSetList != null) {
+            securityRequirementSetList.forEach(securityRequirementSet ->
+                    visitSecurityRequirementSet(securityRequirementSet, element, context));
         }
     }
 
@@ -1164,9 +1209,11 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
         // Get the request body type of the method
         org.glassfish.hk2.classmodel.reflect.ParameterizedType bodyType = null;
+        int indexParam = 0;
         for (org.glassfish.hk2.classmodel.reflect.Parameter methodParam : method.getParameters()) {
             if (ModelUtils.isRequestBody(context, methodParam)) {
                 bodyType = methodParam;
+                indexParam = methodParam.getIndex();
                 break;
             }
         }
@@ -1175,8 +1222,16 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         }
 
         // Create the default request body with a wildcard mediatype
-        MediaType mediaType = new MediaTypeImpl().schema(createSchema(context, bodyType));
-        requestBody.getContent().addMediaType(jakarta.ws.rs.core.MediaType.WILDCARD, mediaType);
+        MediaType mediaType = new MediaTypeImpl();
+        AnnotationModel paramAnnotation = method.getParameter(indexParam).getAnnotation(org.eclipse.microprofile.openapi.annotations.media.Schema.class.getName());
+        Boolean hidden = false;
+        if (paramAnnotation != null) {
+            hidden = paramAnnotation.getValue("hidden", Boolean.class);
+        }
+        if (hidden == null || !hidden) {
+            mediaType.schema(createSchema(context, bodyType));
+        }
+        requestBody.getContent().addMediaType(jakarta.ws.rs.core.MediaType.APPLICATION_JSON, mediaType);
 
         operation.setRequestBody(requestBody);
         return requestBody;
