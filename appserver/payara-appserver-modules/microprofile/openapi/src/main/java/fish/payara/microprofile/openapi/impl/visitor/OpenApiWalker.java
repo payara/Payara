@@ -128,7 +128,7 @@ public class OpenApiWalker<E extends AnnotatedElement> implements ApiWalker {
                 processAnnotation((ClassModel) type, visitor);
             }
         }
-        addSchemasToPaths();
+        syncSchemas();
     }
 
     @SuppressWarnings("unchecked")
@@ -312,17 +312,36 @@ public class OpenApiWalker<E extends AnnotatedElement> implements ApiWalker {
         return annotationAlternatives;
     }
     
-    private void addSchemasToPaths() {
+    private void syncSchemas() {
         OpenAPI api = context.getApi();
+        context.getApi().getComponents().getSchemas();
+        for (Map.Entry<String, org.eclipse.microprofile.openapi.models.media.Schema> entry : context.getApi().getComponents().getSchemas().entrySet()) {
+            if (entry.getValue() != null && entry.getValue().getProperties() != null) {
+                for (Map.Entry<String, org.eclipse.microprofile.openapi.models.media.Schema> entry1 : entry.getValue().getProperties().entrySet()) {
+                    if (entry1.getValue() instanceof SchemaImpl) {
+                        SchemaImpl schemaImpl = (SchemaImpl) entry1.getValue();
+                        if (schemaImpl.getImplementation() != null) {
+                            String[] implQualified = schemaImpl.getImplementation().split("\\.");
+                            org.eclipse.microprofile.openapi.models.media.Schema from = context.getApi().getComponents().getSchemas().get(implQualified[implQualified.length - 1]);
+                            SchemaImpl.merge(from, schemaImpl, true, context);
+                        }
+                    }
+                }
+            }
+        }
         api.getPaths().getPathItems().forEach((String s, PathItem t) -> {
             t.getOperations().forEach((PathItem.HttpMethod u, org.eclipse.microprofile.openapi.models.Operation v) -> {
                 v.getResponses().getAPIResponses().forEach((String w, org.eclipse.microprofile.openapi.models.responses.APIResponse x) -> {
                     if (x.getContent() != null) {
                         x.getContent().getMediaTypes().forEach((y, z) -> {
-                            SchemaImpl.merge(z.getSchema(), z.getSchema(), true, context);
                             if (z.getSchema() instanceof SchemaImpl) {
                                 SchemaImpl schema = (SchemaImpl) z.getSchema();
-                                schema.setImplementation(null);
+                                if (schema.getImplementation() != null) {
+                                    String[] implQualified = schema.getImplementation().split("\\.");
+                                    org.eclipse.microprofile.openapi.models.media.Schema from = context.getApi().getComponents().getSchemas().get(implQualified[implQualified.length - 1]);
+                                    SchemaImpl.merge(from, schema, true, context);
+                                    schema.setImplementation(null);
+                                }
                             }
                         });
                     }
