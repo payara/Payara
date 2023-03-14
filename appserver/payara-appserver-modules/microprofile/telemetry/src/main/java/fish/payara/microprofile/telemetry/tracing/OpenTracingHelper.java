@@ -40,6 +40,7 @@
 package fish.payara.microprofile.telemetry.tracing;
 
 import io.opentelemetry.api.trace.SpanBuilder;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 import jakarta.enterprise.inject.spi.BeanManager;
 import jakarta.enterprise.inject.spi.CDI;
 import jakarta.ws.rs.Path;
@@ -84,7 +85,9 @@ public class OpenTracingHelper {
      * @param tracedAnnotation the Traced annotation object for this request
      * @return the name to use as the span's operation name
      */
-    public String determineOperationName(final ContainerRequestContext request, final Traced tracedAnnotation) {
+    public String determineOperationName(final ContainerRequestContext request,
+                                         final Traced tracedAnnotation,
+                                         final WithSpan withSpanAnnotation) {
         if (tracedAnnotation != null) {
             String operationName = OpenTracingCdiUtils.getConfigOverrideValue(
                             Traced.class, "operationName", resourceInfo, String.class)
@@ -98,7 +101,18 @@ public class OpenTracingHelper {
             }
             return operationName;
         }
-        // TODO: OpenTelemetry @WithSpan
+        if (withSpanAnnotation != null) {
+            var operationName = OpenTracingCdiUtils.getConfigOverrideValue(
+                    WithSpan.class, "value", resourceInfo, String.class).orElse(withSpanAnnotation.value());
+
+            // By default, the span name will be <className>.<methodName>,
+            // unless a name is provided as an argument to the annotation.
+            if (operationName.equals("")) {
+                return resourceInfo.getResourceClass().getCanonicalName() + "."
+                        + resourceInfo.getResourceMethod().getName();
+            }
+            return operationName;
+        }
 
         SpanStrategy naming = determineSpanStrategy();
 
@@ -293,6 +307,14 @@ public class OpenTracingHelper {
             return null;
         }
         return OpenTracingCdiUtils.getAnnotation(beanManager, Traced.class, resourceInfo);
+    }
+
+    public WithSpan getWithSpanAnnotation() {
+        final BeanManager bm = getBeanManager();
+        if (bm == null) {
+            return null;
+        }
+        return OpenTracingCdiUtils.getAnnotation(bm, WithSpan.class, resourceInfo);
     }
 
     /**

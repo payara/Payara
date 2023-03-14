@@ -67,6 +67,36 @@
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>io.opentelemetry.instrumentation</groupId>
+            <artifactId>opentelemetry-instrumentation-annotations</artifactId>
+            <scope>compile</scope>
+            <optional>true</optional>
+            <exclusions>
+                <exclusion>
+                    <!-- we already have it, so it is unnecessary to bring it in -->
+                    <groupId>io.opentelemetry</groupId>
+                    <artifactId>opentelemetry-api</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry.instrumentation</groupId>
+            <artifactId>opentelemetry-instrumentation-annotations-support</artifactId>
+            <scope>compile</scope>
+            <optional>true</optional>
+            <exclusions>
+                <!-- we already have it, so it is unnecessary to bring it in -->
+                <exclusion>
+                    <groupId>io.opentelemetry</groupId>
+                    <artifactId>opentelemetry-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>io.opentelemetry</groupId>
+                    <artifactId>opentelemetry-semconv</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
         <!-- we will rely on transitive dependencies of our leaf ones -->
         <dependency>
             <groupId>io.opentelemetry</groupId>
@@ -125,6 +155,7 @@
                         <Embed-Dependency>
                             *;groupId=com.squareup.*;inline=true,
                             *;groupId=io.opentelemetry;inline=true,
+                            *;groupId=io.opentelemetry.instrumentation;inline=true
                         </Embed-Dependency>
                         <Embed-Transitive>true</Embed-Transitive>
                     </instructions>

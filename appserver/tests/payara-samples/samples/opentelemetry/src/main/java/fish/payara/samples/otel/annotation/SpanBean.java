@@ -39,39 +39,60 @@
  *  holder.
  *
  */
+package fish.payara.samples.otel.annotation;
 
-package fish.payara.samples.otel.spanname;
+import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.instrumentation.annotations.SpanAttribute;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
-import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+@ApplicationScoped
+public class SpanBean {
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
+    private static final Logger LOG = Logger.getLogger(SpanBean.class.getName());
 
-@RunWith(Arquillian.class)
-public class OpenTracingPathSpanNamingIT extends AbstractSpanNameTest {
-    public static class SpanConfig extends Conf {
-        public SpanConfig() {
-            super(Map.of(SPAN_NAMING_KEY, "opentracing-http-path"));
+    @Inject
+    SpanChildBean spanChildBean;
+
+    @WithSpan
+    public void span() {
+        LOG.log(Level.INFO, "invoking span");
+    }
+
+    @WithSpan("definedName")
+    public void spanName() {
+        LOG.log(Level.INFO, "invoking spanName");
+    }
+
+    @WithSpan(kind = SpanKind.SERVER)
+    public void spanKind() {
+        LOG.log(Level.INFO, "invoking spanKind");
+    }
+
+    @WithSpan
+    public void spanArgs(@SpanAttribute(value = "customStringAttribute") String attr1,
+                         @SpanAttribute(value = "customBooleanAttribute") boolean attr2,
+                         @SpanAttribute(value = "customIntegerAttribute") int attr3,
+                         @SpanAttribute String woSpanAttributeValue,
+                         String noName) {
+        LOG.log(Level.INFO, "invoking spanArgs with spanAttribute");
+    }
+
+    @WithSpan
+    public void spanChild() {
+        LOG.log(Level.INFO, "invoking spanChild");
+        spanChildBean.spanChild();
+    }
+
+    @ApplicationScoped
+    public static class SpanChildBean {
+        @WithSpan
+        public void spanChild() {
+
         }
-    }
-    @Deployment
-    public static WebArchive deployment() {
-        return configSource(base(), SpanConfig.class);
-    }
-
-    @Test
-    public void testSpanName() {
-        var response = target(null, "async", "compute").request().get();
-        assertEquals(200, response.getStatus());
-        var spans = exporter.getSpans();
-
-        var expected = "GET:/async/compute";
-        assertThat(spans).describedAs("Expecting span name of "+expected).anySatisfy(span -> assertThat(span.getName()).isEqualTo(expected));
     }
 }
