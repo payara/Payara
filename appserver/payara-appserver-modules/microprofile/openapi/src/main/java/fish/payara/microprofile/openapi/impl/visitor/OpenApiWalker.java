@@ -338,7 +338,11 @@ public class OpenApiWalker<E extends AnnotatedElement> implements ApiWalker {
                                 SchemaImpl schema = (SchemaImpl) z.getSchema();
                                 if (schema.getImplementation() != null) {
                                     String[] implQualified = schema.getImplementation().split("\\.");
-                                    org.eclipse.microprofile.openapi.models.media.Schema from = context.getApi().getComponents().getSchemas().get(implQualified[implQualified.length - 1]);
+                                    String schemaClassName = implQualified[implQualified.length - 1];
+                                    if(schemaClassName.contains("$")) {
+                                        schemaClassName = schemaClassName.substring(schemaClassName.indexOf("$") + 1);
+                                    }
+                                    org.eclipse.microprofile.openapi.models.media.Schema from = context.getApi().getComponents().getSchemas().get(schemaClassName);
                                     SchemaImpl.merge(from, schema, false, context);
                                     schema.setImplementation(null);
                                 }
