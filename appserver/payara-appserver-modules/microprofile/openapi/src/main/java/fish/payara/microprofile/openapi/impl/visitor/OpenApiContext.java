@@ -40,6 +40,7 @@
 package fish.payara.microprofile.openapi.impl.visitor;
 
 import fish.payara.microprofile.openapi.api.visitor.ApiContext;
+import fish.payara.microprofile.openapi.impl.model.responses.APIResponseImpl;
 import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -91,7 +92,7 @@ public class OpenApiContext implements ApiContext {
 
     private Map<ExtensibleType<? extends ExtensibleType>, AnnotationInfo> parsedTypes = new ConcurrentHashMap<>();
 
-    private Map<String, APIResponse> mappedExceptionResponses = new ConcurrentHashMap<>();
+    private Map<String, Set<APIResponse>> mappedExceptionResponses = new ConcurrentHashMap<>();
 
     public OpenApiContext(Types allTypes, Set<Type> allowedTypes, ClassLoader appClassLoader, OpenAPI api) {
         this.allTypes = allTypes;
@@ -136,12 +137,18 @@ public class OpenApiContext implements ApiContext {
     @Override
     public void addMappedExceptionResponse(String exceptionType, APIResponse exceptionResponse) {
         if (exceptionType != null) {
-            mappedExceptionResponses.put(exceptionType, exceptionResponse);
+            if(mappedExceptionResponses.containsKey(exceptionType)) {
+                mappedExceptionResponses.get(exceptionType).add(exceptionResponse);
+            } else {
+                Set set = new HashSet<>();
+                set.add(exceptionResponse);
+                mappedExceptionResponses.put(exceptionType, set);
+            }
         }
     }
 
     @Override
-    public Map<String, APIResponse> getMappedExceptionResponses() {
+    public Map<String, Set<APIResponse>> getMappedExceptionResponses() {
         return Collections.unmodifiableMap(mappedExceptionResponses);
     }
 

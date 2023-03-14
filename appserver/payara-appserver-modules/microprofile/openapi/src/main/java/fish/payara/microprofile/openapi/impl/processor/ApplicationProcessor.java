@@ -841,7 +841,14 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
                 final String exceptionType = methodModel.getParameter(0).getTypeName();
                 mapException(context, exceptionType, apiResponse);
             } else if (element instanceof ClassModel) {
-                // this is fine, class-based annotation is reflected in methods as well
+                final ClassModel classModel = (ClassModel) element;
+                for (ParameterizedInterfaceModel parameterizedInterface : classModel.getParameterizedInterfaces()) {
+                    if (parameterizedInterface.getRawInterfaceName().equals(jakarta.ws.rs.ext.ExceptionMapper.class.getName())
+                            && !parameterizedInterface.getParametizedTypes().isEmpty()) {
+                        String exceptionType = parameterizedInterface.getParametizedTypes().toArray(new ParameterizedInterfaceModel[0])[0].getName();
+                        mapException(context, exceptionType, apiResponse);
+                    }
+                }
             } else {
                 LOGGER.warning(() -> "Unrecognised @APIResponse annotation position at: " + element.shortDesc());
             }
@@ -1270,13 +1277,16 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
         // Add responses for the applicable declared exceptions
         for (String exceptionType : method.getExceptionTypes()) {
-            final APIResponseImpl mappedResponse = (APIResponseImpl) context.getMappedExceptionResponses().get(exceptionType);
-            if (mappedResponse != null) {
-                final String responseCode = mappedResponse.getResponseCode();
-                if (responseCode != null) {
-                    responses.addAPIResponse(responseCode, mappedResponse);
+            final Set<APIResponse> mappedResponses = context.getMappedExceptionResponses().get(exceptionType);
+            for (APIResponse mappedResponse : mappedResponses) {
+                if (mappedResponse != null) {
+                    final String responseCode = ((APIResponseImpl)mappedResponse).getResponseCode();
+                    if (responseCode != null) {
+                        responses.addAPIResponse(responseCode, mappedResponse);
+                    }
                 }
             }
+            
             operation.addExceptionType(exceptionType);
         }
     }

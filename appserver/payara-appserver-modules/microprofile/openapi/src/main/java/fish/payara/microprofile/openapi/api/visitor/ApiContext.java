@@ -42,6 +42,7 @@ package fish.payara.microprofile.openapi.api.visitor;
 import fish.payara.microprofile.openapi.impl.visitor.AnnotationInfo;
 
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.eclipse.microprofile.openapi.models.Operation;
@@ -74,7 +75,7 @@ public interface ApiContext {
 
     void addMappedExceptionResponse(String exceptionType, APIResponse exceptionResponse);
 
-    Map<String, APIResponse> getMappedExceptionResponses();
+    Map<String, Set<APIResponse>> getMappedExceptionResponses();
 
     /**
      * @param type any class, not null
