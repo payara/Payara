@@ -669,7 +669,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             String schemaName = ModelUtils.getSchemaName(context, fieldOrMethod);
             SchemaImpl schema = SchemaImpl.createInstance(schemaAnnotation, context);
             if(fieldOrMethod instanceof FieldModel
-                    && schema.getImplementation().equals(Void.class.getName())) {
+                    && Void.class.getName().equals(schema.getImplementation())) {
                 FieldModel fieldModel = (FieldModel) fieldOrMethod;
                 schema.setImplementation(fieldModel.getTypeName());
             }
