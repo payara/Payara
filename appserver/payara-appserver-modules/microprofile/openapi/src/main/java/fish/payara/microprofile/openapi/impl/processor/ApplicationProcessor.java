@@ -1198,10 +1198,9 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
     @Override
     public void visitSecurityRequirementSet(AnnotationModel annotation, AnnotatedElement element, ApiContext context) {
-        List<AnnotationModel> securityRequirements = annotation.getValue("value", List.class);
-        if (securityRequirements != null) {
-            securityRequirements.forEach(securityRequirement ->
-                    visitSecurityRequirement(securityRequirement, element, context));
+        if (element instanceof MethodModel) {
+            SecurityRequirement securityRequirement = SecurityRequirementImpl.createInstances(annotation, context);
+            context.getWorkingOperation().addSecurityRequirement(securityRequirement);
         }
     }
 
@@ -1278,15 +1277,16 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         // Add responses for the applicable declared exceptions
         for (String exceptionType : method.getExceptionTypes()) {
             final Set<APIResponse> mappedResponses = context.getMappedExceptionResponses().get(exceptionType);
-            for (APIResponse mappedResponse : mappedResponses) {
-                if (mappedResponse != null) {
-                    final String responseCode = ((APIResponseImpl)mappedResponse).getResponseCode();
-                    if (responseCode != null) {
-                        responses.addAPIResponse(responseCode, mappedResponse);
+            if (mappedResponses != null) {
+                for (APIResponse mappedResponse : mappedResponses) {
+                    if (mappedResponse != null) {
+                        final String responseCode = ((APIResponseImpl) mappedResponse).getResponseCode();
+                        if (responseCode != null) {
+                            responses.addAPIResponse(responseCode, mappedResponse);
+                        }
                     }
                 }
             }
-            
             operation.addExceptionType(exceptionType);
         }
     }

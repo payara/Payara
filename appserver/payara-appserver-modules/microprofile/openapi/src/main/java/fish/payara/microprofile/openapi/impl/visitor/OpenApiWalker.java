@@ -67,6 +67,10 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.xml.bind.annotation.XmlRootElement;
+import java.util.ArrayList;
+import java.util.Collection;
+import static java.util.Collections.singletonList;
+import java.util.List;
 
 import org.eclipse.microprofile.openapi.annotations.ExternalDocumentation;
 import org.eclipse.microprofile.openapi.annotations.OpenAPIDefinition;
@@ -113,7 +117,7 @@ public class OpenApiWalker<E extends AnnotatedElement> implements ApiWalker {
     private final OpenApiContext context;
 
     private Map<Class<? extends Annotation>, VisitorFunction<AnnotationModel, E>> annotationVisitor;
-    private Map<Class<? extends Annotation>, Class<? extends Annotation>> annotationAlternatives;
+    private Map<Class<? extends Annotation>, List<Class<? extends Annotation>>> annotationAlternatives;
 
     public OpenApiWalker(OpenAPI api, Types allTypes, Set<Type> allowedTypes, ClassLoader appClassLoader) {
         this.allowedTypes = new TreeSet<>(Comparator.comparing(Type::getName, String::compareTo));
@@ -155,7 +159,7 @@ public class OpenApiWalker<E extends AnnotatedElement> implements ApiWalker {
 
         for (Class<? extends Annotation> annotationClass : getAnnotationVisitor(visitor).keySet()) {
             VisitorFunction<AnnotationModel, E> annotationFunction = getAnnotationVisitor(visitor).get(annotationClass);
-            Class<? extends Annotation> alternative = getAnnotationAlternatives().get(annotationClass);
+            List<Class<? extends Annotation>> alternatives = getAnnotationAlternatives().get(annotationClass);
 
             // If it's just the one annotation class
             // Check the element
@@ -183,10 +187,18 @@ public class OpenApiWalker<E extends AnnotatedElement> implements ApiWalker {
                     // process the annotation by its function
                     annotationFunction.apply(annotations.getAnnotation(annotationClass, element), element, context);
                 }
-            } else if (element instanceof MethodModel && annotations.isAnnotationPresent(annotationClass)
-                    && (alternative == null || !annotations.isAnnotationPresent(alternative, element))) {
+            } else if (element instanceof MethodModel && annotations.isAnnotationPresent(annotationClass)) {
+                boolean process = true;
+                if (alternatives != null) {
+                    for (Class<? extends Annotation> alternative : alternatives) {
+                        if (annotations.isAnnotationPresent(alternative, element)) {
+                            process = false;
+                            break;
+                        }
+                    }
+                }
                 // If the method isn't annotated, inherit the class annotation
-                if (context.getPath() != null) {
+                if (process && context.getPath() != null) {
                     annotationFunction.apply(annotations.getAnnotation(annotationClass), element, context);
                 }
             }
@@ -287,27 +299,51 @@ public class OpenApiWalker<E extends AnnotatedElement> implements ApiWalker {
         return annotationVisitor;
     }
 
-    private Map<Class<? extends Annotation>, Class<? extends Annotation>> getAnnotationAlternatives() {
+    private Map<Class<? extends Annotation>, List<Class<? extends Annotation>>> getAnnotationAlternatives() {
         if (annotationAlternatives == null) {
             annotationAlternatives = new HashMap<>();
-            annotationAlternatives.put(Server.class, Servers.class);
-            annotationAlternatives.put(Servers.class, Server.class);
-            annotationAlternatives.put(Extensions.class, Extension.class);
-            annotationAlternatives.put(Extension.class, Extensions.class);
-            annotationAlternatives.put(Callback.class, Callbacks.class);
-            annotationAlternatives.put(Callbacks.class, Callback.class);
-            annotationAlternatives.put(APIResponse.class, APIResponses.class);
-            annotationAlternatives.put(APIResponses.class, APIResponse.class);
-            annotationAlternatives.put(Parameters.class, Parameter.class);
-            annotationAlternatives.put(Parameter.class, Parameters.class);
-            annotationAlternatives.put(Tag.class, Tags.class);
-            annotationAlternatives.put(Tags.class, Tag.class);
-            annotationAlternatives.put(SecurityScheme.class, SecuritySchemes.class);
-            annotationAlternatives.put(SecuritySchemes.class, SecurityScheme.class);
-            annotationAlternatives.put(SecurityRequirement.class, SecurityRequirements.class);
-            annotationAlternatives.put(SecurityRequirements.class, SecurityRequirement.class);
-            annotationAlternatives.put(SecurityRequirementsSet.class, SecurityRequirementsSets.class);
-            annotationAlternatives.put(SecurityRequirementsSets.class, SecurityRequirementsSet.class);
+            annotationAlternatives.put(Server.class, singletonList(Servers.class));
+            annotationAlternatives.put(Servers.class, singletonList(Server.class));
+            annotationAlternatives.put(Extensions.class, singletonList(Extension.class));
+            annotationAlternatives.put(Extension.class, singletonList(Extensions.class));
+            annotationAlternatives.put(Callback.class, singletonList(Callbacks.class));
+            annotationAlternatives.put(Callbacks.class, singletonList(Callback.class));
+            annotationAlternatives.put(APIResponse.class, singletonList(APIResponses.class));
+            annotationAlternatives.put(APIResponses.class, singletonList(APIResponse.class));
+            annotationAlternatives.put(Parameters.class, singletonList(Parameter.class));
+            annotationAlternatives.put(Parameter.class, singletonList(Parameters.class));
+            annotationAlternatives.put(Tag.class, singletonList(Tags.class));
+            annotationAlternatives.put(Tags.class, singletonList(Tag.class));
+            annotationAlternatives.put(SecurityScheme.class, singletonList(SecuritySchemes.class));
+            annotationAlternatives.put(SecuritySchemes.class, singletonList(SecurityScheme.class));
+            annotationAlternatives.put(SecurityRequirement.class, new ArrayList<>() {
+                {
+                    add(SecurityRequirements.class);
+                    add(SecurityRequirementsSet.class);
+                    add(SecurityRequirementsSets.class);
+                }
+            });
+            annotationAlternatives.put(SecurityRequirements.class, new ArrayList<>() {
+                {
+                    add(SecurityRequirement.class);
+                    add(SecurityRequirementsSet.class);
+                    add(SecurityRequirementsSets.class);
+                }
+            });
+            annotationAlternatives.put(SecurityRequirementsSet.class, new ArrayList<>() {
+                {
+                    add(SecurityRequirement.class);
+                    add(SecurityRequirements.class);
+                    add(SecurityRequirementsSets.class);
+                }
+            });
+            annotationAlternatives.put(SecurityRequirementsSets.class, new ArrayList<>() {
+                {
+                    add(SecurityRequirement.class);
+                    add(SecurityRequirements.class);
+                    add(SecurityRequirementsSet.class);
+                }
+            });
         }
         return annotationAlternatives;
     }
