@@ -350,12 +350,11 @@ public class OpenApiWalker<E extends AnnotatedElement> implements ApiWalker {
     
     private void syncSchemas() {
         OpenAPI api = context.getApi();
-        context.getApi().getComponents().getSchemas();
-        for (Map.Entry<String, org.eclipse.microprofile.openapi.models.media.Schema> entry : context.getApi().getComponents().getSchemas().entrySet()) {
-            if (entry.getValue() != null && entry.getValue().getProperties() != null) {
-                for (Map.Entry<String, org.eclipse.microprofile.openapi.models.media.Schema> entry1 : entry.getValue().getProperties().entrySet()) {
-                    if (entry1.getValue() instanceof SchemaImpl) {
-                        SchemaImpl schemaImpl = (SchemaImpl) entry1.getValue();
+        for (Map.Entry<String, org.eclipse.microprofile.openapi.models.media.Schema> schemaEntry : context.getApi().getComponents().getSchemas().entrySet()) {
+            if (schemaEntry.getValue() != null && schemaEntry.getValue().getProperties() != null) {
+                for (Map.Entry<String, org.eclipse.microprofile.openapi.models.media.Schema> propSchemaEntry : schemaEntry.getValue().getProperties().entrySet()) {
+                    if (propSchemaEntry.getValue() instanceof SchemaImpl) {
+                        SchemaImpl schemaImpl = (SchemaImpl) propSchemaEntry.getValue();
                         if (schemaImpl.getImplementation() != null) {
                             String[] implQualified = schemaImpl.getImplementation().split("\\.");
                             org.eclipse.microprofile.openapi.models.media.Schema from = context.getApi().getComponents().getSchemas().get(implQualified[implQualified.length - 1]);
@@ -371,16 +370,28 @@ public class OpenApiWalker<E extends AnnotatedElement> implements ApiWalker {
                     if (x.getContent() != null) {
                         x.getContent().getMediaTypes().forEach((y, z) -> {
                             if (z.getSchema() instanceof SchemaImpl) {
-                                SchemaImpl schema = (SchemaImpl) z.getSchema();
-                                if (schema.getImplementation() != null) {
-                                    String[] implQualified = schema.getImplementation().split("\\.");
+                                SchemaImpl toschema = (SchemaImpl) z.getSchema();
+                                if (toschema.getImplementation() != null) {
+                                    String[] implQualified = toschema.getImplementation().split("\\.");
                                     String schemaClassName = implQualified[implQualified.length - 1];
-                                    if(schemaClassName.contains("$")) {
+                                    if (schemaClassName.contains("$")) {
                                         schemaClassName = schemaClassName.substring(schemaClassName.indexOf("$") + 1);
                                     }
                                     org.eclipse.microprofile.openapi.models.media.Schema from = context.getApi().getComponents().getSchemas().get(schemaClassName);
-                                    SchemaImpl.merge(from, schema, false, context);
-                                    schema.setImplementation(null);
+                                    if (from != null) {
+                                        SchemaImpl.merge(from, toschema, false, context);
+                                    } else {
+                                        for (org.eclipse.microprofile.openapi.models.media.Schema fromSchema : context.getApi().getComponents().getSchemas().values()) {
+                                            if(fromSchema instanceof SchemaImpl) {
+                                                SchemaImpl fromSchemaImpl = (SchemaImpl) fromSchema;
+                                                if (fromSchemaImpl.getImplementation() != null
+                                                        && fromSchemaImpl.getImplementation().equals(toschema.getImplementation())) {
+                                                    SchemaImpl.merge(fromSchemaImpl, toschema, false, context);
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         });
@@ -388,7 +399,7 @@ public class OpenApiWalker<E extends AnnotatedElement> implements ApiWalker {
                 });
             });
         });
-        
+
     }
 
 }

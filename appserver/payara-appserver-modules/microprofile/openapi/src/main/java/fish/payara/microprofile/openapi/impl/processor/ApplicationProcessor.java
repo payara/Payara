@@ -584,7 +584,11 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
         // If there is an annotation, parse its configuration
         if (schemaAnnotation != null) {
-            SchemaImpl.merge(SchemaImpl.createInstance(schemaAnnotation, context), schema, false, context);
+            SchemaImpl from = SchemaImpl.createInstance(schemaAnnotation, context);
+            if (from.getImplementation() == null) {
+                from.setImplementation(clazz.getName());
+            }
+            SchemaImpl.merge(from, schema, false, context);
         }
 
         for (FieldModel field : clazz.getFields()) {
