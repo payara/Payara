@@ -1006,6 +1006,9 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             return;
         }
         Parameter parameter = ParameterImpl.createInstance(annotation, context);
+        if(context.getPath().contains("{" + parameter.getName() + "}")){
+            parameter.setRequired(true);
+        }
 
         if (element instanceof org.glassfish.hk2.classmodel.reflect.Parameter) {
             matchedParam = findOperationParameterFor((org.glassfish.hk2.classmodel.reflect.Parameter) element, context);
