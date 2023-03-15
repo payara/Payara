@@ -235,7 +235,7 @@
         <websocket-api.version>2.1.0</websocket-api.version>
         <concurrent-api.version>3.0.1</concurrent-api.version>
         <concurrent.version>3.0.0.payara-p2</concurrent.version>
-        <asm.version>9.2</asm.version>
+        <asm.version>9.4</asm.version>
         <monitoring-console-api.version>2.0.1</monitoring-console-api.version>
         <monitoring-console-process.version>2.0.1</monitoring-console-process.version>
         <monitoring-console-webapp.version>2.0.1</monitoring-console-webapp.version>
