@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server.internal.orb</groupId>
         <artifactId>orb</artifactId>
-        <version>6.2023.3</version>
+        <version>6.2023.4-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.server.core.orb</groupId>
     <artifactId>orb-enabler</artifactId>
