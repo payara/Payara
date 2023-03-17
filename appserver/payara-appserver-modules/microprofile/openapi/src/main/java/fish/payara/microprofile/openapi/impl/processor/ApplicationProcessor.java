@@ -584,7 +584,11 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
         // If there is an annotation, parse its configuration
         if (schemaAnnotation != null) {
-            SchemaImpl.merge(SchemaImpl.createInstance(schemaAnnotation, context), schema, false, context);
+            SchemaImpl from = SchemaImpl.createInstance(schemaAnnotation, context);
+            if (from.getImplementation() == null) {
+                from.setImplementation(clazz.getName());
+            }
+            SchemaImpl.merge(from, schema, false, context);
         }
 
         for (FieldModel field : clazz.getFields()) {
@@ -668,6 +672,11 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             // Get the schema object name
             String schemaName = ModelUtils.getSchemaName(context, fieldOrMethod);
             SchemaImpl schema = SchemaImpl.createInstance(schemaAnnotation, context);
+            if(fieldOrMethod instanceof FieldModel
+                    && Void.class.getName().equals(schema.getImplementation())) {
+                FieldModel fieldModel = (FieldModel) fieldOrMethod;
+                schema.setImplementation(fieldModel.getTypeName());
+            }
 
             // Get the parent schema object name
             String parentName = null;
@@ -836,7 +845,14 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
                 final String exceptionType = methodModel.getParameter(0).getTypeName();
                 mapException(context, exceptionType, apiResponse);
             } else if (element instanceof ClassModel) {
-                // this is fine, class-based annotation is reflected in methods as well
+                final ClassModel classModel = (ClassModel) element;
+                for (ParameterizedInterfaceModel parameterizedInterface : classModel.getParameterizedInterfaces()) {
+                    if (parameterizedInterface.getRawInterfaceName().equals(jakarta.ws.rs.ext.ExceptionMapper.class.getName())
+                            && !parameterizedInterface.getParametizedTypes().isEmpty()) {
+                        String exceptionType = parameterizedInterface.getParametizedTypes().toArray(new ParameterizedInterfaceModel[0])[0].getName();
+                        mapException(context, exceptionType, apiResponse);
+                    }
+                }
             } else {
                 LOGGER.warning(() -> "Unrecognised @APIResponse annotation position at: " + element.shortDesc());
             }
@@ -994,6 +1010,9 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             return;
         }
         Parameter parameter = ParameterImpl.createInstance(annotation, context);
+        if(context.getPath().contains("{" + parameter.getName() + "}")){
+            parameter.setRequired(true);
+        }
 
         if (element instanceof org.glassfish.hk2.classmodel.reflect.Parameter) {
             matchedParam = findOperationParameterFor((org.glassfish.hk2.classmodel.reflect.Parameter) element, context);
@@ -1186,10 +1205,9 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
     @Override
     public void visitSecurityRequirementSet(AnnotationModel annotation, AnnotatedElement element, ApiContext context) {
-        List<AnnotationModel> securityRequirements = annotation.getValue("value", List.class);
-        if (securityRequirements != null) {
-            securityRequirements.forEach(securityRequirement ->
-                    visitSecurityRequirement(securityRequirement, element, context));
+        if (element instanceof MethodModel) {
+            SecurityRequirement securityRequirement = SecurityRequirementImpl.createInstances(annotation, context);
+            context.getWorkingOperation().addSecurityRequirement(securityRequirement);
         }
     }
 
@@ -1265,11 +1283,15 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
         // Add responses for the applicable declared exceptions
         for (String exceptionType : method.getExceptionTypes()) {
-            final APIResponseImpl mappedResponse = (APIResponseImpl) context.getMappedExceptionResponses().get(exceptionType);
-            if (mappedResponse != null) {
-                final String responseCode = mappedResponse.getResponseCode();
-                if (responseCode != null) {
-                    responses.addAPIResponse(responseCode, mappedResponse);
+            final Set<APIResponse> mappedResponses = context.getMappedExceptionResponses().get(exceptionType);
+            if (mappedResponses != null) {
+                for (APIResponse mappedResponse : mappedResponses) {
+                    if (mappedResponse != null) {
+                        final String responseCode = ((APIResponseImpl) mappedResponse).getResponseCode();
+                        if (responseCode != null) {
+                            responses.addAPIResponse(responseCode, mappedResponse);
+                        }
+                    }
                 }
             }
             operation.addExceptionType(exceptionType);

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2023] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.glassfish.web;
 
@@ -170,7 +170,12 @@ public class WarHandler extends AbstractArchiveHandler {
             r.setDocBase(base.getAbsolutePath());
 
             cloader.setResources(r);
-            cloader.addRepository("WEB-INF/classes/", new File(base, "WEB-INF/classes/"));
+            File classesPath = new File(base, "WEB-INF/classes/");
+            if (!classesPath.exists()) {
+                // make sure the WEB-INF/classes exists, it is searched by class loader
+                classesPath.mkdirs();
+            }
+            cloader.addRepository("WEB-INF/classes/", classesPath);
             if (context.getScratchDir("ejb") != null) {
                 cloader.addRepository(context.getScratchDir("ejb").toURI().toURL().toString().concat("/"));
             }

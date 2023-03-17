@@ -93,7 +93,7 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI, Clo
             from.setExternalDocs(ExternalDocumentationImpl.createInstance(externalDocs));
         }
         extractAnnotations(annotation, context, "security", SecurityRequirementImpl::createInstance, from::addSecurityRequirement);
-        extractAnnotations(annotation, context, "securitySets", SecurityRequirementImpl::createInstances, from::addSecurityRequirements);
+        extractAnnotations(annotation, context, "securitySets", SecurityRequirementImpl::createInstances, from::addSecurityRequirement);
         extractAnnotations(annotation, context, "servers", ServerImpl::createInstance, from::addServer);
         extractAnnotations(annotation, context, "tags", TagImpl::createInstance, from::addTag);
         AnnotationModel components = annotation.getValue("components", AnnotationModel.class);
@@ -102,10 +102,6 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI, Clo
         }
         from.setExtensions(parseExtensions(annotation));
         return from;
-    }
-
-    private void addSecurityRequirements(List<SecurityRequirement> securityRequirements) {
-        securityRequirements.forEach(this::addSecurityRequirement);
     }
 
     public final ApiContext getContext() {

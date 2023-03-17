@@ -85,6 +85,7 @@ public class ExternalDocumentationImpl extends ExtensibleImpl<ExternalDocumentat
             return;
         }
         to.setDescription(mergeProperty(to.getDescription(), from.getDescription(), override));
+        to.setExtensions(mergeProperty(to.getExtensions(), from.getExtensions(), override));
         to.setUrl(mergeProperty(to.getUrl(), from.getUrl(), override));
     }
 

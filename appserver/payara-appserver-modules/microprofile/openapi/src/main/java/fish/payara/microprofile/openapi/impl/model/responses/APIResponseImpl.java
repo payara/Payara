@@ -59,6 +59,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import jakarta.ws.rs.core.MediaType;
+import java.util.Objects;
 
 import org.eclipse.microprofile.openapi.models.headers.Header;
 import org.eclipse.microprofile.openapi.models.links.Link;
@@ -248,6 +249,28 @@ public class APIResponseImpl extends ExtensibleImpl<APIResponse> implements APIR
                 );
             }
         }
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 37 * hash + Objects.hashCode(this.responseCode);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final APIResponseImpl other = (APIResponseImpl) obj;
+        return Objects.equals(this.responseCode, other.responseCode);
     }
 
 }

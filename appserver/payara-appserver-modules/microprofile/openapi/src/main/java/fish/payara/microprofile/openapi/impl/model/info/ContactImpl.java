@@ -97,6 +97,7 @@ public class ContactImpl extends ExtensibleImpl<Contact> implements Contact {
         to.setName(mergeProperty(to.getName(), from.getName(), override));
         to.setUrl(mergeProperty(to.getUrl(), from.getUrl(), override));
         to.setEmail(mergeProperty(to.getEmail(), from.getEmail(), override));
+        to.setExtensions(mergeProperty(to.getExtensions(), from.getExtensions(), override));
     }
 
 }

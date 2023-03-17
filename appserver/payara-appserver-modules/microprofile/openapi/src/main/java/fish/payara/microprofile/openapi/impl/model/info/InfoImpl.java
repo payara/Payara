@@ -140,6 +140,7 @@ public class InfoImpl extends ExtensibleImpl<Info> implements Info {
         to.setTitle(mergeProperty(to.getTitle(), from.getTitle(), override));
         to.setVersion(mergeProperty(to.getVersion(), from.getVersion(), override));
         to.setDescription(mergeProperty(to.getDescription(), from.getDescription(), override));
+        to.setExtensions(mergeProperty(to.getExtensions(), from.getExtensions(), override));
         to.setTermsOfService(mergeProperty(to.getTermsOfService(), from.getTermsOfService(), override));
         if (from.getLicense() != null) {
             if (to.getLicense() == null) {

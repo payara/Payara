@@ -117,6 +117,7 @@ public class TagImpl extends ExtensibleImpl<Tag> implements Tag {
         }
         to.setName(mergeProperty(to.getName(), from.getName(), override));
         to.setDescription(mergeProperty(to.getDescription(), from.getDescription(), override));
+        to.setExtensions(mergeProperty(to.getExtensions(), from.getExtensions(), override));
         if(from.getExternalDocs() != null) {
             if (to.getExternalDocs() == null) {
                 to.setExternalDocs(new ExternalDocumentationImpl());

@@ -186,11 +186,15 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
         from.setMinProperties(annotation.getValue("minProperties", Integer.class));
         from.setRequired(annotation.getValue("requiredProperties", List.class));
         String additionalPropertiesAttr = annotation.getValue("additionalProperties", String.class);
-        if (Void.class.getName().equals(additionalPropertiesAttr)) {
+        if (additionalPropertiesAttr == null || Void.class.getName().equals(additionalPropertiesAttr)) {
             // Void is used as default, e.g. not specified value
-            additionalPropertiesAttr = null;
+            from.setAdditionalPropertiesSchema(null);
+        } else if (org.eclipse.microprofile.openapi.annotations.media.Schema.True.class.getName().equals(additionalPropertiesAttr)
+                || org.eclipse.microprofile.openapi.annotations.media.Schema.False.class.getName().equals(additionalPropertiesAttr)) {
+            from.setAdditionalPropertiesBoolean(org.eclipse.microprofile.openapi.annotations.media.Schema.True.class.getName().equals(additionalPropertiesAttr));
+        } else {
+            from.setAdditionalPropertiesSchema(fromImplementation(additionalPropertiesAttr, context));
         }
-        from.setAdditionalPropertiesBoolean(additionalPropertiesAttr == null ? null : org.eclipse.microprofile.openapi.annotations.media.Schema.True.class.getName().equals(additionalPropertiesAttr));
 
         extractAnnotations(annotation, context, "properties", "name", SchemaImpl::createInstance, from::addProperty);
         for (Entry<String, Schema> property : from.getProperties().entrySet()) {
@@ -201,7 +205,6 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
         }
 
         from.setDescription(annotation.getValue("description", String.class));
-        from.setExtensions(parseExtensions(annotation));
         from.setFormat(annotation.getValue("format", String.class));
         from.setNullable(annotation.getValue("nullable", Boolean.class));
         from.setReadOnly(annotation.getValue("readOnly", Boolean.class));

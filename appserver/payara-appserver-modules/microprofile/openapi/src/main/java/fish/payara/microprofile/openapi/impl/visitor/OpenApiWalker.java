@@ -67,6 +67,10 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.xml.bind.annotation.XmlRootElement;
+import java.util.ArrayList;
+import java.util.Collection;
+import static java.util.Collections.singletonList;
+import java.util.List;
 
 import org.eclipse.microprofile.openapi.annotations.ExternalDocumentation;
 import org.eclipse.microprofile.openapi.annotations.OpenAPIDefinition;
@@ -113,7 +117,7 @@ public class OpenApiWalker<E extends AnnotatedElement> implements ApiWalker {
     private final OpenApiContext context;
 
     private Map<Class<? extends Annotation>, VisitorFunction<AnnotationModel, E>> annotationVisitor;
-    private Map<Class<? extends Annotation>, Class<? extends Annotation>> annotationAlternatives;
+    private Map<Class<? extends Annotation>, List<Class<? extends Annotation>>> annotationAlternatives;
 
     public OpenApiWalker(OpenAPI api, Types allTypes, Set<Type> allowedTypes, ClassLoader appClassLoader) {
         this.allowedTypes = new TreeSet<>(Comparator.comparing(Type::getName, String::compareTo));
@@ -128,7 +132,7 @@ public class OpenApiWalker<E extends AnnotatedElement> implements ApiWalker {
                 processAnnotation((ClassModel) type, visitor);
             }
         }
-        addSchemasToPaths();
+        syncSchemas();
     }
 
     @SuppressWarnings("unchecked")
@@ -155,7 +159,7 @@ public class OpenApiWalker<E extends AnnotatedElement> implements ApiWalker {
 
         for (Class<? extends Annotation> annotationClass : getAnnotationVisitor(visitor).keySet()) {
             VisitorFunction<AnnotationModel, E> annotationFunction = getAnnotationVisitor(visitor).get(annotationClass);
-            Class<? extends Annotation> alternative = getAnnotationAlternatives().get(annotationClass);
+            List<Class<? extends Annotation>> alternatives = getAnnotationAlternatives().get(annotationClass);
 
             // If it's just the one annotation class
             // Check the element
@@ -183,10 +187,18 @@ public class OpenApiWalker<E extends AnnotatedElement> implements ApiWalker {
                     // process the annotation by its function
                     annotationFunction.apply(annotations.getAnnotation(annotationClass, element), element, context);
                 }
-            } else if (element instanceof MethodModel && annotations.isAnnotationPresent(annotationClass)
-                    && (alternative == null || !annotations.isAnnotationPresent(alternative, element))) {
+            } else if (element instanceof MethodModel && annotations.isAnnotationPresent(annotationClass)) {
+                boolean process = true;
+                if (alternatives != null) {
+                    for (Class<? extends Annotation> alternative : alternatives) {
+                        if (annotations.isAnnotationPresent(alternative, element)) {
+                            process = false;
+                            break;
+                        }
+                    }
+                }
                 // If the method isn't annotated, inherit the class annotation
-                if (context.getPath() != null) {
+                if (process && context.getPath() != null) {
                     annotationFunction.apply(annotations.getAnnotation(annotationClass), element, context);
                 }
             }
@@ -287,49 +299,107 @@ public class OpenApiWalker<E extends AnnotatedElement> implements ApiWalker {
         return annotationVisitor;
     }
 
-    private Map<Class<? extends Annotation>, Class<? extends Annotation>> getAnnotationAlternatives() {
+    private Map<Class<? extends Annotation>, List<Class<? extends Annotation>>> getAnnotationAlternatives() {
         if (annotationAlternatives == null) {
             annotationAlternatives = new HashMap<>();
-            annotationAlternatives.put(Server.class, Servers.class);
-            annotationAlternatives.put(Servers.class, Server.class);
-            annotationAlternatives.put(Extensions.class, Extension.class);
-            annotationAlternatives.put(Extension.class, Extensions.class);
-            annotationAlternatives.put(Callback.class, Callbacks.class);
-            annotationAlternatives.put(Callbacks.class, Callback.class);
-            annotationAlternatives.put(APIResponse.class, APIResponses.class);
-            annotationAlternatives.put(APIResponses.class, APIResponse.class);
-            annotationAlternatives.put(Parameters.class, Parameter.class);
-            annotationAlternatives.put(Parameter.class, Parameters.class);
-            annotationAlternatives.put(Tag.class, Tags.class);
-            annotationAlternatives.put(Tags.class, Tag.class);
-            annotationAlternatives.put(SecurityScheme.class, SecuritySchemes.class);
-            annotationAlternatives.put(SecuritySchemes.class, SecurityScheme.class);
-            annotationAlternatives.put(SecurityRequirement.class, SecurityRequirements.class);
-            annotationAlternatives.put(SecurityRequirements.class, SecurityRequirement.class);
-            annotationAlternatives.put(SecurityRequirementsSet.class, SecurityRequirementsSets.class);
-            annotationAlternatives.put(SecurityRequirementsSets.class, SecurityRequirementsSet.class);
+            annotationAlternatives.put(Server.class, singletonList(Servers.class));
+            annotationAlternatives.put(Servers.class, singletonList(Server.class));
+            annotationAlternatives.put(Extensions.class, singletonList(Extension.class));
+            annotationAlternatives.put(Extension.class, singletonList(Extensions.class));
+            annotationAlternatives.put(Callback.class, singletonList(Callbacks.class));
+            annotationAlternatives.put(Callbacks.class, singletonList(Callback.class));
+            annotationAlternatives.put(APIResponse.class, singletonList(APIResponses.class));
+            annotationAlternatives.put(APIResponses.class, singletonList(APIResponse.class));
+            annotationAlternatives.put(Parameters.class, singletonList(Parameter.class));
+            annotationAlternatives.put(Parameter.class, singletonList(Parameters.class));
+            annotationAlternatives.put(Tag.class, singletonList(Tags.class));
+            annotationAlternatives.put(Tags.class, singletonList(Tag.class));
+            annotationAlternatives.put(SecurityScheme.class, singletonList(SecuritySchemes.class));
+            annotationAlternatives.put(SecuritySchemes.class, singletonList(SecurityScheme.class));
+            annotationAlternatives.put(SecurityRequirement.class, new ArrayList<>() {
+                {
+                    add(SecurityRequirements.class);
+                    add(SecurityRequirementsSet.class);
+                    add(SecurityRequirementsSets.class);
+                }
+            });
+            annotationAlternatives.put(SecurityRequirements.class, new ArrayList<>() {
+                {
+                    add(SecurityRequirement.class);
+                    add(SecurityRequirementsSet.class);
+                    add(SecurityRequirementsSets.class);
+                }
+            });
+            annotationAlternatives.put(SecurityRequirementsSet.class, new ArrayList<>() {
+                {
+                    add(SecurityRequirement.class);
+                    add(SecurityRequirements.class);
+                    add(SecurityRequirementsSets.class);
+                }
+            });
+            annotationAlternatives.put(SecurityRequirementsSets.class, new ArrayList<>() {
+                {
+                    add(SecurityRequirement.class);
+                    add(SecurityRequirements.class);
+                    add(SecurityRequirementsSet.class);
+                }
+            });
         }
         return annotationAlternatives;
     }
     
-    private void addSchemasToPaths() {
+    private void syncSchemas() {
         OpenAPI api = context.getApi();
+        for (Map.Entry<String, org.eclipse.microprofile.openapi.models.media.Schema> schemaEntry : context.getApi().getComponents().getSchemas().entrySet()) {
+            if (schemaEntry.getValue() != null && schemaEntry.getValue().getProperties() != null) {
+                for (Map.Entry<String, org.eclipse.microprofile.openapi.models.media.Schema> propSchemaEntry : schemaEntry.getValue().getProperties().entrySet()) {
+                    if (propSchemaEntry.getValue() instanceof SchemaImpl) {
+                        SchemaImpl schemaImpl = (SchemaImpl) propSchemaEntry.getValue();
+                        if (schemaImpl.getImplementation() != null) {
+                            String[] implQualified = schemaImpl.getImplementation().split("\\.");
+                            org.eclipse.microprofile.openapi.models.media.Schema from = context.getApi().getComponents().getSchemas().get(implQualified[implQualified.length - 1]);
+                            SchemaImpl.merge(from, schemaImpl, false, context);
+                        }
+                    }
+                }
+            }
+        }
         api.getPaths().getPathItems().forEach((String s, PathItem t) -> {
             t.getOperations().forEach((PathItem.HttpMethod u, org.eclipse.microprofile.openapi.models.Operation v) -> {
                 v.getResponses().getAPIResponses().forEach((String w, org.eclipse.microprofile.openapi.models.responses.APIResponse x) -> {
                     if (x.getContent() != null) {
                         x.getContent().getMediaTypes().forEach((y, z) -> {
-                            SchemaImpl.merge(z.getSchema(), z.getSchema(), true, context);
                             if (z.getSchema() instanceof SchemaImpl) {
-                                SchemaImpl schema = (SchemaImpl) z.getSchema();
-                                schema.setImplementation(null);
+                                SchemaImpl toschema = (SchemaImpl) z.getSchema();
+                                if (toschema.getImplementation() != null) {
+                                    String[] implQualified = toschema.getImplementation().split("\\.");
+                                    String schemaClassName = implQualified[implQualified.length - 1];
+                                    if (schemaClassName.contains("$")) {
+                                        schemaClassName = schemaClassName.substring(schemaClassName.indexOf("$") + 1);
+                                    }
+                                    org.eclipse.microprofile.openapi.models.media.Schema from = context.getApi().getComponents().getSchemas().get(schemaClassName);
+                                    if (from != null) {
+                                        SchemaImpl.merge(from, toschema, false, context);
+                                    } else {
+                                        for (org.eclipse.microprofile.openapi.models.media.Schema fromSchema : context.getApi().getComponents().getSchemas().values()) {
+                                            if(fromSchema instanceof SchemaImpl) {
+                                                SchemaImpl fromSchemaImpl = (SchemaImpl) fromSchema;
+                                                if (fromSchemaImpl.getImplementation() != null
+                                                        && fromSchemaImpl.getImplementation().equals(toschema.getImplementation())) {
+                                                    SchemaImpl.merge(fromSchemaImpl, toschema, false, context);
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         });
                     }
                 });
             });
         });
-        
+
     }
 
 }
