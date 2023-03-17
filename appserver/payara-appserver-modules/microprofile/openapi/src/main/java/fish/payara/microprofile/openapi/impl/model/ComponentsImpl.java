@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -52,6 +52,7 @@ import fish.payara.microprofile.openapi.impl.model.security.SecuritySchemeImpl;
 
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.createOrderedMap;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.readOnlyView;
 
 import java.util.Map;
@@ -83,6 +84,7 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
 
     public static Components createInstance(AnnotationModel annotation, ApiContext context) {
         Components from = new ComponentsImpl();
+        from.setExtensions(parseExtensions(annotation));
         extractAnnotations(annotation, context, "schemas", "name", SchemaImpl::createInstance, from::addSchema);
         extractAnnotations(annotation, context, "responses", "name", APIResponseImpl::createInstance, from::addResponse);
         extractAnnotations(annotation, context, "parameters", "name", ParameterImpl::createInstance, from::addParameter);
@@ -352,6 +354,7 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
         if (from == null) {
             return;
         }
+        to.setExtensions(mergeProperty(to.getExtensions(), from.getExtensions(), override));
         // Handle @Schema
         if (from.getSchemas()!= null) {
             for (Entry<String, Schema> fromEntry : from.getSchemas().entrySet()) {

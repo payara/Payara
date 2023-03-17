@@ -58,6 +58,7 @@
 
     <dependencyManagement>
         <dependencies>
+            <!-- TODO: add, and version-manage any external components packaged by core modules -->
             <dependency>
                 <groupId>fish.payara.server.core.admin</groupId>
                 <artifactId>admin-cli</artifactId>
@@ -289,6 +290,12 @@
             <dependency>
                 <groupId>fish.payara.server.core.packager</groupId>
                 <artifactId>opentracing-repackaged</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.server.core.packager</groupId>
+                <artifactId>opentelemetry-repackaged</artifactId>
                 <version>${payara.core.version}</version>
             </dependency>
 

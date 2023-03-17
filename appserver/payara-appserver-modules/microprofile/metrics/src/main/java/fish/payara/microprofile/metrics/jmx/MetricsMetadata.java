@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2018-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -60,7 +60,6 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlElementWrapper;
 import jakarta.xml.bind.annotation.XmlTransient;
 import org.eclipse.microprofile.metrics.Metadata;
-import org.eclipse.microprofile.metrics.MetricType;
 import org.eclipse.microprofile.metrics.MetricUnits;
 
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -79,9 +78,6 @@ public class MetricsMetadata implements Metadata {
 
     @XmlElement
     private String name;
-
-    @XmlElement
-    private String displayName;
 
     @XmlElement
     private String description;
@@ -105,25 +101,23 @@ public class MetricsMetadata implements Metadata {
     }
 
     public MetricsMetadata(Metadata metadata) {
-        this(null, metadata.getName(), metadata.getDisplayName(), metadata.description().orElse(null), metadata.getTypeRaw(), metadata.unit().orElse(null));
+        this(null, metadata.getName(), metadata.description().orElse(null), null, metadata.unit().orElse(null));
     }
 
-    public MetricsMetadata(String mBean, String name, String displayName, String description, MetricType typeRaw, String unit) {
+    public MetricsMetadata(String mBean, String name, String description, String type, String unit) {
         this();
+        this.type = type;
         this.mBean = mBean;
         this.name = name;
-        this.displayName = displayName;
         this.description = description;
-        this.type = typeRaw.toString();
         this.unit = unit;
     }
 
-    public MetricsMetadata(String name, String displayName, String description, MetricType typeRaw, String unit) {
+    public MetricsMetadata(String name, String description, String type, String unit) {
         this();
         this.name = name;
-        this.displayName = displayName;
         this.description = description;
-        this.type = typeRaw.toString();
+        this.type = type;
         this.unit = unit;
     }
 
@@ -168,16 +162,6 @@ public class MetricsMetadata implements Metadata {
     }
 
     @Override
-    public String getDisplayName() {
-        return displayName;
-    }
-
-    @Override
-    public Optional<String> displayName() {
-        return Optional.ofNullable(displayName);
-    }
-
-    @Override
     public String getUnit() {
         return unit == null ? MetricUnits.NONE : unit;
     }
@@ -197,9 +181,12 @@ public class MetricsMetadata implements Metadata {
         return Optional.ofNullable(description);
     }
 
-    @Override
     public String getType() {
         return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     private boolean validateMetadata() {
@@ -216,12 +203,6 @@ public class MetricsMetadata implements Metadata {
         }
         if (isNull(metadata.getType())) {
             LOGGER.log(WARNING, "'type' property not defined in {0} metadata", metadata.getName());
-            validationResult = false;
-        }
-        try {
-            MetricType.from(type);
-        } catch (IllegalArgumentException ex) {
-            LOGGER.log(WARNING, "'type' property is not valid in {0} metadata", metadata.getName());
             validationResult = false;
         }
         if (nonNull(metadata.getName()) && nonNull(metadata.getMBean())) {
@@ -255,11 +236,6 @@ public class MetricsMetadata implements Metadata {
         return validationResult;
     }
 
-    @Override
-    public MetricType getTypeRaw() {
-        return MetricType.from(type);
-    }
-
     public void setTags(List<XmlTag> tags) {
         if (tags == null) {
             throw new IllegalArgumentException("tags must not be null");
@@ -273,7 +249,7 @@ public class MetricsMetadata implements Metadata {
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, displayName, description, unit, type);
+        return Objects.hash(name, description, unit);
     }
 
     @Override
@@ -287,10 +263,8 @@ public class MetricsMetadata implements Metadata {
         Metadata that = (Metadata) o;
 
         return Objects.equals(name, that.getName()) &&
-                Objects.equals(getDisplayName(), that.getDisplayName()) &&
                 Objects.equals(getDescription(), that.getDescription()) &&
-                Objects.equals(getUnit(), that.getUnit()) &&
-                Objects.equals(getTypeRaw(), that.getTypeRaw());
+                Objects.equals(getUnit(), that.getUnit());
     }
 
     @Override
@@ -299,10 +273,9 @@ public class MetricsMetadata implements Metadata {
                 .add("mBean='" + mBean + "'")
                 .add("dynamic=" + dynamic)
                 .add("name='" + name + "'")
-                .add("displayName='" + displayName + "'")
                 .add("description='" + description + "'")
                 .add("unit='" + unit + "'")
-                .add("type='" + type + "'")
+                .add("type='"+ type + "'")
                 .add("valid=" + valid)
                 .add("tags=" + tags)
                 .toString();

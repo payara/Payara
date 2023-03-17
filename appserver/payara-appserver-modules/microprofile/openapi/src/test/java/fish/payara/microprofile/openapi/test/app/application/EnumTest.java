@@ -72,7 +72,7 @@ public class EnumTest extends OpenApiApplicationTest {
     @Test
     public void testSchemaReferenceCreated() {
         assertEquals("#/components/schemas/Data",
-                path(getOpenAPIJson(), "paths./test/enum/add.post.requestBody.content.*/*.schema.$ref").asText());
+                path(getOpenAPIJson(), "paths./test/enum/add.post.requestBody.content.application/json.schema.$ref").asText());
     }
 
     @Test

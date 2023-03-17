@@ -45,6 +45,9 @@ JSON Smart 2.4.8
 JXMPP 0.6.4
 Mini DNS 0.3.4
 Nimbus Jose JWT 9.23
+OkHttp3 3.14.9
+OkIO 1.17.2
+Open Telemetry 1.22.0
 OpenTracing 0.33.0
 OSGi Core API 4.1.0, 5.0.0, 6.0.0, 7.0.0
 OSGi Compendium API 4.0.0, 7.0.0

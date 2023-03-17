@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -54,6 +54,7 @@ public class OAuthFlowsImpl extends ExtensibleImpl<OAuthFlows> implements OAuthF
 
     public static OAuthFlows createInstance(AnnotationModel annotation) {
         OAuthFlows from = new OAuthFlowsImpl();
+        from.setExtensions(parseExtensions(annotation));
         AnnotationModel implicitAnnotation = annotation.getValue("implicit", AnnotationModel.class);
         if (implicitAnnotation != null) {
             from.setImplicit(OAuthFlowImpl.createInstance(implicitAnnotation));
@@ -117,6 +118,7 @@ public class OAuthFlowsImpl extends ExtensibleImpl<OAuthFlows> implements OAuthF
         if (from == null) {
             return;
         }
+        to.setExtensions(mergeProperty(to.getExtensions(), from.getExtensions(), override));
         if (from.getPassword() != null) {
             OAuthFlow flow = new OAuthFlowImpl();
             OAuthFlowImpl.merge(from.getPassword(), flow, override);

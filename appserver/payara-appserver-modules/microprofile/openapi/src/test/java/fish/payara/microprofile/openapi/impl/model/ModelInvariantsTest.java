@@ -112,7 +112,7 @@ public class ModelInvariantsTest {
 
     @Test
     public void addKeyValueIgnoresNull() {
-        BiPredicate<Extensible<?>, String> hasExtension = (obj, key) -> obj.getExtensions().containsKey(key);
+        BiPredicate<Extensible<?>, String> hasExtension = (obj, key) -> obj.getExtensions() != null && obj.getExtensions().containsKey(key);
         assertAddIgnoresNull(new CallbackImpl(), Callback::addPathItem, Callback::hasPathItem);
         assertAddIgnoresNull(new CallbackImpl(), Callback::addExtension, hasExtension);
         assertAddIgnoresNull(new ExampleImpl(), Example::addExtension,  hasExtension);

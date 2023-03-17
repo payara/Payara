@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) [2020-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2020-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -55,22 +55,17 @@ import java.util.concurrent.TimeUnit;
 
 import jakarta.enterprise.inject.spi.InjectionPoint;
 
+import java.util.function.Function;
 import org.eclipse.microprofile.metrics.Counter;
 import org.eclipse.microprofile.metrics.Metadata;
-import org.eclipse.microprofile.metrics.Meter;
 import org.eclipse.microprofile.metrics.Metric;
 import org.eclipse.microprofile.metrics.MetricID;
 import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.eclipse.microprofile.metrics.MetricUnits;
-import org.eclipse.microprofile.metrics.SimpleTimer;
 import org.eclipse.microprofile.metrics.Tag;
 import org.eclipse.microprofile.metrics.Timer;
-import org.eclipse.microprofile.metrics.MetricRegistry.Type;
-import org.eclipse.microprofile.metrics.annotation.ConcurrentGauge;
 import org.eclipse.microprofile.metrics.annotation.Counted;
 import org.eclipse.microprofile.metrics.annotation.Gauge;
-import org.eclipse.microprofile.metrics.annotation.Metered;
-import org.eclipse.microprofile.metrics.annotation.SimplyTimed;
 import org.eclipse.microprofile.metrics.annotation.Timed;
 import org.junit.Test;
 
@@ -88,7 +83,8 @@ import fish.payara.microprofile.metrics.test.TestUtils;
  */
 public class AnnotationReaderGetOrRegisterTest {
 
-    private final MetricRegistry registry = new MetricRegistryImpl(Type.APPLICATION, this::tick);
+    private final MetricRegistry registry = new MetricRegistryImpl(
+            MetricRegistry.APPLICATION_SCOPE, this::tick);
     private long clockTime;
 
     /**
@@ -111,44 +107,11 @@ public class AnnotationReaderGetOrRegisterTest {
     }
 
     @Test
-    @Counted(tags = { "a=b", "c=d" }, displayName = "displayName")
+    @Counted(tags = { "a=b", "c=d" })
     public void counterFromMetdadata() {
         assertGetsOrRegisters(AnnotationReader.COUNTED, Counter.class, 2);
     }
 
-    @Test
-    public void meterWithoutAnnotation() {
-        assertGetsOrRegisters(AnnotationReader.METERED, Meter.class, 0);
-    }
-
-    @Test
-    @Metered(tags = { "a=b", "c=d" })
-    public void meterFromName() {
-        assertGetsOrRegisters(AnnotationReader.METERED, Meter.class, 2);
-    }
-
-    @Test
-    @Metered(tags = { "a=b", "c=d" }, description = "description")
-    public void meterFromMetdadata() {
-        assertGetsOrRegisters(AnnotationReader.METERED, Meter.class, 2);
-    }
-
-    @Test
-    public void simpleTimerWithoutAnnotation() {
-        assertGetsOrRegisters(AnnotationReader.SIMPLY_TIMED, SimpleTimer.class, 0);
-    }
-
-    @Test
-    @SimplyTimed(tags = { "a=b", "c=d" })
-    public void simpleTimerFromName() {
-        assertGetsOrRegisters(AnnotationReader.SIMPLY_TIMED, SimpleTimer.class, 2);
-    }
-
-    @Test
-    @SimplyTimed(tags = { "a=b", "c=d" }, unit = MetricUnits.HOURS)
-    public void simpleTimerFromMetdadata() {
-        assertGetsOrRegisters(AnnotationReader.SIMPLY_TIMED, SimpleTimer.class, 2);
-    }
 
     @Test
     public void timerWithoutAnnotation() {
@@ -167,32 +130,18 @@ public class AnnotationReaderGetOrRegisterTest {
         assertGetsOrRegisters(AnnotationReader.TIMED, Timer.class, 2);
     }
 
-    @Test
-    public void concurrentGaugeWithoutAnnotation() {
-        assertGetsOrRegisters(AnnotationReader.CONCURRENT_GAUGE, org.eclipse.microprofile.metrics.ConcurrentGauge.class, 0);
-    }
-
-    @Test
-    @ConcurrentGauge(tags = { "a=b", "c=d" })
-    public void concurrentGaugeFromName() {
-        assertGetsOrRegisters(AnnotationReader.CONCURRENT_GAUGE, org.eclipse.microprofile.metrics.ConcurrentGauge.class, 2);
-    }
-
-    @Test
-    @ConcurrentGauge(tags = { "a=b", "c=d" }, unit = MetricUnits.HOURS, description = "description")
-    public void concurrentGaugeFromMetdadata() {
-        assertGetsOrRegisters(AnnotationReader.CONCURRENT_GAUGE, org.eclipse.microprofile.metrics.ConcurrentGauge.class, 2);
-    }
 
     @Test
     public void gaugeWithoutAnnotation() {
         String name = getClass().getCanonicalName() + ".gaugeWithoutAnnotation";
         org.eclipse.microprofile.metrics.Gauge<Long> gauge = () -> 1L;
-        registry.register(name, gauge);
+        Double d = new Double(gauge.getValue());
+        Function<Double, Number> func = v -> d.doubleValue();
+        org.eclipse.microprofile.metrics.Gauge<Number> g = registry.gauge(name, d , func);
         InjectionPoint point = testMethodAsInjectionPoint();
         org.eclipse.microprofile.metrics.Gauge<?> gauge2 = AnnotationReader.GAUGE.getOrRegister(point,
                 org.eclipse.microprofile.metrics.Gauge.class, registry);
-        assertSame(gauge, gauge2);
+        assertSame(g, gauge2);
     }
 
     @Test
@@ -202,12 +151,15 @@ public class AnnotationReaderGetOrRegisterTest {
         String name = getClass().getCanonicalName() + ".gaugeFromMetdadata";
         Metadata expected = Metadata.builder(annoated).withName(name).build();
         org.eclipse.microprofile.metrics.Gauge<Long> gauge = () -> 1L;
-        registry.register(expected, gauge, new Tag("a", "b"), new Tag("c", "d"));
+        Double d = new Double(gauge.getValue());
+        Function<Double, Number> func = v -> d.doubleValue();
+        org.eclipse.microprofile.metrics.Gauge<Number> g = registry
+                .gauge(expected, d, func, new Tag("a", "b"), new Tag("c", "d"));
         InjectionPoint point = testMethodAsInjectionPoint();
         org.eclipse.microprofile.metrics.Gauge<?> gauge2 = AnnotationReader.GAUGE.getOrRegister(point,
                 org.eclipse.microprofile.metrics.Gauge.class, registry);
         assertNotNull(gauge2);
-        assertSame(gauge, gauge2);
+        assertSame(g, gauge2);
     }
 
     private <T extends Metric, A extends Annotation> void assertGetsOrRegisters(AnnotationReader<A> reader,
@@ -233,13 +185,6 @@ public class AnnotationReaderGetOrRegisterTest {
         } catch (IllegalArgumentException ex) {
             // with no annotation, done
             return;
-        }
-        assertEquals(reader.type(), metadata.getTypeRaw());
-        String displayName = reader.displayName(annotation);
-        if (displayName.isEmpty()) {
-            assertEquals(metricID.getName(), metadata.getDisplayName());
-        } else {
-            assertEquals(displayName, metadata.getDisplayName());
         }
         String description = reader.description(annotation);
         if (description.isEmpty()) {
