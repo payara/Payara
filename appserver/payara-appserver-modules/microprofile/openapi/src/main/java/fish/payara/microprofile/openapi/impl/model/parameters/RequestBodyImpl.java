@@ -132,6 +132,7 @@ public class RequestBodyImpl extends ExtensibleImpl<RequestBody> implements Requ
             return;
         }
         to.setDescription(mergeProperty(to.getDescription(), from.getDescription(), override));
+        to.setExtensions(mergeProperty(to.getExtensions(), from.getExtensions(), override));
         to.setRequired(mergeProperty(to.getRequired(), from.getRequired(), override));
         if (from.getContent() != null) {
             if (to.getContent() == null) {

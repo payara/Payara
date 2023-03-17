@@ -194,6 +194,7 @@ public class LinkImpl extends ExtensibleImpl<Link> implements Link {
             return;
         }
         to.setDescription(mergeProperty(to.getDescription(), from.getDescription(), override));
+        to.setExtensions(mergeProperty(to.getExtensions(), from.getExtensions(), override));
         to.setOperationId(mergeProperty(to.getOperationId(), from.getOperationId(), override));
         to.setOperationRef(mergeProperty(to.getOperationRef(), from.getOperationRef(), override));
         to.setRequestBody(mergeProperty(to.getRequestBody(), from.getRequestBody(), override));

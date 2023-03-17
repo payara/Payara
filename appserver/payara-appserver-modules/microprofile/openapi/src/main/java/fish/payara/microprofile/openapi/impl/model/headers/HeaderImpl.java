@@ -268,6 +268,7 @@ public class HeaderImpl extends ExtensibleImpl<Header> implements Header {
             applyReference(to, from.getRef());
             return;
         }
+        to.setExtensions(mergeProperty(to.getExtensions(), from.getExtensions(), override));
         to.setDescription(mergeProperty(to.getDescription(), from.getDescription(), override));
         to.setRequired(mergeProperty(to.getRequired(), from.getRequired(), override));
         to.setDeprecated(mergeProperty(to.getDeprecated(), from.getDeprecated(), override));

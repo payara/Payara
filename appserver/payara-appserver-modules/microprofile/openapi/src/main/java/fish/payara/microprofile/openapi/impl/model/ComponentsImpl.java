@@ -52,6 +52,7 @@ import fish.payara.microprofile.openapi.impl.model.security.SecuritySchemeImpl;
 
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.createOrderedMap;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.readOnlyView;
 
 import java.util.Map;
@@ -353,6 +354,7 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
         if (from == null) {
             return;
         }
+        to.setExtensions(mergeProperty(to.getExtensions(), from.getExtensions(), override));
         // Handle @Schema
         if (from.getSchemas()!= null) {
             for (Entry<String, Schema> fromEntry : from.getSchemas().entrySet()) {

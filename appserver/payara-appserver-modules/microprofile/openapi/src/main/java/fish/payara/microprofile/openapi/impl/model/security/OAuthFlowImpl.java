@@ -146,6 +146,7 @@ public class OAuthFlowImpl extends ExtensibleImpl<OAuthFlow> implements OAuthFlo
             to.setScopes(mergeProperty(to.getScopes(), from.getScopes(), override));
         }
         to.setRefreshUrl(mergeProperty(to.getRefreshUrl(), from.getRefreshUrl(), override));
+        to.setExtensions(mergeProperty(to.getExtensions(), from.getExtensions(), override));
         to.setAuthorizationUrl(mergeProperty(to.getAuthorizationUrl(), from.getAuthorizationUrl(), override));
     }
 

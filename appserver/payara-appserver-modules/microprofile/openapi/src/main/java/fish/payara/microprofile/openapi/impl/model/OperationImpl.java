@@ -107,6 +107,7 @@ public class OperationImpl extends ExtensibleImpl<Operation> implements Operatio
         extractAnnotations(annotation, context, "callbacks", "name", CallbackImpl::createInstance, from::addCallback);
         from.setDeprecated(annotation.getValue("deprecated", Boolean.class));
         extractAnnotations(annotation, context, "security", SecurityRequirementImpl::createInstance, from::addSecurityRequirement);
+        extractAnnotations(annotation, context, "securitySets", SecurityRequirementImpl::createInstances, from::addSecurityRequirement);
         extractAnnotations(annotation, context, "servers", ServerImpl::createInstance, from::addServer);
         from.setMethod(annotation.getValue("method", String.class));
         return from;
@@ -292,7 +293,7 @@ public class OperationImpl extends ExtensibleImpl<Operation> implements Operatio
         }
         return this;
     }
-
+    
     @Override
     public void removeSecurityRequirement(SecurityRequirement securityRequirement) {
         if (security != null) {
@@ -352,7 +353,20 @@ public class OperationImpl extends ExtensibleImpl<Operation> implements Operatio
         to.setOperationId(mergeProperty(to.getOperationId(), from.getOperationId(), override));
         to.setSummary(mergeProperty(to.getSummary(), from.getSummary(), override));
         to.setDescription(mergeProperty(to.getDescription(), from.getDescription(), override));
+        to.setExtensions(mergeProperty(to.getExtensions(), from.getExtensions(), override));
         to.setDeprecated(mergeProperty(to.getDeprecated(), from.getDeprecated(), override));
+        // Handle @SecurityRequirement
+        if (from.getSecurity() != null) {
+            for (SecurityRequirement requirement : from.getSecurity()) {
+                if (requirement != null) {
+                    SecurityRequirement newRequirement = new SecurityRequirementImpl();
+                    SecurityRequirementImpl.merge(requirement, newRequirement);
+                    if (!to.getSecurity().contains(newRequirement)) {
+                        to.addSecurityRequirement(newRequirement);
+                    }
+                }
+            }
+        }
     }
 
     public static void merge(Operation from, Operation to,
@@ -386,6 +400,18 @@ public class OperationImpl extends ExtensibleImpl<Operation> implements Operatio
         if (from.getResponses() != null) {
             for (APIResponse response : from.getResponses().getAPIResponses().values()) {
                 APIResponsesImpl.merge(response, to.getResponses(), override, context);
+            }
+        }
+        // Handle @SecurityRequirement
+        if (from.getSecurity() != null) {
+            for (SecurityRequirement requirement : from.getSecurity()) {
+                if (requirement != null) {
+                    SecurityRequirement newRequirement = new SecurityRequirementImpl();
+                    SecurityRequirementImpl.merge(requirement, newRequirement);
+                    if (!to.getSecurity().contains(newRequirement)) {
+                        to.addSecurityRequirement(newRequirement);
+                    }
+                }
             }
         }
     }

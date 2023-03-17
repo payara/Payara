@@ -308,6 +308,7 @@ public class ParameterImpl extends ExtensibleImpl<Parameter> implements Paramete
         }
         to.setName(mergeProperty(to.getName(), from.getName(), override));
         to.setDescription(mergeProperty(to.getDescription(), from.getDescription(), override));
+        to.setExtensions(mergeProperty(to.getExtensions(), from.getExtensions(), override));
         if (from.getIn()!= null) {
             to.setIn(mergeProperty(to.getIn(),from.getIn(), override));
         }

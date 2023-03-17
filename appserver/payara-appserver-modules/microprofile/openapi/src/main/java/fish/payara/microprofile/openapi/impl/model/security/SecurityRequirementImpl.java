@@ -66,6 +66,19 @@ public class SecurityRequirementImpl extends LinkedHashMap<String, List<String>>
         return from;
     }
 
+    public static SecurityRequirement createInstances(AnnotationModel annotationModel, ApiContext context) {
+        SecurityRequirement securityRequirement = new SecurityRequirementImpl();
+        List<AnnotationModel> annotations = annotationModel.getValue("value", ArrayList.class);
+        if (annotations != null) {
+            for (AnnotationModel annotation : annotations) {
+                String name = annotation.getValue("name", String.class);
+                List<String> scopes = annotation.getValue("scopes", List.class);
+                securityRequirement.addScheme(name, scopes != null ? scopes : Collections.emptyList());
+            }
+        }
+        return securityRequirement;
+    }
+
     public SecurityRequirementImpl() {
         super();
     }
@@ -119,16 +132,4 @@ public class SecurityRequirementImpl extends LinkedHashMap<String, List<String>>
         }
     }
 
-    public static <T> List<SecurityRequirement> createInstances(AnnotationModel annotationModel, ApiContext context) {
-        List<SecurityRequirement> securityRequirements = new ArrayList<>();
-        List<AnnotationModel> annotations = annotationModel.getValue("value", ArrayList.class);
-        for (AnnotationModel annotation : annotations) {
-            SecurityRequirement securityRequirement = new SecurityRequirementImpl();
-            String name = annotation.getValue("name", String.class);
-            List<String> scopes = annotation.getValue("scopes", List.class);
-            securityRequirement.addScheme(name, scopes != null ? scopes : Collections.emptyList());
-            securityRequirements.add(securityRequirement);
-        }
-        return securityRequirements;
-    }
 }

@@ -154,6 +154,7 @@ public class EncodingImpl extends ExtensibleImpl<Encoding> implements Encoding {
         to.setStyle(mergeProperty(to.getStyle(), from.getStyle(), override));
         to.setExplode(mergeProperty(to.getExplode(), from.getExplode(), override));
         to.setAllowReserved(mergeProperty(to.getAllowReserved(), from.getAllowReserved(), override));
+        to.setExtensions(mergeProperty(to.getExtensions(), from.getExtensions(), override));
         if (from.getHeaders() != null) {
             for (Entry<String, Header> header : from.getHeaders().entrySet()) {
                 final String headerName = header.getKey();
