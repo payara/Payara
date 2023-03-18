@@ -163,7 +163,7 @@
         <mail.version>2.1.0</mail.version>
         <angus.mail.version>1.0.0</angus.mail.version>
         <jakarta.annotation-api.version>2.1.1</jakarta.annotation-api.version>
-        <hk2.version>3.0.1.payara-p2</hk2.version>
+        <hk2.version>3.0.1.payara-p3</hk2.version>
         <osgi-resource-locator.version>1.0.3</osgi-resource-locator.version>
         <stax-api.version>1.0-2</stax-api.version>
         <jackson.version>2.14.1</jackson.version>
