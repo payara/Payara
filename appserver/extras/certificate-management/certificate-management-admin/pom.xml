@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.extras.certificate-management</groupId>
         <artifactId>certificate-management-parent</artifactId>
-        <version>6.2023.3-SNAPSHOT</version>
+        <version>6.2023.4-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
