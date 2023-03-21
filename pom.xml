@@ -163,7 +163,7 @@
         <mail.version>2.1.0</mail.version>
         <angus.mail.version>1.0.0</angus.mail.version>
         <jakarta.annotation-api.version>2.1.1</jakarta.annotation-api.version>
-        <hk2.version>3.0.1.payara-p2</hk2.version>
+        <hk2.version>3.0.1.payara-p3</hk2.version>
         <osgi-resource-locator.version>1.0.3</osgi-resource-locator.version>
         <stax-api.version>1.0-2</stax-api.version>
         <jackson.version>2.14.1</jackson.version>
@@ -237,7 +237,7 @@
         <websocket-api.version>2.1.0</websocket-api.version>
         <concurrent-api.version>3.0.1</concurrent-api.version>
         <concurrent.version>3.0.0.payara-p2</concurrent.version>
-        <asm.version>9.2</asm.version>
+        <asm.version>9.4</asm.version>
         <monitoring-console-api.version>2.0.1</monitoring-console-api.version>
         <monitoring-console-process.version>2.0.1</monitoring-console-process.version>
         <monitoring-console-webapp.version>2.0.1</monitoring-console-webapp.version>
