@@ -47,6 +47,8 @@ import io.opentelemetry.instrumentation.annotations.WithSpan;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -86,6 +88,34 @@ public class SpanBean {
     public void spanChild() {
         LOG.log(Level.INFO, "invoking spanChild");
         spanChildBean.spanChild();
+    }
+
+    @WithSpan
+    public CompletionStage<String> asyncSpan() {
+        var result = new CompletableFuture<String>();
+        new Thread(() -> {
+            try {
+                Thread.sleep(500);
+                result.complete("OK");
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }).start();
+        return result;
+    }
+
+    @WithSpan
+    public CompletionStage<String> asyncExceptionSpan() {
+        var result = new CompletableFuture<String>();
+        new Thread(() -> {
+            try {
+                Thread.sleep(500);
+                result.completeExceptionally(new IllegalArgumentException("exception being throw"));
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }).start();
+        return result;
     }
 
     @ApplicationScoped

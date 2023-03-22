@@ -102,16 +102,10 @@ public class OpenTracingHelper {
             return operationName;
         }
         if (withSpanAnnotation != null) {
-            var operationName = OpenTracingCdiUtils.getConfigOverrideValue(
-                    WithSpan.class, "value", resourceInfo, String.class).orElse(withSpanAnnotation.value());
-
-            // By default, the span name will be <className>.<methodName>,
-            // unless a name is provided as an argument to the annotation.
-            if (operationName.equals("")) {
-                return resourceInfo.getResourceClass().getCanonicalName() + "."
-                        + resourceInfo.getResourceMethod().getName();
-            }
-            return operationName;
+            // replace blank value with <className>.<methodName>,
+            // unless a value is provided as an argument to the annotation.
+            return withSpanAnnotation.value().isBlank() ? resourceInfo.getResourceClass().getCanonicalName() + "."
+                        + resourceInfo.getResourceMethod().getName() : withSpanAnnotation.value();
         }
 
         SpanStrategy naming = determineSpanStrategy();
