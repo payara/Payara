@@ -255,6 +255,11 @@ public class WebappClassLoader
     protected int debug = 0;
 
     /**
+     * When configured it will host the value for SameSite Cookie
+     */
+    private String cookieSameSiteValue = "";
+
+    /**
      * Should this class loader delegate to the parent class loader
      * <strong>before</strong> searching its own repositories (i.e. the
      * usual Java2 delegation model)?  If set to <code>false</code>,
@@ -720,6 +725,13 @@ public class WebappClassLoader
         this.debug = debug;
     }
 
+    public String getCookieSameSiteValue() {
+        return cookieSameSiteValue;
+    }
+
+    public void setCookieSameSiteValue(String cookieSameSiteValue) {
+        this.cookieSameSiteValue = cookieSameSiteValue;
+    }
 
     /**
      * Return the "delegate first" flag for this class loader.
