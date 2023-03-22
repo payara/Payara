@@ -41,11 +41,13 @@
  */
 package fish.payara.samples.otel.annotation;
 
+import io.opentelemetry.instrumentation.annotations.SpanAttribute;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.QueryParam;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -72,6 +74,14 @@ public class WithSpanResource {
     @GET
     public String getSpanAnnotatedOnDirectMethod() {
         LOG.log(Level.INFO, "getSpanAnnotatedOnDirectMethod()");
+        return "OK";
+    }
+
+    @WithSpan
+    @Path("/spanAnnotatedWithAttributes")
+    @GET
+    public String getSpanAnnotatedWithAttributes(@QueryParam("q") @SpanAttribute("query") String query) {
+        LOG.log(Level.INFO, "getSpanAnnotatedWithAttributes()");
         return "OK";
     }
 }

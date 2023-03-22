@@ -46,6 +46,7 @@ import fish.payara.opentracing.PropagationHelper;
 import fish.payara.requesttracing.jaxrs.client.PayaraTracingServices;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
@@ -66,6 +67,7 @@ import jakarta.ws.rs.PUT;
 import org.glassfish.api.invocation.InvocationManager;
 
 import java.util.Arrays;
+import java.util.concurrent.CompletionStage;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -93,40 +95,36 @@ public class WithSpanMethodInterceptor {
         final OpenTelemetryService openTelemetryService = payaraTracingServices.getOpenTelemetryService();
         final InvocationManager invocationManager = payaraTracingServices.getInvocationManager();
 
+        // extract the span attribute annotation from the method
+        var builder = Attributes.builder();
+        extractSpanAttributes(invocationContext, builder);
+        var attributes = builder.build();
+
         // If Request Tracing is enabled, and this isn't a JaxRs method
         if (openTelemetryService == null || !openTelemetryService.isEnabled() //
                 || isJaxRsMethod(invocationContext) || isWebServiceMethod(invocationContext, invocationManager)) {
             // If request tracing was turned off, or this is a JaxRs method, just carry on
             LOG.finest("The call is already monitored by some different component, proceeding the invocation.");
+            var currentSpan = Span.current();
+            currentSpan.setAllAttributes(attributes);
             return invocationContext.proceed();
         }
 
         // Get the WithSpan annotation present on the method
         final WithSpan withSpan = OpenTracingCdiUtils.getAnnotation(bm, WithSpan.class, invocationContext);
-        var builder = Attributes.builder();
-        extractSpanAttributes(invocationContext, builder);
+
         // If we *have* been told to, get the application's Tracer instance and start an active span.
         SpanBuilder spanBuilder = openTelemetryService.getCurrentTracer()
                 .spanBuilder(getWithSpanValue(invocationContext, withSpan))
                 .setSpanKind(getWithSpanKind(invocationContext, withSpan))
-                .setAllAttributes(builder.build());
+                .setAllAttributes(attributes);
         spanBuilder.setParent(Context.current());
         final var span = spanBuilder.startSpan();
-        try (var ignore = PropagationHelper.start(span, Context.current())) {
-            try {
-                return invocationContext.proceed();
-            } catch (final Exception ex) {
-                LOG.log(Level.FINEST, "Setting the error to the active span ...", ex);
-                span.setAttribute("error", true);
-                span.setAttribute(SemanticAttributes.EXCEPTION_TYPE, Throwable.class.getName());
-                span.addEvent(SemanticAttributes.EXCEPTION_EVENT_NAME,
-                        Attributes.of(SemanticAttributes.EXCEPTION_MESSAGE, ex.getMessage()));
-                span.recordException(ex);
-                throw ex;
-            }
-        } finally {
-            span.end();
+
+        if (invocationContext.getMethod().getReturnType().equals(CompletionStage.class)) {
+            return handleAsyncInvocation(invocationContext, span);
         }
+        return handleSyncInvocation(invocationContext, span);
     }
 
     /**
@@ -218,5 +216,40 @@ public class WithSpanMethodInterceptor {
                                 }).toArray(String[]::new),
                         InvocationContext::getParameters);
         extractor.onStart(builder, Context.current(), invocationContext);
+    }
+
+    private Object handleSyncInvocation(InvocationContext invocationContext, Span span) throws Exception {
+        try (var ignore = PropagationHelper.start(span, Context.current())) {
+                try {
+                    return invocationContext.proceed();
+                } catch (final Exception ex) {
+                    printExceptionAttributes(span, ex);
+                    throw ex;
+                }
+            } finally {
+                span.end();
+            }
+    }
+
+    private Object handleAsyncInvocation(InvocationContext invocationContext, Span span) throws Exception {
+        var helper = PropagationHelper.startMultiThreaded(span, Context.current());
+        CompletionStage<?> future = (CompletionStage<?>) invocationContext.proceed();
+            return future.whenComplete((value, ex) -> {
+                if (ex != null) {
+                    printExceptionAttributes(helper.span(), ex);
+                }
+                helper.localScope().close();
+                helper.end();
+                helper.close();
+            });
+    }
+
+    private void printExceptionAttributes(Span span, Throwable ex) {
+        LOG.log(Level.FINEST, "Setting the error to the active span ...", ex);
+        span.setAttribute("error", true);
+        span.setAttribute(SemanticAttributes.EXCEPTION_TYPE, Throwable.class.getName());
+        span.addEvent(SemanticAttributes.EXCEPTION_EVENT_NAME,
+                Attributes.of(SemanticAttributes.EXCEPTION_MESSAGE, ex.getMessage()));
+        span.recordException(ex);
     }
 }
