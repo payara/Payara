@@ -485,6 +485,12 @@
                 <version>${payara.core.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>fish.payara.server.core.packager</groupId>
+                <artifactId>opentelemetry-repackaged</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
             <!-- public dependencies -->
             <dependency>
                 <groupId>org.glassfish.hk2</groupId>

@@ -46,7 +46,9 @@
 
     <name>Repackaged Tiger-Types</name>
     <description>Repackages tiger-types jar to expose more packages into the OSGI module</description>
-
+    <properties>
+        <jar.manifest/>
+    </properties>
     <build>       
         <plugins>
             <plugin>

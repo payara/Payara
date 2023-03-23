@@ -370,6 +370,8 @@
         <module>../nucleus/cluster/common</module>
         <module>../nucleus/packager/external/j-interop</module>
         <module>../nucleus/cluster/ssh</module>
+        <module>../nucleus/payara-modules/payara-executor-service</module>
+        <module>../nucleus/packager/external/opentelemetry-repackaged</module>
     </modules>
 
     <build>
