@@ -75,7 +75,6 @@
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>glassfish-api</artifactId>
-            <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -98,7 +97,6 @@
         <dependency>
             <groupId>fish.payara.server.core.admin</groupId>
             <artifactId>monitoring-core</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.deployment</groupId>
@@ -109,7 +107,6 @@
         <dependency>
             <groupId>fish.payara.server.core.web</groupId>
             <artifactId>web-gui-plugin-common</artifactId>
-            <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

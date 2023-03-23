@@ -55,7 +55,6 @@
         <dependency>
             <groupId>fish.payara.server.core.payara-modules</groupId>
             <artifactId>payara-executor-service</artifactId>
-            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>

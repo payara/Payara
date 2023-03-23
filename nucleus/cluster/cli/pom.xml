@@ -95,11 +95,9 @@
         <dependency>
             <groupId>fish.payara.server.core.admin</groupId>
             <artifactId>admin-cli</artifactId>
-            <version>${project.parent.version}</version>
         </dependency>        <dependency>
             <groupId>fish.payara.server.core.nucleus</groupId>
             <artifactId>glassfish</artifactId>
-            <version>${project.parent.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.admin</groupId>
@@ -109,17 +107,14 @@
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>common-util</artifactId>
-            <version>${project.parent.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.admin</groupId>
             <artifactId>admin-util</artifactId>
-            <version>${project.parent.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.admin</groupId>
             <artifactId>launcher</artifactId>
-            <version>${project.parent.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.cluster</groupId>
@@ -132,7 +127,6 @@
         <dependency>
             <groupId>fish.payara.server.core.security</groupId>
             <artifactId>ssl-impl</artifactId>
-            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>

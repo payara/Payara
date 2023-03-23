@@ -82,7 +82,6 @@
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>common-util</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.payara-modules</groupId>
@@ -97,7 +96,6 @@
         <dependency>
             <groupId>fish.payara.server.core.web</groupId>
             <artifactId>web-core</artifactId>
-            <version>${project.version}</version>
         </dependency>
     </dependencies>
 

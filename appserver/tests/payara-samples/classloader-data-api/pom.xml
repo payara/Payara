@@ -65,7 +65,7 @@
         <dependency>
             <groupId>fish.payara.server.core.web</groupId>
             <artifactId>war-util</artifactId>
-            <version>${project.version}</version>
+
             <scope>provided</scope>
         </dependency>
         <dependency>

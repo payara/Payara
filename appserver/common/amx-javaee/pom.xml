@@ -78,12 +78,10 @@
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>amx-core</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.deployment</groupId>
             <artifactId>dol</artifactId>
-            <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -98,7 +96,6 @@
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>stats77</artifactId>
-            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>

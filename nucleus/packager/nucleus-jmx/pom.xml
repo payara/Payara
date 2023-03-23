@@ -58,19 +58,19 @@
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>glassfish-mbeanserver</artifactId>
-            <version>${project.version}</version>
+
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>amx-core</artifactId>
-            <version>${project.version}</version>
+
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.packager</groupId>
             <artifactId>jmxremote_optional-repackaged</artifactId>
-            <version>${project.version}</version>
+
             <optional>true</optional>
         </dependency>
     </dependencies>

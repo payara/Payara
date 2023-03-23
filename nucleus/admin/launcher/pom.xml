@@ -75,12 +75,10 @@
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>common-util</artifactId>
-            <version>${project.version}</version>
-        </dependency>      
+        </dependency>
         <dependency>
             <groupId>fish.payara.server.core.nucleus</groupId>
             <artifactId>logging</artifactId>
-            <version>${project.version}</version>
         </dependency>
        <dependency>
             <groupId>org.glassfish.annotations</groupId>

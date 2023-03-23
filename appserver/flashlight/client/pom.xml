@@ -64,12 +64,10 @@
         <dependency>
             <groupId>fish.payara.server.core.flashlight</groupId>
             <artifactId>flashlight-framework</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>internal-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>

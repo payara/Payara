@@ -74,7 +74,6 @@
         <dependency>
             <groupId>fish.payara.server.core.admin</groupId>
             <artifactId>admin-cli</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.jline</groupId>

@@ -64,7 +64,7 @@ holder.
         <dependency>
             <groupId>fish.payara.server.core.nucleus</groupId>
             <artifactId>glassfish</artifactId>
-            <version>4.1-SNAPSHOT</version>
+
             <scope>provided</scope>
         </dependency>
     </dependencies>

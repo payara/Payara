@@ -166,7 +166,6 @@
     	<dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>glassfish-ee-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
     	<dependency>
             <groupId>fish.payara.server.internal.jdbc</groupId>

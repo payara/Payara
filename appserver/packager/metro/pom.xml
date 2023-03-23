@@ -170,7 +170,6 @@
         <dependency>
             <groupId>fish.payara.server.core.packager</groupId>
             <artifactId>metro-xmlsec-repackaged</artifactId>
-            <version>${project.version}</version>
         </dependency>
         
         

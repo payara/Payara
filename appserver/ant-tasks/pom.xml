@@ -75,25 +75,21 @@
         <dependency>
           <groupId>fish.payara.server.core.common</groupId>
           <artifactId>simple-glassfish-api</artifactId>
-          <version>${project.version}</version>
         </dependency>
 
         <dependency>
           <groupId>fish.payara.server.core.common</groupId>
           <artifactId>glassfish-api</artifactId>
-          <version>${project.version}</version>
         </dependency>
 
         <dependency>
           <groupId>fish.payara.server.core.admin</groupId>
           <artifactId>admin-cli</artifactId>
-          <version>${project.version}</version>
         </dependency>
 
         <dependency>
           <groupId>fish.payara.server.core.web</groupId>
           <artifactId>web-embed-api</artifactId>
-          <version>${project.version}</version>
         </dependency>
 
 

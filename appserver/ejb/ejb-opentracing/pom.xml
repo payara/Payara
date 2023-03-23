@@ -55,12 +55,10 @@ holder.
         <dependency>
             <groupId>fish.payara.server.core.orb</groupId>
             <artifactId>orb-connector</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.payara-modules</groupId>
             <artifactId>opentracing-adapter</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>io.opentracing</groupId>

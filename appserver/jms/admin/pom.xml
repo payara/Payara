@@ -90,28 +90,24 @@
         <dependency>
             <groupId>fish.payara.server.core.admin</groupId>
             <artifactId>config-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>glassfish-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.test-utils</groupId>
             <artifactId>utils</artifactId>
-            <version>${project.version}</version>
+
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.admin</groupId>
             <artifactId>admin-util</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
     	    <groupId>fish.payara.server.core.connectors</groupId>
     	    <artifactId>connectors-internal-api</artifactId>
-    	    <version>${project.version}</version>
         </dependency>
     	<dependency>
             <groupId>fish.payara.server.internal.jms</groupId>
@@ -131,7 +127,6 @@
         <dependency>
             <groupId>fish.payara.server.core.nucleus</groupId>
             <artifactId>kernel</artifactId>
-            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>

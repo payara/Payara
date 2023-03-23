@@ -100,7 +100,6 @@
         <dependency>
             <groupId>fish.payara.server.core.transaction</groupId>
             <artifactId>transaction-internal-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.transaction</groupId>
@@ -110,17 +109,14 @@
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>glassfish-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>common-util</artifactId>
-            <version>${project.parent.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.admin</groupId>
             <artifactId>config-api</artifactId>
-            <version>${project.parent.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.pfl</groupId>
@@ -142,7 +138,7 @@
         <dependency>
             <groupId>fish.payara.server.core.orb</groupId>
             <artifactId>orb-connector</artifactId>
-            <version>${project.parent.version}</version>
+
             <optional>true</optional>
         </dependency>
         <dependency>

@@ -77,7 +77,6 @@
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>simple-glassfish-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
    </dependencies>
 </project>

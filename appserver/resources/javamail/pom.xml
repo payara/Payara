@@ -85,7 +85,7 @@
         <dependency>
             <groupId>fish.payara.server.core.security</groupId>
             <artifactId>security-services</artifactId>
-            <version>${project.version}</version>
+
             <scope>test</scope>
         </dependency>
     </dependencies>

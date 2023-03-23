@@ -91,7 +91,6 @@
         <dependency>
             <groupId>fish.payara.server.core.admin</groupId>
             <artifactId>admin-cli</artifactId>
-            <version>${project.parent.version}</version>
         </dependency>
     </dependencies>
 </project>

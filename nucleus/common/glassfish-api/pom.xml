@@ -79,7 +79,6 @@
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>scattered-archive-api</artifactId>
-	    <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
@@ -88,7 +87,6 @@
         <dependency>
             <groupId>fish.payara.server.core.grizzly</groupId>
             <artifactId>nucleus-grizzly-all</artifactId>
-            <version>${project.version}</version>
         </dependency>
         
         <dependency>
