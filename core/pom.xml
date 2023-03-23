@@ -231,6 +231,7 @@
 
     <modules>
         <module>core-bom</module>
+        <module>core-parent</module>
         <!--        fish.payara.server.internal.common      glassfish-api-->
         <module>../nucleus/common/glassfish-api</module>
         <!--        fish.payara.server.internal.common      common-util-->

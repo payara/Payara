@@ -155,6 +155,7 @@
         <module>JMX-Monitoring</module>
         <module>payara-micro</module>
         <module>payara-api</module>
+        <module>payara-executor-service</module>
         <module>environment-warning</module>
         <module>payara-rest-endpoints</module>
         <module>rest-monitoring</module>

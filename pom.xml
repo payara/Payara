@@ -134,6 +134,7 @@
     <properties>
         <dynamic.build.properties.version>0.0.1.a2</dynamic.build.properties.version>
 
+        <javase.version>${jdk.version}</javase.version>
         <!-- BOM-referenced versions -->
 
         <osgi-resource-locator.version>1.0.3</osgi-resource-locator.version>
