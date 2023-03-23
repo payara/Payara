@@ -207,6 +207,12 @@
                 <artifactId>opendmk_jmxremote_optional_jar</artifactId>
                 <version>${opendmk.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.jenkins-ci</groupId>
+                <artifactId>trilead-ssh2</artifactId>
+                <version>${trilead-ssh2.version}</version>
+                <scope>provided</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

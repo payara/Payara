@@ -135,7 +135,8 @@
         <pfl.version>4.1.2</pfl.version>
         <opendmk.version>1.0-b01-ea</opendmk.version>
         <jna.version>5.12.1</jna.version>
-
+        <!-- A pure Java implementation of the SSH-2 protocol -->
+        <trilead-ssh2.version>build-217-jenkins-16</trilead-ssh2.version>
 
         <!-- build versions -->
         <jdk.version>11</jdk.version>
@@ -365,6 +366,7 @@
         <module>../appserver/packager/external/libpam4j</module>
         <module>../nucleus/packager/external/tiger-types</module>
         <module>../nucleus/test-utils/utils</module>
+        <module>../nucleus/packager/external/trilead-ssh2</module>
     </modules>
 
     <build>

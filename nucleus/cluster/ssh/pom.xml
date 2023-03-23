@@ -73,9 +73,8 @@
     </build>
     <dependencies>
         <dependency>
-            <groupId>fish.payara.server.internal.packager</groupId>
+            <groupId>fish.payara.server.core.packager</groupId>
             <artifactId>trilead-ssh2-repackaged</artifactId>
-            <version>${project.parent.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.hk2</groupId>

@@ -122,8 +122,7 @@
         <classmate.version>1.5.0</classmate.version>
         <jboss.logging.version>3.5.0.Final</jboss.logging.version>
 
-        <!-- A pure Java implementation of the SSH-2 protocol -->
-        <trilead-ssh2.version>build-217-jenkins-16</trilead-ssh2.version>
+
 
         <!-- GlassFish MBean Annotation Library -->
         <antlr.version>2.7.7</antlr.version>
