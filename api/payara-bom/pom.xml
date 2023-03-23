@@ -488,20 +488,6 @@
                 <version>${jakarta.jws-api.version}</version>
             </dependency>
 
-            <dependency>
-                <groupId>io.opentelemetry</groupId>
-                <artifactId>opentelemetry-bom</artifactId>
-                <version>${opentelemetry.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-            <dependency>
-                <groupId>io.opentelemetry</groupId>
-                <artifactId>opentelemetry-bom-alpha</artifactId>
-                <version>${opentelemetry.alpha.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
             <!-- packaged components -->
             <dependency>
                 <groupId>io.opentelemetry</groupId>
