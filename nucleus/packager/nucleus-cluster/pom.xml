@@ -77,10 +77,9 @@
 	        <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.cluster</groupId>
+            <groupId>fish.payara.server.core.cluster</groupId>
             <artifactId>cluster-ssh</artifactId>
-            <version>${project.version}</version>
-	    <optional>true</optional>
+	        <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.packager</groupId>

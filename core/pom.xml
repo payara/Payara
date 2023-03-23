@@ -369,6 +369,7 @@
         <module>../nucleus/packager/external/trilead-ssh2</module>
         <module>../nucleus/cluster/common</module>
         <module>../nucleus/packager/external/j-interop</module>
+        <module>../nucleus/cluster/ssh</module>
     </modules>
 
     <build>
