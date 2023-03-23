@@ -55,7 +55,6 @@
     <name>Test Utilities Modules</name>
 
     <modules>
-        <module>utils</module>
         <module>utils-ng</module>
     </modules>
 

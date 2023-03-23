@@ -71,7 +71,6 @@
         <module>trilead-ssh2</module>
         <module>j-interop</module>
     	<module>antlr</module>
-        <module>opentelemetry-repackaged</module>
     </modules>
     <build>
         <plugins>
