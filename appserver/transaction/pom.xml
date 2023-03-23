@@ -53,7 +53,6 @@
     <packaging>pom</packaging>
     <name>GlassFish Transaction modules</name>  
     <modules>
-        <module>internal-api</module>
         <module>jta</module>
         <module>jts</module>
         <module>jts-l10n</module>

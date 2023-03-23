@@ -58,7 +58,6 @@
         <module>backup</module>
         <module>cli</module>
         <module>cli-optional</module>
-        <module>admin-core</module>
         <module>backup-l10n</module>
         <module>cli-optional-l10n</module>
         <module>gf_template</module>

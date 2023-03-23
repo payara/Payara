@@ -54,9 +54,6 @@
     <name>Nucleus Security Parent</name>
     <description>Security Infrastructure and Technology Integration Modules</description>  
     <modules>
-        <module>core</module>
-        <module>ssl-impl</module>
-        <module>services</module>
         <module>core-l10n</module>
         <module>services-l10n</module>
   </modules>

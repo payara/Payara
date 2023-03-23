@@ -55,12 +55,8 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
     
     <modules>
         <module>asadmin-audit</module>
-        <module>hazelcast-bootstrap</module>
-        <module>healthcheck-core</module>
         <module>healthcheck-cpool</module>
-        <module>healthcheck-stuck</module>
         <module>phonehome-bootstrap</module>
-        <module>requesttracing-core</module>
         <module>notification-core</module>
         <module>asadmin-recorder</module>
         <module>service-exemplar</module>
@@ -68,19 +64,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
         <module>notification-cdi-eventbus-core</module>
         <module>jsr107-repackaged</module>
         <module>payara-executor-service</module>
-        <module>opentracing-adapter</module>
         <module>nucleus-microprofile</module>
     </modules>
     
-    <profiles>
-        <profile>
-            <id>jdk8</id>
-            <activation>
-                <jdk>[1.8,)</jdk>
-            </activation>
-            <modules>
-                <module>nucleus-microprofile</module>
-            </modules>
-        </profile>
-    </profiles>
 </project>

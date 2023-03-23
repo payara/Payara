@@ -67,15 +67,11 @@
     </properties>
 
     <modules>
-        <module>jmxremote_optional</module>
-        <module>ldapbp</module>
         <module>vboxjws</module>
         <module>trilead-ssh2</module>
         <module>j-interop</module>
-	    <module>antlr</module>
-        <module>opentracing-repackaged</module>
+    	<module>antlr</module>
         <module>opentelemetry-repackaged</module>
-        <module>tiger-types</module>
     </modules>
     <build>
         <plugins>

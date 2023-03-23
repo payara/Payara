@@ -53,7 +53,6 @@
     <packaging>pom</packaging>
     <name>GlassFish Nucleus Deployment Related Modules</name>  
     <modules>
-        <module>common</module>
         <module>admin</module>
         <module>autodeploy</module>
         <module>dtds</module>

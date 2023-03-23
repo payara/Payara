@@ -53,9 +53,7 @@
     <description>Aggregator Module for Artefacts that exposes the public API of Payara Application Server</description>
 
     <modules>
-        <module>payara-api</module>
         <module>payara-bom</module>
-	<module>payara-core-bom</module>
     </modules>
 
     <properties>

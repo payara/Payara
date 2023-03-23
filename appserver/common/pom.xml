@@ -53,14 +53,6 @@
     <packaging>pom</packaging>
     <name>GlassFish Common modules</name>  
     <modules>
-    	<module>stats77</module>
-    	<module>amx-javaee</module>
-<!--	<module>mejb</module>
-	<module>mejb-frag</module>    	-->
-        <module>glassfish-ee-api</module>
-        <module>annotation-framework</module>
-        <module>container-common</module>
-        <module>glassfish-naming</module>
         <module>annotation-framework-l10n</module>
         <module>container-common-l10n</module>
         <module>glassfish-naming-l10n</module>

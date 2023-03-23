@@ -55,7 +55,6 @@
     <modules>
         <module>descriptors</module>
         <module>connectors-connector</module>
-        <module>connectors-internal-api</module>
         <module>connectors-runtime</module>
         <module>connectors-inbound-runtime</module>
         <module>work-management</module>

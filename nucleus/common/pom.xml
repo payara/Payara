@@ -53,13 +53,6 @@
     <packaging>pom</packaging>
     <name>GlassFish Nucleus Common modules</name>  
     <modules>
-        <module>simple-glassfish-api</module>
-    	<module>internal-api</module>
-    	<module>common-util</module>
-    	<module>glassfish-api</module>
-        <module>mbeanserver</module>
-    	<module>scattered-archive-api</module>
-    	<module>amx-core</module>
     	<module>common-util-l10n</module>
     	<module>internal-api-l10n</module>
     	<module>glassfish-api-l10n</module>

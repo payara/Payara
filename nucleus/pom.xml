@@ -97,53 +97,39 @@
     <properties>
         <!-- on Hudson and RE, ${build.number} gets replaced by real build ID -->
         <build.id>${build.number}</build.id>
-        <jdk.version>11</jdk.version>
-        <javadoc.skip>false</javadoc.skip>
 
-        <maven.assembly.plugin.version>3.4.2</maven.assembly.plugin.version>
         <maven.remote.resources.plugin.version>1.7.0</maven.remote.resources.plugin.version>
-        <maven.antrun.plugin.version>3.1.0</maven.antrun.plugin.version>
         <maven.eclipse.plugin.version>2.10</maven.eclipse.plugin.version>
         <maven.invoker.plugin.version>3.3.0</maven.invoker.plugin.version>
         <maven.war.plugin.version>3.3.2</maven.war.plugin.version>
         <maven.makepkgs.plugin.version>0.6.2</maven.makepkgs.plugin.version>
         <maven.jaxb2.plugin.version>0.15.1</maven.jaxb2.plugin.version>
         <maven.antlr.plugin.version>2.2</maven.antlr.plugin.version>
-        <maven.enforcer.plugin.version>3.1.0</maven.enforcer.plugin.version>
+
         <maven.jaxws.plugin.version>2.6</maven.jaxws.plugin.version>
         <maven.apt.plugin.version>1.0-alpha-5</maven.apt.plugin.version>
         <maven.build.helper.plugin.version>3.3.0</maven.build.helper.plugin.version>
         <maven.plugin.api.version>3.6.0</maven.plugin.api.version>
 
         <!-- Servlet -->
-        <grizzly.npn.api.version>2.0.0.payara-p1</grizzly.npn.api.version>
         <grizzly.npn.osgi.version>2.0.0</grizzly.npn.osgi.version>
 
         <!-- Other -->
-        <hk2.plugin.version>3.0.2</hk2.plugin.version> <!-- May need patched-->
-        <tiger.types.version>1.4.payara-p1</tiger.types.version>
 
-        <glassfish-corba.version>4.2.4.payara-p2</glassfish-corba.version>
         <saaj-api.version>1.4.0</saaj-api.version>
 
         <!-- Library for introspecting types with full generic information including resolving of field and method types. -->
         <classmate.version>1.5.0</classmate.version>
         <jboss.logging.version>3.5.0.Final</jboss.logging.version>
-        <!-- Javassist (JAVA programming ASSISTant) makes Java bytecode manipulation simple. It is a class library for editing bytecodes in Java. -->
-        <javassist.version>3.29.2-GA</javassist.version>
 
         <!-- A pure Java implementation of the SSH-2 protocol -->
         <trilead-ssh2.version>build-217-jenkins-16</trilead-ssh2.version>
 
-        <!-- Primitive Function Library (PFL); a library of simple utilities used by Glassfish -->
-        <pfl.version>4.1.2</pfl.version>
         <!-- GlassFish MBean Annotation Library -->
-        <gmbal.version>4.0.3</gmbal.version>
         <antlr.version>2.7.7</antlr.version>
 
         <commons-io.version>2.11.0</commons-io.version>
 
-        <mimepull.version>1.10.0</mimepull.version>
 
         <!-- Apache Felix is an open source implementation of the OSGi Core Release 8 framework specification. -->
         <org.apache.felix.main.version>7.0.5</org.apache.felix.main.version>
@@ -163,25 +149,16 @@
         <org.osgi.util.function.version>1.2.0</org.osgi.util.function.version>
 
         <!-- Java Business Integration (JBI) is a specification for an approach to implementing a service-oriented architecture (SOA).  -->
-        <glassfish-management-api.version>3.2.3.payara-p1</glassfish-management-api.version>
         <btrace.version>1.2.3</btrace.version>
-        <opendmk.version>1.0-b01-ea</opendmk.version>
         <l10n.version>3.1-b41</l10n.version>
-        <ha-api.version>3.1.13</ha-api.version>
-        <mockito.version>2.28.2</mockito.version>
 
         <!-- Build -->
 
-        <glassfishbuild.version>3.2.20.payara-p2</glassfishbuild.version>
         <source-annotation-processor.version>1.0</source-annotation-processor.version>
-        <logging-annotation-processor.version>1.9</logging-annotation-processor.version>
-        <command-security-plugin.version>1.0.13</command-security-plugin.version>
-        <command.security.maven.plugin.isFailureFatal>false</command.security.maven.plugin.isFailureFatal>
         <copyright-plugin.version>1.39</copyright-plugin.version>
         <nucleus.install.dir.name>nucleus</nucleus.install.dir.name>
         <ant.version>1.10.12</ant.version>
         <ant-launcher.version>1.10.12</ant-launcher.version>
-        <metainf-services.version>1.9</metainf-services.version>
 
         <!-- Debug / analysis -->
         <findbugs.skip>true</findbugs.skip>
@@ -210,7 +187,6 @@
         <module>security</module>
         <module>test-utils</module>
         <module>diagnostics</module>
-        <module>resources</module>
         <module>resources-l10n</module>
         <module>hk2</module>
     </modules>
@@ -873,7 +849,7 @@ Parent is ${project.parent}</echo>
             <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
-                <version>4.13.2</version>
+                <version>${junit.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
