@@ -220,15 +220,15 @@ public class WithSpanMethodInterceptor {
 
     private Object handleSyncInvocation(InvocationContext invocationContext, Span span) throws Exception {
         try (var ignore = PropagationHelper.start(span, Context.current())) {
-                try {
-                    return invocationContext.proceed();
-                } catch (final Exception ex) {
-                    printExceptionAttributes(span, ex);
-                    throw ex;
-                }
-            } finally {
-                span.end();
+            try {
+                return invocationContext.proceed();
+            } catch (final Exception ex) {
+                printExceptionAttributes(span, ex);
+                throw ex;
             }
+        } finally {
+            span.end();
+        }
     }
 
     private Object handleAsyncInvocation(InvocationContext invocationContext, Span span) throws Exception {
@@ -238,7 +238,6 @@ public class WithSpanMethodInterceptor {
                 if (ex != null) {
                     printExceptionAttributes(helper.span(), ex);
                 }
-                helper.localScope().close();
                 helper.end();
                 helper.close();
             });

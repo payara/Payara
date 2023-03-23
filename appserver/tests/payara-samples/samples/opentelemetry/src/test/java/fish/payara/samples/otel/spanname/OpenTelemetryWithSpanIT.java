@@ -154,7 +154,7 @@ public class OpenTelemetryWithSpanIT extends AbstractSpanNameTest {
     }
 
     @Test
-    public void testWithSpanDirectAnnotated() {
+    public void testJaxRsWithSpanDirectAnnotated() {
         var response = target(null, "withSpan", "spanDirectAnnotated").request().get();
         assertEquals(200, response.getStatus());
         var spans = exporter.getSpans();
@@ -192,7 +192,7 @@ public class OpenTelemetryWithSpanIT extends AbstractSpanNameTest {
     }
 
     @Test
-    public void testSpanAnnotatedWithAttributes() {
+    public void testJaxrsWithSpanAnnotatedWithAttributes() {
         var response = target(null, "withSpan", "spanAnnotatedWithAttributes")
                 .queryParam("q", "queryValue").request().get();
         assertEquals(200, response.getStatus());
