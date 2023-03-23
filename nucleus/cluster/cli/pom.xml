@@ -122,9 +122,8 @@
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.cluster</groupId>
+            <groupId>fish.payara.server.core.cluster</groupId>
             <artifactId>cluster-common</artifactId>
-            <version>${project.parent.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.cluster</groupId>

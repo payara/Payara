@@ -45,10 +45,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>fish.payara.server.internal.cluster</groupId>
-        <artifactId>cluster</artifactId>
-        <version>6.2023.4-SNAPSHOT</version>
-    </parent>    
+        <groupId>fish.payara.server.core</groupId>
+        <artifactId>core-parent</artifactId>
+        <version>6.0.0-SNAPSHOT</version>
+        <relativePath>../../../core/core-parent</relativePath>
+    </parent>
+    <groupId>fish.payara.server.core.cluster</groupId>
     <artifactId>cluster-common</artifactId>
     <packaging>glassfish-jar</packaging>
     
@@ -98,9 +100,8 @@
             <artifactId>admin-util</artifactId>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.packager</groupId>
+            <groupId>fish.payara.server.core.packager</groupId>
             <artifactId>j-interop-repackaged</artifactId>
-            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>
