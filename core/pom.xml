@@ -372,6 +372,7 @@
         <module>../nucleus/cluster/ssh</module>
         <module>../nucleus/payara-modules/payara-executor-service</module>
         <module>../nucleus/packager/external/opentelemetry-repackaged</module>
+        <module>../nucleus/cluster/admin</module>
     </modules>
 
     <build>

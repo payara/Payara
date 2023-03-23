@@ -45,10 +45,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>fish.payara.server.internal.cluster</groupId>
-        <artifactId>cluster</artifactId>
-        <version>6.2023.4-SNAPSHOT</version>
-    </parent>    
+        <groupId>fish.payara.server.core</groupId>
+        <artifactId>core-parent</artifactId>
+        <version>6.0.0-SNAPSHOT</version>
+        <relativePath>../../../core/core-parent</relativePath>
+    </parent>
+    <groupId>fish.payara.server.core.cluster</groupId>
     <artifactId>cluster-admin</artifactId>
     <packaging>glassfish-jar</packaging>
     
@@ -80,23 +82,19 @@
         <dependency>
             <groupId>fish.payara.server.core.admin</groupId>
             <artifactId>admin-util</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.admin</groupId>
             <artifactId>config-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>glassfish-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.nucleus</groupId>
             <artifactId>kernel</artifactId>
-            <version>${project.version}</version>
-        </dependency>        
+        </dependency>
         <dependency>
             <groupId>fish.payara.server.core.cluster</groupId>
             <artifactId>cluster-common</artifactId>
@@ -112,7 +110,6 @@
         <dependency>
             <groupId>fish.payara.server.core.security</groupId>
             <artifactId>security</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.test-utils</groupId>
@@ -122,7 +119,6 @@
         <dependency>
             <groupId>fish.payara.server.core.payara-modules</groupId>
             <artifactId>payara-executor-service</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>jakarta.ws.rs</groupId>

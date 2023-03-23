@@ -94,9 +94,8 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.cluster</groupId>
+            <groupId>fish.payara.server.core.cluster</groupId>
             <artifactId>cluster-admin</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
