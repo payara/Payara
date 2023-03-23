@@ -68,7 +68,6 @@
 
     <modules>
         <module>vboxjws</module>
-        <module>j-interop</module>
     	<module>antlr</module>
     </modules>
     <build>

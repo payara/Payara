@@ -367,6 +367,8 @@
         <module>../nucleus/packager/external/tiger-types</module>
         <module>../nucleus/test-utils/utils</module>
         <module>../nucleus/packager/external/trilead-ssh2</module>
+        <module>../nucleus/cluster/common</module>
+        <module>../nucleus/packager/external/j-interop</module>
     </modules>
 
     <build>

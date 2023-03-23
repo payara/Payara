@@ -467,6 +467,11 @@
                 <artifactId>trilead-ssh2-repackaged</artifactId>
                 <version>${payara.core.version}</version>
             </dependency>
+            <dependency>
+                <groupId>fish.payara.server.core.packager</groupId>
+                <artifactId>j-interop-repackaged</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
 
             <!-- public dependencies -->
             <dependency>
