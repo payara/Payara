@@ -48,6 +48,7 @@ import static javax.xml.stream.XMLStreamConstants.END_DOCUMENT;
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
 
+import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
@@ -84,6 +85,8 @@ import org.glassfish.web.loader.LogFacade;
 import org.glassfish.web.loader.WebappClassLoader;
 import org.glassfish.web.sniffer.WarDetector;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.types.Property;
 
 import com.sun.enterprise.config.serverbeans.Config;
@@ -348,6 +351,12 @@ public class WarHandler extends AbstractArchiveHandler {
         boolean consistent = true;
         Boolean value = null;
 
+        String app = dc.getAppProps().getProperty("context-root");
+        if (cloader.getCookieSameSiteValue() != null && app != null && !"".equals(cloader.getCookieSameSiteValue())) {
+            app = app.substring(1).toLowerCase();
+            System.setProperty(app + ".sameSite", cloader.getCookieSameSiteValue());
+        }
+
         File warContextXml = new File(base.getAbsolutePath(), WAR_CONTEXT_XML);
         if (warContextXml.exists()) {
             ContextXmlParser parser = new ContextXmlParser(warContextXml);
@@ -362,7 +371,7 @@ public class WarHandler extends AbstractArchiveHandler {
                 domainCRS = parser.getClearReferencesStatic();
             }
 
-            List<Boolean> csrs = new ArrayList<Boolean>();
+            List<Boolean> csrs = new ArrayList<>();
             HttpService httpService = serverConfig.getHttpService();
             DeployCommandParameters params = dc.getCommandParameters(DeployCommandParameters.class);
             String vsIDs = params.virtualservers;
@@ -410,7 +419,7 @@ public class WarHandler extends AbstractArchiveHandler {
             logger.log(Level.WARNING, LogFacade.INCONSISTENT_CLEAR_REFERENCE_STATIC);
         }
     }
-    
+
     // ---- inner class ----
     protected abstract class BaseXmlParser {
         protected XMLStreamReader parser = null;
