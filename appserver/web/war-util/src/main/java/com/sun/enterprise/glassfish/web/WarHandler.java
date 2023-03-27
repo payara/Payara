@@ -48,7 +48,6 @@ import static javax.xml.stream.XMLStreamConstants.END_DOCUMENT;
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
 
-import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
@@ -85,8 +84,6 @@ import org.glassfish.web.loader.LogFacade;
 import org.glassfish.web.loader.WebappClassLoader;
 import org.glassfish.web.sniffer.WarDetector;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.types.Property;
 
 import com.sun.enterprise.config.serverbeans.Config;
