@@ -73,7 +73,6 @@
         <dependency>
             <groupId>fish.payara.server.core.orb</groupId>
             <artifactId>orb-enabler</artifactId>
-
             <scope>provided</scope>
         </dependency>
     </dependencies>
