@@ -96,7 +96,7 @@ public class OpenTracingHelper {
             // followed by the method signature
             if (operationName.equals("")) {
                 operationName = request.getMethod() + ":"
-                        + resourceInfo.getResourceClass().getName() + "."
+                        + resourceInfo.getResourceClass().getCanonicalName() + "."
                         + resourceInfo.getResourceMethod().getName();
             }
             return operationName;
@@ -104,7 +104,7 @@ public class OpenTracingHelper {
         if (withSpanAnnotation != null) {
             // replace blank value with <className>.<methodName>,
             // unless a value is provided as an argument to the annotation.
-            return withSpanAnnotation.value().isBlank() ? resourceInfo.getResourceClass().getCanonicalName() + "."
+            return withSpanAnnotation.value().isBlank() ? resourceInfo.getResourceClass().getName() + "."
                         + resourceInfo.getResourceMethod().getName() : withSpanAnnotation.value();
         }
 
