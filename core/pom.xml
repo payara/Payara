@@ -137,6 +137,10 @@
         <jna.version>5.12.1</jna.version>
         <!-- A pure Java implementation of the SSH-2 protocol -->
         <trilead-ssh2.version>build-217-jenkins-16</trilead-ssh2.version>
+        <opentelemetry.version>1.22.0</opentelemetry.version>
+        <opentelemetry.alpha.version>1.22.0-alpha</opentelemetry.alpha.version>
+        <testng.version>7.4.0</testng.version>
+        <bouncycastle-jdk15on.version>1.64</bouncycastle-jdk15on.version>
 
         <!-- build versions -->
         <jdk.version>11</jdk.version>
@@ -162,7 +166,8 @@
         <glassfishbuild.version>3.2.20.payara-p2</glassfishbuild.version>
         <maven.antrun.plugin.version>3.1.0</maven.antrun.plugin.version>
         <maven.assembly.plugin.version>3.4.2</maven.assembly.plugin.version>
-        <hk2.plugin.version>3.0.2</hk2.plugin.version> <!-- May need patched-->
+        <hk2.plugin.version>3.0.2</hk2.plugin.version>
+        <maven.build.helper.plugin.version>3.3.0</maven.build.helper.plugin.version>
 
 
         <!-- build settings -->
@@ -170,9 +175,6 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <deploy.skip>true</deploy.skip>
         <javadoc.skip>true</javadoc.skip>
-        <opentelemetry.version>1.22.0</opentelemetry.version>
-        <opentelemetry.alpha.version>1.22.0-alpha</opentelemetry.alpha.version>
-
     </properties>
 
     <scm>
@@ -373,6 +375,7 @@
         <module>../nucleus/payara-modules/payara-executor-service</module>
         <module>../nucleus/packager/external/opentelemetry-repackaged</module>
         <module>../nucleus/cluster/admin</module>
+        <module>../nucleus/admin/server-mgmt</module>
     </modules>
 
     <build>

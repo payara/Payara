@@ -53,7 +53,6 @@
     <packaging>pom</packaging>
     <name>Admin Modules</name>
     <modules>
-        <module>server-mgmt</module>
         <module>rest</module>
         <module>launcher-l10n</module>
         <module>monitor-l10n</module>
