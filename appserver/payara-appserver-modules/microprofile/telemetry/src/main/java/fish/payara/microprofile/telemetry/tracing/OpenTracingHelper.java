@@ -96,7 +96,7 @@ public class OpenTracingHelper {
             // followed by the method signature
             if (operationName.equals("")) {
                 operationName = request.getMethod() + ":"
-                        + resourceInfo.getResourceClass().getCanonicalName() + "."
+                        + resourceInfo.getResourceClass().getName() + "."
                         + resourceInfo.getResourceMethod().getName();
             }
             return operationName;
