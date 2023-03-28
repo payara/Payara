@@ -223,11 +223,9 @@ public class WithSpanMethodInterceptor {
             try {
                 return invocationContext.proceed();
             } catch (final Exception ex) {
-                printExceptionAttributes(span, ex);
+                markSpanAsFailed(span, ex);
                 throw ex;
             }
-        } finally {
-            span.end();
         }
     }
 
@@ -236,14 +234,14 @@ public class WithSpanMethodInterceptor {
         CompletionStage<?> future = (CompletionStage<?>) invocationContext.proceed();
             return future.whenComplete((value, ex) -> {
                 if (ex != null) {
-                    printExceptionAttributes(helper.span(), ex);
+                    markSpanAsFailed(helper.span(), ex);
                 }
                 helper.end();
                 helper.close();
             });
     }
 
-    private void printExceptionAttributes(Span span, Throwable ex) {
+    private void markSpanAsFailed(Span span, Throwable ex) {
         LOG.log(Level.FINEST, "Setting the error to the active span ...", ex);
         span.setAttribute("error", true);
         span.setAttribute(SemanticAttributes.EXCEPTION_TYPE, Throwable.class.getName());
