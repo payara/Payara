@@ -376,6 +376,7 @@
         <module>../nucleus/packager/external/opentelemetry-repackaged</module>
         <module>../nucleus/cluster/admin</module>
         <module>../nucleus/admin/server-mgmt</module>
+        <module>../nucleus/cluster/cli</module>
     </modules>
 
     <build>

@@ -503,6 +503,11 @@
                 <version>${payara.core.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>fish.payara.server.core.cluster</groupId>
+                <artifactId>cluster-cli</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
             <!-- public dependencies -->
             <dependency>
                 <groupId>org.glassfish.hk2</groupId>
