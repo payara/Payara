@@ -92,7 +92,6 @@
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>glassfish-api</artifactId>
-
             <scope>provided</scope>
         </dependency>
         <dependency>
