@@ -60,7 +60,6 @@
 
     <properties>
         <jakarta.faces-spec.version>4.0.0</jakarta.faces-spec.version>
-        <jsftemplating.version>3.0.0</jsftemplating.version>
         <jboss.classfilewriter.version>1.2.5.Final</jboss.classfilewriter.version>
         <!-- Java EE Security API -->
         <jakarta.security.enterprise-spec.version>1.0</jakarta.security.enterprise-spec.version>

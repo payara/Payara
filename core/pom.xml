@@ -141,6 +141,8 @@
         <opentelemetry.alpha.version>1.22.0-alpha</opentelemetry.alpha.version>
         <testng.version>7.4.0</testng.version>
         <bouncycastle-jdk15on.version>1.64</bouncycastle-jdk15on.version>
+        <jsftemplating.version>3.0.0</jsftemplating.version>
+        <jakarta.faces-api.version>4.0.1</jakarta.faces-api.version>
 
         <!-- build versions -->
         <jdk.version>11</jdk.version>
@@ -382,6 +384,8 @@
         <module>../appserver/admingui/plugin-service</module>
         <module>../nucleus/admin/rest/rest-client</module>
         <module>../appserver/deployment/client</module>
+        <module>../appserver/admingui/dataprovider</module>
+        <module>../appserver/admingui/faces-compat</module>
     </modules>
 
     <build>

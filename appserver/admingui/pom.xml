@@ -100,7 +100,6 @@
     </developers>
 
     <modules>
-        <module>dataprovider</module>
         <module>common</module>
         <module>core</module>
         <module>concurrent</module>
@@ -149,7 +148,6 @@
         <module>rest-monitoring-plugin</module>
         <module>microprofile-console-plugin</module>
         <module>microprofile-console-plugin-l10n</module>
-        <module>faces-compat</module>
     </modules>
 
     <properties>

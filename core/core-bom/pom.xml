@@ -529,6 +529,21 @@
                 <artifactId>deployment-client</artifactId>
                 <version>${payara.core.version}</version>
             </dependency>
+            <dependency>
+                <groupId>fish.payara.server.core.admingui</groupId>
+                <artifactId>faces-compat</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fish.payara.server.core.admingui</groupId>
+                <artifactId>dataprovider</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fish.payara.server.core.admingui</groupId>
+                <artifactId>faces-compat</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
             <!-- public dependencies -->
             <dependency>
                 <groupId>org.glassfish.hk2</groupId>
