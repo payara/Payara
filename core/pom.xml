@@ -379,6 +379,7 @@
         <module>../nucleus/cluster/cli</module>
 
         <module>../appserver/admingui/gf-admingui-connector</module>
+        <module>../appserver/admingui/plugin-service</module>
     </modules>
 
     <build>

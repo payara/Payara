@@ -145,9 +145,8 @@
 
     <dependencies>
         <dependency>
-            <groupId>fish.payara.server.internal.admingui</groupId>
+            <groupId>fish.payara.server.core.admingui</groupId>
             <artifactId>console-plugin-service</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.admingui</groupId>
