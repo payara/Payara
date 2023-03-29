@@ -55,7 +55,6 @@
     <modules>
         <module>dtds</module>
         <module>schemas</module>
-        <module>client</module>
         <module>javaee-full</module>
         <module>jsr88-jar</module>
         <module>javaee-core-l10n</module>
