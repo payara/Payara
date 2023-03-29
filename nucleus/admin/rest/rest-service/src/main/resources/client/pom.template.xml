@@ -47,15 +47,15 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.glassfish.admin</groupId>
     <artifactId>rest-service-client</artifactId>
-    <version>{{glassfish.version}}</version>
+    <version>{{payara.core.version}}</version>
     
     <name>GlassFish Admin REST Service Client</name>
 
     <dependencies>
         <dependency>
-            <groupId>fish.payara.server.internal.admin</groupId>
+            <groupId>fish.payara.server.core.admin</groupId>
             <artifactId>rest-client</artifactId>
-            <version>{{glassfish.version}}</version>
+            <version>{{payara.core.version.version}}</version>
         </dependency>
     </dependencies>
 </project>

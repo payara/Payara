@@ -380,6 +380,7 @@
 
         <module>../appserver/admingui/gf-admingui-connector</module>
         <module>../appserver/admingui/plugin-service</module>
+        <module>../nucleus/admin/rest/rest-client</module>
     </modules>
 
     <build>

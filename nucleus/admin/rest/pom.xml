@@ -84,7 +84,6 @@
 
     <modules>
         <module>rest-testing</module>
-        <module>rest-client</module>
         <module>rest-service</module>
         <module>rest-service-l10n</module>
         <module>gf-restadmin-connector</module>
