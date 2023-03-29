@@ -386,6 +386,7 @@
         <module>../appserver/deployment/client</module>
         <module>../appserver/admingui/dataprovider</module>
         <module>../appserver/admingui/faces-compat</module>
+        <module>../appserver/admingui/common</module>
     </modules>
 
     <build>

@@ -100,7 +100,6 @@
     </developers>
 
     <modules>
-        <module>common</module>
         <module>core</module>
         <module>concurrent</module>
         <module>cluster</module>
