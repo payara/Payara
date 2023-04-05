@@ -183,7 +183,7 @@
         <json.bind-api.version>3.0.0</json.bind-api.version>
         <yasson.version>3.0.2</yasson.version>
         <jakarta-persistence-api.version>3.1.0</jakarta-persistence-api.version>
-        <eclipselink.version>4.0.0-M3.payara-p2</eclipselink.version>
+        <eclipselink.version>4.0.1.payara-p1</eclipselink.version>
         <eclipselink.asm.version>9.4.0</eclipselink.asm.version>
         <jakarta.transaction-api.version>2.0.1</jakarta.transaction-api.version>
         <jakarta.interceptor-api.version>2.1.0</jakarta.interceptor-api.version>
