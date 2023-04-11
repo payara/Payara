@@ -86,10 +86,17 @@ public interface ApiContext {
 
     /**
      * @param type any class, not null
-     * @return true, if the give type is a filtered class for OpenAPI metadata processing
-     * otherwise false
+     * @return true, if the given type is a filtered class for OpenAPI metadata
+     * processing     * otherwise false
      */
     boolean isAllowedType(Type type);
+
+    /**
+     * @param type any class, not null
+     * @return true, if the given type is a part of the WAR file, otherwise
+     * false (e.g. class in a library)
+     */
+    boolean isAllowedResource(Type type);
 
     /**
      * @param type any class, not null
