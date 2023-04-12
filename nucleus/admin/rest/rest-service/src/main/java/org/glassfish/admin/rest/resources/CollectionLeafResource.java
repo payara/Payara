@@ -386,7 +386,7 @@ public abstract class CollectionLeafResource extends AbstractResource {
         return part.replace("\\", "\\\\")
                 .replace(":", "\\:")
                 .replace("'", "\\'")
-                .replace("\"", "\\");
+                .replace("\"", "\\\"");
     }
 
     // TODO: JvmOptions needs to have its own class, but the generator doesn't seem to support
