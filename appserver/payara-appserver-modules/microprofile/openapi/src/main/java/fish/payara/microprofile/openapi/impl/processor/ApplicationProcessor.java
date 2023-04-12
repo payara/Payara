@@ -156,7 +156,6 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
                     api,
                     allTypes,
                     config == null ? allowedTypes : config.getValidClasses(allowedTypes),
-                    allowedResourceTypes,
                     appClassLoader
             );
             apiWalker.accept(this);
@@ -167,7 +166,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     // JAX-RS method handlers
     @Override
     public void visitGET(AnnotationModel get, MethodModel element, ApiContext context) {
-        if (context.getPath() == null || !context.isAllowedResource(element.getDeclaringType())) {
+        if (context.getPath() == null) {
             return;
         }
 
@@ -189,7 +188,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
     @Override
     public void visitPOST(AnnotationModel post, MethodModel element, ApiContext context) {
-        if (context.getPath() == null || !context.isAllowedResource(element.getDeclaringType())) {
+        if (context.getPath() == null) {
             return;
         }
 
@@ -211,7 +210,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
     @Override
     public void visitPUT(AnnotationModel put, MethodModel element, ApiContext context) {
-        if (context.getPath() == null || !context.isAllowedResource(element.getDeclaringType())) {
+        if (context.getPath() == null) {
             return;
         }
 
@@ -233,7 +232,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
     @Override
     public void visitDELETE(AnnotationModel delete, MethodModel element, ApiContext context) {
-        if (context.getPath() == null || !context.isAllowedResource(element.getDeclaringType())) {
+        if (context.getPath() == null) {
             return;
         }
 
@@ -255,7 +254,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
     @Override
     public void visitHEAD(AnnotationModel head, MethodModel element, ApiContext context) {
-        if (context.getPath() == null || !context.isAllowedResource(element.getDeclaringType())) {
+        if (context.getPath() == null) {
             return;
         }
 
@@ -277,7 +276,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
     @Override
     public void visitOPTIONS(AnnotationModel options, MethodModel element, ApiContext context) {
-        if (context.getPath() == null || !context.isAllowedResource(element.getDeclaringType())) {
+        if (context.getPath() == null) {
             return;
         }
 
@@ -299,7 +298,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
     @Override
     public void visitPATCH(AnnotationModel patch, MethodModel element, ApiContext context) {
-        if (context.getPath() == null || !context.isAllowedResource(element.getDeclaringType())) {
+        if (context.getPath() == null) {
             return;
         }
 

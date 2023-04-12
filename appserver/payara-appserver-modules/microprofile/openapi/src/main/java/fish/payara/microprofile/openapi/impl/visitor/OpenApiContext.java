@@ -81,7 +81,6 @@ public class OpenApiContext implements ApiContext {
     private final ClassLoader appClassLoader;
     private final OpenAPI api;
     private final Set<Type> allowedTypes;
-    private final Set<Type> allowedResourceTypes;
     private final Map<String, Set<Type>> resourceMapping;
     private String path;
     private Operation operation;
@@ -93,10 +92,9 @@ public class OpenApiContext implements ApiContext {
 
     private Map<String, Set<APIResponse>> mappedExceptionResponses = new ConcurrentHashMap<>();
 
-    public OpenApiContext(Map<String, Type> allTypes, Set<Type> allowedTypes, Set<Type> allowedResourceTypes, ClassLoader appClassLoader, OpenAPI api) {
+    public OpenApiContext(Map<String, Type> allTypes, Set<Type> allowedTypes, ClassLoader appClassLoader, OpenAPI api) {
         this.allTypes = allTypes;
         this.allowedTypes = allowedTypes;
-        this.allowedResourceTypes = allowedResourceTypes;
         this.api = api;
         this.appClassLoader = appClassLoader;
         this.resourceMapping = generateResourceMapping();
@@ -105,7 +103,6 @@ public class OpenApiContext implements ApiContext {
     public OpenApiContext(OpenApiContext parentApiContext, AnnotatedElement annotatedElement) {
         this.allTypes = parentApiContext.allTypes;
         this.allowedTypes = parentApiContext.allowedTypes;
-        this.allowedResourceTypes = parentApiContext.allowedResourceTypes;
         this.api = parentApiContext.api;
         this.appClassLoader = parentApiContext.appClassLoader;
         this.resourceMapping = parentApiContext.resourceMapping;
@@ -161,11 +158,6 @@ public class OpenApiContext implements ApiContext {
     @Override
     public boolean isApplicationType(String type) {
         return allTypes.containsKey(type);
-    }
-
-    @Override
-    public boolean isAllowedResource(Type type) {
-        return allowedResourceTypes.contains(type);
     }
 
     @Override

@@ -93,13 +93,6 @@ public interface ApiContext {
 
     /**
      * @param type any class, not null
-     * @return true, if the given type is a part of the WAR file, otherwise
-     * false (e.g. class in a library)
-     */
-    boolean isAllowedResource(Type type);
-
-    /**
-     * @param type any class, not null
      * @return type, if the give type is a known type in this context, else null
      */
     Type getType(String type);

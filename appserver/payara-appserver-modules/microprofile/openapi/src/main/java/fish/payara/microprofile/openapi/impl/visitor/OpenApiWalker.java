@@ -117,10 +117,10 @@ public class OpenApiWalker<E extends AnnotatedElement> implements ApiWalker {
     private Map<Class<? extends Annotation>, VisitorFunction<AnnotationModel, E>> annotationVisitor;
     private Map<Class<? extends Annotation>, List<Class<? extends Annotation>>> annotationAlternatives;
 
-    public OpenApiWalker(OpenAPI api, Map<String, Type> allTypes, Set<Type> allowedTypes, Set<Type> allowedResourceTypes, ClassLoader appClassLoader) {
+    public OpenApiWalker(OpenAPI api, Map<String, Type> allTypes, Set<Type> allowedTypes, ClassLoader appClassLoader) {
         this.allowedTypes = new TreeSet<>(Comparator.comparing(Type::getName, String::compareTo));
         this.allowedTypes.addAll(allowedTypes);
-        this.context = new OpenApiContext(allTypes, this.allowedTypes, allowedResourceTypes, appClassLoader, api);
+        this.context = new OpenApiContext(allTypes, this.allowedTypes, appClassLoader, api);
     }
 
     @Override
