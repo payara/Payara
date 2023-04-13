@@ -40,7 +40,6 @@
 package fish.payara.microprofile.openapi.impl.visitor;
 
 import fish.payara.microprofile.openapi.api.visitor.ApiContext;
-import fish.payara.microprofile.openapi.impl.model.responses.APIResponseImpl;
 import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -75,11 +74,10 @@ import org.glassfish.hk2.classmodel.reflect.ClassModel;
 import org.glassfish.hk2.classmodel.reflect.ExtensibleType;
 import org.glassfish.hk2.classmodel.reflect.MethodModel;
 import org.glassfish.hk2.classmodel.reflect.Type;
-import org.glassfish.hk2.classmodel.reflect.Types;
 
 public class OpenApiContext implements ApiContext {
 
-    private final Types allTypes;
+    private final Map<String, Type> allTypes;
     private final ClassLoader appClassLoader;
     private final OpenAPI api;
     private final Set<Type> allowedTypes;
@@ -94,7 +92,7 @@ public class OpenApiContext implements ApiContext {
 
     private Map<String, Set<APIResponse>> mappedExceptionResponses = new ConcurrentHashMap<>();
 
-    public OpenApiContext(Types allTypes, Set<Type> allowedTypes, ClassLoader appClassLoader, OpenAPI api) {
+    public OpenApiContext(Map<String, Type> allTypes, Set<Type> allowedTypes, ClassLoader appClassLoader, OpenAPI api) {
         this.allTypes = allTypes;
         this.allowedTypes = allowedTypes;
         this.api = api;
@@ -159,12 +157,12 @@ public class OpenApiContext implements ApiContext {
 
     @Override
     public boolean isApplicationType(String type) {
-        return allTypes.getBy(type) != null;
+        return allTypes.containsKey(type);
     }
 
     @Override
     public Type getType(String type) {
-        return allTypes.getBy(type);
+        return allTypes.get(type);
     }
 
     @Override
@@ -200,7 +198,7 @@ public class OpenApiContext implements ApiContext {
                                 .stream()
                                 .map(Class::getName)
                                 .filter(name -> !name.startsWith("org.glassfish.jersey")) // Remove all Jersey providers
-                                .map(allTypes::getBy)
+                                .map(allTypes::get)
                                 .filter(Objects::nonNull)
                                 .collect(toSet()));
                     } catch (ClassNotFoundException | InstantiationException | IllegalAccessException

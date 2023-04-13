@@ -39,6 +39,7 @@
  */
 package fish.payara.microprofile.openapi.resource.rule;
 
+import fish.payara.microprofile.openapi.impl.OpenAPISupplier;
 import fish.payara.microprofile.openapi.impl.model.OpenAPIImpl;
 import fish.payara.microprofile.openapi.impl.processor.ApplicationProcessor;
 import fish.payara.microprofile.openapi.impl.processor.BaseProcessor;
@@ -79,7 +80,8 @@ public class ApplicationProcessedDocument {
             new BaseProcessor(asList(new URL("http://localhost:8080/testlocation_123"))).process(document, null);
 
             // Apply application processor
-            new ApplicationProcessor(getTypes(), getApplicationTypes(extraClasses), appClassLoader).process(document, null);
+            new ApplicationProcessor(OpenAPISupplier.typesToMap(getTypes()), getApplicationTypes(extraClasses), getApplicationTypes(extraClasses), appClassLoader)
+                    .process(document, null);
             if (filter != null) {
                 new FilterProcessor(filter.getDeclaredConstructor().newInstance()).process(document, null);
             }
