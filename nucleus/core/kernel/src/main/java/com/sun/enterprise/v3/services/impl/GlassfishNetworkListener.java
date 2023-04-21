@@ -54,7 +54,6 @@ import com.sun.enterprise.v3.services.impl.monitor.FileCacheMonitor;
 import com.sun.enterprise.v3.services.impl.monitor.GrizzlyMonitoring;
 import com.sun.enterprise.v3.services.impl.monitor.KeepAliveMonitor;
 import com.sun.enterprise.v3.services.impl.monitor.ThreadPoolMonitor;
-import fish.payara.nucleus.requesttracing.store.RequestTraceStoreFactory;
 import org.glassfish.grizzly.Buffer;
 import org.glassfish.grizzly.config.GenericGrizzlyListener;
 import org.glassfish.grizzly.config.dom.Http;
@@ -74,7 +73,6 @@ import org.glassfish.grizzly.http.server.filecache.FileCache;
 import org.glassfish.grizzly.http.server.util.Mapper;
 import org.glassfish.grizzly.http.util.DataChunk;
 import org.glassfish.grizzly.http.util.Header;
-import org.glassfish.grizzly.http.util.HeaderValue;
 import org.glassfish.grizzly.http.util.MimeHeaders;
 import org.glassfish.grizzly.threadpool.ThreadPoolConfig;
 import org.glassfish.grizzly.utils.DelayedExecutor;
@@ -352,19 +350,19 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
 
     protected static class HttpAdapterImpl implements HttpAdapter {
         private final VirtualServer virtualServer;
-        private final ContainerMapper conainerMapper;
+        private final ContainerMapper containerMapper;
         private final String webAppRootPath;
 
         public HttpAdapterImpl(VirtualServer virtualServer, ContainerMapper conainerMapper, String webAppRootPath) {
             this.virtualServer = virtualServer;
-            this.conainerMapper = conainerMapper;
+            this.containerMapper = conainerMapper;
             this.webAppRootPath = webAppRootPath;
         }
 
 
         @Override
         public ContainerMapper getMapper() {
-            return conainerMapper;
+            return containerMapper;
         }
 
         @Override
@@ -482,16 +480,32 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
             // Set response "X-Frame-Options" header
             if (!httpHeader.containsHeader(xFrameOptionsHeader) && xFrameOptions != null) {
                 httpHeader.addHeader(xFrameOptionsHeader, xFrameOptions);
+
             }
 
-            if (this.cookieSameSiteValue != null && httpHeader instanceof HttpResponsePacket) {
+            if (httpHeader instanceof HttpResponsePacket) {
                 final HttpResponsePacket response = (HttpResponsePacket) httpHeader;
-                MimeHeaders headers = response.getHeaders();
-                for (int i = 0; i < headers.size(); i++) {
-                    if (headers.getName(i).toString().equals("Set-Cookie")) {
-                        DataChunk value = headers.getValue(i);
-                        value.setString(value + ";SameSite=" + this.cookieSameSiteValue +
-                                ("None".equals(this.cookieSameSiteValue) ? ";Secure" : ""));
+                String sameSite = this.cookieSameSiteValue;
+                final HttpRequestPacket request = response.getRequest();
+                String uri = request.getRequestURI();
+                if (uri != null) {
+                    String[] uriArray = uri.split("/");
+                    if (uriArray.length > 1) {
+                        String app = uriArray[1].toLowerCase();
+                        String sameSiteProp = System.getProperty(app + ".sameSite");
+                        if (sameSiteProp != null) {
+                            sameSite = sameSiteProp;
+                        }
+                    }
+                }
+                if (sameSite != null) {
+                    MimeHeaders headers = response.getHeaders();
+                    for (int i = 0; i < headers.size(); i++) {
+                        if (headers.getName(i).toString().equals("Set-Cookie")) {
+                            DataChunk value = headers.getValue(i);
+                            value.setString(value + ";SameSite=" + sameSite +
+                                    ("None".equals(sameSite) ? ";Secure" : ""));
+                        }
                     }
                 }
             }

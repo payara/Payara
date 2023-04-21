@@ -81,6 +81,7 @@ import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.FormParam;
 import jakarta.ws.rs.HttpMethod;
 import jakarta.ws.rs.core.Response.Status;
+import java.util.Map;
 
 import org.eclipse.microprofile.openapi.models.Components;
 import org.eclipse.microprofile.openapi.models.ExternalDocumentation;
@@ -111,7 +112,6 @@ import org.glassfish.hk2.classmodel.reflect.MethodModel;
 import org.glassfish.hk2.classmodel.reflect.ParameterizedInterfaceModel;
 import org.glassfish.hk2.classmodel.reflect.ParameterizedType;
 import org.glassfish.hk2.classmodel.reflect.Type;
-import org.glassfish.hk2.classmodel.reflect.Types;
 
 /**
  * A processor to parse the application for annotations, to add to the OpenAPI
@@ -124,12 +124,13 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     /**
      * A list of all classes in the given application.
      */
-    private final Types allTypes;
+    private final Map<String, Type> allTypes;
 
     /**
      * A list of allowed classes for scanning
      */
     private final Set<Type> allowedTypes;
+    private final Set<Type> allowedResourceTypes;
 
     private final ClassLoader appClassLoader;
 
@@ -141,9 +142,10 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
      * processing
      * @param appClassLoader the class loader for the application.
      */
-    public ApplicationProcessor(Types allTypes, Set<Type> allowedTypes, ClassLoader appClassLoader) {
+    public ApplicationProcessor(Map<String, Type> allTypes, Set<Type> allowedTypes, Set<Type> allowedResourceTypes, ClassLoader appClassLoader) {
         this.allTypes = allTypes;
         this.allowedTypes = allowedTypes;
+        this.allowedResourceTypes = allowedResourceTypes;
         this.appClassLoader = appClassLoader;
     }
 
@@ -1347,7 +1349,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
         // If the schema is an object, insert the reference
         if (schemaType == SchemaType.OBJECT) {
-            if (insertObjectReference(context, schema, type.getType(), typeName)) {
+            if (insertObjectReference(context, schema, context.getType(typeName), typeName)) {
                 schema.setType(null);
                 schema.setItems(null);
             }
@@ -1503,8 +1505,6 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             final AnnotationModel schemaAnnotation = context.getAnnotationInfo(referenceClassType)
                     .getAnnotation(org.eclipse.microprofile.openapi.annotations.media.Schema.class);
             String schemaName = ModelUtils.getSchemaName(context, referenceClass);
-            // Set the reference name
-            referee.setRef(schemaName);
 
             Schema schema = context.getApi().getComponents().getSchemas().get(schemaName);
             if (schema == null) {
@@ -1517,8 +1517,13 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
                     LOGGER.log(FINE, "Unrecognised schema {0} class found.", new Object[]{referenceClassName});
                 }
             }
+            Schema createdReference = context.getApi().getComponents().getSchemas().get(schemaName);
+            // Set the reference name, if the schema was created
+            if (createdReference != null) {
+                referee.setRef(schemaName);
+            }
 
-            return true;
+            return createdReference != null;
         }
 
         return false;

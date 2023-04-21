@@ -80,8 +80,8 @@ public class OpenApiConfiguration {
 
     private Class<? extends OASModelReader> modelReader;
     private Class<? extends OASFilter> filter;
-    private boolean scanDisable;
-    private boolean scanLib;
+    private boolean scanDisable = false;
+    private boolean scanLib = false;
     private List<String> scanPackages = new ArrayList<>();
     private List<String> scanClasses = new ArrayList<>();
     private List<String> scanExcludePackages = new ArrayList<>();
