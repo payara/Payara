@@ -146,7 +146,7 @@
         <jaxb-extra-osgi.version>2.3.0</jaxb-extra-osgi.version>
 
         <yasson.version>3.0.2</yasson.version>
-        <eclipselink.version>4.0.0-M3.payara-p2</eclipselink.version>
+        <eclipselink.version>4.0.1-payara-p1</eclipselink.version>
         <eclipselink.asm.version>9.4.0</eclipselink.asm.version>
         <jms-api.version>3.1.0</jms-api.version>
         <mq.version>6.3.0.payara-p2</mq.version>
