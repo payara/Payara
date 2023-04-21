@@ -183,7 +183,6 @@
         <connection>scm:git:git@github.com:payara/payara.git</connection>
         <url>scm:git:git@github.com:payara/payara.git</url>
         <developerConnection>scm:git:git@github.com:payara/payara.git</developerConnection>
-        <tag>payara-server-6.2023.3-SNAPSHOT</tag>
     </scm>
 
     <issueManagement>
