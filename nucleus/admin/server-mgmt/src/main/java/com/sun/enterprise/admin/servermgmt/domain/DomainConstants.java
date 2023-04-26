@@ -60,15 +60,28 @@ public class DomainConstants {
     /** Name of directory stores the domain information. */
     public static final String INFO_DIRECTORY = "init-info";
 
-    /** Filename contains the server certificates, including its private key. */
+    /**
+     * Filename contains the server certificates, including its private key.
+     */
     public static final String KEYSTORE_FILE = "keystore.p12";
 
-    /** Master password file name stores the password for secure key store.  */
+    /**
+     * Master password file name stores the password for secure key store.
+     */
     public static final String MASTERPASSWORD_FILE = "master-password";
 
-    /** Filename contains the trusted certificates, including public keys. */
+    /**
+     * Filename contains the trusted certificates, including public keys.
+     */
     public static final String TRUSTSTORE_FILE = "cacerts.p12";
 
-    /** Filename contains most of the domain configuration. */
+    /**
+     * Fallback TRUSTSTORE_FILE if the P12 format is not found, use JKS format
+     */
+    public static final String TRUSTSTORE_JSK_FILE = "cacerts.jks";
+
+    /**
+     * Filename contains most of the domain configuration.
+     */
     public static final String DOMAIN_XML_FILE = "domain.xml";
 }
