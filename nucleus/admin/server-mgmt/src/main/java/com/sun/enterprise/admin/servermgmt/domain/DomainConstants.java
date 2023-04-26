@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2023 Payara Foundation and/or its affiliates 
 
 package com.sun.enterprise.admin.servermgmt.domain;
 
@@ -78,7 +79,7 @@ public class DomainConstants {
     /**
      * Fallback TRUSTSTORE_FILE if the P12 format is not found, use JKS format
      */
-    public static final String TRUSTSTORE_JSK_FILE = "cacerts.jks";
+    public static final String TRUSTSTORE_JKS_FILE = "cacerts.jks";
 
     /**
      * Filename contains most of the domain configuration.

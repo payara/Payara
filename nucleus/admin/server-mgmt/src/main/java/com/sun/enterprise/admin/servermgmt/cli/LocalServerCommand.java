@@ -37,8 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-// Portions Copyright [2016-2022] [Payara Foundation and/or affiliates]
+// Portions Copyright [2016-2023] [Payara Foundation and/or affiliates]
 
 package com.sun.enterprise.admin.servermgmt.cli;
 
@@ -563,7 +562,7 @@ public abstract class LocalServerCommand extends CLICommand {
 
         File configDir = serverDirs.getConfigDir();
         File mp = Stream.of(new File(configDir, DomainConstants.TRUSTSTORE_FILE),
-                        new File(configDir, DomainConstants.TRUSTSTORE_JSK_FILE))
+                        new File(configDir, DomainConstants.TRUSTSTORE_JKS_FILE))
                 .filter(f -> f.canRead())
                 .findFirst()
                 .orElse(null);
