@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) 2018 Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) 2018-2023 Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -39,10 +39,14 @@
  */
 package fish.payara.admin.servermgmt.cli;
 
-import com.sun.enterprise.admin.servermgmt.DomainException;
 import com.sun.enterprise.admin.servermgmt.KeystoreManager;
 import com.sun.enterprise.admin.servermgmt.cli.LocalDomainCommand;
-import com.sun.enterprise.admin.servermgmt.domain.DomainConstants;
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.CommandException;
+import org.glassfish.api.admin.CommandValidationException;
+import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.Service;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -56,11 +60,6 @@ import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.glassfish.hk2.api.PerLookup;
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.api.Param;
-import org.glassfish.api.admin.CommandException;
-import org.glassfish.api.admin.CommandValidationException;
 
 /**
  * Adds a new PKCS#8 encoded plain (unencrypted) RSA keypair to the domain's keystore
@@ -86,20 +85,6 @@ public class AddKeypairCommand extends LocalDomainCommand {
 	//@Inject
 	KeystoreManager keyManager = new KeystoreManager();
 
-	private File getKeyStoreFile() throws DomainException, IOException {
-
-		if (getServerDirs() == null) {
-			return null;
-		}
-
-		File mp = new File(getServerDirs().getConfigDir(), DomainConstants.KEYSTORE_FILE);
-		Logger.getLogger(AddKeypairCommand.class.getName()).log(Level.SEVERE, mp.getAbsolutePath());
-		if (!mp.canRead()) {
-			return null;
-		}
-		return mp;
-	}
-
 	@Override
 	protected void validate()
 			throws CommandException, CommandValidationException {
@@ -120,12 +105,12 @@ public class AddKeypairCommand extends LocalDomainCommand {
 				keyManager.addKeyPair(destKeyStore, "JKS",
 						mp.toCharArray(), privKey, certChain.toArray(new Certificate[1]), destAlias);
 				logger.fine(() -> MessageFormat.format("Private key with alias [{0}] added to keystore {1}.",
-						new Object[] {destAlias, destKeyStore.getAbsolutePath()}));
+						new Object[]{destAlias, destKeyStore.getAbsolutePath()}));
 			} catch (IOException | NoSuchAlgorithmException | KeyStoreException ex) {
 				Logger.getLogger(AddKeypairCommand.class.getName()).log(Level.SEVERE, null, ex);
 				throw new CommandException(ex.getLocalizedMessage());
 			}
-		} catch (DomainException | IOException | InvalidKeySpecException ex) {
+		} catch (InvalidKeySpecException ex) {
 			throw new CommandException(ex.getLocalizedMessage());
 		}
 
