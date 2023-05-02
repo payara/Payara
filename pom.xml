@@ -166,7 +166,7 @@
         <hk2.version>3.0.1.payara-p3</hk2.version>
         <osgi-resource-locator.version>1.0.3</osgi-resource-locator.version>
         <stax-api.version>1.0-2</stax-api.version>
-        <jackson.version>2.14.1</jackson.version>
+        <jackson.version>2.15.0</jackson.version>
         <snakeyaml.version>2.0</snakeyaml.version>
         <hazelcast.version>5.2.2</hazelcast.version>
         <jaxb-api.version>4.0.0</jaxb-api.version>
