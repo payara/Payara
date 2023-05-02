@@ -54,6 +54,7 @@ import jakarta.transaction.TransactionManager;
 import jakarta.transaction.TransactionalException;
 
 import com.sun.enterprise.transaction.TransactionManagerHelper;
+import org.glassfish.api.invocation.ComponentInvocation;
 
 /**
  * Transactional annotation Interceptor class for RequiresNew transaction type, ie
@@ -85,13 +86,14 @@ public class TransactionalInterceptorRequiresNew extends TransactionalIntercepto
 
         setTransactionalTransactionOperationsManger(false);
 
-        boolean hasTransactionInComponentInvocation = false;
+        boolean currentInvocationHasTransaction = false;
         try {
             Transaction suspendedTransaction = null;
             if (getTransactionManager().getTransaction() != null) {
                 _logger.log(FINE, CDI_JTA_MBREQNEW);
 
-                hasTransactionInComponentInvocation = getCurrentInvocation().getTransaction() != null;
+                ComponentInvocation currentInvocation = getCurrentInvocation();
+                currentInvocationHasTransaction = (currentInvocation != null) && currentInvocation.getTransaction() != null;
 
                 suspendedTransaction = getTransactionManager().suspend();
                 // todo catch, wrap in new transactional exception and throw
@@ -142,7 +144,8 @@ public class TransactionalInterceptorRequiresNew extends TransactionalIntercepto
                     try {
                         getTransactionManager().resume(suspendedTransaction);
 
-                        if (!hasTransactionInComponentInvocation) {
+                        ComponentInvocation currentInvocation = getCurrentInvocation();
+                        if (!currentInvocationHasTransaction && currentInvocation != null) {
                             getCurrentInvocation().setTransaction(null);
                         }
                     } catch (Exception exception) {
