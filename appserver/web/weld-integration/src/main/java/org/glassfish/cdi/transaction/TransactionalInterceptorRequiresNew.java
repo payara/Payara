@@ -85,13 +85,17 @@ public class TransactionalInterceptorRequiresNew extends TransactionalIntercepto
 
         setTransactionalTransactionOperationsManger(false);
 
+        boolean hasTransactionInComponentInvocation = false;
         try {
             Transaction suspendedTransaction = null;
             if (getTransactionManager().getTransaction() != null) {
                 _logger.log(FINE, CDI_JTA_MBREQNEW);
 
+                hasTransactionInComponentInvocation = getCurrentInvocation().getTransaction() != null;
+
                 suspendedTransaction = getTransactionManager().suspend();
                 // todo catch, wrap in new transactional exception and throw
+
             }
             try {
                 getTransactionManager().begin();
@@ -137,6 +141,10 @@ public class TransactionalInterceptorRequiresNew extends TransactionalIntercepto
                 if (suspendedTransaction != null) {
                     try {
                         getTransactionManager().resume(suspendedTransaction);
+
+                        if (!hasTransactionInComponentInvocation) {
+                            getCurrentInvocation().setTransaction(null);
+                        }
                     } catch (Exception exception) {
                         throw new TransactionalException(
                                 "Managed bean with Transactional annotation and TxType of REQUIRED " +
