@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017-2021] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2023] Payara Foundation and/or affiliates
  */
 
 package com.sun.enterprise.admin.remote;
@@ -227,10 +227,10 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
      * anything needed prior to the URLConnection#connect invocation.
      * <p>
      * The caller will invoke this method after it has invoked {@link URL#openConnection}
-     * but before it invokes {@link URL#connect}.
+     * but before it invokes {@link URLConnection#connect}.
      * <li>{@link #useConnection} - to read from the
      * input stream, etc.  The caller will invoke this method after it has
-     * successfully invoked {@link URL#connect}.
+     * successfully invoked {@link URLConnection#connect}.
      * </ul>
      * Because the caller might have to work with multiple URLConnection objects
      * (as it follows redirection, for example) this contract allows the caller
