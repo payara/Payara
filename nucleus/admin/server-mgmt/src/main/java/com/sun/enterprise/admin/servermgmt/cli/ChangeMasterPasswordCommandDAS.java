@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or affiliates]
+// Portions Copyright [2016-2023] [Payara Foundation and/or affiliates]
 
 package com.sun.enterprise.admin.servermgmt.cli;
 
@@ -115,8 +115,7 @@ public class ChangeMasterPasswordCommandDAS extends LocalDomainCommand {
             if (nmp == null)
                 throw new CommandException(STRINGS.get("no.console"));
 
-            // if password is less than 6 characters then the domain can become corrupt
-            // FIXES GLASSFISH-21017
+            // keytool requires password at least 6 characters
             if (nmp.length() < 6) {
                 throw new CommandException(STRINGS.get("password.too.short"));
             }

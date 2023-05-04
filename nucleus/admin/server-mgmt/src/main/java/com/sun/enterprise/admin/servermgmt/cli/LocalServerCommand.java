@@ -252,23 +252,14 @@ public abstract class LocalServerCommand extends CLICommand {
     }
 
     protected boolean loadAndVerifyKeystore(File jks, String mpv) {
-        FileInputStream fis = null;
         try {
-            fis = new FileInputStream(jks);
-            KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
-            ks.load(fis, mpv.toCharArray());
+            // try to load the keystore with the provided keystore password
+            KeyStore.getInstance(jks, mpv.toCharArray());
             return true;
         } catch (Exception e) {
             if (logger.isLoggable(Level.FINER))
                 logger.finer(e.getMessage());
             return false;
-        } finally {
-            try {
-                if (fis != null)
-                    fis.close();
-            } catch (IOException ioe) {
-                // ignore, I know ...
-            }
         }
     }
 

@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016-2020] [Payara Foundation and/or affiliates]
+// Portions Copyright [2016-2023] [Payara Foundation and/or affiliates]
 
 package com.sun.enterprise.admin.servermgmt.pe;
 
@@ -713,10 +713,25 @@ public class PEFileLayout
         return new File(getConfigRoot(), WSSSERVERCONFIG);
     }
 
+    private File fileAlternative(File root, String fileDefault, String alternative) {
+        File p12 = new File(root, fileDefault);
+        if(p12.exists()) {
+            // if PKCS12 file exists, use it
+            return p12;
+        }
+        File jks = new File(root, alternative);
+        if(jks.exists()) {
+            // if JKS file exists, use it
+            return jks;
+        }
+        // if none exists, use the default one, PKCS12
+        return p12;
+    }
+
     public static final String KEYSTORE = "keystore.p12";
-    public File getKeyStore()
-    {
-        return new File(getConfigRoot(), KEYSTORE);
+    public static final String KEYSTORE_JKS = "keystore.jks";
+    public File getKeyStore() {
+        return fileAlternative(getConfigRoot(), KEYSTORE, KEYSTORE_JKS);
     }
 
     public static final String TRUSTSTORE_TEMPLATE = "cacerts.p12";
@@ -758,9 +773,9 @@ public class PEFileLayout
     }
 
     public static final String TRUSTSTORE = "cacerts.p12";
-    public File getTrustStore()
-    {
-        return new File(getConfigRoot(), TRUSTSTORE);
+    public static final String TRUSTSTORE_JKS = "cacerts.jks";
+    public File getTrustStore() {
+        return fileAlternative(getConfigRoot(), TRUSTSTORE, TRUSTSTORE_JKS);
     }
 
     public File getMasterPasswordFile()

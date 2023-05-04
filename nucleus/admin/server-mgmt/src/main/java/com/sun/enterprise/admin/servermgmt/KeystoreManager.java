@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2018-2020] [Payara Foundation and/or its affiliates]
+ * Portions Copyright [2018-2023] [Payara Foundation and/or its affiliates]
  */
 package com.sun.enterprise.admin.servermgmt;
 
@@ -738,49 +738,40 @@ public class KeystoreManager {
             final File keystore = layout.getKeyStore();
             // First see if the alias exists. The user could have deleted it. Any failure in the
             // command indicates that the alias does not exist, so we return without error.
-            String keyStoreType = System.getProperty("javax.net.ssl.keyStoreType");
-            if (keyStoreType == null) {
-                keyStoreType = KeyStore.getDefaultType();
-            }
-
-            // add code to change all the aliases that exist rather then change s1as only
+            String realKeyStoreType = null;
+            // change all the aliases that exist rather than change s1as only
             List<String> aliases = new ArrayList<>();
-            FileInputStream is = null;
             try {
-                KeyStore keyStore = KeyStore.getInstance(keyStoreType);
-                is = new FileInputStream(keystore);
-                keyStore.load(is, storePassword.toCharArray());
+                KeyStore keyStore = KeyStore.getInstance(keystore, storePassword.toCharArray());
+                realKeyStoreType = keyStore.getType();
+                // debugging hint: try to load the key with password
+                //keyStore.getKey("s1as", "changeit".toCharArray())
                 Enumeration<String> all = keyStore.aliases();
                 while (all.hasMoreElements()) {
                     aliases.add(all.nextElement());
                 }
             } catch (Exception e) {
                 aliases.add(CERTIFICATE_ALIAS);
-            } finally {
-                if (is != null) {
-                    try {
-                        is.close();
-                    } catch (IOException ex) {
-                        getLogger().log(Level.SEVERE, UNHANDLED_EXCEPTION, ex);
+            }
+
+            // change truststore password from the default, only for jks, not for pkcs12
+            if ("jks".equalsIgnoreCase(realKeyStoreType)) {
+                String[] keytoolListCmd = {"-list", "-keystore", keystore.getAbsolutePath(), "-alias", CERTIFICATE_ALIAS,};
+                KeytoolExecutor p = new KeytoolExecutor(keytoolListCmd, 30, new String[]{storePassword});
+                try {
+                    // verify, that the keystore is readable by the new password, using keytool
+                    p.execute("s1asKeyPasswordNotChanged", keystore);
+
+                    // keystore is readable, update the key passwords
+                    for (String alias : aliases) {
+                        String[] keytoolKeyPasswdCmd = new String[]{"-keypasswd", "-keystore", keystore.getAbsolutePath(), "-alias", alias,};
+                        p = new KeytoolExecutor(keytoolKeyPasswdCmd, 30, new String[]{storePassword, oldKeyPassword, newKeyPassword, newKeyPassword});
+                        p.execute("s1asKeyPasswordNotChanged", keystore);
                     }
+                } catch (RepositoryException ex) {
+                    getLogger().log(Level.SEVERE, UNHANDLED_EXCEPTION, ex);
                 }
             }
-
-            String[] keytoolCmd = { "-list", "-keystore", keystore.getAbsolutePath(), "-alias", CERTIFICATE_ALIAS, };
-            KeytoolExecutor p = new KeytoolExecutor(keytoolCmd, 30, new String[] { storePassword });
-            try {
-                p.execute("s1asKeyPasswordNotChanged", keystore);
-            } catch (RepositoryException ex) {
-                return;
-            }
-
-            // change truststore password from the default
-            for (String alias : aliases) {
-                keytoolCmd = new String[] { "-keypasswd", "-keystore", keystore.getAbsolutePath(), "-alias", alias, };
-                p = new KeytoolExecutor(keytoolCmd, 30, new String[] { storePassword, oldKeyPassword, newKeyPassword, newKeyPassword });
-                p.execute("s1asKeyPasswordNotChanged", keystore);
-            }
-
         }
     }
 
@@ -817,11 +808,15 @@ public class KeystoreManager {
                 // alias could not be changed.
                 getLogger().log(Level.SEVERE, UNHANDLED_EXCEPTION, ex);
             }
+        } else {
+            getLogger().log(Level.SEVERE, SLogger.INVALID_FILE_LOCATION, keystore.getAbsolutePath());
         }
 
         if (truststore.exists()) {
             // Change the password on the truststore
             changeKeyStorePassword(oldPassword, newPassword, truststore);
+        } else {
+            getLogger().log(Level.SEVERE, SLogger.INVALID_FILE_LOCATION, truststore.getAbsolutePath());
         }
     }
 
