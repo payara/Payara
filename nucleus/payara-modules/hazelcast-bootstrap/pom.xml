@@ -42,7 +42,7 @@
    <parent>
         <groupId>fish.payara.server.internal.payara-modules</groupId>
         <artifactId>payara-nucleus-modules</artifactId>
-        <version>6.2023.5-SNAPSHOT</version>
+        <version>6.2023.6-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>fish.payara.server.core.payara-modules</groupId>
