@@ -46,7 +46,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>fish.payara.server</groupId>
     <artifactId>payara-aggregator</artifactId>
-    <version>6.2023.5-SNAPSHOT</version>
+    <version>6.2023.6-SNAPSHOT</version>
     <parent>
         <groupId>fish.payara.server.core</groupId>
         <artifactId>core-aggregator</artifactId>
@@ -69,7 +69,7 @@
         <connection>scm:git:git@github.com:payara/payara.git</connection>
         <url>scm:git:git@github.com:payara/payara.git</url>
         <developerConnection>scm:git:git@github.com:payara/payara.git</developerConnection>
-        <tag>payara-server-6.2023.5-SNAPSHOT</tag>
+        <tag>payara-server-6.2023.6-SNAPSHOT</tag>
     </scm>
 
     <issueManagement>
@@ -167,8 +167,8 @@
         <microprofile-release.version>6.0</microprofile-release.version>
         <payara-arquillian-container.version>3.0.alpha6</payara-arquillian-container.version>
         <h2db.version>2.1.212</h2db.version>
-        <concurrent-api.version>3.0.1</concurrent-api.version>
-        <concurrent.version>3.0.0.payara-p2</concurrent.version>
+        <concurrent-api.version>3.0.2</concurrent-api.version>
+        <concurrent.version>3.0.2.payara-p1</concurrent.version>
         <asm.version>9.4</asm.version>
         <monitoring-console-process.version>2.0.1</monitoring-console-process.version>
         <monitoring-console-webapp.version>2.0.1</monitoring-console-webapp.version>
