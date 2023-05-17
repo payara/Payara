@@ -39,40 +39,40 @@
 #
 
 -exportcontents: \
-                        com.sun.appserv.web.cache;version=${project.osgi.version}, \
-                        com.sun.appserv.web.cache.filter;version=${project.osgi.version}, \
-                        com.sun.appserv.web.cache.mapping;version=${project.osgi.version}, \
-                        com.sun.appserv.web.taglibs.cache;version=${project.osgi.version}, \
-                        com.sun.enterprise.security.web;version=${project.osgi.version}, \
-                        com.sun.enterprise.util.logging;version=${project.osgi.version}, \
-                        com.sun.enterprise.web;version=${project.osgi.version}, \
-                        com.sun.enterprise.web.accesslog;version=${project.osgi.version}, \
-                        com.sun.enterprise.web.connector.coyote;version=${project.osgi.version}, \
-                        com.sun.enterprise.web.connector.extension;version=${project.osgi.version}, \
-                        com.sun.enterprise.web.deploy;version=${project.osgi.version}, \
-                        com.sun.enterprise.web.jsp;version=${project.osgi.version}, \
-                        com.sun.enterprise.web.logger;version=${project.osgi.version}, \
-                        com.sun.enterprise.web.logging.pwc;version=${project.osgi.version}, \
-                        com.sun.enterprise.web.monitor;version=${project.osgi.version}, \
-                        com.sun.enterprise.web.monitor.impl;version=${project.osgi.version}, \
-                        com.sun.enterprise.web.pluggable;version=${project.osgi.version}, \
-                        com.sun.enterprise.web.pwc;version=${project.osgi.version}, \
-                        com.sun.enterprise.web.pwc.connector.coyote;version=${project.osgi.version}, \
-                        com.sun.enterprise.web.reconfig;version=${project.osgi.version}, \
-                        com.sun.enterprise.web.session;version=${project.osgi.version}, \
-                        com.sun.enterprise.web.stats;version=${project.osgi.version}, \
-                        com.sun.enterprise.web.util;version=${project.osgi.version}, \
-                        com.sun.web.server;version=${project.osgi.version}, \
-                        org.glassfish.web;version=${project.osgi.version}, \
-                        org.glassfish.web.deployment.archivist;version=${project.osgi.version}, \
-                        org.glassfish.web.deployment.descriptor;version=${project.osgi.version}, \
-                        org.glassfish.web.deployment.io;version=${project.osgi.version}, \
-                        org.glassfish.web.deployment.io.runtime;version=${project.osgi.version}, \
-                        org.glassfish.web.deployment.runtime;version=${project.osgi.version}, \
-                        org.glassfish.web.deployment.util;version=${project.osgi.version}, \
-                        org.glassfish.web.deployment.xml;version=${project.osgi.version}, \
-                        org.glassfish.web.deployment.node.runtime.wls;version=${project.osgi.version} \
-                        
+                        com.sun.appserv.web.cache; \
+                        com.sun.appserv.web.cache.filter; \
+                        com.sun.appserv.web.cache.mapping; \
+                        com.sun.appserv.web.taglibs.cache; \
+                        com.sun.enterprise.security.web; \
+                        com.sun.enterprise.util.logging; \
+                        com.sun.enterprise.web; \
+                        com.sun.enterprise.web.accesslog; \
+                        com.sun.enterprise.web.connector.coyote; \
+                        com.sun.enterprise.web.connector.extension; \
+                        com.sun.enterprise.web.deploy; \
+                        com.sun.enterprise.web.jsp; \
+                        com.sun.enterprise.web.logger; \
+                        com.sun.enterprise.web.logging.pwc; \
+                        com.sun.enterprise.web.monitor; \
+                        com.sun.enterprise.web.monitor.impl; \
+                        com.sun.enterprise.web.pluggable; \
+                        com.sun.enterprise.web.pwc; \
+                        com.sun.enterprise.web.pwc.connector.coyote; \
+                        com.sun.enterprise.web.reconfig; \
+                        com.sun.enterprise.web.session; \
+                        com.sun.enterprise.web.stats; \
+                        com.sun.enterprise.web.util; \
+                        com.sun.web.server; \
+                        org.glassfish.web; \
+                        org.glassfish.web.deployment.archivist; \
+                        org.glassfish.web.deployment.descriptor; \
+                        org.glassfish.web.deployment.io; \
+                        org.glassfish.web.deployment.io.runtime; \
+                        org.glassfish.web.deployment.runtime; \
+                        org.glassfish.web.deployment.util; \
+                        org.glassfish.web.deployment.xml; \
+                        org.glassfish.web.deployment.node.runtime.wls; \
+
                         version=${project.osgi.version}
 
 Import-Package: \
