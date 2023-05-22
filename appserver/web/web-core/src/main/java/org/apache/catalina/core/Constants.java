@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2022-2023] [Payara Foundation and/or its affiliates]
 
 package org.apache.catalina.core;
 
@@ -68,6 +68,9 @@ public class Constants {
 
     public static final String JSP_SERVLET_CLASS
             = "org.glassfish.wasp.servlet.JspServlet";
+
+    public static final String OLD_JSP_SERVLET_CLASS
+            = "org.apache.jasper.servlet.JspServlet";
 
     public static final String JSP_SERVLET_NAME = "jsp";
 

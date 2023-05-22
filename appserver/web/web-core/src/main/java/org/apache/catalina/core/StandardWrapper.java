@@ -55,48 +55,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2023] [Payara Foundation and/or its affiliates]
 
 package org.apache.catalina.core;
 
-import static java.text.MessageFormat.format;
-import static java.util.Collections.list;
-import static java.util.Collections.unmodifiableList;
-import static java.util.Collections.unmodifiableMap;
-import static java.util.logging.Level.FINE;
-import static java.util.logging.Level.FINEST;
-import static java.util.logging.Level.INFO;
-import static jakarta.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
-import static org.apache.catalina.InstanceEvent.EventType.AFTER_DESTROY_EVENT;
-import static org.apache.catalina.InstanceEvent.EventType.AFTER_INIT_EVENT;
-import static org.apache.catalina.InstanceEvent.EventType.AFTER_SERVICE_EVENT;
-import static org.apache.catalina.InstanceEvent.EventType.BEFORE_DESTROY_EVENT;
-import static org.apache.catalina.InstanceEvent.EventType.BEFORE_INIT_EVENT;
-import static org.apache.catalina.InstanceEvent.EventType.BEFORE_SERVICE_EVENT;
-import static org.apache.catalina.LogFacade.CANNOT_ALLOCATE_SERVLET_EXCEPTION;
-import static org.apache.catalina.LogFacade.CANNOT_FIND_LOADER_EXCEPTION;
-import static org.apache.catalina.LogFacade.CANNOT_FIND_SERVLET_CLASS_EXCEPTION;
-import static org.apache.catalina.LogFacade.CLASS_IS_NOT_SERVLET_EXCEPTION;
-import static org.apache.catalina.LogFacade.DESTROY_SERVLET_EXCEPTION;
-import static org.apache.catalina.LogFacade.ERROR_ALLOCATE_SERVLET_INSTANCE_EXCEPTION;
-import static org.apache.catalina.LogFacade.ERROR_INSTANTIATE_SERVLET_CLASS_EXCEPTION;
-import static org.apache.catalina.LogFacade.ERROR_LOADING_INFO;
-import static org.apache.catalina.LogFacade.MARK_SERVLET_UNAVAILABLE;
-import static org.apache.catalina.LogFacade.NO_SERVLET_BE_SPECIFIED_EXCEPTION;
-import static org.apache.catalina.LogFacade.PARENT_CONTAINER_MUST_BE_CONTEXT_EXCEPTION;
-import static org.apache.catalina.LogFacade.PRIVILEGED_SERVLET_CANNOT_BE_LOADED_EXCEPTION;
-import static org.apache.catalina.LogFacade.SERVLET_EXECUTION_EXCEPTION;
-import static org.apache.catalina.LogFacade.SERVLET_INIT_EXCEPTION;
-import static org.apache.catalina.LogFacade.SERVLET_UNLOAD_EXCEPTION;
-import static org.apache.catalina.LogFacade.WAITING_INSTANCE_BE_DEALLOCATED;
-import static org.apache.catalina.LogFacade.WRAPPER_CONTAINER_NO_CHILD_EXCEPTION;
-import static org.apache.catalina.core.Constants.JSP_SERVLET_CLASS;
-import static org.apache.catalina.core.Constants.JSP_SERVLET_NAME;
-import static org.apache.catalina.security.SecurityUtil.doAsPrivilege;
-import static org.apache.catalina.security.SecurityUtil.executeUnderSubjectDoAs;
-import static org.apache.catalina.security.SecurityUtil.isPackageProtectionEnabled;
-import static org.glassfish.internal.api.Globals.getDefaultHabitat;
+import fish.payara.notification.requesttracing.RequestTraceSpan;
+import fish.payara.nucleus.requesttracing.RequestTracingService;
+import fish.payara.opentracing.OpenTracingService;
+import io.opentracing.Tracer;
+import io.opentracing.tag.Tags;
+import jakarta.servlet.Servlet;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.UnavailableException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.apache.catalina.Container;
+import org.apache.catalina.ContainerServlet;
+import org.apache.catalina.Context;
+import org.apache.catalina.InstanceListener;
+import org.apache.catalina.LifecycleException;
+import org.apache.catalina.Loader;
+import org.apache.catalina.Wrapper;
+import org.apache.catalina.security.SecurityUtil;
+import org.apache.catalina.util.Enumerator;
+import org.apache.catalina.util.InstanceSupport;
+import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.internal.api.Globals;
+import org.glassfish.jersey.servlet.ServletContainer;
+import org.glassfish.web.valve.GlassFishValve;
 
+import javax.management.Notification;
+import javax.management.NotificationBroadcasterSupport;
+import javax.management.ObjectName;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.security.AccessController;
@@ -111,47 +106,33 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Filter;
-import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
-import javax.management.Notification;
-import javax.management.NotificationBroadcasterSupport;
-import javax.management.ObjectName;
-import jakarta.servlet.Servlet;
-import jakarta.servlet.ServletConfig;
-import jakarta.servlet.ServletContext;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.ServletRequest;
-import jakarta.servlet.ServletResponse;
-import jakarta.servlet.UnavailableException;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
-import io.opentracing.Tracer;
-import org.apache.catalina.Container;
-import org.apache.catalina.ContainerServlet;
-import org.apache.catalina.Context;
-import org.apache.catalina.InstanceListener;
-import org.apache.catalina.LifecycleException;
-import org.apache.catalina.Loader;
-import org.apache.catalina.Wrapper;
-import org.apache.catalina.security.SecurityUtil;
-import org.apache.catalina.util.Enumerator;
-import org.apache.catalina.util.InstanceSupport;
-import org.glassfish.jersey.servlet.ServletContainer;
-import org.glassfish.web.valve.GlassFishValve;
-
-import fish.payara.nucleus.requesttracing.RequestTracingService;
-import fish.payara.notification.requesttracing.RequestTraceSpan;
-import fish.payara.opentracing.OpenTracingService;
-import io.opentracing.tag.Tags;
-import org.glassfish.api.invocation.InvocationManager;
-import org.glassfish.internal.api.Globals;
+import static jakarta.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+import static java.text.MessageFormat.format;
+import static java.util.Collections.list;
+import static java.util.Collections.unmodifiableList;
+import static java.util.Collections.unmodifiableMap;
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.FINEST;
+import static java.util.logging.Level.INFO;
+import static org.apache.catalina.InstanceEvent.EventType.AFTER_DESTROY_EVENT;
+import static org.apache.catalina.InstanceEvent.EventType.AFTER_INIT_EVENT;
+import static org.apache.catalina.InstanceEvent.EventType.AFTER_SERVICE_EVENT;
+import static org.apache.catalina.InstanceEvent.EventType.BEFORE_DESTROY_EVENT;
+import static org.apache.catalina.InstanceEvent.EventType.BEFORE_INIT_EVENT;
+import static org.apache.catalina.InstanceEvent.EventType.BEFORE_SERVICE_EVENT;
+import static org.apache.catalina.LogFacade.*;
+import static org.apache.catalina.core.Constants.JSP_SERVLET_CLASS;
+import static org.apache.catalina.core.Constants.JSP_SERVLET_NAME;
+import static org.apache.catalina.core.Constants.OLD_JSP_SERVLET_CLASS;
+import static org.apache.catalina.security.SecurityUtil.doAsPrivilege;
+import static org.apache.catalina.security.SecurityUtil.executeUnderSubjectDoAs;
+import static org.apache.catalina.security.SecurityUtil.isPackageProtectionEnabled;
+import static org.glassfish.internal.api.Globals.getDefaultHabitat;
 
 /**
  * Standard implementation of the <b>Wrapper</b> interface that represents
@@ -668,6 +649,10 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
             throw new IllegalStateException(
                 "Wrapper already initialized with servlet instance, " +
                 "class, or name");
+        }
+
+        if (OLD_JSP_SERVLET_CLASS.equals(className)) {
+            className = JSP_SERVLET_CLASS;
         }
 
         servletClassName = className;
