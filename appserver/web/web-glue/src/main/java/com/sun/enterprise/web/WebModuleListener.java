@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2019-2023] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.web;
 
@@ -88,6 +88,8 @@ final class WebModuleListener
      * The logger used to log messages
      */
     private static final Logger _logger = LogFacade.getLogger();
+    public static final String OLD_PAYARA5_JSP_SERVLET = "org.apache.jasper.servlet.JspServlet";
+    public static final String NEW_PAYARA6_JSP_SERVLET = "org.glassfish.wasp.servlet.JspServlet";
 
     /**
      * Descriptor object associated with this web application.
@@ -324,10 +326,13 @@ final class WebModuleListener
         String includeJarsString = null;;
         for (WebComponentDescriptor wcd: wbd.getWebComponentDescriptors()) {
             if ("jsp".equals(wcd.getCanonicalName())) {
+                if (OLD_PAYARA5_JSP_SERVLET.equals(wcd.getWebComponentImplementation())) {
+                    wcd.setWebComponentImplementation(NEW_PAYARA6_JSP_SERVLET);
+                }
                 InitializationParameter initp =
                     wcd.getInitializationParameterByName("system-jar-includes");
                 if (initp != null) {
-                    includeJarsString = initp.getValue();
+                    includeJarsString = adjustJars(initp.getValue());
                     break;
                 }
             }
@@ -342,6 +347,14 @@ final class WebModuleListener
         while (tokenizer.hasMoreElements()) {
             includeJars.add(tokenizer.nextToken());
         }
+    }
+
+    private String adjustJars(String value) {
+        if (value.contains("javax.servlet.jsp")) {
+            return value.replace("javax.servlet.jsp.jstl.jar", "jakarta.servlet.jsp.jstl.jar")
+                    .replace("javax.servlet.jsp.jar", "");
+        }
+        return value;
     }
 
     private boolean included(String path) {
