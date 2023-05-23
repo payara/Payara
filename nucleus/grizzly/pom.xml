@@ -52,8 +52,4 @@
     <artifactId>nucleus-grizzly</artifactId>
     <packaging>pom</packaging>
     <name>GlassFish Nucleus Grizzly modules</name>
-    <modules>
-        <module>config</module>
-        <module>nucleus-grizzly-all</module>
-    </modules>
 </project>

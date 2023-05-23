@@ -60,11 +60,8 @@
     <description>Security Infrastructure and Technology Integration Modules</description>
     
     <modules>
-        <module>webintegration</module>
-        <module>core-ee</module>
         <module>security-all</module>
         <module>jacc.provider.inmemory</module>
-        <module>jaspic-provider-framework</module>
         <module>webservices.security</module>
         <module>ejb.security</module>
         <module>appclient.security</module>

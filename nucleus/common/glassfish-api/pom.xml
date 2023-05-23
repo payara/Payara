@@ -46,10 +46,10 @@
     <modelVersion>4.0.0</modelVersion>
     
     <parent>
-        <groupId>fish.payara.server</groupId>
-        <artifactId>payara-nucleus-parent</artifactId>
+        <groupId>fish.payara.server.core</groupId>
+        <artifactId>core-parent</artifactId>
         <version>6.2023.6-SNAPSHOT</version>
-        <relativePath>../../pom.xml</relativePath>
+        <relativePath>../../../core/core-parent</relativePath>
     </parent>  
     
     <groupId>fish.payara.server.core.common</groupId>
@@ -79,7 +79,6 @@
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>scattered-archive-api</artifactId>
-	    <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
@@ -88,7 +87,6 @@
         <dependency>
             <groupId>fish.payara.server.core.grizzly</groupId>
             <artifactId>nucleus-grizzly-all</artifactId>
-            <version>${project.version}</version>
         </dependency>
         
         <dependency>

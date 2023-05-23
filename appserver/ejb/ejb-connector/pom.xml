@@ -77,17 +77,14 @@
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>internal-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>glassfish-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.deployment</groupId>
             <artifactId>deployment-common</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>jakarta.enterprise.deploy</groupId>
@@ -98,9 +95,9 @@
             <artifactId>hk2-core</artifactId>
         </dependency>
         <dependency>
-             <groupId>fish.payara.server.internal.test-utils</groupId>
+             <groupId>fish.payara.server.core.test-utils</groupId>
              <artifactId>utils</artifactId>
-             <version>${project.version}</version>
+
              <scope>test</scope>
         </dependency>
     </dependencies>

@@ -75,7 +75,6 @@
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>glassfish-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.hazelcast</groupId>
@@ -89,7 +88,6 @@
         <dependency>
             <groupId>fish.payara.server.core.payara-modules</groupId>
             <artifactId>hazelcast-bootstrap</artifactId>
-            <version>${project.version}</version>
         </dependency>
     </dependencies>
     

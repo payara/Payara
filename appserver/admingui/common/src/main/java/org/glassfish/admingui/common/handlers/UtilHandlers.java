@@ -58,9 +58,8 @@ import com.sun.jsftemplating.layout.descriptors.handler.HandlerContext;
 import com.sun.jsftemplating.layout.descriptors.handler.HandlerDefinition;
 import com.sun.jsftemplating.util.FileUtil;
 import jakarta.faces.component.UIViewRoot;
-import org.glassfish.admin.rest.utils.JsonUtil;
 import org.glassfish.admingui.common.util.GuiUtil;
-import org.glassfish.admingui.common.util.JSONUtil;
+import org.glassfish.admingui.common.util.JsonUtil;
 import org.glassfish.admingui.common.util.RestUtil;
 
 import java.io.File;
@@ -1156,7 +1155,7 @@ public class UtilHandlers {
                     break;
                 default:
                     // Check if we should unicode escape this...
-                    JSONUtil.appendUnicodeEscaped(ch, builder);
+                    JsonUtil.appendUnicodeEscaped(ch, builder);
                     break;
             }
             ch = it.next();

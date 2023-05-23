@@ -84,9 +84,8 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
     
     <dependencies>
         <dependency>
-            <groupId>fish.payara.server.internal.admingui</groupId>
+            <groupId>fish.payara.server.core.admingui</groupId>
             <artifactId>console-plugin-service</artifactId>
-            <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>

@@ -71,7 +71,7 @@
         <dependency>
     	    <groupId>fish.payara.server.core.admin</groupId>
             <artifactId>monitoring-core</artifactId>
-            <version>${project.version}</version>
+
            <optional>true</optional>
         </dependency>
     </dependencies>

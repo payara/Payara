@@ -86,7 +86,7 @@
         <dependency>
             <groupId>fish.payara.server.core.admin</groupId>
             <artifactId>config-api</artifactId>
-            <version>${project.version}</version>
+
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -107,18 +107,16 @@
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>container-common</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.api</groupId>
             <artifactId>payara-api</artifactId>
-            <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.payara-modules</groupId>
             <artifactId>requesttracing-core</artifactId>
-            <version>${project.version}</version>
+
             <scope>provided</scope>
         </dependency>
         <dependency>

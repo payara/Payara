@@ -45,10 +45,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>fish.payara.server.internal.common</groupId>
-        <artifactId>nucleus-common</artifactId>
+        <groupId>fish.payara.server.core</groupId>
+        <artifactId>core-parent</artifactId>
         <version>6.2023.6-SNAPSHOT</version>
-        <relativePath>../../common/pom.xml</relativePath>
+        <relativePath>../../../core/core-parent</relativePath>
     </parent>
     <groupId>fish.payara.server.core.flashlight</groupId>
     <artifactId>flashlight-framework</artifactId>
@@ -103,7 +103,6 @@
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>internal-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.osgi</groupId>

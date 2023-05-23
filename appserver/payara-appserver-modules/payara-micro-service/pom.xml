@@ -90,27 +90,22 @@
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>glassfish-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.nucleus</groupId>
             <artifactId>glassfish</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.payara-modules</groupId>
             <artifactId>hazelcast-bootstrap</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.payara-modules</groupId>
             <artifactId>healthcheck-core</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.payara-modules</groupId>
             <artifactId>requesttracing-core</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.payara-modules</groupId>
@@ -130,13 +125,12 @@
         <dependency>
             <groupId>fish.payara.server.core.web</groupId>
             <artifactId>web-glue</artifactId>
-            <version>${project.version}</version>
+
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>container-common</artifactId>
-            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>

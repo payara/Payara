@@ -45,14 +45,18 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>admingui</artifactId>
-        <groupId>fish.payara.server.internal.admingui</groupId>
+        <groupId>fish.payara.server.core</groupId>
+        <artifactId>core-parent</artifactId>
         <version>6.2023.6-SNAPSHOT</version>
+        <relativePath>../../../core/core-parent</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-
+    <groupId>fish.payara.server.core.admingui</groupId>
     <artifactId>faces-compat</artifactId>
 
+    <properties>
+        <jar.manifest/>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
@@ -94,6 +98,7 @@
         <dependency>
             <groupId>org.glassfish.jsftemplating</groupId>
             <artifactId>jsftemplating</artifactId>
+            <version>${jsftemplating.version}</version>
             <optional>true</optional>
             <scope>compile</scope>
             <exclusions>
@@ -106,13 +111,13 @@
         <dependency>
             <groupId>org.glassfish.jsftemplating</groupId>
             <artifactId>jsftemplating-dt</artifactId>
+            <version>${jsftemplating.version}</version>
             <optional>true</optional>
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.admingui</groupId>
+            <groupId>fish.payara.server.core.admingui</groupId>
             <artifactId>dataprovider</artifactId>
-            <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
 
@@ -123,27 +128,22 @@
         <dependency>
             <groupId>fish.payara.server.core.web</groupId>
             <artifactId>web-glue</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>glassfish-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>common-util</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>container-common</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.deployment</groupId>
             <artifactId>dol</artifactId>
-            <version>${project.version}</version>
         </dependency>
     </dependencies>
 

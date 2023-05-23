@@ -36,4 +36,4 @@
  # only if the new code is made subject to such option by the copyright
  # holder.
 # PAYARA-2010 this is explicitly needed as it is created via Duck Typing
-Import-Package: org.jvnet.hk2.config.types; version="[6.2021,7)", *
+Import-Package: org.jvnet.hk2.config.types; version="[6.0.0,7)", *

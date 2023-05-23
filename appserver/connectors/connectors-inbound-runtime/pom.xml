@@ -87,7 +87,6 @@
         <dependency>
             <groupId>fish.payara.server.core.admin</groupId>
             <artifactId>config-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.connectors</groupId>
@@ -97,12 +96,10 @@
         <dependency>
             <groupId>fish.payara.server.core.connectors</groupId>
             <artifactId>connectors-internal-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.transaction</groupId>
             <artifactId>transaction-internal-api</artifactId>
-            <version>${project.parent.version}</version>
         </dependency>
         <dependency>
             <groupId>jakarta.resource</groupId>
@@ -111,12 +108,10 @@
         <dependency>
             <groupId>fish.payara.server.core.ejb</groupId>
             <artifactId>ejb-internal-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.deployment</groupId>
             <artifactId>dol</artifactId>
-            <version>${project.parent.version}</version>
         </dependency>
     </dependencies>
 </project>

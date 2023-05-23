@@ -45,9 +45,10 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>fish.payara.server.internal.common</groupId>
-        <artifactId>common</artifactId>
+        <groupId>fish.payara.server.core</groupId>
+        <artifactId>core-parent</artifactId>
         <version>6.2023.6-SNAPSHOT</version>
+        <relativePath>../../../core/core-parent</relativePath>
     </parent>
 
     <groupId>fish.payara.server.core.common</groupId>
@@ -100,37 +101,30 @@
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>glassfish-naming</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>glassfish-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>internal-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.deployment</groupId>
             <artifactId>dol</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>common-util</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.admin</groupId>
             <artifactId>config-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.admin</groupId>
             <artifactId>admin-util</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>jakarta.mail</groupId>
@@ -139,12 +133,10 @@
         <dependency>
             <groupId>fish.payara.server.core.security</groupId>
             <artifactId>security</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.connectors</groupId>
             <artifactId>connectors-internal-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.ha</groupId>
@@ -153,7 +145,6 @@
         <dependency>
             <groupId>fish.payara.server.core.payara-modules</groupId>
             <artifactId>hazelcast-bootstrap</artifactId>
-            <version>${project.version}</version>
             <optional>true</optional>
         </dependency>
         <dependency>

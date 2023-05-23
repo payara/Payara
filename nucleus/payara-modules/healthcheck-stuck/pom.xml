@@ -42,11 +42,12 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    
+
     <parent>
-        <groupId>fish.payara.server.internal.payara-modules</groupId>
-        <artifactId>payara-nucleus-modules</artifactId>
+        <groupId>fish.payara.server.core</groupId>
+        <artifactId>core-parent</artifactId>
         <version>6.2023.6-SNAPSHOT</version>
+        <relativePath>../../../core/core-parent</relativePath>
     </parent>
     <groupId>fish.payara.server.core.payara-modules</groupId>
     <artifactId>healthcheck-stuck</artifactId>
@@ -69,7 +70,6 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
         <dependency>
             <groupId>fish.payara.server.core.payara-modules</groupId>
             <artifactId>healthcheck-core</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.monitoring-console</groupId>

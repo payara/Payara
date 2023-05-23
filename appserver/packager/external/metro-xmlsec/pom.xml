@@ -48,7 +48,6 @@
         <version>6.2023.6-SNAPSHOT</version>
     </parent>
 
-    <groupId>fish.payara.server.core.packager</groupId>
     <artifactId>metro-xmlsec-repackaged</artifactId>
     <name>metro-xmlsec-repackaged</name>
     <description>Metro xmlsec repackaged as a module</description>

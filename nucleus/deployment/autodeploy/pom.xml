@@ -102,17 +102,14 @@
 	    <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>glassfish-api</artifactId>
-            <version>${project.version}</version>
-        </dependency>      
+        </dependency>
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>common-util</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.deployment</groupId>
             <artifactId>deployment-common</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
           <groupId>org.glassfish.annotations</groupId>
@@ -122,7 +119,7 @@
         <dependency>
             <groupId>fish.payara.server.core.payara-modules</groupId>
             <artifactId>payara-executor-service</artifactId>
-            <version>${project.version}</version>
+
             <type>jar</type>
         </dependency>
     </dependencies>

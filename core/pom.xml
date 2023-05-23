@@ -1,0 +1,420 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~
+  ~  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+  ~
+  ~  Copyright (c) 2011-2023 Payara Foundation and/or its affiliates. All rights reserved.
+  ~
+  ~  The contents of this file are subject to the terms of either the GNU
+  ~  General Public License Version 2 only ("GPL") or the Common Development
+  ~  and Distribution License("CDDL") (collectively, the "License").  You
+  ~  may not use this file except in compliance with the License.  You can
+  ~  obtain a copy of the License at
+  ~  https://github.com/payara/Payara/blob/master/LICENSE.txt
+  ~  See the License for the specific
+  ~  language governing permissions and limitations under the License.
+  ~
+  ~  When distributing the software, include this License Header Notice in each
+  ~  file and include the License file at glassfish/legal/LICENSE.txt.
+  ~
+  ~  GPL Classpath Exception:
+  ~  The Payara Foundation designates this particular file as subject to the "Classpath"
+  ~  exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+  ~  file that accompanied this code.
+  ~
+  ~  Modifications:
+  ~  If applicable, add the following below the License Header, with the fields
+  ~  enclosed by brackets [] replaced by your own identifying information:
+  ~  "Portions Copyright [year] [name of copyright owner]"
+  ~
+  ~  Contributor(s):
+  ~  If you wish your version of this file to be governed by only the CDDL or
+  ~  only the GPL Version 2, indicate your decision by adding "[Contributor]
+  ~  elects to include this software in this distribution under the [CDDL or GPL
+  ~  Version 2] license."  If you don't indicate a single choice of license, a
+  ~  recipient has the option to distribute your version of this file under
+  ~  either the CDDL, the GPL Version 2 or to extend the choice of license to
+  ~  its licensees as provided above.  However, if you add GPL Version 2 code
+  ~  and therefore, elected the GPL Version 2 license, then the option applies
+  ~  only if the new code is made subject to such option by the copyright
+  ~  holder.
+  ~
+  -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>fish.payara.server.core</groupId>
+    <artifactId>core-aggregator</artifactId>
+    <version>6.2023.6-SNAPSHOT</version>
+
+    <packaging>pom</packaging>
+    <name>Payara Core Aggregator</name>
+
+    <description>All of Payara Core modules</description>
+
+    <properties>
+        <payara.core.version>6.2023.6-SNAPSHOT</payara.core.version>
+        <!-- BOM dependencies versions -->
+        <payara.security-connectors.version>3.0.alpha6</payara.security-connectors.version>
+        <hk2.version>3.0.1.payara-p3</hk2.version>
+        <osgi.version>7.0.0</osgi.version>
+        <jakarta.security.enterprise.version>3.0.1.payara-p1</jakarta.security.enterprise.version>
+        <cdi-api.version>4.0.1</cdi-api.version>
+        <grizzly.version>4.0.0.payara-p1</grizzly.version>
+        <servlet-api.version>6.0.0</servlet-api.version>
+        <jakarta.el-api.version>5.0.0</jakarta.el-api.version>
+        <expressly.version>5.0.0</expressly.version>
+        <microprofile-config.version>3.0.2</microprofile-config.version>
+        <parsson.version>1.1.1.payara-p1</parsson.version>
+        <jakarta.activation-api.version>2.1.0</jakarta.activation-api.version>
+        <jaxb-api.version>4.0.0</jaxb-api.version>
+        <jackson.version>2.15.0</jackson.version>
+        <jersey.version>3.1.0.payara-p1</jersey.version>
+        <jakarta.validation.version>3.0.1</jakarta.validation.version>
+        <hibernate.validator.version>8.0.0.Final</hibernate.validator.version>
+        <hibernate.validator-cdi.version>8.0.0.Final</hibernate.validator-cdi.version>
+        <jaxb-impl.version>4.0.1</jaxb-impl.version>
+        <jsonp-api.version>2.1.0</jsonp-api.version>
+        <jakarta.security.auth.message-api.version>3.0.0</jakarta.security.auth.message-api.version>
+        <jakarta.security.jacc-api.version>2.1.0</jakarta.security.jacc-api.version>
+        <jakarta.security.enterprise-api.version>3.0.0</jakarta.security.enterprise-api.version>
+        <jakarta.ejb-api.version>4.0.0</jakarta.ejb-api.version>
+        <jakarta.transaction-api.version>2.0.1</jakarta.transaction-api.version>
+        <jakarta.interceptor-api.version>2.1.0</jakarta.interceptor-api.version>
+        <jakarta.inject.version>2.0.0</jakarta.inject.version>
+        <json.bind-api.version>3.0.0</json.bind-api.version>
+        <jakarta-persistence-api.version>3.1.0</jakarta-persistence-api.version>
+        <jakarta.batch-api.version>2.1.0</jakarta.batch-api.version>
+        <microprofile-opentracing.version>3.0</microprofile-opentracing.version>
+        <microprofile-fault-tolerance.version>4.0.2.payara-p1</microprofile-fault-tolerance.version>
+        <microprofile-jwt-auth.version>2.1</microprofile-jwt-auth.version>
+        <microprofile-healthcheck.version>4.0</microprofile-healthcheck.version>
+        <microprofile-metrics.version>5.0.0.payara-p1</microprofile-metrics.version>
+        <microprofile-rest-client.version>3.0.1</microprofile-rest-client.version>
+        <microprofile-openapi.version>3.1</microprofile-openapi.version>
+        <jakarta.enterprise.deploy-api.version>1.7.2</jakarta.enterprise.deploy-api.version>
+        <jakarta.resource-api.version>2.1.0</jakarta.resource-api.version>
+        <jakarta.annotation-api.version>2.1.1</jakarta.annotation-api.version>
+        <exousia.version>2.1.0</exousia.version>
+        <opentracing.version>0.33.0</opentracing.version>
+        <jsp-api.version>3.1.0</jsp-api.version>
+        <javax.cache-api.version>1.1.1.payara-p1</javax.cache-api.version>
+        <hazelcast.version>5.2.2</hazelcast.version>
+        <jakartaee.api.version>10.0.0</jakartaee.api.version>
+        <weld-api.version>5.0.SP2</weld-api.version>
+        <weld.version>5.0.1.Final</weld.version>
+        <tyrus.version>2.1.0.payara-p1</tyrus.version>
+        <jsp-impl.version>3.1.0</jsp-impl.version>
+        <asm.version>9.4</asm.version>
+        <websocket-api.version>2.1.0</websocket-api.version>
+        <jax-rs-api.impl.version>3.1.0</jax-rs-api.impl.version>
+
+
+        <!-- implementation and build dependencies -->
+        <glassfish-management-api.version>3.2.3.payara-p1</glassfish-management-api.version>
+        <glassfish-corba.version>4.2.4.payara-p2</glassfish-corba.version>
+        <junit.version>4.13.2</junit.version>
+        <mockito.version>2.28.2</mockito.version>
+        <logging-annotation-processor.version>1.9</logging-annotation-processor.version>
+        <jline.version>3.21.0</jline.version>
+        <grizzly.npn.api.version>2.0.0.payara-p1</grizzly.npn.api.version>
+        <tiger.types.version>1.4.payara-p1</tiger.types.version>
+        <mimepull.version>1.10.0</mimepull.version>
+        <gmbal.version>4.0.3</gmbal.version>
+        <monitoring-console-api.version>2.0.1</monitoring-console-api.version>
+        <metainf-services.version>1.9</metainf-services.version>
+        <ldapbp.version>1.0</ldapbp.version>
+        <!-- Javassist (JAVA programming ASSISTant) makes Java bytecode manipulation simple. It is a class library for editing bytecodes in Java. -->
+        <javassist.version>3.29.2-GA</javassist.version>
+        <mail.version>2.1.0</mail.version>
+        <angus.mail.version>1.0.0</angus.mail.version>
+        <ha-api.version>3.1.13</ha-api.version>
+        <apache.bcel.version>6.7.0</apache.bcel.version>
+        <!-- Primitive Function Library (PFL); a library of simple utilities used by Glassfish -->
+        <pfl.version>4.1.2</pfl.version>
+        <opendmk.version>1.0-b01-ea</opendmk.version>
+        <jna.version>5.12.1</jna.version>
+        <!-- A pure Java implementation of the SSH-2 protocol -->
+        <trilead-ssh2.version>build-217-jenkins-16</trilead-ssh2.version>
+        <opentelemetry.version>1.22.0</opentelemetry.version>
+        <opentelemetry.alpha.version>1.22.0-alpha</opentelemetry.alpha.version>
+        <testng.version>7.4.0</testng.version>
+        <bouncycastle-jdk15on.version>1.64</bouncycastle-jdk15on.version>
+        <jsftemplating.version>3.0.0</jsftemplating.version>
+        <jakarta.faces-api.version>4.0.1</jakarta.faces-api.version>
+
+        <!-- build versions -->
+        <jdk.version>11</jdk.version>
+        <maven.enforcer.plugin.version>3.1.0</maven.enforcer.plugin.version>
+        <command-security-plugin.version>1.0.13</command-security-plugin.version>
+        <command.security.maven.plugin.isFailureFatal>false</command.security.maven.plugin.isFailureFatal>
+        <maven.jar.plugin.version>3.3.0</maven.jar.plugin.version>
+        <maven.clean.plugin.version>3.2.0</maven.clean.plugin.version>
+        <maven.compiler.plugin.version>3.10.1</maven.compiler.plugin.version>
+        <maven.compiler.showDeprecation>true</maven.compiler.showDeprecation>
+        <maven.surefire.plugin.version>3.0.0-M7</maven.surefire.plugin.version>
+        <maven.resources.plugin.version>3.3.0</maven.resources.plugin.version>
+        <maven.release.plugin.version>2.5.3</maven.release.plugin.version>
+        <maven.dependency.plugin.version>3.3.0</maven.dependency.plugin.version>
+        <maven.gpg.plugin.version>1.6</maven.gpg.plugin.version>
+        <maven.deploy.plugin.version>3.0.0</maven.deploy.plugin.version>
+        <maven.source.plugin.version>3.2.1</maven.source.plugin.version>
+        <maven.javadoc.plugin.version>3.4.1</maven.javadoc.plugin.version>
+        <maven.install.plugin.version>3.1.0</maven.install.plugin.version>
+        <maven.bundle.plugin.version>4.1.0</maven.bundle.plugin.version>
+        <maven.failsafe.plugin.version>3.0.0-M7</maven.failsafe.plugin.version>
+        <maven.site.plugin.version>3.12.1</maven.site.plugin.version>
+        <glassfishbuild.version>3.2.20.payara-p2</glassfishbuild.version>
+        <maven.antrun.plugin.version>3.1.0</maven.antrun.plugin.version>
+        <maven.assembly.plugin.version>3.4.2</maven.assembly.plugin.version>
+        <hk2.plugin.version>3.0.2</hk2.plugin.version>
+        <maven.build.helper.plugin.version>3.3.0</maven.build.helper.plugin.version>
+
+
+        <!-- build settings -->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <deploy.skip>true</deploy.skip>
+        <javadoc.skip>true</javadoc.skip>
+    </properties>
+
+    <scm>
+        <connection>scm:git:git@github.com:payara/payara.git</connection>
+        <url>scm:git:git@github.com:payara/payara.git</url>
+        <developerConnection>scm:git:git@github.com:payara/payara.git</developerConnection>
+    </scm>
+
+    <issueManagement>
+        <system>Github</system>
+        <url>https://github.com/payara/Payara/issues</url>
+    </issueManagement>
+
+    <developers>
+        <developer>
+            <name>Payara Team</name>
+            <email>info@payara.fish</email>
+            <organization>Payara Foundation</organization>
+            <organizationUrl>http://www.payara.fish</organizationUrl>
+        </developer>
+    </developers>
+
+    <licenses>
+        <license>
+            <name>CDDL + GPLv2 with classpath exception</name>
+            <url>https://raw.githubusercontent.com/payara/Payara/master/LICENSE.txt</url>
+            <distribution>repo</distribution>
+            <comments>A business-friendly OSS license</comments>
+        </license>
+    </licenses>
+
+    <repositories>
+        <repository>
+            <id>payara-nexus-artifacts</id>
+            <url>https://nexus.payara.fish/repository/payara-artifacts</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+
+    </repositories>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>payara-nexus-artifacts</id>
+            <url>https://nexus.payara.fish/repository/payara-artifacts</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </pluginRepository>
+    </pluginRepositories>
+
+    <modules>
+        <module>core-bom</module>
+        <module>core-parent</module>
+        <!--        fish.payara.server.internal.common      glassfish-api-->
+        <module>../nucleus/common/glassfish-api</module>
+        <!--        fish.payara.server.internal.common      common-util-->
+        <module>../nucleus/common/common-util</module>
+        <!--        fish.payara.server.internal.common      simple-glassfish-api-->
+        <module>../nucleus/common/simple-glassfish-api</module>
+        <!--        fish.payara.server.internal.common      scattered-archive-api-->
+        <module>../nucleus/common/scattered-archive-api</module>
+        <!--        fish.payara.server.internal.common      internal-api-->
+        <module>../nucleus/common/internal-api</module>
+        <!--        fish.payara.server.internal.common      glassfish-mbeanserver-->
+        <module>../nucleus/common/mbeanserver</module>
+        <!--        fish.payara.server.internal.common      amx-core-->
+        <module>../nucleus/common/amx-core</module>
+        <!--        fish.payara.server.internal.grizzly     nucleus-grizzly-all-->
+        <module>../nucleus/grizzly/nucleus-grizzly-all</module>
+        <!--        fish.payara.server.internal.grizzly     grizzly-config-->
+        <module>../nucleus/grizzly/config</module>
+
+        <!--        fish.payara.server.internal.admin       config-api-->
+        <module>../nucleus/admin/config-api</module>
+        <!--        fish.payara.server.internal.admin       launcher-->
+        <module>../nucleus/admin/launcher</module>
+        <!--        fish.payara.server.internal.admin       admin-cli-->
+        <module>../nucleus/admin/cli</module>
+        <!--        fish.payara.server.internal.admin       admin-util-->
+        <module>../nucleus/admin/util</module>
+        <!--        fish.payara.server.internal.admin       monitoring-core-->
+        <module>../nucleus/admin/monitor</module>
+        <!--        fish.payara.server.internal.hk2         hk2-config-->
+        <module>../nucleus/hk2/hk2-config</module>
+        <!--        fish.payara.server.internal.hk2         config-types-->
+        <module>../nucleus/hk2/config-types</module>
+        <!--        fish.payara.server.internal.core        glassfish-->
+        <module>../nucleus/core/bootstrap</module>
+        <!--        fish.payara.server.internal.core        logging-->
+        <module>../nucleus/core/logging</module>
+        <!--        fish.payara.server.internal.core        api-exporter-->
+        <module>../nucleus/core/api-exporter</module>
+        <!--        fish.payara.server.internal.core        kernel-->
+        <module>../nucleus/core/kernel</module>
+        <!--        fish.payara.security.connectors         security-connectors-api-->
+        <!--        fish.payara.api                         payara-api-->
+        <!-- external -->
+        <module>../api/payara-api</module>
+        <!--        fish.payara.server.internal.flashlight  flashlight-framework-->
+        <module>../nucleus/flashlight/framework</module>
+        <!--        fish.payara.server.internal.security    jaspic.provider.framework-->
+        <module>../appserver/security/jaspic-provider-framework</module>
+        <!--        fish.payara.server.internal.security    security-ee-->
+        <module>../appserver/security/core-ee</module>
+        <!--        fish.payara.server.internal.security    websecurity-->
+        <module>../appserver/security/webintegration</module>
+        <!--        fish.payara.server.internal.deployment  deployment-common-->
+        <module>../nucleus/deployment/common</module>
+        <!--        fish.payara.server.internal.security    ssl-impl-->
+        <!-- duplicated in reactor? -->
+        <module>../nucleus/security/ssl-impl</module>
+        <!--        fish.payara.server.internal.security    security-->
+        <module>../nucleus/security/core</module>
+        <!--        fish.payara.server.internal.common      glassfish-ee-api-->
+        <module>../appserver/common/glassfish-ee-api</module>
+        <!--        fish.payara.server.internal.resources   resources-connector-->
+        <module>../appserver/resources/resources-connector</module>
+        <!--        fish.payara.server.internal.transaction transaction-internal-api-->
+        <module>../appserver/transaction/internal-api</module>
+        <!--        fish.payara.server.internal.deployment  dol-->
+        <module>../appserver/deployment/dol</module>
+        <!--        fish.payara.server.internal.connectors  connectors-internal-api-->
+        <module>../appserver/connectors/connectors-internal-api</module>
+        <!--        fish.payara.server.internal.ejb         ejb-internal-api-->
+        <module>../appserver/ejb/ejb-internal-api</module>
+        <!--        fish.payara.server.internal.resourcebase.resources  nucleus-resources-->
+        <module>../nucleus/resources</module>
+        <!--        fish.payara.server.internal.security    security-services-->
+        <module>../nucleus/security/services</module>
+        <!--        fish.payara.server.internal.common      annotation-framework-->
+        <module>../appserver/common/annotation-framework</module>
+        <!--        fish.payara.server.internal.deployment  deployment-javaee-core-->
+        <module>../appserver/deployment/javaee-core</module>
+        <!--        fish.payara.server.internal.web         web-naming-->
+        <module>../appserver/web/web-naming</module>
+        <!--        fish.payara.server.internal.common      glassfish-naming-->
+        <module>../appserver/common/glassfish-naming</module>
+        <!--        fish.payara.server.internal.common      container-common-->
+        <module>../appserver/common/container-common</module>
+        <!--        fish.payara.server.internal.web         gf-web-connector-->
+        <module>../appserver/web/gf-web-connector</module>
+        <!--        fish.payara.server.internal.web         war-util-->
+        <module>../appserver/web/war-util</module>
+        <!--        fish.payara.monitoring-console          monitoring-console-api-->
+        <!--external-->
+        <!--        fish.payara.server.internal.payara-modules  hazelcast-bootstrap-->
+        <module>../nucleus/payara-modules/hazelcast-bootstrap</module>
+        <!--        fish.payara.server.internal.payara-modules  healthcheck-core-->
+        <module>../nucleus/payara-modules/healthcheck-core</module>
+        <!--        fish.payara.server.internal.payara-modules  requesttracing-core-->
+        <module>../nucleus/payara-modules/requesttracing-core</module>
+        <!--        fish.payara.server.internal.payara-modules  opentracing-adapter-->
+        <module>../nucleus/payara-modules/opentracing-adapter</module>
+        <!--        fish.payara.server.internal.web         web-core-->
+        <module>../appserver/web/web-core</module>
+        <!--        fish.payara.server.internal.common      stats77-->
+        <module>../appserver/common/stats77</module>
+        <!--        fish.payara.server.internal.payara-modules  healthcheck-stuck-->
+        <module>../nucleus/payara-modules/healthcheck-stuck</module>
+        <!--        fish.payara.server.internal.common      amx-javaee-->
+        <module>../appserver/common/amx-javaee</module>
+        <!--        fish.payara.server.internal.web         web-cli-->
+        <module>../appserver/web/admin</module>
+        <!--        fish.payara.server.internal.web         web-sse-->
+        <module>../appserver/web/web-sse</module>
+        <!--        fish.payara.server.internal.admin       admin-core-->
+        <module>../appserver/admin/admin-core</module>
+        <!--        fish.payara.server.internal.web         web-gui-plugin-common-->
+        <module>../appserver/web/gui-plugin-common</module>
+        <!--        fish.payara.server.internal.web         web-embed-api-->
+        <module>../appserver/web/web-embed/api</module>
+        <!--        fish.payara.server.internal.web         web-glue-->
+        <module>../appserver/web/web-glue</module>
+        <!--        fish.payara.server.internal.orb         orb-enabler-->
+        <module>../appserver/orb/orb-enabler</module>
+        <!--        fish.payara.server.internal.orb         orb-connector-->
+        <module>../appserver/orb/orb-connector</module>
+
+        <module>../nucleus/packager/external/ldapbp</module>
+        <module>../nucleus/packager/external/jmxremote_optional</module>
+        <module>../nucleus/packager/external/opentracing-repackaged</module>
+        <module>../appserver/packager/external/libpam4j</module>
+        <module>../nucleus/packager/external/tiger-types</module>
+        <module>../nucleus/test-utils/utils</module>
+        <module>../nucleus/packager/external/trilead-ssh2</module>
+        <module>../nucleus/cluster/common</module>
+        <module>../nucleus/packager/external/j-interop</module>
+        <module>../nucleus/cluster/ssh</module>
+        <module>../nucleus/payara-modules/payara-executor-service</module>
+        <module>../nucleus/packager/external/opentelemetry-repackaged</module>
+        <module>../nucleus/cluster/admin</module>
+        <module>../nucleus/admin/server-mgmt</module>
+        <module>../nucleus/cluster/cli</module>
+
+        <module>../appserver/admingui/gf-admingui-connector</module>
+        <module>../appserver/admingui/plugin-service</module>
+        <module>../nucleus/admin/rest/rest-client</module>
+        <module>../appserver/deployment/client</module>
+        <module>../appserver/admingui/dataprovider</module>
+        <module>../appserver/admingui/faces-compat</module>
+        <module>../appserver/admingui/common</module>
+    </modules>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>flatten-maven-plugin</artifactId>
+                    <version>1.1.0</version>
+                    <configuration>
+                        <flattenMode>ossrh</flattenMode>
+                        <pomElements>
+                            <developers>resolve</developers>
+                            <build>remove</build>
+                        </pomElements>
+                        <flattenedPomFilename>target/flattened-pom.xml</flattenedPomFilename>
+                    </configuration>
+                    <executions>
+                        <!-- enable flattening -->
+                        <execution>
+                            <id>flatten</id>
+                            <phase>process-resources</phase>
+                            <goals>
+                                <goal>flatten</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+</project>

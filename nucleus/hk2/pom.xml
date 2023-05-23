@@ -75,8 +75,6 @@
         </plugins>
     </build>
     <modules>
-        <module>hk2-config</module>
         <module>config-generator</module>
-        <module>config-types</module>
     </modules>
 </project>

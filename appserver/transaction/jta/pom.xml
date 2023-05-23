@@ -109,27 +109,22 @@
         <dependency>
             <groupId>fish.payara.server.core.transaction</groupId>
             <artifactId>transaction-internal-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>glassfish-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>internal-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.admin</groupId>
             <artifactId>config-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>common-util</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.external</groupId>
@@ -142,7 +137,7 @@
         <dependency>
             <groupId>fish.payara.server.core.payara-modules</groupId>
             <artifactId>opentracing-adapter</artifactId>
-            <version>${project.version}</version>
+
             <scope>provided</scope>
         </dependency>
         <dependency>

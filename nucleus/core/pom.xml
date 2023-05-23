@@ -53,12 +53,8 @@
     <packaging>pom</packaging>
     <name>GlassFish Nucleus Core modules</name>
     <modules>
-        <module>bootstrap</module>
-        <module>kernel</module>
-        <module>api-exporter</module>
         <module>extra-jre-packages</module>
         <module>javassist-packages</module>
-        <module>logging</module>
         <module>logging-l10n</module>
         <module>kernel-l10n</module>
         <module>context-propagation</module>

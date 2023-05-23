@@ -76,12 +76,10 @@ holder.
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>internal-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.security</groupId>
             <artifactId>security</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>

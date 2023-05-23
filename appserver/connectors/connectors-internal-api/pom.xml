@@ -44,9 +44,10 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
-        <groupId>fish.payara.server.internal.connectors</groupId>
-        <artifactId>connectors</artifactId>
+        <groupId>fish.payara.server.core</groupId>
+        <artifactId>core-parent</artifactId>
         <version>6.2023.6-SNAPSHOT</version>
+        <relativePath>../../../core/core-parent</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -89,43 +90,35 @@
         <dependency>
             <groupId>fish.payara.server.core.admin</groupId>
             <artifactId>config-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
          <dependency>
             <groupId>fish.payara.server.core.transaction</groupId>
             <artifactId>transaction-internal-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
          <dependency>
             <groupId>fish.payara.server.core.admin</groupId>
             <artifactId>admin-util</artifactId>
-            <version>${project.version}</version>
          </dependency>
          <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>internal-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.test-utils</groupId>
+            <groupId>fish.payara.server.core.test-utils</groupId>
             <artifactId>utils</artifactId>
-            <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.deployment</groupId>
             <artifactId>dol</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.resources</groupId>
             <artifactId>resources-connector</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.api</groupId>
             <artifactId>payara-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>

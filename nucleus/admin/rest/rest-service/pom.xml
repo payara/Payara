@@ -69,14 +69,12 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.admin</groupId>
+            <groupId>fish.payara.server.core.admin</groupId>
             <artifactId>rest-client</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>common-util</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
@@ -89,12 +87,10 @@
         <dependency>
             <groupId>fish.payara.server.core.nucleus</groupId>
             <artifactId>kernel</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>glassfish-api</artifactId>
-            <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -129,7 +125,6 @@
         <dependency>
             <groupId>fish.payara.server.core.flashlight</groupId>
             <artifactId>flashlight-framework</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.external</groupId>
@@ -144,7 +139,6 @@
         <dependency>
             <groupId>fish.payara.server.core.security</groupId>
             <artifactId>security</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency> <!-- for FindBugs -->
             <groupId>org.osgi</groupId>

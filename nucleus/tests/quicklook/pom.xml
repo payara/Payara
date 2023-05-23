@@ -83,19 +83,19 @@ utilities are in the NucleusTestUtils class.
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>common-util</artifactId>
-            <version>${project.version}</version>
+
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>glassfish-mbeanserver</artifactId>
-            <version>${project.version}</version>
+
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.test-utils</groupId>
+            <groupId>fish.payara.server.core.test-utils</groupId>
             <artifactId>utils-ng</artifactId>
-            <version>${project.version}</version>
+
             <scope>test</scope>
         </dependency>
         <dependency>
