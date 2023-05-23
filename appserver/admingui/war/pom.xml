@@ -102,7 +102,7 @@
                     <archive>
                         <manifestEntries>
                             <Glassfish-require-services>org.glassfish.api.admingui.ConsoleProvider</Glassfish-require-services>
-                            <HK2-Import-Bundles>fish.payara.server.internal.admingui.console-common,org.glassfish.hk2.hk2,fish.payara.server.core.admingui.console-plugin-service, fish.payara.server.core.deployment.deployment-client,
+                            <HK2-Import-Bundles>fish.payara.server.core.admingui.console-common,org.glassfish.hk2.hk2,fish.payara.server.core.admingui.console-plugin-service, fish.payara.server.core.deployment.deployment-client,
                                 jakarta.servlet-api,jakarta.servlet.jsp-api,org.glassfish.expressly,fish.payara.server.core.admingui.faces-compat,fish.payara.server.core.admingui.dataprovider,com.sun.pkg.client</HK2-Import-Bundles>
                         </manifestEntries>
                     </archive>
