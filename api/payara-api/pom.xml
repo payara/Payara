@@ -53,6 +53,10 @@
     <name>Payara-API</name>
     <description>Artefact that exposes public API of Payara Application Server</description>
 
+    <properties>
+        <javadoc.skip>false</javadoc.skip>
+    </properties>
+
     <build>
         <plugins>
             <plugin>
