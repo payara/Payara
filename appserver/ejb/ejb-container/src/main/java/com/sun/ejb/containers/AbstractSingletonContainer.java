@@ -182,7 +182,7 @@ public abstract class AbstractSingletonContainer extends BaseContainer {
 
     @Override
     protected ComponentContext _getContext(EjbInvocation invocation) throws EJBException {
-        // initilize, serialize the Singleton and set to the session
+        // initialize, serialize the Singleton and set to the session
         checkInit();
         if (clusteredLookup.isClusteredEnabled()) {
             AbstractSessionContextImpl sessionContext = (AbstractSessionContextImpl) singletonCtx;
