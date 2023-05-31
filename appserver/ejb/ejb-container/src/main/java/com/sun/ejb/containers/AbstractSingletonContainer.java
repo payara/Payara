@@ -182,13 +182,13 @@ public abstract class AbstractSingletonContainer extends BaseContainer {
 
     @Override
     protected ComponentContext _getContext(EjbInvocation invocation) throws EJBException {
+        // initilize, serialize the Singleton and set to the session
         checkInit();
         if (clusteredLookup.isClusteredEnabled()) {
             AbstractSessionContextImpl sessionContext = (AbstractSessionContextImpl) singletonCtx;
             try {
                 invocationManager.preInvoke(invocation);
                 invocation.context = sessionContext;
-                sessionContext.setEJB(clusteredLookup.getClusteredSingletonMap().get(clusteredLookup.getClusteredSessionKey()));
                 if (isJCDIEnabled()) {
                     if (sessionContext.getJCDIInjectionContext() != null) {
                         sessionContext.getJCDIInjectionContext().cleanup(false);
@@ -214,6 +214,7 @@ public abstract class AbstractSingletonContainer extends BaseContainer {
             try {
                 invocationManager.preInvoke(inv);
                 if (clusteredLookup.getClusteredSingletonMap().containsKey(clusteredLookup.getClusteredSessionKey())) {
+                    // serializes the Singleton into Hazelcast
                     clusteredLookup.getClusteredSingletonMap().set(clusteredLookup.getClusteredSessionKey(), inv.context.getEJB());
                 }
             }
