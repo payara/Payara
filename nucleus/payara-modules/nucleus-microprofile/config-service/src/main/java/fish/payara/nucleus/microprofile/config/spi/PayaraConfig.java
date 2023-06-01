@@ -61,6 +61,8 @@ import java.util.function.Supplier;
 import static fish.payara.nucleus.microprofile.config.spi.ConfigValueResolverImpl.getCacheKey;
 import static fish.payara.nucleus.microprofile.config.spi.ConfigValueResolverImpl.throwWhenNotExists;
 import static java.lang.System.currentTimeMillis;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Standard implementation for MP {@link Config}.
@@ -90,11 +92,12 @@ public class PayaraConfig implements Config {
 
     private final List<ConfigSource> sources;
     private final Map<Class<?>, Converter<?>> converters;
-    private final long defaultCacheDurationSeconds;
+    private final long defaultCacheDurationMilliSeconds;
 
     private final Map<String, CacheEntry> cachedValuesByProperty = new ConcurrentHashMap<>();
 
-    private volatile Long configuredCacheValue = null;
+    private volatile long configuredCacheDurationSeconds;
+    private volatile long configuredCacheDurationSecondsExpires = 0; // force value reload at start
     private final Object configuredCacheValueLock = new Object();
     
     private final String profile;
@@ -102,7 +105,7 @@ public class PayaraConfig implements Config {
     public PayaraConfig(List<ConfigSource> sources, Map<Class<?>, Converter<?>> converters, long defaultCacheDurationSeconds) {
         this.sources = sources;
         this.converters = new ConcurrentHashMap<>(converters);
-        this.defaultCacheDurationSeconds = defaultCacheDurationSeconds;
+        this.defaultCacheDurationMilliSeconds = defaultCacheDurationSeconds;
         Collections.sort(sources, new ConfigSourceComparator());
 
         profile = getConfigValue(MP_CONFIG_PROFILE_NAME_STRING).getValue();
@@ -112,26 +115,33 @@ public class PayaraConfig implements Config {
     public long getCacheDurationSeconds() {
         final Optional<Converter<Long>> converter = Optional.ofNullable((Converter<Long>) converters.get(Long.class));
         if (converter.isPresent()) {
-            // Atomic block to modify the cached duration value
-            synchronized (configuredCacheValueLock) {
-                // If the value has been found and it hasn't expired
-                if (configuredCacheValue != null && configuredCacheValue > currentTimeMillis()) {
-                    return configuredCacheValue;
-                } else {
+            long currentTimeMillis = currentTimeMillis();
+            // If the value has been found and it hasn't expired
+            if (currentTimeMillis < configuredCacheDurationSecondsExpires) {
+                return configuredCacheDurationSeconds;
+            } else {
+                // Atomic block to modify the cached value
+                synchronized (configuredCacheValueLock) {
+                    // double check if situation didn't change
+                    if (currentTimeMillis < configuredCacheDurationSecondsExpires) {
+                        return configuredCacheDurationSeconds;
+                    }
                     // Fetch the value from config
                     final ConfigValue value = searchConfigSources(MP_CONFIG_CACHE_DURATION, null);
                     if (value.getValue() != null) {
                         // If it's found, cache it
-                        configuredCacheValue = convertValue(value, null, converter);
-                        return configuredCacheValue;
+                        configuredCacheDurationSeconds = convertValue(value, null, converter);
                     } else {
                         // Cache the default value (usually that's from the server config)
-                        configuredCacheValue = defaultCacheDurationSeconds;
+                        configuredCacheDurationSeconds = defaultCacheDurationMilliSeconds;
                     }
+                    configuredCacheDurationSecondsExpires = currentTimeMillis + configuredCacheDurationSeconds;
+                    Logger.getLogger(PayaraConfig.class.getName()).log(Level.SEVERE, "getCacheDurationSeconds took about {0} ms", currentTimeMillis() - currentTimeMillis);
+                    return configuredCacheDurationSeconds;
                 }
             }
         }
-        return defaultCacheDurationSeconds;
+        return defaultCacheDurationMilliSeconds;
     }
 
     @SuppressWarnings("unchecked")
