@@ -80,6 +80,8 @@ public class PayaraConfig implements Config {
     private static final String MP_CONFIG_EXPANSION_ENABLED_STRING = "mp.config.property.expressions.enabled";
     private static final String MP_CONFIG_PROFILE_NAME_STRING = "mp.config.profile";
 
+    private static final Logger log = Logger.getLogger(PayaraConfig.class.getName());
+
     private static final class CacheEntry {
         final ConfigValueImpl value;
         final long expires;
@@ -136,7 +138,8 @@ public class PayaraConfig implements Config {
                         configuredCacheDurationSeconds = defaultCacheDurationMilliSeconds;
                     }
                     configuredCacheDurationSecondsExpires = currentTimeMillis + configuredCacheDurationSeconds;
-                    Logger.getLogger(PayaraConfig.class.getName()).log(Level.SEVERE, "getCacheDurationSeconds took about {0} ms", currentTimeMillis() - currentTimeMillis);
+                    long endTimeMillis = currentTimeMillis();
+                    log.log(Level.FINER, () -> "getCacheDurationSeconds took about " + (endTimeMillis - currentTimeMillis) + " ms");
                     return configuredCacheDurationSeconds;
                 }
             }
