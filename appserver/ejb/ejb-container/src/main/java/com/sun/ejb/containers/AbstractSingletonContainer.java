@@ -37,11 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.containers;
 
 import com.hazelcast.cp.IAtomicLong;
+import com.hazelcast.cp.lock.FencedLock;
 import com.hazelcast.map.IMap;
 import com.sun.ejb.ComponentContext;
 import com.sun.ejb.Container;
@@ -124,6 +125,7 @@ public abstract class AbstractSingletonContainer extends BaseContainer {
     protected final ClusteredSingletonLookup clusteredLookup =
         new ClusteredSingletonLookupImpl(ejbDescriptor, componentId);
 
+    private FencedLock clusteredSingletonLock;
 
     /**
      * This constructor is called from the JarManager when a Jar is deployed.
@@ -189,6 +191,20 @@ public abstract class AbstractSingletonContainer extends BaseContainer {
             try {
                 invocationManager.preInvoke(invocation);
                 invocation.context = sessionContext;
+
+                clusteredSingletonLock = clusteredLookup.getDistributedLock();
+                if (_logger.isLoggable(Level.FINE)) {
+                    _logger.log(Level.FINE, "##### DistributedLock, about to lock container, Locked: {1}, Locked by Us: {2}, thread ID {3} #####",
+                            new Object[]{AbstractSingletonContainer.class.getName(), clusteredSingletonLock.isLocked(), clusteredSingletonLock.isLockedByCurrentThread(), Thread.currentThread().getId()});
+                }
+                clusteredSingletonLock.lock();
+                if (_logger.isLoggable(Level.FINE)) {
+                    _logger.log(Level.FINE, "##### DistributedLock, after call to lock container, Locked: {1}, Locked by Us: {2}, thread ID {3} #####",
+                            new Object[]{AbstractSingletonContainer.class.getName(), clusteredSingletonLock.isLocked(), clusteredSingletonLock.isLockedByCurrentThread(), Thread.currentThread().getId()});
+                }
+
+                sessionContext.setEJB(clusteredLookup.getClusteredSingletonMap().get(clusteredLookup.getClusteredSessionKey()));
+
                 if (isJCDIEnabled()) {
                     if (sessionContext.getJCDIInjectionContext() != null) {
                         sessionContext.getJCDIInjectionContext().cleanup(false);
@@ -216,6 +232,16 @@ public abstract class AbstractSingletonContainer extends BaseContainer {
                 if (clusteredLookup.getClusteredSingletonMap().containsKey(clusteredLookup.getClusteredSessionKey())) {
                     // serializes the Singleton into Hazelcast
                     clusteredLookup.getClusteredSingletonMap().set(clusteredLookup.getClusteredSessionKey(), inv.context.getEJB());
+                }
+
+                if (_logger.isLoggable(Level.FINE)) {
+                    _logger.log(Level.FINE, "##### DistributedLock, about to unlock container, Locked: {1}, Locked by Us: {2}, thread ID {3} #####",
+                            new Object[]{AbstractSingletonContainer.class.getName(), clusteredSingletonLock.isLocked(), clusteredSingletonLock.isLockedByCurrentThread(), Thread.currentThread().getId()});
+                }
+                clusteredSingletonLock.unlock();
+                if (_logger.isLoggable(Level.FINE)) {
+                    _logger.log(Level.FINE, "##### DistributedLock, after call to unlock container, Locked: {1}, Locked by Us: {2}, thread ID {3} #####",
+                            new Object[]{AbstractSingletonContainer.class.getName(), clusteredSingletonLock.isLocked(), clusteredSingletonLock.isLockedByCurrentThread(), Thread.currentThread().getId()});
                 }
             }
             finally {
