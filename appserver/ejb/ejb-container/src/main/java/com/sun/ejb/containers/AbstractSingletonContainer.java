@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2023] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.containers;
 
@@ -60,11 +60,13 @@ import com.sun.enterprise.security.SecurityManager;
 import com.sun.enterprise.util.Utility;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.rmi.RemoteException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.Lock;
 import java.util.logging.Level;
 
 import jakarta.ejb.CreateException;
@@ -125,7 +127,7 @@ public abstract class AbstractSingletonContainer extends BaseContainer {
     protected final ClusteredSingletonLookup clusteredLookup =
         new ClusteredSingletonLookupImpl(ejbDescriptor, componentId);
 
-    private FencedLock clusteredSingletonLock;
+    protected FencedLock clusteredSingletonLock;
 
     /**
      * This constructor is called from the JarManager when a Jar is deployed.
@@ -192,16 +194,35 @@ public abstract class AbstractSingletonContainer extends BaseContainer {
                 invocationManager.preInvoke(invocation);
                 invocation.context = sessionContext;
 
-                clusteredSingletonLock = clusteredLookup.getDistributedLock();
                 if (_logger.isLoggable(Level.FINE)) {
-                    _logger.log(Level.FINE, "##### DistributedLock, about to lock container, Locked: {1}, Locked by Us: {2}, thread ID {3} #####",
-                            new Object[]{AbstractSingletonContainer.class.getName(), clusteredSingletonLock.isLocked(), clusteredSingletonLock.isLockedByCurrentThread(), Thread.currentThread().getId()});
+                    // Log all operations on the lock - note this Should™ also log the call to unlock in releaseContext
+                    clusteredSingletonLock = (FencedLock) Proxy.newProxyInstance(loader, new Class<?>[]{FencedLock.class},
+                            (proxy, method, args) -> {
+                                FencedLock fencedLock = clusteredLookup.getDistributedLock();
+                                _logger.log(
+                                        Level.FINE,
+                                        "DistributedLock, about to call {0}, Locked: {1}, Locked by Us: {2}, thread ID {3}",
+                                        new Object[] {
+                                                method.getName(),
+                                                fencedLock.isLocked(),
+                                                fencedLock.isLockedByCurrentThread(),
+                                                Thread.currentThread().getId()});
+                                Object rv = method.invoke(fencedLock, args);
+                                _logger.log(
+                                        Level.FINE,
+                                        "DistributedLock, after call to {0}, Locked: {1}, Locked by Us: {2}, thread ID {3}",
+                                        new Object[] {
+                                                method.getName(),
+                                                fencedLock.isLocked(),
+                                                fencedLock.isLockedByCurrentThread(),
+                                                Thread.currentThread().getId()});
+                                return rv;
+                    });
+                } else {
+                    clusteredSingletonLock = clusteredLookup.getDistributedLock();
                 }
+
                 clusteredSingletonLock.lock();
-                if (_logger.isLoggable(Level.FINE)) {
-                    _logger.log(Level.FINE, "##### DistributedLock, after call to lock container, Locked: {1}, Locked by Us: {2}, thread ID {3} #####",
-                            new Object[]{AbstractSingletonContainer.class.getName(), clusteredSingletonLock.isLocked(), clusteredSingletonLock.isLockedByCurrentThread(), Thread.currentThread().getId()});
-                }
 
                 sessionContext.setEJB(clusteredLookup.getClusteredSingletonMap().get(clusteredLookup.getClusteredSessionKey()));
 
@@ -234,15 +255,7 @@ public abstract class AbstractSingletonContainer extends BaseContainer {
                     clusteredLookup.getClusteredSingletonMap().set(clusteredLookup.getClusteredSessionKey(), inv.context.getEJB());
                 }
 
-                if (_logger.isLoggable(Level.FINE)) {
-                    _logger.log(Level.FINE, "##### DistributedLock, about to unlock container, Locked: {1}, Locked by Us: {2}, thread ID {3} #####",
-                            new Object[]{AbstractSingletonContainer.class.getName(), clusteredSingletonLock.isLocked(), clusteredSingletonLock.isLockedByCurrentThread(), Thread.currentThread().getId()});
-                }
                 clusteredSingletonLock.unlock();
-                if (_logger.isLoggable(Level.FINE)) {
-                    _logger.log(Level.FINE, "##### DistributedLock, after call to unlock container, Locked: {1}, Locked by Us: {2}, thread ID {3} #####",
-                            new Object[]{AbstractSingletonContainer.class.getName(), clusteredSingletonLock.isLocked(), clusteredSingletonLock.isLockedByCurrentThread(), Thread.currentThread().getId()});
-                }
             }
             finally {
                 invocationManager.postInvoke(inv);

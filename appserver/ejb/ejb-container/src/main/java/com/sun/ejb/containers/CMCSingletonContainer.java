@@ -37,21 +37,17 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2023] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.containers;
 
-import com.hazelcast.cp.lock.FencedLock;
 import com.sun.ejb.ComponentContext;
 import com.sun.ejb.EjbInvocation;
 import com.sun.ejb.InvocationInfo;
 import com.sun.ejb.MethodLockInfo;
-import static com.sun.ejb.containers.BaseContainer._logger;
 import com.sun.enterprise.security.SecurityManager;
-import java.lang.reflect.Proxy;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.logging.Level;
 import jakarta.ejb.ConcurrentAccessException;
 import jakarta.ejb.ConcurrentAccessTimeoutException;
 import jakarta.ejb.IllegalLoopbackException;
@@ -125,23 +121,8 @@ public class CMCSingletonContainer
                 ? defaultMethodLockInfo : invInfo.methodLockInfo;
         Lock theLock;
         if(lockInfo.isDistributed()) {
-            if (_logger.isLoggable(Level.FINE)) {
-                // log all lock operations
-                theLock = (Lock) Proxy.newProxyInstance(loader, new Class<?>[]{Lock.class},
-                        (proxy, method, args) -> {
-                            FencedLock fencedLock = clusteredLookup.getDistributedLock();
-                            _logger.log(Level.FINE, "DistributedLock, about to call {0}, Locked: {1}, Locked by Us: {2}, thread ID {3}",
-                                    new Object[]{method.getName(), fencedLock.isLocked(), fencedLock.isLockedByCurrentThread(), Thread.currentThread().getId()});
-                            Object rv = method.invoke(fencedLock, args);
-                            _logger.log(Level.FINE, "DistributedLock, after to call {0}, Locked: {1}, Locked by Us: {2}, thread ID {3}",
-                                    new Object[]{method.getName(), fencedLock.isLocked(), fencedLock.isLockedByCurrentThread(), Thread.currentThread().getId()});
-                            return rv;
-                        });
-            } else {
-                theLock = clusteredLookup.getDistributedLock();
-            }
-        }
-        else {
+            theLock = clusteredSingletonLock;
+        } else {
             theLock = lockInfo.isReadLockedMethod() ? readLock : writeLock;
         }
 
