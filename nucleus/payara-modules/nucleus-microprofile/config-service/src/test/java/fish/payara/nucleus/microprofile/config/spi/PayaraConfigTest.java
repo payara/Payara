@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2023 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -272,7 +272,7 @@ public class PayaraConfigTest {
     @Test
     public void ttlParameterIsRespected() {
         final long ttl = 60 * 1000L;
-        assertEquals(ttl, new PayaraConfig(emptyList(), emptyMap(), ttl).getCacheDurationSeconds());
+        assertEquals(ttl, new PayaraConfig(emptyList(), emptyMap(), ttl).getCacheDurationMilliSeconds());
     }
 
     private <T> void assertCachedValue(ConfigSource source, String key, Class<T> propertyType, T expectedValue1,

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2022 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2023 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -61,6 +61,8 @@ import java.util.function.Supplier;
 import static fish.payara.nucleus.microprofile.config.spi.ConfigValueResolverImpl.getCacheKey;
 import static fish.payara.nucleus.microprofile.config.spi.ConfigValueResolverImpl.throwWhenNotExists;
 import static java.lang.System.currentTimeMillis;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Standard implementation for MP {@link Config}.
@@ -78,6 +80,8 @@ public class PayaraConfig implements Config {
     private static final String MP_CONFIG_EXPANSION_ENABLED_STRING = "mp.config.property.expressions.enabled";
     private static final String MP_CONFIG_PROFILE_NAME_STRING = "mp.config.profile";
 
+    private static final Logger log = Logger.getLogger(PayaraConfig.class.getName());
+
     private static final class CacheEntry {
         final ConfigValueImpl value;
         final long expires;
@@ -90,48 +94,57 @@ public class PayaraConfig implements Config {
 
     private final List<ConfigSource> sources;
     private final Map<Class<?>, Converter<?>> converters;
-    private final long defaultCacheDurationSeconds;
+    private final long defaultCacheDurationMilliSeconds;
 
     private final Map<String, CacheEntry> cachedValuesByProperty = new ConcurrentHashMap<>();
 
-    private volatile Long configuredCacheValue = null;
+    private volatile long configuredCacheDurationMilliSeconds;
+    private volatile long configuredCacheDurationMilliSecondsExpires = 0; // force value reload at start
     private final Object configuredCacheValueLock = new Object();
     
     private final String profile;
 
-    public PayaraConfig(List<ConfigSource> sources, Map<Class<?>, Converter<?>> converters, long defaultCacheDurationSeconds) {
+    public PayaraConfig(List<ConfigSource> sources, Map<Class<?>, Converter<?>> converters, long defaultCacheDurationMilliSeconds) {
         this.sources = sources;
         this.converters = new ConcurrentHashMap<>(converters);
-        this.defaultCacheDurationSeconds = defaultCacheDurationSeconds;
+        this.defaultCacheDurationMilliSeconds = defaultCacheDurationMilliSeconds;
         Collections.sort(sources, new ConfigSourceComparator());
 
         profile = getConfigValue(MP_CONFIG_PROFILE_NAME_STRING).getValue();
     }
 
     @SuppressWarnings("unchecked")
-    public long getCacheDurationSeconds() {
+    public long getCacheDurationMilliSeconds() {
         final Optional<Converter<Long>> converter = Optional.ofNullable((Converter<Long>) converters.get(Long.class));
         if (converter.isPresent()) {
-            // Atomic block to modify the cached duration value
-            synchronized (configuredCacheValueLock) {
-                // If the value has been found and it hasn't expired
-                if (configuredCacheValue != null && configuredCacheValue > currentTimeMillis()) {
-                    return configuredCacheValue;
-                } else {
+            long currentTimeMillis = currentTimeMillis();
+            // If the value has been found and it hasn't expired
+            if (currentTimeMillis < configuredCacheDurationMilliSecondsExpires) {
+                return configuredCacheDurationMilliSeconds;
+            } else {
+                // Atomic block to modify the cached value
+                synchronized (configuredCacheValueLock) {
+                    // double check if situation didn't change
+                    if (currentTimeMillis < configuredCacheDurationMilliSecondsExpires) {
+                        return configuredCacheDurationMilliSeconds;
+                    }
                     // Fetch the value from config
                     final ConfigValue value = searchConfigSources(MP_CONFIG_CACHE_DURATION, null);
                     if (value.getValue() != null) {
                         // If it's found, cache it
-                        configuredCacheValue = convertValue(value, null, converter);
-                        return configuredCacheValue;
+                        configuredCacheDurationMilliSeconds = convertValue(value, null, converter);
                     } else {
                         // Cache the default value (usually that's from the server config)
-                        configuredCacheValue = defaultCacheDurationSeconds;
+                        configuredCacheDurationMilliSeconds = defaultCacheDurationMilliSeconds;
                     }
+                    configuredCacheDurationMilliSecondsExpires = currentTimeMillis + configuredCacheDurationMilliSeconds;
+                    long endTimeMillis = currentTimeMillis();
+                    log.log(Level.FINER, () -> "getCacheDurationSeconds took about " + (endTimeMillis - currentTimeMillis) + " ms");
+                    return configuredCacheDurationMilliSeconds;
                 }
             }
         }
-        return defaultCacheDurationSeconds;
+        return defaultCacheDurationMilliSeconds;
     }
 
     @SuppressWarnings("unchecked")
@@ -217,7 +230,7 @@ public class PayaraConfig implements Config {
     }
 
     protected ConfigValueImpl getConfigValue(String propertyName, String cacheKey, Long ttl, String defaultValue, ConfigValueType type) {
-        long entryTTL = ttl != null ? ttl : getCacheDurationSeconds();
+        long entryTTL = ttl != null ? ttl : getCacheDurationMilliSeconds();
         
         if (entryTTL <= 0) {
             return searchConfigSources(propertyName, defaultValue);
