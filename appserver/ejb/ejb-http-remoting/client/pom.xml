@@ -60,6 +60,7 @@
     </description>
 
     <properties>
+        <javadoc.skip>false</javadoc.skip>
         <deploy.skip>false</deploy.skip>
     </properties>
 
