@@ -1,4 +1,5 @@
 /*
+ *
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  *  Copyright (c) 2023 Payara Foundation and/or its affiliates. All rights reserved.
@@ -36,11 +37,20 @@
  *  and therefore, elected the GPL Version 2 license, then the option applies
  *  only if the new code is made subject to such option by the copyright
  *  holder.
+ *
  */
-package fish.payara.microprofile.telemetry.tracing.jaxrs.client;
+package fish.payara.microprofile.telemetry.tracing;
 
 import fish.payara.opentracing.OpenTelemetryService;
 import io.opentelemetry.api.trace.Tracer;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.ConfigProvider;
+import org.eclipse.microprofile.config.ConfigValue;
+import org.eclipse.microprofile.config.spi.ConfigSource;
+import org.eclipse.microprofile.config.spi.Converter;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -60,10 +70,59 @@ import fish.payara.opentracing.OpenTracingService;
  */
 public final class PayaraTracingServices {
 
+    static final Config EMPTY_CONFIG = new Config() {
+        @Override
+        public <T> T getValue(String s, Class<T> aClass) {
+            throw new NoSuchElementException("Empty config");
+        }
+
+        @Override
+        public ConfigValue getConfigValue(String s) {
+            throw new NoSuchElementException("Empty Config");
+        }
+
+        @Override
+        public <T> Optional<T> getOptionalValue(String s, Class<T> aClass) {
+            return Optional.empty();
+        }
+
+        @Override
+        public Iterable<String> getPropertyNames() {
+            return List.of();
+        }
+
+        @Override
+        public Iterable<ConfigSource> getConfigSources() {
+            return List.of();
+        }
+
+        @Override
+        public <T> Optional<Converter<T>> getConverter(Class<T> aClass) {
+            return Optional.empty();
+        }
+
+        @Override
+        public <T> T unwrap(Class<T> aClass) {
+            return null;
+        }
+    };
+
+    /**
+     * Gets the Config object for current application.
+     *
+     * @return the Config object for this request, or null if no config could be found
+     */
+    public static Config getConfig() {
+        try {
+            return ConfigProvider.getConfig();
+        } catch (final IllegalArgumentException ex) {
+            return EMPTY_CONFIG;
+        }
+    }
+
     private final RequestTracingService requestTracingService;
     private final OpenTracingService openTracingService;
 
-    private final InvocationManager invocationManager;
     private final Deployment deployment;
     
     private final OpenTelemetryService openTelemetryService;
@@ -78,7 +137,6 @@ public final class PayaraTracingServices {
 
         requestTracingService = getFromServiceHandle(baseServiceLocator, RequestTracingService.class);
         openTracingService = getFromServiceHandle(baseServiceLocator, OpenTracingService.class);
-        invocationManager = getFromServiceHandle(baseServiceLocator, InvocationManager.class);
         deployment = getFromServiceHandle(baseServiceLocator, Deployment.class);
         openTelemetryService = getFromServiceHandle(baseServiceLocator, OpenTelemetryService.class);
     }
@@ -108,17 +166,6 @@ public final class PayaraTracingServices {
      * @return {@link OpenTracingService}, or null if the HK2 service couldn't be
      *         initialised.
      */
-    public OpenTracingService getOpenTracingService() {
-        if (isTracingAvailable()) {
-            return openTracingService;
-        }
-        return null;
-    }
-
-    /**
-     * @return {@link OpenTracingService}, or null if the HK2 service couldn't be
-     *         initialised.
-     */
     public OpenTelemetryService getOpenTelemetryService() {
         if (isTracingAvailable()) {
             return openTelemetryService;
@@ -127,28 +174,10 @@ public final class PayaraTracingServices {
     }
 
     /**
-     * @return {@link InvocationManager}
-     */
-    public InvocationManager getInvocationManager() {
-        return invocationManager;
-    }
-
-    /**
      * @return {@link Deployment}
      */
     public Deployment getDeployment() {
         return deployment;
-    }
-
-    /**
-     * @return application name known to the actual {@link InvocationManager}, or
-     *         null if no invocation manager can be found.
-     */
-    public String getApplicationName() {
-        if (isTracingAvailable()) {
-            return openTracingService.getApplicationName(invocationManager);
-        }
-        return null;
     }
 
     /**
@@ -169,7 +198,7 @@ public final class PayaraTracingServices {
      * @return the specified service, or null if the service handle isn't available.
      * @throws RuntimeException if the service initialisation failed.
      */
-    private static final <T> T getFromServiceHandle(ServiceLocator serviceLocator, Class<T> serviceClass) {
+    private static <T> T getFromServiceHandle(ServiceLocator serviceLocator, Class<T> serviceClass) {
         ServiceHandle<T> serviceHandle = serviceLocator.getServiceHandle(serviceClass);
         if (serviceHandle != null && serviceHandle.isActive()) {
             return serviceHandle.getService();

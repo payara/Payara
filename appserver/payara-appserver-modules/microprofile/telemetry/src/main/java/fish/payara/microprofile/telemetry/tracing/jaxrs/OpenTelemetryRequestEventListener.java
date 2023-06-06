@@ -39,7 +39,6 @@
  */
 package fish.payara.microprofile.telemetry.tracing.jaxrs;
 
-import fish.payara.microprofile.telemetry.tracing.OpenTracingHelper;
 import fish.payara.opentracing.OpenTelemetryService;
 import fish.payara.opentracing.PropagationHelper;
 import io.opentelemetry.api.common.Attributes;
@@ -75,13 +74,14 @@ public class OpenTelemetryRequestEventListener implements RequestEventListener {
 
     private final OpenTelemetryService openTelemetryService;
 
-    private OpenTracingHelper openTracingHelper;
+    private final OpenTracingHelper openTracingHelper;
 
     public OpenTelemetryRequestEventListener(final ResourceInfo resourceInfo,
-                                             final OpenTelemetryService openTelemetryService) {
+                                             final OpenTelemetryService openTelemetryService,
+                                             final OpenTracingHelper openTracingHelper) {
         this.resourceInfo = resourceInfo;
         this.openTelemetryService = openTelemetryService;
-        this.openTracingHelper = new OpenTracingHelper(this.resourceInfo);
+        this.openTracingHelper = openTracingHelper;
     }
 
     @Override
@@ -95,14 +95,12 @@ public class OpenTelemetryRequestEventListener implements RequestEventListener {
 
         try {
             if (requestEvent.getType() == RequestEvent.Type.REQUEST_MATCHED) {
-                // FISH-6971 still using Traced temporarily till further refactoring
-                final Traced tracedAnnotation = openTracingHelper.getTracedAnnotation();
                 final ContainerRequest requestContext = requestEvent.getContainerRequest();
-                if (!openTracingHelper.canTrace(requestContext, tracedAnnotation)) {
+                if (!openTracingHelper.canTrace(resourceInfo, requestContext)) {
                     LOG.finest(() -> "canTrace(...) returned false, nothing to do.");
                     return;
                 }
-                final String operationName = openTracingHelper.determineOperationName(requestContext, tracedAnnotation);
+                final String operationName = openTracingHelper.determineOperationName(resourceInfo, requestContext);
                 onIncomingRequest(requestEvent, operationName);
                 return;
             }

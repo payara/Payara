@@ -39,7 +39,7 @@
  */
 package fish.payara.microprofile.telemetry.tracing.jaxrs;
 
-import fish.payara.microprofile.telemetry.tracing.jaxrs.client.PayaraTracingServices;
+import fish.payara.microprofile.telemetry.tracing.PayaraTracingServices;
 import jakarta.ws.rs.core.FeatureContext;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.jersey.internal.spi.ForcedAutoDiscoverable;

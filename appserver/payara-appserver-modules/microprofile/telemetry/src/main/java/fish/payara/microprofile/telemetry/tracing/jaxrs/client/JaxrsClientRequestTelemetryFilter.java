@@ -39,6 +39,7 @@
  */
 package fish.payara.microprofile.telemetry.tracing.jaxrs.client;
 
+import fish.payara.microprofile.telemetry.tracing.PayaraTracingServices;
 import fish.payara.notification.requesttracing.RequestTraceSpan;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.nucleus.requesttracing.domain.PropagationHeaders;
