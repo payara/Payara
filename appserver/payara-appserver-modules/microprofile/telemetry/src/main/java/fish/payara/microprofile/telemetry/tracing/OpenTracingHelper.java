@@ -149,6 +149,10 @@ public class OpenTracingHelper {
         determineSpanStrategy().augmentSpan(spanBuilder);
     }
 
+    public String getHttpRoute(ContainerRequest request, ResourceInfo resourceInfo) {
+        return SpanStrategy.OTEL_MP_TCK.determineSpanName(request, resourceInfo);
+    }
+
     /**
      * Strategy for naming spans.
      */

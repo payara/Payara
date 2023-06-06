@@ -193,7 +193,14 @@ public class OpenTelemetryRequestEventListener implements RequestEventListener {
                 .setAttribute(SemanticAttributes.HTTP_URL, requestContext.getRequestUri().toString())
                 .setAttribute(SemanticAttributes.HTTP_TARGET,
                         requestContext.getUriInfo().getRequestUri().getPath() + queryParam)
+                .setAttribute(SemanticAttributes.HTTP_SCHEME, requestContext.getRequestUri().getScheme())
+                .setAttribute(SemanticAttributes.NET_HOST_NAME, requestContext.getRequestUri().getHost())
+                .setAttribute(SemanticAttributes.HTTP_ROUTE, openTracingHelper.getHttpRoute(requestContext, resourceInfo))
                 .setAttribute("component", "jaxrs");
+
+        if (requestContext.getRequestUri().getPort() != -1) {
+            spanBuilder.setAttribute(SemanticAttributes.NET_HOST_PORT, (long)requestContext.getRequestUri().getPort());
+        }
 
         openTracingHelper.augmentSpan(spanBuilder);
 

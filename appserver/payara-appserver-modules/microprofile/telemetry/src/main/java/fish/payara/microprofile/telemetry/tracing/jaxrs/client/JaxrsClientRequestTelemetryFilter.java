@@ -116,9 +116,14 @@ public class JaxrsClientRequestTelemetryFilter implements ClientRequestFilter, C
             SpanBuilder spanBuilder = tracer.spanBuilder(requestContext.getMethod())
                     .setAttribute(SemanticAttributes.HTTP_URL, requestContext.getUri().toString())
                     .setAttribute(SemanticAttributes.HTTP_METHOD, requestContext.getMethod())
+                    .setAttribute(SemanticAttributes.NET_PEER_NAME, requestContext.getUri().getHost())
                     .setAttribute("component", "jaxrs")
                     .setAttribute("span.kind", "client")
                     .setSpanKind(SpanKind.CLIENT);
+
+            if (requestContext.getUri().getPort() != -1) {
+                spanBuilder.setAttribute(SemanticAttributes.NET_PEER_PORT, (long)requestContext.getUri().getPort());
+            }
 
             // Get the propagated span context from the request if present
             // This is required to account for asynchronous client requests
