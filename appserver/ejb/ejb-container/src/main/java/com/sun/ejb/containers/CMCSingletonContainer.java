@@ -80,6 +80,35 @@ public class CMCSingletonContainer
         defaultMethodLockInfo.setLockType(LockType.WRITE, clusteredLookup.isDistributedLockEnabled());
     }
 
+    @Override
+    protected ComponentContext _getContext(EjbInvocation invocation) {
+        super._getContext(invocation);
+
+        MethodLockInfo lockInfo = (invocation.invocationInfo.methodLockInfo == null)
+                ? defaultMethodLockInfo : invocation.invocationInfo.methodLockInfo;
+        // If the lock is distributed we will have locked it during lookupClusteredSingleton, called from super._getContext
+        if (!lockInfo.isDistributed()) {
+            lock(invocation);
+        }
+
+        //Now that we have the lock return the singletonCtx
+        return singletonCtx;
+    }
+
+    /**
+     * Get the clustered singleton for this container.
+     *
+     * This overrides the method in {@link AbstractSingletonContainer} to guard concurrent access via {@link Lock Locks}
+     *
+     * @param invocation The {@link EjbInvocation} that prompted the lookup
+     * @return The clustered singleton object
+     */
+    @Override
+    protected Object getClusteredSingleton(EjbInvocation invocation) {
+        lock(invocation);
+        return super.getClusteredSingleton(invocation);
+    }
+
     /*
      * Findbugs complains that the lock acquired in this method is not
      *  unlocked on all paths in this method.
@@ -111,11 +140,8 @@ public class CMCSingletonContainer
      * before every bean method.
      *
      */
-    @Override
-    protected ComponentContext _getContext(EjbInvocation inv) {
-        super._getContext(inv);
-
-        InvocationInfo invInfo = inv.invocationInfo;
+    private void lock(EjbInvocation invocation) {
+        InvocationInfo invInfo = invocation.invocationInfo;
 
         MethodLockInfo lockInfo = (invInfo.methodLockInfo == null)
                 ? defaultMethodLockInfo : invInfo.methodLockInfo;
@@ -127,14 +153,13 @@ public class CMCSingletonContainer
         }
 
         if ( (rwLock.getReadHoldCount() > 0) &&
-             (!rwLock.isWriteLockedByCurrentThread()) ) {
+                (!rwLock.isWriteLockedByCurrentThread()) ) {
             if( lockInfo.isWriteLockedMethod() ) {
                 throw new IllegalLoopbackException("Illegal Reentrant Access : Attempt to make " +
                         "a loopback call on a Write Lock method '" + invInfo.targetMethod1 +
                         "' while a Read lock is already held");
             }
         }
-
 
         /*
          * Please see comment at the beginning of the method.
@@ -143,7 +168,7 @@ public class CMCSingletonContainer
          * even if exceptions were thrown in _getContext()
          */
         if (!lockInfo.hasTimeout() ||
-            ( (lockInfo.hasTimeout() && (lockInfo.getTimeout() == BLOCK_INDEFINITELY) )) ) {
+                ( (lockInfo.hasTimeout() && (lockInfo.getTimeout() == BLOCK_INDEFINITELY) )) ) {
             theLock.lock();
         } else {
             try {
@@ -167,12 +192,8 @@ public class CMCSingletonContainer
             }
         }
 
-
         //Now that we have acquired the lock, remember it
-        inv.setCMCLock(theLock);
-
-        //Now that we have the lock return the singletonCtx
-        return singletonCtx;
+        invocation.setCMCLock(theLock);
     }
 
     /**

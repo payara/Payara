@@ -66,7 +66,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.Lock;
 import java.util.logging.Level;
 
 import jakarta.ejb.CreateException;
@@ -222,9 +221,16 @@ public abstract class AbstractSingletonContainer extends BaseContainer {
                     clusteredSingletonLock = clusteredLookup.getDistributedLock();
                 }
 
-                clusteredSingletonLock.lock();
-
-                sessionContext.setEJB(clusteredLookup.getClusteredSingletonMap().get(clusteredLookup.getClusteredSessionKey()));
+                /**
+                 * Look up the clustered singleton and set it in the session context. Note that if this is an instance
+                 * of {@link CMCSingletonContainer} the
+                 * {@link CMCSingletonContainer#getClusteredSingleton(EjbInvocation)} will (by default)
+                 * guard concurrent access via {@link java.util.concurrent.locks.Lock Locks}.
+                 *
+                 * This is done here so that when multiple concurrent threads are queued up to execute they will
+                 * lock around the read & write of the EJB itself, rather than the method call.
+                 */
+                sessionContext.setEJB(getClusteredSingleton(invocation));
 
                 if (isJCDIEnabled()) {
                     if (sessionContext.getJCDIInjectionContext() != null) {
@@ -245,6 +251,18 @@ public abstract class AbstractSingletonContainer extends BaseContainer {
         return singletonCtx;
     }
 
+    /**
+     * Get the clustered singleton for this container.
+     *
+     * This method does not provide any concurrent access guards, but may be overridden to do so.
+     *
+     * @param invocation The {@link EjbInvocation} that prompted the lookup
+     * @return The clustered singleton object
+     */
+    protected Object getClusteredSingleton(EjbInvocation invocation) {
+        return clusteredLookup.getClusteredSingletonMap().get(clusteredLookup.getClusteredSessionKey());
+    }
+
     @Override
     protected void releaseContext(EjbInvocation inv) throws EJBException {
         if (clusteredLookup.isClusteredEnabled()) {
@@ -254,8 +272,6 @@ public abstract class AbstractSingletonContainer extends BaseContainer {
                     // serializes the Singleton into Hazelcast
                     clusteredLookup.getClusteredSingletonMap().set(clusteredLookup.getClusteredSessionKey(), inv.context.getEJB());
                 }
-
-                clusteredSingletonLock.unlock();
             }
             finally {
                 invocationManager.postInvoke(inv);
