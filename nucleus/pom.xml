@@ -658,6 +658,13 @@ Parent is ${project.parent}</echo>
     <dependencyManagement>
         <dependencies>
             <dependency>
+                <groupId>fish.payara.server.core</groupId>
+                <artifactId>core-bom</artifactId>
+                <version>${payara.core.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
                 <groupId>fish.payara.api</groupId>
                 <artifactId>payara-bom</artifactId>
                 <!-- A workaround for case when module redefines its version (rest-monitoring-war) -->
