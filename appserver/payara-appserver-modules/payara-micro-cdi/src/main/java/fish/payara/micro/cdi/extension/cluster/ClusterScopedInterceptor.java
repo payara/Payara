@@ -40,6 +40,7 @@
 package fish.payara.micro.cdi.extension.cluster;
 
 import com.hazelcast.cp.IAtomicLong;
+import com.hazelcast.cp.lock.FencedLock;
 import fish.payara.cluster.Clustered;
 import fish.payara.cluster.DistributedLockType;
 import static fish.payara.micro.cdi.extension.cluster.ClusterScopeContext.getAnnotation;
@@ -78,16 +79,16 @@ public class ClusterScopedInterceptor implements Serializable {
     }
 
     @AroundInvoke
-    public Object lockAndRefresh(InvocationContext invocationContext) throws Exception {
-        Class<?> beanClass = invocationContext.getMethod().getDeclaringClass();
-        Clustered clusteredAnnotation = getAnnotation(beanManager, beanClass);
+    public Object refreshAndUnlock(InvocationContext invocationContext) throws Exception {
         try {
-            lock(beanClass, clusteredAnnotation);
             return invocationContext.proceed();
         }
         finally {
+            Class<?> beanClass = invocationContext.getMethod().getDeclaringClass();
+            Clustered clusteredAnnotation = getAnnotation(beanManager, beanClass);
             refresh(beanClass, invocationContext.getTarget());
-            unlock(beanClass, clusteredAnnotation);
+            clusteredLookup.setClusteredSessionKeyIfNotSet(beanClass, clusteredAnnotation);
+            unlock(clusteredAnnotation, clusteredLookup.getDistributedLock());
         }
     }
 
@@ -115,17 +116,21 @@ public class ClusterScopedInterceptor implements Serializable {
         return invocationContext.proceed();
     }
 
-    private void lock(Class<?> beanClass, Clustered clusteredAnnotation) {
+    static boolean lock(Clustered clusteredAnnotation, FencedLock lock) {
         if (clusteredAnnotation.lock() == DistributedLockType.LOCK) {
-            clusteredLookup.setClusteredSessionKeyIfNotSet(beanClass, clusteredAnnotation);
-            clusteredLookup.getDistributedLock().lock();
+            if (!lock.isLockedByCurrentThread()) {
+                lock.lock();
+                return true;
+            }
         }
+        return false;
     }
 
-    private void unlock(Class<?> beanClass, Clustered clusteredAnnotation) {
+    static void unlock(Clustered clusteredAnnotation, FencedLock lock) {
         if (clusteredAnnotation.lock() == DistributedLockType.LOCK) {
-            clusteredLookup.setClusteredSessionKeyIfNotSet(beanClass, clusteredAnnotation);
-            clusteredLookup.getDistributedLock().unlock();
+            if (lock.isLockedByCurrentThread()) {
+                lock.unlock();
+            }
         }
     }
 
