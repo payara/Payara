@@ -106,7 +106,7 @@
         <weld.version>5.0.1.Final</weld.version>
         <tyrus.version>2.1.0.payara-p1</tyrus.version>
         <jsp-impl.version>3.1.0</jsp-impl.version>
-        <asm.version>9.4</asm.version>
+        <asm.version>9.5</asm.version>
         <websocket-api.version>2.1.0</websocket-api.version>
         <jax-rs-api.impl.version>3.1.0</jax-rs-api.impl.version>
 
