@@ -58,6 +58,9 @@ import fish.payara.cluster.Clustered;
 import fish.payara.micro.cdi.extension.cluster.annotations.ClusterScoped;
 import java.util.Optional;
 
+import static fish.payara.micro.cdi.extension.cluster.ClusterScopedInterceptor.lock;
+import static fish.payara.micro.cdi.extension.cluster.ClusterScopedInterceptor.unlock;
+
 /**
  * @Clustered singleton CDI context implementation
  *
@@ -81,14 +84,24 @@ class ClusterScopeContext implements Context {
 
     @Override
     public <TT> TT get(Contextual<TT> contextual, CreationalContext<TT> creationalContext) {
-        TT beanInstance = get(contextual);
-        if (beanInstance == null) {
-            beanInstance = getFromApplicationScoped(contextual, Optional.of(creationalContext));
-            final Bean<TT> bean = (Bean<TT>) contextual;
-            if (clusteredLookup.getClusteredSingletonMap()
-                    .putIfAbsent(getBeanName(bean, getAnnotation(beanManager, bean)), beanInstance) != null) {
-                bean.destroy(beanInstance, creationalContext);
-                beanInstance = get(contextual);
+        final Bean<TT> bean = (Bean<TT>) contextual;
+        Clustered clusteredAnnotation = getAnnotation(beanManager, bean);
+        clusteredLookup.setClusteredSessionKeyIfNotSet(bean.getBeanClass(), clusteredAnnotation);
+        boolean locked = lock(clusteredAnnotation, clusteredLookup.getDistributedLock());
+        TT beanInstance = null;
+        try {
+            beanInstance = get(contextual);
+            if (beanInstance == null) {
+                beanInstance = getFromApplicationScoped(contextual, Optional.of(creationalContext));
+                if (clusteredLookup.getClusteredSingletonMap()
+                        .putIfAbsent(getBeanName(bean, clusteredAnnotation), beanInstance) != null) {
+                    bean.destroy(beanInstance, creationalContext);
+                    beanInstance = get(contextual);
+                }
+            }
+        } finally {
+            if (locked && beanInstance == null) {
+                unlock(clusteredAnnotation, clusteredLookup.getDistributedLock());
             }
         }
         return beanInstance;
@@ -100,10 +113,19 @@ class ClusterScopeContext implements Context {
         final Bean<TT> bean = (Bean<TT>) contextual;
         Clustered clusteredAnnotation = getAnnotation(beanManager, bean);
         String beanName = getBeanName(bean, clusteredAnnotation);
-        TT beanInstance = (TT)clusteredLookup.getClusteredSingletonMap().get(beanName);
-        if (clusteredAnnotation.callPostConstructOnAttach() && beanInstance != null &&
-                getFromApplicationScoped(contextual, Optional.empty()) == null ) {
-            beanManager.getContext(ApplicationScoped.class).get(contextual, beanManager.createCreationalContext(contextual));
+        clusteredLookup.setClusteredSessionKeyIfNotSet(bean.getBeanClass(), clusteredAnnotation);
+        boolean locked = lock(clusteredAnnotation, clusteredLookup.getDistributedLock());
+        TT beanInstance = null;
+        try {
+            beanInstance = (TT) clusteredLookup.getClusteredSingletonMap().get(beanName);
+            if (clusteredAnnotation.callPostConstructOnAttach() && beanInstance != null &&
+                    getFromApplicationScoped(contextual, Optional.empty()) == null) {
+                beanManager.getContext(ApplicationScoped.class).get(contextual, beanManager.createCreationalContext(contextual));
+            }
+        } finally {
+            if (locked && beanInstance == null) {
+                unlock(clusteredAnnotation, clusteredLookup.getDistributedLock());
+            }
         }
         return beanInstance;
     }
