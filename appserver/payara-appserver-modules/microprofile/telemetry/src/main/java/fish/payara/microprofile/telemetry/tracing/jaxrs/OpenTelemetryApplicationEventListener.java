@@ -39,14 +39,12 @@
  */
 package fish.payara.microprofile.telemetry.tracing.jaxrs;
 
-import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.opentracing.OpenTelemetryService;
-import fish.payara.microprofile.telemetry.tracing.jaxrs.client.PayaraTracingServices;
+import fish.payara.microprofile.telemetry.tracing.PayaraTracingServices;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Priority;
 import jakarta.ws.rs.Priorities;
 import jakarta.ws.rs.container.ResourceInfo;
-import jakarta.ws.rs.core.Configuration;
 import jakarta.ws.rs.core.Context;
 import org.glassfish.jersey.server.monitoring.ApplicationEvent;
 import org.glassfish.jersey.server.monitoring.ApplicationEventListener;
@@ -60,14 +58,12 @@ public class OpenTelemetryApplicationEventListener implements ApplicationEventLi
 
     private static final Logger LOG = Logger.getLogger(OpenTelemetryApplicationEventListener.class.getName());
 
-    private RequestTracingService requestTracing;
     private OpenTelemetryService openTelemetryService;
 
     @Context
     private ResourceInfo resourceInfo;
 
-    @Context
-    private Configuration configuration;
+    private OpenTracingHelper openTracingHelper;
 
     /**
      * Initialization of internal services.
@@ -76,8 +72,8 @@ public class OpenTelemetryApplicationEventListener implements ApplicationEventLi
     public void postConstruct() {
         LOG.finest("postConstruct()");
         final PayaraTracingServices payaraTracingServices = new PayaraTracingServices();
-        this.requestTracing = payaraTracingServices.getRequestTracingService();
         this.openTelemetryService = payaraTracingServices.getOpenTelemetryService();
+        this.openTracingHelper = new OpenTracingHelper();
     }
 
 
@@ -94,7 +90,7 @@ public class OpenTelemetryApplicationEventListener implements ApplicationEventLi
             LOG.finest("isRequestTracingInProgress() returned false, nothing to do.");
             return null;
         }
-        return new OpenTelemetryRequestEventListener(this.resourceInfo, this.openTelemetryService);
+        return new OpenTelemetryRequestEventListener(this.resourceInfo, this.openTelemetryService, this.openTracingHelper);
     }
 
 

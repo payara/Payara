@@ -39,7 +39,7 @@
  */
 package fish.payara.microprofile.telemetry.tracing.jaxrs.client;
 
-import fish.payara.microprofile.telemetry.tracing.OpenTracingHelper;
+import fish.payara.microprofile.telemetry.tracing.PayaraTracingServices;
 import org.eclipse.microprofile.rest.client.RestClientBuilder;
 import org.eclipse.microprofile.rest.client.spi.RestClientListener;
 
@@ -49,13 +49,11 @@ public class RestClientTelemetryListener implements RestClientListener {
 
     static final String REST_CLIENT_INVOKED_METHOD = "org.eclipse.microprofile.rest.client.invokedMethod";
 
-    private static final Logger logger = Logger.getLogger(RestClientTelemetryListener.class.getName());
-
     @Override
     public void onNewClient(Class<?> aClass, RestClientBuilder restClientBuilder) {
         restClientBuilder.register(new AsyncContextPropagator.Factory());
         // OpenTracing mandates respecting setting of @Traced annotation on the class
         restClientBuilder.property(JaxrsClientRequestTelemetryFilter.REQUEST_CONTEXT_TRACING_PREDICATE,
-                new TracedMethodFilter(OpenTracingHelper.getConfig(), aClass));
+                new TracedMethodFilter(PayaraTracingServices.getConfig(), aClass));
     }
 }
