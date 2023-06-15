@@ -41,6 +41,8 @@ package fish.payara.micro.cdi.extension.cluster;
 
 import java.lang.annotation.Annotation;
 
+import com.hazelcast.cp.lock.FencedLock;
+import fish.payara.cluster.DistributedLockType;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.context.spi.Context;
 import jakarta.enterprise.context.spi.Contextual;
@@ -51,15 +53,13 @@ import jakarta.enterprise.inject.spi.BeanManager;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.util.DOLUtils;
 
+import jakarta.interceptor.InvocationContext;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.soteria.cdi.CdiUtils;
 
 import fish.payara.cluster.Clustered;
 import fish.payara.micro.cdi.extension.cluster.annotations.ClusterScoped;
 import java.util.Optional;
-
-import static fish.payara.micro.cdi.extension.cluster.ClusterScopedInterceptor.lock;
-import static fish.payara.micro.cdi.extension.cluster.ClusterScopedInterceptor.unlock;
 
 /**
  * @Clustered singleton CDI context implementation
@@ -100,6 +100,10 @@ class ClusterScopeContext implements Context {
                 }
             }
         } finally {
+            /**
+             * If we couldn't find a bean instance we won't have unlocked in {@link ClusterScopedInterceptor#refreshAndUnlock(InvocationContext)},
+             * so unlock here as a fallback
+             */
             if (locked && beanInstance == null) {
                 unlock(clusteredAnnotation, clusteredLookup.getDistributedLock());
             }
@@ -123,6 +127,10 @@ class ClusterScopeContext implements Context {
                 beanManager.getContext(ApplicationScoped.class).get(contextual, beanManager.createCreationalContext(contextual));
             }
         } finally {
+            /**
+             * If we couldn't find a bean instance we won't have unlocked in {@link ClusterScopedInterceptor#refreshAndUnlock(InvocationContext)},
+             * so unlock here as a fallback
+             */
             if (locked && beanInstance == null) {
                 unlock(clusteredAnnotation, clusteredLookup.getDistributedLock());
             }
@@ -176,5 +184,23 @@ class ClusterScopeContext implements Context {
             }
         }
         throw new IllegalArgumentException("All elements were null.");
+    }
+
+    private static boolean lock(Clustered clusteredAnnotation, FencedLock lock) {
+        if (clusteredAnnotation.lock() == DistributedLockType.LOCK) {
+            if (!lock.isLockedByCurrentThread()) {
+                lock.lock();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    protected static void unlock(Clustered clusteredAnnotation, FencedLock lock) {
+        if (clusteredAnnotation.lock() == DistributedLockType.LOCK) {
+            if (lock.isLockedByCurrentThread()) {
+                lock.unlock();
+            }
+        }
     }
 }
