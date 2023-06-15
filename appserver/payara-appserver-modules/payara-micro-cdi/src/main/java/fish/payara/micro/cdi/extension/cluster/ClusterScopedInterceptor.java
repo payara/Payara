@@ -41,8 +41,6 @@ package fish.payara.micro.cdi.extension.cluster;
 
 import com.hazelcast.cp.IAtomicLong;
 import fish.payara.cluster.Clustered;
-import static fish.payara.micro.cdi.extension.cluster.ClusterScopeContext.getAnnotation;
-import static fish.payara.micro.cdi.extension.cluster.ClusterScopeContext.getBeanName;
 import fish.payara.micro.cdi.extension.cluster.annotations.ClusterScopedIntercepted;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -83,7 +81,7 @@ public class ClusterScopedInterceptor implements Serializable {
         }
         finally {
             Class<?> beanClass = invocationContext.getMethod().getDeclaringClass();
-            Clustered clusteredAnnotation = getAnnotation(beanManager, beanClass);
+            Clustered clusteredAnnotation = ClusterScopeContext.getAnnotation(beanManager, beanClass);
             refresh(beanClass, invocationContext.getTarget());
             clusteredLookup.setClusteredSessionKeyIfNotSet(beanClass, clusteredAnnotation);
             ClusterScopeContext.unlock(clusteredAnnotation, clusteredLookup.getDistributedLock());
@@ -93,7 +91,7 @@ public class ClusterScopedInterceptor implements Serializable {
     @PostConstruct
     Object postConstruct(InvocationContext invocationContext) throws Exception {
         Class<?> beanClass = invocationContext.getTarget().getClass().getSuperclass();
-        Clustered clusteredAnnotation = getAnnotation(beanManager, beanClass);
+        Clustered clusteredAnnotation = ClusterScopeContext.getAnnotation(beanManager, beanClass);
         clusteredLookup.setClusteredSessionKeyIfNotSet(beanClass, clusteredAnnotation);
         clusteredLookup.getClusteredUsageCount().incrementAndGet();
         return invocationContext.proceed();
@@ -102,7 +100,7 @@ public class ClusterScopedInterceptor implements Serializable {
     @PreDestroy
     Object preDestroy(InvocationContext invocationContext) throws Exception {
         Class<?> beanClass = invocationContext.getTarget().getClass().getSuperclass();
-        Clustered clusteredAnnotation = getAnnotation(beanManager, beanClass);
+        Clustered clusteredAnnotation = ClusterScopeContext.getAnnotation(beanManager, beanClass);
         clusteredLookup.setClusteredSessionKeyIfNotSet(beanClass, clusteredAnnotation);
         IAtomicLong count = clusteredLookup.getClusteredUsageCount();
         if (count.decrementAndGet() <= 0) {
@@ -120,7 +118,7 @@ public class ClusterScopedInterceptor implements Serializable {
             throw new IllegalArgumentException("Multiple beans found for " + beanClass);
         }
         Bean<?> bean = managedBeans.iterator().next();
-        String beanName = getBeanName(bean, getAnnotation(beanManager, bean));
+        String beanName = ClusterScopeContext.getBeanName(bean, ClusterScopeContext.getAnnotation(beanManager, bean));
         clusteredLookup.getClusteredSingletonMap().set(beanName, instance);
     }
 
