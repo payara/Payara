@@ -1,14 +1,16 @@
-name: Auto Assign Label
+name: Agent Assignment
 on:
   issues:
     types:
       - opened
 jobs:
   auto-assign-label:
+    #Needs to be tested (maybe changed to a specific release)
     runs-on: ubuntu-latest
     steps:
       - name: Get Team Members
         id: team-members
+        #Temporary solution - team member configuration should be dynamic
         run: echo "::set-output name=members::felixif,shub8968,Elifzeynepedman,kalinchan"
       - name: Get Next Team Member
         id: next-member
@@ -28,7 +30,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
-              labels: ['Open']
+              labels: ['Status: Open']
             })
             github.issues.addAssignees({
               owner: context.repo.owner,

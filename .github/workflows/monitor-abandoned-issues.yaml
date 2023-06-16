@@ -1,9 +1,10 @@
-name: Abandoned Labeler
+name: Monitor Abandoned Issues
 on:
   schedule:
-    - cron: "0 */3 * * *"
+    - cron: "0 */24 * * *"
 jobs:
   abandoned-labeler:
+    #Needs to be tested (maybe changed to a specific release)
     runs-on: ubuntu-latest
     steps:
       - name: Check for abandoned issues
@@ -11,12 +12,12 @@ jobs:
         with:
           script: |
             const { owner, repo } = context.repo;
-            const pendingLabel = "Pending";
-            const abandonedLabel = "Abandoned";
-            const timeThreshold = 5 * 60 * 60 * 1000 // 5 Hrs
-            //5 * 60 * 1000 // 5 Minute
-            // 5 * 24 * 60 * 60 * 1000; // 5 days
-
+            const pendingLabel = "Status: Pending";
+            const abandonedLabel = "Status: Abandoned";
+            
+            const timeThreshold = 5 * 60 * 60 * 24 * 1000 // 5 days
+            
+            // Query all GH issues that are pending and not closed
             const issuesResponse = await github.rest.issues.listForRepo({
               owner,
               repo,
@@ -27,6 +28,9 @@ jobs:
             for (const issue of issuesResponse.data) {
               const updatedAt = new Date(issue.updated_at).getTime();
               const currentTime = new Date().getTime();
+              const updateMessage = `Greetings, 
+                It's been more than 5 days since we requested more information or an update from you on the details of this issue. Could you provide an update soon, please?
+                We're afraid that if we do not receive an update, we'll have to close this issue due to inactivity.`;
 
               if (currentTime - updatedAt > timeThreshold) {
                 await github.rest.issues.addLabels({
@@ -47,7 +51,7 @@ jobs:
                   owner,
                   repo,
                   issue_number: issue.number,
-                  body: "It's been more than 5 Hours since your last update. Could you please provide an update?",
+                  body: updateMessage,
                 });
               }
             }
