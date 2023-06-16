@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2022] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,9 +41,6 @@ package fish.payara.micro.cdi.extension.cluster;
 
 import com.hazelcast.cp.IAtomicLong;
 import fish.payara.cluster.Clustered;
-import fish.payara.cluster.DistributedLockType;
-import static fish.payara.micro.cdi.extension.cluster.ClusterScopeContext.getAnnotation;
-import static fish.payara.micro.cdi.extension.cluster.ClusterScopeContext.getBeanName;
 import fish.payara.micro.cdi.extension.cluster.annotations.ClusterScopedIntercepted;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -78,23 +75,23 @@ public class ClusterScopedInterceptor implements Serializable {
     }
 
     @AroundInvoke
-    public Object lockAndRefresh(InvocationContext invocationContext) throws Exception {
-        Class<?> beanClass = invocationContext.getMethod().getDeclaringClass();
-        Clustered clusteredAnnotation = getAnnotation(beanManager, beanClass);
+    public Object refreshAndUnlock(InvocationContext invocationContext) throws Exception {
         try {
-            lock(beanClass, clusteredAnnotation);
             return invocationContext.proceed();
         }
         finally {
+            Class<?> beanClass = invocationContext.getMethod().getDeclaringClass();
+            Clustered clusteredAnnotation = ClusterScopeContext.getAnnotation(beanManager, beanClass);
             refresh(beanClass, invocationContext.getTarget());
-            unlock(beanClass, clusteredAnnotation);
+            clusteredLookup.setClusteredSessionKeyIfNotSet(beanClass, clusteredAnnotation);
+            ClusterScopeContext.unlock(clusteredAnnotation, clusteredLookup.getDistributedLock());
         }
     }
 
     @PostConstruct
     Object postConstruct(InvocationContext invocationContext) throws Exception {
         Class<?> beanClass = invocationContext.getTarget().getClass().getSuperclass();
-        Clustered clusteredAnnotation = getAnnotation(beanManager, beanClass);
+        Clustered clusteredAnnotation = ClusterScopeContext.getAnnotation(beanManager, beanClass);
         clusteredLookup.setClusteredSessionKeyIfNotSet(beanClass, clusteredAnnotation);
         clusteredLookup.getClusteredUsageCount().incrementAndGet();
         return invocationContext.proceed();
@@ -103,7 +100,7 @@ public class ClusterScopedInterceptor implements Serializable {
     @PreDestroy
     Object preDestroy(InvocationContext invocationContext) throws Exception {
         Class<?> beanClass = invocationContext.getTarget().getClass().getSuperclass();
-        Clustered clusteredAnnotation = getAnnotation(beanManager, beanClass);
+        Clustered clusteredAnnotation = ClusterScopeContext.getAnnotation(beanManager, beanClass);
         clusteredLookup.setClusteredSessionKeyIfNotSet(beanClass, clusteredAnnotation);
         IAtomicLong count = clusteredLookup.getClusteredUsageCount();
         if (count.decrementAndGet() <= 0) {
@@ -115,27 +112,13 @@ public class ClusterScopedInterceptor implements Serializable {
         return invocationContext.proceed();
     }
 
-    private void lock(Class<?> beanClass, Clustered clusteredAnnotation) {
-        if (clusteredAnnotation.lock() == DistributedLockType.LOCK) {
-            clusteredLookup.setClusteredSessionKeyIfNotSet(beanClass, clusteredAnnotation);
-            clusteredLookup.getDistributedLock().lock();
-        }
-    }
-
-    private void unlock(Class<?> beanClass, Clustered clusteredAnnotation) {
-        if (clusteredAnnotation.lock() == DistributedLockType.LOCK) {
-            clusteredLookup.setClusteredSessionKeyIfNotSet(beanClass, clusteredAnnotation);
-            clusteredLookup.getDistributedLock().unlock();
-        }
-    }
-
     private void refresh(Class<?> beanClass, Object instance) {
         Set<Bean<?>> managedBeans = beanManager.getBeans(beanClass);
         if (managedBeans.size() > 1) {
             throw new IllegalArgumentException("Multiple beans found for " + beanClass);
         }
         Bean<?> bean = managedBeans.iterator().next();
-        String beanName = getBeanName(bean, getAnnotation(beanManager, bean));
+        String beanName = ClusterScopeContext.getBeanName(bean, ClusterScopeContext.getAnnotation(beanManager, bean));
         clusteredLookup.getClusteredSingletonMap().set(beanName, instance);
     }
 
