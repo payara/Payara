@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2021 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2023 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -115,7 +115,7 @@ public class MemberAddressPicker implements MemberAddressProvider {
     private InetSocketAddress initBindAddress() {
         InetSocketAddress address = new InetSocketAddress(0);
         if (env.isDas() && !env.isMicro() && !config.getDASBindAddress().isEmpty()) {
-            int port = new Integer(config.getDasPort());
+            int port = Integer.valueOf(config.getDasPort());
             address = initAddress(config.getDASBindAddress(), port);
             logger.log(Level.FINE, "Bind address is specified in the configuration so we will use that {0}", address);
         } else if (config.getDiscoveryMode().startsWith("multicast")) {
@@ -132,7 +132,7 @@ public class MemberAddressPicker implements MemberAddressProvider {
         InetSocketAddress address;
         int port = 0;
         if (env.isDas() && !env.isMicro()) {
-            port = new Integer(config.getDasPort());
+            port = Integer.valueOf(config.getDasPort());
             // try setting public address from global Payara config
             address = initAddress(config.getDASPublicAddress(), port);
         } else {

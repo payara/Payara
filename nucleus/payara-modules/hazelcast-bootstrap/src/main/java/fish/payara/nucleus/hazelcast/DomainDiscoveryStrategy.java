@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,20 +40,30 @@
 package fish.payara.nucleus.hazelcast;
 
 import com.hazelcast.cluster.Address;
+import com.hazelcast.cluster.Member;
+import com.hazelcast.internal.partition.membergroup.DefaultMemberGroup;
+import com.hazelcast.logging.ILogger;
+import com.hazelcast.spi.discovery.AbstractDiscoveryStrategy;
 import com.hazelcast.spi.discovery.DiscoveryNode;
 import com.hazelcast.spi.discovery.SimpleDiscoveryNode;
-import com.hazelcast.spi.discovery.integration.DiscoveryService;
-import com.hazelcast.spi.discovery.integration.DiscoveryServiceSettings;
+import com.hazelcast.spi.partitiongroup.MemberGroup;
+import com.hazelcast.spi.partitiongroup.PartitionGroupStrategy;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Node;
 import com.sun.enterprise.util.io.InstanceDirs;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.grizzly.utils.Holder;
+import org.glassfish.internal.api.Globals;
+import static fish.payara.nucleus.hazelcast.HazelcastCore.INSTANCE_GROUP_ATTRIBUTE;
 import static fish.payara.nucleus.hazelcast.MemberAddressPicker.initAddress;
+import static fish.payara.nucleus.hazelcast.PayaraHazelcastDiscoveryFactory.HOST_AWARE_PARTITIONING;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
-import java.util.Collections;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -61,37 +71,39 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.grizzly.utils.Holder;
-import org.glassfish.internal.api.Globals;
-import org.glassfish.internal.api.ServerContext;
 
 /**
- * Provides a Discovery SPI implementation for Hazelcast that uses knowledge
- * of the domain topology to build out the cluster and discover members
- * @since 5.0
- * @author steve
+ * Delegate to the Domain Discovery Service for node discovery.
+ * <p>
+ * Separate different domain instance groups into partition groups,
+ * and optionally implements host-aware partitioning
+ * since it's not possible to combine Hazelcast's (very) simple implementation
+ * of host-aware partitioning and custom API-based discovery strategy
+ *
+ * @author lprimak
  */
-public class DomainDiscoveryService implements DiscoveryService {
-    private static Logger logger = Logger.getLogger(DomainDiscoveryService.class.getName());
+public final class DomainDiscoveryStrategy extends AbstractDiscoveryStrategy {
+    private final boolean hostAwarePartitioning;
     private final Holder.LazyHolder<InetAddress> chosenAddress =
             Holder.LazyHolder.lazyHolder(MemberAddressPicker::findMyAddressOrLocalHost);
 
-    public DomainDiscoveryService(DiscoveryServiceSettings settings) {
-
+    @SuppressWarnings("rawtypes")
+    public DomainDiscoveryStrategy(ILogger logger, Map<String, Comparable> properties) {
+        super(logger, properties);
+        hostAwarePartitioning = getOrDefault("fish.payara.cluster", HOST_AWARE_PARTITIONING, Boolean.FALSE);
     }
 
-    @Override
-    public void start() {
-        //
-    }
-
+    /**
+     * Provides a Discovery SPI implementation for Hazelcast that uses knowledge
+     * of the domain topology to build out the cluster and discover members
+     * @since 5.0
+     * @author steve
+     */
     @Override
     public Iterable<DiscoveryNode> discoverNodes() {
-        logger.fine("Starting Domain Node Discovery");
+        getLogger().fine("Starting Domain Node Discovery");
         List<DiscoveryNode> nodes = new LinkedList<>();
         Domain domain = Globals.getDefaultHabitat().getService(Domain.class);
-        ServerContext ctxt = Globals.getDefaultHabitat().getService(ServerContext.class);
         ServerEnvironment env = Globals.getDefaultHabitat().getService(ServerEnvironment.class);
         // add the DAS
         HazelcastRuntimeConfiguration hzConfig = domain.getExtensionByType(HazelcastRuntimeConfiguration.class);
@@ -99,7 +111,7 @@ public class DomainDiscoveryService implements DiscoveryService {
         if (!env.isDas()) {
             try {
                 // first get hold of the DAS host
-                logger.fine("This is a Standalone Instance");
+                getLogger().fine("This is a Standalone Instance");
                 String dasHost = hzConfig.getDASPublicAddress();
                 if (dasHost == null || dasHost.isEmpty()) {
                     dasHost = hzConfig.getDASBindAddress();
@@ -108,46 +120,46 @@ public class DomainDiscoveryService implements DiscoveryService {
 
                 if (dasHost.isEmpty()) {
                     // ok drag it off the properties file
-                    logger.fine("Neither DAS Public Address or Bind Address is set in the configuration");
+                    getLogger().fine("Neither DAS Public Address or Bind Address is set in the configuration");
                     InstanceDirs instance = new InstanceDirs(env.getInstanceRoot());
                     Properties dasProps = new Properties();
                     dasProps.load(new FileInputStream(instance.getDasPropertiesFile()));
-                    logger.fine("Loaded the das.properties file from the agent directory");
+                    getLogger().fine("Loaded the das.properties file from the agent directory");
                     dasHost = dasProps.getProperty("agent.das.host");
                     // then do an IP lookup
                     dasHost = InetAddress.getByName(dasHost).getHostAddress();
-                    logger.log(Level.FINE, "Loaded the das.properties file from the agent directory and found DAS IP {0}", dasHost);
+                    getLogger().log(Level.FINE, String.format("Loaded the das.properties file from the agent directory and found DAS IP %s", dasHost));
                 }
 
                 if (dasHost.isEmpty() || dasHost.equals("127.0.0.1") || dasHost.equals("localhost")) {
-                    logger.fine("Looks like the DAS IP is loopback or empty let's find the actual IP of this machine as that is where the DAS is");
+                    getLogger().fine("Looks like the DAS IP is loopback or empty let's find the actual IP of this machine as that is where the DAS is");
                     nodes.add(new SimpleDiscoveryNode(new Address(chosenAddress.get(), Integer.parseInt(hzConfig.getDasPort()))));
                 } else {
-                    logger.log(Level.FINE, "DAS should be listening on {0}", dasHost);
+                    getLogger().log(Level.FINE, String.format("DAS should be listening on %s", dasHost));
                     nodes.add(new SimpleDiscoveryNode(new Address(dasHost, Integer.valueOf(hzConfig.getDasPort()))));
                 }
 
                 // also add all nodes we are aware of in the domain to see if we can get in using start port
-                logger.fine("Also adding all known domain nodes and start ports in case the DAS is down");
+                getLogger().fine("Also adding all known domain nodes and start ports in case the DAS is down");
                 for (Node node : domain.getNodes().getNode()) {
                     InetAddress address = InetAddress.getByName(node.getNodeHost());
                     if (!address.isLoopbackAddress()) {
-                        logger.log(Level.FINE, "Adding Node {0}", address);
+                        getLogger().log(Level.FINE, String.format("Adding Node %s", address));
                         nodes.add(new SimpleDiscoveryNode(new Address(address.getHostAddress(), Integer.valueOf(hzConfig.getStartPort()))));
                     }
                 }
             } catch (IOException ex) {
-                Logger.getLogger(DomainDiscoveryService.class.getName()).log(Level.SEVERE, null, ex);
+                getLogger().log(Level.SEVERE, "Exception", ex);
             }
 
         } else if (env.isMicro()) {
             try {
-                logger.log(Level.FINE, "We are Payara Micro therefore adding DAS {0}", hzConfig.getDASPublicAddress());
+                getLogger().log(Level.FINE, String.format("We are Payara Micro therefore adding DAS %s", hzConfig.getDASPublicAddress()));
                 // check if user has added locahost as unlikely to work
                 String dasHost = Optional.ofNullable(initAddress(hzConfig.getDASPublicAddress(), 0))
                         .map(InetSocketAddress::getHostString).orElse("");
                 if (hzConfig.getDasPort().equals("4848")) {
-                    logger.log(Level.WARNING,"You have specified 4848 as the datagrid domain port however this is the default DAS admin port, the default domain datagrid port is 4900");
+                    getLogger().log(Level.WARNING,"You have specified 4848 as the datagrid domain port however this is the default DAS admin port, the default domain datagrid port is 4900");
                 }
                 if (dasHost.isEmpty() || dasHost.equals("127.0.0.1") || dasHost.equals("localhost")) {
                     nodes.add(new SimpleDiscoveryNode(new Address(chosenAddress.get(), Integer.parseInt(hzConfig.getDasPort()))));
@@ -155,11 +167,11 @@ public class DomainDiscoveryService implements DiscoveryService {
                     nodes.add(new SimpleDiscoveryNode(new Address(InetAddress.getByName(dasHost), Integer.valueOf(hzConfig.getDasPort()))));
                 }
             } catch (UnknownHostException | NumberFormatException ex) {
-                Logger.getLogger(DomainDiscoveryService.class.getName()).log(Level.SEVERE, null, ex);
+                getLogger().log(Level.SEVERE, "Exception", ex);
             }
         } else {
             // ok this is the DAS
-            logger.fine("We are the DAS therefore we will add all known nodes with start port as IP addresses to connect to");
+            getLogger().fine("We are the DAS therefore we will add all known nodes with start port as IP addresses to connect to");
 
             // Embedded runtimese don't have nodes
             if (domain.getNodes() == null) {
@@ -169,7 +181,7 @@ public class DomainDiscoveryService implements DiscoveryService {
                     try {
                         InetAddress address = InetAddress.getByName(node.getNodeHost());
                         if (!address.isLoopbackAddress()) {
-                            logger.log(Level.FINE, "Adding Node {0}", address);
+                            getLogger().log(Level.FINE, String.format("Adding Node %s", address));
                             nodes.add(new SimpleDiscoveryNode(new Address(address.getHostAddress(),
                                     Integer.valueOf(hzConfig.getStartPort()))));
                         } else {
@@ -177,7 +189,7 @@ public class DomainDiscoveryService implements DiscoveryService {
                             nodes.add(new SimpleDiscoveryNode(new Address(chosenAddress.get(), Integer.parseInt(hzConfig.getStartPort()))));
                         }
                     } catch (IOException ex) {
-                        Logger.getLogger(DomainDiscoveryService.class.getName()).log(Level.SEVERE, null, ex);
+                        getLogger().log(Level.SEVERE, "Exception", ex);
                     }
                 }
             }
@@ -187,12 +199,30 @@ public class DomainDiscoveryService implements DiscoveryService {
     }
 
     @Override
-    public void destroy() {
-        //
+    public PartitionGroupStrategy getPartitionGroupStrategy(Collection<? extends Member> allMembers) {
+        getLogger().finest("Getting Partition Strategy");
+        Map<String, MemberGroup> memberGroups = new HashMap<>();
+        collectMembers(allMembers, memberGroups);
+        return memberGroups::values;
     }
 
-    @Override
-    public Map<String, String> discoverLocalMetadata() {
-        return Collections.emptyMap();
+    private void collectMembers(Collection<? extends Member> members, Map<String, MemberGroup> memberGroups) {
+        for (Member member : members) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(member.getAttribute(INSTANCE_GROUP_ATTRIBUTE));
+            if (hostAwarePartitioning) {
+                sb.append("|");
+                sb.append(member.getAddress().getHost());
+            }
+            memberGroups.compute(sb.toString(), (key, val) -> {
+                if (val == null) {
+                    val = new DefaultMemberGroup();
+                }
+                val.addMember(member);
+                getLogger().fine(String.format("added %s - %s to %s", member.getAddress(),
+                        member.getUuid(), key));
+                return val;
+            });
+        }
     }
 }
