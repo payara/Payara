@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2015-2023 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,46 +37,45 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.util;
+package fish.payara.nucleus.hazelcast;
 
-import com.sun.enterprise.admin.util.JarFileUtils;
-import org.glassfish.api.StartupRunLevel;
-import org.glassfish.api.event.EventListener;
-import org.glassfish.api.event.EventTypes;
-import org.glassfish.api.event.Events;
-import org.glassfish.hk2.runlevel.RunLevel;
-import org.jvnet.hk2.annotations.Service;
-
-import jakarta.annotation.PostConstruct;
-import jakarta.inject.Inject;
-import java.util.logging.Logger;
+import com.hazelcast.config.properties.PropertyDefinition;
+import com.hazelcast.config.properties.PropertyTypeConverter;
+import com.hazelcast.config.properties.SimplePropertyDefinition;
+import com.hazelcast.logging.ILogger;
+import com.hazelcast.spi.discovery.DiscoveryNode;
+import com.hazelcast.spi.discovery.DiscoveryStrategy;
+import com.hazelcast.spi.discovery.DiscoveryStrategyFactory;
+import java.util.Collection;
+import static java.util.Collections.singletonList;
+import java.util.Map;
 
 /**
- * Clean up to stop a stale file handles remaining open
+ * Factory for {@link DomainDiscoveryStrategy} instantiation and configuration
  *
- * @author steve
- * @since 4.1.154
+ * @author lprimak
  */
-@Service(name = "payara-cleanup")
-@RunLevel(StartupRunLevel.VAL)
-public class CleanupPostBoot implements EventListener {
+public class PayaraHazelcastDiscoveryFactory implements DiscoveryStrategyFactory {
+    static final PropertyDefinition HOST_AWARE_PARTITIONING =
+            new SimplePropertyDefinition("host-aware-partitioning", true,
+                    PropertyTypeConverter.BOOLEAN);
+    private static final Collection<PropertyDefinition> PROPERTIES =
+            singletonList(HOST_AWARE_PARTITIONING);
 
-    @Inject
-    Events events;
-
-    private static Logger logger = Logger.getLogger(CleanupPostBoot.class.getName());
-
-    @PostConstruct
-    public void postConstruct() {
-        events.register(this);
+    @Override
+    public Class<? extends DiscoveryStrategy> getDiscoveryStrategyType() {
+        return DomainDiscoveryStrategy.class;
     }
 
     @Override
-    public void event(Event<?> event) {
-        if (event.is(EventTypes.SERVER_READY)) {
-            logger.config("Cleaning JarFileFactory Cache to prevent jar FD leaks");
-            JarFileUtils.closeCachedJarFiles();
-        }
+    @SuppressWarnings("rawtypes")
+    public DiscoveryStrategy newDiscoveryStrategy(DiscoveryNode discoveryNode, ILogger logger,
+                                                  Map<String, Comparable> properties) {
+        return new DomainDiscoveryStrategy(logger, properties);
     }
 
+    @Override
+    public Collection<PropertyDefinition> getConfigurationProperties() {
+        return PROPERTIES;
+    }
 }
