@@ -546,7 +546,7 @@
             <dependency>
                 <groupId>io.opentelemetry</groupId>
                 <artifactId>opentelemetry-opentracing-shim</artifactId>
-                <version>${opentelemetry.alpha.version}</version>
+                <version>${opentelemetry.version}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
