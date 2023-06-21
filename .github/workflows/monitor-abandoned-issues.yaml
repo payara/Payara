@@ -1,21 +1,27 @@
 name: Monitor Abandoned Issues
+
 on:
   schedule:
     - cron: "0 */24 * * *"
+
 jobs:
   abandoned-labeler:
-    #Needs to be tested (maybe changed to a specific release)
     runs-on: ubuntu-latest
+    permissions:
+      issues: write
     steps:
       - name: Check for abandoned issues
         uses: actions/github-script@v6
+        env:
+          daysInterval: ${{ vars.MONITORING_INTERVAL_DAYS }}
         with:
           script: |
             const { owner, repo } = context.repo;
             const pendingLabel = "Status: Pending";
             const abandonedLabel = "Status: Abandoned";
             
-            const timeThreshold = 5 * 60 * 60 * 24 * 1000 // 5 days
+            const parsedDays = parseFloat("${{ env.daysInterval }}");
+            const timeThreshold = parsedDays * 24 * 60 * 60 * 1000;
             
             // Query all GH issues that are pending and not closed
             const issuesResponse = await github.rest.issues.listForRepo({
@@ -29,7 +35,7 @@ jobs:
               const updatedAt = new Date(issue.updated_at).getTime();
               const currentTime = new Date().getTime();
               const updateMessage = `Greetings, 
-                It's been more than 5 days since we requested more information or an update from you on the details of this issue. Could you provide an update soon, please?
+                It's been more than ${parsedDays} days since we requested more information or an update from you on the details of this issue. Could you provide an update soon, please?
                 We're afraid that if we do not receive an update, we'll have to close this issue due to inactivity.`;
 
               if (currentTime - updatedAt > timeThreshold) {
