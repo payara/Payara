@@ -427,30 +427,6 @@
                         </supportedProjectTypes>
                     </configuration>
                 </plugin>
-                <!-- Flatten plugin for use in public artifacts. -->
-                <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>flatten-maven-plugin</artifactId>
-                    <version>1.1.0</version>
-                    <configuration>
-                        <flattenMode>ossrh</flattenMode>
-                        <pomElements>
-                            <developers>resolve</developers>
-                            <build>remove</build>
-                        </pomElements>
-                        <flattenedPomFilename>target/flattened-pom.xml</flattenedPomFilename>
-                    </configuration>
-                    <executions>
-                        <!-- enable flattening -->
-                        <execution>
-                            <id>flatten</id>
-                            <phase>process-resources</phase>
-                            <goals>
-                                <goal>flatten</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>xml-maven-plugin</artifactId>

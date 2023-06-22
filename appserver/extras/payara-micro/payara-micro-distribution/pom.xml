@@ -51,6 +51,9 @@
     <artifactId>payara-micro</artifactId>
     <name>Payara Micro Distribution</name>
 
+    <!-- Override to stop flatten plugin resolving it to an incorrect URL using parent artifact IDs -->
+    <url>https://github.com/payara/Payara/</url>
+
     <properties>
         <product.name>Payara Micro</product.name>
         <deploy.skip>false</deploy.skip>

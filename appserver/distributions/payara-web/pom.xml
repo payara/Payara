@@ -54,6 +54,9 @@
     <packaging>glassfish-distribution</packaging>
     <description>This pom describes how to assemble the Payara Web Distribution</description>
 
+    <!-- Override to stop flatten plugin resolving it to an incorrect URL using parent artifact IDs -->
+    <url>https://github.com/payara/Payara/</url>
+
     <build>
         <testSourceDirectory>src/test/java</testSourceDirectory>
         <testOutputDirectory>target/test-classes/WEB-INF/classes</testOutputDirectory>
