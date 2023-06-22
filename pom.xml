@@ -71,11 +71,6 @@
         <tag>payara-server-6.2023.7-SNAPSHOT</tag>
     </scm>
 
-    <issueManagement>
-        <system>Github</system>
-        <url>https://github.com/payara/Payara/issues</url>
-    </issueManagement>
-
     <developers>
         <developer>
             <name>Payara Team</name>
