@@ -177,7 +177,6 @@
         <module>core</module>
         <module>admin</module>
         <module>flashlight</module>
-        <module>grizzly</module>
         <module>deployment</module>
         <module>payara-modules</module>
         <module>packager</module>
