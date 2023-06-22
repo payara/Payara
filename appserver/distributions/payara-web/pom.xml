@@ -56,6 +56,11 @@
 
     <!-- Override to stop flatten plugin resolving it to an incorrect URL using parent artifact IDs -->
     <url>https://github.com/payara/Payara/</url>
+    <scm>
+        <connection>scm:git:git@github.com:payara/payara.git</connection>
+        <url>scm:git:git@github.com:payara/payara.git</url>
+        <developerConnection>scm:git:git@github.com:payara/payara.git</developerConnection>
+    </scm>
 
     <build>
         <testSourceDirectory>src/test/java</testSourceDirectory>
