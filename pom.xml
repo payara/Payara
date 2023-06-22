@@ -71,15 +71,6 @@
         <tag>payara-server-6.2023.7-SNAPSHOT</tag>
     </scm>
 
-    <developers>
-        <developer>
-            <name>Payara Team</name>
-            <email>info@payara.fish</email>
-            <organization>Payara Foundation</organization>
-            <organizationUrl>http://www.payara.fish</organizationUrl>
-        </developer>
-    </developers>
-
     <licenses>
         <license>
             <name>CDDL + GPLv2 with classpath exception</name>
