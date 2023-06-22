@@ -71,15 +71,6 @@
         <tag>payara-server-6.2023.7-SNAPSHOT</tag>
     </scm>
 
-    <licenses>
-        <license>
-            <name>CDDL + GPLv2 with classpath exception</name>
-            <url>https://raw.githubusercontent.com/payara/Payara/master/LICENSE.txt</url>
-            <distribution>repo</distribution>
-            <comments>A business-friendly OSS license</comments>
-        </license>
-    </licenses>
-
     <repositories>
         <repository>
             <id>payara-nexus-artifacts</id>
