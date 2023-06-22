@@ -56,16 +56,6 @@
     <name>Payara Nucleus Parent Project</name>
 
     <repositories>
-        <!-- Try Maven central first, not last, which happens when omitted here -->
-        <repository>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-            <id>central</id>
-            <name>Central Repository</name>
-            <url>https://repo.maven.apache.org/maven2</url>
-        </repository>
-
         <repository>
             <id>eclipse.microprofile</id>
             <name>Eclipse MicroProfile Repository</name>

@@ -68,7 +68,21 @@
         <tag>payara-server-6.2023.7-SNAPSHOT</tag>
     </scm>
 
+    <!-- Some of these are duplicated from core-bom because it isn't deployed to Maven Central so we need to tell
+         Maven where to download it from -->
     <repositories>
+        <!-- Try Maven central first, not last, which happens when omitted here -->
+        <repository>
+            <id>central</id>
+            <name>Central Repository</name>
+            <url>https://repo.maven.apache.org/maven2</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
         <repository>
             <id>payara-nexus-artifacts</id>
             <url>https://nexus.payara.fish/repository/payara-artifacts</url>
@@ -81,7 +95,21 @@
         </repository>
     </repositories>
 
+    <!-- Some of these are duplicated from core-bom because it isn't deployed to Maven Central so we need to tell
+         Maven where to download it from -->
     <pluginRepositories>
+        <!-- Try Maven central first, not last, which happens when omitted here -->
+        <pluginRepository>
+            <id>central</id>
+            <name>Central Repository</name>
+            <url>https://repo.maven.apache.org/maven2</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </pluginRepository>
         <pluginRepository>
             <id>payara-nexus-artifacts</id>
             <url>https://nexus.payara.fish/repository/payara-artifacts</url>

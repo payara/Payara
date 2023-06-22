@@ -216,6 +216,19 @@
     </licenses>
 
     <repositories>
+        <!-- Try Maven central first, not last, which happens when omitted here -->
+        <repository>
+            <id>central</id>
+            <name>Central Repository</name>
+            <url>https://repo.maven.apache.org/maven2</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+
         <repository>
             <id>payara-nexus-artifacts</id>
             <url>https://nexus.payara.fish/repository/payara-artifacts</url>
@@ -230,6 +243,19 @@
     </repositories>
 
     <pluginRepositories>
+        <!-- Try Maven central first, not last, which happens when omitted here -->
+        <pluginRepository>
+            <id>central</id>
+            <name>Central Repository</name>
+            <url>https://repo.maven.apache.org/maven2</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </pluginRepository>
+
         <pluginRepository>
             <id>payara-nexus-artifacts</id>
             <url>https://nexus.payara.fish/repository/payara-artifacts</url>
