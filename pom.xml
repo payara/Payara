@@ -56,7 +56,6 @@
     <packaging>pom</packaging>
 
     <name>Payara Project</name>
-    <url>https://github.com/payara/Payara</url>
 
     <modules>
         <module>core</module>
