@@ -41,16 +41,20 @@
 #
 # files in the config directory to synchronize to server instances on startup
 #
-# Portions Copyright [2016-2020] [Payara Foundation]
+# Portions Copyright [2016-2023] [Payara Foundation]
 domain.xml
 admin-keyfile
 cacerts.p12
+# for backward compatibility with Payara 5
+cacerts.jks
 client-jnlp-config.properties
 default-web.xml
 domain-passwords
 glassfish-acc.xml
 keyfile
 keystore.p12
+# for backward compatibility with Payara 5
+keystore.jks
 login.conf
 server.policy
 sun-acc.xml
