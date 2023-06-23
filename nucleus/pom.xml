@@ -99,7 +99,7 @@
         <trilead-ssh2.version>build-217-jenkins-16</trilead-ssh2.version>
 
         <!-- Primitive Function Library (PFL); a library of simple utilities used by Glassfish -->
-        <pfl.version>4.1.2</pfl.version>
+        <pfl.version>4.1.2.payara-p1</pfl.version>
         <!-- GlassFish MBean Annotation Library -->
         <gmbal.version>4.0.3</gmbal.version>
         <antlr.version>2.7.7</antlr.version>
