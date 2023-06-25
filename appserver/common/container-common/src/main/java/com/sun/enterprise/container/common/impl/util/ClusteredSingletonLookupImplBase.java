@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -160,6 +160,13 @@ public abstract class ClusteredSingletonLookupImplBase implements ClusteredSingl
     }
 
     private String makeSessionHzKey() {
-        return getKeyPrefix() + componentId + "/" + getClusteredSessionKey();
+        String sessionKey = getClusteredSessionKey();
+        if (componentId.startsWith(sessionKey)) {
+            // shorten session key if componentId is similar
+            // workaround for https://github.com/hazelcast/hazelcast/issues/17901
+            return getKeyPrefix() + sessionKey;
+        } else {
+            return getKeyPrefix() + componentId + "/" + sessionKey;
+        }
     }
 }
