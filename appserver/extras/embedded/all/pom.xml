@@ -443,25 +443,17 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
+        <!-- Microprofile -->
+        <dependency>
+            <groupId>fish.payara.server.internal.packager</groupId>
+            <artifactId>microprofile-package</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+            <optional>true</optional>
+        </dependency>
     </dependencies>
 
     <profiles>
-        <profile>
-            <id>jdk8</id>
-            <activation>
-                <jdk>[1.8,)</jdk>
-            </activation>
-            <dependencies>
-                <!-- Microprofile -->
-                <dependency>
-                    <groupId>fish.payara.server.internal.packager</groupId>
-                    <artifactId>microprofile-package</artifactId>
-                    <version>${project.version}</version>
-                    <type>zip</type>
-                    <optional>true</optional>
-                </dependency>
-            </dependencies>
-        </profile>
         <profile>
             <!-- generate empty javadoc jar -->
             <id>release-phase2</id>
