@@ -52,6 +52,9 @@
     <packaging>pom</packaging>
     <description>List of dependencies provided by and compatible with specific Payara Release</description>
 
+    <!-- Override to stop flatten plugin resolving it to an incorrect URL using parent artifact IDs -->
+    <url>https://github.com/payara/Payara/</url>
+
     <dependencyManagement>
         <dependencies>
             <!-- Public artifacts -->
@@ -946,7 +949,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>flatten-maven-plugin</artifactId>
-                <version>1.3.0</version>
+                <version>${maven.flatten.plugin.version}</version>
                 <configuration>
                     <flattenMode>bom</flattenMode>
                     <flattenDependencyMode>all</flattenDependencyMode>

@@ -55,6 +55,9 @@
     <artifactId>payara-embedded-all</artifactId>
     <name>Embedded Payara All-In-One</name>
 
+    <!-- Override to stop flatten plugin resolving it to an incorrect URL using parent artifact IDs -->
+    <url>https://github.com/payara/Payara/</url>
+
     <properties>
         <deploy.skip>false</deploy.skip>
     </properties>

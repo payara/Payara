@@ -56,6 +56,9 @@
 
     <description>This pom describes how to assemble the Payara Distribution</description>
 
+    <!-- Override to stop flatten plugin resolving it to an incorrect URL using parent artifact IDs -->
+    <url>https://github.com/payara/Payara/</url>
+
     <build>
         <plugins>
             <plugin>

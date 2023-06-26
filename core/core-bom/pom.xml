@@ -52,6 +52,9 @@
     <packaging>pom</packaging>
     <description>List of dependencies of Payara core projects</description>
 
+    <!-- Override to stop flatten plugin resolving it to an incorrect URL using parent artifact IDs -->
+    <url>https://github.com/payara/Payara/</url>
+
     <properties>
         <payara.core.version>${project.version}</payara.core.version>
     </properties>
