@@ -64,10 +64,6 @@
         <module>api</module>
     </modules>
 
-    <scm>
-        <tag>payara-server-6.2023.7-SNAPSHOT</tag>
-    </scm>
-
     <!-- Some of these are duplicated from core-bom because it isn't deployed to Maven Central so we need to tell
          Maven where to download it from -->
     <repositories>
