@@ -129,7 +129,6 @@
         <!-- BOM-referenced versions -->
 
         <osgi-resource-locator.version>1.0.3</osgi-resource-locator.version>
-        <stax-api.version>1.0-2</stax-api.version>
         <snakeyaml.version>2.0</snakeyaml.version>
         <jstl-impl.version>3.0.0</jstl-impl.version>
         <mojarra.version>4.0.0.payara-p2</mojarra.version>
@@ -149,7 +148,6 @@
         <angus.activation.version>1.0.0</angus.activation.version>
         <istack-commons-runtime.version>4.0.1</istack-commons-runtime.version>
         <wsdl4j.version>1.6.3</wsdl4j.version>
-        <jbi.version>1.0</jbi.version>
         <microprofile-release.version>6.0</microprofile-release.version>
         <payara-arquillian-container.version>3.0.alpha6</payara-arquillian-container.version>
         <h2db.version>2.1.212</h2db.version>
@@ -160,7 +158,6 @@
         <validation.xml.root>${project.build.outputDirectory}</validation.xml.root>
         <payara.transformer.version>0.2.9</payara.transformer.version>
         <payara.deployment.transformer.version>1.2</payara.deployment.transformer.version>
-        <osgi.dto.version>1.1.1</osgi.dto.version>
     </properties>
 
     <profiles>
