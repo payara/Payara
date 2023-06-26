@@ -493,6 +493,9 @@
                 <configuration>
                     <flattenMode>bom</flattenMode>
                     <flattenDependencyMode>all</flattenDependencyMode>
+                    <pomElements>
+                        <dependencyManagement>expand</dependencyManagement>
+                    </pomElements>
                 </configuration>
             </plugin>
         </plugins>

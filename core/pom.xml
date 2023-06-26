@@ -436,7 +436,6 @@
                         <pomElements>
                             <developers>resolve</developers>
                             <build>remove</build>
-                            <dependencyManagement>expand</dependencyManagement>
                             <properties>flatten</properties>
                         </pomElements>
                         <flattenedPomFilename>target/flattened-pom.xml</flattenedPomFilename>
