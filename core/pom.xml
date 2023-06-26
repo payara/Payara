@@ -138,7 +138,7 @@
         <ha-api.version>3.1.13</ha-api.version>
         <apache.bcel.version>6.7.0</apache.bcel.version>
         <!-- Primitive Function Library (PFL); a library of simple utilities used by Glassfish -->
-        <pfl.version>4.1.2</pfl.version>
+        <pfl.version>4.1.2.payara-p1</pfl.version>
         <opendmk.version>1.0-b01-ea</opendmk.version>
         <jna.version>5.12.1</jna.version>
         <!-- A pure Java implementation of the SSH-2 protocol -->
