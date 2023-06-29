@@ -62,6 +62,13 @@
     <!-- Override to stop flatten plugin resolving it to an incorrect URL using parent artifact IDs -->
     <url>https://github.com/payara/Payara/</url>
 
+    <!-- Don't inherit SCM from parent since flatten resolves it incorrectly in a similar manner to the URL -->
+    <scm>
+        <url>https://github.com/payara/Payara/tree/master</url>
+        <connection>scm:git:git://github.com/payara/payara.git</connection>
+        <developerConnection>scm:git:ssh://github.com:payara/payara.git</developerConnection>
+    </scm>
+
     <properties>
         <javadoc.skip>false</javadoc.skip>
         <deploy.skip>false</deploy.skip>

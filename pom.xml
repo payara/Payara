@@ -56,7 +56,6 @@
     <packaging>pom</packaging>
 
     <name>Payara Project</name>
-    <url>https://github.com/payara/Payara</url>
 
     <modules>
         <module>core</module>
@@ -65,37 +64,21 @@
         <module>api</module>
     </modules>
 
-    <scm>
-        <connection>scm:git:git@github.com:payara/payara.git</connection>
-        <url>scm:git:git@github.com:payara/payara.git</url>
-        <developerConnection>scm:git:git@github.com:payara/payara.git</developerConnection>
-        <tag>payara-server-6.2023.7-SNAPSHOT</tag>
-    </scm>
-
-    <issueManagement>
-        <system>Github</system>
-        <url>https://github.com/payara/Payara/issues</url>
-    </issueManagement>
-
-    <developers>
-        <developer>
-            <name>Payara Team</name>
-            <email>info@payara.fish</email>
-            <organization>Payara Foundation</organization>
-            <organizationUrl>http://www.payara.fish</organizationUrl>
-        </developer>
-    </developers>
-
-    <licenses>
-        <license>
-            <name>CDDL + GPLv2 with classpath exception</name>
-            <url>https://raw.githubusercontent.com/payara/Payara/master/LICENSE.txt</url>
-            <distribution>repo</distribution>
-            <comments>A business-friendly OSS license</comments>
-        </license>
-    </licenses>
-
+    <!-- Some of these are duplicated from core-bom because it isn't deployed to Maven Central so we need to tell
+         Maven where to download it from -->
     <repositories>
+        <!-- Try Maven central first, not last, which happens when omitted here -->
+        <repository>
+            <id>central</id>
+            <name>Central Repository</name>
+            <url>https://repo.maven.apache.org/maven2</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
         <repository>
             <id>payara-nexus-artifacts</id>
             <url>https://nexus.payara.fish/repository/payara-artifacts</url>
@@ -106,19 +89,23 @@
                 <enabled>false</enabled>
             </snapshots>
         </repository>
+    </repositories>
 
-        <!-- Temporary repo for Jakarta EE 10 development until the jar files are available on maven central -->
-        <repository>
-            <id>staged-jakarta-releases</id>
-            <url>https://jakarta.oss.sonatype.org/content/groups/staging/</url>
+    <!-- Some of these are duplicated from core-bom because it isn't deployed to Maven Central so we need to tell
+         Maven where to download it from -->
+    <pluginRepositories>
+        <!-- Try Maven central first, not last, which happens when omitted here -->
+        <pluginRepository>
+            <id>central</id>
+            <name>Central Repository</name>
+            <url>https://repo.maven.apache.org/maven2</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
-        </repository>
-
-    </repositories>
-
-    <pluginRepositories>
+        </pluginRepository>
         <pluginRepository>
             <id>payara-nexus-artifacts</id>
             <url>https://nexus.payara.fish/repository/payara-artifacts</url>
@@ -138,7 +125,6 @@
         <!-- BOM-referenced versions -->
 
         <osgi-resource-locator.version>1.0.3</osgi-resource-locator.version>
-        <stax-api.version>1.0-2</stax-api.version>
         <snakeyaml.version>2.0</snakeyaml.version>
         <jstl-impl.version>3.0.0</jstl-impl.version>
         <mojarra.version>4.0.0.payara-p2</mojarra.version>
@@ -158,18 +144,15 @@
         <angus.activation.version>1.0.0</angus.activation.version>
         <istack-commons-runtime.version>4.0.1</istack-commons-runtime.version>
         <wsdl4j.version>1.6.3</wsdl4j.version>
-        <jbi.version>1.0</jbi.version>
         <microprofile-release.version>6.0</microprofile-release.version>
         <payara-arquillian-container.version>3.0.alpha6</payara-arquillian-container.version>
         <h2db.version>2.1.212</h2db.version>
         <concurrent.version>3.0.2.payara-p1</concurrent.version>
-        <asm.version>9.5</asm.version>
         <monitoring-console-process.version>2.0.1</monitoring-console-process.version>
         <monitoring-console-webapp.version>2.0.1</monitoring-console-webapp.version>
         <validation.xml.root>${project.build.outputDirectory}</validation.xml.root>
         <payara.transformer.version>0.2.9</payara.transformer.version>
         <payara.deployment.transformer.version>1.2</payara.deployment.transformer.version>
-        <osgi.dto.version>1.1.1</osgi.dto.version>
     </properties>
 
     <profiles>
