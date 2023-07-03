@@ -46,11 +46,11 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>fish.payara.server</groupId>
     <artifactId>payara-aggregator</artifactId>
-    <version>6.2023.7-SNAPSHOT</version>
+    <version>6.2023.7</version>
     <parent>
         <groupId>fish.payara.server.core</groupId>
         <artifactId>core-aggregator</artifactId>
-        <version>6.2023.7-SNAPSHOT</version>
+        <version>6.2023.7</version>
         <relativePath>core</relativePath>
     </parent>
     <packaging>pom</packaging>
