@@ -37,13 +37,16 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2023 Payara Foundation and/or affiliates
 
 package com.sun.enterprise.util.cluster;
 
-import java.io.*;
-import java.util.*;
 
-import jakarta.xml.bind.annotation.*;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Request message to synchronize files.
@@ -71,6 +74,15 @@ public final class SyncRequest {
      */
     @XmlElement(name = "file", type = ModTime.class)
     public List<ModTime> files;
+
+    @Override
+    public String toString() {
+        return "SyncRequest{" +
+                "instance='" + instance + "', " +
+                "dir='" + dir + "', " +
+                (files == null ? "null" : files.size()) + " files" +
+                '}';
+    }
 
     /**
      * The file name and mod time.
