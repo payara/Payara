@@ -49,7 +49,6 @@ import java.util.logging.Logger;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.context.Initialized;
 import jakarta.enterprise.event.Observes;
-import jakarta.enterprise.inject.spi.Annotated;
 import jakarta.enterprise.inject.spi.Bean;
 import jakarta.enterprise.inject.spi.BeanManager;
 import jakarta.enterprise.inject.spi.Extension;
@@ -84,12 +83,16 @@ public class HealthCDIExtension implements Extension {
     }
 
     void processBean(@Observes ProcessBean<?> event) {
-        final Annotated annotated = event.getAnnotated();
-        if (annotated.isAnnotationPresent(Readiness.class)
-                || annotated.isAnnotationPresent(Liveness.class)
-                || annotated.isAnnotationPresent(Startup.class)) {
-            this.healthCheckBeans.add(event.getBean());
-        }
+        event.getBean().getQualifiers()
+            .stream()
+            .filter(qualifier -> {
+                var annotationType = qualifier.annotationType();
+                return Readiness.class.equals(annotationType)
+                    || Liveness.class.equals(annotationType)
+                    || Startup.class.equals(annotationType);
+            })
+            .findAny()
+            .ifPresent(x -> this.healthCheckBeans.add(event.getBean()));
     }
 
     void applicationInitialized(@Observes @Initialized(ApplicationScoped.class) Object init, BeanManager beanManager) {
