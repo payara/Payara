@@ -48,7 +48,7 @@
     <parent>
         <groupId>fish.payara.extras</groupId>
         <artifactId>extras</artifactId>
-        <version>6.2023.7-SNAPSHOT</version>
+        <version>6.2023.8-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -57,6 +57,13 @@
 
     <!-- Override to stop flatten plugin resolving it to an incorrect URL using parent artifact IDs -->
     <url>https://github.com/payara/Payara/</url>
+
+    <!-- Don't inherit SCM from parent since flatten resolves it incorrectly in a similar manner to the URL -->
+    <scm>
+        <url>https://github.com/payara/Payara/tree/master</url>
+        <connection>scm:git:git://github.com/payara/payara.git</connection>
+        <developerConnection>scm:git:ssh://github.com:payara/payara.git</developerConnection>
+    </scm>
 
     <properties>
         <deploy.skip>false</deploy.skip>
@@ -119,6 +126,11 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>flatten-maven-plugin</artifactId>
+                <configuration>
+                    <pomElements>
+                        <dependencies>remove</dependencies>
+                    </pomElements>
+                </configuration>
             </plugin>
         </plugins>
     </build>
@@ -431,25 +443,17 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
+        <!-- Microprofile -->
+        <dependency>
+            <groupId>fish.payara.server.internal.packager</groupId>
+            <artifactId>microprofile-package</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+            <optional>true</optional>
+        </dependency>
     </dependencies>
 
     <profiles>
-        <profile>
-            <id>jdk8</id>
-            <activation>
-                <jdk>[1.8,)</jdk>
-            </activation>
-            <dependencies>
-                <!-- Microprofile -->
-                <dependency>
-                    <groupId>fish.payara.server.internal.packager</groupId>
-                    <artifactId>microprofile-package</artifactId>
-                    <version>${project.version}</version>
-                    <type>zip</type>
-                    <optional>true</optional>
-                </dependency>
-            </dependencies>
-        </profile>
         <profile>
             <!-- generate empty javadoc jar -->
             <id>release-phase2</id>

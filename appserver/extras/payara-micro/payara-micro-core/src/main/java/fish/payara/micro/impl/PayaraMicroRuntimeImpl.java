@@ -186,55 +186,7 @@ public class PayaraMicroRuntimeImpl implements PayaraMicroRuntime  {
         }
         return result;
     }
-   
-        /**
-     * Runs a Callable object on all members of the Payara Micro Cluster
-     * Functionally equivalent to the run method on ClusterCommandRunner passing in
-     * all cluster members obtained from getClusteredPayaras() 
-     * @param <T> The Type of the Callable
-     * @param callable The Callable object to run
-     * @return 
-     * @deprecated This method has an undefined ClassLoader and is unusable by a user, 
-     * as it only operates on server ClassLoader rather than on application ClassLoader <br/>
-     * {It will be removed in the upcoming releases}. 
-     */
-    @Override
-    @Deprecated
-    public <T extends Serializable> Map<InstanceDescriptor, Future<T>> run (Callable<T> callable) {
-        
-        // NEEDS TO HANDLE THE CASE FOR LOCAL RUNNING IF NO CLUSTER ENABLED
-        
-        Map<UUID, Future<T>> runCallable = instanceService.runCallable(callable);
-        return keysToDescriptors(runCallable);
-    }
     
-    /**
-     * Runs a Callable object on specified members of the Payara Micro Cluster
-     * Functionally equivalent to the run method on ClusterCommandRunner passing in
-     * all cluster members obtained from getClusteredPayaras() 
-     * @param <T> The Type of the Callable
-     * @param members The collection of members to run the callable on
-     * @param callable The Callable object to run
-     * @return 
-     * 
-     * @deprecated This method has an undefined ClassLoader and is unusable by a user, 
-     * as it only operates on server ClassLoader rather than on application ClassLoader <br/>
-     * {It will be removed in the upcoming releases}. 
-     * 
-     */
-    @Override
-    @Deprecated
-    public <T extends Serializable> Map<InstanceDescriptor, Future<T>> run (Collection<InstanceDescriptor> members, Callable<T> callable) {
-        
-        HashSet<UUID> memberUUIDs = new HashSet<>(members.size());
-        for (InstanceDescriptor member : members) {
-            memberUUIDs.add(member.getMemberUUID());
-        }    
-        
-        Map<UUID, Future<T>> runCallable = instanceService.runCallable(memberUUIDs,callable);
-        return keysToDescriptors(runCallable);
-    }
-
     private <T extends Serializable> Map<InstanceDescriptor, Future<T>> keysToDescriptors(Map<UUID, Future<T>> runCallable) {
         Map<InstanceDescriptor, Future<T>> result = new HashMap<>(runCallable.size());
         for (Entry<UUID, Future<T>> entry : runCallable.entrySet()) {

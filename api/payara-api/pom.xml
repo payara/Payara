@@ -45,7 +45,7 @@
     <parent>
         <groupId>fish.payara.server.core</groupId>
         <artifactId>core-parent</artifactId>
-        <version>6.2023.7-SNAPSHOT</version>
+        <version>6.2023.8-SNAPSHOT</version>
         <relativePath>../../core/core-parent</relativePath>
     </parent>
     <groupId>fish.payara.api</groupId>
@@ -55,6 +55,13 @@
 
     <!-- Override to stop flatten plugin resolving it to an incorrect URL using parent artifact IDs -->
     <url>https://github.com/payara/Payara/</url>
+
+    <!-- Don't inherit SCM from parent since flatten resolves it incorrectly in a similar manner to the URL -->
+    <scm>
+        <url>https://github.com/payara/Payara/tree/master</url>
+        <connection>scm:git:git://github.com/payara/payara.git</connection>
+        <developerConnection>scm:git:ssh://github.com:payara/payara.git</developerConnection>
+    </scm>
 
     <properties>
         <javadoc.skip>false</javadoc.skip>
@@ -138,7 +145,6 @@
     </dependencyManagement>
 
     <dependencies>
-
         <dependency>
             <groupId>jakarta.platform</groupId>
             <artifactId>jakarta.jakartaee-api</artifactId>

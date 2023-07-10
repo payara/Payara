@@ -1,0 +1,42 @@
+name: Agent Assignment
+on:
+  issues:
+    types:
+      - opened
+jobs:
+  auto-assign-label:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Get Team Members
+        id: team-members
+        env:
+          frontLine: ${{ vars.FRONT_LINE_USERS_LIST }}
+        #TODO - Temporary solution - team member configuration should be dynamic
+        run: |
+          echo "::set-output name=members::$frontLine"
+      - name: Get Next Team Member
+        id: next-member
+        run: |
+          members=($(echo "${{ steps.team-members.outputs.members }}" | tr ',' '\n'))
+          index=$(( (${GITHUB_RUN_NUMBER}-1) % ${#members[@]} ))
+          next_member=${members[$index]}
+          echo "::set-output name=next_member::$next_member"
+      - name: Add Open Label and Assign to Next Team Member
+        uses: actions/github-script@v4
+        with:
+          script: |
+            github.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              labels: ['Status: Open']
+            })
+            github.issues.addAssignees({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              assignees: [`${{ steps.next-member.outputs.next_member}}`]
+            })
+          github-token: ${{ secrets.GITHUB_TOKEN }}

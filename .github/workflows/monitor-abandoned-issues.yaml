@@ -1,0 +1,63 @@
+name: Monitor Abandoned Issues
+
+on:
+  schedule:
+    - cron: "0 */24 * * *"
+
+jobs:
+  abandoned-labeler:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Check for abandoned issues
+        uses: actions/github-script@v6
+        env:
+          daysInterval: ${{ vars.MONITORING_INTERVAL_DAYS }}
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const pendingLabel = "Status: Pending";
+            const abandonedLabel = "Status: Abandoned";
+            
+            const parsedDays = parseFloat("${{ env.daysInterval }}");
+            const timeThreshold = parsedDays * 24 * 60 * 60 * 1000;
+            
+            // Query all GH issues that are pending and not closed
+            const issuesResponse = await github.rest.issues.listForRepo({
+              owner,
+              repo,
+              labels: pendingLabel,
+              state: "open",
+            });
+
+            for (const issue of issuesResponse.data) {
+              const updatedAt = new Date(issue.updated_at).getTime();
+              const currentTime = new Date().getTime();
+              const updateMessage = `Greetings, 
+                It's been more than ${parsedDays} days since we requested more information or an update from you on the details of this issue. Could you provide an update soon, please?
+                We're afraid that if we do not receive an update, we'll have to close this issue due to inactivity.`;
+
+              if (currentTime - updatedAt > timeThreshold) {
+                await github.rest.issues.addLabels({
+                  owner,
+                  repo,
+                  issue_number: issue.number,
+                  labels: [abandonedLabel],
+                });
+
+                await github.rest.issues.removeLabel({
+                  owner,
+                  repo,
+                  issue_number: issue.number,
+                  name: pendingLabel,
+                });
+
+                await github.rest.issues.createComment({
+                  owner,
+                  repo,
+                  issue_number: issue.number,
+                  body: updateMessage,
+                });
+              }
+            }

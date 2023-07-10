@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright 2018-2023 Payara Foundation and/or affiliates
 
 package com.sun.enterprise.v3.admin.cluster;
 
@@ -73,10 +73,11 @@ import org.glassfish.hk2.api.ServiceLocator;
  */
 public abstract class SecureAdminBootstrapHelper {
     private static final String DOMAIN_XML_PATH = "config/domain.xml";
-    private static final String[] SECURE_ADMIN_FILE_REL_URIS_TO_COPY = new String[]{
-        DOMAIN_XML_PATH,
-        "config/keystore.p12",
-        "config/cacerts.p12"
+    // One of the files in each group must be available and will be copied to the new instance
+    private static final String[][] SECURE_ADMIN_FILE_REL_URIS_TO_COPY_ALTERNATIVES = new String[][]{
+            new String[]{DOMAIN_XML_PATH},
+            new String[]{"config/keystore.p12", "config/keystore.jks"},
+            new String[]{"config/cacerts.p12", "config/cacerts.jks"}
     };
     private static final String[] SECURE_ADMIN_FILE_DIRS_TO_CREATE = new String[]{
         "config"
@@ -212,6 +213,15 @@ public abstract class SecureAdminBootstrapHelper {
         }
     }
 
+    private static String resolveAlternative(URI dasInstanceDir, String[] fileRelativePathAlternatives) throws IOException {
+        for(String alternative : fileRelativePathAlternatives) {
+            if(new File(dasInstanceDir.resolve(alternative)).exists()) {
+                return alternative;
+            }
+        }
+        throw new IOException("No alternative file is available on the server: "+fileRelativePathAlternatives);
+    }
+
     /**
      * Implements the helper functionality for a remote instance.
      */
@@ -277,10 +287,11 @@ public abstract class SecureAdminBootstrapHelper {
 
         @Override
         protected void copyBootstrapFiles() throws FileNotFoundException, IOException {
-            for (String fileRelativePath : SECURE_ADMIN_FILE_REL_URIS_TO_COPY) {
+            for (String[] fileRelativePathAlternative : SECURE_ADMIN_FILE_REL_URIS_TO_COPY_ALTERNATIVES) {
                 InputStream is = null;
                 String remoteFilePath = null;
                 try {
+                    String fileRelativePath = resolveAlternative(dasInstanceDir.toURI(), fileRelativePathAlternative);
                     is = new BufferedInputStream(
                             new FileInputStream(
                             new File(dasInstanceDir.toURI().resolve(fileRelativePath))));
@@ -506,7 +517,8 @@ public abstract class SecureAdminBootstrapHelper {
 
         @Override
         public void copyBootstrapFiles() throws IOException {
-            for (String relativePathToFile : SECURE_ADMIN_FILE_REL_URIS_TO_COPY) {
+            for (String[] fileRelativePathAlternative : SECURE_ADMIN_FILE_REL_URIS_TO_COPY_ALTERNATIVES) {
+                String relativePathToFile = resolveAlternative(existingInstanceDirURI, fileRelativePathAlternative);
                 final File origin = new File(existingInstanceDirURI.resolve(relativePathToFile));
                 final File dest = new File(newInstanceDirURI.resolve(relativePathToFile));
                 FileUtils.copyFile(origin, dest);
