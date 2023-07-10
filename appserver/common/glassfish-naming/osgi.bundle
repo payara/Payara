@@ -44,3 +44,4 @@
                         com.sun.enterprise.naming.spi; \
                         com.sun.enterprise.naming.util; version=${project.osgi.version}
 
+Import-Package: javax.rmi.CORBA,org.omg.CORBA_2_3.portable,org.omg.CORBA.portable,com.sun.corba.ee.impl.presentation.rmi.codegen,*
