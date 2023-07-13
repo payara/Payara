@@ -45,6 +45,7 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import fish.payara.opentracing.OpenTelemetryService;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 import jakarta.enterprise.event.Observes;
 import jakarta.enterprise.inject.spi.AfterDeploymentValidation;
 import jakarta.enterprise.inject.spi.BeanManager;
@@ -69,8 +70,10 @@ public class TelemetryCdiExtension implements Extension {
     }
 
     void beforeBeanDiscovery(@Observes BeforeBeanDiscovery bbd, BeanManager bm) {
+        bbd.addInterceptorBinding(WithSpan.class);
         addAnnotatedType(bbd, bm, OpenTracingTracerProducer.class);
         addAnnotatedType(bbd, bm, OpenTelemetryTracerProducer.class);
+        addAnnotatedType(bbd, bm, WithSpanInterceptor.class);
     }
 
     static void addAnnotatedType(BeforeBeanDiscovery bbd, BeanManager bm, Class<?> beanClass) {
