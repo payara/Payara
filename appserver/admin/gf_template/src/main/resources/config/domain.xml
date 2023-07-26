@@ -42,7 +42,7 @@
 
 -->
 
-<!-- Portions Copyright [2017-2022] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2017-2023] [Payara Foundation and/or its affiliates] -->
 
 <domain log-root="${com.sun.aas.instanceRoot}/logs" application-root="${com.sun.aas.instanceRoot}/applications" version="10.0">
     <hazelcast-runtime-configuration start-port="%%%HAZELCAST_START_PORT%%%" das-port="%%%HAZELCAST_DAS_PORT%%%" auto-increment-port="%%%HAZELCAST_AUTO_INCREMENT%%%"></hazelcast-runtime-configuration>
@@ -217,6 +217,7 @@
                 <jvm-options>[17|]--add-opens=java.base/java.lang.invoke=ALL-UNNAMED</jvm-options>
                 <jvm-options>[17|]--add-opens=java.desktop/java.beans=ALL-UNNAMED</jvm-options>
                 <jvm-options>[17|]--add-exports=jdk.naming.dns/com.sun.jndi.dns=ALL-UNNAMED</jvm-options>
+                <jvm-options>[17|]--add-exports=java.naming/com.sun.jndi.ldap=ALL-UNNAMED</jvm-options>
                 <jvm-options>-Xmx512m</jvm-options>
                 <jvm-options>-XX:NewRatio=2</jvm-options>
                 <jvm-options>-XX:+UnlockDiagnosticVMOptions</jvm-options>
@@ -451,6 +452,7 @@
                 <jvm-options>[17|]--add-opens=java.base/java.lang.invoke=ALL-UNNAMED</jvm-options>
                 <jvm-options>[17|]--add-opens=java.desktop/java.beans=ALL-UNNAMED</jvm-options>
                 <jvm-options>[17|]--add-exports=jdk.naming.dns/com.sun.jndi.dns=ALL-UNNAMED</jvm-options>
+                <jvm-options>[17|]--add-exports=java.naming/com.sun.jndi.ldap=ALL-UNNAMED</jvm-options>
                 <jvm-options>-Xmx512m</jvm-options>
                 <jvm-options>-XX:NewRatio=2</jvm-options>
                 <jvm-options>-XX:+UnlockDiagnosticVMOptions</jvm-options>
