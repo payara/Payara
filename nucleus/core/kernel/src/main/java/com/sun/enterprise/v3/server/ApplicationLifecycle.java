@@ -840,6 +840,10 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 context.removeTransientAppMetaData(Parser.class.getName());
                 context.resetModuleMetaData();
                 tracing.register(context);
+
+                // Rescan for the data we just removed
+                getDeployableTypes(context);
+
                 span.finish();
             }
         }
