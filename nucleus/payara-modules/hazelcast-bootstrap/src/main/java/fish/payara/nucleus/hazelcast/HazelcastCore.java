@@ -527,13 +527,15 @@ public class HazelcastCore implements EventListener, ConfigListener {
         } else {
             //build the domain discovery config
             config.setProperty("hazelcast.discovery.enabled", "true");
-            PartitionGroupConfig partitionGroupConfig = config.getPartitionGroupConfig();
-            partitionGroupConfig.setEnabled(true);
-            partitionGroupConfig.setGroupType(PartitionGroupConfig.MemberGroupType.SPI);
             config.getNetworkConfig().getJoin().getDiscoveryConfig().addDiscoveryStrategyConfig(
                     new DiscoveryStrategyConfig(DomainDiscoveryStrategy.class.getName())
                             .addProperty(HOST_AWARE_PARTITIONING.key(), hostAwarePartitioning));
             config.getNetworkConfig().getJoin().getMulticastConfig().setEnabled(false);
+            if (Boolean.parseBoolean(System.getProperty("hazelcast.auto-partition-group", "false"))) {
+                PartitionGroupConfig partitionGroupConfig = config.getPartitionGroupConfig();
+                partitionGroupConfig.setEnabled(true);
+                partitionGroupConfig.setGroupType(PartitionGroupConfig.MemberGroupType.SPI);
+            }
         }
 
         if (env.isDas() && !env.isMicro()) {
