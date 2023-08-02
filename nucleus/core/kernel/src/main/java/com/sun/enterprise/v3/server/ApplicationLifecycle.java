@@ -811,11 +811,13 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 logger.log(Level.WARNING,
                         "Caught exception trying to instantiate a deployment transformer, skipping...",
                         exception);
+                span.finish();
                 return;
             }
 
             if (!jakartaNamespaceDeploymentTransformerOptional.isPresent()) {
                 logger.log(Level.INFO, "No deployment transformer implementation found.");
+                span.finish();
                 return;
             }
 
@@ -843,9 +845,8 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
 
                 // Rescan for the data we just removed
                 getDeployableTypes(context);
-
-                span.finish();
             }
+            span.finish();
         }
     }
 
