@@ -928,16 +928,6 @@ Parent is ${project.parent}</echo>
                 <version>${javassist.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.eclipse.transformer</groupId>
-                <artifactId>org.eclipse.transformer.payara</artifactId>
-                <version>${payara.transformer.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>fish.payara.deployment.transformer</groupId>
-                <artifactId>deployment-transformer-api</artifactId>
-                <version>${payara.deployment.transformer.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>org.bouncycastle</groupId>
                 <artifactId>bcprov-jdk15on</artifactId>
                 <version>${bouncycastle-jdk15on.version}</version>

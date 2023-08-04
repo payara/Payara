@@ -186,6 +186,9 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <deploy.skip>true</deploy.skip>
         <javadoc.skip>true</javadoc.skip>
+
+        <payara.deployment.transformer.version>1.3</payara.deployment.transformer.version>
+        <payara.transformer.version>0.2.12</payara.transformer.version>
     </properties>
 
     <issueManagement>
@@ -918,6 +921,18 @@
                 <groupId>org.jboss.weld.environment</groupId>
                 <artifactId>weld-environment-common</artifactId>
                 <version>${weld.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.deployment.transformer</groupId>
+                <artifactId>deployment-transformer-api</artifactId>
+                <version>${payara.deployment.transformer.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.transformer</groupId>
+                <artifactId>fish.payara.transformer.payara</artifactId>
+                <version>${payara.transformer.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
