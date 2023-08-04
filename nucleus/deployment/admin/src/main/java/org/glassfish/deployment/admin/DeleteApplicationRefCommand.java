@@ -38,9 +38,10 @@
  * holder.
  */
 
-// Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2017-2023 [Payara Foundation and/or its affiliates]
 package org.glassfish.deployment.admin;
 
+import com.sun.enterprise.admin.util.ClusterOperationUtil;
 import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.config.serverbeans.ApplicationRef;
 import com.sun.enterprise.config.serverbeans.Applications;
@@ -190,10 +191,7 @@ public class DeleteApplicationRefCommand implements AdminCommand, AdminCommandSe
         commandParams.command = Command.delete_application_ref;
 
         // for each matched version
-        Iterator it = matchedVersions.iterator();
-        while (it.hasNext()) {
-            String appName = (String)it.next();
-
+        for (String appName : matchedVersions) {
             Application application = applications.getApplication(appName);
             if (application == null) {
                 if (env.isDas()) {
