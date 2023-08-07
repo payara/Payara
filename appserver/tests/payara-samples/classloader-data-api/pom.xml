@@ -44,12 +44,12 @@
     <parent>
         <groupId>fish.payara.samples</groupId>
         <artifactId>payara-samples</artifactId>
-        <version>6.2023.8-SNAPSHOT</version>
+        <version>6.2023.8</version>
     </parent>
 
     <groupId>fish.payara.samples</groupId>
     <artifactId>classloader-data-api</artifactId>
-    <version>6.2023.8-SNAPSHOT</version>
+    <version>6.2023.8</version>
 
     <packaging>war</packaging>
     <name>Payara Samples - ClassLoader Data API</name>
