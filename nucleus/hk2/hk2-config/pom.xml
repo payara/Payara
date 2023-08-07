@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server.core</groupId>
         <artifactId>core-parent</artifactId>
-        <version>6.2023.8</version>
+        <version>6.2023.9-SNAPSHOT</version>
         <relativePath>../../../core/core-parent</relativePath>
     </parent>
     <groupId>fish.payara.server.core.hk2</groupId>

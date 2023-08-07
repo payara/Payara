@@ -43,7 +43,7 @@
 
     <groupId>fish.payara.server.internal.tests</groupId>
     <artifactId>repackaged</artifactId>
-    <version>6.2023.8</version>
+    <version>6.2023.9-SNAPSHOT</version>
     <name>Payara Samples - Payara - repackaged libs as a module</name>
     
     <packaging>pom</packaging>

@@ -45,7 +45,7 @@
     <parent>
         <groupId>fish.payara.server.internal.persistence</groupId>
         <artifactId>persistence</artifactId>
-        <version>6.2023.8</version>
+        <version>6.2023.9-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>fish.payara.server.internal.persistence.cmp</groupId>

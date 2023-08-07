@@ -71,12 +71,12 @@ utilities are in the NucleusTestUtils class.
     <parent>
         <groupId>fish.payara.server.internal.tests</groupId>
         <artifactId>nucleus-tests</artifactId>
-        <version>6.2023.8</version>
+        <version>6.2023.9-SNAPSHOT</version>
     </parent>
 
     <artifactId>nucleus-quicklook</artifactId>
     <name>Nucleus Quicklook Tests</name>
-    <version>6.2023.8</version>
+    <version>6.2023.9-SNAPSHOT</version>
     <description>This pom describes how to run QuickLook tests on the Nucleus distribution</description>
     
     <dependencies>

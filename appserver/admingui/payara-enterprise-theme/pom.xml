@@ -49,7 +49,7 @@
     <parent>
         <groupId>fish.payara.server.internal.admingui</groupId>
         <artifactId>admingui</artifactId>
-        <version>6.2023.8</version>
+        <version>6.2023.9-SNAPSHOT</version>
     </parent>
 
     <artifactId>console-payara-enterprise-branding-plugin</artifactId>
