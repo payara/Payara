@@ -151,9 +151,9 @@ public class OpenTelemetryRequestEventListener implements RequestEventListener {
         activeSpan.setAttribute(SemanticAttributes.HTTP_STATUS_CODE, statusInfo.getStatusCode());
 
         // If the response status is an error, add error information to the span
-        if (statusInfo.getFamily() == Response.Status.Family.CLIENT_ERROR
-                || statusInfo.getFamily() == Response.Status.Family.SERVER_ERROR) {
+        if (statusInfo.getFamily() == Response.Status.Family.SERVER_ERROR) {
             activeSpan.setAttribute("error", true);
+            activeSpan.setStatus(StatusCode.ERROR);
             // If there's an attached exception, add it to the span
             if (response.hasEntity() && response.getEntity() instanceof Throwable) {
                 activeSpan.recordException((Throwable) response.getEntity());

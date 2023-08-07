@@ -48,7 +48,6 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
-import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.annotations.SpanAttribute;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
@@ -65,11 +64,22 @@ import jakarta.ws.rs.PATCH;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
 import org.glassfish.api.invocation.InvocationManager;
+import org.jboss.weld.interceptor.WeldInvocationContext;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.Objects;
+import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.CompletionStage;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static java.util.Arrays.asList;
+import static java.util.logging.Level.FINER;
 
 /**
  * Interceptor for CDI beans that adds tracing spans using OpenTelemetry.
@@ -85,6 +95,97 @@ public class WithSpanMethodInterceptor {
 
     public WithSpanMethodInterceptor(final BeanManager bm) {
         this.bm = bm;
+    }
+
+    /**
+     * Gets the annotation from the method that triggered the interceptor.
+     *
+     * @param <A> The annotation type to return
+     * @param beanManager The invoking interceptor's BeanManager
+     * @param annotationClass The class of the annotation to get
+     * @param invocationContext The context of the method invocation
+     * @return The annotation that triggered the interceptor.
+     */
+    private static <A extends Annotation> A getAnnotation(BeanManager beanManager, Class<A> annotationClass, InvocationContext invocationContext) {
+        A annotation = getInterceptedAnnotation(annotationClass, invocationContext);
+
+        if (annotation == null) {
+            annotation = getAnnotation(beanManager, annotationClass, invocationContext.getMethod().getDeclaringClass(), invocationContext.getMethod());
+        }
+
+        return annotation;
+    }
+
+    public static <A extends Annotation> A getAnnotation(BeanManager beanManager, Class<A> annotationClass, Class<?> annotatedClass, Method method) {
+        logGetAnnotation(annotationClass, method);
+        Objects.requireNonNull(annotatedClass, "annotatedClass");
+        Objects.requireNonNull(method, "method");
+
+        // Try to get the annotation from the method, otherwise attempt to get it from the class
+        if (method.isAnnotationPresent(annotationClass)) {
+            LOG.log(FINER, "Annotation was directly present on the method");
+            return method.getAnnotation(annotationClass);
+        }
+
+        if (annotatedClass.isAnnotationPresent(annotationClass)) {
+            LOG.log(FINER, "Annotation was directly present on the class");
+            return annotatedClass.getAnnotation(annotationClass);
+        }
+
+        LOG.log(FINER, "Annotation wasn't directly present on the method or class, checking stereotypes");
+
+        // Account for Stereotypes
+        Queue<Annotation> annotations = new LinkedList<>(asList(annotatedClass.getAnnotations()));
+
+        // Loop over each individual annotation
+        while (!annotations.isEmpty()) {
+            Annotation a = annotations.remove();
+
+            // Check if this is the annotation we're looking for
+            if (a.annotationType().equals(annotationClass)) {
+                LOG.log(FINER, "Annotation was found in a stereotype");
+                return annotationClass.cast(a);
+            }
+
+            // If the found annotation is a stereotype, get the individual annotations and add them to the list
+            // to be iterated over
+            if (beanManager.isStereotype(a.annotationType())) {
+                annotations.addAll(beanManager.getStereotypeDefinition(a.annotationType()));
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Uses Weld to find an annotation. The annotation must be an intercepted annotation that has a binding
+     * @param <A>
+     * @param annotationClass {@link Annotation} to look for
+     * @param invocationContext
+     * @return the {@link Annotation} that the interceptor is inceptoring,or null if it cannot be found
+     */
+    private static <A extends Annotation> A getInterceptedAnnotation(Class<A> annotationClass, InvocationContext invocationContext){
+         if (invocationContext instanceof WeldInvocationContext) {
+            Set<Annotation> interceptorBindings = ((WeldInvocationContext) invocationContext).getInterceptorBindings();
+            for (Annotation annotationBound : interceptorBindings) {
+                if (annotationBound.annotationType().equals(annotationClass)) {
+                    return (A) annotationBound;
+                }
+            }
+        }
+        return null;
+    }
+
+    private static void logGetAnnotation(Class<?> annotatedClass, Method method) {
+        LOG.log(FINER, "Attempting to get annotation {0} from {1}",
+            new String[] {getString(annotatedClass, Class::getSimpleName), getString(method, Method::getName)});
+    }
+
+    private static <T> String getString(final T object, Function<T, String> toString) {
+        if (object == null) {
+            return null;
+        }
+        return toString.apply(object);
     }
 
     @AroundInvoke
@@ -111,12 +212,12 @@ public class WithSpanMethodInterceptor {
         }
 
         // Get the WithSpan annotation present on the method
-        final WithSpan withSpan = OpenTracingCdiUtils.getAnnotation(bm, WithSpan.class, invocationContext);
+        final WithSpan withSpan = getAnnotation(bm, WithSpan.class, invocationContext);
 
         // If we *have* been told to, get the application's Tracer instance and start an active span.
         SpanBuilder spanBuilder = openTelemetryService.getCurrentTracer()
                 .spanBuilder(getWithSpanValue(invocationContext, withSpan))
-                .setSpanKind(getWithSpanKind(invocationContext, withSpan))
+                .setSpanKind(withSpan.kind())
                 .setAllAttributes(attributes);
         spanBuilder.setParent(Context.current());
         final var span = spanBuilder.startSpan();
@@ -139,7 +240,7 @@ public class WithSpanMethodInterceptor {
     private boolean isJaxRsMethod(InvocationContext invocationContext) {
         // Check if any of the HTTP Method annotations are present on the intercepted method
         for (Class httpMethod : HTTP_METHODS) {
-            if (OpenTracingCdiUtils.getAnnotation(bm, httpMethod, invocationContext) != null) {
+            if (getAnnotation(bm, httpMethod, invocationContext) != null) {
                 return true;
             }
         }
@@ -171,28 +272,12 @@ public class WithSpanMethodInterceptor {
      *         or the default value if the annotation is not present or its value is empty
      */
     private String getWithSpanValue(final InvocationContext invocationContext, final WithSpan withSpan) {
-        final String withSpanValue = OpenTracingCdiUtils
-                .getConfigOverrideValue(WithSpan.class, "value", invocationContext, String.class)
-                .orElse(withSpan.value());
+        final String withSpanValue = withSpan.value();
         if (withSpanValue.isEmpty()) {
-            return invocationContext.getMethod().getDeclaringClass().getCanonicalName()
+            return invocationContext.getMethod().getDeclaringClass().getSimpleName()
                     + "." + invocationContext.getMethod().getName();
         }
         return withSpanValue;
-    }
-
-    /**
-     * Returns the SpanKind of the {@link WithSpan} annotation on the intercepted method,
-     * or the default value if the annotation is not present.
-     *
-     * @param invocationContext The context of the intercepted method invocation.
-     * @param withSpan The {@link WithSpan} annotation that may be present on the intercepted method.
-     * @return The SpanKind of the {@link WithSpan} annotation on the intercepted method,
-     *         or the default value if the annotation is not present.
-     */
-    private SpanKind getWithSpanKind(final InvocationContext invocationContext, final WithSpan withSpan) {
-        return OpenTracingCdiUtils.getConfigOverrideValue(WithSpan.class, "kind", invocationContext, SpanKind.class)
-                .orElse(withSpan.kind());
     }
 
     /**
@@ -205,7 +290,7 @@ public class WithSpanMethodInterceptor {
      */
     private void extractSpanAttributes(final InvocationContext invocationContext, final AttributesBuilder builder) {
         MethodSpanAttributesExtractor<InvocationContext, Void> extractor = MethodSpanAttributesExtractor
-                .newInstance(
+                .create(
                         InvocationContext::getMethod,
                         (m, p) -> Arrays.stream(m.getParameters())
                                 .map(v -> {
