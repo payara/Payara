@@ -111,5 +111,19 @@
                 <module>certificate-management</module>
             </modules>
         </profile>
+        <!-- Profile to build all optional modules under extras -->
+        <profile>
+            <id>BuildExtras</id>
+            <activation>
+                <property>
+                    <name>BuildExtras</name>
+                </property>
+            </activation>
+            <modules>
+                <module>embedded</module>
+                <module>docker-images</module>
+                <module>certificate-management</module>
+            </modules>
+        </profile>
     </profiles>
 </project>
