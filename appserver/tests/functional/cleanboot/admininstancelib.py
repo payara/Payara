@@ -1,7 +1,7 @@
 #!/bin/python3
 from playwright.sync_api import Page, expect
 
-def create_instance(page: Page, nameInstance):
+def create_instance(page: Page, name_instance):
 	# Open the admin page 
 	page.goto('http://localhost:4848')
 	page.wait_for_selector('div[id="treeForm:tree_children"]')
@@ -17,18 +17,18 @@ def create_instance(page: Page, nameInstance):
 	# Create new instance
 	page.get_by_role("Button", name="New...").click()
 	page.wait_for_selector('input[id="propertyForm:propertySheet:propertSectionTextField:NameTextProp:NameText"]')
-	page.get_by_role("textbox").fill(nameInstance)
+	page.get_by_role("textbox").fill(name_instance)
 	page.get_by_role("Button", name="OK").click()
 	page.wait_for_selector('input[value=" Save "]')
 
 	# Check for the presence of the new instance in the table
-	instance_link = page.get_by_role("link", name=nameInstance, exact=True)
+	instance_link = page.get_by_role("link", name=name_instance, exact=True)
 	expect(instance_link).to_be_visible()
 
 	# return to homepage
 	page.goto('http://localhost:4848')
 
-def start_instance(page: Page, nameInstance):
+def start_instance(page: Page, name_instance):
 	# Open the admin page 
 	page.goto('http://localhost:4848')
 	page.wait_for_selector('div[id="treeForm:tree_children"]')
@@ -39,7 +39,7 @@ def start_instance(page: Page, nameInstance):
 	page.wait_for_selector('input[value=" Save "]')
 	
 	# Open the page of the instance to start it
-	instance_link = page.get_by_role("link", name=nameInstance, exact=True)
+	instance_link = page.get_by_role("link", name=name_instance, exact=True)
 	instance_link.click()
 	page.wait_for_selector('div[id="propertyForm:propertyContentPage"]')
 

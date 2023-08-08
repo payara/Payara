@@ -2,7 +2,7 @@
 from playwright.sync_api import Page, expect
 
 
-def create_group(page: Page, nameGroup, nameInstances):
+def create_group(page: Page, name_group, name_instances):
 	# Open the admin page 
 	page.goto('http://localhost:4848')
 	page.wait_for_selector('div[id="treeForm:tree_children"]')
@@ -18,18 +18,18 @@ def create_group(page: Page, nameGroup, nameInstances):
 	# Create new instance
 	page.get_by_role("Button", name="New...").click()
 	page.wait_for_selector('input[id="propertyForm:propertySheet:propertySectionTextField:NameTextProp:NameText"]')
-	page.get_by_role("textbox").fill(nameGroup)
+	page.get_by_role("textbox").fill(name_group)
 	page.get_by_role("Button", name="OK").click()
 	page.wait_for_selector('input[value="New..."]')
 
 	# Check for the presence of the new instance in the table
-	group_link = page.get_by_role("link", name=nameGroup, exact=True)
+	group_link = page.get_by_role("link", name=name_group, exact=True)
 	expect(group_link).to_be_visible()
 	group_link.click()
 	page.wait_for_selector('table.Tab1TblNew_sun4')
 
 	# Create instances in the group
-	for nameInstance in nameInstances:
+	for name_instance in name_instances:
 		group_tabs = page.locator('table.Tab1TblNew_sun4')
 		group_instance_tab = group_tabs.get_by_role("link", name="Instances", exact=True)
 		group_instance_tab.click()
@@ -37,12 +37,12 @@ def create_group(page: Page, nameGroup, nameInstances):
 		# Create new instance
 		page.get_by_role("Button", name="New...").click()
 		page.wait_for_selector('input[id="propertyForm:propertySheet:propertSectionTextField:NameTextProp:NameText"]')
-		page.get_by_role("textbox").fill(nameInstance)
+		page.get_by_role("textbox").fill(name_instance)
 		page.get_by_role("Button", name="OK").click()
 		page.wait_for_selector('input[value=" Save "]')
 
 		# Check for the presence of the new instance in the table
-		instance_link = page.get_by_role("link", name=nameInstance, exact=True)
+		instance_link = page.get_by_role("link", name=name_instance, exact=True)
 		expect(instance_link).to_be_visible()
 
 		group_general_tab = group_tabs.get_by_role("link", name="General", exact=True)
@@ -102,7 +102,6 @@ def stop_groups(page: Page):
 	stop_button.click()
 	# wait for modal to appear and disappear
 	page.wait_for_selector('input[value="Processing..."]')
-	page.wait_for_selector('div#ajaxPanelBody')
 	page.wait_for_selector('input[value="Processing..."]', timeout=1200000,state="hidden")
 	page.wait_for_selector('div#ajaxPanelBody', timeout=1200000,state="hidden")
 
