@@ -13,7 +13,7 @@ Logs above INFO are collected in files, to be assessed manually (some warnings a
 
 Set PAYARA_HOME to the tested Payara. For example:
 
-    PAYARA_HOME=/path-to-my-payara-src/appserver/distributions/payara/target/stage/payara6
+    export PAYARA_HOME=/path-to-my-payara-src/appserver/distributions/payara/target/stage/payara6
 
 Install the Pytest plugin:
 
@@ -22,6 +22,8 @@ Install the Pytest plugin:
 Install the required browsers:
 
     playwright install
+
+Note: you may also need to run the command `playwright install-deps`
 
 ## run the tests:
 
