@@ -136,7 +136,7 @@ def delete_instances(page: Page):
 	page.goto('http://localhost:4848')
 
 def collect_logs(page: Page, name_instance, log_levels):
-	logs = [name_instance + " : "]
+	logs = [name_instance + " : \n"]
 	# Open the admin page 
 	page.goto('http://localhost:4848')
 	page.wait_for_selector('div[id="treeForm:tree_children"]')
@@ -152,32 +152,33 @@ def collect_logs(page: Page, name_instance, log_levels):
 	page.wait_for_selector('div[id="propertyForm:propertyContentPage"]')
 	view_log_button = page.locator('input[value="View Log Files"]')
 	
-	with page.context.expect_page() as new_page_event:
+	with page.context.expect_page() as log_page_event:
 		view_log_button.click()
 
-	new_page = new_page_event.value
+	log_page = log_page_event.value
 
-	new_page.wait_for_load_state()
-	new_page.wait_for_selector('div[id="propertyForm:basicTable"]')
+	log_page.wait_for_load_state()
+	log_page.wait_for_selector('div[id="propertyForm:basicTable"]')
 
-	log_level_combobox = new_page.locator('select[id="propertyForm:propertyContentPage:propertySheet:propertSectionTextField:logLevelProp:logLevel"]')
+	log_level_combobox = log_page.locator('select[id="propertyForm:propertyContentPage:propertySheet:propertSectionTextField:logLevelProp:logLevel"]')
 	log_level_combobox.click();
 	for log_level in log_levels:
 		# Change the log level to the desired value and filter logs on that level
-		new_page.get_by_label("Log Level:").select_option(value=log_level, force=True)
-		search_button = new_page.locator('input[id="propertyForm:propertyContentPage:bottomButtons:searchButtonBottom"]')
+		log_page.get_by_label("Log Level:").select_option(value=log_level, force=True)
+		search_button = log_page.locator('input[id="propertyForm:propertyContentPage:bottomButtons:searchButtonBottom"]')
 		search_button.click()
 
-		# create list of every rows displayed
-		log_entries = new_page.get_by_role("row").all()
-		for log_entry in log_entries:
-			cells = log_entry.get_by_role("rowheader").all()
-			if cells: 
-				log_entry_level = cells[1].text_content()
-				log_entry_message = cells[2].text_content()
-				logs.append(log_entry_level + " - " + log_entry_message + " \n")
-
-	new_page.close()
+		# create list of every details buttons displayed
+		details_buttons = log_page.get_by_role("link", name="(details)").all()
+		for details_button in details_buttons:
+			with page.context.expect_page() as detail_page_event:
+				details_button.click()
+			log_detail_page = detail_page_event.value
+			log_entry_level = log_detail_page.locator('span[id*="logLevel"]').text_content()
+			log_entry_message = log_detail_page.locator('span[id*="completeMessage"]').text_content()
+			logs.append(log_entry_level + " - " + log_entry_message + " \n")
+			log_detail_page.close()
+	log_page.close()
 	logs.append(" \n")
 	logs = ' '.join(logs)
 	return logs
