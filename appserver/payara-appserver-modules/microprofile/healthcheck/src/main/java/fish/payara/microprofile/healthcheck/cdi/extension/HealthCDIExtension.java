@@ -40,6 +40,7 @@
 
 package fish.payara.microprofile.healthcheck.cdi.extension;
 
+import java.lang.annotation.Annotation;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -89,7 +90,30 @@ public class HealthCDIExtension implements Extension {
                 || annotated.isAnnotationPresent(Liveness.class)
                 || annotated.isAnnotationPresent(Startup.class)) {
             this.healthCheckBeans.add(event.getBean());
+        } else {
+            final Bean bean = event.getBean();
+            if (bean != null) {
+                Set<Annotation> annotations = bean.getQualifiers();
+                for (Annotation annotation : annotations) {
+                    Class<? extends Annotation> annotationType = annotation.annotationType();
+                    if (inheritsFromHealthTypes(annotationType)) {
+                        this.healthCheckBeans.add(event.getBean());
+                    }
+                }
+            }
         }
+    }
+
+    private boolean inheritsFromHealthTypes(Class<? extends Annotation> annotationType) {
+        Class<?> currentClass = annotationType;
+        while (currentClass != null) {
+            if (currentClass.equals(Readiness.class) || currentClass.equals(Liveness.class)
+                    || currentClass.equals(Startup.class)) {
+                return true;
+            }
+            currentClass = currentClass.getSuperclass();
+        }
+        return false;
     }
 
     void applicationInitialized(@Observes @Initialized(ApplicationScoped.class) Object init, BeanManager beanManager) {
