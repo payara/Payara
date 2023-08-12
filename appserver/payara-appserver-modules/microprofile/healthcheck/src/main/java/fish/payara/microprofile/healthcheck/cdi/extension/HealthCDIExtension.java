@@ -85,35 +85,18 @@ public class HealthCDIExtension implements Extension {
     }
 
     void processBean(@Observes ProcessBean<?> event) {
-        final Annotated annotated = event.getAnnotated();
-        if (annotated.isAnnotationPresent(Readiness.class)
-                || annotated.isAnnotationPresent(Liveness.class)
-                || annotated.isAnnotationPresent(Startup.class)) {
-            this.healthCheckBeans.add(event.getBean());
-        } else {
-            final Bean bean = event.getBean();
-            if (bean != null) {
-                Set<Annotation> annotations = bean.getQualifiers();
-                for (Annotation annotation : annotations) {
-                    Class<? extends Annotation> annotationType = annotation.annotationType();
-                    if (inheritsFromHealthTypes(annotationType)) {
-                        this.healthCheckBeans.add(event.getBean());
-                    }
+        Bean<?> bean = event.getBean();
+        if (bean != null) {
+            Set<Annotation> annotations = bean.getQualifiers();
+            for (Annotation annotation : annotations) {
+                Class<? extends Annotation> annotationType = annotation.annotationType();
+                if (Readiness.class.equals(annotationType)
+                        || Liveness.class.equals(annotationType)
+                        || Startup.class.equals(annotationType)) {
+                    this.healthCheckBeans.add(event.getBean());
                 }
             }
         }
-    }
-
-    private boolean inheritsFromHealthTypes(Class<? extends Annotation> annotationType) {
-        Class<?> currentClass = annotationType;
-        while (currentClass != null) {
-            if (currentClass.equals(Readiness.class) || currentClass.equals(Liveness.class)
-                    || currentClass.equals(Startup.class)) {
-                return true;
-            }
-            currentClass = currentClass.getSuperclass();
-        }
-        return false;
     }
 
     void applicationInitialized(@Observes @Initialized(ApplicationScoped.class) Object init, BeanManager beanManager) {
