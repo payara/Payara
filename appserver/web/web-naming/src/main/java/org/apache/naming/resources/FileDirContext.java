@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2023] [Payara Foundation and/or its affiliates]
 
 package org.apache.naming.resources;
 
@@ -159,12 +159,12 @@ public class FileDirContext extends BaseDirContext {
      */
     protected String absoluteBase = null;
 
+    private String canonicalBase = null;
 
     /**
      * Case sensitivity.
      */
     protected boolean caseSensitive = true;
-
 
     /**
      * Allow linking.
@@ -189,34 +189,33 @@ public class FileDirContext extends BaseDirContext {
 
         // Validate the format of the proposed document root
         if (docBase == null)
-            throw new IllegalArgumentException
-            (rb.getString(LogFacade.RESOURCES_NULL));
+            throw new IllegalArgumentException(rb.getString(LogFacade.RESOURCES_NULL));
 
         // START S1AS8PE 4965170
         base = docBaseFileCache.get(docBase);
-        if (base == null){
+        if (base == null) {
             // Calculate a File object referencing this document base directory
             base = new File(docBase);
             docBaseFileCache.put(docBase,base);
         }
         // END S1AS8PE 4965170
 
+        // Validate that the document base is an existing directory
+        if (!base.exists() || !base.isDirectory() || !base.canRead()) {
+            throw new IllegalArgumentException(
+                    MessageFormat.format(rb.getString(LogFacade.FILE_RESOURCES_BASE), docBase));
+        }
+
+        this.absoluteBase = normalize(base.getAbsolutePath());
 
         try {
             base = base.getCanonicalFile();
+            this.canonicalBase = base.getCanonicalPath();
         } catch (IOException e) {
-            // Ignore
+            throw new IllegalArgumentException(e);
         }
-
-        // Validate that the document base is an existing directory
-        if (!base.exists() || !base.isDirectory() || !base.canRead())
-            throw new IllegalArgumentException
-                    (MessageFormat.format(rb.getString(LogFacade.FILE_RESOURCES_BASE), docBase));
-        this.absoluteBase = base.getAbsolutePath();
         super.setDocBase(docBase);
-
     }
-
 
     /**
      * Set case sensitivity.
@@ -582,16 +581,19 @@ public class FileDirContext extends BaseDirContext {
         throws NamingException {
         
         // Note: No custom attributes allowed
-         
+
+        // bind() is meant to create a file so ensure that the path doesn't end in '/'
+        if (name.endsWith("/")) {
+            throw new NamingException(MessageFormat.format(rb.getString(LogFacade.RESOURCES_BIND_FAILED), name));
+        }
+
         File file = new File(base, name);
         if (file.exists())
             throw new NameAlreadyBoundException
                     (MessageFormat.format(rb.getString(LogFacade.RESOURCES_ALREADY_BOUND), name));
 
         rebind(file, obj, attrs);
-        
     }
-
 
     /**
      * Binds a name to an object, along with associated attributes, 
@@ -871,7 +873,37 @@ public class FileDirContext extends BaseDirContext {
      * @return the validated java.io.File
      */
     protected File file(String name, boolean fileMustExist) {
+        if (name.equals("/")) {
+            name = "";
+        }
+
         return validate(base, name, name, fileCache, fileMustExist);
+    }
+
+    private boolean isInvalidWindowsFilename(String name) {
+        final int len = name.length();
+        if (len == 0) {
+            return false;
+        }
+        // This consistently ~10 times faster than the equivalent regular
+        // expression irrespective of input length.
+        for (int i = 0; i < len; i++) {
+            char c = name.charAt(i);
+            if (c == '\"' || c == '<' || c == '>') {
+                // These characters are disallowed in Windows file names and
+                // there are known problems for file names with these characters
+                // when using File#getCanonicalPath().
+                // Note: There are additional characters that are disallowed in
+                //       Windows file names but these are not known to cause
+                //       problems when using File#getCanonicalPath().
+                return true;
+            }
+        }
+        // Windows does not allow file names to end in ' ' unless specific low
+        // level APIs are used to create the files that bypass various checks.
+        // File names that end in ' ' are known to cause problems when using
+        // File#getCanonicalPath().
+        return name.charAt(len - 1) == ' ';
     }
 
     /*
@@ -881,10 +913,17 @@ public class FileDirContext extends BaseDirContext {
 
         // START S1AS8PE 4965170
         File file = fCache.get(keyName);
-        if (file == null){
+        if (file == null) {
             file = new File(baseFile, name);
         }
         // END S1AS8PE 4965170
+
+        // If the requested names ends in '/', the Java File API will return a
+        // matching file if one exists. This isn't what we want as it is not
+        // consistent with the Servlet spec rules for request mapping.
+        if (file.isFile() && name.endsWith("/")) {
+            return null;
+        }
         
         if (!fileMustExist || file.exists() && file.canRead()) {
 
@@ -895,13 +934,19 @@ public class FileDirContext extends BaseDirContext {
             }
             // END S1AS 6200277
 
+            // Additional Windows specific checks to handle known problems with
+            // File.getCanonicalPath()
+            if (JrePlatform.IS_WINDOWS && isInvalidWindowsFilename(name)) {
+                return null;
+            }
+
             // Check that this file belongs to our root path
             String canPath = null;
             try {
                 canPath = file.toPath().toRealPath().toString();
             } catch (IOException e) {
             }
-            if (canPath == null) {
+            if (canPath == null || !canPath.startsWith(canonicalBase)) {
                 if (logger.isLoggable(Level.FINE)) {
                     logger.log(Level.FINE, LogFacade.FILE_RESOURCES_NULL_CANONICAL_PATH);
                 }
@@ -927,8 +972,7 @@ public class FileDirContext extends BaseDirContext {
                 if (fileAbsPath.endsWith("."))
                     fileAbsPath = fileAbsPath + "/";
                 String absPath = normalize(fileAbsPath);
-                canPath = normalize(canPath);
-                if ((canPath == null) || (absPath == null)) {
+                if (absPath == null) {
                     if (logger.isLoggable(Level.FINE)) {
                         logger.log(Level.FINE, LogFacade.FILE_RESOURCES_NULL_ABS_PATH,
                                 new Object[]{canPath,absPath});
@@ -940,14 +984,15 @@ public class FileDirContext extends BaseDirContext {
                     absPath = absPath.substring(absoluteBase.length() + 1);
                     if (absPath.equals(""))
                         absPath = "/";
-                    canPath = canPath.substring(absoluteBase.length() + 1);
-                    if (canPath.equals(""))
-                        canPath = "/";
+                    canPath = canPath.substring(canonicalBase.length() + 1);
+                    if (canPath.length() > 0) {
+                        canPath = normalize(canPath);
+                    }
                     if (!canPath.equals(absPath)) {
-                    // START S1AS 6200277
-                    //  return null;
-                    // END S1AS 6200277
-                    // START S1AS 6200277
+                        // START S1AS 6200277
+                        //  return null;
+                        // END S1AS 6200277
+                        // START S1AS 6200277
                         if (canPath.equalsIgnoreCase(absPath)
                                 || !allowLinking) {
                             if (logger.isLoggable(Level.FINE)) {
