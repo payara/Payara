@@ -1,0 +1,68 @@
+name: Close Old Voted issues
+
+on:
+  schedule:
+    - cron: "* * * * 1-5"
+
+jobs:
+  oldvoting-labeler-test:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Check for old voted issues
+        id: old-vote-issues
+        uses: actions/github-script@v6
+        with:
+          script: |
+            // - github: A pre-authenticated octokit/rest.js client
+            const { owner, repo } = context.repo;
+            const votingLabel = "Status: Voting";
+
+            // Query all GH issues for Voting 
+            // is:issue is:open label:"Status: Voting" 
+            const issuesResponse = await github.rest.issues.listForRepo({
+              owner,
+              repo,
+              labels: votingLabel,
+              state: 'open',
+            });
+            
+            //issuesResponse has all the issues labeled with Voting.
+            if (issuesResponse.data.length === 0) {
+              core.info('No issues labelled with Voting found to process. Exiting.');
+              return;
+            }
+            const now = new Date().getTime();
+            
+            for (const issue of issuesResponse.data) {
+              core.info(`Processing issue #${issue.number}`);
+              core.info(`Issue was created ${issue.created_at}`);            
+              const issueDate = new Date(issue.created_at).getTime();
+              const daysSinceCreated = (now - issueDate) / 1000 / 60 / 60 / 24;
+              if (daysSinceCreated > 5) { //change it to 180
+                //core.info(`Closing #${issue.number} because it has not got enough votes in the last ${daysSinceCreated} days`);
+                const message = `Greetings, closing the issue because it has not got enough votes in the last 6 months.`;
+                await github.rest.issues.removeLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  name: votingLabel,
+                });
+                
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  body: message,
+                });                
+                
+               
+                await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                state: 'closed',
+               });
+              }
+            }

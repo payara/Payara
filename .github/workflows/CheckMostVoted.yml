@@ -1,0 +1,82 @@
+name: Test Most Voted Enhancement
+
+on:
+  schedule:
+    - cron: "* * * * 1-5"
+
+jobs:
+  voting-labeler-test:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Check for most voted enhancement
+        id: vote-issues
+        uses: actions/github-script@v6
+        with:
+          script: |
+            // - github: A pre-authenticated octokit/rest.js client
+            const { owner, repo } = context.repo;
+            const openLabel = "Status: Open";
+            const votingLabel = "Status: Voting";
+
+            // Query all GH issues for Voting 
+            // is:issue is:open label:"Status: Voting" reactions:+1>0 sort:reactions-+1-desc 
+            const issuesResponse = await github.rest.issues.listForRepo({
+              owner,
+              repo,
+              labels: votingLabel,
+              state: 'open',
+              sort: 'reactions-+1',
+              direction: 'desc',
+            });
+            
+            //issuesResponse has all the issues labeled with Voting.
+            if (issuesResponse.data.length === 0) {
+              core.info('No issues labelled with Voting found to process. Exiting.');
+              return;
+            }
+            //filter issues with atleast one vote. Change it later to >1
+            issuesResponse.data = issuesResponse.data.filter((i) => i.reactions['+1'] > 0)
+            
+            if (issuesResponse.data.length === 0) {
+              core.info('No issues labelled with Voting has votes. Exiting.');
+              return;
+            }
+            
+            //if there are more than 1 issues for voting, then sort by reactions.
+            if (issuesResponse.data.length > 1) {
+              Total = issuesResponse.data.length
+              issuesResponse.data.sort.reactions-+1;
+            }
+            MostVotes = 0
+
+            for (const issue of issuesResponse.data) {
+              if (MostVotes == 0) { // Saving the number of votes for the first issue
+                MostVotes = issue.reactions['+1'];
+                core.info(`Highest votes is  ${MostVotes}`);
+                }
+              core.info(`Processing issue #${issue.number}`);
+              core.info(`Number of +1 reactions ${issue.reactions['+1']}`);
+              core.info(`Issue was created ${issue.created_at}`);
+            }
+            
+            //filter out the issues with MostVotes number. This is to cover the case with more than 1 isues with the same number of votes
+            issuesResponse.data = issuesResponse.data.filter((i) => i.reactions['+1'] == MostVotes)
+            
+            //Sort by created by       
+            issuesResponse.data.sort.created_at;
+            OldestIssue = 0;
+            OldestDate = new Date(null).getTime();
+            for (const issue of issuesResponse.data) {
+                issueDate = new Date(issue.created_at).getTime();
+                if (OldestDate == 0) {
+                  OldestDate = new Date(issue.created_at).getTime();
+                  OldestIssue = issue;
+                  }
+                if(issueDate < OldestDate)  {
+                  OldestDate = issueDate;
+                  OldestIssue = issue;
+                }
+              }
+            core.info(`Final issue selected for enhancement is #${OldestIssue.number} created on ${OldestIssue.created_at}`);

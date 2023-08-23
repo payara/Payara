@@ -1,0 +1,48 @@
+name: Monitor Inactive Open Issues
+
+on:
+  schedule:
+    - cron: "0 10 * * 1-5"
+
+jobs:
+  inactive-labeler:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Check for inactive open issues
+        uses: actions/github-script@v6
+        env:
+          daysInterval: ${{ vars.MONITORING_INACTIVE_INTERVAL_DAYS }}
+        with:
+          script: |
+            // - github: A pre-authenticated octokit/rest.js client
+            const { owner, repo } = context.repo;
+            const openLabel = "Status: Open";
+            
+            //const parsedDays = parseFloat("${{ env.daysInterval }}");
+            const parsedDays = 14;
+            const timeThreshold = parsedDays * 24 * 60 * 60 * 1000;
+            
+            // Query all GH issues that are open
+            const issuesResponse = await github.rest.issues.listForRepo({
+              owner,
+              repo,
+              labels: openLabel,
+              state: "open",  
+            });
+
+            for (const issue of issuesResponse.data) {
+              const updatedAt = new Date(issue.updated_at).getTime();
+              const currentTime = new Date().getTime();
+              const updateMessage = `Please update the issue #${issue.number}.`;
+
+              if (currentTime - updatedAt > timeThreshold) {
+                 await github.rest.issues.createComment({
+                  owner,
+                  repo,
+                  issue_number: issue.number,
+                  body: updateMessage,
+                });
+              }
+            }
