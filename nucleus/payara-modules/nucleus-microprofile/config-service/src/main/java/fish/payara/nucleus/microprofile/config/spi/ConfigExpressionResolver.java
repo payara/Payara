@@ -46,8 +46,11 @@ import org.glassfish.config.support.TranslatedConfigView;
 import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import org.jboss.logging.Logger;
 
 final class ConfigExpressionResolver {
+    
+    private static final Logger log = Logger.getLogger(ConfigExpressionResolver.class);
 
     private final Iterable<ConfigSource> sources;
 
@@ -121,10 +124,16 @@ final class ConfigExpressionResolver {
         for (ConfigSource source : sources) {
             final String result = source.getValue(propertyName);
             if (result != null && !result.isEmpty()) {
+                String resolvedExpression = null;
+                try {
+                    resolvedExpression = resolveExpression(result);
+                } catch(NoSuchElementException noSuchElementException) {
+                    log.info("Error when expansion of the field Microprofile 3.1");
+                }
                 return new ConfigValueImpl(
                     propertyName,
                         result,
-                        resolveExpression(result),
+                        resolvedExpression,
                         source.getName(),
                         source.getOrdinal()
                 );
