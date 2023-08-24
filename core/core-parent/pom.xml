@@ -599,4 +599,64 @@
             </plugins>
         </pluginManagement>
     </build>
+    
+    <profiles>
+        <profile>
+            <id>force-semver</id>
+            <!-- Force semantic versioning. The differences are in target/japicmp in text, html and xml -->
+            <build>
+                <plugins>
+                    <!-- plugin to parse version number without "-SNAPSHOT" -->
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>build-helper-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>released-version</id>
+                                <goals>
+                                    <goal>released-version</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>com.github.siom79.japicmp</groupId>
+                        <artifactId>japicmp-maven-plugin</artifactId>
+                        <version>0.17.2</version>
+                        <configuration>
+                            <!-- Use the latest published version. It's necessary to use specific version because subprojects using glassfish-jar cannot be found. -->
+                            <oldVersion> 
+                                <dependency>
+                                    <groupId>${project.groupId}</groupId>
+                                    <artifactId>${project.artifactId}</artifactId>
+                                    <version>${releasedVersion.majorVersion}.${releasedVersion.minorVersion}.${releasedVersion.incrementalVersion}</version>
+                                    <type>jar</type>
+                                </dependency>
+                            </oldVersion>
+                            <!-- Use the current version. It's necessary to use <file> because subprojects using glassfish-jar cannot be found.-->
+                            <newVersion>
+                                <file>
+                                    <path>${project.build.directory}/${project.artifactId}-${project.version}.jar</path>
+                                </file>
+                            </newVersion>
+                            <parameter>
+                                <!-- see documentation https://siom79.github.io/japicmp/MavenPlugin.html -->
+                                <ignoreMissingClasses>true</ignoreMissingClasses>
+                                <breakBuildBasedOnSemanticVersioning>true</breakBuildBasedOnSemanticVersioning>
+                            </parameter>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>cmp</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
 </project>
