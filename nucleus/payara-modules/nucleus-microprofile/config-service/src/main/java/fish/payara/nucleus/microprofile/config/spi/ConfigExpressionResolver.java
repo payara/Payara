@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2021-2022] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2021-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -103,10 +103,12 @@ final class ConfigExpressionResolver {
                     0
             );
         }
-
+        
+        ConfigValueImpl resultWithoutProfile = getValue(propertyName);
         String profiledPropertyName = resolveExpression((profile == null ? "" : "%" + profile + ".") + propertyName);
-
-        ConfigValueImpl result = getValue(profiledPropertyName);
+        ConfigValueImpl resultWithProfile = getValue(profiledPropertyName);
+        
+        ConfigValueImpl result = resultWithoutProfile.getSourceOrdinal() > resultWithProfile.getSourceOrdinal() ? resultWithoutProfile : resultWithProfile;
 
         if (result == null) {
             String resolvedPropertyName = resolveExpression(propertyName);
