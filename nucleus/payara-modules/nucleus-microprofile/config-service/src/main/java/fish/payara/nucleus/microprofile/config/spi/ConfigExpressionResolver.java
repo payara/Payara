@@ -107,8 +107,8 @@ final class ConfigExpressionResolver {
         String profiledPropertyName = resolveExpression((profile == null ? "" : "%" + profile + ".") + propertyName);
         ConfigValueImpl result = getValue(profiledPropertyName);
         
-        if(profile != null) {
-            ConfigValueImpl resultWithoutProfile = getValue(propertyName);
+        if(profile != null && result != null) {
+            ConfigValueImpl resultWithoutProfile = getValue(resolveExpression(propertyName));
             result = resultWithoutProfile.getSourceOrdinal() == result.getSourceOrdinal() ? result :
                     (resultWithoutProfile.getSourceOrdinal() > result.getSourceOrdinal()) ? resultWithoutProfile : result;
         } 
