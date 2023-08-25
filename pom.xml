@@ -58,7 +58,6 @@
     <name>Payara Project</name>
 
     <modules>
-        <module>core</module>
         <module>nucleus</module>
         <module>appserver</module>
         <module>api</module>
@@ -296,6 +295,19 @@
                     <url>https://nexus.payara.fish/repository/payara-snapshots/</url>
                 </snapshotRepository>
             </distributionManagement>
+        </profile>
+
+        <profile>
+            <id>BuildCore</id>
+            <activation>
+                <property>
+                    <name>build.core.skip</name>
+                    <value>!true</value>
+                </property>
+            </activation>
+            <modules>
+                <module>core</module>
+            </modules>
         </profile>
 
     </profiles>
