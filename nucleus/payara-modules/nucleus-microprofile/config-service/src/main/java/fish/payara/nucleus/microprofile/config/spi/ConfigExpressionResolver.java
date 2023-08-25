@@ -103,18 +103,15 @@ final class ConfigExpressionResolver {
                     0
             );
         }
-        ConfigValueImpl result = null;
-        String profiledPropertyName = null;
-        ConfigValueImpl resultWithoutProfile = getValue(propertyName);
+        
+        String profiledPropertyName = resolveExpression((profile == null ? "" : "%" + profile + ".") + propertyName);
+        ConfigValueImpl result = getValue(profiledPropertyName);
+        
         if(profile != null) {
-            profiledPropertyName = resolveExpression("%" + profile + "." + propertyName);
-            ConfigValueImpl resultWithProfile = getValue(profiledPropertyName);
-            result = resultWithoutProfile.getSourceOrdinal() == resultWithProfile.getSourceOrdinal() ? resultWithProfile :
-                    (resultWithoutProfile.getSourceOrdinal() > resultWithProfile.getSourceOrdinal()) ? resultWithoutProfile : resultWithProfile;
-        } else {
-            profiledPropertyName = propertyName;
-            result = resultWithoutProfile;
-        }
+            ConfigValueImpl resultWithoutProfile = getValue(propertyName);
+            result = resultWithoutProfile.getSourceOrdinal() == result.getSourceOrdinal() ? result :
+                    (resultWithoutProfile.getSourceOrdinal() > result.getSourceOrdinal()) ? resultWithoutProfile : result;
+        } 
         
 
         if (result == null) {
