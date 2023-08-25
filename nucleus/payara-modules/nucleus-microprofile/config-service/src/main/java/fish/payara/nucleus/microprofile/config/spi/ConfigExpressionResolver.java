@@ -134,7 +134,8 @@ final class ConfigExpressionResolver {
                 try {
                     resolvedExpression = resolveExpression(result);
                 } catch(NoSuchElementException noSuchElementException) {
-                    log.info("Error when expansion of the field Microprofile 3.1");
+                    log.warn("We don't need to thrown the exception just wrap the null result " +
+                            "into the ConfigValueImpl - MP Config 3.1");
                 }
                 return new ConfigValueImpl(
                     propertyName,
