@@ -17,7 +17,6 @@
         <maven.compiler.target>11</maven.compiler.target>
         <payara.version>6.5.0.RC1</payara.version>
         <payara.profile>all</payara.profile>
-        <jdk.version>11</jdk.version>
     </properties>
 
     
@@ -85,7 +84,6 @@
                 <jdk>1.8</jdk>
             </activation>
             <properties> 
-                <jdk.version>8</jdk.version> 
                 <maven.compiler.source>1.8</maven.compiler.source>
                 <maven.compiler.target>1.8</maven.compiler.target>
             </properties>
@@ -105,8 +103,6 @@
                 <jdk>11</jdk>
             </activation>
             <properties>
-                <payara.profile>all</payara.profile>   
-                <jdk.version>11</jdk.version> 
                 <maven.compiler.source>11</maven.compiler.source>
                 <maven.compiler.target>11</maven.compiler.target>
             </properties>
@@ -117,8 +113,6 @@
                 <jdk>17</jdk>
             </activation>
             <properties>
-                <payara.profile>all</payara.profile>   
-                <jdk.version>17</jdk.version> 
                 <maven.compiler.source>17</maven.compiler.source>
                 <maven.compiler.target>17</maven.compiler.target>
             </properties>
