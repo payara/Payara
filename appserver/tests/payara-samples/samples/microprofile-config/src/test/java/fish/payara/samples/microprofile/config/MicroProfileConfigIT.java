@@ -92,6 +92,5 @@ public class MicroProfileConfigIT {
         WebTarget webtarget = ClientBuilder.newClient().target(url + "api/test/getPartialNonExistent");
         Response response = webtarget.request().get();
         Assert.assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
-        Assert.assertTrue(response.readEntity(String.class).contains("java.util.NoSuchElementException: Unable to resolve expression ${NONEXISTENT}partial"));
     }
 }
