@@ -596,6 +596,11 @@
                     <artifactId>build-helper-maven-plugin</artifactId>
                     <version>${maven.build.helper.plugin.version}</version>
                 </plugin>
+                <plugin>
+                    <groupId>com.github.siom79.japicmp</groupId>
+                    <artifactId>japicmp-maven-plugin</artifactId>
+                    <version>${japicmp.maven.plugin.version}</version>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
@@ -622,7 +627,6 @@
                     <plugin>
                         <groupId>com.github.siom79.japicmp</groupId>
                         <artifactId>japicmp-maven-plugin</artifactId>
-                        <version>0.17.2</version>
                         <configuration>
                             <!-- Use the latest published version. It's necessary to use specific version because subprojects using glassfish-jar cannot be found. -->
                             <oldVersion> 
