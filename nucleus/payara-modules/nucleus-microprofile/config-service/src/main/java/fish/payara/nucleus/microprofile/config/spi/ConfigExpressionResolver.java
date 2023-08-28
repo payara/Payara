@@ -134,8 +134,7 @@ final class ConfigExpressionResolver {
                 try {
                     resolvedExpression = resolveExpression(result);
                 } catch(NoSuchElementException noSuchElementException) {
-                    log.warn("We don't need to thrown the exception just wrap the null result " +
-                            "into the ConfigValueImpl - MP Config 3.1");
+                    log.warn(String.format("Using null value in configuration, expression %s", result));
                 }
                 return new ConfigValueImpl(
                     propertyName,
