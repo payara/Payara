@@ -9,7 +9,7 @@ ENV HOME_DIR=${PAYARA_HOME}
 ENV PAYARA_DIR=${HOME_DIR} \
     SCRIPT_DIR=${HOME_DIR} \
     DEPLOY_DIR=/opt/payara/deployments \
-    JVM_ARGS="" \
+    JVM_ARGS="-Djdk.util.zip.disableZip64ExtraFieldValidation=true" \
     MEM_MAX_RAM_PERCENTAGE="70.0" \
     MEM_XSS="512k"
 
