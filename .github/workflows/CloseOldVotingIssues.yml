@@ -2,7 +2,7 @@ name: Close Old Voted issues
 
 on:
   schedule:
-    - cron: "* * * * 1-5"
+    - cron: "0 10 1 * *"
 
 jobs:
   oldvoting-labeler-test:
@@ -40,7 +40,7 @@ jobs:
               core.info(`Issue was created ${issue.created_at}`);            
               const issueDate = new Date(issue.created_at).getTime();
               const daysSinceCreated = (now - issueDate) / 1000 / 60 / 60 / 24;
-              if (daysSinceCreated > 5) { //change it to 180
+              if (daysSinceCreated > 180) { // 180 days
                 //core.info(`Closing #${issue.number} because it has not got enough votes in the last ${daysSinceCreated} days`);
                 const message = `Greetings, closing the issue because it has not got enough votes in the last 6 months.`;
                 await github.rest.issues.removeLabel({
