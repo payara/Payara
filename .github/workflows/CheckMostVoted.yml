@@ -2,7 +2,7 @@ name: Test Most Voted Enhancement
 
 on:
   schedule:
-    - cron: "* * * * 1-5"
+    - cron: "0 10 1 * *"
 
 jobs:
   voting-labeler-test:
@@ -37,7 +37,7 @@ jobs:
               return;
             }
             //filter issues with atleast one vote. Change it later to >1
-            issuesResponse.data = issuesResponse.data.filter((i) => i.reactions['+1'] > 0)
+            issuesResponse.data = issuesResponse.data.filter((i) => i.reactions['+1'] > 1)
             
             if (issuesResponse.data.length === 0) {
               core.info('No issues labelled with Voting has votes. Exiting.');
