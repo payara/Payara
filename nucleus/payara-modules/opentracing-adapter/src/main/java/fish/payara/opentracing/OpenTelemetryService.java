@@ -262,7 +262,7 @@ public class OpenTelemetryService implements EventListener {
             try {
                 return AutoConfiguredOpenTelemetrySdk.builder()
                         .setServiceClassLoader(Thread.currentThread().getContextClassLoader())
-                        .registerShutdownHook(false)
+                        .disableShutdownHook()
                         .addTracerProviderCustomizer((builder, config) -> {
                           if (isPayaraTracingEnabled()) {
                               return builder.addSpanProcessor(new PayaraRequestTracingProcessor(locator.getService(RequestTracingService.class)));
@@ -271,7 +271,7 @@ public class OpenTelemetryService implements EventListener {
                           }
                         })
                         .addPropertiesSupplier(() -> props)
-                        .setResultAsGlobal(false)
+                        //.setResultAsGlobal(false)
                         .build().getOpenTelemetrySdk();
             } catch (ConfigurationException ce) {
                 logger.log(Level.SEVERE, "Failed to configure OpenTelemetry for " + applicationName + " using classlaoder "
