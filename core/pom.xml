@@ -56,7 +56,7 @@
     <properties>
         <payara.core.version>6.2023.9-SNAPSHOT</payara.core.version>
         <!-- BOM dependencies versions -->
-        <payara.security-connectors.version>3.0.alpha6</payara.security-connectors.version>
+        <payara.security-connectors.version>3.0.alpha7</payara.security-connectors.version>
         <hk2.version>3.0.1.payara-p3</hk2.version>
         <osgi.version>7.0.0</osgi.version>
         <osgi.dto.version>1.1.1</osgi.dto.version>
@@ -103,10 +103,10 @@
         <javax.cache-api.version>1.1.1.payara-p1</javax.cache-api.version>
         <hazelcast.version>5.3.1</hazelcast.version>
         <jakartaee.api.version>10.0.0</jakartaee.api.version>
-        <weld-api.version>5.0.SP2</weld-api.version>
+        <weld-api.version>5.0.SP3</weld-api.version>
         <weld.version>5.0.1.Final</weld.version>
         <tyrus.version>2.1.0.payara-p1</tyrus.version>
-        <jsp-impl.version>3.1.0</jsp-impl.version>
+        <jsp-impl.version>3.2.0</jsp-impl.version>
         <asm.version>9.5</asm.version>
         <websocket-api.version>2.1.0</websocket-api.version>
         <jax-rs-api.impl.version>3.1.0</jax-rs-api.impl.version>
@@ -179,7 +179,7 @@
         <hk2.plugin.version>3.0.2</hk2.plugin.version>
         <maven.build.helper.plugin.version>3.3.0</maven.build.helper.plugin.version>
         <maven.flatten.plugin.version>1.5.0</maven.flatten.plugin.version>
-
+        <japicmp.maven.plugin.version>0.17.2</japicmp.maven.plugin.version>
 
         <!-- build settings -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
