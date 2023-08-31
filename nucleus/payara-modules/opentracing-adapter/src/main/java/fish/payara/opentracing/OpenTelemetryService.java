@@ -271,7 +271,7 @@ public class OpenTelemetryService implements EventListener {
                           }
                         })
                         .addPropertiesSupplier(() -> props)
-                        //.setResultAsGlobal(false)
+                        .setResultAsGlobal()
                         .build().getOpenTelemetrySdk();
             } catch (ConfigurationException ce) {
                 logger.log(Level.SEVERE, "Failed to configure OpenTelemetry for " + applicationName + " using classlaoder "
