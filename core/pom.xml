@@ -145,8 +145,9 @@
         <jna.version>5.12.1</jna.version>
         <!-- A pure Java implementation of the SSH-2 protocol -->
         <trilead-ssh2.version>build-217-jenkins-16</trilead-ssh2.version>
-        <opentelemetry.version>1.26.0</opentelemetry.version>
-        <opentelemetry.alpha.version>1.26.0-alpha</opentelemetry.alpha.version>
+        <opentelemetry.version>1.29.0</opentelemetry.version>
+        <opentelemetry.alpha.version>1.29.0-alpha</opentelemetry.alpha.version>
+        <opentelemetry.alpha26.version>1.26.0-alpha</opentelemetry.alpha26.version>
         <testng.version>7.4.0</testng.version>
         <bouncycastle-jdk15on.version>1.64</bouncycastle-jdk15on.version>
         <jsftemplating.version>3.0.0</jsftemplating.version>
