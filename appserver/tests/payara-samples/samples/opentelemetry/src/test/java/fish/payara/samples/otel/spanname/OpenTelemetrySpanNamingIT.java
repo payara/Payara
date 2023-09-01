@@ -51,12 +51,19 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import io.opentelemetry.api.GlobalOpenTelemetry;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 @RunWith(Arquillian.class)
 public class OpenTelemetrySpanNamingIT extends AbstractSpanNameTest {
+
+    @BeforeEach
+    public void setup() {
+        //to add reconfiguration for tests
+        GlobalOpenTelemetry.resetForTest();
+    }
     public static class SpanConfig extends Conf {
         public SpanConfig() {
             super(Map.of(SPAN_NAMING_KEY, "opentelemetry"));
