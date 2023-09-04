@@ -11,7 +11,8 @@ jobs:
       issues: write
     steps:
       - name: Check for inactive open issues
-        uses: actions/github-script@v6,neonidian/teams-notify-build-status@v3
+      - uses: actions/github-script@v6
+      - uses: neonidian/teams-notify-build-status@v3
         env:
           daysInterval: ${{ vars.MONITORING_INACTIVE_INTERVAL_DAYS }}
         with:
