@@ -218,7 +218,7 @@
             <dependency>
                 <groupId>io.opentelemetry</groupId>
                 <artifactId>opentelemetry-sdk-extension-autoconfigure</artifactId>
-                <version>${opentelemetry.alpha.version}</version>
+                <version>${opentelemetry.version}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
@@ -242,13 +242,13 @@
             <dependency>
                 <groupId>io.opentelemetry</groupId>
                 <artifactId>opentelemetry-sdk-logs</artifactId>
-                <version>${opentelemetry.alpha.version}</version>
+                <version>${opentelemetry.version}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>io.opentelemetry</groupId>
                 <artifactId>opentelemetry-api-logs</artifactId>
-                <version>${opentelemetry.alpha.version}</version>
+                <version>${opentelemetry.alpha26.version}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
