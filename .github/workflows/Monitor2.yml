@@ -16,6 +16,7 @@ jobs:
         env:
           daysInterval: ${{ vars.MONITORING_INACTIVE_INTERVAL_DAYS }}
         with:
+          webhookUrl: ${{ secrets.TEAMS_INCOMING_WEBHOOK_URL }}
           script: |
             // - github: A pre-authenticated octokit/rest.js client
             const { owner, repo } = context.repo;
