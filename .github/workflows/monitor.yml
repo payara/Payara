@@ -40,6 +40,6 @@ jobs:
                   const updatedAt = new Date(issue.updated_at).getTime();
                   const currentTime = new Date().getTime();
                   if(currentTime - updatedAt > timeThreshold) {
-                      
+                      message: Workflow run passed
                 }
              }
