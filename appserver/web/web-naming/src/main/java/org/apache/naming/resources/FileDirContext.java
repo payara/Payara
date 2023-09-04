@@ -214,10 +214,10 @@ public class FileDirContext extends BaseDirContext {
                     (MessageFormat.format(rb.getString(LogFacade.FILE_RESOURCES_BASE), docBase));
         }
 
-        this.absoluteBase = base.getAbsolutePath();
+        this.absoluteBase = normalize(base.getAbsolutePath());
 
         try {
-            this.canonicalBase = base.getCanonicalPath();
+            this.canonicalBase = normalize(base.getCanonicalPath());
         } catch (IOException e) {
             throw new IllegalArgumentException(e);
         }
@@ -927,7 +927,7 @@ public class FileDirContext extends BaseDirContext {
             // Check that this file belongs to our root path
             String canPath = null;
             try {
-                canPath = file.toPath().toRealPath().toString();
+                canPath = normalize(file.toPath().toRealPath().toString());
             } catch (IOException e) {
             }
             if (canPath == null || !canPath.startsWith(canonicalBase)) {
