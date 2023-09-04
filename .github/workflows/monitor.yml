@@ -36,4 +36,8 @@ jobs:
         with:
             webhookUrl: ${{ secrets.TEAMS_INCOMING_WEBHOOK_URL }}
             message: Workflow run passed !!
+             for (const issue of issuesResponse.data) {
+                  const updatedAt = new Date(issue.updated_at).getTime();
+                  const currentTime = new Date().getTime();
+             }
 
