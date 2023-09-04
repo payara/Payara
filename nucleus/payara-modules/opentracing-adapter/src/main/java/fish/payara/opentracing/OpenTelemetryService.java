@@ -131,7 +131,10 @@ public class OpenTelemetryService implements EventListener {
             logger.log(Level.WARNING, "OpenTelemetry service not registered to Payara Events: "
                     + "The Tracer for an application won't be removed upon undeployment");
         }
-        GlobalOpenTelemetry.set(new GlobalTelemetry());
+        OpenTelemetry openTelemetry = GlobalOpenTelemetry.get();
+        if(openTelemetry == null) {
+            GlobalOpenTelemetry.set(new GlobalTelemetry());
+        }
     }
 
     @PreDestroy
@@ -262,7 +265,7 @@ public class OpenTelemetryService implements EventListener {
             try {
                 return AutoConfiguredOpenTelemetrySdk.builder()
                         .setServiceClassLoader(Thread.currentThread().getContextClassLoader())
-                        .registerShutdownHook(false)
+                        .disableShutdownHook()
                         .addTracerProviderCustomizer((builder, config) -> {
                           if (isPayaraTracingEnabled()) {
                               return builder.addSpanProcessor(new PayaraRequestTracingProcessor(locator.getService(RequestTracingService.class)));
@@ -271,7 +274,6 @@ public class OpenTelemetryService implements EventListener {
                           }
                         })
                         .addPropertiesSupplier(() -> props)
-                        .setResultAsGlobal(false)
                         .build().getOpenTelemetrySdk();
             } catch (ConfigurationException ce) {
                 logger.log(Level.SEVERE, "Failed to configure OpenTelemetry for " + applicationName + " using classlaoder "
