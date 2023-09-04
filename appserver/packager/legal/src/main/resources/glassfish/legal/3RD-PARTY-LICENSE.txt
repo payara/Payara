@@ -28,7 +28,7 @@ Apache Ant 1.10.9
 Apache BCEL 6.6.1
 Apache Felix OSGI 7.x
 Apache Log4j 1.2.12, 1.2.17
-Apache Santaurio 3.0.0
+Apache Santuario 3.0.2
 Classmate 1.5.1
 Commons CLI 1.4
 Commons Codec 1.15
