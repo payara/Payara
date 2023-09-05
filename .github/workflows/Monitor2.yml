@@ -12,6 +12,8 @@ jobs:
     steps:
 
       - uses: neonidian/teams-notify-build-status@v3
+        with:
+                  webhookUrl: ${{ secrets.TEAMS_INCOMING_WEBHOOK_URL }}
       
       - name: Check for inactive open issues
         uses: actions/github-script@v6
