@@ -10,8 +10,12 @@ jobs:
     permissions:
       issues: write
     steps:
+
+      - uses: neonidian/teams-notify-build-status@v3
+      
       - name: Check for inactive open issues
         uses: actions/github-script@v6
+        
         env:
                   
           script: |
