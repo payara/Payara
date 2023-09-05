@@ -2,7 +2,7 @@ name: Monitor Inactive Open Issues
 
 on:
   schedule:
-    - cron: "* * * * 1-5"
+    - cron: "0 10 * * 1-5"
 
 jobs:
   inactive-labeler:
@@ -10,19 +10,17 @@ jobs:
     permissions:
       issues: write
     steps:
-      - uses: neonidian/teams-notify-build-status@v3
-        with:
-                webhookUrl: ${{ secrets.TEAMS_INCOMING_WEBHOOK_URL }}
-      
-      - name: step1 
+      - name: Check for inactive open issues
         uses: actions/github-script@v6
         env:
           daysInterval: ${{ vars.MONITORING_INACTIVE_INTERVAL_DAYS }}
-        
+        with:
           script: |
             // - github: A pre-authenticated octokit/rest.js client
             const { owner, repo } = context.repo;
             const openLabel = "Status: Open";
+            
+            //const parsedDays = parseFloat("${{ env.daysInterval }}");
             const parsedDays = 14;
             const timeThreshold = parsedDays * 24 * 60 * 60 * 1000;
             
@@ -33,5 +31,16 @@ jobs:
               labels: openLabel,
               state: "open",  
             });
-
-     
+            for (const issue of issuesResponse.data) {
+              const updatedAt = new Date(issue.updated_at).getTime();
+              const currentTime = new Date().getTime();
+              const updateMessage = `Please update the issue #${issue.number}.`;
+              if (currentTime - updatedAt > timeThreshold) {
+                 await github.rest.issues.createComment({
+                  owner,
+                  repo,
+                  issue_number: issue.number,
+                  body: updateMessage,
+                });
+              }
+            }
