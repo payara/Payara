@@ -165,6 +165,11 @@ public class WeightedSnapshot extends Snapshot {
         return percentileValues;
     }
 
+    @Override
+    public HistogramBucket[] bucketValues() {
+        return new HistogramBucket[0];
+    }
+
     private double getValue(double quantile) {
         if (quantile < 0.0 || quantile > 1.0 || Double.isNaN(quantile)) {
             throw new IllegalArgumentException(quantile + " is not in [0..1]");
