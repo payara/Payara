@@ -91,7 +91,7 @@
         <microprofile-fault-tolerance.version>4.0.2.payara-p1</microprofile-fault-tolerance.version>
         <microprofile-jwt-auth.version>2.1</microprofile-jwt-auth.version>
         <microprofile-healthcheck.version>4.0</microprofile-healthcheck.version>
-        <microprofile-metrics.version>5.1.0-RC1</microprofile-metrics.version>
+        <microprofile-metrics.version>5.1.0-RC1.payara-p1</microprofile-metrics.version>
         <microprofile-rest-client.version>3.0.1</microprofile-rest-client.version>
         <microprofile-openapi.version>3.1</microprofile-openapi.version>
         <jakarta.enterprise.deploy-api.version>1.7.2</jakarta.enterprise.deploy-api.version>
