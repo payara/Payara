@@ -13,7 +13,7 @@ jobs:
       - name: Check for inactive open issues
         uses: actions/github-script@v6
         env:
-          daysInterval: ${{ vars.MONITORING_INACTIVE_INTERVAL_DAYS }}
+          
         with:
           script: |
             // - github: A pre-authenticated octokit/rest.js client
@@ -33,11 +33,16 @@ jobs:
             });
       - name: sending a message
         uses: neonidian/teams-notify-build-status@v3
+        env: 
         with:
-            webhookUrl: ${{ secrets.TEAMS_INCOMING_WEBHOOK_URL }}
-             for (const issue of issuesResponse.data) {
+            script: |
+               for (const issue of issuesResponse.data) {
                   const updatedAt = new Date(issue.updated_at).getTime();
                   const currentTime = new Date().getTime();
-                  message: Workflow run passed
-             }
+                  
+                
+            webhookUrl: ${{ secrets.TEAMS_INCOMING_WEBHOOK_URL }}
+            message: Workflow run passed
+                 }
+             
 
