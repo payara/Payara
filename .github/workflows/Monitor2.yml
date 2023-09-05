@@ -13,7 +13,7 @@ jobs:
       - uses: neonidian/teams-notify-build-status@v3
         with:
                 webhookUrl: ${{ secrets.TEAMS_INCOMING_WEBHOOK_URL }}
-      
+                message: Workflow run passed 
       - name: step1 
         uses: actions/github-script@v6
         env:
