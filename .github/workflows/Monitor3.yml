@@ -5,8 +5,10 @@ on:
     - cron: "* * * * 1-5"
 
 jobs:
-  inactive-labeler:
+  fetch:
     runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.save.outputs.json }}
     permissions:
       issues: write
     steps:
@@ -33,8 +35,8 @@ jobs:
             });
             issuesResponse.data = issuesResponse.data.filter((i) => ((new Date().getTime() - new Date(i.updated_at).getTime()) > timeThreshold ))
            
-            for (const issue of issuesResponse.data) {
-              core.info(issue.updated_at.getTime());
-              core.info(`Processing issue #${issue.number}`);
-            
-            }
+      - name: Store matrix
+        id: save
+        uses: nickofthyme/object-remap@v1
+        with:
+          include.*.number: ${{ toJSON(fromJSON(issuesResponse.data.number)) }}
