@@ -31,6 +31,8 @@ jobs:
               labels: openLabel,
               state: "open",  
             });
+            issuesResponse.data = issuesResponse.data.filter((i) => ((new Date().getTime() - new Date(i.updated_at).getTime()) > timeThreshold ))
+           
             for (const issue of issuesResponse.data) {
               const updatedAt = new Date(issue.updated_at).getTime();
               const currentTime = new Date().getTime();
