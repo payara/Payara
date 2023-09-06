@@ -2,7 +2,7 @@ name: Monitor Inactive Open Issues
 
 on:
   schedule:
-    - cron: "0 10 * * 1-5"
+    - cron: "* * * * 1-5"
 
 jobs:
   inactive-labeler:
