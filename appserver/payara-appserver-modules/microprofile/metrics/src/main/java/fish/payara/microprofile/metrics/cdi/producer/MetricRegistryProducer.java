@@ -44,6 +44,7 @@ import fish.payara.microprofile.metrics.MetricsService.MetricsContext;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Default;
 import jakarta.enterprise.inject.Produces;
 import jakarta.enterprise.inject.spi.InjectionPoint;
 import org.eclipse.microprofile.metrics.MetricRegistry;
@@ -66,6 +67,8 @@ public class MetricRegistryProducer {
     }
 
     @Produces
+    @Default
+    @RegistryScope
     public MetricRegistry getMetricRegistry(InjectionPoint injectionPoint) {
         RegistryScope registryScope = injectionPoint.getAnnotated().getAnnotation(RegistryScope.class);
         if(registryScope == null) {
