@@ -55,9 +55,11 @@
 
 package fish.payara.microprofile.metrics.impl;
 
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAdder;
 import jakarta.enterprise.inject.Vetoed;
+import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.metrics.Histogram;
 import org.eclipse.microprofile.metrics.Snapshot;
 
@@ -73,6 +75,14 @@ public class HistogramImpl implements Histogram {
     private final Reservoir reservoir;
     private final LongAdder count;
     private final AtomicLong sum;
+    private String metricName;
+    
+    public final static String METRIC_PERCENTILES_PROPERTY = "mp.metrics.distribution.percentiles";
+    public HistogramImpl(String metricName) {
+        this();
+        this.metricName = metricName;
+        validateMetricsConfiguration();
+    }
 
     /**
      * Creates a new {@link HistogramImpl} using an
@@ -138,5 +148,12 @@ public class HistogramImpl implements Histogram {
     @Override
     public String toString() {
         return "Histogram[" + getCount() + "]";
+    }
+    
+    void validateMetricsConfiguration() {
+        Optional<String> customPercentiles = ConfigProvider.getConfig().getOptionalValue(METRIC_PERCENTILES_PROPERTY, String.class);
+        if(!customPercentiles.isEmpty()) {
+            MetricsConfigParserUtil.parsePercentile(customPercentiles.get());
+        }
     }
 }

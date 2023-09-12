@@ -197,17 +197,17 @@ public class MetricRegistryImpl implements MetricRegistry {
 
     @Override
     public Histogram histogram(String name, Tag... tags) {
-        return findMetricOrCreate(name, Histogram.class.getTypeName(), new HistogramImpl(), tags);
+        return findMetricOrCreate(name, Histogram.class.getTypeName(), new HistogramImpl(name), tags);
     }
 
     @Override
     public Histogram histogram(Metadata metadata, Tag... tags) {
-        return findMetricOrCreate(metadata, Histogram.class.getTypeName(),new HistogramImpl(), tags);
+        return findMetricOrCreate(metadata, Histogram.class.getTypeName(),new HistogramImpl(metadata.getName()), tags);
     }
 
     @Override
     public Histogram histogram(String name) {
-        return findMetricOrCreate(name, Histogram.class.getTypeName(), new HistogramImpl(), new Tag[0]);
+        return findMetricOrCreate(name, Histogram.class.getTypeName(), new HistogramImpl(name), new Tag[0]);
     }
 
     @Override
@@ -217,7 +217,7 @@ public class MetricRegistryImpl implements MetricRegistry {
 
     @Override
     public Histogram histogram(MetricID metricID) {
-        return findMetricOrCreate(metricID.getName(), Histogram.class.getTypeName(), new HistogramImpl(), metricID.getTagsAsArray());
+        return findMetricOrCreate(metricID.getName(), Histogram.class.getTypeName(), new HistogramImpl(metricID.getName()), metricID.getTagsAsArray());
     }
 
     @Override
@@ -497,6 +497,7 @@ public class MetricRegistryImpl implements MetricRegistry {
             }
         }
         final Metadata newMetadata = metadata;
+        //verify here the new properties
         final T newMetric = metric != null ? metric:(T) createMetricInstance(newMetadata, metricType);
         MetricFamily<T> family = (MetricFamily<T>) metricsFamiliesByName.computeIfAbsent(name,
                 key -> new MetricFamily<>(newMetadata));
