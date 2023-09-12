@@ -100,7 +100,7 @@ public class TimerImpl implements Timer {
      * @param reservoir the {@link Reservoir} implementation the timer should
      * use
      */
-    public TimerImpl(Reservoir reservoir) {
+    public TimerImpl(ExponentiallyDecayingReservoir reservoir) {
         this(reservoir, Clock.defaultClock());
     }
 
@@ -112,7 +112,7 @@ public class TimerImpl implements Timer {
      * use
      * @param clock the {@link Clock} implementation the timer should use
      */
-    public TimerImpl(Reservoir reservoir, Clock clock) {
+    public TimerImpl(ExponentiallyDecayingReservoir reservoir, Clock clock) {
         this.clock = clock;
         this.histogram = new HistogramImpl(reservoir);
     }

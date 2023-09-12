@@ -72,12 +72,19 @@ public class WeightedSnapshot extends Snapshot {
     private final long[] values;
     private final double[] normWeights;
     private final double[] quantiles;
+    
+    private HistogramAdapter histogramAdapter;
 
     /**
      * Create a new {@link Snapshot} with the given values.
      *
      * @param values an unordered set of values in the reservoir
      */
+    public WeightedSnapshot(Collection<WeightedSample> values, HistogramAdapter histogramAdapter) {
+        this(values);
+        this.histogramAdapter = histogramAdapter;
+    }
+
     public WeightedSnapshot(Collection<WeightedSample> values) {
         final WeightedSample[] copy = values.toArray(new WeightedSample[]{});
 
@@ -149,7 +156,7 @@ public class WeightedSnapshot extends Snapshot {
 
     @Override
     public PercentileValue[] percentileValues() {
-        PercentileValue[] percentileValues = null;
+        /*PercentileValue[] percentileValues = null;
         double[] percentiles = {0.5, 0.75, 0.95, 0.98, 0.99, 0.999};
         if(values.length > 0 && quantiles.length > 0 && values.length == quantiles.length) {
             percentileValues = new PercentileValue[percentiles.length];
@@ -161,6 +168,13 @@ public class WeightedSnapshot extends Snapshot {
             for (int i = 0; i < percentiles.length; i++) {
                 percentileValues[i] = new PercentileValue(percentiles[i], 0);
             }
+        }
+        return percentileValues;*/
+        Double[] percentiles = histogramAdapter.percentileValues();
+        PercentileValue[] percentileValues = null;
+        percentileValues = new PercentileValue[percentiles.length];
+        for (int i = 0; i < percentiles.length; i++) {
+            percentileValues[i] = new PercentileValue(percentiles[i], getValue(percentiles[i]));
         }
         return percentileValues;
     }

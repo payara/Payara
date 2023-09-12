@@ -91,6 +91,13 @@ public class ExponentiallyDecayingReservoir implements Reservoir {
     private volatile long startTime;
     private final AtomicLong nextScaleTime;
     private final Clock clock;
+    
+    private HistogramAdapter histogramAdapter;
+    
+    public ExponentiallyDecayingReservoir(HistogramAdapter histogramAdapter) {
+        this();
+        this.histogramAdapter = histogramAdapter;
+    }
 
     /**
      * Creates a new {@link ExponentiallyDecayingReservoir} of 1028 elements,
@@ -186,7 +193,12 @@ public class ExponentiallyDecayingReservoir implements Reservoir {
         rescaleIfNeeded();
         lockForRegularUsage();
         try {
-            return new WeightedSnapshot(values.values());
+            if(this.histogramAdapter != null) {
+                return new WeightedSnapshot(values.values(), this.histogramAdapter);
+            } else {
+                return new WeightedSnapshot(values.values());
+            }
+            
         } finally {
             unlockForRegularUsage();
         }
@@ -259,4 +271,9 @@ public class ExponentiallyDecayingReservoir implements Reservoir {
     private void unlockForRegularUsage() {
         lock.readLock().unlock();
     }
+    
+    public void setHistogramAdapter(HistogramAdapter histogramAdapter) {
+        this.histogramAdapter = histogramAdapter;
+    }
+    
 }

@@ -1,6 +1,8 @@
 package fish.payara.microprofile.metrics.impl;
 
+import java.util.ArrayDeque;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.logging.Logger;
 
 public class MetricsConfigParserUtil {
@@ -12,7 +14,8 @@ public class MetricsConfigParserUtil {
     private static final String PERCENTILE_KEY_VALUE_SEPARATOR = "=";
 
     private static final String PERCENTILE_VALUE_SEPARATOR = ",";
-    public static MetricCustomPercentile parsePercentile(String percentileProperty) {
+    public static Collection<MetricCustomPercentile> parsePercentile(String percentileProperty) {
+        ArrayDeque<MetricCustomPercentile> metricPercentileCollection = new ArrayDeque<>();
         if(percentileProperty == null || percentileProperty.length() == 0) {
             return null;
         }
@@ -30,8 +33,9 @@ public class MetricsConfigParserUtil {
                 Arrays.sort(percentileValues);
                 customPercentile = new MetricCustomPercentile(metricName, percentileValues);
             }
+            metricPercentileCollection.addFirst(customPercentile);
         }
-        return customPercentile;
+        return metricPercentileCollection;
     }
     
     public static Double evaluatePercentileValue(String percentile) {

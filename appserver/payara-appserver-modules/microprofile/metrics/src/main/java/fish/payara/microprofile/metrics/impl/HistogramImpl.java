@@ -55,10 +55,14 @@
 
 package fish.payara.microprofile.metrics.impl;
 
+import java.util.Collection;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAdder;
 import jakarta.enterprise.inject.Vetoed;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.metrics.Histogram;
 import org.eclipse.microprofile.metrics.Snapshot;
@@ -72,15 +76,20 @@ import org.eclipse.microprofile.metrics.Snapshot;
 @Vetoed
 public class HistogramImpl implements Histogram {
 
-    private final Reservoir reservoir;
+    private final ExponentiallyDecayingReservoir reservoir;
     private final LongAdder count;
     private final AtomicLong sum;
     private String metricName;
+
+    private HistogramAdapter histogramAdapter;
+    
+    private Map<String, Collection<MetricCustomPercentile>> percentilesConfigMap;
     
     public final static String METRIC_PERCENTILES_PROPERTY = "mp.metrics.distribution.percentiles";
-    public HistogramImpl(String metricName) {
+    public HistogramImpl(String metricName, Map<String, Collection<MetricCustomPercentile>> percentilesConfigMap) {
         this();
         this.metricName = metricName;
+        this.percentilesConfigMap = percentilesConfigMap;
         validateMetricsConfiguration();
     }
 
@@ -97,7 +106,7 @@ public class HistogramImpl implements Histogram {
      *
      * @param reservoir the reservoir to create a histogram from
      */
-    public HistogramImpl(Reservoir reservoir) {
+    public HistogramImpl(ExponentiallyDecayingReservoir reservoir) {
         this.reservoir = reservoir;
         this.count = new LongAdder();
         this.sum = new AtomicLong();
@@ -151,9 +160,39 @@ public class HistogramImpl implements Histogram {
     }
     
     void validateMetricsConfiguration() {
-        Optional<String> customPercentiles = ConfigProvider.getConfig().getOptionalValue(METRIC_PERCENTILES_PROPERTY, String.class);
-        if(!customPercentiles.isEmpty()) {
-            MetricsConfigParserUtil.parsePercentile(customPercentiles.get());
+        Collection<MetricCustomPercentile> computed = percentilesConfigMap.computeIfAbsent(this.metricName, this::processMap);
+        if(computed != null && computed.size() != 0) {
+            MetricCustomPercentile result = this.matches(computed, this.metricName);
+            if(histogramAdapter == null && result.getPercentiles() != null && result.getPercentiles().length > 0) {
+                histogramAdapter = new HistogramAdapter(null, result.getPercentiles());
+            } else {
+                Double[] percentiles = {0.5, 0.75, 0.95, 0.98, 0.99, 0.999};
+                histogramAdapter = new HistogramAdapter(percentiles, null);
+            }
+            this.reservoir.setHistogramAdapter(histogramAdapter);
         }
     }
+    
+    private Collection<MetricCustomPercentile> processMap(String appName) {
+        Optional<String> customPercentiles = ConfigProvider.getConfig().getOptionalValue(METRIC_PERCENTILES_PROPERTY, String.class);
+        return (customPercentiles.isPresent()) ? MetricsConfigParserUtil.parsePercentile(customPercentiles.get()) : null;
+    }
+    
+    private MetricCustomPercentile matches(Collection<MetricCustomPercentile> customMetrics, String metricName) {
+        for(MetricCustomPercentile metricCustomPercentile:customMetrics) {
+            if(metricCustomPercentile.getName().contentEquals("*")){
+                //check this validation
+                return null;
+            }
+            
+            Pattern p = Pattern.compile(metricCustomPercentile.getName());
+            Matcher m = p.matcher(metricName.trim());
+            if(m.matches()){
+                return metricCustomPercentile;
+            }
+        }
+        return null;
+    }
+    
+    
 }

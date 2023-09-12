@@ -42,6 +42,8 @@ package fish.payara.microprofile.metrics.impl;
 import fish.payara.microprofile.metrics.cdi.MetricUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -110,6 +112,9 @@ public class MetricRegistryImpl implements MetricRegistry {
     private final ConcurrentMap<String, MetricFamily<?>> metricsFamiliesByName = new ConcurrentHashMap<>();
     private final Clock clock;
     private final List<MetricRegistrationListener> listeners = new ArrayList<>();
+
+    private volatile Map<String, Collection<MetricCustomPercentile>> percentilesConfigMap = 
+            new HashMap<String, Collection<MetricCustomPercentile>>();
 
     public MetricRegistryImpl() {
         this.scope = null;
@@ -197,17 +202,18 @@ public class MetricRegistryImpl implements MetricRegistry {
 
     @Override
     public Histogram histogram(String name, Tag... tags) {
-        return findMetricOrCreate(name, Histogram.class.getTypeName(), new HistogramImpl(name), tags);
+        return findMetricOrCreate(name, Histogram.class.getTypeName(), new HistogramImpl(name, percentilesConfigMap), tags);
     }
 
     @Override
     public Histogram histogram(Metadata metadata, Tag... tags) {
-        return findMetricOrCreate(metadata, Histogram.class.getTypeName(),new HistogramImpl(metadata.getName()), tags);
+        return findMetricOrCreate(metadata, Histogram.class.getTypeName(),new HistogramImpl(metadata.getName(), 
+                percentilesConfigMap), tags);
     }
 
     @Override
     public Histogram histogram(String name) {
-        return findMetricOrCreate(name, Histogram.class.getTypeName(), new HistogramImpl(name), new Tag[0]);
+        return findMetricOrCreate(name, Histogram.class.getTypeName(), new HistogramImpl(name, percentilesConfigMap), new Tag[0]);
     }
 
     @Override
@@ -217,7 +223,8 @@ public class MetricRegistryImpl implements MetricRegistry {
 
     @Override
     public Histogram histogram(MetricID metricID) {
-        return findMetricOrCreate(metricID.getName(), Histogram.class.getTypeName(), new HistogramImpl(metricID.getName()), metricID.getTagsAsArray());
+        return findMetricOrCreate(metricID.getName(), Histogram.class.getTypeName(), new HistogramImpl(metricID.getName(), percentilesConfigMap), 
+                metricID.getTagsAsArray());
     }
 
     @Override
