@@ -80,7 +80,7 @@
         <jakarta.security.auth.message-api.version>3.0.0</jakarta.security.auth.message-api.version>
         <jakarta.security.jacc-api.version>2.1.0</jakarta.security.jacc-api.version>
         <jakarta.security.enterprise-api.version>3.0.0</jakarta.security.enterprise-api.version>
-        <jakarta.ejb-api.version>4.0.0</jakarta.ejb-api.version>
+        <jakarta.ejb-api.version>4.0.1</jakarta.ejb-api.version>
         <jakarta.transaction-api.version>2.0.1</jakarta.transaction-api.version>
         <jakarta.interceptor-api.version>2.1.0</jakarta.interceptor-api.version>
         <jakarta.inject.version>2.0.0</jakarta.inject.version>
