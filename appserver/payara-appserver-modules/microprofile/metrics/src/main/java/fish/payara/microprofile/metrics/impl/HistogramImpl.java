@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2018-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -55,11 +55,17 @@
 
 package fish.payara.microprofile.metrics.impl;
 
+import java.util.Collection;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAdder;
 import jakarta.enterprise.inject.Vetoed;
+import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.metrics.Histogram;
 import org.eclipse.microprofile.metrics.Snapshot;
+
+import static fish.payara.microprofile.metrics.impl.MetricRegistryImpl.METRIC_HISTOGRAM_BUCKETS_PROPERTY;
 
 /**
  * A metric which calculates the distribution of a value.
@@ -70,9 +76,17 @@ import org.eclipse.microprofile.metrics.Snapshot;
 @Vetoed
 public class HistogramImpl implements Histogram {
 
-    private final Reservoir reservoir;
+    private final ExponentiallyDecayingReservoir reservoir;
     private final LongAdder count;
     private final AtomicLong sum;
+    private HistogramAdapter histogramAdapter;
+    
+    public HistogramImpl(String metricName, 
+                         Map<String, Collection<MetricsCustomPercentile>> percentilesConfigMap,
+                         Map<String, Collection<HistogramMetricsBucket>> bucketsConfigMap) {
+        this();
+        validateMetricsConfiguration(metricName, percentilesConfigMap, bucketsConfigMap);
+    }
 
     /**
      * Creates a new {@link HistogramImpl} using an
@@ -87,7 +101,7 @@ public class HistogramImpl implements Histogram {
      *
      * @param reservoir the reservoir to create a histogram from
      */
-    public HistogramImpl(Reservoir reservoir) {
+    public HistogramImpl(ExponentiallyDecayingReservoir reservoir) {
         this.reservoir = reservoir;
         this.count = new LongAdder();
         this.sum = new AtomicLong();
@@ -138,5 +152,43 @@ public class HistogramImpl implements Histogram {
     @Override
     public String toString() {
         return "Histogram[" + getCount() + "]";
+    }
+
+    void validateMetricsConfiguration(String metricName, Map<String, Collection<MetricsCustomPercentile>> percentilesConfigMap,
+                                      Map<String, Collection<HistogramMetricsBucket>> bucketsConfigMap) {
+        Collection<MetricsCustomPercentile> computedPercentiles = percentilesConfigMap
+                .computeIfAbsent(metricName, MetricsConfigParserUtil::processPercentileMap);
+        Collection<HistogramMetricsBucket> computedBuckets = bucketsConfigMap
+                .computeIfAbsent(metricName, this::processHistogramBucketMap);
+        MetricsCustomPercentile resultPercentile = null;
+        HistogramMetricsBucket resultBuckets = null;
+        histogramAdapter = new HistogramAdapter();
+        if(computedPercentiles != null && computedPercentiles.size() != 0) {
+            resultPercentile = MetricsCustomPercentile.matches(computedPercentiles, metricName);
+        }
+        
+        if (resultPercentile != null && resultPercentile.getPercentiles() != null 
+                && resultPercentile.getPercentiles().length > 0) {
+            histogramAdapter.setPercentilesFromConfig(resultPercentile.getPercentiles());
+        } else if (resultPercentile != null && resultPercentile.getPercentiles() == null 
+                && resultPercentile.isDisabled()) {
+            //skip this case
+        } else {
+            Double[] percentiles = {0.5, 0.75, 0.95, 0.98, 0.99, 0.999};
+            histogramAdapter.setPercentilesFromConfig(percentiles);
+        }
+        if(computedBuckets != null && computedBuckets.size() != 0) {
+            resultBuckets = HistogramMetricsBucket.matches(computedBuckets, metricName);
+        }
+        if (resultBuckets != null && resultBuckets.getBuckets() != null && resultBuckets.getBuckets().length > 0) {
+            histogramAdapter.setBucketValuesFromConfig(resultBuckets.getBuckets());
+        }
+
+        this.reservoir.setConfigAdapter(histogramAdapter);
+    }
+    
+    private synchronized Collection<HistogramMetricsBucket> processHistogramBucketMap(String appName) {
+        Optional<String> customBuckets = ConfigProvider.getConfig().getOptionalValue(METRIC_HISTOGRAM_BUCKETS_PROPERTY, String.class);
+        return (customBuckets.isPresent()) ? MetricsConfigParserUtil.parseHistogramBuckets(customBuckets.get()) : null;
     }
 }
