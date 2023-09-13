@@ -178,20 +178,15 @@ public class HistogramImpl implements Histogram {
             MetricsCustomPercentile result = MetricsCustomPercentile.matches(computedPercentiles, this.metricName);
             if(result != null && result.getPercentiles() != null && result.getPercentiles().length > 0) {
                 histogramAdapter.setPercentilesFromConfig(result.getPercentiles());
-            } else {
-                Double[] percentiles = {0.5, 0.75, 0.95, 0.98, 0.99, 0.999};
-                histogramAdapter.setPercentiles(percentiles);
-            }
-        }
+            } 
+        } 
         
         if(computedBuckets != null && computedBuckets.size() != 0) {
             MetricsCustomBucket result = MetricsCustomBucket.matches(computedBuckets, this.metricName);
             if(result!= null && result.getBuckets() != null && result.getBuckets().length > 0) {
                 histogramAdapter.setBucketValuesFromConfig(result.getBuckets());
-            } else {
-                histogramAdapter.setBucketValues(new Double[0]);
-            }
-        }
+            } 
+        } 
 
         this.reservoir.setHistogramAdapter(histogramAdapter);
     }

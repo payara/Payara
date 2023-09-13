@@ -1,17 +1,13 @@
 package fish.payara.microprofile.metrics.impl;
 
 public abstract class AbstractConfigAdapter {
-    Double[] percentiles;
-
     Double[] percentilesFromConfig;
-    
-    Double[] bucketValues;
-    
     Double[] bucketValuesFromConfig;
     public Double[] percentileValues() {
         if(percentilesFromConfig != null && percentilesFromConfig.length > 0) {
             return percentilesFromConfig;
         } else {
+            Double[] percentiles = {0.5, 0.75, 0.95, 0.98, 0.99, 0.999};
             return percentiles;
         }
     }
@@ -20,17 +16,10 @@ public abstract class AbstractConfigAdapter {
         if(bucketValuesFromConfig != null && bucketValuesFromConfig.length > 0) {
             return bucketValuesFromConfig;
         } else {
-            return bucketValues;
+            return new Double[0];
         }
     }
-
-    public Double[] getPercentiles() {
-        return percentiles;
-    }
-
-    public void setPercentiles(Double[] percentiles) {
-        this.percentiles = percentiles;
-    }
+    
 
     public Double[] getPercentilesFromConfig() {
         return percentilesFromConfig;
@@ -38,14 +27,6 @@ public abstract class AbstractConfigAdapter {
 
     public void setPercentilesFromConfig(Double[] percentilesFromConfig) {
         this.percentilesFromConfig = percentilesFromConfig;
-    }
-
-    public Double[] getBucketValues() {
-        return bucketValues;
-    }
-
-    public void setBucketValues(Double[] bucketValues) {
-        this.bucketValues = bucketValues;
     }
 
     public Double[] getBucketValuesFromConfig() {
