@@ -1,4 +1,4 @@
-name: Test Most Voted Enhancement
+name: Select the top voted enhancement request
 
 on:
   schedule:
@@ -21,13 +21,11 @@ jobs:
             const votingLabel = "Status: Voting";
 
             // Query all GH issues for Voting 
-            // is:issue is:open label:"Status: Voting" reactions:+1>0 sort:reactions-+1-desc 
             const issuesResponse = await github.rest.issues.listForRepo({
               owner,
               repo,
               labels: votingLabel,
               state: 'open',
-              sort: 'reactions-+1',
               direction: 'desc',
             });
             
@@ -36,47 +34,52 @@ jobs:
               core.info('No issues labelled with Voting found to process. Exiting.');
               return;
             }
-            //filter issues with atleast one vote. Change it later to >1
+            //filter issues with at least 2 votes.
             issuesResponse.data = issuesResponse.data.filter((i) => i.reactions['+1'] > 1)
             
             if (issuesResponse.data.length === 0) {
-              core.info('No issues labelled with Voting has votes. Exiting.');
+              core.info('Current issues in the Voting stage do not have enough votes to qualify for selection. Exiting');
               return;
             }
-            
-            //if there are more than 1 issues for voting, then sort by reactions.
-            if (issuesResponse.data.length > 1) {
-              Total = issuesResponse.data.length
-              issuesResponse.data.sort.reactions-+1;
-            }
-            MostVotes = 0
 
+            issuesResponse.data.sort.reactions-+1;
+            
+            mostVotes = 0;
+            oldestIssue = 0;
+            oldestDate = new Date(null).getTime();
             for (const issue of issuesResponse.data) {
-              if (MostVotes == 0) { // Saving the number of votes for the first issue
-                MostVotes = issue.reactions['+1'];
-                core.info(`Highest votes is  ${MostVotes}`);
-                }
               core.info(`Processing issue #${issue.number}`);
               core.info(`Number of +1 reactions ${issue.reactions['+1']}`);
               core.info(`Issue was created ${issue.created_at}`);
-            }
-            
-            //filter out the issues with MostVotes number. This is to cover the case with more than 1 isues with the same number of votes
-            issuesResponse.data = issuesResponse.data.filter((i) => i.reactions['+1'] == MostVotes)
-            
-            //Sort by created by       
-            issuesResponse.data.sort.created_at;
-            OldestIssue = 0;
-            OldestDate = new Date(null).getTime();
-            for (const issue of issuesResponse.data) {
-                issueDate = new Date(issue.created_at).getTime();
-                if (OldestDate == 0) {
-                  OldestDate = new Date(issue.created_at).getTime();
-                  OldestIssue = issue;
-                  }
-                if(issueDate < OldestDate)  {
-                  OldestDate = issueDate;
-                  OldestIssue = issue;
+              issueVotes = issue.reactions['+1'];
+              issueDate = new Date(issue.created_at).getTime();
+              
+              if (oldestDate == 0) {
+                  oldestDate = new Date(issue.created_at).getTime();
+                  oldestIssue = issue;
+                  mostVotes = issueVotes;
                 }
-              }
-            core.info(`Final issue selected for enhancement is #${OldestIssue.number} created on ${OldestIssue.created_at}`);
+
+              if ((issueVotes >=  mostVotes) && (issueDate < oldestDate)) { 
+                mostVotes = issueVotes;
+                oldestIssue = issue;
+                }
+            }
+            core.info(`Highest votes is  ${mostVotes}`);
+            core.info(`Final issue selected for enhancement is #${oldestIssue.number} created on ${oldestIssue.created_at}`);
+            const message = `Greetings, 
+              This enhancement request has been selected in the community Voting and will be escalated to our Product Management Team.`;
+            await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: oldestIssue.number,
+                  body: message,
+                });
+                
+            return oldestIssue.number;
+            
+      - uses: neonidian/teams-notify-build-status@v3
+        if: ${{ steps.vote-issues.outputs.result}}   
+        with:
+           webhookUrl: ${{ secrets.TEAMS_INCOMING_WEBHOOK_URL }}   # Secret name is "TEAMS_INCOMING_WEBHOOK_URL"
+           message: The  Github issue number ${{ steps.vote-issues.outputs.result }} has been selected for voting and thus requires to be escalated. 
