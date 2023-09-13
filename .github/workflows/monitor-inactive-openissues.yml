@@ -11,6 +11,7 @@ jobs:
       issues: write
     steps:
       - name: Check for inactive open issues
+        id: issueList
         uses: actions/github-script@v6
         env:
           daysInterval: ${{ vars.MONITORING_INACTIVE_INTERVAL_DAYS }}
@@ -20,8 +21,8 @@ jobs:
             const { owner, repo } = context.repo;
             const openLabel = "Status: Open";
             
-            //const parsedDays = parseFloat("${{ env.daysInterval }}");
-            const parsedDays = 14;
+            const parsedDays = parseFloat("${{ env.daysInterval }}");
+            //const parsedDays = 14; 
             const timeThreshold = parsedDays * 24 * 60 * 60 * 1000;
             
             // Query all GH issues that are open
@@ -31,18 +32,19 @@ jobs:
               labels: openLabel,
               state: "open",  
             });
+            issuesResponse.data = issuesResponse.data.filter((i) => ((new Date().getTime() - new Date(i.updated_at).getTime()) > timeThreshold ))
+            
+            core.info(`Parsed days is ${parsedDays}`);
+            const issuesResponseData = issuesResponse.data.map((issue) => issue.number);
+            if (issuesResponseData.length > 0) {
+                const issueList =  issuesResponseData.toString();
+                core.info(`The issues to update are : `);
+                core.info(issuesResponseData.toString());
+                return issueList;
+              }          
 
-            for (const issue of issuesResponse.data) {
-              const updatedAt = new Date(issue.updated_at).getTime();
-              const currentTime = new Date().getTime();
-              const updateMessage = `Please update the issue #${issue.number}.`;
-
-              if (currentTime - updatedAt > timeThreshold) {
-                 await github.rest.issues.createComment({
-                  owner,
-                  repo,
-                  issue_number: issue.number,
-                  body: updateMessage,
-                });
-              }
-            }
+      - uses: neonidian/teams-notify-build-status@v3
+        if: ${{ steps.issueList.outputs.result}}   
+        with:
+           webhookUrl: ${{ secrets.TEAMS_INCOMING_WEBHOOK_URL }}   # Secret name is "TEAMS_INCOMING_WEBHOOK_URL"
+           message: The following Github issues need to be updated ${{ steps.issueList.outputs.result }}.  
