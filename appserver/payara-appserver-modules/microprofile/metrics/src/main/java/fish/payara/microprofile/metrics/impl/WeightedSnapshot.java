@@ -166,7 +166,7 @@ public class WeightedSnapshot extends Snapshot {
 
     @Override
     public HistogramBucket[] bucketValues() {
-        Double[] buckets = histogramAdapter.getBucketValues();
+        Double[] buckets = histogramAdapter.bucketValues();
         HistogramBucket[] histogramBuckets = new HistogramBucket[buckets.length];
         for(int i = 0;i < buckets.length; i++) {
             histogramBuckets[i] = new HistogramBucket(buckets[i], i);
