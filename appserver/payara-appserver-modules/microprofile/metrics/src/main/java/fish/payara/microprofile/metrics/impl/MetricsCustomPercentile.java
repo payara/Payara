@@ -1,22 +1,12 @@
 package fish.payara.microprofile.metrics.impl;
 
-public class MetricCustomPercentile {
-    
-    private String name;
+public class MetricsCustomPercentile extends PropertyConfig {
     
     private Double[] percentiles;
 
-    public MetricCustomPercentile(String name, Double[] percentiles) {
-        this.name = name;
+    public MetricsCustomPercentile(String name, Double[] percentiles) {
+        this.metricName = name;
         this.percentiles = percentiles;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public Double[] getPercentiles() {

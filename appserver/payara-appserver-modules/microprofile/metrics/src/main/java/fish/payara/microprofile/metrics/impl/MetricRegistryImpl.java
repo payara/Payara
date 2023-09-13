@@ -40,6 +40,7 @@
 package fish.payara.microprofile.metrics.impl;
 
 import fish.payara.microprofile.metrics.cdi.MetricUtils;
+import jakarta.enterprise.inject.Vetoed;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -61,8 +62,6 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import jakarta.enterprise.inject.Vetoed;
 import java.util.stream.Collectors;
 import org.eclipse.microprofile.metrics.Counter;
 import org.eclipse.microprofile.metrics.Gauge;
@@ -76,10 +75,7 @@ import org.eclipse.microprofile.metrics.MetricUnits;
 import org.eclipse.microprofile.metrics.Tag;
 import org.eclipse.microprofile.metrics.Timer;
 
-import static java.util.Collections.emptyMap;
-import static java.util.Collections.emptySet;
-import static java.util.Collections.unmodifiableMap;
-import static java.util.Collections.unmodifiableSet;
+import static java.util.Collections.*;
 import static java.util.stream.Collectors.toMap;
 import static org.eclipse.microprofile.metrics.MetricFilter.ALL;
 
@@ -113,8 +109,11 @@ public class MetricRegistryImpl implements MetricRegistry {
     private final Clock clock;
     private final List<MetricRegistrationListener> listeners = new ArrayList<>();
 
-    private volatile Map<String, Collection<MetricCustomPercentile>> percentilesConfigMap = 
-            new HashMap<String, Collection<MetricCustomPercentile>>();
+    private Map<String, Collection<MetricsCustomPercentile>> percentilesConfigMap = 
+            new HashMap<String, Collection<MetricsCustomPercentile>>();
+    
+    private Map<String, Collection<MetricsCustomBucket>> bucketsConfigMap =
+            new HashMap<>();
 
     public MetricRegistryImpl() {
         this.scope = null;
@@ -202,18 +201,18 @@ public class MetricRegistryImpl implements MetricRegistry {
 
     @Override
     public Histogram histogram(String name, Tag... tags) {
-        return findMetricOrCreate(name, Histogram.class.getTypeName(), new HistogramImpl(name, percentilesConfigMap), tags);
+        return findMetricOrCreate(name, Histogram.class.getTypeName(), new HistogramImpl(name, percentilesConfigMap, bucketsConfigMap), tags);
     }
 
     @Override
     public Histogram histogram(Metadata metadata, Tag... tags) {
         return findMetricOrCreate(metadata, Histogram.class.getTypeName(),new HistogramImpl(metadata.getName(), 
-                percentilesConfigMap), tags);
+                percentilesConfigMap, bucketsConfigMap), tags);
     }
 
     @Override
     public Histogram histogram(String name) {
-        return findMetricOrCreate(name, Histogram.class.getTypeName(), new HistogramImpl(name, percentilesConfigMap), new Tag[0]);
+        return findMetricOrCreate(name, Histogram.class.getTypeName(), new HistogramImpl(name, percentilesConfigMap, bucketsConfigMap), new Tag[0]);
     }
 
     @Override
@@ -223,7 +222,8 @@ public class MetricRegistryImpl implements MetricRegistry {
 
     @Override
     public Histogram histogram(MetricID metricID) {
-        return findMetricOrCreate(metricID.getName(), Histogram.class.getTypeName(), new HistogramImpl(metricID.getName(), percentilesConfigMap), 
+        return findMetricOrCreate(metricID.getName(), Histogram.class.getTypeName(), new HistogramImpl(metricID.getName(), 
+                        percentilesConfigMap, bucketsConfigMap), 
                 metricID.getTagsAsArray());
     }
 

@@ -1,21 +1,23 @@
 package fish.payara.microprofile.metrics.impl;
 
-public class HistogramAdapter {
+public class HistogramAdapter extends AbstractConfigAdapter {
     
-    private Double[] percentiles;
+    public HistogramAdapter() {
+        this.percentiles = null;
+        this.percentilesFromConfig = null;
+        this.bucketValuesFromConfig = null;
+        this.bucketValues = null;
+    }
     
-    private Double[] percentilesFromConfig;
-
-    public HistogramAdapter(Double[] percentiles, Double[] percentilesFromConfig) {
+    public HistogramAdapter(Double[] percentiles, Double[] percentilesFromConfig, 
+                            Double[] bucketValues, Double[] bucketValuesFromConfig) {
         this.percentiles = percentiles;
         this.percentilesFromConfig = percentilesFromConfig;
+        this.bucketValues = bucketValues;
+        this.bucketValuesFromConfig = bucketValuesFromConfig;
     }
+    
+    
 
-    public Double[] percentileValues() {
-        if(percentilesFromConfig != null && percentilesFromConfig.length > 0) {
-            return percentilesFromConfig;
-        } else {
-            return percentiles;
-        }
-    }
+
 }

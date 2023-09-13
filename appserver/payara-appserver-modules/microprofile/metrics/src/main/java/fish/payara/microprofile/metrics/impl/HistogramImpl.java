@@ -83,13 +83,22 @@ public class HistogramImpl implements Histogram {
 
     private HistogramAdapter histogramAdapter;
     
-    private Map<String, Collection<MetricCustomPercentile>> percentilesConfigMap;
+    private Map<String, Collection<MetricsCustomPercentile>> percentilesConfigMap;
     
-    public final static String METRIC_PERCENTILES_PROPERTY = "mp.metrics.distribution.percentiles";
-    public HistogramImpl(String metricName, Map<String, Collection<MetricCustomPercentile>> percentilesConfigMap) {
+    private Map<String, Collection<MetricsCustomBucket>> bucketsConfigMap;
+    
+    public static final String METRIC_PERCENTILES_PROPERTY = "mp.metrics.distribution.percentiles";
+    
+    public static final String METRIC_HISTOGRAM_BUCKETS_PROPERTY = "mp.metrics.distribution.histogram.buckets";
+    
+    
+    public HistogramImpl(String metricName, 
+                         Map<String, Collection<MetricsCustomPercentile>> percentilesConfigMap,
+                         Map<String, Collection<MetricsCustomBucket>> bucketsConfigMap) {
         this();
         this.metricName = metricName;
         this.percentilesConfigMap = percentilesConfigMap;
+        this.bucketsConfigMap = bucketsConfigMap;
         validateMetricsConfiguration();
     }
 
@@ -160,39 +169,40 @@ public class HistogramImpl implements Histogram {
     }
     
     void validateMetricsConfiguration() {
-        Collection<MetricCustomPercentile> computed = percentilesConfigMap.computeIfAbsent(this.metricName, this::processMap);
-        if(computed != null && computed.size() != 0) {
-            MetricCustomPercentile result = this.matches(computed, this.metricName);
-            if(histogramAdapter == null && result.getPercentiles() != null && result.getPercentiles().length > 0) {
-                histogramAdapter = new HistogramAdapter(null, result.getPercentiles());
+        Collection<MetricsCustomPercentile> computedPercentiles = percentilesConfigMap.computeIfAbsent(this.metricName, this::processPercentileMap);
+        Collection<MetricsCustomBucket> computedBuckets = bucketsConfigMap.computeIfAbsent(this.metricName, this::processBucketMap);
+
+        histogramAdapter = new HistogramAdapter();
+        
+        if(computedPercentiles != null && computedPercentiles.size() != 0) {
+            MetricsCustomPercentile result = MetricsCustomPercentile.matches(computedPercentiles, this.metricName);
+            if(result.getPercentiles() != null && result.getPercentiles().length > 0) {
+                histogramAdapter.setPercentilesFromConfig(result.getPercentiles());
             } else {
                 Double[] percentiles = {0.5, 0.75, 0.95, 0.98, 0.99, 0.999};
-                histogramAdapter = new HistogramAdapter(percentiles, null);
+                histogramAdapter.setPercentiles(percentiles);
             }
-            this.reservoir.setHistogramAdapter(histogramAdapter);
         }
+        
+        if(computedBuckets != null && computedBuckets.size() != 0) {
+            MetricsCustomBucket result = MetricsCustomBucket.matches(computedBuckets, this.metricName);
+            if(result.getBuckets() != null && result.getBuckets().length > 0) {
+                histogramAdapter.setBucketValuesFromConfig(result.getBuckets());
+            } else {
+                histogramAdapter.setBucketValues(new Double[0]);
+            }
+        }
+
+        this.reservoir.setHistogramAdapter(histogramAdapter);
     }
     
-    private Collection<MetricCustomPercentile> processMap(String appName) {
+    private Collection<MetricsCustomPercentile> processPercentileMap(String appName) {
         Optional<String> customPercentiles = ConfigProvider.getConfig().getOptionalValue(METRIC_PERCENTILES_PROPERTY, String.class);
         return (customPercentiles.isPresent()) ? MetricsConfigParserUtil.parsePercentile(customPercentiles.get()) : null;
     }
     
-    private MetricCustomPercentile matches(Collection<MetricCustomPercentile> customMetrics, String metricName) {
-        for(MetricCustomPercentile metricCustomPercentile:customMetrics) {
-            if(metricCustomPercentile.getName().contentEquals("*")){
-                //check this validation
-                return null;
-            }
-            
-            Pattern p = Pattern.compile(metricCustomPercentile.getName());
-            Matcher m = p.matcher(metricName.trim());
-            if(m.matches()){
-                return metricCustomPercentile;
-            }
-        }
-        return null;
+    private Collection<MetricsCustomBucket> processBucketMap(String appName) {
+        Optional<String> customBuckets = ConfigProvider.getConfig().getOptionalValue(METRIC_HISTOGRAM_BUCKETS_PROPERTY, String.class);
+        return (customBuckets.isPresent()) ? MetricsConfigParserUtil.parseHistogramBuckets(customBuckets.get()) : null;
     }
-    
-    
 }
