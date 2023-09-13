@@ -73,18 +73,18 @@ public class WeightedSnapshot extends Snapshot {
     private final double[] normWeights;
     private final double[] quantiles;
     
-    private HistogramAdapter histogramAdapter;
+    private AbstractConfigAdapter configAdapter;
 
     /**
      * Create a new {@link Snapshot} with the given values.
      *
      * @param values an unordered set of values in the reservoir
      */
-    public WeightedSnapshot(Collection<WeightedSample> values, HistogramAdapter histogramAdapter) {
+    public WeightedSnapshot(Collection<WeightedSample> values, AbstractConfigAdapter configAdapter) {
         this(values);
-        this.histogramAdapter = histogramAdapter;
+        this.configAdapter = configAdapter;
     }
-
+    
     public WeightedSnapshot(Collection<WeightedSample> values) {
         final WeightedSample[] copy = values.toArray(new WeightedSample[]{});
 
@@ -156,7 +156,7 @@ public class WeightedSnapshot extends Snapshot {
 
     @Override
     public PercentileValue[] percentileValues() {
-        Double[] percentiles = histogramAdapter.percentileValues();
+        Double[] percentiles = configAdapter.percentileValues();
         PercentileValue[] percentileValues = new PercentileValue[percentiles.length];
         for (int i = 0; i < percentiles.length; i++) {
             percentileValues[i] = new PercentileValue(percentiles[i], getValue(percentiles[i]));
@@ -166,7 +166,7 @@ public class WeightedSnapshot extends Snapshot {
 
     @Override
     public HistogramBucket[] bucketValues() {
-        Double[] buckets = histogramAdapter.bucketValues();
+        Double[] buckets = configAdapter.bucketValues();
         HistogramBucket[] histogramBuckets = new HistogramBucket[buckets.length];
         for(int i = 0;i < buckets.length; i++) {
             histogramBuckets[i] = new HistogramBucket(buckets[i], i);

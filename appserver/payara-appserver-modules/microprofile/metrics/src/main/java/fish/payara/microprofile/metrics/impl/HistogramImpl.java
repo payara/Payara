@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2018-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -61,11 +61,11 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAdder;
 import jakarta.enterprise.inject.Vetoed;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.metrics.Histogram;
 import org.eclipse.microprofile.metrics.Snapshot;
+
+import static fish.payara.microprofile.metrics.impl.MetricRegistryImpl.METRIC_HISTOGRAM_BUCKETS_PROPERTY;
 
 /**
  * A metric which calculates the distribution of a value.
@@ -79,27 +79,13 @@ public class HistogramImpl implements Histogram {
     private final ExponentiallyDecayingReservoir reservoir;
     private final LongAdder count;
     private final AtomicLong sum;
-    private String metricName;
-
     private HistogramAdapter histogramAdapter;
-    
-    private Map<String, Collection<MetricsCustomPercentile>> percentilesConfigMap;
-    
-    private Map<String, Collection<MetricsCustomBucket>> bucketsConfigMap;
-    
-    public static final String METRIC_PERCENTILES_PROPERTY = "mp.metrics.distribution.percentiles";
-    
-    public static final String METRIC_HISTOGRAM_BUCKETS_PROPERTY = "mp.metrics.distribution.histogram.buckets";
-    
     
     public HistogramImpl(String metricName, 
                          Map<String, Collection<MetricsCustomPercentile>> percentilesConfigMap,
-                         Map<String, Collection<MetricsCustomBucket>> bucketsConfigMap) {
+                         Map<String, Collection<HistogramMetricsBucket>> bucketsConfigMap) {
         this();
-        this.metricName = metricName;
-        this.percentilesConfigMap = percentilesConfigMap;
-        this.bucketsConfigMap = bucketsConfigMap;
-        validateMetricsConfiguration();
+        validateMetricsConfiguration(metricName, percentilesConfigMap, bucketsConfigMap);
     }
 
     /**
@@ -168,35 +154,31 @@ public class HistogramImpl implements Histogram {
         return "Histogram[" + getCount() + "]";
     }
     
-    void validateMetricsConfiguration() {
-        Collection<MetricsCustomPercentile> computedPercentiles = percentilesConfigMap.computeIfAbsent(this.metricName, this::processPercentileMap);
-        Collection<MetricsCustomBucket> computedBuckets = bucketsConfigMap.computeIfAbsent(this.metricName, this::processBucketMap);
+    void validateMetricsConfiguration(String metricName, Map<String, Collection<MetricsCustomPercentile>> percentilesConfigMap, 
+                                      Map<String, Collection<HistogramMetricsBucket>> bucketsConfigMap) {
+        Collection<MetricsCustomPercentile> computedPercentiles = percentilesConfigMap.computeIfAbsent(metricName, MetricsConfigParserUtil::processPercentileMap);
+        Collection<HistogramMetricsBucket> computedBuckets = bucketsConfigMap.computeIfAbsent(metricName, this::processHistogramBucketMap);
 
         histogramAdapter = new HistogramAdapter();
         
         if(computedPercentiles != null && computedPercentiles.size() != 0) {
-            MetricsCustomPercentile result = MetricsCustomPercentile.matches(computedPercentiles, this.metricName);
+            MetricsCustomPercentile result = MetricsCustomPercentile.matches(computedPercentiles, metricName);
             if(result != null && result.getPercentiles() != null && result.getPercentiles().length > 0) {
                 histogramAdapter.setPercentilesFromConfig(result.getPercentiles());
             } 
         } 
         
         if(computedBuckets != null && computedBuckets.size() != 0) {
-            MetricsCustomBucket result = MetricsCustomBucket.matches(computedBuckets, this.metricName);
+            HistogramMetricsBucket result = HistogramMetricsBucket.matches(computedBuckets, metricName);
             if(result!= null && result.getBuckets() != null && result.getBuckets().length > 0) {
                 histogramAdapter.setBucketValuesFromConfig(result.getBuckets());
             } 
         } 
 
-        this.reservoir.setHistogramAdapter(histogramAdapter);
+        this.reservoir.setConfigAdapter(histogramAdapter);
     }
     
-    private synchronized Collection<MetricsCustomPercentile> processPercentileMap(String appName) {
-        Optional<String> customPercentiles = ConfigProvider.getConfig().getOptionalValue(METRIC_PERCENTILES_PROPERTY, String.class);
-        return (customPercentiles.isPresent()) ? MetricsConfigParserUtil.parsePercentile(customPercentiles.get()) : null;
-    }
-    
-    private synchronized Collection<MetricsCustomBucket> processBucketMap(String appName) {
+    private synchronized Collection<HistogramMetricsBucket> processHistogramBucketMap(String appName) {
         Optional<String> customBuckets = ConfigProvider.getConfig().getOptionalValue(METRIC_HISTOGRAM_BUCKETS_PROPERTY, String.class);
         return (customBuckets.isPresent()) ? MetricsConfigParserUtil.parseHistogramBuckets(customBuckets.get()) : null;
     }

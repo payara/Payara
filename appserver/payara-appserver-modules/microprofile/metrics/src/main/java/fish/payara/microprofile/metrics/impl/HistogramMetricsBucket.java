@@ -39,11 +39,19 @@
  */
 package fish.payara.microprofile.metrics.impl;
 
-public class HistogramAdapter extends AbstractConfigAdapter {
+public class HistogramMetricsBucket extends PropertyConfig {
+    private Double[] buckets;
+
+    public HistogramMetricsBucket(String name, Double[] buckets) {
+        this.metricName = name;
+        this.buckets = buckets;
+    }
     
-    public HistogramAdapter() {
-        this.percentilesFromConfig = null;
-        this.bucketValuesFromConfig = null;
+    public Double[] getBuckets() {
+        return buckets;
     }
 
+    public void setBuckets(Double[] buckets) {
+        this.buckets = buckets;
+    }
 }

@@ -109,10 +109,19 @@ public class MetricRegistryImpl implements MetricRegistry {
     private final Clock clock;
     private final List<MetricRegistrationListener> listeners = new ArrayList<>();
 
+    public static final String METRIC_PERCENTILES_PROPERTY = "mp.metrics.distribution.percentiles";
+
+    public static final String METRIC_HISTOGRAM_BUCKETS_PROPERTY = "mp.metrics.distribution.histogram.buckets";
+    
+    public static final String METRIC_TIMER_BUCKETS_PROPERTY = "mp.metrics.distribution.timer.buckets";
+
     private Map<String, Collection<MetricsCustomPercentile>> percentilesConfigMap = 
             new HashMap<String, Collection<MetricsCustomPercentile>>();
     
-    private Map<String, Collection<MetricsCustomBucket>> bucketsConfigMap =
+    private Map<String, Collection<HistogramMetricsBucket>> histogramBucketsConfigMap =
+            new HashMap<>();
+    
+    private Map<String, Collection<TimerMetricsBucket>> timerBucketsConfigMap =
             new HashMap<>();
 
     public MetricRegistryImpl() {
@@ -201,18 +210,18 @@ public class MetricRegistryImpl implements MetricRegistry {
 
     @Override
     public Histogram histogram(String name, Tag... tags) {
-        return findMetricOrCreate(name, Histogram.class.getTypeName(), new HistogramImpl(name, percentilesConfigMap, bucketsConfigMap), tags);
+        return findMetricOrCreate(name, Histogram.class.getTypeName(), new HistogramImpl(name, percentilesConfigMap, histogramBucketsConfigMap), tags);
     }
 
     @Override
     public Histogram histogram(Metadata metadata, Tag... tags) {
         return findMetricOrCreate(metadata, Histogram.class.getTypeName(),new HistogramImpl(metadata.getName(), 
-                percentilesConfigMap, bucketsConfigMap), tags);
+                percentilesConfigMap, histogramBucketsConfigMap), tags);
     }
 
     @Override
     public Histogram histogram(String name) {
-        return findMetricOrCreate(name, Histogram.class.getTypeName(), new HistogramImpl(name, percentilesConfigMap, bucketsConfigMap), new Tag[0]);
+        return findMetricOrCreate(name, Histogram.class.getTypeName(), new HistogramImpl(name, percentilesConfigMap, histogramBucketsConfigMap), new Tag[0]);
     }
 
     @Override
@@ -223,7 +232,7 @@ public class MetricRegistryImpl implements MetricRegistry {
     @Override
     public Histogram histogram(MetricID metricID) {
         return findMetricOrCreate(metricID.getName(), Histogram.class.getTypeName(), new HistogramImpl(metricID.getName(), 
-                        percentilesConfigMap, bucketsConfigMap), 
+                        percentilesConfigMap, histogramBucketsConfigMap), 
                 metricID.getTagsAsArray());
     }
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -92,13 +92,8 @@ public class ExponentiallyDecayingReservoir implements Reservoir {
     private final AtomicLong nextScaleTime;
     private final Clock clock;
     
-    private HistogramAdapter histogramAdapter;
+    private AbstractConfigAdapter configAdapter;
     
-    public ExponentiallyDecayingReservoir(HistogramAdapter histogramAdapter) {
-        this();
-        this.histogramAdapter = histogramAdapter;
-    }
-
     /**
      * Creates a new {@link ExponentiallyDecayingReservoir} of 1028 elements,
      * which offers a 99.9% confidence level with a 5% margin of error assuming
@@ -193,8 +188,8 @@ public class ExponentiallyDecayingReservoir implements Reservoir {
         rescaleIfNeeded();
         lockForRegularUsage();
         try {
-            if(this.histogramAdapter != null) {
-                return new WeightedSnapshot(values.values(), this.histogramAdapter);
+            if(this.configAdapter != null) {
+                return new WeightedSnapshot(values.values(), this.configAdapter);
             } else {
                 return new WeightedSnapshot(values.values());
             }
@@ -272,8 +267,8 @@ public class ExponentiallyDecayingReservoir implements Reservoir {
         lock.readLock().unlock();
     }
     
-    public void setHistogramAdapter(HistogramAdapter histogramAdapter) {
-        this.histogramAdapter = histogramAdapter;
+    public void setConfigAdapter(AbstractConfigAdapter configAdapter) {
+        this.configAdapter = configAdapter;
     }
     
 }
