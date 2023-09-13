@@ -196,12 +196,12 @@ public class HistogramImpl implements Histogram {
         this.reservoir.setHistogramAdapter(histogramAdapter);
     }
     
-    private Collection<MetricsCustomPercentile> processPercentileMap(String appName) {
+    private synchronized Collection<MetricsCustomPercentile> processPercentileMap(String appName) {
         Optional<String> customPercentiles = ConfigProvider.getConfig().getOptionalValue(METRIC_PERCENTILES_PROPERTY, String.class);
         return (customPercentiles.isPresent()) ? MetricsConfigParserUtil.parsePercentile(customPercentiles.get()) : null;
     }
     
-    private Collection<MetricsCustomBucket> processBucketMap(String appName) {
+    private synchronized Collection<MetricsCustomBucket> processBucketMap(String appName) {
         Optional<String> customBuckets = ConfigProvider.getConfig().getOptionalValue(METRIC_HISTOGRAM_BUCKETS_PROPERTY, String.class);
         return (customBuckets.isPresent()) ? MetricsConfigParserUtil.parseHistogramBuckets(customBuckets.get()) : null;
     }
