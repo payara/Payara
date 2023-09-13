@@ -528,11 +528,5 @@
                 <product.name>Payara Micro Enterprise</product.name>
             </properties>
         </profile>
-        <profile>
-            <id>deploy-internals</id>
-            <properties>
-                <deploy.skip>true</deploy.skip>
-            </properties>
-        </profile>
     </profiles>
 </project>

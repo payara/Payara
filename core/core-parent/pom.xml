@@ -54,20 +54,7 @@
 
     <name>Payara Core Parent</name>
 
-    <distributionManagement>
-        <repository>
-            <id>payara-nexus-artifacts</id>
-            <url>https://nexus.payara.fish/repository/payara-artifacts/</url>
-        </repository>
-        <snapshotRepository>
-            <id>payara-nexus-snapshots</id>
-            <url>https://nexus.payara.fish/repository/payara-snapshots/</url>
-        </snapshotRepository>
-    </distributionManagement>
-
     <properties>
-        <!-- core artifacts end up in payara-artifacts repo -->
-        <deploy.skip>false</deploy.skip>
         <jar.manifest>${project.build.outputDirectory}/META-INF/MANIFEST.MF</jar.manifest>
     </properties>
 
@@ -401,15 +388,6 @@
                         <testExcludes>
                             <testExclude>**/.ade_path/**</testExclude>
                         </testExcludes>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-deploy-plugin</artifactId>
-                    <version>${maven.deploy.plugin.version}</version>
-                    <configuration>
-                        <retryFailedDeploymentCount>10</retryFailedDeploymentCount>
-                        <skip>${deploy.skip}</skip>
                     </configuration>
                 </plugin>
 
