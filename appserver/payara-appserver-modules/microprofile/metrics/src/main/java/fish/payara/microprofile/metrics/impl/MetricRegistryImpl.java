@@ -590,7 +590,7 @@ public class MetricRegistryImpl implements MetricRegistry {
         }
 
         if(Timer.class.getName().equals(metricType)) {
-            return new TimerImpl(clock);
+            return new TimerImpl(name, percentilesConfigMap, timerBucketsConfigMap, clock);
         }
 
         throw new IllegalArgumentException("Invalid metric type : "+metricType);

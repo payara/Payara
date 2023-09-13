@@ -88,8 +88,8 @@ public class TimerImpl implements Timer {
     private TimerAdapter timerAdapter;
     
     public TimerImpl(String metricName, Map<String, Collection<MetricsCustomPercentile>> percentilesConfigMap, 
-                     Map<String, Collection<TimerMetricsBucket>> timerBucketsConfigMap) {
-        this();
+                     Map<String, Collection<TimerMetricsBucket>> timerBucketsConfigMap, Clock clock) {
+        this(clock);
         validateMetricsConfiguration(metricName, percentilesConfigMap, timerBucketsConfigMap);
     }
 
