@@ -156,23 +156,8 @@ public class WeightedSnapshot extends Snapshot {
 
     @Override
     public PercentileValue[] percentileValues() {
-        /*PercentileValue[] percentileValues = null;
-        double[] percentiles = {0.5, 0.75, 0.95, 0.98, 0.99, 0.999};
-        if(values.length > 0 && quantiles.length > 0 && values.length == quantiles.length) {
-            percentileValues = new PercentileValue[percentiles.length];
-            for (int i = 0; i < percentiles.length; i++) {
-                percentileValues[i] = new PercentileValue(percentiles[i], getValue(percentiles[i]));
-            }
-        } else {
-            percentileValues = new PercentileValue[percentiles.length];
-            for (int i = 0; i < percentiles.length; i++) {
-                percentileValues[i] = new PercentileValue(percentiles[i], 0);
-            }
-        }
-        return percentileValues;*/
         Double[] percentiles = histogramAdapter.percentileValues();
-        PercentileValue[] percentileValues = null;
-        percentileValues = new PercentileValue[percentiles.length];
+        PercentileValue[] percentileValues = new PercentileValue[percentiles.length];
         for (int i = 0; i < percentiles.length; i++) {
             percentileValues[i] = new PercentileValue(percentiles[i], getValue(percentiles[i]));
         }
@@ -181,7 +166,12 @@ public class WeightedSnapshot extends Snapshot {
 
     @Override
     public HistogramBucket[] bucketValues() {
-        return new HistogramBucket[0];
+        Double[] buckets = histogramAdapter.getBucketValues();
+        HistogramBucket[] histogramBuckets = new HistogramBucket[buckets.length];
+        for(int i = 0;i < buckets.length; i++) {
+            histogramBuckets[i] = new HistogramBucket(buckets[i], i);
+        }
+        return histogramBuckets;
     }
 
     private double getValue(double quantile) {
