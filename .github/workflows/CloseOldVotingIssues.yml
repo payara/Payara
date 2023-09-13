@@ -1,4 +1,4 @@
-name: Close Old Voted issues
+name: Close enhancement requests with not enough votes
 
 on:
   schedule:
@@ -13,14 +13,17 @@ jobs:
       - name: Check for old voted issues
         id: old-vote-issues
         uses: actions/github-script@v6
+        env:
+          daysInterval: ${{ vars.CLOSING_ENHANCEMENTS_INTERVAL }}
         with:
           script: |
             // - github: A pre-authenticated octokit/rest.js client
             const { owner, repo } = context.repo;
             const votingLabel = "Status: Voting";
+            
+            const parsedDays = parseFloat("${{ env.daysInterval }}");
 
             // Query all GH issues for Voting 
-            // is:issue is:open label:"Status: Voting" 
             const issuesResponse = await github.rest.issues.listForRepo({
               owner,
               repo,
@@ -30,7 +33,7 @@ jobs:
             
             //issuesResponse has all the issues labeled with Voting.
             if (issuesResponse.data.length === 0) {
-              core.info('No issues labelled with Voting found to process. Exiting.');
+              core.info('"Current issues in the Voting stage do not have enough votes to qualify for selection. Exiting.');
               return;
             }
             const now = new Date().getTime();
@@ -40,9 +43,14 @@ jobs:
               core.info(`Issue was created ${issue.created_at}`);            
               const issueDate = new Date(issue.created_at).getTime();
               const daysSinceCreated = (now - issueDate) / 1000 / 60 / 60 / 24;
-              if (daysSinceCreated > 180) { // 180 days
-                //core.info(`Closing #${issue.number} because it has not got enough votes in the last ${daysSinceCreated} days`);
-                const message = `Greetings, closing the issue because it has not got enough votes in the last 6 months.`;
+              const reactions = issue.reactions['+1'];
+              core.info(`reaction is ${reactions}`);  
+              if (daysSinceCreated > parsedDays && reactions <2) { 
+                core.info(`Closing #${issue.number} because it has not got enough votes for more than ${parsedDays} days`);
+                const message = `Greetings,
+                  This issue has been open for community Voting for more than ${parsedDays} days and sadly it hasn't received enough votes to be considered for its implementation according to our community policies.
+                  As there is not enough interest from the community we'll proceed to close this issue.`;
+                  
                 await github.rest.issues.removeLabel({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
@@ -55,14 +63,13 @@ jobs:
                   repo: context.repo.repo,
                   issue_number: issue.number,
                   body: message,
-                });                
-                
+                });  
                
                 await github.rest.issues.update({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: issue.number,
-                state: 'closed',
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  state: 'closed',
                });
               }
             }
