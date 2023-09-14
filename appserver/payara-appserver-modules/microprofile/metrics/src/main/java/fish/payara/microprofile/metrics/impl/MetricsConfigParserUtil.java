@@ -166,7 +166,7 @@ public class MetricsConfigParserUtil {
         } else if(bucket.matches("[0-9]+h")) { //case h
             return Duration.ofSeconds(Long.parseLong(bucket.substring(0, bucket.length() - 1)));
         } else if(bucket.matches("[0-9]+")) { //normal
-            return Duration.ofSeconds(Long.parseLong(bucket));
+            return Duration.ofMillis(Long.parseLong(bucket));
         } else {
             logger.info(String.format("Error when trying to read property %s with %s name", METRIC_TIMER_BUCKETS_PROPERTY, bucket));
             return null;
