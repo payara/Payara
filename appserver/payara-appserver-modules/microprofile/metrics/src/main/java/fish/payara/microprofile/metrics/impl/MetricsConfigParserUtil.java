@@ -69,7 +69,7 @@ public class MetricsConfigParserUtil {
             String[] resultKeyValueSplit = nameValue.split(PROPERTY_KEY_VALUE_SEPARATOR);
             String metricName = resultKeyValueSplit[0];
             if(resultKeyValueSplit.length == 1) {
-                //evaluate when no value, disabled
+                customPercentile = new MetricsCustomPercentile(metricName, true);
             } else {
                 Double[] percentileValues = Arrays.asList(resultKeyValueSplit[1].split(PROPERTY_VALUE_SEPARATOR)).stream()
                         .map(MetricsConfigParserUtil::evaluatePercentileValue)

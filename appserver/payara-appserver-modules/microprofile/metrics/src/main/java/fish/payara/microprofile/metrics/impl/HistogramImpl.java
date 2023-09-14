@@ -165,7 +165,12 @@ public class HistogramImpl implements Histogram {
             MetricsCustomPercentile result = MetricsCustomPercentile.matches(computedPercentiles, metricName);
             if(result != null && result.getPercentiles() != null && result.getPercentiles().length > 0) {
                 histogramAdapter.setPercentilesFromConfig(result.getPercentiles());
-            } 
+            } else if(result != null && result.getPercentiles() == null && result.isDisabled()) {
+                
+            } else {
+                Double[] percentiles = {0.5, 0.75, 0.95, 0.98, 0.99, 0.999};
+                histogramAdapter.setPercentilesFromConfig(percentiles);
+            }
         } 
         
         if(computedBuckets != null && computedBuckets.size() != 0) {

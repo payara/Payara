@@ -42,10 +42,17 @@ package fish.payara.microprofile.metrics.impl;
 public class MetricsCustomPercentile extends PropertyConfig {
     
     private Double[] percentiles;
+    
+    private boolean isDisabled;
 
     public MetricsCustomPercentile(String name, Double[] percentiles) {
         this.metricName = name;
         this.percentiles = percentiles;
+    }
+    
+    public MetricsCustomPercentile(String name, boolean isDisabled) {
+        this.metricName = name;
+        this.isDisabled = isDisabled;
     }
 
     public Double[] getPercentiles() {
@@ -54,5 +61,13 @@ public class MetricsCustomPercentile extends PropertyConfig {
 
     public void setPercentiles(Double[] percentiles) {
         this.percentiles = percentiles;
+    }
+
+    public boolean isDisabled() {
+        return isDisabled;
+    }
+
+    public void setDisabled(boolean disabled) {
+        isDisabled = disabled;
     }
 }
