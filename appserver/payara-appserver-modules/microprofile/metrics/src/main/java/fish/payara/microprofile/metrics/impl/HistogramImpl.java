@@ -160,8 +160,13 @@ public class HistogramImpl implements Histogram {
                 .computeIfAbsent(metricName, MetricsConfigParserUtil::processPercentileMap);
         Collection<HistogramMetricsBucket> computedBuckets = bucketsConfigMap
                 .computeIfAbsent(metricName, this::processHistogramBucketMap);
+        MetricsCustomPercentile resultPercentile = null;
+        HistogramMetricsBucket resultBuckets = null;
         histogramAdapter = new HistogramAdapter();
-        MetricsCustomPercentile resultPercentile = MetricsCustomPercentile.matches(computedPercentiles, metricName);
+        if(computedPercentiles != null && computedPercentiles.size() != 0) {
+            resultPercentile = MetricsCustomPercentile.matches(computedPercentiles, metricName);
+        }
+        
         if (resultPercentile != null && resultPercentile.getPercentiles() != null 
                 && resultPercentile.getPercentiles().length > 0) {
             histogramAdapter.setPercentilesFromConfig(resultPercentile.getPercentiles());
@@ -172,8 +177,9 @@ public class HistogramImpl implements Histogram {
             Double[] percentiles = {0.5, 0.75, 0.95, 0.98, 0.99, 0.999};
             histogramAdapter.setPercentilesFromConfig(percentiles);
         }
-        
-        HistogramMetricsBucket resultBuckets = HistogramMetricsBucket.matches(computedBuckets, metricName);
+        if(computedBuckets != null && computedBuckets.size() != 0) {
+            resultBuckets = HistogramMetricsBucket.matches(computedBuckets, metricName);
+        }
         if (resultBuckets != null && resultBuckets.getBuckets() != null && resultBuckets.getBuckets().length > 0) {
             histogramAdapter.setBucketValuesFromConfig(resultBuckets.getBuckets());
         }

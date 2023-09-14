@@ -229,8 +229,14 @@ public class TimerImpl implements Timer {
                 .computeIfAbsent(metricName, MetricsConfigParserUtil::processPercentileMap);
         Collection<TimerMetricsBucket> computedTimersBuckets = timerBucketsConfigMap
                 .computeIfAbsent(metricName, this::processTimerBucketMap);
+        MetricsCustomPercentile resultPercentile = null;
+        TimerMetricsBucket resultBucket = null;
         timerAdapter = new TimerAdapter();
-        MetricsCustomPercentile resultPercentile = MetricsCustomPercentile.matches(computedPercentiles, metricName);
+        
+        if(computedPercentiles != null && computedPercentiles.size() != 0) {
+            resultPercentile = MetricsCustomPercentile.matches(computedPercentiles, metricName);
+        }
+        
         if (resultPercentile != null && resultPercentile.getPercentiles() != null 
                 && resultPercentile.getPercentiles().length > 0) {
             timerAdapter.setPercentilesFromConfig(resultPercentile.getPercentiles());
@@ -242,7 +248,10 @@ public class TimerImpl implements Timer {
             timerAdapter.setPercentilesFromConfig(percentiles);
         }
         
-        TimerMetricsBucket resultBucket = TimerMetricsBucket.matches(computedTimersBuckets, metricName);
+        if(computedTimersBuckets != null && computedTimersBuckets.size() != 0) {
+            resultBucket = TimerMetricsBucket.matches(computedTimersBuckets, metricName);
+        }
+        
         if (resultBucket != null && resultBucket.getBuckets() != null && resultBucket.getBuckets().length > 0) {
             timerAdapter.setBucketValuesFromConfig(resultBucket.getBuckets());
         }
