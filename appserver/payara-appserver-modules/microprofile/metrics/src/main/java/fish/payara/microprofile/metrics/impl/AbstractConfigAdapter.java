@@ -46,8 +46,7 @@ public abstract class AbstractConfigAdapter {
         if(percentilesFromConfig != null && percentilesFromConfig.length > 0) {
             return percentilesFromConfig;
         } else {
-            Double[] percentiles = {0.5, 0.75, 0.95, 0.98, 0.99, 0.999};
-            return percentiles;
+            return new Double[0];
         }
     }
     
