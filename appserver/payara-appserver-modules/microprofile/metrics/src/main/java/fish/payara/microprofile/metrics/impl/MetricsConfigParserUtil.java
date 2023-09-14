@@ -39,6 +39,7 @@
  */
 package fish.payara.microprofile.metrics.impl;
 
+import java.time.Duration;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Collection;
@@ -46,8 +47,7 @@ import java.util.Optional;
 import java.util.logging.Logger;
 import org.eclipse.microprofile.config.ConfigProvider;
 
-import static fish.payara.microprofile.metrics.impl.MetricRegistryImpl.METRIC_HISTOGRAM_BUCKETS_PROPERTY;
-import static fish.payara.microprofile.metrics.impl.MetricRegistryImpl.METRIC_PERCENTILES_PROPERTY;
+import static fish.payara.microprofile.metrics.impl.MetricRegistryImpl.*;
 
 public class MetricsConfigParserUtil {
     
@@ -121,11 +121,11 @@ public class MetricsConfigParserUtil {
             if(resultKeyValueSplit.length == 1) {
                 //evaluate when no value, disabled
             } else {
-                Double[] bucketValues = Arrays.asList(resultKeyValueSplit[1].split(PROPERTY_VALUE_SEPARATOR)).stream()
+                Duration[] bucketValues = Arrays.asList(resultKeyValueSplit[1].split(PROPERTY_VALUE_SEPARATOR)).stream()
                         .map(MetricsConfigParserUtil::evaluateTimerBucketValue)
-                        .filter(d -> d != null).toArray(Double[]::new);
-                Arrays.sort(bucketValues);
-                customBucket = new TimerMetricsBucket(metricName, bucketValues);
+                        .filter(d -> d != null).toArray(Duration[]::new);
+                customBucket = new TimerMetricsBucket(metricName, 
+                        Arrays.stream(bucketValues).mapToDouble(Duration::toNanos).boxed().toArray(Double[]::new));
             }
             metricTimerCollection.addFirst(customBucket);
         }
@@ -155,11 +155,20 @@ public class MetricsConfigParserUtil {
         }
     }
 
-    public static Double evaluateTimerBucketValue(String bucket) {
-        if(bucket.matches("[0-9]+[.]*[0-9]*")) {
-            return Double.parseDouble(bucket);
+    public static Duration evaluateTimerBucketValue(String bucket) {
+        bucket = bucket.trim();
+        if(bucket.matches("[0-9]+ms")) { //case ms
+            return Duration.ofMillis(Long.parseLong(bucket.substring(0, bucket.length() - 2)));
+        } else if(bucket.matches("[0-9]+s")) { //case s
+            return Duration.ofSeconds(Long.parseLong(bucket.substring(0, bucket.length() - 1)));
+        } else if(bucket.matches("[0-9]+m")) { //case m
+            return Duration.ofSeconds(Long.parseLong(bucket.substring(0, bucket.length() - 1)));
+        } else if(bucket.matches("[0-9]+h")) { //case h
+            return Duration.ofSeconds(Long.parseLong(bucket.substring(0, bucket.length() - 1)));
+        } else if(bucket.matches("[0-9]+")) { //normal
+            return Duration.ofSeconds(Long.parseLong(bucket));
         } else {
-            logger.info(String.format("Error when trying to read property %s with %s name", METRIC_HISTOGRAM_BUCKETS_PROPERTY, bucket));
+            logger.info(String.format("Error when trying to read property %s with %s name", METRIC_TIMER_BUCKETS_PROPERTY, bucket));
             return null;
         }
     }
