@@ -223,32 +223,30 @@ public class TimerImpl implements Timer {
         return "Timer[" + getCount() + "]";
     }
 
-    void validateMetricsConfiguration(String metricName, Map<String, Collection<MetricsCustomPercentile>> percentilesConfigMap, 
-                                      Map<String, Collection<TimerMetricsBucket>> timerBucketsConfigMap){
-        Collection<MetricsCustomPercentile> computedPercentiles = percentilesConfigMap.computeIfAbsent(metricName, MetricsConfigParserUtil::processPercentileMap);
-        Collection<TimerMetricsBucket> computedTimersBuckets = timerBucketsConfigMap.computeIfAbsent(metricName, this::processTimerBucketMap);
-
+    void validateMetricsConfiguration(String metricName, Map<String, Collection<MetricsCustomPercentile>> percentilesConfigMap,
+                                      Map<String, Collection<TimerMetricsBucket>> timerBucketsConfigMap) {
+        Collection<MetricsCustomPercentile> computedPercentiles = percentilesConfigMap
+                .computeIfAbsent(metricName, MetricsConfigParserUtil::processPercentileMap);
+        Collection<TimerMetricsBucket> computedTimersBuckets = timerBucketsConfigMap
+                .computeIfAbsent(metricName, this::processTimerBucketMap);
         timerAdapter = new TimerAdapter();
+        MetricsCustomPercentile resultPercentile = MetricsCustomPercentile.matches(computedPercentiles, metricName);
+        if (resultPercentile != null && resultPercentile.getPercentiles() != null 
+                && resultPercentile.getPercentiles().length > 0) {
+            timerAdapter.setPercentilesFromConfig(resultPercentile.getPercentiles());
+        } else if (resultPercentile != null && resultPercentile.getPercentiles() == null 
+                && resultPercentile.isDisabled()) {
 
-        if(computedPercentiles != null && computedPercentiles.size() != 0) {
-            MetricsCustomPercentile result = MetricsCustomPercentile.matches(computedPercentiles, metricName);
-            if(result != null && result.getPercentiles() != null && result.getPercentiles().length > 0) {
-                timerAdapter.setPercentilesFromConfig(result.getPercentiles());
-            } else if(result != null && result.getPercentiles() == null && result.isDisabled()) {
-
-            } else {
-                Double[] percentiles = {0.5, 0.75, 0.95, 0.98, 0.99, 0.999};
-                timerAdapter.setPercentilesFromConfig(percentiles);
-            }
+        } else {
+            Double[] percentiles = {0.5, 0.75, 0.95, 0.98, 0.99, 0.999};
+            timerAdapter.setPercentilesFromConfig(percentiles);
         }
-
-        if(computedTimersBuckets != null && computedTimersBuckets.size() != 0) {
-            TimerMetricsBucket result = TimerMetricsBucket.matches(computedTimersBuckets, metricName);
-            if(result!= null && result.getBuckets() != null && result.getBuckets().length > 0) {
-                timerAdapter.setBucketValuesFromConfig(result.getBuckets());
-            }
+        
+        TimerMetricsBucket resultBucket = TimerMetricsBucket.matches(computedTimersBuckets, metricName);
+        if (resultBucket != null && resultBucket.getBuckets() != null && resultBucket.getBuckets().length > 0) {
+            timerAdapter.setBucketValuesFromConfig(resultBucket.getBuckets());
         }
-
+        
         this.reservoir.setConfigAdapter(timerAdapter);
     }
 

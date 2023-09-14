@@ -153,32 +153,30 @@ public class HistogramImpl implements Histogram {
     public String toString() {
         return "Histogram[" + getCount() + "]";
     }
-    
-    void validateMetricsConfiguration(String metricName, Map<String, Collection<MetricsCustomPercentile>> percentilesConfigMap, 
-                                      Map<String, Collection<HistogramMetricsBucket>> bucketsConfigMap) {
-        Collection<MetricsCustomPercentile> computedPercentiles = percentilesConfigMap.computeIfAbsent(metricName, MetricsConfigParserUtil::processPercentileMap);
-        Collection<HistogramMetricsBucket> computedBuckets = bucketsConfigMap.computeIfAbsent(metricName, this::processHistogramBucketMap);
 
+    void validateMetricsConfiguration(String metricName, Map<String, Collection<MetricsCustomPercentile>> percentilesConfigMap,
+                                      Map<String, Collection<HistogramMetricsBucket>> bucketsConfigMap) {
+        Collection<MetricsCustomPercentile> computedPercentiles = percentilesConfigMap
+                .computeIfAbsent(metricName, MetricsConfigParserUtil::processPercentileMap);
+        Collection<HistogramMetricsBucket> computedBuckets = bucketsConfigMap
+                .computeIfAbsent(metricName, this::processHistogramBucketMap);
         histogramAdapter = new HistogramAdapter();
+        MetricsCustomPercentile resultPercentile = MetricsCustomPercentile.matches(computedPercentiles, metricName);
+        if (resultPercentile != null && resultPercentile.getPercentiles() != null 
+                && resultPercentile.getPercentiles().length > 0) {
+            histogramAdapter.setPercentilesFromConfig(resultPercentile.getPercentiles());
+        } else if (resultPercentile != null && resultPercentile.getPercentiles() == null 
+                && resultPercentile.isDisabled()) {
+            //skip this case
+        } else {
+            Double[] percentiles = {0.5, 0.75, 0.95, 0.98, 0.99, 0.999};
+            histogramAdapter.setPercentilesFromConfig(percentiles);
+        }
         
-        if(computedPercentiles != null && computedPercentiles.size() != 0) {
-            MetricsCustomPercentile result = MetricsCustomPercentile.matches(computedPercentiles, metricName);
-            if(result != null && result.getPercentiles() != null && result.getPercentiles().length > 0) {
-                histogramAdapter.setPercentilesFromConfig(result.getPercentiles());
-            } else if(result != null && result.getPercentiles() == null && result.isDisabled()) {
-                
-            } else {
-                Double[] percentiles = {0.5, 0.75, 0.95, 0.98, 0.99, 0.999};
-                histogramAdapter.setPercentilesFromConfig(percentiles);
-            }
-        } 
-        
-        if(computedBuckets != null && computedBuckets.size() != 0) {
-            HistogramMetricsBucket result = HistogramMetricsBucket.matches(computedBuckets, metricName);
-            if(result!= null && result.getBuckets() != null && result.getBuckets().length > 0) {
-                histogramAdapter.setBucketValuesFromConfig(result.getBuckets());
-            } 
-        } 
+        HistogramMetricsBucket resultBuckets = HistogramMetricsBucket.matches(computedBuckets, metricName);
+        if (resultBuckets != null && resultBuckets.getBuckets() != null && resultBuckets.getBuckets().length > 0) {
+            histogramAdapter.setBucketValuesFromConfig(resultBuckets.getBuckets());
+        }
 
         this.reservoir.setConfigAdapter(histogramAdapter);
     }
