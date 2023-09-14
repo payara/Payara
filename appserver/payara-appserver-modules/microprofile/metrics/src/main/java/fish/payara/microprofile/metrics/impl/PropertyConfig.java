@@ -53,8 +53,8 @@ public abstract class PropertyConfig {
 
     public static <T extends PropertyConfig> T matches(Collection<T> configurations, String metricName) {
         for(PropertyConfig propertyConfig:configurations) {
-            if(propertyConfig.getMetricName().contentEquals("*")){
-                //check this validation
+            int idxWildcard = propertyConfig.getMetricName().indexOf("*");
+            if(idxWildcard > -1 && metricName.contains(propertyConfig.getMetricName().substring(0,idxWildcard))){
                 return (T) propertyConfig;
             }
             Pattern p = Pattern.compile(metricName.trim());
