@@ -1558,13 +1558,14 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
                                 Globals.getDefaultBaseServiceLocator().getService(InvocationManager.class));
 
                         Tracer tracer = openTracing.getTracer(applicationName);
-                        if (tracer != null && tracer.activeSpan() != null) {
-                            // Presumably held open by return being handled by another thread
+                        if (tracer != null && tracer.activeSpan() != null && response.isCommitted()) {
+                            // If response is not committed, it is likely async
                             tracer.activeSpan().setTag(
                                     Tags.HTTP_STATUS.getKey(),
-                                    Integer.toString(((HttpServletResponse) response).getStatus()));
+                                    ((HttpServletResponse) response).getStatus());
                             tracer.activeSpan().finish();
                         }
+                        // TODO: clear OpenTelemetry context once we move to natively using it.
 
                         if (requestTracing.isRequestTracingEnabled() && span != null) {
                             span.addSpanTag("ResponseStatus", Integer.toString(
