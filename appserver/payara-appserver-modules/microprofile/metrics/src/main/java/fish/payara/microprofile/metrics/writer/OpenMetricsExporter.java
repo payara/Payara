@@ -41,6 +41,7 @@ package fish.payara.microprofile.metrics.writer;
 
 import static fish.payara.microprofile.metrics.MetricUnitsUtils.scaleToBaseUnit;
 
+import fish.payara.microprofile.metrics.impl.WeightedSnapshot;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.math.BigDecimal;
@@ -163,6 +164,23 @@ public class OpenMetricsExporter implements MetricExporter {
         appendValue(globalName(metricID, metadata, "_count"), tags, count.getAsLong());
         appendValue(globalName(metricID, metadata, "_sum"), tags, sum.get());
         Snapshot.PercentileValue[] pencentileValues = snapshot.percentileValues();
+        if(snapshot instanceof WeightedSnapshot) {
+            WeightedSnapshot w = (WeightedSnapshot) snapshot;
+            if(w.getConfigAdapter() != null) {
+                printCustomPercentile(pencentileValues, summary, tags, metadata);
+            } 
+        } else {
+            printMedian(pencentileValues, summary, tags, metadata);
+        }
+    }
+
+    public void printCustomPercentile(Snapshot.PercentileValue[] pencentileValues, String summary, Tag[] tags, Metadata metadata) {
+        for (Snapshot.PercentileValue value : pencentileValues) {
+            appendValue(summary, tags("quantile", Double.toString(value.getPercentile()), tags), scaleToBaseUnit(value.getValue(), metadata));
+        }
+    }
+    
+    public void printMedian(Snapshot.PercentileValue[] pencentileValues, String summary, Tag[] tags, Metadata metadata) {
         Optional<Snapshot.PercentileValue> median = Arrays.stream(pencentileValues)
                 .filter(p -> p.getPercentile() == 0.5).findFirst();
         Optional<Snapshot.PercentileValue> percentile75th = Arrays.stream(pencentileValues)
@@ -175,7 +193,6 @@ public class OpenMetricsExporter implements MetricExporter {
                 .filter(p -> p.getPercentile() == 0.99).findFirst();
         Optional<Snapshot.PercentileValue> percentile999th = Arrays.stream(pencentileValues)
                 .filter(p -> p.getPercentile() == 0.999).findFirst();
-
 
         if(median.isPresent()) {
             appendValue(summary, tags("quantile", "0.5", tags),

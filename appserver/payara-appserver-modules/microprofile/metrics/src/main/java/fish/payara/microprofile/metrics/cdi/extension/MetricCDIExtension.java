@@ -153,7 +153,8 @@ public class MetricCDIExtension<E extends Member & AnnotatedElement> implements 
         metadataMap.putIfAbsent(name, metadata);
         initService();
         if(reader.annotationType().getName().equals(Timed.class.getName())) {
-            metricsService.getContext(true).getOrCreateRegistry("application").timer(metadata);
+            String availableScope = reader.scope(reader.annotation(bean, element));
+            metricsService.getContext(true).getOrCreateRegistry((availableScope != null) ? availableScope : "application").timer(metadata);
         }
     }
 
