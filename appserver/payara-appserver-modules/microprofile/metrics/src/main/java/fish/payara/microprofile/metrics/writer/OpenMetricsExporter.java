@@ -176,7 +176,7 @@ public class OpenMetricsExporter implements MetricExporter {
 
     public void printCustomPercentile(Snapshot.PercentileValue[] pencentileValues, String summary, Tag[] tags, Metadata metadata) {
         for (Snapshot.PercentileValue value : pencentileValues) {
-            appendValue(summary, tags("quantile", Double.toString(value.getPercentile()), tags), scaleToBaseUnit(value.getValue(), metadata));
+            appendValue(summary, tags("quantile", Double.toString(value.getPercentile()), tags), value.getValue());
         }
     }
     
