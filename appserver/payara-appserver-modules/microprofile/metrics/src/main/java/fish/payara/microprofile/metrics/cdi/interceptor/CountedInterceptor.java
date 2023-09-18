@@ -56,7 +56,7 @@ import fish.payara.microprofile.metrics.cdi.AnnotationReader;
 
 @Counted
 @Interceptor
-@Priority(Interceptor.Priority.LIBRARY_BEFORE + 1)
+@Priority(Interceptor.Priority.LIBRARY_BEFORE + 10)
 public class CountedInterceptor extends AbstractInterceptor {
 
     @Override
