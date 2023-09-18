@@ -64,34 +64,45 @@ public class GlassFishWeldProvider implements CDIProvider {
              * In certain scenarios we use flat deployment model (weld-se, weld-servlet). In that case
              * we return the only BeanManager we have.
              */
-            if (Container.instance().beanDeploymentArchives().values().size() == 1) {
+            if (Container.instance().beanDeploymentArchives().size() == 1) {
                 return Container.instance().beanDeploymentArchives().values().iterator().next();
             }
 
-            try {
-                // first, try JNDI
-                return (BeanManagerImpl) (new javax.naming.InitialContext().lookup("java:comp/BeanManager"));
-            } catch (NamingException noBeanManagerFoundEx) {
-                // To get the correct bean manager we need to determine the class loader of the calling class.
-                // unfortunately we only have the class name so we need to find the root bda that has a class loader
-                // that can successfully load the class.  This should give us the correct BDA which then can be used
-                // to get the correct bean manager
-                Map<BeanDeploymentArchive, BeanManagerImpl> beanDeploymentArchives
-                        = Container.instance().beanDeploymentArchives();
-                Set<Map.Entry<BeanDeploymentArchive, BeanManagerImpl>> entries = beanDeploymentArchives.entrySet();
-                for (Map.Entry<BeanDeploymentArchive, BeanManagerImpl> entry : entries) {
-                    BeanDeploymentArchive beanDeploymentArchive = entry.getKey();
-                    if (beanDeploymentArchive instanceof RootBeanDeploymentArchive) {
-                        RootBeanDeploymentArchive rootBeanDeploymentArchive = (RootBeanDeploymentArchive) beanDeploymentArchive;
-                        ClassLoader moduleClassLoaderForBDA = rootBeanDeploymentArchive.getModuleClassLoaderForBDA();
-                        try {
-                            Class.forName(callerClassName, false, moduleClassLoaderForBDA);
-                            // successful so this is the bda we want.
-                            return entry.getValue();
-                        } catch (Exception ignore) {
-                        }
+            // To get the correct bean manager we need to determine the class loader of the calling class.
+            // unfortunately we only have the class name so we need to find the root bda that has a class loader
+            // that can successfully load the class.  This should give us the correct BDA which then can be used
+            // to get the correct bean manager
+            Map<BeanDeploymentArchive, BeanManagerImpl> beanDeploymentArchives
+                    = Container.instance().beanDeploymentArchives();
+            Set<Map.Entry<BeanDeploymentArchive, BeanManagerImpl>> entries = beanDeploymentArchives.entrySet();
+            for (Map.Entry<BeanDeploymentArchive, BeanManagerImpl> entry : entries) {
+                BeanDeploymentArchive beanDeploymentArchive = entry.getKey();
+                if (beanDeploymentArchive instanceof RootBeanDeploymentArchive) {
+                    RootBeanDeploymentArchive rootBeanDeploymentArchive = (RootBeanDeploymentArchive) beanDeploymentArchive;
+                    if (rootBeanDeploymentArchive.getKnownClasses().contains(callerClassName)) {
+                        return entry.getValue();
                     }
                 }
+            }
+            // Not found among known classes in bean deployment archives, try classloaders
+            for (Map.Entry<BeanDeploymentArchive, BeanManagerImpl> entry : entries) {
+                BeanDeploymentArchive beanDeploymentArchive = entry.getKey();
+                if (beanDeploymentArchive instanceof RootBeanDeploymentArchive) {
+                    RootBeanDeploymentArchive rootBeanDeploymentArchive = (RootBeanDeploymentArchive) beanDeploymentArchive;
+                    ClassLoader moduleClassLoaderForBDA = rootBeanDeploymentArchive.getModuleClassLoaderForBDA();
+                    try {
+                        Class.forName(callerClassName, false, moduleClassLoaderForBDA);
+                        // successful so this is the bda we want.
+                        return entry.getValue();
+                    } catch (Exception ignore) {
+                    }
+                }
+            }
+            try {
+                // Last attempt, try JNDI
+                return (BeanManagerImpl) (new javax.naming.InitialContext().lookup("java:comp/BeanManager"));
+            } catch (NamingException noBeanManagerFoundEx) {
+                // didn't work
             }
             return super.unsatisfiedBeanManager(callerClassName);
         }
