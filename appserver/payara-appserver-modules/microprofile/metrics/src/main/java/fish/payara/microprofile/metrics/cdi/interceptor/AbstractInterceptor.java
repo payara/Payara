@@ -41,22 +41,17 @@
 package fish.payara.microprofile.metrics.cdi.interceptor;
 
 import fish.payara.microprofile.metrics.MetricsService;
-
 import fish.payara.microprofile.metrics.cdi.AnnotationReader;
+import jakarta.enterprise.inject.Intercepted;
 import jakarta.enterprise.inject.spi.Bean;
+import jakarta.inject.Inject;
+import jakarta.interceptor.InvocationContext;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Member;
-
-import jakarta.enterprise.inject.Intercepted;
-import jakarta.inject.Inject;
-import jakarta.interceptor.AroundConstruct;
-import jakarta.interceptor.AroundInvoke;
-import jakarta.interceptor.AroundTimeout;
-import jakarta.interceptor.InvocationContext;
-
 import org.eclipse.microprofile.metrics.Metric;
 import org.eclipse.microprofile.metrics.MetricID;
-import org.eclipse.microprofile.metrics.annotation.*;
+import org.eclipse.microprofile.metrics.annotation.Counted;
+import org.eclipse.microprofile.metrics.annotation.Timed;
 import org.glassfish.internal.api.Globals;
 
 /* package-private */ abstract class AbstractInterceptor {
@@ -98,22 +93,7 @@ import org.glassfish.internal.api.Globals;
         }
         return metricsContext.getApplicationRegistry().getMetric(metricID, metricType);
     }
-
-    @AroundConstruct
-    private Object constructorInvocation(InvocationContext context) throws Exception {
-        return preInterceptor(context, context.getConstructor());
-    }
-
-    @AroundInvoke
-    private Object methodInvocation(InvocationContext context) throws Exception {
-        return preInterceptor(context, context.getMethod());
-    }
-
-    @AroundTimeout
-    private Object timeoutInvocation(InvocationContext context) throws Exception {
-        return preInterceptor(context, context.getMethod());
-    }
-
+    
     private <E extends Member & AnnotatedElement> Object preInterceptor(InvocationContext context, E element) throws Exception {
         initService();
         if (metricsService.isEnabled()) {
