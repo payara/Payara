@@ -40,6 +40,10 @@
 
 package fish.payara.microprofile.metrics.cdi.interceptor;
 
+import jakarta.interceptor.AroundConstruct;
+import jakarta.interceptor.AroundInvoke;
+import jakarta.interceptor.AroundTimeout;
+import jakarta.interceptor.InterceptorBinding;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Member;
 import java.util.function.BiFunction;
@@ -58,6 +62,21 @@ import fish.payara.microprofile.metrics.cdi.AnnotationReader;
 @Priority(Interceptor.Priority.LIBRARY_BEFORE + 10)
 public class TimedInterceptor extends AbstractInterceptor {
 
+    @AroundConstruct
+    Object timedConstructor(InvocationContext context) throws Exception {
+        return context.proceed();
+    }
+    
+    @AroundInvoke
+    Object timedInvoked(InvocationContext context) throws Exception {
+        return context.proceed();
+    }
+    
+    @AroundTimeout
+    Object timedTimeout(InvocationContext context) throws Exception {
+        return context.proceed();
+    }
+    
     @Override
     protected <E extends Member & AnnotatedElement> Object applyInterceptor(InvocationContext context, E element)
             throws Exception {
@@ -71,5 +90,7 @@ public class TimedInterceptor extends AbstractInterceptor {
             Class<?> bean, ThreeFunctionResolver<MetricID, Class<Timer>, String, Timer> loader) throws Exception {
         return apply(element, bean, AnnotationReader.TIMED, Timer.class, loader).time(context::proceed);
     }
+    
+    
 
 }

@@ -100,13 +100,13 @@ public class MetricCDIExtension<E extends Member & AnnotatedElement> implements 
     private final List<String> validationMessages = new ArrayList<>();
 
     void beforeBeanDiscovery(@Observes BeforeBeanDiscovery beforeBeanDiscovery, BeanManager manager) {
-        addNonbindingAnnotation(Counted.class, beforeBeanDiscovery);
-        addNonbindingAnnotation(Timed.class, beforeBeanDiscovery);
-        addNonbindingAnnotation(Gauge.class, beforeBeanDiscovery);
+        //addNonbindingAnnotation(Counted.class, beforeBeanDiscovery);
+        //addNonbindingAnnotation(Timed.class, beforeBeanDiscovery);
+        //addNonbindingAnnotation(Gauge.class, beforeBeanDiscovery);
 
-        addAnnotatedType(CountedInterceptor.class, manager, beforeBeanDiscovery);
-        addAnnotatedType(TimedInterceptor.class, manager, beforeBeanDiscovery);
-        addAnnotatedType(MetricsInterceptor.class, manager, beforeBeanDiscovery);
+        //addAnnotatedType(CountedInterceptor.class, manager, beforeBeanDiscovery);
+        //addAnnotatedType(TimedInterceptor.class, manager, beforeBeanDiscovery);
+        //addAnnotatedType(MetricsInterceptor.class, manager, beforeBeanDiscovery);
 
         addAnnotatedType(MetricProducer.class, manager, beforeBeanDiscovery);
         addAnnotatedType(MetricRegistryProducer.class, manager, beforeBeanDiscovery);
