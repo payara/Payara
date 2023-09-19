@@ -75,7 +75,10 @@ import org.eclipse.microprofile.metrics.MetricUnits;
 import org.eclipse.microprofile.metrics.Tag;
 import org.eclipse.microprofile.metrics.Timer;
 
-import static java.util.Collections.*;
+import static java.util.Collections.emptyMap;
+import static java.util.Collections.emptySet;
+import static java.util.Collections.unmodifiableMap;
+import static java.util.Collections.unmodifiableSet;
 import static java.util.stream.Collectors.toMap;
 import static org.eclipse.microprofile.metrics.MetricFilter.ALL;
 
@@ -145,8 +148,8 @@ public class MetricRegistryImpl implements MetricRegistry {
 
     @Override
     public Counter counter(String name) {
-        return findMetricOrCreate(name, Counter.class.getTypeName(), new CounterImpl(), 
-                MetricUtils.resolveGlobalTagsConfiguration());
+        return findMetricOrCreate(name, Counter.class.getTypeName(), new CounterImpl(),
+                new Tag[0]);
     }
 
     @Override
@@ -223,8 +226,8 @@ public class MetricRegistryImpl implements MetricRegistry {
     @Override
     public Histogram histogram(String name) {
         return findMetricOrCreate(name, Histogram.class.getTypeName(), 
-                new HistogramImpl(name, percentilesConfigMap, histogramBucketsConfigMap), 
-                MetricUtils.resolveGlobalTagsConfiguration());
+                new HistogramImpl(name, percentilesConfigMap, histogramBucketsConfigMap),
+                new Tag[0]);
     }
 
     @Override
@@ -251,8 +254,7 @@ public class MetricRegistryImpl implements MetricRegistry {
 
     @Override
     public Timer timer(String name) {
-        return findMetricOrCreate(name, Timer.class.getTypeName(), null,
-                MetricUtils.resolveGlobalTagsConfiguration());
+        return findMetricOrCreate(name, Timer.class.getTypeName(), null, new Tag[0]);
     }
 
     @Override

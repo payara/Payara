@@ -173,7 +173,7 @@ public final class MetricUtils<T extends Metric> {
      */
 
     private static Gauge<?> getGauge(MetricRegistry registry, String name) {
-        return getGauge(registry, name, MetricUtils.resolveGlobalTagsConfiguration());
+        return getGauge(registry, name, new Tag[0]);
     }
 
     private static Gauge<?> getGauge(MetricRegistry registry, Metadata metadata, Tag[] tags) {
