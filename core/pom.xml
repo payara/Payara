@@ -86,7 +86,7 @@
         <jakarta.inject.version>2.0.0</jakarta.inject.version>
         <json.bind-api.version>3.0.0</json.bind-api.version>
         <jakarta-persistence-api.version>3.1.0</jakarta-persistence-api.version>
-        <jakarta.batch-api.version>2.1.0</jakarta.batch-api.version>
+        <jakarta.batch-api.version>2.1.1</jakarta.batch-api.version>
         <microprofile-opentracing.version>3.0</microprofile-opentracing.version>
         <microprofile-fault-tolerance.version>4.0.2.payara-p1</microprofile-fault-tolerance.version>
         <microprofile-jwt-auth.version>2.1</microprofile-jwt-auth.version>
