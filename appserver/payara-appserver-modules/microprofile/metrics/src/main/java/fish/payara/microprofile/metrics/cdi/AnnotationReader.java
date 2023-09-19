@@ -39,10 +39,14 @@
  */
 package fish.payara.microprofile.metrics.cdi;
 
-import static java.util.Arrays.asList;
-
+import jakarta.enterprise.inject.Stereotype;
+import jakarta.enterprise.inject.spi.Annotated;
+import jakarta.enterprise.inject.spi.AnnotatedMember;
+import jakarta.enterprise.inject.spi.AnnotatedParameter;
+import jakarta.enterprise.inject.spi.InjectionPoint;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Executable;
 import java.lang.reflect.Field;
@@ -50,18 +54,13 @@ import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
-
-import jakarta.enterprise.inject.Stereotype;
-import jakarta.enterprise.inject.spi.Annotated;
-import jakarta.enterprise.inject.spi.AnnotatedMember;
-import jakarta.enterprise.inject.spi.AnnotatedParameter;
-import jakarta.enterprise.inject.spi.InjectionPoint;
-
+import java.util.stream.Stream;
 import org.eclipse.microprofile.metrics.Metadata;
 import org.eclipse.microprofile.metrics.MetricID;
 import org.eclipse.microprofile.metrics.MetricRegistry;
@@ -71,7 +70,8 @@ import org.eclipse.microprofile.metrics.annotation.Counted;
 import org.eclipse.microprofile.metrics.annotation.Gauge;
 import org.eclipse.microprofile.metrics.annotation.Metric;
 import org.eclipse.microprofile.metrics.annotation.Timed;
-import org.glassfish.internal.api.Globals;
+
+import static java.util.Arrays.asList;
 
 /**
  * Utility that allows reading the different MP metrics {@link Annotation}s from different annotated abstractions
@@ -713,7 +713,11 @@ public final class AnnotationReader<T extends Annotation> {
         if (tags == null || tags.length == 0) {
             return new Tag[0];
         }
-        return asList(tags).stream().map(AnnotationReader::tagFromString).toArray(Tag[]::new);
+        Tag[] tagsArray = asList(tags).stream().map(AnnotationReader::tagFromString).toArray(Tag[]::new);
+        Tag[] tagsFromConfigArray = MetricUtils.resolveGlobalTagsConfiguration();
+        Tag[] mergeOfTags = Stream.concat(Arrays.stream(tagsArray), 
+                Arrays.stream(tagsFromConfigArray)).toArray(s -> (Tag[])Array.newInstance(tagsArray.getClass().getComponentType(), s));
+        return mergeOfTags;
     }
 
 

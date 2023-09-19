@@ -145,7 +145,8 @@ public class MetricRegistryImpl implements MetricRegistry {
 
     @Override
     public Counter counter(String name) {
-        return findMetricOrCreate(name, Counter.class.getTypeName(), new CounterImpl(), new Tag[0]);
+        return findMetricOrCreate(name, Counter.class.getTypeName(), new CounterImpl(), 
+                MetricUtils.resolveGlobalTagsConfiguration());
     }
 
     @Override
@@ -221,7 +222,9 @@ public class MetricRegistryImpl implements MetricRegistry {
 
     @Override
     public Histogram histogram(String name) {
-        return findMetricOrCreate(name, Histogram.class.getTypeName(), new HistogramImpl(name, percentilesConfigMap, histogramBucketsConfigMap), new Tag[0]);
+        return findMetricOrCreate(name, Histogram.class.getTypeName(), 
+                new HistogramImpl(name, percentilesConfigMap, histogramBucketsConfigMap), 
+                MetricUtils.resolveGlobalTagsConfiguration());
     }
 
     @Override
@@ -248,7 +251,8 @@ public class MetricRegistryImpl implements MetricRegistry {
 
     @Override
     public Timer timer(String name) {
-        return findMetricOrCreate(name, Timer.class.getTypeName(), null, new Tag[0]);
+        return findMetricOrCreate(name, Timer.class.getTypeName(), null,
+                MetricUtils.resolveGlobalTagsConfiguration());
     }
 
     @Override
