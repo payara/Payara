@@ -609,6 +609,13 @@
         <profile>
             <id>force-semver</id>
             <!-- Force semantic versioning. The differences are in target/japicmp in text, html and xml -->
+            <activation>
+                <property>
+                    <!-- Active unless explicitly set to false -->
+                    <name>core.force.semver</name>
+                    <value>!false</value>
+                </property>
+            </activation>
             <build>
                 <plugins>
                     <!-- plugin to parse version number without "-SNAPSHOT" -->
