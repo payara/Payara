@@ -117,6 +117,13 @@
         </pluginRepository>
     </pluginRepositories>
 
+    <distributionManagement>
+        <repository>
+            <id>payara-nexus-distributions</id>
+            <url>https://nexus.payara.fish/repository/payara-community/</url>
+        </repository>
+    </distributionManagement>
+
     <properties>
         <dynamic.build.properties.version>0.0.1.a2</dynamic.build.properties.version>
 
@@ -150,6 +157,8 @@
         <monitoring-console-process.version>2.0.1</monitoring-console-process.version>
         <monitoring-console-webapp.version>2.0.1</monitoring-console-webapp.version>
         <validation.xml.root>${project.build.outputDirectory}</validation.xml.root>
+
+        <deploy.skip>true</deploy.skip>
     </properties>
 
     <profiles>
@@ -279,25 +288,6 @@
         </profile>
 
         <profile>
-            <!-- only internal modules deployed, so tests can run without Server build built -->
-            <id>deploy-internals</id>
-            <properties>
-                <deploy.skip>false</deploy.skip>
-            </properties>
-
-            <distributionManagement>
-                <repository>
-                    <id>payara-nexus-artifacts</id>
-                    <url>https://nexus.payara.fish/repository/payara-artifacts/</url>
-                </repository>
-                <snapshotRepository>
-                    <id>payara-nexus-snapshots</id>
-                    <url>https://nexus.payara.fish/repository/payara-snapshots/</url>
-                </snapshotRepository>
-            </distributionManagement>
-        </profile>
-
-        <profile>
             <id>BuildCore</id>
             <activation>
                 <property>
@@ -388,15 +378,6 @@
                         <testExcludes>
                             <testExclude>**/.ade_path/**</testExclude>
                         </testExcludes>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-deploy-plugin</artifactId>
-                    <version>${maven.deploy.plugin.version}</version>
-                    <configuration>
-                        <retryFailedDeploymentCount>10</retryFailedDeploymentCount>
-                        <skip>${deploy.skip}</skip>
                     </configuration>
                 </plugin>
 
