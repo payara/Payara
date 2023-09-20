@@ -67,7 +67,7 @@
         <jakarta.el-api.version>5.0.0</jakarta.el-api.version>
         <expressly.version>5.0.0</expressly.version>
         <microprofile-config.version>3.0.2</microprofile-config.version>
-        <parsson.version>1.1.1.payara-p1</parsson.version>
+        <parsson.version>1.1.4.payara-p1</parsson.version>
         <jakarta.activation-api.version>2.1.0</jakarta.activation-api.version>
         <jaxb-api.version>4.0.0</jaxb-api.version>
         <jackson.version>2.15.0</jackson.version>
@@ -76,7 +76,7 @@
         <hibernate.validator.version>8.0.0.Final</hibernate.validator.version>
         <hibernate.validator-cdi.version>8.0.0.Final</hibernate.validator-cdi.version>
         <jaxb-impl.version>4.0.1</jaxb-impl.version>
-        <jsonp-api.version>2.1.0</jsonp-api.version>
+        <jsonp-api.version>2.1.2</jsonp-api.version>
         <jakarta.security.auth.message-api.version>3.0.0</jakarta.security.auth.message-api.version>
         <jakarta.security.jacc-api.version>2.1.0</jakarta.security.jacc-api.version>
         <jakarta.security.enterprise-api.version>3.0.0</jakarta.security.enterprise-api.version>
