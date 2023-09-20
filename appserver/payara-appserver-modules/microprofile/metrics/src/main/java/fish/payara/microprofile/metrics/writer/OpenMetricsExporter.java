@@ -80,7 +80,7 @@ import org.eclipse.microprofile.metrics.Timer;
 public class OpenMetricsExporter implements MetricExporter {
 
     protected enum OpenMetricsType {
-        counter, gauge, summary
+        counter, gauge, summary, histogram
     }
 
     protected final String scope;
@@ -158,26 +158,47 @@ public class OpenMetricsExporter implements MetricExporter {
         appendTYPE(max, OpenMetricsType.gauge);
         appendHELP(max, metadata);
         appendValue(max, tags, scaleToBaseUnit(snapshot.getMax(), metadata));
+        
         String summary = globalName(metricID, metadata);
-        appendTYPE(summary, OpenMetricsType.summary);
         appendHELP(summary, metadata);
-        appendValue(globalName(metricID, metadata, "_count"), tags, count.getAsLong());
-        appendValue(globalName(metricID, metadata, "_sum"), tags, sum.get());
-        Snapshot.PercentileValue[] pencentileValues = snapshot.percentileValues();
+        
+        Snapshot.PercentileValue[] percentileValues = snapshot.percentileValues();
         if(snapshot instanceof WeightedSnapshot) {
             WeightedSnapshot w = (WeightedSnapshot) snapshot;
             if(w.getConfigAdapter() != null) {
-                printCustomPercentile(pencentileValues, summary, tags, metadata);
-            } 
+                if(w.bucketValues() != null && w.bucketValues().length > 0) {
+                    appendTYPE(summary, OpenMetricsType.histogram);
+                    printCustomPercentile(percentileValues, summary, tags, metadata);
+                    printBuckets(snapshot.bucketValues(), globalName(metricID, metadata, "_bucket"), tags, metadata);
+                } else {
+                    appendTYPE(summary, OpenMetricsType.summary);
+                    printCustomPercentile(percentileValues, summary, tags, metadata);
+                }
+            } else {
+                appendTYPE(summary, OpenMetricsType.summary);
+            }
         } else {
-            printMedian(pencentileValues, summary, tags, metadata);
+            appendTYPE(summary, OpenMetricsType.summary);
+            printMedian(percentileValues, summary, tags, metadata);
         }
+
+        appendValue(globalName(metricID, metadata, "_count"), tags, count.getAsLong());
+        appendValue(globalName(metricID, metadata, "_sum"), tags, sum.get());
     }
 
     public void printCustomPercentile(Snapshot.PercentileValue[] pencentileValues, String summary, Tag[] tags, Metadata metadata) {
         for (Snapshot.PercentileValue value : pencentileValues) {
             appendValue(summary, tags("quantile", Double.toString(value.getPercentile()), tags), value.getValue());
         }
+    }
+    
+    public void printBuckets(Snapshot.HistogramBucket[] buckets, String summary, Tag[] tags, Metadata metadata) {
+        double counter = 0.0;
+        for (Snapshot.HistogramBucket h : buckets) {
+            appendValue(summary, tags("le", Double.toString(h.getBucket()), tags), h.getCount());
+            counter++;
+        }
+        appendValue(summary, tags("le", "+Inf", tags), counter);
     }
     
     public void printMedian(Snapshot.PercentileValue[] pencentileValues, String summary, Tag[] tags, Metadata metadata) {
