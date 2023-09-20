@@ -41,6 +41,7 @@ package fish.payara.microprofile.metrics.writer;
 
 import static fish.payara.microprofile.metrics.MetricUnitsUtils.scaleToBaseUnit;
 
+import fish.payara.microprofile.metrics.impl.HistogramImpl;
 import fish.payara.microprofile.metrics.impl.WeightedSnapshot;
 import java.io.PrintWriter;
 import java.io.Writer;
@@ -173,7 +174,8 @@ public class OpenMetricsExporter implements MetricExporter {
                 if(w.bucketValues() != null && w.bucketValues().length > 0) {
                     appendTYPE(summary, OpenMetricsType.histogram);
                     printCustomPercentile(percentileValues, summary, tags, metadata);
-                    printBuckets(snapshot.bucketValues(), globalName(metricID, metadata, "_bucket"), tags, metadata);
+                    printBuckets(snapshot.bucketValues(), globalName(metricID, metadata, "_bucket")
+                            , tags, metadata, sampling);
                 } else {
                     appendTYPE(summary, OpenMetricsType.summary);
                     printCustomPercentile(percentileValues, summary, tags, metadata);
@@ -196,16 +198,24 @@ public class OpenMetricsExporter implements MetricExporter {
         }
     }
     
-    public void printBuckets(Snapshot.HistogramBucket[] buckets, String summary, Tag[] tags, Metadata metadata) {
+    public void printBuckets(Snapshot.HistogramBucket[] buckets, String summary, Tag[] tags, Metadata metadata,
+                             Sampling sampling) {
         int counter = 0;
-        List<Long> bucketsList = Stream.of(buckets)
-                .map(bucket -> TimeUnit.MILLISECONDS.convert((long) bucket.getBucket(), TimeUnit.NANOSECONDS))
-                .collect(Collectors.toList());
+        if(sampling != null && sampling instanceof HistogramImpl) {
+            for (Snapshot.HistogramBucket b : buckets) {
+                appendValue(summary, tags("le", Double.toString(b.getBucket()), tags), b.getCount());
+                counter++;
+            }
+        } else {
+            List<Long> bucketsList = Stream.of(buckets)
+                    .map(bucket -> TimeUnit.MILLISECONDS.convert((long) bucket.getBucket(), TimeUnit.NANOSECONDS))
+                    .collect(Collectors.toList());
 
-        for (long b : bucketsList) {
-            double seconds = b / 1000.0;
-            appendValue(summary, tags("le", Double.toString(seconds), tags), buckets[counter].getCount());
-            counter++;
+            for (long b : bucketsList) {
+                double seconds = b / 1000.0;
+                appendValue(summary, tags("le", Double.toString(seconds), tags), buckets[counter].getCount());
+                counter++;
+            }
         }
         appendValue(summary, tags("le", "+Inf", tags), Double.parseDouble(Integer.toString(counter)));
     }
