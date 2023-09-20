@@ -162,9 +162,9 @@ public class MetricsConfigParserUtil {
         } else if(bucket.matches("[0-9]+s")) { //case s
             return Duration.ofSeconds(Long.parseLong(bucket.substring(0, bucket.length() - 1)));
         } else if(bucket.matches("[0-9]+m")) { //case m
-            return Duration.ofSeconds(Long.parseLong(bucket.substring(0, bucket.length() - 1)));
+            return Duration.ofMinutes(Long.parseLong(bucket.substring(0, bucket.length() - 1)));
         } else if(bucket.matches("[0-9]+h")) { //case h
-            return Duration.ofSeconds(Long.parseLong(bucket.substring(0, bucket.length() - 1)));
+            return Duration.ofHours(Long.parseLong(bucket.substring(0, bucket.length() - 1)));
         } else if(bucket.matches("[0-9]+")) { //normal
             return Duration.ofMillis(Long.parseLong(bucket));
         } else {
