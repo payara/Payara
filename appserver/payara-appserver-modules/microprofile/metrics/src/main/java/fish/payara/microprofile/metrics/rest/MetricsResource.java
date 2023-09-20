@@ -150,9 +150,9 @@ public class MetricsResource extends HttpServlet {
                             response.sendError(SC_NOT_FOUND, "Not available scope to consume");
                         }
 
-                        if(scope != null && metricName != null) {
+                        if(availableScope && scope != null && metricName != null) {
                             outputWriter.write(scope, metricName);
-                        } else {
+                        } else if(availableScope) {
                             outputWriter.write(scope);
                         }
                     } else {
