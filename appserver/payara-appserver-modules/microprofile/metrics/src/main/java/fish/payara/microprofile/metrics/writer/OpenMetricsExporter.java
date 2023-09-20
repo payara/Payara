@@ -48,12 +48,16 @@ import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.function.LongSupplier;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.eclipse.microprofile.metrics.Counter;
 import org.eclipse.microprofile.metrics.Gauge;
 import org.eclipse.microprofile.metrics.Histogram;
@@ -193,12 +197,17 @@ public class OpenMetricsExporter implements MetricExporter {
     }
     
     public void printBuckets(Snapshot.HistogramBucket[] buckets, String summary, Tag[] tags, Metadata metadata) {
-        double counter = 0.0;
-        for (Snapshot.HistogramBucket h : buckets) {
-            appendValue(summary, tags("le", Double.toString(h.getBucket()), tags), h.getCount());
+        int counter = 0;
+        List<Long> bucketsList = Stream.of(buckets)
+                .map(bucket -> TimeUnit.MILLISECONDS.convert((long) bucket.getBucket(), TimeUnit.NANOSECONDS))
+                .collect(Collectors.toList());
+
+        for (long b : bucketsList) {
+            double seconds = b / 1000.0;
+            appendValue(summary, tags("le", Double.toString(seconds), tags), buckets[counter].getCount());
             counter++;
         }
-        appendValue(summary, tags("le", "+Inf", tags), counter);
+        appendValue(summary, tags("le", "+Inf", tags), Double.parseDouble(Integer.toString(counter)));
     }
     
     public void printMedian(Snapshot.PercentileValue[] pencentileValues, String summary, Tag[] tags, Metadata metadata) {
