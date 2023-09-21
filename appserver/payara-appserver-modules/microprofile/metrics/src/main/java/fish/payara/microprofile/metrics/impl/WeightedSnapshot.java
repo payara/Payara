@@ -161,7 +161,7 @@ public class WeightedSnapshot extends Snapshot {
             Double[] percentiles = configAdapter.percentileValues();
             percentileValues = new PercentileValue[percentiles.length];
             for (int i = 0; i < percentiles.length; i++) {
-                percentileValues[i] = new PercentileValue(percentiles[i], percentiles[i]);
+                percentileValues[i] = new PercentileValue(percentiles[i], getValue(percentiles[i]));
             }
         } else {
             double[] percentiles = {0.5, 0.75, 0.95, 0.98, 0.99, 0.999};
