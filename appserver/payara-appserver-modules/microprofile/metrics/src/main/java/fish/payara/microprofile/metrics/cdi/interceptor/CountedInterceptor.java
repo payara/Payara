@@ -42,12 +42,10 @@ package fish.payara.microprofile.metrics.cdi.interceptor;
 
 import fish.payara.microprofile.metrics.cdi.AnnotationReader;
 import jakarta.annotation.Priority;
-import jakarta.interceptor.AroundInvoke;
 import jakarta.interceptor.Interceptor;
 import jakarta.interceptor.InvocationContext;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Member;
-import java.util.logging.Logger;
 import org.eclipse.microprofile.metrics.Counter;
 import org.eclipse.microprofile.metrics.MetricID;
 import org.eclipse.microprofile.metrics.annotation.Counted;
@@ -56,21 +54,17 @@ import org.eclipse.microprofile.metrics.annotation.Counted;
 @Interceptor
 @Priority(Interceptor.Priority.LIBRARY_BEFORE + 1)
 public class CountedInterceptor extends AbstractInterceptor {
-    @AroundInvoke
-    public <E extends Member & AnnotatedElement> Object callingMethodAnnotated(InvocationContext context) throws Exception {
-        return applyInterceptor(context, context.getMethod());
-    }
     @Override
     protected <E extends Member & AnnotatedElement> Object applyInterceptor(InvocationContext context, E element)
             throws Exception {
         return proceedCounted(context, element, bean.getBeanClass(), this::getMetric);
     }
-    
+
     /**
      * Make the actual logic unit testable...
      */
     static <E extends Member & AnnotatedElement> Object proceedCounted(InvocationContext context, E element,
-            Class<?> bean, ThreeFunctionResolver<MetricID, Class<Counter>, String, Counter> loader) throws Exception {
+                                                                       Class<?> bean, ThreeFunctionResolver<MetricID, Class<Counter>, String, Counter> loader) throws Exception {
         Counter counter = apply(element, bean, AnnotationReader.COUNTED, Counter.class, loader);
         counter.inc();
         return context.proceed();
