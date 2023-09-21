@@ -182,6 +182,7 @@ public class OpenMetricsExporter implements MetricExporter {
                 }
             } else {
                 appendTYPE(summary, OpenMetricsType.summary);
+                printMedian(percentileValues, summary, tags, metadata);
             }
         } else {
             appendTYPE(summary, OpenMetricsType.summary);
