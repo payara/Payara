@@ -42,6 +42,7 @@ package fish.payara.microprofile.metrics.cdi.interceptor;
 
 import fish.payara.microprofile.metrics.cdi.AnnotationReader;
 import jakarta.annotation.Priority;
+import jakarta.interceptor.AroundInvoke;
 import jakarta.interceptor.Interceptor;
 import jakarta.interceptor.InvocationContext;
 import java.lang.reflect.AnnotatedElement;
@@ -55,6 +56,7 @@ import org.eclipse.microprofile.metrics.annotation.Counted;
 @Priority(Interceptor.Priority.LIBRARY_BEFORE + 1)
 public class CountedInterceptor extends AbstractInterceptor {
 
+    @AroundInvoke
     @Override
     protected <E extends Member & AnnotatedElement> Object applyInterceptor(InvocationContext context, E element)
             throws Exception {
