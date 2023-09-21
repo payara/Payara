@@ -56,21 +56,16 @@ import org.eclipse.microprofile.metrics.annotation.Counted;
 @Interceptor
 @Priority(Interceptor.Priority.LIBRARY_BEFORE + 1)
 public class CountedInterceptor extends AbstractInterceptor {
-
-    private static final Logger logger = Logger.getLogger(CountedInterceptor.class.getName());
-    
+    @AroundInvoke
+    public <E extends Member & AnnotatedElement> Object callingMethodAnnotated(InvocationContext context) throws Exception {
+        return applyInterceptor(context, context.getMethod());
+    }
     @Override
     protected <E extends Member & AnnotatedElement> Object applyInterceptor(InvocationContext context, E element)
             throws Exception {
         return proceedCounted(context, element, bean.getBeanClass(), this::getMetric);
     }
     
-    @AroundInvoke
-    public <E extends Member & AnnotatedElement> Object callingMethodAnnotated(InvocationContext context) throws Exception {
-        logger.info("Calling  method->"+context.toString());
-        return context.proceed();
-    }
-
     /**
      * Make the actual logic unit testable...
      */
