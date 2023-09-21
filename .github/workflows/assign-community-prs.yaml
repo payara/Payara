@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     #Conditionally runs the job if the author of the PR is not an owner or member of the organisation
     #See https://docs.github.com/en/graphql/reference/enums#commentauthorassociation
-    if: github.event.pull_request.author_association != 'OWNER' && github.event.pull_request.author_association != 'MEMBER'
+    if: ${{ github.event.pull_request.author_association != 'OWNER' && github.event.pull_request.author_association != 'MEMBER' }}
     permissions:
       pull-requests: write
     env:
