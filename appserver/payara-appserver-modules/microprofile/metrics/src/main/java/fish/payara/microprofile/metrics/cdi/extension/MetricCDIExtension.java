@@ -82,6 +82,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.eclipse.microprofile.metrics.Metadata;
+import org.eclipse.microprofile.metrics.Tag;
 import org.eclipse.microprofile.metrics.annotation.Counted;
 import org.eclipse.microprofile.metrics.annotation.Gauge;
 import org.eclipse.microprofile.metrics.annotation.Timed;
@@ -151,11 +152,12 @@ public class MetricCDIExtension<E extends Member & AnnotatedElement> implements 
         String name = metadata.getName();
         annotatedElements.putIfAbsent(name, element);
         metadataMap.putIfAbsent(name, metadata);
-        //initService();
-        //if(reader.annotationType().getName().equals(Timed.class.getName()) && !MetricsInterceptor.isMethodPrivate(element)) {
-        //    String availableScope = reader.scope(reader.annotation(bean, element));
-        //    metricsService.getContext(true).getOrCreateRegistry((availableScope != null) ? availableScope : "application").timer(metadata);
-        //}
+        initService();
+        if(reader.annotationType().getName().equals(Timed.class.getName()) && !MetricsInterceptor.isMethodPrivate(element)) {
+            String availableScope = reader.scope(reader.annotation(bean, element));
+            Tag[] tags = reader.tags(reader.annotation(bean, element));
+            metricsService.getContext(true).getOrCreateRegistry((availableScope != null) ? availableScope : "application").timer(metadata, tags);
+        }
     }
 
     void validationError(@Observes AfterBeanDiscovery afterBeanDiscovery){
