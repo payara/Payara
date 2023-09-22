@@ -151,11 +151,11 @@ public class MetricCDIExtension<E extends Member & AnnotatedElement> implements 
         String name = metadata.getName();
         annotatedElements.putIfAbsent(name, element);
         metadataMap.putIfAbsent(name, metadata);
-        initService();
-        if(reader.annotationType().getName().equals(Timed.class.getName()) && !MetricsInterceptor.isMethodPrivate(element)) {
-            String availableScope = reader.scope(reader.annotation(bean, element));
-            metricsService.getContext(true).getOrCreateRegistry((availableScope != null) ? availableScope : "application").timer(metadata);
-        }
+        //initService();
+        //if(reader.annotationType().getName().equals(Timed.class.getName()) && !MetricsInterceptor.isMethodPrivate(element)) {
+        //    String availableScope = reader.scope(reader.annotation(bean, element));
+        //    metricsService.getContext(true).getOrCreateRegistry((availableScope != null) ? availableScope : "application").timer(metadata);
+        //}
     }
 
     void validationError(@Observes AfterBeanDiscovery afterBeanDiscovery){
