@@ -208,6 +208,13 @@
                 <scope>test</scope>
             </dependency>
 
+            <dependency>
+                <groupId>io.opentelemetry.instrumentation</groupId>
+                <artifactId>opentelemetry-instrumentation-bom</artifactId>
+                <version>${opentelemetry.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <!-- packaged components -->
             <dependency>
                 <groupId>io.opentelemetry</groupId>
@@ -297,6 +304,18 @@
                 <groupId>io.opentelemetry</groupId>
                 <artifactId>opentelemetry-exporter-common</artifactId>
                 <version>${opentelemetry.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry.instrumentation</groupId>
+                <artifactId>opentelemetry-instrumentation-annotations</artifactId>
+                <version>${opentelemetry.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry.instrumentation</groupId>
+                <artifactId>opentelemetry-instrumentation-annotations-support</artifactId>
+                <version>${opentelemetry.alpha.version}</version>
                 <scope>provided</scope>
             </dependency>
 
