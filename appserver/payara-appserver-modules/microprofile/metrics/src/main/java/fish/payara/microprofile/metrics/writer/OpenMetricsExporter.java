@@ -156,26 +156,26 @@ public class OpenMetricsExporter implements MetricExporter {
     private void exportSampling(MetricID metricID, Sampling sampling, LongSupplier count, Supplier<Number> sum, Metadata metadata) {
         Tag[] tags = metricID.getTagsAsArray();
         Snapshot snapshot = sampling.getSnapshot();
-        String mean = globalName(metricID, metadata,"_mean");
+        String mean = globalName(metricID, metadata, "_mean");
         appendTYPE(mean, OpenMetricsType.gauge);
         appendValue(mean, tags, scaleToBaseUnit(snapshot.getMean(), metadata));
         String max = globalName(metricID, metadata, "_max");
         appendTYPE(max, OpenMetricsType.gauge);
         appendHELP(max, metadata);
         appendValue(max, tags, scaleToBaseUnit(snapshot.getMax(), metadata));
-        
+
         String summary = globalName(metricID, metadata);
         appendHELP(summary, metadata);
-        
+
         Snapshot.PercentileValue[] percentileValues = snapshot.percentileValues();
-        if(snapshot instanceof WeightedSnapshot) {
+        if (snapshot instanceof WeightedSnapshot) {
             WeightedSnapshot w = (WeightedSnapshot) snapshot;
-            if(w.getConfigAdapter() != null) {
-                if(w.bucketValues() != null && w.bucketValues().length > 0) {
+            if (w.getConfigAdapter() != null) {
+                if (w.bucketValues() != null && w.bucketValues().length > 0) {
                     appendTYPE(summary, OpenMetricsType.histogram);
                     printCustomPercentile(percentileValues, summary, tags, metadata);
-                    printBuckets(snapshot.bucketValues(), globalName(metricID, metadata, "_bucket")
-                            , tags, metadata, sampling);
+                    printBuckets(snapshot.bucketValues(), globalName(metricID, metadata, "_bucket"), 
+                            tags, metadata, sampling);
                 } else {
                     appendTYPE(summary, OpenMetricsType.summary);
                     printCustomPercentile(percentileValues, summary, tags, metadata);
@@ -198,11 +198,11 @@ public class OpenMetricsExporter implements MetricExporter {
             appendValue(summary, tags("quantile", Double.toString(value.getPercentile()), tags), value.getValue());
         }
     }
-    
+
     public void printBuckets(Snapshot.HistogramBucket[] buckets, String summary, Tag[] tags, Metadata metadata,
                              Sampling sampling) {
         int counter = 0;
-        if(sampling != null && sampling instanceof HistogramImpl) {
+        if (sampling != null && sampling instanceof HistogramImpl) {
             for (Snapshot.HistogramBucket b : buckets) {
                 appendValue(summary, tags("le", Double.toString(b.getBucket()), tags), b.getCount());
                 counter++;

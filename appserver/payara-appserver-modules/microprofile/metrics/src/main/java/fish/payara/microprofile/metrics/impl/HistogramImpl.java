@@ -163,21 +163,21 @@ public class HistogramImpl implements Histogram {
         MetricsCustomPercentile resultPercentile = null;
         HistogramMetricsBucket resultBuckets = null;
         histogramAdapter = new HistogramAdapter();
-        if(computedPercentiles != null && computedPercentiles.size() != 0) {
+        if (computedPercentiles != null && computedPercentiles.size() != 0) {
             resultPercentile = MetricsCustomPercentile.matches(computedPercentiles, metricName);
         }
-        
-        if (resultPercentile != null && resultPercentile.getPercentiles() != null 
+
+        if (resultPercentile != null && resultPercentile.getPercentiles() != null
                 && resultPercentile.getPercentiles().length > 0) {
             histogramAdapter.setPercentilesFromConfig(resultPercentile.getPercentiles());
-        } else if (resultPercentile != null && resultPercentile.getPercentiles() == null 
+        } else if (resultPercentile != null && resultPercentile.getPercentiles() == null
                 && resultPercentile.isDisabled()) {
             //skip this case
         } else {
             Double[] percentiles = {0.5, 0.75, 0.95, 0.98, 0.99, 0.999};
             histogramAdapter.setPercentilesFromConfig(percentiles);
         }
-        if(computedBuckets != null && computedBuckets.size() != 0) {
+        if (computedBuckets != null && computedBuckets.size() != 0) {
             resultBuckets = HistogramMetricsBucket.matches(computedBuckets, metricName);
         }
         if (resultBuckets != null && resultBuckets.getBuckets() != null && resultBuckets.getBuckets().length > 0) {
@@ -186,7 +186,7 @@ public class HistogramImpl implements Histogram {
 
         this.reservoir.setConfigAdapter(histogramAdapter);
     }
-    
+
     private synchronized Collection<HistogramMetricsBucket> processHistogramBucketMap(String appName) {
         Optional<String> customBuckets = ConfigProvider.getConfig().getOptionalValue(METRIC_HISTOGRAM_BUCKETS_PROPERTY, String.class);
         return (customBuckets.isPresent()) ? MetricsConfigParserUtil.parseHistogramBuckets(customBuckets.get()) : null;

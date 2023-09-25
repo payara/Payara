@@ -58,17 +58,18 @@ public class MetricsConfigParserUtil {
     private static final String PROPERTY_KEY_VALUE_SEPARATOR = "=";
 
     private static final String PROPERTY_VALUE_SEPARATOR = ",";
+
     public static Collection<MetricsCustomPercentile> parsePercentile(String percentileProperty) {
         ArrayDeque<MetricsCustomPercentile> metricPercentileCollection = new ArrayDeque<>();
-        if(percentileProperty == null || percentileProperty.length() == 0) {
+        if (percentileProperty == null || percentileProperty.length() == 0) {
             return null;
         }
         MetricsCustomPercentile customPercentile = null;
         String[] valuePairs = percentileProperty.split(PROPERTY_NAME_SEPARATOR);
-        for(String nameValue : valuePairs) {
+        for (String nameValue : valuePairs) {
             String[] resultKeyValueSplit = nameValue.split(PROPERTY_KEY_VALUE_SEPARATOR);
             String metricName = resultKeyValueSplit[0];
-            if(resultKeyValueSplit.length == 1) {
+            if (resultKeyValueSplit.length == 1) {
                 customPercentile = new MetricsCustomPercentile(metricName, true);
             } else {
                 Double[] percentileValues = Arrays.asList(resultKeyValueSplit[1].split(PROPERTY_VALUE_SEPARATOR)).stream()
@@ -81,19 +82,19 @@ public class MetricsConfigParserUtil {
         }
         return metricPercentileCollection;
     }
-    
+
     public static Collection<HistogramMetricsBucket> parseHistogramBuckets(String histogramBucketsProperty) {
         ArrayDeque<HistogramMetricsBucket> metricHistogramCollection = new ArrayDeque<>();
-        if(histogramBucketsProperty == null || histogramBucketsProperty.length() == 0) {
+        if (histogramBucketsProperty == null || histogramBucketsProperty.length() == 0) {
             return null;
         }
-        
+
         HistogramMetricsBucket customBucket = null;
         String[] valuePairs = histogramBucketsProperty.split(PROPERTY_NAME_SEPARATOR);
-        for (String nameValue: valuePairs) {
+        for (String nameValue : valuePairs) {
             String[] resultKeyValueSplit = nameValue.split(PROPERTY_KEY_VALUE_SEPARATOR);
             String metricName = resultKeyValueSplit[0];
-            if(resultKeyValueSplit.length == 1) {
+            if (resultKeyValueSplit.length == 1) {
                 //evaluate when no value, disabled
             } else {
                 Double[] bucketValues = Arrays.asList(resultKeyValueSplit[1].split(PROPERTY_VALUE_SEPARATOR)).stream()
@@ -109,22 +110,20 @@ public class MetricsConfigParserUtil {
 
     public static Collection<TimerMetricsBucket> parseTimerBuckets(String timerBucketsProperty) {
         ArrayDeque<TimerMetricsBucket> metricTimerCollection = new ArrayDeque<>();
-        if(timerBucketsProperty == null || timerBucketsProperty.length() == 0) {
+        if (timerBucketsProperty == null || timerBucketsProperty.length() == 0) {
             return null;
         }
 
         TimerMetricsBucket customBucket = null;
         String[] valuePairs = timerBucketsProperty.split(PROPERTY_NAME_SEPARATOR);
-        for (String nameValue: valuePairs) {
+        for (String nameValue : valuePairs) {
             String[] resultKeyValueSplit = nameValue.split(PROPERTY_KEY_VALUE_SEPARATOR);
             String metricName = resultKeyValueSplit[0];
-            if(resultKeyValueSplit.length == 1) {
-                //evaluate when no value, disabled
-            } else {
+            if (resultKeyValueSplit.length != 1) {
                 Duration[] bucketValues = Arrays.asList(resultKeyValueSplit[1].split(PROPERTY_VALUE_SEPARATOR)).stream()
                         .map(MetricsConfigParserUtil::evaluateTimerBucketValue)
                         .filter(d -> d != null).toArray(Duration[]::new);
-                customBucket = new TimerMetricsBucket(metricName, 
+                customBucket = new TimerMetricsBucket(metricName,
                         Arrays.stream(bucketValues).mapToDouble(Duration::toNanos).boxed().toArray(Double[]::new));
             }
             metricTimerCollection.addFirst(customBucket);
@@ -136,9 +135,9 @@ public class MetricsConfigParserUtil {
         Optional<String> customPercentiles = ConfigProvider.getConfig().getOptionalValue(METRIC_PERCENTILES_PROPERTY, String.class);
         return (customPercentiles.isPresent()) ? MetricsConfigParserUtil.parsePercentile(customPercentiles.get()) : null;
     }
-    
+
     public static Double evaluatePercentileValue(String percentile) {
-        if(percentile.matches("[0][.][0-9]+")) {
+        if (percentile.matches("[0][.][0-9]+")) {
             return Double.parseDouble(percentile);
         } else {
             logger.info(String.format("Error when trying to read property %s with %s name", METRIC_PERCENTILES_PROPERTY, percentile));
@@ -147,7 +146,7 @@ public class MetricsConfigParserUtil {
     }
 
     public static Double evaluateHistogramBucketValue(String bucket) {
-        if(bucket.matches("[0-9]+[.]*[0-9]*")) {
+        if (bucket.matches("[0-9]+[.]*[0-9]*")) {
             return Double.parseDouble(bucket);
         } else {
             logger.info(String.format("Error when trying to read property %s with %s name", METRIC_HISTOGRAM_BUCKETS_PROPERTY, bucket));
@@ -157,15 +156,15 @@ public class MetricsConfigParserUtil {
 
     public static Duration evaluateTimerBucketValue(String bucket) {
         bucket = bucket.trim();
-        if(bucket.matches("[0-9]+ms")) { //case ms
+        if (bucket.matches("[0-9]+ms")) { //case ms
             return Duration.ofMillis(Long.parseLong(bucket.substring(0, bucket.length() - 2)));
-        } else if(bucket.matches("[0-9]+s")) { //case s
+        } else if (bucket.matches("[0-9]+s")) { //case s
             return Duration.ofSeconds(Long.parseLong(bucket.substring(0, bucket.length() - 1)));
-        } else if(bucket.matches("[0-9]+m")) { //case m
+        } else if (bucket.matches("[0-9]+m")) { //case m
             return Duration.ofMinutes(Long.parseLong(bucket.substring(0, bucket.length() - 1)));
-        } else if(bucket.matches("[0-9]+h")) { //case h
+        } else if (bucket.matches("[0-9]+h")) { //case h
             return Duration.ofHours(Long.parseLong(bucket.substring(0, bucket.length() - 1)));
-        } else if(bucket.matches("[0-9]+")) { //normal
+        } else if (bucket.matches("[0-9]+")) { //normal
             return Duration.ofMillis(Long.parseLong(bucket));
         } else {
             logger.info(String.format("Error when trying to read property %s with %s name", METRIC_TIMER_BUCKETS_PROPERTY, bucket));

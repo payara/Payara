@@ -232,30 +232,30 @@ public class TimerImpl implements Timer {
         MetricsCustomPercentile resultPercentile = null;
         TimerMetricsBucket resultBucket = null;
         timerAdapter = new TimerAdapter();
-        
-        if(computedPercentiles != null && computedPercentiles.size() != 0) {
+
+        if (computedPercentiles != null && computedPercentiles.size() != 0) {
             resultPercentile = MetricsCustomPercentile.matches(computedPercentiles, metricName);
         }
-        
-        if (resultPercentile != null && resultPercentile.getPercentiles() != null 
+
+        if (resultPercentile != null && resultPercentile.getPercentiles() != null
                 && resultPercentile.getPercentiles().length > 0) {
             timerAdapter.setPercentilesFromConfig(resultPercentile.getPercentiles());
-        } else if (resultPercentile != null && resultPercentile.getPercentiles() == null 
+        } else if (resultPercentile != null && resultPercentile.getPercentiles() == null
                 && resultPercentile.isDisabled()) {
 
         } else {
             Double[] percentiles = {0.5, 0.75, 0.95, 0.98, 0.99, 0.999};
             timerAdapter.setPercentilesFromConfig(percentiles);
         }
-        
-        if(computedTimersBuckets != null && computedTimersBuckets.size() != 0) {
+
+        if (computedTimersBuckets != null && computedTimersBuckets.size() != 0) {
             resultBucket = TimerMetricsBucket.matches(computedTimersBuckets, metricName);
         }
-        
+
         if (resultBucket != null && resultBucket.getBuckets() != null && resultBucket.getBuckets().length > 0) {
             timerAdapter.setBucketValuesFromConfig(resultBucket.getBuckets());
         }
-        
+
         this.reservoir.setConfigAdapter(timerAdapter);
     }
 

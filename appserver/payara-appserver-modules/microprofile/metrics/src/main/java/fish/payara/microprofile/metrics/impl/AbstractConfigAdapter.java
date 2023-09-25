@@ -42,24 +42,27 @@ package fish.payara.microprofile.metrics.impl;
 public abstract class AbstractConfigAdapter {
     Double[] percentilesFromConfig;
     Double[] bucketValuesFromConfig;
+
     public Double[] percentileValues() {
-        if(percentilesFromConfig != null && percentilesFromConfig.length > 0) {
+        if (percentilesFromConfig != null && percentilesFromConfig.length > 0) {
             return percentilesFromConfig;
         } else {
             return new Double[0];
         }
     }
-    
+
     public Double[] bucketValues() {
-        if(bucketValuesFromConfig != null && bucketValuesFromConfig.length > 0) {
+        if (bucketValuesFromConfig != null && bucketValuesFromConfig.length > 0) {
             return bucketValuesFromConfig;
         } else {
             return new Double[0];
         }
     }
+
     public void setPercentilesFromConfig(Double[] percentilesFromConfig) {
         this.percentilesFromConfig = percentilesFromConfig;
     }
+
     public void setBucketValuesFromConfig(Double[] bucketValuesFromConfig) {
         this.bucketValuesFromConfig = bucketValuesFromConfig;
     }

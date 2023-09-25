@@ -153,10 +153,12 @@ public class MetricCDIExtension<E extends Member & AnnotatedElement> implements 
         annotatedElements.putIfAbsent(name, element);
         metadataMap.putIfAbsent(name, metadata);
         initService();
-        if(reader.annotationType().getName().equals(Timed.class.getName()) && !MetricsInterceptor.isMethodPrivate(element)) {
+        if (reader.annotationType().getName().equals(Timed.class.getName()) && 
+                !MetricsInterceptor.isMethodPrivate(element)) {
             String availableScope = reader.scope(reader.annotation(bean, element));
             Tag[] tags = reader.tags(reader.annotation(bean, element));
-            metricsService.getContext(true).getOrCreateRegistry((availableScope != null) ? availableScope : "application").timer(metadata, tags);
+            metricsService.getContext(true).
+                    getOrCreateRegistry((availableScope != null) ? availableScope : "application").timer(metadata, tags);
         }
     }
 

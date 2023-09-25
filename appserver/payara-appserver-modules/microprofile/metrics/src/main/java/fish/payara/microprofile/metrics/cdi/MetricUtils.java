@@ -189,25 +189,25 @@ public final class MetricUtils<T extends Metric> {
 
     public static Tag[] resolveGlobalTagsConfiguration() {
         Optional<String> globalTags = ConfigProvider.getConfig().getOptionalValue(METRIC_TAGS_GLOBAL_PROPERTY, String.class);
-        if(globalTags.isPresent()) {
+        if (globalTags.isPresent()) {
             return parseGlobalTags(globalTags.get());
         } else {
             return new Tag[0];
         }
     }
-    
+
     private static Tag[] parseGlobalTags(String globalTags) {
-        if(globalTags == null || globalTags.length() == 0) {
+        if (globalTags == null || globalTags.length() == 0) {
             return new Tag[0];
         }
-        
+
         String[] keyValuePairs = globalTags.split("(?<!\\\\),");
-        
+
         Tag[] tagsArray = new Tag[keyValuePairs.length];
-        
+
         int tagIndex = 0;
-        for(String kv:keyValuePairs) {
-            if(kv.length() == 0) {
+        for (String kv : keyValuePairs) {
+            if (kv.length() == 0) {
                 String message = String
                         .format("Invalid list of global tags, the correct format is: [a-zA-Z_][a-zA-Z0-9_]*. Please" +
                                 "review entry %s from global properties", METRIC_TAGS_GLOBAL_PROPERTY);
@@ -218,11 +218,11 @@ public final class MetricUtils<T extends Metric> {
 
             String key = internalKVSplit[0];
             String value = internalKVSplit[1];
-            
-            if(!key.matches("[a-zA-Z_][a-zA-Z0-9_]*")) {
+
+            if (!key.matches("[a-zA-Z_][a-zA-Z0-9_]*")) {
                 String message = String
                         .format("Invalid tag name. Please review names to follow regex [a-zA-Z_][a-zA-Z0-9_]*. " +
-                                        "Invalid name %s", key);
+                                "Invalid name %s", key);
                 throw new IllegalArgumentException(message);
             }
             value = value.replace("\\,", ",");
@@ -236,7 +236,7 @@ public final class MetricUtils<T extends Metric> {
     private static String[] getInternalKeyValueStrings(String kv) {
         String[] internalKVSplit = kv.split("(?<!\\\\)=");
 
-        if(internalKVSplit.length != 2 || internalKVSplit[0].length() == 0 || internalKVSplit[1].length() == 0) {
+        if (internalKVSplit.length != 2 || internalKVSplit[0].length() == 0 || internalKVSplit[1].length() == 0) {
             String message = String
                     .format("Invalid individual global tag, the correct format is: [a-zA-Z_][a-zA-Z0-9_]*. Please" +
                             "review entry %s from global properties", METRIC_TAGS_GLOBAL_PROPERTY);

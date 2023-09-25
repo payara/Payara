@@ -71,8 +71,7 @@ import static jakarta.ws.rs.core.MediaType.TEXT_PLAIN;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class MetricsResource extends HttpServlet {
-
-    //private static final String GLOBAL_TAGS_VARIABLE = "mp.metrics.tags";
+    
     private static final String GLOBAL_TAG_MALFORMED_EXCEPTION = "Malformed list of Global Tags. Tag names "
             + "must match the following regex [a-zA-Z_][a-zA-Z0-9_]*."
             + " Global Tag values must not be empty."
@@ -102,13 +101,13 @@ public class MetricsResource extends HttpServlet {
         }
         metricsService.refresh();
 
-        String scopeParameter = request.getParameter("scope") != null ? request.getParameter("scope"): null;
+        String scopeParameter = request.getParameter("scope") != null ? request.getParameter("scope") : null;
         String metricName = request.getParameter("name") != null ? request.getParameter("name") : null;
         String pathInfo = request.getPathInfo() != null ? request.getPathInfo().substring(1) : EMPTY_STRING;
         String[] pathInfos = pathInfo.split("/");
         boolean availableScope = true;
 
-        if(!pathInfo.isEmpty() && pathInfos.length > 0) {
+        if (!pathInfo.isEmpty() && pathInfos.length > 0) {
             response.sendError(SC_NOT_FOUND, "Not available paths to consume");
             return;
         }
@@ -123,11 +122,11 @@ public class MetricsResource extends HttpServlet {
                     if (scopeParameter != null && !scopeParameter.isEmpty()) {
                         String scope;
                         try {
-                            if(scopeParameter.equals(MetricRegistry.BASE_SCOPE)) {
+                            if (scopeParameter.equals(MetricRegistry.BASE_SCOPE)) {
                                 scope = MetricRegistry.BASE_SCOPE;
-                            } else if(scopeParameter.equals(MetricRegistry.VENDOR_SCOPE)) {
+                            } else if (scopeParameter.equals(MetricRegistry.VENDOR_SCOPE)) {
                                 scope = MetricRegistry.VENDOR_SCOPE;
-                            } else if(scopeParameter.equals(MetricRegistry.APPLICATION_SCOPE)) {
+                            } else if (scopeParameter.equals(MetricRegistry.APPLICATION_SCOPE)) {
                                 scope = MetricRegistry.APPLICATION_SCOPE;
                             } else {
                                 scope = scopeParameter;
@@ -136,23 +135,23 @@ public class MetricsResource extends HttpServlet {
                             throw new NoSuchRegistryException(scopeParameter);
                         }
 
-                        for(String name:metricsService.getContextNames()){
+                        for (String name : metricsService.getContextNames()) {
                             Optional<String> availableScopeOptional = metricsService.getContext(name)
                                     .getRegistries().keySet().stream().filter(k -> k.equals(scope)).findAny();
-                            if(!availableScopeOptional.isPresent()) {
+                            if (!availableScopeOptional.isPresent()) {
                                 availableScope = false;
                             } else {
                                 availableScope = true;
                             }
                         }
 
-                        if(!availableScope) {
+                        if (!availableScope) {
                             response.sendError(SC_NOT_FOUND, "Not available scope to consume");
                         }
 
-                        if(availableScope && scope != null && metricName != null) {
+                        if (availableScope && scope != null && metricName != null) {
                             outputWriter.write(scope, metricName);
-                        } else if(availableScope) {
+                        } else if (availableScope) {
                             outputWriter.write(scope);
                         }
                     } else {
