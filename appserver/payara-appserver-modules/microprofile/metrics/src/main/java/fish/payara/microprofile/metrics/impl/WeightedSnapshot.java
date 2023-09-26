@@ -73,16 +73,16 @@ public class WeightedSnapshot extends Snapshot {
     private final double[] normWeights;
     private final double[] quantiles;
     
-    private AbstractConfigAdapter configAdapter;
+    private ConfigurationProperties configurationProperties;
 
     /**
      * Create a new {@link Snapshot} with the given values.
      *
      * @param values an unordered set of values in the reservoir
      */
-    public WeightedSnapshot(Collection<WeightedSample> values, AbstractConfigAdapter configAdapter) {
+    public WeightedSnapshot(Collection<WeightedSample> values, ConfigurationProperties configurationProperties) {
         this(values);
-        this.configAdapter = configAdapter;
+        this.configurationProperties = configurationProperties;
     }
     
     public WeightedSnapshot(Collection<WeightedSample> values) {
@@ -157,8 +157,8 @@ public class WeightedSnapshot extends Snapshot {
     @Override
     public PercentileValue[] percentileValues() {
         PercentileValue[] percentileValues = null;
-        if (configAdapter != null) {
-            Double[] percentiles = configAdapter.percentileValues();
+        if (configurationProperties != null) {
+            Double[] percentiles = configurationProperties.percentileValues();
             percentileValues = new PercentileValue[percentiles.length];
             for (int i = 0; i < percentiles.length; i++) {
                 percentileValues[i] = new PercentileValue(percentiles[i], getValue(percentiles[i]));
@@ -182,7 +182,7 @@ public class WeightedSnapshot extends Snapshot {
 
     @Override
     public HistogramBucket[] bucketValues() {
-        Double[] buckets = configAdapter.bucketValues();
+        Double[] buckets = configurationProperties.bucketValues();
         HistogramBucket[] histogramBuckets = new HistogramBucket[buckets.length];
         for (int i = 0; i < buckets.length; i++) {
             histogramBuckets[i] = new HistogramBucket(buckets[i], i);
@@ -230,8 +230,8 @@ public class WeightedSnapshot extends Snapshot {
         }
     }
     
-    public AbstractConfigAdapter getConfigAdapter() {
-        return this.configAdapter;
+    public ConfigurationProperties getConfigAdapter() {
+        return this.configurationProperties;
     }
 
     @Override

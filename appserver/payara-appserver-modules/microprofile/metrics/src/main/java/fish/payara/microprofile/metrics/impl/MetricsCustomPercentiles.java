@@ -39,11 +39,60 @@
  */
 package fish.payara.microprofile.metrics.impl;
 
-public class HistogramAdapter extends AbstractConfigAdapter {
+import java.util.Collection;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+public class MetricsCustomPercentiles {
     
-    public HistogramAdapter() {
-        this.percentilesFromConfig = null;
-        this.bucketValuesFromConfig = null;
+    private Double[] percentiles;
+
+    protected String metricName;
+    
+    private boolean isDisabled;
+
+    public MetricsCustomPercentiles(String name, Double[] percentiles) {
+        this.metricName = name;
+        this.percentiles = percentiles;
+    }
+    
+    public MetricsCustomPercentiles(String name, boolean isDisabled) {
+        this.metricName = name;
+        this.isDisabled = isDisabled;
     }
 
+    public Double[] getPercentiles() {
+        return percentiles;
+    }
+
+    public void setPercentiles(Double[] percentiles) {
+        this.percentiles = percentiles;
+    }
+
+    public boolean isDisabled() {
+        return isDisabled;
+    }
+
+    public void setDisabled(boolean disabled) {
+        isDisabled = disabled;
+    }
+
+    public String getMetricName() {
+        return metricName;
+    }
+
+    public static MetricsCustomPercentiles matches(Collection<MetricsCustomPercentiles> configurations, String metricName) {
+        for (MetricsCustomPercentiles propertyConfig : configurations) {
+            int idxWildcard = propertyConfig.getMetricName().indexOf("*");
+            if (idxWildcard > -1 && metricName.contains(propertyConfig.getMetricName().substring(0, idxWildcard))) {
+                return propertyConfig;
+            }
+            Pattern p = Pattern.compile(metricName.trim());
+            Matcher m = p.matcher(propertyConfig.getMetricName().trim());
+            if (m.matches()) {
+                return propertyConfig;
+            }
+        }
+        return null;
+    }
 }

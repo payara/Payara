@@ -45,24 +45,5 @@ import java.util.regex.Pattern;
 
 public abstract class PropertyConfig {
     
-    protected String metricName;
     
-    public String getMetricName() {
-        return metricName;
-    }
-
-    public static <T extends PropertyConfig> T matches(Collection<T> configurations, String metricName) {
-        for (PropertyConfig propertyConfig : configurations) {
-            int idxWildcard = propertyConfig.getMetricName().indexOf("*");
-            if (idxWildcard > -1 && metricName.contains(propertyConfig.getMetricName().substring(0, idxWildcard))) {
-                return (T) propertyConfig;
-            }
-            Pattern p = Pattern.compile(metricName.trim());
-            Matcher m = p.matcher(propertyConfig.getMetricName().trim());
-            if (m.matches()) {
-                return (T) propertyConfig;
-            }
-        }
-        return null;
-    }
 }

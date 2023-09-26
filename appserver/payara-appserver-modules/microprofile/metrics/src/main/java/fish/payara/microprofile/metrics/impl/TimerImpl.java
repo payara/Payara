@@ -67,7 +67,6 @@ import org.eclipse.microprofile.metrics.Histogram;
 import org.eclipse.microprofile.metrics.Snapshot;
 import org.eclipse.microprofile.metrics.Timer;
 
-import static fish.payara.microprofile.metrics.impl.MetricRegistryImpl.METRIC_HISTOGRAM_BUCKETS_PROPERTY;
 import static fish.payara.microprofile.metrics.impl.MetricRegistryImpl.METRIC_TIMER_BUCKETS_PROPERTY;
 
 /**
@@ -85,10 +84,10 @@ public class TimerImpl implements Timer {
 
     private ExponentiallyDecayingReservoir reservoir;
     
-    private TimerAdapter timerAdapter;
+    private ConfigurationProperties configurationProperties;
     
-    public TimerImpl(String metricName, Map<String, Collection<MetricsCustomPercentile>> percentilesConfigMap, 
-                     Map<String, Collection<TimerMetricsBucket>> timerBucketsConfigMap, Clock clock) {
+    public TimerImpl(String metricName, Map<String, Collection<MetricsCustomPercentiles>> percentilesConfigMap,
+                     Map<String, Collection<MetricsCustomBuckets>> timerBucketsConfigMap, Clock clock) {
         this(clock);
         validateMetricsConfiguration(metricName, percentilesConfigMap, timerBucketsConfigMap);
     }
@@ -223,43 +222,43 @@ public class TimerImpl implements Timer {
         return "Timer[" + getCount() + "]";
     }
 
-    void validateMetricsConfiguration(String metricName, Map<String, Collection<MetricsCustomPercentile>> percentilesConfigMap,
-                                      Map<String, Collection<TimerMetricsBucket>> timerBucketsConfigMap) {
-        Collection<MetricsCustomPercentile> computedPercentiles = percentilesConfigMap
+    void validateMetricsConfiguration(String metricName, Map<String, Collection<MetricsCustomPercentiles>> percentilesConfigMap,
+                                      Map<String, Collection<MetricsCustomBuckets>> timerBucketsConfigMap) {
+        Collection<MetricsCustomPercentiles> computedPercentiles = percentilesConfigMap
                 .computeIfAbsent(metricName, MetricsConfigParserUtil::processPercentileMap);
-        Collection<TimerMetricsBucket> computedTimersBuckets = timerBucketsConfigMap
+        Collection<MetricsCustomBuckets> computedTimersBuckets = timerBucketsConfigMap
                 .computeIfAbsent(metricName, this::processTimerBucketMap);
-        MetricsCustomPercentile resultPercentile = null;
-        TimerMetricsBucket resultBucket = null;
-        timerAdapter = new TimerAdapter();
+        MetricsCustomPercentiles resultPercentile = null;
+        MetricsCustomBuckets resultBucket = null;
+        configurationProperties = new ConfigurationProperties();
 
-        if (computedPercentiles != null && computedPercentiles.size() != 0) {
-            resultPercentile = MetricsCustomPercentile.matches(computedPercentiles, metricName);
+        if (computedPercentiles != null && !computedPercentiles.isEmpty()) {
+            resultPercentile = MetricsCustomPercentiles.matches(computedPercentiles, metricName);
         }
 
         if (resultPercentile != null && resultPercentile.getPercentiles() != null
                 && resultPercentile.getPercentiles().length > 0) {
-            timerAdapter.setPercentilesFromConfig(resultPercentile.getPercentiles());
+            configurationProperties.setPercentilesFromConfig(resultPercentile.getPercentiles());
         } else if (resultPercentile != null && resultPercentile.getPercentiles() == null
                 && resultPercentile.isDisabled()) {
 
         } else {
             Double[] percentiles = {0.5, 0.75, 0.95, 0.98, 0.99, 0.999};
-            timerAdapter.setPercentilesFromConfig(percentiles);
+            configurationProperties.setPercentilesFromConfig(percentiles);
         }
 
         if (computedTimersBuckets != null && computedTimersBuckets.size() != 0) {
-            resultBucket = TimerMetricsBucket.matches(computedTimersBuckets, metricName);
+            resultBucket = MetricsCustomBuckets.matches(computedTimersBuckets, metricName);
         }
 
         if (resultBucket != null && resultBucket.getBuckets() != null && resultBucket.getBuckets().length > 0) {
-            timerAdapter.setBucketValuesFromConfig(resultBucket.getBuckets());
+            configurationProperties.setBucketValuesFromConfig(resultBucket.getBuckets());
         }
 
-        this.reservoir.setConfigAdapter(timerAdapter);
+        this.reservoir.setConfigAdapter(configurationProperties);
     }
 
-    private synchronized Collection<TimerMetricsBucket> processTimerBucketMap(String appName) {
+    private synchronized Collection<MetricsCustomBuckets> processTimerBucketMap(String appName) {
         Optional<String> customBuckets = ConfigProvider.getConfig().getOptionalValue(METRIC_TIMER_BUCKETS_PROPERTY, String.class);
         return (customBuckets.isPresent()) ? MetricsConfigParserUtil.parseTimerBuckets(customBuckets.get()) : null;
     }

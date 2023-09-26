@@ -39,35 +39,38 @@
  */
 package fish.payara.microprofile.metrics.impl;
 
-public class MetricsCustomPercentile extends PropertyConfig {
+public class ConfigurationProperties {
+
+    Double[] percentilesFromConfig;
+    Double[] bucketValuesFromConfig;
     
-    private Double[] percentiles;
-    
-    private boolean isDisabled;
-
-    public MetricsCustomPercentile(String name, Double[] percentiles) {
-        this.metricName = name;
-        this.percentiles = percentiles;
-    }
-    
-    public MetricsCustomPercentile(String name, boolean isDisabled) {
-        this.metricName = name;
-        this.isDisabled = isDisabled;
+    public ConfigurationProperties() {
+        this.percentilesFromConfig = null;
+        this.bucketValuesFromConfig = null;
     }
 
-    public Double[] getPercentiles() {
-        return percentiles;
+    public Double[] percentileValues() {
+        if (percentilesFromConfig != null && percentilesFromConfig.length > 0) {
+            return percentilesFromConfig;
+        } else {
+            return new Double[0];
+        }
     }
 
-    public void setPercentiles(Double[] percentiles) {
-        this.percentiles = percentiles;
+    public Double[] bucketValues() {
+        if (bucketValuesFromConfig != null && bucketValuesFromConfig.length > 0) {
+            return bucketValuesFromConfig;
+        } else {
+            return new Double[0];
+        }
     }
 
-    public boolean isDisabled() {
-        return isDisabled;
+    public void setPercentilesFromConfig(Double[] percentilesFromConfig) {
+        this.percentilesFromConfig = percentilesFromConfig;
     }
 
-    public void setDisabled(boolean disabled) {
-        isDisabled = disabled;
+    public void setBucketValuesFromConfig(Double[] bucketValuesFromConfig) {
+        this.bucketValuesFromConfig = bucketValuesFromConfig;
     }
+
 }

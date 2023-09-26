@@ -118,13 +118,13 @@ public class MetricRegistryImpl implements MetricRegistry {
     
     public static final String METRIC_TIMER_BUCKETS_PROPERTY = "mp.metrics.distribution.timer.buckets";
 
-    private Map<String, Collection<MetricsCustomPercentile>> percentilesConfigMap = 
-            new HashMap<String, Collection<MetricsCustomPercentile>>();
+    private Map<String, Collection<MetricsCustomPercentiles>> percentilesConfigMap = 
+            new HashMap<String, Collection<MetricsCustomPercentiles>>();
     
-    private Map<String, Collection<HistogramMetricsBucket>> histogramBucketsConfigMap =
+    private Map<String, Collection<MetricsCustomBuckets>> histogramBucketsConfigMap =
             new HashMap<>();
     
-    private Map<String, Collection<TimerMetricsBucket>> timerBucketsConfigMap =
+    private Map<String, Collection<MetricsCustomBuckets>> timerBucketsConfigMap =
             new HashMap<>();
 
     public MetricRegistryImpl() {

@@ -39,10 +39,44 @@
  */
 package fish.payara.microprofile.metrics.impl;
 
-public class TimerAdapter extends AbstractConfigAdapter {
+import java.util.Collection;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-    public TimerAdapter() {
-        this.bucketValuesFromConfig = null;
-        this.percentilesFromConfig = null;
+public class MetricsCustomBuckets {
+    private Double[] buckets;
+
+    protected String metricName;
+
+    public Double[] getBuckets() {
+        return buckets;
+    }
+
+    public MetricsCustomBuckets(String name, Double[] buckets) {
+        this.metricName = name;
+        this.buckets = buckets;
+    }
+
+    public void setBuckets(Double[] buckets) {
+        this.buckets = buckets;
+    }
+
+    public String getMetricName() {
+        return metricName;
+    }
+
+    public static MetricsCustomBuckets matches(Collection<MetricsCustomBuckets> configurations, String metricName) {
+        for (MetricsCustomBuckets propertyConfig : configurations) {
+            int idxWildcard = propertyConfig.getMetricName().indexOf("*");
+            if (idxWildcard > -1 && metricName.contains(propertyConfig.getMetricName().substring(0, idxWildcard))) {
+                return propertyConfig;
+            }
+            Pattern p = Pattern.compile(metricName.trim());
+            Matcher m = p.matcher(propertyConfig.getMetricName().trim());
+            if (m.matches()) {
+                return propertyConfig;
+            }
+        }
+        return null;
     }
 }

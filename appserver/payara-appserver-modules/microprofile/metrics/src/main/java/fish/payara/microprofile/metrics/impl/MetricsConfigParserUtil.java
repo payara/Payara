@@ -59,37 +59,37 @@ public class MetricsConfigParserUtil {
 
     private static final String PROPERTY_VALUE_SEPARATOR = ",";
 
-    public static Collection<MetricsCustomPercentile> parsePercentile(String percentileProperty) {
-        ArrayDeque<MetricsCustomPercentile> metricPercentileCollection = new ArrayDeque<>();
+    public static Collection<MetricsCustomPercentiles> parsePercentile(String percentileProperty) {
+        ArrayDeque<MetricsCustomPercentiles> metricPercentileCollection = new ArrayDeque<>();
         if (percentileProperty == null || percentileProperty.length() == 0) {
             return null;
         }
-        MetricsCustomPercentile customPercentile = null;
+        MetricsCustomPercentiles customPercentile = null;
         String[] valuePairs = percentileProperty.split(PROPERTY_NAME_SEPARATOR);
         for (String nameValue : valuePairs) {
             String[] resultKeyValueSplit = nameValue.split(PROPERTY_KEY_VALUE_SEPARATOR);
             String metricName = resultKeyValueSplit[0];
             if (resultKeyValueSplit.length == 1) {
-                customPercentile = new MetricsCustomPercentile(metricName, true);
+                customPercentile = new MetricsCustomPercentiles(metricName, true);
             } else {
                 Double[] percentileValues = Arrays.asList(resultKeyValueSplit[1].split(PROPERTY_VALUE_SEPARATOR)).stream()
                         .map(MetricsConfigParserUtil::evaluatePercentileValue)
                         .filter(d -> d != null && d >= 0.0 && d <= 1.0).toArray(Double[]::new);
                 Arrays.sort(percentileValues);
-                customPercentile = new MetricsCustomPercentile(metricName, percentileValues);
+                customPercentile = new MetricsCustomPercentiles(metricName, percentileValues);
             }
             metricPercentileCollection.addFirst(customPercentile);
         }
         return metricPercentileCollection;
     }
 
-    public static Collection<HistogramMetricsBucket> parseHistogramBuckets(String histogramBucketsProperty) {
-        ArrayDeque<HistogramMetricsBucket> metricHistogramCollection = new ArrayDeque<>();
+    public static Collection<MetricsCustomBuckets> parseHistogramBuckets(String histogramBucketsProperty) {
+        ArrayDeque<MetricsCustomBuckets> metricHistogramCollection = new ArrayDeque<>();
         if (histogramBucketsProperty == null || histogramBucketsProperty.length() == 0) {
             return null;
         }
 
-        HistogramMetricsBucket customBucket = null;
+        MetricsCustomBuckets customBucket = null;
         String[] valuePairs = histogramBucketsProperty.split(PROPERTY_NAME_SEPARATOR);
         for (String nameValue : valuePairs) {
             String[] resultKeyValueSplit = nameValue.split(PROPERTY_KEY_VALUE_SEPARATOR);
@@ -101,20 +101,20 @@ public class MetricsConfigParserUtil {
                         .map(MetricsConfigParserUtil::evaluateHistogramBucketValue)
                         .filter(d -> d != null).toArray(Double[]::new);
                 Arrays.sort(bucketValues);
-                customBucket = new HistogramMetricsBucket(metricName, bucketValues);
+                customBucket = new MetricsCustomBuckets(metricName, bucketValues);
             }
             metricHistogramCollection.addFirst(customBucket);
         }
         return metricHistogramCollection;
     }
 
-    public static Collection<TimerMetricsBucket> parseTimerBuckets(String timerBucketsProperty) {
-        ArrayDeque<TimerMetricsBucket> metricTimerCollection = new ArrayDeque<>();
+    public static Collection<MetricsCustomBuckets> parseTimerBuckets(String timerBucketsProperty) {
+        ArrayDeque<MetricsCustomBuckets> metricTimerCollection = new ArrayDeque<>();
         if (timerBucketsProperty == null || timerBucketsProperty.length() == 0) {
             return null;
         }
 
-        TimerMetricsBucket customBucket = null;
+        MetricsCustomBuckets customBucket = null;
         String[] valuePairs = timerBucketsProperty.split(PROPERTY_NAME_SEPARATOR);
         for (String nameValue : valuePairs) {
             String[] resultKeyValueSplit = nameValue.split(PROPERTY_KEY_VALUE_SEPARATOR);
@@ -123,7 +123,7 @@ public class MetricsConfigParserUtil {
                 Duration[] bucketValues = Arrays.asList(resultKeyValueSplit[1].split(PROPERTY_VALUE_SEPARATOR)).stream()
                         .map(MetricsConfigParserUtil::evaluateTimerBucketValue)
                         .filter(d -> d != null).toArray(Duration[]::new);
-                customBucket = new TimerMetricsBucket(metricName,
+                customBucket = new MetricsCustomBuckets(metricName,
                         Arrays.stream(bucketValues).mapToDouble(Duration::toNanos).boxed().toArray(Double[]::new));
             }
             metricTimerCollection.addFirst(customBucket);
@@ -131,7 +131,7 @@ public class MetricsConfigParserUtil {
         return metricTimerCollection;
     }
 
-    public static synchronized Collection<MetricsCustomPercentile> processPercentileMap(String appName) {
+    public static synchronized Collection<MetricsCustomPercentiles> processPercentileMap(String appName) {
         Optional<String> customPercentiles = ConfigProvider.getConfig().getOptionalValue(METRIC_PERCENTILES_PROPERTY, String.class);
         return (customPercentiles.isPresent()) ? MetricsConfigParserUtil.parsePercentile(customPercentiles.get()) : null;
     }

@@ -92,7 +92,7 @@ public class ExponentiallyDecayingReservoir implements Reservoir {
     private final AtomicLong nextScaleTime;
     private final Clock clock;
     
-    private AbstractConfigAdapter configAdapter;
+    private ConfigurationProperties configurationProperties;
     
     /**
      * Creates a new {@link ExponentiallyDecayingReservoir} of 1028 elements,
@@ -188,8 +188,8 @@ public class ExponentiallyDecayingReservoir implements Reservoir {
         rescaleIfNeeded();
         lockForRegularUsage();
         try {
-            if(this.configAdapter != null) {
-                return new WeightedSnapshot(values.values(), this.configAdapter);
+            if(this.configurationProperties != null) {
+                return new WeightedSnapshot(values.values(), this.configurationProperties);
             } else {
                 return new WeightedSnapshot(values.values());
             }
@@ -267,8 +267,8 @@ public class ExponentiallyDecayingReservoir implements Reservoir {
         lock.readLock().unlock();
     }
     
-    public void setConfigAdapter(AbstractConfigAdapter configAdapter) {
-        this.configAdapter = configAdapter;
+    public void setConfigAdapter(ConfigurationProperties configurationProperties) {
+        this.configurationProperties = configurationProperties;
     }
     
 }
