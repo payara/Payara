@@ -345,7 +345,7 @@ OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED O
 DAMAGE.
 
 ---------------------------------------------------
-EclipseLink 2.7.11
+EclipseLink 4.0.1
 Yasson 3.0.3
 ---------------------------------------------------
 
