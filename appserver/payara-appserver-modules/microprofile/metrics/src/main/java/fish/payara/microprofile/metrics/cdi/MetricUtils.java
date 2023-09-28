@@ -48,6 +48,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
 import java.util.stream.Stream;
+import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.metrics.Counter;
 import org.eclipse.microprofile.metrics.Gauge;
@@ -188,9 +189,14 @@ public final class MetricUtils<T extends Metric> {
     }
 
     public static Tag[] resolveGlobalTagsConfiguration() {
-        Optional<String> globalTags = ConfigProvider.getConfig().getOptionalValue(METRIC_TAGS_GLOBAL_PROPERTY, String.class);
-        if (globalTags.isPresent()) {
-            return parseGlobalTags(globalTags.get());
+        Config config = MetricUtils.getConfigProvider();
+        if (config != null) {
+            Optional<String> globalTags = config.getOptionalValue(METRIC_TAGS_GLOBAL_PROPERTY, String.class);
+            if (globalTags.isPresent()) {
+                return parseGlobalTags(globalTags.get());
+            } else {
+                return new Tag[0];
+            }
         } else {
             return new Tag[0];
         }
@@ -259,5 +265,12 @@ public final class MetricUtils<T extends Metric> {
         }
     }
 
+    public static Config getConfigProvider() {
+        try {
+            return ConfigProvider.getConfig();
+        } catch(Exception e) {
+            return null;
+        }
+    }
 
 }

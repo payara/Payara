@@ -55,13 +55,14 @@
 
 package fish.payara.microprofile.metrics.impl;
 
+import fish.payara.microprofile.metrics.cdi.MetricUtils;
+import jakarta.enterprise.inject.Vetoed;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAdder;
-import jakarta.enterprise.inject.Vetoed;
-import org.eclipse.microprofile.config.ConfigProvider;
+import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.metrics.Histogram;
 import org.eclipse.microprofile.metrics.Snapshot;
 
@@ -188,7 +189,12 @@ public class HistogramImpl implements Histogram {
     }
 
     private synchronized Collection<MetricsCustomBuckets> processHistogramBucketMap(String appName) {
-        Optional<String> customBuckets = ConfigProvider.getConfig().getOptionalValue(METRIC_HISTOGRAM_BUCKETS_PROPERTY, String.class);
-        return (customBuckets.isPresent()) ? MetricsConfigParserUtil.parseHistogramBuckets(customBuckets.get()) : null;
+        Config config = MetricUtils.getConfigProvider();
+        if (config != null) {
+            Optional<String> customBuckets = config.getOptionalValue(METRIC_HISTOGRAM_BUCKETS_PROPERTY, String.class);
+            return (customBuckets.isPresent()) ? MetricsConfigParserUtil.parseHistogramBuckets(customBuckets.get()) : null;
+        } else {
+            return null;
+        }
     }
 }

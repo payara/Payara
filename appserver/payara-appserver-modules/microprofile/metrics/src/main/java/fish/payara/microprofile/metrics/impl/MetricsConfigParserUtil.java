@@ -39,13 +39,14 @@
  */
 package fish.payara.microprofile.metrics.impl;
 
+import fish.payara.microprofile.metrics.cdi.MetricUtils;
 import java.time.Duration;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.logging.Logger;
-import org.eclipse.microprofile.config.ConfigProvider;
+import org.eclipse.microprofile.config.Config;
 
 import static fish.payara.microprofile.metrics.impl.MetricRegistryImpl.*;
 
@@ -132,8 +133,12 @@ public class MetricsConfigParserUtil {
     }
 
     public static synchronized Collection<MetricsCustomPercentiles> processPercentileMap(String appName) {
-        Optional<String> customPercentiles = ConfigProvider.getConfig().getOptionalValue(METRIC_PERCENTILES_PROPERTY, String.class);
-        return (customPercentiles.isPresent()) ? MetricsConfigParserUtil.parsePercentile(customPercentiles.get()) : null;
+        Config config = MetricUtils.getConfigProvider();
+        if (config != null) {
+            Optional<String> customPercentiles = config.getOptionalValue(METRIC_PERCENTILES_PROPERTY, String.class);
+            return (customPercentiles.isPresent()) ? MetricsConfigParserUtil.parsePercentile(customPercentiles.get()) : null;
+        }
+        return null;
     }
 
     public static Double evaluatePercentileValue(String percentile) {
@@ -171,4 +176,5 @@ public class MetricsConfigParserUtil {
             return null;
         }
     }
+    
 }

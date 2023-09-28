@@ -55,14 +55,15 @@
 
 package fish.payara.microprofile.metrics.impl;
 
+import fish.payara.microprofile.metrics.cdi.MetricUtils;
+import jakarta.enterprise.inject.Vetoed;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
-import jakarta.enterprise.inject.Vetoed;
-import org.eclipse.microprofile.config.ConfigProvider;
+import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.metrics.Histogram;
 import org.eclipse.microprofile.metrics.Snapshot;
 import org.eclipse.microprofile.metrics.Timer;
@@ -259,8 +260,12 @@ public class TimerImpl implements Timer {
     }
 
     private synchronized Collection<MetricsCustomBuckets> processTimerBucketMap(String appName) {
-        Optional<String> customBuckets = ConfigProvider.getConfig().getOptionalValue(METRIC_TIMER_BUCKETS_PROPERTY, String.class);
-        return (customBuckets.isPresent()) ? MetricsConfigParserUtil.parseTimerBuckets(customBuckets.get()) : null;
+        Config config = MetricUtils.getConfigProvider();
+        if(config != null) {
+            Optional<String> customBuckets = config.getOptionalValue(METRIC_TIMER_BUCKETS_PROPERTY, String.class);
+            return (customBuckets.isPresent()) ? MetricsConfigParserUtil.parseTimerBuckets(customBuckets.get()) : null;
+        }
+        return null;
     }
     
 
