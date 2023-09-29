@@ -132,7 +132,7 @@ public class MetricsConfigParserUtil {
         return metricTimerCollection;
     }
 
-    public static synchronized Collection<MetricsCustomPercentiles> processPercentileMap(String appName) {
+    public static Collection<MetricsCustomPercentiles> processPercentileMap(String appName) {
         Config config = MetricUtils.getConfigProvider();
         if (config != null) {
             Optional<String> customPercentiles = config.getOptionalValue(METRIC_PERCENTILES_PROPERTY, String.class);

@@ -188,7 +188,7 @@ public class HistogramImpl implements Histogram {
         this.reservoir.setConfigAdapter(configurationProperties);
     }
 
-    private synchronized Collection<MetricsCustomBuckets> processHistogramBucketMap(String appName) {
+    private Collection<MetricsCustomBuckets> processHistogramBucketMap(String appName) {
         Config config = MetricUtils.getConfigProvider();
         if (config != null) {
             Optional<String> customBuckets = config.getOptionalValue(METRIC_HISTOGRAM_BUCKETS_PROPERTY, String.class);

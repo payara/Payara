@@ -259,9 +259,9 @@ public class TimerImpl implements Timer {
         this.reservoir.setConfigAdapter(configurationProperties);
     }
 
-    private synchronized Collection<MetricsCustomBuckets> processTimerBucketMap(String appName) {
+    private Collection<MetricsCustomBuckets> processTimerBucketMap(String appName) {
         Config config = MetricUtils.getConfigProvider();
-        if(config != null) {
+        if (config != null) {
             Optional<String> customBuckets = config.getOptionalValue(METRIC_TIMER_BUCKETS_PROPERTY, String.class);
             return (customBuckets.isPresent()) ? MetricsConfigParserUtil.parseTimerBuckets(customBuckets.get()) : null;
         }
