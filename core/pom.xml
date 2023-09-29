@@ -56,7 +56,7 @@
     <properties>
         <payara.core.version>6.8.0-SNAPSHOT</payara.core.version>
         <!-- BOM dependencies versions -->
-        <payara.security-connectors.version>3.0.alpha7</payara.security-connectors.version>
+        <payara.security-connectors.version>3.0.alpha8</payara.security-connectors.version>
         <hk2.version>3.0.1.payara-p3</hk2.version>
         <osgi.version>7.0.0</osgi.version>
         <osgi.dto.version>1.1.1</osgi.dto.version>
