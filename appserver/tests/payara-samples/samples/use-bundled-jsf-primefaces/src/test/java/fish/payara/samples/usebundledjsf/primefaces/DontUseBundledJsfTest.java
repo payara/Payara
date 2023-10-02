@@ -72,11 +72,11 @@ public class DontUseBundledJsfTest {
     public static WebArchive createDeployment() {
         return ShrinkWrap.create(WebArchive.class, "dontusebundledjsfprimefaces.war")
                 .addClasses(Resources.class, JSFVersion.class)
-                .addAsWebInfResource(new File("src/main/webapp", "beans.xml"))
-                .addAsWebInfResource(new File("src/main/webapp", "faces-config.xml"))
-                .addAsWebInfResource(new File("src/main/webapp", "web.xml"))
+                .addAsWebInfResource(new File("src/main/webapp/WEB-INF", "beans.xml"))
+                .addAsWebInfResource(new File("src/main/webapp/WEB-INF", "faces-config.xml"))
+                .addAsWebInfResource(new File("src/main/webapp/WEB-INF", "web.xml"))
                 // Don't add payara-web.xml so that useBundledJsf and class loader delegation are not configured
-                // .addAsWebInfResource(new File("src/main/webapp", "payara-web.xml"))
+                // .addAsWebInfResource(new File("src/main/webapp/WEB-INF", "payara-web.xml"))
                 .addAsLibraries(Libraries.resolveMavenCoordinatesToFiles("org.glassfish:jakarta.faces:" + JSF_VERSION))
                 .addAsLibraries(Libraries.resolveMavenCoordinatesToFiles("org.primefaces:primefaces:13.0.1-jakarta"))
                 ;
