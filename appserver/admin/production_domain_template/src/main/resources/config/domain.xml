@@ -188,6 +188,8 @@
         <jvm-options>--add-opens=java.naming/javax.naming.spi=ALL-UNNAMED</jvm-options>
         <jvm-options>--add-opens=java.rmi/sun.rmi.transport=ALL-UNNAMED</jvm-options>
         <jvm-options>--add-opens=java.logging/java.util.logging=ALL-UNNAMED</jvm-options>
+        <jvm-options>--add-opens=java.management/javax.management=ALL-UNNAMED</jvm-options>
+        <jvm-options>--add-opens=java.management/javax.management.openmbean=ALL-UNNAMED</jvm-options>
         <jvm-options>[17|]--add-exports=java.base/sun.net.www=ALL-UNNAMED</jvm-options>
         <jvm-options>[17|]--add-exports=java.base/sun.security.util=ALL-UNNAMED</jvm-options>
         <jvm-options>[17|]--add-opens=java.base/java.lang.invoke=ALL-UNNAMED</jvm-options>
@@ -403,6 +405,8 @@
         <jvm-options>--add-opens=java.naming/javax.naming.spi=ALL-UNNAMED</jvm-options>
         <jvm-options>--add-opens=java.rmi/sun.rmi.transport=ALL-UNNAMED</jvm-options>
         <jvm-options>--add-opens=java.logging/java.util.logging=ALL-UNNAMED</jvm-options>
+        <jvm-options>--add-opens=java.management/javax.management=ALL-UNNAMED</jvm-options>
+        <jvm-options>--add-opens=java.management/javax.management.openmbean=ALL-UNNAMED</jvm-options>
         <jvm-options>[17|]--add-exports=java.base/sun.net.www=ALL-UNNAMED</jvm-options>
         <jvm-options>[17|]--add-exports=java.base/sun.security.util=ALL-UNNAMED</jvm-options>
         <jvm-options>[17|]--add-opens=java.base/java.lang.invoke=ALL-UNNAMED</jvm-options>
