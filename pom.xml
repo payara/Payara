@@ -144,7 +144,7 @@
         <angus.activation.version>1.0.0</angus.activation.version>
         <istack-commons-runtime.version>4.0.1</istack-commons-runtime.version>
         <wsdl4j.version>1.6.3</wsdl4j.version>
-        <microprofile-release.version>6.0</microprofile-release.version>
+        <microprofile-release.version>6.1</microprofile-release.version>
         <payara-arquillian-container.version>3.0.alpha6</payara-arquillian-container.version>
         <h2db.version>2.1.212</h2db.version>
         <concurrent.version>3.0.2.payara-p1</concurrent.version>
