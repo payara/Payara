@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2023] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt.cli;
 
@@ -104,7 +104,7 @@ public class RestartDomainCommand extends StopDomainCommand {
         else
             cmd.executeAndReturnOutput("restart-domain");
 
-        waitForRestart(oldServerPid);
+        waitForRestart(oldServerPid, (super.getTimeout() * 1000));
 
         logger.info(STRINGS.get("restartDomain.success"));
     }
@@ -151,4 +151,6 @@ public class RestartDomainCommand extends StopDomainCommand {
 
         return cmd.execute(opts.toArray(new String[opts.size()]));
     }
+
+
 }
