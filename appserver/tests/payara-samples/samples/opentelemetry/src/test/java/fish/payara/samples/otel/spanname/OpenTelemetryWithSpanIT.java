@@ -138,8 +138,8 @@ public class OpenTelemetryWithSpanIT extends AbstractSpanNameTest {
         spanBean.spanChild();
         var spans = exporter.getSpans();
         assertEquals(2, spans.size());
-        assertEquals("fish.payara.samples.otel.annotation.SpanBean.SpanChildBean.spanChild", spans.get(0).getName());
-        assertEquals("fish.payara.samples.otel.annotation.SpanBean.spanChild", spans.get(1).getName());
+        assertEquals("SpanChildBean.spanChild", spans.get(0).getName());
+        assertEquals("SpanBean.spanChild", spans.get(1).getName());
         assertEquals(spans.get(0).getParentSpanId(), spans.get(1).getSpanId());
     }
 
