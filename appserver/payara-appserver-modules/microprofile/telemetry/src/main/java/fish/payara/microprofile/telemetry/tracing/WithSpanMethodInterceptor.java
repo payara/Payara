@@ -274,8 +274,8 @@ public class WithSpanMethodInterceptor {
     private String getWithSpanValue(final InvocationContext invocationContext, final WithSpan withSpan) {
         final String withSpanValue = withSpan.value();
         if (withSpanValue.isEmpty()) {
-            if(invocationContext.getMethod().getDeclaringClass().getName().contains("$")) {
-                return invocationContext.getMethod().getDeclaringClass().getSimpleName() 
+            if (invocationContext.getMethod().getDeclaringClass().getName().contains("$")) {
+                return invocationContext.getMethod().getDeclaringClass().getSimpleName()
                         + "." + invocationContext.getMethod().getName();
             } else {
                 return invocationContext.getMethod().getDeclaringClass().getCanonicalName()
