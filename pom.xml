@@ -136,7 +136,7 @@
         <mojarra.version>4.0.0.payara-p2</mojarra.version>
         <jaxb-extra-osgi.version>2.3.0</jaxb-extra-osgi.version>
 
-        <yasson.version>3.0.2</yasson.version>
+        <yasson.version>3.0.3</yasson.version>
         <eclipselink.version>4.0.1.payara-p1</eclipselink.version>
         <eclipselink.asm.version>9.5.0</eclipselink.asm.version>
         <mq.version>6.3.0.payara-p3</mq.version>
