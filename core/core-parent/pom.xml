@@ -246,7 +246,7 @@
                         <configuration>
                             <rules>
                                 <requireJavaVersion>
-                                    <version>[${jdk.version},21)</version>
+                                    <version>[${jdk.version},)</version>
                                     <message>You need at least JDK11</message>
                                 </requireJavaVersion>
                                 <requireMavenVersion>
