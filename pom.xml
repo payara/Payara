@@ -386,13 +386,15 @@
                     <artifactId>maven-bundle-plugin</artifactId>
                     <version>${maven.bundle.plugin.version}</version>
                     <configuration>
-                        <!-- By default, we don't export anything. -->
-                        <Export-Package />
                         <instructions>
+                            <!-- By default, we don't export anything. -->
+                            <!--                            <Export-Package />-->
                             <!--
                                 Read all the configuration from osgi.bundle file, if it exists.
                             -->
                             <_include>-osgi.bundle</_include>
+                            <!-- Don't import JDK packages -->
+                            <_noimportjava>true</_noimportjava>
                         </instructions>
                         <excludeDependencies>tools-jar</excludeDependencies>
                         <supportedProjectTypes>
