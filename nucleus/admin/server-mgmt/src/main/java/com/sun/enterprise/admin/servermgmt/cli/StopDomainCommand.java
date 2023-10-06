@@ -77,15 +77,15 @@ public class StopDomainCommand extends LocalDomainCommand {
     @Param(optional = true, defaultValue = "false")
     Boolean kill;
 
-    @Param(optional = true, defaultValue = "600")
-    private int timeout;
+    @Param(optional = true, defaultValue = "60")
+    protected int timeout;
 
     @Override
     protected void validate()
             throws CommandException {
         setDomainName(userArgDomainName);
 
-        if (timeout < 1){
+        if (timeout < 1) {
             throw new CommandValidationException("Timeout must be at least 1 second long.");
         }
 
@@ -206,6 +206,7 @@ public class StopDomainCommand extends LocalDomainCommand {
     protected void doCommand() throws CommandException {
         // run the remote stop-domain command and throw away the output
         RemoteCLICommand cmd = new RemoteCLICommand(getName(), programOpts, env);
+        cmd.setReadTimeout(timeout * 1000);
         try {
             cmd.executeAndReturnOutput("stop-domain", "--force", force.toString());
         } catch (Exception e) {
@@ -291,9 +292,5 @@ public class StopDomainCommand extends LocalDomainCommand {
                     prevPid, ex.getMessage()));
         }
         return 0;
-    }
-
-    protected int getTimeout() {
-        return timeout;
     }
 }

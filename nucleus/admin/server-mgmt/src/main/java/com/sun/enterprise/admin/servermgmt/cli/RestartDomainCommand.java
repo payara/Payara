@@ -98,13 +98,14 @@ public class RestartDomainCommand extends StopDomainCommand {
         // run the remote restart-domain command and throw away the output
         RemoteCLICommand cmd =
                 new RemoteCLICommand("restart-domain", programOpts, env);
+        cmd.setReadTimeout(timeout * 1000);
 
         if (debug != null)
             cmd.executeAndReturnOutput("restart-domain", "--debug", debug.toString());
         else
             cmd.executeAndReturnOutput("restart-domain");
 
-        waitForRestart(oldServerPid, (super.getTimeout() * 1000));
+        waitForRestart(oldServerPid, (timeout * 1000));
 
         logger.info(STRINGS.get("restartDomain.success"));
     }
@@ -151,6 +152,4 @@ public class RestartDomainCommand extends StopDomainCommand {
 
         return cmd.execute(opts.toArray(new String[opts.size()]));
     }
-
-
 }

@@ -99,7 +99,7 @@ public class StartDomainCommand extends LocalDomainCommand implements StartServe
     private String postBootCommand;
 
     @Param(defaultValue = "600", optional = true)
-    private int timeout;
+    protected int timeout;
     
     @Inject
     ServerEnvironment senv;
@@ -137,7 +137,7 @@ public class StartDomainCommand extends LocalDomainCommand implements StartServe
                 throw new CommandValidationException("postboot commands file does not exist: "+ postbootFile.getAbsolutePath());
             }
         }
-        if (timeout < 1){
+        if (timeout < 1) {
             throw new CommandValidationException("Timeout must be at least 1 second long.");
         }
         super.validate();
