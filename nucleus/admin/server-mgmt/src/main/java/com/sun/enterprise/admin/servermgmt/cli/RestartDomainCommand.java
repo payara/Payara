@@ -78,6 +78,9 @@ public class RestartDomainCommand extends StopDomainCommand {
     @Param(name = "debug", optional = true)
     private Boolean debug;
 
+    @Param(optional = true, defaultValue = "600")
+    protected int timeout;
+
     @Inject
     private ServiceLocator habitat;
     private static final LocalStringsImpl STRINGS = new LocalStringsImpl(RestartDomainCommand.class);
