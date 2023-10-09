@@ -8,7 +8,7 @@ SYNOPSIS
            [--debug={true|false}] [--domaindir domain-dir]
            [--dry-run={true|false}] [--upgrade={true|false}]
            [--verbose={true|false}] [--watchdog={true|false}]
-           [domain-name]
+           [--timeout timeout] [domain-name]
 
 DESCRIPTION
        The start-domain subcommand starts the domain administration server
@@ -147,6 +147,10 @@ OPTIONS
            false
                Limited information is not displayed in the console window
                (default).
+
+       --timeout
+           Specifies the amount of time in seconds the command will run for
+           before timing out. Default is 600 seconds.
 
 OPERANDS
        domain-name

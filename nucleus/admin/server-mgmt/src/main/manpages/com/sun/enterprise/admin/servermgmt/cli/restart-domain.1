@@ -7,7 +7,7 @@ SYNOPSIS
            restart-domain [--help] [--debug ={true|false}]
            [--domaindir domaindir]
            [--force={true|false}] [--kill={false|true}]
-           [domain-name]
+           [--timeout timeout] [domain-name]
 
 DESCRIPTION
        The restart-domain subcommand stops and then restarts the domain
@@ -84,6 +84,10 @@ OPTIONS
            true
                The domain is killed. The subcommand uses functionality of the
                operating system to terminate the domain process.
+
+       --timeout
+           Specifies the amount of time in seconds the command will run for
+           before timing out. Default is 600 seconds.
 
 OPERANDS
        domain-name

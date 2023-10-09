@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2017] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2017-2023] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -91,6 +91,10 @@ public class StartDomainsCommand extends StartDomainCommand {
             if (!postbootFile.exists()){
                 throw new CommandValidationException("postboot commands file does not exist: "+ postbootFile.getAbsolutePath());
             }
+        }
+
+        if (timeout < 1) {
+            throw new CommandValidationException("Timeout must be at least 1 second long.");
         }
     }
     
