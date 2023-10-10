@@ -164,7 +164,7 @@
                                 <Export-Package>fish.payara.server.internal.admingui,
                                     !com.sun.faces.tlddoc-resources,
                                     com.sun.faces.*;com.sun.jsft.*;com.sun.jsftemplating.*;jakarta.faces.*;version="3.0";usage="admingui";mandatory:=usage</Export-Package>
-                                <Import-Package>!com.sun.faces.*,!jakarta.faces.*,!com.sun.jsftemplating.*,!com.sun.jsft,*</Import-Package>
+                                <Import-Package>!com.sun.faces.*,!jakarta.faces.*,!com.sun.jsftemplating.*,!com.sun.jsft,!org.apache.jasper.compiler,*</Import-Package>
                             </instructions>
                         </configuration>
                     </execution>
