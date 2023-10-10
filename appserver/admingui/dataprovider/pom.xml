@@ -99,7 +99,7 @@
                     <instructions>
                         <Embed-Dependency>artifactId=dataprovider;inline=true;</Embed-Dependency>
                         <Export-Package>com.sun.data.*; password="GlassFish"; mandatory:=password</Export-Package>
-                        <Import-Package>com.sun.sql.*;resolution:=optional, *</Import-Package>
+                        <Import-Package>com.sun.sql.*;resolution:=optional,*</Import-Package>
                     </instructions>
                     <unpackBundle>true</unpackBundle>
                 </configuration>

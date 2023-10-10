@@ -66,26 +66,4 @@
             <artifactId>internal-api</artifactId>
         </dependency>
     </dependencies>
-
-<!--    <build>-->
-<!--        <plugins>-->
-<!--            <plugin>-->
-<!--                <groupId>org.apache.felix</groupId>-->
-<!--                <artifactId>maven-bundle-plugin</artifactId>-->
-<!--                <executions>-->
-<!--                    <execution>-->
-<!--                        <id>bundle</id>-->
-<!--                        <goals>-->
-<!--                            <goal>bundle</goal>-->
-<!--                        </goals>-->
-<!--                        <configuration>-->
-<!--                            <instructions>-->
-<!--                                <Export-Package>fish.payara.nucleus.executorservice</Export-Package>-->
-<!--                            </instructions>-->
-<!--                        </configuration>-->
-<!--                    </execution>-->
-<!--                </executions>-->
-<!--            </plugin>-->
-<!--        </plugins>-->
-<!--    </build>-->
 </project>

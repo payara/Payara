@@ -468,6 +468,27 @@
                         <skip>${deploy.skip}</skip>
                     </configuration>
                 </plugin>
+
+                <plugin>
+                    <groupId>org.apache.felix</groupId>
+                    <artifactId>maven-bundle-plugin</artifactId>
+                    <version>${maven.bundle.plugin.version}</version>
+                    <configuration>
+                        <instructions>
+                            <!--
+                                Read all the configuration from osgi.bundle file, if it exists.
+                            -->
+                            <_include>-osgi.bundle</_include>
+                            <!-- Don't import JDK packages -->
+                            <_noimportjava>true</_noimportjava>
+                        </instructions>
+                        <excludeDependencies>tools-jar</excludeDependencies>
+                        <supportedProjectTypes>
+                            <supportedProjectType>glassfish-jar</supportedProjectType>
+                            <supportedProjectType>jar</supportedProjectType>
+                        </supportedProjectTypes>
+                    </configuration>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
