@@ -48,7 +48,7 @@
     <parent>
         <groupId>fish.payara.server.internal.diagnostics</groupId>
         <artifactId>nucleus-diagnostics</artifactId>
-        <version>6.2023.3-SNAPSHOT</version>
+        <version>6.2023.10-SNAPSHOT</version>
     </parent>
     
     <artifactId>diagnostics-api</artifactId>
@@ -61,7 +61,7 @@
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>internal-api</artifactId>
-            <version>${project.version}</version>
+
             <optional>true</optional>
         </dependency>
     </dependencies>

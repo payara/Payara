@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2023 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,21 +39,21 @@
  */
 package fish.payara.microprofile.metrics.cdi;
 
+import java.lang.reflect.Array;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
-import org.eclipse.microprofile.metrics.ConcurrentGauge;
+import java.util.stream.Stream;
 import org.eclipse.microprofile.metrics.Counter;
 import org.eclipse.microprofile.metrics.Gauge;
 import org.eclipse.microprofile.metrics.Histogram;
 import org.eclipse.microprofile.metrics.Metadata;
-import org.eclipse.microprofile.metrics.Meter;
 import org.eclipse.microprofile.metrics.Metric;
 import org.eclipse.microprofile.metrics.MetricID;
 import org.eclipse.microprofile.metrics.MetricRegistry;
-import org.eclipse.microprofile.metrics.SimpleTimer;
 import org.eclipse.microprofile.metrics.Tag;
 import org.eclipse.microprofile.metrics.Timer;
 
@@ -81,6 +81,10 @@ public final class MetricUtils<T extends Metric> {
 
     private static final Map<Class<? extends Metric>, MetricUtils<?>> TYPES = new HashMap<>();
 
+    public static final String TAG_METRIC_MP_SCOPE_NAME = "mp_scope";
+
+    public static final String TAG_METRIC_MP_APP_NAME = "mp_app";
+
     private final ByJust<String, T> byName;
     private final By<String, Tag[], T> byNameAndTags;
     private final By<Metadata, Tag[], T> byMetadataAndTags;
@@ -103,11 +107,8 @@ public final class MetricUtils<T extends Metric> {
 
     static {
         register(Counter.class, MetricRegistry::counter, MetricRegistry::counter, MetricRegistry::counter);
-        register(ConcurrentGauge.class, MetricRegistry::concurrentGauge, MetricRegistry::concurrentGauge, MetricRegistry::concurrentGauge);
         register(Histogram.class, MetricRegistry::histogram, MetricRegistry::histogram, MetricRegistry::histogram);
-        register(Meter.class, MetricRegistry::meter, MetricRegistry::meter, MetricRegistry::meter);
         register(Timer.class, MetricRegistry::timer, MetricRegistry::timer, MetricRegistry::timer);
-        register(SimpleTimer.class, MetricRegistry::simpleTimer, MetricRegistry::simpleTimer, MetricRegistry::simpleTimer);
         register(Gauge.class, MetricUtils::getGauge, MetricUtils::getGauge, MetricUtils::getGauge);
     }
 
@@ -126,6 +127,33 @@ public final class MetricUtils<T extends Metric> {
     public static <T extends Metric> T getOrRegisterByMetadataAndTags(MetricRegistry registry, Class<T> metric,
             Metadata metadata, Tag... tags) {
         return (T) getOrRegister(metric).byMetadataAndTags.apply(registry, metadata, tags);
+    }
+
+    /**
+     * This method will add the mp_scope to indicate scope of the metric if not available
+     * @param scope the scope associated with the metric
+     * @param tags current tags available for the metric
+     * @return array of tags including the mp_scope tag
+     */
+    public static Tag[] setScopeTagForMetric(String scope, Tag... tags) {
+        Tag[] tArray = new Tag[1];
+        if(scope.equals(MetricRegistry.BASE_SCOPE)) {
+            Tag t = new Tag("mp_scope", MetricRegistry.BASE_SCOPE);
+            tArray[0] = t;
+        } else if(scope.equals(MetricRegistry.VENDOR_SCOPE)) {
+            Tag t = new Tag("mp_scope", MetricRegistry.VENDOR_SCOPE);
+            tArray[0] = t;
+        } else if(scope.equals(MetricRegistry.APPLICATION_SCOPE)) {
+            Tag t = new Tag("mp_scope", MetricRegistry.APPLICATION_SCOPE);
+            tArray[0] = t;
+        } else if(scope != null) {
+            Tag t = new Tag("mp_scope", scope);
+            tArray[0] = t;
+        }
+        Tag[] mergeArray = Stream.concat(Arrays.stream(tags),
+                        Arrays.stream(tArray)).
+                toArray(v -> (Tag[]) Array.newInstance(tags.getClass().getComponentType(), v));
+        return mergeArray;
     }
 
     private static <T extends Metric> MetricUtils<?> getOrRegister(Class<T> metric) {
@@ -150,12 +178,12 @@ public final class MetricUtils<T extends Metric> {
 
     @SuppressWarnings("unchecked")
     private static Gauge<?> getGauge(MetricRegistry registry, String name, Tag[] tags) {
-        MetricID metricID = new MetricID(name, tags);
-        Gauge<?> gauge = registry.getGauges().get(metricID);
-        return gauge != null ? gauge : new LazyGauge<>(() -> registry.getGauges().get(metricID));
+        MetricID complementedMetricID = new MetricID(name, tags);
+        Gauge<?> gauge = registry.getGauges().get(complementedMetricID);
+        return gauge != null ? gauge : new LazyGauge<>(() -> registry.getGauges().get(complementedMetricID));
     }
 
-    private static final class LazyGauge<T> implements Gauge<T> {
+    private static final class LazyGauge<T extends Number> implements Gauge<T> {
 
         private final AtomicReference<Gauge<T>> gauge = new AtomicReference<>();
         private final Supplier<Gauge<T>> lookup;
@@ -167,7 +195,7 @@ public final class MetricUtils<T extends Metric> {
             Gauge<T> lazy = gauge.updateAndGet(instance -> instance != null ? instance : lookup.get());
             return lazy == null ? null : lazy.getValue();
         }
-
-
     }
+
+
 }

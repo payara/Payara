@@ -46,14 +46,13 @@
     <parent>
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-nucleus-parent</artifactId>
-        <version>6.2023.3-SNAPSHOT</version>
+        <version>6.2023.10-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.server.internal.deployment</groupId>
     <artifactId>nucleus-deployment</artifactId>
     <packaging>pom</packaging>
     <name>GlassFish Nucleus Deployment Related Modules</name>  
     <modules>
-        <module>common</module>
         <module>admin</module>
         <module>autodeploy</module>
         <module>dtds</module>

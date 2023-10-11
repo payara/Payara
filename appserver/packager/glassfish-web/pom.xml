@@ -48,7 +48,7 @@
     <parent>
         <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>6.2023.3-SNAPSHOT</version>
+        <version>6.2023.10-SNAPSHOT</version>
     </parent>
 
     <artifactId>glassfish-web</artifactId>
@@ -122,44 +122,12 @@
                 </plugins>
             </build>
         </profile>
-
-        <profile>
-            <id>jdk8</id>
-            <activation>
-                <jdk>[1.8,)</jdk>
-            </activation>
-            <dependencies>
-                <!-- Soteria / Java EE Security -->
-                <dependency>
-                    <groupId>jakarta.security.enterprise</groupId>
-                    <artifactId>jakarta.security.enterprise-api</artifactId>
-                </dependency>
-                <dependency>
-                    <groupId>org.glassfish.soteria</groupId>
-                    <artifactId>jakarta.security.enterprise</artifactId>
-                </dependency>
-                <dependency>
-                    <groupId>fish.payara.security.connectors</groupId>
-                    <artifactId>security-connector-oauth2-client</artifactId>
-                </dependency>
-                <dependency>
-                    <groupId>fish.payara.security.connectors</groupId>
-                    <artifactId>security-connector-oidc-client</artifactId>
-                </dependency>
-                <dependency>
-                    <groupId>fish.payara.server.internal.security</groupId>
-                    <artifactId>realm-stores</artifactId>
-                    <version>${project.version}</version>
-                </dependency>
-            </dependencies>
-        </profile>
     </profiles>
 
     <dependencies>
         <dependency>
             <groupId>fish.payara.server.core.web</groupId>
             <artifactId>gf-web-connector</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.web</groupId>
@@ -184,32 +152,26 @@
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>stats77</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.web</groupId>
             <artifactId>web-cli</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.web</groupId>
             <artifactId>web-core</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.web</groupId>
             <artifactId>web-embed-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.web</groupId>
             <artifactId>web-glue</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.web</groupId>
             <artifactId>web-gui-plugin-common</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.web</groupId>
@@ -219,12 +181,10 @@
         <dependency>
             <groupId>fish.payara.server.core.web</groupId>
             <artifactId>web-sse</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.web</groupId>
             <artifactId>war-util</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>jakarta.servlet.jsp</groupId>
@@ -308,11 +268,32 @@
         <dependency>
             <groupId>fish.payara.server.core.security</groupId>
             <artifactId>websecurity</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
             <artifactId>jaspic-servlet-utils</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <!-- Soteria / Java EE Security -->
+        <dependency>
+            <groupId>jakarta.security.enterprise</groupId>
+            <artifactId>jakarta.security.enterprise-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.soteria</groupId>
+            <artifactId>jakarta.security.enterprise</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.security.connectors</groupId>
+            <artifactId>security-connector-oauth2-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.security.connectors</groupId>
+            <artifactId>security-connector-oidc-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.server.internal.security</groupId>
+            <artifactId>realm-stores</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

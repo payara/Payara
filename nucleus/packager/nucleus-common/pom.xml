@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>nucleus-packages</artifactId>
-        <version>6.2023.3-SNAPSHOT</version>
+        <version>6.2023.10-SNAPSHOT</version>
     </parent>
     <artifactId>nucleus-common</artifactId>
     <name>Nucleus Commons Package</name>
@@ -71,7 +71,7 @@
         <dependency>
     	    <groupId>fish.payara.server.core.admin</groupId>
             <artifactId>monitoring-core</artifactId>
-            <version>${project.version}</version>
+
            <optional>true</optional>
         </dependency>
     </dependencies>

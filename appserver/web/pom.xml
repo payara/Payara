@@ -47,31 +47,23 @@
     <parent>
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-parent</artifactId>
-        <version>6.2023.3-SNAPSHOT</version>
+        <version>6.2023.10-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.server.internal.web</groupId>
     <artifactId>web</artifactId>
     <packaging>pom</packaging>
     <name>GlassFish Web container related modules</name>  
     <modules>
-        <module>web-core</module>
-        <module>war-util</module>
         <module>jstl-connector</module>
         <module>jersey-mvc-connector</module>
         <module>jsf-connector</module>
         <module>jspcaching-connector</module>
-        <module>gui-plugin-common</module>
-        <module>web-glue</module>
         <module>webtier-all</module>
-        <module>admin</module>
-        <module>gf-web-connector</module>
         <module>gf-weld-connector</module>
         <module>weld-integration</module>
         <module>weld-integration-fragment</module>
         <module>weld-integration-test-fragment</module>
-        <module>web-embed</module>
         <module>web-ha</module>
-        <module>web-sse</module>
         <module>gui-plugin-common-l10n</module>
         <module>admin-l10n</module>
         <module>war-util-l10n</module>

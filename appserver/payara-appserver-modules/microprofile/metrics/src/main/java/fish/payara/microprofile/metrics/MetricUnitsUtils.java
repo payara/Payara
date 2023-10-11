@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2023 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -98,7 +98,6 @@ public final class MetricUnitsUtils {
         case MetricUnits.KILOBITS: return value.doubleValue() * 1000d / 8d;
         case MetricUnits.MEGABITS: return value.doubleValue() * 1000d * 1000d / 8d;
         case MetricUnits.GIGABITS: return value.doubleValue() * 1000d * 1000d * 1000d / 8d;
-        case MetricUnits.KIBIBITS: return value.doubleValue() * 1024d / 8d;
         case MetricUnits.MEBIBITS: return value.doubleValue() * 1024d * 1024d / 8d;
         case MetricUnits.GIBIBITS: return value.doubleValue() * 1024d * 1024d * 1024d / 8d;
 
@@ -106,7 +105,6 @@ public final class MetricUnitsUtils {
         case MetricUnits.BYTES: return value;
         case MetricUnits.KILOBYTES: return value.doubleValue() * 1000d;
         case MetricUnits.MEGABYTES: return value.doubleValue() * 1000d * 1000d;
-        case MetricUnits.GIGABYTES: return value.doubleValue() * 1000d * 1000d * 1000d;
 
         // seconds from time unit
         case MetricUnits.NANOSECONDS: return value.longValue()  / 1000d / 1000d / 1000d;
@@ -118,6 +116,8 @@ public final class MetricUnitsUtils {
         case MetricUnits.DAYS: return value.doubleValue() * 60d * 60d * 24d;
 
         // others
+        case MetricUnits.KIBIBITS:
+        case MetricUnits.GIGABYTES:
         case MetricUnits.PERCENT:
         case MetricUnits.PER_SECOND:
         default:

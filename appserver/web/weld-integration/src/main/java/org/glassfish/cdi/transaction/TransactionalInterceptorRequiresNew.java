@@ -54,6 +54,7 @@ import jakarta.transaction.TransactionManager;
 import jakarta.transaction.TransactionalException;
 
 import com.sun.enterprise.transaction.TransactionManagerHelper;
+import org.glassfish.api.invocation.ComponentInvocation;
 
 /**
  * Transactional annotation Interceptor class for RequiresNew transaction type, ie
@@ -85,13 +86,18 @@ public class TransactionalInterceptorRequiresNew extends TransactionalIntercepto
 
         setTransactionalTransactionOperationsManger(false);
 
+        boolean currentInvocationHasTransaction = false;
         try {
             Transaction suspendedTransaction = null;
             if (getTransactionManager().getTransaction() != null) {
                 _logger.log(FINE, CDI_JTA_MBREQNEW);
 
+                ComponentInvocation currentInvocation = getCurrentInvocation();
+                currentInvocationHasTransaction = (currentInvocation != null) && currentInvocation.getTransaction() != null;
+
                 suspendedTransaction = getTransactionManager().suspend();
                 // todo catch, wrap in new transactional exception and throw
+
             }
             try {
                 getTransactionManager().begin();
@@ -137,6 +143,11 @@ public class TransactionalInterceptorRequiresNew extends TransactionalIntercepto
                 if (suspendedTransaction != null) {
                     try {
                         getTransactionManager().resume(suspendedTransaction);
+
+                        ComponentInvocation currentInvocation = getCurrentInvocation();
+                        if (!currentInvocationHasTransaction && currentInvocation != null) {
+                            getCurrentInvocation().setTransaction(null);
+                        }
                     } catch (Exception exception) {
                         throw new TransactionalException(
                                 "Managed bean with Transactional annotation and TxType of REQUIRED " +

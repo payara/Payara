@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2015-2021 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015-2023 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -72,7 +72,7 @@ public class CleanupPostBoot implements EventListener {
     }
 
     @Override
-    public void event(Event event) {
+    public void event(Event<?> event) {
         if (event.is(EventTypes.SERVER_READY)) {
             logger.config("Cleaning JarFileFactory Cache to prevent jar FD leaks");
             JarFileUtils.closeCachedJarFiles();

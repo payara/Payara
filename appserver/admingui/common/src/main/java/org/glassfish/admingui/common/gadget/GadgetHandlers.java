@@ -60,8 +60,8 @@ import java.util.Map;
 import java.util.StringTokenizer;
 
 import org.glassfish.admingui.common.util.GuiUtil;
+import org.glassfish.admingui.common.util.JsonUtil;
 import org.glassfish.admingui.connector.GadgetModule;
-import org.glassfish.admin.rest.utils.JsonUtil;
 
 import org.jvnet.hk2.config.ConfigParser;
 import org.jvnet.hk2.config.DomDocument;

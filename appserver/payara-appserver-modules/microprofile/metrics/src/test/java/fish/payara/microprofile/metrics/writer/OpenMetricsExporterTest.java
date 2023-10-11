@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2023 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -50,20 +50,17 @@ import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.eclipse.microprofile.metrics.ConcurrentGauge;
 import org.eclipse.microprofile.metrics.Counter;
 import org.eclipse.microprofile.metrics.Gauge;
 import org.eclipse.microprofile.metrics.Histogram;
 import org.eclipse.microprofile.metrics.Metadata;
-import org.eclipse.microprofile.metrics.Meter;
 import org.eclipse.microprofile.metrics.Metric;
 import org.eclipse.microprofile.metrics.MetricID;
+import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.eclipse.microprofile.metrics.MetricUnits;
-import org.eclipse.microprofile.metrics.SimpleTimer;
 import org.eclipse.microprofile.metrics.Snapshot;
 import org.eclipse.microprofile.metrics.Tag;
 import org.eclipse.microprofile.metrics.Timer;
-import org.eclipse.microprofile.metrics.MetricRegistry.Type;
 import org.junit.Test;
 
 /**
@@ -81,7 +78,7 @@ public class OpenMetricsExporterTest {
      * The actual output as written by the {@link OpenMetricsExporter}
      */
     private final StringWriter actual = new StringWriter();
-    private final MetricExporter exporter = new OpenMetricsExporter(actual).in(Type.APPLICATION);
+    private final MetricExporter exporter = new OpenMetricsExporter(actual).in(MetricRegistry.APPLICATION_SCOPE);
 
     @Test
     public void exportCounter() {
@@ -95,35 +92,9 @@ public class OpenMetricsExporterTest {
         assertOutputEqualsFile("Counter.txt", metricID, counter, metadata);
     }
 
-    @Test
-    public void exportConcurrentGauge() {
-        ConcurrentGauge gauge = mock(ConcurrentGauge.class);
-        when(gauge.getCount()).thenReturn(80L);
-        when(gauge.getMin()).thenReturn(20L);
-        when(gauge.getMax()).thenReturn(100L);
-        MetricID metricID = new MetricID("method_a_invocations");
-        Metadata metadata = Metadata.builder()
-                .withName(metricID.getName())
-                .withDescription("The number of parallel invocations of methodA()")
-                .build();
-        assertOutputEqualsFile("ConcurrentGauge.txt", metricID, gauge, metadata);
-    }
 
-    @Test
-    public void exportMeter() {
-        Meter meter = mock(Meter.class);
-        when(meter.getCount()).thenReturn(29382L);
-        when(meter.getMeanRate()).thenReturn(12.223d);
-        when(meter.getOneMinuteRate()).thenReturn(12.563d);
-        when(meter.getFiveMinuteRate()).thenReturn(12.364d);
-        when(meter.getFifteenMinuteRate()).thenReturn(12.126d);
-        MetricID metricID = new MetricID("requests");
-        Metadata metadata = Metadata.builder()
-                .withName(metricID.getName())
-                .withDescription("Tracks the number of requests to the server")
-                .build();
-        assertOutputEqualsFile("Meter.txt", metricID, meter, metadata);
-    }
+
+
 
     @Test
     public void exportHistogram() {
@@ -132,16 +103,7 @@ public class OpenMetricsExporterTest {
         when(histogram.getSum()).thenReturn(45678L);
         Snapshot snapshot = mock(Snapshot.class);
         when(histogram.getSnapshot()).thenReturn(snapshot);
-        when(snapshot.getMin()).thenReturn(180L);
-        when(snapshot.getMax()).thenReturn(31716L);
-        when(snapshot.getMean()).thenReturn(4738.231d);
-        when(snapshot.getStdDev()).thenReturn(1054.7343037063602d);
-        when(snapshot.getMedian()).thenReturn(4201d);
-        when(snapshot.get75thPercentile()).thenReturn(6175d);
-        when(snapshot.get95thPercentile()).thenReturn(13560d);
-        when(snapshot.get98thPercentile()).thenReturn(29643d);
-        when(snapshot.get99thPercentile()).thenReturn(31716d);
-        when(snapshot.get999thPercentile()).thenReturn(31716d);
+        when(snapshot.percentileValues()).thenReturn(getPercentilesArray());
         MetricID metricID = new MetricID("file_sizes");
         Metadata metadata = Metadata.builder()
                 .withName(metricID.getName())
@@ -151,20 +113,7 @@ public class OpenMetricsExporterTest {
         assertOutputEqualsFile("Histogram.txt", metricID, histogram, metadata);
     }
 
-    @Test
-    public void exportSimpleTimer() {
-        SimpleTimer timer = mock(SimpleTimer.class);
-        when(timer.getCount()).thenReturn(12L);
-        when(timer.getElapsedTime()).thenReturn(Duration.ofMillis(12300L));
-        when(timer.getMaxTimeDuration()).thenReturn(Duration.ofMillis(3231L));
-        when(timer.getMinTimeDuration()).thenReturn(Duration.ofNanos(25600000L));
-        MetricID metricID = new MetricID("response_time");
-        Metadata metadata = Metadata.builder()
-                .withName(metricID.getName())
-                .withDescription("The number of calls to this REST endpoint #(1)")
-                .build();
-        assertOutputEqualsFile("SimpleTimer.txt", metricID, timer, metadata);
-    }
+
 
     @Test
     public void exportGauge() {
@@ -185,22 +134,13 @@ public class OpenMetricsExporterTest {
         Timer timer = mock(Timer.class);
         when(timer.getElapsedTime()).thenReturn(Duration.ofMillis(23L));
         when(timer.getCount()).thenReturn(80L);
-        when(timer.getMeanRate()).thenReturn(0.004292520715985437d);
-        when(timer.getOneMinuteRate()).thenReturn(2.794076465421066E-14d);
-        when(timer.getFiveMinuteRate()).thenReturn(4.800392614619373E-4d);
-        when(timer.getFifteenMinuteRate()).thenReturn(0.01063191047532505d);
+
         Snapshot snapshot = mock(Snapshot.class);
         when(timer.getSnapshot()).thenReturn(snapshot);
-        when(snapshot.getMin()).thenReturn(169916L);
-        when(snapshot.getMax()).thenReturn(560869L);
+
         when(snapshot.getMean()).thenReturn(415041d);
-        when(snapshot.getStdDev()).thenReturn(652907d);
-        when(snapshot.getMedian()).thenReturn(293324d);
-        when(snapshot.get75thPercentile()).thenReturn(344914d);
-        when(snapshot.get95thPercentile()).thenReturn(543647d);
-        when(snapshot.get98thPercentile()).thenReturn(2706543d);
-        when(snapshot.get99thPercentile()).thenReturn(5608694d);
-        when(snapshot.get999thPercentile()).thenReturn(5608694d);
+        when(snapshot.percentileValues()).thenReturn(getPercentilesArray());
+
         MetricID metricID = new MetricID("response_time");
         Metadata metadata = Metadata.builder()
                 .withName(metricID.getName())
@@ -208,6 +148,16 @@ public class OpenMetricsExporterTest {
                 .withUnit(MetricUnits.NANOSECONDS)
                 .build();
         assertOutputEqualsFile("Timer.txt", metricID, timer, metadata);
+    }
+
+    public Snapshot.PercentileValue[] getPercentilesArray() {
+        Snapshot.PercentileValue[] percentileValues = null;
+        double[] percentiles = {0.5, 0.75, 0.95, 0.98, 0.99, 0.999};
+        percentileValues = new Snapshot.PercentileValue[percentiles.length];
+        for (int i = 0; i < percentiles.length; i++) {
+            percentileValues[i] = new Snapshot.PercentileValue(percentiles[i], 0);
+        }
+        return percentileValues;
     }
 
     @Test
@@ -221,7 +171,7 @@ public class OpenMetricsExporterTest {
                 .withDescription("The average duration of foo requests during last 5 minutes")
                 .withUnit(MetricUnits.MILLISECONDS)
                 .build();
-        MetricExporter base = exporter.in(Type.BASE);
+        MetricExporter base = exporter.in(MetricRegistry.APPLICATION_SCOPE);
         base.export(fooValID, fooVal, fooValMetadata);
         Gauge<Long> barVal = mock(Gauge.class);
         when(barVal.getValue()).thenReturn(42L);
@@ -254,10 +204,11 @@ public class OpenMetricsExporterTest {
                 .build();
         exporter.export(g1ID, g1, metadata);
         exporter.export(g2ID, g2, metadata);
-        assertEquals("# TYPE application_common gauge\n" +
-                "# HELP application_common description\n" +
-                "application_common{a=\"b\"} 1\n" +
-                "application_common{some=\"other\"} 2\n", actual.getBuffer().toString());
+        assertEquals("# TYPE common gauge\n" +
+                "# HELP common description\n" +
+                "common{a=\"b\"} 1\n" +
+                "# HELP common description\n"+
+                "common{some=\"other\"} 2\n", actual.getBuffer().toString());
     }
 
     @Test
@@ -265,6 +216,7 @@ public class OpenMetricsExporterTest {
         Histogram histogram = mock(Histogram.class);
         Snapshot snapshot = mock(Snapshot.class);
         when(histogram.getSnapshot()).thenReturn(snapshot);
+        when(snapshot.percentileValues()).thenReturn(getPercentilesArray());
         MetricID metricID = new MetricID("test6", new Tag("custom", "tag-value"));
         Metadata metadata = Metadata.builder()
                 .withName(metricID.getName())
@@ -272,17 +224,7 @@ public class OpenMetricsExporterTest {
                 .build();
         exporter.export(metricID, histogram, metadata);
         String actualOutput = actual.getBuffer().toString();
-        assertTrue(actualOutput.contains("application_test6_seconds{custom=\"tag-value\",quantile=\"0.5\"} 0"));
-    }
-
-    @Test
-    public void gaugesWithNonNumberValuesAreNotExported() {
-        Gauge<String> gauge = () -> "hello world";
-        MetricID metricID = new MetricID("test3");
-        Metadata metadata = Metadata.builder()
-                .withName(metricID.getName())
-                .build();
-        assertOutputEquals("", metricID, gauge, metadata);
+        assertTrue(actualOutput.contains("test6_seconds{custom=\"tag-value\",quantile=\"0.5\"} 0"));
     }
 
     @Test
@@ -303,8 +245,8 @@ public class OpenMetricsExporterTest {
         Metadata metadata = Metadata.builder()
                 .withName(metricID.getName())
                 .build();
-        assertOutputEquals("# TYPE application_test5_total counter\n" +
-                "application_test5_total{key=\"escape\\\\and\\\"and\\n\"} 13\n", metricID, counter, metadata);
+        assertOutputEquals("# TYPE test5_total counter\n" +
+                "# HELP test5_total \n"+"test5_total{key=\"escape\\\\and\\\"and\\n\"} 13\n", metricID, counter, metadata);
     }
 
     @Test
@@ -315,8 +257,8 @@ public class OpenMetricsExporterTest {
         Metadata metadata = Metadata.builder()
                 .withName(metricID.getName())
                 .build();
-        assertOutputEquals("# TYPE application_my_total counter\n" +
-                "application_my_total 13\n", metricID, counter, metadata);
+        assertOutputEquals("# TYPE my_total counter\n" +
+                "# HELP my_total \n"+"my_total 13\n", metricID, counter, metadata);
     }
 
     @Test
@@ -327,8 +269,8 @@ public class OpenMetricsExporterTest {
                 .withName(metricID.getName())
                 .withUnit(MetricUnits.PER_SECOND)
                 .build();
-        assertOutputEquals("# TYPE application_test7_per_second gauge\n" +
-                "application_test7_per_second 2.3\n", metricID, perSec, metadata);
+        assertOutputEquals("# TYPE test7_per_second gauge\n" +
+                "# HELP test7_per_second \n"+"test7_per_second 2.3\n", metricID, perSec, metadata);
     }
 
     @Test
@@ -339,8 +281,8 @@ public class OpenMetricsExporterTest {
                 .withName(metricID.getName())
                 .withUnit(MetricUnits.PERCENT)
                 .build();
-        assertOutputEquals("# TYPE application_test8_ratio gauge\n" +
-                "application_test8_ratio 2.3\n", metricID, perSec, metadata);
+        assertOutputEquals("# TYPE test8_ratio gauge\n" +
+                "# HELP test8_ratio \n"+"test8_ratio 2.3\n", metricID, perSec, metadata);
     }
 
     @Test
@@ -351,8 +293,8 @@ public class OpenMetricsExporterTest {
                 .withName(metricID.getName())
                 .withUnit("meter_per_sec")
                 .build();
-        assertOutputEquals("# TYPE application_test9_meter_per_sec gauge\n" +
-                "application_test9_meter_per_sec 2.3\n", metricID, aPerB, metadata);
+        assertOutputEquals("# TYPE test9_meter_per_sec gauge\n" +
+                "# HELP test9_meter_per_sec \n"+"test9_meter_per_sec 2.3\n", metricID, aPerB, metadata);
     }
 
     @Test
@@ -363,8 +305,8 @@ public class OpenMetricsExporterTest {
                 .withName(metricID.getName())
                 .withUnit(MetricUnits.NONE)
                 .build();
-        assertOutputEquals("# TYPE application_test2 gauge\n" +
-                "application_test2 13\n", metricID, gauge, metadata);
+        assertOutputEquals("# TYPE test2 gauge\n" +
+                "# HELP test2 \n"+"test2 13\n", metricID, gauge, metadata);
     }
 
     @Test
@@ -376,8 +318,8 @@ public class OpenMetricsExporterTest {
                 .withName(metricID.getName())
                 .withDescription("")
                 .build();
-        assertOutputEquals("# TYPE application_test1_total counter\n" +
-                "application_test1_total 13\n", metricID, counter, metadata);
+        assertOutputEquals("# TYPE test1_total counter\n" +
+                "# HELP test1_total \n"+"test1_total 13\n", metricID, counter, metadata);
     }
 
     @Test
@@ -396,8 +338,6 @@ public class OpenMetricsExporterTest {
         assertUnitConversion(MetricUnits.GIGABITS, 2, "bytes", "2.5E8");
 
         // those that scale with 1024
-        assertUnitConversion(MetricUnits.KIBIBITS, 1, "bytes", "128");
-        assertUnitConversion(MetricUnits.KIBIBITS, 55, "bytes", "7040");
         assertUnitConversion(MetricUnits.MEBIBITS, 1, "bytes", "131072");
         assertUnitConversion(MetricUnits.MEBIBITS, 23, "bytes", "3014656");
         assertUnitConversion(MetricUnits.GIBIBITS, 1, "bytes", "1.34217728E8");
@@ -412,8 +352,6 @@ public class OpenMetricsExporterTest {
         assertUnitConversion(MetricUnits.KILOBYTES, 23, "bytes", "23000");
         assertUnitConversion(MetricUnits.MEGABYTES, 1, "bytes", "1000000");
         assertUnitConversion(MetricUnits.MEGABYTES, 0.5d, "bytes", "500000");
-        assertUnitConversion(MetricUnits.GIGABYTES, 1, "bytes", "1.0E9");
-        assertUnitConversion(MetricUnits.GIGABYTES, 0.025d, "bytes", "2.5E7");
     }
 
     @Test
@@ -436,8 +374,8 @@ public class OpenMetricsExporterTest {
                 .withName(metricID.getName())
                 .withUnit(inputUnit)
                 .build();
-        assertOutputEquals("# TYPE application_" + name + "_" + expectedUnit + " gauge\n" +
-                "application_" + name + "_" + expectedUnit + " " + expectedValue + "\n", metricID, gauge, metadata);
+        assertOutputEquals("# TYPE " + name + "_" + expectedUnit + " gauge\n" +
+                "# HELP "+ name + "_" + expectedUnit+" \n" + name + "_" + expectedUnit + " " + expectedValue + "\n", metricID, gauge, metadata);
         actual.getBuffer().setLength(0); // clean output so far to allow multiple usages of this in a single test
     }
 

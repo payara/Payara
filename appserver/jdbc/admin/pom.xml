@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server.internal.jdbc</groupId>
         <artifactId>jdbc</artifactId>
-        <version>6.2023.3-SNAPSHOT</version>
+        <version>6.2023.10-SNAPSHOT</version>
     </parent>    
     <artifactId>jdbc-admin</artifactId>
     <packaging>glassfish-jar</packaging>
@@ -91,22 +91,18 @@
         <dependency>
             <groupId>fish.payara.server.core.admin</groupId>
             <artifactId>config-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.cluster</groupId>
+            <groupId>fish.payara.server.core.cluster</groupId>
             <artifactId>cluster-admin</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>glassfish-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
          <dependency>
             <groupId>fish.payara.server.core.connectors</groupId>
             <artifactId>connectors-internal-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
          <dependency>
             <groupId>fish.payara.server.internal.jdbc</groupId>
@@ -114,15 +110,14 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.test-utils</groupId>
+            <groupId>fish.payara.server.core.test-utils</groupId>
             <artifactId>utils</artifactId>
-            <version>${project.version}</version>
+
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.admin</groupId>
             <artifactId>admin-util</artifactId>
-            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>

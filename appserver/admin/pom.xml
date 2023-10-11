@@ -48,7 +48,7 @@
     <parent>
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-parent</artifactId>
-        <version>6.2023.3-SNAPSHOT</version>
+        <version>6.2023.10-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.server.internal.admin</groupId>
     <artifactId>admin</artifactId>
@@ -58,7 +58,6 @@
         <module>backup</module>
         <module>cli</module>
         <module>cli-optional</module>
-        <module>admin-core</module>
         <module>backup-l10n</module>
         <module>cli-optional-l10n</module>
         <module>gf_template</module>

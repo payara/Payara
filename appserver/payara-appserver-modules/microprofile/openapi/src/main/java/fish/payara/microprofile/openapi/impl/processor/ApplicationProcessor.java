@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2022] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -81,6 +81,7 @@ import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.FormParam;
 import jakarta.ws.rs.HttpMethod;
 import jakarta.ws.rs.core.Response.Status;
+import java.util.Map;
 
 import org.eclipse.microprofile.openapi.models.Components;
 import org.eclipse.microprofile.openapi.models.ExternalDocumentation;
@@ -111,7 +112,6 @@ import org.glassfish.hk2.classmodel.reflect.MethodModel;
 import org.glassfish.hk2.classmodel.reflect.ParameterizedInterfaceModel;
 import org.glassfish.hk2.classmodel.reflect.ParameterizedType;
 import org.glassfish.hk2.classmodel.reflect.Type;
-import org.glassfish.hk2.classmodel.reflect.Types;
 
 /**
  * A processor to parse the application for annotations, to add to the OpenAPI
@@ -124,12 +124,13 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     /**
      * A list of all classes in the given application.
      */
-    private final Types allTypes;
+    private final Map<String, Type> allTypes;
 
     /**
      * A list of allowed classes for scanning
      */
     private final Set<Type> allowedTypes;
+    private final Set<Type> allowedResourceTypes;
 
     private final ClassLoader appClassLoader;
 
@@ -141,9 +142,10 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
      * processing
      * @param appClassLoader the class loader for the application.
      */
-    public ApplicationProcessor(Types allTypes, Set<Type> allowedTypes, ClassLoader appClassLoader) {
+    public ApplicationProcessor(Map<String, Type> allTypes, Set<Type> allowedTypes, Set<Type> allowedResourceTypes, ClassLoader appClassLoader) {
         this.allTypes = allTypes;
         this.allowedTypes = allowedTypes;
+        this.allowedResourceTypes = allowedResourceTypes;
         this.appClassLoader = appClassLoader;
     }
 
@@ -356,16 +358,20 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             if (requestBody != null) {
                 // Find the wildcard return type
                 if (requestBody.getContent() != null
-                        && requestBody.getContent().getMediaType(jakarta.ws.rs.core.MediaType.WILDCARD) != null) {
-                    MediaType wildcardMedia = requestBody.getContent().getMediaType(jakarta.ws.rs.core.MediaType.WILDCARD);
+                        && requestBody.getContent().getMediaType(
+                                jakarta.ws.rs.core.MediaType.APPLICATION_JSON) != null) {
+                    MediaType jsonMedia = requestBody.getContent().getMediaType(
+                            jakarta.ws.rs.core.MediaType.APPLICATION_JSON);
 
                     // Copy the wildcard return type to the valid request body types
                     List<String> mediaTypes = consumes.getValue("value", List.class);
                     for (String mediaType : mediaTypes) {
-                        requestBody.getContent().addMediaType(getContentType(mediaType), wildcardMedia);
+                        requestBody.getContent().addMediaType(getContentType(mediaType), jsonMedia);
                     }
-                    // If there is an @Consumes, remove the wildcard
-                    requestBody.getContent().removeMediaType(jakarta.ws.rs.core.MediaType.WILDCARD);
+                    // If there is an @Consumes, removes the default
+                    if (!mediaTypes.contains(jakarta.ws.rs.core.MediaType.APPLICATION_JSON)) {
+                        requestBody.getContent().removeMediaType(jakarta.ws.rs.core.MediaType.APPLICATION_JSON);
+                    }
                 }
             }
         }
@@ -441,27 +447,35 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         newParameter.setName(name);
         newParameter.setIn(in);
         newParameter.setRequired(required);
-        SchemaImpl schema = new SchemaImpl();
-        String defaultValue = getDefaultValueIfPresent(element);
 
-        if (element instanceof org.glassfish.hk2.classmodel.reflect.Parameter) {
-            org.glassfish.hk2.classmodel.reflect.Parameter parameter = (org.glassfish.hk2.classmodel.reflect.Parameter) element;
-            schema.setType(ModelUtils.getSchemaType(parameter.getTypeName(), context));
-        } else {
-            FieldModel field = (FieldModel) element;
-            schema.setType(ModelUtils.getSchemaType(field.getTypeName(), context));
+        Boolean isSchemaHidden = false;
+        AnnotationModel annotation = element.getAnnotation(org.eclipse.microprofile.openapi.annotations.media.Schema.class.getName());
+        if (annotation != null) {
+            isSchemaHidden = annotation.getValue("hidden", Boolean.class);
         }
+        if (!isSchemaHidden) {
+            SchemaImpl schema = new SchemaImpl();
+            String defaultValue = getDefaultValueIfPresent(element);
 
-        if (schema.getType() == SchemaType.ARRAY) {
-            schema.setItems(getArraySchema(element, context));
-            if (defaultValue != null) {
-                schema.getItems().setDefaultValue(defaultValue);
+            if (element instanceof org.glassfish.hk2.classmodel.reflect.Parameter) {
+                org.glassfish.hk2.classmodel.reflect.Parameter parameter = (org.glassfish.hk2.classmodel.reflect.Parameter) element;
+                schema.setType(ModelUtils.getSchemaType(parameter.getTypeName(), context));
+            } else {
+                FieldModel field = (FieldModel) element;
+                schema.setType(ModelUtils.getSchemaType(field.getTypeName(), context));
             }
-        } else if (defaultValue != null) {
-            schema.setDefaultValue(defaultValue);
-        }
 
-        newParameter.setSchema(schema);
+            if (schema.getType() == SchemaType.ARRAY) {
+                schema.setItems(getArraySchema(element, context));
+                if (defaultValue != null) {
+                    schema.getItems().setDefaultValue(defaultValue);
+                }
+            } else if (defaultValue != null) {
+                schema.setDefaultValue(defaultValue);
+            }
+
+            newParameter.setSchema(schema);
+        }
 
         final Operation workingOperation = context.getWorkingOperation();
         if (workingOperation != null) {
@@ -572,7 +586,11 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
         // If there is an annotation, parse its configuration
         if (schemaAnnotation != null) {
-            SchemaImpl.merge(SchemaImpl.createInstance(schemaAnnotation, context), schema, false, context);
+            SchemaImpl from = SchemaImpl.createInstance(schemaAnnotation, context);
+            if (from.getImplementation() == null) {
+                from.setImplementation(clazz.getName());
+            }
+            SchemaImpl.merge(from, schema, false, context);
         }
 
         for (FieldModel field : clazz.getFields()) {
@@ -656,6 +674,11 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             // Get the schema object name
             String schemaName = ModelUtils.getSchemaName(context, fieldOrMethod);
             SchemaImpl schema = SchemaImpl.createInstance(schemaAnnotation, context);
+            if(fieldOrMethod instanceof FieldModel
+                    && Void.class.getName().equals(schema.getImplementation())) {
+                FieldModel fieldModel = (FieldModel) fieldOrMethod;
+                schema.setImplementation(fieldModel.getTypeName());
+            }
 
             // Get the parent schema object name
             String parentName = null;
@@ -694,6 +717,10 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     private static void visitSchemaParameter(AnnotationModel schemaAnnotation, org.glassfish.hk2.classmodel.reflect.Parameter parameter, ApiContext context) {
         // If this is being parsed at the start, ignore it as the path doesn't exist
         if (context.getWorkingOperation() == null) {
+            return;
+        }
+        Boolean hidden = schemaAnnotation.getValue("hidden", Boolean.class);
+        if (hidden != null && hidden) {
             return;
         }
         // Check if it's a request body
@@ -794,6 +821,10 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         if (element instanceof MethodModel || element instanceof org.glassfish.hk2.classmodel.reflect.Parameter) {
             final RequestBody currentRequestBody = context.getWorkingOperation().getRequestBody();
             if (currentRequestBody != null) {
+                Boolean hidden = requestBodySchema.getValue("hidden", Boolean.class);
+                if (hidden != null && hidden) {
+                    return;
+                }
                 final String implementationClass = requestBodySchema.getValue("value", String.class);
                 final SchemaImpl schema = SchemaImpl.fromImplementation(implementationClass, context);
 
@@ -815,8 +846,17 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
                 final MethodModel methodModel = (MethodModel) element;
                 final String exceptionType = methodModel.getParameter(0).getTypeName();
                 mapException(context, exceptionType, apiResponse);
+            } else if (element instanceof ClassModel) {
+                final ClassModel classModel = (ClassModel) element;
+                for (ParameterizedInterfaceModel parameterizedInterface : classModel.getParameterizedInterfaces()) {
+                    if (parameterizedInterface.getRawInterfaceName().equals(jakarta.ws.rs.ext.ExceptionMapper.class.getName())
+                            && !parameterizedInterface.getParametizedTypes().isEmpty()) {
+                        String exceptionType = parameterizedInterface.getParametizedTypes().toArray(new ParameterizedInterfaceModel[0])[0].getName();
+                        mapException(context, exceptionType, apiResponse);
+                    }
+                }
             } else {
-                LOGGER.warning("Unrecognised annotation position at: " + element.shortDesc());
+                LOGGER.warning(() -> "Unrecognised @APIResponse annotation position at: " + element.shortDesc());
             }
             return;
         }
@@ -848,9 +888,13 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
     @Override
     public void visitAPIResponses(AnnotationModel annotation, AnnotatedElement element, ApiContext context) {
+        APIResponsesImpl from = APIResponsesImpl.createInstance(annotation, context);
         List<AnnotationModel> responses = annotation.getValue("value", List.class);
         if (responses != null) {
             responses.forEach(response -> visitAPIResponse(response, element, context));
+        }
+        if (context.getWorkingOperation() != null) {
+            APIResponsesImpl.merge(from, context.getWorkingOperation().getResponses(), true, context);
         }
     }
 
@@ -968,6 +1012,9 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             return;
         }
         Parameter parameter = ParameterImpl.createInstance(annotation, context);
+        if(context.getPath().contains("{" + parameter.getName() + "}")){
+            parameter.setRequired(true);
+        }
 
         if (element instanceof org.glassfish.hk2.classmodel.reflect.Parameter) {
             matchedParam = findOperationParameterFor((org.glassfish.hk2.classmodel.reflect.Parameter) element, context);
@@ -1153,7 +1200,25 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     public void visitSecurityRequirements(AnnotationModel annotation, AnnotatedElement element, ApiContext context) {
         List<AnnotationModel> securityRequirements = annotation.getValue("value", List.class);
         if (securityRequirements != null) {
-            securityRequirements.forEach(securityRequirement -> visitSecurityRequirement(securityRequirement, element, context));
+            securityRequirements.forEach(securityRequirement ->
+                    visitSecurityRequirement(securityRequirement, element, context));
+        }
+    }
+
+    @Override
+    public void visitSecurityRequirementSet(AnnotationModel annotation, AnnotatedElement element, ApiContext context) {
+        if (element instanceof MethodModel) {
+            SecurityRequirement securityRequirement = SecurityRequirementImpl.createInstances(annotation, context);
+            context.getWorkingOperation().addSecurityRequirement(securityRequirement);
+        }
+    }
+
+    @Override
+    public void visitSecurityRequirementSets(AnnotationModel annotation, AnnotatedElement element, ApiContext context) {
+        List<AnnotationModel> securityRequirementSetList = annotation.getValue("value", List.class);
+        if (securityRequirementSetList != null) {
+            securityRequirementSetList.forEach(securityRequirementSet ->
+                    visitSecurityRequirementSet(securityRequirementSet, element, context));
         }
     }
 
@@ -1164,9 +1229,11 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
         // Get the request body type of the method
         org.glassfish.hk2.classmodel.reflect.ParameterizedType bodyType = null;
+        int indexParam = 0;
         for (org.glassfish.hk2.classmodel.reflect.Parameter methodParam : method.getParameters()) {
             if (ModelUtils.isRequestBody(context, methodParam)) {
                 bodyType = methodParam;
+                indexParam = methodParam.getIndex();
                 break;
             }
         }
@@ -1175,8 +1242,16 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         }
 
         // Create the default request body with a wildcard mediatype
-        MediaType mediaType = new MediaTypeImpl().schema(createSchema(context, bodyType));
-        requestBody.getContent().addMediaType(jakarta.ws.rs.core.MediaType.WILDCARD, mediaType);
+        MediaType mediaType = new MediaTypeImpl();
+        AnnotationModel paramAnnotation = method.getParameter(indexParam).getAnnotation(org.eclipse.microprofile.openapi.annotations.media.Schema.class.getName());
+        Boolean hidden = false;
+        if (paramAnnotation != null) {
+            hidden = paramAnnotation.getValue("hidden", Boolean.class);
+        }
+        if (hidden == null || !hidden) {
+            mediaType.schema(createSchema(context, bodyType));
+        }
+        requestBody.getContent().addMediaType(jakarta.ws.rs.core.MediaType.APPLICATION_JSON, mediaType);
 
         operation.setRequestBody(requestBody);
         return requestBody;
@@ -1210,11 +1285,15 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
         // Add responses for the applicable declared exceptions
         for (String exceptionType : method.getExceptionTypes()) {
-            final APIResponseImpl mappedResponse = (APIResponseImpl) context.getMappedExceptionResponses().get(exceptionType);
-            if (mappedResponse != null) {
-                final String responseCode = mappedResponse.getResponseCode();
-                if (responseCode != null) {
-                    responses.addAPIResponse(responseCode, mappedResponse);
+            final Set<APIResponse> mappedResponses = context.getMappedExceptionResponses().get(exceptionType);
+            if (mappedResponses != null) {
+                for (APIResponse mappedResponse : mappedResponses) {
+                    if (mappedResponse != null) {
+                        final String responseCode = ((APIResponseImpl) mappedResponse).getResponseCode();
+                        if (responseCode != null) {
+                            responses.addAPIResponse(responseCode, mappedResponse);
+                        }
+                    }
                 }
             }
             operation.addExceptionType(exceptionType);
@@ -1270,7 +1349,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
         // If the schema is an object, insert the reference
         if (schemaType == SchemaType.OBJECT) {
-            if (insertObjectReference(context, schema, type.getType(), typeName)) {
+            if (insertObjectReference(context, schema, context.getType(typeName), typeName)) {
                 schema.setType(null);
                 schema.setItems(null);
             }
@@ -1426,8 +1505,6 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             final AnnotationModel schemaAnnotation = context.getAnnotationInfo(referenceClassType)
                     .getAnnotation(org.eclipse.microprofile.openapi.annotations.media.Schema.class);
             String schemaName = ModelUtils.getSchemaName(context, referenceClass);
-            // Set the reference name
-            referee.setRef(schemaName);
 
             Schema schema = context.getApi().getComponents().getSchemas().get(schemaName);
             if (schema == null) {
@@ -1440,8 +1517,13 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
                     LOGGER.log(FINE, "Unrecognised schema {0} class found.", new Object[]{referenceClassName});
                 }
             }
+            Schema createdReference = context.getApi().getComponents().getSchemas().get(schemaName);
+            // Set the reference name, if the schema was created
+            if (createdReference != null) {
+                referee.setRef(schemaName);
+            }
 
-            return true;
+            return createdReference != null;
         }
 
         return false;

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -59,6 +59,7 @@ public class InfoImpl extends ExtensibleImpl<Info> implements Info {
         Info from = new InfoImpl();
         from.setTitle(annotation.getValue("title", String.class));
         from.setDescription(annotation.getValue("description", String.class));
+        from.setExtensions(parseExtensions(annotation));
         from.setTermsOfService(annotation.getValue("termsOfService", String.class));
         AnnotationModel contact = annotation.getValue("contact", AnnotationModel.class);
         if (contact != null) {
@@ -139,6 +140,7 @@ public class InfoImpl extends ExtensibleImpl<Info> implements Info {
         to.setTitle(mergeProperty(to.getTitle(), from.getTitle(), override));
         to.setVersion(mergeProperty(to.getVersion(), from.getVersion(), override));
         to.setDescription(mergeProperty(to.getDescription(), from.getDescription(), override));
+        to.setExtensions(mergeProperty(to.getExtensions(), from.getExtensions(), override));
         to.setTermsOfService(mergeProperty(to.getTermsOfService(), from.getTermsOfService(), override));
         if (from.getLicense() != null) {
             if (to.getLicense() == null) {

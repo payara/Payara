@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2018-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -60,13 +60,12 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import jakarta.enterprise.inject.Vetoed;
 import org.eclipse.microprofile.metrics.Histogram;
-import org.eclipse.microprofile.metrics.Meter;
 import org.eclipse.microprofile.metrics.Snapshot;
 import org.eclipse.microprofile.metrics.Timer;
 
 /**
  * A timer metric which aggregates timing durations and provides duration
- * statistics, plus throughput statistics via {@link Meter}.
+ * statistics.
  *
  * The timer measures duration in nanoseconds.
  *
@@ -74,7 +73,6 @@ import org.eclipse.microprofile.metrics.Timer;
 @Vetoed
 public class TimerImpl implements Timer {
 
-    private final Meter meter;
     private final Histogram histogram;
     private final Clock clock;
 
@@ -115,7 +113,6 @@ public class TimerImpl implements Timer {
      * @param clock the {@link Clock} implementation the timer should use
      */
     public TimerImpl(Reservoir reservoir, Clock clock) {
-        this.meter = new MeterImpl(clock);
         this.clock = clock;
         this.histogram = new HistogramImpl(reservoir);
     }
@@ -191,25 +188,6 @@ public class TimerImpl implements Timer {
         return histogram.getCount();
     }
 
-    @Override
-    public double getFifteenMinuteRate() {
-        return meter.getFifteenMinuteRate();
-    }
-
-    @Override
-    public double getFiveMinuteRate() {
-        return meter.getFiveMinuteRate();
-    }
-
-    @Override
-    public double getMeanRate() {
-        return meter.getMeanRate();
-    }
-
-    @Override
-    public double getOneMinuteRate() {
-        return meter.getOneMinuteRate();
-    }
 
     @Override
     public Snapshot getSnapshot() {
@@ -219,7 +197,6 @@ public class TimerImpl implements Timer {
     private void update(long duration) {
         if (duration >= 0) {
             histogram.update(duration);
-            meter.mark();
         }
     }
 

@@ -37,11 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2023] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.containers;
 
 import com.hazelcast.cp.IAtomicLong;
+import com.hazelcast.cp.lock.FencedLock;
 import com.hazelcast.map.IMap;
 import com.sun.ejb.ComponentContext;
 import com.sun.ejb.Container;
@@ -59,6 +60,7 @@ import com.sun.enterprise.security.SecurityManager;
 import com.sun.enterprise.util.Utility;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.rmi.RemoteException;
 import java.util.HashMap;
 import java.util.Map;
@@ -124,6 +126,7 @@ public abstract class AbstractSingletonContainer extends BaseContainer {
     protected final ClusteredSingletonLookup clusteredLookup =
         new ClusteredSingletonLookupImpl(ejbDescriptor, componentId);
 
+    protected FencedLock clusteredSingletonLock;
 
     /**
      * This constructor is called from the JarManager when a Jar is deployed.
@@ -182,13 +185,53 @@ public abstract class AbstractSingletonContainer extends BaseContainer {
 
     @Override
     protected ComponentContext _getContext(EjbInvocation invocation) throws EJBException {
+        // initialize, serialize the Singleton and set to the session
         checkInit();
         if (clusteredLookup.isClusteredEnabled()) {
             AbstractSessionContextImpl sessionContext = (AbstractSessionContextImpl) singletonCtx;
             try {
                 invocationManager.preInvoke(invocation);
                 invocation.context = sessionContext;
-                sessionContext.setEJB(clusteredLookup.getClusteredSingletonMap().get(clusteredLookup.getClusteredSessionKey()));
+
+                if (_logger.isLoggable(Level.FINE)) {
+                    // Log all operations on the lock - note this Should™ also log the call to unlock in releaseContext
+                    clusteredSingletonLock = (FencedLock) Proxy.newProxyInstance(loader, new Class<?>[]{FencedLock.class},
+                            (proxy, method, args) -> {
+                                FencedLock fencedLock = clusteredLookup.getDistributedLock();
+                                _logger.log(
+                                        Level.FINE,
+                                        "DistributedLock, about to call {0}, Locked: {1}, Locked by Us: {2}, thread ID {3}",
+                                        new Object[] {
+                                                method.getName(),
+                                                fencedLock.isLocked(),
+                                                fencedLock.isLockedByCurrentThread(),
+                                                Thread.currentThread().getId()});
+                                Object rv = method.invoke(fencedLock, args);
+                                _logger.log(
+                                        Level.FINE,
+                                        "DistributedLock, after call to {0}, Locked: {1}, Locked by Us: {2}, thread ID {3}",
+                                        new Object[] {
+                                                method.getName(),
+                                                fencedLock.isLocked(),
+                                                fencedLock.isLockedByCurrentThread(),
+                                                Thread.currentThread().getId()});
+                                return rv;
+                    });
+                } else {
+                    clusteredSingletonLock = clusteredLookup.getDistributedLock();
+                }
+
+                /**
+                 * Look up the clustered singleton and set it in the session context. Note that if this is an instance
+                 * of {@link CMCSingletonContainer} the
+                 * {@link CMCSingletonContainer#getClusteredSingleton(EjbInvocation)} will (by default)
+                 * guard concurrent access via {@link java.util.concurrent.locks.Lock Locks}.
+                 *
+                 * This is done here so that when multiple concurrent threads are queued up to execute they will
+                 * lock around the read & write of the EJB itself, rather than the method call.
+                 */
+                sessionContext.setEJB(getClusteredSingleton(invocation));
+
                 if (isJCDIEnabled()) {
                     if (sessionContext.getJCDIInjectionContext() != null) {
                         sessionContext.getJCDIInjectionContext().cleanup(false);
@@ -208,12 +251,25 @@ public abstract class AbstractSingletonContainer extends BaseContainer {
         return singletonCtx;
     }
 
+    /**
+     * Get the clustered singleton for this container.
+     *
+     * This method does not provide any concurrent access guards, but may be overridden to do so.
+     *
+     * @param invocation The {@link EjbInvocation} that prompted the lookup
+     * @return The clustered singleton object
+     */
+    protected Object getClusteredSingleton(EjbInvocation invocation) {
+        return clusteredLookup.getClusteredSingletonMap().get(clusteredLookup.getClusteredSessionKey());
+    }
+
     @Override
     protected void releaseContext(EjbInvocation inv) throws EJBException {
         if (clusteredLookup.isClusteredEnabled()) {
             try {
                 invocationManager.preInvoke(inv);
                 if (clusteredLookup.getClusteredSingletonMap().containsKey(clusteredLookup.getClusteredSessionKey())) {
+                    // serializes the Singleton into Hazelcast
                     clusteredLookup.getClusteredSingletonMap().set(clusteredLookup.getClusteredSessionKey(), inv.context.getEJB());
                 }
             }

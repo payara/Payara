@@ -2,7 +2,7 @@
 <!--
   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  
-  Copyright (c) [2016-2021] Payara Foundation and/or its affiliates. All rights reserved.
+  Copyright (c) [2016-2023] Payara Foundation and/or its affiliates. All rights reserved.
  
   The contents of this file are subject to the terms of either the GNU
   General Public License Version 2 only ("GPL") or the Common Development
@@ -43,13 +43,29 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>fish.payara.api</groupId>
-        <artifactId>api-parent</artifactId>
-        <version>6.2023.3-SNAPSHOT</version>
+        <groupId>fish.payara.server.core</groupId>
+        <artifactId>core-parent</artifactId>
+        <version>6.8.0-SNAPSHOT</version>
+        <relativePath>../../core/core-parent</relativePath>
     </parent>
+    <groupId>fish.payara.api</groupId>
     <artifactId>payara-api</artifactId>
     <name>Payara-API</name>
     <description>Artefact that exposes public API of Payara Application Server</description>
+
+    <!-- Override to stop flatten plugin resolving it to an incorrect URL using parent artifact IDs -->
+    <url>https://github.com/payara/Payara/</url>
+
+    <!-- Don't inherit SCM from parent since flatten resolves it incorrectly in a similar manner to the URL -->
+    <scm>
+        <url>https://github.com/payara/Payara/tree/master</url>
+        <connection>scm:git:git://github.com/payara/payara.git</connection>
+        <developerConnection>scm:git:ssh://github.com:payara/payara.git</developerConnection>
+    </scm>
+
+    <properties>
+        <javadoc.skip>false</javadoc.skip>
+    </properties>
 
     <build>
         <plugins>
@@ -119,8 +135,8 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>fish.payara.api</groupId>
-                <artifactId>payara-bom</artifactId>
+                <groupId>fish.payara.server.core</groupId>
+                <artifactId>core-bom</artifactId>
                 <type>pom</type>
                 <version>${project.version}</version>
                 <scope>import</scope>
@@ -129,7 +145,6 @@
     </dependencyManagement>
 
     <dependencies>
-
         <dependency>
             <groupId>jakarta.platform</groupId>
             <artifactId>jakarta.jakartaee-api</artifactId>

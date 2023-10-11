@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2023 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -53,23 +53,17 @@ import java.util.function.LongSupplier;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 
-import org.eclipse.microprofile.metrics.ConcurrentGauge;
 import org.eclipse.microprofile.metrics.Counter;
 import org.eclipse.microprofile.metrics.Gauge;
 import org.eclipse.microprofile.metrics.Histogram;
 import org.eclipse.microprofile.metrics.Metadata;
-import org.eclipse.microprofile.metrics.Meter;
-import org.eclipse.microprofile.metrics.Metered;
 import org.eclipse.microprofile.metrics.Metric;
 import org.eclipse.microprofile.metrics.MetricID;
 import org.eclipse.microprofile.metrics.MetricUnits;
 import org.eclipse.microprofile.metrics.Sampling;
-import org.eclipse.microprofile.metrics.SimpleTimer;
 import org.eclipse.microprofile.metrics.Snapshot;
 import org.eclipse.microprofile.metrics.Tag;
 import org.eclipse.microprofile.metrics.Timer;
-
-import org.eclipse.microprofile.metrics.MetricRegistry.Type;
 
 /**
  * Writes {@link Metric}s according to the OpenMetrics standard as defined in <a href=
@@ -88,17 +82,22 @@ public class OpenMetricsExporter implements MetricExporter {
         counter, gauge, summary
     }
 
-    protected final Type scope;
+    protected final String scope;
+
     protected final PrintWriter out;
     protected final Set<String> typeWrittenByGlobalName;
     protected final Set<String> helpWrittenByGlobalName;
+    
+    private static final String GC_TOTAL_ID = "gc_total";
+    
+    private static final String GC_TIME_SECONDS_TOTAL_ID = "gc_time_seconds_total";
 
     public OpenMetricsExporter(Writer out) {
         this(null, out instanceof PrintWriter ? (PrintWriter) out : new PrintWriter(out), new HashSet<>(), new HashSet<>());
     }
 
-    protected OpenMetricsExporter(Type scope, PrintWriter out, Set<String> typeWrittenByGlobalName,
-            Set<String> helpWrittenByGlobalName) {
+    protected OpenMetricsExporter(String scope, PrintWriter out, Set<String> typeWrittenByGlobalName,
+                                  Set<String> helpWrittenByGlobalName) {
         this.scope = scope;
         this.out = out;
         this.typeWrittenByGlobalName = typeWrittenByGlobalName;
@@ -106,7 +105,7 @@ public class OpenMetricsExporter implements MetricExporter {
     }
 
     @Override
-    public MetricExporter in(Type scope, boolean asNode) {
+    public MetricExporter in(String scope, boolean asNode) {
         return new OpenMetricsExporter(scope, out, typeWrittenByGlobalName, helpWrittenByGlobalName);
     }
 
@@ -117,25 +116,10 @@ public class OpenMetricsExporter implements MetricExporter {
 
     @Override
     public void export(MetricID metricID, Counter counter, Metadata metadata) {
-        String total = globalName(metricID, "_total");
+        String total = globalName(metricID, metadata, "_total");
         appendTYPE(total, OpenMetricsType.counter);
         appendHELP(total, metadata);
-        appendValue(total, metricID.getTagsAsArray(), counter.getCount());
-    }
-
-    @Override
-    public void export(MetricID metricID, ConcurrentGauge gauge, Metadata metadata) {
-        Tag[] tags = metricID.getTagsAsArray();
-        String current = globalName(metricID, "_current");
-        appendTYPE(current, OpenMetricsType.gauge);
-        appendHELP(current, metadata);
-        appendValue(current, tags, gauge.getCount());
-        String min = globalName(metricID, "_min");
-        appendTYPE(min, OpenMetricsType.gauge);
-        appendValue(min, tags, gauge.getMin());
-        String max = globalName(metricID, "_max");
-        appendTYPE(max, OpenMetricsType.gauge);
-        appendValue(max, tags, gauge.getMax());
+        appendValue(total, metricID.getTagsAsArray(), scaleToBaseUnit((double)counter.getCount(), metadata));
     }
 
     @Override
@@ -166,78 +150,66 @@ public class OpenMetricsExporter implements MetricExporter {
     private void exportSampling(MetricID metricID, Sampling sampling, LongSupplier count, Supplier<Number> sum, Metadata metadata) {
         Tag[] tags = metricID.getTagsAsArray();
         Snapshot snapshot = sampling.getSnapshot();
-        String mean = globalName(metricID, "_mean", metadata);
+        String mean = globalName(metricID, metadata,"_mean");
         appendTYPE(mean, OpenMetricsType.gauge);
         appendValue(mean, tags, scaleToBaseUnit(snapshot.getMean(), metadata));
-        String max = globalName(metricID, "_max", metadata);
+        String max = globalName(metricID, metadata, "_max");
         appendTYPE(max, OpenMetricsType.gauge);
+        appendHELP(max, metadata);
         appendValue(max, tags, scaleToBaseUnit(snapshot.getMax(), metadata));
-        String min = globalName(metricID, "_min", metadata);
-        appendTYPE(min, OpenMetricsType.gauge);
-        appendValue(min, tags, scaleToBaseUnit(snapshot.getMin(), metadata));
-        String stddev = globalName(metricID, "_stddev", metadata);
-        appendTYPE(stddev, OpenMetricsType.gauge);
-        appendValue(stddev, tags, scaleToBaseUnit(snapshot.getStdDev(), metadata));
         String summary = globalName(metricID, metadata);
         appendTYPE(summary, OpenMetricsType.summary);
         appendHELP(summary, metadata);
         appendValue(globalName(metricID, metadata, "_count"), tags, count.getAsLong());
         appendValue(globalName(metricID, metadata, "_sum"), tags, sum.get());
-        appendValue(summary, tags("quantile", "0.5", tags), scaleToBaseUnit(snapshot.getMedian(), metadata));
-        appendValue(summary, tags("quantile", "0.75", tags), scaleToBaseUnit(snapshot.get75thPercentile(), metadata));
-        appendValue(summary, tags("quantile", "0.95", tags), scaleToBaseUnit(snapshot.get95thPercentile(), metadata));
-        appendValue(summary, tags("quantile", "0.98", tags), scaleToBaseUnit(snapshot.get98thPercentile(), metadata));
-        appendValue(summary, tags("quantile", "0.99", tags), scaleToBaseUnit(snapshot.get99thPercentile(), metadata));
-        appendValue(summary, tags("quantile", "0.999", tags), scaleToBaseUnit(snapshot.get999thPercentile(), metadata));
-    }
+        Snapshot.PercentileValue[] pencentileValues = snapshot.percentileValues();
+        Optional<Snapshot.PercentileValue> median = Arrays.stream(pencentileValues)
+                .filter(p -> p.getPercentile() == 0.5).findFirst();
+        Optional<Snapshot.PercentileValue> percentile75th = Arrays.stream(pencentileValues)
+                .filter(p -> p.getPercentile() == 0.75).findFirst();
+        Optional<Snapshot.PercentileValue> percentile95th = Arrays.stream(pencentileValues)
+                .filter(p -> p.getPercentile() == 0.95).findFirst();
+        Optional<Snapshot.PercentileValue> percentile98th = Arrays.stream(pencentileValues)
+                .filter(p -> p.getPercentile() == 0.98).findFirst();
+        Optional<Snapshot.PercentileValue> percentile99th = Arrays.stream(pencentileValues)
+                .filter(p -> p.getPercentile() == 0.99).findFirst();
+        Optional<Snapshot.PercentileValue> percentile999th = Arrays.stream(pencentileValues)
+                .filter(p -> p.getPercentile() == 0.999).findFirst();
 
-    @Override
-    public void export(MetricID metricID, Meter meter, Metadata metadata) {
-        Tag[] tags = metricID.getTagsAsArray();
-        String total = globalName(metricID, "_total");
-        appendTYPE(total, OpenMetricsType.counter);
-        appendHELP(total, metadata);
-        appendValue(total, tags, meter.getCount());
-        exportMetered(metricID, meter);
-    }
 
-    private void exportMetered(MetricID metricID, Metered metered) {
-        Tag[] tags = metricID.getTagsAsArray();
-        String rate = globalName(metricID, "_rate_per_second");
-        appendTYPE(rate, OpenMetricsType.gauge);
-        appendValue(rate, tags, metered.getMeanRate());
-        String oneMinRate = globalName(metricID, "_one_min_rate_per_second");
-        appendTYPE(oneMinRate, OpenMetricsType.gauge);
-        appendValue(oneMinRate, tags, metered.getOneMinuteRate());
-        String fiveMinRate = globalName(metricID, "_five_min_rate_per_second");
-        appendTYPE(fiveMinRate, OpenMetricsType.gauge);
-        appendValue(fiveMinRate, tags, metered.getFiveMinuteRate());
-        String fifteenMinRate = globalName(metricID, "_fifteen_min_rate_per_second");
-        appendTYPE(fifteenMinRate, OpenMetricsType.gauge);
-        appendValue(fifteenMinRate, tags, metered.getFifteenMinuteRate());
-    }
+        if(median.isPresent()) {
+            appendValue(summary, tags("quantile", "0.5", tags),
+                    scaleToBaseUnit(median.get().getValue(), metadata));
+        }
 
-    @Override
-    public void export(MetricID metricID, SimpleTimer timer, Metadata metadata) {
-        Tag[] tags = metricID.getTagsAsArray();
-        String total = globalName(metricID, "_total");
-        appendTYPE(total, OpenMetricsType.counter);
-        appendHELP(total, metadata);
-        appendValue(total, tags, timer.getCount());
-        String elapsedTime = globalName(metricID, "_elapsedTime_seconds");
-        appendTYPE(elapsedTime, OpenMetricsType.gauge);
-        appendValue(elapsedTime, tags, toSeconds(timer.getElapsedTime()));
-        String maxTime = globalName(metricID, "_maxTimeDuration_seconds");
-        appendTYPE(maxTime, OpenMetricsType.gauge);
-        appendValue(maxTime, tags, toSeconds(timer.getMaxTimeDuration()));
-        String minTime = globalName(metricID, "_minTimeDuration_seconds");
-        appendTYPE(minTime, OpenMetricsType.gauge);
-        appendValue(minTime, tags, toSeconds(timer.getMinTimeDuration()));
+        if(percentile75th.isPresent()) {
+            appendValue(summary, tags("quantile", "0.75", tags),
+                    scaleToBaseUnit(percentile75th.get().getValue(), metadata));
+        }
+
+        if(percentile95th.isPresent()) {
+            appendValue(summary, tags("quantile", "0.95", tags),
+                    scaleToBaseUnit(percentile95th.get().getValue(), metadata));
+        }
+
+        if(percentile98th.isPresent()) {
+            appendValue(summary, tags("quantile", "0.98", tags),
+                    scaleToBaseUnit(percentile98th.get().getValue(), metadata));
+        }
+
+        if(percentile99th.isPresent()) {
+            appendValue(summary, tags("quantile", "0.99", tags),
+                    scaleToBaseUnit(percentile99th.get().getValue(), metadata));
+        }
+
+        if(percentile999th.isPresent()) {
+            appendValue(summary, tags("quantile", "0.999", tags),
+                    scaleToBaseUnit(percentile999th.get().getValue(), metadata));
+        }
     }
 
     @Override
     public void export(MetricID metricID, Timer timer, Metadata metadata) {
-        exportMetered(metricID, timer);
         exportSampling(metricID, timer, timer::getCount, () -> toSeconds(timer.getElapsedTime()), metadata);
     }
 
@@ -250,25 +222,21 @@ public class OpenMetricsExporter implements MetricExporter {
     }
 
     protected void appendHELP(String globalName, Metadata metadata) {
-        if (helpWrittenByGlobalName.contains(globalName)) {
-            return;
+        if(!helpWrittenByGlobalName.contains(globalName)) {
+            helpWrittenByGlobalName.add(globalName);
         }
-        helpWrittenByGlobalName.add(globalName);
         Optional<String> description = metadata.description();
-        if (!description.isPresent()) {
-            return;
-        }
-        String text = description.get();
-        if (text.isEmpty()) {
-            return;
-        }
-        out.append("# HELP ").append(globalName).append(' ').append(text).append('\n');
+        out.append("# HELP ").append(globalName).append(' ').append(description.isPresent() ? description.get(): "").append('\n');
     }
 
     protected void appendValue(String globalName, Tag[] tags, Number value) {
         out.append(globalName);
         out.append(tagsToString(tags));
-        out.append(' ').append(value == null ? "NaN" : roundValue(value)).append('\n');
+        if(globalName.equals(GC_TOTAL_ID) || globalName.equals(GC_TIME_SECONDS_TOTAL_ID)) {
+            out.append(' ').append(value.toString()).append('\n');
+        } else {
+            out.append(' ').append(value == null ? "NaN" : roundValue(value)).append('\n');
+        }
     }
 
     private void appendValue(String globalName, Tag[] tags, long value) {
@@ -343,12 +311,10 @@ public class OpenMetricsExporter implements MetricExporter {
         case MetricUnits.KILOBITS:
         case MetricUnits.MEGABITS:
         case MetricUnits.GIGABITS:
-        case MetricUnits.KIBIBITS:
         case MetricUnits.MEBIBITS:
         case MetricUnits.GIBIBITS:
         case MetricUnits.KILOBYTES:
         case MetricUnits.MEGABYTES:
-        case MetricUnits.GIGABYTES:
             return globalName(metricID, infix + "_bytes" + suffix);
         case MetricUnits.PERCENT:
             return globalName(metricID, infix + "_ratio" + suffix);
@@ -356,6 +322,8 @@ public class OpenMetricsExporter implements MetricExporter {
             return globalName(metricID, infix + "_per_second" + suffix);
         case MetricUnits.NONE:
             return globalName(metricID, infix + suffix);
+        case MetricUnits.KIBIBITS:
+        case MetricUnits.GIGABYTES:
         default:
             return globalName(metricID, infix + "_" + unit + suffix);
         }
@@ -363,9 +331,9 @@ public class OpenMetricsExporter implements MetricExporter {
 
     private String globalName(MetricID metricID, String suffix) {
         String name = metricID.getName();
-        return sanitizeMetricName(!suffix.isEmpty() && name.endsWith(suffix)
-                ? scope.getName() + '_' + name
-                : scope.getName() + '_' + name + suffix);
+        return sanitizeMetricName(!suffix.isEmpty() && (name.endsWith(suffix) || name.contains(".total"))
+                ? name
+                : name + suffix);
     }
 
     private static CharSequence escapeTagValue(String name) {

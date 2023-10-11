@@ -49,7 +49,7 @@
     <parent>
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-nucleus-parent</artifactId>
-        <version>6.2023.3-SNAPSHOT</version>
+        <version>6.2023.10-SNAPSHOT</version>
         <relativePath>../nucleus/pom.xml</relativePath>
     </parent>
 
@@ -60,12 +60,9 @@
 
     <properties>
         <jakarta.faces-spec.version>4.0.0</jakarta.faces-spec.version>
-        <jsftemplating.version>3.0.0</jsftemplating.version>
-        <jboss.classfilewriter.version>1.2.5.Final</jboss.classfilewriter.version>
-        <apache.bcel.version>6.7.0</apache.bcel.version>
+        <jboss.classfilewriter.version>1.3.0.Final.payara-p1</jboss.classfilewriter.version>
         <!-- Java EE Security API -->
         <jakarta.security.enterprise-spec.version>1.0</jakarta.security.enterprise-spec.version>
-        <jna.version>5.12.1</jna.version>
 
         <!-- Application Server / Implementation -->
         <product.name>Payara Server</product.name>
@@ -85,9 +82,9 @@
         <!-- Java API for XML Registries Resource Adapter -->
         <jaxr.version>JAXR_RA_20091012</jaxr.version>
 
-        <nimbus-jose-jwt.version>9.25</nimbus-jose-jwt.version>
-        <accessors-smart.version>2.4.8</accessors-smart.version>
-        <json-smart.version>2.4.8</json-smart.version>
+        <nimbus-jose-jwt.version>9.35</nimbus-jose-jwt.version>
+        <accessors-smart.version>2.4.11</accessors-smart.version>
+        <json-smart.version>2.4.11</json-smart.version>
         <reactor-core.version>3.4.4</reactor-core.version>
         <reactive-streams.version>1.0.3</reactive-streams.version>
         <jcip-annotations.version>1.0-1</jcip-annotations.version>
@@ -548,7 +545,7 @@
             <dependency>
                 <groupId>com.sun</groupId>
                 <artifactId>ldapbp</artifactId>
-                <version>1.0</version>
+                <version>${ldapbp.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.hk2</groupId>

@@ -37,57 +37,62 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-// Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2017-2023 [Payara Foundation and/or its affiliates]
 package org.glassfish.deployment.admin;
 
+import com.sun.enterprise.admin.util.ClusterOperationUtil;
 import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.config.serverbeans.ApplicationRef;
 import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.Param;
-import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.RuntimeType;
-import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.api.deployment.UndeployCommandParameters;
-import org.glassfish.api.deployment.OpsParams.Origin;
-import org.glassfish.api.deployment.OpsParams.Command;
-import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.glassfish.config.support.TargetType;
-import org.glassfish.config.support.CommandTarget;
-import org.glassfish.internal.data.ApplicationInfo;
-import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
+import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
-import org.glassfish.api.ActionReport;
-import org.glassfish.api.I18n;
-import org.glassfish.internal.deployment.Deployment;
-import org.glassfish.internal.deployment.ExtendedDeploymentContext;
+import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
-
-import org.jvnet.hk2.annotations.Service;
-
-import org.glassfish.hk2.api.PerLookup;
-import org.jvnet.hk2.config.TransactionFailure;
-
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Collection;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.io.File;
-import java.net.URI;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
+import java.util.stream.Collectors;
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.I18n;
+import org.glassfish.api.Param;
 import org.glassfish.api.admin.AccessRequired.AccessCheck;
+import org.glassfish.api.admin.AdminCommand;
+import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.AdminCommandSecurity;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.FailurePolicy;
+import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.deployment.OpsParams.Command;
+import org.glassfish.api.deployment.OpsParams.Origin;
+import org.glassfish.api.deployment.UndeployCommandParameters;
+import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.config.support.CommandTarget;
+import org.glassfish.config.support.TargetType;
+import org.glassfish.deployment.common.DeploymentProperties;
+import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.deployment.versioning.VersioningException;
 import org.glassfish.deployment.versioning.VersioningService;
+import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.data.ApplicationInfo;
+import org.glassfish.internal.deployment.Deployment;
+import org.glassfish.internal.deployment.ExtendedDeploymentContext;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.TransactionFailure;
 
 /**
  * Delete application ref command
@@ -134,6 +139,9 @@ public class DeleteApplicationRefCommand implements AdminCommand, AdminCommandSe
 
     @Inject
     ServerEnvironment env;
+
+    @Inject
+    private ServiceLocator habitat;
 
     private List<String> matchedVersions;
         
@@ -190,10 +198,7 @@ public class DeleteApplicationRefCommand implements AdminCommand, AdminCommandSe
         commandParams.command = Command.delete_application_ref;
 
         // for each matched version
-        Iterator it = matchedVersions.iterator();
-        while (it.hasNext()) {
-            String appName = (String)it.next();
-
+        for (String appName : matchedVersions) {
             Application application = applications.getApplication(appName);
             if (application == null) {
                 if (env.isDas()) {
@@ -270,7 +275,26 @@ public class DeleteApplicationRefCommand implements AdminCommand, AdminCommandSe
                         logger.warning("failed to delete application ref for " + appName);
                     }
                 }
-            } catch(Exception e) {
+
+                // the command is replicated on instance by CommandRunnerImpl's replication
+                // replicate to deployment group manually if necessary:
+                DeploymentGroup targetDeploymentGroup = domain.getDeploymentGroupNamed(target);
+                if (server.isDas() && targetDeploymentGroup != null) {
+                    List<String> instances = targetDeploymentGroup.getInstances().stream().map(i -> i.getName()).collect(Collectors.toList());
+                    ParameterMap paramMap = new ParameterMap();
+                    paramMap.add("DEFAULT", appName);
+                    paramMap.add(DeploymentProperties.TARGET, DeploymentUtils.DOMAIN_TARGET_NAME);
+                    ClusterOperationUtil.replicateCommand(
+                            UndeployCommand.Command.undeploy.name(),
+                            FailurePolicy.Error,
+                            FailurePolicy.Warn,
+                            FailurePolicy.Ignore,
+                            instances,
+                            context,
+                            paramMap,
+                            habitat);
+                }
+            } catch (IOException | URISyntaxException | RuntimeException e) {
                 logger.log(Level.SEVERE, "Error during deleteing application ref ", e);
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 report.setMessage(e.getMessage());

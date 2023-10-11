@@ -1,0 +1,42 @@
+name: Monitor Abandoned Issues
+#Runs at minute 0 past every 48th hour
+on:
+  schedule:
+    - cron: "0 */48 * * *"
+env:
+  daysInterval: ${{ vars.MONITORING_INTERVAL_DAYS }}
+jobs:
+  check-environment:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          if [ -z $daysInterval ]; then
+            echo "::error::'MONITORING_INTERVAL_DAYS' environment variable is not set"
+            exit 1
+          fi
+  check-abandoned-issues:
+    needs: check-environment
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - uses: actions/checkout@v3
+      - name: Monitor abandoned issues
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const script = require('./.github/workflows/scripts/checkAbandonedIssues.js');
+            await script({github, context, core});
+  close-abandoned-issues:
+    needs: check-environment
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - uses: actions/checkout@v3
+      - name: Close abandoned issues
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const script = require('./.github/workflows/scripts/closeAbandonedIssues.js');
+            await script({github, context, core});

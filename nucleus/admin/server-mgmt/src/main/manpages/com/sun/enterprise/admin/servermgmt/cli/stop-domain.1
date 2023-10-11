@@ -7,7 +7,7 @@ NAME
 SYNOPSIS
            stop-domain [--help] [--domaindir domaindir]
            [--force={true|false}] [--kill={false|true}]
-           [domain-name]
+           [--timeout timeout][domain-name]
 
 DESCRIPTION
        The stop-domain subcommand stops the Domain Administration Server (DAS)
@@ -60,6 +60,10 @@ OPTIONS
            true
                The domain is killed. The subcommand uses functionality of the
                operating system to terminate the domain process.
+
+       --timeout
+           Specifies the amount of time in seconds the command will run for
+           before timing out. Default is 60 seconds.
 
 OPERANDS
        domain-name

@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server.internal.resources</groupId>
         <artifactId>resources</artifactId>
-        <version>6.2023.3-SNAPSHOT</version>
+        <version>6.2023.10-SNAPSHOT</version>
     </parent>
 
     <artifactId>javamail</artifactId>
@@ -85,7 +85,7 @@
         <dependency>
             <groupId>fish.payara.server.core.security</groupId>
             <artifactId>security-services</artifactId>
-            <version>${project.version}</version>
+
             <scope>test</scope>
         </dependency>
     </dependencies>

@@ -46,11 +46,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>fish.payara.server.internal.grizzly</groupId>
-        <artifactId>nucleus-grizzly</artifactId>
-        <version>6.2023.3-SNAPSHOT</version>
+        <groupId>fish.payara.server.core</groupId>
+        <artifactId>core-parent</artifactId>
+        <version>6.8.0-SNAPSHOT</version>
+        <relativePath>../../../core/core-parent</relativePath>
     </parent>
-    
+
     <groupId>fish.payara.server.core.grizzly</groupId>
     <artifactId>nucleus-grizzly-all</artifactId>
     <name>Nucleus Grizzly jars Combining</name>
@@ -71,6 +72,7 @@
     <properties>
         <gmbal.grizzly.version>3.0.0-b023</gmbal.grizzly.version>
         <findbugs.skip>true</findbugs.skip>
+        <jar.manifest></jar.manifest>
     </properties>    
 
     <build>       
@@ -141,7 +143,6 @@
         <dependency>
             <groupId>fish.payara.server.core.grizzly</groupId>
             <artifactId>grizzly-config</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.gmbal</groupId>

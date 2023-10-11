@@ -37,8 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-// Portions Copyright [2016-2022] [Payara Foundation and/or affiliates]
+// Portions Copyright [2016-2023] [Payara Foundation and/or affiliates]
 
 package com.sun.enterprise.admin.servermgmt.cli;
 
@@ -46,6 +45,7 @@ import com.sun.enterprise.admin.cli.CLICommand;
 import com.sun.enterprise.admin.cli.CLIConstants;
 import com.sun.enterprise.admin.cli.ProgramOptions;
 import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
+import com.sun.enterprise.admin.servermgmt.domain.DomainConstants;
 import com.sun.enterprise.security.store.PasswordAdapter;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.universal.io.SmartFile;
@@ -84,6 +84,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.stream.Stream;
 
 import static com.sun.enterprise.admin.servermgmt.domain.DomainConstants.MASTERPASSWORD_FILE;
 
@@ -247,27 +248,18 @@ public abstract class LocalServerCommand extends CLICommand {
         // cacerts.p12 instead of keystore.p12. Since the truststore
         // is less-likely to be Non-JKS
 
-        return loadAndVerifyKeystore(getJKS(), mpv);
+        return loadAndVerifyKeystore(getKeyStoreFile(), mpv);
     }
 
     protected boolean loadAndVerifyKeystore(File jks, String mpv) {
-        FileInputStream fis = null;
         try {
-            fis = new FileInputStream(jks);
-            KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
-            ks.load(fis, mpv.toCharArray());
+            // try to load the keystore with the provided keystore password
+            KeyStore.getInstance(jks, mpv.toCharArray());
             return true;
         } catch (Exception e) {
             if (logger.isLoggable(Level.FINER))
                 logger.finer(e.getMessage());
             return false;
-        } finally {
-            try {
-                if (fis != null)
-                    fis.close();
-            } catch (IOException ioe) {
-                // ignore, I know ...
-            }
         }
     }
 
@@ -549,13 +541,22 @@ public abstract class LocalServerCommand extends CLICommand {
         }
     }
 
-    private File getJKS() {
-        if (serverDirs == null)
+    /**
+     * Load KeyStore. By default, it is cacerts.p12. If not found, search for cacerts.jks.
+     *
+     * @return File of keystore (p12 or jks) in config directory, null if none is found
+     */
+    protected File getKeyStoreFile() {
+        if (serverDirs == null) {
             return null;
+        }
 
-        File mp = new File(new File(serverDirs.getServerDir(), "config"), "cacerts.p12");
-        if (!mp.canRead())
-            return null;
+        File configDir = serverDirs.getConfigDir();
+        File mp = Stream.of(new File(configDir, DomainConstants.TRUSTSTORE_FILE),
+                        new File(configDir, DomainConstants.TRUSTSTORE_JKS_FILE))
+                .filter(f -> f.canRead())
+                .findFirst()
+                .orElse(null);
         return mp;
     }
 

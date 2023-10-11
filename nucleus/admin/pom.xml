@@ -46,19 +46,13 @@
     <parent>
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-nucleus-parent</artifactId>
-        <version>6.2023.3-SNAPSHOT</version>
+        <version>6.2023.10-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.server.internal.admin</groupId>
     <artifactId>nucleus-admin</artifactId>
     <packaging>pom</packaging>
     <name>Admin Modules</name>
     <modules>
-        <module>config-api</module>
-        <module>server-mgmt</module>
-        <module>util</module>    
-        <module>cli</module>
-        <module>launcher</module>
-        <module>monitor</module>
         <module>rest</module>
         <module>launcher-l10n</module>
         <module>monitor-l10n</module>

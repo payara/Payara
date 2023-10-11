@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -62,6 +62,7 @@ public class ServerImpl extends ExtensibleImpl<Server> implements Server {
     public static Server createInstance(AnnotationModel annotation, ApiContext context) {
         Server from = new ServerImpl();
         from.setDescription(annotation.getValue("description", String.class));
+        from.setExtensions(parseExtensions(annotation));
         from.setUrl(annotation.getValue("url", String.class));
         extractAnnotations(annotation, context, "variables", "name", ServerVariableImpl::createInstance, from::addVariable);
         return from;
@@ -122,6 +123,7 @@ public class ServerImpl extends ExtensibleImpl<Server> implements Server {
         }
         to.setUrl(mergeProperty(to.getUrl(), from.getUrl(), override));
         to.setDescription(mergeProperty(to.getDescription(), from.getDescription(), override));
+        to.setExtensions(mergeProperty(to.getExtensions(), from.getExtensions(), override));
         if (from.getVariables() != null) {
             for (String serverVariableName : from.getVariables().keySet()) {
                 merge(
@@ -142,6 +144,7 @@ public class ServerImpl extends ExtensibleImpl<Server> implements Server {
         org.eclipse.microprofile.openapi.models.servers.ServerVariable variable = new ServerVariableImpl();
         variable.setDefaultValue(mergeProperty(variable.getDefaultValue(), from.getDefaultValue(), override));
         variable.setDescription(mergeProperty(variable.getDescription(), from.getDescription(), override));
+        variable.setExtensions(mergeProperty(variable.getExtensions(), from.getExtensions(), override));
         if (from.getEnumeration()!= null && !from.getEnumeration().isEmpty()) {
             if (variable.getEnumeration() == null) {
                 variable.setEnumeration(createList());

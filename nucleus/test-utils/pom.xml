@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-nucleus-parent</artifactId>
-        <version>6.2023.3-SNAPSHOT</version>
+        <version>6.2023.10-SNAPSHOT</version>
     </parent>
 
     <groupId>fish.payara.server.internal.test-utils</groupId>
@@ -55,7 +55,6 @@
     <name>Test Utilities Modules</name>
 
     <modules>
-        <module>utils</module>
         <module>utils-ng</module>
     </modules>
 

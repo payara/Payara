@@ -46,14 +46,13 @@
     <parent>
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-parent</artifactId>
-        <version>6.2023.3-SNAPSHOT</version>
+        <version>6.2023.10-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.server.internal.transaction</groupId>
     <artifactId>transaction</artifactId>
     <packaging>pom</packaging>
     <name>GlassFish Transaction modules</name>  
     <modules>
-        <module>internal-api</module>
         <module>jta</module>
         <module>jts</module>
         <module>jts-l10n</module>

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2022 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -92,14 +92,13 @@ public class JwtAuthCdiExtension implements Extension {
 
     public void register(@Observes BeforeBeanDiscovery beforeBean, BeanManager beanManager) {
         beforeBean.addAnnotatedType(beanManager.createAnnotatedType(InjectionPointGenerator.class), "JWT InjectionPointGenerator ");
-        beforeBean.addAnnotatedType(beanManager.createAnnotatedType(JsonWebTokenProducer.class), JsonWebTokenProducer.class.getName());
     }
     
     /**
      * This method tries to find the LoginConfig annotation and if does flags that fact.
      * 
      */
-    public <T> void findLoginConfigAnnotation(@Observes ProcessBean<T> eventIn) {
+    public <T> void findLoginConfigAnnotation(@Observes ProcessBean<T> eventIn, BeanManager beanManager) {
         
         ProcessBean<T> event = eventIn; // JDK8 u60 workaround
         
@@ -114,7 +113,7 @@ public class JwtAuthCdiExtension implements Extension {
      * declared later on. 
      * 
      */
-    public <T> void findRoles(@Observes ProcessManagedBean<T> eventIn) {
+    public <T> void findRoles(@Observes ProcessManagedBean<T> eventIn, BeanManager beanManager) {
         
         ProcessManagedBean<T> event = eventIn; // JDK8 u60 workaround
         
@@ -135,7 +134,7 @@ public class JwtAuthCdiExtension implements Extension {
         
     }
     
-    public <T> void checkInjectIntoRightScope(@Observes ProcessInjectionTarget<T> eventIn) {
+    public <T> void checkInjectIntoRightScope(@Observes ProcessInjectionTarget<T> eventIn, BeanManager beanManager) {
 
         ProcessInjectionTarget<T> event = eventIn; // JDK8 u60 workaround
         
@@ -165,7 +164,7 @@ public class JwtAuthCdiExtension implements Extension {
         }
     }
    
-    public void installMechanismIfNeeded(@Observes AfterBeanDiscovery eventIn) {
+    public void installMechanismIfNeeded(@Observes AfterBeanDiscovery eventIn, BeanManager beanManager) {
 
         AfterBeanDiscovery afterBeanDiscovery = eventIn; // JDK8 u60 workaround
 

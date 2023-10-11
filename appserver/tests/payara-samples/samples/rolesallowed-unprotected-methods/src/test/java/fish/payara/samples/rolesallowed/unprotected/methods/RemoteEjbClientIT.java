@@ -90,6 +90,8 @@ public class RemoteEjbClientIT {
             System.out.println(ejb.sayHello());
             Assert.assertTrue(ejb.sayHello().equalsIgnoreCase("Hello Anonymous!"));
         } catch (NamingException ne) {
+            // Print the exception, so we know, where it failed
+            ne.printStackTrace();
             Assert.fail("Failed performing lookup:\n" + ne.getCause());
         }
     }

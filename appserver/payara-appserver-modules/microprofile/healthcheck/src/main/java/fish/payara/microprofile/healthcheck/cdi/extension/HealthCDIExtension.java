@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) 2020-2021 Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) 2020-2023 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -40,6 +40,7 @@
 
 package fish.payara.microprofile.healthcheck.cdi.extension;
 
+import java.lang.annotation.Annotation;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -84,11 +85,17 @@ public class HealthCDIExtension implements Extension {
     }
 
     void processBean(@Observes ProcessBean<?> event) {
-        final Annotated annotated = event.getAnnotated();
-        if (annotated.isAnnotationPresent(Readiness.class)
-                || annotated.isAnnotationPresent(Liveness.class)
-                || annotated.isAnnotationPresent(Startup.class)) {
-            this.healthCheckBeans.add(event.getBean());
+        Bean<?> bean = event.getBean();
+        if (bean != null) {
+            Set<Annotation> annotations = bean.getQualifiers();
+            for (Annotation annotation : annotations) {
+                Class<? extends Annotation> annotationType = annotation.annotationType();
+                if (Readiness.class.equals(annotationType)
+                        || Liveness.class.equals(annotationType)
+                        || Startup.class.equals(annotationType)) {
+                    this.healthCheckBeans.add(event.getBean());
+                }
+            }
         }
     }
 

@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server.internal.concurrent</groupId>
         <artifactId>concurrent</artifactId>
-        <version>6.2023.3-SNAPSHOT</version>
+        <version>6.2023.10-SNAPSHOT</version>
     </parent>    
     <artifactId>concurrent-connector</artifactId>
     <packaging>glassfish-jar</packaging>
@@ -58,7 +58,6 @@
         <dependency>
             <groupId>fish.payara.server.core.admin</groupId>
             <artifactId>config-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
@@ -67,17 +66,14 @@
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>glassfish-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
          <dependency>
             <groupId>fish.payara.server.core.admin</groupId>
             <artifactId>admin-util</artifactId>
-            <version>${project.version}</version>
          </dependency>
        <dependency>
             <groupId>fish.payara.server.core.resourcebase.resources</groupId>
             <artifactId>nucleus-resources</artifactId>
-            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>

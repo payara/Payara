@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -433,7 +433,7 @@ public class RequestTracingService implements EventListener, ConfigListener, Mon
                 && requestEventStore.getTrace().getTraceSpans().getFirst().equals(requestEvent);
     }
 
-    private boolean shouldStartTrace() {
+    public  boolean shouldStartTrace() {
         if (!isRequestTracingEnabled()) {
             return false;
         }
@@ -469,6 +469,15 @@ public class RequestTracingService implements EventListener, ConfigListener, Mon
         }
         requestEventStore.endTrace(timestampMillis);
         processTraceEnd();
+    }
+
+
+    public void processSpan(RequestTraceSpan finishedSpan) {
+        if (!isRequestTracingEnabled()) {
+            return;
+        }
+        requestEventStore.storeEvent(finishedSpan, 0);
+        requestEventStore.endTrace(finishedSpan.getTimeOccured()+finishedSpan.getSpanDuration());
     }
 
     private void processTraceEnd() {
@@ -636,6 +645,7 @@ public class RequestTracingService implements EventListener, ConfigListener, Mon
             trace = uncollectedTraces.poll();
         }
     }
+
 
     private static String collectTrace(MonitoringDataCollector tracingCollector, RequestTrace trace, long threshold) {
         try {
