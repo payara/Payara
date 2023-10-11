@@ -613,12 +613,6 @@
                 <artifactId>security-connector-oauth2-client</artifactId>
                 <version>${payara.security-connectors.version}</version>
             </dependency>
-
-            <dependency>
-                <groupId>org.apache.tomcat</groupId>
-                <artifactId>tomcat-catalina</artifactId>
-                <version>${catalina.version}</version>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 

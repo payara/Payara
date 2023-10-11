@@ -955,6 +955,12 @@
                 <artifactId>fish.payara.transformer.payara</artifactId>
                 <version>${payara.transformer.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>org.apache.tomcat</groupId>
+                <artifactId>tomcat-catalina</artifactId>
+                <version>${catalina.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 </project>
