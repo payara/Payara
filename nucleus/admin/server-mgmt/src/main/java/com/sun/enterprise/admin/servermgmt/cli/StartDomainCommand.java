@@ -101,6 +101,9 @@ public class StartDomainCommand extends LocalDomainCommand implements StartServe
     @Param(defaultValue = "600", optional = true)
     protected int timeout;
     
+    @Param(optional = true, defaultValue = "false")
+    private boolean warmup;
+    
     @Inject
     ServerEnvironment senv;
     
@@ -181,6 +184,10 @@ public class StartDomainCommand extends LocalDomainCommand implements StartServe
 
             doAdminPasswordCheck();
 
+            if(warmup) {
+                info.setWarmup(true);
+            }
+
             // launch returns very quickly if verbose is not set
             // if verbose is set then it returns after the domain dies
             launcher.launch();
@@ -247,6 +254,7 @@ public class StartDomainCommand extends LocalDomainCommand implements StartServe
         info.setDebug(debug);
         info.setUpgrade(upgrade);
         info.setWatchdog(watchdog);
+        info.setWarmup(warmup);
         info.setDropInterruptedCommands(drop_interrupted_commands);
         info.setPrebootCommandsFile(preBootCommand);
         info.setpostbootCommandsFile(postBootCommand);
@@ -270,6 +278,7 @@ public class StartDomainCommand extends LocalDomainCommand implements StartServe
         args.add("--verbose=" + verbose);
         args.add("--watchdog=" + watchdog);
         args.add("--debug=" + debug);
+        args.add("--warmup=" + warmup);
         args.add("--domaindir");
         args.add(getDomainsDir().toString());
         if (ok(getDomainName()))

@@ -377,6 +377,13 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
             logger.log(level, "PostStartup level done in " +
                 (postStartupFinishTime - startupFinishTime) + " ms");
         }
+        if(context.getArguments().containsKey("-warmup") && 
+                context.getArguments().getProperty("-warmup").equals("true")){
+            logger.info(String.format("Doing warmup stop of server, " +
+                    "please check configurations to be reused on another server instances"));
+            stop();
+            return false;
+        }
         return true;
     }
     
