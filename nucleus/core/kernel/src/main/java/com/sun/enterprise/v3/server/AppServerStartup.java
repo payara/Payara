@@ -50,6 +50,9 @@ import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.module.bootstrap.ModuleStartup;
 import com.sun.enterprise.module.bootstrap.StartupContext;
 import com.sun.enterprise.util.Result;
+import jakarta.inject.Inject;
+import jakarta.inject.Provider;
+import jakarta.inject.Singleton;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -61,12 +64,8 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import jakarta.inject.Inject;
-import jakarta.inject.Provider;
-import jakarta.inject.Singleton;
 import org.glassfish.api.FutureProvider;
 import org.glassfish.api.StartupRunLevel;
-import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ProcessEnvironment;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener.Event;
@@ -376,13 +375,6 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
             long postStartupFinishTime = System.currentTimeMillis();
             logger.log(level, "PostStartup level done in " +
                 (postStartupFinishTime - startupFinishTime) + " ms");
-        }
-        if(context.getArguments().containsKey("-warmup") && 
-                context.getArguments().getProperty("-warmup").equals("true")){
-            logger.info(String.format("Doing warmup stop of server, " +
-                    "please check configurations to be reused on another server instances"));
-            stop();
-            return false;
         }
         return true;
     }

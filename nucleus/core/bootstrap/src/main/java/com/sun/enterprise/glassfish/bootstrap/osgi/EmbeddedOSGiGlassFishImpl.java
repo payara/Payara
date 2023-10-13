@@ -74,6 +74,11 @@ public class EmbeddedOSGiGlassFishImpl extends GlassFishDecorator {
     public void start() throws GlassFishException {
         super.start();
         registerService();
+        if(bundleContext.getProperty("-warmup") != null && bundleContext.getProperty("-warmup").equals("true")){
+            logger.log(Level.WARNING, LogFacade.WARMUP_OPTION_AS_TRUE);
+            stop();
+            System.exit(0);
+        }
     }
 
     @Override

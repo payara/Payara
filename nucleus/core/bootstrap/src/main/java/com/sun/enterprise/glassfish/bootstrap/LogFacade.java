@@ -265,6 +265,11 @@ public class LogFacade {
             message = "Got an unexpected exception.",
             level = "WARNING")
     public static final String CAUGHT_EXCEPTION = "NCLS-BOOTSTRAP-00039";
+    
+    @LogMessageInfo(
+            message = "The option warmup was set to true, stopping the server.",
+            level = "WARNING")
+    public static final String WARMUP_OPTION_AS_TRUE = "NCLS-BOOTSTRAP-00040";
 
 }
 
