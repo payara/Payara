@@ -184,7 +184,7 @@ public class StartDomainCommand extends LocalDomainCommand implements StartServe
 
             doAdminPasswordCheck();
 
-            if(warmup) {
+            if (warmup) {
                 info.setWarmup(warmup);
                 helper.setWarmup(warmup);
             }

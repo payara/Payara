@@ -473,9 +473,9 @@ public class GFLauncherInfo {
             upgrade = false;
         
         tsb = getBoolean("warmup");
-        if(tsb.isTrue())
+        if (tsb.isTrue())
             warmup = true;
-        else if(tsb.isFalse())
+        else if (tsb.isFalse())
             warmup = false;
     }
 
