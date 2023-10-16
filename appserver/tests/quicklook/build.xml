@@ -385,6 +385,25 @@
 			<jvmarg value="-DASADMIN=${ASADMIN}" />
 			<jvmarg value="-DAPPCLIENT=${APPCLIENT}"/>
 			<jvmarg value="--add-opens=java.base/java.lang=ALL-UNNAMED" />
+			<jvmarg value="--add-opens=java.base/java.io=ALL-UNNAMED" />
+			<jvmarg value="--add-opens=java.management/javax.management.openmbean=ALL-UNNAMED" />
+			<jvmarg value="--add-opens=java.management/javax.management=ALL-UNNAMED" />
+			<jvmarg value="--add-opens=java.base/java.net=ALL-UNNAMED" />
+			<jvmarg value="--add-opens=java.base/java.nio=ALL-UNNAMED" />
+			<jvmarg value="--add-opens=java.base/java.util=ALL-UNNAMED" />
+			<jvmarg value="--add-opens=java.base/sun.nio.ch=ALL-UNNAMED" />
+			<jvmarg value="--add-opens=java.management/sun.management=ALL-UNNAMED" />
+			<jvmarg value="--add-opens=java.base/sun.net.www.protocol.jrt=ALL-UNNAMED" />
+			<jvmarg value="--add-opens=java.naming/javax.naming.spi=ALL-UNNAMED" />
+			<jvmarg value="--add-opens=java.rmi/sun.rmi.transport=ALL-UNNAMED" />
+			<jvmarg value="--add-opens=java.logging/java.util.logging=ALL-UNNAMED" />
+			<jvmarg value="--add-opens=java.base/sun.net.www=ALL-UNNAMED" />
+			<jvmarg value="--add-opens=java.base/sun.security.util=ALL-UNNAMED" />
+			<jvmarg value="--add-opens=java.base/java.lang.invoke=ALL-UNNAMED" />
+			<jvmarg value="--add-opens=java.desktop/java.beans=ALL-UNNAMED" />
+			<jvmarg value="--add-exports=jdk.naming.dns/com.sun.jndi.dns=ALL-UNNAMED" />
+			<jvmarg value="--add-exports=java.naming/com.sun.jndi.ldap=ALL-UNNAMED" />
+			<jvmarg value="--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED" />
 			<jvmarg value="--illegal-access=debug" />
 			<sysproperty key="glassfish.home" value="${glassfish.home}"/>
 			<sysproperty key="domain.name" value="${domain.name}"/>
