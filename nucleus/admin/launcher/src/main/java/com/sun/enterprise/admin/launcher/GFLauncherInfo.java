@@ -215,7 +215,9 @@ public class GFLauncherInfo {
      * 
      * @return true if the warmup is on.
      */
-    public boolean isWarmup() { return warmup; }
+    public boolean isWarmup() {
+        return warmup;
+    }
 
     /**
      * 
@@ -471,12 +473,13 @@ public class GFLauncherInfo {
             upgrade = true;
         else if(tsb.isFalse())
             upgrade = false;
-        
+
         tsb = getBoolean("warmup");
-        if (tsb.isTrue())
+        if (tsb.isTrue()) {
             warmup = true;
-        else if (tsb.isFalse())
+        } else if (tsb.isFalse()) {
             warmup = false;
+        }
     }
 
     private void finalSetup() throws GFLauncherException {
