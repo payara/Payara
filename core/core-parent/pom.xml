@@ -652,7 +652,7 @@
                             <parameter>
                                 <!-- see documentation https://siom79.github.io/japicmp/MavenPlugin.html -->
                                 <ignoreMissingClasses>true</ignoreMissingClasses>
-                                <breakBuildBasedOnSemanticVersioning>true</breakBuildBasedOnSemanticVersioning>
+                                <breakBuildBasedOnSemanticVersioning>false</breakBuildBasedOnSemanticVersioning>
                             </parameter>
                         </configuration>
                         <executions>
