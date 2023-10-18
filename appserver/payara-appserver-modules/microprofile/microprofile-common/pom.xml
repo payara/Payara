@@ -43,7 +43,7 @@
     <parent>
         <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
         <artifactId>microprofile</artifactId>
-        <version>6.2023.3-SNAPSHOT</version>
+        <version>6.2023.10-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
     <artifactId>microprofile-common</artifactId>
@@ -65,12 +65,10 @@
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>internal-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.payara-modules</groupId>
             <artifactId>payara-executor-service</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>jakarta.platform</groupId>

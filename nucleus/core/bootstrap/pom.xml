@@ -44,13 +44,14 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    
+
     <parent>
-        <groupId>fish.payara.server.internal.core</groupId>
-        <artifactId>nucleus-core</artifactId>
-        <version>6.2023.3-SNAPSHOT</version>
+        <groupId>fish.payara.server.core</groupId>
+        <artifactId>core-parent</artifactId>
+        <version>6.9.0-SNAPSHOT</version>
+        <relativePath>../../../core/core-parent</relativePath>
     </parent>
-    
+
     <groupId>fish.payara.server.core.nucleus</groupId>
     <artifactId>glassfish</artifactId>
     <packaging>glassfish-jar</packaging>
@@ -156,7 +157,6 @@
             -->
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>simple-glassfish-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
           <groupId>org.glassfish.annotations</groupId>
@@ -166,7 +166,6 @@
         <dependency>
             <groupId>fish.payara.server.core.admin</groupId>
             <artifactId>config-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>

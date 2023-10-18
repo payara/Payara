@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server.internal.web</groupId>
         <artifactId>web</artifactId>
-        <version>6.2023.3-SNAPSHOT</version>
+        <version>6.2023.10-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>web-ha</artifactId>
@@ -94,12 +94,10 @@
         <dependency>
             <groupId>fish.payara.server.core.web</groupId>
             <artifactId>web-glue</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>common-util</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.ha</groupId>

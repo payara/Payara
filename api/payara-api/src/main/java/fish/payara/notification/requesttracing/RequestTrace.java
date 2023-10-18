@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 
 import static fish.payara.notification.requesttracing.EventType.*;
 
@@ -57,6 +58,7 @@ import static fish.payara.notification.requesttracing.EventType.*;
  * @author steve
  */
 public class RequestTrace implements Serializable, Comparable<RequestTrace> {
+    private static final Logger LOGGER = Logger.getLogger(RequestTrace.class.getName());
 
     public RequestTrace() {
         trace = new LinkedList<>();
@@ -301,10 +303,22 @@ public class RequestTrace implements Serializable, Comparable<RequestTrace> {
     }
     
     private void assignReferences() {
+        boolean root = true;
         for (RequestTraceSpan span : trace) {
-            if (trace.indexOf(span) != 0) {
+            if (root) {
+                // skip the first trace
+                root = false;
+            } else {
                 RequestTraceSpan bestMatchingParent = null;
+                if (span.getTraceEndTime() == null) {
+                    LOGGER.info(() -> logUnfinishedSpan(span));
+                    span.setTraceEndTime(trace.getFirst().getTraceEndTime());
+                    continue;
+                }
                 for (RequestTraceSpan comparisonSpan : trace) {
+                    if (comparisonSpan.getTraceEndTime() == null || span == comparisonSpan) {
+                        continue;
+                    }
                     if (span.getTimeOccured() > comparisonSpan.getTimeOccured()
                             && span.getTraceEndTime().compareTo(comparisonSpan.getTraceEndTime()) < 0) {
                         if (bestMatchingParent == null) {
@@ -324,7 +338,21 @@ public class RequestTrace implements Serializable, Comparable<RequestTrace> {
             }
         }
     }
-    
+
+    private String logUnfinishedSpan(RequestTraceSpan span) {
+        var root = trace.getFirst();
+        var sb = new StringBuilder(300);
+        sb.append("Unfinished trace found during completion of trace ")
+                .append(root.getTraceId())
+                .append(" tagged ")
+                .append(root.getSpanTags())
+                .append("\nUnfinished span is ")
+                .append(span.getTraceId())
+                .append(" tagged ")
+                .append(span.getSpanTags());
+        return sb.toString();
+    }
+
     @Override
     public int compareTo(RequestTrace requestTrace) {
         int compareElapsedTime = Long.compare(requestTrace.elapsedTime, elapsedTime);

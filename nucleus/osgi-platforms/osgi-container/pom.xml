@@ -45,7 +45,7 @@
     <parent>
         <groupId>fish.payara.server.internal.osgi-platforms</groupId>
         <artifactId>osgi-platforms</artifactId>
-        <version>6.2023.3-SNAPSHOT</version>
+        <version>6.2023.10-SNAPSHOT</version>
     </parent>
 
     <artifactId>osgi-container</artifactId>
@@ -84,12 +84,10 @@
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>glassfish-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>internal-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
           <groupId>org.glassfish.annotations</groupId>

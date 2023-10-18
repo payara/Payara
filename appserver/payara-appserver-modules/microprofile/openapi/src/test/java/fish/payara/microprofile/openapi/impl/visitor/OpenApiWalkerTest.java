@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2019-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,6 +40,7 @@
 package fish.payara.microprofile.openapi.impl.visitor;
 
 
+import fish.payara.microprofile.openapi.impl.OpenAPISupplier;
 import fish.payara.microprofile.openapi.resource.classloader.ApplicationClassLoader;
 import fish.payara.microprofile.openapi.resource.rule.ApplicationProcessedDocument;
 import fish.payara.microprofile.openapi.test.app.OpenApiApplicationTest;
@@ -90,7 +91,7 @@ public class OpenApiWalkerTest extends OpenApiApplicationTest {
         ApplicationClassLoader appClassLoader = new ApplicationClassLoader(testedClasssses);
 
         final OpenApiWalker openApiWalker = new OpenApiWalker(getDocument(),
-                ApplicationProcessedDocument.getTypes(),
+                OpenAPISupplier.typesToMap(ApplicationProcessedDocument.getTypes()),
                 ApplicationProcessedDocument.getApplicationTypes(testedClasssses.toArray(new Class<?>[0])),
                 appClassLoader);
         final java.lang.reflect.Field sortedClassesField = OpenApiWalker.class.getDeclaredField("allowedTypes");

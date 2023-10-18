@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2018-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -43,8 +43,6 @@ package fish.payara.microprofile.metrics.rest;
 import fish.payara.microprofile.metrics.MetricsService;
 import fish.payara.microprofile.metrics.exception.NoSuchMetricException;
 import fish.payara.microprofile.metrics.exception.NoSuchRegistryException;
-import fish.payara.microprofile.metrics.writer.JsonExporter;
-import fish.payara.microprofile.metrics.writer.JsonExporter.Mode;
 import fish.payara.microprofile.metrics.writer.MetricsWriter;
 import fish.payara.microprofile.metrics.writer.MetricsWriterImpl;
 import fish.payara.microprofile.metrics.writer.OpenMetricsExporter;
@@ -73,7 +71,7 @@ import jakarta.ws.rs.core.MediaType;
 import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 import static jakarta.ws.rs.core.MediaType.TEXT_PLAIN;
 
-import org.eclipse.microprofile.metrics.MetricRegistry.Type;
+import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.metrics.Tag;
@@ -111,10 +109,16 @@ public class MetricsResource extends HttpServlet {
         }
         metricsService.refresh();
 
+        String scopeParameter = request.getParameter("scope") != null ? request.getParameter("scope"): null;
+        String metricName = request.getParameter("name") != null ? request.getParameter("name") : null;
         String pathInfo = request.getPathInfo() != null ? request.getPathInfo().substring(1) : EMPTY_STRING;
         String[] pathInfos = pathInfo.split("/");
-        String registryName = pathInfos.length > 0 ? pathInfos[0] : null;
-        String metricName = pathInfos.length > 1 ? pathInfos[1] : null;
+        boolean availableScope = true;
+
+        if(!pathInfo.isEmpty() && pathInfos.length > 0) {
+            response.sendError(SC_NOT_FOUND, "Not available paths to consume");
+            return;
+        }
 
         try {
             String contentType = getContentType(request, response);
@@ -123,14 +127,37 @@ public class MetricsResource extends HttpServlet {
                 response.setCharacterEncoding(UTF_8.name());
                 MetricsWriter outputWriter = getOutputWriter(request, response, metricsService, contentType);
                 if (outputWriter != null) {
-                    if (registryName != null && !registryName.isEmpty()) {
-                        Type scope;
+                    if (scopeParameter != null && !scopeParameter.isEmpty()) {
+                        String scope;
                         try {
-                            scope = Type.valueOf(registryName.toUpperCase());
+                            if(scopeParameter.equals(MetricRegistry.BASE_SCOPE)) {
+                                scope = MetricRegistry.BASE_SCOPE;
+                            } else if(scopeParameter.equals(MetricRegistry.VENDOR_SCOPE)) {
+                                scope = MetricRegistry.VENDOR_SCOPE;
+                            } else if(scopeParameter.equals(MetricRegistry.APPLICATION_SCOPE)) {
+                                scope = MetricRegistry.APPLICATION_SCOPE;
+                            } else {
+                                scope = scopeParameter;
+                            }
                         } catch (RuntimeException ex) {
-                            throw new NoSuchRegistryException(registryName);
+                            throw new NoSuchRegistryException(scopeParameter);
                         }
-                        if (metricName != null && !metricName.isEmpty()) {
+
+                        for(String name:metricsService.getContextNames()){
+                            Optional<String> availableScopeOptional = metricsService.getContext(name)
+                                    .getRegistries().keySet().stream().filter(k -> k.equals(scope)).findAny();
+                            if(!availableScopeOptional.isPresent()) {
+                                availableScope = false;
+                            } else {
+                                availableScope = true;
+                            }
+                        }
+
+                        if(!availableScope) {
+                            response.sendError(SC_NOT_FOUND, "Not available scope to consume");
+                        }
+
+                        if(scope != null && metricName != null) {
                             outputWriter.write(scope, metricName);
                         } else {
                             outputWriter.write(scope);
@@ -141,7 +168,7 @@ public class MetricsResource extends HttpServlet {
                 }
             }
         } catch (NoSuchRegistryException ex) {
-            response.sendError(SC_NOT_FOUND, String.format("[%s] registry not found", registryName));
+            response.sendError(SC_NOT_FOUND, String.format("[%s] registry not found", scopeParameter));
         } catch (NoSuchMetricException ex) {
             response.sendError(SC_NOT_FOUND, String.format("[%s] metric not found", metricName));
         }
@@ -153,19 +180,9 @@ public class MetricsResource extends HttpServlet {
         Writer writer = response.getWriter();
         String method = request.getMethod();
         if (GET.equalsIgnoreCase(method)) {
-            if (APPLICATION_JSON.equals(contentType)) {
-                return new MetricsWriterImpl(new JsonExporter(writer, Mode.GET, true),
-                    service.getContextNames(), service::getContext, getGlobalTags());
-            }
             if (TEXT_PLAIN.equals(contentType)) {
                 return new MetricsWriterImpl(new OpenMetricsExporter(writer),
                     service.getContextNames(), service::getContext, getGlobalTags());
-            }
-        }
-        if (OPTIONS.equalsIgnoreCase(method)) {
-            if (APPLICATION_JSON.equals(contentType)) {
-                return new MetricsWriterImpl(new JsonExporter(writer, Mode.OPTIONS, true),
-                        service.getContextNames(), service::getContext, getGlobalTags());
             }
         }
         return null;
@@ -219,11 +236,6 @@ public class MetricsResource extends HttpServlet {
             return null;
 
         case OPTIONS:
-            if (accept.contains(APPLICATION_JSON) || accept.contains(APPLICATION_WILDCARD)) {
-                return APPLICATION_JSON;
-            }
-            response.sendError(SC_NOT_ACCEPTABLE, String.format("[%s] not acceptable", accept));
-            return null;
         default:
             response.sendError(SC_METHOD_NOT_ALLOWED, String.format("HTTP method [%s] not allowed", method));
         }
@@ -233,23 +245,17 @@ public class MetricsResource extends HttpServlet {
 
     static Optional<String> parseMetricsAcceptHeader(String accept) {
         String[] acceptFormats = accept.split(",");
-        double qJsonValue = 0;
         double qTextFormat = 0;
         for (String format : acceptFormats) {
             if (format.contains(TEXT_PLAIN) || format.contains(MediaType.WILDCARD) || format.contains("text/*")) {
                 qTextFormat = parseQValue(format);
-            } else if (format.contains(APPLICATION_JSON) || format.contains(APPLICATION_WILDCARD)) {
-                qJsonValue = parseQValue(format);
-            } // else { no other formats supported by Payara, ignored }
+            }
         }
 
-        // if neither JSON or plain text are supported
-        if (qJsonValue == 0 && qTextFormat == 0) {
+        if (qTextFormat == 0) {
             return Optional.empty();
         }
-        if (qJsonValue > qTextFormat) {
-            return Optional.of(MediaType.APPLICATION_JSON);
-        }
+
         return Optional.of(MediaType.TEXT_PLAIN);
     }
 
@@ -299,7 +305,7 @@ public class MetricsResource extends HttpServlet {
     @Override
     protected void doOptions(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        String method = request.getMethod();
+        response.sendError(SC_METHOD_NOT_ALLOWED, String.format("HTTP method [%s] not allowed", method));
     }
-
 }

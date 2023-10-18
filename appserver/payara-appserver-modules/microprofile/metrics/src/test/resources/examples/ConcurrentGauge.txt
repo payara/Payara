@@ -1,7 +1,0 @@
-# TYPE application_method_a_invocations_current gauge
-# HELP application_method_a_invocations_current The number of parallel invocations of methodA()
-application_method_a_invocations_current 80
-# TYPE application_method_a_invocations_min gauge
-application_method_a_invocations_min 20
-# TYPE application_method_a_invocations_max gauge
-application_method_a_invocations_max 100

@@ -1,0 +1,58 @@
+name: Monitor issues on voting status
+#Runs the first day of each month at 10 A.M
+on:
+  schedule:
+    - cron: "0 10 1 * *"
+
+jobs:
+  select-top-voted-issue:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - uses: actions/checkout@v3
+      - name: Select the most voted enhancement
+        id: select-top-voted-issue
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const script = require('./.github/workflows/scripts/selectMostVotedIssue.js')
+            return await script({github, context, core})
+      - name: Notify MS Teams channel
+        id: notify-ms-teams
+        if: ${{ success() && steps.select-top-voted-issue.outputs.result }}
+        uses: simbo/msteams-message-card-action@latest
+        env:
+          issueTitle: ${{ fromJSON(steps.select-top-voted-issue.outputs.result).title }}
+          issueURL: ${{ fromJSON(steps.select-top-voted-issue.outputs.result).url }}
+          assignee: ${{ fromJSON(steps.select-top-voted-issue.outputs.result).assignee }}
+        with:
+          webhook: ${{ secrets.COMMUNITY_EVENTS_WEBHOOK_URL }}
+          title: An Enhancement Proposal Issue has been selected the top-voted issue!
+          message: <code>${{ env.issueTitle }}</code> assigned to <strong>${{ env.assignee }}</strong>
+          buttons: |
+            View Issue on GitHub ${{ env.issueURL }}
+  close-forgotten-voting-issues:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    needs: select-top-voted-issue
+    env:
+      maximumVotingThreshold: ${{ vars.MAX_VOTING_THRESHOLD_DAYS }}
+    steps:
+      - name: Check environment
+        run: |
+          if [ -z $maximumVotingThreshold ]; then
+            echo "::error::'MAX_VOTING_THRESHOLD_DAYS' environment variable is not set"
+            exit 1
+          fi
+      - uses: actions/checkout@v3
+        if: success()
+      - name: Close "forgotten" enhancement requests
+        id: close-forgotten-enhancements
+        if: success()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const script = require('./.github/workflows/scripts/closeForgottenEnhancements.js')
+            script({github, context, core})

@@ -410,7 +410,12 @@ public final class JDBCRealm extends DigestRealmBase {
                     } else {
                         valid = Arrays.equals(dbPassword, hashedUserPassword);
                     }
+                    if (!valid) {
+                        _logger.finest(() -> "User '" + user + "' password mismatch!");
+                    }
                 }
+            } else {
+                _logger.finest(() -> "User '" + user + "' not found in the database!");
             }
         } catch (SQLException ex) {
             _logger.log(Level.SEVERE, "jdbcrealm.invaliduserreason", new String[] { user, ex.toString() });

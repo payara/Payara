@@ -45,11 +45,21 @@
     <parent>
         <groupId>fish.payara.server.internal.extras</groupId>
         <artifactId>payara-micro-parent</artifactId>
-        <version>6.2023.3-SNAPSHOT</version>
+        <version>6.2023.10-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.extras</groupId>
     <artifactId>payara-micro</artifactId>
     <name>Payara Micro Distribution</name>
+
+    <!-- Override to stop flatten plugin resolving it to an incorrect URL using parent artifact IDs -->
+    <url>https://github.com/payara/Payara/</url>
+
+    <!-- Don't inherit SCM from parent since flatten resolves it incorrectly in a similar manner to the URL -->
+    <scm>
+        <url>https://github.com/payara/Payara/tree/master</url>
+        <connection>scm:git:git://github.com/payara/payara.git</connection>
+        <developerConnection>scm:git:ssh://github.com:payara/payara.git</developerConnection>
+    </scm>
 
     <properties>
         <product.name>Payara Micro</product.name>
@@ -516,12 +526,6 @@
             <id>enterprise</id>
             <properties>
                 <product.name>Payara Micro Enterprise</product.name>
-            </properties>
-        </profile>
-        <profile>
-            <id>deploy-internals</id>
-            <properties>
-                <deploy.skip>true</deploy.skip>
             </properties>
         </profile>
     </profiles>

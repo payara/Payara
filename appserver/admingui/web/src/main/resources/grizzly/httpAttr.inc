@@ -40,7 +40,7 @@
 
 -->
 
-<!-- Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates.] -->
+<!-- Portions Copyright [2017-2023] [Payara Foundation and/or its affiliates.] -->
 
 <!-- grizzly/httpAttr.inc -->
 
@@ -247,8 +247,8 @@
             <sun:checkbox id="encodedSlashEnabled" label="$resource{i18n_web.common.enabled}" selected="#{pageSession.httpMap['encodedSlashEnabled']}" selectedValue="true" />
         </sun:property>
 
-        <sun:property id="websockets"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.WebsocketsSupport}" helpText="$resource{i18n_web.http.WebsocketsSupportHelp}" >
-            <sun:checkbox id="websocketsEnabled" label="$resource{i18n_web.common.enabled}" selected="#{pageSession.httpMap['websocketsSupportEnabled']}" selectedValue="true" />
+        <sun:property id="websocketsSupportEnabled"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.WebsocketsSupport}" helpText="$resource{i18n_web.http.WebsocketsSupportHelp}" >
+            <sun:checkbox id="websocketsSupportEnabled" label="$resource{i18n_web.common.enabled}" selected="#{pageSession.httpMap['websocketsSupportEnabled']}" selectedValue="true" />
         </sun:property>
     
         <sun:property id="SchemeMapping"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.SchemeMapping}" helpText="$resource{i18n_web.http.SchemeMappingHelp}" >
@@ -259,5 +259,12 @@
             <sun:textField id="RemoteUserMapping"  columns="$int{50}" maxLength="#{sessionScope.fieldLengths['maxLength.http.ForcedResponseType']}" text="#{pageSession.httpMap['remoteUserMapping']}" />
         </sun:property>
 
+        <sun:property id="cookieSameSiteEnabled"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.EnableCookieSameSite}" helpText="$resource{i18n_web.http.EnableCookieSameSiteHelp}">
+            <sun:checkbox id="cookieSameSiteEnabled" label="$resource{i18n_web.common.enabled}" selected="#{pageSession.httpMap['cookieSameSiteEnabled']}" selectedValue="true" />
+        </sun:property>
+
+        <sun:property id="CookieSameSiteValue"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.CookieSameSiteValue}" helpText="$resource{i18n_web.http.CookieSameSiteValueHelp}">
+            <sun:dropDown id="cookieSameSiteValue" selected="#{pageSession.httpMap['cookieSameSiteValue']}" labels={"Strict","Lax","None"} />
+        </sun:property>
 "<br /><br />
 </sun:propertySheetSection>

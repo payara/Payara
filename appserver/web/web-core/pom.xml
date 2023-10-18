@@ -46,9 +46,10 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>fish.payara.server.internal.web</groupId>
-        <artifactId>web</artifactId>
-        <version>6.2023.3-SNAPSHOT</version>
+        <groupId>fish.payara.server.core</groupId>
+        <artifactId>core-parent</artifactId>
+        <version>6.9.0-SNAPSHOT</version>
+        <relativePath>../../../core/core-parent</relativePath>
     </parent>
 
     <groupId>fish.payara.server.core.web</groupId>
@@ -112,32 +113,26 @@
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>glassfish-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>internal-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>common-util</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.web</groupId>
             <artifactId>war-util</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>container-common</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.payara-modules</groupId>
             <artifactId>requesttracing-core</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.annotations</groupId>
@@ -161,19 +156,16 @@
         <dependency>
             <groupId>fish.payara.server.core.payara-modules</groupId>
             <artifactId>healthcheck-core</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.payara-modules</groupId>
             <artifactId>healthcheck-stuck</artifactId>
-            <version>${project.version}</version>
             <optional>true</optional>
         </dependency>
 
         <dependency>
             <groupId>fish.payara.server.core.payara-modules</groupId>
             <artifactId>opentracing-adapter</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>io.opentracing</groupId>

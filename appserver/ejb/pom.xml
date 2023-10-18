@@ -45,7 +45,7 @@
     <parent>
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-parent</artifactId>
-        <version>6.2023.3-SNAPSHOT</version>
+        <version>6.2023.10-SNAPSHOT</version>
     </parent>
 
     <groupId>fish.payara.server.internal.ejb</groupId>
@@ -57,7 +57,6 @@
     <modules>
         <module>ejb-all</module>
         <module>ejb-connector</module>
-        <module>ejb-internal-api</module>
         <module>ejb-container</module>
         <module>ejb-client</module>
         <module>ejb-full-container</module>

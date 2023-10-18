@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server.internal.admingui</groupId>
         <artifactId>admingui</artifactId>
-        <version>6.2023.3-SNAPSHOT</version>
+        <version>6.2023.10-SNAPSHOT</version>
     </parent>
     <artifactId>war</artifactId>
     <packaging>war</packaging>
@@ -102,8 +102,8 @@
                     <archive>
                         <manifestEntries>
                             <Glassfish-require-services>org.glassfish.api.admingui.ConsoleProvider</Glassfish-require-services>
-                            <HK2-Import-Bundles>fish.payara.server.internal.admingui.console-common,org.glassfish.hk2.hk2,fish.payara.server.internal.admingui.console-plugin-service, fish.payara.server.internal.deployment.deployment-client,
-                                jakarta.servlet-api,jakarta.servlet.jsp-api,org.glassfish.expressly,fish.payara.server.internal.admingui.faces-compat,fish.payara.server.internal.admingui.dataprovider,com.sun.pkg.client</HK2-Import-Bundles>
+                            <HK2-Import-Bundles>fish.payara.server.core.admingui.console-common,org.glassfish.hk2.hk2,fish.payara.server.core.admingui.console-plugin-service, fish.payara.server.core.deployment.deployment-client,
+                                jakarta.servlet-api,jakarta.servlet.jsp-api,org.glassfish.expressly,fish.payara.server.core.admingui.faces-compat,fish.payara.server.core.admingui.dataprovider,com.sun.pkg.client</HK2-Import-Bundles>
                         </manifestEntries>
                     </archive>
                 </configuration>
@@ -149,9 +149,8 @@
             <artifactId>woodstock-webui-jsf</artifactId>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.admingui</groupId>
+            <groupId>fish.payara.server.core.admingui</groupId>
             <artifactId>faces-compat</artifactId>
-            <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>

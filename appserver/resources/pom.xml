@@ -45,14 +45,13 @@
     <parent>
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-parent</artifactId>
-        <version>6.2023.3-SNAPSHOT</version>
+        <version>6.2023.10-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.server.internal.resources</groupId>
     <artifactId>resources</artifactId>
     <packaging>pom</packaging>
     <name>GlassFish Resources infrastructure related modules</name>
     <modules>
-        <module>resources-connector</module>
         <module>resources-runtime</module>
         <module>javamail</module>
         <module>resources-connector-l10n</module>

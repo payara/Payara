@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>6.2023.3-SNAPSHOT</version>
+        <version>6.2023.10-SNAPSHOT</version>
     </parent>
     <artifactId>glassfish-common</artifactId>
     <name>Glassfish Commons Package</name>
@@ -136,7 +136,6 @@
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>glassfish-naming</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.deployment</groupId>
@@ -153,7 +152,6 @@
         <dependency>
             <groupId>fish.payara.server.core.admin</groupId>
             <artifactId>monitoring-core</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>jakarta.enterprise.deploy</groupId>

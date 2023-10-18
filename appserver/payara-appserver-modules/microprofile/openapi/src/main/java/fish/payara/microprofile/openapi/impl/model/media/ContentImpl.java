@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,6 +40,7 @@
 package fish.payara.microprofile.openapi.impl.model.media;
 
 import fish.payara.microprofile.openapi.api.visitor.ApiContext;
+import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import fish.payara.microprofile.openapi.impl.model.examples.ExampleImpl;
 
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
@@ -60,6 +61,8 @@ public class ContentImpl extends LinkedHashMap<String, MediaType> implements Con
 
     private static final long serialVersionUID = 1575356277308242221L;
 
+    private Map<String, Object> extensions = null; // workaround as Content doesn't extend Extendable!
+
     public ContentImpl() {
         super();
     }
@@ -74,6 +77,7 @@ public class ContentImpl extends LinkedHashMap<String, MediaType> implements Con
         if (typeName == null || typeName.isEmpty()) {
             typeName = jakarta.ws.rs.core.MediaType.WILDCARD;
         }
+        from.setExtensions(ExtensibleImpl.parseExtensions(annotation));
         MediaType mediaType = new MediaTypeImpl();
         from.addMediaType(typeName, mediaType);
         extractAnnotations(annotation, context, "examples", "name", ExampleImpl::createInstance, mediaType::addExample);
@@ -118,7 +122,6 @@ public class ContentImpl extends LinkedHashMap<String, MediaType> implements Con
         if (from == null) {
             return;
         }
-
         for (Map.Entry<String, MediaType> fromEntry : from.getMediaTypes().entrySet()) {
 
             final String typeName = fromEntry.getKey();
@@ -159,7 +162,18 @@ public class ContentImpl extends LinkedHashMap<String, MediaType> implements Con
                 Schema schema = toMediaType.getSchema();
                 SchemaImpl.merge(fromMediaType.getSchema(), schema, true, context);
             }
+
+            // extensions
+            ExtensibleImpl.merge(fromMediaType, toMediaType, override);
         }
+    }
+
+    public Map<String, Object> getExtensions() {
+        return extensions;
+    }
+
+    public void setExtensions(Map<String, Object> extensions) {
+        this.extensions = extensions;
     }
 
 }

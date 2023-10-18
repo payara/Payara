@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server.internal.orb</groupId>
         <artifactId>orb</artifactId>
-        <version>6.2023.3-SNAPSHOT</version>
+        <version>6.2023.10-SNAPSHOT</version>
     </parent>
     <artifactId>orb-iiop</artifactId>
     <packaging>glassfish-jar</packaging>
@@ -77,7 +77,6 @@
         <dependency>
             <groupId>fish.payara.server.core.deployment</groupId>
             <artifactId>dol</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.corba</groupId>
@@ -102,32 +101,26 @@
         <dependency>
             <groupId>fish.payara.server.core.orb</groupId>
             <artifactId>orb-connector</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.orb</groupId>
             <artifactId>orb-enabler</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>common-util</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.admin</groupId>
             <artifactId>config-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>internal-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>glassfish-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>jakarta.ejb</groupId>

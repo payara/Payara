@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2023] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.glassfish.web;
 
@@ -170,7 +170,12 @@ public class WarHandler extends AbstractArchiveHandler {
             r.setDocBase(base.getAbsolutePath());
 
             cloader.setResources(r);
-            cloader.addRepository("WEB-INF/classes/", new File(base, "WEB-INF/classes/"));
+            File classesPath = new File(base, "WEB-INF/classes/");
+            if (!classesPath.exists()) {
+                // make sure the WEB-INF/classes exists, it is searched by class loader
+                classesPath.mkdirs();
+            }
+            cloader.addRepository("WEB-INF/classes/", classesPath);
             if (context.getScratchDir("ejb") != null) {
                 cloader.addRepository(context.getScratchDir("ejb").toURI().toURL().toString().concat("/"));
             }
@@ -300,6 +305,7 @@ public class WarHandler extends AbstractArchiveHandler {
     protected void configureLoaderProperties(WebappClassLoader cloader,
             WebXmlParser webXmlParser, File base) {
 
+        cloader.setCookieSameSiteValue(webXmlParser.getCookieSameSiteValue());
         cloader.setUseMyFaces(webXmlParser.isUseBundledJSF());
 
         File libDir = new File(base, "WEB-INF/lib");
@@ -342,6 +348,12 @@ public class WarHandler extends AbstractArchiveHandler {
         boolean consistent = true;
         Boolean value = null;
 
+        String app = dc.getAppProps().getProperty("context-root");
+        if (cloader.getCookieSameSiteValue() != null && app != null && !"".equals(cloader.getCookieSameSiteValue())) {
+            app = app.substring(1).toLowerCase();
+            System.setProperty(app + ".sameSite", cloader.getCookieSameSiteValue());
+        }
+
         File warContextXml = new File(base.getAbsolutePath(), WAR_CONTEXT_XML);
         if (warContextXml.exists()) {
             ContextXmlParser parser = new ContextXmlParser(warContextXml);
@@ -356,7 +368,7 @@ public class WarHandler extends AbstractArchiveHandler {
                 domainCRS = parser.getClearReferencesStatic();
             }
 
-            List<Boolean> csrs = new ArrayList<Boolean>();
+            List<Boolean> csrs = new ArrayList<>();
             HttpService httpService = serverConfig.getHttpService();
             DeployCommandParameters params = dc.getCommandParameters(DeployCommandParameters.class);
             String vsIDs = params.virtualservers;
@@ -404,7 +416,7 @@ public class WarHandler extends AbstractArchiveHandler {
             logger.log(Level.WARNING, LogFacade.INCONSISTENT_CLEAR_REFERENCE_STATIC);
         }
     }
-    
+
     // ---- inner class ----
     protected abstract class BaseXmlParser {
         protected XMLStreamReader parser = null;
@@ -507,6 +519,8 @@ public class WarHandler extends AbstractArchiveHandler {
         String getVersionIdentifier() {
             return versionIdentifier;
         }
+
+        public abstract String getCookieSameSiteValue();
     }
 
     protected class SunWebXmlParser extends WebXmlParser {
@@ -527,6 +541,11 @@ public class WarHandler extends AbstractArchiveHandler {
         @Override
         protected String getXmlFileName() {
             return SUN_WEB_XML;
+        }
+
+        @Override
+        public String getCookieSameSiteValue() {
+            return "";
         }
 
         protected String getRootElementName() {
@@ -617,6 +636,8 @@ public class WarHandler extends AbstractArchiveHandler {
                         versionIdentifier = parser.getElementText();
                     } else if (RuntimeTagNames.PAYARA_WHITELIST_PACKAGE.equals(name)) {
                         application.addWhitelistPackage(parser.getElementText());
+                    } else if ("cookie-properties".equals(name)) {
+                        readCookieConfig();
                     } else {
                         skipSubTree(name);
                     }
@@ -627,6 +648,8 @@ public class WarHandler extends AbstractArchiveHandler {
                 }
             }
         }
+
+        protected void readCookieConfig() throws XMLStreamException {}
     }
 
     protected class GlassFishWebXmlParser extends SunWebXmlParser {
@@ -648,6 +671,8 @@ public class WarHandler extends AbstractArchiveHandler {
     }
     
     protected class PayaraWebXmlParser extends GlassFishWebXmlParser {
+        private String cookieSameSiteValue;
+
         PayaraWebXmlParser(ReadableArchive archive, Application application)
                 throws XMLStreamException, IOException {
 
@@ -662,6 +687,28 @@ public class WarHandler extends AbstractArchiveHandler {
         @Override
         protected String getRootElementName() {
             return "payara-web-app";
+        }
+
+        @Override
+        protected void readCookieConfig() throws XMLStreamException {
+            while (parser.hasNext()) {
+                int eventType = parser.next();
+                if (eventType == XMLStreamReader.END_ELEMENT && parser.getLocalName().equals("cookie-properties")) {
+                    break;
+                }
+                if (eventType == XMLStreamReader.START_ELEMENT && parser.getLocalName().equals("property")) {
+                    String name = parser.getAttributeValue(null, "name");
+                    String value = parser.getAttributeValue(null, "value");
+                    if (name != null && name.equals("cookieSameSite")) {
+                        this.cookieSameSiteValue = value;
+                    }
+                }
+            }
+        }
+
+        @Override
+        public String getCookieSameSiteValue() {
+            return cookieSameSiteValue;
         }
     }
 
@@ -696,6 +743,11 @@ public class WarHandler extends AbstractArchiveHandler {
                     }
                 }
             }
+        }
+
+        @Override
+        public String getCookieSameSiteValue() {
+            return "";
         }
     }
 

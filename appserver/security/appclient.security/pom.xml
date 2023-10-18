@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server.internal.security</groupId>
         <artifactId>securitymodule</artifactId>
-        <version>6.2023.3-SNAPSHOT</version>
+        <version>6.2023.10-SNAPSHOT</version>
     </parent>
     <artifactId>appclient.security</artifactId>
     <packaging>glassfish-jar</packaging>
@@ -98,12 +98,10 @@
         <dependency>
             <groupId>fish.payara.server.core.security</groupId>
             <artifactId>security</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.security</groupId>
             <artifactId>security-ee</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.security</groupId>
@@ -118,7 +116,6 @@
         <dependency>
             <groupId>fish.payara.server.core.orb</groupId>
             <artifactId>orb-connector</artifactId>
-            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>

@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server.internal.admin</groupId>
         <artifactId>rest-service-parent</artifactId>
-        <version>6.2023.3-SNAPSHOT</version>
+        <version>6.2023.10-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>gf-restadmin-connector</artifactId>
@@ -58,17 +58,14 @@
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>glassfish-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.admin</groupId>
             <artifactId>config-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.nucleus</groupId>
             <artifactId>kernel</artifactId>
-            <version>${project.version}</version>
         </dependency>
     </dependencies>
     <build>

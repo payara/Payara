@@ -1,0 +1,49 @@
+name: Agent Assignment to Community Contributions
+on:
+  pull_request_target:
+    types:
+      - opened
+      - reopened
+jobs:
+  assign-front-line-engineer:
+    runs-on: ubuntu-latest
+    #Conditionally runs the job if the author of the PR is not an owner or member of the organisation
+    #See https://docs.github.com/en/graphql/reference/enums#commentauthorassociation
+    if: ${{ github.event.pull_request.author_association != 'OWNER' && github.event.pull_request.author_association != 'MEMBER' }}
+    permissions:
+      pull-requests: write
+    env:
+      PR_URL: ${{ github.event.pull_request.html_url }}
+      PR_TITLE: ${{ github.event.pull_request.title }}
+    steps:
+      - name: Get Next Assignee
+        id: get-next-assignee
+        env:
+          FRONT_LINE: ${{ vars.FRONT_LINE_USERS_LIST }}
+        run: |
+          if [ -z $FRONT_LINE ]; then
+            echo "::error::'FRONT_LINE_USERS_LIST' environment variable is not set"
+            exit 1
+          fi
+          members=($(echo $FRONT_LINE | tr ',' '\n'))
+          index=$(( (${GITHUB_RUN_NUMBER}-1) % ${#members[@]} ))
+          next_member=${members[$index]}
+          echo "SELECTED_ASSIGNEE=$next_member" >> "$GITHUB_ENV"
+      - name: Assign selected member
+        id: assign-selected-member
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: success()
+        run: |
+          echo "::debug::Selected assignee: $SELECTED_ASSIGNEE"
+          gh pr edit $PR_URL --add-assignee $SELECTED_ASSIGNEE
+      - name: Notify MS Teams channel
+        id: notify-ms-teams
+        if: success()
+        uses: simbo/msteams-message-card-action@latest
+        with:
+          webhook: ${{ secrets.COMMUNITY_EVENTS_WEBHOOK_URL }}
+          title: A new Community Contribution has been raised (or re-opened)!
+          message: <code>${{ env.PR_TITLE }}</code> assigned to <strong>${{ env.SELECTED_ASSIGNEE }}</strong>
+          buttons: |
+            View PR on GitHub ${{ env.PR_URL }}

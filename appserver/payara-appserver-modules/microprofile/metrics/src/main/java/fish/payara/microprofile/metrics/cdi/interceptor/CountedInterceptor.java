@@ -69,7 +69,7 @@ public class CountedInterceptor extends AbstractInterceptor {
      * Make the actual logic unit testable...
      */
     static <E extends Member & AnnotatedElement> Object proceedCounted(InvocationContext context, E element,
-            Class<?> bean, BiFunction<MetricID, Class<Counter>, Counter> loader) throws Exception {
+            Class<?> bean, ThreeFunctionResolver<MetricID, Class<Counter>, String, Counter> loader) throws Exception {
         Counter counter = apply(element, bean, AnnotationReader.COUNTED, Counter.class, loader);
         counter.inc();
         return context.proceed();

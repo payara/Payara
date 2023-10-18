@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates.]
+// Portions Copyright [2016-2023] [Payara Foundation and/or its affiliates.]
 
 package com.sun.ejb.containers;
 
@@ -50,7 +50,11 @@ import org.glassfish.api.invocation.ComponentInvocation;
 
 import com.sun.enterprise.container.common.spi.JCDIService;
 
-import jakarta.ejb.*;
+import jakarta.ejb.EJBContext;
+import jakarta.ejb.EJBHome;
+import jakarta.ejb.EJBLocalHome;
+import jakarta.ejb.EJBLocalObject;
+import jakarta.ejb.EJBObject;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import jakarta.transaction.Status;
@@ -58,9 +62,11 @@ import jakarta.transaction.Transaction;
 import jakarta.transaction.TransactionManager;
 import jakarta.transaction.UserTransaction;
 import java.lang.reflect.Method;
-import java.security.Identity;
 import java.security.Principal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -70,8 +76,8 @@ import java.util.logging.Logger;
  */
 
 public abstract class EJBContextImpl
-    implements EJBContext, ComponentContext, java.io.Serializable
-{
+        implements EJBContext, ComponentContext, java.io.Serializable {
+
     static final Logger _logger = EjbContainerUtilImpl.getLogger();
 
     public enum BeanState {CREATED, POOLED, READY, INVOKING, INCOMPLETE_TX,
@@ -133,7 +139,8 @@ public abstract class EJBContextImpl
         isRemoteInterfaceSupported = container.isRemoteInterfaceSupported();
         isLocalInterfaceSupported  = container.isLocalInterfaceSupported();
     }
-    
+
+    @Override
     public Transaction getTransaction() {
         return transaction;
     }
@@ -237,11 +244,12 @@ public abstract class EJBContextImpl
     /**
      *
      */
+    @Override
     public Object getEJB() {
         return ejb;
     }
-    
-    
+
+    @Override
     public Container getContainer() {
         return container;
     }
@@ -251,8 +259,9 @@ public abstract class EJBContextImpl
      * associated with this Context.
      */
     public void registerResource(ResourceHandle h) {
-        if ( resources == null )
+        if (resources == null) {
             resources = new ArrayList();
+        }
         resources.add(h);
     }
     
@@ -260,17 +269,20 @@ public abstract class EJBContextImpl
      * Unregister a resource from this Context.
      */
     public void unregisterResource(ResourceHandle h) {
-        if ( resources == null )
+        if (resources == null) {
             resources = new ArrayList();
+        }
         resources.remove(h);
     }
 
     /**
      * Get all the resources associated with the context
      */
+    @Override
     public List getResourceList() {
-        if (resources == null)
+        if (resources == null) {
             resources = new ArrayList(0);
+        }
         return resources;
     }
 
@@ -316,9 +328,7 @@ public abstract class EJBContextImpl
     /**
      * This is a SessionContext/EntityContext method.
      */
-    public EJBObject getEJBObject()
-        throws IllegalStateException
-    {
+    public EJBObject getEJBObject() throws IllegalStateException {
         if (ejbStub == null) {
             throw new IllegalStateException("EJBObject not available");
         }
@@ -329,9 +339,7 @@ public abstract class EJBContextImpl
     /**
      * This is a SessionContext/EntityContext method.
      */
-    public EJBLocalObject getEJBLocalObject()
-        throws IllegalStateException
-    {
+    public EJBLocalObject getEJBLocalObject() throws IllegalStateException {
         if ( ejbLocalObjectImpl == null ) {
             throw new IllegalStateException("EJBLocalObject not available");
         }
@@ -344,6 +352,7 @@ public abstract class EJBContextImpl
     /**
      *
      */
+    @Override
     public EJBHome getEJBHome() {
         if (! isRemoteInterfaceSupported) {
             throw new IllegalStateException("EJBHome not available");
@@ -356,6 +365,7 @@ public abstract class EJBContextImpl
     /**
      *
      */
+    @Override
     public EJBLocalHome getEJBLocalHome() {
         if (! isLocalInterfaceSupported) {
             throw new IllegalStateException("EJBLocalHome not available");
@@ -363,27 +373,8 @@ public abstract class EJBContextImpl
 
         return container.getEJBLocalHome();
     }
-    
-    
-    /**
-     *
-     */
-    public Properties getEnvironment() {
-        // This is deprecated, see EJB2.0 section 20.6.
-        return container.getEnvironmentProperties();
-    }
-    
-    /**
-     * @deprecated
-     */
-    public Identity getCallerIdentity() {
-        // This method is deprecated.
-        // see EJB2.0 section 21.2.5
-        throw new RuntimeException(
-        "getCallerIdentity() is deprecated, please use getCallerPrincipal().");
-    }
 
-
+    @Override
     public Object lookup(String name) {
         Object o = null;
 
@@ -409,6 +400,7 @@ public abstract class EJBContextImpl
     /**
      *
      */
+    @Override
     public Principal getCallerPrincipal() {
 
         checkAccessToCallerSecurity();
@@ -421,8 +413,9 @@ public abstract class EJBContextImpl
      /**
      * @return Returns the contextMetaData.
      */
+    @Override
     public Map<String, Object> getContextData() {
-        Map<String, Object> contextData = (Map<String, Object>) Collections.EMPTY_MAP;
+        Map<String, Object> contextData = Collections.emptyMap();
         ComponentInvocation inv = EjbContainerUtilImpl.getInstance().getCurrentInvocation();
         if ( inv instanceof EjbInvocation ) {
             EjbInvocation ejbInv = (EjbInvocation) inv;
@@ -431,55 +424,42 @@ public abstract class EJBContextImpl
         return contextData;
     }
     
-    
-    /**
-     * @deprecated
-     */
-    public boolean isCallerInRole(Identity identity) {
-        // THis method is deprecated.
-        // This implementation is as in EJB2.0 section 21.2.5
-        return isCallerInRole(identity.getName());
-    }
-    
-    
     /**
      *
      */
+    @Override
     public boolean isCallerInRole(String roleRef) {
-        if ( roleRef == null )
+        if (roleRef == null) {
             throw new IllegalStateException("Argument is null");
+        }
 
         checkAccessToCallerSecurity();
         
         com.sun.enterprise.security.SecurityManager sm = container.getSecurityManager();
-	    return sm.isCallerInRole(roleRef);
+        return sm.isCallerInRole(roleRef);
     }
     
     /**
      * Overridden in containers that allow access to isCallerInRole() and
      * getCallerPrincipal()
      */
-    protected void checkAccessToCallerSecurity()
-        throws IllegalStateException
-    {
+    protected void checkAccessToCallerSecurity() throws IllegalStateException {
         throw new IllegalStateException("Operation not allowed");
     }
     
     /**
      *
      */
-    public UserTransaction getUserTransaction()
-        throws IllegalStateException
-    {
+    @Override
+    public UserTransaction getUserTransaction() throws IllegalStateException {
         throw new IllegalStateException("Operation not allowed");
     }
     
     /**
      *
      */
-    public void setRollbackOnly()
-        throws IllegalStateException
-    {
+    @Override
+    public void setRollbackOnly() throws IllegalStateException {
         if (state == BeanState.CREATED)
             throw new IllegalStateException("EJB not in READY state");
         
@@ -509,18 +489,15 @@ public abstract class EJBContextImpl
             tm.setRollbackOnly();
             
         } catch (Exception ex) {
-            IllegalStateException illEx = new IllegalStateException(ex.toString());
-            illEx.initCause(ex);
-            throw illEx;
+            throw new IllegalStateException(ex);
         }
     }
     
     /**
      *
      */
-    public boolean getRollbackOnly()
-        throws IllegalStateException
-    {
+    @Override
+    public boolean getRollbackOnly() throws IllegalStateException {
         if (state == BeanState.CREATED)
             throw new IllegalStateException("EJB not in READY state");
         
@@ -595,21 +572,17 @@ public abstract class EJBContextImpl
      * is covered by this check.  It is overridden in the applicable concrete
      * context impl subclasses.
      */
-    public void checkTimerServiceMethodAccess()
-        throws IllegalStateException
-    {
+    @Override
+    public void checkTimerServiceMethodAccess() throws IllegalStateException {
         throw new IllegalStateException("EJB Timer Service method calls " +
         "cannot be called in this context");
     }
     
     // Throw exception if EJB is in ejbActivate/Passivate
-    protected void checkActivatePassivate()
-        throws IllegalStateException
-    {
+    protected void checkActivatePassivate() throws IllegalStateException {
         if( inActivatePassivate() ) {
             throw new IllegalStateException("Operation not allowed.");
         }
-        
     }
     
     protected boolean inActivatePassivate() {
@@ -657,5 +630,4 @@ public abstract class EJBContextImpl
         ejbLocalObjectImpl = null;
         ejbLocalBusinessObjectImpl = null;
     }
-	
 }

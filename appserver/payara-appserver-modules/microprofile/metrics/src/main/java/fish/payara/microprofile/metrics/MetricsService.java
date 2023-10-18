@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2023 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,8 +41,8 @@ package fish.payara.microprofile.metrics;
 
 import java.util.Set;
 
+import java.util.concurrent.ConcurrentMap;
 import org.eclipse.microprofile.metrics.MetricRegistry;
-import org.eclipse.microprofile.metrics.MetricRegistry.Type;
 import org.jvnet.hk2.annotations.Contract;
 
 import fish.payara.microprofile.metrics.exception.NoSuchRegistryException;
@@ -127,28 +127,22 @@ public interface MetricsService {
             return SERVER_CONTEXT_NAME.equals(getName());
         }
 
-        /**
-         * Access a {@link MetricRegistry} of this context. Each context has one instance of each type except the server
-         * context does not have an application type registry.
-         *
-         * @param type the type of {@link MetricRegistry} to access
-         * @return the {@link MetricRegistry} instance for the type in this context
-         * @throws NoSuchRegistryException In case asking for a {@link MetricRegistry.Type#APPLICATION} registry in the
-         *                                 server (global) context.
-         */
-        MetricRegistry getRegistry(MetricRegistry.Type type) throws NoSuchRegistryException;
+        MetricRegistry getOrCreateRegistry(String registryName) throws NoSuchRegistryException;
 
         default MetricRegistry getBaseRegistry() {
-            return getRegistry(Type.BASE);
+            return getOrCreateRegistry(MetricRegistry.BASE_SCOPE);
         }
 
         default MetricRegistry getVendorRegistry() {
-            return getRegistry(Type.VENDOR);
+            return getOrCreateRegistry(MetricRegistry.VENDOR_SCOPE);
         }
 
         default MetricRegistry getApplicationRegistry() throws NoSuchRegistryException {
-            return getRegistry(Type.APPLICATION);
+            return getOrCreateRegistry(MetricRegistry.APPLICATION_SCOPE);
         }
+
+        ConcurrentMap<String, MetricRegistry> getRegistries();
+
     }
 
 }

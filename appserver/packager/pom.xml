@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-parent</artifactId>
-        <version>6.2023.3-SNAPSHOT</version>
+        <version>6.2023.10-SNAPSHOT</version>
     </parent>
     
     <groupId>fish.payara.server.internal.packager</groupId>
@@ -155,10 +155,10 @@
         <module>JMX-Monitoring</module>
         <module>payara-micro</module>
         <module>payara-api</module>
+        <module>payara-executor-service</module>
         <module>environment-warning</module>
         <module>payara-rest-endpoints</module>
         <module>rest-monitoring</module>
-        <module>payara-executor-service</module>
         <module>cdi-auth-roles</module>
         <module>yubikey-authentication</module>
         <module>docker</module>
@@ -175,7 +175,6 @@
         <findbugs.skip>true</findbugs.skip>
         <zip.excludes>**\/META-INF,META-INF\/*</zip.excludes>
         <pkg_proto.py>src/main/resources/pkg_proto.py</pkg_proto.py>
-        <deploy.skip>true</deploy.skip>
     </properties>
     
     <build>

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2023 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,17 +40,19 @@
 package fish.payara.microprofile.metrics.writer;
 
 import static java.lang.System.arraycopy;
+
+import fish.payara.microprofile.metrics.cdi.*;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
 import org.eclipse.microprofile.metrics.Metadata;
 import org.eclipse.microprofile.metrics.Metric;
 import org.eclipse.microprofile.metrics.MetricID;
 import org.eclipse.microprofile.metrics.MetricRegistry;
-import org.eclipse.microprofile.metrics.MetricRegistry.Type;
 
 import org.eclipse.microprofile.metrics.Tag;
 
@@ -80,7 +82,7 @@ public class MetricsWriterImpl implements MetricsWriter {
     }
 
     @Override
-    public void write(Type scope, String metricName)
+    public void write(String scope, String metricName)
             throws NoSuchRegistryException, NoSuchMetricException {
         MetricExporter exporter = this.exporter.in(scope, false);
         writeMetricFamily(exporter, scope, metricName);
@@ -88,7 +90,7 @@ public class MetricsWriterImpl implements MetricsWriter {
     }
 
     @Override
-    public void write(Type scope) throws NoSuchRegistryException {
+    public void write(String scope) throws NoSuchRegistryException {
         MetricExporter exporter = this.exporter.in(scope, false);
         writeRegistries(exporter, scope);
         exporter.exportComplete();
@@ -97,22 +99,24 @@ public class MetricsWriterImpl implements MetricsWriter {
     @Override
     public void write() throws IOException {
         MetricExporter exporter = this.exporter;
-        exporter = exporter.in(Type.BASE);
-        writeRegistries(exporter, Type.BASE);
-        exporter = exporter.in(Type.VENDOR);
-        writeRegistries(exporter, Type.VENDOR);
-        exporter = exporter.in(Type.APPLICATION);
-        writeRegistries(exporter, Type.APPLICATION);
+        for (String contextName : contextNames) {
+            MetricsContext context = getContextByName.apply(contextName);
+            ConcurrentMap<String, MetricRegistry> registries = context.getRegistries();
+            for(String scope:registries.keySet()) {
+                exporter = exporter.in(scope);
+                writeRegistries(exporter, scope);
+            }
+        }
         exporter.exportComplete();
     }
 
-    private void writeRegistries(MetricExporter exporter, Type scope) {
+    private void writeRegistries(MetricExporter exporter, String scope) {
         for (String metricName : allMetricNames(scope)) {
             writeMetricFamily(exporter, scope, metricName);
         }
     }
 
-    private void writeMetricFamily(MetricExporter exporter, Type scope, String metricName) {
+    private void writeMetricFamily(MetricExporter exporter, String scope, String metricName) {
         for (String contextName : contextNames) {
             MetricRegistryImpl registry = getMetricsRegistry(contextName, scope);
             if (registry != null && registry.getMetadata(metricName) != null) { // it has metrics with that name
@@ -140,9 +144,10 @@ public class MetricsWriterImpl implements MetricsWriter {
             if (!contextName.isEmpty()) {
                 Tag[] tagsWithoutApp = metricID.getTagsAsArray();
                 Tag[] tags = Arrays.copyOf(tagsWithoutApp, tagsWithoutApp.length + 1);
-                tags[tagsWithoutApp.length] = new Tag("_app", contextName);
-                metricID = new MetricID(metricName, tags);
+                tags[tagsWithoutApp.length] = new Tag("mp_app", contextName);
             }
+            Tag[] addingScope = MetricUtils.setScopeTagForMetric(registry.getScope(),metricID.getTagsAsArray());
+            metricID = new MetricID(metricID.getName(), addingScope);
             exporter.export(metricID, metric.getValue(), metadata);
         }
     }
@@ -152,12 +157,13 @@ public class MetricsWriterImpl implements MetricsWriter {
      * https://github.com/eclipse/microprofile-metrics/pull/548 adds needed methods to the API so they will be available
      * in the {@link MetricRegistry} interface in 3.0 and this cast can be removed.
      */
-    private MetricRegistryImpl getMetricsRegistry(String contextName, Type scope) {
+    private MetricRegistryImpl getMetricsRegistry(String contextName, String scope) {
         MetricsContext context = getContextByName.apply(contextName);
-        return scope == Type.APPLICATION && context.isServerContext() ? null : (MetricRegistryImpl) context.getRegistry(scope);
+        return scope.equals(MetricRegistry.APPLICATION_SCOPE) && context.isServerContext() ? null :
+                (MetricRegistryImpl) context.getOrCreateRegistry(scope);
     }
 
-    private Set<String> allMetricNames(Type scope) {
+    private Set<String> allMetricNames(String scope) {
         Set<String> allNames = new TreeSet<>();
         for (String contextName : contextNames) {
             MetricRegistry registry = getMetricsRegistry(contextName, scope);

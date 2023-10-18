@@ -68,7 +68,7 @@ public class TimedInterceptor extends AbstractInterceptor {
      * Make the actual logic unit testable...
      */
     static <E extends Member & AnnotatedElement> Object proceedTimed(InvocationContext context, E element,
-            Class<?> bean, BiFunction<MetricID, Class<Timer>, Timer> loader) throws Exception {
+            Class<?> bean, ThreeFunctionResolver<MetricID, Class<Timer>, String, Timer> loader) throws Exception {
         return apply(element, bean, AnnotationReader.TIMED, Timer.class, loader).time(context::proceed);
     }
 

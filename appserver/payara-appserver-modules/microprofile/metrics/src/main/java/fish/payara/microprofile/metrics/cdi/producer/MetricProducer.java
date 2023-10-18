@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2018-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -40,71 +40,74 @@
 
 package fish.payara.microprofile.metrics.cdi.producer;
 
+import fish.payara.microprofile.metrics.*;
 import fish.payara.microprofile.metrics.cdi.AnnotationReader;
-
 import jakarta.enterprise.context.Dependent;
 import jakarta.enterprise.inject.Produces;
 import jakarta.enterprise.inject.spi.InjectionPoint;
-import jakarta.inject.Inject;
-import org.eclipse.microprofile.metrics.ConcurrentGauge;
+import java.lang.annotation.Annotation;
 import org.eclipse.microprofile.metrics.Counter;
 import org.eclipse.microprofile.metrics.Gauge;
 import org.eclipse.microprofile.metrics.Histogram;
-import org.eclipse.microprofile.metrics.Meter;
 import org.eclipse.microprofile.metrics.MetricRegistry;
-import org.eclipse.microprofile.metrics.MetricType;
-import org.eclipse.microprofile.metrics.SimpleTimer;
 import org.eclipse.microprofile.metrics.Timer;
+import org.eclipse.microprofile.metrics.annotation.Counted;
 import org.eclipse.microprofile.metrics.annotation.Metric;
+import org.glassfish.internal.api.Globals;
 
 @Dependent
 public class MetricProducer {
 
-    private static final AnnotationReader<Metric> COUNTER = AnnotationReader.METRIC.asType(MetricType.COUNTER);
-    private static final AnnotationReader<Metric> CONCURRENT_GAUGE = AnnotationReader.METRIC.asType(MetricType.CONCURRENT_GAUGE);
-    private static final AnnotationReader<Metric> GAUGE = AnnotationReader.METRIC.asType(MetricType.GAUGE);
-    private static final AnnotationReader<Metric> HISTOGRAM = AnnotationReader.METRIC.asType(MetricType.HISTOGRAM);
-    private static final AnnotationReader<Metric> METER = AnnotationReader.METRIC.asType(MetricType.METERED);
-    private static final AnnotationReader<Metric> SIMPLE_TIMER = AnnotationReader.METRIC.asType(MetricType.SIMPLE_TIMER);
-    private static final AnnotationReader<Metric> TIMER = AnnotationReader.METRIC.asType(MetricType.TIMER);
-
-    @Inject
-    private MetricRegistry registry;
+    private static final AnnotationReader<Metric> COUNTER = AnnotationReader.METRIC.asType(Counter.class.getTypeName());
+    private static final AnnotationReader<Metric> GAUGE = AnnotationReader.METRIC.asType(Gauge.class.getTypeName());
+    private static final AnnotationReader<Metric> HISTOGRAM = AnnotationReader.METRIC.asType(Histogram.class.getTypeName());
+    private static final AnnotationReader<Metric> TIMER = AnnotationReader.METRIC.asType(Timer.class.getTypeName());
 
     @Produces
     private Counter counter(InjectionPoint ip) {
-        return COUNTER.getOrRegister(ip, Counter.class, registry);
-    }
-
-    @Produces
-    private ConcurrentGauge concurrentGauge(InjectionPoint ip) {
-        return CONCURRENT_GAUGE.getOrRegister(ip, ConcurrentGauge.class, registry);
+        return COUNTER.getOrRegister(ip, Counter.class, getMetricRegistry(ip));
     }
 
     @SuppressWarnings("unchecked")
     @Produces
-    private <T> Gauge<T> gauge(InjectionPoint ip) {
-        return GAUGE.getOrRegister(ip, Gauge.class, registry);
+    private <T extends Number> Gauge<T> gauge(InjectionPoint ip) {
+        return GAUGE.getOrRegister(ip, Gauge.class, getMetricRegistry(ip));
     }
 
     @Produces
     private Histogram histogram(InjectionPoint ip) {
-        return HISTOGRAM.getOrRegister(ip, Histogram.class, registry);
-    }
-
-    @Produces
-    private Meter meter(InjectionPoint ip) {
-        return METER.getOrRegister(ip, Meter.class, registry);
-    }
-
-    @Produces
-    private SimpleTimer simpleTimer(InjectionPoint ip) {
-        return SIMPLE_TIMER.getOrRegister(ip, SimpleTimer.class, registry);
+        return HISTOGRAM.getOrRegister(ip, Histogram.class, getMetricRegistry(ip));
     }
 
     @Produces
     private Timer timer(InjectionPoint ip) {
-        return TIMER.getOrRegister(ip, Timer.class, registry);
+        return TIMER.getOrRegister(ip, Timer.class, getMetricRegistry(ip));
+    }
+
+    private MetricRegistry getMetricRegistry(InjectionPoint ip) {
+        MetricsService metricsService =
+                Globals.getDefaultBaseServiceLocator().getService(MetricsService.class);
+        for(Annotation an : ip.getAnnotated().getAnnotations()) {
+            if(an.annotationType().getName().equals(Metric.class.getTypeName())){
+                Metric a = (Metric) an;
+                return metricsService.getContext(true).getOrCreateRegistry(a.scope());
+            }
+            if(an.annotationType().getName().equals(org.eclipse.microprofile.metrics.annotation.Counted.class.getTypeName())){
+                Counted a = (Counted) an;
+                return metricsService.getContext(true).getOrCreateRegistry(a.scope());
+            }
+
+            if(an.annotationType().getName().equals(org.eclipse.microprofile.metrics.annotation.Gauge.class.getTypeName())){
+                org.eclipse.microprofile.metrics.annotation.Gauge a = (org.eclipse.microprofile.metrics.annotation.Gauge) an;
+                return metricsService.getContext(true).getOrCreateRegistry(a.scope());
+            }
+
+            if(an.annotationType().getName().equals(org.eclipse.microprofile.metrics.annotation.Timed.class.getTypeName())){
+                org.eclipse.microprofile.metrics.annotation.Timed a = (org.eclipse.microprofile.metrics.annotation.Timed) an;
+                return metricsService.getContext(true).getOrCreateRegistry(a.scope());
+            }
+        }
+        return metricsService.getContext(true).getApplicationRegistry();
     }
 
 }

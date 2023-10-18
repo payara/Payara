@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- *    Copyright (c) [2017-2018] Payara Foundation and/or its affiliates. All rights reserved.
- * 
+ *
+ *    Copyright (c) [2017-2023] Payara Foundation and/or its affiliates. All rights reserved.
+ *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
  *     and Distribution License("CDDL") (collectively, the "License").  You
@@ -46,6 +46,7 @@ import java.util.logging.Level;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
 import org.glassfish.api.admin.CommandValidationException;
+import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.hk2.api.MultiException;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
@@ -71,6 +72,9 @@ public class StopDomainsCommand extends StopDomainCommand {
     protected void validate()
             throws CommandException, CommandValidationException {
         // no-op to prevent initDomain being called
+        if (timeout < 1) {
+            throw new CommandValidationException("Timeout must be at least 1 second long.");
+        }
     }
     
     @Override
@@ -81,7 +85,11 @@ public class StopDomainsCommand extends StopDomainCommand {
             String[] domains = userArgDomainName.split(",");
             for (String domainName : domains) {
                 setConfig(domainName);
+                ParameterMap parameterMap = new ParameterMap();
+                parameterMap.insert("timeout", String.valueOf(timeout));
+                programOpts.updateOptions(parameterMap);
                 RemoteCLICommand cmd = new RemoteCLICommand("stop-domain", programOpts, env);
+                cmd.setReadTimeout(timeout * 1000);
                 logger.log(Level.FINE, "Stopping domain {0}", domainName);
                 try {
                     cmd.executeAndReturnOutput("stop-domain");

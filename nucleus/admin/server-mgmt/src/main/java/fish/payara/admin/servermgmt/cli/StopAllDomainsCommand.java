@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2017-2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -85,6 +85,9 @@ public class StopAllDomainsCommand extends StopDomainCommand {
     protected void validate()
             throws CommandException, CommandValidationException {
         // no-op to prevent initDomain being called
+        if (timeout < 1) {
+            throw new CommandValidationException("Timeout must be at least 1 second long.");
+        }
     }    
     
     @Override
@@ -95,7 +98,11 @@ public class StopAllDomainsCommand extends StopDomainCommand {
             String[] domainsList = getDomains();
             for (String domain : domainsList) {
                 setConfig(domain);
+                ParameterMap parameterMap = new ParameterMap();
+                parameterMap.insert("timeout", String.valueOf(timeout));
+                programOpts.updateOptions(parameterMap);
                 RemoteCLICommand cmd = new RemoteCLICommand("stop-domain", programOpts, env);
+                cmd.setReadTimeout(timeout * 1000);
                 logger.log(Level.FINE, "Stopping domain {0}", domain);
                 try {
                     cmd.executeAndReturnOutput("stop-domain", "--force", force.toString());

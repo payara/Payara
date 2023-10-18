@@ -37,10 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2022] [Payara Foundation and/or its affiliates]
 package org.glassfish.admin.rest.utils;
 
 import com.sun.enterprise.admin.remote.AdminCommandStateImpl;
+import com.sun.enterprise.v3.admin.JobManagerService;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -48,6 +48,7 @@ import org.glassfish.admin.rest.RestLogging;
 import org.glassfish.api.admin.AdminCommandEventBroker;
 import org.glassfish.api.admin.AdminCommandState;
 import org.glassfish.api.admin.CommandRunner;
+import org.glassfish.internal.api.Globals;
 
 /**
  *
@@ -77,6 +78,8 @@ public class DetachedCommandHelper implements Runnable, AdminCommandEventBroker.
         CountDownLatch latch = new CountDownLatch(1);
         DetachedCommandHelper helper = new DetachedCommandHelper(commandInvocation, latch);
         commandInvocation.listener(".*", helper);
+        JobManagerService jobManagerService = Globals.getDefaultHabitat().getService(JobManagerService.class);
+        jobManagerService.getThreadPool().execute(helper);
         try {
             if (!latch.await(10, TimeUnit.SECONDS)) {
                 RestLogging.restLogger.log(Level.FINE, "latch.await() returned false");

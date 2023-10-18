@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server.internal.persistence.cmp</groupId>
         <artifactId>cmp</artifactId>
-        <version>6.2023.3-SNAPSHOT</version>
+        <version>6.2023.10-SNAPSHOT</version>
     </parent>
     <artifactId>cmp-support-sqlstore</artifactId>
     <packaging>glassfish-jar</packaging>
@@ -138,7 +138,6 @@
         <dependency>
             <groupId>fish.payara.server.core.deployment</groupId>
             <artifactId>dol</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.jdbc</groupId>
@@ -148,7 +147,6 @@
         <dependency>
             <groupId>fish.payara.server.core.connectors</groupId>
             <artifactId>connectors-internal-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.persistence</groupId>
@@ -158,12 +156,10 @@
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>internal-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>common-util</artifactId>
-            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>

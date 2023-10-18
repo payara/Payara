@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server.internal.webservices</groupId>
         <artifactId>webservices</artifactId>
-        <version>6.2023.3-SNAPSHOT</version>
+        <version>6.2023.10-SNAPSHOT</version>
     </parent>
     <artifactId>soap-tcp</artifactId>
     <packaging>glassfish-jar</packaging>
@@ -75,12 +75,10 @@
         <dependency>
             <groupId>fish.payara.server.core.ejb</groupId>
             <artifactId>ejb-internal-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.deployment</groupId>
             <artifactId>dol</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.metro</groupId>

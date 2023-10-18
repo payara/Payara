@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2023 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -103,7 +103,6 @@ public class AllMetricsTckTest extends AbstractMetricTest {
             String name = metric.name;
             Metadata metadata = registry.getMetadata(name);
             assertNotNull("Missing metadata for metric " + name, metadata);
-            assertEquals("Incorrect type for metric " + name, MetricType.from(metric.type), metadata.getTypeRaw());
             assertEquals("Incorrect unit for metric" + name, metric.unit, metadata.getUnit());
         }
 
@@ -187,6 +186,5 @@ public class AllMetricsTckTest extends AbstractMetricTest {
         assertNotNull("Metric does not exist: " + metric, m);
         Metadata metadata = registry.getMetadata(metricID.getName());
         assertNotNull(metadata);
-        assertEquals(MetricType.from(type), metadata.getTypeRaw());
     }
 }

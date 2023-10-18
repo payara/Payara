@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -49,7 +49,6 @@ import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.impl.model.callbacks.CallbackImpl;
 import fish.payara.microprofile.openapi.impl.model.parameters.ParameterImpl;
 import fish.payara.microprofile.openapi.impl.model.parameters.RequestBodyImpl;
-import fish.payara.microprofile.openapi.impl.model.responses.APIResponseImpl;
 import fish.payara.microprofile.openapi.impl.model.responses.APIResponsesImpl;
 import fish.payara.microprofile.openapi.impl.model.security.SecurityRequirementImpl;
 import fish.payara.microprofile.openapi.impl.model.servers.ServerImpl;
@@ -58,6 +57,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import fish.payara.microprofile.openapi.impl.model.responses.APIResponseImpl;
 
 import org.eclipse.microprofile.openapi.models.ExternalDocumentation;
 import org.eclipse.microprofile.openapi.models.Operation;
@@ -103,9 +103,11 @@ public class OperationImpl extends ExtensibleImpl<Operation> implements Operatio
             from.setRequestBody(RequestBodyImpl.createInstance(requestBody, context));
         }
         extractAnnotations(annotation, context, "responses", "responseCode", APIResponseImpl::createInstance, from.responses::addAPIResponse);
+        from.setExtensions(parseExtensions(annotation));
         extractAnnotations(annotation, context, "callbacks", "name", CallbackImpl::createInstance, from::addCallback);
         from.setDeprecated(annotation.getValue("deprecated", Boolean.class));
         extractAnnotations(annotation, context, "security", SecurityRequirementImpl::createInstance, from::addSecurityRequirement);
+        extractAnnotations(annotation, context, "securitySets", SecurityRequirementImpl::createInstances, from::addSecurityRequirement);
         extractAnnotations(annotation, context, "servers", ServerImpl::createInstance, from::addServer);
         from.setMethod(annotation.getValue("method", String.class));
         return from;
@@ -291,7 +293,7 @@ public class OperationImpl extends ExtensibleImpl<Operation> implements Operatio
         }
         return this;
     }
-
+    
     @Override
     public void removeSecurityRequirement(SecurityRequirement securityRequirement) {
         if (security != null) {
@@ -351,7 +353,20 @@ public class OperationImpl extends ExtensibleImpl<Operation> implements Operatio
         to.setOperationId(mergeProperty(to.getOperationId(), from.getOperationId(), override));
         to.setSummary(mergeProperty(to.getSummary(), from.getSummary(), override));
         to.setDescription(mergeProperty(to.getDescription(), from.getDescription(), override));
+        to.setExtensions(mergeProperty(to.getExtensions(), from.getExtensions(), override));
         to.setDeprecated(mergeProperty(to.getDeprecated(), from.getDeprecated(), override));
+        // Handle @SecurityRequirement
+        if (from.getSecurity() != null) {
+            for (SecurityRequirement requirement : from.getSecurity()) {
+                if (requirement != null) {
+                    SecurityRequirement newRequirement = new SecurityRequirementImpl();
+                    SecurityRequirementImpl.merge(requirement, newRequirement);
+                    if (!to.getSecurity().contains(newRequirement)) {
+                        to.addSecurityRequirement(newRequirement);
+                    }
+                }
+            }
+        }
     }
 
     public static void merge(Operation from, Operation to,
@@ -385,6 +400,18 @@ public class OperationImpl extends ExtensibleImpl<Operation> implements Operatio
         if (from.getResponses() != null) {
             for (APIResponse response : from.getResponses().getAPIResponses().values()) {
                 APIResponsesImpl.merge(response, to.getResponses(), override, context);
+            }
+        }
+        // Handle @SecurityRequirement
+        if (from.getSecurity() != null) {
+            for (SecurityRequirement requirement : from.getSecurity()) {
+                if (requirement != null) {
+                    SecurityRequirement newRequirement = new SecurityRequirementImpl();
+                    SecurityRequirementImpl.merge(requirement, newRequirement);
+                    if (!to.getSecurity().contains(newRequirement)) {
+                        to.addSecurityRequirement(newRequirement);
+                    }
+                }
             }
         }
     }

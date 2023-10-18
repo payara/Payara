@@ -45,7 +45,7 @@
     <parent>
         <groupId>fish.payara.server.internal.connectors</groupId>
         <artifactId>connectors</artifactId>
-        <version>6.2023.3-SNAPSHOT</version>
+        <version>6.2023.10-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>gf-connectors-connector</artifactId>
@@ -89,31 +89,26 @@
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>common-util</artifactId>
-            <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>fish.payara.server.core.connectors</groupId>
             <artifactId>connectors-internal-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
 
        <dependency>
             <groupId>fish.payara.server.core.deployment</groupId>
             <artifactId>deployment-common</artifactId>
-            <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>internal-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>glassfish-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>

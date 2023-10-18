@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2017-2021] Payara Foundation and/or affiliates
+//Portions Copyright [2017-2023] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt.cli;
 
@@ -63,6 +63,8 @@ import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.universal.process.ProcessStreamDrainer;
 import com.sun.enterprise.universal.xml.MiniXmlParserException;
 import org.glassfish.security.common.FileRealmStorageManager;
+
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 /**
  * The start-domain command.
@@ -95,6 +97,9 @@ public class StartDomainCommand extends LocalDomainCommand implements StartServe
     private String preBootCommand;
     @Param(name = "postbootcommandfile", optional = true)
     private String postBootCommand;
+
+    @Param(defaultValue = "600", optional = true)
+    protected int timeout;
     
     @Inject
     ServerEnvironment senv;
@@ -131,6 +136,9 @@ public class StartDomainCommand extends LocalDomainCommand implements StartServe
             if (!postbootFile.exists()){
                 throw new CommandValidationException("postboot commands file does not exist: "+ postbootFile.getAbsolutePath());
             }
+        }
+        if (timeout < 1) {
+            throw new CommandValidationException("Timeout must be at least 1 second long.");
         }
         super.validate();
     }
@@ -206,7 +214,7 @@ public class StartDomainCommand extends LocalDomainCommand implements StartServe
 
             }
             else {
-                helper.waitForServer();
+                helper.waitForServer(timeout, SECONDS);
                 helper.report();
                 return SUCCESS;
             }

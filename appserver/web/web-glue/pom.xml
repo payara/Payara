@@ -44,11 +44,12 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"> <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>fish.payara.server.internal.web</groupId>
-        <artifactId>web</artifactId>
-        <version>6.2023.3-SNAPSHOT</version>
+        <groupId>fish.payara.server.core</groupId>
+        <artifactId>core-parent</artifactId>
+        <version>6.9.0-SNAPSHOT</version>
+        <relativePath>../../../core/core-parent</relativePath>
     </parent>
-    
+
     <groupId>fish.payara.server.core.web</groupId>
     <artifactId>web-glue</artifactId>
     <packaging>glassfish-jar</packaging>
@@ -112,12 +113,10 @@
         <dependency>
             <groupId>fish.payara.server.core.web</groupId>
             <artifactId>web-cli</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.flashlight</groupId>
             <artifactId>flashlight-framework</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
@@ -126,42 +125,34 @@
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>stats77</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.web</groupId>
             <artifactId>war-util</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.web</groupId>
             <artifactId>web-core</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.admin</groupId>
             <artifactId>admin-util</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>common-util</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.deployment</groupId>
             <artifactId>deployment-common</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.deployment</groupId>
             <artifactId>deployment-javaee-core</artifactId>
-            <version>${project.version}</version>
         </dependency>
          <dependency>
             <groupId>fish.payara.api</groupId>
             <artifactId>payara-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.wasp</groupId>
@@ -174,72 +165,58 @@
         <dependency>
             <groupId>fish.payara.server.core.admin</groupId>
             <artifactId>admin-core</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.admin</groupId>
             <artifactId>monitoring-core</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.deployment</groupId>
             <artifactId>dol</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>glassfish-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>internal-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.transaction</groupId>
             <artifactId>transaction-internal-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>container-common</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.admin</groupId>
             <artifactId>config-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.web</groupId>
             <artifactId>web-gui-plugin-common</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.nucleus</groupId>
             <artifactId>kernel</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.security</groupId>
             <artifactId>websecurity</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.web</groupId>
             <artifactId>web-embed-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.web</groupId>
             <artifactId>gf-web-connector</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.web</groupId>
             <artifactId>web-sse</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.kohsuke.metainf-services</groupId>
@@ -250,11 +227,6 @@
             <groupId>org.glassfish.annotations</groupId>
             <artifactId>logging-annotation-processor</artifactId>
             <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>war-util</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>

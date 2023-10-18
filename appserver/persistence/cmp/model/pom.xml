@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server.internal.persistence.cmp</groupId>
         <artifactId>cmp</artifactId>
-        <version>6.2023.3-SNAPSHOT</version>
+        <version>6.2023.10-SNAPSHOT</version>
     </parent>
     <artifactId>cmp-model</artifactId>
     <packaging>glassfish-jar</packaging>
@@ -93,7 +93,6 @@
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>common-util</artifactId>
-            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>

@@ -86,22 +86,18 @@
 	    <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>glassfish-api</artifactId>
-            <version>${project.version}</version>
-        </dependency>      
+        </dependency>
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>common-util</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.deployment</groupId>
             <artifactId>deployment-common</artifactId>
-            <version>${project.version}</version>
         </dependency>
        <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>kernel</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.deployment</groupId>

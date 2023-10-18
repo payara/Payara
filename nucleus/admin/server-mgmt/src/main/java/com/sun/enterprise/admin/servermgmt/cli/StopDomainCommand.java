@@ -37,11 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates]
+ * Portions Copyright [2017-2023] [Payara Foundation and/or its affiliates]
  */
 package com.sun.enterprise.admin.servermgmt.cli;
 
-import com.sun.enterprise.admin.cli.CLIConstants;
 import com.sun.enterprise.admin.cli.remote.DASUtils;
 import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
 import com.sun.enterprise.universal.process.ProcessUtils;
@@ -77,12 +76,19 @@ public class StopDomainCommand extends LocalDomainCommand {
     Boolean force;
     @Param(optional = true, defaultValue = "false")
     Boolean kill;
-    private static final long WAIT_FOR_DAS_TIME_MS = 60000; // 1 minute
+
+    @Param(optional = true, defaultValue = "60")
+    protected int timeout;
 
     @Override
     protected void validate()
             throws CommandException {
         setDomainName(userArgDomainName);
+
+        if (timeout < 1) {
+            throw new CommandValidationException("Timeout must be at least 1 second long.");
+        }
+
         super.validate(); // which calls initDomain() !!
     }
 
@@ -200,6 +206,7 @@ public class StopDomainCommand extends LocalDomainCommand {
     protected void doCommand() throws CommandException {
         // run the remote stop-domain command and throw away the output
         RemoteCLICommand cmd = new RemoteCLICommand(getName(), programOpts, env);
+        cmd.setReadTimeout(timeout * 1000);
         try {
             cmd.executeAndReturnOutput("stop-domain", "--force", force.toString());
         } catch (Exception e) {
@@ -253,12 +260,12 @@ public class StopDomainCommand extends LocalDomainCommand {
 
         if (alive) {
             throw new CommandException(Strings.get("StopDomain.DASNotDead",
-                    (WAIT_FOR_DAS_TIME_MS / 1000)));
+                    timeout));
         }
     }
 
     private boolean timedOut(long startTime) {
-        return (System.currentTimeMillis() - startTime) > WAIT_FOR_DAS_TIME_MS;
+        return (System.currentTimeMillis() - startTime) > (timeout * 1000);
     }
 
     protected int kill() throws CommandException {

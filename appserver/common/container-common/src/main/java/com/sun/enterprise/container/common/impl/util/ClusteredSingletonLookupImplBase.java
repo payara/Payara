@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,12 +42,14 @@ package com.sun.enterprise.container.common.impl.util;
 
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.cp.IAtomicLong;
+import com.hazelcast.cp.exception.CPSubsystemException;
 import com.hazelcast.cp.lock.FencedLock;
 import com.hazelcast.map.IMap;
 import com.sun.enterprise.container.common.spi.ClusteredSingletonLookup;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.JavaEEContextUtil;
@@ -91,8 +93,8 @@ public abstract class ClusteredSingletonLookupImplBase implements ClusteredSingl
 
     @Override
     public FencedLock getDistributedLock() {
-        return lock.updateAndGet(v -> v != null ? v : getHazelcastInstance().getCPSubsystem()
-                .getLock(makeLockKey()));
+        return retryCpOperation(() -> lock.updateAndGet(v -> v != null ?
+                v : getHazelcastInstance().getCPSubsystem().getLock(makeLockKey())));
     }
 
     @Override
@@ -104,8 +106,8 @@ public abstract class ClusteredSingletonLookupImplBase implements ClusteredSingl
 
     @Override
     public  IAtomicLong getClusteredUsageCount() {
-        return count.updateAndGet(v -> v != null ? v : getHazelcastInstance().getCPSubsystem()
-                .getAtomicLong(makeCountKey()));
+        return retryCpOperation(() -> count.updateAndGet(v -> v != null ?
+                v : getHazelcastInstance().getCPSubsystem().getAtomicLong(makeCountKey())));
     }
 
     private HazelcastInstance getHazelcastInstance() {
@@ -143,6 +145,18 @@ public abstract class ClusteredSingletonLookupImplBase implements ClusteredSingl
         return hzCore;
     }
 
+    private <TT> TT retryCpOperation(Supplier<TT> operation) {
+        CPSubsystemException exception = null;
+        for (int ii = 0; ii < 3; ++ii) {
+            try {
+                return operation.get();
+            } catch (CPSubsystemException e) {
+                exception = e;
+            }
+        }
+        throw exception;
+    }
+
     private String makeKeyPrefix() {
         return String.format("Payara/%s/singleton/", singletonType.name().toLowerCase());
     }
@@ -160,6 +174,13 @@ public abstract class ClusteredSingletonLookupImplBase implements ClusteredSingl
     }
 
     private String makeSessionHzKey() {
-        return getKeyPrefix() + componentId + "/" + getClusteredSessionKey();
+        String sessionKey = getClusteredSessionKey();
+        if (componentId.startsWith(sessionKey)) {
+            // shorten session key if componentId is similar
+            // workaround for https://github.com/hazelcast/hazelcast/issues/17901
+            return getKeyPrefix() + sessionKey;
+        } else {
+            return getKeyPrefix() + componentId + "/" + sessionKey;
+        }
     }
 }

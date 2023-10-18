@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2023] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.concurrent.runtime;
 
@@ -87,6 +87,8 @@ import java.util.List;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.data.ApplicationRegistry;
 
@@ -338,25 +340,17 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         SpanBuilder builder = tracer.buildSpan("executeConcurrentContext");
 
         // Check for propagated span
-        if (handle.getSpanContextMap() != null) {
-            @SuppressWarnings("unchecked")
-            SpanContext spanContext = tracer.extract(Format.Builtin.TEXT_MAP, new MapToTextMap(handle.getSpanContextMap()));
-            if (spanContext != null) {
-                builder.asChildOf(spanContext);
-                // Check for the presence of a propagated parent operation name
-                try {
-                    String operationName = ((RequestTraceSpanContext) spanContext).getBaggageItems().get("operation.name");
-                    if (operationName != null) {
-                        builder.withTag("Parent Operation Name", operationName);
-                    }
-                } catch (ClassCastException cce) {
-                    logger.log(Level.FINE, "ClassCastException caught converting Span Context", cce);
-                }
-            }
+        if (handle.getParentTraceContext() != null) {
+            builder.asChildOf(handle.getParentTraceContext());
+
+            // Check for the presence of a propagated parent operation name
+            StreamSupport.stream(handle.getParentTraceContext().baggageItems().spliterator(), false)
+                    .filter(e -> "operation.name".equals(e.getKey()))
+                    .forEach(e -> builder.withTag("Parent Operation Name", e.getValue()));
         }
 
         if (invocation != null) {
-            builder = builder.withTag("App Name", invocation.getAppName())
+            builder.withTag("App Name", invocation.getAppName())
                     .withTag("Component ID", invocation.getComponentId())
                     .withTag("Module Name", invocation.getModuleName());
 
@@ -561,7 +555,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
             return eq;
         }
     }
-
+    
     private void initialiseServices() {
         try {
             this.requestTracing = Globals.getDefaultHabitat().getService(RequestTracingService.class);

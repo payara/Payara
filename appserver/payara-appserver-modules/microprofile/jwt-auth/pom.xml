@@ -45,7 +45,7 @@
     <parent>
         <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
         <artifactId>microprofile</artifactId>
-        <version>6.2023.3-SNAPSHOT</version>
+        <version>6.2023.10-SNAPSHOT</version>
     </parent>
 
     <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
@@ -108,13 +108,11 @@
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>internal-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>fish.payara.server.core.web</groupId>
             <artifactId>web-glue</artifactId>
-            <version>${project.version}</version>
         </dependency>
 
         <dependency>
@@ -126,7 +124,6 @@
         <dependency>
             <groupId>fish.payara.server.core.deployment</groupId>
             <artifactId>dol</artifactId>
-            <version>${project.version}</version>
         </dependency>
         
         <dependency>

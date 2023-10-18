@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2023] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.admin.rest.resources;
 
@@ -73,8 +73,7 @@ import org.glassfish.api.ActionReport;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Optional;
-import java.util.function.Function;
+
 import org.glassfish.admin.rest.utils.ResourceUtil;
 import org.glassfish.admin.rest.utils.Util;
 import org.jvnet.hk2.config.Dom;
@@ -198,7 +197,6 @@ public abstract class CollectionLeafResource extends AbstractResource {
         } else {
             payload = data;
         }
-
 
         return runCommand(postCommand, payload, "rest.resource.create.message",
             "\"{0}\" created successfully.", "rest.resource.post.forbidden","POST on \"{0}\" is forbidden.");
@@ -386,7 +384,9 @@ public abstract class CollectionLeafResource extends AbstractResource {
      */
     protected String escapeOptionPart(String part) {
         return part.replace("\\", "\\\\")
-                .replace(":", "\\:");
+                .replace(":", "\\:")
+                .replace("'", "\\'")
+                .replace("\"", "\\\"");
     }
 
     // TODO: JvmOptions needs to have its own class, but the generator doesn't seem to support

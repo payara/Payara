@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-parent</artifactId>
-        <version>6.2023.3-SNAPSHOT</version>
+        <version>6.2023.10-SNAPSHOT</version>
     </parent>
 
     <groupId>fish.payara.distributions</groupId>
@@ -55,26 +55,6 @@
     <packaging>pom</packaging>
 
     <name>Glassfish distributions</name>
-
-    <developers>
-        <developer>
-            <id>snjezana</id>
-            <name>Snjezana Sevo-Zenzerovic</name>
-            <url>http://blogs.sun.com/snjezana</url>
-            <organization>Oracle, Inc.</organization>
-            <roles>
-                <role>developer</role>
-            </roles>
-        </developer>
-        <developer>
-            <id>romain_grecourt</id>
-            <name>Romain Grecourt</name>
-            <organization>Oracle, Inc</organization>
-            <roles>
-                <role>developer</role>
-            </roles>
-        </developer>
-    </developers>
 
     <properties>
         <deploy.skip>false</deploy.skip>
@@ -209,15 +189,6 @@
     </build>
 
     <profiles>
-
-        <!-- Don't deploy any distributions if only the internals are being deployed -->
-        <profile>
-            <id>deploy-internals</id>
-            <properties>
-                <deploy.skip>true</deploy.skip>
-            </properties>
-        </profile>
-
         <!-- Default build profile -->
         <profile>
             <id>DefaultBuild</id>

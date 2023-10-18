@@ -74,13 +74,7 @@ public class AcceptContentTypeTest {
     @Test
     public void withoutPreference() {
         assertEquals(Optional.of("text/plain"),
-                parseMetricsAcceptHeader("application/json, text/plain"));
-    }
-
-    @Test
-    public void withDefaultPreference() {
-        assertEquals(Optional.of("application/json"),
-                parseMetricsAcceptHeader("text/plain;q=0.5, application/json"));
+                parseMetricsAcceptHeader("text/plain"));
     }
 
     @Test

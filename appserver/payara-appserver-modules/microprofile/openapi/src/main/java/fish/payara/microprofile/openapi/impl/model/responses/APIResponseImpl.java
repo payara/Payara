@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -59,6 +59,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import jakarta.ws.rs.core.MediaType;
+import java.util.Objects;
 
 import org.eclipse.microprofile.openapi.models.headers.Header;
 import org.eclipse.microprofile.openapi.models.links.Link;
@@ -78,6 +79,7 @@ public class APIResponseImpl extends ExtensibleImpl<APIResponse> implements APIR
     public static APIResponseImpl createInstance(AnnotationModel annotation, ApiContext context) {
         APIResponseImpl from = new APIResponseImpl();
         from.setDescription(annotation.getValue("description", String.class));
+        from.setExtensions(parseExtensions(annotation));
         HeaderImpl.createInstances(annotation, context).forEach(from::addHeader);
 
         final List<ContentImpl> contents = createList();
@@ -96,6 +98,10 @@ public class APIResponseImpl extends ExtensibleImpl<APIResponse> implements APIR
         extractAnnotations(annotation, context, "content", ContentImpl::createInstance, contents::add);
         for (ContentImpl content : contents) {
             content.getMediaTypes().forEach(from.content::addMediaType);
+            // copy extensions down to media types
+            if (content.getExtensions() != null) {
+                content.getExtensions().forEach((extKey, extValue) -> content.getMediaTypes().forEach((mtKey, mtValue) -> from.content.getMediaType(mtKey).addExtension(extKey, extValue)));
+            }
         }
 
         extractAnnotations(annotation, context, "links", "name", LinkImpl::createInstance, from::addLink);
@@ -215,6 +221,7 @@ public class APIResponseImpl extends ExtensibleImpl<APIResponse> implements APIR
             return;
         }
         to.setDescription(mergeProperty(to.getDescription(), from.getDescription(), override));
+        ExtensibleImpl.merge(from, to, override);
         if (from.getContent() != null) {
             if (to.getContent() == null) {
                 to.setContent(new ContentImpl());
@@ -242,6 +249,28 @@ public class APIResponseImpl extends ExtensibleImpl<APIResponse> implements APIR
                 );
             }
         }
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 37 * hash + Objects.hashCode(this.responseCode);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final APIResponseImpl other = (APIResponseImpl) obj;
+        return Objects.equals(this.responseCode, other.responseCode);
     }
 
 }

@@ -42,19 +42,21 @@
     Portions Copyright [2019-2022] [Payara Foundation and/or its affiliates]
 -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>fish.payara.server.internal.security</groupId>
-        <artifactId>nucleus-security</artifactId>
-        <version>6.2023.3-SNAPSHOT</version>
+        <groupId>fish.payara.server.core</groupId>
+        <artifactId>core-parent</artifactId>
+        <version>6.9.0-SNAPSHOT</version>
+        <relativePath>../../../core/core-parent</relativePath>
     </parent>
     <groupId>fish.payara.server.core.security</groupId>
     <artifactId>security</artifactId>
     <packaging>glassfish-jar</packaging>
-    
+
     <name>Security Core Classes</name>
-    
+
     <developers>
         <developer>
             <id>kumarjayanti</id>
@@ -87,13 +89,13 @@
                     <include>**/*.properties</include>
                 </includes>
             </resource>
-             <resource>
+            <resource>
                 <directory>src/main/resources</directory>
                 <includes>
                     <include>**/*.properties</include>
                 </includes>
             </resource>
-             <resource>
+            <resource>
                 <directory>src/main/resources</directory>
                 <includes>
                     <include>**/*.1</include>
@@ -105,31 +107,31 @@
                     <include>**/admin-keyfile</include>
                 </includes>
             </resource>
-             <resource>
+            <resource>
                 <directory>src/main/resources</directory>
                 <includes>
                     <include>**/keyfile</include>
                 </includes>
             </resource>
-             <resource>
+            <resource>
                 <directory>src/main/resources</directory>
                 <includes>
                     <include>**/*.p12</include>
                 </includes>
             </resource>
-             <resource>
+            <resource>
                 <directory>src/main/resources</directory>
                 <includes>
                     <include>**/secure.seed</include>
                 </includes>
             </resource>
-             <resource>
+            <resource>
                 <directory>src/main/resources</directory>
                 <includes>
                     <include>**/server.policy</include>
                 </includes>
             </resource>
-             <resource>
+            <resource>
                 <directory>src/main/resources</directory>
                 <includes>
                     <include>**/login.conf</include>
@@ -137,40 +139,40 @@
             </resource>
         </resources>
         <plugins>
-           <plugin>
-           <groupId>org.apache.maven.plugins</groupId>
-           <artifactId>maven-dependency-plugin</artifactId>
-           <executions>
-             <execution>
-               <id>copy-installed</id>
-               <phase>process-classes</phase>
-               <goals>
-                 <goal>copy</goal>
-               </goals>
-               <configuration>
-                 <artifactItems>
-                   <artifactItem>
-                     <groupId>solarisrealm</groupId>
-                     <artifactId>libsolsparcauth</artifactId>
-                     <version>1.0</version>
-                     <type>so</type>
-                   </artifactItem>
-                   <artifactItem>
-                     <groupId>solarisrealm</groupId>
-                     <artifactId>libsolx86auth</artifactId>
-                     <version>1.0</version>
-                     <type>so</type>
-                   </artifactItem>
-                 </artifactItems>
-                 <stripVersion>
-                    true
-                 </stripVersion>
-                 <!--<outputDirectory>${maven.project.build.outputDirectory}</outputDirectory>-->
-                 <outputDirectory>target/classes</outputDirectory>
-               </configuration>
-             </execution>           
-           </executions>
-         </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-installed</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>solarisrealm</groupId>
+                                    <artifactId>libsolsparcauth</artifactId>
+                                    <version>1.0</version>
+                                    <type>so</type>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>solarisrealm</groupId>
+                                    <artifactId>libsolx86auth</artifactId>
+                                    <version>1.0</version>
+                                    <type>so</type>
+                                </artifactItem>
+                            </artifactItems>
+                            <stripVersion>
+                                true
+                            </stripVersion>
+                            <!--<outputDirectory>${maven.project.build.outputDirectory}</outputDirectory>-->
+                            <outputDirectory>target/classes</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
     <dependencies>
@@ -181,32 +183,26 @@
         <dependency>
             <groupId>fish.payara.server.core.admin</groupId>
             <artifactId>config-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>common-util</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.security</groupId>
             <artifactId>ssl-impl</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.deployment</groupId>
             <artifactId>deployment-common</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>internal-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>glassfish-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.api</groupId>
@@ -216,21 +212,20 @@
         <dependency> <!-- for FindBugs -->
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>simple-glassfish-api</artifactId>
-            <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.packager</groupId>
-            <artifactId>ldapbp-repackaged</artifactId>
-            <version>${project.version}</version>
+            <groupId>com.sun</groupId>
+            <artifactId>ldapbp</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
-	    <groupId>org.glassfish.external</groupId>
-	    <artifactId>management-api</artifactId>
+            <groupId>org.glassfish.external</groupId>
+            <artifactId>management-api</artifactId>
         </dependency>
         <dependency>
-    	    <groupId>org.glassfish.gmbal</groupId>
-	    <artifactId>gmbal</artifactId>
+            <groupId>org.glassfish.gmbal</groupId>
+            <artifactId>gmbal</artifactId>
         </dependency>
         <dependency>
             <groupId>org.glassfish.annotations</groupId>

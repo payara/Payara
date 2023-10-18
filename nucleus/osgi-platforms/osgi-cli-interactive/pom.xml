@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server.internal.osgi-platforms</groupId>
         <artifactId>osgi-platforms</artifactId>
-        <version>6.2023.3-SNAPSHOT</version>
+        <version>6.2023.10-SNAPSHOT</version>
     </parent>
 
     <artifactId>osgi-cli-interactive</artifactId>
@@ -74,7 +74,6 @@
         <dependency>
             <groupId>fish.payara.server.core.admin</groupId>
             <artifactId>admin-cli</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.jline</groupId>

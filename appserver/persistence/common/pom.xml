@@ -47,7 +47,7 @@
     <parent>
 	<groupId>fish.payara.server.internal.persistence</groupId>
     	<artifactId>persistence</artifactId>
-        <version>6.2023.3-SNAPSHOT</version>
+        <version>6.2023.10-SNAPSHOT</version>
     </parent>
     <artifactId>persistence-common</artifactId>
     <packaging>glassfish-jar</packaging>
@@ -77,17 +77,14 @@
         <dependency>
             <groupId>fish.payara.server.core.deployment</groupId>
             <artifactId>dol</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.connectors</groupId>
             <artifactId>connectors-internal-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>container-common</artifactId>
-            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>

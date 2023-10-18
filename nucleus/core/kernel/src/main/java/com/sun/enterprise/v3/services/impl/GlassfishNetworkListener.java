@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016,2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2023] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.v3.services.impl;
 
 import com.sun.appserv.server.util.Version;
@@ -71,7 +71,9 @@ import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.ServerFilterConfiguration;
 import org.glassfish.grizzly.http.server.filecache.FileCache;
 import org.glassfish.grizzly.http.server.util.Mapper;
+import org.glassfish.grizzly.http.util.DataChunk;
 import org.glassfish.grizzly.http.util.Header;
+import org.glassfish.grizzly.http.util.MimeHeaders;
 import org.glassfish.grizzly.threadpool.ThreadPoolConfig;
 import org.glassfish.grizzly.utils.DelayedExecutor;
 import org.glassfish.hk2.api.DynamicConfiguration;
@@ -281,7 +283,9 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
                 keepAlive,
                 delayedExecutor,
                 maxRequestHeaders,
-                maxResponseHeaders);
+                maxResponseHeaders,
+                http == null || Boolean.parseBoolean(http.getCookieSameSiteEnabled()),
+                http == null ? Http.COOKIE_SAME_SITE_VALUE : http.getCookieSameSiteValue());
 
         if (http != null) { // could be null for HTTP redirect
             httpCodecFilter.setMaxPayloadRemainderToSkip(
@@ -346,19 +350,19 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
 
     protected static class HttpAdapterImpl implements HttpAdapter {
         private final VirtualServer virtualServer;
-        private final ContainerMapper conainerMapper;
+        private final ContainerMapper containerMapper;
         private final String webAppRootPath;
 
         public HttpAdapterImpl(VirtualServer virtualServer, ContainerMapper conainerMapper, String webAppRootPath) {
             this.virtualServer = virtualServer;
-            this.conainerMapper = conainerMapper;
+            this.containerMapper = conainerMapper;
             this.webAppRootPath = webAppRootPath;
         }
 
 
         @Override
         public ContainerMapper getMapper() {
-            return conainerMapper;
+            return containerMapper;
         }
 
         @Override
@@ -379,6 +383,7 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
         private final String serverVersion;
         private final String xPoweredBy;
         private final String xFrameOptions;
+        private final String cookieSameSiteValue;
 
         public GlassfishHttpCodecFilter(
                 final boolean isXPoweredByEnabled,
@@ -388,7 +393,9 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
                 final int maxHeadersSize,
                 final String defaultResponseContentType,
                 final KeepAlive keepAlive, final DelayedExecutor executor,
-                final int maxRequestHeaders, final int maxResponseHeaders) {
+                final int maxRequestHeaders, final int maxResponseHeaders,
+                final boolean cookieSameSiteEnabled,
+                final String cookieSameSiteValue) {
             super(chunkingEnabled, maxHeadersSize, defaultResponseContentType,
                     keepAlive, executor, maxRequestHeaders, maxResponseHeaders);
 
@@ -430,6 +437,12 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
             } else {
                 xFrameOptions = null;
             }
+
+            if (cookieSameSiteEnabled) {
+                this.cookieSameSiteValue = cookieSameSiteValue;
+            } else {
+                this.cookieSameSiteValue = null;
+            }
         }
 
         @Override
@@ -467,6 +480,34 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
             // Set response "X-Frame-Options" header
             if (!httpHeader.containsHeader(xFrameOptionsHeader) && xFrameOptions != null) {
                 httpHeader.addHeader(xFrameOptionsHeader, xFrameOptions);
+
+            }
+
+            if (httpHeader instanceof HttpResponsePacket) {
+                final HttpResponsePacket response = (HttpResponsePacket) httpHeader;
+                String sameSite = this.cookieSameSiteValue;
+                final HttpRequestPacket request = response.getRequest();
+                String uri = request.getRequestURI();
+                if (uri != null) {
+                    String[] uriArray = uri.split("/");
+                    if (uriArray.length > 1) {
+                        String app = uriArray[1].toLowerCase();
+                        String sameSiteProp = System.getProperty(app + ".sameSite");
+                        if (sameSiteProp != null) {
+                            sameSite = sameSiteProp;
+                        }
+                    }
+                }
+                if (sameSite != null) {
+                    MimeHeaders headers = response.getHeaders();
+                    for (int i = 0; i < headers.size(); i++) {
+                        if (headers.getName(i).toString().equals("Set-Cookie")) {
+                            DataChunk value = headers.getValue(i);
+                            value.setString(value + ";SameSite=" + sameSite +
+                                    ("None".equals(sameSite) ? ";Secure" : ""));
+                        }
+                    }
+                }
             }
         }
     }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2023 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -46,7 +46,6 @@ import java.util.Collection;
 import java.util.Set;
 
 import org.eclipse.microprofile.metrics.Metadata;
-import org.eclipse.microprofile.metrics.MetricRegistry.Type;
 import org.eclipse.microprofile.metrics.Tag;
 
 public class FilteredMetricsExporter extends OpenMetricsExporter {
@@ -58,14 +57,14 @@ public class FilteredMetricsExporter extends OpenMetricsExporter {
         this.metricNames = metricNames;
     }
 
-    protected FilteredMetricsExporter(Type scope, PrintWriter out, Set<String> typeWrittenByGlobalName,
-            Set<String> helpWrittenByGlobalName, Collection<String> metricNames) {
+    protected FilteredMetricsExporter(String scope, PrintWriter out, Set<String> typeWrittenByGlobalName,
+                                      Set<String> helpWrittenByGlobalName, Collection<String> metricNames) {
         super(scope, out, typeWrittenByGlobalName, helpWrittenByGlobalName);
         this.metricNames = metricNames;
     }
 
     @Override
-    public MetricExporter in(Type scope, boolean asNode) {
+    public MetricExporter in(String scope, boolean asNode) {
         return new FilteredMetricsExporter(scope, out, typeWrittenByGlobalName, helpWrittenByGlobalName, metricNames);
     }
 

@@ -142,7 +142,7 @@
             <sun:textField id="startPort" columns="$int{40}"  styleClass="integer" maxLength="30" text="#{pageSession.valueMap['startPort']}" />
         </sun:property>
         <sun:property id="licenseKeyProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.licenseKey}"  helpText="$resource{i18nhc.hazelcast.configuration.licenseKeyHelp}">
-            <sun:textField id="licenseKey" columns="$int{40}" maxLength="100" text="#{pageSession.valueMap['licenseKey']}" />
+            <sun:textField id="licenseKey" columns="$int{40}" maxLength="200" text="#{pageSession.valueMap['licenseKey']}" />
         </sun:property> 
         <sun:property id="hostawareProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.hostaware}"  helpText="$resource{i18nhc.hazelcast.configuration.hostawareHelp}">
             <sun:checkbox id="hostaware" selected="#{pageSession.valueMap['hostAwarePartitioning']}" selectedValue="true" />
