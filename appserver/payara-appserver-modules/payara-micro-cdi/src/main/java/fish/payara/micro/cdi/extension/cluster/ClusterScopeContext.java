@@ -41,7 +41,9 @@ package fish.payara.micro.cdi.extension.cluster;
 
 import java.lang.annotation.Annotation;
 
+import com.hazelcast.cp.exception.CPSubsystemException;
 import com.hazelcast.cp.lock.FencedLock;
+import com.hazelcast.cp.lock.exception.LockOwnershipLostException;
 import fish.payara.cluster.DistributedLockType;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.context.spi.Context;
@@ -60,6 +62,8 @@ import org.glassfish.soteria.cdi.CdiUtils;
 import fish.payara.cluster.Clustered;
 import fish.payara.micro.cdi.extension.cluster.annotations.ClusterScoped;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @Clustered singleton CDI context implementation
@@ -67,6 +71,7 @@ import java.util.Optional;
  * @author lprimak
  */
 class ClusterScopeContext implements Context {
+    private static final Logger log = Logger.getLogger(ClusterScopeContext.class.getName());
     private final BeanManager beanManager;
     private final ClusteredSingletonLookupImpl clusteredLookup;
 
@@ -198,8 +203,12 @@ class ClusterScopeContext implements Context {
 
     protected static void unlock(Clustered clusteredAnnotation, FencedLock lock) {
         if (clusteredAnnotation.lock() == DistributedLockType.LOCK) {
-            if (lock.isLockedByCurrentThread()) {
-                lock.unlock();
+            try {
+                if (lock.isLockedByCurrentThread()) {
+                    lock.unlock();
+                }
+            } catch (CPSubsystemException | LockOwnershipLostException e) {
+                log.log(Level.WARNING, "Distributed unlock failed", e);
             }
         }
     }

@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-parent</artifactId>
-        <version>6.2023.9-SNAPSHOT</version>
+        <version>6.2023.11-SNAPSHOT</version>
     </parent>
 
     <groupId>fish.payara.distributions</groupId>
@@ -189,15 +189,6 @@
     </build>
 
     <profiles>
-
-        <!-- Don't deploy any distributions if only the internals are being deployed -->
-        <profile>
-            <id>deploy-internals</id>
-            <properties>
-                <deploy.skip>true</deploy.skip>
-            </properties>
-        </profile>
-
         <!-- Default build profile -->
         <profile>
             <id>DefaultBuild</id>

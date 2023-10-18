@@ -1829,6 +1829,11 @@ public class WebappClassLoader
             // Ignore
         }
 
+        // If we haven't found it locally, and we're using bundled JSF, DON'T delegate any lookup if it's a JSF class
+        if (useMyFaces && !delegateLoad && (name.startsWith("javax.faces") || name.startsWith("jakarta.faces") || name.startsWith("com.sun.faces"))) {
+            throw new ClassNotFoundException(String.format("Class [%s] could not be found in bundled JSF", name));
+        }
+
         // (3) Delegate if class was not found locally
         if ((application.isWhitelistEnabled()? isWhitelisted : true) && !delegateLoad) {
             if (logger.isLoggable(Level.FINER)) {

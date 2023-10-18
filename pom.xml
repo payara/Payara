@@ -46,11 +46,11 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>fish.payara.server</groupId>
     <artifactId>payara-aggregator</artifactId>
-    <version>6.2023.9-SNAPSHOT</version>
+    <version>6.2023.11-SNAPSHOT</version>
     <parent>
         <groupId>fish.payara.server.core</groupId>
         <artifactId>core-aggregator</artifactId>
-        <version>6.2023.9-SNAPSHOT</version>
+        <version>6.9.0-SNAPSHOT</version>
         <relativePath>core</relativePath>
     </parent>
     <packaging>pom</packaging>
@@ -58,7 +58,6 @@
     <name>Payara Project</name>
 
     <modules>
-        <module>core</module>
         <module>nucleus</module>
         <module>appserver</module>
         <module>api</module>
@@ -118,6 +117,13 @@
         </pluginRepository>
     </pluginRepositories>
 
+    <distributionManagement>
+        <repository>
+            <id>payara-nexus-distributions</id>
+            <url>https://nexus.payara.fish/repository/payara-community/</url>
+        </repository>
+    </distributionManagement>
+
     <properties>
         <dynamic.build.properties.version>0.0.1.a2</dynamic.build.properties.version>
 
@@ -130,27 +136,29 @@
         <mojarra.version>4.0.0.payara-p2</mojarra.version>
         <jaxb-extra-osgi.version>2.3.0</jaxb-extra-osgi.version>
 
-        <yasson.version>3.0.2</yasson.version>
+        <yasson.version>3.0.3</yasson.version>
         <eclipselink.version>4.0.1.payara-p1</eclipselink.version>
         <eclipselink.asm.version>9.5.0</eclipselink.asm.version>
         <mq.version>6.3.0.payara-p3</mq.version>
         <com.ibm.jbatch.container.version>2.1.1</com.ibm.jbatch.container.version>
         <com.ibm.jbatch.spi.version>2.1.1</com.ibm.jbatch.spi.version>
         <webservices.version>4.0.1</webservices.version>
-        <org.apache.santuario.version>3.0.0</org.apache.santuario.version>
+        <org.apache.santuario.version>3.0.2</org.apache.santuario.version>
         <woodstox.version>6.4.0</woodstox.version>
         <woodstock-jsf.version>5.0.0</woodstock-jsf.version>
         <woodstock-jsf-suntheme.version>5.0.0.payara-p1</woodstock-jsf-suntheme.version>
         <angus.activation.version>1.0.0</angus.activation.version>
-        <istack-commons-runtime.version>4.0.1</istack-commons-runtime.version>
+        <istack-commons-runtime.version>4.2.0</istack-commons-runtime.version>
         <wsdl4j.version>1.6.3</wsdl4j.version>
         <microprofile-release.version>6.0</microprofile-release.version>
         <payara-arquillian-container.version>3.0.alpha6</payara-arquillian-container.version>
-        <h2db.version>2.1.212</h2db.version>
+        <h2db.version>2.2.220</h2db.version>
         <concurrent.version>3.0.2.payara-p1</concurrent.version>
         <monitoring-console-process.version>2.0.1</monitoring-console-process.version>
         <monitoring-console-webapp.version>2.0.1</monitoring-console-webapp.version>
         <validation.xml.root>${project.build.outputDirectory}</validation.xml.root>
+
+        <deploy.skip>true</deploy.skip>
     </properties>
 
     <profiles>
@@ -280,22 +288,16 @@
         </profile>
 
         <profile>
-            <!-- only internal modules deployed, so tests can run without Server build built -->
-            <id>deploy-internals</id>
-            <properties>
-                <deploy.skip>false</deploy.skip>
-            </properties>
-
-            <distributionManagement>
-                <repository>
-                    <id>payara-nexus-artifacts</id>
-                    <url>https://nexus.payara.fish/repository/payara-artifacts/</url>
-                </repository>
-                <snapshotRepository>
-                    <id>payara-nexus-snapshots</id>
-                    <url>https://nexus.payara.fish/repository/payara-snapshots/</url>
-                </snapshotRepository>
-            </distributionManagement>
+            <id>BuildCore</id>
+            <activation>
+                <property>
+                    <name>build.core.skip</name>
+                    <value>!true</value>
+                </property>
+            </activation>
+            <modules>
+                <module>core</module>
+            </modules>
         </profile>
 
     </profiles>
@@ -376,15 +378,6 @@
                         <testExcludes>
                             <testExclude>**/.ade_path/**</testExclude>
                         </testExcludes>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-deploy-plugin</artifactId>
-                    <version>${maven.deploy.plugin.version}</version>
-                    <configuration>
-                        <retryFailedDeploymentCount>10</retryFailedDeploymentCount>
-                        <skip>${deploy.skip}</skip>
                     </configuration>
                 </plugin>
 

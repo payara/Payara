@@ -1,0 +1,68 @@
+<!-- DTD used by the java.util.logging.XMLFormatter -->
+<!-- This provides an XML formatted log message. -->
+
+<!-- The document type is "log" which consists of a sequence
+of record elements -->
+<!ELEMENT log (record*)>
+
+<!-- Each logging call is described by a record element. -->
+<!ELEMENT record (date, millis, sequence, logger?, level,
+class?, method?, thread?, message, key?, catalog?, param*, exception?)>
+
+<!-- Date and time when LogRecord was created in ISO 8601 format -->
+<!ELEMENT date (#PCDATA)>
+
+<!-- Time when LogRecord was created in milliseconds since
+midnight January 1st, 1970, UTC. -->
+<!ELEMENT millis (#PCDATA)>
+
+<!-- Unique sequence number within source VM. -->
+<!ELEMENT sequence (#PCDATA)>
+
+<!-- Name of source Logger object. -->
+<!ELEMENT logger (#PCDATA)>
+
+<!-- Logging level, may be either one of the constant
+names from java.util.logging.Level (such as "SEVERE"
+or "WARNING") or an integer value such as "20". -->
+<!ELEMENT level (#PCDATA)>
+
+<!-- Fully qualified name of class that issued
+logging call, e.g. "javax.marsupial.Wombat". -->
+<!ELEMENT class (#PCDATA)>
+
+<!-- Name of method that issued logging call.
+It may be either an unqualified method name such as
+"fred" or it may include argument type information
+in parenthesis, for example "fred(int,String)". -->
+<!ELEMENT method (#PCDATA)>
+
+<!-- Integer thread ID. -->
+<!ELEMENT thread (#PCDATA)>
+
+<!-- The message element contains the text string of a log message. -->
+<!ELEMENT message (#PCDATA)>
+
+<!-- If the message string was localized, the key element provides
+the original localization message key. -->
+<!ELEMENT key (#PCDATA)>
+
+<!-- If the message string was localized, the catalog element provides
+the logger's localization resource bundle name. -->
+<!ELEMENT catalog (#PCDATA)>
+
+<!-- If the message string was localized, each of the param elements
+provides the String value (obtained using Object.toString())
+of the corresponding LogRecord parameter. -->
+<!ELEMENT param (#PCDATA)>
+
+<!-- An exception consists of an optional message string followed
+by a series of StackFrames. Exception elements are used
+for Java exceptions and other java Throwables. -->
+<!ELEMENT exception (message?, frame+)>
+
+<!-- A frame describes one line in a Throwable backtrace. -->
+<!ELEMENT frame (class, method, line?)>
+
+<!-- an integer line number within a class's source file. -->
+<!ELEMENT line (#PCDATA)>

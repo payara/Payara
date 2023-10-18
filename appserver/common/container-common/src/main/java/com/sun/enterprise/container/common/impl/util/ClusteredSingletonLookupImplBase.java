@@ -42,12 +42,14 @@ package com.sun.enterprise.container.common.impl.util;
 
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.cp.IAtomicLong;
+import com.hazelcast.cp.exception.CPSubsystemException;
 import com.hazelcast.cp.lock.FencedLock;
 import com.hazelcast.map.IMap;
 import com.sun.enterprise.container.common.spi.ClusteredSingletonLookup;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.JavaEEContextUtil;
@@ -91,8 +93,8 @@ public abstract class ClusteredSingletonLookupImplBase implements ClusteredSingl
 
     @Override
     public FencedLock getDistributedLock() {
-        return lock.updateAndGet(v -> v != null ? v : getHazelcastInstance().getCPSubsystem()
-                .getLock(makeLockKey()));
+        return retryCpOperation(() -> lock.updateAndGet(v -> v != null ?
+                v : getHazelcastInstance().getCPSubsystem().getLock(makeLockKey())));
     }
 
     @Override
@@ -104,8 +106,8 @@ public abstract class ClusteredSingletonLookupImplBase implements ClusteredSingl
 
     @Override
     public  IAtomicLong getClusteredUsageCount() {
-        return count.updateAndGet(v -> v != null ? v : getHazelcastInstance().getCPSubsystem()
-                .getAtomicLong(makeCountKey()));
+        return retryCpOperation(() -> count.updateAndGet(v -> v != null ?
+                v : getHazelcastInstance().getCPSubsystem().getAtomicLong(makeCountKey())));
     }
 
     private HazelcastInstance getHazelcastInstance() {
@@ -141,6 +143,18 @@ public abstract class ClusteredSingletonLookupImplBase implements ClusteredSingl
     @Override
     public HazelcastCore getHazelcastCore() {
         return hzCore;
+    }
+
+    private <TT> TT retryCpOperation(Supplier<TT> operation) {
+        CPSubsystemException exception = null;
+        for (int ii = 0; ii < 3; ++ii) {
+            try {
+                return operation.get();
+            } catch (CPSubsystemException e) {
+                exception = e;
+            }
+        }
+        throw exception;
     }
 
     private String makeKeyPrefix() {

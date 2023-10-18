@@ -46,28 +46,15 @@
     <parent>
         <groupId>fish.payara.server.core</groupId>
         <artifactId>core-aggregator</artifactId>
-        <version>6.2023.9-SNAPSHOT</version>
+        <version>6.9.0-SNAPSHOT</version>
     </parent>
     <artifactId>core-parent</artifactId>
-    <version>6.2023.9-SNAPSHOT</version>
+    <version>6.9.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Payara Core Parent</name>
 
-    <distributionManagement>
-        <repository>
-            <id>payara-nexus-artifacts</id>
-            <url>https://nexus.payara.fish/repository/payara-artifacts/</url>
-        </repository>
-        <snapshotRepository>
-            <id>payara-nexus-snapshots</id>
-            <url>https://nexus.payara.fish/repository/payara-snapshots/</url>
-        </snapshotRepository>
-    </distributionManagement>
-
     <properties>
-        <!-- core artifacts end up in payara-artifacts repo -->
-        <deploy.skip>false</deploy.skip>
         <jar.manifest>${project.build.outputDirectory}/META-INF/MANIFEST.MF</jar.manifest>
     </properties>
 
@@ -374,6 +361,27 @@
                 </configuration>
             </plugin>
 
+            <!-- Add manpages for asadmin commands -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>add-resource</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>add-resource</goal>
+                        </goals>
+                        <configuration>
+                            <resources>
+                                <resource>
+                                    <directory>src/main/manpages</directory>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
 
 
@@ -401,15 +409,6 @@
                         <testExcludes>
                             <testExclude>**/.ade_path/**</testExclude>
                         </testExcludes>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-deploy-plugin</artifactId>
-                    <version>${maven.deploy.plugin.version}</version>
-                    <configuration>
-                        <retryFailedDeploymentCount>10</retryFailedDeploymentCount>
-                        <skip>${deploy.skip}</skip>
                     </configuration>
                 </plugin>
 
@@ -596,7 +595,78 @@
                     <artifactId>build-helper-maven-plugin</artifactId>
                     <version>${maven.build.helper.plugin.version}</version>
                 </plugin>
+                <plugin>
+                    <groupId>com.github.siom79.japicmp</groupId>
+                    <artifactId>japicmp-maven-plugin</artifactId>
+                    <version>${japicmp.maven.plugin.version}</version>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
+    
+    <profiles>
+        <profile>
+            <id>force-semver</id>
+            <!-- Force semantic versioning. The differences are in target/japicmp in text, html and xml -->
+            <activation>
+                <property>
+                    <!-- Active unless explicitly set to false -->
+                    <name>core.force.semver</name>
+                    <value>!false</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <!-- plugin to parse version number without "-SNAPSHOT" -->
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>build-helper-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>released-version</id>
+                                <goals>
+                                    <goal>released-version</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>com.github.siom79.japicmp</groupId>
+                        <artifactId>japicmp-maven-plugin</artifactId>
+                        <configuration>
+                            <!-- Use the latest published version. It's necessary to use specific version because subprojects using glassfish-jar cannot be found. -->
+                            <oldVersion> 
+                                <dependency>
+                                    <groupId>${project.groupId}</groupId>
+                                    <artifactId>${project.artifactId}</artifactId>
+                                    <version>${releasedVersion.majorVersion}.${releasedVersion.minorVersion}.${releasedVersion.incrementalVersion}</version>
+                                    <type>jar</type>
+                                </dependency>
+                            </oldVersion>
+                            <!-- Use the current version. It's necessary to use <file> because subprojects using glassfish-jar cannot be found.-->
+                            <newVersion>
+                                <file>
+                                    <path>${project.build.directory}/${project.artifactId}-${project.version}.jar</path>
+                                </file>
+                            </newVersion>
+                            <parameter>
+                                <!-- see documentation https://siom79.github.io/japicmp/MavenPlugin.html -->
+                                <ignoreMissingClasses>true</ignoreMissingClasses>
+                                <breakBuildBasedOnSemanticVersioning>true</breakBuildBasedOnSemanticVersioning>
+                            </parameter>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>cmp</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
 </project>

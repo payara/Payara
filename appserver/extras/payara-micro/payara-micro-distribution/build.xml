@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!-- Portions Copyright 2016-2022 Payara Foundation and/or its affiliates -->
+<!-- Portions Copyright 2016-2023 Payara Foundation and/or its affiliates -->
 
 <project name="payara-micro" default="new.create" basedir=".">
     <property name="rootdir" value="target"/>
@@ -221,7 +221,7 @@
                 <attribute name="Start-Class" value="fish.payara.micro.impl.PayaraMicroImpl"/>
                 <attribute name="Add-Exports" value="java.base/jdk.internal.ref jdk.naming.dns/com.sun.jndi.dns java.naming/com.sun.jndi.ldap"/>
                 <attribute name="Add-Opens"
-                           value="java.base/jdk.internal.loader java.base/java.lang java.base/java.net java.base/java.nio java.base/java.util java.base/sun.nio.ch java.management/sun.management jdk.management/com.sun.management.internal java.base/sun.net.www.protocol.jrt java.base/sun.net.www.protocol.jar java.naming/javax.naming.spi java.rmi/sun.rmi.transport java.logging/java.util.logging"/>
+                           value="java.base/jdk.internal.loader java.base/java.lang java.base/java.net java.base/java.nio java.base/java.util java.base/sun.nio.ch java.management/sun.management jdk.management/com.sun.management.internal java.base/sun.net.www.protocol.jrt java.base/sun.net.www.protocol.jar java.base/java.io java.naming/javax.naming.spi java.rmi/sun.rmi.transport java.logging/java.util.logging java.management/javax.management java.management/javax.management.openmbean"/>
             </manifest>
         </jar>
     </target>
