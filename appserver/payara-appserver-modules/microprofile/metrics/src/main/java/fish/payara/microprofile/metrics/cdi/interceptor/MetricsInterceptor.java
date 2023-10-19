@@ -118,8 +118,7 @@ public class MetricsInterceptor {
             Class<?> type = beanClass;
             do {
                 for (Method method : type.getDeclaredMethods()) {
-                    //for gouge should we need to consider private methods, wait for answer
-                    if (!method.isSynthetic()) { //&& !Modifier.isPrivate(method.getModifiers())) {
+                    if (!method.isSynthetic() && !Modifier.isPrivate(method.getModifiers())) {
                         registerMetrics(beanClass, method, context.getTarget(), metricsService);
                         //review metrics from stereotypes applied to methods
                         registerFromStereotypes(bean.getStereotypes(), beanClass, method,
@@ -212,7 +211,7 @@ public class MetricsInterceptor {
      * @param element method to evaluate
      * @return boolean indicating if this is a private method
      */
-    private <E extends Member & AnnotatedElement> boolean isMethodPrivate(E element) {
+    public static <E extends Member & AnnotatedElement> boolean isMethodPrivate(E element) {
         if(element instanceof Method && Modifier.isPrivate(((Method)element).getModifiers())){
             return true;
         }

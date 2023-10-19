@@ -653,6 +653,10 @@
                                 <!-- see documentation https://siom79.github.io/japicmp/MavenPlugin.html -->
                                 <ignoreMissingClasses>true</ignoreMissingClasses>
                                 <breakBuildBasedOnSemanticVersioning>true</breakBuildBasedOnSemanticVersioning>
+                                <excludes>
+                                    <exclude>io.opentelemetry.extension</exclude>
+                                    <exclude>io.opentelemetry.instrumentation</exclude>
+                                </excludes>
                             </parameter>
                         </configuration>
                         <executions>

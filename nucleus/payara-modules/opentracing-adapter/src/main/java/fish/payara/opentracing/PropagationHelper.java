@@ -138,6 +138,13 @@ public class PropagationHelper implements Scope {
 
     @Override
     public void close() {
+        closeContext();
+        if (singleThreaded && !errorReported) {
+            end();
+        }
+    }
+
+    public void closeContext() {
         if (spanScope != null) {
             spanScope.close();
             spanScope = null;
@@ -145,9 +152,6 @@ public class PropagationHelper implements Scope {
         if (contextScope != null) {
             contextScope.close();
             contextScope = null;
-        }
-        if (singleThreaded && !errorReported) {
-            end();
         }
     }
 

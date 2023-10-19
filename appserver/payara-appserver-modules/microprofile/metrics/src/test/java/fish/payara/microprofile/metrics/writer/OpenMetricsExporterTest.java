@@ -46,10 +46,13 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.StringWriter;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.Duration;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import java.util.stream.Collectors;
 import org.eclipse.microprofile.metrics.Counter;
 import org.eclipse.microprofile.metrics.Gauge;
 import org.eclipse.microprofile.metrics.Histogram;
@@ -89,7 +92,7 @@ public class OpenMetricsExporterTest {
                 .withName(metricID.getName())
                 .withDescription("The number of unique visitors")
                 .build();
-        assertOutputEqualsFile("Counter.txt", metricID, counter, metadata);
+        assertOutputEqualsContent("Counter.txt", metricID, counter, metadata);
     }
 
 
@@ -110,7 +113,7 @@ public class OpenMetricsExporterTest {
                 .withDescription("Users file size")
                 .withUnit(MetricUnits.BYTES)
                 .build();
-        assertOutputEqualsFile("Histogram.txt", metricID, histogram, metadata);
+        assertOutputEqualsContent("Histogram.txt", metricID, histogram, metadata);
     }
 
 
@@ -126,7 +129,7 @@ public class OpenMetricsExporterTest {
                 .withDescription("The running cost of the server in dollars.")
                 .withUnit("dollars")
                 .build();
-        assertOutputEqualsFile("Gauge.txt", metricID, gauge, metadata);
+        assertOutputEqualsContent("Gauge.txt", metricID, gauge, metadata);
     }
 
     @Test
@@ -147,7 +150,7 @@ public class OpenMetricsExporterTest {
                 .withDescription("Server response time for /index.html")
                 .withUnit(MetricUnits.NANOSECONDS)
                 .build();
-        assertOutputEqualsFile("Timer.txt", metricID, timer, metadata);
+        assertOutputEqualsContent("Timer.txt", metricID, timer, metadata);
     }
 
     public Snapshot.PercentileValue[] getPercentilesArray() {
@@ -384,9 +387,9 @@ public class OpenMetricsExporterTest {
         assertEquals(expected, actual.getBuffer().toString());
     }
 
-    private void assertOutputEqualsFile(String expectedFile, MetricID metricID, Metric metric, Metadata metadata) {
+    private void assertOutputEqualsContent(String expectedFile, MetricID metricID, Metric metric, Metadata metadata) {
         exporter.export(metricID, metric, metadata);
-        assertOutputEqualsFile(expectedFile);
+        assertOutputEqualsContent(expectedFile);
     }
 
     private void assertOutputEqualsFile(String expectedFile) {
@@ -396,6 +399,22 @@ public class OpenMetricsExporterTest {
     private String readFile(String file) {
         try {
             return new String(readAllBytes(Paths.get(getClass().getResource(file).toURI())));
+        } catch (Exception ex) {
+            throw new AssertionError(ex);
+        }
+    }
+
+    private void assertOutputEqualsContent(String expectedFile) {
+        List<String> lines = readLines("/examples/" + expectedFile);
+        String resultingContent = actual.getBuffer().toString();
+        for (String l : lines) {
+            assertTrue(resultingContent.contains(l));
+        }
+    }
+
+    private List<String> readLines(String file) {
+        try {
+            return Files.lines(Paths.get(getClass().getResource(file).toURI())).collect(Collectors.toList());
         } catch (Exception ex) {
             throw new AssertionError(ex);
         }

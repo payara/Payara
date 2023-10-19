@@ -43,10 +43,13 @@ import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
 import java.util.stream.Stream;
+import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.metrics.Counter;
 import org.eclipse.microprofile.metrics.Gauge;
 import org.eclipse.microprofile.metrics.Histogram;
@@ -84,6 +87,8 @@ public final class MetricUtils<T extends Metric> {
     public static final String TAG_METRIC_MP_SCOPE_NAME = "mp_scope";
 
     public static final String TAG_METRIC_MP_APP_NAME = "mp_app";
+    
+    public static final String METRIC_TAGS_GLOBAL_PROPERTY = "mp.metrics.tags";
 
     private final ByJust<String, T> byName;
     private final By<String, Tag[], T> byNameAndTags;
@@ -183,6 +188,69 @@ public final class MetricUtils<T extends Metric> {
         return gauge != null ? gauge : new LazyGauge<>(() -> registry.getGauges().get(complementedMetricID));
     }
 
+    public static Tag[] resolveGlobalTagsConfiguration() {
+        Config config = MetricUtils.getConfigProvider();
+        if (config != null) {
+            Optional<String> globalTags = config.getOptionalValue(METRIC_TAGS_GLOBAL_PROPERTY, String.class);
+            if (globalTags.isPresent()) {
+                return parseGlobalTags(globalTags.get());
+            } else {
+                return new Tag[0];
+            }
+        } else {
+            return new Tag[0];
+        }
+    }
+
+    private static Tag[] parseGlobalTags(String globalTags) {
+        if (globalTags == null || globalTags.length() == 0) {
+            return new Tag[0];
+        }
+
+        String[] keyValuePairs = globalTags.split("(?<!\\\\),");
+
+        Tag[] tagsArray = new Tag[keyValuePairs.length];
+
+        int tagIndex = 0;
+        for (String kv : keyValuePairs) {
+            if (kv.length() == 0) {
+                String message = String
+                        .format("Invalid list of global tags, the correct format is: [a-zA-Z_][a-zA-Z0-9_]*. Please" +
+                                "review entry %s from global properties", METRIC_TAGS_GLOBAL_PROPERTY);
+                throw new IllegalArgumentException(message);
+            }
+
+            String[] internalKVSplit = getInternalKeyValueStrings(kv);
+
+            String key = internalKVSplit[0];
+            String value = internalKVSplit[1];
+
+            if (!key.matches("[a-zA-Z_][a-zA-Z0-9_]*")) {
+                String message = String
+                        .format("Invalid tag name. Please review names to follow regex [a-zA-Z_][a-zA-Z0-9_]*. " +
+                                "Invalid name %s", key);
+                throw new IllegalArgumentException(message);
+            }
+            value = value.replace("\\,", ",");
+            value = value.replace("\\=", "=");
+            tagsArray[tagIndex] = new Tag(key, value);
+            tagIndex++;
+        }
+        return tagsArray;
+    }
+
+    private static String[] getInternalKeyValueStrings(String kv) {
+        String[] internalKVSplit = kv.split("(?<!\\\\)=");
+
+        if (internalKVSplit.length != 2 || internalKVSplit[0].length() == 0 || internalKVSplit[1].length() == 0) {
+            String message = String
+                    .format("Invalid individual global tag, the correct format is: [a-zA-Z_][a-zA-Z0-9_]*. Please" +
+                            "review entry %s from global properties", METRIC_TAGS_GLOBAL_PROPERTY);
+            throw new IllegalArgumentException(message);
+        }
+        return internalKVSplit;
+    }
+
     private static final class LazyGauge<T extends Number> implements Gauge<T> {
 
         private final AtomicReference<Gauge<T>> gauge = new AtomicReference<>();
@@ -197,5 +265,12 @@ public final class MetricUtils<T extends Metric> {
         }
     }
 
+    public static Config getConfigProvider() {
+        try {
+            return ConfigProvider.getConfig();
+        } catch(Exception e) {
+            return null;
+        }
+    }
 
 }
