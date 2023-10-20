@@ -60,3 +60,6 @@
 
 # dependent flashlight package resolved at runtime
 DynamicImport-Package: org.glassfish.flashlight.provider
+
+# Don't import ourself!
+Import-Package: !com.sun.enterprise.security.acl, *
