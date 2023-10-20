@@ -143,7 +143,7 @@
         <com.ibm.jbatch.container.version>2.1.1</com.ibm.jbatch.container.version>
         <com.ibm.jbatch.spi.version>2.1.1</com.ibm.jbatch.spi.version>
         <webservices.version>4.0.1</webservices.version>
-        <org.apache.santuario.version>3.0.2</org.apache.santuario.version>
+        <org.apache.santuario.version>3.0.3</org.apache.santuario.version>
         <woodstox.version>6.4.0</woodstox.version>
         <woodstock-jsf.version>5.0.0</woodstock-jsf.version>
         <woodstock-jsf-suntheme.version>5.0.0.payara-p1</woodstock-jsf-suntheme.version>
