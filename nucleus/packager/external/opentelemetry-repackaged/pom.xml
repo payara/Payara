@@ -156,6 +156,7 @@
                             !com.android.*,
                             !dalvik.*,
                             io.opentelemetry.exporter.prometheus;resolution:=optional,
+                            sun.security.ssl;resolution:=optional,
                             *
                         </Import-Package>
                         <!-- Embed the dependencies and then shade them in next step -->
