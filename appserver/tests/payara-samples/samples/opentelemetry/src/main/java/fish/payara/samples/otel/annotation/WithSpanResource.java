@@ -39,39 +39,49 @@
  *  holder.
  *
  */
+package fish.payara.samples.otel.annotation;
 
-package fish.payara.samples.otel.spanname;
+import io.opentelemetry.instrumentation.annotations.SpanAttribute;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
+import jakarta.enterprise.context.RequestScoped;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.QueryParam;
 
-import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+@RequestScoped
+@Path("/withSpan")
+public class WithSpanResource {
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
+    private static final Logger LOG = Logger.getLogger(WithSpanResource.class.getName());
 
-@RunWith(Arquillian.class)
-public class OpenTracingPathSpanNamingIT extends AbstractSpanNameTest {
-    public static class SpanConfig extends Conf {
-        public SpanConfig() {
-            super(Map.of(SPAN_NAMING_KEY, "opentracing-http-path"));
-        }
+    @Inject
+    SpanBean spanBean;
+
+    @Path("/span")
+    @GET
+    public String getSpan() {
+        LOG.log(Level.INFO, "getSpan()");
+        spanBean.span();
+        return "OK";
     }
-    @Deployment
-    public static WebArchive deployment() {
-        return configSource(base(), SpanConfig.class);
+
+    @WithSpan
+    @Path("/spanDirectAnnotated")
+    @GET
+    public String getSpanAnnotatedOnDirectMethod() {
+        LOG.log(Level.INFO, "getSpanAnnotatedOnDirectMethod()");
+        return "OK";
     }
 
-    @Test
-    public void testSpanName() {
-        var response = target(null, "async", "compute").request().get();
-        assertEquals(200, response.getStatus());
-        var spans = exporter.getSpans();
-
-        var expected = "GET:/async/compute";
-        assertThat(spans).describedAs("Expecting span name of "+expected).anySatisfy(span -> assertThat(span.getName()).isEqualTo(expected));
+    @WithSpan
+    @Path("/spanAnnotatedWithAttributes")
+    @GET
+    public String getSpanAnnotatedWithAttributes(@QueryParam("q") @SpanAttribute("query") String query) {
+        LOG.log(Level.INFO, "getSpanAnnotatedWithAttributes()");
+        return "OK";
     }
 }

@@ -41,11 +41,17 @@
 package fish.payara.microprofile.metrics.rest;
 
 import fish.payara.microprofile.metrics.MetricsService;
+import fish.payara.microprofile.metrics.cdi.MetricUtils;
 import fish.payara.microprofile.metrics.exception.NoSuchMetricException;
 import fish.payara.microprofile.metrics.exception.NoSuchRegistryException;
 import fish.payara.microprofile.metrics.writer.MetricsWriter;
 import fish.payara.microprofile.metrics.writer.MetricsWriterImpl;
 import fish.payara.microprofile.metrics.writer.OpenMetricsExporter;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Optional;
@@ -53,33 +59,19 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+import org.eclipse.microprofile.metrics.MetricRegistry;
+import org.glassfish.internal.api.Globals;
 
 import static fish.payara.microprofile.Constants.EMPTY_STRING;
-import static java.nio.charset.StandardCharsets.UTF_8;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import static jakarta.servlet.http.HttpServletResponse.SC_FORBIDDEN;
-import static jakarta.servlet.http.HttpServletResponse.SC_METHOD_NOT_ALLOWED;
-import static jakarta.servlet.http.HttpServletResponse.SC_NOT_ACCEPTABLE;
-import static jakarta.servlet.http.HttpServletResponse.SC_NOT_FOUND;
+import static jakarta.servlet.http.HttpServletResponse.*;
 import static jakarta.ws.rs.HttpMethod.GET;
 import static jakarta.ws.rs.HttpMethod.OPTIONS;
 import static jakarta.ws.rs.core.HttpHeaders.ACCEPT;
-import jakarta.ws.rs.core.MediaType;
-import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 import static jakarta.ws.rs.core.MediaType.TEXT_PLAIN;
-
-import org.eclipse.microprofile.metrics.MetricRegistry;
-import org.eclipse.microprofile.config.Config;
-import org.eclipse.microprofile.config.ConfigProvider;
-import org.eclipse.microprofile.metrics.Tag;
-import org.glassfish.internal.api.Globals;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class MetricsResource extends HttpServlet {
-
-    private static final String GLOBAL_TAGS_VARIABLE = "mp.metrics.tags";
+    
     private static final String GLOBAL_TAG_MALFORMED_EXCEPTION = "Malformed list of Global Tags. Tag names "
             + "must match the following regex [a-zA-Z_][a-zA-Z0-9_]*."
             + " Global Tag values must not be empty."
@@ -109,13 +101,13 @@ public class MetricsResource extends HttpServlet {
         }
         metricsService.refresh();
 
-        String scopeParameter = request.getParameter("scope") != null ? request.getParameter("scope"): null;
+        String scopeParameter = request.getParameter("scope") != null ? request.getParameter("scope") : null;
         String metricName = request.getParameter("name") != null ? request.getParameter("name") : null;
         String pathInfo = request.getPathInfo() != null ? request.getPathInfo().substring(1) : EMPTY_STRING;
         String[] pathInfos = pathInfo.split("/");
         boolean availableScope = true;
 
-        if(!pathInfo.isEmpty() && pathInfos.length > 0) {
+        if (!pathInfo.isEmpty() && pathInfos.length > 0) {
             response.sendError(SC_NOT_FOUND, "Not available paths to consume");
             return;
         }
@@ -130,11 +122,11 @@ public class MetricsResource extends HttpServlet {
                     if (scopeParameter != null && !scopeParameter.isEmpty()) {
                         String scope;
                         try {
-                            if(scopeParameter.equals(MetricRegistry.BASE_SCOPE)) {
+                            if (scopeParameter.equals(MetricRegistry.BASE_SCOPE)) {
                                 scope = MetricRegistry.BASE_SCOPE;
-                            } else if(scopeParameter.equals(MetricRegistry.VENDOR_SCOPE)) {
+                            } else if (scopeParameter.equals(MetricRegistry.VENDOR_SCOPE)) {
                                 scope = MetricRegistry.VENDOR_SCOPE;
-                            } else if(scopeParameter.equals(MetricRegistry.APPLICATION_SCOPE)) {
+                            } else if (scopeParameter.equals(MetricRegistry.APPLICATION_SCOPE)) {
                                 scope = MetricRegistry.APPLICATION_SCOPE;
                             } else {
                                 scope = scopeParameter;
@@ -143,23 +135,23 @@ public class MetricsResource extends HttpServlet {
                             throw new NoSuchRegistryException(scopeParameter);
                         }
 
-                        for(String name:metricsService.getContextNames()){
+                        for (String name : metricsService.getContextNames()) {
                             Optional<String> availableScopeOptional = metricsService.getContext(name)
                                     .getRegistries().keySet().stream().filter(k -> k.equals(scope)).findAny();
-                            if(!availableScopeOptional.isPresent()) {
+                            if (!availableScopeOptional.isPresent()) {
                                 availableScope = false;
                             } else {
                                 availableScope = true;
                             }
                         }
 
-                        if(!availableScope) {
+                        if (!availableScope) {
                             response.sendError(SC_NOT_FOUND, "Not available scope to consume");
                         }
 
-                        if(scope != null && metricName != null) {
+                        if (availableScope && scope != null && metricName != null) {
                             outputWriter.write(scope, metricName);
-                        } else {
+                        } else if (availableScope) {
                             outputWriter.write(scope);
                         }
                     } else {
@@ -182,42 +174,12 @@ public class MetricsResource extends HttpServlet {
         if (GET.equalsIgnoreCase(method)) {
             if (TEXT_PLAIN.equals(contentType)) {
                 return new MetricsWriterImpl(new OpenMetricsExporter(writer),
-                    service.getContextNames(), service::getContext, getGlobalTags());
+                    service.getContextNames(), service::getContext, MetricUtils.resolveGlobalTagsConfiguration());
             }
         }
         return null;
     }
-
-    private static Tag[] getGlobalTags() {
-        Config config = ConfigProvider.getConfig();
-        Optional<String> globalTagsProperty = config.getOptionalValue(GLOBAL_TAGS_VARIABLE, String.class);
-        if (!globalTagsProperty.isPresent()) {
-            return new Tag[0];
-        }
-        String globalTags = globalTagsProperty.get();
-        if (globalTags == null || globalTags.length() == 0) {
-            return new Tag[0];
-        }
-        String[] kvPairs = globalTags.split("(?<!\\\\),");
-        Tag[] tags = new Tag[kvPairs.length];
-        for (int i = 0; i < kvPairs.length; i++) {
-            String kvString = kvPairs[i];
-            if (kvString.length() == 0) {
-                throw new IllegalArgumentException(GLOBAL_TAG_MALFORMED_EXCEPTION);
-            }
-            String[] keyValueSplit = kvString.split("(?<!\\\\)=");
-            if (keyValueSplit.length != 2 || keyValueSplit[0].length() == 0 || keyValueSplit[1].length() == 0) {
-                throw new IllegalArgumentException(GLOBAL_TAG_MALFORMED_EXCEPTION);
-            }
-            String key = keyValueSplit[0];
-            String value = keyValueSplit[1];
-            value = value.replace("\\,", ",");
-            value = value.replace("\\=", "=");
-            tags[i] = new Tag(key, value);
-        }
-        return tags;
-    }
-
+    
     private static String getContentType(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String method = request.getMethod();
         String accept = request.getHeader(ACCEPT);

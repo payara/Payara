@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2018-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -40,18 +40,15 @@
 
 package fish.payara.microprofile.metrics.cdi.interceptor;
 
-import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Member;
-import java.util.function.BiFunction;
-
+import fish.payara.microprofile.metrics.cdi.AnnotationReader;
 import jakarta.annotation.Priority;
 import jakarta.interceptor.Interceptor;
 import jakarta.interceptor.InvocationContext;
+import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Member;
 import org.eclipse.microprofile.metrics.MetricID;
 import org.eclipse.microprofile.metrics.Timer;
 import org.eclipse.microprofile.metrics.annotation.Timed;
-
-import fish.payara.microprofile.metrics.cdi.AnnotationReader;
 
 @Timed
 @Interceptor
@@ -67,9 +64,10 @@ public class TimedInterceptor extends AbstractInterceptor {
     /**
      * Make the actual logic unit testable...
      */
-    static <E extends Member & AnnotatedElement> Object proceedTimed(InvocationContext context, E element,
+    static <E extends Member & AnnotatedElement> Object proceedTimed(InvocationContext context, E element, 
             Class<?> bean, ThreeFunctionResolver<MetricID, Class<Timer>, String, Timer> loader) throws Exception {
         return apply(element, bean, AnnotationReader.TIMED, Timer.class, loader).time(context::proceed);
     }
+
 
 }

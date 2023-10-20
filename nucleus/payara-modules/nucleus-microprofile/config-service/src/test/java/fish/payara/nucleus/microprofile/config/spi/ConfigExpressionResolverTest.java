@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2021-2022] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2021-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -45,11 +45,11 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.HashMap;
-import java.util.NoSuchElementException;
 
 import static fish.payara.nucleus.microprofile.config.spi.ConfigTestUtils.createSource;
 import static java.util.Collections.singleton;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 public class ConfigExpressionResolverTest {
@@ -122,9 +122,10 @@ public class ConfigExpressionResolverTest {
         assertEquals("1valuevalue2", result.getValue());
     }
 
-    @Test(expected = NoSuchElementException.class)
-    public void testNonExistentReference() {
-        resolver.resolve("reference.not.found");
+    @Test
+    public void testNonNullReference() {
+        ConfigValueImpl configValue = resolver.resolve("reference.not.found");
+        assertNotNull(configValue);
     }
 
     @Test
