@@ -621,13 +621,37 @@ public class ASURLClassLoader extends CurrentBeforeParentClassLoader
                         res.setProtectionDomain(ASURLClassLoader.this, entry.getCertificates());
                         return classData;
                     }
+                    
+                    if (zip.isMultiRelease()) {
+                        String javaVersion = System.getProperty("java.version");
+                        JarEntry multiVersionEntry = zip.getJarEntry("META-INF/versions/"+javaVersion+"/"+entryName);
+                        if (multiVersionEntry != null) {
+                            InputStream classStream = zip.getInputStream(multiVersionEntry);
+                            byte[] classData = getClassData(classStream);
+                            res.setProtectionDomain(ASURLClassLoader.this, multiVersionEntry.getCertificates());
+                            return classData;
+                        }
+                    }
                 } else { // Its a directory....
-                    File classFile = new File (res.file, entryName.replace('/', File.separatorChar));
+                    String entryPath = entryName.replace('/', File.separatorChar);
+                    File classFile = new File (res.file, entryPath);
                     if (classFile.exists()) {
                         try (InputStream classStream = new FileInputStream(classFile)) {
                             byte[] classData = getClassData(classStream);
                             res.setProtectionDomain(ASURLClassLoader.this, null);
                             return classData;
+                        }
+                    }
+                    
+                    File multiVersionDir = new File(res.file, "META-INF/versions/");
+                    if (multiVersionDir.exists()) {
+                        File multiVersionClassFile = new File(multiVersionDir, entryPath);
+                        if (multiVersionClassFile.exists()) {
+                            try (InputStream classStream = new FileInputStream(multiVersionClassFile)) {
+                                byte[] classData = getClassData(classStream);
+                                res.setProtectionDomain(ASURLClassLoader.this, null);
+                                return classData;
+                            }
                         }
                     }
                 }
