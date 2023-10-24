@@ -126,7 +126,7 @@
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>
-            <version>3.14.9</version>
+            <version>4.12.0</version>
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>
@@ -153,6 +153,8 @@
                             !org.checkerframework.checker.nullness.qual,
                             !org.conscrypt,sun.misc;version=!,
                             !javax.annotation.*,
+                            !org.bouncycastle.*,
+                            !org.openjsse.*,
                             *
                         </Import-Package>
                         <!-- Embed the dependencies and then shade them in next step -->
