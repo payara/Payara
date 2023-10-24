@@ -130,6 +130,34 @@
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-stdlib-common</artifactId>
+            <version>1.9.10</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-stdlib-jdk8</artifactId>
+            <version>1.8.21</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-stdlib-jdk7</artifactId>
+            <version>1.8.21</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-stdlib</artifactId>
+            <version>1.8.21</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
     </dependencies>
 
     <!-- next we need to relocate okhttp, and add OSGi manifest -->
@@ -161,7 +189,8 @@
                         <Embed-Dependency>
                             *;groupId=com.squareup.*;inline=true,
                             *;groupId=io.opentelemetry;inline=true,
-                            *;groupId=io.opentelemetry.instrumentation;inline=true
+                            *;groupId=io.opentelemetry.instrumentation;inline=true,
+                            *;groupId=org.jetbrains.kotlin.*;inline=true
                         </Embed-Dependency>
                         <Embed-Transitive>true</Embed-Transitive>
                     </instructions>
@@ -193,6 +222,7 @@
                     <artifactSet>
                         <includes>
                             <include>com.squareup.*:*</include>
+                            <inclue>org.jetbrains.kotlin.*:*</inclue>
                         </includes>
                     </artifactSet>
                     <filters>
