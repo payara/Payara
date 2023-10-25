@@ -137,7 +137,7 @@
         <jaxb-extra-osgi.version>2.3.0</jaxb-extra-osgi.version>
 
         <yasson.version>3.0.3</yasson.version>
-        <eclipselink.version>4.0.1.payara-p1</eclipselink.version>
+        <eclipselink.version>4.0.1.payara-p2</eclipselink.version>
         <eclipselink.asm.version>9.5.0</eclipselink.asm.version>
         <mq.version>6.3.0.payara-p3</mq.version>
         <com.ibm.jbatch.container.version>2.1.1</com.ibm.jbatch.container.version>
