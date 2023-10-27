@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
- // Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
+ // Portions Copyright [2016-2023] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.loader;
 
@@ -614,23 +614,13 @@ public class ASURLClassLoader extends CurrentBeforeParentClassLoader
             try {
                 if (res.isJar) { // It is a jarfile..
                     JarFile zip = res.zip;
-                    JarEntry entry = zip.getJarEntry(entryName);
+                    JarFile jar = new JarFile(res.file, false, JarFile.OPEN_READ,
+                            Runtime.Version.parse(System.getProperty("java.version")));
+                    JarEntry entry = jar.getJarEntry(entryName);
                     if (entry != null) {
-                        InputStream classStream = zip.getInputStream(entry);
-                        byte[] classData = getClassData(classStream);
+                        byte[] classData = getClassData(zip.getInputStream(entry));
                         res.setProtectionDomain(ASURLClassLoader.this, entry.getCertificates());
                         return classData;
-                    }
-                    
-                    if (zip.isMultiRelease()) {
-                        String javaVersion = System.getProperty("java.version");
-                        JarEntry multiVersionEntry = zip.getJarEntry("META-INF/versions/"+javaVersion+"/"+entryName);
-                        if (multiVersionEntry != null) {
-                            InputStream classStream = zip.getInputStream(multiVersionEntry);
-                            byte[] classData = getClassData(classStream);
-                            res.setProtectionDomain(ASURLClassLoader.this, multiVersionEntry.getCertificates());
-                            return classData;
-                        }
                     }
                 } else { // Its a directory....
                     String entryPath = entryName.replace('/', File.separatorChar);
