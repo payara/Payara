@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2023 [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.v3.admin.cluster;
 
@@ -86,16 +87,16 @@ public class PostRegisterInstanceCommand extends RegisterInstanceCommandParamete
         ActionReport report = context.getActionReport();
         final Logger logger = context.getLogger();
 
-        final  InstanceRegisterInstanceCommandParameters suppInfo =
+        final InstanceRegisterInstanceCommandParameters suppInfo =
                 context.getActionReport().getResultType(InstanceRegisterInstanceCommandParameters.class);
 
-        if (suppInfo != null && clusterName != null) {
+        if (suppInfo != null && (clusterName != null || deploymentGroup != null)) {
             try {
                 ParameterMapExtractor pme = new ParameterMapExtractor(suppInfo, this);
                 final ParameterMap paramMap = pme.extract();
 
                 List<String> targets = new ArrayList<String>();
-                List<Server> instances = target.getInstances(this.clusterName);
+                List<Server> instances = target.getInstances(this.clusterName != null ? clusterName : deploymentGroup);
                 for (Server s : instances) {
                     targets.add(s.getName());
                 }
