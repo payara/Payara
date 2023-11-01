@@ -158,6 +158,8 @@
         <findbugs.glassfish.logging.validLoggerPrefixes>jakarta.enterprise</findbugs.glassfish.logging.validLoggerPrefixes>
         <jacoco.plugin.version>0.8.8</jacoco.plugin.version>
 
+        <awaitility.version>4.2.0</awaitility.version>
+
     </properties>
 
     <modules>
@@ -815,7 +817,7 @@ Parent is ${project.parent}</echo>
             <dependency>
                 <groupId>org.awaitility</groupId>
                 <artifactId>awaitility</artifactId>
-                <version>4.0.3</version>
+                <version>${awaitility.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
