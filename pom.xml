@@ -382,26 +382,6 @@
                 </plugin>
 
                 <plugin>
-                    <groupId>org.apache.felix</groupId>
-                    <artifactId>maven-bundle-plugin</artifactId>
-                    <version>${maven.bundle.plugin.version}</version>
-                    <configuration>
-                        <!-- By default, we don't export anything. -->
-                        <Export-Package />
-                        <instructions>
-                            <!--
-                                Read all the configuration from osgi.bundle file, if it exists.
-                            -->
-                            <_include>-osgi.bundle</_include>
-                        </instructions>
-                        <excludeDependencies>tools-jar</excludeDependencies>
-                        <supportedProjectTypes>
-                            <supportedProjectType>glassfish-jar</supportedProjectType>
-                            <supportedProjectType>jar</supportedProjectType>
-                        </supportedProjectTypes>
-                    </configuration>
-                </plugin>
-                <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>xml-maven-plugin</artifactId>
                     <version>1.0.2</version>

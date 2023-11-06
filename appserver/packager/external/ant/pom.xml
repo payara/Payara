@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright 2017-2023 Payara Foundation and/or its affiliates -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
@@ -98,6 +98,16 @@
                             !org.apache.tools.ant.util.java15,
                             !org.apache.tools.ant.taskdefs.optional,
                             !org.apache.env,
+                            !org.apache.harmony.luni.util,
+                            com.sun.tools.javah.*;resolution:=optional,
+                            gnu.classpath.*;resolution:=optional,
+                            gnu.gcj.*;resolution:=optional,
+                            javax.activation.*;resolution:=optional,
+                            javax.mail.internet.*;resolution:=optional,
+                            kaffe.util.*;resolution:=optional,
+                            org.tukaani.xz.*;resolution:=optional,
+                            sun.tools.native2ascii.*;resolution:=optional,
+                            weblogic.*;resolution:=optional,
                             *
                         </Import-Package>
                         <!-- !* matches with nothing, so no other class will be included in this bundle,
