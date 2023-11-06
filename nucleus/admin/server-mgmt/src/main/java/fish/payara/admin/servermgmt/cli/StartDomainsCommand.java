@@ -41,6 +41,10 @@ package fish.payara.admin.servermgmt.cli;
 
 import com.sun.enterprise.admin.servermgmt.cli.StartDomainCommand;
 import java.io.File;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
@@ -75,47 +79,64 @@ public class StartDomainsCommand extends StartDomainCommand {
     private String preBootCommand;
     @Param(name = "postbootcommandfile", optional = true)
     private String postBootCommand;
-    
+
+    @Param(optional = true, defaultValue = "600")
+    private int timeout;
+
+    @Param(optional = true, defaultValue = "600")
+    private int domainTimeout;
+
     @Override
     protected void validate()
             throws CommandException, CommandValidationException {
-        if (preBootCommand != null){
+        if (preBootCommand != null) {
             File prebootfile = new File(preBootCommand);
-            if (!prebootfile.exists()){
+            if (!prebootfile.exists()) {
                 throw new CommandValidationException("preboot commands file does not exist: " + prebootfile.getAbsolutePath());
             }
         }
-        
-        if (postBootCommand != null){
+
+        if (postBootCommand != null) {
             File postbootFile = new File(postBootCommand);
-            if (!postbootFile.exists()){
-                throw new CommandValidationException("postboot commands file does not exist: "+ postbootFile.getAbsolutePath());
+            if (!postbootFile.exists()) {
+                throw new CommandValidationException("postboot commands file does not exist: " + postbootFile.getAbsolutePath());
             }
         }
 
-        if (timeout < 1) {
+        if (timeout < 1 || domainTimeout < 1) {
             throw new CommandValidationException("Timeout must be at least 1 second long.");
         }
     }
-    
+
     @Override
     protected int executeCommand() throws CommandException {
-        try{
-            String[] domains = domainName0.split(",");
-            for (String domainName : domains) {
-                setDomainName(domainName);
-                super.initDomain();
-                programOpts.setHostAndPort(getAdminAddress());
-                super.executeCommand();
-                logger.log(Level.FINE, "Started domain {0}", domainName);
+
+        ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
+        Future future = executorService.submit(() -> {
+            try {
+                String[] domains = domainName0.split(",");
+                for (String domainName : domains) {
+                    setDomainName(domainName);
+                    super.timeout = domainTimeout;
+                    super.initDomain();
+                    programOpts.setHostAndPort(getAdminAddress());
+                    super.executeCommand();
+                    logger.log(Level.FINE, "Started domain {0}", domainName);
+                }
+            } catch (Exception ex) {
+                throw new RuntimeException(new CommandException(ex.getLocalizedMessage()));
             }
-            return 0;
-        } catch (Exception ex){
-            throw new CommandException(ex.getLocalizedMessage());
+        });
+        long startTime = System.currentTimeMillis();
+        while (!timedOut(startTime)) {
+            if (future.isDone()) {
+                return 0;
+            }
         }
+        throw new CommandException("Command Timed Out");
     }
-    
-    
-    
-    
+
+    private boolean timedOut(long startTime) {
+        return (System.currentTimeMillis() - startTime) > (timeout * 1000);
+    }
 }
