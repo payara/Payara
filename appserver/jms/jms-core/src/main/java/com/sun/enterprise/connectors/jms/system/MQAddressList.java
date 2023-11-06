@@ -37,7 +37,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2023 [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.connectors.jms.system;
 
@@ -47,21 +46,25 @@ import java.util.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.FileInputStream;
+import java.beans.PropertyVetoException;
 
 import com.sun.enterprise.connectors.jms.config.JmsHost;
 import com.sun.enterprise.connectors.jms.config.JmsService;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.connectors.jms.util.JmsRaUtil;
+import com.sun.enterprise.admin.util.AdminConstants;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
 import com.sun.enterprise.connectors.jms.JMSLoggerInfo;
-import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
-import fish.payara.enterprise.config.serverbeans.DeploymentGroups;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.internal.api.Globals;
+import org.glassfish.api.ActionReport;
 import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.universal.glassfish.ASenvPropertyReader;
 import org.glassfish.api.logging.LogHelper;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.SingleConfigCode;
+import org.jvnet.hk2.config.TransactionFailure;
 
 /**
  * Defines an MQ addressList.
@@ -72,7 +75,7 @@ public class MQAddressList {
 
     private static final Logger logger = JMSLoggerInfo.getLogger();
     private String myName =
-            System.getProperty(SystemPropertyConstants.SERVER_NAME);
+               System.getProperty(SystemPropertyConstants.SERVER_NAME);
 
     private List<MQUrl> urlList = new ArrayList<MQUrl>();
 
@@ -121,15 +124,10 @@ public class MQAddressList {
     }
     public void setup()throws Exception
     {
-        if (isClustered() && (!this.jmsService.getType().equals(ActiveJmsResourceAdapter.REMOTE))) {
-            logger.log(Level.FINE, "MQAddressList L128 CLUSTERED | " + this.jmsService.getType() + " | " + isClustered());
-            setup(true);
-        } else {
-            logger.log(Level.FINE, "MQAddressList L131 NOT CLUSTERED | " + this.jmsService.getType() + " | " + isClustered());
-            setup(false);
-        }
+       if (isClustered() && (!this.jmsService.getType().equals(ActiveJmsResourceAdapter.REMOTE)) )
+                    setup(true);
+        else setup(false);
     }
-
     /**
      * Sets up the addresslist.
      */
@@ -173,8 +171,8 @@ public class MQAddressList {
         } catch (Exception e) {
             if (logger.isLoggable(Level.FINE))
                 logger.log(Level.FINE, "Exception while attempting to get nodeagentHost : " + e.getMessage());
-            if (logger.isLoggable(Level.FINE))
-                logger.log(Level.FINE, e.getMessage(), e);
+            if (logger.isLoggable(Level.FINER))
+                logger.log(Level.FINER, e.getMessage(), e);
         }
     }
 
@@ -183,18 +181,18 @@ public class MQAddressList {
         Nodes nodes = Globals.get(Nodes.class);
         Node node = nodes.getNode(nodeRef);
 
-        if (node != null)
-        {
+         if (node != null)
+         {
             if (node.getNodeHost() != null) return node.getNodeHost();
-                //localhostNode
+            //localhostNode
             else if (node.isDefaultLocalNode())
             {
-                String hostName = getHostNameFromDasProperties();
-                if ("localhost".equals(hostName))
-                    //instance is co-located on same machine as DAS. Hence read host name from system property
-                    return System.getProperty(SystemPropertyConstants.HOST_NAME_PROPERTY);
+                 String hostName = getHostNameFromDasProperties();
+                 if ("localhost".equals(hostName))
+                 //instance is co-located on same machine as DAS. Hence read host name from system property
+                 return System.getProperty(SystemPropertyConstants.HOST_NAME_PROPERTY);
             }
-        }
+         }
 
 
         return null;
@@ -209,18 +207,18 @@ public class MQAddressList {
                 SystemPropertyConstants.AGENT_ROOT_PROPERTY);
 
         if(!StringUtils.ok(agentsDirPath))
-        //return agentsDirPath;
+            //return agentsDirPath;
         {
             String installRootPath = getSystemProperty(
-                    SystemPropertyConstants.INSTALL_ROOT_PROPERTY);
+                SystemPropertyConstants.INSTALL_ROOT_PROPERTY);
 
             if(!StringUtils.ok(installRootPath))
                 installRootPath = System.getProperty(
-                        SystemPropertyConstants.INSTALL_ROOT_PROPERTY);
+                    SystemPropertyConstants.INSTALL_ROOT_PROPERTY);
             agentsDirPath = installRootPath + File.separator + "nodes";
         }
-        // if(!StringUtils.ok(installRootPath))
-        //   throw new CommandException("Agent.noInstallDirPath");
+       // if(!StringUtils.ok(installRootPath))
+         //   throw new CommandException("Agent.noInstallDirPath");
 
         String dasPropsFilePath = agentsDirPath + File.separator + "agent" + File.separator + "config";
         File dasPropsFile = new File(dasPropsFilePath, "das.properties");
@@ -234,7 +232,7 @@ public class MQAddressList {
             fis = null;
             dasPropertiesHostName = dasprops.getProperty("agent.das.host");
             return dasPropertiesHostName;
-        } catch (IOException ioex) {
+         } catch (IOException ioex) {
             ;
         } finally {
             if (fis != null) {
@@ -252,116 +250,130 @@ public class MQAddressList {
 
     protected String getSystemProperty(String propertyName)
     {
-        if (systemProps == null)
-            systemProps = Collections.unmodifiableMap(new ASenvPropertyReader().getProps());
+       if (systemProps == null)
+         systemProps = Collections.unmodifiableMap(new ASenvPropertyReader().getProps());
 
         return systemProps.get(propertyName);
     }
 
     public String getMasterBroker(String clustername) {
-        String masterbrk = null;
+    String masterbrk = null;
+    //if (rep != null) {
         try {
-            JmsHost mb = getMasterJmsHostInCluster(clustername);
-            JmsService js = getJmsServiceForMasterBroker(clustername);
-            MQUrl url = createUrl(mb, js);
-            masterbrk = url.toString();
-            if (logger.isLoggable(Level.FINE))
-                logger.log(Level.FINE, "Master broker obtained is " + masterbrk);
-        } catch (Exception e) {
+        JmsHost mb = getMasterJmsHostInCluster(clustername);
+        JmsService js = getJmsServiceForMasterBroker
+                                 (clustername);
+        MQUrl url = createUrl(mb, js);
+        masterbrk = url.toString();
+        if (logger.isLoggable(Level.FINE))
+            logger.log(Level.FINE, "Master broker obtained is " + masterbrk);
+        }
+        catch (Exception e) {
             LogHelper.log(logger, Level.SEVERE, JMSLoggerInfo.GET_MASTER_FAILED, e);
         }
-        return masterbrk;
+    //}
+    return masterbrk;
     }
 
-    private JmsService getJmsServiceForMasterBroker(String clusterName) {
-        Domain domain = Globals.get(Domain.class);
-        Cluster cluster = domain.getClusterNamed(clusterName);
+      private JmsService getJmsServiceForMasterBroker(String clusterName)  {
+         Domain domain = Globals.get(Domain.class);
+         Cluster cluster = domain.getClusterNamed(clusterName);
+
         final Server[] buddies = getServersInCluster(cluster);
-        final Config cfg = getConfigForServer(buddies[0]);
+        final Config cfg =  getConfigForServer(buddies[0]);
         return cfg.getExtensionByType(JmsService.class);
-    }
+	}
 
     private Config getConfigForServer(Server server){
 
-        String cfgRef = server.getConfigRef();
-        return getConfigByName(cfgRef);
+         String cfgRef = server.getConfigRef();
+         return getConfigByName(cfgRef);
     }
     private Config getConfigByName(String cfgRef){
-        Domain domain = Globals.get(Domain.class);
-        Configs configs = domain.getConfigs();
-        List configList = configs.getConfig();
-        for(int i=0; i < configList.size(); i++){
-            Config config = (Config)configList.get(i);
-            if (config.getName().equals(cfgRef))
-                return config;
+         Domain domain = Globals.get(Domain.class);
+         Configs configs = domain.getConfigs();
+                List configList = configs.getConfig();
+                for(int i=0; i < configList.size(); i++){
+                    Config config = (Config)configList.get(i);
+                    if (config.getName().equals(cfgRef))
+                        return config;
         }
         return null;
     }
-
-    private JmsHost getMasterJmsHostInCluster(String clusterName) throws Exception {
+     private JmsHost getMasterJmsHostInCluster(String clusterName) throws Exception {
         Domain domain = Globals.get(Domain.class);
         Cluster cluster = domain.getClusterNamed(clusterName);
-        Config config = domain.getConfigNamed(cluster.getConfigRef());
-        JmsService jmsService = config.getExtensionByType(JmsService.class);
-        Server masterBrokerInstance = null;
 
-        String masterBrokerInstanceName = jmsService.getMasterBroker();
-        if (masterBrokerInstanceName != null) {
-            masterBrokerInstance = domain.getServerNamed(masterBrokerInstanceName);
-        } else {
+         /*
+           Since GF 3.1 - Added a new way to configure the master broker
+           Check if a master broker has been configured by looking at jmsService.getMasterBroker
+           If it is configured, return th
+           If not, use the first configured server in the cluster list as the master broker
+         */
+         Config config = domain.getConfigNamed(cluster.getConfigRef());
+         JmsService jmsService = config.getExtensionByType(JmsService.class);
+         Server masterBrokerInstance = null;
+
+         String masterBrokerInstanceName = jmsService.getMasterBroker();
+         if (masterBrokerInstanceName != null){
+             masterBrokerInstance = domain.getServerNamed(masterBrokerInstanceName);
+         }
+         else{
             Server[] buddies = getServersInCluster(cluster);
             // return the first valid host
-            // there may be hosts attached to an NA that is down
-            if (buddies.length > 0) {
+			// there may be hosts attached to an NA that is down
+            if (buddies.length > 0){
                 masterBrokerInstance = buddies[0];
             }
         }
         final JmsHost copy = getResolvedJmsHost(masterBrokerInstance);
-        if (copy != null)
+	    if (copy != null)
             return copy;
         else
-            throw new RuntimeException("No JMS hosts available to select as Master");
+	        throw new RuntimeException("No JMS hosts available to select as Master");
     }
 
-    public Cluster getClusterByName(String clusterName) {
-        Domain domain = Globals.get(Domain.class);
-        Clusters clusters = domain.getClusters();
-        List<Cluster> clusterList = clusters.getCluster();
-        for (Cluster cluster : clusterList) {
-            if (cluster.getName().equals(clusterName))
-                return cluster;
-        }
+    public Cluster getClusterByName(String clusterName)
+    {
+         Domain domain = Globals.get(Domain.class);
+         Clusters clusters = domain.getClusters();
+         List clusterList = clusters.getCluster();
+
+         for (int i =0; i < clusterList.size(); i++){
+             Cluster cluster = (Cluster)clusterList.get(i);
+             if (cluster.getName().equals(clusterName))
+                         return cluster;
+         }
         return null;
     }
-
-    public DeploymentGroup getDeploymentGroupByName(String deploymentGroup) {
-        Domain domain = Globals.get(Domain.class);
-        DeploymentGroups deploymentGroups = domain.getDeploymentGroups();
-        List<DeploymentGroup> deploymentGroupList = deploymentGroups.getDeploymentGroup();
-        for (DeploymentGroup dg : deploymentGroupList) {
-            if (dg.getName().equals(deploymentGroup))
-                return dg;
-        }
-        return null;
-    }
-
-    public Server[] getServersInCluster(String clusterName) {
+    public Server[] getServersInCluster(String clusterName){
         Cluster cluster = getClusterByName(clusterName);
         return getServersInCluster(cluster);
     }
+    public Server[] getServersInCluster(Cluster cluster)
+    {
+        //first ensure that the cluster exists
+        //Cluster cluster = ClusterHelper.getClusterByName(configContext, clusterName);
 
-    public Server[] getServersInCluster(Cluster cluster) {
+        //Now fetch the server instances in the cluster.
         List servers = cluster.getInstances();
+
+
+       // List serverRefs = cluster.getServerRef();
+
         Server[] result = new Server[servers.size()];
+       // Domain domain = Globals.get(Domain.class);
+
         for (int i = 0; i <  servers.size(); i++) {
-            result[i] = (Server) servers.get(i);
+            result[i] = (Server) servers.get(i); //.getServerNamed(((ServerRef)serverRefs.get(i)).getRef());
+
+          //  try {
+            //} catch (ConfigException ex) {
+              //  throw new ConfigException(_strMgr.getString("noSuchClusterInstance",
+                //    clusterName, serverRefs[i].getRef()));
+            //}
         }
         return result;
-    }
-
-    public List<Server> getServersInDeploymentGroup(String deploymentGroup) {
-        DeploymentGroup dg = getDeploymentGroupByName(deploymentGroup);
-        return dg.getInstances();
     }
 
     public boolean isDAS(String targetName)  {
@@ -376,6 +388,17 @@ public class MQAddressList {
         final Config config = getConfigByName(targetName);
         return (config != null ? true : false);
     }
+
+
+    /**
+     * Gets the admin config context associated with this server instance
+     * Usage Notice: Use this only for operations that are performed in DAS
+     * and requires the admin config context
+     */
+   /* private ConfigContext getAdminConfigContext() {
+        return com.sun.enterprise.admin.server.core.AdminService.
+                   getAdminService().getAdminContext().getAdminConfigContext();
+    } */
 
     /**
      * Setup addresslist for Standalone server instance in EE
@@ -413,14 +436,11 @@ public class MQAddressList {
      * For LOCAL/EMBEDDED clusters the MQ broker corresponding
      * to "this" server instance needs to be placed ahead
      * of the other brokers of the other siblings in the AS
-     * cluster to enable sticky connection balancing by MQ.
+     * cluter to enable sticky connection balancing by MQ.
      */
-    private void setupForCluster() {
+    private void setupForCluster() throws Exception {
         java.util.Map<String,JmsHost> hostMap =
-                getResolvedLocalJmsHostsInMyCluster(true);
-        if (hostMap == null || hostMap.size() == 0) {
-            hostMap = getResolvedLocalJmsHostsInDeploymentGroup(true);
-        }
+            getResolvedLocalJmsHostsInMyCluster(true);
         //First add my jms host.
         JmsHost jmsHost = hostMap.get(myName);
         MQUrl myUrl = createUrl(jmsHost, nodeHost);
@@ -435,9 +455,9 @@ public class MQAddressList {
     }
 
     public Map<String, JmsHost> getResolvedLocalJmsHostsInMyCluster(final boolean includeMe) {
-        final Map<String, JmsHost> map = new HashMap<String, JmsHost>();
-        Cluster cluster = getClusterForServer(myName);
-        if (cluster != null) {
+        final Map<String, JmsHost> map = new HashMap<String, JmsHost> ();
+         Cluster cluster = getClusterForServer( myName);
+        if (cluster != null){
             final Server[] buddies = getServersInCluster(cluster);
             for (final Server as : buddies) {
                 if (!includeMe && myName.equals(as.getName()))
@@ -445,84 +465,38 @@ public class MQAddressList {
 
                 JmsHost copy = null;
                 try {
-                    copy = getResolvedJmsHost(as);
-                } catch (Exception e) {
-                    logger.log(Level.FINE, e.getMessage());
+                            copy  = getResolvedJmsHost(as);
+                    } catch (Exception e) {
+                      //e.printStackTrace();
                 }
                 map.put(as.getName(), copy);
+
             }
         }
-        return (map);
+        return ( map );
     }
 
-    public Map<String, JmsHost> getResolvedLocalJmsHostsInDeploymentGroup(final boolean includeMe) {
-        final Map<String, JmsHost> map = new HashMap<>();
-        DeploymentGroup deploymentGroup = getDeploymentGroupForServer(myName);
-        if (deploymentGroup != null) {
-            List<Server> instances = deploymentGroup.getInstances();
-            logger.fine("instances.size()=" + instances.size());
-            for (Server as : instances) {
-                if (!includeMe && myName.equals(as.getName())) {
-                    continue;
-                }
-                JmsHost copy = null;
-                try {
-                    copy = getResolvedJmsHost(as);
-                    logger.fine(copy.getHost() + ":" + copy.getPort() + " added in");
-                } catch (Exception e) {
-                    logger.fine(e.getMessage());
-                }
-                map.put(as.getName(), copy);
-            }
-        }
-        return (map);
-    }
+    public Cluster getClusterForServer(String instanceName){
+         Domain domain = Globals.get(Domain.class);
+         Clusters clusters = domain.getClusters();
+         List clusterList = clusters.getCluster();
 
-    public Cluster getClusterForServer(String instanceName) {
-        Domain domain = Globals.get(Domain.class);
-        Clusters clusters = domain.getClusters();
-        List<Cluster> clusterList = clusters.getCluster();
-        for (Cluster cluster : clusterList) {
-            if (isServerInCluster(cluster, instanceName)) {
-                return cluster;
-            }
-        }
+         for (int i =0; i < clusterList.size(); i++){
+             Cluster cluster = (Cluster)clusterList.get(i);
+             if (isServerInCluster(cluster, instanceName))
+                         return cluster;
+         }
         return null;
     }
 
     private boolean isServerInCluster (Cluster cluster, String instanceName){
-        List<Server> instances = cluster.getInstances();
-        for (Server instance : instances) {
-            if (instanceName.equals(instance.getName())) {
+        List instances = cluster.getInstances();
+        for (int i=0; i < instances.size(); i++){
+            if(instanceName.equals(((Server)instances.get(i)).getName()))
                 return true;
-            }
         }
         return false;
     }
-
-    public DeploymentGroup getDeploymentGroupForServer(String instanceName){
-        Domain domain = Globals.get(Domain.class);
-        DeploymentGroups deploymentGroups = domain.getDeploymentGroups();
-        List<DeploymentGroup> deploymentGroupList = deploymentGroups.getDeploymentGroup();
-        logger.fine("deploymentGroupList.size()=" + deploymentGroupList.size());
-        for (DeploymentGroup deploymentGroup : deploymentGroupList) {
-            if (isServerInDeploymentGroup(deploymentGroup, instanceName)) {
-                return deploymentGroup;
-            }
-        }
-        return null;
-    }
-
-    private boolean isServerInDeploymentGroup (DeploymentGroup deploymentGroup, String instanceName){
-        List<Server> instances = deploymentGroup.getInstances();
-        for (Server instance : instances) {
-            if (instanceName.equals(instance.getName())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     /**
      * Creates a String representation of address list from
      * array list. In short, it is a comma separated list.
@@ -596,152 +570,173 @@ public class MQAddressList {
 
     public static MQUrl createUrl(JmsHost host, JmsService js, String overridedHostName) {
         try {
-            String name = host.getName();
-            String hostName = host.getHost();
-            // For LOCAL/EMBEDDED Clustered instances and
-            // standalone server instances, use
-            // their nodeagent's hostname as the jms host name.
-            if (overridedHostName != null && !overridedHostName.trim().equals("")) {
-                hostName = overridedHostName;
+        String name = host.getName();
+        String hostName = host.getHost();
+        // For LOCAL/EMBEDDED Clustered instances and
+        // standalone server instances, use
+        // their nodeagent's hostname as the jms host name.
+        if (overridedHostName != null && !overridedHostName.trim().equals("")) {
+           hostName = overridedHostName;
+        }
+
+        String port = host.getPort();
+        MQUrl url = new MQUrl(name);
+        url.setHost(hostName);
+        url.setPort(port);
+        if (js != null) {
+            String scheme = js.getMqScheme();
+            if (scheme != null && !scheme.trim().equals("")) {
+                url.setScheme(scheme);
             }
 
-            String port = host.getPort();
-            MQUrl url = new MQUrl(name);
-            url.setHost(hostName);
-            url.setPort(port);
-            if (js != null) {
-                String scheme = js.getMqScheme();
-                if (scheme != null && !scheme.trim().equals("")) {
-                    url.setScheme(scheme);
-                }
-
-                String service = js.getMqService();
-                if (service != null && !service.trim().equals("")) {
-                    url.setService(service);
-                }
+            String service = js.getMqService();
+            if (service != null && !service.trim().equals("")) {
+                url.setService(service);
             }
-            return url;
+        }
+        return url;
         } catch (Exception ce) {
             ce.printStackTrace();
         }
         return null;
     }
 
-    //Used to get resolved local JmsHost for a standalone server instance
+     //Used to get resolved local JmsHost for a standalone server instance
     private JmsHost getResolvedJmsHostForStandaloneServerInstance(
-            String serverName) throws Exception {
+                                         String serverName) throws Exception {
         if (logger.isLoggable(Level.FINE))
             logFine(" getresolved " + serverName);
-        //ConfigContext con =  getAdminConfigContext();
-        Server serverInstance = getServerByName(serverName);
-        if (logger.isLoggable(Level.FINE))
-            logFine("serverinstace " + serverInstance);
-        JmsHost jmsHost = getResolvedJmsHost(serverInstance);
-        return jmsHost;
+       //ConfigContext con =  getAdminConfigContext();
+       Server serverInstance = getServerByName(serverName);
+       if (logger.isLoggable(Level.FINE))
+           logFine("serverinstace " + serverInstance);
+       JmsHost jmsHost = getResolvedJmsHost(serverInstance);
+       return jmsHost;
     }
 
-    private Server getServerByName(String serverName) {
+    private Server getServerByName(String serverName){
         Domain domain = Globals.get(Domain.class);
         Servers servers = domain.getServers();
         List serverList = servers.getServer();
 
-        for (int i = 0; i < serverList.size(); i++) {
+        for (int i=0; i < serverList.size(); i++){
             Server server = (Server) serverList.get(i);
-            if (serverName.equals(server.getName()))
+            if(serverName.equals(server.getName()))
                 return server;
         }
-        return null;
+           return null;
     }
 
-    private JmsHost getResolvedJmsHost(Server as) throws Exception {
+
+    private JmsHost getResolvedJmsHost(Server as) throws Exception{
         if (as == null) {
             return null;
         }
-        if (logger.isLoggable(Level.FINE)) {
+        if (logger.isLoggable(Level.FINE))
             logFine("getResolvedJmsHost " + as);
-        }
+//        final JmsService jmsService     = Globals.get(JmsService.class);
+  //      JmsHost jmsHost                 = null;
+    //    if (JMSServiceType.LOCAL.toString().equals(jmsService.getType())	|| JMSServiceType.EMBEDDED.toString().equals(jmsService.getType())) {
+      //      jmsHost = getDefaultJmsHost(jmsService);
+        //}
+       // return ( jmsHost );
 
-        JmsHost jmsHost = getResolvedLocalJmsHostInServer(as);
-        JmsHost copy = createJmsHostCopy(jmsHost, as);
+        JmsHost jmsHost   = getResolvedLocalJmsHostInServer(as);
+        JmsHost copy      = createJmsHostCopy(jmsHost, as);
 
         String hostName = getNodeHostName(as);
-        String port = JmsRaUtil.getJMSPropertyValue(as);
+        String port = JmsRaUtil.getJMSPropertyValue(as) ;//"JMS_PROVIDER_PORT", "7676");
         copy.setHost(hostName);
         copy.setPort(port);
 
         return copy;
     }
 
-    private JmsHost createJmsHostCopy(final JmsHost jmsHost, final Server server) {
+    private JmsHost createJmsHostCopy(final JmsHost jmsHost, final Server server)
+        {
         JmsHost jmsHostCopy = new JmsHostWrapper();
+
+
         try {
             jmsHostCopy.setAdminPassword(jmsHost.getAdminPassword());
             jmsHostCopy.setAdminUserName(jmsHost.getAdminUserName());
             jmsHostCopy.setName(jmsHost.getName());
             jmsHostCopy.setHost(jmsHost.getHost());
             jmsHostCopy.setPort(jmsHost.getPort());
-        } catch (Exception tfe) {
+        } catch(Exception tfe) {
             tfe.printStackTrace();//todo: handle this exception
         }
         return jmsHostCopy;
-    }
+     }
+    /*static JmsHost jmsHostcopy = null;
+     private JmsHost createJmsHostCopy(final JmsHost jmsHost, final Server server)
+        {
+        try {
+            //jmsHost.deepCopy();
+             ConfigSupport.apply(new SingleConfigCode<JmsService>() {
+                public Object run(JmsService param) throws PropertyVetoException, TransactionFailure {
 
-    private JmsHost getResolvedLocalJmsHostInServer(final Server server) {
+                    final JmsHost jmsHost = param.createChild(JmsHost.class); //TODO: need a way to create a JmsHost instance
+                    jmsHost.setAdminPassword(jmsHost.getAdminPassword());
+                    jmsHost.setAdminUserName(jmsHost.getAdminUserName());
+                    jmsHost.setName(jmsHost.getName());
+                    jmsHost.setHost(jmsHost.getHost());
+                    jmsHost.setPort(jmsHost.getPort());
+                    MQAddressList.jmsHostcopy = jmsHost;
+                    return jmsHost;
+                }
+            }, getConfigForServer(server).getJmsService());
+        } catch(TransactionFailure tfe) {
+            //tfe.printStackTrace();//todo: handle this exception
+        }
+        return jmsHostcopy;
+     }*/
+     private JmsHost getResolvedLocalJmsHostInServer(final Server server)  {
         Config config = getConfigForServer(server);
-        if (config != null) {
+        if (config != null)
+        {
             JmsService jmsService = config.getExtensionByType(JmsService.class);
             JmsHost jmsHost = null;
-            if (JMSServiceType.LOCAL.toString().equals(jmsService.getType()) || JMSServiceType.EMBEDDED.toString().equals(jmsService.getType())) {
-                jmsHost = getDefaultJmsHost(jmsService);
+             if (JMSServiceType.LOCAL.toString().equals(jmsService.getType())	|| JMSServiceType.EMBEDDED.toString().equals(jmsService.getType())) {
+            jmsHost = getDefaultJmsHost(jmsService);
             }
-            return (jmsHost);
-        }
-        return null;
-    }
+            return ( jmsHost );
 
-    public JmsHost getDefaultJmsHost(JmsService jmsService) {
-        String defaultJmsHost = jmsService.getDefaultJmsHost();
-        List<JmsHost> jmsHosts = jmsService.getJmsHost();
+        }
+         return null;
+     }
+
+    public JmsHost getDefaultJmsHost(JmsService jmsService){
+        String defaultJmsHost=   jmsService.getDefaultJmsHost();
+        List <JmsHost> jmsHosts = jmsService.getJmsHost();
         JmsHost jmsHost = null;
-        if (defaultJmsHost != null && !defaultJmsHost.equals("") && jmsHosts != null && jmsHosts.size() > 0) {
-            for (JmsHost host : jmsHosts) {
-                if (defaultJmsHost.equals(host.getName())) {
-                    return host;
-                }
+        if (defaultJmsHost != null && ! defaultJmsHost.equals("") && jmsHosts != null && jmsHosts.size()> 0){
+            for (int i=0; i <jmsHosts.size(); i++)
+                   if (defaultJmsHost.equals((jmsHosts.get(i)).getName()))
+                          return (JmsHost)jmsHosts.get(i);
             }
-        }
-        if (jmsHosts != null && jmsHosts.size() > 0) {
-            jmsHost = jmsHosts.get(0);
-        } else {
-            jmsHost = Globals.get(JmsHost.class);
-        }
+
+             if(jmsHosts != null && jmsHosts.size() >0 )
+                     jmsHost = jmsHosts.get(0);
+             else
+                jmsHost = Globals.get(JmsHost.class);
+
         return jmsHost;
     }
 
     public boolean isClustered()  {
         Domain domain = Globals.get(Domain.class);
         Clusters clusters = domain.getClusters();
-        if (clusters != null) {
-            List<Cluster> clusterList = clusters.getCluster();
-            if (clusterList.size() > 0) {
-                logger.log(Level.FINE, "clusters IDENTIFIED");
-                return JmsRaUtil.isClustered(clusterList, myName);
-            }
-        }
-        DeploymentGroups deploymentGroups = domain.getDeploymentGroups();
-        if (deploymentGroups != null) {
-            List<DeploymentGroup> deploymentGroupList = deploymentGroups.getDeploymentGroup();
-            if (deploymentGroupList.size() > 0) {
-                logger.log(Level.FINE, "deploymentGroups IDENTIFIED");
-                return JmsRaUtil.isServerInDeploymentGroup(deploymentGroupList, myName);
-            }
-        }
-        logger.log(Level.FINE, "neither deploymentGroups nor clusters");
-        return false;
+        if (clusters == null) return false;
+
+        List clusterList = clusters.getCluster();
+
+        return JmsRaUtil.isClustered(clusterList, myName);
     }
 
     private static String getServerName() {
-        return System.getProperty(SystemPropertyConstants.SERVER_NAME);
+        String serverName=System.getProperty(SystemPropertyConstants.SERVER_NAME);
+        return serverName;
     }
 
     private void logFine(String s) {
@@ -763,4 +758,6 @@ public class MQAddressList {
         EMBEDDED
     }
 
+
 }
+
