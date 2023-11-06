@@ -37,7 +37,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2023 [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.connectors.jms.util;
 
@@ -61,7 +60,7 @@ import com.sun.enterprise.deployment.ConnectorConfigProperty;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.zip.ZipFile;
 import com.sun.enterprise.util.zip.ZipFileException;
-import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
+import com.sun.logging.LogDomains;
 
 import org.glassfish.ejb.config.MdbContainer;
 import org.glassfish.internal.api.Globals;
@@ -155,44 +154,23 @@ public class JmsRaUtil {
               return (enableClustering() && isServerClustered(clusters,
                 instanceName));
      }
-
-    /**
+      /**
      * Return true if the given server instance is part of a cluster.
      */
-    public static boolean isServerClustered(List clusters, String instanceName) {
+    public static boolean isServerClustered(List clusters, String instanceName)
+    {
         return (getClusterForServer(clusters, instanceName) != null);
     }
-
-    public static Cluster getClusterForServer(List<Cluster> clusters, String instanceName){
+    public static Cluster getClusterForServer(List clusters, String instanceName){
         //Return the server only if it is part of a cluster (i.e. only if a cluster
         //has a reference to it).
-        for (Cluster cluster : clusters) {
-            final List<Server> servers = cluster.getInstances();
-            for (Server server : servers) {
-                if (server.getName().equals(instanceName)) {
+        for (int i = 0; i < clusters.size(); i++) {
+            final List servers = ((Cluster)clusters.get(i)).getInstances();
+            for (int j = 0; j < servers.size(); j++) {
+                if (((Server)servers.get(j)).getName().equals(instanceName)) {
                     // check to see if the server exists as a sanity check.
                     // NOTE: we are not checking for duplicate server instances here.
-                    return cluster;
-                }
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Return true if the given server instance is part of a deployment group.
-     */
-    public static boolean isServerInDeploymentGroup(List<DeploymentGroup> deploymentGroupList, String instanceName)
-    {
-        return (getDeploymentGroupForServer(deploymentGroupList, instanceName) != null);
-    }
-
-    public static DeploymentGroup getDeploymentGroupForServer(List<DeploymentGroup> deploymentGroupList, String instanceName){
-        for (DeploymentGroup deploymentGroup : deploymentGroupList) {
-            final List<Server> servers = deploymentGroup.getInstances();
-            for (Server server : servers) {
-                if (server.getName().equals(instanceName)) {
-                    return deploymentGroup;
+                    return (Cluster) clusters.get(i);
                 }
             }
         }
