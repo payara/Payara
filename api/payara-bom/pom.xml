@@ -416,11 +416,6 @@
                 <version>${org.apache.santuario.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.glassfish.metro</groupId>
-                <artifactId>webservices-extra-xmlsec</artifactId>
-                <version>${webservices.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>com.sun.xml.bind</groupId>
                 <artifactId>jaxb-extra-osgi</artifactId>
                 <version>${jaxb-extra-osgi.version}</version>
