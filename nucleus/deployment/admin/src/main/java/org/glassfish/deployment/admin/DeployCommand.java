@@ -41,6 +41,7 @@
 
 package org.glassfish.deployment.admin;
 
+import com.sun.enterprise.deployment.web.SecurityConstraint;
 import fish.payara.nucleus.hotdeploy.HotDeployService;
 import fish.payara.nucleus.hotdeploy.ApplicationState;
 import com.sun.enterprise.config.serverbeans.*;
@@ -75,6 +76,7 @@ import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RestParam;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.container.Sniffer;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ArchiveHandler;
@@ -90,10 +92,12 @@ import org.glassfish.deployment.versioning.VersioningUtils;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.data.ApplicationInfo;
+import org.glassfish.internal.data.ModuleInfo;
 import org.glassfish.internal.deployment.*;
 import org.glassfish.internal.deployment.analysis.DeploymentSpan;
 import org.glassfish.internal.deployment.analysis.SpanSequence;
 import org.glassfish.internal.deployment.analysis.StructuredDeploymentTracing;
+import org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl;
 import org.jvnet.hk2.annotations.Contract;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.Transaction;
@@ -574,7 +578,14 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                 deployment.initialize(deplResult.appInfo, deplResult.appInfo.getSniffers(), deplResult.context);
             }
             ApplicationInfo appInfo = deplResult != null ? deplResult.appInfo : null;
-
+            try {
+                checkForAnnotationAndSecurityConstraint(deplResult);
+            }  catch (DeploymentException e) {
+                // roll back the deployment and re-throw the exception
+                deployment.undeploy(name, deploymentContext);
+                deploymentContext.clean();
+                throw e;
+            }
             /*
              * Various deployers might have added to the downloadable or
              * generated artifacts.  Extract them and, if the command succeeded,
@@ -588,6 +599,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
 
             if (report.getActionExitCode() == ActionReport.ExitCode.SUCCESS) {
                 try (SpanSequence innerSpan = span.start(DeploymentTracing.AppStage.REGISTRATION)){
+
                     moveAppFilesToPermanentLocation(
                             deploymentContext, logger);
                     recordFileLocations(appProps);
@@ -1084,5 +1096,42 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
          * @param context of the deployment
          */
         void intercept(DeployCommand self, DeploymentContext context);
+    }
+
+    private void checkForAnnotationAndSecurityConstraint(Deployment.ApplicationDeployment applicationDeployment) {
+        if (applicationDeployment == null) {
+            return;
+        }
+        if (applicationDeployment.appInfo == null) {
+            return;
+        }
+        // Get WebBundleDescriptior
+        WebBundleDescriptorImpl webBundleDescription = (WebBundleDescriptorImpl) applicationDeployment.appInfo.getMetaData("org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl");
+        if (webBundleDescription == null) {
+            return;
+        }
+
+        // Check for security constraint
+        Enumeration<SecurityConstraint> securityConstraintEnumeration = webBundleDescription.getSecurityConstraints();
+        if (!securityConstraintEnumeration.hasMoreElements()) {
+            return;
+        }
+
+        //Get application sniffers
+        Collection<Sniffer> sniffers = applicationDeployment.appInfo.getSniffers();
+        if (sniffers.isEmpty()) {
+            return;
+        }
+
+        sniffers.forEach(sniffer -> {
+            if (sniffer.getClass().getSimpleName().equals("JwtAuthSniffer")){
+                // Security Constraint Defined and JwtAuthSniffer Defined which means an inconsistent state!
+                throw new DeploymentException("Invalid web.xml - security-constraints cannot be defined while using the @LoginConfig annotation");
+            }
+        });
+
+
+
+
     }
 }
