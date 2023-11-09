@@ -258,10 +258,6 @@
                     <groupId>org.apache.santuario</groupId>
                     <artifactId>xmlsec</artifactId>
                 </exclusion>
-                <exclusion>
-                    <groupId>org.glassfish.metro</groupId>
-                    <artifactId>webservices-extra-xmlsec</artifactId>
-                </exclusion>
             </exclusions>
         </dependency>
         <dependency>

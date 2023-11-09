@@ -28,7 +28,7 @@ Apache Ant 1.10.9
 Apache BCEL 6.6.1
 Apache Felix OSGI 7.x
 Apache Log4j 1.2.12, 1.2.17
-Apache Santuario 3.0.2
+Apache Santuario 4.0.0
 Classmate 1.5.1
 Commons CLI 1.4
 Commons Codec 1.15
@@ -60,7 +60,7 @@ SnakeYaml 1.33
 SNMP4J 2.5.3
 Tiger Types 1.4
 Weld 5.0.1.Final
-Woodstox Core 6.2.7
+Woodstox Core 6.5.1
 Xalan 2.7.2
 XML APIs 1.3.04
 XPP3 1.1.4c

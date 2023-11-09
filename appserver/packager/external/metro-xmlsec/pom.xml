@@ -128,10 +128,5 @@
             <artifactId>xmlsec</artifactId>
             <optional>true</optional>
         </dependency>
-        <dependency>
-            <groupId>org.glassfish.metro</groupId>
-            <artifactId>webservices-extra-xmlsec</artifactId>
-            <optional>true</optional>
-        </dependency>
     </dependencies>
 </project>
