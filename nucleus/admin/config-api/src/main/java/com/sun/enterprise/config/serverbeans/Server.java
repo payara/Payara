@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2023] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -796,7 +796,7 @@ public interface Server extends ConfigBeanProxy, PropertyBag, Named, SystemPrope
         }
 
         private void setupSupplemental(AdminCommandContext context, final Server instance) {
-            if (clusterName != null) {
+            if (clusterName != null || deploymentGroup != null) {
                 InstanceRegisterInstanceCommandParameters cp = new InstanceRegisterInstanceCommandParameters();
                 context.getActionReport().
                         setResultType(InstanceRegisterInstanceCommandParameters.class, cp);
