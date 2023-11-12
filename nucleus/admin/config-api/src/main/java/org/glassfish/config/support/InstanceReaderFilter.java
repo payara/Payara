@@ -43,6 +43,8 @@ package org.glassfish.config.support;
 
 import com.sun.enterprise.util.StringUtils;
 import java.net.*;
+import java.util.List;
+import java.util.Map;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -133,7 +135,16 @@ class InstanceReaderFilter extends ServerReaderFilter {
     private boolean handleConfig(XMLStreamReader reader) {
         String name = reader.getAttributeValue(null, NAME);
 
-        return !dxpp.getConfigName().equals(name);
+        Map<String, String> mapServerConfig = dxpp.getMapServerConfig();
+        boolean isConfigFromServerInDG = false;
+        List<String> dgServerNames = dxpp.getDGServerNames();
+        for (String server : mapServerConfig.keySet()) {
+            if (dgServerNames.contains(server) && mapServerConfig.get(server).equals(name)) {
+                isConfigFromServerInDG = true;
+            }
+        }
+
+        return !(dxpp.getConfigName().equals(name) || isConfigFromServerInDG);
     }
 
     /**
