@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!-- Portions Copyright 2016-2022 Payara Foundation and/or its affiliates -->
+<!-- Portions Copyright 2016-2023 Payara Foundation and/or its affiliates -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -145,8 +145,8 @@
         <source-annotation-processor.version>1.0</source-annotation-processor.version>
         <copyright-plugin.version>1.39</copyright-plugin.version>
         <nucleus.install.dir.name>nucleus</nucleus.install.dir.name>
-        <ant.version>1.10.12</ant.version>
-        <ant-launcher.version>1.10.12</ant-launcher.version>
+        <ant.version>1.10.14</ant.version>
+        <ant-launcher.version>1.10.14</ant-launcher.version>
 
         <!-- Debug / analysis -->
         <findbugs.skip>true</findbugs.skip>
