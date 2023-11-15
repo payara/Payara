@@ -89,6 +89,7 @@ class DomainXmlPreParser {
     private List<ClusterData> clusters = new LinkedList<>();
     private List<DeploymentGroupData> deploymentGroups = new LinkedList<>();
     private List<String> configNames = new LinkedList<>();
+    private Map<String, String> mapServerConfig = new HashMap<>();
     private ClusterData cluster;
     private DeploymentGroupData deploymentGroup;
     private String instanceName;
@@ -148,6 +149,10 @@ class DomainXmlPreParser {
             return Collections.EMPTY_LIST;
         }
         return deploymentGroup.dgServerRefs;
+    }
+
+    public Map<String, String> getMapServerConfig() {
+        return this.mapServerConfig;
     }
 
     final String getConfigName() {
@@ -275,9 +280,11 @@ class DomainXmlPreParser {
         String configRef = getConfigRef();
 
         printf("SERVER: " + name + ", ref= " + configRef);
+        mapServerConfig.put(name, configRef);
 
-        if (instanceName.equals(name))
+        if (instanceName.equals(name)) {
             serverConfigRef = configRef;
+        }
     }
 
     private void handleDeploymentGroups() throws XMLStreamException {
