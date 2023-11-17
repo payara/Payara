@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2023] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt.cli;
 
@@ -78,6 +78,9 @@ public class RestartDomainCommand extends StopDomainCommand {
     @Param(name = "debug", optional = true)
     private Boolean debug;
 
+    @Param(optional = true, defaultValue = "600")
+    protected int timeout;
+
     @Inject
     private ServiceLocator habitat;
     private static final LocalStringsImpl STRINGS = new LocalStringsImpl(RestartDomainCommand.class);
@@ -98,13 +101,14 @@ public class RestartDomainCommand extends StopDomainCommand {
         // run the remote restart-domain command and throw away the output
         RemoteCLICommand cmd =
                 new RemoteCLICommand("restart-domain", programOpts, env);
+        cmd.setReadTimeout(timeout * 1000);
 
         if (debug != null)
             cmd.executeAndReturnOutput("restart-domain", "--debug", debug.toString());
         else
             cmd.executeAndReturnOutput("restart-domain");
 
-        waitForRestart(oldServerPid);
+        waitForRestart(oldServerPid, (timeout * 1000));
 
         logger.info(STRINGS.get("restartDomain.success"));
     }

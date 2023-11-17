@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2021 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -56,6 +56,7 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.config.Named;
 import org.glassfish.api.admin.config.PropertiesDesc;
 import static org.glassfish.config.support.Constants.NAME_SERVER_REGEX;
+import org.glassfish.api.admin.config.ReferenceContainer;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.Dom;
@@ -71,7 +72,7 @@ import org.jvnet.hk2.config.types.PropertyBag;
  */
 @Configured
 @NotDuplicateTargetName(message="{dg.duplicate.name}", payload=DeploymentGroup.class)
-public interface DeploymentGroup extends Named, Payload, RefContainer, PropertyBag {
+public interface DeploymentGroup extends Named, Payload, RefContainer, PropertyBag, ReferenceContainer {
     
     /**
      * Sets the deployment group name
@@ -117,6 +118,35 @@ public interface DeploymentGroup extends Named, Payload, RefContainer, PropertyB
 
     @DuckTyped
     void deleteResourceRef(String refName) throws TransactionFailure;
+
+    /**
+     * Returns the DG configuration reference
+     * @return the config-ref attribute
+     */
+    @DuckTyped
+    @Override
+    String getReference();
+
+    // five trivial methods that ReferenceContainer's need to implement
+    @DuckTyped
+    @Override
+    boolean isCluster();
+
+    @DuckTyped
+    @Override
+    boolean isServer();
+
+    @DuckTyped
+    @Override
+    boolean isDas();
+
+    @DuckTyped
+    @Override
+    boolean isDeploymentGroup();
+
+    @DuckTyped
+    @Override
+    boolean isInstance();
     
     /**
      *	Properties as per {@link org.jvnet.hk2.config.types.PropertyBag}
@@ -129,14 +159,25 @@ public interface DeploymentGroup extends Named, Payload, RefContainer, PropertyB
 
 
     class Duck {
+        public static boolean isCluster(DeploymentGroup me) { return false; }
+        public static boolean isServer(DeploymentGroup me)  { return false; }
+        public static boolean isInstance(DeploymentGroup me) { return false; }
+        public static boolean isDas(DeploymentGroup me) { return false; }
+        public static boolean isDeploymentGroup(DeploymentGroup me) { return true; }
+
+        public static String getReference(DeploymentGroup me) {
+            for (Server server : me.getInstances()) {
+                return server.getConfigRef();
+            }
+            return "";
+        }
 
         public static List<Server> getInstances(DeploymentGroup me) {
 
             Dom clusterDom = Dom.unwrap(me);
-            Domain domain =
-                    clusterDom.getHabitat().getService(Domain.class);
+            Domain domain = clusterDom.getHabitat().getService(Domain.class);
 
-            ArrayList<Server> instances = new ArrayList<Server>();
+            ArrayList<Server> instances = new ArrayList<>();
             for (DGServerRef sRef : me.getDGServerRef()) {
                 Server svr =  domain.getServerNamed(sRef.getRef());
                 // the instance's domain.xml only has its own server 

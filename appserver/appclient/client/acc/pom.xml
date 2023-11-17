@@ -48,7 +48,7 @@
     <parent>
         <groupId>fish.payara.server.appclient</groupId>
         <artifactId>client</artifactId>
-        <version>6.2023.8-SNAPSHOT</version>
+        <version>6.2023.12-SNAPSHOT</version>
     </parent>
     
     
@@ -257,10 +257,6 @@
                 <exclusion>
                     <groupId>org.apache.santuario</groupId>
                     <artifactId>xmlsec</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.glassfish.metro</groupId>
-                    <artifactId>webservices-extra-xmlsec</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>

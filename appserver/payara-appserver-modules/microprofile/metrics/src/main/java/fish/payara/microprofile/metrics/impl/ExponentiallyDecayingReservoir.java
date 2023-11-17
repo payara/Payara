@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -91,7 +91,9 @@ public class ExponentiallyDecayingReservoir implements Reservoir {
     private volatile long startTime;
     private final AtomicLong nextScaleTime;
     private final Clock clock;
-
+    
+    private ConfigurationProperties configurationProperties;
+    
     /**
      * Creates a new {@link ExponentiallyDecayingReservoir} of 1028 elements,
      * which offers a 99.9% confidence level with a 5% margin of error assuming
@@ -186,7 +188,12 @@ public class ExponentiallyDecayingReservoir implements Reservoir {
         rescaleIfNeeded();
         lockForRegularUsage();
         try {
-            return new WeightedSnapshot(values.values());
+            if(this.configurationProperties != null) {
+                return new WeightedSnapshot(values.values(), this.configurationProperties);
+            } else {
+                return new WeightedSnapshot(values.values());
+            }
+            
         } finally {
             unlockForRegularUsage();
         }
@@ -259,4 +266,9 @@ public class ExponentiallyDecayingReservoir implements Reservoir {
     private void unlockForRegularUsage() {
         lock.readLock().unlock();
     }
+    
+    public void setConfigAdapter(ConfigurationProperties configurationProperties) {
+        this.configurationProperties = configurationProperties;
+    }
+    
 }

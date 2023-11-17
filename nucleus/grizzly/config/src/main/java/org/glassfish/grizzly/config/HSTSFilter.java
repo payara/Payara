@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2021 Payara Foundation and/or affiliates
+ * Copyright (c) [2021-2023] Payara Foundation and/or affiliates
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -99,7 +99,9 @@ public class HSTSFilter extends BaseFilter implements ConfigAwareElement<Ssl> {
         Object message = ctx.getMessage();
         if (message instanceof HttpContent && enabled) {
             HttpContent content = (HttpContent) message;
-            content.getHttpHeader().addHeader(HSTS_HEADER, header);
+            if(!content.getHttpHeader().containsHeader(HSTS_HEADER)) {
+                content.getHttpHeader().addHeader(HSTS_HEADER, header);
+            }
         }     
         
         return ctx.getInvokeAction();

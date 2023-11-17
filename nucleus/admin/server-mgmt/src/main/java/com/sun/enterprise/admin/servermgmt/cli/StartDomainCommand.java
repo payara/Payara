@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2017-2021] Payara Foundation and/or affiliates
+//Portions Copyright [2017-2023] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt.cli;
 
@@ -63,6 +63,8 @@ import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.universal.process.ProcessStreamDrainer;
 import com.sun.enterprise.universal.xml.MiniXmlParserException;
 import org.glassfish.security.common.FileRealmStorageManager;
+
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 /**
  * The start-domain command.
@@ -95,6 +97,12 @@ public class StartDomainCommand extends LocalDomainCommand implements StartServe
     private String preBootCommand;
     @Param(name = "postbootcommandfile", optional = true)
     private String postBootCommand;
+
+    @Param(defaultValue = "600", optional = true)
+    protected int timeout;
+    
+    @Param(optional = true, defaultValue = "false")
+    private boolean warmup;
     
     @Inject
     ServerEnvironment senv;
@@ -131,6 +139,9 @@ public class StartDomainCommand extends LocalDomainCommand implements StartServe
             if (!postbootFile.exists()){
                 throw new CommandValidationException("postboot commands file does not exist: "+ postbootFile.getAbsolutePath());
             }
+        }
+        if (timeout < 1) {
+            throw new CommandValidationException("Timeout must be at least 1 second long.");
         }
         super.validate();
     }
@@ -173,6 +184,11 @@ public class StartDomainCommand extends LocalDomainCommand implements StartServe
 
             doAdminPasswordCheck();
 
+            if (warmup) {
+                info.setWarmup(warmup);
+                helper.setWarmup(warmup);
+            }
+
             // launch returns very quickly if verbose is not set
             // if verbose is set then it returns after the domain dies
             launcher.launch();
@@ -206,7 +222,7 @@ public class StartDomainCommand extends LocalDomainCommand implements StartServe
 
             }
             else {
-                helper.waitForServer();
+                helper.waitForServer(timeout, SECONDS);
                 helper.report();
                 return SUCCESS;
             }
@@ -239,6 +255,7 @@ public class StartDomainCommand extends LocalDomainCommand implements StartServe
         info.setDebug(debug);
         info.setUpgrade(upgrade);
         info.setWatchdog(watchdog);
+        info.setWarmup(warmup);
         info.setDropInterruptedCommands(drop_interrupted_commands);
         info.setPrebootCommandsFile(preBootCommand);
         info.setpostbootCommandsFile(postBootCommand);
@@ -262,6 +279,7 @@ public class StartDomainCommand extends LocalDomainCommand implements StartServe
         args.add("--verbose=" + verbose);
         args.add("--watchdog=" + watchdog);
         args.add("--debug=" + debug);
+        args.add("--warmup=" + warmup);
         args.add("--domaindir");
         args.add(getDomainsDir().toString());
         if (ok(getDomainName()))

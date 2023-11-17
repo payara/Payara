@@ -37,6 +37,7 @@
 # only if the new code is made subject to such option by the copyright
 # holder.
 #
+# Portions Copyright 2023 Payara Foundation and/or its affiliates.
 
 -exportcontents: \
                         org.glassfish.appclient.client; \
@@ -51,4 +52,5 @@
 # Making this import optional.
 Import-Package: \
                         org.jboss.weld.environment.se;resolution:=optional, \
+                        org.glassfish.appclient.client.acc.agent;resolution:=optional, \
                         *

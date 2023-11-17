@@ -37,12 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2023 Payara Foundation and/or its affiliates
 
 package org.glassfish.deployment.admin;
 
-import fish.payara.deployment.transformer.api.JakartaNamespaceDeploymentTransformer;
-import fish.payara.deployment.transformer.api.JakartaNamespaceDeploymentTransformerConstants;
 import fish.payara.nucleus.hotdeploy.HotDeployService;
 import fish.payara.nucleus.hotdeploy.ApplicationState;
 import com.sun.enterprise.config.serverbeans.*;
@@ -82,7 +80,6 @@ import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ArchiveHandler;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.event.EventListener;
-import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
@@ -92,8 +89,6 @@ import org.glassfish.deployment.versioning.VersioningSyntaxException;
 import org.glassfish.deployment.versioning.VersioningUtils;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.hk2.classmodel.reflect.Parser;
-import org.glassfish.hk2.classmodel.reflect.Types;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.deployment.*;
 import org.glassfish.internal.deployment.analysis.DeploymentSpan;
@@ -511,44 +506,6 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                             source(initialContext.getSource())
                             .archiveHandler(archiveHandler)
                             .build(initialContext);
-            
-            Optional<JakartaNamespaceDeploymentTransformer> jakartaNamespaceDeploymentTransformerOptional =
-                    Optional.empty();
-            try {
-                jakartaNamespaceDeploymentTransformerOptional = ServiceLoader.load(JakartaNamespaceDeploymentTransformer.class).findFirst();
-            } catch (NoClassDefFoundError exception) {
-                // ClassNotFoundException gets thrown if we've found a service but couldn't instantiate it
-                logger.log(Level.WARNING,
-                        "Caught exception trying to instantiate a deployment transformer, skipping...",
-                        exception);
-            }
-            
-            if (jakartaNamespaceDeploymentTransformerOptional.isPresent()) {
-                JakartaNamespaceDeploymentTransformer jakartaNamespaceDeploymentTransformerService =
-                        jakartaNamespaceDeploymentTransformerOptional.get();
-                String transformNS = System.getProperty(
-                        JakartaNamespaceDeploymentTransformerConstants.TRANSFORM_NAMESPACE);
-                Types types = deployment.getDeployableTypes(deploymentContext);
-                if (Boolean.valueOf(transformNS) || (transformNS == null &&
-                        !jakartaNamespaceDeploymentTransformerService.isJakartaEEApplication(types))) {
-                    span.start(DeploymentTracing.AppStage.TRANSFORM_ARCHIVE);
-                    deploymentContext.getSource().close();
-                    File output = jakartaNamespaceDeploymentTransformerService.transformApplication(
-                            path, context, isDirectoryDeployed);
-                    if (output == null) {
-                        return;
-                    }
-
-                    deploymentContext.getAppProps().setProperty(ServerTags.EMPTY_BEANS_XML_MODE_ALL_PROP, Boolean.TRUE.toString());
-                    deploymentContext.setSource((FileArchive)archiveFactory.createArchive(output));
-
-                    // reset transient and module data of orignal deployed archive
-                    deploymentContext.removeTransientAppMetaData(Types.class.getName());
-                    deploymentContext.removeTransientAppMetaData(Parser.class.getName());
-                    deploymentContext.resetModuleMetaData();
-                    structuredTracing.register(deploymentContext);
-                }
-            }
 
             // reset the properties (might be null) set by the deployers when undeploying.
             if (undeployProps != null) {

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2020] Payara Foundation and/or affiliates
+// Portions Copyright 2018-2023 Payara Foundation and/or affiliates
 
 package com.sun.enterprise.security.auth.realm;
 
@@ -51,6 +51,7 @@ import static java.util.logging.Level.FINER;
 import static java.util.logging.Level.INFO;
 import static org.glassfish.external.probe.provider.PluginPoint.SERVER;
 
+import java.nio.file.Paths;
 import java.util.Enumeration;
 import java.util.Properties;
 import java.util.logging.Logger;
@@ -368,7 +369,7 @@ public abstract class Realm extends AbstractStatefulRealm implements Comparable<
                             serviceLocator.getService(ClassLoaderHierarchy.class).getCommonClassLoader();
                     String realmJarPath = props.getProperty("realmJarPath");
                     if (realmJarPath != null) {
-                        commonClassLoader.addURL(new URL("file://" + realmJarPath));
+                        commonClassLoader.addURL(Paths.get(realmJarPath).toUri().toURL());
                     }
                     // TODO: workaround here. Once fixed in V3 we should be able to use
                     // Context ClassLoader instead.

@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2023 Payara Foundation and/or its affiliates
 package org.apache.catalina.authenticator;
 
 import static java.util.logging.Level.FINE;
@@ -600,6 +600,11 @@ public class FormAuthenticator extends AuthenticatorBase {
         if (saved.getQueryString() != null) {
             savedRequestURL.append('?');
             savedRequestURL.append(saved.getQueryString());
+        }
+
+        // Avoid protocol relative redirects
+        while (savedRequestURL.length() > 1 && savedRequestURL.charAt(1) == '/') {
+            savedRequestURL.deleteCharAt(0);
         }
 
         return savedRequestURL.toString();
