@@ -130,7 +130,7 @@
         <tiger.types.version>1.4.payara-p1</tiger.types.version>
         <mimepull.version>1.10.0</mimepull.version>
         <gmbal.version>4.0.3</gmbal.version>
-        <monitoring-console-api.version>2.0.1</monitoring-console-api.version>
+        <monitoring-console-api.version>2.0.2</monitoring-console-api.version>
         <metainf-services.version>1.9</metainf-services.version>
         <ldapbp.version>1.0</ldapbp.version>
         <!-- Javassist (JAVA programming ASSISTant) makes Java bytecode manipulation simple. It is a class library for editing bytecodes in Java. -->
