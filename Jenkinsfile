@@ -5,7 +5,7 @@ def DOMAIN_NAME
 def payaraBuildNumber
 pipeline {
     agent {
-        label 'pr-testing'
+        label 'general-purpose'
     }
     environment {
         MP_METRICS_TAGS='tier=integration'
