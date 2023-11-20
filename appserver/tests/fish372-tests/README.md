@@ -20,7 +20,7 @@ While this scenario appears as working on the paper, in practice there are some 
 * the goals `payara-micro:start` and `payara-micro:stop` aren't available on the maven command line and the raise:
 
 ```
-[ERROR] No plugin found for prefix 'payara' in the current project and in the plugin groups [org.apache.maven.plugins, org.codehaus.mojo] available from the repositories [local (/home/nicolas/.m2/repository), payara-nexus-artifacts (https://nexus.payara.fish/repository/payara-artifacts), central (https://repo.maven.apache.org/maven2)] -> [Help 1]
+[ERROR] No plugin found for prefix 'payara' in the current project and in the plugin groups [org.apache.maven.plugins, org.codehaus.mojo] available from the repositories [local (/home/nicolas/.m2/repository), payara-nexus-artifacts (https://nexus.dev.payara.fish/repository/payara-artifacts), central (https://repo.maven.apache.org/maven2)] -> [Help 1]
 ```
 
 * the payara-micro:start goal doesn't provide support to wait for the server start, meaning that, depending on the required time, the integration tests might be executed before the server starts.
