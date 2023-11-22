@@ -4,13 +4,16 @@ def pom
 def DOMAIN_NAME
 def payaraBuildNumber
 pipeline {
-    agent any
+    agent {
+        label 'general-purpose'
+    }
     environment {
         MP_METRICS_TAGS='tier=integration'
         MP_CONFIG_CACHE_DURATION=0
     }
     tools {
         jdk "zulu-11"
+        maven "maven-3.6.3"
     }
     stages {
         stage('Report') {
@@ -43,13 +46,6 @@ pipeline {
                 }
             }
         }
-//        stage('Quality Gate') {
-//            steps {
-//                timeout(time: 1, unit: 'HOURS') {
-//                    waitForQualityGate abortPipeline: true, credentialsId: 'sonarqube-user-token'
-//                }
-//            }
-//        }
         stage('Setup for Quicklook Tests') {
             steps {
                 setupDomain()
