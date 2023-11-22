@@ -218,11 +218,11 @@
     <distributionManagement>
         <repository>
             <id>payara-nexus-artifacts</id>
-            <url>https://nexus.payara.fish/repository/payara-artifacts/</url>
+            <url>https://nexus.dev.payara.fish/repository/payara-artifacts/</url>
         </repository>
         <snapshotRepository>
             <id>payara-nexus-snapshots</id>
-            <url>https://nexus.payara.fish/repository/payara-snapshots/</url>
+            <url>https://nexus.dev.payara.fish/repository/payara-snapshots/</url>
         </snapshotRepository>
     </distributionManagement>
 
@@ -242,7 +242,7 @@
 
         <repository>
             <id>payara-nexus-artifacts</id>
-            <url>https://nexus.payara.fish/repository/payara-artifacts</url>
+            <url>https://nexus.dev.payara.fish/repository/payara-artifacts</url>
             <releases>
                 <enabled>true</enabled>
             </releases>
@@ -269,7 +269,7 @@
 
         <pluginRepository>
             <id>payara-nexus-artifacts</id>
-            <url>https://nexus.payara.fish/repository/payara-artifacts</url>
+            <url>https://nexus.dev.payara.fish/repository/payara-artifacts</url>
             <releases>
                 <enabled>true</enabled>
             </releases>

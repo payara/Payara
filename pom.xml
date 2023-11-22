@@ -80,7 +80,7 @@
         </repository>
         <repository>
             <id>payara-nexus-artifacts</id>
-            <url>https://nexus.payara.fish/repository/payara-artifacts</url>
+            <url>https://nexus.dev.payara.fish/repository/payara-artifacts</url>
             <releases>
                 <enabled>true</enabled>
             </releases>
@@ -107,7 +107,7 @@
         </pluginRepository>
         <pluginRepository>
             <id>payara-nexus-artifacts</id>
-            <url>https://nexus.payara.fish/repository/payara-artifacts</url>
+            <url>https://nexus.dev.payara.fish/repository/payara-artifacts</url>
             <releases>
                 <enabled>true</enabled>
             </releases>
@@ -120,7 +120,7 @@
     <distributionManagement>
         <repository>
             <id>payara-nexus-distributions</id>
-            <url>https://nexus.payara.fish/repository/payara-community/</url>
+            <url>https://nexus.dev.payara.fish/repository/payara-community/</url>
         </repository>
     </distributionManagement>
 
