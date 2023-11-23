@@ -34,7 +34,7 @@ Commons CLI 1.4
 Commons Codec 1.15
 Commons Lang3 3.12.0
 Eclipse MicroProfile 5.0 APIs
-Hazelcast 5.1.1
+Hazelcast 5.3.6
 Hibernate Validator 8.0.0.Final
 IBM Batch 2.1.1
 Jackson 2.13.4
