@@ -40,7 +40,12 @@
 package fish.payara.admin.servermgmt.cli;
 
 import com.sun.enterprise.admin.servermgmt.cli.RestartDomainCommand;
+
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.logging.Level;
+
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
 import org.glassfish.api.admin.CommandValidationException;
@@ -62,27 +67,49 @@ public class RestartDomainsCommand extends RestartDomainCommand {
     @Param(name = "debug", optional = true)
     private Boolean debug;
 
+    @Param(optional = true, defaultValue = "600")
+    private int timeout;
+
+    @Param(optional = true, defaultValue = "600")
+    private int domainTimeout;
+
     @Override
     protected void validate()
             throws CommandException, CommandValidationException {
-        if (timeout < 1) {
+        if (timeout < 1 || domainTimeout < 1) {
             throw new CommandValidationException("Timeout must be at least 1 second long.");
         }
     }
     
     @Override
     protected int executeCommand() throws CommandException {
-        try {
-            String[] domains = userArgDomainName.split(",");
-            for (String domainName : domains) {
-                setDomainName(domainName);
-                super.executeCommand();
-                logger.log(Level.FINE, "Restarted domain {0}", domainName);
+        ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
+        Future future = executorService.submit(() -> {
+            try {
+                String[] domains = userArgDomainName.split(",");
+                for (String domainName : domains) {
+                    setDomainName(domainName);
+                    super.timeout = domainTimeout;
+                    super.executeCommand();
+                    logger.log(Level.FINE, "Restarted domain {0}", domainName);
+                }
+                return 0;
+            } catch (Exception ex){
+                throw new CommandException(ex.getLocalizedMessage());
             }
-            return 0;
-        } catch (Exception ex){
-            throw new CommandException(ex.getLocalizedMessage());
+        });
+        long startTime = System.currentTimeMillis();
+        while (!timedOut(startTime)) {
+            if (future.isDone()) {
+                return 0;
+            }
         }
+        throw new CommandException("Command Timed Out");
     }
-    
+
+    private boolean timedOut(long startTime) {
+        return (System.currentTimeMillis() - startTime) > (timeout * 1000);
+    }
+
+
 }

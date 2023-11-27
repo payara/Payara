@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2021-2022] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2021-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -46,8 +46,11 @@ import org.glassfish.config.support.TranslatedConfigView;
 import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import org.jboss.logging.Logger;
 
 final class ConfigExpressionResolver {
+    
+    private static final Logger log = Logger.getLogger(ConfigExpressionResolver.class);
 
     private final Iterable<ConfigSource> sources;
 
@@ -100,10 +103,16 @@ final class ConfigExpressionResolver {
                     0
             );
         }
-
+        
         String profiledPropertyName = resolveExpression((profile == null ? "" : "%" + profile + ".") + propertyName);
-
         ConfigValueImpl result = getValue(profiledPropertyName);
+        
+        if(profile != null && result != null) {
+            ConfigValueImpl resultWithoutProfile = getValue(resolveExpression(propertyName));
+            result = resultWithoutProfile.getSourceOrdinal() == result.getSourceOrdinal() ? result :
+                    (resultWithoutProfile.getSourceOrdinal() > result.getSourceOrdinal()) ? resultWithoutProfile : result;
+        } 
+        
 
         if (result == null) {
             String resolvedPropertyName = resolveExpression(propertyName);
@@ -121,10 +130,16 @@ final class ConfigExpressionResolver {
         for (ConfigSource source : sources) {
             final String result = source.getValue(propertyName);
             if (result != null && !result.isEmpty()) {
+                String resolvedExpression = null;
+                try {
+                    resolvedExpression = resolveExpression(result);
+                } catch(NoSuchElementException noSuchElementException) {
+                    log.warn(String.format("Using null value in configuration, expression %s", result));
+                }
                 return new ConfigValueImpl(
                     propertyName,
                         result,
-                        resolveExpression(result),
+                        resolvedExpression,
                         source.getName(),
                         source.getOrdinal()
                 );

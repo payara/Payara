@@ -46,7 +46,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>fish.payara.server.core</groupId>
     <artifactId>core-aggregator</artifactId>
-    <version>6.9.0-SNAPSHOT</version>
+    <version>6.10.0-SNAPSHOT</version>
 
     <packaging>pom</packaging>
     <name>Payara Core Aggregator</name>
@@ -54,7 +54,7 @@
     <description>All of Payara Core modules</description>
 
     <properties>
-        <payara.core.version>6.9.0-SNAPSHOT</payara.core.version>
+        <payara.core.version>6.10.0-SNAPSHOT</payara.core.version>
         <!-- BOM dependencies versions -->
         <payara.security-connectors.version>3.0.alpha8</payara.security-connectors.version>
         <hk2.version>3.0.1.payara-p3</hk2.version>
@@ -66,7 +66,7 @@
         <servlet-api.version>6.0.0</servlet-api.version>
         <jakarta.el-api.version>5.0.0</jakarta.el-api.version>
         <expressly.version>5.0.0</expressly.version>
-        <microprofile-config.version>3.0.2</microprofile-config.version>
+        <microprofile-config.version>3.1</microprofile-config.version>
         <parsson.version>1.1.1.payara-p1</parsson.version>
         <jakarta.activation-api.version>2.1.0</jakarta.activation-api.version>
         <jaxb-api.version>4.0.0</jaxb-api.version>
@@ -90,10 +90,10 @@
         <microprofile-opentracing.version>3.0</microprofile-opentracing.version>
         <microprofile-fault-tolerance.version>4.0.2.payara-p1</microprofile-fault-tolerance.version>
         <microprofile-jwt-auth.version>2.1</microprofile-jwt-auth.version>
-        <microprofile-healthcheck.version>4.0</microprofile-healthcheck.version>
-        <microprofile-metrics.version>5.0.0.payara-p1</microprofile-metrics.version>
+        <microprofile-healthcheck.version>4.0.1</microprofile-healthcheck.version>
+        <microprofile-metrics.version>5.1.0.payara-p1</microprofile-metrics.version>
         <microprofile-rest-client.version>3.0.1</microprofile-rest-client.version>
-        <microprofile-openapi.version>3.1</microprofile-openapi.version>
+        <microprofile-openapi.version>3.1.1</microprofile-openapi.version>
         <jakarta.enterprise.deploy-api.version>1.7.2</jakarta.enterprise.deploy-api.version>
         <jakarta.resource-api.version>2.1.0</jakarta.resource-api.version>
         <jakarta.annotation-api.version>2.1.1</jakarta.annotation-api.version>
@@ -101,7 +101,7 @@
         <opentracing.version>0.33.0</opentracing.version>
         <jsp-api.version>3.1.0</jsp-api.version>
         <javax.cache-api.version>1.1.1.payara-p1</javax.cache-api.version>
-        <hazelcast.version>5.3.1</hazelcast.version>
+        <hazelcast.version>5.3.6</hazelcast.version>
         <jakartaee.api.version>10.0.0</jakartaee.api.version>
         <weld-api.version>5.0.SP3</weld-api.version>
         <weld.version>5.0.1.Final</weld.version>
@@ -149,13 +149,13 @@
         <opentelemetry.alpha.version>1.29.0-alpha</opentelemetry.alpha.version>
         <opentelemetry.alpha26.version>1.26.0-alpha</opentelemetry.alpha26.version>
         <testng.version>7.4.0</testng.version>
-        <bouncycastle-jdk15on.version>1.64</bouncycastle-jdk15on.version>
+        <bouncycastle-jdk15on.version>1.70</bouncycastle-jdk15on.version>
         <jsftemplating.version>3.0.0</jsftemplating.version>
         <jakarta.faces-api.version>4.0.1</jakarta.faces-api.version>
 
         <!-- build versions -->
         <jdk.version>11</jdk.version>
-        <maven.enforcer.plugin.version>3.1.0</maven.enforcer.plugin.version>
+        <maven.enforcer.plugin.version>3.4.1</maven.enforcer.plugin.version>
         <command-security-plugin.version>1.0.13</command-security-plugin.version>
         <command.security.maven.plugin.isFailureFatal>false</command.security.maven.plugin.isFailureFatal>
         <maven.jar.plugin.version>3.3.0</maven.jar.plugin.version>
@@ -171,7 +171,7 @@
         <maven.source.plugin.version>3.2.1</maven.source.plugin.version>
         <maven.javadoc.plugin.version>3.4.1</maven.javadoc.plugin.version>
         <maven.install.plugin.version>3.1.0</maven.install.plugin.version>
-        <maven.bundle.plugin.version>4.1.0</maven.bundle.plugin.version>
+        <maven.bundle.plugin.version>5.1.9</maven.bundle.plugin.version>
         <maven.failsafe.plugin.version>3.0.0-M7</maven.failsafe.plugin.version>
         <maven.site.plugin.version>3.12.1</maven.site.plugin.version>
         <glassfishbuild.version>3.2.20.payara-p2</glassfishbuild.version>
@@ -220,11 +220,11 @@
     <distributionManagement>
         <repository>
             <id>payara-nexus-artifacts</id>
-            <url>https://nexus.payara.fish/repository/payara-artifacts/</url>
+            <url>https://nexus.dev.payara.fish/repository/payara-artifacts/</url>
         </repository>
         <snapshotRepository>
             <id>payara-nexus-snapshots</id>
-            <url>https://nexus.payara.fish/repository/payara-snapshots/</url>
+            <url>https://nexus.dev.payara.fish/repository/payara-snapshots/</url>
         </snapshotRepository>
     </distributionManagement>
 
@@ -244,7 +244,7 @@
 
         <repository>
             <id>payara-nexus-artifacts</id>
-            <url>https://nexus.payara.fish/repository/payara-artifacts</url>
+            <url>https://nexus.dev.payara.fish/repository/payara-artifacts</url>
             <releases>
                 <enabled>true</enabled>
             </releases>
@@ -271,7 +271,7 @@
 
         <pluginRepository>
             <id>payara-nexus-artifacts</id>
-            <url>https://nexus.payara.fish/repository/payara-artifacts</url>
+            <url>https://nexus.dev.payara.fish/repository/payara-artifacts</url>
             <releases>
                 <enabled>true</enabled>
             </releases>
@@ -466,6 +466,27 @@
                     <configuration>
                         <retryFailedDeploymentCount>10</retryFailedDeploymentCount>
                         <skip>${deploy.skip}</skip>
+                    </configuration>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.felix</groupId>
+                    <artifactId>maven-bundle-plugin</artifactId>
+                    <version>${maven.bundle.plugin.version}</version>
+                    <configuration>
+                        <instructions>
+                            <!--
+                                Read all the configuration from osgi.bundle file, if it exists.
+                            -->
+                            <_include>-osgi.bundle</_include>
+                            <!-- Don't import JDK packages -->
+                            <_noimportjava>true</_noimportjava>
+                        </instructions>
+                        <excludeDependencies>tools-jar</excludeDependencies>
+                        <supportedProjectTypes>
+                            <supportedProjectType>glassfish-jar</supportedProjectType>
+                            <supportedProjectType>jar</supportedProjectType>
+                        </supportedProjectTypes>
                     </configuration>
                 </plugin>
             </plugins>

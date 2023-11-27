@@ -14,7 +14,7 @@ example: payara-embedded-all-6.2023.8.RC1.jar
 
 From the location ${PAYARA_HOME}/appserver/tests/functional/embeddedtest, run the command:
 
-> mvn clean compile test -P {FullProfile/WebProfile} -Dpayara.version="6.2023.8.RC1"
+> mvn clean -P {FullProfile/WebProfile} -Dpayara.version="6.2023.8.RC1" compile test 
 
 the test is designed to adapt to jdk 8, 11, or 17. 
 

@@ -45,7 +45,7 @@
     <parent>
         <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>external</artifactId>
-        <version>6.2023.10-SNAPSHOT</version>
+        <version>6.2023.12-SNAPSHOT</version>
     </parent>
 
     <artifactId>metro-xmlsec-repackaged</artifactId>
@@ -126,11 +126,6 @@
         <dependency>
             <groupId>org.apache.santuario</groupId>
             <artifactId>xmlsec</artifactId>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.metro</groupId>
-            <artifactId>webservices-extra-xmlsec</artifactId>
             <optional>true</optional>
         </dependency>
     </dependencies>

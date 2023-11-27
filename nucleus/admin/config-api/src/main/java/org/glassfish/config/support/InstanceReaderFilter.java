@@ -37,12 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2023] Payara Foundation and/or affiliates
 
 package org.glassfish.config.support;
 
 import com.sun.enterprise.util.StringUtils;
 import java.net.*;
+import java.util.List;
+import java.util.Map;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -67,7 +69,7 @@ class InstanceReaderFilter extends ServerReaderFilter {
 
     /**
      * This method is called for every element.  We are very interested
-     * in server, config and cluster.
+     * in server, config, cluster and deployment group.
      * We will only filter out config and server and cluster elements never other elements
      * We use this as a handy hook to get info about other elements -- which really
      * is a side-effect.
@@ -96,6 +98,10 @@ class InstanceReaderFilter extends ServerReaderFilter {
             if (elementName.equals(CLUSTER)){
                 return handleCluster(reader);
             }
+
+            if (elementName.equals(DEPLOYMENT_GROUP)){
+                return handleDeploymentGroup(reader);
+            }
             
             // keep everything else
             return false;
@@ -119,7 +125,8 @@ class InstanceReaderFilter extends ServerReaderFilter {
     private boolean handleServer(XMLStreamReader r) {
         String name = r.getAttributeValue(null, NAME);
 
-        return !(StringUtils.ok(name) && dxpp.getServerNames().contains(name));
+        return !(StringUtils.ok(name) &&
+                (dxpp.getServerNames().contains(name) || dxpp.getDGServerNames().contains(name)));
     }
 
     /**
@@ -128,7 +135,16 @@ class InstanceReaderFilter extends ServerReaderFilter {
     private boolean handleConfig(XMLStreamReader reader) {
         String name = reader.getAttributeValue(null, NAME);
 
-        return !dxpp.getConfigName().equals(name);
+        Map<String, String> mapServerConfig = dxpp.getMapServerConfig();
+        boolean isConfigFromServerInDG = false;
+        List<String> dgServerNames = dxpp.getDGServerNames();
+        for (String server : mapServerConfig.keySet()) {
+            if (dgServerNames.contains(server) && mapServerConfig.get(server).equals(name)) {
+                isConfigFromServerInDG = true;
+            }
+        }
+
+        return !(dxpp.getConfigName().equals(name) || isConfigFromServerInDG);
     }
 
     /**
@@ -142,6 +158,19 @@ class InstanceReaderFilter extends ServerReaderFilter {
         String myCluster = dxpp.getClusterName();
 
         return !(StringUtils.ok(myCluster) && myCluster.equals(name));
+    }
+
+    /**
+     * Note that dxpp.getClusterName() will definitely return null
+     * for stand-alone instances.  This is normal.
+     *
+     * @return true if we want to filter out this DEPLOYMENT GROUP element
+     */
+    private boolean handleDeploymentGroup(XMLStreamReader reader) {
+        String name = reader.getAttributeValue(null, NAME);
+        String myDG = dxpp.getDeploymentGroupName();
+
+        return !(StringUtils.ok(myDG) && myDG.equals(name));
     }
 
     private final DomainXmlPreParser dxpp;
