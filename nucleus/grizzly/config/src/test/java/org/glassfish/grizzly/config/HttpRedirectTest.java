@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2023] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.grizzly.config;
 
 import java.io.BufferedReader;
@@ -47,10 +49,14 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.concurrent.TimeUnit;
 import javax.net.SocketFactory;
 
 import org.junit.Assert;
 import org.junit.Test;
+
+import static org.awaitility.Awaitility.await;
+import static org.glassfish.grizzly.config.GrizzlyTestUtils.portsAreAvailable;
 
 public class HttpRedirectTest extends BaseTestGrizzlyConfig {
 
@@ -59,6 +65,7 @@ public class HttpRedirectTest extends BaseTestGrizzlyConfig {
 
     @Test
     public void legacyHttpToHttpsRedirect() throws IOException {
+        await().atMost(1, TimeUnit.MINUTES).until(() -> portsAreAvailable(48480));
         doTest(SocketFactory.getDefault(),
                "legacy-http-https-redirect.xml",
                 "/",
@@ -69,6 +76,7 @@ public class HttpRedirectTest extends BaseTestGrizzlyConfig {
 
     @Test
     public void legacyHttpsToHttpRedirect() throws IOException {
+        await().atMost(1, TimeUnit.MINUTES).until(() -> portsAreAvailable(48480));
         doTest(getSSLSocketFactory(),
                "legacy-https-http-redirect.xml",
                 "/",
@@ -79,6 +87,7 @@ public class HttpRedirectTest extends BaseTestGrizzlyConfig {
 
     @Test
     public void httpToHttpsSamePortRedirect() throws IOException {
+        await().atMost(1, TimeUnit.MINUTES).until(() -> portsAreAvailable(48480));
         doTest(SocketFactory.getDefault(),
                "http-https-redirect-same-port.xml",
                 "/",
@@ -89,6 +98,7 @@ public class HttpRedirectTest extends BaseTestGrizzlyConfig {
 
     @Test
     public void httpsToHttpSamePortRedirect() throws IOException {
+        await().atMost(1, TimeUnit.MINUTES).until(() -> portsAreAvailable(48480));
         doTest(getSSLSocketFactory(),
                "https-http-redirect-same-port.xml",
                 "/",
@@ -99,6 +109,7 @@ public class HttpRedirectTest extends BaseTestGrizzlyConfig {
 
     @Test
     public void httpToHttpsDifferentPortRedirect() throws IOException {
+        await().atMost(1, TimeUnit.MINUTES).until(() -> portsAreAvailable(48480));
         doTest(getSSLSocketFactory(),
                "http-https-redirect-different-port.xml",
                 "/",
@@ -109,6 +120,7 @@ public class HttpRedirectTest extends BaseTestGrizzlyConfig {
 
     @Test
     public void httpToHttpsWithAttributesRedirect() throws IOException {
+        await().atMost(1, TimeUnit.MINUTES).until(() -> portsAreAvailable(48480));
         doTest(getSSLSocketFactory(),
                 "http-https-redirect-different-port.xml",
                 "/index.html?DEFAULT=D:%5Cprojects%5Ceclipse%5CSimpleWAR.war&name=SimpleWAR&contextroot=SimpleWAR&force=true&keepstate=true",
@@ -119,6 +131,7 @@ public class HttpRedirectTest extends BaseTestGrizzlyConfig {
 
     @Test
     public void httpsToHttpDifferentPortRedirect() throws IOException {
+        await().atMost(1, TimeUnit.MINUTES).until(() -> portsAreAvailable(48480));
         doTest(SocketFactory.getDefault(),
                "https-http-redirect-different-port.xml",
                 "/",

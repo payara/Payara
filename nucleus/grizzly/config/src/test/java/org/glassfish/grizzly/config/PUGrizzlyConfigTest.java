@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2023] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.grizzly.config;
 
 import java.io.ByteArrayOutputStream;
@@ -47,10 +49,14 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.net.URL;
+import java.util.concurrent.TimeUnit;
 import javax.net.ssl.HttpsURLConnection;
 
 import org.junit.Assert;
 import org.junit.Test;
+
+import static org.awaitility.Awaitility.await;
+import static org.glassfish.grizzly.config.GrizzlyTestUtils.portsAreAvailable;
 
 /**
  * Created Jan 5, 2009
@@ -63,7 +69,7 @@ public class PUGrizzlyConfigTest extends BaseTestGrizzlyConfig {
     @Test
     public void puConfig() throws IOException, InstantiationException {
         GrizzlyConfig grizzlyConfig = null;
-        
+        await().atMost(1, TimeUnit.MINUTES).until(() -> portsAreAvailable(38082));
         try {
             grizzlyConfig = new GrizzlyConfig("grizzly-config-pu.xml");
             grizzlyConfig.setupNetwork();
@@ -88,7 +94,7 @@ public class PUGrizzlyConfigTest extends BaseTestGrizzlyConfig {
     @Test
     public void puHttpHttpsSamePortConfig() throws IOException, InstantiationException {
         GrizzlyConfig grizzlyConfig = null;
-
+        await().atMost(1, TimeUnit.MINUTES).until(() -> portsAreAvailable(38082));
         try {
             grizzlyConfig = new GrizzlyConfig("grizzly-config-pu-http-https-same-port.xml");
             grizzlyConfig.setupNetwork();
@@ -114,9 +120,9 @@ public class PUGrizzlyConfigTest extends BaseTestGrizzlyConfig {
     @Test
     public void wrongPuConfigLoop() throws IOException, InstantiationException {
         GrizzlyConfig grizzlyConfig = null;
-
         boolean isIllegalState = false;
-        
+
+        await().atMost(1, TimeUnit.MINUTES).until(() -> portsAreAvailable(38082));
         try {
             grizzlyConfig = new GrizzlyConfig("grizzly-config-pu-loop.xml");
             grizzlyConfig.setupNetwork();

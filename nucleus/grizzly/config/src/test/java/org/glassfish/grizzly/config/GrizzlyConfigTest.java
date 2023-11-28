@@ -38,15 +38,18 @@
  * holder.
  */
 
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2023] [Payara Foundation]
+
 package org.glassfish.grizzly.config;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.ServerSocket;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.glassfish.grizzly.Transport;
 import org.glassfish.grizzly.config.dom.NetworkAddressValidator;
@@ -64,6 +67,8 @@ import org.glassfish.grizzly.strategies.WorkerThreadIOStrategy;
 import org.junit.Assert;
 import org.junit.Test;
 
+import static org.awaitility.Awaitility.await;
+import static org.glassfish.grizzly.config.GrizzlyTestUtils.portsAreAvailable;
 import static org.junit.Assert.*;
 
 /**
@@ -77,7 +82,7 @@ public class GrizzlyConfigTest extends BaseTestGrizzlyConfig {
     @Test
     public void processConfig() throws IOException, InstantiationException {
         GrizzlyConfig grizzlyConfig = null;
-        
+        await().atMost(1, TimeUnit.MINUTES).until(() -> portsAreAvailable(38082, 38083, 38084));
         try {
             grizzlyConfig = new GrizzlyConfig("grizzly-config.xml");
             grizzlyConfig.setupNetwork();
@@ -101,6 +106,7 @@ public class GrizzlyConfigTest extends BaseTestGrizzlyConfig {
     @Test
     public void references() throws IOException {
         GrizzlyConfig grizzlyConfig = null;
+        await().atMost(1, TimeUnit.MINUTES).until(() -> portsAreAvailable(38082, 38083, 38084));
         try {
             grizzlyConfig = new GrizzlyConfig("grizzly-config.xml");
             final List<NetworkListener> list = grizzlyConfig.getConfig().getNetworkListeners().getNetworkListener();
@@ -130,6 +136,7 @@ public class GrizzlyConfigTest extends BaseTestGrizzlyConfig {
     @Test
     public void defaults() throws IOException {
         GrizzlyConfig grizzlyConfig = null;
+        await().atMost(1, TimeUnit.MINUTES).until(() -> portsAreAvailable(38082, 38083, 38084));
         try {
             grizzlyConfig = new GrizzlyConfig("grizzly-config.xml");
             final ThreadPool threadPool = grizzlyConfig.getConfig().getNetworkListeners().getThreadPool().get(0);
@@ -144,6 +151,7 @@ public class GrizzlyConfigTest extends BaseTestGrizzlyConfig {
     @Test
     public void testDefaultBufferConfiguration() throws Exception {
         GrizzlyConfig grizzlyConfig = null;
+        await().atMost(1, TimeUnit.MINUTES).until(() -> portsAreAvailable(38082, 38083, 38084));
         try {
             configure();
             grizzlyConfig = new GrizzlyConfig("grizzly-config.xml");
@@ -165,6 +173,7 @@ public class GrizzlyConfigTest extends BaseTestGrizzlyConfig {
     @Test
     public void testSelectionKeyHandlerConfiguration() throws Exception {
         GrizzlyConfig grizzlyConfig = null;
+        await().atMost(1, TimeUnit.MINUTES).until(() -> portsAreAvailable(38084));
         try {
             configure();
             grizzlyConfig = new GrizzlyConfig("grizzly-config-skh.xml");
@@ -185,6 +194,7 @@ public class GrizzlyConfigTest extends BaseTestGrizzlyConfig {
     @Test
     public void testDirectBufferConfiguration() throws Exception {
         GrizzlyConfig grizzlyConfig = null;
+        await().atMost(1, TimeUnit.MINUTES).until(() -> portsAreAvailable(38084));
         try {
             configure();
             grizzlyConfig = new GrizzlyConfig("grizzly-direct-buffer.xml");
@@ -207,6 +217,7 @@ public class GrizzlyConfigTest extends BaseTestGrizzlyConfig {
     @Test
     public void testSocketBufferConfiguration() throws Exception {
         GrizzlyConfig grizzlyConfig = null;
+        await().atMost(1, TimeUnit.MINUTES).until(() -> portsAreAvailable(38084, 38085, 38086, 38087));
         try {
             configure();
             grizzlyConfig = new GrizzlyConfig("grizzly-config-socket.xml");
@@ -246,6 +257,7 @@ public class GrizzlyConfigTest extends BaseTestGrizzlyConfig {
     @Test
     public void ssl() throws URISyntaxException, IOException {
         GrizzlyConfig grizzlyConfig = null;
+        await().atMost(1, TimeUnit.MINUTES).until(() -> portsAreAvailable(38082, 38083, 38084, 38085));
         try {
             configure();
             grizzlyConfig = new GrizzlyConfig("grizzly-config-ssl.xml");
@@ -321,6 +333,7 @@ public class GrizzlyConfigTest extends BaseTestGrizzlyConfig {
     @Test
     public void ioStrategySet() throws IOException, InstantiationException {
         GrizzlyConfig grizzlyConfig = null;
+        await().atMost(1, TimeUnit.MINUTES).until(() -> portsAreAvailable(38082, 38083));
         try {
             grizzlyConfig = new GrizzlyConfig("grizzly-config-io-strategies.xml");
             grizzlyConfig.setupNetwork();
@@ -344,6 +357,7 @@ public class GrizzlyConfigTest extends BaseTestGrizzlyConfig {
     @Test
     public void backendConfig() throws IOException, InstantiationException {
         GrizzlyConfig grizzlyConfig = null;
+        await().atMost(1, TimeUnit.MINUTES).until(() -> portsAreAvailable(38082, 38083, 38084, 38085));
         try {
             grizzlyConfig = new GrizzlyConfig("grizzly-backend-config.xml");
 
