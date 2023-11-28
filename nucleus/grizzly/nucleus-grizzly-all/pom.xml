@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!--"Portions Copyright [2017-2022] [Payara Foundation and/or its affiliates]" -->
+<!-- Portions Copyright 2017-2023 Payara Foundation and/or its affiliates -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -48,7 +48,7 @@
     <parent>
         <groupId>fish.payara.server.core</groupId>
         <artifactId>core-parent</artifactId>
-        <version>6.9.0-SNAPSHOT</version>
+        <version>6.10.0-SNAPSHOT</version>
         <relativePath>../../../core/core-parent</relativePath>
     </parent>
 
@@ -102,7 +102,7 @@
                         </goals>
                         <configuration>
                             <instructions>
-                                <Import-Package>*</Import-Package>
+                                <Import-Package>!android.os, sun.security.ssl; resolution:=optional, *</Import-Package>
                                 <DynamicImport-Package>*</DynamicImport-Package>
                                 <Export-Package>org.glassfish.grizzly.*</Export-Package>
                                 <Private-Package>org.glassfish.grizzly.*</Private-Package>

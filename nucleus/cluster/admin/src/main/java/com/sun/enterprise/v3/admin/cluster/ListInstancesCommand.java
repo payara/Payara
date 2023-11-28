@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2023] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.v3.admin.cluster;
 
 import com.sun.enterprise.admin.util.InstanceStateService;
@@ -349,6 +349,10 @@ public class ListInstancesCommand implements AdminCommand {
         else if (rc.isCluster()) { 
             Cluster cluster = (Cluster) rc;
             return cluster.getInstances();
+        }
+        else if (rc.isDeploymentGroup()) {
+            DeploymentGroup deploymentGroup = (DeploymentGroup) rc;
+            return deploymentGroup.getInstances();
         }
         else {
             return null;

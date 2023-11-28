@@ -69,7 +69,7 @@ public class OpenTelemetrySpanNamingIT extends AbstractSpanNameTest {
 
     @Test
     public void testSpanName() {
-        var response = target(null).request().get();
+        var response = target(null, "async", "compute").request().get();
         assertEquals(200, response.getStatus());
         var spans = exporter.getSpans();
 

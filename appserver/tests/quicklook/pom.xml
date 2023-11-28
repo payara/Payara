@@ -41,7 +41,7 @@
 
 -->
 
-<!-- Portions Copyright 2018-2022 Payara Foundation and/or its affiliates -->
+<!-- Portions Copyright 2018-2023 Payara Foundation and/or its affiliates -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"> 
     <modelVersion>4.0.0</modelVersion>
@@ -49,7 +49,7 @@
     <parent>
         <groupId>fish.payara.server.internal.tests</groupId>
         <artifactId>payara-tests</artifactId>
-        <version>6.2023.10-SNAPSHOT</version>
+        <version>6.2023.12-SNAPSHOT</version>
     </parent>
 
     <groupId>org.glassfish.quicklook</groupId>
@@ -226,17 +226,17 @@
                     <dependency>
                         <groupId>org.apache.ant</groupId>
                         <artifactId>ant</artifactId>
-                        <version>1.10.12</version>
+                        <version>1.10.14</version>
                     </dependency>
                     <dependency>
                         <groupId>org.apache.ant</groupId>
                         <artifactId>ant-junit</artifactId>
-                        <version>1.10.12</version>
+                        <version>1.10.14</version>
                     </dependency>
                     <dependency>
                         <groupId>org.apache.ant</groupId>
                         <artifactId>ant-apache-regexp</artifactId>
-                        <version>1.10.12</version>
+                        <version>1.10.14</version>
                         <scope>runtime</scope>
                     </dependency>
                     <dependency>

@@ -46,10 +46,10 @@
     <parent>
         <groupId>fish.payara.server.core</groupId>
         <artifactId>core-aggregator</artifactId>
-        <version>6.9.0-SNAPSHOT</version>
+        <version>6.10.0-SNAPSHOT</version>
     </parent>
     <artifactId>core-parent</artifactId>
-    <version>6.9.0-SNAPSHOT</version>
+    <version>6.10.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Payara Core Parent</name>
@@ -246,7 +246,7 @@
                         <configuration>
                             <rules>
                                 <requireJavaVersion>
-                                    <version>[${jdk.version},21)</version>
+                                    <version>[${jdk.version},)</version>
                                     <message>You need at least JDK11</message>
                                 </requireJavaVersion>
                                 <requireMavenVersion>
@@ -409,27 +409,6 @@
                         <testExcludes>
                             <testExclude>**/.ade_path/**</testExclude>
                         </testExcludes>
-                    </configuration>
-                </plugin>
-
-                <plugin>
-                    <groupId>org.apache.felix</groupId>
-                    <artifactId>maven-bundle-plugin</artifactId>
-                    <version>${maven.bundle.plugin.version}</version>
-                    <configuration>
-                        <!-- By default, we don't export anything. -->
-                        <Export-Package />
-                        <instructions>
-                            <!--
-                                Read all the configuration from osgi.bundle file, if it exists.
-                            -->
-                            <_include>-osgi.bundle</_include>
-                        </instructions>
-                        <excludeDependencies>tools-jar</excludeDependencies>
-                        <supportedProjectTypes>
-                            <supportedProjectType>glassfish-jar</supportedProjectType>
-                            <supportedProjectType>jar</supportedProjectType>
-                        </supportedProjectTypes>
                     </configuration>
                 </plugin>
 
@@ -653,6 +632,10 @@
                                 <!-- see documentation https://siom79.github.io/japicmp/MavenPlugin.html -->
                                 <ignoreMissingClasses>true</ignoreMissingClasses>
                                 <breakBuildBasedOnSemanticVersioning>true</breakBuildBasedOnSemanticVersioning>
+                                <excludes>
+                                    <exclude>io.opentelemetry.extension</exclude>
+                                    <exclude>io.opentelemetry.instrumentation</exclude>
+                                </excludes>
                             </parameter>
                         </configuration>
                         <executions>

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2023] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.glassfish.bootstrap.osgi;
 
@@ -74,6 +74,11 @@ public class EmbeddedOSGiGlassFishImpl extends GlassFishDecorator {
     public void start() throws GlassFishException {
         super.start();
         registerService();
+        if (bundleContext.getProperty("-warmup") != null && bundleContext.getProperty("-warmup").equals("true")) {
+            logger.log(Level.WARNING, LogFacade.WARMUP_OPTION_AS_TRUE);
+            stop();
+            System.exit(0);
+        }
     }
 
     @Override

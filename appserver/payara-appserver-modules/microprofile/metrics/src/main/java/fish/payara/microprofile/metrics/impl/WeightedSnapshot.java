@@ -72,12 +72,19 @@ public class WeightedSnapshot extends Snapshot {
     private final long[] values;
     private final double[] normWeights;
     private final double[] quantiles;
+    
+    private ConfigurationProperties configurationProperties;
 
     /**
      * Create a new {@link Snapshot} with the given values.
      *
      * @param values an unordered set of values in the reservoir
      */
+    public WeightedSnapshot(Collection<WeightedSample> values, ConfigurationProperties configurationProperties) {
+        this(values);
+        this.configurationProperties = configurationProperties;
+    }
+    
     public WeightedSnapshot(Collection<WeightedSample> values) {
         final WeightedSample[] copy = values.toArray(new WeightedSample[]{});
 
@@ -150,19 +157,37 @@ public class WeightedSnapshot extends Snapshot {
     @Override
     public PercentileValue[] percentileValues() {
         PercentileValue[] percentileValues = null;
-        double[] percentiles = {0.5, 0.75, 0.95, 0.98, 0.99, 0.999};
-        if(values.length > 0 && quantiles.length > 0 && values.length == quantiles.length) {
+        if (configurationProperties != null) {
+            Double[] percentiles = configurationProperties.percentileValues();
             percentileValues = new PercentileValue[percentiles.length];
             for (int i = 0; i < percentiles.length; i++) {
                 percentileValues[i] = new PercentileValue(percentiles[i], getValue(percentiles[i]));
             }
         } else {
-            percentileValues = new PercentileValue[percentiles.length];
-            for (int i = 0; i < percentiles.length; i++) {
-                percentileValues[i] = new PercentileValue(percentiles[i], 0);
+            double[] percentiles = {0.5, 0.75, 0.95, 0.98, 0.99, 0.999};
+            if (values.length > 0 && quantiles.length > 0 && values.length == quantiles.length) {
+                percentileValues = new PercentileValue[percentiles.length];
+                for (int i = 0; i < percentiles.length; i++) {
+                    percentileValues[i] = new PercentileValue(percentiles[i], getValue(percentiles[i]));
+                }
+            } else {
+                percentileValues = new PercentileValue[percentiles.length];
+                for (int i = 0; i < percentiles.length; i++) {
+                    percentileValues[i] = new PercentileValue(percentiles[i], 0);
+                }
             }
         }
         return percentileValues;
+    }
+
+    @Override
+    public HistogramBucket[] bucketValues() {
+        Double[] buckets = configurationProperties.bucketValues();
+        HistogramBucket[] histogramBuckets = new HistogramBucket[buckets.length];
+        for (int i = 0; i < buckets.length; i++) {
+            histogramBuckets[i] = new HistogramBucket(buckets[i], i);
+        }
+        return histogramBuckets;
     }
 
     private double getValue(double quantile) {
@@ -203,6 +228,10 @@ public class WeightedSnapshot extends Snapshot {
                 out.printf("%d%n", value);
             }
         }
+    }
+    
+    public ConfigurationProperties getConfigAdapter() {
+        return this.configurationProperties;
     }
 
     @Override

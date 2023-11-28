@@ -94,6 +94,8 @@ public class StartServerHelper {
     private final int debugPort;
     private final boolean isDebugSuspend;
     // only set when actively trouble-shooting or investigating...
+    
+    private boolean isWarmup = false;
     private static final  boolean DEBUG_MESSAGES_ON = false;
     private static final LocalStringsImpl STRINGS = new LocalStringsImpl(StartServerHelper.class);
     
@@ -273,6 +275,9 @@ public class StartServerHelper {
         if (debugPort >= 0) {
             logger.info(STRINGS.get("ServerStart.DebuggerMessage", "" + debugPort));
         }
+        if (isWarmup) {
+            logger.info(STRINGS.get("ServerStart.SuccessWithWarmupEnabled"));
+        }
     }
 
     /**
@@ -423,6 +428,14 @@ public class StartServerHelper {
             Environment env = new Environment();
             CLIUtil.writeCommandToDebugLog("restart-debug", env, new String[]{"DEBUG MESSAGE FROM RESTART JVM", s}, 99999);
         }
+    }
+    
+    public void setWarmup(boolean warmup) {
+        this.isWarmup = warmup;
+    }
+    
+    public boolean getWarmup() {
+        return isWarmup;
     }
 
     /**

@@ -42,16 +42,6 @@
 
 package fish.payara.samples.otel.spanname;
 
-import java.io.File;
-import java.net.URI;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Logger;
-
-import fish.payara.samples.PayaraArquillianTestRunner;
-import fish.payara.samples.PayaraTestRunnerDelegate;
 import fish.payara.samples.otel.JaxrsApp;
 import fish.payara.samples.otel.async.AsyncResource;
 import io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSpanExporterProvider;
@@ -63,6 +53,13 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.resolver.api.maven.Maven;
+
+import java.net.URI;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Logger;
 
 public class AbstractSpanNameTest {
     protected final Logger logger = Logger.getLogger(getClass().getName());
@@ -88,8 +85,9 @@ public class AbstractSpanNameTest {
     @Inject
     protected InMemoryExporter exporter;
 
-    protected WebTarget target(String wrapType) {
-        var target = ClientBuilder.newClient().target(baseUri).path("jaxrs").path("async").path("compute");
+    protected WebTarget target(String wrapType, String basePath, String path) {
+        var target = ClientBuilder.newClient().target(baseUri).path("jaxrs").path(basePath).path(path);
+
         if (wrapType != null) {
             target = target.queryParam("propagation", wrapType);
         }

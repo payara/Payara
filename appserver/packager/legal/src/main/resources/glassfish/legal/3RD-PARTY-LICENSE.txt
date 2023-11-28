@@ -24,17 +24,17 @@ party licensors listed.
 
 ---------------------------------------------------
 Accessors Smart 2.4.11
-Apache Ant 1.10.9
+Apache Ant 1.10.14
 Apache BCEL 6.6.1
 Apache Felix OSGI 7.x
 Apache Log4j 1.2.12, 1.2.17
-Apache Santuario 3.0.2
+Apache Santuario 4.0.0
 Classmate 1.5.1
 Commons CLI 1.4
 Commons Codec 1.15
 Commons Lang3 3.12.0
-Eclipse MicroProfile 5.0 APIs
-Hazelcast 5.1.1
+Eclipse MicroProfile 6.1 APIs
+Hazelcast 5.3.6
 Hibernate Validator 8.0.0.Final
 IBM Batch 2.1.1
 Jackson 2.13.4
@@ -60,7 +60,7 @@ SnakeYaml 1.33
 SNMP4J 2.5.3
 Tiger Types 1.4
 Weld 5.0.1.Final
-Woodstox Core 6.2.7
+Woodstox Core 6.5.1
 Xalan 2.7.2
 XML APIs 1.3.04
 XPP3 1.1.4c

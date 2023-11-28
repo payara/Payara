@@ -38,7 +38,7 @@
 # holder.
 #
 
-# Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+# Portions Copyright 2016-2023 Payara Foundation and/or its affiliates
 
 -exportcontents: \
                         com.sun.enterprise.v3.admin; \
@@ -67,4 +67,4 @@ DynamicImport-Package: fish.payara.nucleus.requesttracing, \
 # Only in non-OSGi embedded mode, kernel depends on logging package, so
 # optionally depend on that pkg. This way, when GF is embedded in 
 # OSGi environment, logging bundle need not be installed.
-Import-Package: com.sun.enterprise.server.logging.*; resolution:=optional, *
+Import-Package: com.sun.enterprise.server.logging.*; resolution:=optional, com.sun.tracing.*; resolution:=optional, *

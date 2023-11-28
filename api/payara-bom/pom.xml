@@ -44,7 +44,7 @@
     <parent>
         <groupId>fish.payara.api</groupId>
         <artifactId>api-parent</artifactId>
-        <version>6.2023.10-SNAPSHOT</version>
+        <version>6.2023.12-SNAPSHOT</version>
     </parent>
 
     <artifactId>payara-bom</artifactId>
@@ -208,6 +208,13 @@
                 <scope>test</scope>
             </dependency>
 
+            <dependency>
+                <groupId>io.opentelemetry.instrumentation</groupId>
+                <artifactId>opentelemetry-instrumentation-bom</artifactId>
+                <version>${opentelemetry.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <!-- packaged components -->
             <dependency>
                 <groupId>io.opentelemetry</groupId>
@@ -243,12 +250,6 @@
                 <groupId>io.opentelemetry</groupId>
                 <artifactId>opentelemetry-sdk-logs</artifactId>
                 <version>${opentelemetry.version}</version>
-                <scope>provided</scope>
-            </dependency>
-            <dependency>
-                <groupId>io.opentelemetry</groupId>
-                <artifactId>opentelemetry-api-logs</artifactId>
-                <version>${opentelemetry.alpha26.version}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
@@ -297,6 +298,18 @@
                 <groupId>io.opentelemetry</groupId>
                 <artifactId>opentelemetry-exporter-common</artifactId>
                 <version>${opentelemetry.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry.instrumentation</groupId>
+                <artifactId>opentelemetry-instrumentation-annotations</artifactId>
+                <version>${opentelemetry.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry.instrumentation</groupId>
+                <artifactId>opentelemetry-instrumentation-annotations-support</artifactId>
+                <version>${opentelemetry.alpha.version}</version>
                 <scope>provided</scope>
             </dependency>
 
@@ -401,11 +414,6 @@
                 <groupId>org.apache.santuario</groupId>
                 <artifactId>xmlsec</artifactId>
                 <version>${org.apache.santuario.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.metro</groupId>
-                <artifactId>webservices-extra-xmlsec</artifactId>
-                <version>${webservices.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.sun.xml.bind</groupId>

@@ -66,7 +66,7 @@ import java.util.logging.Logger;
 
 import static java.util.Objects.requireNonNull;
 
-public class OpenTelemetryRequestEventListener implements RequestEventListener {
+class OpenTelemetryRequestEventListener implements RequestEventListener {
 
     private static final Logger LOG = Logger.getLogger(OpenTelemetryRequestEventListener.class.getName());
 
@@ -75,6 +75,8 @@ public class OpenTelemetryRequestEventListener implements RequestEventListener {
     private final OpenTelemetryService openTelemetryService;
 
     private final OpenTracingHelper openTracingHelper;
+
+    private PropagationHelper helper;
 
     public OpenTelemetryRequestEventListener(final ResourceInfo resourceInfo,
                                              final OpenTelemetryService openTelemetryService,
@@ -89,11 +91,19 @@ public class OpenTelemetryRequestEventListener implements RequestEventListener {
         LOG.fine(() -> "onEvent(event.type=" + requestEvent.getType() + ", path=" + getPath(requestEvent) + ")");
         // onException is special, it can come in any phase of request processing.
         // early phases are simply ignored.
-        if (Arrays.asList(RequestEvent.Type.START, RequestEvent.Type.MATCHING_START).contains(requestEvent.getType())) {
-            return;
-        }
-
         try {
+            switch (requestEvent.getType()) {
+                case START:
+                case MATCHING_START:
+                case LOCATOR_MATCHED:
+                case SUBRESOURCE_LOCATED:
+                case REQUEST_FILTERED:
+                case EXCEPTION_MAPPER_FOUND:
+                case EXCEPTION_MAPPING_FINISHED:
+                    // these events are not interesting
+                    return;
+            }
+
             if (requestEvent.getType() == RequestEvent.Type.REQUEST_MATCHED) {
                 final ContainerRequest requestContext = requestEvent.getContainerRequest();
                 if (!openTracingHelper.canTrace(resourceInfo, requestContext)) {
@@ -105,18 +115,33 @@ public class OpenTelemetryRequestEventListener implements RequestEventListener {
                 return;
             }
 
-            final Span activeSpan = Span.current();
+            final Span activeSpan = helper != null ? helper.span() : Span.current();
             if (!activeSpan.isRecording()) {
                 LOG.finest(() -> "Could not find any active span, nothing to do.");
                 return;
             }
 
-            if (requestEvent.getType() == RequestEvent.Type.ON_EXCEPTION) {
-                onException(requestEvent, activeSpan);
-            } else if (requestEvent.getType() == RequestEvent.Type.RESP_FILTERS_FINISHED) {
-                onOutgoingResponse(requestEvent, activeSpan);
-            } else if (requestEvent.getType() == RequestEvent.Type.FINISHED) {
-                finish(requestEvent, activeSpan);
+            switch (requestEvent.getType()) {
+                case ON_EXCEPTION:
+                    onException(requestEvent, activeSpan);
+                    break;
+                case RESOURCE_METHOD_FINISHED:
+                    // remove scope from processing thread
+                    if (helper != null) {
+                        helper.closeContext();
+                    }
+                    break;
+                case RESP_FILTERS_FINISHED:
+                    onOutgoingResponse(requestEvent, activeSpan);
+                    break;
+                case FINISHED:
+                    if (helper != null) {
+                        finish(requestEvent);
+                    } else {
+                        LOG.log(Level.FINE, "Request finished but there was no active span");
+                        activeSpan.end();
+                    }
+                    break;
             }
         } catch (final RuntimeException e) {
             LOG.log(Level.CONFIG, "Exception thrown by the listener!", e);
@@ -130,7 +155,6 @@ public class OpenTelemetryRequestEventListener implements RequestEventListener {
 
     private void onException(final RequestEvent event, final Span activeSpan) {
         LOG.fine(() -> "onException(event=" + event.getType() + ")");
-        checkActiveSpan(activeSpan);
         activeSpan.setStatus(StatusCode.ERROR, event.getException().getMessage());
         activeSpan.setAttribute("error", true);
         activeSpan.setAttribute(SemanticAttributes.EXCEPTION_TYPE, Throwable.class.getName());
@@ -142,7 +166,6 @@ public class OpenTelemetryRequestEventListener implements RequestEventListener {
 
     private void onOutgoingResponse(final RequestEvent event, final Span activeSpan) {
         LOG.fine(() -> "onOutgoingRequest(event=" + event.getType() + ")");
-        checkActiveSpan(activeSpan);
         final ContainerResponse response = requireNonNull(event.getContainerResponse(), "response");
         final Response.StatusType statusInfo = response.getStatusInfo();
         LOG.fine(() -> "Response context: status code=" + statusInfo.getStatusCode() //
@@ -151,9 +174,9 @@ public class OpenTelemetryRequestEventListener implements RequestEventListener {
         activeSpan.setAttribute(SemanticAttributes.HTTP_STATUS_CODE, statusInfo.getStatusCode());
 
         // If the response status is an error, add error information to the span
-        if (statusInfo.getFamily() == Response.Status.Family.CLIENT_ERROR
-                || statusInfo.getFamily() == Response.Status.Family.SERVER_ERROR) {
+        if (statusInfo.getFamily() == Response.Status.Family.SERVER_ERROR) {
             activeSpan.setAttribute("error", true);
+            activeSpan.setStatus(StatusCode.ERROR);
             // If there's an attached exception, add it to the span
             if (response.hasEntity() && response.getEntity() instanceof Throwable) {
                 activeSpan.recordException((Throwable) response.getEntity());
@@ -165,14 +188,9 @@ public class OpenTelemetryRequestEventListener implements RequestEventListener {
         }
     }
 
-    private void finish(final RequestEvent event, final Span activeSpan) {
+    private void finish(final RequestEvent event) {
         LOG.fine(() -> "finish(event=" + event.getType() + ")");
-        activeSpan.end();
-        Object scopeObj = event.getContainerRequest().getProperty(PropagationHelper.class.getName());
-        if(scopeObj !=null && scopeObj instanceof PropagationHelper){
-            ((PropagationHelper) scopeObj).close();
-            event.getContainerRequest().removeProperty(PropagationHelper.class.getName());
-        }
+        helper.close();
         LOG.finest("Finished.");
     }
 
@@ -209,8 +227,8 @@ public class OpenTelemetryRequestEventListener implements RequestEventListener {
         // please make sure to close the scope
 
         final Span span = spanBuilder.startSpan();
-
-        requestContext.setProperty(PropagationHelper.class.getName(), PropagationHelper.start(span, spanContext));
+        helper = PropagationHelper.start(span, spanContext);
+        requestContext.setProperty(PropagationHelper.class.getName(), helper);
         LOG.fine(() -> "Request tracing enabled for request=" + requestContext.getRequest() + " on uri=" + toString(requestContext.getUriInfo()));
     }
 
@@ -223,8 +241,8 @@ public class OpenTelemetryRequestEventListener implements RequestEventListener {
     }
 
     private Context extractContext(ContainerRequest request) {
-        // get the propagator from OTel SDK and
-        return openTelemetryService.getCurrentSdk().getPropagators().getTextMapPropagator().extract(Context.current(),
+        // extract any propagation headers from request. Use empty, root context as this surely starts the new context
+        return openTelemetryService.getCurrentSdk().getPropagators().getTextMapPropagator().extract(Context.root(),
                 request, new TextMapGetter<ContainerRequest>() {
                     @Override
                     public Iterable<String> keys(ContainerRequest containerRequest) {
@@ -238,9 +256,4 @@ public class OpenTelemetryRequestEventListener implements RequestEventListener {
                 });
     }
 
-    private void checkActiveSpan(final Span activeSpan) {
-        if (activeSpan == null) {
-            throw new IllegalStateException("Active span is null, something closed it.");
-        }
-    }
 }

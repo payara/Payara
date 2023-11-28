@@ -40,8 +40,11 @@
 package fish.payara.microprofile.metrics.impl;
 
 import fish.payara.microprofile.metrics.cdi.MetricUtils;
+import jakarta.enterprise.inject.Vetoed;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -59,8 +62,6 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import jakarta.enterprise.inject.Vetoed;
 import java.util.stream.Collectors;
 import org.eclipse.microprofile.metrics.Counter;
 import org.eclipse.microprofile.metrics.Gauge;
@@ -111,6 +112,21 @@ public class MetricRegistryImpl implements MetricRegistry {
     private final Clock clock;
     private final List<MetricRegistrationListener> listeners = new ArrayList<>();
 
+    public static final String METRIC_PERCENTILES_PROPERTY = "mp.metrics.distribution.percentiles";
+
+    public static final String METRIC_HISTOGRAM_BUCKETS_PROPERTY = "mp.metrics.distribution.histogram.buckets";
+    
+    public static final String METRIC_TIMER_BUCKETS_PROPERTY = "mp.metrics.distribution.timer.buckets";
+
+    private Map<String, Collection<MetricsCustomPercentiles>> percentilesConfigMap = 
+            new HashMap<String, Collection<MetricsCustomPercentiles>>();
+    
+    private Map<String, Collection<MetricsCustomBuckets>> histogramBucketsConfigMap =
+            new HashMap<>();
+    
+    private Map<String, Collection<MetricsCustomBuckets>> timerBucketsConfigMap =
+            new HashMap<>();
+
     public MetricRegistryImpl() {
         this.scope = null;
         this.clock = Clock.defaultClock();
@@ -132,7 +148,8 @@ public class MetricRegistryImpl implements MetricRegistry {
 
     @Override
     public Counter counter(String name) {
-        return findMetricOrCreate(name, Counter.class.getTypeName(), new CounterImpl(), new Tag[0]);
+        return findMetricOrCreate(name, Counter.class.getTypeName(), new CounterImpl(),
+                new Tag[0]);
     }
 
     @Override
@@ -197,17 +214,20 @@ public class MetricRegistryImpl implements MetricRegistry {
 
     @Override
     public Histogram histogram(String name, Tag... tags) {
-        return findMetricOrCreate(name, Histogram.class.getTypeName(), new HistogramImpl(), tags);
+        return findMetricOrCreate(name, Histogram.class.getTypeName(), new HistogramImpl(name, percentilesConfigMap, histogramBucketsConfigMap), tags);
     }
 
     @Override
     public Histogram histogram(Metadata metadata, Tag... tags) {
-        return findMetricOrCreate(metadata, Histogram.class.getTypeName(),new HistogramImpl(), tags);
+        return findMetricOrCreate(metadata, Histogram.class.getTypeName(),new HistogramImpl(metadata.getName(), 
+                percentilesConfigMap, histogramBucketsConfigMap), tags);
     }
 
     @Override
     public Histogram histogram(String name) {
-        return findMetricOrCreate(name, Histogram.class.getTypeName(), new HistogramImpl(), new Tag[0]);
+        return findMetricOrCreate(name, Histogram.class.getTypeName(), 
+                new HistogramImpl(name, percentilesConfigMap, histogramBucketsConfigMap),
+                new Tag[0]);
     }
 
     @Override
@@ -217,7 +237,9 @@ public class MetricRegistryImpl implements MetricRegistry {
 
     @Override
     public Histogram histogram(MetricID metricID) {
-        return findMetricOrCreate(metricID.getName(), Histogram.class.getTypeName(), new HistogramImpl(), metricID.getTagsAsArray());
+        return findMetricOrCreate(metricID.getName(), Histogram.class.getTypeName(), new HistogramImpl(metricID.getName(), 
+                        percentilesConfigMap, histogramBucketsConfigMap), 
+                metricID.getTagsAsArray());
     }
 
     @Override
@@ -497,6 +519,7 @@ public class MetricRegistryImpl implements MetricRegistry {
             }
         }
         final Metadata newMetadata = metadata;
+        //verify here the new properties
         final T newMetric = metric != null ? metric:(T) createMetricInstance(newMetadata, metricType);
         MetricFamily<T> family = (MetricFamily<T>) metricsFamiliesByName.computeIfAbsent(name,
                 key -> new MetricFamily<>(newMetadata));
@@ -573,7 +596,7 @@ public class MetricRegistryImpl implements MetricRegistry {
         }
 
         if(Timer.class.getName().equals(metricType)) {
-            return new TimerImpl(clock);
+            return new TimerImpl(name, percentilesConfigMap, timerBucketsConfigMap, clock);
         }
 
         throw new IllegalArgumentException("Invalid metric type : "+metricType);

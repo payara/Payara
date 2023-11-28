@@ -44,7 +44,7 @@
     <parent>
         <groupId>fish.payara.server.internal.tests</groupId>
         <artifactId>repackaged</artifactId>
-        <version>6.2023.10-SNAPSHOT</version>
+        <version>6.2023.12-SNAPSHOT</version>
     </parent>
     <groupId>org.omnifaces</groupId>
     <artifactId>jacc-provider-repackaged</artifactId>
@@ -154,7 +154,7 @@
     <repositories>
         <repository>
             <id>payara-nexus-artifacts</id>
-            <url>https://nexus.payara.fish/repository/payara-artifacts</url>
+            <url>https://nexus.dev.payara.fish/repository/payara-artifacts</url>
             <releases>
                 <enabled>true</enabled>
             </releases>

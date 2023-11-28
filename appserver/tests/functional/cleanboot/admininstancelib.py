@@ -167,6 +167,7 @@ def collect_logs(page: Page, name_instance, log_levels):
 		log_page.get_by_label("Log Level:").select_option(value=log_level, force=True)
 		search_button = log_page.locator('input[id="propertyForm:propertyContentPage:bottomButtons:searchButtonBottom"]')
 		search_button.click()
+		log_page.wait_for_load_state()
 
 		# create list of every details buttons displayed
 		details_buttons = log_page.get_by_role("link", name="(details)").all()
@@ -174,9 +175,12 @@ def collect_logs(page: Page, name_instance, log_levels):
 			with page.context.expect_page() as detail_page_event:
 				details_button.click()
 			log_detail_page = detail_page_event.value
+			log_detail_page.wait_for_load_state()
 			log_entry_level = log_detail_page.locator('span[id*="logLevel"]').text_content()
-			log_entry_message = log_detail_page.locator('span[id*="completeMessage"]').text_content()
-			logs.append(log_entry_level + " - " + log_entry_message + " \n")
+			log_entry_messages = log_detail_page.locator('span[id*="completeMessage"]').all()
+			if len(log_entry_messages) > 0:
+				log_entry_message = log_detail_page.locator('span[id*="completeMessage"]').text_content()
+				logs.append(log_entry_level + " - " + log_entry_message + " \n")
 			log_detail_page.close()
 	log_page.close()
 	logs.append(" \n")
