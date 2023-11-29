@@ -127,7 +127,6 @@
                 <groupId>fish.payara.api</groupId>
                 <artifactId>payara-api</artifactId>
                 <version>${payara.core.version}</version>
-                <scope>provided</scope>
             </dependency>
 
             <!-- APIs -->
