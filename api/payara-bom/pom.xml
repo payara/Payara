@@ -123,6 +123,12 @@
                 <version>${project.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>fish.payara.api</groupId>
+                <artifactId>payara-api</artifactId>
+                <version>${payara.core.version}</version>
+            </dependency>
+
             <!-- APIs -->
             <!-- Jakarta BOM. May be used in import scope by client instead of aggregate -->
             <dependency>
