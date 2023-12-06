@@ -330,7 +330,7 @@
             </http-service>
             <iiop-service>
                 <orb use-thread-pool-ids="thread-pool-1" />
-                <iiop-listener port="${IIOP_LISTENER_PORT}" id="orb-listener-1" address="0.0.0.0" />
+                <iiop-listener port="${IIOP_LISTENER_PORT}" id="orb-listener-1" lazy-init="true" address="0.0.0.0" />
                 <ssl />
                 <iiop-listener port="${IIOP_SSL_LISTENER_PORT}" id="SSL" address="0.0.0.0" security-enabled="true">
                     <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" cert-nickname="s1as" />

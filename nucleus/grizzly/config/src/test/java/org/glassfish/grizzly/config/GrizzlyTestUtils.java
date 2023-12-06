@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2017-2023] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,34 +37,33 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.healthcheck.configuration;
 
-import static fish.payara.nucleus.healthcheck.HealthCheckConstants.DEFAULT_STUCK_THREAD_NAME;
-import java.beans.PropertyVetoException;
-import org.jvnet.hk2.config.Attribute;
-import org.jvnet.hk2.config.Configured;
+package org.glassfish.grizzly.config;
+
+import java.net.ServerSocket;
 
 /**
- * @since 4.1.2.173
- * @author jonathan coustick
+ * A collection of utilities used in the Grizzly Tests
+ *
+ * @author James Hillyard
  */
-@Configured
-@CheckerConfigurationType(type = CheckerType.STUCK_THREAD)
-public interface StuckThreadsChecker extends Checker {
-    
-    @Attribute(defaultValue = DEFAULT_STUCK_THREAD_NAME)
-    String getName();
-    void setName(String value) throws PropertyVetoException;
+public class GrizzlyTestUtils {
 
-    @Attribute(defaultValue = "5", dataType = Long.class)
-    String getThreshold();
-    void setThreshold(String value) throws PropertyVetoException;
-    
-    @Attribute(defaultValue = "MINUTES")
-    String getThresholdTimeUnit();
-    void setThresholdTimeUnit(String value) throws PropertyVetoException;
-
-    @Attribute(defaultValue = "")
-    String getBlacklistPatterns();
-    void setBlacklistPatterns(String blacklistPatterns);
+    /**
+     * Used to verify if all the varargs of ports are available. This is useful with awaitility to ensure tests don't
+     * run while the ports are still open, likely due to a previous test not closing it yet.
+     *
+     * @param ports A varargs of ports to verify all are available
+     * @return true if all ports are available
+     */
+    protected static boolean portsAreAvailable(int... ports) {
+        for (int port : ports) {
+            try (ServerSocket ignored = new ServerSocket(port)) {
+                // No exception means the port was available
+            } catch (Exception e) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

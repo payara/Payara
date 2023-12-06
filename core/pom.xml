@@ -46,7 +46,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>fish.payara.server.core</groupId>
     <artifactId>core-aggregator</artifactId>
-    <version>6.10.0-SNAPSHOT</version>
+    <version>6.11.0-SNAPSHOT</version>
 
     <packaging>pom</packaging>
     <name>Payara Core Aggregator</name>
@@ -54,7 +54,7 @@
     <description>All of Payara Core modules</description>
 
     <properties>
-        <payara.core.version>6.10.0-SNAPSHOT</payara.core.version>
+        <payara.core.version>6.11.0-SNAPSHOT</payara.core.version>
         <!-- BOM dependencies versions -->
         <payara.security-connectors.version>3.0.alpha8</payara.security-connectors.version>
         <hk2.version>3.0.1.payara-p3</hk2.version>
@@ -130,7 +130,7 @@
         <tiger.types.version>1.4.payara-p1</tiger.types.version>
         <mimepull.version>1.10.0</mimepull.version>
         <gmbal.version>4.0.3</gmbal.version>
-        <monitoring-console-api.version>2.0.1</monitoring-console-api.version>
+        <monitoring-console-api.version>2.0.2</monitoring-console-api.version>
         <metainf-services.version>1.9</metainf-services.version>
         <ldapbp.version>1.0</ldapbp.version>
         <!-- Javassist (JAVA programming ASSISTant) makes Java bytecode manipulation simple. It is a class library for editing bytecodes in Java. -->
@@ -190,6 +190,8 @@
 
         <payara.deployment.transformer.version>1.3</payara.deployment.transformer.version>
         <payara.transformer.version>0.2.12</payara.transformer.version>
+
+        <awaitility.version>4.2.0</awaitility.version>
     </properties>
 
     <issueManagement>

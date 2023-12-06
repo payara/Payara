@@ -1,6 +1,6 @@
 <!--
 
- Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ Copyright (c) [2017-2023] Payara Foundation and/or its affiliates. All rights reserved.
 
  The contents of this file are subject to the terms of either the GNU
  General Public License Version 2 only ("GPL") or the Common Development
@@ -138,6 +138,11 @@
                       helpText="$resource{i18nhx.healthcheck.checker.configuration.stuckThreads.thresholdUnitLabelHelpText}">
             <sun:dropDown id="unitDropdown" selected="#{pageSession.valueMap['thresholdUnit']}" 
                           labels={"MILLISECONDS", "SECONDS", "MINUTES", "HOURS", "DAYS"} />
+        </sun:property>
+        <sun:property id="blacklistPatternsProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}"
+                      label="$resource{i18nhx.healthcheck.checker.configuration.stuckThreads.blacklistPatternsLabel}"
+                      helpText="$resource{i18nhx.healthcheck.checker.configuration.stuckThreads.blacklistPatternsLabelHelpText}">
+            <sun:textField id="blacklistPatterns" columns="$int{75}" maxLength="255" text="#{pageSession.valueMap['blacklistPatterns']}" />
         </sun:property>
     </sun:propertySheetSection>
 </sun:propertySheet>
