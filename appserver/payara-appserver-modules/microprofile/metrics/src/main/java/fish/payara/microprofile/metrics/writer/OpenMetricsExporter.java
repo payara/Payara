@@ -190,7 +190,7 @@ public class OpenMetricsExporter implements MetricExporter {
         }
 
         appendValue(globalName(metricID, metadata, "_count"), tags, ((double) count.getAsLong()));
-        appendValue(globalName(metricID, metadata, "_sum"), tags, sum.get());
+        appendValue(globalName(metricID, metadata, "_sum"), tags, (sum.get()).doubleValue());
     }
 
     public void printCustomPercentile(Snapshot.PercentileValue[] pencentileValues, String summary, Tag[] tags, Metadata metadata) {
