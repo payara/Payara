@@ -189,7 +189,7 @@ public class OpenMetricsExporter implements MetricExporter {
             printMedian(percentileValues, summary, tags, metadata);
         }
 
-        appendValue(globalName(metricID, metadata, "_count"), tags, count.getAsLong());
+        appendValue(globalName(metricID, metadata, "_count"), tags, ((double) count.getAsLong()));
         appendValue(globalName(metricID, metadata, "_sum"), tags, sum.get());
     }
 
@@ -215,7 +215,7 @@ public class OpenMetricsExporter implements MetricExporter {
                 appendValue(summary, tags("le", Double.toString(seconds), tags), ((double) evaluateBucketCount(seconds, sampling)));
             }
         }
-        appendValue(summary, tags("le", "+Inf", tags), (double) count.getAsLong());
+        appendValue(summary, tags("le", "+Inf", tags), ((double) count.getAsLong()));
     }
 
     public long evaluateBucketCount(double bucket, Sampling sampling) {
@@ -227,7 +227,7 @@ public class OpenMetricsExporter implements MetricExporter {
             if (sampling instanceof TimerImpl) {
                 conversionArray = Arrays.stream(values).mapToDouble(l -> l / 1000000000D).toArray();
             } else {
-                conversionArray = Arrays.stream(values).mapToDouble(l -> l / 1000D).toArray();
+                conversionArray = Arrays.stream(values).mapToDouble(l -> Long.valueOf(l).doubleValue()).toArray();
             }
             return Arrays.stream(conversionArray).filter(s -> s <= bucket).count();
         }
@@ -320,9 +320,6 @@ public class OpenMetricsExporter implements MetricExporter {
 
     protected String roundValue(Number value) {
         String valString = value.toString();
-        if (valString.endsWith(".0")) {
-            valString = valString.substring(0, valString.length() - 2); // avoid decimal NNN.0 => NNN
-        }
         if (valString.endsWith("000000001")) {
             valString = valString.substring(0, valString.length() - 9); // cut off double representation error
         }
