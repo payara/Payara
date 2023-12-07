@@ -3,6 +3,6 @@
 fooVal_seconds{store="webshop"} 12.345
 # TYPE barVal_bytes gauge
 # HELP barVal_bytes 
-barVal_bytes{component="backend",store="webshop"} 42000
+barVal_bytes{component="backend",store="webshop"} 42000.0
 # HELP barVal_bytes 
-barVal_bytes{component="frontend",store="webshop"} 63000
+barVal_bytes{component="frontend",store="webshop"} 63000.0
