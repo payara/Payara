@@ -50,6 +50,9 @@ import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.util.io.DomainDirs;
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.logging.Level;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
@@ -69,6 +72,13 @@ public class StopAllDomainsCommand extends StopDomainCommand {
     Boolean force;
     @Param(optional = true, defaultValue = "false")
     Boolean kill;
+
+    @Param(optional = true, defaultValue = "600")
+    private int timeout;
+
+    @Param(optional = true, defaultValue = "60")
+    private int domainTimeout;
+
     private static final long WAIT_FOR_DAS_TIME_MS = 60000; // 1 minute
       
     private static final LocalStringsImpl strings = new LocalStringsImpl(ListDomainsCommand.class);
@@ -85,7 +95,7 @@ public class StopAllDomainsCommand extends StopDomainCommand {
     protected void validate()
             throws CommandException, CommandValidationException {
         // no-op to prevent initDomain being called
-        if (timeout < 1) {
+        if (timeout < 1 || domainTimeout < 1) {
             throw new CommandValidationException("Timeout must be at least 1 second long.");
         }
     }    
@@ -93,34 +103,43 @@ public class StopAllDomainsCommand extends StopDomainCommand {
     @Override
     @SuppressWarnings("ThrowFromFinallyBlock")
     protected int executeCommand() throws CommandException {
-        MultiException allExceptions = new MultiException();
-        try {
-            String[] domainsList = getDomains();
-            for (String domain : domainsList) {
-                setConfig(domain);
-                ParameterMap parameterMap = new ParameterMap();
-                parameterMap.insert("timeout", String.valueOf(timeout));
-                programOpts.updateOptions(parameterMap);
-                RemoteCLICommand cmd = new RemoteCLICommand("stop-domain", programOpts, env);
-                cmd.setReadTimeout(timeout * 1000);
-                logger.log(Level.FINE, "Stopping domain {0}", domain);
-                try {
-                    cmd.executeAndReturnOutput("stop-domain", "--force", force.toString());
-                } catch (Exception e) {
-                    allExceptions.addError(e);
+        ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
+        Future future = executorService.submit(() -> {
+            MultiException allExceptions = new MultiException();
+            try {
+                String[] domainsList = getDomains();
+                for (String domain : domainsList) {
+                    setConfig(domain);
+                    ParameterMap parameterMap = new ParameterMap();
+                    parameterMap.insert("timeout", String.valueOf(domainTimeout));
+                    programOpts.updateOptions(parameterMap);
+                    RemoteCLICommand cmd = new RemoteCLICommand("stop-domain", programOpts, env);
+                    cmd.setReadTimeout(domainTimeout * 1000);
+                    logger.log(Level.FINE, "Stopping domain {0}", domain);
+                    try {
+                        cmd.executeAndReturnOutput("stop-domain", "--force", force.toString());
+                    } catch (Exception e) {
+                        allExceptions.addError(e);
+                    }
+                    logger.fine("Stopped domain");
                 }
-                logger.fine("Stopped domain");
+                return 0;
+            } catch (Exception ex) {
+                allExceptions.addError(ex);
+                return 1; // required to compile, but exception should be thrown in finally block
+            } finally {
+                if (!allExceptions.getErrors().isEmpty()){
+                    throw new CommandException(allExceptions.getMessage());
+                }
             }
-            return 0;
-        } catch (Exception ex) {
-            allExceptions.addError(ex);
-            return 1; // required to compile, but exception should be thrown in finally block
-        } finally {
-            if (!allExceptions.getErrors().isEmpty()){
-                throw new CommandException(allExceptions.getMessage());
+        });
+        long startTime = System.currentTimeMillis();
+        while (!timedOut(startTime)) {
+            if (future.isDone()) {
+                return 0;
             }
         }
-        
+        throw new CommandException("Command Timed Out");
     }
     
     //Copied from ListDomainCommand.java
@@ -181,5 +200,9 @@ public class StopAllDomainsCommand extends StopDomainCommand {
             return kill();
         }
         return 0;
+    }
+
+    private boolean timedOut(long startTime) {
+        return (System.currentTimeMillis() - startTime) > (timeout * 1000);
     }
 }

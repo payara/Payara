@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2021 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2023 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -60,6 +60,7 @@ import org.jvnet.hk2.annotations.Service;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -202,17 +203,22 @@ public class StuckThreadsHealthCheck extends
         long thresholdInMillis = getThresholdInMillis();
         long now = System.currentTimeMillis();
         ConcurrentHashMap<Long, Long> threads = stuckThreadsStore.getThreads();
-        for (Entry<Long, Long> thread : threads.entrySet()){
+        String[] blacklist = checker.getBlacklistPatterns().split(",");
+        for (Entry<Long, Long> thread : threads.entrySet()) {
             Long threadId = thread.getKey();
             long workStartedTime = thread.getValue();
             long timeWorkingInMillis = now - workStartedTime;
             if (timeWorkingInMillis > thresholdInMillis){
                 ThreadInfo info = bean.getThreadInfo(threadId, Integer.MAX_VALUE);
-                if (info != null){ //check thread hasn't died already
+                if (info != null && !isInBlacklist(info.getThreadName(), blacklist)){ //check thread hasn't died already
                     consumer.accept(workStartedTime, timeWorkingInMillis, thresholdInMillis, info);
                 }
             }
         }
+    }
+
+    private boolean isInBlacklist(String threadName, String[] blacklistPatterns) {
+        return Arrays.stream(blacklistPatterns).anyMatch(threadName::matches);
     }
 
     private long getThresholdInMillis() {
@@ -224,7 +230,7 @@ public class StuckThreadsHealthCheck extends
     public HealthCheckStuckThreadExecutionOptions constructOptions(StuckThreadsChecker checker) {
         return new HealthCheckStuckThreadExecutionOptions(Boolean.valueOf(checker.getEnabled()),
                 Long.parseLong(checker.getTime()), asTimeUnit(checker.getUnit()), Boolean.valueOf(checker.getAddToMicroProfileHealth()),
-                Long.parseLong(checker.getThreshold()), asTimeUnit(checker.getThresholdTimeUnit()));
+                Long.parseLong(checker.getThreshold()), asTimeUnit(checker.getThresholdTimeUnit()), checker.getBlacklistPatterns());
     }
 
     @Override
