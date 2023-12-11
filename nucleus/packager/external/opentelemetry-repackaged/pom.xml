@@ -60,6 +60,7 @@
 
     <properties>
         <jar.manifest/>
+        <okhttp3-version>4.12.0</okhttp3-version>
     </properties>
 
     <dependencies>
@@ -126,7 +127,7 @@
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>
-            <version>3.14.9</version>
+            <version>${okhttp3-version}</version>
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>
@@ -157,6 +158,9 @@
                             !dalvik.*,
                             io.opentelemetry.exporter.prometheus;resolution:=optional,
                             sun.security.ssl;resolution:=optional,
+                            !kotlin.*,
+                            !org.bouncycastle.*,
+                            !org.openjsse.*,
                             *
                         </Import-Package>
                         <!-- Embed the dependencies and then shade them in next step -->
