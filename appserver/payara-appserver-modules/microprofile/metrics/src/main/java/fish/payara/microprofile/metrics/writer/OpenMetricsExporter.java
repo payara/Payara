@@ -42,6 +42,7 @@ package fish.payara.microprofile.metrics.writer;
 import static fish.payara.microprofile.metrics.MetricUnitsUtils.scaleToBaseUnit;
 
 import fish.payara.microprofile.metrics.impl.HistogramImpl;
+import fish.payara.microprofile.metrics.impl.TimerImpl;
 import fish.payara.microprofile.metrics.impl.WeightedSnapshot;
 import java.io.PrintWriter;
 import java.io.Writer;
@@ -166,7 +167,6 @@ public class OpenMetricsExporter implements MetricExporter {
 
         String summary = globalName(metricID, metadata);
         appendHELP(summary, metadata);
-
         Snapshot.PercentileValue[] percentileValues = snapshot.percentileValues();
         if (snapshot instanceof WeightedSnapshot) {
             WeightedSnapshot w = (WeightedSnapshot) snapshot;
@@ -174,8 +174,8 @@ public class OpenMetricsExporter implements MetricExporter {
                 if (w.bucketValues() != null && w.bucketValues().length > 0) {
                     appendTYPE(summary, OpenMetricsType.histogram);
                     printCustomPercentile(percentileValues, summary, tags, metadata);
-                    printBuckets(snapshot.bucketValues(), globalName(metricID, metadata, "_bucket"), 
-                            tags, metadata, sampling);
+                    printBuckets(snapshot.bucketValues(), globalName(metricID, metadata, "_bucket"),
+                                tags, metadata, sampling, count);
                 } else {
                     appendTYPE(summary, OpenMetricsType.summary);
                     printCustomPercentile(percentileValues, summary, tags, metadata);
@@ -189,8 +189,8 @@ public class OpenMetricsExporter implements MetricExporter {
             printMedian(percentileValues, summary, tags, metadata);
         }
 
-        appendValue(globalName(metricID, metadata, "_count"), tags, count.getAsLong());
-        appendValue(globalName(metricID, metadata, "_sum"), tags, sum.get());
+        appendValue(globalName(metricID, metadata, "_count"), tags, ((double) count.getAsLong()));
+        appendValue(globalName(metricID, metadata, "_sum"), tags, (sum.get()).doubleValue());
     }
 
     public void printCustomPercentile(Snapshot.PercentileValue[] pencentileValues, String summary, Tag[] tags, Metadata metadata) {
@@ -200,12 +200,10 @@ public class OpenMetricsExporter implements MetricExporter {
     }
 
     public void printBuckets(Snapshot.HistogramBucket[] buckets, String summary, Tag[] tags, Metadata metadata,
-                             Sampling sampling) {
-        int counter = 0;
+                             Sampling sampling, LongSupplier count) {
         if (sampling != null && sampling instanceof HistogramImpl) {
             for (Snapshot.HistogramBucket b : buckets) {
-                appendValue(summary, tags("le", Double.toString(b.getBucket()), tags), b.getCount());
-                counter++;
+                appendValue(summary, tags("le", Double.toString(b.getBucket()), tags), ((double) evaluateBucketCount(b.getBucket(), sampling)));
             }
         } else {
             List<Long> bucketsList = Stream.of(buckets)
@@ -214,11 +212,26 @@ public class OpenMetricsExporter implements MetricExporter {
 
             for (long b : bucketsList) {
                 double seconds = b / 1000.0;
-                appendValue(summary, tags("le", Double.toString(seconds), tags), buckets[counter].getCount());
-                counter++;
+                appendValue(summary, tags("le", Double.toString(seconds), tags), ((double) evaluateBucketCount(seconds, sampling)));
             }
         }
-        appendValue(summary, tags("le", "+Inf", tags), Double.parseDouble(Integer.toString(counter)));
+        appendValue(summary, tags("le", "+Inf", tags), ((double) count.getAsLong()));
+    }
+
+    public long evaluateBucketCount(double bucket, Sampling sampling) {
+        Snapshot snapshot = sampling.getSnapshot();
+        if (snapshot instanceof WeightedSnapshot) {
+            WeightedSnapshot weightedSnapshot = (WeightedSnapshot) snapshot;
+            double[] conversionArray = null;
+            long[] values = weightedSnapshot.getValues();
+            if (sampling instanceof TimerImpl) {
+                conversionArray = Arrays.stream(values).mapToDouble(l -> l / 1000000000D).toArray();
+            } else {
+                conversionArray = Arrays.stream(values).mapToDouble(l -> Long.valueOf(l).doubleValue()).toArray();
+            }
+            return Arrays.stream(conversionArray).filter(s -> s <= bucket).count();
+        }
+        return 0L;
     }
     
     public void printMedian(Snapshot.PercentileValue[] pencentileValues, String summary, Tag[] tags, Metadata metadata) {
@@ -307,9 +320,6 @@ public class OpenMetricsExporter implements MetricExporter {
 
     protected String roundValue(Number value) {
         String valString = value.toString();
-        if (valString.endsWith(".0")) {
-            valString = valString.substring(0, valString.length() - 2); // avoid decimal NNN.0 => NNN
-        }
         if (valString.endsWith("000000001")) {
             valString = valString.substring(0, valString.length() - 9); // cut off double representation error
         }

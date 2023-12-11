@@ -45,7 +45,7 @@
     <parent>
         <groupId>fish.payara.extras</groupId>
         <artifactId>extras</artifactId>
-        <version>6.2023.12-SNAPSHOT</version>
+        <version>6.2024.1-SNAPSHOT</version>
     </parent>
     <artifactId>docker-images</artifactId>
     <packaging>pom</packaging>
@@ -59,6 +59,7 @@
         <docker.java.repository>azul/zulu-openjdk</docker.java.repository>
         <docker.jdk11.tag>11.0.21</docker.jdk11.tag>
         <docker.jdk17.tag>17.0.9</docker.jdk17.tag>
+        <docker.jdk21.tag>21.0.1</docker.jdk21.tag>
 
         <docker.payara.domainName>domain1</docker.payara.domainName>
         <docker.payara.rootDirectoryName>payara6</docker.payara.rootDirectoryName>
@@ -80,7 +81,7 @@
                 <plugin>
                     <groupId>io.fabric8</groupId>
                     <artifactId>docker-maven-plugin</artifactId>
-                    <version>0.33.0</version>
+                    <version>0.43.4</version>
                     <extensions>true</extensions>
                     <configuration>
                         <verbose>true</verbose>
@@ -201,6 +202,78 @@
                                         <cleanup>none</cleanup>
                                         <noCache>${docker.noCache}</noCache>
                                         <dockerFile>${project.build.directory}/antrun/Dockerfile.jdk17</dockerFile>
+                                        <assembly>
+                                            <mode>tar</mode>
+                                            <descriptor>assembly.xml</descriptor>
+                                            <tarLongFileMode>gnu</tarLongFileMode>
+                                        </assembly>
+                                    </build>
+                                </image>
+                            </images>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <!-- Split into a separate profile for when we want to update images for distributions that don't support JDK 21 -->
+        <profile>
+            <id>generate-jdk21-docker-image</id>
+            <activation>
+                <file>
+                    <!-- Essentially - Skip this aggregator pom -->
+                    <exists>src/main/docker/Dockerfile</exists>
+                </file>
+            </activation>
+            <build>
+                <plugins>
+                    <!-- Required until https://github.com/fabric8io/docker-maven-plugin/issues/859 is resolved -->
+                    <plugin>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>filter-dockerfiles</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <copy file="src/main/docker/Dockerfile" toFile="target/antrun/Dockerfile.jdk21">
+                                            <filterset>
+                                                <filter token="docker.java.image" value="${docker.java.repository}:${docker.jdk21.tag}"/>
+                                                <filter token="docker.payara.tag" value="${docker.payara.tag}-jdk21"/>
+                                            </filterset>
+                                        </copy>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>io.fabric8</groupId>
+                        <artifactId>docker-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>build-docker-image</id>
+                                <goals>
+                                    <goal>build</goal>
+                                </goals>
+                                <phase>package</phase>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <images>
+                                <image>
+                                    <name>${docker.payara.repository}</name>
+                                    <build>
+                                        <!-- On Windows with default setting ${*}, $PATH would get filtered as well -->
+                                        <filter>@</filter>
+                                        <tags>
+                                            <tag>${docker.payara.tag}-jdk21</tag>
+                                        </tags>
+                                        <cleanup>none</cleanup>
+                                        <noCache>${docker.noCache}</noCache>
+                                        <dockerFile>${project.build.directory}/antrun/Dockerfile.jdk21</dockerFile>
                                         <assembly>
                                             <mode>tar</mode>
                                             <descriptor>assembly.xml</descriptor>

@@ -44,7 +44,7 @@
     <parent>
         <groupId>fish.payara.api</groupId>
         <artifactId>api-parent</artifactId>
-        <version>6.2023.12-SNAPSHOT</version>
+        <version>6.2024.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>payara-bom</artifactId>
@@ -434,9 +434,9 @@
             </dependency>
 
             <dependency>
-                <groupId>com.sun.messaging.mq</groupId>
+                <groupId>org.glassfish.mq</groupId>
                 <artifactId>imqjmx</artifactId>
-                <version>4.4.2</version>
+                <version>5.1</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.mq</groupId>

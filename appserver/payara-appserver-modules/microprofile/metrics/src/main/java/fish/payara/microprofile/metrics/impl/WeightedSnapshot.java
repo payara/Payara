@@ -183,9 +183,10 @@ public class WeightedSnapshot extends Snapshot {
     @Override
     public HistogramBucket[] bucketValues() {
         Double[] buckets = configurationProperties.bucketValues();
+        Arrays.sort(buckets);
         HistogramBucket[] histogramBuckets = new HistogramBucket[buckets.length];
         for (int i = 0; i < buckets.length; i++) {
-            histogramBuckets[i] = new HistogramBucket(buckets[i], i);
+            histogramBuckets[i] = new HistogramBucket(buckets[i], 0);
         }
         return histogramBuckets;
     }
@@ -213,6 +214,10 @@ public class WeightedSnapshot extends Snapshot {
         }
 
         return values[posx];
+    }
+    
+    public long[] getValues() {
+        return values;
     }
 
 
