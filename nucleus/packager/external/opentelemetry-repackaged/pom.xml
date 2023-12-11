@@ -61,6 +61,7 @@
     <properties>
         <jar.manifest/>
         <okhttp3-version>4.12.0</okhttp3-version>
+        <kotlin-version>1.8.21</kotlin-version>
     </properties>
 
     <dependencies>
@@ -131,6 +132,13 @@
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-stdlib</artifactId>
+            <version>${kotlin-version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
     </dependencies>
 
     <!-- next we need to relocate okhttp, and add OSGi manifest -->
@@ -167,7 +175,8 @@
                         <Embed-Dependency>
                             *;groupId=com.squareup.*;inline=true,
                             *;groupId=io.opentelemetry;inline=true,
-                            *;groupId=io.opentelemetry.instrumentation;inline=true
+                            *;groupId=io.opentelemetry.instrumentation;inline=true,
+                            *;groupId=org.jetbrains.*;inline=true
                         </Embed-Dependency>
                         <Embed-Transitive>true</Embed-Transitive>
                     </instructions>
@@ -199,12 +208,19 @@
                     <artifactSet>
                         <includes>
                             <include>com.squareup.*:*</include>
+                            <inclue>org.jetbrains.*:*</inclue>
                         </includes>
                     </artifactSet>
                     <filters>
                         <!-- bundle plugin already inlined the classes, so we can skip the contents -->
                         <filter>
                             <artifact>com.squareup.*:*</artifact>
+                            <excludes>
+                                <exclude>**</exclude>
+                            </excludes>
+                        </filter>
+                        <filter>
+                            <artifact>org.jetbrains.*:*</artifact>
                             <excludes>
                                 <exclude>**</exclude>
                             </excludes>
@@ -218,6 +234,10 @@
                         <relocation>
                             <pattern>okio.</pattern>
                             <shadedPattern>fish.payara.shaded.okio.</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>kotlin.</pattern>
+                            <shadedPattern>fish.payara.shaded.kotlin.</shadedPattern>
                         </relocation>
                     </relocations>
                 </configuration>
