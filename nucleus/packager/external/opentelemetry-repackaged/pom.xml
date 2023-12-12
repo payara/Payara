@@ -176,7 +176,7 @@
                             *;groupId=com.squareup.*;inline=true,
                             *;groupId=io.opentelemetry;inline=true,
                             *;groupId=io.opentelemetry.instrumentation;inline=true,
-                            *;groupId=org.jetbrains.*;inline=true
+                            *;groupId=org.jetbrains.kotlin.*;inline=true
                         </Embed-Dependency>
                         <Embed-Transitive>true</Embed-Transitive>
                     </instructions>
@@ -208,7 +208,7 @@
                     <artifactSet>
                         <includes>
                             <include>com.squareup.*:*</include>
-                            <inclue>org.jetbrains.*:*</inclue>
+                            <inclue>org.jetbrains.kotlin.*:*</inclue>
                         </includes>
                     </artifactSet>
                     <filters>
@@ -220,7 +220,7 @@
                             </excludes>
                         </filter>
                         <filter>
-                            <artifact>org.jetbrains.*:*</artifact>
+                            <artifact>org.jetbrains.kotlin.*:*</artifact>
                             <excludes>
                                 <exclude>**</exclude>
                             </excludes>
