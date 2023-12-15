@@ -60,8 +60,6 @@
 
     <properties>
         <jar.manifest/>
-        <okhttp3-version>4.12.0</okhttp3-version>
-        <kotlin-version>1.8.21</kotlin-version>
     </properties>
 
     <dependencies>
