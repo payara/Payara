@@ -126,7 +126,14 @@
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>
-            <version>3.14.9</version>
+            <version>${okhttp3-version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-stdlib</artifactId>
+            <version>${kotlin-version}</version>
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>
@@ -157,13 +164,17 @@
                             !dalvik.*,
                             io.opentelemetry.exporter.prometheus;resolution:=optional,
                             sun.security.ssl;resolution:=optional,
+                            !kotlin.*,
+                            !org.bouncycastle.*,
+                            !org.openjsse.*,
                             *
                         </Import-Package>
                         <!-- Embed the dependencies and then shade them in next step -->
                         <Embed-Dependency>
                             *;groupId=com.squareup.*;inline=true,
                             *;groupId=io.opentelemetry;inline=true,
-                            *;groupId=io.opentelemetry.instrumentation;inline=true
+                            *;groupId=io.opentelemetry.instrumentation;inline=true,
+                            *;groupId=org.jetbrains.kotlin.*;inline=true
                         </Embed-Dependency>
                         <Embed-Transitive>true</Embed-Transitive>
                     </instructions>
@@ -195,12 +206,19 @@
                     <artifactSet>
                         <includes>
                             <include>com.squareup.*:*</include>
+                            <inclue>org.jetbrains.kotlin.*:*</inclue>
                         </includes>
                     </artifactSet>
                     <filters>
                         <!-- bundle plugin already inlined the classes, so we can skip the contents -->
                         <filter>
                             <artifact>com.squareup.*:*</artifact>
+                            <excludes>
+                                <exclude>**</exclude>
+                            </excludes>
+                        </filter>
+                        <filter>
+                            <artifact>org.jetbrains.kotlin.*:*</artifact>
                             <excludes>
                                 <exclude>**</exclude>
                             </excludes>
@@ -214,6 +232,10 @@
                         <relocation>
                             <pattern>okio.</pattern>
                             <shadedPattern>fish.payara.shaded.okio.</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>kotlin.</pattern>
+                            <shadedPattern>fish.payara.shaded.kotlin.</shadedPattern>
                         </relocation>
                     </relocations>
                 </configuration>
