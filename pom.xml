@@ -159,6 +159,8 @@
         <validation.xml.root>${project.build.outputDirectory}</validation.xml.root>
 
         <deploy.skip>true</deploy.skip>
+        <javadoc.skip>true</javadoc.skip>
+        <source.skip>true</source.skip>
     </properties>
 
     <profiles>

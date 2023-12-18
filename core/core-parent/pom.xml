@@ -56,6 +56,8 @@
 
     <properties>
         <jar.manifest>${project.build.outputDirectory}/META-INF/MANIFEST.MF</jar.manifest>
+        <javadoc.skip>false</javadoc.skip>
+        <source.skip>false</source.skip>
     </properties>
 
     <dependencyManagement>
@@ -332,7 +334,17 @@
                     <excludes>
                         <exclude>**/.ade_path/**</exclude>
                     </excludes>
+                    <skipSource>${source.skip}</skipSource>
                 </configuration>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
 
             <plugin>
@@ -359,6 +371,14 @@
                     <detectOfflineLinks>false</detectOfflineLinks>
                     <skip>${javadoc.skip}</skip>
                 </configuration>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
 
             <!-- Add manpages for asadmin commands -->
