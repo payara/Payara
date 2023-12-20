@@ -61,9 +61,20 @@
         <docker.jdk17.tag>17.0.9</docker.jdk17.tag>
         <docker.jdk21.tag>21.0.1</docker.jdk21.tag>
 
+        <!-- List of platform architectures which we wish to build Docker images for -
+                shouldn't have anything not provided as an option by ${docker.java.repository}.
+
+                This is purposefully left blank here so that buildx isn't activated by the docker-maven-plugin, since
+                buildx requires that the payara/basic be fully published to a registry to be used in the other images
+                (aka mvn deploy rather than mvn package/install).
+
+                This is set to a value in the 'generate-multiplatform-images' profile below -->
+        <docker.platforms></docker.platforms>
+
         <docker.payara.domainName>domain1</docker.payara.domainName>
         <docker.payara.rootDirectoryName>payara6</docker.payara.rootDirectoryName>
 
+        <!-- This is a placeholder to aid with property resolution, it gets overridden in each submodule -->
         <docker.payara.repository>payara/${project.artifactId}</docker.payara.repository>
         <docker.payara.tag>${payara.version}</docker.payara.tag>
         <docker.payara.image>${docker.payara.repository}:${docker.payara.tag}</docker.payara.image>
@@ -187,6 +198,11 @@
                                                     <descriptor>assembly.xml</descriptor>
                                                     <tarLongFileMode>gnu</tarLongFileMode>
                                                 </assembly>
+                                                <buildx>
+                                                    <platforms>
+                                                        <platform>${docker.platforms}</platform>
+                                                    </platforms>
+                                                </buildx>
                                             </build>
                                         </image>
                                         <image>
@@ -205,6 +221,11 @@
                                                     <descriptor>assembly.xml</descriptor>
                                                     <tarLongFileMode>gnu</tarLongFileMode>
                                                 </assembly>
+                                                <buildx>
+                                                    <platforms>
+                                                        <platform>${docker.platforms}</platform>
+                                                    </platforms>
+                                                </buildx>
                                             </build>
                                         </image>
                                     </images>
@@ -277,6 +298,11 @@
                                                     <descriptor>assembly.xml</descriptor>
                                                     <tarLongFileMode>gnu</tarLongFileMode>
                                                 </assembly>
+                                                <buildx>
+                                                    <platforms>
+                                                        <platform>${docker.platforms}</platform>
+                                                    </platforms>
+                                                </buildx>
                                             </build>
                                         </image>
                                     </images>
@@ -286,6 +312,13 @@
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+        <profile>
+            <id>generate-multiplatform-docker-images</id>
+            <properties>
+                <!-- List of platform architectures which we wish to build Docker images for - shouldn't have anything not provided as an option by ${docker.java.repository} -->
+                <docker.platforms>linux/amd64,linux/arm64/v8</docker.platforms>
+            </properties>
         </profile>
     </profiles>
 </project>
