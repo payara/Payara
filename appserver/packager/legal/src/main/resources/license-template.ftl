@@ -28,30 +28,23 @@ party licensors listed.
     <#list licenses as license>
         <#assign result = result + " (" + license + ")"/>
     </#list>
-    <#return result>
+<#return result>
 </#function>
 <#function artifactFormat p>
     <#if p.name?index_of('Unnamed') &gt; -1>
-        <#return p.artifactId + " (" + p.groupId + ":" + p.artifactId + ":" + p.version + " - " + (p.url!"no url defined") + ")">
+<#return p.artifactId + " (" + p.groupId + ":" + p.artifactId + ":" + p.version + " - " + (p.url!"no url defined") + ")">
     <#else>
-        <#return p.name + " (" + p.groupId + ":" + p.artifactId + ":" + p.version + " - " + (p.url!"no url defined") + ")">
+<#return p.name + " (" + p.groupId + ":" + p.artifactId + ":" + p.version + " - " + (p.url!"no url defined") + ")">
     </#if>
 </#function>
-
 <#if dependencyMap?size == 0>
     The project has no dependencies.
 <#else>
-<#assign licensesMap = {}/>
-
-
-    <#list dependencyMap as e>
-
+    <#list dependencyMap as e >
         <#assign project = e.getKey()/>
         <#assign licenses = e.getValue()/>
-        <#assign license = licenses[0]>
-        ${artifactFormat(project)}
-        ${licenseFormat(licenses)} ${license}
-        -----------------
+${artifactFormat(project)}
+${licenseFormat(licenses)}
     </#list>
 </#if>
 ---------------------------------------------------

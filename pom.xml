@@ -395,7 +395,7 @@
                         </execution>
                     </executions>
                     <configuration>
-                        <outputDirectory>${project.basedir}/appserver/packager/legal/src/main/resources</outputDirectory>
+                        <outputDirectory>${project.basedir}/appserver/packager/legal/src/main/resources/glassfish/legal</outputDirectory>
                         <thirdPartyFilename>3RD-PARTY-LICENSE.txt</thirdPartyFilename>
                         <excludedGroups>fish.payara.*</excludedGroups>
                         <fileTemplate>${project.basedir}/appserver/packager/legal/src/main/resources/license-template.ftl</fileTemplate>
