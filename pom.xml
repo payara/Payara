@@ -392,6 +392,7 @@
                                 <goal>download-licenses</goal>
                                 <goal>aggregate-add-third-party</goal>
                             </goals>
+                            <phase>null</phase>
                         </execution>
                     </executions>
                     <configuration>
@@ -399,6 +400,7 @@
                         <thirdPartyFilename>3RD-PARTY-LICENSE.txt</thirdPartyFilename>
                         <excludedGroups>fish.payara.*</excludedGroups>
                         <fileTemplate>${project.basedir}/appserver/packager/legal/src/main/resources/license-template.ftl</fileTemplate>
+                        <missingFile>${project.basedir}/appserver/packager/legal/src/main/resources/THIRD-PARTY.properties</missingFile>
                     </configuration>
                 </plugin>
                 <plugin>
