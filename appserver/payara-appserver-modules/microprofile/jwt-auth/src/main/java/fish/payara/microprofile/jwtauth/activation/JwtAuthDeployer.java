@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2020-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2020-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,9 +40,11 @@
 package fish.payara.microprofile.jwtauth.activation;
 
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
 
+import com.sun.enterprise.deployment.web.SecurityConstraint;
 import jakarta.enterprise.inject.spi.Extension;
 
 import org.glassfish.api.deployment.DeploymentContext;
@@ -71,6 +73,11 @@ public class JwtAuthDeployer extends MicroProfileDeployer<JwtAuthContainer, JwtA
         WebBundleDescriptorImpl descriptor = deploymentContext.getModuleMetaData(WebBundleDescriptorImpl.class);
         if (descriptor != null) {
             descriptor.addAppListenerDescriptor(new AppListenerDescriptorImpl(RolesDeclarationInitializer.class.getName()));
+
+            Enumeration<SecurityConstraint> securityConstraintEnumeration = descriptor.getSecurityConstraints();
+            if (securityConstraintEnumeration.hasMoreElements()) {
+                LOGGER.warning("Invalid web.xml - security-constraints cannot be defined while using the @LoginConfig annotation");
+            }
         } else {
             LOGGER.warning("Failed to find WebBundleDescriptorImpl. JWT Auth roles will not be declared");
         }
