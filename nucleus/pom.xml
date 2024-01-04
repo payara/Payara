@@ -94,7 +94,7 @@
         <maven.war.plugin.version>3.3.2</maven.war.plugin.version>
         <maven.makepkgs.plugin.version>0.6.2</maven.makepkgs.plugin.version>
         <maven.jaxb2.plugin.version>0.15.1</maven.jaxb2.plugin.version>
-        <maven.antlr.plugin.version>2.2</maven.antlr.plugin.version>
+        <maven.antlr.plugin.version>2.4</maven.antlr.plugin.version>
 
         <maven.jaxws.plugin.version>2.6</maven.jaxws.plugin.version>
         <maven.apt.plugin.version>1.0-alpha-5</maven.apt.plugin.version>
@@ -344,7 +344,7 @@
                 </plugin>
 
                 <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
+                    <groupId>org.omnifaces</groupId>
                     <artifactId>antlr-maven-plugin</artifactId>
                     <version>${maven.antlr.plugin.version}</version>
                 </plugin>
