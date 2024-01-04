@@ -213,6 +213,10 @@
                     <version>${maven.surefire.plugin.version}</version>
                     <configuration>
                         <trimStackTrace>false</trimStackTrace>
+                        <!-- required on JDK 21 -->
+                        <argLine>
+                            --add-opens=java.base/java.lang=ALL-UNNAMED
+                        </argLine>
                     </configuration>
                 </plugin>
 

@@ -301,6 +301,12 @@
 
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <!-- required on JDK 21 -->
+                    <argLine>
+                        --add-opens=java.base/java.lang=ALL-UNNAMED
+                    </argLine>
+                </configuration>
             </plugin>
 
 

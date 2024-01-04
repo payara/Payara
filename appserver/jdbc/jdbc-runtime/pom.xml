@@ -73,6 +73,11 @@
                     <classpathDependencyExcludes>
                         <classpathDependencyExcludes>fish.payara.server.internal.core:kernel</classpathDependencyExcludes>
                     </classpathDependencyExcludes>
+                    <!-- required on JDK 21 -->
+                    <argLine>
+                        --add-opens=java.base/java.lang=ALL-UNNAMED
+                        --add-opens=java.base/java.util=ALL-UNNAMED
+                    </argLine>
                 </configuration>
             </plugin>
         </plugins>
