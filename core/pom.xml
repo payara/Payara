@@ -158,7 +158,7 @@
         <!-- build versions -->
         <jdk.version>11</jdk.version>
         <maven.enforcer.plugin.version>3.4.1</maven.enforcer.plugin.version>
-        <command-security-plugin.version>1.0.13</command-security-plugin.version>
+        <command-security-plugin.version>1.0.17</command-security-plugin.version>
         <command.security.maven.plugin.isFailureFatal>false</command.security.maven.plugin.isFailureFatal>
         <maven.jar.plugin.version>3.3.0</maven.jar.plugin.version>
         <maven.clean.plugin.version>3.2.0</maven.clean.plugin.version>
