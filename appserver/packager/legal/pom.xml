@@ -52,5 +52,18 @@
     <name>Glassfish Legal content distribution fragment</name>
     <description>This pom describes how to assemble the Glassfish legal content distribution fragment</description>
     <packaging>distribution-fragment</packaging>
+
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <excludes>
+                    <exclude>license-template.ftl</exclude>
+                    <exclude>THIRD-PARTY.properties</exclude>
+                </excludes>
+                <filtering>false</filtering>
+            </resource>
+        </resources>
+    </build>
 </project>
 
