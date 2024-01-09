@@ -64,14 +64,4 @@
             <scope>provided</scope>
         </dependency>
     </dependencies>
-
-    <profiles>
-        <profile>
-            <id>generate-multiplatform-docker-images</id>
-            <properties>
-                <!-- List of platform architectures which we wish to build Docker images for - shouldn't have anything not provided as an option by ${docker.java.repository} -->
-                <docker.platforms>linux/amd64,linux/arm64</docker.platforms>
-            </properties>
-        </profile>
-    </profiles>
 </project>

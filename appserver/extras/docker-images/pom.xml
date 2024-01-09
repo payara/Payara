@@ -64,13 +64,10 @@
         <!-- List of platform architectures which we wish to build Docker images for -
                 shouldn't have anything not provided as an option by ${docker.java.repository}.
 
-                This is purposefully left blank here so that buildx isn't activated by the docker-maven-plugin, since
-                buildx requires that the payara/basic be fully published to a registry to be used in the other images
-                (aka mvn deploy rather than mvn package/install).
+                This is purposefully left blank here so that buildx isn't activated by default.
 
-                This is set to a value in the 'generate-multiplatform-docker-images' profile in the micro image pom,
-                 as it's currently the only one which supports this due to the aforementioned buildx issue with the
-                 payara/basic image which does not affect the payara/micro image -->
+                This is set to a value in the 'generate-multiplatform-docker-images' profile below
+         -->
         <docker.platforms></docker.platforms>
 
         <docker.payara.domainName>domain1</docker.payara.domainName>
@@ -80,6 +77,8 @@
         <docker.payara.repository>payara/${project.artifactId}</docker.payara.repository>
         <docker.payara.tag>${payara.version}</docker.payara.tag>
         <docker.payara.image>${docker.payara.repository}:${docker.payara.tag}</docker.payara.image>
+
+        <docker.payara.basic.tag>${install.dir.name}</docker.payara.basic.tag>
     </properties>
 
     <build>
@@ -111,7 +110,6 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <modules>
-                <module>basic</module>
                 <module>server-full</module>
                 <module>server-web</module>
                 <module>server-node</module>
@@ -127,7 +125,6 @@
                 </property>
             </activation>
             <modules>
-                <module>basic</module>
                 <module>server-full</module>
                 <module>server-node</module>
                 <module>micro</module>
@@ -164,7 +161,7 @@
                                         <copy file="src/main/docker/Dockerfile" toFile="target/antrun/Dockerfile.jdk17">
                                             <filterset>
                                                 <filter token="docker.java.image" value="${docker.java.repository}:${docker.jdk17.tag}"/>
-                                                <filter token="docker.payara.tag" value="${docker.payara.tag}-jdk17"/>
+                                                <filter token="docker.payara.basic.tag" value="${docker.payara.basic.tag}-jdk17"/>
                                             </filterset>
                                         </copy>
                                     </target>
@@ -264,7 +261,7 @@
                                         <copy file="src/main/docker/Dockerfile" toFile="target/antrun/Dockerfile.jdk21">
                                             <filterset>
                                                 <filter token="docker.java.image" value="${docker.java.repository}:${docker.jdk21.tag}"/>
-                                                <filter token="docker.payara.tag" value="${docker.payara.tag}-jdk21"/>
+                                                <filter token="docker.payara.basic.tag" value="${docker.payara.basic.tag}-jdk21"/>
                                             </filterset>
                                         </copy>
                                     </target>
@@ -314,6 +311,42 @@
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+        <profile>
+            <id>generate-multiplatform-docker-images</id>
+            <properties>
+                <!-- List of platform architectures which we wish to build Docker images for - shouldn't have anything not provided as an option by ${docker.java.repository} -->
+                <docker.platforms>linux/amd64,linux/arm64</docker.platforms>
+            </properties>
+        </profile>
+        <profile>
+            <!--
+                Convenience profile for skipping build of the basic image.
+
+                The basic image rarely changes outside of JDK updates, and has an awkward interaction with buildx when
+                generating multiplatform docker images.
+
+                Buildx WILL NOT utilise any locally built or cached version of an image - it will only pull PUBLISHED
+                images from a docker registry. This becomes an issue when working with multiplatform images and making
+                changes to the basic and server images at the same time - if you make a change to the basic image and
+                expect the server image to utilise your changes, you HAVE to publish the basic image first, otherwise
+                it will pull and utilise the published version. This is visible when versioning the basic image the same
+                way as the server image: if the payara/server-full:6.2024.1-SNAPSHOT image pulls from
+                payara/basic:6.2024.1-SNAPSHOT then a multiplatform build utilising buildx will fail even if the
+                payara/basic:6.2024.1-SNAPSHOT image is present in the local Docker cache since there won't be a
+                published snapshot image of payara/basic (unless we set up a snapshot repo and configure.
+            -->
+            <id>generate-basic-docker-image</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+                <property>
+                    <name>generateBasicDockerImage</name>
+                    <value>!false</value>
+                </property>
+            </activation>
+            <modules>
+                <module>basic</module>
+            </modules>
         </profile>
     </profiles>
 </project>
