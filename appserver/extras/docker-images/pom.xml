@@ -68,7 +68,9 @@
                 buildx requires that the payara/basic be fully published to a registry to be used in the other images
                 (aka mvn deploy rather than mvn package/install).
 
-                This is set to a value in the 'generate-multiplatform-images' profile below -->
+                This is set to a value in the 'generate-multiplatform-docker-images' profile in the micro image pom,
+                 as it's currently the only one which supports this due to the aforementioned buildx issue with the
+                 payara/basic image which does not affect the payara/micro image -->
         <docker.platforms></docker.platforms>
 
         <docker.payara.domainName>domain1</docker.payara.domainName>
@@ -312,13 +314,6 @@
                     </plugin>
                 </plugins>
             </build>
-        </profile>
-        <profile>
-            <id>generate-multiplatform-docker-images</id>
-            <properties>
-                <!-- List of platform architectures which we wish to build Docker images for - shouldn't have anything not provided as an option by ${docker.java.repository} -->
-                <docker.platforms>linux/amd64,linux/arm64/v8</docker.platforms>
-            </properties>
         </profile>
     </profiles>
 </project>
