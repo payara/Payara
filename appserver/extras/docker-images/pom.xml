@@ -230,6 +230,64 @@
                                     </images>
                                 </configuration>
                             </execution>
+
+                            <execution>
+                                <id>deploy-docker-image</id>
+                                <goals>
+                                    <goal>push</goal>
+                                </goals>
+                                <phase>deploy</phase>
+                                <configuration>
+                                    <images>
+                                        <image>
+                                            <name>${docker.payara.repository}</name>
+                                            <build>
+                                                <!-- On Windows with default setting ${*}, $PATH would get filtered as well -->
+                                                <filter>@</filter>
+                                                <tags>
+                                                    <tag>${docker.payara.tag}</tag>
+                                                </tags>
+                                                <cleanup>none</cleanup>
+                                                <noCache>${docker.noCache}</noCache>
+                                                <dockerFile>${project.build.directory}/antrun/Dockerfile.jdk11</dockerFile>
+                                                <assembly>
+                                                    <mode>tar</mode>
+                                                    <descriptor>assembly.xml</descriptor>
+                                                    <tarLongFileMode>gnu</tarLongFileMode>
+                                                </assembly>
+                                                <buildx>
+                                                    <platforms>
+                                                        <platform>${docker.platforms}</platform>
+                                                    </platforms>
+                                                </buildx>
+                                            </build>
+                                        </image>
+                                        <image>
+                                            <name>${docker.payara.repository}</name>
+                                            <build>
+                                                <!-- On Windows with default setting ${*}, $PATH would get filtered as well -->
+                                                <filter>@</filter>
+                                                <tags>
+                                                    <tag>${docker.payara.tag}-jdk17</tag>
+                                                </tags>
+                                                <cleanup>none</cleanup>
+                                                <noCache>${docker.noCache}</noCache>
+                                                <dockerFile>${project.build.directory}/antrun/Dockerfile.jdk17</dockerFile>
+                                                <assembly>
+                                                    <mode>tar</mode>
+                                                    <descriptor>assembly.xml</descriptor>
+                                                    <tarLongFileMode>gnu</tarLongFileMode>
+                                                </assembly>
+                                                <buildx>
+                                                    <platforms>
+                                                        <platform>${docker.platforms}</platform>
+                                                    </platforms>
+                                                </buildx>
+                                            </build>
+                                        </image>
+                                    </images>
+                                </configuration>
+                            </execution>
                         </executions>
                     </plugin>
                 </plugins>
@@ -279,6 +337,41 @@
                                     <goal>build</goal>
                                 </goals>
                                 <phase>package</phase>
+                                <configuration>
+                                    <images>
+                                        <image>
+                                            <name>${docker.payara.repository}</name>
+                                            <build>
+                                                <!-- On Windows with default setting ${*}, $PATH would get filtered as well -->
+                                                <filter>@</filter>
+                                                <tags>
+                                                    <tag>${docker.payara.tag}-jdk21</tag>
+                                                </tags>
+                                                <cleanup>none</cleanup>
+                                                <noCache>${docker.noCache}</noCache>
+                                                <dockerFile>${project.build.directory}/antrun/Dockerfile.jdk21</dockerFile>
+                                                <assembly>
+                                                    <mode>tar</mode>
+                                                    <descriptor>assembly.xml</descriptor>
+                                                    <tarLongFileMode>gnu</tarLongFileMode>
+                                                </assembly>
+                                                <buildx>
+                                                    <platforms>
+                                                        <platform>${docker.platforms}</platform>
+                                                    </platforms>
+                                                </buildx>
+                                            </build>
+                                        </image>
+                                    </images>
+                                </configuration>
+                            </execution>
+
+                            <execution>
+                                <id>deploy-docker-image-jdk21</id>
+                                <goals>
+                                    <goal>push</goal>
+                                </goals>
+                                <phase>deploy</phase>
                                 <configuration>
                                     <images>
                                         <image>
