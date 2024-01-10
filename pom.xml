@@ -203,39 +203,6 @@
         </profile>
 
         <profile>
-            <id>license-gen</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>exec-maven-plugin</artifactId>
-                        <version>3.1.0</version>
-                        <inherited>false</inherited>
-                        <executions>
-                            <execution>
-                                <id>download-and-aggregate-licenses</id>
-                                <phase>validate</phase>
-                                <goals>
-                                    <goal>exec</goal>
-                                </goals>
-                                <configuration>
-                                    <executable>mvn</executable>
-                                    <arguments>
-                                        <argument>license:aggregate-add-third-party</argument>
-                                    </arguments>
-                                </configuration>
-                            </execution>
-                        </executions>
-
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
-        <profile>
             <id>javadoc</id>
             <activation>
                 <property>
@@ -367,6 +334,28 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.1.0</version>
+                <inherited>false</inherited>
+                <executions>
+                    <execution>
+                        <id>download-and-aggregate-licenses</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>mvn</executable>
+                            <arguments>
+                                <argument>license:aggregate-add-third-party</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+
+            </plugin>
         </plugins>
 
         <pluginManagement>
@@ -426,6 +415,7 @@
                         <excludedGroups>fish.payara.*</excludedGroups>
                         <fileTemplate>appserver/packager/legal/src/main/resources/license-template.ftl</fileTemplate>
                         <missingFile>${project.basedir}/appserver/packager/legal/src/main/resources/THIRD-PARTY.properties</missingFile>
+                        <force>true</force>
                     </configuration>
                 </plugin>
                 <plugin>
