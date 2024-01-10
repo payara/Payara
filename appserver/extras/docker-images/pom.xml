@@ -111,6 +111,7 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <modules>
+                <module>server-base</module>
                 <module>server-full</module>
                 <module>server-web</module>
                 <module>server-node</module>
@@ -126,6 +127,7 @@
                 </property>
             </activation>
             <modules>
+                <module>server-base</module>
                 <module>server-full</module>
                 <module>server-node</module>
                 <module>micro</module>
@@ -422,35 +424,6 @@
                 <!-- List of platform architectures which we wish to build Docker images for - shouldn't have anything not provided as an option by ${docker.java.repository} -->
                 <docker.platforms>linux/amd64,linux/arm64</docker.platforms>
             </properties>
-        </profile>
-        <profile>
-            <!--
-                Convenience profile for skipping build of the base image.
-
-                The base image rarely changes outside of JDK updates, and has an awkward interaction with buildx when
-                generating multiplatform docker images.
-
-                Buildx WILL NOT utilise any locally built or cached version of an image - it will only pull PUBLISHED
-                images from a docker registry. This becomes an issue when working with multiplatform images and making
-                changes to the base and server images at the same time - if you make a change to the base image and
-                expect the server image to utilise your changes, you HAVE to publish the base image first, otherwise
-                it will pull and utilise the published version. This is visible when versioning the base image the same
-                way as the server image: if the payara/server-full:6.2024.1-SNAPSHOT image pulls from
-                payara/server-base:6.2024.1-SNAPSHOT then a multiplatform build utilising buildx will fail even if the
-                payara/server-base:6.2024.1-SNAPSHOT image is present in the local Docker cache since there won't be a
-                published snapshot image of payara/server-base (unless we set up a snapshot repo and configure.
-            -->
-            <id>generate-server-base-docker-image</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-                <property>
-                    <name>generateServerBaseDockerImage</name>
-                    <value>!false</value>
-                </property>
-            </activation>
-            <modules>
-                <module>server-base</module>
-            </modules>
         </profile>
     </profiles>
 </project>
