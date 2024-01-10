@@ -37,7 +37,7 @@
 #    only if the new code is made subject to such option by the copyright
 #    holder.
 
-FROM payara/basic:@docker.payara.basic.tag@
+FROM payara/server-base:@docker.payara.server.base.tag@
 
 ENV PAYARA_DAS_HOST="localhost" \
     PAYARA_DAS_PORT="4848" \
