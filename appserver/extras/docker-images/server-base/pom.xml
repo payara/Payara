@@ -47,15 +47,14 @@
         <artifactId>docker-images</artifactId>
         <version>6.2024.1-SNAPSHOT</version>
     </parent>
-    <artifactId>basic-docker-image</artifactId>
+    <artifactId>server-base-docker-image</artifactId>
     <packaging>pom</packaging>
-    <name>Payara Docker Images - Basic Image</name>
+    <name>Payara Docker Images - Server Base Image</name>
 
     <properties>
         <docker.noCache>false</docker.noCache>
-        <docker.payara.repository>payara/basic</docker.payara.repository>
-        <docker.keyserver.url>keyserver.ubuntu.com</docker.keyserver.url>
+        <docker.payara.repository>payara/server-base</docker.payara.repository>
 
-        <docker.payara.tag>${docker.payara.basic.tag}</docker.payara.tag>
+        <docker.payara.tag>${docker.payara.server.base.tag}</docker.payara.tag>
     </properties>
 </project>

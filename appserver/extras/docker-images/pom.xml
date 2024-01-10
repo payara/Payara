@@ -72,13 +72,14 @@
 
         <docker.payara.domainName>domain1</docker.payara.domainName>
         <docker.payara.rootDirectoryName>payara6</docker.payara.rootDirectoryName>
+        <docker.keyserver.url>keyserver.ubuntu.com</docker.keyserver.url>
 
         <!-- This is a placeholder to aid with property resolution, it gets overridden in each submodule -->
         <docker.payara.repository>payara/${project.artifactId}</docker.payara.repository>
         <docker.payara.tag>${payara.version}</docker.payara.tag>
         <docker.payara.image>${docker.payara.repository}:${docker.payara.tag}</docker.payara.image>
 
-        <docker.payara.basic.tag>${install.dir.name}</docker.payara.basic.tag>
+        <docker.payara.server.base.tag>${install.dir.name}</docker.payara.server.base.tag>
     </properties>
 
     <build>
@@ -141,7 +142,7 @@
             </activation>
             <build>
                 <plugins>
-                    <!-- Required until https://github.com/fabric8io/docker-maven-plugin/issues/859 is resolved -->
+                    <!-- Required until https://github.com/fabric8io/docker-maven-plugin/issues/859 and https://github.com/fabric8io/docker-maven-plugin/issues/1705 are resolved -->
                     <plugin>
                         <artifactId>maven-antrun-plugin</artifactId>
                         <executions>
@@ -156,12 +157,19 @@
                                         <copy file="src/main/docker/Dockerfile" toFile="target/antrun/Dockerfile.jdk11">
                                             <filterset>
                                                 <filter token="docker.java.image" value="${docker.java.repository}:${docker.jdk11.tag}"/>
+                                                <filter token="docker.payara.server.base.tag" value="${docker.payara.server.base.tag}"/>
+                                                <filter token="docker.keyserver.url" value="${docker.keyserver.url}"/>
+                                                <filter token="docker.payara.domainName" value="${docker.payara.domainName}"/>
+                                                <filter token="docker.payara.rootDirectoryName" value="${docker.payara.rootDirectoryName}"/>
                                             </filterset>
                                         </copy>
                                         <copy file="src/main/docker/Dockerfile" toFile="target/antrun/Dockerfile.jdk17">
                                             <filterset>
                                                 <filter token="docker.java.image" value="${docker.java.repository}:${docker.jdk17.tag}"/>
-                                                <filter token="docker.payara.basic.tag" value="${docker.payara.basic.tag}-jdk17"/>
+                                                <filter token="docker.payara.server.base.tag" value="${docker.payara.server.base.tag}-jdk17"/>
+                                                <filter token="docker.keyserver.url" value="${docker.keyserver.url}"/>
+                                                <filter token="docker.payara.domainName" value="${docker.payara.domainName}"/>
+                                                <filter token="docker.payara.rootDirectoryName" value="${docker.payara.rootDirectoryName}"/>
                                             </filterset>
                                         </copy>
                                     </target>
@@ -304,7 +312,7 @@
             </activation>
             <build>
                 <plugins>
-                    <!-- Required until https://github.com/fabric8io/docker-maven-plugin/issues/859 is resolved -->
+                    <!-- Required until https://github.com/fabric8io/docker-maven-plugin/issues/859 and https://github.com/fabric8io/docker-maven-plugin/issues/1705 are resolved -->
                     <plugin>
                         <artifactId>maven-antrun-plugin</artifactId>
                         <executions>
@@ -319,7 +327,10 @@
                                         <copy file="src/main/docker/Dockerfile" toFile="target/antrun/Dockerfile.jdk21">
                                             <filterset>
                                                 <filter token="docker.java.image" value="${docker.java.repository}:${docker.jdk21.tag}"/>
-                                                <filter token="docker.payara.basic.tag" value="${docker.payara.basic.tag}-jdk21"/>
+                                                <filter token="docker.payara.server.base.tag" value="${docker.payara.server.base.tag}-jdk21"/>
+                                                <filter token="docker.keyserver.url" value="${docker.keyserver.url}"/>
+                                                <filter token="docker.payara.domainName" value="${docker.payara.domainName}"/>
+                                                <filter token="docker.payara.rootDirectoryName" value="${docker.payara.rootDirectoryName}"/>
                                             </filterset>
                                         </copy>
                                     </target>
@@ -414,31 +425,31 @@
         </profile>
         <profile>
             <!--
-                Convenience profile for skipping build of the basic image.
+                Convenience profile for skipping build of the base image.
 
-                The basic image rarely changes outside of JDK updates, and has an awkward interaction with buildx when
+                The base image rarely changes outside of JDK updates, and has an awkward interaction with buildx when
                 generating multiplatform docker images.
 
                 Buildx WILL NOT utilise any locally built or cached version of an image - it will only pull PUBLISHED
                 images from a docker registry. This becomes an issue when working with multiplatform images and making
-                changes to the basic and server images at the same time - if you make a change to the basic image and
-                expect the server image to utilise your changes, you HAVE to publish the basic image first, otherwise
-                it will pull and utilise the published version. This is visible when versioning the basic image the same
+                changes to the base and server images at the same time - if you make a change to the base image and
+                expect the server image to utilise your changes, you HAVE to publish the base image first, otherwise
+                it will pull and utilise the published version. This is visible when versioning the base image the same
                 way as the server image: if the payara/server-full:6.2024.1-SNAPSHOT image pulls from
-                payara/basic:6.2024.1-SNAPSHOT then a multiplatform build utilising buildx will fail even if the
-                payara/basic:6.2024.1-SNAPSHOT image is present in the local Docker cache since there won't be a
-                published snapshot image of payara/basic (unless we set up a snapshot repo and configure.
+                payara/server-base:6.2024.1-SNAPSHOT then a multiplatform build utilising buildx will fail even if the
+                payara/server-base:6.2024.1-SNAPSHOT image is present in the local Docker cache since there won't be a
+                published snapshot image of payara/server-base (unless we set up a snapshot repo and configure.
             -->
-            <id>generate-basic-docker-image</id>
+            <id>generate-server-base-docker-image</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
                 <property>
-                    <name>generateBasicDockerImage</name>
+                    <name>generateServerBaseDockerImage</name>
                     <value>!false</value>
                 </property>
             </activation>
             <modules>
-                <module>basic</module>
+                <module>server-base</module>
             </modules>
         </profile>
     </profiles>
