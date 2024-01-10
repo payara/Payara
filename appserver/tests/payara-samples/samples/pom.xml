@@ -90,6 +90,7 @@
         <module>reproducers</module>
         <module>opentelemetry</module>
         <module>use-bundled-jsf-primefaces</module>
+        <module>cleanboot</module>
     </modules>
 
     <dependencyManagement>

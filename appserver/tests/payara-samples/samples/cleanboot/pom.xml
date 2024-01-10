@@ -29,17 +29,16 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    
+    <artifactId>cleanboot</artifactId>
+    <version>6.2024.1-SNAPSHOT</version>
+    <name>Payara Samples - Payara - Clean boot test</name>
 
     <parent>
         <groupId>fish.payara.samples</groupId>
         <artifactId>payara-samples-profiled-tests</artifactId>
         <version>6.2024.1-SNAPSHOT</version>
     </parent>
-    
-    <groupId>fish.payara.samples</groupId>
-    <artifactId>clean-boot-test</artifactId>
-    <version>6.2024.1-SNAPSHOT</version>
-    <name>Payara Samples - Payara - Clean boot test</name>
 
     <properties>
       <playwright.version>1.40.0</playwright.version>
