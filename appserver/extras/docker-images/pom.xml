@@ -64,11 +64,10 @@
         <!-- List of platform architectures which we wish to build Docker images for -
                 shouldn't have anything not provided as an option by ${docker.java.repository}.
 
-                This is purposefully left blank here so that buildx isn't activated by default.
-
-                This is set to a value in the 'generate-multiplatform-docker-images' profile below
+                If you wish to utilise the default Docker builder instead of buildx, set this property to nothing
+                e.g. mvn clean install -Ddocker.platforms=
          -->
-        <docker.platforms></docker.platforms>
+        <docker.platforms>linux/amd64,linux/arm64</docker.platforms>
 
         <docker.payara.domainName>domain1</docker.payara.domainName>
         <docker.payara.rootDirectoryName>payara6</docker.payara.rootDirectoryName>
@@ -405,13 +404,6 @@
                     </plugin>
                 </plugins>
             </build>
-        </profile>
-        <profile>
-            <id>generate-multiplatform-docker-images</id>
-            <properties>
-                <!-- List of platform architectures which we wish to build Docker images for - shouldn't have anything not provided as an option by ${docker.java.repository} -->
-                <docker.platforms>linux/amd64,linux/arm64</docker.platforms>
-            </properties>
         </profile>
     </profiles>
 </project>
