@@ -57,6 +57,36 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.1.1</version>
+                <executions>
+                  <execution>
+                    <id>install-playwright-dependencies</id>
+                    <phase>pre-integration-test</phase>
+                    <goals>
+                      <goal>exec</goal>
+                    </goals>
+                  </execution>
+                </executions>
+                <configuration>
+                    <executable>java</executable>
+                    <mainClass>com.microsoft.playwright.CLI</mainClass>
+                    <arguments>
+                        <argument>-classpath</argument>
+                        <classpath />
+                        <argument>com.microsoft.playwright.CLI</argument>
+                        <argument>install-deps</argument>
+                    </arguments>
+                    <async>false</async>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
     
     <profiles>
         <profile>
