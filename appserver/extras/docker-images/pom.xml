@@ -76,7 +76,6 @@
         <!-- This is a placeholder to aid with property resolution, it gets overridden in each submodule -->
         <docker.payara.repository>payara/${project.artifactId}</docker.payara.repository>
         <docker.payara.tag>${payara.version}</docker.payara.tag>
-        <docker.payara.image>${docker.payara.repository}:${docker.payara.tag}</docker.payara.image>
 
         <docker.payara.server.base.tag>${install.dir.name}</docker.payara.server.base.tag>
     </properties>
