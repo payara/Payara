@@ -52,17 +52,11 @@ ENV PAYARA_DIR=${HOME_DIR}/appserver \
     MEM_XSS="512k"
 ENV PATH="${PATH}:${PAYARA_DIR}/bin"
 
-ARG TINI_VERSION=v0.19.0
-
-# Download tini
-ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini \
-    https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini.asc /
-
 RUN true \
     && apt-get update \
     # OpenSSL contains security vulnerabilities and is unused by Payara. To prevent recurring issues simply remove OpenSSL
     && apt-get remove -y openssl \
-    && apt-get install -y gpg \
+    && apt-get install -y tini \
     && rm -rf /var/lib/apt/lists/* \
     && mkdir -p ${HOME_DIR} \
     && addgroup --gid 1000 payara \
@@ -72,12 +66,7 @@ RUN true \
     && mkdir -p ${DEPLOY_DIR} \
     && mkdir -p ${CONFIG_DIR} \
     && mkdir -p ${SCRIPT_DIR} \
-    && chown -R payara:payara ${HOME_DIR} \
-    # Verify tini
-    && gpg --verbose --keyserver @docker.keyserver.url@ --recv-keys 595E85A6B1B4779EA4DAAEC70B588DFF0527A9B7 \
-    && gpg --verify /tini.asc \
-    && chmod +x /tini \
-    && true
+    && chown -R payara:payara ${HOME_DIR}
 
 USER payara
 WORKDIR ${HOME_DIR}

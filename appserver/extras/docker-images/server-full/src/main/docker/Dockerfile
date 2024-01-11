@@ -80,5 +80,5 @@ RUN true \
         ${PAYARA_DIR}/glassfish/domains/${DOMAIN_NAME}/logs \
     && true
 
-ENTRYPOINT ["/tini", "--"]
+ENTRYPOINT ["tini", "--"]
 CMD "${SCRIPT_DIR}/entrypoint.sh"
