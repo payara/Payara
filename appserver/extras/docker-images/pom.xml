@@ -79,6 +79,8 @@
         <docker.payara.image>${docker.payara.repository}:${docker.payara.tag}</docker.payara.image>
 
         <docker.payara.server.base.tag>${install.dir.name}</docker.payara.server.base.tag>
+
+        <docker.skip.build>false</docker.skip.build>
     </properties>
 
     <build>
@@ -191,6 +193,7 @@
                                         <image>
                                             <name>${docker.payara.repository}</name>
                                             <build>
+                                                <skip>${docker.skip.build}</skip>
                                                 <!-- On Windows with default setting ${*}, $PATH would get filtered as well -->
                                                 <filter>@</filter>
                                                 <tags>
@@ -214,6 +217,7 @@
                                         <image>
                                             <name>${docker.payara.repository}</name>
                                             <build>
+                                                <skip>${docker.skip.build}</skip>
                                                 <!-- On Windows with default setting ${*}, $PATH would get filtered as well -->
                                                 <filter>@</filter>
                                                 <tags>
@@ -351,6 +355,7 @@
                                         <image>
                                             <name>${docker.payara.repository}</name>
                                             <build>
+                                                <skip>${docker.skip.build}</skip>
                                                 <!-- On Windows with default setting ${*}, $PATH would get filtered as well -->
                                                 <filter>@</filter>
                                                 <tags>
