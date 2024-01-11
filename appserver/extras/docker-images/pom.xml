@@ -76,8 +76,6 @@
         <!-- This is a placeholder to aid with property resolution, it gets overridden in each submodule -->
         <docker.payara.repository>payara/${project.artifactId}</docker.payara.repository>
         <docker.payara.tag>${payara.version}</docker.payara.tag>
-
-        <docker.payara.server.base.tag>${install.dir.name}</docker.payara.server.base.tag>
     </properties>
 
     <build>
@@ -109,7 +107,6 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <modules>
-                <module>server-base</module>
                 <module>server-full</module>
                 <module>server-web</module>
                 <module>server-node</module>
@@ -125,7 +122,6 @@
                 </property>
             </activation>
             <modules>
-                <module>server-base</module>
                 <module>server-full</module>
                 <module>server-node</module>
                 <module>micro</module>
@@ -157,7 +153,6 @@
                                         <copy file="src/main/docker/Dockerfile" toFile="target/antrun/Dockerfile.jdk11">
                                             <filterset>
                                                 <filter token="docker.java.image" value="${docker.java.repository}:${docker.jdk11.tag}"/>
-                                                <filter token="docker.payara.server.base.tag" value="${docker.payara.server.base.tag}"/>
                                                 <filter token="docker.payara.domainName" value="${docker.payara.domainName}"/>
                                                 <filter token="docker.payara.rootDirectoryName" value="${docker.payara.rootDirectoryName}"/>
                                             </filterset>
@@ -165,7 +160,6 @@
                                         <copy file="src/main/docker/Dockerfile" toFile="target/antrun/Dockerfile.jdk17">
                                             <filterset>
                                                 <filter token="docker.java.image" value="${docker.java.repository}:${docker.jdk17.tag}"/>
-                                                <filter token="docker.payara.server.base.tag" value="${docker.payara.server.base.tag}-jdk17"/>
                                                 <filter token="docker.payara.domainName" value="${docker.payara.domainName}"/>
                                                 <filter token="docker.payara.rootDirectoryName" value="${docker.payara.rootDirectoryName}"/>
                                             </filterset>
@@ -325,7 +319,6 @@
                                         <copy file="src/main/docker/Dockerfile" toFile="target/antrun/Dockerfile.jdk21">
                                             <filterset>
                                                 <filter token="docker.java.image" value="${docker.java.repository}:${docker.jdk21.tag}"/>
-                                                <filter token="docker.payara.server.base.tag" value="${docker.payara.server.base.tag}-jdk21"/>
                                                 <filter token="docker.payara.domainName" value="${docker.payara.domainName}"/>
                                                 <filter token="docker.payara.rootDirectoryName" value="${docker.payara.rootDirectoryName}"/>
                                             </filterset>
