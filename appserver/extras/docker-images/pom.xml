@@ -72,7 +72,6 @@
 
         <docker.payara.domainName>domain1</docker.payara.domainName>
         <docker.payara.rootDirectoryName>payara6</docker.payara.rootDirectoryName>
-        <docker.keyserver.url>keyserver.ubuntu.com</docker.keyserver.url>
 
         <!-- This is a placeholder to aid with property resolution, it gets overridden in each submodule -->
         <docker.payara.repository>payara/${project.artifactId}</docker.payara.repository>
@@ -160,7 +159,6 @@
                                             <filterset>
                                                 <filter token="docker.java.image" value="${docker.java.repository}:${docker.jdk11.tag}"/>
                                                 <filter token="docker.payara.server.base.tag" value="${docker.payara.server.base.tag}"/>
-                                                <filter token="docker.keyserver.url" value="${docker.keyserver.url}"/>
                                                 <filter token="docker.payara.domainName" value="${docker.payara.domainName}"/>
                                                 <filter token="docker.payara.rootDirectoryName" value="${docker.payara.rootDirectoryName}"/>
                                             </filterset>
@@ -169,7 +167,6 @@
                                             <filterset>
                                                 <filter token="docker.java.image" value="${docker.java.repository}:${docker.jdk17.tag}"/>
                                                 <filter token="docker.payara.server.base.tag" value="${docker.payara.server.base.tag}-jdk17"/>
-                                                <filter token="docker.keyserver.url" value="${docker.keyserver.url}"/>
                                                 <filter token="docker.payara.domainName" value="${docker.payara.domainName}"/>
                                                 <filter token="docker.payara.rootDirectoryName" value="${docker.payara.rootDirectoryName}"/>
                                             </filterset>
@@ -330,7 +327,6 @@
                                             <filterset>
                                                 <filter token="docker.java.image" value="${docker.java.repository}:${docker.jdk21.tag}"/>
                                                 <filter token="docker.payara.server.base.tag" value="${docker.payara.server.base.tag}-jdk21"/>
-                                                <filter token="docker.keyserver.url" value="${docker.keyserver.url}"/>
                                                 <filter token="docker.payara.domainName" value="${docker.payara.domainName}"/>
                                                 <filter token="docker.payara.rootDirectoryName" value="${docker.payara.rootDirectoryName}"/>
                                             </filterset>
