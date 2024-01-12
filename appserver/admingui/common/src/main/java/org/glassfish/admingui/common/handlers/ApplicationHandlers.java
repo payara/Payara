@@ -180,7 +180,7 @@ public class ApplicationHandlers {
                             "modulename=" + encodedModuleName;
                     Map<?, ?> map = (Map<?, ?>) RestUtil.restRequest(endpoint, null, "GET", null, false).get("data");
                     Map<?, ?> props = (Map<?, ?>)map.get("properties");
-                    String contextRoot = (String) props.get("contextRoot");
+                    String contextRoot = props != null ? (String) props.get("contextRoot") : getContextRootAppJson(appName);
                     getLaunchInfo(appName, contextRoot, oneRow);
                 }
 
@@ -205,7 +205,21 @@ public class ApplicationHandlers {
           handlerCtx.setOutputValue(NAME_RESULT, result);
     }
 
-
+    private static String getContextRootAppJson(String appName) {
+        String endpoint = GuiUtil.getSessionValue(REST_URL) + PATH_APPLICATIONS_APPLICATION + appName + ".json";
+        Map<String, Object> map = RestUtil.restRequest(endpoint, null, "GET", null, false);
+        Map<String, Object> data = (Map<String, Object>) map.get("data");
+        if (data != null) {
+            Map<String, Object> extraProperties = (Map<String, Object>) data.get("extraProperties");
+            if (extraProperties != null) {
+                Map<String, Object> entity = (Map<String, Object>) extraProperties.get("entity");
+                if (entity != null) {
+                    return (String) entity.get("contextRoot");
+                }
+            }
+        }
+        return "";
+    }
 
     private static List<Map<String, Object>> getSubComponentDetail(String appName, String moduleName, List<String> snifferList, List<Map<String, Object>> result){
         try{
