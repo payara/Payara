@@ -113,7 +113,6 @@ public enum RUNTIME_OPTION {
     contextroot(true),
     warmup(false),
     hotdeploy(false),
-    keepstate(false),
     nohazelcast(false);
 
     RUNTIME_OPTION(boolean hasValue) {
