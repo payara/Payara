@@ -107,7 +107,6 @@ import fish.payara.micro.boot.PayaraMicroBoot;
 import fish.payara.micro.boot.PayaraMicroLauncher;
 import fish.payara.micro.boot.loader.OpenURLClassLoader;
 import fish.payara.micro.cmd.options.RUNTIME_OPTION;
-import static fish.payara.micro.cmd.options.RUNTIME_OPTION.hotdeploy;
 import fish.payara.micro.cmd.options.RuntimeOptions;
 import fish.payara.micro.cmd.options.ValidationException;
 import fish.payara.micro.data.InstanceDescriptor;
