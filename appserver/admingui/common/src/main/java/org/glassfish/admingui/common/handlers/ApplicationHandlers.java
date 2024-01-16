@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
 /**
  *
  * @author anilam
@@ -180,7 +180,7 @@ public class ApplicationHandlers {
                             "modulename=" + encodedModuleName;
                     Map<?, ?> map = (Map<?, ?>) RestUtil.restRequest(endpoint, null, "GET", null, false).get("data");
                     Map<?, ?> props = (Map<?, ?>)map.get("properties");
-                    String contextRoot = (String) props.get("contextRoot");
+                    String contextRoot = props != null ? (String) props.get("contextRoot") : null;
                     getLaunchInfo(appName, contextRoot, oneRow);
                 }
 
@@ -204,8 +204,6 @@ public class ApplicationHandlers {
           }
           handlerCtx.setOutputValue(NAME_RESULT, result);
     }
-
-
 
     private static List<Map<String, Object>> getSubComponentDetail(String appName, String moduleName, List<String> snifferList, List<Map<String, Object>> result){
         try{

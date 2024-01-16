@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2024] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.v3.server;
 
@@ -252,12 +252,18 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
         // process the deployed applications
         Iterator iter = DeploymentOrder.getApplicationDeployments();
         while (iter.hasNext()) {
-          Application app = (Application)iter.next();
-          ApplicationRef appRef = server.getApplicationRef(app.getName());
-          if (appRef != null) {
-            // Does the application need to be run on this instance?
-            appDeployments.addAll(processApplication(app, appRef));
-          }
+            Application app = (Application)iter.next();
+            ApplicationRef appRef = server.getApplicationRef(app.getName());
+            if (appRef == null) {
+                List<Server> serverList = domain.getServers().getServer();
+                for (Server server : serverList) {
+                    appRef = domain.getApplicationRefInTarget(app.getName(), server.getName());
+                    if (appRef != null) break;
+                }
+            }
+            if (appRef != null) {
+                appDeployments.addAll(processApplication(app, appRef));
+            }
         }
 
         // does the user want us to run a particular application
