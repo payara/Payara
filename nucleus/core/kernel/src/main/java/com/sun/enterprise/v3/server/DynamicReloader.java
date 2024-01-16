@@ -251,6 +251,7 @@ public class DynamicReloader implements Runnable {
         deployParam.set(DeploymentProperties.KEEP_REPOSITORY_DIRECTORY, "true");
 
         Properties reloadFile = appInfo.readReloadFile();
+        boolean keepState = Boolean.parseBoolean(reloadFile.getProperty(DeployCommandParameters.ParameterNames.KEEP_STATE));
         boolean hotDeploy = Boolean.parseBoolean(reloadFile.getProperty(DeployCommandParameters.ParameterNames.HOT_DEPLOY));
         if (hotDeploy) {
             deployParam.set(DeployCommandParameters.ParameterNames.HOT_DEPLOY, "true");
@@ -262,6 +263,9 @@ public class DynamicReloader implements Runnable {
             if (sourcesChanged != null && !sourcesChanged.isEmpty()) {
                 deployParam.set(DeployCommandParameters.ParameterNames.SOURCES_CHANGED, sourcesChanged);
             }
+        }
+        if(keepState) {
+            deployParam.set(DeployCommandParameters.ParameterNames.KEEP_STATE, "true");
         }
         commandRunner.getCommandInvocation("deploy", new XMLActionReporter(), kernelSubject).parameters(deployParam).execute();
 

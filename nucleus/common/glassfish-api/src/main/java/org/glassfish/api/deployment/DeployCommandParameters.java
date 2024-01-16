@@ -303,6 +303,7 @@ public class DeployCommandParameters extends OpsParams {
         public static final String DEPLOYMENT_ORDER = "deploymentorder";
         public static final String ALT_DD = "altdd";
         public static final String RUNTIME_ALT_DD = "runtimealtdd";
+        public static final String KEEP_STATE = "keepState";
         public static final String HOT_DEPLOY = "hotdeploy";
         public static final String SOURCES_CHANGED = "sourceschanged";
         public static final String METADATA_CHANGED = "metadatachanged";
