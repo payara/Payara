@@ -49,6 +49,8 @@ public class AdminGroup {
 
     static public void createGroup(Page page, String nameGroup, String[] nameInstances) {
 
+        System.out.println("Create the deployment group " + nameGroup);
+
         AdminPage.gotoHomepage(page);
         goToDeploymentGroupPage(page);
 
@@ -89,6 +91,9 @@ public class AdminGroup {
     }
 
     static public void startGroups(Page page) {
+
+        System.out.println("Start the deployment groups");
+
         AdminPage.gotoHomepage(page);
         goToDeploymentGroupPage(page);
 

@@ -69,8 +69,11 @@ public class CleanBootIT {
 
         timestamp = new Timestamp(System.currentTimeMillis());
         logs = logs.concat(timestamp.toString()) + " \n";
-        Assert.assertTrue(!(logs.contains("SEVERE") && !(logs.contains("ALERT"))) && !(logs.contains("EMERGENCY")));
         System.out.println(logs);
+        boolean containsError = logs.contains("SEVERE") || logs.contains("ALERT") || logs.contains("EMERGENCY");
+        if (containsError) {
+            Assert.fail("Logs contain SEVERE or ALERT or EMERGENCY");
+        }
     }
 
     @Test
@@ -93,7 +96,10 @@ public class CleanBootIT {
 
         timestamp = new Timestamp(System.currentTimeMillis());
         logs = logs.concat(timestamp.toString()) + " \n";
-        Assert.assertTrue(!(logs.contains("SEVERE") && !(logs.contains("ALERT"))) && !(logs.contains("EMERGENCY")));
         System.out.println(logs);
+        boolean containsError = logs.contains("SEVERE") || logs.contains("ALERT") || logs.contains("EMERGENCY");
+        if (containsError) {
+            Assert.fail("Logs contain SEVERE or ALERT or EMERGENCY");
+        }
     }
 }

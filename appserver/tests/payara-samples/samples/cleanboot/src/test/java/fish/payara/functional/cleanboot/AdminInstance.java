@@ -46,6 +46,8 @@ public class AdminInstance {
 
     static public void createInstance(Page page, String nameInstance) {
 
+        System.out.println("Create the instance " + nameInstance);
+
         AdminPage.gotoHomepage(page);
         goToInstancePage(page);
 
@@ -62,6 +64,8 @@ public class AdminInstance {
     }
 
     static public void startInstance(Page page, String nameInstance) {
+
+        System.out.println("Start the instance " + nameInstance);
 
         AdminPage.gotoHomepage(page);
         goToInstancePage(page);
@@ -80,7 +84,9 @@ public class AdminInstance {
         waitForProcess(page);
     }
 
-    static public void startInstances(Page page, String nameInstance) {
+    static public void startInstances(Page page) {
+
+        System.out.println("Start the instances");
 
         AdminPage.gotoHomepage(page);
         goToInstancePage(page);
@@ -100,6 +106,8 @@ public class AdminInstance {
 
     static public void stopInstances(Page page) {
 
+        System.out.println("Stop the instances");
+
         AdminPage.gotoHomepage(page);
         goToInstancePage(page);
 
@@ -117,6 +125,8 @@ public class AdminInstance {
 
     static public void deleteInstances(Page page) {
 
+        System.out.println("Delete the instances");
+
         AdminPage.gotoHomepage(page);
         goToInstancePage(page);
 
@@ -133,6 +143,9 @@ public class AdminInstance {
 }
 
     static public String collectLogs(Page page, String nameInstance, String[] logLevels) {
+
+        System.out.println("Collect the logs from " + nameInstance);
+
         String logs = nameInstance + " : \n";
 
         AdminPage.gotoHomepage(page);
