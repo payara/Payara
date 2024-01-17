@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.v3.server;
 
@@ -262,6 +262,10 @@ public class DynamicReloader implements Runnable {
             if (sourcesChanged != null && !sourcesChanged.isEmpty()) {
                 deployParam.set(DeployCommandParameters.ParameterNames.SOURCES_CHANGED, sourcesChanged);
             }
+        }
+        boolean keepState = Boolean.parseBoolean(reloadFile.getProperty(DeployCommandParameters.ParameterNames.KEEP_STATE));
+        if(keepState) {
+            deployParam.set(DeployCommandParameters.ParameterNames.KEEP_STATE, "true");
         }
         commandRunner.getCommandInvocation("deploy", new XMLActionReporter(), kernelSubject).parameters(deployParam).execute();
 
