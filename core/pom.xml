@@ -58,7 +58,10 @@
         <!-- BOM dependencies versions -->
         <payara.security-connectors.version>3.1</payara.security-connectors.version>
         <hk2.version>3.0.1.payara-p3</hk2.version>
-        <osgi.version>7.0.0</osgi.version>
+        <osgi.version>8.0.0</osgi.version>
+        <osgi.annotation.version>7.0.0</osgi.annotation.version>
+        <osgi.enterprise.version>7.0.0</osgi.enterprise.version>
+        <osgi.cmpn.version>7.0.0</osgi.cmpn.version>
         <osgi.dto.version>1.1.1</osgi.dto.version>
         <jakarta.security.enterprise.version>3.0.3.payara-p1</jakarta.security.enterprise.version>
         <cdi-api.version>4.0.1</cdi-api.version>
@@ -889,7 +892,7 @@
             <dependency>
                 <groupId>org.osgi</groupId>
                 <artifactId>osgi.cmpn</artifactId>
-                <version>${osgi.version}</version>
+                <version>${osgi.cmpn.version}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
@@ -901,13 +904,13 @@
             <dependency>
                 <groupId>org.osgi</groupId>
                 <artifactId>osgi.enterprise</artifactId>
-                <version>${osgi.version}</version>
+                <version>${osgi.enterprise.version}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.osgi</groupId>
                 <artifactId>osgi.annotation</artifactId>
-                <version>${osgi.version}</version>
+                <version>${osgi.annotation.version}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
