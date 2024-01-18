@@ -59,7 +59,7 @@
         <payara.security-connectors.version>3.1</payara.security-connectors.version>
         <hk2.version>3.0.1.payara-p3</hk2.version>
         <osgi.version>8.0.0</osgi.version>
-        <osgi.annotation.version>7.0.0</osgi.annotation.version>
+        <osgi.annotation.version>8.1.0</osgi.annotation.version>
         <osgi.enterprise.version>7.0.0</osgi.enterprise.version>
         <osgi.cmpn.version>7.0.0</osgi.cmpn.version>
         <osgi.dto.version>1.1.1</osgi.dto.version>
