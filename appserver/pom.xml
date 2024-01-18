@@ -143,7 +143,6 @@
                     <target>${javase.version}</target>
                 </configuration>
             </plugin>
-
             <plugin>
                 <groupId>org.glassfish.build</groupId>
                 <artifactId>spec-version-maven-plugin</artifactId>

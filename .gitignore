@@ -26,3 +26,4 @@ appserver/tests/quicklook/quicklook_summary.txt
 **/nbproject
 .flattened-pom.xml
 **/__pycache__
+appserver/packager/legal/src/main/resources/glassfish/legal/3RD-PARTY-LICENSE.txt
