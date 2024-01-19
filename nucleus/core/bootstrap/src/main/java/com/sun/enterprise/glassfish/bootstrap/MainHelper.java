@@ -51,10 +51,13 @@ import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Utility class used by bootstrap module.
@@ -528,9 +531,43 @@ public class MainHelper {
             ClassLoaderBuilder clb = new ClassLoaderBuilder(ctx, delegate);
             clb.addFrameworkJars();
             clb.addBootstrapApiJar(); // simple-glassfish-api.jar
-            return clb.build();
+            ClassLoader classLoader = clb.build();
+            String osgiPackages = classLoader.resources("META-INF/MANIFEST.MF").map(MainHelper::loadExports)
+                    .collect(Collectors.joining(", "));
+            System.err.println("OSGI framework packages:\n" + osgiPackages);
+            String javaPackages = detectJavaPackages();
+            System.err.println("JDK provided packages:\n" + javaPackages);
+            ctx.setProperty(org.osgi.framework.Constants.FRAMEWORK_SYSTEMPACKAGES, osgiPackages +  ", " + javaPackages);
+            return classLoader;
         } catch (IOException e) {
             throw new Error(e);
+        }
+    }
+
+    private static String detectJavaPackages() {
+        Set<String> packages = new HashSet<>();
+        for (Module module : ModuleLayer.boot().modules()) {
+            addAllExportedPackages(module, packages);
+        }
+        return packages.stream().sorted().collect(Collectors.joining(", "));
+    }
+
+
+    private static void addAllExportedPackages(Module module, Set<String> packages) {
+        for (String pkg : module.getPackages()) {
+            if (module.isExported(pkg) || module.isOpen(pkg)) {
+                packages.add(pkg);
+            }
+        }
+    }
+
+    private static String loadExports(final URL url) {
+        try (InputStream is = url.openStream()) {
+            Manifest manifest = new Manifest(is);
+            Attributes attributes = manifest.getMainAttributes();
+            return attributes.getValue(org.osgi.framework.Constants.EXPORT_PACKAGE);
+        } catch (IOException e) {
+            throw new IllegalStateException("Could not parse manifest from " + url, e);
         }
     }
 
