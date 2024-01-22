@@ -1,7 +1,7 @@
 #
 #    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #
-#    Copyright (c) 2023 Payara Foundation and/or its affiliates. All rights reserved.
+#    Copyright (c) 2023-2024 Payara Foundation and/or its affiliates. All rights reserved.
 #
 #    The contents of this file are subject to the terms of either the GNU
 #    General Public License Version 2 only ("GPL") or the Common Development
@@ -37,16 +37,47 @@
 #    only if the new code is made subject to such option by the copyright
 #    holder.
 
-FROM payara/basic:@docker.payara.tag@
+FROM @docker.java.image@
 
-ENV PAYARA_DAS_HOST="localhost" \
+ENV HOME_DIR=/opt/payara
+ENV PAYARA_DIR=${HOME_DIR}/appserver \
+    SCRIPT_DIR=${HOME_DIR}/scripts \
+    CONFIG_DIR=${HOME_DIR}/config \
+    DEPLOY_DIR=${HOME_DIR}/deployments \
+    PASSWORD_FILE=${HOME_DIR}/passwordFile \
+    ADMIN_USER=admin \
+    ADMIN_PASSWORD=admin \
+    JVM_ARGS="" \
+    MEM_MAX_RAM_PERCENTAGE="70.0" \
+    MEM_XSS="512k" \
+    PAYARA_DAS_HOST="localhost" \
     PAYARA_DAS_PORT="4848" \
     PAYARA_NODE_NAME="" \
     PAYARA_CONFIG_NAME="" \
     PAYARA_INSTANCE_NAME="" \
     DOCKER_CONTAINER_IP=""
-ENV PAYARA_PASSWORD_FILE_DIR=${HOME_DIR}/passwords
+ENV PATH="${PATH}:${PAYARA_DIR}/bin" \
+    PAYARA_PASSWORD_FILE_DIR=${HOME_DIR}/passwords
 ENV PAYARA_PASSWORD_FILE=${PAYARA_PASSWORD_FILE_DIR}/passwordfile.txt
+
+RUN true \
+    && apt-get update \
+    # OpenSSL contains security vulnerabilities and is unused by Payara. To prevent recurring issues simply remove OpenSSL
+    && apt-get remove -y openssl \
+    && apt-get install -y tini \
+    && rm -rf /var/lib/apt/lists/* \
+    && mkdir -p ${HOME_DIR} \
+    && addgroup --gid 1000 payara \
+    && adduser --system --uid 1000 --no-create-home --shell /bin/bash --home "${HOME_DIR}" --gecos "" --ingroup payara payara \
+    && echo payara:payara | chpasswd \
+    && mkdir -p ${PAYARA_DIR} \
+    && mkdir -p ${DEPLOY_DIR} \
+    && mkdir -p ${CONFIG_DIR} \
+    && mkdir -p ${SCRIPT_DIR} \
+    && chown -R payara:payara ${HOME_DIR}
+
+USER payara
+WORKDIR ${HOME_DIR}
 
 # Create and set the Payara user and working directory owned by the new user
 RUN true \
