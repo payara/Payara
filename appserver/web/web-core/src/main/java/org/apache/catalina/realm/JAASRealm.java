@@ -55,11 +55,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2024] Payara Foundation and/or affiliates
 
 package org.apache.catalina.realm;
 
 
+import com.sun.enterprise.security.GroupPrincipal;
 import org.apache.catalina.Container;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LogFacade;
@@ -67,7 +68,6 @@ import org.apache.catalina.LogFacade;
 import javax.security.auth.Subject;
 import javax.security.auth.login.*;
 import java.security.Principal;
-import java.security.acl.Group;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -438,15 +438,13 @@ public class JAASRealm
                 roles.add(principal.getName());
             }
             // Same as Jboss - that's a pretty clean solution
-            if( (principal instanceof Group) &&
-                    "Roles".equals( principal.getName())) {
-                Group grp=(Group)principal;
-                Enumeration en=grp.members();
-                while( en.hasMoreElements() ) {
-                    Principal roleP=(Principal)en.nextElement();
-                    roles.add( roleP.getName());
+            if ((principal instanceof GroupPrincipal) && "Roles".equals(principal.getName())) {
+                GroupPrincipal grp = (GroupPrincipal) principal;
+                Enumeration<? extends Principal> membersEnum = grp.members();
+                while (membersEnum.hasMoreElements()) {
+                    Principal roleP = membersEnum.nextElement();
+                    roles.add(roleP.getName());
                 }
-
             }
         }
 
