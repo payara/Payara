@@ -75,7 +75,7 @@
         <jakarta.validation.version>3.0.2</jakarta.validation.version>
         <hibernate.validator.version>8.0.0.Final</hibernate.validator.version>
         <hibernate.validator-cdi.version>8.0.0.Final</hibernate.validator-cdi.version>
-        <jaxb-impl.version>4.0.4.payara-p1</jaxb-impl.version>
+        <jaxb-impl.version>4.0.1</jaxb-impl.version>
         <jsonp-api.version>2.1.0</jsonp-api.version>
         <jakarta.security.auth.message-api.version>3.0.0</jakarta.security.auth.message-api.version>
         <jakarta.security.jacc-api.version>2.1.0</jakarta.security.jacc-api.version>
