@@ -582,7 +582,7 @@ class FlusherThread extends Thread {
                     outputStream.write(buffer, 0, byteCnt);
                     outputStream.flush();
                 }
-                yield();
+                Thread.yield();
             }
         } catch (IOException e) {
             // ignore
