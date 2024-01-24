@@ -81,7 +81,7 @@
         </resources>
         <plugins>
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
+                <groupId>org.omnifaces</groupId>
                 <artifactId>antlr-maven-plugin</artifactId>
                 <configuration>
                     <grammars>EJBQL.g, JDOQLCodeGeneration.g, Semantic.g</grammars>
