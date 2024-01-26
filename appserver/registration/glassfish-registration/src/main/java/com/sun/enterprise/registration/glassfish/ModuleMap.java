@@ -117,7 +117,6 @@ public class ModuleMap {
                 put("org.apache.felix.gogo.command", 58);
                 put("org.apache.felix.gogo.runtime", 59);
                 put("org.apache.felix.gogo.shell", 60);
-                put("org.apache.felix.scr", 61);
                 put("org.apache.felix.shell", 62);
                 put("org.apache.felix.shell.remote", 63);
                 put("org.apache.felix.shell.tui", 64);

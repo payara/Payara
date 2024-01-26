@@ -129,12 +129,7 @@
         <org.apache.felix.gogo.command.version>1.1.2</org.apache.felix.gogo.command.version>
         <org.apache.felix.fileinstall.version>3.7.4.payara-p1</org.apache.felix.fileinstall.version>
         <org.apache.felix.configadmin.version>1.9.26</org.apache.felix.configadmin.version>
-        <org.apache.felix.scr.version>2.1.30</org.apache.felix.scr.version>
         <org.apache.felix.bundlerepository.version>2.0.10</org.apache.felix.bundlerepository.version>
-
-        <!-- OSGi Promise and Function is required for Apache Felix scr -->
-        <org.osgi.util.promise.version>1.2.0</org.osgi.util.promise.version>
-        <org.osgi.util.function.version>1.2.0</org.osgi.util.function.version>
 
         <!-- Java Business Integration (JBI) is a specification for an approach to implementing a service-oriented architecture (SOA).  -->
         <btrace.version>1.2.3</btrace.version>
@@ -685,25 +680,9 @@ Parent is ${project.parent}</echo>
                 <version>${org.apache.felix.configadmin.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.felix</groupId> <!-- Implementation of the Declarative Services specification 1.3 -->
-                <artifactId>org.apache.felix.scr</artifactId>
-                <version>${org.apache.felix.scr.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>org.apache.felix</groupId> <!-- Bundle repository service. -->
                 <artifactId>org.apache.felix.bundlerepository</artifactId>
                 <version>${org.apache.felix.bundlerepository.version}</version>
-            </dependency>
-
-            <dependency> <!-- Required for org.apache.felix.scr-->
-                <groupId>org.osgi</groupId>
-                <artifactId>org.osgi.util.promise</artifactId>
-                <version>${org.osgi.util.promise.version}</version>
-            </dependency>
-            <dependency> <!-- Required for org.apache.felix.scr-->
-                <groupId>org.osgi</groupId>
-                <artifactId>org.osgi.util.function</artifactId>
-                <version>${org.osgi.util.function.version}</version>
             </dependency>
 
             <dependency>

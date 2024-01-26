@@ -91,18 +91,6 @@
            <artifactId>org.apache.felix.configadmin</artifactId>
         </dependency>
         <dependency>
-           <groupId>org.apache.felix</groupId>
-           <artifactId>org.apache.felix.scr</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.util.promise</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.util.function</artifactId>
-        </dependency>
-        <dependency>
             <groupId>fish.payara.server.internal.osgi-platforms</groupId>
             <artifactId>osgi-cli-remote</artifactId>
             <version>${project.version}</version>
