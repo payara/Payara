@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2017-2022 Payara Foundation and/or its affiliates
+// Portions Copyright 2017-2024 Payara Foundation and/or its affiliates
+// Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license.
 
 package com.sun.enterprise.glassfish.bootstrap;
 
@@ -534,9 +535,9 @@ public class MainHelper {
             ClassLoader classLoader = clb.build();
             String osgiPackages = classLoader.resources("META-INF/MANIFEST.MF").map(MainHelper::loadExports)
                     .collect(Collectors.joining(", "));
-            System.err.println("OSGI framework packages:\n" + osgiPackages);
+            logger.log(Level.FINE, "OSGi framework packages:\n" + osgiPackages);
             String javaPackages = detectJavaPackages();
-            System.err.println("JDK provided packages:\n" + javaPackages);
+            logger.log(Level.FINE, "JDK provided packages:\n" + osgiPackages);
             ctx.setProperty(org.osgi.framework.Constants.FRAMEWORK_SYSTEMPACKAGES, osgiPackages +  ", " + javaPackages);
             return classLoader;
         } catch (IOException e) {
