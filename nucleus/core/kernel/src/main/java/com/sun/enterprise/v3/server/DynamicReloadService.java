@@ -104,9 +104,7 @@ public class DynamicReloadService implements ConfigListener, PostConstruct, PreD
             "dynamic-reload-enabled", "dynamic-reload-poll-interval-in-seconds"
             );
 
-    public DynamicReloadService() {
-    }
-
+    @Override
     public void postConstruct() {
         logger = KernelLoggerInfo.getLogger();
         /*
@@ -134,6 +132,7 @@ public class DynamicReloadService implements ConfigListener, PostConstruct, PreD
 
     }
 
+    @Override
     public void preDestroy() {
         stop();
     }
@@ -155,22 +154,18 @@ public class DynamicReloadService implements ConfigListener, PostConstruct, PreD
         }
         return result;
     }
-    
+
     private void start(int pollIntervalInSeconds) {
         reloader.init();
-        timerTask = executor.scheduleAtFixedRate(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            reloader.run();
-                        } catch (Exception ex) {
-                            logger.log(Level.SEVERE, "Error in the DynamicReloader Scheduled Task", ex);
-                        }
-                    }
-                },
+        timerTask = executor.scheduleAtFixedRate(() -> {
+            try {
+                reloader.run();
+            } catch (Exception ex) {
+                logger.log(Level.SEVERE, "Error in the DynamicReloader Scheduled Task", ex);
+            }
+        },
                 0L,
-                pollIntervalInSeconds, 
+                pollIntervalInSeconds,
                 TimeUnit.SECONDS);
         logger.log(Level.FINE, "[Reloader] Started, monitoring every {0} seconds", pollIntervalInSeconds);
     }
@@ -202,6 +197,7 @@ public class DynamicReloadService implements ConfigListener, PostConstruct, PreD
         start(pollIntervalInSeconds);
     }
 
+    @Override
     public synchronized UnprocessedChangeEvents changed(PropertyChangeEvent[] events) {
         /*
          * Deal with any changes to the DasConfig that might affect whether
@@ -211,7 +207,7 @@ public class DynamicReloadService implements ConfigListener, PostConstruct, PreD
          */
        
         /* Record any events we tried to process but could not. */
-        List<UnprocessedChangeEvent> unprocessedEvents = new ArrayList<UnprocessedChangeEvent>();
+        List<UnprocessedChangeEvent> unprocessedEvents = new ArrayList<>();
 
         Boolean newEnabled = null;
         Integer newPollIntervalInSeconds = null;
@@ -220,8 +216,7 @@ public class DynamicReloadService implements ConfigListener, PostConstruct, PreD
             String propName = event.getPropertyName();
             if (event.getSource() instanceof DasConfig) {
                 if (configPropertyNames.contains(propName) && (event.getOldValue().equals(event.getNewValue()))) {
-                    logger.fine("[DynamicReload] Ignoring reconfig of " + propName + 
-                            " from " + event.getOldValue() + " to " + event.getNewValue());
+                    logger.log(Level.FINE, "[DynamicReload] Ignoring reconfig of {0} from {1} to {2}", new Object[]{propName, event.getOldValue(), event.getNewValue()});
                     continue;
                 }
                 if (propName.equals("dynamic-reload-enabled")) {
@@ -232,7 +227,7 @@ public class DynamicReloadService implements ConfigListener, PostConstruct, PreD
                     newEnabled = Boolean.valueOf((String) event.getNewValue());
                 } else if (propName.equals("dynamic-reload-poll-interval-in-seconds")) {
                     try {
-                        newPollIntervalInSeconds = new Integer((String) event.getNewValue());
+                        newPollIntervalInSeconds = Integer.valueOf((String) event.getNewValue());
                     } catch (NumberFormatException ex) {
                         String reason = ex.getClass().getName() + " " + ex.getLocalizedMessage();
                         logger.log(Level.WARNING, reason);
@@ -257,6 +252,6 @@ public class DynamicReloadService implements ConfigListener, PostConstruct, PreD
                 reschedule(newPollIntervalInSeconds);
             }
         }
-        return (unprocessedEvents.size() > 0) ? new UnprocessedChangeEvents(unprocessedEvents) : null;
+        return (!unprocessedEvents.isEmpty()) ? new UnprocessedChangeEvents(unprocessedEvents) : null;
     }
 }
