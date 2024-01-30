@@ -3,7 +3,7 @@
   ~
   ~  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
   ~
-  ~  Copyright (c) 2011-2023 Payara Foundation and/or its affiliates. All rights reserved.
+  ~  Copyright (c) 2011-2024 Payara Foundation and/or its affiliates. All rights reserved.
   ~
   ~  The contents of this file are subject to the terms of either the GNU
   ~  General Public License Version 2 only ("GPL") or the Common Development
@@ -575,7 +575,7 @@
                 </plugin>
 
                 <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
+                    <groupId>org.omnifaces</groupId>
                     <artifactId>antlr-maven-plugin</artifactId>
                     <version>${maven.antlr.plugin.version}</version>
                 </plugin>
