@@ -44,7 +44,9 @@ import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Set;
 
 import static fish.payara.nucleus.microprofile.config.spi.ConfigTestUtils.createSource;
 import static java.util.Collections.singleton;
@@ -55,7 +57,8 @@ import static org.junit.Assert.assertNull;
 public class ConfigExpressionResolverTest {
     
     private final ConfigSource source = createSource("S1", 100, new HashMap<>());
-    private final ConfigExpressionResolver resolver = new ConfigExpressionResolver(singleton(source), "test");
+    private final ConfigSource source2 = createSource("S2", 110, new HashMap<>());
+    private final ConfigExpressionResolver resolver = new ConfigExpressionResolver(Set.of(source, source2), "test");
 
     @Before
     public void configureConfigProperties() {
@@ -74,6 +77,10 @@ public class ConfigExpressionResolverTest {
         source.getProperties().put("default.key.reference", "${${not.existing:key}:not.found}");
         source.getProperties().put("%test.fish.payara.badger", "mushroom");
         source.getProperties().put("fish.payara.badger", "badger");
+        source.getProperties().put("%test.fish.payara.rod", "bites");
+        
+        source2.getProperties().put("fish.payara.rod", "nobites");
+        source2.getProperties().put("%test.fish.payara.profile-only", "gotcha");
     }
 
     @Test
@@ -183,6 +190,20 @@ public class ConfigExpressionResolverTest {
         ConfigValue result = resolver.resolve("fish.payara.badger");
         assertEquals("mushroom", result.getValue());
         assertEquals("mushroom", result.getRawValue());
+    }
+    
+    @Test
+    public void testProfilesOverrideProfiledValueFromSourceWithHigherOrdinal() {
+        ConfigValue result = resolver.resolve("fish.payara.rod");
+        assertEquals("nobites", result.getValue());
+        assertEquals("nobites", result.getRawValue());
+    }
+    
+    @Test
+    public void testProfilesDoNotFailToLookupWhenOnlyProfiledValueExists() {
+        ConfigValue result = resolver.resolve("fish.payara.profile-only");
+        assertEquals("gotcha", result.getValue());
+        assertEquals("gotcha", result.getRawValue());
     }
     
 }
