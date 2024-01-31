@@ -537,8 +537,8 @@ public class MainHelper {
                     .collect(Collectors.joining(", "));
             logger.log(Level.FINE, "OSGi framework packages:\n" + osgiPackages);
             String javaPackages = detectJavaPackages();
-            logger.log(Level.FINE, "JDK provided packages:\n" + osgiPackages);
-            ctx.setProperty(org.osgi.framework.Constants.FRAMEWORK_SYSTEMPACKAGES, osgiPackages +  ", " + javaPackages);
+            logger.log(Level.FINE, "JDK provided packages:\n" + javaPackages);
+            ctx.setProperty(org.osgi.framework.Constants.FRAMEWORK_SYSTEMPACKAGES, osgiPackages + ", " + javaPackages);
             return classLoader;
         } catch (IOException e) {
             throw new Error(e);
