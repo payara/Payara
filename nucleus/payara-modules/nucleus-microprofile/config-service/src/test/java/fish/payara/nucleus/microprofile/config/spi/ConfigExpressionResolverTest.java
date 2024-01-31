@@ -44,7 +44,6 @@ import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Set;
 
@@ -57,8 +56,10 @@ import static org.junit.Assert.assertNull;
 public class ConfigExpressionResolverTest {
     
     private final ConfigSource source = createSource("S1", 100, new HashMap<>());
-    private final ConfigSource source2 = createSource("S2", 110, new HashMap<>());
-    private final ConfigExpressionResolver resolver = new ConfigExpressionResolver(Set.of(source, source2), "test");
+    private final ConfigSource sourceHigherOrdinal = createSource("SHO", 110, new HashMap<>());
+    private final ConfigSource sourceEqualOrdinal = createSource("SEO", 100, new HashMap<>());
+    private final ConfigSource sourceLowerOrdinal = createSource("SEO", 90, new HashMap<>());
+    private final ConfigExpressionResolver resolver = new ConfigExpressionResolver(Set.of(source, sourceHigherOrdinal, sourceEqualOrdinal, sourceLowerOrdinal), "test");
 
     @Before
     public void configureConfigProperties() {
@@ -79,8 +80,11 @@ public class ConfigExpressionResolverTest {
         source.getProperties().put("fish.payara.badger", "badger");
         source.getProperties().put("%test.fish.payara.rod", "bites");
         
-        source2.getProperties().put("fish.payara.rod", "nobites");
-        source2.getProperties().put("%test.fish.payara.profile-only", "gotcha");
+        sourceHigherOrdinal.getProperties().put("fish.payara.rod", "nobites");
+        sourceHigherOrdinal.getProperties().put("%test.fish.payara.profile-only", "gotcha");
+        
+        sourceEqualOrdinal.getProperties().put("fish.payara.badger", "i-shall-be-ignored");
+        sourceLowerOrdinal.getProperties().put("fish.payara.badger", "i-shall-be-ignored");
     }
 
     @Test
@@ -187,6 +191,8 @@ public class ConfigExpressionResolverTest {
     
     @Test
     public void testProfiles() {
+        // This test case does not only test if the profiled value is used from the same source, but also if the
+        // defined equal and lower ordinal sources are ignored
         ConfigValue result = resolver.resolve("fish.payara.badger");
         assertEquals("mushroom", result.getValue());
         assertEquals("mushroom", result.getRawValue());
