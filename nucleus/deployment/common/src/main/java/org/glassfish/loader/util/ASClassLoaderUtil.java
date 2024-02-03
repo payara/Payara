@@ -41,8 +41,10 @@
 
 package org.glassfish.loader.util;
 
+import com.sun.enterprise.deployment.deploy.shared.Util;
 import com.sun.enterprise.module.HK2Module;
 import com.sun.enterprise.module.ModulesRegistry;
+import com.sun.enterprise.util.OS;
 import com.sun.enterprise.util.io.FileUtils;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.DeploymentContext;
@@ -51,24 +53,22 @@ import org.glassfish.internal.api.ClassLoaderHierarchy;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.api.admin.ServerEnvironment;
-import com.sun.enterprise.deployment.deploy.shared.Util;
-import com.sun.enterprise.util.OS;
 import java.io.File;
-import java.io.FileFilter;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.FileInputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.FileSystemNotFoundException;
 import java.nio.file.Paths;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
-import java.util.jar.Manifest;
-import java.util.jar.Attributes;
 import java.util.*;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 
 import org.glassfish.logging.annotation.LogMessageInfo;
 
@@ -254,26 +254,38 @@ public class ASClassLoaderUtil {
                 if (mr != null) {
                     for (HK2Module module : mr.getModules()) {
                         for (URI uri : module.getModuleDefinition().getLocations()) {
-                            if (uri.toString().startsWith("reference:")) {
+                            String uriString = uri.toString();
+                            if (uriString.startsWith("reference:")) {
                                 try {
                                     // OSGi modules can have "reference:" prepended to them if they're exploded, except
                                     // there doesn't appear to be an actual FileSystemProvider for this type
-                                    tmpString.append(new URI(uri.toString().substring("reference:".length())));
+                                    tmpString.append(new URI(uriString.substring("reference:".length())));
                                     tmpString.append(File.pathSeparator);
                                 } catch (URISyntaxException use) {
                                     deplLogger.log(Level.WARNING,
                                             "Error truncating URI with prefix of \"reference:\"",
                                             use);
                                 }
-                            } else if (uri.toString().startsWith("jardir:")) {
+                            } else if (uriString.startsWith("jardir:")) {
                                 // OSGi fileinstall created modules can have a "jardir:" schema for directory
                                 // structures, but there is no FileSystemProvider for this type.
                                 // Since the path is the file system path, just substitute the "file:" schema
-                                tmpString.append("file:").append(uri.toString().substring("jardir:".length()));
+                                tmpString.append("file:").append(uriString.substring("jardir:".length()));
                                 tmpString.append(File.pathSeparator);
+                            } else if (uriString.startsWith("jar:")) {
+                                // In Spring Boot application, the URIs are pointing to embedded JARs in a JAR,
+                                // resulting in a FileSystemNotFoundException when parsed with Paths.get(...)
+                                deplLogger.log(Level.INFO, "The URI has been ignored: {0}", uriString);
                             } else {
-                                tmpString.append(Paths.get(uri).toString());
-                                tmpString.append(File.pathSeparator);
+                                try {
+                                    tmpString.append(Paths.get(uri).toString());
+                                    tmpString.append(File.pathSeparator);
+                                } catch(FileSystemNotFoundException fsNotFound) {
+                                    LogRecord logRecord = new LogRecord(Level.WARNING, "Unable to add the URI in the classpath: {0}");
+                                    logRecord.setParameters(new Object[]{uri});
+                                    logRecord.setThrown(fsNotFound);
+                                    deplLogger.log(logRecord);
+                                }
                             }
                         }
                     }
