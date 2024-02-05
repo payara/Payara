@@ -53,12 +53,12 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
 import java.util.jar.Attributes;
+import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * Utility class used by bootstrap module.
@@ -533,38 +533,28 @@ public class MainHelper {
             clb.addFrameworkJars();
             clb.addBootstrapApiJar(); // simple-glassfish-api.jar
             ClassLoader classLoader = clb.build();
-            String osgiPackages = classLoader.resources("META-INF/MANIFEST.MF").map(MainHelper::loadExports)
-                    .collect(Collectors.joining(", "));
-            logger.log(Level.FINE, "OSGi framework packages:\n" + osgiPackages);
-            String javaPackages = detectJavaPackages();
-            logger.log(Level.FINE, "JDK provided packages:\n" + javaPackages);
-            ctx.setProperty(org.osgi.framework.Constants.FRAMEWORK_SYSTEMPACKAGES, osgiPackages + ", " + javaPackages);
+
+            // Get package exports from Bootstrap API jar (simple-glassfish-jar.jar) and add to OSGi boot
+            String bootstrapApiPackages = readExports(
+                    new File(ctx.getProperty(Constants.INSTALL_ROOT_PROP_NAME),
+                            "modules" + File.separator + "simple-glassfish-api.jar")
+                            .toURI().toURL());
+            logger.log(Level.FINE, "Setting OSGi Framework System Packages Extra property to:\n" + bootstrapApiPackages);
+            ctx.setProperty(org.osgi.framework.Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, bootstrapApiPackages);
             return classLoader;
         } catch (IOException e) {
             throw new Error(e);
         }
     }
 
-    private static String detectJavaPackages() {
-        Set<String> packages = new HashSet<>();
-        for (Module module : ModuleLayer.boot().modules()) {
-            addAllExportedPackages(module, packages);
-        }
-        return packages.stream().sorted().collect(Collectors.joining(", "));
-    }
-
-
-    private static void addAllExportedPackages(Module module, Set<String> packages) {
-        for (String pkg : module.getPackages()) {
-            if (module.isExported(pkg) || module.isOpen(pkg)) {
-                packages.add(pkg);
-            }
-        }
-    }
-
-    private static String loadExports(final URL url) {
-        try (InputStream is = url.openStream()) {
-            Manifest manifest = new Manifest(is);
+    /**
+     * Read the Export-Package manifest entry from a given JAR file.
+     * @param url The URL of a JAR file to read the manifest entry from
+     * @return The value of the Export-Package entry from the given JAR file
+     */
+    private static String readExports(final URL url) {
+        try (JarInputStream is = new JarInputStream(url.openStream())) {
+            Manifest manifest = is.getManifest();
             Attributes attributes = manifest.getMainAttributes();
             return attributes.getValue(org.osgi.framework.Constants.EXPORT_PACKAGE);
         } catch (IOException e) {
@@ -960,7 +950,7 @@ public class MainHelper {
             }
             return hotswapManager;
         }
- 
+
     }
 }
 
