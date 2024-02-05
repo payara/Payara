@@ -64,7 +64,7 @@
                 <artifactId>maven-bundle-plugin</artifactId>
                 <configuration>
                     <instructions>
-                        <Export-Package>org.glassfish.embeddable.*; org.glassfish.embeddable.spi</Export-Package>
+                        <Export-Package>org.glassfish.embeddable.*</Export-Package>
                     </instructions>
                 </configuration>
             </plugin>
