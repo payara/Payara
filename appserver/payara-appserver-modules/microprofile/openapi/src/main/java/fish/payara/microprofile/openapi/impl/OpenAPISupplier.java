@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2020-2023] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2024 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,6 +44,7 @@ import static java.util.stream.Collectors.toSet;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -189,12 +190,19 @@ public class OpenAPISupplier implements Supplier<OpenAPI> {
                 StructuredDeploymentTracing.create(entryId),
                 Logger.getLogger(OpenApiService.class.getName())
         );
-        types.putAll(typesToMap(earLibParser.getContext().getTypes()));
+        types.putAll(typesToMap(earLibParser.getContext().getTypes(), archive.getURI()));
         return types;
     }
 
-    public static Map<String, Type> typesToMap(Types types) {
+    public static Map<String, Type> typesToMap(Types types, URI archive) {
         return types.getAllTypes().stream()
+                // We only care about classes defined by the application. With the switch to OSGi R8 and allowing Felix
+                // to import/export JDK classes we need to filter out said JDK classes as (currently) HK2 does not do
+                // so for us. Collecting to a map based on name without filtering would lead to a conflict between
+                // the ClassModel and the 'xType' e.g. the ClassModel for the 'Enum' class and the 'EnumType'
+                // used for modelling things of type 'Enum' would both have the name 'java.lang.Enum'
+                .filter(type -> type.getDefiningURIs().stream().anyMatch(
+                        definingUri -> definingUri.getPath().contains(archive.getPath())))
                 .collect(Collectors.toMap((t) -> t.getName(), Function.identity()));
     }
 
