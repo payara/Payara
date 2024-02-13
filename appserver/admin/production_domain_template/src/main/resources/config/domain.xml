@@ -190,14 +190,14 @@
         <jvm-options>--add-opens=java.logging/java.util.logging=ALL-UNNAMED</jvm-options>
         <jvm-options>--add-opens=java.management/javax.management=ALL-UNNAMED</jvm-options>
         <jvm-options>--add-opens=java.management/javax.management.openmbean=ALL-UNNAMED</jvm-options>
-        <jvm-options>[17|]--add-exports=java.base/sun.net.www=ALL-UNNAMED</jvm-options>
-        <jvm-options>[17|]--add-exports=java.base/sun.security.util=ALL-UNNAMED</jvm-options>
-        <jvm-options>[17|]--add-opens=java.base/java.lang.invoke=ALL-UNNAMED</jvm-options>
-        <jvm-options>[17|]--add-opens=java.desktop/java.beans=ALL-UNNAMED</jvm-options>
-        <jvm-options>[17|]--add-exports=jdk.naming.dns/com.sun.jndi.dns=ALL-UNNAMED</jvm-options>
-        <jvm-options>[17|]--add-exports=java.naming/com.sun.jndi.ldap=ALL-UNNAMED</jvm-options>
-        <jvm-options>[17|]--add-opens=java.base/java.io=ALL-UNNAMED</jvm-options>
-        <jvm-options>[21|]--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED</jvm-options>
+        <jvm-options>--add-exports=java.base/sun.net.www=ALL-UNNAMED</jvm-options>
+        <jvm-options>--add-exports=java.base/sun.security.util=ALL-UNNAMED</jvm-options>
+        <jvm-options>--add-opens=java.base/java.lang.invoke=ALL-UNNAMED</jvm-options>
+        <jvm-options>--add-opens=java.desktop/java.beans=ALL-UNNAMED</jvm-options>
+        <jvm-options>--add-exports=jdk.naming.dns/com.sun.jndi.dns=ALL-UNNAMED</jvm-options>
+        <jvm-options>--add-exports=java.naming/com.sun.jndi.ldap=ALL-UNNAMED</jvm-options>
+        <jvm-options>--add-opens=java.base/java.io=ALL-UNNAMED</jvm-options>
+        <jvm-options>--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED</jvm-options>
         <jvm-options>-Xmx2g</jvm-options>
         <jvm-options>-Xms2g</jvm-options>
         <jvm-options>-XX:+UseG1GC</jvm-options>
@@ -407,13 +407,13 @@
         <jvm-options>--add-opens=java.logging/java.util.logging=ALL-UNNAMED</jvm-options>
         <jvm-options>--add-opens=java.management/javax.management=ALL-UNNAMED</jvm-options>
         <jvm-options>--add-opens=java.management/javax.management.openmbean=ALL-UNNAMED</jvm-options>
-        <jvm-options>[17|]--add-exports=java.base/sun.net.www=ALL-UNNAMED</jvm-options>
-        <jvm-options>[17|]--add-exports=java.base/sun.security.util=ALL-UNNAMED</jvm-options>
-        <jvm-options>[17|]--add-opens=java.base/java.lang.invoke=ALL-UNNAMED</jvm-options>
-        <jvm-options>[17|]--add-opens=java.desktop/java.beans=ALL-UNNAMED</jvm-options>
-        <jvm-options>[17|]--add-exports=java.naming/com.sun.jndi.ldap=ALL-UNNAMED</jvm-options>
-        <jvm-options>[17|]--add-opens=java.base/java.io=ALL-UNNAMED</jvm-options>
-        <jvm-options>[21|]--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED</jvm-options>
+        <jvm-options>--add-exports=java.base/sun.net.www=ALL-UNNAMED</jvm-options>
+        <jvm-options>--add-exports=java.base/sun.security.util=ALL-UNNAMED</jvm-options>
+        <jvm-options>--add-opens=java.base/java.lang.invoke=ALL-UNNAMED</jvm-options>
+        <jvm-options>--add-opens=java.desktop/java.beans=ALL-UNNAMED</jvm-options>
+        <jvm-options>--add-exports=java.naming/com.sun.jndi.ldap=ALL-UNNAMED</jvm-options>
+        <jvm-options>--add-opens=java.base/java.io=ALL-UNNAMED</jvm-options>
+        <jvm-options>--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED</jvm-options>
         <jvm-options>-Xmx2g</jvm-options>
         <jvm-options>-Xms2g</jvm-options>
         <jvm-options>-XX:+UseG1GC</jvm-options>
