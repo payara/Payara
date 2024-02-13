@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server.internal.jdbc.jdbc-ra</groupId>
         <artifactId>jdbc-ra</artifactId>
-        <version>6.2024.2-SNAPSHOT</version>
+        <version>7.2024.1-SNAPSHOT</version>
     </parent>
     <artifactId>jdbc-core-l10n</artifactId>
     
