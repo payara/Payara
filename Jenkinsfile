@@ -12,7 +12,7 @@ pipeline {
         MP_CONFIG_CACHE_DURATION=0
     }
     tools {
-        jdk "zulu-11"
+        jdk "zulu-21"
         maven "maven-3.6.3"
     }
     stages {
