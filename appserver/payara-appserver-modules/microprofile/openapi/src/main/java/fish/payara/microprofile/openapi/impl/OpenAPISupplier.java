@@ -89,6 +89,8 @@ import java.util.stream.Collectors;
 
 public class OpenAPISupplier implements Supplier<OpenAPI> {
 
+    private static final Logger logger = Logger.getLogger(OpenAPISupplier.class.getName());
+
     private final OpenApiConfiguration config;
     private final String applicationId;
     private final String contextRoot;
@@ -173,7 +175,7 @@ public class OpenAPISupplier implements Supplier<OpenAPI> {
                                 applicationId + "-parent-" + entry);
                         earLibTypes.putAll(libTypes);
                     } catch (IOException ex) {
-                        Logger.getLogger(OpenAPISupplier.class.getName()).log(Level.SEVERE, "Unable to parse EAR archive '" + entry + "': " + ex.getMessage(), ex);
+                        logger.log(Level.SEVERE, "Unable to parse EAR archive '" + entry + "': " + ex.getMessage(), ex);
                     }
                 }
             }
@@ -188,7 +190,7 @@ public class OpenAPISupplier implements Supplier<OpenAPI> {
                 true,
                 true,
                 StructuredDeploymentTracing.create(entryId),
-                Logger.getLogger(OpenApiService.class.getName())
+                logger
         );
         types.putAll(typesToMap(earLibParser.getContext().getTypes(), archive.getURI()));
         return types;
@@ -203,7 +205,13 @@ public class OpenAPISupplier implements Supplier<OpenAPI> {
                 // used for modelling things of type 'Enum' would both have the name 'java.lang.Enum'
                 .filter(type -> type.getDefiningURIs().stream().anyMatch(
                         definingUri -> definingUri.getPath().contains(archive.getPath())))
-                .collect(Collectors.toMap((t) -> t.getName(), Function.identity()));
+                .collect(Collectors.toMap((t) -> t.getName(), Function.identity(), (first, second) -> {
+                    logger.log(Level.FINE, "Duplicate type {0} detected while performing OpenAPI scanning, will use the first.",
+                            first.getName());
+                    logger.log(Level.FINER, "First duplicate type: {0}\n\nSecond duplicate type: {1}",
+                            new Object[]{first.toString(), second.toString()});
+                    return first;
+                }));
     }
 
     /**
