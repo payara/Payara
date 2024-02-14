@@ -237,7 +237,6 @@ void makeDomain() {
 }
 
 void setupDomain() {
-    WORKSPACE = "${pwd()}"
     echo '*#*#*#*#*#*#*#*#*#*#*#*#  Unstash distributions  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
     unstash name: 'payara-target'
     echo '*#*#*#*#*#*#*#*#*#*#*#*#  Unstash maven repository  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
