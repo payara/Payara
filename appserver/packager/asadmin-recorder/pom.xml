@@ -19,7 +19,7 @@
     <parent>
         <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>6.2024.2-SNAPSHOT</version>
+        <version>6.2024.3-SNAPSHOT</version>
     </parent>
     <artifactId>asadmin-recorder</artifactId>
     <name>Payara Asadmin Recorder Package</name>
