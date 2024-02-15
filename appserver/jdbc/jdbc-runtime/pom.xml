@@ -73,11 +73,12 @@
                     <classpathDependencyExcludes>
                         <classpathDependencyExcludes>fish.payara.server.internal.core:kernel</classpathDependencyExcludes>
                     </classpathDependencyExcludes>
+                    <argLine>--add-opens=java.base/java.lang=ALL-UNNAMED</argLine>
                 </configuration>
             </plugin>
         </plugins>
     </build>
-    
+
     <dependencies>
         <dependency>
             <groupId>fish.payara.server.internal.connectors</groupId>
