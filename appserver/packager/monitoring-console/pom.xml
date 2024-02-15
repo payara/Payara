@@ -82,7 +82,7 @@
                                     <artifactId>monitoring-console-webapp</artifactId>
                                     <type>war</type>
                                     <version>${monitoring-console-webapp.version}</version>
-                                    <outputDirectory>target/stage/payara6/glassfish/lib/install/applications/__monitoringconsole</outputDirectory>
+                                    <outputDirectory>target/stage/payara7/glassfish/lib/install/applications/__monitoringconsole</outputDirectory>
                                 </artifactItem>
                             </artifactItems>
                         </configuration>

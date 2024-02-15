@@ -73,7 +73,7 @@
         <production_domain_template>production-domain.jar</production_domain_template>
         <version_prefix />
         <version_suffix>#badassfish</version_suffix>
-        <install.dir.name>payara6</install.dir.name>
+        <install.dir.name>payara7</install.dir.name>
 
         <uc-pkg-client.version>1.122-57.2889</uc-pkg-client.version>
         <uc-pkg-bootstrap.version>1.122-57.2889</uc-pkg-bootstrap.version>

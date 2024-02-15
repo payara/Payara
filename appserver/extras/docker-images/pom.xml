@@ -68,7 +68,7 @@
         <docker.platforms>linux/amd64,linux/arm64</docker.platforms>
 
         <docker.payara.domainName>domain1</docker.payara.domainName>
-        <docker.payara.rootDirectoryName>payara6</docker.payara.rootDirectoryName>
+        <docker.payara.rootDirectoryName>payara7</docker.payara.rootDirectoryName>
 
         <!-- This is a placeholder to aid with property resolution, it gets overridden in each submodule -->
         <docker.payara.repository>payara/${project.artifactId}</docker.payara.repository>
@@ -125,7 +125,7 @@
                 <module>tests</module>
             </modules>
         </profile>
-        
+
         <profile>
             <id>generate-jdk21-docker-image</id>
             <activation>

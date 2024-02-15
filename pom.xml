@@ -440,7 +440,7 @@
                                             <!-- these files contain templates with placeholders -->
                                             <exclude>**/glassfish/lib/install/templates/resources/custom/**</exclude>
                                             <!-- no xml in file yet -->
-                                            <exclude>**/payara6/mq/etc/registry/servicetag.xml</exclude>
+                                            <exclude>**/payara7/mq/etc/registry/servicetag.xml</exclude>
                                         </excludes>
                                     </validationSet>
                                 </validationSets>
