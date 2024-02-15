@@ -47,7 +47,7 @@
             <unpack>true</unpack>
             <unpackOptions>
                 <excludes>
-                    <exclude>payara6/glassfish/domains/**</exclude>
+                    <exclude>payara7/glassfish/domains/**</exclude>
                 </excludes>
             </unpackOptions>
             <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>

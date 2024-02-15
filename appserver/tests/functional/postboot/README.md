@@ -7,7 +7,7 @@ Run testpostbootcommand.py.
 ## Setup
 Set PAYARA_HOME to the tested Payara. For example:
 
-    PAYARA_HOME=/path-to-my-payara-src/appserver/distributions/payara/target/stage/payara6 ./testpostbootcommand.py
+    PAYARA_HOME=/path-to-my-payara-src/appserver/distributions/payara/target/stage/payara7 ./testpostbootcommand.py
 
 Set MAVEN_HOME if case you don't have maven (mvn) on your PATH:
 
