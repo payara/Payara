@@ -153,9 +153,10 @@ public class ClusteredConfig extends MembershipAdapter {
     public void clearSharedConfiguration(String name) {
         HazelcastInstance hzInstance = hzCore.getInstance();
         if (hzInstance != null) { // can be null during shutdown
-            String instance = instanceName(hzInstance.getCluster().getLocalMember());
+            Member localMember = hzInstance.getCluster().getLocalMember();
+            String instance = instanceName(localMember);
             String mapName = CONFIGURATION_PREFIX + name;
-            if (instance != null) {
+            if (instance != null && !localMember.isLiteMember()) {
                 hzInstance.getReplicatedMap(mapName).remove(instance);
             }
         }

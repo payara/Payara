@@ -137,6 +137,7 @@ public class EventsImpl implements Events {
                     // when synchronous listener throws DeploymentException
                     // we re-throw the exception to abort the deployment
                     throw de;
+                } catch(ReplicatedMapCantBeCreatedOnLiteMemberException e) { // Ignore
                 } catch (Throwable e) {
                     logger.log(Level.WARNING, KernelLoggerInfo.exceptionDispatchEvent, e);
                 }
