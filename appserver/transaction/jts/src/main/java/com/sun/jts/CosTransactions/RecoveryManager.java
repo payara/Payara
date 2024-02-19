@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation]
+// Portions Copyright 2016-2024 Payara Foundation and/or its affiliates.
 //----------------------------------------------------------------------------
 //
 // Module:      RecoveryManager.java
@@ -242,7 +242,6 @@ public class RecoveryManager {
      * @param localTID   The local identifier for the transaction.
      * @param coord      The Coordinator for the transaction.
      * @param timeout    The timeout for the transaction.
-     * @param log        The log object for the transaction.
      *
      * @return  Indicates success of the operation.
      *
@@ -1479,7 +1478,7 @@ public class RecoveryManager {
     /**
     *  Waits for resync to complete with timeout.
     *
-    * @param cmtTimeout Container managed transaction timeout
+    * @param cmtTimeOut Container managed transaction timeout
     *
     * @return
     *
@@ -1907,7 +1906,7 @@ class ResyncThread extends Thread  {
      * @see
      */
     public void run() {
-        yield();
+        Thread.yield();
 
 	if(_logger.isLoggable(Level.FINE))
 	{

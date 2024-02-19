@@ -12,7 +12,7 @@ pipeline {
         MP_CONFIG_CACHE_DURATION=0
     }
     tools {
-        jdk "zulu-11"
+        jdk "zulu-21"
         maven "maven-3.6.3"
     }
     stages {
@@ -42,7 +42,7 @@ pipeline {
                     archiveArtifacts artifacts: 'appserver/extras/payara-micro/payara-micro-distribution/target/payara-micro.jar', fingerprint: true
                 }
                 always {
-                    archiveArtifacts allowEmptyArchive: true, artifacts: 'appserver/distributions/payara/target/stage/payara6/glassfish/logs/server.log'
+                    archiveArtifacts allowEmptyArchive: true, artifacts: 'appserver/distributions/payara/target/stage/payara7/glassfish/logs/server.log'
                 }
             }
         }
@@ -56,7 +56,7 @@ pipeline {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 sh """rm  ~/test\\|sa.mv.db  || true"""
                 sh """mvn -B -V -ff -e clean test --strict-checksums -Pall \
-                -Dglassfish.home=\"${pwd()}/appserver/distributions/payara/target/stage/payara6/glassfish\" \
+                -Dglassfish.home=\"${pwd()}/appserver/distributions/payara/target/stage/payara7/glassfish\" \
                 -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
                 -Djavax.xml.accessExternalSchema=all \
                 -f appserver/tests/quicklook/pom.xml"""
@@ -117,7 +117,7 @@ pipeline {
                 sh """mvn -B -V -ff -e clean verify --strict-checksums \
                 -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
                 -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
-                -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/appserver/distributions/payara/target/stage/payara6" \
+                -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/appserver/distributions/payara/target/stage/payara7" \
                 -Ppayara-server-remote,full"""
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
@@ -235,7 +235,7 @@ pipeline {
 
 void makeDomain() {
     script{
-        ASADMIN = "./appserver/distributions/payara/target/stage/payara6/bin/asadmin"
+        ASADMIN = "./appserver/distributions/payara/target/stage/payara7/bin/asadmin"
         DOMAIN_NAME = "test-domain"
     }
     sh "${ASADMIN} create-domain --nopassword ${DOMAIN_NAME}"
@@ -255,7 +255,7 @@ void processReportAndStopDomain() {
 }
 
 void saveLogsAndCleanup(String logArchiveName) {
-    zip archive: true, dir: "appserver/distributions/payara/target/stage/payara6/glassfish/domains/${DOMAIN_NAME}/logs", glob: 'server.*', zipFile: logArchiveName
+    zip archive: true, dir: "appserver/distributions/payara/target/stage/payara7/glassfish/domains/${DOMAIN_NAME}/logs", glob: 'server.*', zipFile: logArchiveName
     echo 'tidying up after tests: '
     sh "rm -f -v *.zip"
     sh "${ASADMIN} delete-domain ${DOMAIN_NAME}"

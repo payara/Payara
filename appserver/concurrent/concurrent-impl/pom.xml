@@ -48,7 +48,7 @@
     <parent>
         <groupId>fish.payara.server.internal.concurrent</groupId>
         <artifactId>concurrent</artifactId>
-        <version>6.2024.2-SNAPSHOT</version>
+        <version>7.2024.1-SNAPSHOT</version>
     </parent>    
     <artifactId>concurrent-impl</artifactId>
     <packaging>glassfish-jar</packaging>
@@ -138,5 +138,17 @@
             <artifactId>opentracing-api</artifactId>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <argLine>--add-opens=java.base/java.lang=ALL-UNNAMED</argLine>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
 

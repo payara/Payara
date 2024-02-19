@@ -31,8 +31,8 @@ The default domain called 'domain1' is already installed and preconfigured.
 The 'asadmin' command-line utility is used to control and manage Payara Server (start, stop, configure, deploy applications, etc.).
 
 To start Payara Server, just go in the directory where Payara Server is located and type:
-        On Unix: payara6/bin/asadmin start-domain
-        On Windows: payara6\bin\asadmin start-domain
+        On Unix: payara7/bin/asadmin start-domain
+        On Windows: payara7\bin\asadmin start-domain
 
 After a few seconds, Payara Server will be up and ready to accept requests. The default 'domain1' domain is configured to listen on port 8080. In your browser, go to http://localhost:8080 to see the default landing page.
 
@@ -43,8 +43,8 @@ To manage Payara Server, just go to web administration console: http://localhost
 =========================
 
 To stop Payara Server, just issue the following command:
-        On Unix: payara6/bin/asadmin stop-domain
-        On Windows: payara6\bin\asadmin stop-domain
+        On Unix: payara7/bin/asadmin stop-domain
+        On Windows: payara7\bin\asadmin stop-domain
 
 
 4. Where to go next?

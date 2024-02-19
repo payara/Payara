@@ -46,10 +46,10 @@
     <parent>
         <groupId>fish.payara.server.core</groupId>
         <artifactId>core-aggregator</artifactId>
-        <version>6.13.0-SNAPSHOT</version>
+        <version>7.0.0-SNAPSHOT</version>
     </parent>
     <artifactId>core-parent</artifactId>
-    <version>6.13.0-SNAPSHOT</version>
+    <version>7.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Payara Core Parent</name>
@@ -249,7 +249,7 @@
                             <rules>
                                 <requireJavaVersion>
                                     <version>[${jdk.version},)</version>
-                                    <message>You need at least JDK11</message>
+                                    <message>You need at least JDK21</message>
                                 </requireJavaVersion>
                                 <requireMavenVersion>
                                     <version>[3.0.3,3.2.1],[3.2.3,)</version>

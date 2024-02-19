@@ -48,7 +48,7 @@
     <parent>
         <groupId>fish.payara.server.internal.admin</groupId>
         <artifactId>rest-service-parent</artifactId>
-        <version>6.2024.2-SNAPSHOT</version>
+        <version>7.2024.1-SNAPSHOT</version>
     </parent>
     
     <artifactId>rest-service</artifactId>
@@ -198,6 +198,13 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <argLine>--add-opens=java.base/java.lang=ALL-UNNAMED</argLine>
+                </configuration>
             </plugin>
         </plugins>
     </build>
