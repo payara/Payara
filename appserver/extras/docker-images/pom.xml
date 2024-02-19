@@ -178,7 +178,7 @@
                                                 <!-- On Windows with default setting ${*}, $PATH would get filtered as well -->
                                                 <filter>@</filter>
                                                 <tags>
-                                                    <tag>${docker.payara.tag}-jdk21</tag>
+                                                    <tag>${docker.payara.tag}</tag>
                                                 </tags>
                                                 <cleanup>none</cleanup>
                                                 <noCache>${docker.noCache}</noCache>
@@ -213,7 +213,7 @@
                                                 <!-- On Windows with default setting ${*}, $PATH would get filtered as well -->
                                                 <filter>@</filter>
                                                 <tags>
-                                                    <tag>${docker.payara.tag}-jdk21</tag>
+                                                    <tag>${docker.payara.tag}</tag>
                                                 </tags>
                                                 <cleanup>none</cleanup>
                                                 <noCache>${docker.noCache}</noCache>
