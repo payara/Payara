@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2022] [Payara Foundation and/or its affiliates]
+//Portions Copyright [2022-2024] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.admin.remote.reader;
 
 import com.sun.enterprise.admin.remote.ParamsWithPayload;
@@ -94,7 +94,9 @@ public class MultipartProprietaryReader implements ProprietaryReader<ParamsWithP
         if (!StringUtils.ok(boundary)) {
             throw new IOException("ContentType does not define boundary");
         }
-        final MIMEMessage mimeMessage = new MIMEMessage(is, boundary, new MIMEConfig());
+        MIMEConfig mimeConfig = new MIMEConfig();
+        mimeConfig.setMemoryThreshold(-1L);
+        final MIMEMessage mimeMessage = new MIMEMessage(is, boundary, mimeConfig);
         //Parse
         for (MIMEPart mimePart : mimeMessage.getAttachments()) {
             String cd = getFirst(mimePart.getHeader("Content-Disposition"));
