@@ -194,7 +194,7 @@
         <javadoc.skip>true</javadoc.skip>
         <source.skip>true</source.skip>
 
-        <payara.deployment.transformer.version>1.4-SNAPSHOT</payara.deployment.transformer.version>
+        <payara.deployment.transformer.version>2.0.0-SNAPSHOT</payara.deployment.transformer.version>
         <payara.transformer.version>0.2.13</payara.transformer.version>
 
         <awaitility.version>4.2.0</awaitility.version>
