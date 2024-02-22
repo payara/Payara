@@ -193,9 +193,13 @@ public class OpenAPISupplier implements Supplier<OpenAPI> {
         return types;
     }
 
+    /**
+     * @return a map of the provided types indexed by name with duplicates removed
+     */
     public static Map<String, Type> typesToMap(Types types) {
-        return types.getAllTypes().stream()
-                .collect(Collectors.toMap((t) -> t.getName(), Function.identity()));
+        return types.getAllTypes().stream().collect(
+                Collectors.toMap((t) -> t.getName(),   // Types are indexed by name
+                Function.identity(), (t1, t2) -> t1)); // Ignoring repeated types with the same name
     }
 
     /**
