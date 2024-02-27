@@ -41,6 +41,7 @@
 
 package org.glassfish.concurrent.runtime.deployer;
 
+import jakarta.enterprise.concurrent.ManagedExecutorService;
 import org.glassfish.concurrent.runtime.ConcurrentRuntime;
 import org.glassfish.enterprise.concurrent.*;
 import org.glassfish.resourcebase.resources.api.ResourceInfo;
@@ -95,8 +96,8 @@ public class ConcurrentObjectFactory implements ObjectFactory {
         return managedThreadFactory;
     }
 
-    private ManagedExecutorServiceAdapter getManagedExecutorService(ManagedExecutorServiceConfig config, ResourceInfo resourceInfo) {
-        ManagedExecutorServiceImpl mes = getRuntime().getManagedExecutorService(resourceInfo, config);
+    private ManagedExecutorService getManagedExecutorService(ManagedExecutorServiceConfig config, ResourceInfo resourceInfo) {
+        AbstractManagedExecutorService mes = getRuntime().getManagedExecutorService(resourceInfo, config);
         return mes.getAdapter();
     }
 

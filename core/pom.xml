@@ -114,7 +114,7 @@
         <websocket-api.version>2.1.0</websocket-api.version>
         <jax-rs-api.impl.version>3.1.0</jax-rs-api.impl.version>
         <jstl-api.version>3.0.0</jstl-api.version>
-        <concurrent-api.version>3.0.2</concurrent-api.version>
+        <concurrent-api.version>3.1.0-M1</concurrent-api.version>
         <jaxws-api.version>4.0.0</jaxws-api.version>
         <jms-api.version>3.1.0</jms-api.version>
         <jakarta.jws-api.version>3.0.0</jakarta.jws-api.version>

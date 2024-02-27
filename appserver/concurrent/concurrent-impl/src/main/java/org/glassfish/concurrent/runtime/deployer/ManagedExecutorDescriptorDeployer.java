@@ -62,8 +62,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.logging.Logger;
 import org.glassfish.concurrent.runtime.ConcurrentRuntime;
+import org.glassfish.enterprise.concurrent.AbstractManagedExecutorService;
 import org.glassfish.enterprise.concurrent.ContextServiceImpl;
-import org.glassfish.enterprise.concurrent.ManagedExecutorServiceImpl;
 
 @Service
 @ResourceDeployerInfo(ManagedExecutorDefinitionDescriptor.class)
@@ -101,7 +101,7 @@ public class ManagedExecutorDescriptorDeployer implements ResourceDeployer {
                 managedExecutorDefinitionDescriptor.getResourceId(), managedExecutorDefinitionDescriptor.getName(), managedExecutorDefinitionDescriptor.getResourceType());
         ResourceInfo resourceInfo = new ResourceInfo(customNameOfResource, applicationName, moduleName);
 
-        ManagedExecutorServiceImpl managedExecutorService = concurrentRuntime.createManagedExecutorService(resourceInfo, managedExecutorServiceConfig, contextService);
+        AbstractManagedExecutorService managedExecutorService = concurrentRuntime.createManagedExecutorService(resourceInfo, managedExecutorServiceConfig, contextService);
         resourceNamingService.publishObject(resourceInfo, customNameOfResource, managedExecutorService, true);
     }
 
