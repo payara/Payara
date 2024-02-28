@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2024 Payara Foundation and/or its affiliates
 
 package org.glassfish.uberjar.bootstrap;
 
@@ -186,8 +187,8 @@ public class UberJarOSGiGlassFishRuntimeBuilder implements RuntimeBuilder {
         System.setProperty(BootstrapProperties.INSTALL_ROOT_PROP_NAME, installRoot);
         System.setProperty(GlassFishProperties.INSTANCE_ROOT_PROP_NAME, instanceRoot);
 
-        props.setProperty("org.osgi.framework.system.packages.extra",
-                "org.glassfish.simpleglassfishapi; version=3.1");
+        // TODO: This likely needs versioning
+        props.setProperty("org.osgi.framework.system.packages.extra", "org.glassfish.simpleglassfishapi");
 
 //        props.setProperty(org.osgi.framework.Constants.FRAMEWORK_BUNDLE_PARENT,
 //                org.osgi.framework.Constants.FRAMEWORK_BUNDLE_PARENT_FRAMEWORK);

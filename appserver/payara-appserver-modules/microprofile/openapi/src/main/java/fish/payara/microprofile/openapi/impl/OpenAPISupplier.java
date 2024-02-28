@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2020-2023] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2024 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,6 +44,7 @@ import static java.util.stream.Collectors.toSet;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -87,6 +88,8 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 public class OpenAPISupplier implements Supplier<OpenAPI> {
+
+    private static final Logger logger = Logger.getLogger(OpenAPISupplier.class.getName());
 
     private final OpenApiConfiguration config;
     private final String applicationId;
@@ -172,7 +175,7 @@ public class OpenAPISupplier implements Supplier<OpenAPI> {
                                 applicationId + "-parent-" + entry);
                         earLibTypes.putAll(libTypes);
                     } catch (IOException ex) {
-                        Logger.getLogger(OpenAPISupplier.class.getName()).log(Level.SEVERE, "Unable to parse EAR archive '" + entry + "': " + ex.getMessage(), ex);
+                        logger.log(Level.SEVERE, "Unable to parse EAR archive '" + entry + "': " + ex.getMessage(), ex);
                     }
                 }
             }
@@ -187,15 +190,28 @@ public class OpenAPISupplier implements Supplier<OpenAPI> {
                 true,
                 true,
                 StructuredDeploymentTracing.create(entryId),
-                Logger.getLogger(OpenApiService.class.getName())
+                logger
         );
-        types.putAll(typesToMap(earLibParser.getContext().getTypes()));
+        types.putAll(typesToMap(earLibParser.getContext().getTypes(), archive.getURI()));
         return types;
     }
 
-    public static Map<String, Type> typesToMap(Types types) {
+    public static Map<String, Type> typesToMap(Types types, URI archive) {
         return types.getAllTypes().stream()
-                .collect(Collectors.toMap((t) -> t.getName(), Function.identity()));
+                // We only care about classes defined by the application. With the switch to OSGi R8 and allowing Felix
+                // to import/export JDK classes we need to filter out said JDK classes as (currently) HK2 does not do
+                // so for us. Collecting to a map based on name without filtering would lead to a conflict between
+                // the ClassModel and the 'xType' e.g. the ClassModel for the 'Enum' class and the 'EnumType'
+                // used for modelling things of type 'Enum' would both have the name 'java.lang.Enum'
+                .filter(type -> type.getDefiningURIs().stream().anyMatch(
+                        definingUri -> definingUri.getPath().contains(archive.getPath())))
+                .collect(Collectors.toMap((t) -> t.getName(), Function.identity(), (first, second) -> {
+                    logger.log(Level.FINE, "Duplicate type {0} detected while performing OpenAPI scanning, will use the first.",
+                            first.getName());
+                    logger.log(Level.FINER, "First duplicate type: {0}\n\nSecond duplicate type: {1}",
+                            new Object[]{first.toString(), second.toString()});
+                    return first;
+                }));
     }
 
     /**
