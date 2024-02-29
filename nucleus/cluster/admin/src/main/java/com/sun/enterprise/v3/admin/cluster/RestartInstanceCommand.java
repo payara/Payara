@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.v3.admin.cluster;
 
@@ -50,6 +50,7 @@ import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.util.OS;
 import com.sun.enterprise.util.ObjectAnalyzer;
 import com.sun.enterprise.util.StringUtils;
+import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import org.glassfish.api.ActionReport;
@@ -64,6 +65,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static com.sun.enterprise.v3.admin.cluster.StartInstanceCommand.pollForLife;
 
 /**
  * @author bnevins
@@ -136,6 +139,9 @@ public class RestartInstanceCommand implements AdminCommand {
 
     private AdminCommandContext context;
 
+    @Inject
+    private PayaraExecutorService executor;
+
     private static final long WAIT_TIME_MS = 600000; // 10 minutes
 
     @Override
@@ -169,13 +175,14 @@ public class RestartInstanceCommand implements AdminCommand {
                 logger.log(Level.FINE, "Restart-instance old-pid = {0}", oldPid);
             callInstance();
             checkForRestart();
-
+            pollForLife(instance, executor, timeout);
+            synchronizeInstance();
+            
             if (!isError()) {
                 String msg = Strings.get("restart.instance.success", instanceName);
                 logger.info(msg);
                 report.setMessage(msg);
             }
-            synchronizeInstance();
         } catch (InstanceNotRunningException inre) {
             start();
         } catch (CommandException ce) {
