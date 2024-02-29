@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  * 
- * Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+ * Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
  */
 package com.sun.enterprise.v3.admin.cluster;
 
@@ -244,7 +244,7 @@ public class StartInstanceCommand implements AdminCommand {
 
         if (report.getActionExitCode() == SUCCESS) {
             // Make sure instance is really up
-            if (!pollForLife(instance)) {
+            if (!pollForLife(instance, executor, timeout)) {
                 report.setMessage(Strings.get("start.instance.timeout", instanceName));
                 report.setActionExitCode(FAILURE);
             }
@@ -330,7 +330,7 @@ public class StartInstanceCommand implements AdminCommand {
      * 
      * @return true if the instance started up, or false otherwise.
      */
-    private boolean pollForLife(Server instance) {
+    static boolean pollForLife(Server instance, PayaraExecutorService executor, int timeout) {
 
         // Start a new thread to check when the instance has started
         CountDownLatch instanceTimeout = new CountDownLatch(1);
