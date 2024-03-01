@@ -106,6 +106,7 @@ public class ManagedScheduledExecutorDefinitionHandler extends AbstractResourceH
         } else {
             msedd.setMaxAsync(managedScheduledExecutorDefinition.maxAsync());
         }
+        msedd.setVirtual(managedScheduledExecutorDefinition.virtual());
 
         msedd.setMetadataSource(MetadataSource.ANNOTATION);
         return msedd;
@@ -128,6 +129,10 @@ public class ManagedScheduledExecutorDefinitionHandler extends AbstractResourceH
 
                 if (descriptor.getMaxAsync() == -1) {
                     descriptor.setMaxAsync(msed.maxAsync());
+                }
+
+                if (descriptor.getVirtual() == null) {
+                    descriptor.setVirtual(msed.virtual());
                 }
 
                 if (descriptor.getContext() == null && msed.context() != null && !msed.context().isBlank()) {

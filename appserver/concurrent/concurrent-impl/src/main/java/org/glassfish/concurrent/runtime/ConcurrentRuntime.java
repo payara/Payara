@@ -78,6 +78,7 @@ import org.glassfish.enterprise.concurrent.ForkJoinManagedExecutorService;
 import org.glassfish.enterprise.concurrent.ManagedExecutorServiceImpl;
 import org.glassfish.enterprise.concurrent.ManagedScheduledExecutorServiceImpl;
 import org.glassfish.enterprise.concurrent.ManagedThreadFactoryImpl;
+import org.glassfish.enterprise.concurrent.virtualthreads.VirtualThreadsManagedExecutorService;
 import org.glassfish.enterprise.concurrent.spi.ContextHandle;
 import org.glassfish.resourcebase.resources.naming.ResourceNamingService;
 
@@ -231,7 +232,16 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
                 null,
                 config.getThreadPriority());
         AbstractManagedExecutorService mes;
-        if (config.getUseForkJoinPool()) {
+        if (config.getUseVirtualThread()) {
+            mes = new VirtualThreadsManagedExecutorService(config.getJndiName(),
+                    null,
+                    config.getHungAfterSeconds() * 1_000L, // in milliseconds
+                    config.isLongRunningTasks(),
+                    config.getMaximumPoolSize(),
+                    config.getTaskQueueCapacity(),
+                    contextService,
+                    AbstractManagedExecutorService.RejectPolicy.ABORT);
+        } else if (config.getUseForkJoinPool()) {
             mes = new ForkJoinManagedExecutorService(config.getJndiName(),
                     managedThreadFactory,
                     config.getHungAfterSeconds() * 1_000L, // in milliseconds
@@ -301,6 +311,7 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
                 config.getJndiName() + "-managedThreadFactory",
                 null,
                 config.getThreadPriority());
+        // TODO: eventually use VT base MSES
         ManagedScheduledExecutorServiceImpl mes = new ManagedScheduledExecutorServiceImpl(config.getJndiName(),
                 managedThreadFactory,
                 config.getHungAfterSeconds() * 1000L, // in millseconds

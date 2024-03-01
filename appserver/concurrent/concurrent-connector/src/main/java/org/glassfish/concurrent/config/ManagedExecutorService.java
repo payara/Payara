@@ -128,6 +128,21 @@ public interface ManagedExecutorService extends ConfigBeanProxy, Resource,
     @DuckTyped
     String getIdentity();
 
+    /**
+     * Gets the value of the useVirtualThreads property.
+     *
+     * @return possible object is {@link String }
+     */
+    @Attribute(defaultValue = "false", dataType = Boolean.class)
+    String getUseVirtualThreads();
+
+    /**
+     * Sets the value of the useVirtualThreads property.
+     *
+     * @param value allowed object is {@link String }
+     */
+    void setUseVirtualThreads(String value) throws PropertyVetoException;
+
     class Duck {
         public static String getIdentity(ManagedExecutorService resource){
             return resource.getJndiName();

@@ -51,6 +51,7 @@ public class ManagedExecutorDefinitionDescriptor extends ResourceDescriptor {
     private String name;
     private int maximumPoolSize = Integer.MAX_VALUE;
     private long hungAfterSeconds = 0;
+    private Boolean virtual = null;
     private String context;
     private Properties properties = new Properties();
 
@@ -102,6 +103,14 @@ public class ManagedExecutorDefinitionDescriptor extends ResourceDescriptor {
 
     public Properties getProperties() {
         return properties;
+    }
+
+    public Boolean getVirtual() {
+        return virtual;
+    }
+
+    public void setVirtual(Boolean virtual) {
+        this.virtual = virtual;
     }
 
     @Override

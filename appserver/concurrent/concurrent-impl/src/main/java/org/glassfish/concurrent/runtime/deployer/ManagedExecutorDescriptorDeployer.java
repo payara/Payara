@@ -389,5 +389,14 @@ public class ManagedExecutorDescriptorDeployer implements ResourceDeployer {
         @Override
         public void setContext(String value) throws PropertyVetoException {
         }
+
+        @Override
+        public String getUseVirtualThreads() {
+            return managedExecutorDefinitionDescriptor.getVirtual().toString();
+        }
+
+        @Override
+        public void setUseVirtualThreads(String value) throws PropertyVetoException {
+        }
     }
 }

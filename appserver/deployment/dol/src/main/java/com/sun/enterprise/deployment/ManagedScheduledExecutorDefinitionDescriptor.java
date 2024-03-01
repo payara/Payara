@@ -52,6 +52,7 @@ public class ManagedScheduledExecutorDefinitionDescriptor extends ResourceDescri
     private String context;
     private long hungTaskThreshold = 0;
     private int maxAsync = Integer.MAX_VALUE;
+    private Boolean virtual = null;
 
     private Properties properties = new Properties();
 
@@ -106,6 +107,14 @@ public class ManagedScheduledExecutorDefinitionDescriptor extends ResourceDescri
             thisName = JAVA_COMP_URL + thisName;
         }
         return thisName;
+    }
+
+    public Boolean getVirtual() {
+        return virtual;
+    }
+
+    public void setVirtual(Boolean virtual) {
+        this.virtual = virtual;
     }
 
     @Override

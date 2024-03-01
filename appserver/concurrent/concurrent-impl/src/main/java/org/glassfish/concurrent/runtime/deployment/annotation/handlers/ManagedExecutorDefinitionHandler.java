@@ -105,6 +105,7 @@ public class ManagedExecutorDefinitionHandler extends AbstractResourceHandler {
             medd.setMaximumPoolSize(managedExecutorDefinition.maxAsync());
         }
 
+        medd.setVirtual(managedExecutorDefinition.virtual());
         medd.setMetadataSource(MetadataSource.ANNOTATION);
         return medd;
     }
