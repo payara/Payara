@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-parent</artifactId>
-        <version>6.2024.3-SNAPSHOT</version>
+        <version>6.2024.3</version>
     </parent>
     
     <groupId>fish.payara.server.internal.installer</groupId>
