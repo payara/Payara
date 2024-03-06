@@ -122,7 +122,7 @@ public class ManagedScheduledExecutorApplicationIT {
         String[] data = message.split(":");
         if(data[1] != null) {
             int numberOfExecutions = Integer.parseInt(data[1]);
-            assertTrue( numberOfExecutions > 0 && numberOfExecutions <= 3);
+            assertTrue(numberOfExecutions > 0 && numberOfExecutions <= 3, "Exptected number of executions for 1.5 second is 1-3, was " + numberOfExecutions);
         }
         assertTrue(message.contains("CronTrigger Submitted"));
     }
@@ -139,7 +139,7 @@ public class ManagedScheduledExecutorApplicationIT {
         String[] data = message.split(":");
         if(data[1] != null) {
             int numberOfExecutions = Integer.parseInt(data[1]);
-            assertTrue( numberOfExecutions > 0 && numberOfExecutions <= 3);
+            assertTrue(numberOfExecutions > 0 && numberOfExecutions <= 3, "Exptected number of executions for 1.5 second is 1-3, was " + numberOfExecutions);
         }
         assertTrue(message.contains("CronTrigger Submitted"));
     }
