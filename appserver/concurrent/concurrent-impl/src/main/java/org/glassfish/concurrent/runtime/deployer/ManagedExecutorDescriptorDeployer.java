@@ -392,7 +392,8 @@ public class ManagedExecutorDescriptorDeployer implements ResourceDeployer {
 
         @Override
         public String getUseVirtualThreads() {
-            return managedExecutorDefinitionDescriptor.getVirtual().toString();
+            Boolean virtualFromDefinition = managedExecutorDefinitionDescriptor.getVirtual();
+            return (virtualFromDefinition == null ? Boolean.FALSE : virtualFromDefinition).toString();
         }
 
         @Override
