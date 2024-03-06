@@ -71,15 +71,15 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.naming.NamingException;
-import org.glassfish.enterprise.concurrent.AbstractManagedExecutorService;
-import org.glassfish.enterprise.concurrent.AbstractManagedThread;
-import org.glassfish.enterprise.concurrent.ContextServiceImpl;
-import org.glassfish.enterprise.concurrent.ForkJoinManagedExecutorService;
-import org.glassfish.enterprise.concurrent.ManagedExecutorServiceImpl;
-import org.glassfish.enterprise.concurrent.ManagedScheduledExecutorServiceImpl;
-import org.glassfish.enterprise.concurrent.ManagedThreadFactoryImpl;
-import org.glassfish.enterprise.concurrent.virtualthreads.VirtualThreadsManagedExecutorService;
-import org.glassfish.enterprise.concurrent.spi.ContextHandle;
+import org.glassfish.concurro.AbstractManagedExecutorService;
+import org.glassfish.concurro.AbstractManagedThread;
+import org.glassfish.concurro.ContextServiceImpl;
+import org.glassfish.concurro.ForkJoinManagedExecutorService;
+import org.glassfish.concurro.ManagedExecutorServiceImpl;
+import org.glassfish.concurro.ManagedScheduledExecutorServiceImpl;
+import org.glassfish.concurro.ManagedThreadFactoryImpl;
+import org.glassfish.concurro.virtualthreads.VirtualThreadsManagedExecutorService;
+import org.glassfish.concurro.spi.ContextHandle;
 import org.glassfish.resourcebase.resources.naming.ResourceNamingService;
 
 /**

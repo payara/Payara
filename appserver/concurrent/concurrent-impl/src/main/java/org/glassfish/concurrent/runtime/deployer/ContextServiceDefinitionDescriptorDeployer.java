@@ -54,7 +54,7 @@ import java.util.stream.Collectors;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.concurrent.runtime.ConcurrentRuntime;
 import org.glassfish.concurrent.runtime.ContextSetupProviderImpl;
-import org.glassfish.enterprise.concurrent.ContextServiceImpl;
+import org.glassfish.concurro.ContextServiceImpl;
 import org.glassfish.resourcebase.resources.api.ResourceConflictException;
 import org.glassfish.resourcebase.resources.api.ResourceDeployer;
 import org.glassfish.resourcebase.resources.api.ResourceDeployerInfo;

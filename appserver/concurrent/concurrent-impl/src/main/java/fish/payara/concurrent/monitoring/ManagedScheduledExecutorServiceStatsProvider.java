@@ -20,7 +20,7 @@ package fish.payara.concurrent.monitoring;
 import org.glassfish.concurrent.config.ManagedScheduledExecutorService;
 import org.glassfish.concurrent.runtime.ConcurrentRuntime;
 import org.glassfish.concurrent.runtime.deployer.ManagedScheduledExecutorServiceConfig;
-import org.glassfish.enterprise.concurrent.ManagedScheduledExecutorServiceImpl;
+import org.glassfish.concurro.ManagedScheduledExecutorServiceImpl;
 import org.glassfish.external.probe.provider.StatsProviderManager;
 import org.glassfish.external.statistics.CountStatistic;
 import org.glassfish.external.statistics.impl.CountStatisticImpl;

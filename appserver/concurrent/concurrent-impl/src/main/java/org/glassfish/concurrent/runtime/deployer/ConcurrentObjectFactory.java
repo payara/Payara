@@ -43,7 +43,11 @@ package org.glassfish.concurrent.runtime.deployer;
 
 import jakarta.enterprise.concurrent.ManagedExecutorService;
 import org.glassfish.concurrent.runtime.ConcurrentRuntime;
-import org.glassfish.enterprise.concurrent.*;
+import org.glassfish.concurro.AbstractManagedExecutorService;
+import org.glassfish.concurro.ContextServiceImpl;
+import org.glassfish.concurro.ManagedScheduledExecutorServiceAdapter;
+import org.glassfish.concurro.ManagedScheduledExecutorServiceImpl;
+import org.glassfish.concurro.ManagedThreadFactoryImpl;
 import org.glassfish.resourcebase.resources.api.ResourceInfo;
 
 import javax.naming.Context;

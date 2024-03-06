@@ -108,8 +108,8 @@
             <artifactId>jakarta.enterprise.concurrent-api</artifactId>
         </dependency>
        <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>jakarta.enterprise.concurrent</artifactId>
+            <groupId>org.glassfish.concurro</groupId>
+            <artifactId>concurro</artifactId>
         </dependency>
         <dependency>
             <groupId>org.easymock</groupId>

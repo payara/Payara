@@ -177,9 +177,9 @@
             <artifactId>jakarta.enterprise.concurrent-api</artifactId>
        </dependency>
        <dependency>
-           <groupId>org.glassfish</groupId>
-           <artifactId>jakarta.enterprise.concurrent</artifactId>
-       </dependency> 
+            <groupId>org.glassfish.concurro</groupId>
+            <artifactId>concurro</artifactId>
+        </dependency>
        <dependency>
             <groupId>jakarta.inject</groupId>
             <artifactId>jakarta.inject-api</artifactId>

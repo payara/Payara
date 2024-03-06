@@ -47,6 +47,9 @@ import com.sun.enterprise.deployment.ManagedExecutorDefinitionDescriptor;
 import jakarta.inject.Inject;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.concurrent.config.ManagedExecutorService;
+import org.glassfish.concurrent.runtime.ConcurrentRuntime;
+import org.glassfish.concurro.AbstractManagedExecutorService;
+import org.glassfish.concurro.ContextServiceImpl;
 import org.glassfish.resourcebase.resources.api.ResourceConflictException;
 import org.glassfish.resourcebase.resources.api.ResourceDeployer;
 import org.glassfish.resourcebase.resources.api.ResourceDeployerInfo;
@@ -61,9 +64,6 @@ import java.beans.PropertyVetoException;
 import java.util.Collection;
 import java.util.List;
 import java.util.logging.Logger;
-import org.glassfish.concurrent.runtime.ConcurrentRuntime;
-import org.glassfish.enterprise.concurrent.AbstractManagedExecutorService;
-import org.glassfish.enterprise.concurrent.ContextServiceImpl;
 
 @Service
 @ResourceDeployerInfo(ManagedExecutorDefinitionDescriptor.class)

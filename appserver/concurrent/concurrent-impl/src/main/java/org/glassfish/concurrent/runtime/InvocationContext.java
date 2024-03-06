@@ -49,7 +49,7 @@ import io.opentracing.Tracer;
 import jakarta.enterprise.concurrent.spi.ThreadContextRestorer;
 import jakarta.enterprise.concurrent.spi.ThreadContextSnapshot;
 import org.glassfish.api.invocation.ComponentInvocation;
-import org.glassfish.enterprise.concurrent.spi.ContextHandle;
+import org.glassfish.concurro.spi.ContextHandle;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
 

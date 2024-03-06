@@ -42,8 +42,8 @@
 package org.glassfish.concurrent.runtime;
 
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
-import org.glassfish.enterprise.concurrent.spi.TransactionHandle;
-import org.glassfish.enterprise.concurrent.spi.TransactionSetupProvider;
+import org.glassfish.concurro.spi.TransactionHandle;
+import org.glassfish.concurro.spi.TransactionSetupProvider;
 
 import jakarta.enterprise.concurrent.ManagedTask;
 import jakarta.transaction.InvalidTransactionException;

@@ -41,7 +41,7 @@
 package org.glassfish.concurrent.runtime;
 
 
-import org.glassfish.enterprise.concurrent.spi.TransactionHandle;
+import org.glassfish.concurro.spi.TransactionHandle;
 
 import jakarta.transaction.Transaction;
 

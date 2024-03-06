@@ -62,8 +62,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.logging.Logger;
 import org.glassfish.concurrent.runtime.ConcurrentRuntime;
-import org.glassfish.enterprise.concurrent.ContextServiceImpl;
-import org.glassfish.enterprise.concurrent.ManagedThreadFactoryImpl;
+import org.glassfish.concurro.ContextServiceImpl;
+import org.glassfish.concurro.ManagedThreadFactoryImpl;
 
 @Service
 @ResourceDeployerInfo(ManagedThreadFactoryDefinitionDescriptor.class)

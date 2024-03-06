@@ -470,9 +470,9 @@
                 <version>${com.ibm.jbatch.spi.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.glassfish</groupId>
-                <artifactId>jakarta.enterprise.concurrent</artifactId>
-                <version>${concurrent.version}</version>
+                <groupId>org.glassfish.concurro</groupId>
+                <artifactId>concurro</artifactId>
+                <version>${concurro.version}</version>
             </dependency>
 
             <dependency>
