@@ -125,9 +125,6 @@ public interface ManagedExecutorService extends ConfigBeanProxy, Resource,
      */
     void setUseForkJoinPool(String value) throws PropertyVetoException;
 
-    @DuckTyped
-    String getIdentity();
-
     /**
      * Gets the value of the useVirtualThreads property.
      *
@@ -142,6 +139,9 @@ public interface ManagedExecutorService extends ConfigBeanProxy, Resource,
      * @param value allowed object is {@link String }
      */
     void setUseVirtualThreads(String value) throws PropertyVetoException;
+
+    @DuckTyped
+    String getIdentity();
 
     class Duck {
         public static String getIdentity(ManagedExecutorService resource){
