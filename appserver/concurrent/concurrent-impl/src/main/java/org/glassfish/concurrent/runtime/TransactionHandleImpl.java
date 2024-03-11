@@ -37,11 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2024 Payara Foundation and/or its affiliates 
 
 package org.glassfish.concurrent.runtime;
 
 
-import org.glassfish.enterprise.concurrent.spi.TransactionHandle;
+import org.glassfish.concurro.spi.TransactionHandle;
 
 import jakarta.transaction.Transaction;
 

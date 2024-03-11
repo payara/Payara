@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2022] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2022-2024] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -106,6 +106,7 @@ public class ManagedScheduledExecutorDefinitionHandler extends AbstractResourceH
         } else {
             msedd.setMaxAsync(managedScheduledExecutorDefinition.maxAsync());
         }
+        msedd.setVirtual(managedScheduledExecutorDefinition.virtual());
 
         msedd.setMetadataSource(MetadataSource.ANNOTATION);
         return msedd;
@@ -128,6 +129,10 @@ public class ManagedScheduledExecutorDefinitionHandler extends AbstractResourceH
 
                 if (descriptor.getMaxAsync() == -1) {
                     descriptor.setMaxAsync(msed.maxAsync());
+                }
+
+                if (descriptor.getVirtual() == null) {
+                    descriptor.setVirtual(msed.virtual());
                 }
 
                 if (descriptor.getContext() == null && msed.context() != null && !msed.context().isBlank()) {

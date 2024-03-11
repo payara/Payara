@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2022] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2022-2024] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -52,6 +52,7 @@ public class ManagedScheduledExecutorDefinitionDescriptor extends ResourceDescri
     private String context;
     private long hungTaskThreshold = 0;
     private int maxAsync = Integer.MAX_VALUE;
+    private Boolean virtual = null;
 
     private Properties properties = new Properties();
 
@@ -106,6 +107,14 @@ public class ManagedScheduledExecutorDefinitionDescriptor extends ResourceDescri
             thisName = JAVA_COMP_URL + thisName;
         }
         return thisName;
+    }
+
+    public Boolean getVirtual() {
+        return virtual;
+    }
+
+    public void setVirtual(Boolean virtual) {
+        this.virtual = virtual;
     }
 
     @Override

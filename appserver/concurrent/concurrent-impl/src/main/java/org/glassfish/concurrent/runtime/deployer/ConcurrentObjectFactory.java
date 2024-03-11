@@ -37,12 +37,17 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2022] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2024] Payara Foundation and/or affiliates
 
 package org.glassfish.concurrent.runtime.deployer;
 
+import jakarta.enterprise.concurrent.ManagedExecutorService;
 import org.glassfish.concurrent.runtime.ConcurrentRuntime;
-import org.glassfish.enterprise.concurrent.*;
+import org.glassfish.concurro.AbstractManagedExecutorService;
+import org.glassfish.concurro.ContextServiceImpl;
+import org.glassfish.concurro.ManagedScheduledExecutorServiceAdapter;
+import org.glassfish.concurro.ManagedScheduledExecutorServiceImpl;
+import org.glassfish.concurro.ManagedThreadFactoryImpl;
 import org.glassfish.resourcebase.resources.api.ResourceInfo;
 
 import javax.naming.Context;
@@ -95,8 +100,8 @@ public class ConcurrentObjectFactory implements ObjectFactory {
         return managedThreadFactory;
     }
 
-    private ManagedExecutorServiceAdapter getManagedExecutorService(ManagedExecutorServiceConfig config, ResourceInfo resourceInfo) {
-        ManagedExecutorServiceImpl mes = getRuntime().getManagedExecutorService(resourceInfo, config);
+    private ManagedExecutorService getManagedExecutorService(ManagedExecutorServiceConfig config, ResourceInfo resourceInfo) {
+        AbstractManagedExecutorService mes = getRuntime().getManagedExecutorService(resourceInfo, config);
         return mes.getAdapter();
     }
 
