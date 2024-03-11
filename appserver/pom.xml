@@ -150,7 +150,7 @@
                 <configuration>
                     <!--suppress UnresolvedMavenProperty -->
                     <dir>${stage.dir}/${install.dir.name}/glassfish/modules</dir>
-                    <excludes>jakarta.inject-api.jar,jakarta.servlet.jsp.jstl.jar,wasp.jar,jakarta.persistence.jar</excludes>
+                    <excludes>jakarta.inject-api.jar,jakarta.servlet.jsp.jstl.jar,wasp.jar,concurro.jar,jakarta.persistence.jar</excludes>
 		    <specs>
 			<!-- Activation-API -->
 			<spec>
