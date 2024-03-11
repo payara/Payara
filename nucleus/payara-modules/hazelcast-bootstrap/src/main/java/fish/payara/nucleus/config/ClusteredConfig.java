@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2024 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -153,9 +153,10 @@ public class ClusteredConfig extends MembershipAdapter {
     public void clearSharedConfiguration(String name) {
         HazelcastInstance hzInstance = hzCore.getInstance();
         if (hzInstance != null) { // can be null during shutdown
-            String instance = instanceName(hzInstance.getCluster().getLocalMember());
+            Member localMember = hzInstance.getCluster().getLocalMember();
+            String instance = instanceName(localMember);
             String mapName = CONFIGURATION_PREFIX + name;
-            if (instance != null) {
+            if (instance != null && !localMember.isLiteMember()) {
                 hzInstance.getReplicatedMap(mapName).remove(instance);
             }
         }
