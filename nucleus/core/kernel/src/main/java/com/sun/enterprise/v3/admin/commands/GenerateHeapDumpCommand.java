@@ -1,7 +1,7 @@
 /*
  *   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *   Copyright (c) [2024] Payara Foundation and/or its affiliates.
+ *   Copyright (c) 2024 Payara Foundation and/or its affiliates.
  *   All rights reserved.
  *
  *   The contents of this file are subject to the terms of either the GNU
@@ -41,24 +41,27 @@
 
 package com.sun.enterprise.v3.admin.commands;
 
-import com.sun.enterprise.config.serverbeans.Cluster;
-import com.sun.enterprise.config.serverbeans.JavaConfig;
-import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.universal.glassfish.TokenResolver;
 import com.sun.enterprise.universal.process.ProcessUtils;
 import com.sun.enterprise.util.StringUtils;
-import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.*;
+import org.glassfish.api.admin.AccessRequired;
+import org.glassfish.api.admin.AdminCommand;
+import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.CommandLock;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.FailurePolicy;
+import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
@@ -78,49 +81,19 @@ import java.util.logging.Logger;
 @I18n("generate.heap.dump")
 @TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.DEPLOYMENT_GROUP})
 @ExecuteOn(value = {RuntimeType.INSTANCE}, ifNeverStarted = FailurePolicy.Error)
-@RestEndpoints({
-        @RestEndpoint(configBean = Cluster.class,
-                opType = RestEndpoint.OpType.GET,
-                path = "generate-heap-dump",
-                description = "Generate Heap Dump",
-                params = {
-                        @RestParam(name = "target", value = "$parent")
-                }),
-        @RestEndpoint(configBean = Server.class,
-                opType = RestEndpoint.OpType.GET,
-                path = "generate-heap-dump",
-                description = "Generate Heap Dump",
-                params = {
-                        @RestParam(name = "target", value = "$parent")
-                }),
-        @RestEndpoint(configBean = DeploymentGroup.class,
-                opType = RestEndpoint.OpType.GET,
-                path = "generate-heap-dump",
-                description = "Generate Heap Dump",
-                params = {
-                        @RestParam(name = "target", value = "$parent")
-                }),
-        @RestEndpoint(configBean = JavaConfig.class,
-                opType = RestEndpoint.OpType.GET,
-                path = "generate-heap-dump",
-                description = "Generate Heap Dump",
-                params = {
-                        @RestParam(name = "target", value = "$grandparent")
-                })
-})
 @AccessRequired(resource = "domain/jvm", action = "read")
 public class GenerateHeapDumpCommand implements AdminCommand {
 
-    Logger LOGGER = Logger.getLogger(GenerateHeapDumpCommand.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(GenerateHeapDumpCommand.class.getName());
 
     @Param(name = "target", optional = true)
-    String target;
+    private String target;
 
     @Param(name = "outputDir")
-    String outputDir;
+    private String outputDir;
 
     @Param(name = "outputFileName", optional = true)
-    String outputFileName;
+    private String outputFileName;
 
     public void execute(AdminCommandContext ctx) {
         ActionReport report = ctx.getActionReport();
@@ -141,8 +114,9 @@ public class GenerateHeapDumpCommand implements AdminCommand {
             Map<String, String> systemPropsMap = new HashMap<String, String>((Map) (System.getProperties()));
             TokenResolver resolver = new TokenResolver(systemPropsMap);
             String resolvedOutput = resolver.resolve(outputDir);
-            if (!resolvedOutput.endsWith("/")) {
-                resolvedOutput = resolvedOutput + "/";
+            resolvedOutput = resolvedOutput.replace('/', File.separatorChar).replace('\\', File.separatorChar);
+            if (!resolvedOutput.endsWith(File.separator)) {
+                resolvedOutput = resolvedOutput + File.separatorChar;
             }
             stringBuilderNewLineAppender.append("Resolved the following output directory: " + resolvedOutput);
 
@@ -166,23 +140,25 @@ public class GenerateHeapDumpCommand implements AdminCommand {
                 LOGGER.log(Level.FINE, "Executing the following command: " + command);
                 Process process = runtime.exec(command);
                 stringBuilderNewLineAppender.append("Generating Heap Dump");
-                BufferedReader input = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                String line;
-                process.waitFor();
                 boolean success = true;
-                while ((line = input.readLine()) != null) {
-                    if (line.contains("File exists")) {
-                        suffix++;
-                        stringBuilderNewLineAppender.append("File already exists, incrementing file name");
-                        success = false;
+                try (BufferedReader input = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                    String line;
+                    process.waitFor();
+                    while ((line = input.readLine()) != null) {
+                        if (line.contains("File exists")) {
+                            suffix++;
+                            stringBuilderNewLineAppender.append("File already exists, incrementing file name");
+                            success = false;
+                        }
+
+                        if (line.contains("No such file or directory")) {
+                            error = true;
+                            stringBuilderNewLineAppender.append("Directory does not exist! " + resolvedOutput);
+                            break;
+                        }
+                        LOGGER.log(Level.FINE, line);
                     }
 
-                    if (line.contains("No such file or directory")) {
-                        error = true;
-                        stringBuilderNewLineAppender.append("Directory does not exist! " + resolvedOutput);
-                        break;
-                    }
-                    LOGGER.log(Level.FINE, line);
                 }
 
                 if (success) {
