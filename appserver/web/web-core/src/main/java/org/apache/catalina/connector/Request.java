@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//Portions Copyright [2016-2022] [Payara Foundation]
+//Portions Copyright [2016-2024] [Payara Foundation]
 
 package org.apache.catalina.connector;
 
@@ -2910,8 +2910,7 @@ public class Request implements HttpRequest, HttpServletRequest {
 
     // ------------------------------------------------------ Protected Methods
 
-    protected Session doGetSession(boolean create) {
-
+    protected synchronized Session doGetSession(boolean create) {
         // There cannot be a session if no context has been assigned yet
         if (context == null) {
             return null;
