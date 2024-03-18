@@ -41,6 +41,7 @@
 
 package com.sun.enterprise.v3.admin.commands;
 
+import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.universal.glassfish.TokenResolver;
 import com.sun.enterprise.universal.process.ProcessUtils;
 import com.sun.enterprise.util.StringUtils;
@@ -48,18 +49,13 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.AccessRequired;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.CommandLock;
-import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.FailurePolicy;
-import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -94,6 +90,8 @@ public class GenerateHeapDumpCommand implements AdminCommand {
 
     @Param(name = "outputFileName", optional = true)
     private String outputFileName;
+    @Inject
+    private ServerEnvironment serverEnv;
 
     public void execute(AdminCommandContext ctx) {
         ActionReport report = ctx.getActionReport();
@@ -106,7 +104,8 @@ public class GenerateHeapDumpCommand implements AdminCommand {
 
         StringBuilderNewLineAppender stringBuilderNewLineAppender = new StringBuilderNewLineAppender(new StringBuilder());
         if (!StringUtils.ok(outputFileName)) {
-            String prefix = StringUtils.ok(target) ? target : "server";
+
+            String prefix = serverEnv.isInstance() ? serverEnv.getInstanceName() : "server";
             outputFileName = prefix + "-heap-dump-" + DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH-mm-ssX").withZone(ZoneOffset.UTC).format(Instant.now());
         }
         try {
@@ -132,48 +131,37 @@ public class GenerateHeapDumpCommand implements AdminCommand {
             LOGGER.log(Level.FINE, "Process ID is " + pid);
 
             Runtime runtime = Runtime.getRuntime();
-            boolean error = false;
-            int suffix = 0;
-            while (true) {
-                String finalFileName = outputFileName + (suffix == 0 ? "" : ("(" + suffix + ")"));
-                String command = String.format("jcmd %s GC.heap_dump %s%s.hprof", pid, resolvedOutput, finalFileName);
-                LOGGER.log(Level.FINE, "Executing the following command: " + command);
-                Process process = runtime.exec(command);
-                stringBuilderNewLineAppender.append("Generating Heap Dump");
-                boolean success = true;
-                try (BufferedReader input = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-                    String line;
-                    process.waitFor();
-                    while ((line = input.readLine()) != null) {
-                        if (line.contains("File exists")) {
-                            suffix++;
-                            stringBuilderNewLineAppender.append("File already exists, incrementing file name");
-                            success = false;
-                        }
 
-                        if (line.contains("No such file or directory")) {
-                            error = true;
-                            stringBuilderNewLineAppender.append("Directory does not exist! " + resolvedOutput);
-                            break;
-                        }
-                        LOGGER.log(Level.FINE, line);
+
+            String command = String.format("jcmd %s GC.heap_dump %s%s.hprof", pid, resolvedOutput, outputFileName);
+            LOGGER.log(Level.FINE, "Executing the following command: " + command);
+            Process process = runtime.exec(command);
+            stringBuilderNewLineAppender.append("Generating Heap Dump");
+            boolean success = true;
+            try (BufferedReader input = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                String line;
+                process.waitFor();
+                while ((line = input.readLine()) != null) {
+                    if (line.contains("File exists")) {
+                        stringBuilderNewLineAppender.append("File already exists");
+                        success = false;
                     }
 
+                    if (line.contains("No such file or directory")) {
+                        success = false;
+                        stringBuilderNewLineAppender.append("Directory does not exist! " + resolvedOutput);
+                    }
+                    LOGGER.log(Level.FINE, line);
                 }
-
-                if (success) {
-                    stringBuilderNewLineAppender.append("File name is " + finalFileName);
-                    break;
-                }
-
             }
 
-            if (error) {
-                stringBuilderNewLineAppender.append("Heap Dump could not be created!");
-                report.setActionExitCode(ExitCode.FAILURE);
-            } else {
+            if (success) {
+                stringBuilderNewLineAppender.append("File name is " + outputFileName);
                 stringBuilderNewLineAppender.append("Heap Dump has been created");
                 report.setActionExitCode(ExitCode.SUCCESS);
+            } else {
+                stringBuilderNewLineAppender.append("Heap Dump could not be created!");
+                report.setActionExitCode(ExitCode.FAILURE);
             }
             report.setMessage(stringBuilderNewLineAppender.toString());
         } catch (IOException | InterruptedException e) {
