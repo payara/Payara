@@ -2910,7 +2910,7 @@ public class Request implements HttpRequest, HttpServletRequest {
 
     // ------------------------------------------------------ Protected Methods
 
-    protected synchronized Session doGetSession(boolean create) {
+    protected Session doGetSession(boolean create) {
         // There cannot be a session if no context has been assigned yet
         if (context == null) {
             return null;
@@ -2953,8 +2953,11 @@ public class Request implements HttpRequest, HttpServletRequest {
             if (session != null && !session.isValid()) {
                 session = null;
             }
+            
             if (session != null) {
-                session.access();
+                synchronized (this) {
+                    session.access();
+                }
                 return session;
             }
         }
@@ -3036,7 +3039,9 @@ public class Request implements HttpRequest, HttpServletRequest {
         }
 
         if (session != null) {
-            session.access();
+            synchronized (this) {
+                session.access();
+            }
             return session;
         } else {
             return null;
