@@ -1000,4 +1000,34 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <profiles>
+        <profile>
+            <id>payara-nexus-staging</id>
+            <repositories>
+                <repository>
+                    <id>payara-nexus-staging</id>
+                    <url>https://nexus.dev.payara.fish/repository/payara-staging</url>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>false</enabled>
+                    </snapshots>
+                </repository>
+            </repositories>
+            <pluginRepositories>
+                <pluginRepository>
+                    <id>payara-nexus-staging</id>
+                    <url>https://nexus.dev.payara.fish/repository/payara-staging</url>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>false</enabled>
+                    </snapshots>
+                </pluginRepository>
+            </pluginRepositories>
+        </profile>
+    </profiles>
 </project>
