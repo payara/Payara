@@ -151,7 +151,7 @@
         <!-- BOM-referenced versions -->
 
         <osgi-resource-locator.version>1.0.3</osgi-resource-locator.version>
-        <snakeyaml.version>2.0</snakeyaml.version>
+        <snakeyaml.version>2.2</snakeyaml.version>
         <jstl-impl.version>3.0.1</jstl-impl.version>
         <mojarra.version>4.0.0.payara-p2</mojarra.version>
         <jaxb-extra-osgi.version>2.3.0</jaxb-extra-osgi.version>
