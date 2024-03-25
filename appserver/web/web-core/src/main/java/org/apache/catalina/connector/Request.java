@@ -2955,9 +2955,7 @@ public class Request implements HttpRequest, HttpServletRequest {
             }
             
             if (session != null) {
-                synchronized (this) {
-                    session.access();
-                }
+                session.access();
                 return session;
             }
         }
@@ -3039,9 +3037,7 @@ public class Request implements HttpRequest, HttpServletRequest {
         }
 
         if (session != null) {
-            synchronized (this) {
-                session.access();
-            }
+            session.access();
             return session;
         } else {
             return null;
