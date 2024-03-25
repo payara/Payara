@@ -146,7 +146,7 @@
         <org.apache.santuario.version>4.0.0</org.apache.santuario.version>
         <woodstox.version>6.5.1</woodstox.version>
         <woodstock-jsf.version>5.0.0</woodstock-jsf.version>
-        <woodstock-jsf-suntheme.version>5.0.0.payara-p1</woodstock-jsf-suntheme.version>
+        <woodstock-jsf-suntheme.version>5.0.0.payara-p2</woodstock-jsf-suntheme.version>
         <angus.activation.version>1.0.0</angus.activation.version>
         <istack-commons-runtime.version>4.2.0</istack-commons-runtime.version>
         <wsdl4j.version>1.6.3</wsdl4j.version>
