@@ -88,6 +88,16 @@
                 <enabled>false</enabled>
             </snapshots>
         </repository>
+        <repository>
+            <id>payara-nexus-snapshots</id>
+            <url>https://nexus.dev.payara.fish/repository/payara-snapshots</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
     </repositories>
 
     <!-- Some of these are duplicated from core-bom because it isn't deployed to Maven Central so we need to tell
@@ -113,6 +123,16 @@
             </releases>
             <snapshots>
                 <enabled>false</enabled>
+            </snapshots>
+        </pluginRepository>
+        <pluginRepository>
+            <id>payara-nexus-snapshots</id>
+            <url>https://nexus.dev.payara.fish/repository/payara-snapshots</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
             </snapshots>
         </pluginRepository>
     </pluginRepositories>
@@ -303,6 +323,35 @@
             </modules>
         </profile>
 
+        <!-- Duplicated from core-bom because it isn't deployed to Maven Central so we need to tell
+             Maven where to download it from -->
+        <profile>
+            <id>payara-nexus-staging</id>
+            <repositories>
+                <repository>
+                    <id>payara-nexus-staging</id>
+                    <url>https://nexus.dev.payara.fish/repository/payara-staging</url>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>false</enabled>
+                    </snapshots>
+                </repository>
+            </repositories>
+            <pluginRepositories>
+                <pluginRepository>
+                    <id>payara-nexus-staging</id>
+                    <url>https://nexus.dev.payara.fish/repository/payara-staging</url>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>false</enabled>
+                    </snapshots>
+                </pluginRepository>
+            </pluginRepositories>
+        </profile>
     </profiles>
 
     <build>
