@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!-- Portions Copyright 2016-2023 Payara Foundation and/or its affiliates -->
+<!-- Portions Copyright 2016-2024 Payara Foundation and/or its affiliates -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -48,7 +48,7 @@
     <parent>
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-aggregator</artifactId>
-        <version>6.2024.2-SNAPSHOT</version>
+        <version>6.2024.4-SNAPSHOT</version>
     </parent>
 
     <artifactId>payara-nucleus-parent</artifactId>
@@ -94,7 +94,7 @@
         <maven.war.plugin.version>3.3.2</maven.war.plugin.version>
         <maven.makepkgs.plugin.version>0.6.2</maven.makepkgs.plugin.version>
         <maven.jaxb2.plugin.version>0.15.1</maven.jaxb2.plugin.version>
-        <maven.antlr.plugin.version>2.2</maven.antlr.plugin.version>
+        <maven.antlr.plugin.version>2.4</maven.antlr.plugin.version>
 
         <maven.jaxws.plugin.version>2.6</maven.jaxws.plugin.version>
         <maven.apt.plugin.version>1.0-alpha-5</maven.apt.plugin.version>
@@ -121,7 +121,7 @@
 
         <!-- Apache Felix is an open source implementation of the OSGi Core Release 8 framework specification. -->
         <org.apache.felix.main.version>7.0.5</org.apache.felix.main.version>
-        <org.apache.felix.webconsole.version>4.8.4</org.apache.felix.webconsole.version>
+        <org.apache.felix.webconsole.version>5.0.0</org.apache.felix.webconsole.version>
         <org.apache.felix.eventadmin.version>1.6.4</org.apache.felix.eventadmin.version>
         <org.apache.felix.shell.version>1.4.3</org.apache.felix.shell.version>
         <org.apache.felix.gogo.runtime.version>1.1.6</org.apache.felix.gogo.runtime.version>
@@ -129,12 +129,14 @@
         <org.apache.felix.gogo.command.version>1.1.2</org.apache.felix.gogo.command.version>
         <org.apache.felix.fileinstall.version>3.7.4.payara-p1</org.apache.felix.fileinstall.version>
         <org.apache.felix.configadmin.version>1.9.26</org.apache.felix.configadmin.version>
-        <org.apache.felix.scr.version>2.1.30</org.apache.felix.scr.version>
+        <org.apache.felix.scr.version>2.2.10</org.apache.felix.scr.version>
         <org.apache.felix.bundlerepository.version>2.0.10</org.apache.felix.bundlerepository.version>
 
         <!-- OSGi Promise and Function is required for Apache Felix scr -->
-        <org.osgi.util.promise.version>1.2.0</org.osgi.util.promise.version>
+        <org.osgi.util.promise.version>1.3.0</org.osgi.util.promise.version>
         <org.osgi.util.function.version>1.2.0</org.osgi.util.function.version>
+        <!-- Service Component also now required since Felix SCR 2.2.2 -->
+        <org.osgi.service.component.version>1.5.1</org.osgi.service.component.version>
 
         <!-- Java Business Integration (JBI) is a specification for an approach to implementing a service-oriented architecture (SOA).  -->
         <btrace.version>1.2.3</btrace.version>
@@ -344,7 +346,7 @@
                 </plugin>
 
                 <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
+                    <groupId>org.omnifaces</groupId>
                     <artifactId>antlr-maven-plugin</artifactId>
                     <version>${maven.antlr.plugin.version}</version>
                 </plugin>
@@ -704,6 +706,11 @@ Parent is ${project.parent}</echo>
                 <groupId>org.osgi</groupId>
                 <artifactId>org.osgi.util.function</artifactId>
                 <version>${org.osgi.util.function.version}</version>
+            </dependency>
+            <dependency> <!-- Required for org.apache.felix.scr-->
+                <groupId>org.osgi</groupId>
+                <artifactId>org.osgi.service.component</artifactId>
+                <version>${org.osgi.service.component.version}</version>
             </dependency>
 
             <dependency>

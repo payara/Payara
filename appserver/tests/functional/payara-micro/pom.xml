@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>fish.payara.samples</groupId>
+        <artifactId>payara-samples-profiled-tests</artifactId>
+        <version>6.2024.4-SNAPSHOT</version>
+        <relativePath>../payara-samples/samples</relativePath>
+    </parent>
+
+    <artifactId>payara-micro</artifactId>
+    <name>Payara Samples - Payara Micro</name>
+
+    <properties>
+      <playwright.version>1.40.0</playwright.version>
+    </properties>
+
+
+    <dependencies>
+        <dependency>
+          <groupId>com.microsoft.playwright</groupId>
+          <artifactId>playwright</artifactId>
+          <version>${playwright.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.samples</groupId>
+            <artifactId>samples-test-utils</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.extras</groupId>
+            <artifactId>payara-micro</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.server.internal.extras</groupId>
+            <artifactId>payara-micro-boot</artifactId>
+        </dependency>
+    </dependencies>
+
+    <profiles>
+        <profile>
+            <id>payara-micro-managed</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation> 
+        </profile>
+        <profile>
+            <id>payara-server-remote</id>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <artifactId>maven-surefire-plugin</artifactId>
+                            <configuration>
+                                <skip>true</skip>
+                            </configuration>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+            </build>
+        </profile>
+        <profile>
+            <id>payara-server-managed</id>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <artifactId>maven-surefire-plugin</artifactId>
+                            <configuration>
+                                <skip>true</skip>
+                            </configuration>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+            </build>
+        </profile>
+        
+        <profile>
+            <id>install-deps</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>  
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>3.1.1</version>
+                        <executions>
+                          <execution>
+                            <id>install-playwright-dependencies</id>
+                            <phase>pre-integration-test</phase>
+                            <goals>
+                              <goal>exec</goal>
+                            </goals>
+                          </execution>
+                        </executions>
+                        <configuration>
+                            <executable>java</executable>
+                            <mainClass>com.microsoft.playwright.CLI</mainClass>
+                            <arguments>
+                                <argument>-classpath</argument>
+                                <classpath />
+                                <argument>com.microsoft.playwright.CLI</argument>
+                                <argument>install-deps</argument>
+                            </arguments>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>         
+        </profile>
+    </profiles>
+</project>

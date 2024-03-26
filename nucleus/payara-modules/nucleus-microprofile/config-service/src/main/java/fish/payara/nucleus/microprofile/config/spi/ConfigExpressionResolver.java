@@ -109,8 +109,12 @@ final class ConfigExpressionResolver {
         
         if(profile != null && result != null) {
             ConfigValueImpl resultWithoutProfile = getValue(resolveExpression(propertyName));
-            result = resultWithoutProfile.getSourceOrdinal() == result.getSourceOrdinal() ? result :
-                    (resultWithoutProfile.getSourceOrdinal() > result.getSourceOrdinal()) ? resultWithoutProfile : result;
+            // Note: In case there is a non-profiled value from a source with the same ordinal value, it will be ignored.
+            //       All spec versions including v3.1 do not include a definition for this edge case -
+            //       all sources are supposed to have a unique ordinal value.
+            if (resultWithoutProfile != null && resultWithoutProfile.getSourceOrdinal() > result.getSourceOrdinal()) {
+                result = resultWithoutProfile;
+            }
         } 
         
 
