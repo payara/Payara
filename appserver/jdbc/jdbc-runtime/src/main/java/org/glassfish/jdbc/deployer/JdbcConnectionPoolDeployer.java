@@ -348,7 +348,7 @@ public class JdbcConnectionPoolDeployer implements ResourceDeployer {
         propList.add(new ConnectorConfigProperty("TransactionIsolation",
                 adminPool.getTransactionIsolationLevel() == null ? ""
                 : adminPool.getTransactionIsolationLevel(),
-                "Transaction Isolatin Level",
+                "Transaction Isolation Level",
                 "java.lang.String"));
 
         propList.add(new ConnectorConfigProperty("GuaranteeIsolationLevel",
