@@ -44,7 +44,7 @@
     <parent>
         <groupId>fish.payara.server.core</groupId>
         <artifactId>core-aggregator</artifactId>
-        <version>7.0.0.Alpha1</version>
+        <version>7.0.0.Alpha2-SNAPSHOT</version>
     </parent>
 
     <artifactId>core-bom</artifactId>
@@ -63,7 +63,7 @@
     </scm>
 
     <properties>
-        <payara.core.version>7.0.0.Alpha1</payara.core.version>
+        <payara.core.version>7.0.0.Alpha2-SNAPSHOT</payara.core.version>
     </properties>
 
     <dependencyManagement>
