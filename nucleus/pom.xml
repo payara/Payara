@@ -87,8 +87,6 @@
     <properties>
         <!-- on Hudson and RE, ${build.number} gets replaced by real build ID -->
         <build.id>${build.number}</build.id>
-
-        <maven.remote.resources.plugin.version>1.7.0</maven.remote.resources.plugin.version>
         <maven.eclipse.plugin.version>2.10</maven.eclipse.plugin.version>
         <maven.invoker.plugin.version>3.3.0</maven.invoker.plugin.version>
         <maven.war.plugin.version>3.3.2</maven.war.plugin.version>
@@ -276,12 +274,6 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-antrun-plugin</artifactId>
                     <version>${maven.antrun.plugin.version}</version>
-                </plugin>
-
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-remote-resources-plugin</artifactId>
-                    <version>${maven.remote.resources.plugin.version}</version>
                 </plugin>
 
                 <plugin>
