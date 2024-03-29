@@ -50,7 +50,7 @@
     <parent>
         <groupId>fish.payara.server.core</groupId>
         <artifactId>core-aggregator</artifactId>
-        <version>7.0.0.Alpha2-SNAPSHOT</version>
+        <version>7.0.0.Alpha1</version>
         <relativePath>core</relativePath>
     </parent>
     <packaging>pom</packaging>
