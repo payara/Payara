@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server.internal.common</groupId>
         <artifactId>nucleus-common</artifactId>
-        <version>7.2024.1-SNAPSHOT</version>
+        <version>7.2024.1.Alpha2-SNAPSHOT</version>
         <relativePath>../../common/pom.xml</relativePath>
     </parent>
     <groupId>fish.payara.server.internal.flashlight</groupId>
