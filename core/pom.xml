@@ -71,7 +71,7 @@
         <jakarta.el-api.version>5.0.1</jakarta.el-api.version>
         <expressly.version>5.0.0</expressly.version>
         <microprofile-config.version>3.1</microprofile-config.version>
-        <parsson.version>1.1.5</parsson.version>
+        <parsson.version>1.1.5.payara-p1</parsson.version>
         <jakarta.activation-api.version>2.1.0</jakarta.activation-api.version>
         <jaxb-api.version>4.0.1.payara-p1</jaxb-api.version>
         <jackson.version>2.15.0</jackson.version>
