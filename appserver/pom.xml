@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright 2016-2024 Payara Foundation and/or its affiliates -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
@@ -86,7 +86,7 @@
         <accessors-smart.version>2.4.11</accessors-smart.version>
         <json-smart.version>2.4.11</json-smart.version>
         <reactor-core.version>3.4.4</reactor-core.version>
-        <reactive-streams.version>1.0.3</reactive-streams.version>
+        <reactive-streams.version>1.0.4</reactive-streams.version>
         <jcip-annotations.version>1.0-1</jcip-annotations.version>
         
         <!-- Yubico client validation version property -->
