@@ -600,6 +600,17 @@ public abstract class PersistentManagerBase extends ManagerBase implements Lifec
         final List<Session> sessions = findSessions();
         for (final Session session1 : sessions) {
             StandardSession session = (StandardSession) session1;
+            //verify if session also is on the store and compare last access time
+            StandardSession sessionFromStore = null;
+            try {
+                sessionFromStore = (StandardSession) swapIn(session.getId());
+            } catch (IOException e) {
+                log.log(Level.WARNING, "Session from Store not available", e);
+            }
+            if (sessionFromStore != null) {
+                log.log(Level.INFO, "processExpires --> Getting session from Store and compare " + sessionFromStore);
+                compareAndUpdate(session, sessionFromStore);
+            }
             if(!session.getIsValid() || session.hasExpired()) {
                 if(session.lockBackground()) {
                     try {
@@ -728,14 +739,42 @@ public abstract class PersistentManagerBase extends ManagerBase implements Lifec
         //6406580 END        
 
         Session session = super.findSession(id);
-        if (session != null)
+
+        if (session != null) {
+            //verify if session also is on the store and compare last access time
+            Session sessionFromStore = swapIn(id);
+            log.log(Level.INFO, "findSession --> Getting session from Store and compare " + sessionFromStore);
+            if (sessionFromStore != null) {
+                compareAndUpdate((StandardSession) session, (StandardSession) sessionFromStore);
+            }
             return (session);
+        }
 
         // See if the Session is in the Store
         session = swapIn(id);
         return (session);
 
-    }       
+    }
+
+    public void compareAndUpdate(StandardSession currentSession, StandardSession sessionFromStore) {
+        log.log(Level.INFO, "compareAndUpdate -->Current Session lastaccessedtime:" + currentSession.getLastAccessedTimeInternal());
+        log.log(Level.INFO, "compareAndUpdate -->Current Session ThisAccessedTime:" + currentSession.getThisAccessedTime());
+        log.log(Level.INFO, "compareAndUpdate -->Session from Store lastaccessedtime:" + sessionFromStore.getLastAccessedTimeInternal());
+        log.log(Level.INFO, "compareAndUpdate -->Session from Store ThisAccessedTime:" + sessionFromStore.getLastAccessedTimeInternal());
+        if (sessionFromStore.getLastAccessedTimeInternal() == currentSession.getLastAccessedTimeInternal()) {
+            return;
+        }
+        //not equal assign new value to update lastaccesstime saved on other instances from the cluster
+        if (sessionFromStore.getLastAccessedTimeInternal() > currentSession.getLastAccessedTimeInternal()) {
+            currentSession.setLastAccessedTime(sessionFromStore.getLastAccessedTimeInternal());
+        }
+        if (sessionFromStore.getThisAccessedTime() > currentSession.getThisAccessedTime()) {
+            currentSession.setThisAccessedTime(sessionFromStore.getThisAccessedTime());
+        }
+
+        log.log(Level.INFO, "compareAndUpdate -->Saving stored LastAccessedTime to current session:" + currentSession.getLastAccessedTimeInternal());
+        log.log(Level.INFO, "compareAndUpdate -->Saving stored AccessedTime to current session:" + currentSession.getThisAccessedTime());
+    }
     
     /**
      * Return the active Session, associated with this Manager, with the

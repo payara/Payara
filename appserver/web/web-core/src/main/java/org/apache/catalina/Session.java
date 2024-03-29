@@ -387,5 +387,15 @@ public interface Session {
     /**
      * unlock the session from foreground
      */      
-    public void unlockForeground(); 
+    public void unlockForeground();
+
+    /**
+     * This method is to get the last time this session was accessed by the request from the client.
+     */
+    public long getThisAccessedTime();
+
+    /**
+     * This method is to set the value of the accessed time
+     */
+    public void setThisAccessedTime(long accessedTime);
 }
