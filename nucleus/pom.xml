@@ -106,7 +106,7 @@
         <saaj-api.version>1.4.0</saaj-api.version>
 
         <!-- Library for introspecting types with full generic information including resolving of field and method types. -->
-        <classmate.version>1.5.0</classmate.version>
+        <classmate.version>1.7.0</classmate.version>
         <jboss.logging.version>3.5.0.Final</jboss.logging.version>
 
 
