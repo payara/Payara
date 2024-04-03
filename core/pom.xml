@@ -156,7 +156,7 @@
         <opentelemetry.alpha26.version>1.26.0-alpha</opentelemetry.alpha26.version>
         <testng.version>7.4.0</testng.version>
         <bouncycastle-jdk15on.version>1.70</bouncycastle-jdk15on.version>
-        <jsftemplating.version>3.0.0</jsftemplating.version>
+        <jsftemplating.version>4.0.4</jsftemplating.version>
         <jakarta.faces-api.version>4.0.1</jakarta.faces-api.version>
 
         <!-- build versions -->
