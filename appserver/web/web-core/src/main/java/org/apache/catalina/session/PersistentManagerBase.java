@@ -609,7 +609,7 @@ public abstract class PersistentManagerBase extends ManagerBase implements Lifec
             }
             if (sessionFromStore != null) {
                 log.log(Level.INFO, "processExpires --> Getting session from Store and compare " + sessionFromStore);
-                compareAndUpdate(session, sessionFromStore);
+                compareAndUpdateAccessedTime(session, sessionFromStore);
             }
             if(!session.getIsValid() || session.hasExpired()) {
                 if(session.lockBackground()) {
@@ -745,7 +745,7 @@ public abstract class PersistentManagerBase extends ManagerBase implements Lifec
             Session sessionFromStore = swapIn(id);
             log.log(Level.INFO, "findSession --> Getting session from Store and compare " + sessionFromStore);
             if (sessionFromStore != null) {
-                compareAndUpdate((StandardSession) session, (StandardSession) sessionFromStore);
+                compareAndUpdateAccessedTime((StandardSession) session, (StandardSession) sessionFromStore);
             }
             return (session);
         }
@@ -756,7 +756,7 @@ public abstract class PersistentManagerBase extends ManagerBase implements Lifec
 
     }
 
-    public void compareAndUpdate(StandardSession currentSession, StandardSession sessionFromStore) {
+    public void compareAndUpdateAccessedTime(StandardSession currentSession, StandardSession sessionFromStore) {
         log.log(Level.INFO, "compareAndUpdate -->Current Session lastaccessedtime:" + currentSession.getLastAccessedTimeInternal());
         log.log(Level.INFO, "compareAndUpdate -->Current Session ThisAccessedTime:" + currentSession.getThisAccessedTime());
         log.log(Level.INFO, "compareAndUpdate -->Session from Store lastaccessedtime:" + sessionFromStore.getLastAccessedTimeInternal());
