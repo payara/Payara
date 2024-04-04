@@ -259,7 +259,7 @@
  <dependency>
                         <groupId>com.beust</groupId>
                         <artifactId>jcommander</artifactId>
-                        <version>1.72</version>
+                        <version>1.82</version>
                     </dependency>
                 </dependencies>
             </plugin>
