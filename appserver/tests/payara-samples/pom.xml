@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server.internal.tests</groupId>
         <artifactId>payara-tests</artifactId>
-        <version>6.2024.4-SNAPSHOT</version>
+        <version>6.2024.5-SNAPSHOT</version>
     </parent>
 
     <groupId>fish.payara.samples</groupId>
@@ -315,7 +315,7 @@
             <dependency>
                 <groupId>io.smallrye.config</groupId>
                 <artifactId>smallrye-config-repackaged</artifactId>
-                <version>2.7.0</version>
+                <version>3.7.1</version>
                 <classifier>jakartaee9</classifier>
                 <scope>test</scope>
                 <exclusions>
@@ -357,7 +357,7 @@
             <dependency>
                 <groupId>org.omnifaces</groupId>
                 <artifactId>omniutils</artifactId>
-                <version>0.11</version>
+                <version>0.13</version>
                 <scope>test</scope>
             </dependency>
             <dependency>

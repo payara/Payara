@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2016-2023] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright 2016-2024 Payara Foundation and/or its affiliates -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
@@ -49,7 +49,7 @@
     <parent>
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-nucleus-parent</artifactId>
-        <version>6.2024.4-SNAPSHOT</version>
+        <version>6.2024.5-SNAPSHOT</version>
         <relativePath>../nucleus/pom.xml</relativePath>
     </parent>
 
@@ -82,11 +82,11 @@
         <!-- Java API for XML Registries Resource Adapter -->
         <jaxr.version>JAXR_RA_20091012</jaxr.version>
 
-        <nimbus-jose-jwt.version>9.35</nimbus-jose-jwt.version>
+        <nimbus-jose-jwt.version>9.37.3</nimbus-jose-jwt.version>
         <accessors-smart.version>2.4.11</accessors-smart.version>
-        <json-smart.version>2.4.11</json-smart.version>
-        <reactor-core.version>3.4.4</reactor-core.version>
-        <reactive-streams.version>1.0.3</reactive-streams.version>
+        <json-smart.version>2.5.1</json-smart.version>
+        <reactor-core.version>3.6.4</reactor-core.version>
+        <reactive-streams.version>1.0.4</reactive-streams.version>
         <jcip-annotations.version>1.0-1</jcip-annotations.version>
         
         <!-- Yubico client validation version property -->

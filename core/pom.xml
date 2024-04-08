@@ -46,7 +46,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>fish.payara.server.core</groupId>
     <artifactId>core-aggregator</artifactId>
-    <version>6.14.0-SNAPSHOT</version>
+    <version>6.15.0-SNAPSHOT</version>
 
     <packaging>pom</packaging>
     <name>Payara Core Aggregator</name>
@@ -54,7 +54,8 @@
     <description>All of Payara Core modules</description>
 
     <properties>
-        <payara.core.version>6.14.0-SNAPSHOT</payara.core.version>
+        <payara.core.version>6.15.0-SNAPSHOT</payara.core.version>
+        <payara.core.compare-version>6.13.0</payara.core.compare-version>
         <!-- BOM dependencies versions -->
         <payara.security-connectors.version>3.1</payara.security-connectors.version>
         <hk2.version>3.0.1.payara-p4</hk2.version>
@@ -70,10 +71,10 @@
         <jakarta.el-api.version>5.0.1</jakarta.el-api.version>
         <expressly.version>5.0.0</expressly.version>
         <microprofile-config.version>3.1</microprofile-config.version>
-        <parsson.version>1.1.1.payara-p1</parsson.version>
+        <parsson.version>1.1.5.payara-p1</parsson.version>
         <jakarta.activation-api.version>2.1.0</jakarta.activation-api.version>
         <jaxb-api.version>4.0.1.payara-p1</jaxb-api.version>
-        <jackson.version>2.15.0</jackson.version>
+        <jackson.version>2.17.0</jackson.version>
         <jersey.version>3.1.5.payara-p1</jersey.version>
         <jakarta.validation.version>3.0.2</jakarta.validation.version>
         <hibernate.validator.version>8.0.0.Final</hibernate.validator.version>
@@ -111,7 +112,7 @@
         <tyrus.version>2.1.3.payara-p1</tyrus.version>
         <jsp-impl.version>3.2.0</jsp-impl.version>
         <asm.version>9.6</asm.version>
-        <websocket-api.version>2.1.0</websocket-api.version>
+        <websocket-api.version>2.1.1</websocket-api.version>
         <jax-rs-api.impl.version>3.1.0</jax-rs-api.impl.version>
         <jstl-api.version>3.0.0</jstl-api.version>
         <concurrent-api.version>3.0.2</concurrent-api.version>
@@ -139,7 +140,7 @@
         <metainf-services.version>1.9</metainf-services.version>
         <ldapbp.version>1.0</ldapbp.version>
         <!-- Javassist (JAVA programming ASSISTant) makes Java bytecode manipulation simple. It is a class library for editing bytecodes in Java. -->
-        <javassist.version>3.29.2-GA</javassist.version>
+        <javassist.version>3.30.2-GA</javassist.version>
         <mail.version>2.1.0</mail.version>
         <angus.mail.version>1.0.0</angus.mail.version>
         <ha-api.version>3.1.13</ha-api.version>
@@ -170,9 +171,9 @@
         <maven.surefire.plugin.version>3.0.0-M7</maven.surefire.plugin.version>
         <maven.resources.plugin.version>3.3.0</maven.resources.plugin.version>
         <maven.release.plugin.version>2.5.3</maven.release.plugin.version>
-        <maven.dependency.plugin.version>3.3.0</maven.dependency.plugin.version>
+        <maven.dependency.plugin.version>3.6.1</maven.dependency.plugin.version>
         <maven.gpg.plugin.version>1.6</maven.gpg.plugin.version>
-        <maven.deploy.plugin.version>3.0.0</maven.deploy.plugin.version>
+        <maven.deploy.plugin.version>3.1.1</maven.deploy.plugin.version>
         <maven.source.plugin.version>3.2.1</maven.source.plugin.version>
         <maven.javadoc.plugin.version>3.4.1</maven.javadoc.plugin.version>
         <maven.install.plugin.version>3.1.0</maven.install.plugin.version>
@@ -259,6 +260,16 @@
             </snapshots>
         </repository>
 
+        <repository>
+            <id>payara-nexus-snapshots</id>
+            <url>https://nexus.dev.payara.fish/repository/payara-snapshots</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
     </repositories>
 
     <pluginRepositories>
@@ -283,6 +294,17 @@
             </releases>
             <snapshots>
                 <enabled>false</enabled>
+            </snapshots>
+        </pluginRepository>
+
+        <pluginRepository>
+            <id>payara-nexus-snapshots</id>
+            <url>https://nexus.dev.payara.fish/repository/payara-snapshots</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
             </snapshots>
         </pluginRepository>
     </pluginRepositories>
@@ -494,6 +516,16 @@
                             <supportedProjectType>jar</supportedProjectType>
                         </supportedProjectTypes>
                     </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-enforcer-plugin</artifactId>
+                    <version>${maven.enforcer.plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>build-helper-maven-plugin</artifactId>
+                    <version>${maven.build.helper.plugin.version}</version>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -984,4 +1016,34 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <profiles>
+        <profile>
+            <id>payara-nexus-staging</id>
+            <repositories>
+                <repository>
+                    <id>payara-nexus-staging</id>
+                    <url>https://nexus.dev.payara.fish/repository/payara-staging</url>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>false</enabled>
+                    </snapshots>
+                </repository>
+            </repositories>
+            <pluginRepositories>
+                <pluginRepository>
+                    <id>payara-nexus-staging</id>
+                    <url>https://nexus.dev.payara.fish/repository/payara-staging</url>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>false</enabled>
+                    </snapshots>
+                </pluginRepository>
+            </pluginRepositories>
+        </profile>
+    </profiles>
 </project>
