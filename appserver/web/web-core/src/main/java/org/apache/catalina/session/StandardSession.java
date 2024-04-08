@@ -763,10 +763,6 @@ public class StandardSession implements HttpSession, Session, Serializable {
         this.lastAccessedTime = this.thisAccessedTime;
         this.thisAccessedTime = System.currentTimeMillis();
         evaluateIfValid();
-        LOGGER.info("Access -> Thread:" + Thread.currentThread().toString());
-        LOGGER.info("Access -> lastAccessedTime:" + this.lastAccessedTime);
-        LOGGER.info("Access -> thisAccessedTime:" + this.thisAccessedTime);
-        LOGGER.info("Access -> thisCreationTime:" + this.creationTime);
     }
 
 
@@ -776,10 +772,6 @@ public class StandardSession implements HttpSession, Session, Serializable {
     @Override
     public void endAccess() {
         isNew = false;
-        LOGGER.info("endAccess -> Thread:" + Thread.currentThread().toString());
-        LOGGER.info("endAccess -> lastAccessedTime:" + this.lastAccessedTime);
-        LOGGER.info("endAccess -> thisAccessedTime:" + this.thisAccessedTime);
-        LOGGER.info("endAccess -> thisCreationTime:" + this.creationTime);
     }
 
 
@@ -1099,16 +1091,8 @@ public class StandardSession implements HttpSession, Session, Serializable {
      */
     @Override
     public boolean hasExpired() {
-        LOGGER.info("hasExpired() -> Thread:" + Thread.currentThread().toString());
-        LOGGER.info("hasExpired() -> lastAccessedTime:" + this.lastAccessedTime);
-        LOGGER.info("hasExpired() -> thisAccessedTime:" + this.thisAccessedTime);
-        LOGGER.info("hasExpired() -> thisCreationTime:" + this.creationTime);
-        LOGGER.info("hasExpired() -> currentTime:" + System.currentTimeMillis());
-        LOGGER.info("hasExpired() -> maxInactiveInterval:" + maxInactiveInterval);
         long diff = System.currentTimeMillis() - this.thisAccessedTime;
-        LOGGER.info("hasExpired() -> diff:" + diff);
         long maxIncInterval = maxInactiveInterval * 1000L;
-        LOGGER.info("hasExpired() -> maxIncInterval:" + maxIncInterval);
         return maxInactiveInterval >= 0
                 && (diff >= maxIncInterval);
     }
@@ -1937,6 +1921,8 @@ public class StandardSession implements HttpSession, Session, Serializable {
         //control assign of lastAccessedTime and thisAccessedTime if both on the local are more recent that the values saved 
         //on the store then use current values
         long readlastAccessedTime = ((Long) stream.readObject());
+        //assign the read value from storage in case the value is greater than the current
+        //this means that other member from the cluster updated the value
         if (readlastAccessedTime != 0 && readlastAccessedTime >= lastAccessedTime) {
             lastAccessedTime = readlastAccessedTime;
         }
@@ -1945,14 +1931,12 @@ public class StandardSession implements HttpSession, Session, Serializable {
         isNew = ((Boolean) stream.readObject());
         isValid = ((Boolean) stream.readObject());
         long readThisAccessedTime = ((Long) stream.readObject());
+        //assign the read value from storage in case the value is greater than the current
+        //this means that other member from the cluster updated the value
         if (readThisAccessedTime != 0 && readThisAccessedTime >= thisAccessedTime) {
             thisAccessedTime = readThisAccessedTime;
         }
-
-        LOGGER.info("readRemainingObject -> Thread:" + Thread.currentThread().toString());
-        LOGGER.info("readRemainingObject -> lastAccessedTime:" + this.lastAccessedTime);
-        LOGGER.info("readRemainingObject -> thisAccessedTime:" + this.thisAccessedTime);
-        LOGGER.info("readRemainingObject -> thisCreationTime:" + this.creationTime);
+        
         /* SJSWS 6371339
         principal = null;        // Transient only
         //        setId((String) stream.readObject());
@@ -2050,10 +2034,6 @@ public class StandardSession implements HttpSession, Session, Serializable {
         stream.writeObject(isNew);
         stream.writeObject(isValid);
         stream.writeObject(thisAccessedTime);
-        LOGGER.info("writeObject -> Thread:" + Thread.currentThread().toString());
-        LOGGER.info("writeObject -> lastAccessedTime:" + this.lastAccessedTime);
-        LOGGER.info("writeObject -> thisAccessedTime:" + this.thisAccessedTime);
-        LOGGER.info("writeObject -> thisCreationTime:" + this.creationTime);
         // START SJSWS 6371339
         // If the principal is serializable, write it out
         // START PWC 6444754

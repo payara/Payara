@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
 
 package org.apache.catalina.session;
 
@@ -600,15 +600,14 @@ public abstract class PersistentManagerBase extends ManagerBase implements Lifec
         final List<Session> sessions = findSessions();
         for (final Session session1 : sessions) {
             StandardSession session = (StandardSession) session1;
-            //verify if session also is on the store and compare last access time
+            //verify if session also is on the store and compare lastAccessTime and thisAccessedTime
             StandardSession sessionFromStore = null;
             try {
                 sessionFromStore = (StandardSession) swapIn(session.getId());
             } catch (IOException e) {
-                log.log(Level.WARNING, "Session from Store not available", e);
+                log.log(Level.INFO, "Caught exception attempting to swap in session from store", e);
             }
             if (sessionFromStore != null) {
-                log.log(Level.INFO, "processExpires --> Getting session from Store and compare " + sessionFromStore);
                 compareAndUpdateAccessedTime(session, sessionFromStore);
             }
             if(!session.getIsValid() || session.hasExpired()) {
@@ -741,9 +740,8 @@ public abstract class PersistentManagerBase extends ManagerBase implements Lifec
         Session session = super.findSession(id);
 
         if (session != null) {
-            //verify if session also is on the store and compare last access time
+            //verify if session also is on the store and compare lastAccessTime and thisAccessedTime
             Session sessionFromStore = swapIn(id);
-            log.log(Level.INFO, "findSession --> Getting session from Store and compare " + sessionFromStore);
             if (sessionFromStore != null) {
                 compareAndUpdateAccessedTime((StandardSession) session, (StandardSession) sessionFromStore);
             }
@@ -757,10 +755,6 @@ public abstract class PersistentManagerBase extends ManagerBase implements Lifec
     }
 
     public void compareAndUpdateAccessedTime(StandardSession currentSession, StandardSession sessionFromStore) {
-        log.log(Level.INFO, "compareAndUpdate -->Current Session lastaccessedtime:" + currentSession.getLastAccessedTimeInternal());
-        log.log(Level.INFO, "compareAndUpdate -->Current Session ThisAccessedTime:" + currentSession.getThisAccessedTime());
-        log.log(Level.INFO, "compareAndUpdate -->Session from Store lastaccessedtime:" + sessionFromStore.getLastAccessedTimeInternal());
-        log.log(Level.INFO, "compareAndUpdate -->Session from Store ThisAccessedTime:" + sessionFromStore.getLastAccessedTimeInternal());
         if (sessionFromStore.getLastAccessedTimeInternal() == currentSession.getLastAccessedTimeInternal()) {
             return;
         }
@@ -768,12 +762,10 @@ public abstract class PersistentManagerBase extends ManagerBase implements Lifec
         if (sessionFromStore.getLastAccessedTimeInternal() > currentSession.getLastAccessedTimeInternal()) {
             currentSession.setLastAccessedTime(sessionFromStore.getLastAccessedTimeInternal());
         }
+        //not equal assign new value to update thisAccessTime saved on other instances from the cluster
         if (sessionFromStore.getThisAccessedTime() > currentSession.getThisAccessedTime()) {
             currentSession.setThisAccessedTime(sessionFromStore.getThisAccessedTime());
         }
-
-        log.log(Level.INFO, "compareAndUpdate -->Saving stored LastAccessedTime to current session:" + currentSession.getLastAccessedTimeInternal());
-        log.log(Level.INFO, "compareAndUpdate -->Saving stored AccessedTime to current session:" + currentSession.getThisAccessedTime());
     }
     
     /**
