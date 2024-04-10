@@ -367,6 +367,8 @@ public interface Container {
      * throwables will be caught and logged.
      */
     void backgroundProcess();
+    
+    void backgroundSessionUpdate();
 
 
     /**

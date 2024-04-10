@@ -292,6 +292,8 @@ public class StandardSession implements HttpSession, Session, Serializable {
      * Flag indicating whether this session is valid or not.
      */
     protected boolean isValid = false;
+    
+    protected volatile boolean isAccessed = false;
 
     /**
      * Internal notes associated with this session by Catalina components
@@ -760,6 +762,7 @@ public class StandardSession implements HttpSession, Session, Serializable {
      */
     @Override
     public void access() {
+        isAccessed = true;
         this.lastAccessedTime = this.thisAccessedTime;
         this.thisAccessedTime = System.currentTimeMillis();
         evaluateIfValid();
@@ -772,6 +775,7 @@ public class StandardSession implements HttpSession, Session, Serializable {
     @Override
     public void endAccess() {
         isNew = false;
+        isAccessed = false;
     }
 
 
@@ -1923,7 +1927,7 @@ public class StandardSession implements HttpSession, Session, Serializable {
         long readlastAccessedTime = ((Long) stream.readObject());
         //assign the read value from storage in case the value is greater than the current
         //this means that other member from the cluster updated the value
-        if (readlastAccessedTime != 0 && readlastAccessedTime >= lastAccessedTime) {
+        if (readlastAccessedTime != 0 && readlastAccessedTime >= lastAccessedTime && !isAccessed) {
             lastAccessedTime = readlastAccessedTime;
         }
 
@@ -1933,7 +1937,7 @@ public class StandardSession implements HttpSession, Session, Serializable {
         long readThisAccessedTime = ((Long) stream.readObject());
         //assign the read value from storage in case the value is greater than the current
         //this means that other member from the cluster updated the value
-        if (readThisAccessedTime != 0 && readThisAccessedTime >= thisAccessedTime) {
+        if (readThisAccessedTime != 0 && readThisAccessedTime >= thisAccessedTime && !isAccessed) {
             thisAccessedTime = readThisAccessedTime;
         }
         
@@ -2159,6 +2163,7 @@ public class StandardSession implements HttpSession, Session, Serializable {
 
         stream.writeObject(sipAppSessionId);
         stream.writeObject(beKey);
+        isAccessed = false;
     }
 
 

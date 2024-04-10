@@ -306,12 +306,17 @@ public abstract class ContainerBase
      * The background thread.
      */
     private Thread thread = null;
+    
+    private Thread sessionThread = null;
 
 
     /**
      * The background thread completion semaphore.
      */
     private volatile boolean threadDone = false;
+    
+    
+    private volatile boolean threadSessionDone = false;
 
 
     /**
@@ -1234,6 +1239,8 @@ public abstract class ContainerBase
 
         // Start our thread
         threadStart();
+        
+        threadSessionStart();
 
         // Notify our interested LifecycleListeners
         lifecycle.fireLifecycleEvent(AFTER_START_EVENT, null);
@@ -1508,6 +1515,10 @@ public abstract class ContainerBase
     public void backgroundProcess() {
     }
 
+    @Override
+    public void backgroundSessionUpdate() {
+    
+    }
 
     // ------------------------------------------------------ Protected Methods
 
@@ -1719,6 +1730,17 @@ public abstract class ContainerBase
         thread.start();
 
     }
+    
+    protected void threadSessionStart() {
+        if (sessionThread != null)
+            return;
+        threadSessionDone = false;
+        String threadName = "ContainerBackgroundSessionProcessor[" + toString() + "]";
+        sessionThread = new Thread(new ContainerBackgroundSessionProcessor(), threadName);
+        sessionThread.setDaemon(true);
+        sessionThread.start();
+        
+    }
 
 
     /**
@@ -1793,5 +1815,50 @@ public abstract class ContainerBase
         }
 
     }
+
+    protected class ContainerBackgroundSessionProcessor implements Runnable {
+
+        @Override
+        public void run() {
+            while (!threadSessionDone) {
+                try {
+                    Thread.sleep(1000L);
+                } catch (InterruptedException e) {
+                    // Ignore
+                }
+                if (!threadSessionDone) {
+                    Container parent = (Container) getMappingObject();
+                    ClassLoader cl =
+                            Thread.currentThread().getContextClassLoader();
+                    if (parent.getLoader() != null) {
+                        cl = parent.getLoader().getClassLoader();
+                    }
+                    processChildren(parent, cl);
+                }
+            }
+        }
+
+        protected void processChildren(Container container, ClassLoader cl) {
+            try {
+                if (container.getLoader() != null) {
+                    Thread.currentThread().setContextClassLoader
+                            (container.getLoader().getClassLoader());
+                }
+                container.backgroundSessionUpdate();
+            } catch (Throwable t) {
+                log.log(Level.SEVERE, LogFacade.EXCEPTION_INVOKES_PERIODIC_OP, t);
+            } finally {
+                Thread.currentThread().setContextClassLoader(cl);
+            }
+            Container[] children = container.findChildren();
+            for (Container child : children) {
+                if (child.getBackgroundProcessorDelay() <= 0) {
+                    processChildren(child, cl);
+                }
+            }
+        }
+
+    }
+    
 
 }

@@ -5756,6 +5756,8 @@ public class StandardContext
 
             // Start ContainerBackgroundProcessor thread
             super.threadStart();
+            super.threadSessionStart();
+            
 
             // Configure and call application filters
             filterStart();
@@ -6190,6 +6192,19 @@ public class StandardContext
             }
         }
         // END S1AS8PE 4965017
+    }
+
+    @Override
+    public void backgroundSessionUpdate() {
+        if ((getManager() != null)) {
+            if (getManager() instanceof StandardManager) {
+                ((StandardManager) getManager()).processExpires();
+            } else if (getManager() instanceof PersistentManagerBase) {
+                PersistentManagerBase pManager =
+                        (PersistentManagerBase) getManager();
+                pManager.backgroundSessionUpdate();
+            }
+        }
     }
 
 

@@ -263,6 +263,10 @@ public abstract class PersistentManagerBase extends ManagerBase implements Lifec
         }
     }
 
+    public void backgroundSessionUpdate() {
+        this.updateSession();
+    }
+
     /**
      * Indicates how many seconds old a session can get, after its last
      * use in a request, before it should be backed up to the store. -1
@@ -620,7 +624,26 @@ public abstract class PersistentManagerBase extends ManagerBase implements Lifec
                 }
             }            
         }
-    }        
+    }   
+    
+    protected void updateSession() {
+        final List<Session> sessions = findSessions();
+        for (final Session session1 : sessions) {
+            StandardSession session = (StandardSession) session1;
+            //verify if session also is on the store and compare lastAccessTime and thisAccessedTime
+            StandardSession sessionFromStore = null;
+            try {
+                if(session != null) {
+                    sessionFromStore = (StandardSession) swapIn(session.getId());
+                }
+            } catch (IOException e) {
+                log.log(Level.INFO, "Caught exception attempting to swap in session from store", e);
+            }
+            if (sessionFromStore != null) {
+                compareAndUpdateAccessedTime(session, sessionFromStore);
+            }
+        }
+    }
 
 
     /**
@@ -755,15 +778,12 @@ public abstract class PersistentManagerBase extends ManagerBase implements Lifec
     }
 
     public void compareAndUpdateAccessedTime(StandardSession currentSession, StandardSession sessionFromStore) {
-        if (sessionFromStore.getLastAccessedTimeInternal() == currentSession.getLastAccessedTimeInternal()) {
-            return;
-        }
-        //not equal assign new value to update lastaccesstime saved on other instances from the cluster
-        if (sessionFromStore.getLastAccessedTimeInternal() > currentSession.getLastAccessedTimeInternal()) {
+        //Greater than or equal assign new value to update lastaccesstime saved on other instances from the cluster
+        if (sessionFromStore.getLastAccessedTimeInternal() >= currentSession.getLastAccessedTimeInternal()) {
             currentSession.setLastAccessedTime(sessionFromStore.getLastAccessedTimeInternal());
         }
-        //not equal assign new value to update thisAccessTime saved on other instances from the cluster
-        if (sessionFromStore.getThisAccessedTime() > currentSession.getThisAccessedTime()) {
+        //Greater than or equal assign new value to update thisAccessTime saved on other instances from the cluster
+        if (sessionFromStore.getThisAccessedTime() >= currentSession.getThisAccessedTime()) {
             currentSession.setThisAccessedTime(sessionFromStore.getThisAccessedTime());
         }
     }
