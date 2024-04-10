@@ -775,7 +775,6 @@ public class StandardSession implements HttpSession, Session, Serializable {
     @Override
     public void endAccess() {
         isNew = false;
-        isAccessed = false;
     }
 
 
