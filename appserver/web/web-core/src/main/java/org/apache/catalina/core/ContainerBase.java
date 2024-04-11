@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2019-2021] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2024] Payara Foundation and/or affiliates
 
 package org.apache.catalina.core;
 
@@ -306,7 +306,11 @@ public abstract class ContainerBase
      * The background thread.
      */
     private Thread thread = null;
-    
+
+
+    /**
+     * The background thread to validate lastaccesstime and accessedtime values.
+     */
     private Thread sessionThread = null;
 
 
@@ -314,8 +318,11 @@ public abstract class ContainerBase
      * The background thread completion semaphore.
      */
     private volatile boolean threadDone = false;
-    
-    
+
+
+    /**
+     * The session background thread completion semaphore.
+     */
     private volatile boolean threadSessionDone = false;
 
 
@@ -1239,7 +1246,8 @@ public abstract class ContainerBase
 
         // Start our thread
         threadStart();
-        
+
+        //Start the session validation thread
         threadSessionStart();
 
         // Notify our interested LifecycleListeners
@@ -1269,6 +1277,9 @@ public abstract class ContainerBase
 
         // Stop our thread
         threadStop();
+
+        //Stop our session validation thread
+        threadSessionStop();
 
         // Notify our interested LifecycleListeners
         lifecycle.fireLifecycleEvent(STOP_EVENT, null);
@@ -1515,9 +1526,12 @@ public abstract class ContainerBase
     public void backgroundProcess() {
     }
 
+    /**
+     * Execute periodic task to get last values added on the session storage, those values 
+     * can be added by another instance on the cluster.
+     */
     @Override
     public void backgroundSessionUpdate() {
-    
     }
 
     // ------------------------------------------------------ Protected Methods
@@ -1730,7 +1744,11 @@ public abstract class ContainerBase
         thread.start();
 
     }
-    
+
+    /**
+     * Start the session background thread that will periodically check session storage values 
+     * to update lastaccesstime and accessedTime.
+     */
     protected void threadSessionStart() {
         if (sessionThread != null)
             return;
@@ -1764,6 +1782,24 @@ public abstract class ContainerBase
 
     }
 
+    /**
+     * Stopping the background thread that is periodically checking storage sessions 
+     * to update lastaccesstime and accessedTime to validate timeouts.
+     */
+    protected void threadSessionStop() {
+        if (sessionThread == null) {
+            return;
+        }
+
+        this.threadSessionDone = true;
+        sessionThread.interrupt();
+        try {
+            sessionThread.join();
+        } catch (InterruptedException e) {
+            //Ignore
+        }
+        sessionThread = null;
+    }
 
     // -------------------------------------- ContainerExecuteDelay Inner Class
 
@@ -1816,6 +1852,10 @@ public abstract class ContainerBase
 
     }
 
+    /**
+     * Thread class to invoke the backgroundSessionUpdate method 
+     * of this container and its children after 500 milliseconds.
+     */
     protected class ContainerBackgroundSessionProcessor implements Runnable {
 
         @Override

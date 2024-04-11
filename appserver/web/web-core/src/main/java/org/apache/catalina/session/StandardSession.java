@@ -56,7 +56,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
 
 package org.apache.catalina.session;
 
@@ -292,7 +292,10 @@ public class StandardSession implements HttpSession, Session, Serializable {
      * Flag indicating whether this session is valid or not.
      */
     protected boolean isValid = false;
-    
+
+    /**
+     * Flag indicating if access method is called
+     */
     protected volatile boolean isAccessed = false;
 
     /**

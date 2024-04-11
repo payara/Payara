@@ -56,6 +56,8 @@
  * limitations under the License.
  */
 
+// Portions Copyright [2024] Payara Foundation and/or affiliates
+
 package org.apache.catalina;
 
 
@@ -367,7 +369,11 @@ public interface Container {
      * throwables will be caught and logged.
      */
     void backgroundProcess();
-    
+
+    /**
+     * Execute periodic task to get last values added on the session storage, those values 
+     * can be added by another instance on the cluster.
+     */
     void backgroundSessionUpdate();
 
 

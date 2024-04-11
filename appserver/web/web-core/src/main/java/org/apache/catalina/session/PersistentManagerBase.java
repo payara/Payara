@@ -263,6 +263,9 @@ public abstract class PersistentManagerBase extends ManagerBase implements Lifec
         }
     }
 
+    /**
+     * Perform the session backgroud process to validate values from session storage.
+     */
     public void backgroundSessionUpdate() {
         this.updateSession();
     }
@@ -624,8 +627,12 @@ public abstract class PersistentManagerBase extends ManagerBase implements Lifec
                 }
             }            
         }
-    }   
-    
+    }
+
+    /**
+     * Verifies available sessions and verifies if from the storage same session was updated from 
+     * another instance from the cluster.
+     */
     protected void updateSession() {
         final List<Session> sessions = findSessions();
         for (final Session session1 : sessions) {
@@ -777,6 +784,11 @@ public abstract class PersistentManagerBase extends ManagerBase implements Lifec
 
     }
 
+    /**
+     * This method compare both sessions and assign lastAccessTime and accessedTime if conditions are true.
+     * @param currentSession
+     * @param sessionFromStore
+     */
     public void compareAndUpdateAccessedTime(StandardSession currentSession, StandardSession sessionFromStore) {
         //Greater than or equal assign new value to update lastaccesstime saved on other instances from the cluster
         if (sessionFromStore.getLastAccessedTimeInternal() >= currentSession.getLastAccessedTimeInternal()) {
