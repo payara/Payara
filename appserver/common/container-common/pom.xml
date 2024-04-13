@@ -156,5 +156,10 @@
             <groupId>org.glassfish.soteria</groupId>
             <artifactId>jakarta.security.enterprise</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.glassfish.concurro</groupId>
+            <artifactId>concurro</artifactId>
+            <version>3.1.0-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 </project>

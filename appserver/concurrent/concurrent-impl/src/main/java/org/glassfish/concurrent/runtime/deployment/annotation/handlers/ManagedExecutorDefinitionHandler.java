@@ -107,6 +107,7 @@ public class ManagedExecutorDefinitionHandler extends AbstractResourceHandler {
 
         medd.setVirtual(managedExecutorDefinition.virtual());
         medd.setMetadataSource(MetadataSource.ANNOTATION);
+        medd.setQualifiers(managedExecutorDefinition.qualifiers());
         return medd;
     }
 

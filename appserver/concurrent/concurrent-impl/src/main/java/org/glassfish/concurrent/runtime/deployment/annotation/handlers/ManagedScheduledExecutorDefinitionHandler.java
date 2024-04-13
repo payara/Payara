@@ -109,6 +109,7 @@ public class ManagedScheduledExecutorDefinitionHandler extends AbstractResourceH
         msedd.setVirtual(managedScheduledExecutorDefinition.virtual());
 
         msedd.setMetadataSource(MetadataSource.ANNOTATION);
+        msedd.setQualifiers(managedScheduledExecutorDefinition.qualifiers());
         return msedd;
     }
 

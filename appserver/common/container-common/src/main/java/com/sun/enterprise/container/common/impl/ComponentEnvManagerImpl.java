@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2022] Payara Foundation and/or affiliates
+// Portions Copyright [2022-2024] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.container.common.impl;
 
@@ -49,6 +49,7 @@ import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
 import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.naming.spi.NamingObjectFactory;
 import com.sun.enterprise.naming.spi.NamingUtils;
+import org.glassfish.concurro.internal.ConcurrencyManagedCDIBeans;
 import org.glassfish.api.admin.ProcessEnvironment;
 import org.glassfish.api.invocation.ApplicationEnvironment;
 import org.glassfish.api.invocation.ComponentInvocation;
@@ -81,6 +82,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import static org.glassfish.deployment.common.JavaEEResourceType.*;
 
@@ -310,7 +312,7 @@ public class ComponentEnvManagerImpl
 
     private void addAllDescriptorBindings(JndiNameEnvironment env, ScopeType scope, Collection<JNDIBinding> jndiBindings) {
 
-        Set<ResourceDescriptor> allDescriptors = new HashSet<ResourceDescriptor>();
+        Set<ResourceDescriptor> allDescriptors = new HashSet<>();
         Set<ResourceDescriptor> dsds = env.getResourceDescriptors(JavaEEResourceType.DSD);
         Set<ResourceDescriptor> jmscfdds = env.getResourceDescriptors(JavaEEResourceType.JMSCFDD);
         Set<ResourceDescriptor> msds =env.getResourceDescriptors(JavaEEResourceType.MSD);
@@ -369,6 +371,35 @@ public class ComponentEnvManagerImpl
                 CompEnvBinding jmscfEnvBinding = new CompEnvBinding(ConnectorsUtil.getPMJndiName(logicalJndiName), jmscfProxy);
                 jndiBindings.add(jmscfEnvBinding);
             }
+        }
+
+        if (scope == ScopeType.APP) {
+            Set<ResourceDescriptor> concurrencyDescs = new HashSet<>();
+            concurrencyDescs.addAll(medd);
+            concurrencyDescs.addAll(mtfdd);
+            concurrencyDescs.addAll(msedd);
+            concurrencyDescs.addAll(csdd);
+            registerConcurrencyCDIQualifiers(jndiBindings, concurrencyDescs);
+        }
+    }
+
+    private void registerConcurrencyCDIQualifiers(Collection<JNDIBinding> jndiBindings, Set<ResourceDescriptor> concurrencyDescs) {
+        if (!jndiBindings.isEmpty()) {
+            ConcurrencyManagedCDIBeans setup = new ConcurrencyManagedCDIBeans();
+            for (ResourceDescriptor desc : concurrencyDescs) {
+                if (desc instanceof ConcurrencyQualifiedDescriptor qDesc) {
+                    Set<String> qualifiers = qDesc.getQualifiers().stream()
+                            .map(c -> c.getName())
+                            .collect(Collectors.toSet());
+                    if (!qualifiers.isEmpty()) {
+                        String concurrencyType = qDesc.getConcurrencyType();
+                        setup.addDefinition(ConcurrencyManagedCDIBeans.Type.valueOf(concurrencyType), qualifiers, desc.getName());
+                    }
+                } else {
+                    System.out.println("ERROR! " + desc);
+                }
+        }
+            jndiBindings.add(new CompEnvBinding(ConcurrencyManagedCDIBeans.JDNI_NAME, setup));
         }
     }
 
@@ -687,7 +718,6 @@ public class ComponentEnvManagerImpl
             jndiBindings.add(new CompEnvBinding(name, value));
          }
 
-        return;
     }
 
     private CompEnvBinding getCompEnvBinding(final ResourceEnvReferenceDescriptor next) {

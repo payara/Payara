@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2022] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2022-2024] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -106,6 +106,8 @@ public class ContextServiceDefinitionHandler extends AbstractResourceHandler {
         csdd.setPropagated(evaluateContexts(contectServiceDefinition.propagated(), unusedContexts));
         csdd.setCleared(evaluateContexts(contectServiceDefinition.cleared(), unusedContexts));
         csdd.setUnchanged(evaluateContexts(contectServiceDefinition.unchanged(), unusedContexts));
+        csdd.setQualifiers(contectServiceDefinition.qualifiers());
+
         return csdd;
     }
 
