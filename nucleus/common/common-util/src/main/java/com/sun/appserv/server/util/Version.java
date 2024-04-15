@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016-2023] [Payara Foundation and/or affiliates]
+// Portions Copyright 2016-2024 Payara Foundation and/or affiliates
 
 package com.sun.appserv.server.util;
 
@@ -158,11 +158,11 @@ public class Version {
         // construct version number
         String maj = getMajorVersion();
         String min = getMinorVersion();
-        String upd = getUpdateVersion().replaceAll("\\D+", "");
+        String upd = getUpdateVersion();
         String v;
         try {
             if (min != null && min.length() > 0 && Integer.parseInt(min) >= 0) {
-                if (upd != null && upd.length() > 0 && Integer.parseInt(upd) >= 0) {
+                if (upd != null && upd.length() > 0) {
                     v = maj + "." + min + "." + upd;
                 } else {
                     v = maj + "." + min;
@@ -205,14 +205,14 @@ public class Version {
      * Returns Minor version
      */
     public static String getMinorVersion() {
-        return getProperty(MINOR_VERSION_KEY, "0").replace("-SNAPSHOT", "");
+        return getProperty(MINOR_VERSION_KEY, "0");
     }
 
     /**
      * Returns Update version
      */
     public static String getUpdateVersion() {
-        return getProperty(UPDATE_VERSION_KEY, "0");
+        return getProperty(UPDATE_VERSION_KEY, "0").replace("-SNAPSHOT", "");
     }
 
     /**
