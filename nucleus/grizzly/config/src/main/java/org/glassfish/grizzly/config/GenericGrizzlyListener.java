@@ -487,9 +487,9 @@ public class GenericGrizzlyListener implements GrizzlyListener {
                         ProtocolFinder.class, finderClassname, finderClassname);
                     configureElement(habitat, networkListener, finderConfig, protocolFinder);
                     final Protocol subProtocol = finderConfig.findProtocol();
-                    
+
                     if (subProtocol.getHttp() != null) {
-                        if (LOGGER.isLoggable(WARNING)) {
+                        if (LOGGER.isLoggable(WARNING) && isHttp2Enabled()) {
                             LOGGER.log(WARNING, 
                                 "HTTP/2 (enabled by default) is unsupported with port " + 
                                 "unification and will be disabled for network listener {0}.", networkListener.getName());
