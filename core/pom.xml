@@ -77,8 +77,7 @@
         <jackson.version>2.17.0</jackson.version>
         <jersey.version>3.1.5.payara-p1</jersey.version>
         <jakarta.validation.version>3.0.2</jakarta.validation.version>
-        <hibernate.validator.version>8.0.0.Final</hibernate.validator.version>
-        <hibernate.validator-cdi.version>8.0.0.Final</hibernate.validator-cdi.version>
+        <hibernate.validator.version>8.0.1.Final</hibernate.validator.version>
         <jaxb-impl.version>4.0.1</jaxb-impl.version>
         <jsonp-api.version>2.1.0</jsonp-api.version>
         <jakarta.security.auth.message-api.version>3.0.0</jakarta.security.auth.message-api.version>
@@ -782,7 +781,7 @@
             <dependency>
                 <groupId>org.hibernate.validator</groupId>
                 <artifactId>hibernate-validator-cdi</artifactId>
-                <version>${hibernate.validator-cdi.version}</version>
+                <version>${hibernate.validator.version}</version>
             </dependency>
 
             <dependency>
