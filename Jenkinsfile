@@ -31,7 +31,7 @@ pipeline {
         stage('Build') {
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Building SRC  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh """mvn -B -V -ff -e clean install --strict-checksums -PQuickBuild \
+                sh """mvn -B -V -ff -e clean install --strict-checksums -PQuickBuild,jakarta-staging \
                     -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
                     -Djavax.xml.accessExternalSchema=all -Dbuild.number=${payaraBuildNumber}"""
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#    Built SRC   *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
