@@ -1860,20 +1860,23 @@ public abstract class ContainerBase
 
         @Override
         public void run() {
-            while (!threadSessionDone) {
-                try {
-                    Thread.sleep(1000L);
-                } catch (InterruptedException e) {
-                    // Ignore
-                }
-                if (!threadSessionDone) {
-                    Container parent = (Container) getMappingObject();
-                    ClassLoader cl =
-                            Thread.currentThread().getContextClassLoader();
-                    if (parent.getLoader() != null) {
-                        cl = parent.getLoader().getClassLoader();
+            if(manager != null) {
+                while (!threadSessionDone) {
+                    try {
+                        //this will calculate the interval depending on the configured timeout from the application
+                        Thread.sleep( (manager.getMaxInactiveInterval() / 2) * 1000L);
+                    } catch (InterruptedException e) {
+                        // Ignore
                     }
-                    processChildren(parent, cl);
+                    if (!threadSessionDone) {
+                        Container parent = (Container) getMappingObject();
+                        ClassLoader cl =
+                                Thread.currentThread().getContextClassLoader();
+                        if (parent.getLoader() != null) {
+                            cl = parent.getLoader().getClassLoader();
+                        }
+                        processChildren(parent, cl);
+                    }
                 }
             }
         }
