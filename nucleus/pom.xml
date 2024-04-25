@@ -91,7 +91,7 @@
         <maven.invoker.plugin.version>3.3.0</maven.invoker.plugin.version>
         <maven.war.plugin.version>3.3.2</maven.war.plugin.version>
         <maven.makepkgs.plugin.version>0.6.2</maven.makepkgs.plugin.version>
-        <maven.jaxb2.plugin.version>0.15.1</maven.jaxb2.plugin.version>
+        <maven.jaxb2.plugin.version>0.15.3</maven.jaxb2.plugin.version>
         <maven.antlr.plugin.version>2.4</maven.antlr.plugin.version>
 
         <maven.jaxws.plugin.version>2.6</maven.jaxws.plugin.version>
