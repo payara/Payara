@@ -122,7 +122,7 @@
         <dependency>
             <groupId>org.virtualbox</groupId>
             <artifactId>vboxjws</artifactId>
-            <version>4.1.4</version>
+            <version>4.2.8</version>
             <!-- By indicating the scope as provided, GF distribution mechanism 
                  excludes this -->
             <optional>true</optional>
