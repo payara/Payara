@@ -275,7 +275,11 @@ public class ASClassLoaderUtil {
                             } else if (uriString.startsWith("jar:")) {
                                 // In Spring Boot application, the URIs are pointing to embedded JARs in a JAR,
                                 // resulting in a FileSystemNotFoundException when parsed with Paths.get(...)
-                                deplLogger.log(Level.INFO, "The URI has been ignored: {0}", uriString);
+                                int index = uriString.indexOf("!");
+                                String jarPath = index == -1 ?
+                                        uriString.substring("jar:".length()) : uriString.substring("jar:".length(), index);
+                                tmpString.append(jarPath);
+                                tmpString.append(File.pathSeparator);
                             } else {
                                 try {
                                     tmpString.append(Paths.get(uri).toString());
