@@ -70,7 +70,7 @@
     </developers>
 
     <properties>
-        <gmbal.grizzly.version>3.0.0-b023</gmbal.grizzly.version>
+        <gmbal.grizzly.version>4.0.3</gmbal.grizzly.version>
         <findbugs.skip>true</findbugs.skip>
         <jar.manifest></jar.manifest>
     </properties>    
