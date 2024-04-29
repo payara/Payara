@@ -59,7 +59,7 @@
         <failOnMissingWebXml>false</failOnMissingWebXml>
         <arquillian-bom.version>1.7.0.Alpha10</arquillian-bom.version>
         <junit-jupiter.version>5.8.2</junit-jupiter.version>
-        <arquillian-payara.version>3.0.alpha3</arquillian-payara.version>
+        <arquillian-payara.version>3.0.alpha4</arquillian-payara.version>
         <jakarta-concurrent.version>3.0.0</jakarta-concurrent.version>
         <shrinkwrap.version>3.1.4</shrinkwrap.version>
     </properties>
