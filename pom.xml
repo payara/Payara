@@ -338,6 +338,27 @@
                 </repository>
             </repositories>
         </profile>
+
+        <profile>
+            <id>GenerateThirdPartyLicenseFile</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>license-maven-plugin</artifactId>
+                        <inherited>false</inherited>
+                        <executions>
+                            <execution>
+                                <id>download-and-aggregate-licenses</id>
+                                <goals>
+                                    <goal>aggregate-add-third-party</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 
     <build>
@@ -368,22 +389,6 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>license-maven-plugin</artifactId>
-                <version>${license-maven-plugin.version}</version>
-                <inherited>false</inherited>
-                <executions>
-                    <execution>
-                        <id>download-and-aggregate-licenses</id>
-                        <phase>generate-resources</phase>
-                        <goals>
-                            <goal>aggregate-add-third-party</goal>
-                        </goals>
-                    </execution>
-                </executions>
-
             </plugin>
         </plugins>
 
