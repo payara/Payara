@@ -42,6 +42,7 @@ pipeline {
                     archiveArtifacts artifacts: 'appserver/distributions/payara/target/payara.zip', fingerprint: true
                     archiveArtifacts artifacts: 'appserver/extras/payara-micro/payara-micro-distribution/target/payara-micro.jar', fingerprint: true
                     stash name: 'payara-target', includes: 'appserver/distributions/payara/target/**', allowEmpty: true
+                    stash name: 'payara-micro', includes: 'appserver/extras/payara-micro/payara-micro-distribution/target/**', allowEmpty: true 
                     dir('/home/ubuntu/.m2/repository/'){
                         stash name: 'payara-m2-repository', includes: '**', allowEmpty: true
                     }
@@ -224,6 +225,34 @@ pipeline {
                         }
                     }
                 }
+
+                stage('Payara Functional Tests') {
+                    agent {
+                        label 'general-purpose'
+                    }
+                    steps {
+                        setupMicro()
+                        
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Building dependencies  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        sh """mvn -V -B -ff clean install --strict-checksums \
+                        -Dpayara.version=${pom.version} \
+                        -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
+                        -Djavax.xml.accessExternalSchema=all \
+                        -DskipTests \
+                        -f appserver/tests/payara-samples """
+
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running functional tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        sh """mvn -V -B -ff clean install --strict-checksums -Ppayara-micro-managed,install-deps \
+                        -Dpayara.version=${pom.version} \
+                        -f appserver/tests/functional/payara-micro """
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                    }
+                    post {
+                        cleanup {
+                            processReport()
+                        }
+                    }
+                }
             }
         }
     }
@@ -250,10 +279,23 @@ void setupDomain() {
     sh "${ASADMIN} start-database || true"
 }
 
+void setupMicro() {
+    echo '*#*#*#*#*#*#*#*#*#*#*#*#  Unstash Micro  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+    unstash name: 'payara-micro'
+    echo '*#*#*#*#*#*#*#*#*#*#*#*#  Unstash maven repository  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+    dir('/home/ubuntu/.m2/repository/'){
+        unstash name: 'payara-m2-repository'
+    }    
+}
+
 void processReportAndStopDomain() {
     junit '**/target/*-reports/*.xml'
     sh "${ASADMIN} stop-domain ${DOMAIN_NAME}"
     sh "${ASADMIN} stop-database || true"
+}
+
+void processReport() {
+    junit '**/target/*-reports/*.xml'
 }
 
 void stopDomain() {
