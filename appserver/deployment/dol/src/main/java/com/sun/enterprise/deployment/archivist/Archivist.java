@@ -375,6 +375,7 @@ public abstract class Archivist<T extends BundleDescriptor> {
      */
     protected void postOpen(T descriptor, ReadableArchive archive)
             throws IOException {
+        descriptor.processBundleDescriptor();
     }
 
     /**

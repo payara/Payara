@@ -603,6 +603,10 @@ public abstract class BundleDescriptor extends RootDeploymentDescriptor implemen
      */
     @Override
     public abstract ArchiveType getModuleType();
+    
+    public void processBundleDescriptor() {
+        
+    }
 
     /**
      * @return the visitor for this bundle descriptor

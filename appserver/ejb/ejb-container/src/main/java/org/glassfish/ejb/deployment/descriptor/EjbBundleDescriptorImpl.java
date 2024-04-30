@@ -355,6 +355,12 @@ public class EjbBundleDescriptorImpl extends com.sun.enterprise.deployment.EjbBu
         return ejbIDs;
     }
 
+    public void processBundleDescriptor() {
+        for (EjbDescriptor ejbDescriptor : ejbs) {
+            ejbDescriptor.processDescriptor();
+        }
+    }
+    
     public void addEjb(EjbDescriptor ejbDescriptor) {
         ejbDescriptor.setEjbBundleDescriptor(this);
         ejbs.add(ejbDescriptor);
