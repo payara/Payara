@@ -2373,6 +2373,11 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
         this.bundleDescriptor = bundleDescriptor;
     }
 
+    /**
+     * Processes the descriptor by adding various descriptors and properties
+     * from the root bundle descriptor.
+     * It is expected that the bundle descriptor is already set before calling this method.
+     */
     public void processDescriptor() {
         if (this.bundleDescriptor != null) {
             for (Object ejbRefObj : this.bundleDescriptor.getEjbReferenceDescriptors()) {
