@@ -185,7 +185,7 @@
         <hk2.plugin.version>3.0.6</hk2.plugin.version>
         <maven.build.helper.plugin.version>3.5.0</maven.build.helper.plugin.version>
         <maven.flatten.plugin.version>1.5.0</maven.flatten.plugin.version>
-        <japicmp.maven.plugin.version>0.17.2</japicmp.maven.plugin.version>
+        <japicmp.maven.plugin.version>0.21.1</japicmp.maven.plugin.version>
 
         <!-- build settings -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
