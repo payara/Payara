@@ -3,7 +3,7 @@
 <!--
    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-   Copyright (c) [2017-2023] Payara Foundation and/or its affiliates. All rights reserved.
+   Copyright (c) [2017-2024] Payara Foundation and/or its affiliates. All rights reserved.
 
    The contents of this file are subject to the terms of either the GNU
    General Public License Version 2 only ("GPL") or the Common Development
@@ -291,7 +291,6 @@
       <system-property name="jersey.config.client.readTimeout" value="300000" />
       <system-property name="jersey.config.client.connectTimeout" value="300000" />
       <system-property name="org.jboss.weld.clustering.rollingUpgradesIdDelimiter" value=".." />
-      <system-property name="org.jboss.weld.probe.allowRemoteAddress" value="127.0.0.1|::1|::1%.+|0:0:0:0:0:0:0:1|0:0:0:0:0:0:0:1%.+" />
       <system-property name="org.glassfish.gmbal.no.multipleUpperBoundsException" value="true"/>
     </config>
     <config name="default-config" dynamic-reconfiguration-enabled="true">

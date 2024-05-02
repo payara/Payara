@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld;
 
@@ -175,18 +175,6 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
     private static final String WELD_BOOTSTRAP_SHUTDOWN = "weld_bootstrap_shutdown";
     private static final String WELD_CONVERSATION_FILTER_CLASS = "org.jboss.weld.module.web.servlet.ConversationFilter";
     private static final String WELD_CONVERSATION_FILTER_NAME = "CDI Conversation Filter";
-
-    public static final String DEV_MODE_PROPERTY = "org.jboss.weld.development";
-
-    private static final String PROBE_FILTER_NAME = "weld-probe-filter";
-    private static final String PROBE_FILTER_CLASS_NAME = "org.jboss.weld.probe.ProbeFilter";
-    private static final boolean PROBE_FILTER_ASYNC_SUPPORT = true;
-    private static final String PROBE_FILTER_URL_PATTERN = "/*";
-    private static final String PROBE_FILTER_DISPATCHER_TYPE = "REQUEST";
-    private static final String PROBE_INVOCATION_MONITOR_EXCLUDE_TYPE = ".*payara.*|.*glassfish.*";
-    private static final String PROBE_EVENT_MONITOR_EXCLUDE_TYPE = "jakarta.servlet.http.*";
-    private static final String PROBE_ALLOW_REMOTE_ADDRESS = "";
-
     private static final String JERSEY_PROCESS_ALL_CLASS_NAME = "org.glassfish.jersey.ext.cdi1x.internal.ProcessAllAnnotatedTypes";
     private static final String JERSEY_HK2_CLASS_NAME = "org.glassfish.jersey.ext.cdi1x.spi.Hk2CustomBoundTypesProvider";
     private static final String JERSEY_PROCESS_JAXRS_CLASS_NAME = "org.glassfish.jersey.ext.cdi1x.internal.ProcessJAXRSAnnotatedTypes";
@@ -345,7 +333,6 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
             }
 
             WebBundleDescriptor webBundleDescriptor = context.getModuleMetaData(WebBundleDescriptor.class);
-            boolean developmentMode = isDevelopmentMode(context);
             if (webBundleDescriptor != null) {
                 webBundleDescriptor.setExtensionProperty(WELD_EXTENSION, "true");
 
@@ -367,16 +354,8 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                 // Doing this here to make sure that its done only for CDI enabled web applications
                 registerWeldConversationFilter(webBundleDescriptor);
 
-                // If development mode enabled then for WAR register ProbeFilter and register ProbeExtension for
-                // every deployment
-                if (developmentMode) {
-                    registerProbeFilter(webBundleDescriptor);
-                }
             }
 
-            if (developmentMode) {
-                registerProbeExtension(externalConfiguration, deploymentImpl);
-            }
 
             BundleDescriptor bundle = (webBundleDescriptor != null) ? webBundleDescriptor : ejbBundle;
             if (bundle != null) {
@@ -927,23 +906,6 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
         return eeModuleDescriptor;
     }
 
-    private boolean isDevelopmentMode(DeploymentContext context) {
-        boolean devMode = WeldUtils.isCDIDevModeEnabled(context) || Boolean.getBoolean(DEV_MODE_PROPERTY);
-        WebBundleDescriptor wDesc = context.getModuleMetaData(WebBundleDescriptor.class);
-        if (!devMode && wDesc != null) {
-            Enumeration<ContextParameter> cpEnumeration = wDesc.getContextParameters();
-            while (cpEnumeration.hasMoreElements()) {
-                ContextParameter param = cpEnumeration.nextElement();
-                if (DEV_MODE_PROPERTY.equals(param.getName()) && Boolean.valueOf(param.getValue())) {
-                    devMode = true;
-                    WeldUtils.setCDIDevMode(context, devMode);
-                    break;
-                }
-            }
-        }
-        return devMode;
-    }
-
     private void registerWeldConversationFilter(WebBundleDescriptor webBundleDescriptor) {
         for (ServletFilterMapping filterMapping : webBundleDescriptor.getServletFilterMappings()) {
             if (WELD_CONVERSATION_FILTER_NAME.equals(((ServletFilterMappingDescriptor) filterMapping).getDisplayName())) {
@@ -958,46 +920,9 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
         }
     }
 
-    private void registerProbeFilter(WebBundleDescriptor webBundleDescriptor) {
-        ServletFilterDescriptor servletFilter = new ServletFilterDescriptor();
-        servletFilter.setClassName(PROBE_FILTER_CLASS_NAME);
-        servletFilter.setName(PROBE_FILTER_NAME);
-        servletFilter.setAsyncSupported(PROBE_FILTER_ASYNC_SUPPORT);
-        webBundleDescriptor.addServletFilter(servletFilter);
-
-        ServletFilterMappingDescriptor servletFilterMapping = new ServletFilterMappingDescriptor();
-        servletFilterMapping.setName(PROBE_FILTER_NAME);
-        servletFilterMapping.addURLPattern(PROBE_FILTER_URL_PATTERN);
-        servletFilterMapping.addDispatcher(PROBE_FILTER_DISPATCHER_TYPE);
-        webBundleDescriptor.addServletFilterMapping(servletFilterMapping);
-    }
-
-    private void registerProbeExtension(ExternalConfigurationImpl externalConfiguration, DeploymentImpl deploymentImpl) {
-        externalConfiguration.setProbeEventMonitorExcludeType(PROBE_EVENT_MONITOR_EXCLUDE_TYPE);
-        externalConfiguration.setProbeInvocationMonitorExcludeType(PROBE_INVOCATION_MONITOR_EXCLUDE_TYPE);
-        externalConfiguration.setProbeAllowRemoteAddress(PROBE_ALLOW_REMOTE_ADDRESS);
-        deploymentImpl.addDynamicExtension(createProbeExtension());
-    }
-
     private void configureConcurrentDeployment(DeploymentContext context, ExternalConfigurationImpl configuration) {
         configuration.setConcurrentDeployment(WeldUtils.isConcurrentDeploymentEnabled());
         configuration.setPreLoaderThreadPoolSize(WeldUtils.getPreLoaderThreads());
-    }
-
-    private Metadata<Extension> createProbeExtension() {
-        ProbeExtension probeExtension;
-        Class<ProbeExtension> probeExtensionClass = ProbeExtension.class;
-        try {
-            if (System.getSecurityManager() != null) {
-                probeExtension = AccessController.doPrivileged(NewInstanceAction.of(probeExtensionClass));
-            } else {
-                probeExtension = probeExtensionClass.newInstance();
-            }
-        } catch (Exception e) {
-            throw new WeldException(e.getCause());
-        }
-
-        return new MetadataImpl<Extension>(probeExtension, "N/A");
     }
 
     private void addWeldListenerToAllWars(DeploymentContext context) {
