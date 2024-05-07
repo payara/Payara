@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld.connector;
 
@@ -576,15 +576,6 @@ public class WeldUtils {
         }
 
         return result;
-    }
-
-    public static boolean isCDIDevModeEnabled(DeploymentContext context) {
-        Object propValue = context.getAppProps().get(ServerTags.CDI_DEV_MODE_ENABLED_PROP);
-        return propValue != null && Boolean.parseBoolean((String) propValue);
-    }
-
-    public static void setCDIDevMode(DeploymentContext context, boolean enabled) {
-       context.getAppProps().setProperty(ServerTags.CDI_DEV_MODE_ENABLED_PROP, String.valueOf(enabled));
     }
     
     public static boolean isEmptyBeansXmlModeALL(DeploymentContext context) {

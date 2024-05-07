@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2024] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld.connector;
 
@@ -66,23 +66,6 @@ public interface CDIService extends ConfigExtension {
      * @param value allowed object is {@link String }
      */
     void setEnableImplicitCdi(String value);
-    
-    /**
-     * Gets the value of the cdidevmode property.
-     *
-     * @return possible object is
-     *         {@link String }
-     */
-    @Attribute(defaultValue = "false", dataType = Boolean.class)
-    String getEnableCdiDevMode();
-
-    /**
-     * Sets the value of the cdidevmode property.
-     *
-     * @param value allowed object is
-     *              {@link String }
-     */
-    void setEnableCdiDevMode(String value) throws PropertyVetoException;
     
     /**
      * Gets the value of the enableConcurrentDeployment property.

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
 <!--
- * Copyright (c) 2016-2023 Payara Foundation. All rights reserved.
+ * Copyright (c) 2016-2024 Payara Foundation. All rights reserved.
  *
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
@@ -268,7 +268,6 @@
       <system-property name="jersey.config.client.readTimeout" value="300000" />
       <system-property name="jersey.config.client.connectTimeout" value="300000" />
       <system-property name="org.jboss.weld.clustering.rollingUpgradesIdDelimiter" value=".." />
-      <system-property name="org.jboss.weld.probe.allowRemoteAddress" value="127.0.0.1|::1|::1%.+|0:0:0:0:0:0:0:1|0:0:0:0:0:0:0:1%.+" />
       <system-property name="org.glassfish.gmbal.no.multipleUpperBoundsException" value="true"/>
     </config>
 
