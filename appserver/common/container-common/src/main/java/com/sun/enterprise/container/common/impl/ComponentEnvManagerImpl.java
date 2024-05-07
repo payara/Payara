@@ -46,7 +46,26 @@ import com.sun.enterprise.container.common.spi.EjbNamingReferenceManager;
 import com.sun.enterprise.container.common.spi.WebServiceReferenceManager;
 import com.sun.enterprise.container.common.spi.util.CallFlowAgent;
 import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
-import com.sun.enterprise.deployment.*;
+import com.sun.enterprise.container.common.spi.util.ConcurrencyCDIAnnotationsService;
+import com.sun.enterprise.deployment.AdministeredObjectDefinitionDescriptor;
+import com.sun.enterprise.deployment.Application;
+import com.sun.enterprise.deployment.ApplicationClientDescriptor;
+import com.sun.enterprise.deployment.ConcurrencyQualifiedDescriptor;
+import com.sun.enterprise.deployment.ConnectionFactoryDefinitionDescriptor;
+import com.sun.enterprise.deployment.DataSourceDefinitionDescriptor;
+import com.sun.enterprise.deployment.EjbReferenceDescriptor;
+import com.sun.enterprise.deployment.EntityManagerFactoryReferenceDescriptor;
+import com.sun.enterprise.deployment.EntityManagerReferenceDescriptor;
+import com.sun.enterprise.deployment.EnvironmentProperty;
+import com.sun.enterprise.deployment.JMSConnectionFactoryDefinitionDescriptor;
+import com.sun.enterprise.deployment.JndiNameEnvironment;
+import com.sun.enterprise.deployment.MailSessionDescriptor;
+import com.sun.enterprise.deployment.ManagedBeanDescriptor;
+import com.sun.enterprise.deployment.MessageDestinationReferenceDescriptor;
+import com.sun.enterprise.deployment.ResourceDescriptor;
+import com.sun.enterprise.deployment.ResourceEnvReferenceDescriptor;
+import com.sun.enterprise.deployment.ResourceReferenceDescriptor;
+import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
 import com.sun.enterprise.naming.spi.NamingObjectFactory;
 import com.sun.enterprise.naming.spi.NamingUtils;
 import org.glassfish.concurro.internal.ConcurrencyManagedCDIBeans;
@@ -66,7 +85,6 @@ import org.glassfish.javaee.services.JMSCFResourcePMProxy;
 import org.glassfish.resourcebase.resources.api.ResourceDeployer;
 import org.glassfish.resourcebase.resources.util.ResourceManagerFactory;
 import org.jvnet.hk2.annotations.Service;
-import com.sun.enterprise.deployment.ResourceDescriptor;
 import com.sun.enterprise.deployment.util.DOLUtils;
 
 import jakarta.inject.Inject;
@@ -74,9 +92,17 @@ import javax.naming.Context;
 import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
 import jakarta.transaction.TransactionManager;
-import jakarta.validation.*;
+import jakarta.validation.Validation;
+import jakarta.validation.ValidationException;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorContext;
+import jakarta.validation.ValidatorFactory;
 import java.net.MalformedURLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -126,8 +152,7 @@ public class ComponentEnvManagerImpl
     @Inject
     private InvocationManager invMgr;
 
-    private ConcurrentMap<String, RefCountJndiNameEnvironment> compId2Env =
-            new ConcurrentHashMap<String, RefCountJndiNameEnvironment>();
+    private ConcurrentMap<String, RefCountJndiNameEnvironment> compId2Env = new ConcurrentHashMap<>();
 
     /*
      * Keep track of number of components using the same component ID
@@ -158,6 +183,7 @@ public class ComponentEnvManagerImpl
             compId2Env.remove(componentId);
     }
 
+    @Override
     public JndiNameEnvironment getJndiNameEnvironment(String componentId) {
         RefCountJndiNameEnvironment rj = compId2Env.get(componentId);
         if (componentId != null && _logger.isLoggable(Level.FINEST)) {
@@ -168,16 +194,18 @@ public class ComponentEnvManagerImpl
         return rj == null ? null : rj.env;
     }
 
+    @Override
     public JndiNameEnvironment getCurrentJndiNameEnvironment() {
         JndiNameEnvironment desc = null;
         ComponentInvocation inv = invMgr.getCurrentInvocation();
         if (inv != null) {
             if (inv.componentId != null) {
                 desc = getJndiNameEnvironment(inv.componentId);
+                String descClass = desc.getClass().toString();
                 if (_logger.isLoggable(Level.FINEST)) {
-                    _logger.finest("ComponentEnvManagerImpl: " +
-                        "getCurrentJndiNameEnvironment " + inv.componentId +
-                        " is " + desc.getClass());
+                    _logger.finest(() -> "ComponentEnvManagerImpl: "
+                            + "getCurrentJndiNameEnvironment " + inv.componentId
+                            + " is " + descClass);
                 }
             }
         }
@@ -186,12 +214,13 @@ public class ComponentEnvManagerImpl
     }
 
 
+    @Override
     public String bindToComponentNamespace(JndiNameEnvironment env)
         throws NamingException {
 
         String compEnvId = getComponentEnvId(env);
 
-        Collection<JNDIBinding> bindings = new ArrayList<JNDIBinding>();
+        Collection<JNDIBinding> bindings = new ArrayList<>();
 
         // Add all java:comp, java:module, and java:app(except for app clients) dependencies
         // for the specified environment
@@ -226,7 +255,7 @@ public class ComponentEnvManagerImpl
         if (!(env instanceof ApplicationClientDescriptor)) {
             // Publish any dependencies with java:global names defined by the current env
             // to the global namespace
-            Collection<JNDIBinding> globalBindings = new ArrayList<JNDIBinding>();
+            Collection<JNDIBinding> globalBindings = new ArrayList<>();
             addJNDIBindings(env, ScopeType.GLOBAL, globalBindings);
 
             if( env instanceof Application ) {
@@ -280,7 +309,7 @@ public class ComponentEnvManagerImpl
 
         String compEnvId = getComponentEnvId(origEnv);
 
-        Collection<JNDIBinding> bindings = new ArrayList<JNDIBinding>();
+        Collection<JNDIBinding> bindings = new ArrayList<>();
 
         addEnvironmentProperties(ScopeType.COMPONENT, envProps.iterator(), bindings);
         addResourceReferences(ScopeType.COMPONENT, resRefs.iterator(), bindings);
@@ -290,24 +319,19 @@ public class ComponentEnvManagerImpl
         // Bind dependencies to the namespace for this component
         namingManager.bindToComponentNamespace(DOLUtils.getApplicationName(origEnv), DOLUtils.getModuleName(origEnv),
                 compEnvId, treatComponentAsModule, bindings);
-
-        return;
     }
 
-    private String getResourceId(JndiNameEnvironment env, Descriptor desc){
-
+    private String getResourceId(JndiNameEnvironment env, Descriptor desc) {
         String resourceId = "";
-        if(dependencyAppliesToScope(desc, ScopeType.COMPONENT)){
-            resourceId = DOLUtils.getApplicationName(env) +    "/" + DOLUtils.getModuleName(env) + "/" +
-                    getComponentEnvId(env) ;
-        } else if(dependencyAppliesToScope(desc, ScopeType.MODULE)){
-            resourceId = DOLUtils.getApplicationName(env) +    "/" + DOLUtils.getModuleName(env) ;
-        } else if(dependencyAppliesToScope(desc, ScopeType.APP)){
-            resourceId = DOLUtils.getApplicationName(env)  ;
+        if (dependencyAppliesToScope(desc, ScopeType.COMPONENT)) {
+            resourceId = DOLUtils.getApplicationName(env) + "/" + DOLUtils.getModuleName(env) + "/"
+                    + getComponentEnvId(env);
+        } else if (dependencyAppliesToScope(desc, ScopeType.MODULE)) {
+            resourceId = DOLUtils.getApplicationName(env) + "/" + DOLUtils.getModuleName(env);
+        } else if (dependencyAppliesToScope(desc, ScopeType.APP)) {
+            resourceId = DOLUtils.getApplicationName(env);
         }
-        
         return resourceId;
-
     }
 
     private void addAllDescriptorBindings(JndiNameEnvironment env, ScopeType scope, Collection<JNDIBinding> jndiBindings) {
@@ -396,9 +420,9 @@ public class ComponentEnvManagerImpl
                         setup.addDefinition(ConcurrencyManagedCDIBeans.Type.valueOf(concurrencyType), qualifiers, desc.getName());
                     }
                 } else {
-                    System.out.println("ERROR! " + desc);
+                    _logger.severe(() -> "Unexpected Concurrency type! Expected ConcurrencyQualifiedDescriptor, got " + desc);
                 }
-        }
+            }
             jndiBindings.add(new CompEnvBinding(ConcurrencyManagedCDIBeans.JDNI_NAME, setup));
         }
     }
@@ -408,6 +432,7 @@ public class ComponentEnvManagerImpl
     }
 
 
+    @Override
     public void unbindFromComponentNamespace(JndiNameEnvironment env)
         throws NamingException {
 
@@ -415,7 +440,7 @@ public class ComponentEnvManagerImpl
         undeployAllDescriptors(env);
 
         // Unpublish any global entries exported by this environment
-        Collection<JNDIBinding> globalBindings = new ArrayList<JNDIBinding>();
+        Collection<JNDIBinding> globalBindings = new ArrayList<>();
         addJNDIBindings(env, ScopeType.GLOBAL, globalBindings);
 
         for(JNDIBinding next : globalBindings) {

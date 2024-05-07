@@ -269,7 +269,7 @@ public class EjbDeployer extends JavaEEDeployer<EjbContainerStarter, EjbApplicat
             compEnvManager.bindToComponentNamespace(ejbBundle);
 
             // If within .war, also bind dependencies declared by web application. There is
-            // a single naming environment for the entire .war module. Yhis is necessary
+            // a single naming environment for the entire .war module. This is necessary
             // in order for eagerly initialized ejb components to have visibility to all the
             // dependencies b/c the web container does not bind to the component namespace until
             // its start phase, which comes after the ejb start phase.

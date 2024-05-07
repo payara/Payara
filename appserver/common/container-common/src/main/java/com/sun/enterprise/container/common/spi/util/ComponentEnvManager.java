@@ -47,7 +47,6 @@ import com.sun.enterprise.deployment.EnvironmentProperty;
 import com.sun.enterprise.deployment.ResourceReferenceDescriptor;
 
 import org.glassfish.api.invocation.ApplicationEnvironment;
-import org.glassfish.api.naming.JNDIBinding;
 import org.jvnet.hk2.annotations.Contract;
 
 import javax.naming.NamingException;

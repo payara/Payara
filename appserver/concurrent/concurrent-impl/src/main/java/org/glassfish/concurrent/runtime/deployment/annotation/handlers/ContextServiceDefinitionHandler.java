@@ -97,16 +97,16 @@ public class ContextServiceDefinitionHandler extends AbstractResourceHandler {
         }
     }
 
-    public ContextServiceDefinitionDescriptor createDescriptor(ContextServiceDefinition contectServiceDefinition) {
-        Set<String> unusedContexts = collectUnusedContexts(contectServiceDefinition);
+    public ContextServiceDefinitionDescriptor createDescriptor(ContextServiceDefinition contextServiceDefinition) {
+        Set<String> unusedContexts = collectUnusedContexts(contextServiceDefinition);
 
         ContextServiceDefinitionDescriptor csdd = new ContextServiceDefinitionDescriptor();
         csdd.setDescription("Context Service Definition");
-        csdd.setName(TranslatedConfigView.expandValue(contectServiceDefinition.name()));
-        csdd.setPropagated(evaluateContexts(contectServiceDefinition.propagated(), unusedContexts));
-        csdd.setCleared(evaluateContexts(contectServiceDefinition.cleared(), unusedContexts));
-        csdd.setUnchanged(evaluateContexts(contectServiceDefinition.unchanged(), unusedContexts));
-        csdd.setQualifiers(contectServiceDefinition.qualifiers());
+        csdd.setName(TranslatedConfigView.expandValue(contextServiceDefinition.name()));
+        csdd.setPropagated(evaluateContexts(contextServiceDefinition.propagated(), unusedContexts));
+        csdd.setCleared(evaluateContexts(contextServiceDefinition.cleared(), unusedContexts));
+        csdd.setUnchanged(evaluateContexts(contextServiceDefinition.unchanged(), unusedContexts));
+        csdd.setQualifiers(contextServiceDefinition.qualifiers());
 
         return csdd;
     }

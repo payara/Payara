@@ -457,7 +457,7 @@ public final class  GlassfishNamingManagerImpl implements GlassfishNamingManager
             namespace.put("java:", jc);
             namespace.put("java:/", jc);
 
-                 JavaURLContext jApp = new JavaURLContext("java:app", null);
+            JavaURLContext jApp = new JavaURLContext("java:app", null);
             namespace.put("java:app", jApp);
             namespace.put("java:app/", jApp);
             JavaURLContext jAppEnv = new JavaURLContext("java:app/env", null);
@@ -474,12 +474,12 @@ public final class  GlassfishNamingManagerImpl implements GlassfishNamingManager
 
         ComponentIdInfo info = componentIdInfo.get(componentId);
 
-        return (info != null) ?  getNamespace(info.appName, info.moduleName, componentId, logicalJndiName) :
-                getComponentNamespace(componentId);
+        return (info != null) ? getNamespace(info.appName, info.moduleName, componentId, logicalJndiName)
+                : getComponentNamespace(componentId);
     }
 
     private Map getNamespace(String appName, String moduleName,
-                             String componentId, String logicalJndiName) throws NamingException {
+            String componentId, String logicalJndiName) throws NamingException {
         Map namespace;
         if( logicalJndiName.startsWith("java:comp") ) {
             namespace = getComponentNamespace(componentId);
