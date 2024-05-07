@@ -46,7 +46,6 @@ import com.sun.enterprise.container.common.spi.EjbNamingReferenceManager;
 import com.sun.enterprise.container.common.spi.WebServiceReferenceManager;
 import com.sun.enterprise.container.common.spi.util.CallFlowAgent;
 import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
-import com.sun.enterprise.container.common.spi.util.ConcurrencyCDIAnnotationsService;
 import com.sun.enterprise.deployment.AdministeredObjectDefinitionDescriptor;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.ApplicationClientDescriptor;
