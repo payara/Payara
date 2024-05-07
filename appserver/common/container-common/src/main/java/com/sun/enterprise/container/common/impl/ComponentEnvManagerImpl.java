@@ -186,10 +186,11 @@ public class ComponentEnvManagerImpl
     @Override
     public JndiNameEnvironment getJndiNameEnvironment(String componentId) {
         RefCountJndiNameEnvironment rj = compId2Env.get(componentId);
+        String className = rj == null ? "NULL" : rj.env.getClass().toString();
         if (componentId != null && _logger.isLoggable(Level.FINEST)) {
-            _logger.finest("ComponentEnvManagerImpl: " +
-                "getJndiNameEnvironment " + componentId + " is " +
-                (rj == null ? "NULL" : rj.env.getClass().toString()));
+            _logger.finest(() -> "ComponentEnvManagerImpl: "
+                    + "getJndiNameEnvironment " + componentId + " is "
+                    + className);
         }
         return rj == null ? null : rj.env;
     }
@@ -408,7 +409,7 @@ public class ComponentEnvManagerImpl
     }
 
     private void registerConcurrencyCDIQualifiers(Collection<JNDIBinding> jndiBindings, Set<ResourceDescriptor> concurrencyDescs) {
-        if (!jndiBindings.isEmpty()) {
+        if (!concurrencyDescs.isEmpty()) {
             ConcurrencyManagedCDIBeans setup = new ConcurrencyManagedCDIBeans();
             for (ResourceDescriptor desc : concurrencyDescs) {
                 if (desc instanceof ConcurrencyQualifiedDescriptor qDesc) {

@@ -463,8 +463,14 @@ public final class  GlassfishNamingManagerImpl implements GlassfishNamingManager
             JavaURLContext jAppEnv = new JavaURLContext("java:app/env", null);
             namespace.put("java:app/env", jAppEnv);
             namespace.put("java:app/env/", jAppEnv);
-
-        }
+            // Create also component id mapping, so the java:app/ binding is found later, even when called from a component
+            ComponentIdInfo appComponentIdInfo = new ComponentIdInfo();
+            appComponentIdInfo.appName = appName;
+            appComponentIdInfo.moduleName = appName;
+            appComponentIdInfo.componentId = appName;
+            appComponentIdInfo.treatComponentAsModule = true;
+            componentIdInfo.put(appName, appComponentIdInfo);
+         }
 
         return namespace;
     }

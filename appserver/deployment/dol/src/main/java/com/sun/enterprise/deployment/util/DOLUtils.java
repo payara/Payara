@@ -991,10 +991,8 @@ public class DOLUtils {
             id = "__ejbBundle__" + ID_SEPARATOR
                     + ejbBundle.getApplication().getName() + ID_SEPARATOR
                     + ejbBundle.getModuleName();
-        } else if (env instanceof Application) {
-            Application ejbBundle = (Application) env;
-            id = "__application__" + ID_SEPARATOR
-                    + ejbBundle.getAppName();
+        } else if (env instanceof Application app) {
+            id = app.getAppName();
         }
 
         return id;
