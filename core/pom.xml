@@ -136,7 +136,7 @@
         <mimepull.version>1.10.0</mimepull.version>
         <gmbal.version>4.0.3</gmbal.version>
         <monitoring-console-api.version>2.0.2</monitoring-console-api.version>
-        <metainf-services.version>1.9</metainf-services.version>
+        <metainf-services.version>1.11</metainf-services.version>
         <ldapbp.version>1.0</ldapbp.version>
         <!-- Javassist (JAVA programming ASSISTant) makes Java bytecode manipulation simple. It is a class library for editing bytecodes in Java. -->
         <javassist.version>3.30.2-GA</javassist.version>
