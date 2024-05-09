@@ -31,7 +31,7 @@ pipeline {
         stage('Build') {
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Building SRC  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh """mvn -B -V -ff -e clean install --strict-checksums -PQuickBuild \
+                sh """mvn -B -V -ff -e clean install --strict-checksums -PQuickBuild,BuildEmbedded \
                     -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
                     -Djavax.xml.accessExternalSchema=all -Dbuild.number=${payaraBuildNumber} \
                     -Djavadoc.skip -Dsource.skip"""
@@ -43,6 +43,8 @@ pipeline {
                     archiveArtifacts artifacts: 'appserver/extras/payara-micro/payara-micro-distribution/target/payara-micro.jar', fingerprint: true
                     stash name: 'payara-target', includes: 'appserver/distributions/payara/target/**', allowEmpty: true
                     stash name: 'payara-micro', includes: 'appserver/extras/payara-micro/payara-micro-distribution/target/**', allowEmpty: true 
+                    stash name: 'payara-embedded-all', includes: 'appserver/extras/embedded/all/target/**', allowEmpty: true 
+                    stash name: 'payara-embedded-web', includes: 'appserver/extras/embedded/web/target/**', allowEmpty: true 
                     dir('/home/ubuntu/.m2/repository/'){
                         stash name: 'payara-m2-repository', includes: '**', allowEmpty: true
                     }
@@ -231,7 +233,11 @@ pipeline {
                         label 'general-purpose'
                     }
                     steps {
-                        setupMicro()
+                        setupM2RepositoryOnly()
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Unstash Micro and Embedded *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        unstash name: 'payara-micro'
+                        unstash name: 'payara-embedded-all'
+                        unstash name: 'payara-embedded-web'
                         
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Building dependencies  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         sh """mvn -V -B -ff clean install --strict-checksums \
@@ -241,10 +247,17 @@ pipeline {
                         -DskipTests \
                         -f appserver/tests/payara-samples """
 
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running functional tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test with Payara Micro  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         sh """mvn -V -B -ff clean install --strict-checksums -Ppayara-micro-managed,install-deps \
                         -Dpayara.version=${pom.version} \
                         -f appserver/tests/functional/payara-micro """
+
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test with Payara Embedded  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        sh """mvn -V -B -ff clean verify --strict-checksums -PFullProfile \
+                        -Dversion=${pom.version} -f appserver/tests/functional/embeddedtest """
+
+                        sh """mvn -V -B -ff clean verify --strict-checksums -PWebProfile \
+                        -Dversion=${pom.version} -f appserver/tests/functional/embeddedtest """
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                     }
                     post {
@@ -279,9 +292,7 @@ void setupDomain() {
     sh "${ASADMIN} start-database || true"
 }
 
-void setupMicro() {
-    echo '*#*#*#*#*#*#*#*#*#*#*#*#  Unstash Micro  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-    unstash name: 'payara-micro'
+void setupM2RepositoryOnly() {
     echo '*#*#*#*#*#*#*#*#*#*#*#*#  Unstash maven repository  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
     dir('/home/ubuntu/.m2/repository/'){
         unstash name: 'payara-m2-repository'

@@ -21,10 +21,10 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-public class EmbeddedDeploymentTest {
+public class EmbeddedDeploymentIT {
  
     @Test
-    public void testDeployCluster() throws IOException {
+    public void DeployCluster() throws IOException {
         String filename = "testEmbeddedDeploymentLog.xml";
         String currentPath = new java.io.File(".").getCanonicalPath();
         try {
@@ -59,7 +59,6 @@ public class EmbeddedDeploymentTest {
             new File(filename).delete();
 
         } catch (GlassFishException ex) {
-            ex.printStackTrace();
         }
     }
 
@@ -91,7 +90,6 @@ public class EmbeddedDeploymentTest {
                 }
             }
         } catch (IOException | ParserConfigurationException | DOMException | SAXException e) {
-            e.printStackTrace();
         }
         return testSuccess;
     }
