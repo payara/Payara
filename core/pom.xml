@@ -87,7 +87,7 @@
         <jakarta.transaction-api.version>2.0.1</jakarta.transaction-api.version>
         <jakarta.interceptor-api.version>2.2.0-M1</jakarta.interceptor-api.version>
         <jakarta.inject.version>2.0.1</jakarta.inject.version>
-        <json.bind-api.version>3.0.0</json.bind-api.version>
+        <json.bind-api.version>3.0.1</json.bind-api.version>
         <jakarta-persistence-api.version>3.1.0</jakarta-persistence-api.version>
         <jakarta.batch-api.version>2.1.1</jakarta.batch-api.version>
         <microprofile-opentracing.version>3.0</microprofile-opentracing.version>
