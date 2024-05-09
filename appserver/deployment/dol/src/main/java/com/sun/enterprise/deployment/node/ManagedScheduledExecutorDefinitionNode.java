@@ -62,6 +62,7 @@ public class ManagedScheduledExecutorDefinitionNode extends DeploymentDescriptor
         table.put(TagNames.MANAGED_SCHEDULED_EXECUTOR_MAX_ASYNC, "setMaxAsync");
         table.put(TagNames.MANAGED_SCHEDULED_EXECUTOR_CONTEXT_SERVICE_REF, "setContext");
         table.put(TagNames.MANAGED_SCHEDULED_EXECUTOR_HUNG_TASK_THRESHOLD, "setHungTaskThreshold");
+        table.put(TagNames.MANAGED_SCHEDULED_EXECUTOR_QUALIFIER, "addQualifier");
         return table;
     }
 

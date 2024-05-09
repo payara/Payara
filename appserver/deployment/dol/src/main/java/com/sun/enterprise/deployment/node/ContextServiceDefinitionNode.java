@@ -58,6 +58,7 @@ public class ContextServiceDefinitionNode extends DeploymentDescriptorNode<Conte
         table.put(TagNames.CONTEXT_SERVICE_PROPAGATED, "addPropagated");
         table.put(TagNames.CONTEXT_SERVICE_CLEARED, "addCleared");
         table.put(TagNames.CONTEXT_SERVICE_UNCHANGED, "addUnchanged");
+        table.put(TagNames.CONTEXT_SERVICE_QUALIFIER, "addQualifier");
         return table;
     }
 

@@ -107,7 +107,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 import static org.glassfish.deployment.common.JavaEEResourceType.*;
 
@@ -412,9 +411,7 @@ public class ComponentEnvManagerImpl
             ConcurrencyManagedCDIBeans setup = new ConcurrencyManagedCDIBeans();
             for (ResourceDescriptor desc : concurrencyDescs) {
                 if (desc instanceof ConcurrencyQualifiedDescriptor qDesc) {
-                    Set<String> qualifiers = qDesc.getQualifiers().stream()
-                            .map(c -> c.getName())
-                            .collect(Collectors.toSet());
+                    Set<String> qualifiers = qDesc.getQualifiers();
                     if (!qualifiers.isEmpty()) {
                         String concurrencyType = qDesc.getConcurrencyType();
                         setup.addDefinition(ConcurrencyManagedCDIBeans.Type.valueOf(concurrencyType), qualifiers, desc.getName());

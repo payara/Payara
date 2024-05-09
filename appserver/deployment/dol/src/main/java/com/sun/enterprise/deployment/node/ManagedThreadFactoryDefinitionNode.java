@@ -61,6 +61,7 @@ public class ManagedThreadFactoryDefinitionNode extends DeploymentDescriptorNode
         table.put(TagNames.MANAGED_THREAD_FACTORY_NAME, "setName");
         table.put(TagNames.MANAGED_THREAD_FACTORY_CONTEXT_SERVICE_REF, "setContext");
         table.put(TagNames.MANAGED_THREAD_FACTORY_PRIORITY, "setPriority");
+        table.put(TagNames.MANAGED_THREAD_FACTORY_QUALIFIER, "addQualifier");
         return table;
     }
 

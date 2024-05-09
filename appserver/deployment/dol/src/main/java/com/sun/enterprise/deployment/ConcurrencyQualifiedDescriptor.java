@@ -50,7 +50,7 @@ import java.util.Set;
  */
 public abstract class ConcurrencyQualifiedDescriptor extends ResourceDescriptor {
 
-    private Set<Class<?>> qualifiers = new HashSet<>();
+    private Set<String> qualifiers = new HashSet<>();
 
     /**
      * return one of CONTEXT_SERVICE, MANAGEDTHREADFACTORY,
@@ -58,15 +58,19 @@ public abstract class ConcurrencyQualifiedDescriptor extends ResourceDescriptor 
      */
     abstract public String getConcurrencyType();
 
-    public Set<Class<?>> getQualifiers() {
+    public Set<String> getQualifiers() {
         return qualifiers;
     }
 
-    public void setQualifiers(Set<Class<?>> qualifiers) {
+    public void addQualifier(String qualifier) {
+        this.qualifiers.add(qualifier);
+    }
+
+    public void setQualifiers(Set<String> qualifiers) {
         this.qualifiers = qualifiers;
     }
 
-    public void setQualifiers(Class<?> qualifiers[]) {
+    public void setQualifiers(String qualifiers[]) {
         this.qualifiers = new HashSet(Arrays.asList(qualifiers));
     }
 }

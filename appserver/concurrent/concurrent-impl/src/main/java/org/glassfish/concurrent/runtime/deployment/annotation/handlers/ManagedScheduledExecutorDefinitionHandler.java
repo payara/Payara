@@ -45,6 +45,7 @@ import com.sun.enterprise.deployment.ResourceDescriptor;
 import com.sun.enterprise.deployment.annotation.context.ResourceContainerContext;
 import com.sun.enterprise.deployment.annotation.handlers.AbstractResourceHandler;
 import jakarta.enterprise.concurrent.ManagedScheduledExecutorDefinition;
+import java.util.Arrays;
 import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
@@ -57,6 +58,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 @Service
 @AnnotationHandlerFor(ManagedScheduledExecutorDefinition.class)
@@ -109,7 +111,7 @@ public class ManagedScheduledExecutorDefinitionHandler extends AbstractResourceH
         msedd.setVirtual(managedScheduledExecutorDefinition.virtual());
 
         msedd.setMetadataSource(MetadataSource.ANNOTATION);
-        msedd.setQualifiers(managedScheduledExecutorDefinition.qualifiers());
+        msedd.setQualifiers(Arrays.asList(managedScheduledExecutorDefinition.qualifiers()).stream().map(c -> c.getName()).collect(Collectors.toSet()));
         return msedd;
     }
 

@@ -46,12 +46,14 @@ import com.sun.enterprise.deployment.annotation.context.ResourceContainerContext
 import com.sun.enterprise.deployment.annotation.handlers.AbstractResourceHandler;
 import jakarta.enterprise.concurrent.ContextServiceDefinition;
 import jakarta.inject.Inject;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
@@ -106,7 +108,7 @@ public class ContextServiceDefinitionHandler extends AbstractResourceHandler {
         csdd.setPropagated(evaluateContexts(contextServiceDefinition.propagated(), unusedContexts));
         csdd.setCleared(evaluateContexts(contextServiceDefinition.cleared(), unusedContexts));
         csdd.setUnchanged(evaluateContexts(contextServiceDefinition.unchanged(), unusedContexts));
-        csdd.setQualifiers(contextServiceDefinition.qualifiers());
+        csdd.setQualifiers(Arrays.asList(contextServiceDefinition.qualifiers()).stream().map(c -> c.getName()).collect(Collectors.toSet()));
 
         return csdd;
     }

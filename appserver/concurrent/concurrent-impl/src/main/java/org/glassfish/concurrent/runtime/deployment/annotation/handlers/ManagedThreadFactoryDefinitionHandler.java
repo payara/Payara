@@ -45,6 +45,7 @@ import com.sun.enterprise.deployment.ResourceDescriptor;
 import com.sun.enterprise.deployment.annotation.context.ResourceContainerContext;
 import com.sun.enterprise.deployment.annotation.handlers.AbstractResourceHandler;
 import jakarta.enterprise.concurrent.ManagedThreadFactoryDefinition;
+import java.util.Arrays;
 import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
@@ -57,6 +58,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 @Service
 @AnnotationHandlerFor(ManagedThreadFactoryDefinition.class)
@@ -101,7 +103,7 @@ public class ManagedThreadFactoryDefinitionHandler extends AbstractResourceHandl
         } else {
             mtfdd.setPriority(managedThreadFactoryDefinition.priority());
         }
-        mtfdd.setQualifiers(managedThreadFactoryDefinition.qualifiers());
+        mtfdd.setQualifiers(Arrays.asList(managedThreadFactoryDefinition.qualifiers()).stream().map(c -> c.getName()).collect(Collectors.toSet()));
         return mtfdd;
     }
 

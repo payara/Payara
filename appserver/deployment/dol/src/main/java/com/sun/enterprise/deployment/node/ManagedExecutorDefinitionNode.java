@@ -62,6 +62,7 @@ public class ManagedExecutorDefinitionNode extends DeploymentDescriptorNode<Mana
         table.put(TagNames.MANAGED_EXECUTOR_MAX_ASYNC, "setMaximumPoolSize");
         table.put(TagNames.MANAGED_EXECUTOR_HUNG_TASK_THRESHOLD, "setHungAfterSeconds");
         table.put(TagNames.MANAGED_EXECUTOR_CONTEXT_SERVICE_REF, "setContext");
+        table.put(TagNames.MANAGED_EXECUTOR_QUALIFIER, "addQualifier");
         return table;
     }
 
