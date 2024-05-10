@@ -21,6 +21,10 @@ updates:
       - dependency-name: org.eclipse.microprofile*"
         update-types: ["version-update:semver-major", "version-update:semver-minor"]
 
+      # Ignore major version updates for dependencies with group ID starting with fish.payara
+      - dependency-name: "fish.payara.*"
+        update-types: ["version-update:semver-major"]
+        
       # Ignore major version updates for individual dependencies within the org.eclipse.persistence group
       - dependency-name: "org.eclipse.persistence:org.eclipse.persistence.core"
         update-types: ["version-update:semver-major"]
