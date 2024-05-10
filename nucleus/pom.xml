@@ -96,7 +96,7 @@
 
         <maven.jaxws.plugin.version>2.6</maven.jaxws.plugin.version>
         <maven.apt.plugin.version>1.0-alpha-5</maven.apt.plugin.version>
-        <maven.plugin.api.version>3.6.0</maven.plugin.api.version>
+        <maven.plugin.api.version>3.9.6</maven.plugin.api.version>
 
         <!-- Servlet -->
         <grizzly.npn.osgi.version>2.0.0</grizzly.npn.osgi.version>
