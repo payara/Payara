@@ -39,7 +39,7 @@
     holder.
 
 -->
-<!--   Portions Copyright [2016] [Payara Foundation]  -->
+<!--   Portions Copyright 2016-2024 Payara Foundation and/or its affiliates  -->
 <!-- /common/commonTask.jsf -->
 
 <!initPage
@@ -66,7 +66,11 @@
       <sun:form id="form">
         <sun:commonTasksSection id="commonTasksSection" helpText="$resource{i18n.commonTasks.help}"  title="$resource{i18n.commonTasks.title}" columns="$int{2}" style="visibility: #{commonTaskVisibility}">
           <sun:commonTasksGroup title="$resource{i18n.commonTasks.task.glassfishNews}">
-            <!-- GLASSFISH-21123, GLASSFISH-21124 -->
+            <sun:commonTask
+              text="$resource{i18n.commonTasks.task.feedback}"
+              toolTip="$resource{i18n.commonTasks.task.feedback.toolTip}"
+              onClick="javascript:var win=window.open('$resource{i18n.commonTasks.task.feedbackLink}','_blank');if (win) {win.focus();}; return false; /*css trick to display as link: .payara. */">
+            </sun:commonTask>
             <sun:commonTask
               text="$resource{i18n.commonTasks.task.support}"
               toolTip="$resource{i18n.commonTasks.task.support.toolTip}"

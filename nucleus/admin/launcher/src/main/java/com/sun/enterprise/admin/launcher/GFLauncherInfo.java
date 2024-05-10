@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation]
+// Portions Copyright [2016-2023] [Payara Foundation]
 
 package com.sun.enterprise.admin.launcher;
 
@@ -149,6 +149,12 @@ public class GFLauncherInfo {
         upgrade = b;
     }
 
+    /**
+     * Starts the server and after bootstrapping immediately stop
+     * @param b
+     */
+    public void setWarmup(boolean b) { warmup = b; }
+
     public void setDomainRootDir(File f) {
         domainRootDir = f;
     }
@@ -203,6 +209,14 @@ public class GFLauncherInfo {
      */
     public boolean isUpgrade() {
         return upgrade;
+    }
+
+    /**
+     * 
+     * @return true if the warmup is on.
+     */
+    public boolean isWarmup() {
+        return warmup;
     }
 
     /**
@@ -337,6 +351,7 @@ public class GFLauncherInfo {
         map.put("-debug", Boolean.toString(debug));
         map.put("-instancename", instanceName);
         map.put("-upgrade", Boolean.toString(upgrade));
+        map.put("-warmup", Boolean.toString(warmup));
         map.put("-read-stdin", "true"); //always make the server read the stdin for master password, at least.
         
         if(respawnInfo != null) {
@@ -458,6 +473,13 @@ public class GFLauncherInfo {
             upgrade = true;
         else if(tsb.isFalse())
             upgrade = false;
+
+        tsb = getBoolean("warmup");
+        if (tsb.isTrue()) {
+            warmup = true;
+        } else if (tsb.isFalse()) {
+            warmup = false;
+        }
     }
 
     private void finalSetup() throws GFLauncherException {
@@ -607,6 +629,7 @@ public class GFLauncherInfo {
     private boolean watchdog = false;
     private boolean debug = false;
     private boolean upgrade = false;
+    private boolean warmup = false;
     File installDir;
     private File domainParentDir;
     private File domainRootDir;

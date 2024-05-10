@@ -37,11 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2023] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.v3.admin.cluster;
 
 import java.util.Map;
+
+import fish.payara.enterprise.config.serverbeans.DGServerRef;
+import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.ExecuteOn;
@@ -171,23 +174,28 @@ public class InstanceRegisterInstanceCommand extends InstanceRegisterInstanceCom
                         }
                     }, thisCluster);
                 }
+
+                // create dg-server-ref on DG
+                DeploymentGroup deploymentGroupNamed = domain.getDeploymentGroupNamed(deploymentGroup);
+                if (deploymentGroupNamed != null) {
+                    ConfigSupport.apply(new SingleConfigCode<DeploymentGroup>() {
+                        @Override
+                        public Object run(DeploymentGroup param) throws PropertyVetoException, TransactionFailure {
+                            DGServerRef newDGServerRef = param.createChild(DGServerRef.class);
+                            newDGServerRef.setRef(instanceName);
+                            param.getDGServerRef().add(newDGServerRef);
+                            return param;
+                        }
+                    }, deploymentGroupNamed);
+                }
             }
 
-
             report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-        } catch (TransactionFailure tfe) {
+        } catch (Exception tfe) {
             report.setMessage(localStrings.getLocalString("register.instance.failed",
                     "Instance {0} registration failed on {1}", instanceName, server.getName()));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(tfe);
-        } catch (Exception e) {
-            report.setMessage(localStrings.getLocalString("register.instance.failed",
-                    "Instance {0} registration failed on {1}", instanceName, server.getName()));
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            report.setFailureCause(e);
         }
-
     }
-
-
 }

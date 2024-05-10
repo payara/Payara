@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2021-2023] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.glassfish.bootstrap;
 
@@ -265,6 +265,11 @@ public class LogFacade {
             message = "Got an unexpected exception.",
             level = "WARNING")
     public static final String CAUGHT_EXCEPTION = "NCLS-BOOTSTRAP-00039";
+    
+    @LogMessageInfo(
+            message = "The option warmup was set to true, stopping the server.",
+            level = "WARNING")
+    public static final String WARMUP_OPTION_AS_TRUE = "NCLS-BOOTSTRAP-00040";
 
 }
 

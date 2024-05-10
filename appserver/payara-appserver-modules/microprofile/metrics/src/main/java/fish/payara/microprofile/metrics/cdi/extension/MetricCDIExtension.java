@@ -54,22 +54,14 @@
  */
 package fish.payara.microprofile.metrics.cdi.extension;
 
-import fish.payara.microprofile.metrics.cdi.MetricsAnnotationBinding;
+import fish.payara.microprofile.metrics.MetricsService;
 import fish.payara.microprofile.metrics.cdi.AnnotationReader;
+import fish.payara.microprofile.metrics.cdi.MetricsAnnotationBinding;
 import fish.payara.microprofile.metrics.cdi.interceptor.CountedInterceptor;
 import fish.payara.microprofile.metrics.cdi.interceptor.MetricsInterceptor;
 import fish.payara.microprofile.metrics.cdi.interceptor.TimedInterceptor;
 import fish.payara.microprofile.metrics.cdi.producer.MetricProducer;
 import fish.payara.microprofile.metrics.cdi.producer.MetricRegistryProducer;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Member;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import jakarta.enterprise.event.Observes;
 import jakarta.enterprise.inject.spi.AfterBeanDiscovery;
 import jakarta.enterprise.inject.spi.AnnotatedCallable;
@@ -82,10 +74,19 @@ import jakarta.enterprise.inject.spi.WithAnnotations;
 import jakarta.enterprise.util.AnnotationLiteral;
 import jakarta.enterprise.util.Nonbinding;
 import jakarta.interceptor.Interceptor;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Member;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.eclipse.microprofile.metrics.Metadata;
+import org.eclipse.microprofile.metrics.Tag;
 import org.eclipse.microprofile.metrics.annotation.Counted;
 import org.eclipse.microprofile.metrics.annotation.Gauge;
 import org.eclipse.microprofile.metrics.annotation.Timed;
+import org.glassfish.internal.api.Globals;
 
 public class MetricCDIExtension<E extends Member & AnnotatedElement> implements Extension {
 
@@ -98,6 +99,10 @@ public class MetricCDIExtension<E extends Member & AnnotatedElement> implements 
     private final Map<String, Metadata> metadataMap = new HashMap<>();
 
     private final List<String> validationMessages = new ArrayList<>();
+
+    private MetricsService metricsService;
+
+    private MetricsService.MetricsContext metricsContext;
 
     void beforeBeanDiscovery(@Observes BeforeBeanDiscovery beforeBeanDiscovery, BeanManager manager) {
         addNonbindingAnnotation(Counted.class, beforeBeanDiscovery);
@@ -147,6 +152,14 @@ public class MetricCDIExtension<E extends Member & AnnotatedElement> implements 
         String name = metadata.getName();
         annotatedElements.putIfAbsent(name, element);
         metadataMap.putIfAbsent(name, metadata);
+        initService();
+        if (reader.annotationType().getName().equals(Timed.class.getName()) && 
+                !MetricsInterceptor.isMethodPrivate(element)) {
+            String availableScope = reader.scope(reader.annotation(bean, element));
+            Tag[] tags = reader.tags(reader.annotation(bean, element));
+            metricsService.getContext(true).
+                    getOrCreateRegistry((availableScope != null) ? availableScope : "application").timer(metadata, tags);
+        }
     }
 
     void validationError(@Observes AfterBeanDiscovery afterBeanDiscovery){
@@ -166,4 +179,14 @@ public class MetricCDIExtension<E extends Member & AnnotatedElement> implements 
         beforeBeanDiscovery.addAnnotatedType(manager.createAnnotatedType(type), type.getName());
     }
 
+
+    private void initService() {
+        if (metricsService == null) {
+            metricsService = Globals.getDefaultBaseServiceLocator().getService(MetricsService.class);
+            if (metricsService.isEnabled()) {
+                metricsContext = metricsService.getContext(true);
+            }
+        }
+    }
+    
 }

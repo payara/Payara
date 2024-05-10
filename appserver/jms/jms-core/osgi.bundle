@@ -37,9 +37,14 @@
 # only if the new code is made subject to such option by the copyright
 # holder.
 #
+# Portions Copyright 2023 Payara Foundation and/or its affiliates
 
 -exportcontents: \
 			com.sun.enterprise.connectors.jms.deployment.annotation.handlers;\
 			com.sun.enterprise.connectors.jms.inflow;\
 			com.sun.enterprise.connectors.jms.system;\
 			com.sun.enterprise.connectors.jms.util; version=${project.osgi.version}
+
+# Optionally import package from OpenMQ for use by LegacyJmsRecoveryResourceHandler.
+# Version bounded simply for major version safety, if version 7 turns out to be fine adjust this bound
+Import-Package: com.sun.messaging.jmq.admin.jmsspi; version="[6.3,7)"; resolution:=optional, *

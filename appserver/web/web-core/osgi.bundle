@@ -37,6 +37,7 @@
 # only if the new code is made subject to such option by the copyright
 # holder.
 #
+# Portions Copyright 2023 Payara Foundation and/or its affiliates
 
 -exportcontents: \
                         com.sun.enterprise.web.connector.grizzly; \
@@ -68,5 +69,5 @@
 # In this case, org.apache.jk.server is one such package. It is used
 # when mod_jk configuration is used. Since, it is not always needed,
 # the import has been marked as optional. By Sahoo.
-Import-Package: org.apache.jk.core;org.apache.jk.server; resolution:=optional; password=GlassFish; version=${project.osgi.version}, *
+Import-Package: org.apache.jk.core;org.apache.jk.server; resolution:=optional; password=GlassFish; version=${project.osgi.version}, !org.apache.xerces.impl, *
 

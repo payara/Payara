@@ -37,7 +37,7 @@
 # only if the new code is made subject to such option by the copyright
 # holder.
 #
-# Portions Copyright [2016,2019] [Payara Foundation]
+# Portions Copyright 2016-2023 Payara Foundation and/or its affiliates
 
 -exportcontents: \
                         com.sun.enterprise.security.acl; \
@@ -60,3 +60,6 @@
 
 # dependent flashlight package resolved at runtime
 DynamicImport-Package: org.glassfish.flashlight.provider
+
+# Don't import ourself!
+Import-Package: !com.sun.enterprise.security.acl, *

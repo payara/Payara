@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.web;
 
@@ -1553,7 +1553,8 @@ public class WebModule extends PwcWebModule implements Context {
         } else if(name.startsWith("alternatedocroot_")) {
             parseAlternateDocBase(name, value);
         } else if(name.startsWith("valve_") ||
-                name.startsWith("listener_")) {
+            name.startsWith("listener_") ||
+            name.startsWith("send-error_")) {
             // do nothing; these properties are dealt with
             // in configureCatalinaProperties()
         } else {

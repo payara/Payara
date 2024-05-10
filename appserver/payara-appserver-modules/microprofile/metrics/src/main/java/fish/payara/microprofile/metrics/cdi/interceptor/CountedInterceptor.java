@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2018-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -40,25 +40,20 @@
 
 package fish.payara.microprofile.metrics.cdi.interceptor;
 
-import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Member;
-import java.util.function.BiFunction;
-
+import fish.payara.microprofile.metrics.cdi.AnnotationReader;
 import jakarta.annotation.Priority;
 import jakarta.interceptor.Interceptor;
 import jakarta.interceptor.InvocationContext;
-
+import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Member;
 import org.eclipse.microprofile.metrics.Counter;
 import org.eclipse.microprofile.metrics.MetricID;
 import org.eclipse.microprofile.metrics.annotation.Counted;
-
-import fish.payara.microprofile.metrics.cdi.AnnotationReader;
 
 @Counted
 @Interceptor
 @Priority(Interceptor.Priority.LIBRARY_BEFORE + 1)
 public class CountedInterceptor extends AbstractInterceptor {
-
     @Override
     protected <E extends Member & AnnotatedElement> Object applyInterceptor(InvocationContext context, E element)
             throws Exception {
@@ -68,8 +63,8 @@ public class CountedInterceptor extends AbstractInterceptor {
     /**
      * Make the actual logic unit testable...
      */
-    static <E extends Member & AnnotatedElement> Object proceedCounted(InvocationContext context, E element,
-            Class<?> bean, ThreeFunctionResolver<MetricID, Class<Counter>, String, Counter> loader) throws Exception {
+    static <E extends Member & AnnotatedElement> Object proceedCounted(InvocationContext context, E element, 
+           Class<?> bean, ThreeFunctionResolver<MetricID, Class<Counter>, String, Counter> loader) throws Exception {
         Counter counter = apply(element, bean, AnnotationReader.COUNTED, Counter.class, loader);
         counter.inc();
         return context.proceed();

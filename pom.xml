@@ -39,18 +39,18 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright 2017-2023 Payara Foundation and/or affiliates
+    Portions Copyright 2017-2024 Payara Foundation and/or affiliates
 -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>fish.payara.server</groupId>
     <artifactId>payara-aggregator</artifactId>
-    <version>6.2023.9-SNAPSHOT</version>
+    <version>6.2024.6-SNAPSHOT</version>
     <parent>
         <groupId>fish.payara.server.core</groupId>
         <artifactId>core-aggregator</artifactId>
-        <version>6.2023.9-SNAPSHOT</version>
+        <version>6.16.0-SNAPSHOT</version>
         <relativePath>core</relativePath>
     </parent>
     <packaging>pom</packaging>
@@ -58,7 +58,6 @@
     <name>Payara Project</name>
 
     <modules>
-        <module>core</module>
         <module>nucleus</module>
         <module>appserver</module>
         <module>api</module>
@@ -81,12 +80,22 @@
         </repository>
         <repository>
             <id>payara-nexus-artifacts</id>
-            <url>https://nexus.payara.fish/repository/payara-artifacts</url>
+            <url>https://nexus.dev.payara.fish/repository/payara-artifacts</url>
             <releases>
                 <enabled>true</enabled>
             </releases>
             <snapshots>
                 <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>payara-nexus-snapshots</id>
+            <url>https://nexus.dev.payara.fish/repository/payara-snapshots</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
             </snapshots>
         </repository>
     </repositories>
@@ -108,7 +117,7 @@
         </pluginRepository>
         <pluginRepository>
             <id>payara-nexus-artifacts</id>
-            <url>https://nexus.payara.fish/repository/payara-artifacts</url>
+            <url>https://nexus.dev.payara.fish/repository/payara-artifacts</url>
             <releases>
                 <enabled>true</enabled>
             </releases>
@@ -116,7 +125,24 @@
                 <enabled>false</enabled>
             </snapshots>
         </pluginRepository>
+        <pluginRepository>
+            <id>payara-nexus-snapshots</id>
+            <url>https://nexus.dev.payara.fish/repository/payara-snapshots</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </pluginRepository>
     </pluginRepositories>
+
+    <distributionManagement>
+        <repository>
+            <id>payara-nexus-distributions</id>
+            <url>https://nexus.dev.payara.fish/repository/payara-community/</url>
+        </repository>
+    </distributionManagement>
 
     <properties>
         <dynamic.build.properties.version>0.0.1.a2</dynamic.build.properties.version>
@@ -125,32 +151,37 @@
         <!-- BOM-referenced versions -->
 
         <osgi-resource-locator.version>1.0.3</osgi-resource-locator.version>
-        <snakeyaml.version>2.0</snakeyaml.version>
-        <jstl-impl.version>3.0.0</jstl-impl.version>
+        <snakeyaml.version>2.2</snakeyaml.version>
+        <jstl-impl.version>3.0.1</jstl-impl.version>
         <mojarra.version>4.0.0.payara-p2</mojarra.version>
         <jaxb-extra-osgi.version>2.3.0</jaxb-extra-osgi.version>
 
-        <yasson.version>3.0.2</yasson.version>
-        <eclipselink.version>4.0.1.payara-p1</eclipselink.version>
-        <eclipselink.asm.version>9.5.0</eclipselink.asm.version>
+        <yasson.version>3.0.3</yasson.version>
+        <eclipselink.version>4.0.1.payara-p2</eclipselink.version>
+        <eclipselink.asm.version>9.6.0</eclipselink.asm.version>
         <mq.version>6.3.0.payara-p3</mq.version>
         <com.ibm.jbatch.container.version>2.1.1</com.ibm.jbatch.container.version>
         <com.ibm.jbatch.spi.version>2.1.1</com.ibm.jbatch.spi.version>
-        <webservices.version>4.0.1</webservices.version>
-        <org.apache.santuario.version>3.0.0</org.apache.santuario.version>
-        <woodstox.version>6.4.0</woodstox.version>
+        <webservices.version>4.0.3.payara-p1</webservices.version>
+        <org.apache.santuario.version>4.0.0</org.apache.santuario.version>
+        <woodstox.version>6.6.2</woodstox.version>
         <woodstock-jsf.version>5.0.0</woodstock-jsf.version>
         <woodstock-jsf-suntheme.version>5.0.0.payara-p1</woodstock-jsf-suntheme.version>
         <angus.activation.version>1.0.0</angus.activation.version>
-        <istack-commons-runtime.version>4.0.1</istack-commons-runtime.version>
+        <istack-commons-runtime.version>4.2.0</istack-commons-runtime.version>
         <wsdl4j.version>1.6.3</wsdl4j.version>
-        <microprofile-release.version>6.0</microprofile-release.version>
+        <microprofile-release.version>6.1</microprofile-release.version>
         <payara-arquillian-container.version>3.0.alpha6</payara-arquillian-container.version>
-        <h2db.version>2.1.212</h2db.version>
+        <h2db.version>2.2.224</h2db.version>
         <concurrent.version>3.0.2.payara-p1</concurrent.version>
-        <monitoring-console-process.version>2.0.1</monitoring-console-process.version>
-        <monitoring-console-webapp.version>2.0.1</monitoring-console-webapp.version>
+        <monitoring-console-process.version>2.0.2</monitoring-console-process.version>
+        <monitoring-console-webapp.version>2.0.2</monitoring-console-webapp.version>
         <validation.xml.root>${project.build.outputDirectory}</validation.xml.root>
+
+        <deploy.skip>true</deploy.skip>
+        <javadoc.skip>true</javadoc.skip>
+        <source.skip>true</source.skip>
+        <license-maven-plugin.version>2.4.0</license-maven-plugin.version>
     </properties>
 
     <profiles>
@@ -280,24 +311,68 @@
         </profile>
 
         <profile>
-            <!-- only internal modules deployed, so tests can run without Server build built -->
-            <id>deploy-internals</id>
-            <properties>
-                <deploy.skip>false</deploy.skip>
-            </properties>
-
-            <distributionManagement>
-                <repository>
-                    <id>payara-nexus-artifacts</id>
-                    <url>https://nexus.payara.fish/repository/payara-artifacts/</url>
-                </repository>
-                <snapshotRepository>
-                    <id>payara-nexus-snapshots</id>
-                    <url>https://nexus.payara.fish/repository/payara-snapshots/</url>
-                </snapshotRepository>
-            </distributionManagement>
+            <id>BuildCore</id>
+            <activation>
+                <property>
+                    <name>build.core.skip</name>
+                    <value>!true</value>
+                </property>
+            </activation>
+            <modules>
+                <module>core</module>
+            </modules>
         </profile>
 
+        <!-- Duplicated from core-bom because it isn't deployed to Maven Central so we need to tell
+             Maven where to download it from -->
+        <profile>
+            <id>payara-nexus-staging</id>
+            <repositories>
+                <repository>
+                    <id>payara-nexus-staging</id>
+                    <url>https://nexus.dev.payara.fish/repository/payara-staging</url>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>false</enabled>
+                    </snapshots>
+                </repository>
+            </repositories>
+            <pluginRepositories>
+                <pluginRepository>
+                    <id>payara-nexus-staging</id>
+                    <url>https://nexus.dev.payara.fish/repository/payara-staging</url>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>false</enabled>
+                    </snapshots>
+                </pluginRepository>
+            </pluginRepositories>
+        </profile>
+
+        <profile>
+            <id>GenerateThirdPartyLicenseFile</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>license-maven-plugin</artifactId>
+                        <inherited>false</inherited>
+                        <executions>
+                            <execution>
+                                <id>download-and-aggregate-licenses</id>
+                                <goals>
+                                    <goal>aggregate-add-third-party</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 
     <build>
@@ -379,33 +454,16 @@
                     </configuration>
                 </plugin>
                 <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-deploy-plugin</artifactId>
-                    <version>${maven.deploy.plugin.version}</version>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>license-maven-plugin</artifactId>
+                    <version>${license-maven-plugin.version}</version>
                     <configuration>
-                        <retryFailedDeploymentCount>10</retryFailedDeploymentCount>
-                        <skip>${deploy.skip}</skip>
-                    </configuration>
-                </plugin>
-
-                <plugin>
-                    <groupId>org.apache.felix</groupId>
-                    <artifactId>maven-bundle-plugin</artifactId>
-                    <version>${maven.bundle.plugin.version}</version>
-                    <configuration>
-                        <!-- By default, we don't export anything. -->
-                        <Export-Package />
-                        <instructions>
-                            <!--
-                                Read all the configuration from osgi.bundle file, if it exists.
-                            -->
-                            <_include>-osgi.bundle</_include>
-                        </instructions>
-                        <excludeDependencies>tools-jar</excludeDependencies>
-                        <supportedProjectTypes>
-                            <supportedProjectType>glassfish-jar</supportedProjectType>
-                            <supportedProjectType>jar</supportedProjectType>
-                        </supportedProjectTypes>
+                        <outputDirectory>${project.basedir}/appserver/packager/legal/src/main/resources/glassfish/legal</outputDirectory>
+                        <thirdPartyFilename>3RD-PARTY-LICENSE.txt</thirdPartyFilename>
+                        <excludedGroups>fish.payara.*</excludedGroups>
+                        <fileTemplate>appserver/packager/legal/src/main/resources/license-template.ftl</fileTemplate>
+                        <missingFile>${project.basedir}/appserver/packager/legal/src/main/resources/THIRD-PARTY.properties</missingFile>
+                        <force>true</force>
                     </configuration>
                 </plugin>
                 <plugin>

@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-parent</artifactId>
-        <version>6.2023.9-SNAPSHOT</version>
+        <version>6.2024.6-SNAPSHOT</version>
     </parent>
     
     <groupId>fish.payara.server.internal.packager</groupId>
@@ -175,7 +175,6 @@
         <findbugs.skip>true</findbugs.skip>
         <zip.excludes>**\/META-INF,META-INF\/*</zip.excludes>
         <pkg_proto.py>src/main/resources/pkg_proto.py</pkg_proto.py>
-        <deploy.skip>true</deploy.skip>
     </properties>
     
     <build>

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2023] Payara Foundation and/or affiliates
 
 package org.glassfish.config.support;
 
@@ -86,12 +86,16 @@ class DomainXmlPreParser {
     }
     
     private XMLStreamReader reader;
-    private List<ClusterData> clusters = new LinkedList<ClusterData>();
-    private List<String> configNames = new LinkedList<String>();
+    private List<ClusterData> clusters = new LinkedList<>();
+    private List<DeploymentGroupData> deploymentGroups = new LinkedList<>();
+    private List<String> configNames = new LinkedList<>();
+    private Map<String, String> mapServerConfig = new HashMap<>();
     private ClusterData cluster;
+    private DeploymentGroupData deploymentGroup;
     private String instanceName;
     private String serverConfigRef;
     private boolean valid = false;
+    private boolean validDG = false;
     
     private static final boolean DEBUG = Boolean.parseBoolean(Utility.getEnvOrProp("AS_DEBUG"));
     private static final Logger LOGGER = Logger.getLogger("org.glassfish.config.support");
@@ -125,11 +129,30 @@ class DomainXmlPreParser {
         return cluster.name;
     }
 
+
+    final String getDeploymentGroupName() {
+        if(!validDG) {
+            return null;
+        }
+        return deploymentGroup.name;
+    }
+
     final List<String> getServerNames() {
         if(!valid) {
             return null;
         }
         return cluster.serverRefs;
+    }
+
+    final List<String> getDGServerNames() {
+        if(!validDG) {
+            return Collections.EMPTY_LIST;
+        }
+        return deploymentGroup.dgServerRefs;
+    }
+
+    public Map<String, String> getMapServerConfig() {
+        return this.mapServerConfig;
     }
 
     final String getConfigName() {
@@ -181,6 +204,20 @@ class DomainXmlPreParser {
         cluster = new ClusterData();
         cluster.configRef = serverConfigRef;
         cluster.serverRefs.add(instanceName);
+
+        // our instance is in either zero or one dg. Find it and set it.
+        for (DeploymentGroupData dgData : deploymentGroups) {
+            for (String serverName : dgData.dgServerRefs) {
+                if (instanceName.equals(serverName)) {
+                    deploymentGroup = dgData;
+                    return;
+                }
+            }
+        }
+        // if we get here that means the instance either
+        // does not exist or it is stand-alone
+        deploymentGroup = new DeploymentGroupData();
+        deploymentGroup.dgServerRefs.add(instanceName);
     }
 
     private void validate() throws DomainXmlPreParserException {
@@ -198,8 +235,11 @@ class DomainXmlPreParser {
             throw new DomainXmlPreParserException(Strings.get("dxpp.confignotfound", instanceName, serverConfigRef));
         }
 
-
         valid = true;
+
+        if (deploymentGroup != null) {
+            validDG = true;
+        }
     }
 
     private void handleElement() throws XMLStreamException {
@@ -214,6 +254,9 @@ class DomainXmlPreParser {
                 break;
             case CLUSTERS:
                 handleClusters();
+                break;
+            case DEPLOYMENT_GROUPS:
+                handleDeploymentGroups();
                 break;
             case CONFIGS:
                 handleConfigs();
@@ -237,9 +280,20 @@ class DomainXmlPreParser {
         String configRef = getConfigRef();
 
         printf("SERVER: " + name + ", ref= " + configRef);
+        mapServerConfig.put(name, configRef);
 
-        if (instanceName.equals(name))
+        if (instanceName.equals(name)) {
             serverConfigRef = configRef;
+        }
+    }
+
+    private void handleDeploymentGroups() throws XMLStreamException {
+        // we are pointed at the servers element
+        printf("FOUND DEPLOYMENT GROUPS");
+
+        while (skipToStartButNotPast(DEPLOYMENT_GROUP, DEPLOYMENT_GROUPS)) {
+            handleDeploymentGroup();
+        }
     }
 
     private void handleClusters() throws XMLStreamException {
@@ -260,10 +314,24 @@ class DomainXmlPreParser {
         printf(cd.toString());
     }
 
+    private void handleDeploymentGroup() throws XMLStreamException {
+        DeploymentGroupData deploymentGroupData = new DeploymentGroupData();
+        deploymentGroupData.name = getName();
+        handleDGServerRefs(deploymentGroupData);
+        deploymentGroups.add(deploymentGroupData);
+        printf(deploymentGroupData.toString());
+    }
+
     private void handleServerRefs(ClusterData cd) throws XMLStreamException {
 
         while (skipToStartButNotPast(SERVER_REF, CLUSTER)) {
             cd.serverRefs.add(reader.getAttributeValue(null, REF));
+        }
+    }
+
+    private void handleDGServerRefs(DeploymentGroupData dgData) throws XMLStreamException {
+        while (skipToStartButNotPast(DG_SERVER_REF, DEPLOYMENT_GROUP)) {
+            dgData.dgServerRefs.add(reader.getAttributeValue(null, REF));
         }
     }
 
@@ -313,14 +381,23 @@ class DomainXmlPreParser {
     }
 
     private static class ClusterData {
-
         String name;
         String configRef;
-        List<String> serverRefs = new ArrayList<String>();
+        List<String> serverRefs = new ArrayList<>();
 
         @Override
         public String toString() {
             return "Cluster:name=" + name + ", config-ref=" + configRef + ", server-refs = " + serverRefs;
+        }
+    }
+
+    private static class DeploymentGroupData {
+        String name;
+        List<String> dgServerRefs = new ArrayList<>();
+
+        @Override
+        public String toString() {
+            return "DeploymentGroup:name=" + name + ", dg-server-refs = " + dgServerRefs;
         }
     }
 }

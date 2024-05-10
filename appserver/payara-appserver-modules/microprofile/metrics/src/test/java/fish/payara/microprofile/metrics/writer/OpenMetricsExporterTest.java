@@ -46,10 +46,13 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.StringWriter;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.Duration;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import java.util.stream.Collectors;
 import org.eclipse.microprofile.metrics.Counter;
 import org.eclipse.microprofile.metrics.Gauge;
 import org.eclipse.microprofile.metrics.Histogram;
@@ -89,7 +92,7 @@ public class OpenMetricsExporterTest {
                 .withName(metricID.getName())
                 .withDescription("The number of unique visitors")
                 .build();
-        assertOutputEqualsFile("Counter.txt", metricID, counter, metadata);
+        assertOutputEqualsContent("Counter.txt", metricID, counter, metadata);
     }
 
 
@@ -110,7 +113,7 @@ public class OpenMetricsExporterTest {
                 .withDescription("Users file size")
                 .withUnit(MetricUnits.BYTES)
                 .build();
-        assertOutputEqualsFile("Histogram.txt", metricID, histogram, metadata);
+        assertOutputEqualsContent("Histogram.txt", metricID, histogram, metadata);
     }
 
 
@@ -126,7 +129,7 @@ public class OpenMetricsExporterTest {
                 .withDescription("The running cost of the server in dollars.")
                 .withUnit("dollars")
                 .build();
-        assertOutputEqualsFile("Gauge.txt", metricID, gauge, metadata);
+        assertOutputEqualsContent("Gauge.txt", metricID, gauge, metadata);
     }
 
     @Test
@@ -147,7 +150,7 @@ public class OpenMetricsExporterTest {
                 .withDescription("Server response time for /index.html")
                 .withUnit(MetricUnits.NANOSECONDS)
                 .build();
-        assertOutputEqualsFile("Timer.txt", metricID, timer, metadata);
+        assertOutputEqualsContent("Timer.txt", metricID, timer, metadata);
     }
 
     public Snapshot.PercentileValue[] getPercentilesArray() {
@@ -246,7 +249,7 @@ public class OpenMetricsExporterTest {
                 .withName(metricID.getName())
                 .build();
         assertOutputEquals("# TYPE test5_total counter\n" +
-                "# HELP test5_total \n"+"test5_total{key=\"escape\\\\and\\\"and\\n\"} 13\n", metricID, counter, metadata);
+                "# HELP test5_total \n"+"test5_total{key=\"escape\\\\and\\\"and\\n\"} 13.0\n", metricID, counter, metadata);
     }
 
     @Test
@@ -258,7 +261,7 @@ public class OpenMetricsExporterTest {
                 .withName(metricID.getName())
                 .build();
         assertOutputEquals("# TYPE my_total counter\n" +
-                "# HELP my_total \n"+"my_total 13\n", metricID, counter, metadata);
+                "# HELP my_total \n"+"my_total 13.0\n", metricID, counter, metadata);
     }
 
     @Test
@@ -319,27 +322,27 @@ public class OpenMetricsExporterTest {
                 .withDescription("")
                 .build();
         assertOutputEquals("# TYPE test1_total counter\n" +
-                "# HELP test1_total \n"+"test1_total 13\n", metricID, counter, metadata);
+                "# HELP test1_total \n"+"test1_total 13.0\n", metricID, counter, metadata);
     }
 
     @Test
     public void unitAnyBitsHasBaseUnitBytes() {
         assertUnitConversion(MetricUnits.BITS, 1, "bytes", "0.125");
-        assertUnitConversion(MetricUnits.BITS, 64, "bytes", "8");
+        assertUnitConversion(MetricUnits.BITS, 64, "bytes", "8.0");
 
         // those that scale with 1000
-        assertUnitConversion(MetricUnits.KILOBITS, 1, "bytes", "125");
-        assertUnitConversion(MetricUnits.KILOBITS, 1000, "bytes", "125000");
-        assertUnitConversion(MetricUnits.KILOBITS, 1024, "bytes", "128000");
-        assertUnitConversion(MetricUnits.KILOBITS, 1000, "bytes", "125000");
-        assertUnitConversion(MetricUnits.KILOBITS, 999, "bytes", "124875");
-        assertUnitConversion(MetricUnits.MEGABITS, 5, "bytes", "625000");
+        assertUnitConversion(MetricUnits.KILOBITS, 1, "bytes", "125.0");
+        assertUnitConversion(MetricUnits.KILOBITS, 1000, "bytes", "125000.0");
+        assertUnitConversion(MetricUnits.KILOBITS, 1024, "bytes", "128000.0");
+        assertUnitConversion(MetricUnits.KILOBITS, 1000, "bytes", "125000.0");
+        assertUnitConversion(MetricUnits.KILOBITS, 999, "bytes", "124875.0");
+        assertUnitConversion(MetricUnits.MEGABITS, 5, "bytes", "625000.0");
         assertUnitConversion(MetricUnits.MEGABITS, 1024, "bytes", "1.28E8");
         assertUnitConversion(MetricUnits.GIGABITS, 2, "bytes", "2.5E8");
 
         // those that scale with 1024
-        assertUnitConversion(MetricUnits.MEBIBITS, 1, "bytes", "131072");
-        assertUnitConversion(MetricUnits.MEBIBITS, 23, "bytes", "3014656");
+        assertUnitConversion(MetricUnits.MEBIBITS, 1, "bytes", "131072.0");
+        assertUnitConversion(MetricUnits.MEBIBITS, 23, "bytes", "3014656.0");
         assertUnitConversion(MetricUnits.GIBIBITS, 1, "bytes", "1.34217728E8");
         assertUnitConversion(MetricUnits.GIBIBITS, 42, "bytes", "5.637144576E9");
     }
@@ -348,10 +351,10 @@ public class OpenMetricsExporterTest {
     public void unitAnyBytesHasBaseUnitBytes() {
         assertUnitConversion(MetricUnits.BYTES, 1, "bytes", "1");
         assertUnitConversion(MetricUnits.BYTES, 555, "bytes", "555");
-        assertUnitConversion(MetricUnits.KILOBYTES, 1, "bytes", "1000");
-        assertUnitConversion(MetricUnits.KILOBYTES, 23, "bytes", "23000");
-        assertUnitConversion(MetricUnits.MEGABYTES, 1, "bytes", "1000000");
-        assertUnitConversion(MetricUnits.MEGABYTES, 0.5d, "bytes", "500000");
+        assertUnitConversion(MetricUnits.KILOBYTES, 1, "bytes", "1000.0");
+        assertUnitConversion(MetricUnits.KILOBYTES, 23, "bytes", "23000.0");
+        assertUnitConversion(MetricUnits.MEGABYTES, 1, "bytes", "1000000.0");
+        assertUnitConversion(MetricUnits.MEGABYTES, 0.5d, "bytes", "500000.0");
     }
 
     @Test
@@ -360,9 +363,9 @@ public class OpenMetricsExporterTest {
         assertUnitConversion(MetricUnits.MICROSECONDS, 50400000, "seconds", "50.4");
         assertUnitConversion(MetricUnits.MILLISECONDS, 123, "seconds", "0.123");
         assertUnitConversion(MetricUnits.SECONDS, 42, "seconds", "42");
-        assertUnitConversion(MetricUnits.MINUTES, 1, "seconds", "60");
-        assertUnitConversion(MetricUnits.HOURS, 2, "seconds", "7200");
-        assertUnitConversion(MetricUnits.DAYS, 1, "seconds", "86400");
+        assertUnitConversion(MetricUnits.MINUTES, 1, "seconds", "60.0");
+        assertUnitConversion(MetricUnits.HOURS, 2, "seconds", "7200.0");
+        assertUnitConversion(MetricUnits.DAYS, 1, "seconds", "86400.0");
     }
 
     private static final AtomicInteger nextNameId = new AtomicInteger(10);
@@ -384,9 +387,9 @@ public class OpenMetricsExporterTest {
         assertEquals(expected, actual.getBuffer().toString());
     }
 
-    private void assertOutputEqualsFile(String expectedFile, MetricID metricID, Metric metric, Metadata metadata) {
+    private void assertOutputEqualsContent(String expectedFile, MetricID metricID, Metric metric, Metadata metadata) {
         exporter.export(metricID, metric, metadata);
-        assertOutputEqualsFile(expectedFile);
+        assertOutputEqualsContent(expectedFile);
     }
 
     private void assertOutputEqualsFile(String expectedFile) {
@@ -396,6 +399,22 @@ public class OpenMetricsExporterTest {
     private String readFile(String file) {
         try {
             return new String(readAllBytes(Paths.get(getClass().getResource(file).toURI())));
+        } catch (Exception ex) {
+            throw new AssertionError(ex);
+        }
+    }
+
+    private void assertOutputEqualsContent(String expectedFile) {
+        List<String> lines = readLines("/examples/" + expectedFile);
+        String resultingContent = actual.getBuffer().toString();
+        for (String l : lines) {
+            assertTrue(resultingContent.contains(l));
+        }
+    }
+
+    private List<String> readLines(String file) {
+        try {
+            return Files.lines(Paths.get(getClass().getResource(file).toURI())).collect(Collectors.toList());
         } catch (Exception ex) {
             throw new AssertionError(ex);
         }

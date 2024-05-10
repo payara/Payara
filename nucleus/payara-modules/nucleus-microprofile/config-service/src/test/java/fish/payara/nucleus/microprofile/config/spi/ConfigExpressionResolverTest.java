@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2021-2022] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2021-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -45,17 +45,21 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.HashMap;
-import java.util.NoSuchElementException;
+import java.util.Set;
 
 import static fish.payara.nucleus.microprofile.config.spi.ConfigTestUtils.createSource;
 import static java.util.Collections.singleton;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 public class ConfigExpressionResolverTest {
     
     private final ConfigSource source = createSource("S1", 100, new HashMap<>());
-    private final ConfigExpressionResolver resolver = new ConfigExpressionResolver(singleton(source), "test");
+    private final ConfigSource sourceHigherOrdinal = createSource("SHO", 110, new HashMap<>());
+    private final ConfigSource sourceEqualOrdinal = createSource("SEO", 100, new HashMap<>());
+    private final ConfigSource sourceLowerOrdinal = createSource("SEO", 90, new HashMap<>());
+    private final ConfigExpressionResolver resolver = new ConfigExpressionResolver(Set.of(source, sourceHigherOrdinal, sourceEqualOrdinal, sourceLowerOrdinal), "test");
 
     @Before
     public void configureConfigProperties() {
@@ -74,6 +78,13 @@ public class ConfigExpressionResolverTest {
         source.getProperties().put("default.key.reference", "${${not.existing:key}:not.found}");
         source.getProperties().put("%test.fish.payara.badger", "mushroom");
         source.getProperties().put("fish.payara.badger", "badger");
+        source.getProperties().put("%test.fish.payara.rod", "bites");
+        
+        sourceHigherOrdinal.getProperties().put("fish.payara.rod", "nobites");
+        sourceHigherOrdinal.getProperties().put("%test.fish.payara.profile-only", "gotcha");
+        
+        sourceEqualOrdinal.getProperties().put("fish.payara.badger", "i-shall-be-ignored");
+        sourceLowerOrdinal.getProperties().put("fish.payara.badger", "i-shall-be-ignored");
     }
 
     @Test
@@ -122,9 +133,10 @@ public class ConfigExpressionResolverTest {
         assertEquals("1valuevalue2", result.getValue());
     }
 
-    @Test(expected = NoSuchElementException.class)
-    public void testNonExistentReference() {
-        resolver.resolve("reference.not.found");
+    @Test
+    public void testNonNullReference() {
+        ConfigValueImpl configValue = resolver.resolve("reference.not.found");
+        assertNotNull(configValue);
     }
 
     @Test
@@ -179,9 +191,25 @@ public class ConfigExpressionResolverTest {
     
     @Test
     public void testProfiles() {
+        // This test case does not only test if the profiled value is used from the same source, but also if the
+        // defined equal and lower ordinal sources are ignored
         ConfigValue result = resolver.resolve("fish.payara.badger");
         assertEquals("mushroom", result.getValue());
         assertEquals("mushroom", result.getRawValue());
+    }
+    
+    @Test
+    public void testProfilesOverrideProfiledValueFromSourceWithHigherOrdinal() {
+        ConfigValue result = resolver.resolve("fish.payara.rod");
+        assertEquals("nobites", result.getValue());
+        assertEquals("nobites", result.getRawValue());
+    }
+    
+    @Test
+    public void testProfilesDoNotFailToLookupWhenOnlyProfiledValueExists() {
+        ConfigValue result = resolver.resolve("fish.payara.profile-only");
+        assertEquals("gotcha", result.getValue());
+        assertEquals("gotcha", result.getRawValue());
     }
     
 }
