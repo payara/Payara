@@ -88,7 +88,9 @@ public class HSTSFilter extends BaseFilter implements ConfigAwareElement<Ssl> {
         Object message = ctx.getMessage();
         if (message instanceof HttpContent && enabled) {
             HttpContent content = (HttpContent) message;
-            content.getHttpHeader().addHeader(HSTS_HEADER, header);
+            if(!content.getHttpHeader().containsHeader(HSTS_HEADER)) {
+                content.getHttpHeader().addHeader(HSTS_HEADER, header);
+            }
         }     
         
         return ctx.getInvokeAction();

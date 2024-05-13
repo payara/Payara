@@ -39,6 +39,7 @@
     holder.
 
 -->
+<!-- Portions Copyright 2024 Payara Foundation and/or its affiliates -->
 
 
 <sun:button id="saveButton" text="$resource{i18n.button.Save}" >
@@ -51,7 +52,7 @@
         foreach (var="row" list="#{pageSession.tableList}") {
             mapPut(map="#{requestScope.data}", key="#{row.name}", value="#{row.value}");
         }
-        gf.restRequest(endpoint="#{pageSession.selfUrl}", method="POST", attrs="#{requestScope.data}", contentType="application/x-www-form-urlencoded", result="#{requestScope.restResponse}");
+        gf.restRequest(endpoint="#{pageSession.selfUrl}", method="PUT", attrs="#{requestScope.data}", contentType="application/x-www-form-urlencoded", result="#{requestScope.restResponse}");
         prepareSuccessfulMsg();
         gf.redirect(page="#{pageSession.selfPage}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
 		gf.isConfigName(configName="#{pageSession.configName}" );
