@@ -143,7 +143,7 @@
         <mail.version>2.1.0</mail.version>
         <angus.mail.version>1.0.0</angus.mail.version>
         <ha-api.version>3.1.13</ha-api.version>
-        <apache.bcel.version>6.7.0</apache.bcel.version>
+        <apache.bcel.version>6.9.0</apache.bcel.version>
         <!-- Primitive Function Library (PFL); a library of simple utilities used by Glassfish -->
         <pfl.version>4.1.2.payara-p1</pfl.version>
         <opendmk.version>1.0-b01-ea</opendmk.version>
