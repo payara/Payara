@@ -157,6 +157,7 @@
         <bouncycastle-jdk15on.version>1.70</bouncycastle-jdk15on.version>
         <jsftemplating.version>3.0.0</jsftemplating.version>
         <jakarta.faces-api.version>4.0.1</jakarta.faces-api.version>
+        <concurro.version>3.1.0-SNAPSHOT</concurro.version>
 
         <!-- build versions -->
         <jdk.version>21</jdk.version>
@@ -910,6 +911,11 @@
                 <groupId>jakarta.enterprise.concurrent</groupId>
                 <artifactId>jakarta.enterprise.concurrent-api</artifactId>
                 <version>${concurrent-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.concurro</groupId>
+                <artifactId>concurro</artifactId>
+                <version>${concurro.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.osgi</groupId>
