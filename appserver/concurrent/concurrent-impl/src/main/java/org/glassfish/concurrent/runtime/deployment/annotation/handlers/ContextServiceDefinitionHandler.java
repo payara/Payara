@@ -43,7 +43,6 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.deployment.ContextServiceDefinitionDescriptor;
 import com.sun.enterprise.deployment.ResourceDescriptor;
 import com.sun.enterprise.deployment.annotation.context.ResourceContainerContext;
-import com.sun.enterprise.deployment.annotation.handlers.AbstractResourceHandler;
 import jakarta.enterprise.concurrent.ContextServiceDefinition;
 import jakarta.inject.Inject;
 import java.util.Arrays;
@@ -69,7 +68,7 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service
 @AnnotationHandlerFor(ContextServiceDefinition.class)
-public class ContextServiceDefinitionHandler extends AbstractResourceHandler {
+public class ContextServiceDefinitionHandler extends AbstractConcurrencyHandler {
 
     private static final Logger logger = Logger.getLogger(ContextServiceDefinitionHandler.class.getName());
 
@@ -88,14 +87,19 @@ public class ContextServiceDefinitionHandler extends AbstractResourceHandler {
         return getDefaultProcessedResult();
     }
 
-    public void processSingleAnnotation(ContextServiceDefinition contextServiceDefinition, ResourceContainerContext[] resourceContainerContexts) {
+    public void processSingleAnnotation(ContextServiceDefinition contextServiceDefinition,
+            ResourceContainerContext[] resourceContainerContexts) {
         logger.log(Level.INFO, "Creating custom context service by annotation");
         ContextServiceDefinitionDescriptor csdd = createDescriptor(contextServiceDefinition);
 
         // add to resource contexts
         for (ResourceContainerContext context : resourceContainerContexts) {
-            Set<ResourceDescriptor> csddes = context.getResourceDescriptors(JavaEEResourceType.CSDD);
-            csddes.add(csdd);
+            Set<ResourceDescriptor> resourceDescriptors = context.getResourceDescriptors(JavaEEResourceType.CSDD);
+            if (descriptorAlreadyPresent(resourceDescriptors, csdd)) {
+                merge(resourceDescriptors, contextServiceDefinition);
+            } else {
+                resourceDescriptors.add(csdd);
+            }
         }
     }
 
@@ -111,6 +115,30 @@ public class ContextServiceDefinitionHandler extends AbstractResourceHandler {
         csdd.setQualifiers(Arrays.asList(contextServiceDefinition.qualifiers()).stream().map(c -> c.getName()).collect(Collectors.toSet()));
 
         return csdd;
+    }
+
+    private void merge(Set<ResourceDescriptor> resourceDescriptors, ContextServiceDefinition csd) {
+        for (ResourceDescriptor resource : resourceDescriptors) {
+            ContextServiceDefinitionDescriptor descriptor = (ContextServiceDefinitionDescriptor) resource;
+            if (descriptor.getName().equals(csd.name())) {
+
+                if (descriptor.getCleared() == null && csd.cleared() != null) {
+                    descriptor.setCleared(new HashSet<>(Arrays.asList(csd.cleared())));
+                }
+
+                if (descriptor.getPropagated() == null && csd.propagated() != null) {
+                    descriptor.setPropagated(new HashSet<>(Arrays.asList(csd.propagated())));
+                }
+
+                if (descriptor.getUnchanged() == null && csd.unchanged() != null) {
+                    descriptor.setUnchanged(new HashSet<>(Arrays.asList(csd.unchanged())));
+                }
+
+                if (descriptor.getQualifiers() == null && csd.qualifiers() != null) {
+                    descriptor.setQualifiers(mapToSetOfStrings(csd.qualifiers()));
+                }
+            }
+        }
     }
 
     private Set<String> evaluateContexts(String[] sourceContexts, Set<String> unusedContexts) {

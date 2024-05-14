@@ -43,9 +43,7 @@ import com.sun.enterprise.deployment.ManagedThreadFactoryDefinitionDescriptor;
 import com.sun.enterprise.deployment.MetadataSource;
 import com.sun.enterprise.deployment.ResourceDescriptor;
 import com.sun.enterprise.deployment.annotation.context.ResourceContainerContext;
-import com.sun.enterprise.deployment.annotation.handlers.AbstractResourceHandler;
 import jakarta.enterprise.concurrent.ManagedThreadFactoryDefinition;
-import java.util.Arrays;
 import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
@@ -54,15 +52,13 @@ import org.glassfish.config.support.TranslatedConfigView;
 import org.glassfish.deployment.common.JavaEEResourceType;
 import org.jvnet.hk2.annotations.Service;
 
-import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 @Service
 @AnnotationHandlerFor(ManagedThreadFactoryDefinition.class)
-public class ManagedThreadFactoryDefinitionHandler extends AbstractResourceHandler {
+public class ManagedThreadFactoryDefinitionHandler extends AbstractConcurrencyHandler {
 
     private static final Logger logger = Logger.getLogger(ManagedThreadFactoryDefinitionHandler.class.getName());
 
@@ -80,10 +76,11 @@ public class ManagedThreadFactoryDefinitionHandler extends AbstractResourceHandl
     protected HandlerProcessingResult processAnnotation(ManagedThreadFactoryDefinition managedThreadFactoryDefinition,
                                                         ResourceContainerContext[] contexts) {
         logger.log(Level.INFO, "Registering ManagedThreadFactory from annotation config");
+        ManagedThreadFactoryDefinitionDescriptor mtfdd = createDescriptor(managedThreadFactoryDefinition);
+
+        // add to resource contexts
         for (ResourceContainerContext context : contexts) {
             Set<ResourceDescriptor> resourceDescriptors = context.getResourceDescriptors(JavaEEResourceType.MTFDD);
-            ManagedThreadFactoryDefinitionDescriptor mtfdd =
-                    createDescriptor(managedThreadFactoryDefinition);
             if (descriptorAlreadyPresent(resourceDescriptors, mtfdd)) {
                 merge(resourceDescriptors, managedThreadFactoryDefinition);
             } else {
@@ -103,15 +100,8 @@ public class ManagedThreadFactoryDefinitionHandler extends AbstractResourceHandl
         } else {
             mtfdd.setPriority(managedThreadFactoryDefinition.priority());
         }
-        mtfdd.setQualifiers(Arrays.asList(managedThreadFactoryDefinition.qualifiers()).stream().map(c -> c.getName()).collect(Collectors.toSet()));
+        mtfdd.setQualifiers(mapToSetOfStrings(managedThreadFactoryDefinition.qualifiers()));
         return mtfdd;
-    }
-
-    private boolean descriptorAlreadyPresent(final Set<ResourceDescriptor> resourceDescriptors,
-                                             final ManagedThreadFactoryDefinitionDescriptor mtfdd) {
-        Optional<ResourceDescriptor> optResourceDescriptor = resourceDescriptors
-                .stream().filter(d -> d.equals(mtfdd)).findAny();
-        return optResourceDescriptor.isPresent();
     }
 
     private void merge(Set<ResourceDescriptor> resourceDescriptors, ManagedThreadFactoryDefinition mtfdd) {
@@ -125,6 +115,10 @@ public class ManagedThreadFactoryDefinitionHandler extends AbstractResourceHandl
 
                 if (descriptor.getContext() == null && mtfdd.context() != null && !mtfdd.context().isBlank()) {
                     descriptor.setContext(TranslatedConfigView.expandValue(mtfdd.context()));
+                }
+
+                if (descriptor.getQualifiers() == null && mtfdd.qualifiers() != null) {
+                    descriptor.setQualifiers(mapToSetOfStrings(mtfdd.qualifiers()));
                 }
             }
         }
