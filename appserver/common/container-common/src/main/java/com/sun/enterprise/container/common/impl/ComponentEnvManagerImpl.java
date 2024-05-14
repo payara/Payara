@@ -412,10 +412,8 @@ public class ComponentEnvManagerImpl
             for (ResourceDescriptor desc : concurrencyDescs) {
                 if (desc instanceof ConcurrencyQualifiedDescriptor qDesc) {
                     Set<String> qualifiers = qDesc.getQualifiers();
-                    if (!qualifiers.isEmpty()) {
-                        String concurrencyType = qDesc.getConcurrencyType();
-                        setup.addDefinition(ConcurrencyManagedCDIBeans.Type.valueOf(concurrencyType), qualifiers, desc.getName());
-                    }
+                    String concurrencyType = qDesc.getConcurrencyType();
+                    setup.addDefinition(ConcurrencyManagedCDIBeans.Type.valueOf(concurrencyType), qualifiers, desc.getName());
                 } else {
                     _logger.severe(() -> "Unexpected Concurrency type! Expected ConcurrencyQualifiedDescriptor, got " + desc);
                 }
