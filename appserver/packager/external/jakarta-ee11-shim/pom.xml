@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~
+  ~  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+  ~
+  ~  Copyright (c) 2024 Payara Foundation and/or its affiliates. All rights reserved.
+  ~
+  ~  The contents of this file are subject to the terms of either the GNU
+  ~  General Public License Version 2 only ("GPL") or the Common Development
+  ~  and Distribution License("CDDL") (collectively, the "License").  You
+  ~  may not use this file except in compliance with the License.  You can
+  ~  obtain a copy of the License at
+  ~  https://github.com/payara/Payara/blob/master/LICENSE.txt
+  ~  See the License for the specific
+  ~  language governing permissions and limitations under the License.
+  ~
+  ~  When distributing the software, include this License Header Notice in each
+  ~  file and include the License file at glassfish/legal/LICENSE.txt.
+  ~
+  ~  GPL Classpath Exception:
+  ~  The Payara Foundation designates this particular file as subject to the "Classpath"
+  ~  exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+  ~  file that accompanied this code.
+  ~
+  ~  Modifications:
+  ~  If applicable, add the following below the License Header, with the fields
+  ~  enclosed by brackets [] replaced by your own identifying information:
+  ~  "Portions Copyright [year] [name of copyright owner]"
+  ~
+  ~  Contributor(s):
+  ~  If you wish your version of this file to be governed by only the CDDL or
+  ~  only the GPL Version 2, indicate your decision by adding "[Contributor]
+  ~  elects to include this software in this distribution under the [CDDL or GPL
+  ~  Version 2] license."  If you don't indicate a single choice of license, a
+  ~  recipient has the option to distribute your version of this file under
+  ~  either the CDDL, the GPL Version 2 or to extend the choice of license to
+  ~  its licensees as provided above.  However, if you add GPL Version 2 code
+  ~  and therefore, elected the GPL Version 2 license, then the option applies
+  ~  only if the new code is made subject to such option by the copyright
+  ~  holder.
+  ~
+  -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>external</artifactId>
+        <groupId>fish.payara.server.internal.packager</groupId>
+        <version>7.2024.1.Alpha2-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>jakarta-ee11-shim</artifactId>
+    <description>
+        Reexport some EE10 packages in versions compatible with EE11 so that some APIs and components continue
+        to work.
+    </description>
+
+    <dependencies>
+        <!-- Upgrade shim for Annotations 3.0 (currently 2.1) required by HK2 4.0 but not yet provided by the Server.
+        Remove or replace with a downgrade shim once Annotations API upgraded to 4.0 in the server. -->
+        <dependency>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Downgrade shim for HK2 3.0 (now 4.0) as Jersey not yet upgraded to 4.0 and InSight not upgraded for EE11.
+        Remove once Jersey upgraded to 4.0 and InSight upgraded to a version aligned with Payara 7 (presumably 3.0), or
+        update this comment with which other component still requires the downgrade shim. -->
+        <dependency>
+            <groupId>org.glassfish.hk2</groupId>
+            <artifactId>hk2-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.hk2</groupId>
+            <artifactId>hk2-locator</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.hk2</groupId>
+            <artifactId>hk2-utils</artifactId>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>make-transition-exports</id>
+                        <goals>
+                            <goal>bundle</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <instructions>
+                                <!-- ignore warnings -->
+                                <_fixupmessages>set to different values in the source,JAR is empty</_fixupmessages>
+                                <!-- Add symbolic bundle names of API bundles here -->
+                                <Require-Bundle>
+                                    <!-- Upgrade shim for Annotations 3.0 (currently 2.1) required by HK2 4.0 but not
+                                    yet provided by the Server. Remove or replace with a downgrade shim once
+                                    Annotations API upgraded to 4.0 in the server. -->
+                                    jakarta.annotation-api,
+                                    <!-- Downgrade shim for HK2 3.0 (now 4.0) as Jersey not yet upgraded to 4.0 and
+                                    InSight not upgraded for EE11. Remove once Jersey upgraded to 4.0 and InSight
+                                    upgraded to a version aligned with Payara 7 (presumably 3.0), or update this
+                                    comment with which other component still requires the downgrade shim. -->
+                                    org.glassfish.hk2.api,
+                                    org.glassfish.hk2.locator,
+                                    org.glassfish.hk2.utils
+                                </Require-Bundle>
+                                <!-- Manually specify the shim versions of packages to be exported via this bundle -->
+                                <!-- Note the "shortened" syntax here: For every API the packages are delimited with
+                                semicolon, then followed with version attribute and shim attribute (this one is
+                                informational though). Spares from repeating the version for every package of the api.
+                                 We drop uses attributes as well. -->
+                                <Export-Package>
+                                    <!-- Upgrade shim for Annotations 3.0 (currently 2.1) required by HK2 4.0 but not
+                                    yet provided by the Server. Remove or replace with a downgrade shim once
+                                    Annotations API upgraded to 4.0 in the server. -->
+                                    jakarta.annotation;
+                                    jakarta.annotation.security;
+                                    jakarta.annotation.sql;version="3.0.99";shim=true,
+
+                                    <!-- Downgrade shim for HK2 3.0 (now 4.0) as Jersey not yet upgraded to 4.0 and
+                                    InSight not upgraded for EE11. Remove once Jersey upgraded to 4.0 and InSight
+                                    upgraded to a version aligned with Payara 7 (presumably 3.0), or update this
+                                    comment with which other component still requires the downgrade shim. -->
+                                    <!-- hk2-api -->
+                                    com.sun.hk2.component;
+                                    org.glassfish.hk2.api;
+                                    org.glassfish.hk2.api.messaging;
+                                    org.glassfish.hk2.extension;
+                                    org.glassfish.hk2.utilities;
+                                    org.glassfish.hk2.utilities.binding;
+                                    org.jvnet.hk2.annotations;version="3.0.99";shim=true,
+                                    <!-- hk2-locator -->
+                                    org.jvnet.hk2.external.generator;
+                                    org.jvnet.hk2.external.runtime;version="3.0.99";shim=true,
+                                    <!-- hk2-utils -->
+                                    org.glassfish.hk2.utilities.cache;
+                                    org.glassfish.hk2.utilities.general;
+                                    org.glassfish.hk2.utilities.reflection;
+                                    org.glassfish.hk2.utilities.reflection.internal;
+                                    org.jvnet.hk2.component;version="3.0.99";shim=true
+                                </Export-Package>
+                            </instructions>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
