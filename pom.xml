@@ -79,6 +79,17 @@
             </snapshots>
         </repository>
         <repository>
+            <id>ossrh-snapshots</id>
+            <name>Sonatype OSSRH Snapshot Repository</name>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
             <id>payara-nexus-artifacts</id>
             <url>https://nexus.dev.payara.fish/repository/payara-artifacts</url>
             <releases>
