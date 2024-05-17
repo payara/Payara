@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.container.common.impl.util;
 
@@ -53,7 +53,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import jakarta.annotation.ManagedBean;
 import jakarta.inject.Inject;
 import javax.naming.NamingException;
 
@@ -263,38 +262,28 @@ public class InjectionManagerImpl implements InjectionManager, PostConstruct {
 
         try {
 
-            ManagedBean managedBeanAnn = clazz.getAnnotation(ManagedBean.class);
-
             ManagedBeanManager managedBeanMgr = serviceLocator.getService(ManagedBeanManager.class);
 
-            if (managedBeanAnn != null) {
 
-                // EE style @ManagedBean
+            JCDIService cdiService = serviceLocator.getService(JCDIService.class);
+
+            if (cdiService != null && cdiService.isCurrentModuleJCDIEnabled()) {
 
                 // Create , inject, and call PostConstruct via managed bean manager
                 managedObject = managedBeanMgr.createManagedBean(clazz);
 
             } else {
 
-                JCDIService cdiService = serviceLocator.getService(JCDIService.class);
+                // Not in a 299-enabled module and not annoated with @ManagedBean, so
+                // just instantiate using new and perform injection
+                Constructor<T> noArgCtor = clazz.getConstructor();
 
-                if (cdiService != null && cdiService.isCurrentModuleJCDIEnabled()) {
+                managedObject = noArgCtor.newInstance();
 
-                    // Create , inject, and call PostConstruct via managed bean manager
-                    managedObject = managedBeanMgr.createManagedBean(clazz);
-
-                } else {
-
-                    // Not in a 299-enabled module and not annoated with @ManagedBean, so
-                    // just instantiate using new and perform injection
-                    Constructor<T> noArgCtor = clazz.getConstructor();
-
-                    managedObject = noArgCtor.newInstance();
-
-                    // Inject and call PostConstruct
-                    injectInstance(managedObject);
-                }
+                // Inject and call PostConstruct
+                injectInstance(managedObject);
             }
+
         } catch (Exception e) {
             throw new InjectionException(localStrings.getLocalString("injection-manager.error-creating-managed-object",
                     "Error creating managed object for class: {0}", clazz), e);
@@ -325,38 +314,27 @@ public class InjectionManagerImpl implements InjectionManager, PostConstruct {
 
         try {
 
-            ManagedBean managedBeanAnn = clazz.getAnnotation(ManagedBean.class);
-
             ManagedBeanManager managedBeanMgr = serviceLocator.getService(ManagedBeanManager.class);
 
-            if (managedBeanAnn != null) {
+            JCDIService jcdiService = serviceLocator.getService(JCDIService.class);
 
-                // EE style @ManagedBean
+            if ((jcdiService != null) && jcdiService.isCurrentModuleJCDIEnabled()) {
 
                 // Create , inject, and call PostConstruct (if necessary) via managed bean manager
                 managedObject = managedBeanMgr.createManagedBean(clazz, invokePostConstruct);
 
             } else {
+                // Not in a 299-enabled module and not annoated with @ManagedBean, so
+                // just instantiate using new and perform injection
+                Constructor<T> noArgCtor = clazz.getConstructor();
 
-                JCDIService jcdiService = serviceLocator.getService(JCDIService.class);
+                managedObject = noArgCtor.newInstance();
 
-                if ((jcdiService != null) && jcdiService.isCurrentModuleJCDIEnabled()) {
+                // Inject and call PostConstruct if necessary
+                injectInstance(managedObject, invokePostConstruct);
 
-                    // Create , inject, and call PostConstruct (if necessary) via managed bean manager
-                    managedObject = managedBeanMgr.createManagedBean(clazz, invokePostConstruct);
-
-                } else {
-                    // Not in a 299-enabled module and not annoated with @ManagedBean, so
-                    // just instantiate using new and perform injection
-                    Constructor<T> noArgCtor = clazz.getConstructor();
-
-                    managedObject = noArgCtor.newInstance();
-
-                    // Inject and call PostConstruct if necessary
-                    injectInstance(managedObject, invokePostConstruct);
-
-                }
             }
+
 
         } catch (Exception e) {
             throw new InjectionException(localStrings.getLocalString("injection-manager.error-creating-managed-object",
@@ -388,8 +366,6 @@ public class InjectionManagerImpl implements InjectionManager, PostConstruct {
 
         Class managedObjectClass = managedObject.getClass();
 
-        ManagedBean managedBeanAnn = (ManagedBean) managedObjectClass.getAnnotation(ManagedBean.class);
-
         ManagedBeanManager managedBeanMgr = serviceLocator.getService(ManagedBeanManager.class);
 
         JCDIService jcdiService = serviceLocator.getService(JCDIService.class);
@@ -400,19 +376,7 @@ public class InjectionManagerImpl implements InjectionManager, PostConstruct {
             managedBeanMgr.destroyManagedBean(managedObject, validate);
 
         } else {
-
-            // If the object's class has @ManagedBean it's a managed bean. Otherwise, ask
-            // managed bean manager.
-            boolean isManagedBean = (managedBeanAnn != null) || managedBeanMgr.isManagedBean(managedObject);
-
-            if (isManagedBean) {
-
-                managedBeanMgr.destroyManagedBean(managedObject, validate);
-
-            } else {
-
-                this.invokeInstancePreDestroy(managedObject, validate);
-            }
+            this.invokeInstancePreDestroy(managedObject, validate);
         }
 
     }
