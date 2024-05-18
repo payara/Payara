@@ -383,7 +383,7 @@ public abstract class GFLauncher {
     }
 
     private static final String DEBUG_ADDRESS_PORT_GROUP = "port";
-    private static final Pattern DEBUG_ADDRESS_PATTERN = Pattern.compile(".*address=(?<hostWithColon>(?<host>[^:]*):)?(?<port>\\d*).*");
+    private static final Pattern DEBUG_ADDRESS_PATTERN = Pattern.compile(".*address=(?<hostWithColon>(?<host>.+):)?(?<port>\\d*).*");
 
     static int extractDebugPort(String option) {
         Matcher m = DEBUG_ADDRESS_PATTERN.matcher(option);

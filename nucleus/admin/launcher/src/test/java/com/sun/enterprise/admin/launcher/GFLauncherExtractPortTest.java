@@ -59,6 +59,27 @@ public class GFLauncherExtractPortTest {
     }
 
     @Test
+    public void shouldExtractPortNumberFromDebugOptionWithHostName() {
+      int port = GFLauncher.extractDebugPort("-agentlib:jdwp=transport=dt_socket,server=y,address=localhost:9876,suspend=n");
+
+      assertEquals(9876, port);
+    }
+
+    @Test
+    public void shouldExtractPortNumberFromDebugOptionWithIPv4Host() {
+      int port = GFLauncher.extractDebugPort("-agentlib:jdwp=transport=dt_socket,server=y,address=127.0.0.1:9876,suspend=n");
+
+      assertEquals(9876, port);
+    }
+
+    @Test
+    public void shouldExtractPortNumberFromDebugOptionWithIPv6Host() {
+      int port = GFLauncher.extractDebugPort("-agentlib:jdwp=transport=dt_socket,server=y,address=[fd27:2024:0518::1]:9876,suspend=n");
+
+      assertEquals(9876, port);
+    }
+
+    @Test
     public void shouldNotFindPortNumberInOption() {
       int port = GFLauncher.extractDebugPort("-agentlib:jdwp=transport=dt_socket,server=y,suspend=n");
 
