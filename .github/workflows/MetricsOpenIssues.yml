@@ -1,0 +1,142 @@
+name: Testing Monthly issue metrics
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 1 * *'
+
+permissions:
+  issues: write
+  pull-requests: read
+
+jobs:
+  build:
+    name: issue metrics
+    runs-on: ubuntu-latest
+    steps:
+    - name: Setting the Repo
+      uses: actions/github-script@v6
+      with:
+          script: |
+            // - github: A pre-authenticated octokit/rest.js client
+            const { owner, repo } = context.repo;
+            
+    - name: Get dates for last month
+      shell: bash
+      run: |
+        # Calculate the first day of the previous month
+        first_day=$(date -d "last month" +%Y-%m-01)
+        # Calculate the last day of the previous month
+        last_day=$(date -d "$first_day +1 month -1 day" +%Y-%m-%d)
+        
+        #Set environment variables with the date range
+        echo "first_day=$first_day" >> "$GITHUB_ENV"
+        echo "last_day=$last_day" >> "$GITHUB_ENV"
+        echo "$first_day..$last_day"
+        echo "last_month=$first_day..$last_day" >> "$GITHUB_ENV"
+        
+    - name: Find Accepted issues percentage
+      id: accept-percent-issues
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const { owner, repo } = context.repo;
+          const acceptLabel = "Status: Accepted";
+          const excludedUsers = ['github-actions']; 
+          const firstDay = process.env.first_day;
+          const lastDay = process.env.last_day;
+          
+          // Query all issues created in the last month
+          const lastMonthIssuesResponse = await github.rest.issues.listForRepo({
+              owner,
+              repo,
+              since: firstDay,
+              until: lastDay,
+              state: 'all'
+          });
+          const lastMonthIssuesTotal = lastMonthIssuesResponse.data;
+          //const lastMonthIssues = lastMonthIssuesResponse.data.filter(issue => !excludedUsers.includes(issue.user.login)); incase we need to filter bot issues
+          
+           // Filter the last month issues to find accepted issues
+           const acceptedIssues = lastMonthIssuesTotal.filter(issue => {
+            return issue.labels.some(label => label.name === acceptLabel);
+            //const acceptedIssues = lastMonthIssues.filter(issue => { return issue.labels.some(label => label.name === acceptLabel);
+          });
+          const totalIssues = lastMonthIssuesTotal.length;
+          console.log(`Total Issues in the last month: ${totalIssues}`);
+          console.log(`Accepted Issues in the last month: ${acceptedIssues.length}`);
+  
+          // Calculate the percentage of accepted issues
+          const percentage = ((acceptedIssues.length / totalIssues) * 100).toFixed(2);
+
+          console.log(`Percentage of accepted issues in the last month: ${percentage}%`);
+          return percentage;
+            
+    - name: Run issue-metrics tool for issues opened in this month
+      id: issue-metrics1
+      uses: github/issue-metrics@v3
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        LABELS_TO_MEASURE: 'Status: Open,Status: Accepted,Status: Pending'
+        SEARCH_QUERY: 'repo:RamyaBill/AutomateGitRepo is:issue created:${{ env.last_month }}'
+           
+    - name: Print output of open issues from the metrics tool 
+      run: echo "${{ steps.issue-metrics1.outputs.metrics }}"
+
+    - name: Run custom script
+      id: run-script
+      uses: actions/github-script@v7
+      with:
+        result-encoding: string
+        script: |
+            const metrics = JSON.parse('${{ steps.issue-metrics1.outputs.metrics }}');
+            const issues = { ...metrics.issues };
+            let issuesTable = '<table>\n';
+            issuesTable += '<tr><th>Issue</th><th>Time to first response</th><th>Time to close</th><th>Time spent in Status: Open</th><th>Time spent in Status: Accepted</th><th>Time spent in Status: Pending</th></tr>\n';
+            for (const key in issues) {
+              if (Object.hasOwnProperty.call(issues, key)) {
+                  const issue = issues[key];
+                  issuesTable += `<tr><td><a href="${issue.html_url}">#${extractIssueNumber(issue.html_url)}</a></td><td>${issue.time_to_first_response}</td><td>${issue.time_to_close}</td><td>${issue.label_metrics['Status: Open']}</td><td>${issue.label_metrics['Status: Accepted']}</td><td>${issue.label_metrics['Status: Pending']}</td></tr>\n`;
+                }
+            }
+              issuesTable += '</table>\n';
+              console.log(issuesTable);
+              return issuesTable;
+              
+              function extractIssueNumber(url) {
+              const parts = url.split('/');
+              return parts[parts.length - 1];
+              }
+          
+    - name: Log issues string
+      run: echo "${{steps.run-script.outputs.result}}"
+
+    - name: Notify MS Teams channel with Open issues
+      id: notify-ms-teams-open
+      uses: simbo/msteams-message-card-action@latest
+      with:
+          webhook: ${{ secrets.TEAMS_INCOMING_WEBHOOK_URL }}
+          title: Payara Github community issues opened in the last month 
+          message: |
+              <code>
+              <p>
+              <table>
+              <tr><th>Metric</th><th>Average</th></tr>
+               <tr><td>Time to first response </td><td> ${{ fromJSON(steps.issue-metrics1.outputs.metrics).average_time_to_first_response }} </td></tr>
+               <tr><td> Time to close </td><td> ${{ fromJSON(steps.issue-metrics1.outputs.metrics).average_time_to_close }}  </td></tr>
+               <tr><td> Time spent in Status: Open </td><td> ${{ fromJSON(steps.issue-metrics1.outputs.metrics).average_time_in_labels['Status: Open'] }} </td></tr>
+               <tr><td> Time spent in Status: Accepted </td><td> ${{ fromJSON(steps.issue-metrics1.outputs.metrics).average_time_in_labels['Status: Accepted'] }} </td></tr>
+               <tr><td> Time spent in Status: Pending </td><td> ${{ fromJSON(steps.issue-metrics1.outputs.metrics).average_time_in_labels['Status: Pending'] }} </td></tr>
+               </table>
+                <br></br>
+                <br></br>
+                <p>
+                <table>
+                <tr><th>Metric</th><th>Count</th></tr>
+                <tr><td> Number of items that remain open </td><td>${{ fromJSON(steps.issue-metrics1.outputs.metrics).num_items_opened }}</td></tr>
+                <tr><td>Number of items closed</td><td>${{ fromJSON(steps.issue-metrics1.outputs.metrics).num_items_closed }}</td></tr>
+                <tr><td>Total number of items created</td><td>${{ fromJSON(steps.issue-metrics1.outputs.metrics).total_item_count }}</td></tr>
+                <tr><td>Percentage of escalated tickets</td><td>${{fromJSON(steps.accept-percent-issues.outputs.result) }}%</td></tr>
+                </table>
+                <br></br>
+                <br></br>
+                <p>${{ steps.run-script.outputs.result}}</p></code>
