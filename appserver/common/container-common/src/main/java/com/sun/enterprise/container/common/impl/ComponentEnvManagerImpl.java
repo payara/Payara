@@ -67,7 +67,7 @@ import com.sun.enterprise.deployment.ResourceReferenceDescriptor;
 import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
 import com.sun.enterprise.naming.spi.NamingObjectFactory;
 import com.sun.enterprise.naming.spi.NamingUtils;
-import org.glassfish.concurro.internal.ConcurrencyManagedCDIBeans;
+import org.glassfish.concurro.cdi.ConcurrencyManagedCDIBeans;
 import org.glassfish.api.admin.ProcessEnvironment;
 import org.glassfish.api.invocation.ApplicationEnvironment;
 import org.glassfish.api.invocation.ComponentInvocation;
