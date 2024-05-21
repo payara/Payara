@@ -67,7 +67,7 @@ jobs:
               core.exportVariable('num_items_opened', raisedMetrics['num_items_opened']);
             }
             if(closedMetricsResult != ''){
-              const closedMetrics = JSON.parse(raisedMetricsResult);
+              const closedMetrics = JSON.parse(closedMetricsResult);
               core.exportVariable('time_to_first_response_2', closedMetrics['average_time_to_first_response']);
               core.exportVariable('time_to_close_2', closedMetrics['average_time_to_close']);
               core.exportVariable('time_in_open_status_2', closedMetrics.average_time_in_labels['Status: Open']);
@@ -104,8 +104,8 @@ jobs:
               </tr>              
               <tr>
                 <td>Time spent in <code>Pending</code> status</td>
-                <td> ${{ env.time_in_open_status_1 }} </td>
-                <td> ${{ env.time_in_open_status_2 }} </td>
+                <td> ${{ env.time_in_pending_status_1 }} </td>
+                <td> ${{ env.time_in_pending_status_2 }} </td>
               </tr>
               <tr>
                 <td>Time spent in <code>Accepted</code> status</td>
