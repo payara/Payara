@@ -184,7 +184,7 @@
         <microprofile-release.version>6.1</microprofile-release.version>
         <payara-arquillian-container.version>3.0.alpha6</payara-arquillian-container.version>
         <h2db.version>2.2.224</h2db.version>
-        <jakarta.enterprise.concurrent>3.1.0-SNAPSHOT</jakarta.enterprise.concurrent>
+        <concurro.version>3.1.0-SNAPSHOT</concurro.version>
 
         <monitoring-console-process.version>3.0.0-SNAPSHOT</monitoring-console-process.version>
         <monitoring-console-webapp.version>3.0.0-SNAPSHOT</monitoring-console-webapp.version>
