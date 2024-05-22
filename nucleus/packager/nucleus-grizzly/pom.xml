@@ -70,7 +70,7 @@
         <dependency>
             <groupId>org.glassfish.grizzly</groupId>
             <artifactId>grizzly-npn-osgi</artifactId>
-            <version>${grizzly.npn.osgi.version}</version>
+            <version>${grizzly-npn-osgi.version}</version>
         </dependency>
     </dependencies>
 

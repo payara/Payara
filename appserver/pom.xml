@@ -213,12 +213,12 @@
                             <artifact>
                                 <groupId>org.glassfish</groupId>
                                 <artifactId>jakarta.faces</artifactId>
-                                <version>${mojarra.version}</version>
+                                <version>${jakarta.faces.version}</version>
                             </artifact>
                             <nonFinal>false</nonFinal>
                             <jarType>impl</jarType>
                             <specVersion>${jakarta.faces-spec.version}</specVersion>
-                            <implVersion>${mojarra.version}</implVersion>
+                            <implVersion>${jakarta.faces.version}</implVersion>
                             <apiPackage>jakarta.faces</apiPackage>
                             <implNamespace>org.glassfish</implNamespace>
                         </spec>
@@ -276,7 +276,7 @@
                             <nonFinal>false</nonFinal>
                             <jarType>api</jarType>
                             <specVersion>2.2</specVersion>
-                            <specImplVersion>${jstl-impl.version}</specImplVersion>
+                            <specImplVersion>${jakarta.servlet.jsp.jstl.version}</specImplVersion>
                             <apiPackage>jakarta.servlet.jsp.jstl</apiPackage>
                         </spec>
 
@@ -575,24 +575,14 @@
             <dependency>
                 <groupId>org.eclipse.persistence</groupId>
                 <artifactId>org.eclipse.persistence.jpa.modelgen.processor</artifactId>
-                <version>${eclipselink.version}</version>
+                <version>${org.eclipse.persistence.version}</version>
                 <scope>compile</scope>
-            </dependency>
-
-            <!--
-                only used to satisfy findbugs,
-                can be removed once GLASSFISH-20835 is resolved
-            -->
-            <dependency>
-                <groupId>org.netbeans.external</groupId>
-                <artifactId>ddl</artifactId>
-                <version>RELEASE210</version>
             </dependency>
 
             <dependency>
                 <groupId>org.jboss.logging</groupId>
                 <artifactId>jboss-logging</artifactId>
-                <version>${jboss.logging.version}</version>
+                <version>${jboss-logging.version}</version>
                 <optional>true</optional>
             </dependency>
             
@@ -614,13 +604,4 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-
-    <profiles>
-        <profile>
-            <id>enterprise</id>
-            <properties>
-                <product.name>Payara Server Enterprise</product.name>
-            </properties>
-        </profile>
-    </profiles>
 </project>

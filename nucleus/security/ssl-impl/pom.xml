@@ -74,11 +74,6 @@
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>common-util</artifactId>
         </dependency>
-        <dependency> <!-- for FindBugs -->
-            <groupId>fish.payara.server.core.common</groupId>
-            <artifactId>simple-glassfish-api</artifactId>
-            <scope>provided</scope>
-        </dependency>
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
             <artifactId>hk2-core</artifactId>

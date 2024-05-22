@@ -172,7 +172,6 @@
         <stage.dir>${project.build.directory}/${stage.dir.name}/${install.dir.name}</stage.dir>
         <temp.dir>${stage.dir}</temp.dir>        
         <temp.modules.dir>${temp.dir}/glassfish/modules</temp.modules.dir>
-        <findbugs.skip>true</findbugs.skip>
         <zip.excludes>**\/META-INF,META-INF\/*</zip.excludes>
         <pkg_proto.py>src/main/resources/pkg_proto.py</pkg_proto.py>
     </properties>

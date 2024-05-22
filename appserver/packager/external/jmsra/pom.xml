@@ -94,7 +94,7 @@
         <dependency>
             <groupId>org.glassfish.mq</groupId>
             <artifactId>mq-distribution</artifactId>
-            <version>${mq.version}</version>
+            <version>${mq-distribution.version}</version>
 	    <type>zip</type>
         </dependency>
     </dependencies>
