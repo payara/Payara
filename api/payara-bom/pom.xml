@@ -336,7 +336,7 @@
             <dependency>
                 <groupId>org.glassfish</groupId>
                 <artifactId>jakarta.faces</artifactId>
-                <version>${mojarra.version}</version>
+                <version>${jakarta.faces.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.fasterxml.woodstox</groupId>
@@ -351,53 +351,53 @@
             <dependency>
                 <groupId>org.eclipse.persistence</groupId>
                 <artifactId>org.eclipse.persistence.core</artifactId>
-                <version>${eclipselink.version}</version>
+                <version>${org.eclipse.persistence.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.eclipse.persistence</groupId>
                 <artifactId>org.eclipse.persistence.jpa</artifactId>
-                <version>${eclipselink.version}</version>
+                <version>${org.eclipse.persistence.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.eclipse.persistence</groupId>
                 <artifactId>org.eclipse.persistence.jpa.jpql</artifactId>
-                <version>${eclipselink.version}</version>
+                <version>${org.eclipse.persistence.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.eclipse.persistence</groupId>
                 <artifactId>org.eclipse.persistence.moxy</artifactId>
-                <version>${eclipselink.version}</version>
+                <version>${org.eclipse.persistence.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.eclipse.persistence</groupId>
                 <artifactId>org.eclipse.persistence.sdo</artifactId>
-                <version>${eclipselink.version}</version>
+                <version>${org.eclipse.persistence.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.eclipse.persistence</groupId>
                 <artifactId>org.eclipse.persistence.dbws</artifactId>
-                <version>${eclipselink.version}</version>
+                <version>${org.eclipse.persistence.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.eclipse.persistence</groupId>
                 <artifactId>org.eclipse.persistence.oracle</artifactId>
-                <version>${eclipselink.version}</version>
+                <version>${org.eclipse.persistence.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.eclipse.persistence</groupId>
                 <artifactId>org.eclipse.persistence.antlr</artifactId>
-                <version>${eclipselink.version}</version>
+                <version>${org.eclipse.persistence.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.eclipse.persistence</groupId>
                 <artifactId>org.eclipse.persistence.asm</artifactId>
-                <version>${eclipselink.asm.version}</version>
+                <version>${org.eclipse.persistence.asm.version}</version>
             </dependency>
             <!-- Annotation processor is best suited for provided scope -->
             <dependency>
                 <groupId>org.eclipse.persistence</groupId>
                 <artifactId>org.eclipse.persistence.jpa.modelgen.processor</artifactId>
-                <version>${eclipselink.version}</version>
+                <version>${org.eclipse.persistence.version}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>

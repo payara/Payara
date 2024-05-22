@@ -105,8 +105,6 @@
         <classmate.version>1.7.0</classmate.version>
         <jboss-logging.version>3.6.0.Final</jboss-logging.version>
 
-
-
         <!-- GlassFish MBean Annotation Library -->
         <antlr.version>2.7.7</antlr.version>
 
