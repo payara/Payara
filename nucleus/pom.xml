@@ -99,15 +99,11 @@
         <maven.plugin.api.version>3.9.6</maven.plugin.api.version>
 
         <!-- Servlet -->
-        <grizzly.npn.osgi.version>2.0.0</grizzly.npn.osgi.version>
-
-        <!-- Other -->
-
-        <saaj-api.version>1.4.0</saaj-api.version>
+        <grizzly-npn-osgi.version>2.0.0</grizzly-npn-osgi.version>
 
         <!-- Library for introspecting types with full generic information including resolving of field and method types. -->
         <classmate.version>1.7.0</classmate.version>
-        <jboss.logging.version>3.6.0.Final</jboss.logging.version>
+        <jboss-logging.version>3.6.0.Final</jboss-logging.version>
 
 
 
@@ -138,25 +134,15 @@
 
         <!-- Java Business Integration (JBI) is a specification for an approach to implementing a service-oriented architecture (SOA).  -->
         <btrace.version>1.2.3</btrace.version>
-        <l10n.version>3.1-b41</l10n.version>
 
         <!-- Build -->
 
-        <source-annotation-processor.version>1.0</source-annotation-processor.version>
-        <copyright-plugin.version>2.4</copyright-plugin.version>
         <nucleus.install.dir.name>nucleus</nucleus.install.dir.name>
         <ant.version>1.10.14</ant.version>
         <ant-launcher.version>1.10.14</ant-launcher.version>
 
         <!-- Debug / analysis -->
-        <findbugs.skip>true</findbugs.skip>
-        <findbugs.threshold>High</findbugs.threshold>
-        <findbugs.common>exclude-common.xml</findbugs.common>
-        <findbugs.exclude/>
-        <findbugs-maven-plugin.version>3.0.5</findbugs-maven-plugin.version>
-        <findbugs.version>1.7</findbugs.version>
-        <findbugs.glassfish.logging.validLoggerPrefixes>jakarta.enterprise</findbugs.glassfish.logging.validLoggerPrefixes>
-        <jacoco.plugin.version>0.8.12</jacoco.plugin.version>
+        <jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
 
     </properties>
 
@@ -355,7 +341,7 @@
                 <plugin>
                     <groupId>org.jacoco</groupId>
                     <artifactId>jacoco-maven-plugin</artifactId>
-                    <version>${jacoco.plugin.version}</version>
+                    <version>${jacoco-maven-plugin.version}</version>
                     <configuration>
                         <skip>${maven.test.skip}</skip>
                         <propertyName>argLine</propertyName>
@@ -542,35 +528,6 @@ Parent is ${project.parent}</echo>
                     <dropVersionComponent>qualifier</dropVersionComponent>
                     <versionPropertyName>project.osgi.version</versionPropertyName>
                 </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>findbugs-maven-plugin</artifactId>
-                <version>${findbugs-maven-plugin.version}</version>
-                <configuration>
-                    <skip>${findbugs.skip}</skip>
-                    <threshold>${findbugs.threshold}</threshold>
-                    <findbugsXmlWithMessages>true</findbugsXmlWithMessages>
-                    <excludeFilterFile>
-                        ${findbugs.common},${findbugs.exclude}
-                    </excludeFilterFile>
-                    <jvmArgs>-Dfindbugs.glassfish.logging.validLoggerPrefixes=${findbugs.glassfish.logging.validLoggerPrefixes}</jvmArgs>
-                    <plugins>
-                        <plugin>
-                            <groupId>org.glassfish.findbugs</groupId>
-                            <artifactId>findbugs-logging-detectors</artifactId>
-                            <version>${findbugs.version}</version>
-                        </plugin>
-                    </plugins>
-                </configuration>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.glassfish.findbugs</groupId>
-                        <artifactId>findbugs</artifactId>
-                        <version>${findbugs.version}</version>
-                    </dependency>
-                </dependencies>
             </plugin>
 
             <plugin>
@@ -917,43 +874,6 @@ Parent is ${project.parent}</echo>
 
     <profiles>
         <profile>
-            <id>ci</id>
-            <modules>
-                <module>tests</module>
-            </modules>
-        </profile>
-
-        <profile>
-            <id>copyright</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <build>
-                <pluginManagement>
-                    <plugins>
-                        <plugin>
-                            <groupId>org.glassfish.copyright</groupId>
-                            <artifactId>glassfish-copyright-maven-plugin</artifactId>
-                            <version>${copyright-plugin.version}</version>
-                            <configuration>
-                                <excludeFile>
-                                    copyright-exclude
-                                </excludeFile>
-                            </configuration>
-                            <dependencies>
-                                <dependency>
-                                    <groupId>fish.payara.server.internal</groupId>
-                                    <artifactId>copyright</artifactId>
-                                    <version>${project.version}</version>
-                                </dependency>
-                            </dependencies>
-                        </plugin>
-                    </plugins>
-                </pluginManagement>
-            </build>
-        </profile>
-
-        <profile>
             <id>embed-source</id>
             <build>
                 <plugins>
@@ -972,77 +892,6 @@ Parent is ${project.parent}</echo>
                 </plugins>
             </build>
         </profile>
-
-        <profile>
-            <id>release-phase2</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-source-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>attach-sources</id>
-                                <goals>
-                                    <goal>jar-no-fork</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-javadoc-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>attach-javadocs</id>
-                                <goals>
-                                    <goal>jar</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-gpg-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>sign-artifacts</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>sign</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
-            <id>findbugs</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <properties>
-                <maven.test.skip>true</maven.test.skip>
-            </properties>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>findbugs-maven-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>run-findbugs</id>
-                                <phase>compile</phase>
-                                <goals>
-                                    <goal>findbugs</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
         <profile>
             <id>doclint-java8-disable</id>
             <activation>
@@ -1051,52 +900,6 @@ Parent is ${project.parent}</echo>
             <properties>
                 <javadoc.options>-Xdoclint:none</javadoc.options>
             </properties>
-        </profile>
-
-        <profile>
-            <id>DeploySnapshot-Sonatype</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-
-            <distributionManagement>
-                <snapshotRepository>
-                    <id>payara-maven-central</id>
-                    <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-                </snapshotRepository>
-            </distributionManagement>
-
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.sonatype.plugins</groupId>
-                        <artifactId>nexus-staging-maven-plugin</artifactId>
-                        <version>1.6.13</version>
-                        <extensions>true</extensions>
-                        <configuration>
-                            <serverId>payara-maven-central</serverId>
-                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-         <profile>
-            <id>CodeCoverage</id>
-            <activation>
-                <property>
-                    <name>BUILD_NUMBER</name>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.jacoco</groupId>
-                        <artifactId>jacoco-maven-plugin</artifactId>
-                    </plugin>
-                </plugins>
-            </build>
         </profile>
     </profiles>
 
@@ -1108,30 +911,4 @@ Parent is ${project.parent}</echo>
             <optional>true</optional>
         </dependency>
     </dependencies>
-
-    <reporting>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-site-plugin</artifactId>
-                <configuration>
-                    <reportPlugins>
-                        <plugin>
-                            <groupId>org.codehaus.mojo</groupId>
-                            <artifactId>findbugs-maven-plugin</artifactId>
-                            <version>${findbugs-maven-plugin.version}</version>
-                            <configuration>
-                                <skip>${findbugs.skip}</skip>
-                                <threshold>${findbugs.threshold}</threshold>
-                                <excludeFilterFile>
-                                    exclude-common.xml,${findbugs.exclude}
-                                </excludeFilterFile>
-                            </configuration>
-                        </plugin>
-                    </reportPlugins>
-                </configuration>
-            </plugin>
-        </plugins>
-    </reporting>
-
 </project>

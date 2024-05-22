@@ -78,10 +78,6 @@
         </developer>
     </developers>
 
-    <properties>
-        <findbugs.exclude>${project.basedir}/exclude.xml</findbugs.exclude>
-    </properties>
-
     <build>
         <resources>
             <resource>
