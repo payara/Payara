@@ -200,8 +200,8 @@ public class ComponentEnvManagerImpl
         if (inv != null) {
             if (inv.componentId != null) {
                 desc = getJndiNameEnvironment(inv.componentId);
-                String descClass = desc.getClass().toString();
                 if (_logger.isLoggable(Level.FINEST)) {
+                    String descClass = desc == null ? "NULL" : desc.getClass().toString();
                     _logger.finest(() -> "ComponentEnvManagerImpl: "
                             + "getCurrentJndiNameEnvironment " + inv.componentId
                             + " is " + descClass);
