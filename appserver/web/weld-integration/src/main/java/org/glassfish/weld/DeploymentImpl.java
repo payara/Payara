@@ -84,9 +84,6 @@ import org.glassfish.weld.services.InjectionServicesImpl;
 import org.jboss.weld.injection.spi.InjectionServices;
 import jakarta.enterprise.inject.build.compatible.spi.BuildCompatibleExtension;
 import org.jboss.weld.lite.extension.translator.LiteExtensionTranslator;
-import java.security.PrivilegedAction;
-import static java.lang.System.getSecurityManager;
-import static java.security.AccessController.doPrivileged;
 import jakarta.enterprise.inject.build.compatible.spi.SkipIfPortableExtensionPresent;
 
 
@@ -490,13 +487,7 @@ public class DeploymentImpl implements CDI11Deployment {
         List<Class<? extends BuildCompatibleExtension>> buildExtensions = getBuildCompatibleExtensions();
         if (!buildExtensions.isEmpty()) {
             try {
-                LiteExtensionTranslator extensionTranslator = getSecurityManager() != null ?
-                        doPrivileged(new PrivilegedAction<LiteExtensionTranslator>() {
-                            @Override
-                            public LiteExtensionTranslator run() {
-                                return new LiteExtensionTranslator(buildExtensions, Thread.currentThread().getContextClassLoader());
-                            }
-                        }): new LiteExtensionTranslator(buildExtensions, Thread.currentThread().getContextClassLoader());
+                LiteExtensionTranslator extensionTranslator = new LiteExtensionTranslator(buildExtensions, Thread.currentThread().getContextClassLoader());
                 extnList.add(new MetadataImpl<>(extensionTranslator));
             } catch(Exception e) {
                 logger.log(WARNING, "Problem to register CDI Build Compatible Extensions");

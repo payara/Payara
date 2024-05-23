@@ -98,6 +98,16 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
+        <repository>
+            <id>staged-jakarta-releases</id>
+            <url>https://jakarta.oss.sonatype.org/content/groups/staging/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
     </repositories>
 
     <!-- Some of these are duplicated from core-bom because it isn't deployed to Maven Central so we need to tell
@@ -133,6 +143,16 @@
             </releases>
             <snapshots>
                 <enabled>true</enabled>
+            </snapshots>
+        </pluginRepository>
+        <pluginRepository>
+            <id>staged-jakarta-releases</id>
+            <url>https://jakarta.oss.sonatype.org/content/groups/staging/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
             </snapshots>
         </pluginRepository>
     </pluginRepositories>

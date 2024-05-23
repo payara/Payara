@@ -119,5 +119,9 @@
             <groupId>fish.payara.server.core.nucleus</groupId>
             <artifactId>glassfish</artifactId>
         </dependency>
+        <dependency>
+            <groupId>jakarta.enterprise</groupId>
+            <artifactId>jakarta.enterprise.cdi-el-api</artifactId>
+        </dependency>
    </dependencies>
 </project>

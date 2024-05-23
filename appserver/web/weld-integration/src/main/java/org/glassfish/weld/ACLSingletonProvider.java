@@ -49,7 +49,6 @@ import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
 
 import java.util.Map;
-import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -94,15 +93,7 @@ public class ACLSingletonProvider extends SingletonProvider
       private static ClassLoader bootstrapCL;
 
       static {
-        SecurityManager sm = System.getSecurityManager();
-        bootstrapCL = (sm != null) ?
-          AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
-            @Override
-            public ClassLoader run()
-            {
-              return Object.class.getClassLoader();
-            }
-          }) : Object.class.getClassLoader();
+        bootstrapCL = Object.class.getClassLoader();
       }
 
       @Override
@@ -141,14 +132,8 @@ public class ACLSingletonProvider extends SingletonProvider
        */
       private ClassLoader getClassLoader()
       {
-        SecurityManager sm = System.getSecurityManager();
-        final ClassLoader tccl = (sm != null) ?
-          AccessController.doPrivileged(new PrivilegedAction<ClassLoader>()
-          {
-            public ClassLoader run() {
-              return Thread.currentThread().getContextClassLoader();
-            }
-          }) : Thread.currentThread().getContextClassLoader();
+       
+        final ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         if (tccl == null) {
           throw new RuntimeException("Thread's context class loader is null");
         }
@@ -177,15 +162,7 @@ public class ACLSingletonProvider extends SingletonProvider
 
       private ClassLoader getParent(final ClassLoader cl)
       {
-        SecurityManager sm = System.getSecurityManager();
-        return sm != null ?
-          AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
-            @Override
-            public ClassLoader run()
-            {
-              return cl.getParent();
-            }
-          }) : cl.getParent();
+        return  cl.getParent();
       }
 
       @Override

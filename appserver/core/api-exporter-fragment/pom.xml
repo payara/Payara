@@ -114,6 +114,7 @@
                                     jakarta.enterprise.event; \
                                     jakarta.enterprise.inject; \
                                     jakarta.enterprise.inject.spi; \
+                                    jakarta.enterprise.inject.spi.el; \
                                     jakarta.enterprise.util; \
                                     jakarta.faces; \
                                     jakarta.faces.application; \

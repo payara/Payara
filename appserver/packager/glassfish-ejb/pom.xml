@@ -103,6 +103,10 @@
             <artifactId>ejb-http-admin</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>jakarta.enterprise</groupId>
+            <artifactId>jakarta.enterprise.cdi-el-api</artifactId>
+        </dependency>
     </dependencies>
     
     <build>

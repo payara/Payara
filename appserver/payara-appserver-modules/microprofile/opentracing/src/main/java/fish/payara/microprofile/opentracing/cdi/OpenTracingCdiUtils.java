@@ -283,7 +283,10 @@ public class OpenTracingCdiUtils {
      */
     private static <A extends Annotation> A getInterceptedAnnotation(Class<A> annotationClass, InvocationContext invocationContext){
          if (invocationContext instanceof WeldInvocationContext) {
-            Set<Annotation> interceptorBindings = ((WeldInvocationContext) invocationContext).getInterceptorBindings();
+             WeldInvocationContext invCtx = (WeldInvocationContext) invocationContext;
+             Set<Annotation> interceptorBindings = (Set<Annotation>) invCtx.getInterceptorBindingsByType(annotationClass);
+            //Set<Annotation> interceptorBindings = ((WeldInvocationContext) invocationContext).getInterceptorBindings();
+            // Set<Annotation> interceptorBindings = (Set<Annotation>) ((WeldInvocationContext) invocationContext).getInterceptorBindingsByType(annotationClass);
             for (Annotation annotationBound : interceptorBindings) {
                 if (annotationBound.annotationType().equals(annotationClass)) {
                     return (A) annotationBound;

@@ -44,7 +44,6 @@ import java.lang.reflect.Proxy;
 import java.security.ProtectionDomain;
 import java.security.PrivilegedExceptionAction;
 
-import static java.security.AccessController.doPrivileged;
 
 public final class ClassGenerator {
 
@@ -63,7 +62,7 @@ public final class ClassGenerator {
                 defineClassMethodSM.setAccessible(true);
                 return null;
             };
-            doPrivileged(action);
+            //doPrivileged(action);
         } catch (final Exception e) {
             throw new Error("Could not initialize access to ClassLoader.defineClass method.", e);
         }

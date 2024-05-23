@@ -802,7 +802,8 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
             file = new File(file, beansXMLPath);
             url = file.toURI().toURL();
         } else {
-            url = new URL("jar:" + file.toURI() + "!/" + beansXMLPath);
+            URI uri = URI.create("jar:" + file.toURI() + "!/" + beansXMLPath);
+            url = uri.toURL();//new URL("jar:" + file.toURI() + "!/" + beansXMLPath);
         }
 
         return url;
