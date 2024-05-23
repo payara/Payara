@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld;
 
@@ -803,7 +803,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
             url = file.toURI().toURL();
         } else {
             URI uri = URI.create("jar:" + file.toURI() + "!/" + beansXMLPath);
-            url = uri.toURL();//new URL("jar:" + file.toURI() + "!/" + beansXMLPath);
+            url = uri.toURL();
         }
 
         return url;
