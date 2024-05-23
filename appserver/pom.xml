@@ -49,7 +49,7 @@
     <parent>
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-nucleus-parent</artifactId>
-        <version>6.2024.5-SNAPSHOT</version>
+        <version>6.2024.6-SNAPSHOT</version>
         <relativePath>../nucleus/pom.xml</relativePath>
     </parent>
 
@@ -83,7 +83,7 @@
         <jaxr.version>JAXR_RA_20091012</jaxr.version>
 
         <nimbus-jose-jwt.version>9.37.3</nimbus-jose-jwt.version>
-        <accessors-smart.version>2.4.11</accessors-smart.version>
+        <accessors-smart.version>2.5.1</accessors-smart.version>
         <json-smart.version>2.5.1</json-smart.version>
         <reactor-core.version>3.6.4</reactor-core.version>
         <reactive-streams.version>1.0.4</reactive-streams.version>
@@ -146,7 +146,7 @@
             <plugin>
                 <groupId>org.glassfish.build</groupId>
                 <artifactId>spec-version-maven-plugin</artifactId>
-                <version>1.2</version>
+                <version>2.2</version>
                 <configuration>
                     <!--suppress UnresolvedMavenProperty -->
                     <dir>${stage.dir}/${install.dir.name}/glassfish/modules</dir>
@@ -275,7 +275,7 @@
                             </artifact>
                             <nonFinal>false</nonFinal>
                             <jarType>api</jarType>
-                            <specVersion>1.2</specVersion>
+                            <specVersion>2.2</specVersion>
                             <specImplVersion>${jstl-impl.version}</specImplVersion>
                             <apiPackage>jakarta.servlet.jsp.jstl</apiPackage>
                         </spec>
@@ -586,7 +586,7 @@
             <dependency>
                 <groupId>org.netbeans.external</groupId>
                 <artifactId>ddl</artifactId>
-                <version>RELEASE82</version>
+                <version>RELEASE210</version>
             </dependency>
 
             <dependency>

@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server.internal.tests</groupId>
         <artifactId>payara-tests</artifactId>
-        <version>6.2024.5-SNAPSHOT</version>
+        <version>6.2024.6-SNAPSHOT</version>
     </parent>
 
     <groupId>fish.payara.samples</groupId>
@@ -315,7 +315,7 @@
             <dependency>
                 <groupId>io.smallrye.config</groupId>
                 <artifactId>smallrye-config-repackaged</artifactId>
-                <version>3.7.1</version>
+                <version>3.8.1</version>
                 <classifier>jakartaee9</classifier>
                 <scope>test</scope>
                 <exclusions>

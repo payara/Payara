@@ -48,7 +48,7 @@
     <parent>
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-aggregator</artifactId>
-        <version>6.2024.5-SNAPSHOT</version>
+        <version>6.2024.6-SNAPSHOT</version>
     </parent>
 
     <artifactId>payara-nucleus-parent</artifactId>
@@ -88,15 +88,15 @@
         <!-- on Hudson and RE, ${build.number} gets replaced by real build ID -->
         <build.id>${build.number}</build.id>
         <maven.eclipse.plugin.version>2.10</maven.eclipse.plugin.version>
-        <maven.invoker.plugin.version>3.3.0</maven.invoker.plugin.version>
+        <maven.invoker.plugin.version>3.6.1</maven.invoker.plugin.version>
         <maven.war.plugin.version>3.3.2</maven.war.plugin.version>
         <maven.makepkgs.plugin.version>0.6.2</maven.makepkgs.plugin.version>
-        <maven.jaxb2.plugin.version>0.15.1</maven.jaxb2.plugin.version>
+        <maven.jaxb2.plugin.version>0.15.3</maven.jaxb2.plugin.version>
         <maven.antlr.plugin.version>2.4</maven.antlr.plugin.version>
 
         <maven.jaxws.plugin.version>2.6</maven.jaxws.plugin.version>
         <maven.apt.plugin.version>1.0-alpha-5</maven.apt.plugin.version>
-        <maven.plugin.api.version>3.6.0</maven.plugin.api.version>
+        <maven.plugin.api.version>3.9.6</maven.plugin.api.version>
 
         <!-- Servlet -->
         <grizzly.npn.osgi.version>2.0.0</grizzly.npn.osgi.version>
@@ -114,12 +114,12 @@
         <!-- GlassFish MBean Annotation Library -->
         <antlr.version>2.7.7</antlr.version>
 
-        <commons-io.version>2.11.0</commons-io.version>
+        <commons-io.version>2.16.1</commons-io.version>
 
 
         <!-- Apache Felix is an open source implementation of the OSGi Core Release 8 framework specification. -->
         <org.apache.felix.main.version>7.0.5</org.apache.felix.main.version>
-        <org.apache.felix.webconsole.version>5.0.0</org.apache.felix.webconsole.version>
+        <org.apache.felix.webconsole.version>5.0.2</org.apache.felix.webconsole.version>
         <org.apache.felix.eventadmin.version>1.6.4</org.apache.felix.eventadmin.version>
         <org.apache.felix.shell.version>1.4.3</org.apache.felix.shell.version>
         <org.apache.felix.gogo.runtime.version>1.1.6</org.apache.felix.gogo.runtime.version>
@@ -143,7 +143,7 @@
         <!-- Build -->
 
         <source-annotation-processor.version>1.0</source-annotation-processor.version>
-        <copyright-plugin.version>1.39</copyright-plugin.version>
+        <copyright-plugin.version>2.4</copyright-plugin.version>
         <nucleus.install.dir.name>nucleus</nucleus.install.dir.name>
         <ant.version>1.10.14</ant.version>
         <ant-launcher.version>1.10.14</ant-launcher.version>

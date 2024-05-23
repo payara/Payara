@@ -39,18 +39,18 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright 2017-2023 Payara Foundation and/or affiliates
+    Portions Copyright 2017-2024 Payara Foundation and/or affiliates
 -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>fish.payara.server</groupId>
     <artifactId>payara-aggregator</artifactId>
-    <version>6.2024.5-SNAPSHOT</version>
+    <version>6.2024.6-SNAPSHOT</version>
     <parent>
         <groupId>fish.payara.server.core</groupId>
         <artifactId>core-aggregator</artifactId>
-        <version>6.15.0-SNAPSHOT</version>
+        <version>6.16.0-SNAPSHOT</version>
         <relativePath>core</relativePath>
     </parent>
     <packaging>pom</packaging>
@@ -164,7 +164,7 @@
         <com.ibm.jbatch.spi.version>2.1.1</com.ibm.jbatch.spi.version>
         <webservices.version>4.0.3.payara-p1</webservices.version>
         <org.apache.santuario.version>4.0.0</org.apache.santuario.version>
-        <woodstox.version>6.5.1</woodstox.version>
+        <woodstox.version>6.6.2</woodstox.version>
         <woodstock-jsf.version>5.0.0</woodstock-jsf.version>
         <woodstock-jsf-suntheme.version>5.0.0.payara-p1</woodstock-jsf-suntheme.version>
         <angus.activation.version>1.0.0</angus.activation.version>
@@ -181,7 +181,7 @@
         <deploy.skip>true</deploy.skip>
         <javadoc.skip>true</javadoc.skip>
         <source.skip>true</source.skip>
-        <license-maven-plugin.version>2.3.0</license-maven-plugin.version>
+        <license-maven-plugin.version>2.4.0</license-maven-plugin.version>
     </properties>
 
     <profiles>
@@ -352,6 +352,27 @@
                 </pluginRepository>
             </pluginRepositories>
         </profile>
+
+        <profile>
+            <id>GenerateThirdPartyLicenseFile</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>license-maven-plugin</artifactId>
+                        <inherited>false</inherited>
+                        <executions>
+                            <execution>
+                                <id>download-and-aggregate-licenses</id>
+                                <goals>
+                                    <goal>aggregate-add-third-party</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 
     <build>
@@ -382,28 +403,6 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>3.1.0</version>
-                <inherited>false</inherited>
-                <executions>
-                    <execution>
-                        <id>download-and-aggregate-licenses</id>
-                        <phase>validate</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <executable>mvn</executable>
-                            <arguments>
-                                <argument>license:aggregate-add-third-party</argument>
-                            </arguments>
-                        </configuration>
-                    </execution>
-                </executions>
-
             </plugin>
         </plugins>
 
