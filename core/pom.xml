@@ -69,7 +69,7 @@
         <grizzly.version>4.0.0.payara-p1</grizzly.version>
         <servlet-api.version>6.0.0</servlet-api.version>
         <!--for CDI we need to increment this version to 6.0.0-->
-        <jakarta.el-api.version>6.0.0-M1</jakarta.el-api.version>
+        <jakarta.el-api.version>6.0.0</jakarta.el-api.version>
         <expressly.version>5.0.0</expressly.version>
         <microprofile-config.version>3.1</microprofile-config.version>
         <parsson.version>1.1.5.payara-p1</parsson.version>
@@ -86,7 +86,7 @@
         <jakarta.security.enterprise-api.version>3.0.0</jakarta.security.enterprise-api.version>
         <jakarta.ejb-api.version>4.0.1</jakarta.ejb-api.version>
         <jakarta.transaction-api.version>2.0.1</jakarta.transaction-api.version>
-        <jakarta.interceptor-api.version>2.2.0-M1</jakarta.interceptor-api.version>
+        <jakarta.interceptor-api.version>2.2.0</jakarta.interceptor-api.version>
         <jakarta.inject.version>2.0.1</jakarta.inject.version>
         <json.bind-api.version>3.0.1</json.bind-api.version>
         <jakarta-persistence-api.version>3.1.0</jakarta-persistence-api.version>
