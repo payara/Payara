@@ -56,7 +56,7 @@
  * limitations under the License.
  */
 
-// Portions Copyright [2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2024 Payara Foundation and/or its affiliates
 
 package org.apache.catalina;
 
