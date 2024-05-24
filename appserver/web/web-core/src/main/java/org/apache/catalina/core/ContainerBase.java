@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2019-2021] Payara Foundation and/or affiliates
+// Portions Copyright 2019-2024 Payara Foundation and/or affiliates
 
 package org.apache.catalina.core;
 
@@ -309,9 +309,21 @@ public abstract class ContainerBase
 
 
     /**
+     * The background thread to validate lastaccesstime and accessedtime values.
+     */
+    private Thread sessionThread = null;
+
+
+    /**
      * The background thread completion semaphore.
      */
     private volatile boolean threadDone = false;
+
+
+    /**
+     * The session background thread completion semaphore.
+     */
+    private volatile boolean threadSessionDone = false;
 
 
     /**
@@ -1235,6 +1247,9 @@ public abstract class ContainerBase
         // Start our thread
         threadStart();
 
+        //Start the session validation thread
+        threadSessionStart();
+
         // Notify our interested LifecycleListeners
         lifecycle.fireLifecycleEvent(AFTER_START_EVENT, null);
     }
@@ -1262,6 +1277,9 @@ public abstract class ContainerBase
 
         // Stop our thread
         threadStop();
+
+        //Stop our session validation thread
+        threadSessionStop();
 
         // Notify our interested LifecycleListeners
         lifecycle.fireLifecycleEvent(STOP_EVENT, null);
@@ -1508,6 +1526,13 @@ public abstract class ContainerBase
     public void backgroundProcess() {
     }
 
+    /**
+     * Execute periodic task to get last values added on the session storage, those values 
+     * can be added by another instance on the cluster.
+     */
+    @Override
+    public void backgroundSessionUpdate() {
+    }
 
     // ------------------------------------------------------ Protected Methods
 
@@ -1720,6 +1745,21 @@ public abstract class ContainerBase
 
     }
 
+    /**
+     * Start the session background thread that will periodically check session storage values 
+     * to update lastaccesstime and accessedTime.
+     */
+    protected void threadSessionStart() {
+        if (sessionThread != null)
+            return;
+        threadSessionDone = false;
+        String threadName = "ContainerBackgroundSessionProcessor[" + toString() + "]";
+        sessionThread = new Thread(new ContainerBackgroundSessionProcessor(), threadName);
+        sessionThread.setDaemon(true);
+        sessionThread.start();
+        
+    }
+
 
     /**
      * Stop the background thread that is periodically checking for
@@ -1742,6 +1782,24 @@ public abstract class ContainerBase
 
     }
 
+    /**
+     * Stopping the background thread that is periodically checking storage sessions 
+     * to update lastaccesstime and accessedTime to validate timeouts.
+     */
+    protected void threadSessionStop() {
+        if (sessionThread == null) {
+            return;
+        }
+
+        this.threadSessionDone = true;
+        sessionThread.interrupt();
+        try {
+            sessionThread.join();
+        } catch (InterruptedException e) {
+            //Ignore
+        }
+        sessionThread = null;
+    }
 
     // -------------------------------------- ContainerExecuteDelay Inner Class
 
@@ -1793,5 +1851,57 @@ public abstract class ContainerBase
         }
 
     }
+
+    /**
+     * Thread class to invoke the backgroundSessionUpdate method 
+     * of this container and its children after 500 milliseconds.
+     */
+    protected class ContainerBackgroundSessionProcessor implements Runnable {
+
+        @Override
+        public void run() {
+            if(manager != null) {
+                while (!threadSessionDone) {
+                    try {
+                        //this will calculate the interval depending on the configured timeout from the application
+                        Thread.sleep( (manager.getMaxInactiveInterval() / 2) * 1000L);
+                    } catch (InterruptedException e) {
+                        // Ignore
+                    }
+                    if (!threadSessionDone) {
+                        Container parent = (Container) getMappingObject();
+                        ClassLoader cl =
+                                Thread.currentThread().getContextClassLoader();
+                        if (parent.getLoader() != null) {
+                            cl = parent.getLoader().getClassLoader();
+                        }
+                        processChildren(parent, cl);
+                    }
+                }
+            }
+        }
+
+        protected void processChildren(Container container, ClassLoader cl) {
+            try {
+                if (container.getLoader() != null) {
+                    Thread.currentThread().setContextClassLoader
+                            (container.getLoader().getClassLoader());
+                }
+                container.backgroundSessionUpdate();
+            } catch (Throwable t) {
+                log.log(Level.SEVERE, LogFacade.EXCEPTION_INVOKES_PERIODIC_OP, t);
+            } finally {
+                Thread.currentThread().setContextClassLoader(cl);
+            }
+            Container[] children = container.findChildren();
+            for (Container child : children) {
+                if (child.getBackgroundProcessorDelay() <= 0) {
+                    processChildren(child, cl);
+                }
+            }
+        }
+
+    }
+    
 
 }
