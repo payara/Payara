@@ -65,6 +65,12 @@
             <artifactId>jakarta.annotation-api</artifactId>
             <scope>provided</scope>
         </dependency>
+        <!-- jakarta.el-->
+        <dependency>
+            <groupId>jakarta.el</groupId>
+            <artifactId>jakarta.el-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
 
         <!-- Downgrade shim for HK2 3.0 (now 4.0) as Jersey not yet upgraded to 4.0 and InSight not upgraded for EE11.
         Remove once Jersey upgraded to 4.0 and InSight upgraded to a version aligned with Payara 7 (presumably 3.0), or
@@ -114,7 +120,9 @@
                                     comment with which other component still requires the downgrade shim. -->
                                     org.glassfish.hk2.api,
                                     org.glassfish.hk2.locator,
-                                    org.glassfish.hk2.utils
+                                    org.glassfish.hk2.utils,
+                                    <!-- jakarta.el-->
+                                    jakarta.el-api
                                 </Require-Bundle>
                                 <!-- Manually specify the shim versions of packages to be exported via this bundle -->
                                 <!-- Note the "shortened" syntax here: For every API the packages are delimited with
@@ -128,7 +136,8 @@
                                     jakarta.annotation;
                                     jakarta.annotation.security;
                                     jakarta.annotation.sql;version="3.0.99";shim=true,
-
+                                    <!-- el previous version-->
+                                    jakarta.el;version="5.0.99";shim=true,
                                     <!-- Downgrade shim for HK2 3.0 (now 4.0) as Jersey not yet upgraded to 4.0 and
                                     InSight not upgraded for EE11. Remove once Jersey upgraded to 4.0 and InSight
                                     upgraded to a version aligned with Payara 7 (presumably 3.0), or update this
