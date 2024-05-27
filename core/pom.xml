@@ -114,7 +114,7 @@
         <websocket-api.version>2.1.1</websocket-api.version>
         <jax-rs-api.impl.version>3.1.0</jax-rs-api.impl.version>
         <jstl-api.version>3.0.0</jstl-api.version>
-        <concurrent-api.version>3.1.0-M1</concurrent-api.version>
+        <concurrent-api.version>3.1.0-RC2</concurrent-api.version>
         <jaxws-api.version>4.0.0</jaxws-api.version>
         <jms-api.version>3.1.0</jms-api.version>
         <jakarta.jws-api.version>3.0.0</jakarta.jws-api.version>
@@ -157,6 +157,7 @@
         <bouncycastle-jdk15on.version>1.70</bouncycastle-jdk15on.version>
         <jsftemplating.version>3.0.0</jsftemplating.version>
         <jakarta.faces-api.version>4.0.1</jakarta.faces-api.version>
+        <concurro.version>3.1.0-SNAPSHOT</concurro.version>
 
         <!-- build versions -->
         <jdk.version>21</jdk.version>
@@ -910,6 +911,11 @@
                 <groupId>jakarta.enterprise.concurrent</groupId>
                 <artifactId>jakarta.enterprise.concurrent-api</artifactId>
                 <version>${concurrent-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.concurro</groupId>
+                <artifactId>concurro</artifactId>
+                <version>${concurro.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.osgi</groupId>

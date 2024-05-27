@@ -469,11 +469,6 @@
                 <artifactId>com.ibm.jbatch.spi</artifactId>
                 <version>${com.ibm.jbatch.spi.version}</version>
             </dependency>
-            <dependency>
-                <groupId>org.glassfish.concurro</groupId>
-                <artifactId>concurro</artifactId>
-                <version>${concurro.version}</version>
-            </dependency>
 
             <dependency>
                 <groupId>com.sun.istack</groupId>

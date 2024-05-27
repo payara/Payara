@@ -43,7 +43,7 @@ import java.util.Properties;
 
 import static org.glassfish.deployment.common.JavaEEResourceType.MSEDD;
 
-public class ManagedScheduledExecutorDefinitionDescriptor extends ResourceDescriptor {
+public class ManagedScheduledExecutorDefinitionDescriptor extends ConcurrencyQualifiedDescriptor {
 
     private static final String JAVA_URL = "java:";
     private static final String JAVA_COMP_URL = "java:comp/";
@@ -58,6 +58,11 @@ public class ManagedScheduledExecutorDefinitionDescriptor extends ResourceDescri
 
     public ManagedScheduledExecutorDefinitionDescriptor() {
         super.setResourceType(MSEDD);
+    }
+
+    @Override
+    public String getConcurrencyType() {
+        return "MANAGED_SCHEDULED_EXECUTOR_SERVICE";
     }
 
     @Override
