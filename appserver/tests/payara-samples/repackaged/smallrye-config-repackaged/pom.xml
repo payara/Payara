@@ -134,7 +134,7 @@
         <dependency>
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging</artifactId>
-            <version>3.4.2.Final</version>
+            <version>3.6.0.Final</version>
             <optional>true</optional>
         </dependency>
         <dependency>
