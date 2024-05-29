@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.deployment;
 
@@ -1812,5 +1812,15 @@ public class Application extends CommonResourceBundleDescriptor
         }
 
         private final String libDir;
+    }
+
+    /**
+     * Application of this Application is this.
+     *
+     * @return
+     */
+    @Override
+    public Application getApplication() {
+        return this;
     }
 }

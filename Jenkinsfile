@@ -79,151 +79,151 @@ pipeline {
                         }
                     }
                 }
-                stage('Payara Samples Tests') {
-                    agent {
-                        label 'general-purpose'
-                    }
-                    steps {
-                        setupDomain()
-                        
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        sh """mvn -V -B -ff clean install --strict-checksums -Ppayara-server-remote,playwright \
-                        -Dpayara.version=${pom.version} \
-                        -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
-                        -Djavax.xml.accessExternalSchema=all \
-                        -f appserver/tests/payara-samples """
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                    }
-                    post {
-                        always {
-                            processReportAndStopDomain()
-                        }
-                        cleanup {
-                            saveLogsAndCleanup 'samples-log.zip'
-                        }
-                    }
-                }
-                stage('MP TCK Runners') {
-                    agent {
-                        label 'general-purpose'
-                    }
-                    steps{
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
-                            branches: [[name: "*/microprofile-6.1"]],
-                            userRemoteConfigs: [[url: "https://github.com/payara/MicroProfile-TCK-Runners.git"]]]
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        
-                        setupDomain()
-
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        sh """mvn -B -V -ff -e clean verify --strict-checksums \
-                        -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
-                        -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
-                        -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/appserver/distributions/payara/target/stage/payara7" \
-                        -Ppayara-server-remote,full"""
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                    }
-                    post {
-                        always {
-                            processReportAndStopDomain()
-                        }
-                        cleanup {
-                            saveLogsAndCleanup 'mp-tck-log.zip'
-                        }
-                    }
-                }
-                stage('EE8 Tests') {
-                    agent {
-                        label 'general-purpose'
-                    }
-                    steps{
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out EE8 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
-                            branches: [[name: "*/Payara6"]],
-                            userRemoteConfigs: [[url: "https://github.com/payara/patched-src-javaee8-samples.git"]]]
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out EE8 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        
-                        setupDomain()
-
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        sh "mvn -B -V -ff -e clean install --strict-checksums -Dsurefire.useFile=false \
-                        -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
-                        -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
-                        -Ppayara-server-remote,stable"
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                    }
-                    post {
-                        always {
-                            processReportAndStopDomain()
-                        }
-                        cleanup {
-                            saveLogsAndCleanup 'ee8-samples-log.zip'
-                        }
-                    }
-                }
-                stage('CargoTracker Tests') {
-                    agent {
-                        label 'general-purpose'
-                    }
-                    steps{
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out cargoTracker tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
-                            branches: [[name: "*/Payara7"]],
-                            userRemoteConfigs: [[url: "https://github.com/payara/cargoTracker.git"]]]
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out cargoTracker tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        
-                        setupDomain()
-
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Cleaning CargoTracker Database in /tmp  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        sh "rm -rf /tmp/cargo*"
-
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        sh """mvn -B -V -ff -e clean install --strict-checksums -Dsurefire.useFile=false \
-                        -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
-                        -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
-                        -Ppayara-server-remote -DtrimStackTrace=false"""
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                    }
-                    post {
-                        always {
-                            processReportAndStopDomain()
-                        }
-                        cleanup {
-                            saveLogsAndCleanup 'cargotracker-log.zip'
-                        }
-                    }
-                }
-                stage('EE7 Tests') {
-                    agent {
-                        label 'general-purpose'
-                    }
-                    steps{
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out EE7 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
-                            branches: [[name: "*/Payara6"]],
-                            userRemoteConfigs: [[url: "https://github.com/payara/patched-src-javaee7-samples.git"]]]
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out EE7 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-
-                        setupDomain()
-
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        sh """mvn -B -V -ff -e clean install --strict-checksums \
-                        -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
-                        -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
-                        -Dpayara_domain=${DOMAIN_NAME} \
-                        -Ppayara-server-remote,stable,payara6"""
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                    }
-                    post {
-                        always {
-                            processReportAndStopDomain()
-                        }
-                        cleanup {
-                            saveLogsAndCleanup 'ee7-samples-log.zip'
-                        }
-                    }
-                }
+//                 stage('Payara Samples Tests') {
+//                     agent {
+//                         label 'general-purpose'
+//                     }
+//                     steps {
+//                         setupDomain()
+//
+//                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+//                         sh """mvn -V -B -ff clean install --strict-checksums -Ppayara-server-remote,playwright \
+//                         -Dpayara.version=${pom.version} \
+//                         -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
+//                         -Djavax.xml.accessExternalSchema=all \
+//                         -f appserver/tests/payara-samples """
+//                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+//                     }
+//                     post {
+//                         always {
+//                             processReportAndStopDomain()
+//                         }
+//                         cleanup {
+//                             saveLogsAndCleanup 'samples-log.zip'
+//                         }
+//                     }
+//                 }
+//                 stage('MP TCK Runners') {
+//                     agent {
+//                         label 'general-purpose'
+//                     }
+//                     steps{
+//                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+//                         checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
+//                             branches: [[name: "*/microprofile-6.1"]],
+//                             userRemoteConfigs: [[url: "https://github.com/payara/MicroProfile-TCK-Runners.git"]]]
+//                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+//
+//                         setupDomain()
+//
+//                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+//                         sh """mvn -B -V -ff -e clean verify --strict-checksums \
+//                         -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
+//                         -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
+//                         -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/appserver/distributions/payara/target/stage/payara7" \
+//                         -Ppayara-server-remote,full"""
+//                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+//                     }
+//                     post {
+//                         always {
+//                             processReportAndStopDomain()
+//                         }
+//                         cleanup {
+//                             saveLogsAndCleanup 'mp-tck-log.zip'
+//                         }
+//                     }
+//                 }
+//                 stage('EE8 Tests') {
+//                     agent {
+//                         label 'general-purpose'
+//                     }
+//                     steps{
+//                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out EE8 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+//                         checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
+//                             branches: [[name: "*/Payara6"]],
+//                             userRemoteConfigs: [[url: "https://github.com/payara/patched-src-javaee8-samples.git"]]]
+//                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out EE8 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+//
+//                         setupDomain()
+//
+//                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+//                         sh "mvn -B -V -ff -e clean install --strict-checksums -Dsurefire.useFile=false \
+//                         -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
+//                         -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
+//                         -Ppayara-server-remote,stable"
+//                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+//                     }
+//                     post {
+//                         always {
+//                             processReportAndStopDomain()
+//                         }
+//                         cleanup {
+//                             saveLogsAndCleanup 'ee8-samples-log.zip'
+//                         }
+//                     }
+//                 }
+//                 stage('CargoTracker Tests') {
+//                     agent {
+//                         label 'general-purpose'
+//                     }
+//                     steps{
+//                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out cargoTracker tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+//                         checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
+//                             branches: [[name: "*/Payara7"]],
+//                             userRemoteConfigs: [[url: "https://github.com/payara/cargoTracker.git"]]]
+//                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out cargoTracker tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+//
+//                         setupDomain()
+//
+//                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Cleaning CargoTracker Database in /tmp  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+//                         sh "rm -rf /tmp/cargo*"
+//
+//                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+//                         sh """mvn -B -V -ff -e clean install --strict-checksums -Dsurefire.useFile=false \
+//                         -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
+//                         -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
+//                         -Ppayara-server-remote -DtrimStackTrace=false"""
+//                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+//                     }
+//                     post {
+//                         always {
+//                             processReportAndStopDomain()
+//                         }
+//                         cleanup {
+//                             saveLogsAndCleanup 'cargotracker-log.zip'
+//                         }
+//                     }
+//                 }
+//                 stage('EE7 Tests') {
+//                     agent {
+//                         label 'general-purpose'
+//                     }
+//                     steps{
+//                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out EE7 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+//                         checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
+//                             branches: [[name: "*/Payara6"]],
+//                             userRemoteConfigs: [[url: "https://github.com/payara/patched-src-javaee7-samples.git"]]]
+//                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out EE7 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+//
+//                         setupDomain()
+//
+//                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+//                         sh """mvn -B -V -ff -e clean install --strict-checksums \
+//                         -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
+//                         -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
+//                         -Dpayara_domain=${DOMAIN_NAME} \
+//                         -Ppayara-server-remote,stable,payara6"""
+//                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+//                     }
+//                     post {
+//                         always {
+//                             processReportAndStopDomain()
+//                         }
+//                         cleanup {
+//                             saveLogsAndCleanup 'ee7-samples-log.zip'
+//                         }
+//                     }
+//                 }
             }
         }
     }

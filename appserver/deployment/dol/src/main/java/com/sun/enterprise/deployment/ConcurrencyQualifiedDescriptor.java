@@ -1,23 +1,23 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2024 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/master/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at glassfish/legal/LICENSE.txt.
  *
  * GPL Classpath Exception:
- * Oracle designates this particular file as subject to the "Classpath"
- * exception as provided by Oracle in the GPL Version 2 section of the License
+ * The Payara Foundation designates this particular file as subject to the "Classpath"
+ * exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  * file that accompanied this code.
  *
  * Modifications:
@@ -37,32 +37,40 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2024 Payara Foundation and/or its affiliates 
+package com.sun.enterprise.deployment;
 
-package org.glassfish.ejb.deployment;
-
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.internal.deployment.AnnotationTypesProvider;
-
-import jakarta.ejb.MessageDriven;
-import jakarta.ejb.Stateful;
-import jakarta.ejb.Stateless;
-import jakarta.ejb.Singleton;
-import java.lang.annotation.Annotation;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
- * Provides the annotation types for the EJB Types
+ * Unify access to qualifier for Concurrency *Definition classes.
  *
- * @author Jerome Dochez
+ * @author Petr Aubrecht
  */
-@Service(name="EJB")
-public class EjbAnnotationTypesProvider implements AnnotationTypesProvider {
-    public Class<? extends Annotation>[] getAnnotationTypes() {
-        return new Class[] {
-            MessageDriven.class, Stateful.class, Stateless.class, Singleton.class};
+public abstract class ConcurrencyQualifiedDescriptor extends ResourceDescriptor {
+
+    private Set<String> qualifiers = new HashSet<>();
+
+    /**
+     * return one of CONTEXT_SERVICE, MANAGEDTHREADFACTORY,
+     * MANAGEDEXECUTORSERVICE, or MANAGEDSCHEDULEDEXECUTORSERVICE
+     */
+    abstract public String getConcurrencyType();
+
+    public Set<String> getQualifiers() {
+        return qualifiers;
     }
 
-    public Class getType(String typename) throws ClassNotFoundException {
-        return getClass().getClassLoader().loadClass(typename);
+    public void addQualifier(String qualifier) {
+        this.qualifiers.add(qualifier);
+    }
+
+    public void setQualifiers(Set<String> qualifiers) {
+        this.qualifiers = qualifiers;
+    }
+
+    public void setQualifiers(String qualifiers[]) {
+        this.qualifiers = new HashSet(Arrays.asList(qualifiers));
     }
 }

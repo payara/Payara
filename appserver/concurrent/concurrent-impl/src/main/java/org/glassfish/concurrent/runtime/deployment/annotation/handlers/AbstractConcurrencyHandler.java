@@ -1,23 +1,23 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2024 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/master/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at glassfish/legal/LICENSE.txt.
  *
  * GPL Classpath Exception:
- * Oracle designates this particular file as subject to the "Classpath"
- * exception as provided by Oracle in the GPL Version 2 section of the License
+ * The Payara Foundation designates this particular file as subject to the "Classpath"
+ * exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  * file that accompanied this code.
  *
  * Modifications:
@@ -37,32 +37,28 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2024 Payara Foundation and/or its affiliates 
+package org.glassfish.concurrent.runtime.deployment.annotation.handlers;
 
-package org.glassfish.ejb.deployment;
-
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.internal.deployment.AnnotationTypesProvider;
-
-import jakarta.ejb.MessageDriven;
-import jakarta.ejb.Stateful;
-import jakarta.ejb.Stateless;
-import jakarta.ejb.Singleton;
-import java.lang.annotation.Annotation;
+import com.sun.enterprise.deployment.ConcurrencyQualifiedDescriptor;
+import com.sun.enterprise.deployment.ResourceDescriptor;
+import com.sun.enterprise.deployment.annotation.handlers.AbstractResourceHandler;
+import java.util.Arrays;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
- * Provides the annotation types for the EJB Types
+ * Abstract parent for concurrency handlers.
  *
- * @author Jerome Dochez
+ * @author Petr Aubrecht
  */
-@Service(name="EJB")
-public class EjbAnnotationTypesProvider implements AnnotationTypesProvider {
-    public Class<? extends Annotation>[] getAnnotationTypes() {
-        return new Class[] {
-            MessageDriven.class, Stateful.class, Stateless.class, Singleton.class};
+public abstract class AbstractConcurrencyHandler extends AbstractResourceHandler {
+    protected static Set<String> mapToSetOfStrings(Class<?>[] qualifiers) {
+        return Arrays.asList(qualifiers).stream().map(c -> c.getName()).collect(Collectors.toSet());
     }
 
-    public Class getType(String typename) throws ClassNotFoundException {
-        return getClass().getClassLoader().loadClass(typename);
+    protected static boolean descriptorAlreadyPresent(Set<ResourceDescriptor> resourceDescriptors, ConcurrencyQualifiedDescriptor descriptor) {
+        Optional<ResourceDescriptor> optResourceDescriptor = resourceDescriptors.stream().filter(d -> d.equals(descriptor)).findAny();
+        return optResourceDescriptor.isPresent();
     }
 }

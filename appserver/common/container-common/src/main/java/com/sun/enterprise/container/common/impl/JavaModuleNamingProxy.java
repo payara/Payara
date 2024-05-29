@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.container.common.impl;
 
@@ -266,10 +266,7 @@ public class JavaModuleNamingProxy
                         appName = app.getAppName();
                     }
 
-                    String moduleName = bd.getModuleDescriptor().getModuleName();
-
                     StringBuilder javaGlobalName = new StringBuilder("java:global/");
-
 
                     if( name.startsWith(JAVA_APP_CONTEXT) ) {
 
@@ -290,6 +287,7 @@ public class JavaModuleNamingProxy
                         javaGlobalName.append(name.substring(javaAppLength));
 
                     } else {
+                        String moduleName = bd.getModuleDescriptor().getModuleName();
 
                         // For portable EJB names relative to java:module, only add
                         // the application name if it's an .ear, but always add

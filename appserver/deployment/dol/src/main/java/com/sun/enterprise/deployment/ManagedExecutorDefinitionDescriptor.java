@@ -41,9 +41,9 @@ package com.sun.enterprise.deployment;
 
 import java.util.Properties;
 
-import static org.glassfish.deployment.common.JavaEEResourceType.*;
+import static org.glassfish.deployment.common.JavaEEResourceType.MEDD;
 
-public class ManagedExecutorDefinitionDescriptor extends ResourceDescriptor {
+public class ManagedExecutorDefinitionDescriptor extends ConcurrencyQualifiedDescriptor {
 
     private static final String JAVA_URL = "java:";
     private static final String JAVA_COMP_URL = "java:comp/";
@@ -57,6 +57,11 @@ public class ManagedExecutorDefinitionDescriptor extends ResourceDescriptor {
 
     public ManagedExecutorDefinitionDescriptor() {
         super.setResourceType(MEDD);
+    }
+
+    @Override
+    public String getConcurrencyType() {
+        return "MANAGED_EXECUTOR_SERVICE";
     }
 
     @Override
