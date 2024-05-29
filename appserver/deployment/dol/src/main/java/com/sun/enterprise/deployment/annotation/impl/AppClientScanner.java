@@ -37,23 +37,21 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2024] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.deployment.annotation.impl;
 
 import com.sun.enterprise.deployment.ApplicationClientDescriptor;
-import java.net.URISyntaxException;
 import org.glassfish.apf.impl.AnnotationUtils;
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.classmodel.reflect.Parser;
 import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.deployment.common.GenericAnnotationDetector;
-import com.sun.enterprise.deploy.shared.FileArchive;
-import com.sun.enterprise.deployment.deploy.shared.InputJarArchive;
-import com.sun.enterprise.deployment.deploy.shared.MultiReadableArchive;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.logging.Level;
 
 /**
@@ -69,8 +67,6 @@ import java.util.logging.Level;
 @Service(name="car")
 @PerLookup
 public class AppClientScanner extends ModuleScanner<ApplicationClientDescriptor> {
-    private static final Class[] managedBeanAnnotations = new Class[] {jakarta.annotation.ManagedBean.class}; 
-
     @Override
     public void process(ReadableArchive archive, ApplicationClientDescriptor bundleDesc, ClassLoader classLoader, Parser parser) throws IOException {
         setParser(parser);
@@ -115,31 +111,6 @@ public class AppClientScanner extends ModuleScanner<ApplicationClientDescriptor>
         String callbackHandler = desc.getCallbackHandler();
         if (callbackHandler != null && !callbackHandler.trim().equals("")) {
             addScanClassName(desc.getCallbackHandler());
-        }
-
-        GenericAnnotationDetector detector =
-            new GenericAnnotationDetector(managedBeanAnnotations);
-
-        if (detector.hasAnnotationInArchive(archive)) {
-            if (archive instanceof FileArchive) {
-                addScanDirectory(new File(archive.getURI()));
-            } else if (archive instanceof InputJarArchive) {
-                /*
-                 * This is during deployment, so use the faster code path using
-                 * the File object.
-                 */
-                URI uriToAdd = archive.getURI();
-                addScanJar(scanJar(uriToAdd));
-            } else if (archive instanceof MultiReadableArchive) {
-                /*
-                 * During app client launches, scan the developer's archive
-                 * which is in slot #1, not the facade archive which is in
-                 * slot #0.  Also, use URIs instead of File objects because
-                 * during Java Web Start launches we don't have access to
-                 * File objects.
-                 */
-                addScanURI(scanURI(((MultiReadableArchive) archive).getURI(1)));
-            }
         }
 
         this.classLoader = classLoader;

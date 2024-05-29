@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2024] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.deployment.annotation.factory;
 
@@ -130,17 +131,7 @@ public class SJSASFactory extends Factory {
             if (annotationTypeName == null) continue;
           
             systemProcessor.pushAnnotationHandler(annotationTypeName, new LazyAnnotationHandler(descriptor)); 
-            annotationClassNames.add("L" + annotationTypeName.replace('.', '/') + ";");  
-
-            // In the current set of the annotations processed by the 
-            // deployment layer, the only annotation that should be
-            // processed even when metadata-complete atribute value is true
-            // is jakarta.annotation.ManagedBean. If there are more annotations
-            // falling in this category in the future, add them to this list
-            if (annotationTypeName.equals("jakarta.annotation.ManagedBean")) {
-                systemProcessorMetaDataComplete.pushAnnotationHandler(annotationTypeName, new LazyAnnotationHandler(descriptor));
-                annotationClassNamesMetaDataComplete.add("L" + annotationTypeName.replace('.', '/') + ";");
-            }
+            annotationClassNames.add("L" + annotationTypeName.replace('.', '/') + ";");
         }
     }
     
