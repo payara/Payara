@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.deployment;
 
@@ -603,6 +603,14 @@ public abstract class BundleDescriptor extends RootDeploymentDescriptor implemen
      */
     @Override
     public abstract ArchiveType getModuleType();
+
+    /**
+     * Processes the bundle descriptor.
+     * This method should be overridden in subclasses to provide specific processing logic
+     * for the bundle descriptor.
+     */
+    public void processBundleDescriptor() {
+    }
 
     /**
      * @return the visitor for this bundle descriptor

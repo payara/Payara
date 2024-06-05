@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2019-2024] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.ejb.deployment.descriptor;
 
@@ -2373,6 +2373,43 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
         this.bundleDescriptor = bundleDescriptor;
     }
 
+    /**
+     * Processes the descriptor by adding various descriptors and properties
+     * from the root bundle descriptor.
+     * It is expected that the bundle descriptor is already set before calling this method.
+     */
+    public void processDescriptor() {
+        if (this.bundleDescriptor != null) {
+            for (Object msgDestRefObj : this.bundleDescriptor.getMessageDestinationReferenceDescriptors()) {
+                addMessageDestinationReferenceDescriptor((MessageDestinationReferenceDescriptor) msgDestRefObj);
+            }
+
+            for (Object envPropObj : this.bundleDescriptor.getEnvironmentProperties()) {
+                addOrMergeEnvironmentProperty((EnvironmentProperty) envPropObj);
+            }
+
+            for (Object servRefObj : this.bundleDescriptor.getServiceReferenceDescriptors()) {
+                addServiceReferenceDescriptor((ServiceReferenceDescriptor) servRefObj);
+            }
+
+            for (Object resRefObj : this.bundleDescriptor.getResourceReferenceDescriptors()) {
+                addResourceReferenceDescriptor((ResourceReferenceDescriptor) resRefObj);
+            }
+
+            for (Object resourceEnvRefObj : this.bundleDescriptor.getResourceEnvReferenceDescriptors()) {
+                addResourceEnvReferenceDescriptor((ResourceEnvReferenceDescriptor) resourceEnvRefObj);
+            }
+
+            for (EntityManagerFactoryReferenceDescriptor entMgrFacRef : this.bundleDescriptor.getEntityManagerFactoryReferenceDescriptors()) {
+                addEntityManagerFactoryReferenceDescriptor(entMgrFacRef);
+            }
+
+            for (EntityManagerReferenceDescriptor entMgrRef : this.bundleDescriptor.getEntityManagerReferenceDescriptors()) {
+                addEntityManagerReferenceDescriptor(entMgrRef);
+            }
+        }
+    }
+    
     /**
      * Called by WebArchivist to notify this EjbDescriptor that it has been associated with a web bundle.
      *
