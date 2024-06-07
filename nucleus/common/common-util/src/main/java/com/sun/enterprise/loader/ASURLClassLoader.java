@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
- // Portions Copyright [2016-2023] [Payara Foundation and/or its affiliates]
+ // Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.loader;
 
@@ -95,6 +95,7 @@ public class ASURLClassLoader extends CurrentBeforeParentClassLoader
 
     /** logger for this class */
     private static final Logger _logger = CULoggerInfo.getLogger();
+    private static final Runtime.Version RUNTIME_VERSION = Runtime.Version.parse(System.getProperty("java.version"));
 
     /*
        list of url entries of this class loader. Using LinkedHashSet instead of original ArrayList
@@ -613,12 +614,9 @@ public class ASURLClassLoader extends CurrentBeforeParentClassLoader
         return AccessController.doPrivileged((PrivilegedAction<byte[]>) () -> {
             try {
                 if (res.isJar) { // It is a jarfile..
-                    JarFile zip = res.zip;
-                    JarFile jar = new JarFile(res.file, false, JarFile.OPEN_READ,
-                            Runtime.Version.parse(System.getProperty("java.version")));
-                    JarEntry entry = jar.getJarEntry(entryName);
+                    JarEntry entry = res.zip.getJarEntry(entryName);
                     if (entry != null) {
-                        byte[] classData = getClassData(zip.getInputStream(entry));
+                        byte[] classData = getClassData(res.zip.getInputStream(entry));
                         res.setProtectionDomain(ASURLClassLoader.this, entry.getCertificates());
                         return classData;
                     }
@@ -899,7 +897,7 @@ public class ASURLClassLoader extends CurrentBeforeParentClassLoader
          * @throws IOException from parent
          */
         public ProtectedJarFile(File file) throws IOException {
-            super(file);
+            super(file, true, OPEN_READ, RUNTIME_VERSION);
             registerCloseEvent();
         }
 
