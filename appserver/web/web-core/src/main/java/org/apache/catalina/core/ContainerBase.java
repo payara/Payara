@@ -1750,7 +1750,7 @@ public abstract class ContainerBase
      * to update lastaccesstime and accessedTime.
      */
     protected void threadSessionStart() {
-        if (sessionThread != null)
+        if (sessionThread != null || manager == null)
             return;
         threadSessionDone = false;
         String threadName = "ContainerBackgroundSessionProcessor[" + toString() + "]";
