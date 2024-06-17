@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2024] [Payara Foundation and/or its affiliates]
 package org.glassfish.ejb.mdb;
 
 import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
@@ -216,7 +216,7 @@ public final class MessageBeanContainer extends BaseContainer implements Message
             messageBeanClient_ = clientFactory.createMessageBeanClient(msgBeanDesc);
 
             componentInvocation = createComponentInvocation();
-            componentInvocation.container = this;
+            componentInvocation.setContainer(this);
             invocationManager.preInvoke(componentInvocation);
             messageBeanClient_.setup(this);
 
@@ -1135,7 +1135,7 @@ public final class MessageBeanContainer extends BaseContainer implements Message
             invocation.context = context;
             invocation.instance = context.getEJB();
             invocation.ejb = context.getEJB();
-            invocation.container = this;
+            invocation.setContainer(this);
 
             // Message Bean Container only starts a new transaction if
             // there is no imported transaction and the message listener

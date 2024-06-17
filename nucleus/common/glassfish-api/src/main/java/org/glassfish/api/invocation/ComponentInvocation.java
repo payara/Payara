@@ -37,12 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2019-2024] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.api.invocation;
 
 import static org.glassfish.api.invocation.ComponentInvocation.ComponentInvocationType.UN_INITIALIZED;
 
+import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -80,9 +81,9 @@ public class ComponentInvocation implements Cloneable {
     /**
      * ServletContext for servlet, Container for EJB
      */
-    public Object container;
+    private WeakReference<Object> container;
 
-    public Object jndiEnvironment;
+    private WeakReference<Object> jndiEnvironment;
 
     public String componentId;
 
@@ -117,13 +118,13 @@ public class ComponentInvocation implements Cloneable {
     protected String registrationName;
 
     public ComponentInvocation() {
-
+        container = new WeakReference<>(null);
     }
 
     public ComponentInvocation(String componentId, ComponentInvocationType invocationType, Object container, String appName, String moduleName, String registrationName) {
         this.componentId = componentId;
         this.invocationType = invocationType;
-        this.container = container;
+        this.container = new WeakReference<>(container);
         this.appName = appName;
         this.moduleName = moduleName;
         this.registrationName = registrationName;
@@ -133,7 +134,7 @@ public class ComponentInvocation implements Cloneable {
         this.componentId = componentId;
         this.invocationType = invocationType;
         this.instance = instance;
-        this.container = container;
+        this.container = new WeakReference<>(container);
         this.transaction = transaction;
     }
 
@@ -202,31 +203,34 @@ public class ComponentInvocation implements Cloneable {
     }
 
     public Object getJndiEnvironment() {
-        return jndiEnvironment;
+        return getJNDIEnvironment();
     }
 
     public void setJndiEnvironment(Object jndiEnvironment) {
-        this.jndiEnvironment = jndiEnvironment;
+        setJNDIEnvironment(jndiEnvironment);
     }
 
     public void setJNDIEnvironment(Object val) {
-        jndiEnvironment = val;
+        jndiEnvironment = new WeakReference<>(val);
     }
 
     public Object getJNDIEnvironment() {
-        return jndiEnvironment;
+        if (jndiEnvironment == null) {
+            return null;
+        }
+        return jndiEnvironment.get();
     }
 
     public Object getContainer() {
-        return container;
+        return container.get();
     }
 
     public void setContainer(Object container) {
-        this.container = container;
+        this.container = new WeakReference<>(container);
     }
 
     public Object getContainerContext() {
-        return container;
+        return getContainer();
     }
 
     public Object getTransaction() {
@@ -391,7 +395,7 @@ public class ComponentInvocation implements Cloneable {
         str.append("\tcomponentId=").append(componentId).append('\n');
         str.append("\ttype=").append(invocationType).append('\n');
         str.append("\tinstance=").append(instanceName != null ? instanceName : String.valueOf(instance)).append('\n');
-        str.append("\tcontainer=").append(container).append('\n');
+        str.append("\tcontainer=").append(getContainer()).append('\n');
         str.append("\tappName=").append(appName).append('\n');
         return str.toString();
     }

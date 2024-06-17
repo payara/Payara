@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019-2024] Payara Foundation and/or affiliates
 
 package org.glassfish.persistence.ejb.entitybean.container;
 
@@ -1284,7 +1285,7 @@ public class EntityContainer extends BaseContainer implements CacheListener {
             context.incrementCalls();
 
             inv.instance = inv.ejb = context.getEJB();
-            inv.container = this;
+            inv.setContainer(this);
             invocationManager.preInvoke(inv);
 
             // call ejbLoad if necessary

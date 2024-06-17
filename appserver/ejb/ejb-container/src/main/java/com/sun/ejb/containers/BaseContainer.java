@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.containers;
 
@@ -2002,7 +2002,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
             }
 
             inv.transactionAttribute = inv.invocationInfo.txAttr;
-            inv.container = this;
+            inv.setContainer(this);
 
             if (inv.mustInvokeAsynchronously()) {
                 return;
