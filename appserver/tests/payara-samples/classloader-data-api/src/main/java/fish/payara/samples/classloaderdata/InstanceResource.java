@@ -46,12 +46,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.LockSupport;
 import java.util.stream.Collectors;
-import jakarta.el.BeanELResolver;
-import jakarta.el.ELContext;
-import jakarta.el.ELResolver;
-import jakarta.el.FunctionMapper;
-import jakarta.el.PropertyNotFoundException;
-import jakarta.el.VariableMapper;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
@@ -100,11 +94,9 @@ public class InstanceResource {
     private static String instanceGetter(Class<?> clazz, AtomicInteger previousValue, Long _timeout) {
         long timeout = Optional.ofNullable(_timeout).orElse(4L) / 2L;
         int previous = previousValue.updateAndGet(prev -> prev < 0 ? InstanceCounter.getInstanceCount(clazz, timeout) : prev);
-        forceSoftReferenceCleanup();
+        memoryPressure();
         System.gc();
         LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(timeout));
-        forceELResolverCleanup();
-        System.gc();
         previousValue.set(InstanceCounter.getInstanceCount(clazz, timeout));
         return String.format("Instances Before GC: %d\nInstances Remaining: %d\nInstances: \n%s\n",
                 previous, previousValue.get(), InstanceCounter.getInstances(clazz, timeout).stream()
@@ -112,36 +104,11 @@ public class InstanceResource {
                         .collect(Collectors.joining("\n\n")));
     }
 
-    private static void forceSoftReferenceCleanup() {
+    private static void memoryPressure() {
         try {
             Object[] ignored = new Object[(int) Runtime.getRuntime().maxMemory()];
         } catch (OutOfMemoryError e) {
             // Ignore
-        }
-    }
-
-    private static void forceELResolverCleanup() {
-        BeanELResolver resolver = new BeanELResolver();
-        try {
-            // has a sideffect of cleaning up the soft references from the map
-            resolver.getType(new ELContext() {
-                @Override
-                public ELResolver getELResolver() {
-                    return resolver;
-                }
-
-                @Override
-                public FunctionMapper getFunctionMapper() {
-                    throw new UnsupportedOperationException("Not supported");
-                }
-
-                @Override
-                public VariableMapper getVariableMapper() {
-                    throw new UnsupportedOperationException("Not supported");
-                }
-            }, new Object(), new Object());
-        } catch (PropertyNotFoundException ex) {
-            // do nothing
         }
     }
 }

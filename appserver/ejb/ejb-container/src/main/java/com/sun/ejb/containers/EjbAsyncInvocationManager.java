@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.containers;
 
@@ -158,7 +159,7 @@ public class EjbAsyncInvocationManager {
             Map.Entry<Long, EjbFutureTask> next = iterator.next();
 
             EjbAsyncTask task = next.getValue().getEjbAsyncTask();
-            if( task.getEjbInvocation().container == container ) {
+            if( task.getEjbInvocation().getContainer() == container ) {
 
                 removedTasks.add(task.getInvId());
 
