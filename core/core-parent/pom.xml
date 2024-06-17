@@ -642,6 +642,8 @@
                                     <exclude>io.opentelemetry.extension</exclude>
                                     <exclude>io.opentelemetry.instrumentation</exclude>
                                     <exclude>fish.payara.shaded</exclude>
+                                    <exclude>org.glassfish.api.invocation</exclude>
+                                    <exclude>org.apache.catalina.core</exclude>
                                 </excludes>
                             </parameter>
                         </configuration>
