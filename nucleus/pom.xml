@@ -156,7 +156,7 @@
         <findbugs-maven-plugin.version>3.0.5</findbugs-maven-plugin.version>
         <findbugs.version>1.7</findbugs.version>
         <findbugs.glassfish.logging.validLoggerPrefixes>jakarta.enterprise</findbugs.glassfish.logging.validLoggerPrefixes>
-        <jacoco.plugin.version>0.8.8</jacoco.plugin.version>
+        <jacoco.plugin.version>0.8.12</jacoco.plugin.version>
 
     </properties>
 
