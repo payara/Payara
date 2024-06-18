@@ -213,12 +213,12 @@
                             <artifact>
                                 <groupId>org.glassfish</groupId>
                                 <artifactId>jakarta.faces</artifactId>
-                                <version>${jakarta.faces.version}</version>
+                                <version>${mojarra.version}</version>
                             </artifact>
                             <nonFinal>false</nonFinal>
                             <jarType>impl</jarType>
                             <specVersion>${jakarta.faces-spec.version}</specVersion>
-                            <implVersion>${jakarta.faces.version}</implVersion>
+                            <implVersion>${mojarra.version}</implVersion>
                             <apiPackage>jakarta.faces</apiPackage>
                             <implNamespace>org.glassfish</implNamespace>
                         </spec>
@@ -575,7 +575,7 @@
             <dependency>
                 <groupId>org.eclipse.persistence</groupId>
                 <artifactId>org.eclipse.persistence.jpa.modelgen.processor</artifactId>
-                <version>${org.eclipse.persistence.version}</version>
+                <version>${eclipselink.version}</version>
                 <scope>compile</scope>
             </dependency>
 

@@ -164,12 +164,12 @@
         <osgi-resource-locator.version>1.0.3</osgi-resource-locator.version>
         <snakeyaml.version>2.2</snakeyaml.version>
         <jakarta.servlet.jsp.jstl.version>3.0.1</jakarta.servlet.jsp.jstl.version>
-        <jakarta.faces.version>4.0.0.payara-p2</jakarta.faces.version>
+        <mojarra.version>4.0.0.payara-p2</mojarra.version>
         <jaxb-extra-osgi.version>2.3.0</jaxb-extra-osgi.version>
 
         <yasson.version>3.0.3</yasson.version>
-        <org.eclipse.persistence.version>4.0.1.payara-p2</org.eclipse.persistence.version>
-        <org.eclipse.persistence.asm.version>9.6.0</org.eclipse.persistence.asm.version>
+        <eclipselink.version>4.0.1.payara-p2</eclipselink.version>
+        <eclipselink.asm.version>9.6.0</eclipselink.asm.version>
         <mq-distribution.version>6.3.0.payara-p3</mq-distribution.version>
         <com.ibm.jbatch.container.version>2.1.1</com.ibm.jbatch.container.version>
         <com.ibm.jbatch.spi.version>2.1.1</com.ibm.jbatch.spi.version>
