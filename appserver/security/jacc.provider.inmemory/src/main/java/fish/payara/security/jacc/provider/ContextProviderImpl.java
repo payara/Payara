@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2022] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2022-2024] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,26 +41,21 @@ package fish.payara.security.jacc.provider;
 
 import fish.payara.jacc.ContextProvider;
 import jakarta.security.jacc.PolicyConfigurationFactory;
-import java.security.Policy;
+
 
 public class ContextProviderImpl implements ContextProvider {
 
     private final PolicyConfigurationFactory factory;
-    private final Policy policy;
 
-    public ContextProviderImpl(PolicyConfigurationFactory factory, Policy policy) {
+
+    public ContextProviderImpl(PolicyConfigurationFactory factory) {
         this.factory = factory;
-        this.policy = policy;
     }
     
     @Override
     public PolicyConfigurationFactory getPolicyConfigurationFactory() {
         return factory;
     }
-  
-    @Override
-    public Policy getPolicy() {
-        return policy;
-    }
+    
 
 }

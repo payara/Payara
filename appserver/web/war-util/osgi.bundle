@@ -37,7 +37,7 @@
 # only if the new code is made subject to such option by the copyright
 # holder.
 #
-# Portions Copyright 2021 Payara Foundation and/or its affiliates
+# Portions Copyright 2021-2024 Payara Foundation and/or its affiliates
 
 -exportcontents: \
                         com.sun.enterprise.glassfish.web; \
@@ -53,4 +53,4 @@
 # In this case, sun.rmi.transport is one such package which is used
 # during classloader cleanup. Since it is only presence for Oracle JDK,
 # the import has been marked as optional.
-Import-Package: sun.rmi.transport; resolution:=optional, org.jboss.weld.interceptor.proxy,*
+Import-Package: sun.rmi.transport; resolution:=optional, org.jboss.weld.interceptor.proxy, jakarta.enterprise.inject.spi.el,*

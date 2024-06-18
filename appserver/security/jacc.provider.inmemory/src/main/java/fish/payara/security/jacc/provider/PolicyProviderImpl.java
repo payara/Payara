@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2022] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2022-2024] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,10 +41,7 @@ package fish.payara.security.jacc.provider;
 
 import fish.payara.jacc.ContextProvider;
 import fish.payara.jacc.JaccConfigurationFactory;
-import jakarta.security.jacc.PolicyContext;
-import java.security.NoSuchAlgorithmException;
 import java.security.Permission;
-import java.security.Policy;
 import java.security.ProtectionDomain;
 import org.glassfish.exousia.modules.locked.SimplePolicyProvider;
 
@@ -53,23 +50,7 @@ import org.glassfish.exousia.modules.locked.SimplePolicyProvider;
  * Implementation of jacc PolicyProvider class
  */
 public class PolicyProviderImpl extends SimplePolicyProvider {
-
-    private Policy basePolicy;
-
-    /**
-     * Create a new instance of PolicyProviderImpl
-     * Delegates to existing policy provider
-     */
-    public PolicyProviderImpl() {
-        basePolicy = Policy.getPolicy();
-        if (basePolicy == null) {
-            try {
-                basePolicy = Policy.getInstance("JavaPolicy", null);
-            } catch (NoSuchAlgorithmException e) {
-                e.printStackTrace();
-            }
-        }
-    }
+    
 
     private static final ThreadLocal<Object> contextProviderReentry = new ThreadLocal<Object>() {
         @Override
@@ -87,16 +68,6 @@ public class PolicyProviderImpl extends SimplePolicyProvider {
         }
         alreadyCalled[0] = 1;
         try {
-            if (!permission.getClass().getName().startsWith("jakarta.")) {
-                return basePolicy.implies(domain, permission);
-            }
-            String contextId = PolicyContext.getContextID();
-            if (contextId != null) {
-                ContextProvider contextProvider = getContextProvider(contextId, getPolicyFactory());
-                if (contextProvider != null) {
-                    return contextProvider.getPolicy().implies(domain, permission);
-                }
-            }
             return super.implies(domain, permission);
         } finally {
             alreadyCalled[0] = 0;

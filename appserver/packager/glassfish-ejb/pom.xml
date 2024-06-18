@@ -41,7 +41,7 @@
 
 -->
 
-<!-- Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates.] -->
+<!-- Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates.] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"> <modelVersion>4.0.0</modelVersion>
     <parent>
@@ -102,6 +102,10 @@
             <groupId>fish.payara.server.internal.ejb</groupId>
             <artifactId>ejb-http-admin</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.enterprise</groupId>
+            <artifactId>jakarta.enterprise.cdi-el-api</artifactId>
         </dependency>
     </dependencies>
     

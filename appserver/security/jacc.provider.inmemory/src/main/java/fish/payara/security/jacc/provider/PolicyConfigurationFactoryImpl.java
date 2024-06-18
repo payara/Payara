@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2022] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2022-2024] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -46,8 +46,6 @@ import jakarta.security.jacc.PolicyConfiguration;
 import jakarta.security.jacc.PolicyConfigurationFactory;
 import jakarta.security.jacc.PolicyContextException;
 import java.security.Permission;
-import java.security.Policy;
-import java.security.SecurityPermission;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -89,8 +87,7 @@ public class PolicyConfigurationFactoryImpl extends SimplePolicyConfigurationFac
     }
     
     @Override
-    public void registerContextProvider(String applicationContextId, PolicyConfigurationFactory factory, Policy policy) {
-        checkSetPolicyPermission();
+    public void registerContextProvider(String applicationContextId, PolicyConfigurationFactory factory) {
         
         try {
             String policyContextId = applicationToPolicyContextIdMap.get(applicationContextId);
@@ -109,7 +106,7 @@ public class PolicyConfigurationFactoryImpl extends SimplePolicyConfigurationFac
                 throw new IllegalStateException("Context :" + policyContextId + " already has an active context (per app) provider");
             }
             
-            contextToContextProviderMap.put(policyContextId, new ContextProviderImpl(factory, policy));
+            contextToContextProviderMap.put(policyContextId, new ContextProviderImpl(factory));
             
         } catch (PolicyContextException e) {
             throw new IllegalStateException(e);
@@ -183,7 +180,6 @@ public class PolicyConfigurationFactoryImpl extends SimplePolicyConfigurationFac
      */
     @Override
     public PolicyConfiguration getPolicyConfiguration(String contextId, boolean remove) throws PolicyContextException {
-        checkSetPolicyPermission();
 
         if (logger.isLoggable(FINE)) {
             logger.fine("JACC Policy Provider: Getting PolicyConfiguration object with id = " + contextId);
@@ -219,7 +215,6 @@ public class PolicyConfigurationFactoryImpl extends SimplePolicyConfigurationFac
      */
     @Override
     public boolean inService(String contextId) throws PolicyContextException {
-        checkSetPolicyPermission();
         
         ContextProvider contextProvider = contextToContextProviderMap.get(contextId);
         
@@ -231,6 +226,8 @@ public class PolicyConfigurationFactoryImpl extends SimplePolicyConfigurationFac
         
     }
 
+
+
     protected List<PolicyConfiguration> getPolicyConfigurationImpls() {
         return new ArrayList<>(contextToConfigurationMap.values());
     }
@@ -239,14 +236,4 @@ public class PolicyConfigurationFactoryImpl extends SimplePolicyConfigurationFac
         return contextToConfigurationMap.remove(contextID);
     }
     
-    protected void checkSetPolicyPermission() {
-        SecurityManager securityManager = System.getSecurityManager();
-        if (securityManager != null) {
-            if (setPolicyPermission == null) {
-                setPolicyPermission = new SecurityPermission("setPolicy");
-            }
-            securityManager.checkPermission(setPolicyPermission);
-        }
-    }
-
 }
