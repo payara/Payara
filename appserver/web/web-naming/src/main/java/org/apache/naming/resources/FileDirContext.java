@@ -930,7 +930,7 @@ public class FileDirContext extends BaseDirContext {
                 canPath = normalize(file.toPath().toRealPath().toString());
             } catch (IOException e) {
             }
-            if (canPath == null || !canPath.startsWith(canonicalBase)) {
+            if (canPath == null || (!canPath.startsWith(canonicalBase) && !allowLinking)) {
                 if (logger.isLoggable(Level.FINE)) {
                     logger.log(Level.FINE, LogFacade.FILE_RESOURCES_NULL_CANONICAL_PATH);
                 }
