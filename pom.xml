@@ -159,12 +159,12 @@
         <yasson.version>3.0.3</yasson.version>
         <eclipselink.version>4.0.1.payara-p2</eclipselink.version>
         <eclipselink.asm.version>9.6.0</eclipselink.asm.version>
-        <mq-distribution.version>6.3.0.payara-p3</mq-distribution.version>
+        <openmq.version>6.3.0.payara-p3</openmq.version>
         <com.ibm.jbatch.container.version>2.1.1</com.ibm.jbatch.container.version>
         <com.ibm.jbatch.spi.version>2.1.1</com.ibm.jbatch.spi.version>
         <webservices.version>4.0.3.payara-p1</webservices.version>
-        <xmlsec.version>4.0.0</xmlsec.version>
-        <woodstox-core.version>6.6.2</woodstox-core.version>
+        <santuario.version>4.0.0</santuario.version>
+        <woodstox.version>6.6.2</woodstox.version>
         <woodstock-jsf.version>5.0.0</woodstock-jsf.version>
         <woodstock-jsf-suntheme.version>5.0.0.payara-p1</woodstock-jsf-suntheme.version>
         <angus-activation.version>1.0.0</angus-activation.version>
@@ -173,7 +173,7 @@
         <microprofile-release.version>6.1</microprofile-release.version>
         <payara-arquillian-container.version>3.0.alpha6</payara-arquillian-container.version>
         <h2db.version>2.2.224</h2db.version>
-        <jakarta.enterprise.concurrent>3.0.2.payara-p1</jakarta.enterprise.concurrent>
+        <concurro.version>3.0.2.payara-p1</concurro.version>
         <monitoring-console-process.version>2.0.2</monitoring-console-process.version>
         <monitoring-console-webapp.version>2.0.2</monitoring-console-webapp.version>
         <validation.xml.root>${project.build.outputDirectory}</validation.xml.root>
