@@ -161,6 +161,7 @@
             <groupId>fish.payara.security.connectors</groupId>
             <artifactId>security-connectors-api</artifactId>
         </dependency>
+        <!-- Temporary dependencies while EE11 in development, remove once EE11 fully released -->
         <dependency>
             <groupId>jakarta.inject</groupId>
             <artifactId>jakarta.inject-api</artifactId>
@@ -181,5 +182,6 @@
             <groupId>jakarta.security.enterprise</groupId>
             <artifactId>jakarta.security.enterprise-api</artifactId>
         </dependency>
+        <!-- End of temporary dependencies -->
     </dependencies>
 </project>

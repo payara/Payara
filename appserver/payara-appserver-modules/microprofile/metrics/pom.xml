@@ -138,6 +138,8 @@
         <dependency>
             <groupId>jakarta.servlet</groupId>
             <artifactId>jakarta.servlet-api</artifactId>
+            <!-- Temporary compile dependency while EE11 in development, should get moved back to test scope once EE11 is finished -->
+            <!-- <scope>test</scope> -->
         </dependency>
         <dependency>
             <groupId>org.awaitility</groupId>
