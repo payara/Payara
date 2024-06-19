@@ -170,12 +170,12 @@
         <yasson.version>3.0.3</yasson.version>
         <eclipselink.version>4.0.1.payara-p2</eclipselink.version>
         <eclipselink.asm.version>9.6.0</eclipselink.asm.version>
-        <mq-distribution.version>6.3.0.payara-p3</mq-distribution.version>
+        <openmq.version>6.3.0.payara-p3</openmq.version>
         <com.ibm.jbatch.container.version>2.1.1</com.ibm.jbatch.container.version>
         <com.ibm.jbatch.spi.version>2.1.1</com.ibm.jbatch.spi.version>
         <webservices.version>4.0.3.payara-p1</webservices.version>
-        <xmlsec.version>4.0.0</xmlsec.version>
-        <woodstox-core.version>6.6.2</woodstox-core.version>
+        <santuario.version>4.0.0</santuario.version>
+        <woodstox.version>6.6.2</woodstox.version>
         <woodstock-jsf.version>5.0.0</woodstock-jsf.version>
         <woodstock-jsf-suntheme.version>5.0.0.payara-p1</woodstock-jsf-suntheme.version>
         <angus-activation.version>1.0.0</angus-activation.version>

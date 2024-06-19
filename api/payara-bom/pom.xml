@@ -341,7 +341,7 @@
             <dependency>
                 <groupId>com.fasterxml.woodstox</groupId>
                 <artifactId>woodstox-core</artifactId>
-                <version>${woodstox-core.version}</version>
+                <version>${woodstox.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.soteria</groupId>
@@ -419,7 +419,7 @@
             <dependency>
                 <groupId>org.apache.santuario</groupId>
                 <artifactId>xmlsec</artifactId>
-                <version>${xmlsec.version}</version>
+                <version>${santuario.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.sun.xml.bind</groupId>
@@ -441,7 +441,7 @@
             <dependency>
                 <groupId>org.glassfish.mq</groupId>
                 <artifactId>mq-distribution</artifactId>
-                <version>${mq-distribution.version}</version>
+                <version>${openmq.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.web</groupId>
