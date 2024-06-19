@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2017-2023] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2024] [Payara Foundation and/or its affiliates]
 
 package org.apache.naming.resources;
 
