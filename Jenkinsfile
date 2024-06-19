@@ -82,7 +82,6 @@ pipeline {
                         }
                     }
                 }
-<<<<<<< HEAD
 //                 stage('Payara Samples Tests') {
 //                     agent {
 //                         label 'general-purpose'
