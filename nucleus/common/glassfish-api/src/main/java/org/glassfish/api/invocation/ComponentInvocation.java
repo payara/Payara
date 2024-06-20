@@ -86,7 +86,7 @@ public class ComponentInvocation implements Cloneable {
      *
      */
     @Deprecated(forRemoval = true, since = "6.17.0")
-    public Object container; //
+    public Object container;
 
     /**
      * DO NOT USE! Retained for semantic versioning. Replaced by {@link ComponentInvocation#jndiEnvironmentReference}.

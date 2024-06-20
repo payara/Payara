@@ -327,31 +327,14 @@ public abstract class ContainerBase
 
 
     /**
-     * The deprecated background thread completion semaphore.
-     *
-     * DO NOT USE! Retained for semantic versioning. Replaced by {@link ContainerBase#threadDoneAtomic}.
-     */
-    @Deprecated(forRemoval = true, since = "6.17.0")
-    private volatile boolean threadDone = false;
-
-    /**
      * The background thread completion semaphore.
      */
-    private AtomicBoolean threadDoneAtomic = new AtomicBoolean();
-
-
-    /**
-     * The deprecated session background thread completion semaphore.
-     *
-     * DO NOT USE! Retained for semantic versioning. Replaced by {@link ContainerBase#threadSessionDoneAtomic}.
-     */
-    @Deprecated(forRemoval = true, since = "6.17.0")
-    private volatile boolean threadSessionDone = false;
+    private AtomicBoolean threadDone = new AtomicBoolean();
 
     /**
      * The session background thread completion semaphore.
      */
-    private AtomicBoolean threadSessionDoneAtomic = new AtomicBoolean();
+    private AtomicBoolean threadSessionDone = new AtomicBoolean();
 
 
     /**
@@ -1765,9 +1748,9 @@ public abstract class ContainerBase
         if (backgroundProcessorDelayAtomic.get() <= 0)
             return;
 
-        threadDoneAtomic.set(false);
+        threadDone.set(false);
         String threadName = "ContainerBackgroundProcessor[" + toString() + "]";
-        thread = new Thread(new ContainerBackgroundProcessorAtomic(getMappingObject(), threadDoneAtomic,
+        thread = new Thread(new ContainerBackgroundProcessorAtomic(getMappingObject(), threadDone,
                 backgroundProcessorDelayAtomic), threadName);
         thread.setDaemon(true);
         thread.start();
@@ -1781,10 +1764,10 @@ public abstract class ContainerBase
     protected void threadSessionStart() {
         if (sessionThread != null || manager == null)
             return;
-        threadSessionDoneAtomic.set(false);
+        threadSessionDone.set(false);
         String threadName = "ContainerBackgroundSessionProcessor[" + toString() + "]";
         sessionThread = new Thread(new ContainerBackgroundSessionProcessorAtomic(getMappingObject(), manager,
-                threadSessionDoneAtomic), threadName);
+                threadSessionDone), threadName);
         sessionThread.setDaemon(true);
         sessionThread.start();
         
@@ -1800,7 +1783,7 @@ public abstract class ContainerBase
         if (thread == null)
             return;
 
-        threadDoneAtomic.set(true);
+        threadDone.set(true);
         thread.interrupt();
         try {
             thread.join();
@@ -1821,7 +1804,7 @@ public abstract class ContainerBase
             return;
         }
 
-        this.threadSessionDoneAtomic.set(true);
+        this.threadSessionDone.set(true);
         sessionThread.interrupt();
         try {
             sessionThread.join();
@@ -1969,7 +1952,7 @@ public abstract class ContainerBase
 
         public ContainerBackgroundProcessor() {
             containerBackgroundProcessorAtomic = new ContainerBackgroundProcessorAtomic(getMappingObject(),
-                    threadDoneAtomic, backgroundProcessorDelayAtomic);
+                    threadDone, backgroundProcessorDelayAtomic);
         }
 
         public ContainerBackgroundProcessor(ContainerBackgroundProcessorAtomic containerBackgroundProcessorAtomic) {
@@ -1999,7 +1982,7 @@ public abstract class ContainerBase
 
         public ContainerBackgroundSessionProcessor() {
             containerBackgroundSessionProcessorAtomic = new ContainerBackgroundSessionProcessorAtomic(
-                    getMappingObject(), manager, threadSessionDoneAtomic);
+                    getMappingObject(), manager, threadSessionDone);
         }
 
         public ContainerBackgroundSessionProcessor(ContainerBackgroundSessionProcessorAtomic containerBackgroundSessionProcessorAtomic) {
