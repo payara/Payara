@@ -407,6 +407,7 @@ public abstract class ContainerBase
     @Override
     public void setBackgroundProcessorDelay(int delay) {
         backgroundProcessorDelayAtomic.set(delay);
+        backgroundProcessorDelay = delay;
     }
 
 
