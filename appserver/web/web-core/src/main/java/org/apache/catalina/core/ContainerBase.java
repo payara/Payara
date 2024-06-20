@@ -220,7 +220,7 @@ public abstract class ContainerBase
     /**
      * The processor delay for this component.
      */
-    protected AtomicInteger backgroundProcessorDelayAtomic = new AtomicInteger(-1);
+    private AtomicInteger backgroundProcessorDelayAtomic = new AtomicInteger(-1);
 
 
     /**
