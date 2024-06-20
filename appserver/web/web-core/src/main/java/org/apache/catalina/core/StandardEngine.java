@@ -97,7 +97,7 @@ public class StandardEngine
         } catch(Exception ex) {
         }
         // By default, the engine will hold the reloading thread
-        backgroundProcessorDelay.set(10);
+        backgroundProcessorDelayAtomic.set(10);
 
     }
 
