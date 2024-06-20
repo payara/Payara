@@ -76,10 +76,6 @@
         </developer>
     </developers>
 
-    <properties>
-        <findbugs.exclude>${project.basedir}/exclude.xml</findbugs.exclude>
-    </properties>
-
     <build>
         <sourceDirectory>src/main/java</sourceDirectory>
         <resources>
@@ -207,11 +203,6 @@
         <dependency>
             <groupId>fish.payara.api</groupId>
             <artifactId>payara-api</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency> <!-- for FindBugs -->
-            <groupId>fish.payara.server.core.common</groupId>
-            <artifactId>simple-glassfish-api</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>

@@ -61,10 +61,6 @@
     <artifactId>nucleus-external</artifactId>
     <name>Repackaged nucleus external modules</name>
 
-    <properties>
-        <findbugs.skip>true</findbugs.skip>
-    </properties>
-
     <modules>
         <module>vboxjws</module>
     	<module>antlr</module>

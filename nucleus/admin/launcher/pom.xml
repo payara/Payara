@@ -57,10 +57,6 @@
     <name>admin-launcher</name>
     <description>Server Launching</description>
 
-    <properties>
-        <findbugs.exclude>${project.basedir}/exclude.xml</findbugs.exclude>
-    </properties>
-
     <build>
         <resources>
             <resource>

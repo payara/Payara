@@ -97,10 +97,6 @@
         </developer>
     </developers>
 
-    <properties>
-        <findbugs.exclude>${project.basedir}/exclude.xml</findbugs.exclude>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>jakarta.servlet</groupId>
@@ -142,11 +138,6 @@
             <groupId>org.glassfish.annotations</groupId>
             <artifactId>logging-annotation-processor</artifactId>
             <optional>true</optional>
-        </dependency>
-        <dependency> <!-- for FindBugs -->
-            <groupId>org.osgi</groupId>
-            <artifactId>osgi.core</artifactId>
-            <scope>provided</scope>
         </dependency>
 
         <dependency>

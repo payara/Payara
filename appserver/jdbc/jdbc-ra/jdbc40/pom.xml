@@ -54,10 +54,6 @@
     <packaging>glassfish-jar</packaging>
     <name>JDBC 40 related classes for JDBC Resource Adapter</name>
 
-    <properties>
-        <findbugs.exclude>${project.basedir}/exclude.xml</findbugs.exclude>
-    </properties>
-
     <build>
         <resources>
             <resource>
