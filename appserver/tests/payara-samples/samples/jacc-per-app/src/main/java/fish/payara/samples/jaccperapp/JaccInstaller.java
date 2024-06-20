@@ -25,8 +25,7 @@ public class JaccInstaller implements ServletContextListener {
 
         JaccConfigurationFactory.getJaccConfigurationFactory().registerContextProvider(
                 getAppContextId(sce.getServletContext()),
-                new TestPolicyConfigurationFactory(),
-                new LoggingTestPolicy());
+                new TestPolicyConfigurationFactory());
 
     }
 
