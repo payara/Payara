@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2017-2023] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2024] [Payara Foundation and/or its affiliates]
 
 package org.apache.naming.resources;
 
@@ -930,7 +930,7 @@ public class FileDirContext extends BaseDirContext {
                 canPath = normalize(file.toPath().toRealPath().toString());
             } catch (IOException e) {
             }
-            if (canPath == null || !canPath.startsWith(canonicalBase)) {
+            if (canPath == null || (!canPath.startsWith(canonicalBase) && !allowLinking)) {
                 if (logger.isLoggable(Level.FINE)) {
                     logger.log(Level.FINE, LogFacade.FILE_RESOURCES_NULL_CANONICAL_PATH);
                 }
