@@ -39,7 +39,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2019] Payara Foundation and/or affiliates -->
+<!-- Portions Copyright [2019-2024] Payara Foundation and/or affiliates -->
 
 <!-- pluginTreeNodeJVM.jsf -->
 
@@ -53,7 +53,7 @@
     </facet>
     
     <!facet image>
-	<sun:imageHyperlink imageURL="/resource/common/security/images/security.gif" url="#{request.contextPath}/common/adminAudit/adminaudit.jsf?configName=${configName}" 
+	<sun:imageHyperlink imageURL="/resource/common/security/images/security.gif" url="#{request.contextPath}/common/security/security.jsf?configName=${configName}"
 	    alt="$resource{i18n.tree.adminAudit}" border="0" immediate="true" />
     </facet>
     
