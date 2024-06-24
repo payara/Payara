@@ -181,32 +181,4 @@
           <scope>test</scope>
        </dependency>
     </dependencies>
-    <profiles>
-        <profile>
-            <id>findbugs</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <properties>
-                <maven.test.skip>false</maven.test.skip>
-            </properties>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>findbugs-maven-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>run-findbugs</id>
-                                <phase>compile</phase>
-                                <goals>
-                                    <goal>findbugs</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 </project>

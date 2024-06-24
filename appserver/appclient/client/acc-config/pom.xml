@@ -71,7 +71,6 @@
                 <config-xsd-dir>src/main/resources</config-xsd-dir>
                 <config-xsd-file>sun-application-client-container_1_2.xsd</config-xsd-file>
         -->
-        <findbugs.exclude>${project.basedir}/exclude.xml</findbugs.exclude>
     </properties>
 
     <developers>

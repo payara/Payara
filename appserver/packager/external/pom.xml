@@ -61,10 +61,6 @@
     <artifactId>external</artifactId>
     <name>Repackaged external modules</name>
 
-    <properties>
-        <findbugs.skip>true</findbugs.skip>
-    </properties>
-
     <modules>
         <module>ant</module>
         <module>h2db</module>

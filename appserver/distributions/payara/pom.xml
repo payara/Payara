@@ -130,31 +130,6 @@
         </plugins>
     </build>
 
-    <profiles>
-        <profile>
-            <id>ips</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
-                        <artifactId>maven-antrun-extended-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>create-ips-distribution</id>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
-
     <dependencies>
         <dependency>
             <groupId>fish.payara.server.internal.featuresets</groupId>

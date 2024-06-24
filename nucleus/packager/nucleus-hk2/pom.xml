@@ -135,7 +135,7 @@
         <dependency>
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging</artifactId>
-            <version>${jboss.logging.version}</version>
+            <version>${jboss-logging.version}</version>
         </dependency>
         <dependency>
             <groupId>org.javassist</groupId>

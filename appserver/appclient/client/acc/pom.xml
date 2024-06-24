@@ -81,7 +81,6 @@
 
         <standalone.classifier>lib</standalone.classifier>
         <acc.osgi.module.classifier>module</acc.osgi.module.classifier>
-        <findbugs.exclude>${project.basedir}/exclude.xml</findbugs.exclude>
     </properties>
 
     <developers>

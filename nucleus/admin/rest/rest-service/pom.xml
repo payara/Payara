@@ -140,11 +140,6 @@
             <groupId>fish.payara.server.core.security</groupId>
             <artifactId>security</artifactId>
         </dependency>
-        <dependency> <!-- for FindBugs -->
-            <groupId>org.osgi</groupId>
-            <artifactId>osgi.core</artifactId>
-            <scope>provided</scope>
-        </dependency>
         
         <dependency>
             <groupId>fish.payara.server.internal.payara-modules</groupId>
