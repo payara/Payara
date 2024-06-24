@@ -90,6 +90,12 @@
             <artifactId>hk2-utils</artifactId>
             <scope>provided</scope>
         </dependency>
+        <!-- Weld -->
+        <dependency>
+            <groupId>org.jboss.weld</groupId>
+            <artifactId>weld-osgi-bundle</artifactId>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -122,7 +128,9 @@
                                     org.glassfish.hk2.locator,
                                     org.glassfish.hk2.utils,
                                     <!-- jakarta.el-->
-                                    jakarta.el-api
+                                    jakarta.el-api,
+                                    <!-- weld-osgi-bundle -->
+                                    org.jboss.weld.osgi-bundle
                                 </Require-Bundle>
                                 <!-- Manually specify the shim versions of packages to be exported via this bundle -->
                                 <!-- Note the "shortened" syntax here: For every API the packages are delimited with
@@ -156,7 +164,45 @@
                                     org.glassfish.hk2.utilities.general;
                                     org.glassfish.hk2.utilities.reflection;
                                     org.glassfish.hk2.utilities.reflection.internal;
-                                    org.jvnet.hk2.component;version="3.0.99";shim=true
+                                    org.jvnet.hk2.component;version="3.0.99";shim=true,
+                                    <!-- weld-osgi-bundle -->
+                                    <!-- Weld API and SPI -->
+                                    org.jboss.weld.*.api.*;
+                                    org.jboss.weld.*.spi.*;
+                                    org.jboss.weld.bootstrap.event;
+                                    org.jboss.weld.context.*;
+                                    org.jboss.weld.events;
+                                    org.jboss.weld.inject;
+                                    org.jboss.weld.interceptor;
+                                    org.jboss.weld.proxy;
+                                    <!-- Weld Lite Extension Translator module -->
+                                    org.jboss.weld.lite.extension.*;
+                                    <!-- Weld modules -->
+                                    org.jboss.weld.module.ejb.*;
+                                    org.jboss.weld.module.jsf.*;
+                                    org.jboss.weld.module.jta.*;
+                                    org.jboss.weld.module.web.*;
+                                    <!-- Internal packages -->
+                                    org.jboss.weld;
+                                    org.jboss.weld.bean;
+                                    org.jboss.weld.bean.builtin;
+                                    org.jboss.weld.bean.proxy;
+                                    org.jboss.weld.bootstrap;
+                                    org.jboss.weld.bootstrap.api;
+                                    org.jboss.weld.config;
+                                    org.jboss.weld.contexts.*;
+                                    org.jboss.weld.event;
+                                    org.jboss.weld.exceptions;
+                                    org.jboss.weld.injection;
+                                    org.jboss.weld.interceptor.proxy;
+                                    org.jboss.weld.interceptor.util.proxy;
+                                    org.jboss.weld.logging;
+                                    org.jboss.weld.manager;
+                                    org.jboss.weld.module.*;
+                                    org.jboss.weld.security;
+                                    org.jboss.weld.util;
+                                    org.jboss.weld.xml;
+                                    org.jboss.weld.serialization.spi;version="5.0.99";shim=true
                                 </Export-Package>
                             </instructions>
                         </configuration>
