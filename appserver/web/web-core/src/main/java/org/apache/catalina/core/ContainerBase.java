@@ -209,9 +209,18 @@ public abstract class ContainerBase
 
 
     /**
+     * The deprecated processor delay for this component.
+     * 
+     * DO NOT USE! Retained for semantic versioning. Replaced by {@link ContainerBase#backgroundProcessorDelayAtomic}.
+     * Use {@link ContainerBase#getBackgroundProcessorDelay()} and {@link ContainerBase#setBackgroundProcessorDelay(int)}
+     */
+    @Deprecated(forRemoval = true, since = "6.17.0")
+    protected int backgroundProcessorDelay = -1;
+
+    /**
      * The processor delay for this component.
      */
-    protected AtomicInteger backgroundProcessorDelay = new AtomicInteger(-1);
+    private AtomicInteger backgroundProcessorDelayAtomic = new AtomicInteger(-1);
 
 
     /**
@@ -322,7 +331,6 @@ public abstract class ContainerBase
      */
     private AtomicBoolean threadDone = new AtomicBoolean();
 
-
     /**
      * The session background thread completion semaphore.
      */
@@ -385,7 +393,7 @@ public abstract class ContainerBase
      */
     @Override
     public int getBackgroundProcessorDelay() {
-        return backgroundProcessorDelay.get();
+        return backgroundProcessorDelayAtomic.get();
     }
 
 
@@ -398,7 +406,8 @@ public abstract class ContainerBase
      */
     @Override
     public void setBackgroundProcessorDelay(int delay) {
-        backgroundProcessorDelay.set(delay);
+        backgroundProcessorDelayAtomic.set(delay);
+        backgroundProcessorDelay = delay;
     }
 
 
@@ -1737,13 +1746,13 @@ public abstract class ContainerBase
 
         if (thread != null)
             return;
-        if (backgroundProcessorDelay.get() <= 0)
+        if (backgroundProcessorDelayAtomic.get() <= 0)
             return;
 
         threadDone.set(false);
         String threadName = "ContainerBackgroundProcessor[" + toString() + "]";
-        thread = new Thread(new ContainerBackgroundProcessor(getMappingObject(), threadDone,
-                backgroundProcessorDelay), threadName);
+        thread = new Thread(new ContainerBackgroundProcessorAtomic(getMappingObject(), threadDone,
+                backgroundProcessorDelayAtomic), threadName);
         thread.setDaemon(true);
         thread.start();
 
@@ -1758,7 +1767,7 @@ public abstract class ContainerBase
             return;
         threadSessionDone.set(false);
         String threadName = "ContainerBackgroundSessionProcessor[" + toString() + "]";
-        sessionThread = new Thread(new ContainerBackgroundSessionProcessor(getMappingObject(), manager,
+        sessionThread = new Thread(new ContainerBackgroundSessionProcessorAtomic(getMappingObject(), manager,
                 threadSessionDone), threadName);
         sessionThread.setDaemon(true);
         sessionThread.start();
@@ -1808,17 +1817,18 @@ public abstract class ContainerBase
 
     // -------------------------------------- ContainerExecuteDelay Inner Class
 
-
     /**
      * Private thread class to invoke the backgroundProcess method 
      * of this container and its children after a fixed delay.
+     *
+     * Replaces {@link ContainerBackgroundProcessor}
      */
-    protected static class ContainerBackgroundProcessor implements Runnable {
+    protected static class ContainerBackgroundProcessorAtomic implements Runnable {
         private final WeakReference<?> base;
         private final AtomicBoolean threadDone;
         private final AtomicInteger backgroundProcessorDelay;
 
-        public ContainerBackgroundProcessor(Object base,
+        public ContainerBackgroundProcessorAtomic(Object base,
                                             AtomicBoolean threadDone, AtomicInteger backgroundProcessorDelay) {
             this.base = new WeakReference<>(base);
             this.threadDone = threadDone;
@@ -1870,13 +1880,15 @@ public abstract class ContainerBase
     /**
      * Thread class to invoke the backgroundSessionUpdate method 
      * of this container and its children after 500 milliseconds.
+     *
+     * Replaces {@link ContainerBackgroundSessionProcessor}
      */
-    protected static class ContainerBackgroundSessionProcessor implements Runnable {
+    protected static class ContainerBackgroundSessionProcessorAtomic implements Runnable {
         private final WeakReference<?> base;
         private final WeakReference<Manager> manager;
         private final AtomicBoolean threadSessionDone;
 
-        public ContainerBackgroundSessionProcessor(Object base, Manager manager, AtomicBoolean threadSessionDone) {
+        public ContainerBackgroundSessionProcessorAtomic(Object base, Manager manager, AtomicBoolean threadSessionDone) {
             this.base = new WeakReference<>(base);
             this.manager = new WeakReference<>(manager);
             this.threadSessionDone = threadSessionDone;
@@ -1923,6 +1935,68 @@ public abstract class ContainerBase
                     processChildren(child, cl);
                 }
             }
+        }
+
+    }
+
+    // -------------------------------------- DEPRECATED!
+    /**
+     * Deprecated private thread class to invoke the backgroundProcess method
+     * of this container and its children after a fixed delay.
+     *
+     * DO NOT USE! Retained for semantic versioning. Replaced by {@link ContainerBackgroundProcessorAtomic}.
+     */
+    @Deprecated(forRemoval = true, since = "6.17.0")
+    protected class ContainerBackgroundProcessor implements Runnable {
+
+        private final ContainerBackgroundProcessorAtomic containerBackgroundProcessorAtomic;
+
+        public ContainerBackgroundProcessor() {
+            containerBackgroundProcessorAtomic = new ContainerBackgroundProcessorAtomic(getMappingObject(),
+                    threadDone, backgroundProcessorDelayAtomic);
+        }
+
+        public ContainerBackgroundProcessor(ContainerBackgroundProcessorAtomic containerBackgroundProcessorAtomic) {
+            this.containerBackgroundProcessorAtomic = containerBackgroundProcessorAtomic;
+        }
+
+        @Override
+        public void run() {
+            containerBackgroundProcessorAtomic.run();
+        }
+
+        protected void processChildren(Container container, ClassLoader cl) {
+            containerBackgroundProcessorAtomic.processChildren(container, cl);
+        }
+    }
+
+    /**
+     * Deprecated thread class to invoke the backgroundSessionUpdate method
+     * of this container and its children after 500 milliseconds.
+     *
+     * DO NOT USE! Retained for semantic versioning. Replaced by {@link ContainerBackgroundSessionProcessorAtomic}.
+     */
+    @Deprecated(forRemoval = true, since = "6.17.0")
+    protected class ContainerBackgroundSessionProcessor implements Runnable {
+
+        private final ContainerBackgroundSessionProcessorAtomic containerBackgroundSessionProcessorAtomic;
+
+        public ContainerBackgroundSessionProcessor() {
+            containerBackgroundSessionProcessorAtomic = new ContainerBackgroundSessionProcessorAtomic(
+                    getMappingObject(), manager, threadSessionDone);
+        }
+
+        public ContainerBackgroundSessionProcessor(ContainerBackgroundSessionProcessorAtomic containerBackgroundSessionProcessorAtomic) {
+            this.containerBackgroundSessionProcessorAtomic = containerBackgroundSessionProcessorAtomic;
+        }
+
+        @Override
+        public void run() {
+            containerBackgroundSessionProcessorAtomic.run();
+        }
+
+        protected void processChildren(Container container, ClassLoader cl) {
+            containerBackgroundSessionProcessorAtomic.processChildren(container, cl);
         }
 
     }

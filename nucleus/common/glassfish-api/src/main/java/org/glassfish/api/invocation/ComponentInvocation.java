@@ -79,11 +79,25 @@ public class ComponentInvocation implements Cloneable {
     private String instanceName;
 
     /**
-     * ServletContext for servlet, Container for EJB
+     * The deprecated ServletContext for servlet, Container for EJB
+     *
+     * DO NOT USE! Retained for semantic versioning. Replaced by {@link ComponentInvocation#containerReference}.
+     * Use {@link ComponentInvocation#getContainer()} and {@link ComponentInvocation#setContainer(Object)} instead.
+     *
      */
-    private WeakReference<Object> container;
+    @Deprecated(forRemoval = true, since = "6.17.0")
+    public Object container;
 
-    private WeakReference<Object> jndiEnvironment;
+    /**
+     * DO NOT USE! Retained for semantic versioning. Replaced by {@link ComponentInvocation#jndiEnvironmentReference}.
+     * Use {@link ComponentInvocation#getJNDIEnvironment()} and {@link ComponentInvocation#setJNDIEnvironment(Object)} instead.
+     */
+    @Deprecated(forRemoval = true, since = "6.17.0")
+    public Object jndiEnvironment;
+
+    private WeakReference<Object> containerReference;
+
+    private WeakReference<Object> jndiEnvironmentReference;
 
     public String componentId;
 
@@ -118,13 +132,13 @@ public class ComponentInvocation implements Cloneable {
     protected String registrationName;
 
     public ComponentInvocation() {
-        container = new WeakReference<>(null);
+        containerReference = new WeakReference<>(null);
     }
 
     public ComponentInvocation(String componentId, ComponentInvocationType invocationType, Object container, String appName, String moduleName, String registrationName) {
         this.componentId = componentId;
         this.invocationType = invocationType;
-        this.container = new WeakReference<>(container);
+        this.containerReference = new WeakReference<>(container);
         this.appName = appName;
         this.moduleName = moduleName;
         this.registrationName = registrationName;
@@ -134,7 +148,7 @@ public class ComponentInvocation implements Cloneable {
         this.componentId = componentId;
         this.invocationType = invocationType;
         this.instance = instance;
-        this.container = new WeakReference<>(container);
+        this.containerReference = new WeakReference<>(container);
         this.transaction = transaction;
     }
 
@@ -211,22 +225,22 @@ public class ComponentInvocation implements Cloneable {
     }
 
     public void setJNDIEnvironment(Object val) {
-        jndiEnvironment = new WeakReference<>(val);
+        jndiEnvironmentReference = new WeakReference<>(val);
     }
 
     public Object getJNDIEnvironment() {
-        if (jndiEnvironment == null) {
+        if (jndiEnvironmentReference == null) {
             return null;
         }
-        return jndiEnvironment.get();
+        return jndiEnvironmentReference.get();
     }
 
     public Object getContainer() {
-        return container.get();
+        return containerReference.get();
     }
 
     public void setContainer(Object container) {
-        this.container = new WeakReference<>(container);
+        this.containerReference = new WeakReference<>(container);
     }
 
     public Object getContainerContext() {
