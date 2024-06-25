@@ -65,7 +65,7 @@
         <osgi.cmpn.version>7.0.0</osgi.cmpn.version>
         <osgi.dto.version>1.1.1</osgi.dto.version>
         <jakarta.security.enterprise.version>3.0.3.payara-p1</jakarta.security.enterprise.version>
-        <cdi-api.version>4.1.0-M1</cdi-api.version>
+        <cdi-api.version>4.1.0</cdi-api.version>
         <grizzly.version>4.0.0.payara-p1</grizzly.version>
         <servlet-api.version>6.0.0</servlet-api.version>
         <jakarta.el-api.version>6.0.0</jakarta.el-api.version>
@@ -85,7 +85,7 @@
         <jakarta.security.enterprise-api.version>3.0.0</jakarta.security.enterprise-api.version>
         <jakarta.ejb-api.version>4.0.1</jakarta.ejb-api.version>
         <jakarta.transaction-api.version>2.0.1</jakarta.transaction-api.version>
-        <jakarta.interceptor-api.version>2.2.0-M1</jakarta.interceptor-api.version>
+        <jakarta.interceptor-api.version>2.2.0</jakarta.interceptor-api.version>
         <jakarta.inject.version>2.0.1</jakarta.inject.version>
         <json.bind-api.version>3.0.1</json.bind-api.version>
         <jakarta-persistence-api.version>3.1.0</jakarta-persistence-api.version>
@@ -105,9 +105,9 @@
         <jsp-api.version>3.1.0</jsp-api.version>
         <javax.cache-api.version>1.1.1.payara-p1</javax.cache-api.version>
         <hazelcast.version>5.3.6</hazelcast.version>
-        <jakartaee.api.version>10.0.0</jakartaee.api.version>
-        <weld-api.version>5.0.SP3</weld-api.version>
-        <weld.version>5.0.1.Final</weld.version>
+        <jakartaee.api.version>11.0.0-M1</jakartaee.api.version>
+        <weld-api.version>6.0.Beta1</weld-api.version>
+        <weld.version>6.0.0.Beta1</weld.version>
         <tyrus.version>2.1.3.payara-p1</tyrus.version>
         <jsp-impl.version>3.2.2</jsp-impl.version>
         <asm.version>9.7</asm.version>
@@ -845,6 +845,11 @@
             <dependency>
                 <groupId>jakarta.enterprise</groupId>
                 <artifactId>jakarta.enterprise.cdi-api</artifactId>
+                <version>${cdi-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.enterprise</groupId>
+                <artifactId>jakarta.enterprise.cdi-el-api</artifactId>
                 <version>${cdi-api.version}</version>
             </dependency>
             <dependency>

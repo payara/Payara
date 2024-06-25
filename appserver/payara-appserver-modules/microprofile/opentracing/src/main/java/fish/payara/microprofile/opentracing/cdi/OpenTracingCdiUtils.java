@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2018-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2024] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -283,7 +283,7 @@ public class OpenTracingCdiUtils {
      */
     private static <A extends Annotation> A getInterceptedAnnotation(Class<A> annotationClass, InvocationContext invocationContext){
          if (invocationContext instanceof WeldInvocationContext) {
-            Set<Annotation> interceptorBindings = ((WeldInvocationContext) invocationContext).getInterceptorBindings();
+            Set<Annotation> interceptorBindings = invocationContext.getInterceptorBindings();
             for (Annotation annotationBound : interceptorBindings) {
                 if (annotationBound.annotationType().equals(annotationClass)) {
                     return (A) annotationBound;
