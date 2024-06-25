@@ -310,23 +310,8 @@ void setupDomain() {
     }    
     echo '*#*#*#*#*#*#*#*#*#*#*#*#  Setting up tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
     makeDomain()
-    startDomain()
-}
-
-void startDomain() {
     sh "${ASADMIN} start-domain ${DOMAIN_NAME}"
     sh "${ASADMIN} start-database || true"
-}
-
-void deleteDomain() {
-    sh "${ASADMIN} delete-domain ${DOMAIN_NAME}"
-}
-
-void resetDomain() {
-    stopDomain()
-    deleteDomain()
-    makeDomain()
-    startDomain()  
 }
 
 void setupM2RepositoryOnly() {
