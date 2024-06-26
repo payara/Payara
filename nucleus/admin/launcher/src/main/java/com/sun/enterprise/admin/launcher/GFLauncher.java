@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2023] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.admin.launcher;
 
@@ -382,15 +382,17 @@ public abstract class GFLauncher {
         return option.startsWith("-Xrunjdwp:") || option.startsWith("-agentlib:jdwp");
     }
 
+    private static final String DEBUG_ADDRESS_PORT_GROUP = "port";
+    private static final Pattern DEBUG_ADDRESS_PATTERN = Pattern.compile(".*address=(?<hostWithColon>(?<host>.+):)?(?<port>\\d*).*");
+
     static int extractDebugPort(String option) {
-        Pattern portRegex = Pattern.compile(".*address=(?<port>\\d*).*");
-        Matcher m = portRegex.matcher(option);
+        Matcher m = DEBUG_ADDRESS_PATTERN.matcher(option);
         if (!m.matches()) {
             return -1;
         }
         try {
-            String addressGroup = m.group("port");
-            return Integer.parseInt(addressGroup);
+            String portGroup = m.group(DEBUG_ADDRESS_PORT_GROUP);
+            return Integer.parseInt(portGroup);
         } catch (NumberFormatException nfex) {
             return -1;
         }
