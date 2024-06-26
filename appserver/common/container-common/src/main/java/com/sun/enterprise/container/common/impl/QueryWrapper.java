@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2024 Payara Foundation and/or affiliates
 
 package com.sun.enterprise.container.common.impl;
 
@@ -599,5 +600,111 @@ public class QueryWrapper <T extends Query> implements Query {
         }
     }
 
+    public Object getSingleResultOrNull() {
+        try {
+            if (callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerQueryStart(EntityManagerQueryMethod.GET_SINGLE_RESULT_OR_NULL);
+            }
+            Object retVal = queryDelegate.getSingleResultOrNull();
+            entityManagerDelegate.clear();
+            return retVal;
+        } finally {
+            if (callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerQueryEnd();
+            }
+        }
+    }
 
+    public Query setCacheRetrieveMode(CacheRetrieveMode cacheRetrieveMode) {
+        try {
+            if (callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerQueryStart(EntityManagerQueryMethod.SET_CACHE_RETRIEVE_MODE);
+            }
+            queryDelegate.setCacheRetrieveMode(cacheRetrieveMode);
+
+        } finally {
+            if (callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerQueryEnd();
+            }
+        }
+
+        return this;
+    }
+
+    public Query setCacheStoreMode(CacheStoreMode cacheStoreMode) {
+        try {
+            if (callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerQueryStart(EntityManagerQueryMethod.SET_CACHE_STORE_MODE);
+            }
+            queryDelegate.setCacheStoreMode(cacheStoreMode);
+
+        } finally {
+            if (callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerQueryEnd();
+            }
+        }
+
+        return this;
+    }
+
+    public CacheRetrieveMode getCacheRetrieveMode() {
+        try {
+            if (callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerQueryStart(EntityManagerQueryMethod.GET_CACHE_RETRIEVE_MODE);
+            }
+
+            return queryDelegate.getCacheRetrieveMode();
+
+        } finally {
+            if (callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerQueryEnd();
+            }
+        }
+    }
+
+    public CacheStoreMode getCacheStoreMode() {
+        try {
+            if (callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerQueryStart(EntityManagerQueryMethod.GET_CACHE_STORE_MODE);
+            }
+
+            return queryDelegate.getCacheStoreMode();
+
+        } finally {
+            if (callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerQueryEnd();
+            }
+        }
+    }
+
+    public Query setTimeout(Integer integer) {
+        try {
+            if (callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerQueryStart(EntityManagerQueryMethod.SET_TIMEOUT);
+            }
+            queryDelegate.setTimeout(integer);
+
+        } finally {
+            if (callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerQueryEnd();
+            }
+        }
+
+        return this;
+    }
+
+    public Integer getTimeout() {
+        try {
+            if (callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerQueryStart(EntityManagerQueryMethod.GET_TIMEOUT);
+            }
+
+            return queryDelegate.getTimeout();
+
+        } finally {
+            if (callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerQueryEnd();
+            }
+        }
+    }
 }
