@@ -156,26 +156,25 @@ public class SnifferManagerImpl implements SnifferManager {
     private <T extends Sniffer> List<T> getApplicableSniffers(DeploymentContext context, List<URI> uris, Types types, Collection<T> sniffers, boolean checkPath) {
         ArchiveType archiveType = habitat.getService(ArchiveType.class, context.getArchiveHandler().getArchiveType());
 
-        if (sniffers==null || sniffers.isEmpty()) {
+        if (sniffers == null || sniffers.isEmpty()) {
             return Collections.emptyList();
         }
 
         List<T> result = new ArrayList<T>();
         for (T sniffer : sniffers) {
-            if (archiveType != null && 
-                !sniffer.supportsArchiveType(archiveType)) {
+            if (archiveType != null && !sniffer.supportsArchiveType(archiveType)) {
                 continue;
             }
             String[] annotationNames = sniffer.getAnnotationNames(context);
-            if (annotationNames==null) continue;
-            for (String annotationName : annotationNames)  {
-              if (types != null) {
-                  Type type = types.getAllTypes().stream()
-                          .filter(t -> t instanceof AnnotationType && t.getName().equals(annotationName))
-                          .findFirst().orElse(null);
-                  if (type == null) {
-                      continue;
-                  }
+            if (annotationNames == null) continue;
+            for (String annotationName : annotationNames) {
+                if (types != null) {
+                    Type type = types.getAllTypes().stream()
+                            .filter(t -> t instanceof AnnotationType && t.getName().equals(annotationName))
+                            .findFirst().orElse(null);
+                    if (type == null) {
+                        continue;
+                    }
                     Collection<AnnotatedElement> elements = ((AnnotationType) type).allAnnotatedTypes();
                     for (AnnotatedElement element : elements) {
                         if (checkPath) {
@@ -199,7 +198,7 @@ public class SnifferManagerImpl implements SnifferManager {
                             break;
                         }
                     }
-              }
+                }
             }
         }
         return result;
