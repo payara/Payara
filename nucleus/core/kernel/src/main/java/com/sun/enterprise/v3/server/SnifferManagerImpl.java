@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2020-2021] Payara Foundation and/or affiliates
+// Portions Copyright 2020-2024 Payara Foundation and/or affiliates
 
 package com.sun.enterprise.v3.server;
 
@@ -170,8 +170,12 @@ public class SnifferManagerImpl implements SnifferManager {
             if (annotationNames==null) continue;
             for (String annotationName : annotationNames)  {
               if (types != null) {
-                Type type = types.getBy(annotationName);
-                if (type instanceof AnnotationType) {
+                  Type type = types.getAllTypes().stream()
+                          .filter(t -> t instanceof AnnotationType && t.getName().equals(annotationName))
+                          .findFirst().orElse(null);
+                  if (type == null) {
+                      continue;
+                  }
                     Collection<AnnotatedElement> elements = ((AnnotationType) type).allAnnotatedTypes();
                     for (AnnotatedElement element : elements) {
                         if (checkPath) {
@@ -195,7 +199,6 @@ public class SnifferManagerImpl implements SnifferManager {
                             break;
                         }
                     }
-                }
               }
             }
         }
