@@ -166,37 +166,37 @@ public class SnifferManagerImpl implements SnifferManager {
                 continue;
             }
             String[] annotationNames = sniffer.getAnnotationNames(context);
-            if (annotationNames == null) continue;
+            if (annotationNames == null || types == null) {
+                continue;
+            }
             for (String annotationName : annotationNames) {
-                if (types != null) {
-                    types.getAllTypes().stream()
-                            .filter(type -> type instanceof AnnotationType && type.getName().equals(annotationName))
-                            .findFirst().ifPresent(type -> {
-                                Collection<AnnotatedElement> elements = ((AnnotationType) type).allAnnotatedTypes();
-                                for (AnnotatedElement element : elements) {
-                                    if (checkPath) {
-                                        Type t;
-                                        if (element instanceof Member) {
-                                            t = ((Member) element).getDeclaringType();
-                                        } else if (element instanceof Type) {
-                                            t = (Type) element;
-                                        } else if (element instanceof ParameterizedType) {
-                                            t = ((ParameterizedType) element).getType();
-                                        } else {
-                                            LOGGER.log(Level.WARNING, "Unrecognised type: {0}.", element);
-                                            continue;
-                                        }
-                                        if (t.wasDefinedIn(uris)) {
-                                            result.add(sniffer);
-                                            break;
-                                        }
+                types.getAllTypes().stream()
+                        .filter(type -> type instanceof AnnotationType && type.getName().equals(annotationName))
+                        .findFirst().ifPresent(type -> {
+                            Collection<AnnotatedElement> elements = ((AnnotationType) type).allAnnotatedTypes();
+                            for (AnnotatedElement element : elements) {
+                                if (checkPath) {
+                                    Type t;
+                                    if (element instanceof Member) {
+                                        t = ((Member) element).getDeclaringType();
+                                    } else if (element instanceof Type) {
+                                        t = (Type) element;
+                                    } else if (element instanceof ParameterizedType) {
+                                        t = ((ParameterizedType) element).getType();
                                     } else {
+                                        LOGGER.log(Level.WARNING, "Unrecognised type: {0}.", element);
+                                        continue;
+                                    }
+                                    if (t.wasDefinedIn(uris)) {
                                         result.add(sniffer);
                                         break;
                                     }
+                                } else {
+                                    result.add(sniffer);
+                                    break;
                                 }
-                            });
-                }
+                            }
+                        });
             }
         }
         return result;
