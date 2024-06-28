@@ -122,7 +122,7 @@
             <sun:property id="NameTextProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.dg.dgName}" >
                 <sun:textField id="NameText" text="#{pageSession.name}" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.dg.dgName']}" required="#{false}" />
             </sun:property>
-            <sun:property id="AutoNameProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.autoName}" helpText="$resource{i18ncs.autoName.help}" >
+            <sun:property id="AutoNameProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.autoName}" helpText="$resource{i18ncs.autoName.helpDg}" >
                 <sun:checkbox id="AutoName" selected="#{pageSession.autoNameSelected}" selectedValue="#{true}" />
             </sun:property> 
               <sun:property id="avaliableInstances" visible="#{pageSession.showInstancesSection}" labelAlign="left" noWrap="#{true}" overlapLabel="#{true}">
