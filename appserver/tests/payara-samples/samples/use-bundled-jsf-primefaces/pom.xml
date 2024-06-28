@@ -70,7 +70,7 @@
         <dependency>
             <groupId>org.primefaces</groupId>
             <artifactId>primefaces</artifactId>
-            <version>13.0.8</version>
+            <version>14.0.1</version>
             <classifier>jakarta</classifier>
         </dependency>
 
