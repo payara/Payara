@@ -163,7 +163,7 @@
         <maven.enforcer.plugin.version>3.5.0</maven.enforcer.plugin.version>
         <command-security-plugin.version>1.0.17</command-security-plugin.version>
         <command.security.maven.plugin.isFailureFatal>false</command.security.maven.plugin.isFailureFatal>
-        <maven.jar.plugin.version>3.4.1</maven.jar.plugin.version>
+        <maven.jar.plugin.version>3.4.2</maven.jar.plugin.version>
         <maven.clean.plugin.version>3.3.2</maven.clean.plugin.version>
         <maven.compiler.plugin.version>3.10.1</maven.compiler.plugin.version>
         <maven.compiler.showDeprecation>true</maven.compiler.showDeprecation>
