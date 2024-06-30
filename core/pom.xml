@@ -80,7 +80,7 @@
         <hibernate.validator.version>8.0.1.Final</hibernate.validator.version>
         <jaxb-impl.version>4.0.1</jaxb-impl.version>
         <jsonp-api.version>2.1.0</jsonp-api.version>
-        <jakarta.security.auth.message-api.version>3.0.0</jakarta.security.auth.message-api.version>
+        <jakarta.security.auth.message-api.version>3.1.0</jakarta.security.auth.message-api.version>
         <jakarta.security.jacc-api.version>2.1.0</jakarta.security.jacc-api.version>
         <jakarta.security.enterprise-api.version>3.0.0</jakarta.security.enterprise-api.version>
         <jakarta.ejb-api.version>4.0.1</jakarta.ejb-api.version>

@@ -92,6 +92,8 @@
         <!-- Yubico client validation version property -->
         <yubico-validation-client2.version>3.0.2.payara-p1</yubico-validation-client2.version>
         <dockerfile-maven-plugin.version>1.4.13</dockerfile-maven-plugin.version>
+        <jakarta.authentication-api.version>3.1.0</jakarta.authentication-api.version>
+        <jakarta.authorization-api.version>2.1.0</jakarta.authorization-api.version>
     </properties>
 
 

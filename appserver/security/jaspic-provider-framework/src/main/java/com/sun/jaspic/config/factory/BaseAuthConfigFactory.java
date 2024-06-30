@@ -37,14 +37,16 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
 package com.sun.jaspic.config.factory;
 
-import static com.sun.jaspic.config.helper.JASPICLogManager.JASPIC_LOGGER;
-import static com.sun.jaspic.config.helper.JASPICLogManager.RES_BUNDLE;
-import static java.util.logging.Level.WARNING;
+import jakarta.security.auth.message.AuthException;
+import jakarta.security.auth.message.config.AuthConfigFactory;
+import jakarta.security.auth.message.config.AuthConfigProvider;
+import jakarta.security.auth.message.config.RegistrationListener;
+import jakarta.security.auth.message.module.ServerAuthModule;
+import jakarta.servlet.ServletContext;
 
-import java.security.Permission;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -59,14 +61,9 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
 
-import jakarta.security.auth.message.AuthException;
-import jakarta.security.auth.message.config.AuthConfigFactory;
-import jakarta.security.auth.message.config.AuthConfigProvider;
-import jakarta.security.auth.message.config.RegistrationListener;
-import jakarta.security.auth.message.module.ServerAuthModule;
-import jakarta.servlet.ServletContext;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
+import static com.sun.jaspic.config.helper.JASPICLogManager.JASPIC_LOGGER;
+import static com.sun.jaspic.config.helper.JASPICLogManager.RES_BUNDLE;
+import static java.util.logging.Level.WARNING;
 import static org.glassfish.soteria.Utils.isEmpty;
 
 
@@ -179,18 +176,13 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
      * @exception AuthException if the provider construction or registration fails.
      */
     @Override
-    @SuppressWarnings("unchecked")
     public String registerConfigProvider(String className, @SuppressWarnings("rawtypes") Map properties, String layer, String appContext,
             String description) {
-        tryCheckPermission(providerRegistrationSecurityPermission);
-
         return _register(_constructProvider(className, properties, null), properties, layer, appContext, description, true);
     }
 
     @Override
     public String registerConfigProvider(AuthConfigProvider provider, String layer, String appContext, String description) {
-        tryCheckPermission(providerRegistrationSecurityPermission);
-
         return _register(provider, null, layer, appContext, description, false);
     }
 
@@ -208,8 +200,6 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
      */
     @Override
     public boolean removeRegistration(String registrationID) {
-        tryCheckPermission(AuthConfigFactory.providerRegistrationSecurityPermission);
-
         return _unRegister(registrationID);
     }
 
@@ -232,8 +222,6 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
      */
     @Override
     public String[] detachListener(RegistrationListener listener, String layer, String appContext) {
-        tryCheckPermission(providerRegistrationSecurityPermission);
-
         List<String> removedListenerIds = new ArrayList<>();
         String registrationId = getRegistrationID(layer, appContext);
 
@@ -312,8 +300,6 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
      */
     @Override
     public void refresh() {
-        tryCheckPermission(AuthConfigFactory.providerRegistrationSecurityPermission);
-
         Map<String, List<RegistrationListener>> preExistingListenersMap = doWriteLocked(() -> loadFactory());
 
         // Notify pre-existing listeners after (re)loading factory
@@ -674,13 +660,6 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
         return effectedListeners;
     }
 
-    private static void tryCheckPermission(Permission permission) {
-        SecurityManager securityManager = System.getSecurityManager();
-        if (securityManager != null) {
-            securityManager.checkPermission(permission);
-        }
-    }
-
     protected <T> T doReadLocked(Supplier<T> supplier) {
         readLock.lock();
         try {
@@ -730,11 +709,8 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
             ServletContext servletContext = (ServletContext) context;
 
             String appContext = servletContext.getVirtualServerName() + " " + servletContext.getContextPath();
-            registrationId = AccessController.doPrivileged((PrivilegedAction<String>) () -> registerConfigProvider(
-                    new DefaultAuthConfigProvider(sam),
-                    "HttpServlet",
-                    appContext,
-                    "Default authentication config provider"));
+            registrationId = registerConfigProvider(new DefaultAuthConfigProvider(sam), "HttpServlet", appContext,
+                    "Default authentication config provider");
 
             servletContext.setAttribute(CONTEXT_REGISTRATION_ID, registrationId);
         }
@@ -747,7 +723,7 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
             ServletContext servletContext = (ServletContext) context;
             String registrationId = (String) servletContext.getAttribute(CONTEXT_REGISTRATION_ID);
             if (!isEmpty(registrationId)) {
-                AccessController.doPrivileged((PrivilegedAction<Boolean>) () -> removeRegistration(registrationId));
+                removeRegistration(registrationId);
             }
         }
     }
