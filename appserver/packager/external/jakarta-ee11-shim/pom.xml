@@ -71,6 +71,12 @@
             <artifactId>jakarta.el-api</artifactId>
             <scope>provided</scope>
         </dependency>
+        <!-- jakarta.authorization-->
+        <dependency>
+            <groupId>jakarta.authorization</groupId>
+            <artifactId>jakarta.authorization-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
 
         <!-- Downgrade shim for HK2 3.0 (now 4.0) as Jersey not yet upgraded to 4.0 and InSight not upgraded for EE11.
         Remove once Jersey upgraded to 4.0 and InSight upgraded to a version aligned with Payara 7 (presumably 3.0), or
@@ -147,6 +153,8 @@
                                     org.glassfish.hk2.utils,
                                     <!-- jakarta.el-->
                                     jakarta.el-api,
+                                    <!-- jakarta.authorization -->
+                                    jakarta.security.jacc-api,
                                     <!-- weld-osgi-bundle -->
                                     org.jboss.weld.osgi-bundle,
                                     <!-- Downgrade shim for Jakarta Authorization, required by Soteria 3.0 -->
@@ -167,6 +175,8 @@
                                     jakarta.annotation.sql;version="2.1.99";shim=true,
                                     <!-- el previous version-->
                                     jakarta.el;version="5.0.99";shim=true,
+                                    <!-- authorization previous version-->
+                                    jakarta.security.jacc;version="2.1.99";shim=true,
                                     <!-- Downgrade shim for HK2 3.0 (now 4.0) as Jersey not yet upgraded to 4.0 and
                                     InSight not upgraded for EE11. Remove once Jersey upgraded to 4.0 and InSight
                                     upgraded to a version aligned with Payara 7 (presumably 3.0), or update this
