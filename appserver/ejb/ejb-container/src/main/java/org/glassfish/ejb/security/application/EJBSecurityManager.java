@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
 package org.glassfish.ejb.security.application;
 
 import com.sun.ejb.EjbInvocation;
@@ -56,6 +56,7 @@ import com.sun.enterprise.security.jacc.cache.PermissionCache;
 import com.sun.enterprise.security.jacc.cache.PermissionCacheFactory;
 import com.sun.enterprise.security.jacc.context.PolicyContextHandlerImpl;
 import com.sun.logging.LogDomains;
+import jakarta.security.jacc.PolicyConfigurationFactory;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationException;
 import org.glassfish.api.invocation.InvocationManager;
@@ -67,7 +68,7 @@ import org.glassfish.external.probe.provider.StatsProviderManager;
 
 import javax.security.auth.Subject;
 import javax.security.auth.SubjectDomainCombiner;
-import jakarta.security.jacc.*;
+import java.security.Policy;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URI;
