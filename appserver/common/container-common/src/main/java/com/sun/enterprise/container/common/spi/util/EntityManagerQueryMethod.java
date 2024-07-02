@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2024 Payara Foundation and/or affiliates
 
 /*
  * EntityManagerQueryMethod.java
@@ -244,6 +245,48 @@ public enum EntityManagerQueryMethod {
     UNWRAP {
         public String toString() {
             return "unwrap()";
+        }
+    },
+
+    GET_SINGLE_RESULT_OR_NULL {
+        public String toString() {
+            return "getSingleResultOrNull()";
+        }
+    },
+
+    SET_CACHE_RETRIEVE_MODE {
+        public String toString() {
+            return "setCacheRetrieveMode(CacheRetrieveMode cacheRetrieveMode)";
+        }
+    },
+
+    SET_CACHE_STORE_MODE {
+        public String toString() {
+            return "setCacheStoreMode(CacheStoreMode cacheStoreMode)";
+        }
+    },
+
+    GET_CACHE_RETRIEVE_MODE {
+        public String toString() {
+            return "getCacheRetrieveMode()";
+        }
+    },
+
+    GET_CACHE_STORE_MODE {
+        public String toString() {
+            return "getCacheStoreMode()";
+        }
+    },
+
+    SET_TIMEOUT {
+        public String toString() {
+            return "setTimeout(Integer integer)";
+        }
+    },
+
+    GET_TIMEOUT {
+        public String toString() {
+            return "getTimeout()";
         }
     }
 

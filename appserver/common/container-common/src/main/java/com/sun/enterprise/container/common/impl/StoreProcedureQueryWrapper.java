@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2024 Payara Foundation and/or affiliates
 
 package com.sun.enterprise.container.common.impl;
 
@@ -164,4 +165,21 @@ public class StoreProcedureQueryWrapper extends QueryWrapper<StoredProcedureQuer
         return queryDelegate.getUpdateCount();
     }
 
+    @Override
+    public StoredProcedureQuery setCacheRetrieveMode(CacheRetrieveMode cacheRetrieveMode) {
+        super.setCacheRetrieveMode(cacheRetrieveMode);
+        return this;
+    }
+
+    @Override
+    public StoredProcedureQuery setCacheStoreMode(CacheStoreMode cacheStoreMode) {
+        super.setCacheStoreMode(cacheStoreMode);
+        return this;
+    }
+
+    @Override
+    public StoredProcedureQuery setTimeout(Integer integer) {
+        super.setTimeout(integer);
+        return this;
+    }
 }
