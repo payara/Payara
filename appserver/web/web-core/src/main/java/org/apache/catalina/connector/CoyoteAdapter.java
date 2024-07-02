@@ -55,10 +55,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2022-2024 Payara Foundation and/or its affiliates
 package org.apache.catalina.connector;
 
-import java.io.IOException;
 import java.nio.charset.Charset;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -638,7 +637,7 @@ public class CoyoteAdapter extends HttpHandler {
             }
             // END CR 6590921
             // Issue a permanent redirect
-            response.sendRedirect(redirectPath, false);
+            response.sendRedirect(redirectPath, HttpServletResponse.SC_MOVED_PERMANENTLY, true);
 
             return false;
         }
