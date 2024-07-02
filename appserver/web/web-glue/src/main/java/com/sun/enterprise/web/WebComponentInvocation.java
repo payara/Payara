@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2019-2024] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.web;
 
@@ -64,8 +64,8 @@ public class WebComponentInvocation extends ComponentInvocation {
         setComponentInvocationType(
                 ComponentInvocation.ComponentInvocationType.SERVLET_INVOCATION);
         componentId = wm.getComponentId();
-        jndiEnvironment = wm.getWebBundleDescriptor();
-        container = wm;
+        setJNDIEnvironment(wm.getWebBundleDescriptor());
+        setContainer(wm);
         this.instance = instance;
         setResourceTableKey(_getResourceTableKey());
         

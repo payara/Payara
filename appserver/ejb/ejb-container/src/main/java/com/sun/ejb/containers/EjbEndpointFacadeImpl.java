@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019-2024] Payara Foundation and/or affiliates
 
 package com.sun.ejb.containers;
 
@@ -89,7 +90,7 @@ public class EjbEndpointFacadeImpl implements EjbEndpointFacade {
 
         // Do the portions of preInvoke that don't need a Method object.
         inv.isWebService = true;
-        inv.container = container_;
+        inv.setContainer(container_);
         inv.transactionAttribute = Container.TX_NOT_INITIALIZED;
 
         // AS per latest spec change, the MessageContext object in WebSvcCtxt

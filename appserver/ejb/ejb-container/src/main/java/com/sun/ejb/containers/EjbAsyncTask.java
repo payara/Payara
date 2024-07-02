@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019-2024] Payara Foundation and/or affiliates
 
 package com.sun.ejb.containers;
 
@@ -88,7 +89,7 @@ public class EjbAsyncTask<V>
     public V call()
             throws Exception {
         V returnValue = null;
-        BaseContainer container = (BaseContainer) inv.container;
+        BaseContainer container = (BaseContainer) inv.getContainer();
         ClassLoader prevCL = Thread.currentThread().getContextClassLoader();
         try {
             Utility.setContextClassLoader(container.getClassLoader());

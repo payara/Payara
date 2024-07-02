@@ -38,7 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+    Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
 
 -->
 
@@ -69,6 +69,7 @@
         }
         
           gf.getChildrenNamesList(endpoint="#{sessionScope.REST_URL}/nodes/node", result="#{pageSession.nodesList}");
+        setPageSessionAttribute(key="autoNameSelected" value="#{false}");
     />
     </event>
     <sun:form id="propertyForm" autoComplete="off">
@@ -80,8 +81,12 @@
             <sun:button id="newButton" text="$resource{i18n.button.OK}"
                 onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) {submitAndDisable(this, '$resource{i18n.button.Processing}');}; return false;" >
             <!command
-                setAttribute(key="nameToCheck" value="#{pageSession.name}");
-                gfj.checkNameExist();
+                py.generateInstanceNameIfRequired(name="#{pageSession.name}", autoname="#{pageSession.autoNameSelected}", instanceName="#{pageSession.name}");
+                if (!#{pageSession.autoNameSelected}) {
+                    setAttribute(key="nameToCheck" value="#{pageSession.name}");
+                    gfj.checkNameExist();
+                }
+
                 createMap(result="#{requestScope.ct}");
                 mapPut(map="#{requestScope.ct}" key="id" value="#{pageSession.name}" );
                 gf.createEntity( endpoint="#{sessionScope.REST_URL}/deployment-groups/deployment-group"   attrs="#{requestScope.ct}")
@@ -98,6 +103,7 @@
                 
                 py.createDeploymentGroupInstances(deploymentGroupName="#{pageSession.name}", instanceRow="#{instances}");            
                 gf.redirect(page="#{request.contextPath}/cluster/dg/dgs.jsf?alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
+                setPageSessionAttribute(key="autoNameSelected" value="#{false}");
              />
             </sun:button>
             <sun:button id="cancelButton" immediate="#{true}" text="$resource{i18n.button.Cancel}" primary="#{false}" >
@@ -114,9 +120,11 @@
     <sun:propertySheet id="propertySheet">
         <sun:propertySheetSection id="propertySectionTextField">
             <sun:property id="NameTextProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.dg.dgName}" >
-                <sun:textField id="NameText" text="#{pageSession.name}" styleClass="required" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.dg.dgName']}" required="#{true}" />
+                <sun:textField id="NameText" text="#{pageSession.name}" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.dg.dgName']}" required="#{false}" />
             </sun:property>
-            
+            <sun:property id="AutoNameProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.autoName}" helpText="$resource{i18ncs.autoName.helpDg}" >
+                <sun:checkbox id="AutoName" selected="#{pageSession.autoNameSelected}" selectedValue="#{true}" />
+            </sun:property> 
               <sun:property id="avaliableInstances" visible="#{pageSession.showInstancesSection}" labelAlign="left" noWrap="#{true}" overlapLabel="#{true}">
                 <sun:addRemove id="deploymentGroupAddRemove"
                                selectAll="$boolean{true}"

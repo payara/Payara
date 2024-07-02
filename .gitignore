@@ -13,6 +13,7 @@ target/
 .vscode/
 .idea
 .DS_Store
+.sdkmanrc
 gfbuild.log
 nb-configuration.xml
 /appserver/tests/quicklook/classes/

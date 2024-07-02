@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2024 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -47,6 +47,34 @@ public class GFLauncherExtractPortTest {
     @Test
     public void shouldExtractPortNumberFromDebugOption() {
       int port = GFLauncher.extractDebugPort("-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=9876");
+
+      assertEquals(9876, port);
+    }
+
+    @Test
+    public void shouldExtractPortNumberFromDebugOptionWithHost() {
+      int port = GFLauncher.extractDebugPort("-agentlib:jdwp=transport=dt_socket,server=y,address=*:9876,suspend=n");
+
+      assertEquals(9876, port);
+    }
+
+    @Test
+    public void shouldExtractPortNumberFromDebugOptionWithHostName() {
+      int port = GFLauncher.extractDebugPort("-agentlib:jdwp=transport=dt_socket,server=y,address=localhost:9876,suspend=n");
+
+      assertEquals(9876, port);
+    }
+
+    @Test
+    public void shouldExtractPortNumberFromDebugOptionWithIPv4Host() {
+      int port = GFLauncher.extractDebugPort("-agentlib:jdwp=transport=dt_socket,server=y,address=127.0.0.1:9876,suspend=n");
+
+      assertEquals(9876, port);
+    }
+
+    @Test
+    public void shouldExtractPortNumberFromDebugOptionWithIPv6Host() {
+      int port = GFLauncher.extractDebugPort("-agentlib:jdwp=transport=dt_socket,server=y,address=[fd27:2024:0518::1]:9876,suspend=n");
 
       assertEquals(9876, port);
     }

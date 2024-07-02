@@ -37,10 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2024] Payara Foundation and/or affiliates
 
 package org.glassfish.deployment.admin;
 
 import java.io.Serializable;
+import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.List;
 import org.glassfish.api.admin.AccessRequired.AccessCheck;
@@ -54,12 +56,12 @@ import org.glassfish.internal.deployment.ExtendedDeploymentContext;
  */
 public class DeployCommandSupplementalInfo implements Serializable{
 
-    private transient ExtendedDeploymentContext dc = null;
+    private transient WeakReference<ExtendedDeploymentContext> dc = null;
     private List<String> previousTargets = null;
     private Collection<? extends AccessCheck> accessChecks = null;
     
     public void setDeploymentContext(final ExtendedDeploymentContext dc) {
-        this.dc = dc;
+        this.dc = new WeakReference<>(dc);
         /*
          * Save the previous targets (if any), because the deploy command
          * processing will clear the transient app metadata which is
@@ -81,7 +83,7 @@ public class DeployCommandSupplementalInfo implements Serializable{
     }
     
     public ExtendedDeploymentContext deploymentContext() {
-        return dc;
+        return dc != null ? dc.get() : null;
     }
     
     public List<String> previousTargets() {

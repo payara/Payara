@@ -2,7 +2,7 @@
  *
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) 2023 Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) 2023-2024 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -368,7 +368,7 @@ final class OpenTracingHelper {
         return result == null ? NULL_TRACED : result;
     }
 
-    private static ResourceCache<Boolean> canTraceCache = new ResourceCache<>();
+    static ResourceCache<Boolean> canTraceCache = new ResourceCache<>();
     /**
      * Helper method that checks if any specified skip patterns match this method name
      *

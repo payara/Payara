@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2024 Payara Foundation and/or its affiliates
 
 package org.apache.catalina.session;
 
@@ -261,6 +261,13 @@ public abstract class PersistentManagerBase extends ManagerBase implements Lifec
             && (this.getStore() instanceof StoreBase)) {
             ((StoreBase) this.getStore()).processExpires();
         }
+    }
+
+    /**
+     * Perform the session backgroud process to validate values from session storage.
+     */
+    public void backgroundSessionUpdate() {
+        this.updateSession();
     }
 
     /**
@@ -600,6 +607,16 @@ public abstract class PersistentManagerBase extends ManagerBase implements Lifec
         final List<Session> sessions = findSessions();
         for (final Session session1 : sessions) {
             StandardSession session = (StandardSession) session1;
+            //verify if session also is on the store and compare lastAccessTime and thisAccessedTime
+            StandardSession sessionFromStore = null;
+            try {
+                sessionFromStore = (StandardSession) swapIn(session.getId());
+            } catch (IOException e) {
+                log.log(Level.INFO, "Caught exception attempting to swap in session from store", e);
+            }
+            if (sessionFromStore != null) {
+                compareAndUpdateAccessedTime(session, sessionFromStore);
+            }
             if(!session.getIsValid() || session.hasExpired()) {
                 if(session.lockBackground()) {
                     try {
@@ -610,7 +627,30 @@ public abstract class PersistentManagerBase extends ManagerBase implements Lifec
                 }
             }            
         }
-    }        
+    }
+
+    /**
+     * Verifies available sessions and verifies if from the storage same session was updated from 
+     * another instance from the cluster.
+     */
+    protected void updateSession() {
+        final List<Session> sessions = findSessions();
+        for (final Session session1 : sessions) {
+            StandardSession session = (StandardSession) session1;
+            //verify if session also is on the store and compare lastAccessTime and thisAccessedTime
+            StandardSession sessionFromStore = null;
+            try {
+                if(session != null) {
+                    sessionFromStore = (StandardSession) swapIn(session.getId());
+                }
+            } catch (IOException e) {
+                log.log(Level.INFO, "Caught exception attempting to swap in session from store", e);
+            }
+            if (sessionFromStore != null) {
+                compareAndUpdateAccessedTime(session, sessionFromStore);
+            }
+        }
+    }
 
 
     /**
@@ -728,14 +768,37 @@ public abstract class PersistentManagerBase extends ManagerBase implements Lifec
         //6406580 END        
 
         Session session = super.findSession(id);
-        if (session != null)
+
+        if (session != null) {
+            //verify if session also is on the store and compare lastAccessTime and thisAccessedTime
+            Session sessionFromStore = swapIn(id);
+            if (sessionFromStore != null) {
+                compareAndUpdateAccessedTime((StandardSession) session, (StandardSession) sessionFromStore);
+            }
             return (session);
+        }
 
         // See if the Session is in the Store
         session = swapIn(id);
         return (session);
 
-    }       
+    }
+
+    /**
+     * This method compare both sessions and assign lastAccessTime and accessedTime if conditions are true.
+     * @param currentSession
+     * @param sessionFromStore
+     */
+    public void compareAndUpdateAccessedTime(StandardSession currentSession, StandardSession sessionFromStore) {
+        //Greater than or equal assign new value to update lastaccesstime saved on other instances from the cluster
+        if (sessionFromStore.getLastAccessedTimeInternal() >= currentSession.getLastAccessedTimeInternal()) {
+            currentSession.setLastAccessedTime(sessionFromStore.getLastAccessedTimeInternal());
+        }
+        //Greater than or equal assign new value to update thisAccessTime saved on other instances from the cluster
+        if (sessionFromStore.getThisAccessedTime() >= currentSession.getThisAccessedTime()) {
+            currentSession.setThisAccessedTime(sessionFromStore.getThisAccessedTime());
+        }
+    }
     
     /**
      * Return the active Session, associated with this Manager, with the

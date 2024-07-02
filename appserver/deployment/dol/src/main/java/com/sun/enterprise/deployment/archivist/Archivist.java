@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2020-2021] [Payara Foundation and/or its affiliates.]
+// Portions Copyright [2020-2024] [Payara Foundation and/or its affiliates.]
 
 package com.sun.enterprise.deployment.archivist;
 
@@ -375,6 +375,7 @@ public abstract class Archivist<T extends BundleDescriptor> {
      */
     protected void postOpen(T descriptor, ReadableArchive archive)
             throws IOException {
+        descriptor.processBundleDescriptor();
     }
 
     /**

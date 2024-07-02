@@ -37,12 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2019-2024] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.api.invocation;
 
 import static org.glassfish.api.invocation.ComponentInvocation.ComponentInvocationType.UN_INITIALIZED;
 
+import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -78,11 +79,25 @@ public class ComponentInvocation implements Cloneable {
     private String instanceName;
 
     /**
-     * ServletContext for servlet, Container for EJB
+     * The deprecated ServletContext for servlet, Container for EJB
+     *
+     * DO NOT USE! Retained for semantic versioning. Replaced by {@link ComponentInvocation#containerReference}.
+     * Use {@link ComponentInvocation#getContainer()} and {@link ComponentInvocation#setContainer(Object)} instead.
+     *
      */
+    @Deprecated(forRemoval = true, since = "6.17.0")
     public Object container;
 
+    /**
+     * DO NOT USE! Retained for semantic versioning. Replaced by {@link ComponentInvocation#jndiEnvironmentReference}.
+     * Use {@link ComponentInvocation#getJNDIEnvironment()} and {@link ComponentInvocation#setJNDIEnvironment(Object)} instead.
+     */
+    @Deprecated(forRemoval = true, since = "6.17.0")
     public Object jndiEnvironment;
+
+    private WeakReference<Object> containerReference;
+
+    private WeakReference<Object> jndiEnvironmentReference;
 
     public String componentId;
 
@@ -117,13 +132,13 @@ public class ComponentInvocation implements Cloneable {
     protected String registrationName;
 
     public ComponentInvocation() {
-
+        containerReference = new WeakReference<>(null);
     }
 
     public ComponentInvocation(String componentId, ComponentInvocationType invocationType, Object container, String appName, String moduleName, String registrationName) {
         this.componentId = componentId;
         this.invocationType = invocationType;
-        this.container = container;
+        this.containerReference = new WeakReference<>(container);
         this.appName = appName;
         this.moduleName = moduleName;
         this.registrationName = registrationName;
@@ -133,7 +148,7 @@ public class ComponentInvocation implements Cloneable {
         this.componentId = componentId;
         this.invocationType = invocationType;
         this.instance = instance;
-        this.container = container;
+        this.containerReference = new WeakReference<>(container);
         this.transaction = transaction;
     }
 
@@ -202,31 +217,34 @@ public class ComponentInvocation implements Cloneable {
     }
 
     public Object getJndiEnvironment() {
-        return jndiEnvironment;
+        return getJNDIEnvironment();
     }
 
     public void setJndiEnvironment(Object jndiEnvironment) {
-        this.jndiEnvironment = jndiEnvironment;
+        setJNDIEnvironment(jndiEnvironment);
     }
 
     public void setJNDIEnvironment(Object val) {
-        jndiEnvironment = val;
+        jndiEnvironmentReference = new WeakReference<>(val);
     }
 
     public Object getJNDIEnvironment() {
-        return jndiEnvironment;
+        if (jndiEnvironmentReference == null) {
+            return null;
+        }
+        return jndiEnvironmentReference.get();
     }
 
     public Object getContainer() {
-        return container;
+        return containerReference.get();
     }
 
     public void setContainer(Object container) {
-        this.container = container;
+        this.containerReference = new WeakReference<>(container);
     }
 
     public Object getContainerContext() {
-        return container;
+        return getContainer();
     }
 
     public Object getTransaction() {
@@ -391,7 +409,7 @@ public class ComponentInvocation implements Cloneable {
         str.append("\tcomponentId=").append(componentId).append('\n');
         str.append("\ttype=").append(invocationType).append('\n');
         str.append("\tinstance=").append(instanceName != null ? instanceName : String.valueOf(instance)).append('\n');
-        str.append("\tcontainer=").append(container).append('\n');
+        str.append("\tcontainer=").append(getContainer()).append('\n');
         str.append("\tappName=").append(appName).append('\n');
         return str.toString();
     }

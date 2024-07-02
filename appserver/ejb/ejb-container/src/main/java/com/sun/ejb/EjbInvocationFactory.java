@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb;
 
@@ -58,7 +58,7 @@ public class EjbInvocationFactory {
 
     public EjbInvocation create() {
         EjbInvocation ejbInv = new EjbInvocation(compEnvId, container);
-        ejbInv.jndiEnvironment = container.getEjbDescriptor();
+        ejbInv.setJNDIEnvironment(container.getEjbDescriptor());
         return ejbInv;
     }
 
@@ -67,7 +67,7 @@ public class EjbInvocationFactory {
         ejbInv.ejb = ejb;
         ejbInv.instance = ejb;
         ejbInv.context = ctx;
-        ejbInv.jndiEnvironment = container.getEjbDescriptor();
+        ejbInv.setJNDIEnvironment(container.getEjbDescriptor());
 
         return ejbInv;
     }
