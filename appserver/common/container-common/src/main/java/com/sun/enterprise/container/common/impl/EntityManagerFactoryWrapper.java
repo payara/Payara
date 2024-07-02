@@ -301,7 +301,7 @@ public class EntityManagerFactoryWrapper
 
     @Override
     public String getName() {
-        return unitName;
+        return getDelegate().getName();
     }
 
     @Override

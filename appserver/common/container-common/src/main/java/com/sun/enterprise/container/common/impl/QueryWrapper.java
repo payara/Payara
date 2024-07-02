@@ -600,6 +600,7 @@ public class QueryWrapper <T extends Query> implements Query {
         }
     }
 
+    @Override
     public Object getSingleResultOrNull() {
         try {
             if (callFlowAgent.isEnabled()) {
@@ -615,6 +616,7 @@ public class QueryWrapper <T extends Query> implements Query {
         }
     }
 
+    @Override
     public Query setCacheRetrieveMode(CacheRetrieveMode cacheRetrieveMode) {
         try {
             if (callFlowAgent.isEnabled()) {
@@ -631,6 +633,7 @@ public class QueryWrapper <T extends Query> implements Query {
         return this;
     }
 
+    @Override
     public Query setCacheStoreMode(CacheStoreMode cacheStoreMode) {
         try {
             if (callFlowAgent.isEnabled()) {
@@ -647,6 +650,7 @@ public class QueryWrapper <T extends Query> implements Query {
         return this;
     }
 
+    @Override
     public CacheRetrieveMode getCacheRetrieveMode() {
         try {
             if (callFlowAgent.isEnabled()) {
@@ -662,6 +666,7 @@ public class QueryWrapper <T extends Query> implements Query {
         }
     }
 
+    @Override
     public CacheStoreMode getCacheStoreMode() {
         try {
             if (callFlowAgent.isEnabled()) {
@@ -677,6 +682,7 @@ public class QueryWrapper <T extends Query> implements Query {
         }
     }
 
+    @Override
     public Query setTimeout(Integer integer) {
         try {
             if (callFlowAgent.isEnabled()) {
@@ -693,6 +699,7 @@ public class QueryWrapper <T extends Query> implements Query {
         return this;
     }
 
+    @Override
     public Integer getTimeout() {
         try {
             if (callFlowAgent.isEnabled()) {

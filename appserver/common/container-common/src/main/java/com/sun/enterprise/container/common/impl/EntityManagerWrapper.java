@@ -1273,12 +1273,12 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
     @Override
     public <T> T find(Class<T> aClass, Object o, FindOption... findOptions) {
         try {
-            if(callFlowAgent.isEnabled()) {
+            if (callFlowAgent.isEnabled()) {
                 callFlowAgent.entityManagerMethodStart(EntityManagerMethod.FIND_CLASS_OBJECT_FINDOPTION);
             }
             return _getDelegate().find(aClass, o, findOptions);
         } finally {
-            if(callFlowAgent.isEnabled()) {
+            if (callFlowAgent.isEnabled()) {
                 callFlowAgent.entityManagerMethodEnd();
             }
         }
@@ -1287,12 +1287,12 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
     @Override
     public <T> T find(EntityGraph<T> entityGraph, Object o, FindOption... findOptions) {
         try {
-            if(callFlowAgent.isEnabled()) {
+            if (callFlowAgent.isEnabled()) {
                 callFlowAgent.entityManagerMethodStart(EntityManagerMethod.FIND_ENTITYGRAPH_OBJECT_FINDOPTION);
             }
             return _getDelegate().find(entityGraph, o, findOptions);
         } finally {
-            if(callFlowAgent.isEnabled()) {
+            if (callFlowAgent.isEnabled()) {
                 callFlowAgent.entityManagerMethodEnd();
             }
         }
@@ -1301,12 +1301,12 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
     @Override
     public <T> T getReference(T t) {
         try {
-            if(callFlowAgent.isEnabled()) {
+            if (callFlowAgent.isEnabled()) {
                 callFlowAgent.entityManagerMethodStart(EntityManagerMethod.GET_REFERENCE_T);
             }
             return _getDelegate().getReference(t);
         } finally {
-            if(callFlowAgent.isEnabled()) {
+            if (callFlowAgent.isEnabled()) {
                 callFlowAgent.entityManagerMethodEnd();
             }
         }
@@ -1315,12 +1315,12 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
     @Override
     public void lock(Object o, LockModeType lockModeType, LockOption... lockOptions) {
         try {
-            if(callFlowAgent.isEnabled()) {
+            if (callFlowAgent.isEnabled()) {
                 callFlowAgent.entityManagerMethodStart(EntityManagerMethod.LOCK_OBJECT_LOCKMODETYPE_LOCKOPTION);
             }
             _getDelegate().lock(o, lockModeType, lockOptions);
         } finally {
-            if(callFlowAgent.isEnabled()) {
+            if (callFlowAgent.isEnabled()) {
                 callFlowAgent.entityManagerMethodEnd();
             }
         }
@@ -1329,12 +1329,12 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
     @Override
     public void refresh(Object o, RefreshOption... refreshOptions) {
         try {
-            if(callFlowAgent.isEnabled()) {
+            if (callFlowAgent.isEnabled()) {
                 callFlowAgent.entityManagerMethodStart(EntityManagerMethod.REFRESH_OBJECT_REFRESHOPTION);
             }
             _getDelegate().refresh(o, refreshOptions);
         } finally {
-            if(callFlowAgent.isEnabled()) {
+            if (callFlowAgent.isEnabled()) {
                 callFlowAgent.entityManagerMethodEnd();
             }
         }
@@ -1343,12 +1343,12 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
     @Override
     public void setCacheRetrieveMode(CacheRetrieveMode cacheRetrieveMode) {
         try {
-            if(callFlowAgent.isEnabled()) {
+            if (callFlowAgent.isEnabled()) {
                 callFlowAgent.entityManagerMethodStart(EntityManagerMethod.SET_CACHE_RETRIEVE_MODE);
             }
             _getDelegate().setCacheRetrieveMode(cacheRetrieveMode);
         } finally {
-            if(callFlowAgent.isEnabled()) {
+            if (callFlowAgent.isEnabled()) {
                 callFlowAgent.entityManagerMethodEnd();
             }
         }
@@ -1357,12 +1357,12 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
     @Override
     public void setCacheStoreMode(CacheStoreMode cacheStoreMode) {
         try {
-            if(callFlowAgent.isEnabled()) {
+            if (callFlowAgent.isEnabled()) {
                 callFlowAgent.entityManagerMethodStart(EntityManagerMethod.SET_CACHE_STORE_MODE);
             }
             _getDelegate().setCacheStoreMode(cacheStoreMode);
         } finally {
-            if(callFlowAgent.isEnabled()) {
+            if (callFlowAgent.isEnabled()) {
                 callFlowAgent.entityManagerMethodEnd();
             }
         }
@@ -1371,12 +1371,12 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
     @Override
     public CacheRetrieveMode getCacheRetrieveMode() {
         try {
-            if(callFlowAgent.isEnabled()) {
+            if (callFlowAgent.isEnabled()) {
                 callFlowAgent.entityManagerMethodStart(EntityManagerMethod.GET_CACHE_RETRIEVE_MODE);
             }
             return _getDelegate().getCacheRetrieveMode();
         } finally {
-            if(callFlowAgent.isEnabled()) {
+            if (callFlowAgent.isEnabled()) {
                 callFlowAgent.entityManagerMethodEnd();
             }
         }
@@ -1385,12 +1385,12 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
     @Override
     public CacheStoreMode getCacheStoreMode() {
         try {
-            if(callFlowAgent.isEnabled()) {
+            if (callFlowAgent.isEnabled()) {
                 callFlowAgent.entityManagerMethodStart(EntityManagerMethod.GET_CACHE_STORE_MODE);
             }
             return _getDelegate().getCacheStoreMode();
         } finally {
-            if(callFlowAgent.isEnabled()) {
+            if (callFlowAgent.isEnabled()) {
                 callFlowAgent.entityManagerMethodEnd();
             }
         }
@@ -1399,12 +1399,12 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
     @Override
     public <T> TypedQuery<T> createQuery(CriteriaSelect<T> criteriaSelect) {
         try {
-            if(callFlowAgent.isEnabled()) {
+            if (callFlowAgent.isEnabled()) {
                 callFlowAgent.entityManagerMethodStart(EntityManagerMethod.CREATE_QUERY_CRITERIASELECT);
             }
             return _getDelegate().createQuery(criteriaSelect);
         } finally {
-            if(callFlowAgent.isEnabled()) {
+            if (callFlowAgent.isEnabled()) {
                 callFlowAgent.entityManagerMethodEnd();
             }
         }
@@ -1413,12 +1413,12 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
     @Override
     public <T> TypedQuery<T> createQuery(TypedQueryReference<T> typedQueryReference) {
         try {
-            if(callFlowAgent.isEnabled()) {
+            if (callFlowAgent.isEnabled()) {
                 callFlowAgent.entityManagerMethodStart(EntityManagerMethod.CREATE_QUERY_TYPEDQUERYREFERENCE);
             }
             return _getDelegate().createQuery(typedQueryReference);
         } finally {
-            if(callFlowAgent.isEnabled()) {
+            if (callFlowAgent.isEnabled()) {
                 callFlowAgent.entityManagerMethodEnd();
             }
         }
@@ -1427,12 +1427,12 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
     @Override
     public <C> void runWithConnection(ConnectionConsumer<C> connectionConsumer) {
         try {
-            if(callFlowAgent.isEnabled()) {
+            if (callFlowAgent.isEnabled()) {
                 callFlowAgent.entityManagerMethodStart(EntityManagerMethod.RUN_WITH_CONNECTION);
             }
             _getDelegate().runWithConnection(connectionConsumer);
         } finally {
-            if(callFlowAgent.isEnabled()) {
+            if (callFlowAgent.isEnabled()) {
                 callFlowAgent.entityManagerMethodEnd();
             }
         }
@@ -1441,12 +1441,12 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
     @Override
     public <C, T> T callWithConnection(ConnectionFunction<C, T> connectionFunction) {
         try {
-            if(callFlowAgent.isEnabled()) {
+            if (callFlowAgent.isEnabled()) {
                 callFlowAgent.entityManagerMethodStart(EntityManagerMethod.CALL_WITH_CONNECTION);
             }
             return _getDelegate().callWithConnection(connectionFunction);
         } finally {
-            if(callFlowAgent.isEnabled()) {
+            if (callFlowAgent.isEnabled()) {
                 callFlowAgent.entityManagerMethodEnd();
             }
         }
