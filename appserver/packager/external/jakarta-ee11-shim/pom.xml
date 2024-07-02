@@ -96,6 +96,11 @@
             <artifactId>weld-osgi-bundle</artifactId>
             <scope>provided</scope>
         </dependency>
+        <!-- Downgrade shim for Jakarta Authorization as Soteria not yet upgraded -->
+        <dependency>
+            <groupId>jakarta.authorization</groupId>
+            <artifactId>jakarta.authorization-api</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
@@ -130,7 +135,9 @@
                                     <!-- jakarta.el-->
                                     jakarta.el-api,
                                     <!-- weld-osgi-bundle -->
-                                    org.jboss.weld.osgi-bundle
+                                    org.jboss.weld.osgi-bundle,
+                                    <!-- Downgrade shim for Jakarta Authorization, required by Soteria 3.0 -->
+                                    jakarta.security.jacc-api
                                 </Require-Bundle>
                                 <!-- Manually specify the shim versions of packages to be exported via this bundle -->
                                 <!-- Note the "shortened" syntax here: For every API the packages are delimited with
@@ -243,7 +250,9 @@
                                     org.jboss.weld.module;
                                     org.jboss.weld.security;
                                     org.jboss.weld.util;
-                                    org.jboss.weld.xml;version="5.0.99";shim=true
+                                    org.jboss.weld.xml;version="5.0.99";shim=true,
+                                    <!-- Downgrade shim for Jakarta Authorization, required by Soteria 3.0 -->
+                                    jakarta.security.jacc;version="2.1.99";shim=true
                                 </Export-Package>
                             </instructions>
                         </configuration>
