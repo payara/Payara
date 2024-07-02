@@ -491,19 +491,7 @@ public class ResponseFacade
 
     @Override
     public void sendRedirect(String location) throws IOException {
-
-        // Disallow operation if the object has gone out of scope
-        if (response == null) {
-            throw new IllegalStateException(rb.getString(NULL_RESPONSE_OBJECT));
-        }
-
-        if (isCommitted()) {
-            throw new IllegalStateException();
-        }
-
-        response.setAppCommitted(true);
-
-        response.sendRedirect(location);
+        response.sendRedirect(location, SC_MOVED_TEMPORARILY, true);
     }
 
     @Override
