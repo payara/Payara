@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2019-2023] Payara Foundation and/or affiliates
+// Portions Copyright 2019-2024 Payara Foundation and/or affiliates
 
 package org.apache.catalina.connector;
 
@@ -95,8 +95,6 @@ import org.apache.catalina.util.CharsetMapper;
 import org.apache.catalina.util.RequestUtil;
 import org.glassfish.grizzly.http.util.CharChunk;
 import org.glassfish.grizzly.http.util.CookieHeaderGenerator;
-import org.glassfish.grizzly.http.util.CookieSerializerUtils;
-import org.glassfish.grizzly.http.util.CookieUtils;
 import org.glassfish.grizzly.http.util.FastHttpDateFormat;
 import org.glassfish.grizzly.http.util.MimeHeaders;
 import org.glassfish.grizzly.http.util.UEncoder;
@@ -1523,6 +1521,73 @@ public class Response
         // Cause the response to be finished (from the application perspective)
         setSuspended(true);
 
+    }
+
+    @Override
+    public void sendRedirect(String location, int sc, boolean clearBuffer) throws IOException {
+        if (isCommitted())
+            throw new IllegalStateException(rb.getString(LogFacade.CANNOT_CALL_SEND_REDIRECT_EXCEPTION));
+
+        // Ignore any call from an included servlet
+        if (included)
+            return;
+
+        // Clear any data content that has been buffered
+        if (clearBuffer) {
+            resetBuffer();
+        }
+
+        // Generate a temporary redirect to the specified location
+        try {
+            /* RIMOD 4642650
+            String absolute = toAbsolute(location);
+            */
+            // START RIMOD 4642650
+            String absolute;
+            if (getContext().getAllowRelativeRedirect()) {
+                absolute = location;
+            } else {
+                absolute = toAbsolute(location);
+            }
+
+            setStatus(sc);
+
+            setHeader("Location", absolute);
+
+            // According to RFC2616 section 10.3.3 302 Found,
+            // the response SHOULD contain a short hypertext note with
+            // a hyperlink to the new URI.
+            setContentType("text/html");
+            setLocale(Locale.getDefault());
+
+            String href = HtmlEntityEncoder.encodeXSS(absolute);
+            StringBuilder sb = new StringBuilder(150 + href.length());
+
+            sb.append("<html>\r\n");
+            sb.append("<head><title>Document moved</title></head>\r\n");
+            sb.append("<body><h1>Document moved</h1>\r\n");
+            sb.append("This document has moved <a href=\"");
+            sb.append(href);
+            sb.append("\">here</a>.<p>\r\n");
+            sb.append("</body>\r\n");
+            sb.append("</html>\r\n");
+
+            try {
+                getWriter().write(sb.toString());
+            } catch (IllegalStateException ise1) {
+                try {
+                    getOutputStream().print(sb.toString());
+                } catch (IllegalStateException ise2) {
+                    // ignore; the RFC says "SHOULD" so it is acceptable
+                    // to omit the body in case of an error
+                }
+            }
+        } catch (IllegalArgumentException e) {
+            setStatus(SC_NOT_FOUND);
+        }
+
+        // Cause the response to be finished (from the application perspective)
+        setSuspended(true);
     }
 
 
