@@ -10,6 +10,7 @@ pipeline {
     environment {
         MP_METRICS_TAGS='tier=integration'
         MP_CONFIG_CACHE_DURATION=0
+        JAVA_HOME = tool("zulu-21")
     }
     tools {
         jdk "zulu-21"
