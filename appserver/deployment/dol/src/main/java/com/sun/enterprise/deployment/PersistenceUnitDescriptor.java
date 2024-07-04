@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2020] PAyara Foundation and/or affiliates
+// Portions Copyright 2020-2024 Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment;
 
@@ -84,6 +84,10 @@ public class PersistenceUnitDescriptor extends Descriptor {
     private SharedCacheMode sharedCacheMode;
 
     private ValidationMode validationMode;
+
+    private String scope;
+
+    private final List<String> qualifiers = new ArrayList<>();
 
     public PersistenceUnitDescriptor() {
     }
@@ -231,5 +235,22 @@ public class PersistenceUnitDescriptor extends Descriptor {
     public String getAbsolutePuRoot() {
         return getParent().getAbsolutePuRoot();
      }
+
+    public String getScope() {
+        return scope;
+    }
+
+    public void setScope(String scope) {
+        this.scope = scope;
+    }
+
+    public List<String> getQualifiers() {
+        return qualifiers;
+    }
+
+    public void addQualifier(String qualifier) {
+        qualifiers.add(qualifier);
+    }
+
 
 }
