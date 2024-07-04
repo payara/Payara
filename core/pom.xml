@@ -182,7 +182,7 @@
         <maven.site.plugin.version>3.12.1</maven.site.plugin.version>
         <glassfishbuild.version>3.2.20.payara-p2</glassfishbuild.version>
         <maven.antrun.plugin.version>3.1.0</maven.antrun.plugin.version>
-        <maven.assembly.plugin.version>3.4.2</maven.assembly.plugin.version>
+        <maven.assembly.plugin.version>3.7.1</maven.assembly.plugin.version>
         <hk2.plugin.version>4.0.0-M2.payara-p2</hk2.plugin.version>
         <maven.build.helper.plugin.version>3.5.0</maven.build.helper.plugin.version>
         <maven.flatten.plugin.version>1.6.0</maven.flatten.plugin.version>
