@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2022] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2024] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,6 +40,7 @@
 package fish.payara.nucleus.hazelcast.admin;
 
 import com.hazelcast.config.FileSystemXmlConfig;
+import com.hazelcast.config.FileSystemYamlConfig;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
@@ -229,16 +230,27 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
             return;
         }
         if (configFile != null && !"hazelcast-config.xml".equals(configFile)) {
-            File xmlConfigFile = new File(configFile);
-            if (!xmlConfigFile.exists()) {
-                String message = "Hazelcast config file not found: " + configFile;
+            File configFile = new File(this.configFile);
+            if (!configFile.exists()) {
+                String message = "Hazelcast config file not found: " + this.configFile;
                 logger.log(Level.INFO, message);
                 actionReport.setMessage(message);
                 actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 return;
             }
             try {
-                new FileSystemXmlConfig(xmlConfigFile);
+                final String fileName = configFile.getName();
+                if (fileName.endsWith(".xml")) {
+                    new FileSystemXmlConfig(configFile);
+                } else if (fileName.endsWith(".yaml") || fileName.endsWith(".yml")) {
+                    new FileSystemYamlConfig((configFile));
+                } else {
+                    String message = "Hazelcast config file type not allowed. Should be a XML or YAML file.";
+                    logger.log(Level.INFO, message);
+                    actionReport.setMessage(message);
+                    actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                    return;
+                }
             } catch (Exception ex) {
                 String message = "Hazelcast config file parsing exception: " + ex.toString();
                 logger.log(Level.INFO, message);
