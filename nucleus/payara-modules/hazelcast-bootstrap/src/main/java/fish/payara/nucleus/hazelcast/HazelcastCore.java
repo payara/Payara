@@ -689,7 +689,8 @@ public class HazelcastCore implements EventListener, ConfigListener {
     public UnprocessedChangeEvents changed(PropertyChangeEvent[] pces) {
         List<UnprocessedChangeEvent> unprocessedChanges = new ArrayList<>();
         for (PropertyChangeEvent pce : pces) {
-            if (pce.getPropertyName().equalsIgnoreCase("datagrid-encryption-enabled")) {
+            if (pce.getPropertyName().equalsIgnoreCase("datagrid-encryption-enabled")
+                    && Boolean.parseBoolean(pce.getOldValue().toString()) != Boolean.parseBoolean(pce.getNewValue().toString())) {
                 unprocessedChanges.add(new UnprocessedChangeEvent(pce, "Hazelcast encryption settings changed"));
             }
         }
