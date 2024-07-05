@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.jacc.context;
 
 import static com.sun.enterprise.security.jacc.context.PolicyContextHandlerImpl.EJB_ARGUMENTS;
@@ -54,6 +54,7 @@ import com.sun.enterprise.security.jacc.cache.PermissionCacheFactory;
 
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.internal.api.Globals;
+import java.lang.ref.WeakReference;
 
 /**
  * This class implements thread scoped data used for the JACC PolicyContext.
@@ -69,7 +70,7 @@ import org.glassfish.internal.api.Globals;
 public class PolicyContextHandlerData {
 
     private HttpServletRequest httpServletRequest;
-    private ComponentInvocation invocation;
+    private WeakReference<ComponentInvocation> invocation;
     private PolicyContextDelegate ejbDelegate;
 
     private PolicyContextHandlerData() {
@@ -85,7 +86,7 @@ public class PolicyContextHandlerData {
     }
 
     public void setInvocation(ComponentInvocation inv) {
-        this.invocation = inv;
+        this.invocation = new WeakReference<>(inv);
     }
 
     public Object get(String key) {
@@ -107,15 +108,15 @@ public class PolicyContextHandlerData {
         }
 
         if (SOAP_MESSAGE.equalsIgnoreCase(key)) {
-            return ejbDelegate != null ? ejbDelegate.getSOAPMessage(invocation) : null;
+            return ejbDelegate != null ? ejbDelegate.getSOAPMessage(invocation.get()) : null;
         }
 
         if (ENTERPRISE_BEAN.equalsIgnoreCase(key)) {
-            return ejbDelegate != null ? ejbDelegate.getEnterpriseBean(invocation) : null;
+            return ejbDelegate != null ? ejbDelegate.getEnterpriseBean(invocation.get()) : null;
         }
 
         if (EJB_ARGUMENTS.equalsIgnoreCase(key)) {
-            return ejbDelegate != null ? ejbDelegate.getEJbArguments(invocation) : null;
+            return ejbDelegate != null ? ejbDelegate.getEJbArguments(invocation.get()) : null;
         }
 
         return null;

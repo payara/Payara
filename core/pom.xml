@@ -57,7 +57,7 @@
         <payara.core.version>7.0.0.Alpha2-SNAPSHOT</payara.core.version>
         <payara.core.compare-version>6.13.0</payara.core.compare-version>
         <!-- BOM dependencies versions -->
-        <payara.security-connectors.version>3.1</payara.security-connectors.version>
+        <payara.security-connectors.version>3.1.1</payara.security-connectors.version>
         <hk2.version>4.0.0-M2.payara-p2</hk2.version>
         <osgi.version>8.0.0</osgi.version>
         <osgi.annotation.version>8.1.0</osgi.annotation.version>
@@ -74,7 +74,7 @@
         <parsson.version>1.1.5.payara-p1</parsson.version>
         <jakarta.activation-api.version>2.1.3</jakarta.activation-api.version>
         <jaxb-api.version>4.0.1.payara-p1</jaxb-api.version>
-        <jackson.version>2.17.0</jackson.version>
+        <jackson.version>2.17.1</jackson.version>
         <jersey.version>3.1.5.payara-p1</jersey.version>
         <jakarta.validation.version>3.1.0</jakarta.validation.version>
         <hibernate.validator.version>8.0.1.Final</hibernate.validator.version>
@@ -100,7 +100,7 @@
         <jakarta.enterprise.deploy-api.version>1.7.2</jakarta.enterprise.deploy-api.version>
         <jakarta.resource-api.version>2.1.0</jakarta.resource-api.version>
         <jakarta.annotation-api.version>3.0.0</jakarta.annotation-api.version>
-        <exousia.version>2.1.0</exousia.version>
+        <exousia.version>2.1.2</exousia.version>
         <opentracing.version>0.33.0</opentracing.version>
         <jsp-api.version>3.1.0</jsp-api.version>
         <javax.cache-api.version>1.1.1.payara-p1</javax.cache-api.version>
@@ -115,14 +115,14 @@
         <jax-rs-api.impl.version>3.1.0</jax-rs-api.impl.version>
         <jstl-api.version>3.0.0</jstl-api.version>
         <concurrent-api.version>3.1.0-RC2</concurrent-api.version>
-        <jaxws-api.version>4.0.0</jaxws-api.version>
+        <jaxws-api.version>4.0.2</jaxws-api.version>
         <jms-api.version>3.1.0</jms-api.version>
         <jakarta.jws-api.version>3.0.0</jakarta.jws-api.version>
         <stax2-api.version>4.2.2</stax2-api.version>
         <stax-api.version>1.0-2</stax-api.version>
         <jbi.version>1.0</jbi.version>
         <okhttp3-version>4.12.0</okhttp3-version>
-        <kotlin-version>1.9.24</kotlin-version>
+        <kotlin-version>2.0.0</kotlin-version>
         
         <!-- implementation and build dependencies -->
         <glassfish-management-api.version>3.2.3.payara-p1</glassfish-management-api.version>
@@ -141,13 +141,13 @@
         <!-- Javassist (JAVA programming ASSISTant) makes Java bytecode manipulation simple. It is a class library for editing bytecodes in Java. -->
         <javassist.version>3.30.2-GA</javassist.version>
         <mail.version>2.1.0</mail.version>
-        <angus.mail.version>1.0.0</angus.mail.version>
+        <angus.mail.version>1.1.0</angus.mail.version>
         <ha-api.version>3.1.13</ha-api.version>
-        <apache.bcel.version>6.7.0</apache.bcel.version>
+        <apache.bcel.version>6.9.0</apache.bcel.version>
         <!-- Primitive Function Library (PFL); a library of simple utilities used by Glassfish -->
         <pfl.version>4.1.2.payara-p1</pfl.version>
         <opendmk.version>1.0-b01-ea</opendmk.version>
-        <jna.version>5.12.1</jna.version>
+        <jna.version>5.14.0</jna.version>
         <!-- A pure Java implementation of the SSH-2 protocol -->
         <trilead-ssh2.version>build-217-jenkins-16</trilead-ssh2.version>
         <opentelemetry.version>1.29.0</opentelemetry.version>
@@ -161,32 +161,32 @@
 
         <!-- build versions -->
         <jdk.version>21</jdk.version>
-        <maven.enforcer.plugin.version>3.4.1</maven.enforcer.plugin.version>
+        <maven.enforcer.plugin.version>3.5.0</maven.enforcer.plugin.version>
         <command-security-plugin.version>1.0.17</command-security-plugin.version>
         <command.security.maven.plugin.isFailureFatal>false</command.security.maven.plugin.isFailureFatal>
-        <maven.jar.plugin.version>3.4.1</maven.jar.plugin.version>
-        <maven.clean.plugin.version>3.3.2</maven.clean.plugin.version>
-        <maven.compiler.plugin.version>3.10.1</maven.compiler.plugin.version>
+        <maven.jar.plugin.version>3.4.2</maven.jar.plugin.version>
+        <maven.clean.plugin.version>3.4.0</maven.clean.plugin.version>
+        <maven.compiler.plugin.version>3.13.0</maven.compiler.plugin.version>
         <maven.compiler.showDeprecation>true</maven.compiler.showDeprecation>
-        <maven.surefire.plugin.version>3.0.0-M7</maven.surefire.plugin.version>
+        <maven.surefire.plugin.version>3.2.5</maven.surefire.plugin.version>
         <maven.resources.plugin.version>3.3.1</maven.resources.plugin.version>
         <maven.release.plugin.version>3.0.1</maven.release.plugin.version>
-        <maven.dependency.plugin.version>3.6.1</maven.dependency.plugin.version>
+        <maven.dependency.plugin.version>3.7.1</maven.dependency.plugin.version>
         <maven.gpg.plugin.version>1.6</maven.gpg.plugin.version>
-        <maven.deploy.plugin.version>3.1.1</maven.deploy.plugin.version>
+        <maven.deploy.plugin.version>3.1.2</maven.deploy.plugin.version>
         <maven.source.plugin.version>3.2.1</maven.source.plugin.version>
         <maven.javadoc.plugin.version>3.6.3</maven.javadoc.plugin.version>
-        <maven.install.plugin.version>3.1.0</maven.install.plugin.version>
+        <maven.install.plugin.version>3.1.2</maven.install.plugin.version>
         <maven.bundle.plugin.version>5.1.9</maven.bundle.plugin.version>
-        <maven.failsafe.plugin.version>3.2.5</maven.failsafe.plugin.version>
+        <maven.failsafe.plugin.version>3.3.0</maven.failsafe.plugin.version>
         <maven.site.plugin.version>3.12.1</maven.site.plugin.version>
         <glassfishbuild.version>3.2.20.payara-p2</glassfishbuild.version>
         <maven.antrun.plugin.version>3.1.0</maven.antrun.plugin.version>
-        <maven.assembly.plugin.version>3.4.2</maven.assembly.plugin.version>
+        <maven.assembly.plugin.version>3.7.1</maven.assembly.plugin.version>
         <hk2.plugin.version>4.0.0-M2.payara-p2</hk2.plugin.version>
         <maven.build.helper.plugin.version>3.5.0</maven.build.helper.plugin.version>
         <maven.flatten.plugin.version>1.6.0</maven.flatten.plugin.version>
-        <japicmp.maven.plugin.version>0.21.1</japicmp.maven.plugin.version>
+        <japicmp.maven.plugin.version>0.21.2</japicmp.maven.plugin.version>
 
         <!-- build settings -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -198,7 +198,7 @@
         <payara.deployment.transformer.version>2.0.0-SNAPSHOT</payara.deployment.transformer.version>
         <payara.transformer.version>0.2.13</payara.transformer.version>
 
-        <awaitility.version>4.2.0</awaitility.version>
+        <awaitility.version>4.2.1</awaitility.version>
     </properties>
 
     <issueManagement>

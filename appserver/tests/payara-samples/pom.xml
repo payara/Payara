@@ -351,7 +351,7 @@
             <dependency>
                 <groupId>org.assertj</groupId>
                 <artifactId>assertj-core</artifactId>
-                <version>3.9.1</version>
+                <version>3.26.0</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
@@ -455,7 +455,7 @@
             </plugin>
             <plugin>
                 <artifactId>maven-war-plugin</artifactId>
-                <version>3.3.1</version>
+                <version>3.4.0</version>
                 <configuration>
                     <failOnMissingWebXml>false</failOnMissingWebXml>
                 </configuration>
@@ -494,7 +494,7 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-jdk14</artifactId>
-            <version>1.7.30</version>
+            <version>2.0.13</version>
             <scope>test</scope>
         </dependency>
         <!-- needed for maven-war-plugin to work properly -->

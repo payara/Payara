@@ -10,6 +10,7 @@ pipeline {
     environment {
         MP_METRICS_TAGS='tier=integration'
         MP_CONFIG_CACHE_DURATION=0
+        JAVA_HOME = tool("zulu-21")
     }
     tools {
         jdk "zulu-21"
@@ -31,7 +32,7 @@ pipeline {
         stage('Build') {
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Building SRC  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh """mvn -B -V -ff -e clean install --strict-checksums -PQuickBuild,jakarta-staging \
+                sh """mvn -B -V -ff -e clean install --strict-checksums -PQuickBuild,BuildEmbedded,jakarta-staging \
                     -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
                     -Djavax.xml.accessExternalSchema=all -Dbuild.number=${payaraBuildNumber} \
                     -Djavadoc.skip -Dsource.skip"""
@@ -42,6 +43,9 @@ pipeline {
                     archiveArtifacts artifacts: 'appserver/distributions/payara/target/payara.zip', fingerprint: true
                     archiveArtifacts artifacts: 'appserver/extras/payara-micro/payara-micro-distribution/target/payara-micro.jar', fingerprint: true
                     stash name: 'payara-target', includes: 'appserver/distributions/payara/target/**', allowEmpty: true
+                    stash name: 'payara-micro', includes: 'appserver/extras/payara-micro/payara-micro-distribution/target/**', allowEmpty: true 
+                    stash name: 'payara-embedded-all', includes: 'appserver/extras/embedded/all/target/**', allowEmpty: true 
+                    stash name: 'payara-embedded-web', includes: 'appserver/extras/embedded/web/target/**', allowEmpty: true 
                     dir('/home/ubuntu/.m2/repository/'){
                         stash name: 'payara-m2-repository', includes: '**', allowEmpty: true
                     }
@@ -56,6 +60,9 @@ pipeline {
                 stage('Quicklook Tests') {
                     agent {
                         label 'general-purpose'
+                    }
+                    options {
+                        retry(3)
                     }
                     steps {
                         setupDomain()
@@ -83,6 +90,9 @@ pipeline {
 //                     agent {
 //                         label 'general-purpose'
 //                     }
+//                     options {
+//                         retry(3)
+//                     }
 //                     steps {
 //                         setupDomain()
 //
@@ -106,6 +116,9 @@ pipeline {
 //                 stage('MP TCK Runners') {
 //                     agent {
 //                         label 'general-purpose'
+//                     }
+//                     options {
+//                         retry(3)
 //                     }
 //                     steps{
 //                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
@@ -137,6 +150,9 @@ pipeline {
 //                     agent {
 //                         label 'general-purpose'
 //                     }
+//                     options {
+//                         retry(3)
+//                     }
 //                     steps{
 //                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out EE8 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 //                         checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
@@ -165,6 +181,9 @@ pipeline {
 //                 stage('CargoTracker Tests') {
 //                     agent {
 //                         label 'general-purpose'
+//                     }
+//                     options {
+//                         retry(3)
 //                     }
 //                     steps{
 //                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out cargoTracker tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
@@ -198,6 +217,9 @@ pipeline {
 //                     agent {
 //                         label 'general-purpose'
 //                     }
+//                     options {
+//                         retry(3)
+//                     }
 //                     steps{
 //                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out EE7 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 //                         checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
@@ -221,6 +243,48 @@ pipeline {
 //                         }
 //                         cleanup {
 //                             saveLogsAndCleanup 'ee7-samples-log.zip'
+//                         }
+//                     }
+//                 }
+//                 stage('Payara Functional Tests') {
+//                     agent {
+//                         label 'general-purpose'
+//                     }
+//                     options {
+//                         retry(3)
+//                     }
+//                     steps {
+//                         setupM2RepositoryOnly()
+//                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Unstash Micro and Embedded *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+//                         unstash name: 'payara-micro'
+//                         unstash name: 'payara-embedded-all'
+//                         unstash name: 'payara-embedded-web'
+//
+//                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Building dependencies  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+//                         sh """mvn -V -B -ff clean install --strict-checksums \
+//                         -Dpayara.version=${pom.version} \
+//                         -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
+//                         -Djavax.xml.accessExternalSchema=all \
+//                         -DskipTests \
+//                         -f appserver/tests/payara-samples """
+//
+//                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test with Payara Micro  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+//                         sh """mvn -V -B -ff clean install --strict-checksums -Ppayara-micro-managed,install-deps \
+//                         -Dpayara.version=${pom.version} \
+//                         -f appserver/tests/functional/payara-micro """
+//
+//                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test with Payara Embedded  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+//                         sh """mvn -V -B -ff clean verify --strict-checksums -PFullProfile \
+//                         -Dversion=${pom.version} -f appserver/tests/functional/embeddedtest """
+//
+//                         sh """mvn -V -B -ff clean verify --strict-checksums -PWebProfile \
+//                         -Dversion=${pom.version} -f appserver/tests/functional/embeddedtest """
+//
+//                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+//                     }
+//                     post {
+//                         cleanup {
+//                             processReport()
 //                         }
 //                     }
 //                 }
@@ -250,10 +314,21 @@ void setupDomain() {
     sh "${ASADMIN} start-database || true"
 }
 
+void setupM2RepositoryOnly() {
+    echo '*#*#*#*#*#*#*#*#*#*#*#*#  Unstash maven repository  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+    dir('/home/ubuntu/.m2/repository/'){
+        unstash name: 'payara-m2-repository'
+    }    
+}
+
 void processReportAndStopDomain() {
     junit '**/target/*-reports/*.xml'
     sh "${ASADMIN} stop-domain ${DOMAIN_NAME}"
     sh "${ASADMIN} stop-database || true"
+}
+
+void processReport() {
+    junit '**/target/*-reports/*.xml'
 }
 
 void stopDomain() {
