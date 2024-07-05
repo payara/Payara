@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2023] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2024 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -58,6 +58,7 @@ import com.hazelcast.config.PartitionGroupConfig;
 import com.hazelcast.config.ScheduledExecutorConfig;
 import com.hazelcast.config.SerializationConfig;
 import com.hazelcast.config.TcpIpConfig;
+import com.hazelcast.config.YamlConfigBuilder;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.HazelcastInstanceNotActiveException;
@@ -76,6 +77,7 @@ import com.sun.enterprise.util.Utility;
 import fish.payara.nucleus.events.HazelcastEvents;
 import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.admin.ServerEnvironment.Status;
@@ -169,6 +171,7 @@ public class HazelcastCore implements EventListener, ConfigListener {
     HazelcastRuntimeConfiguration configuration;
 
     @Inject
+    @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     HazelcastConfigSpecificConfiguration nodeConfig;
 
     @Inject
@@ -348,7 +351,8 @@ public class HazelcastCore implements EventListener, ConfigListener {
             if (file.exists()) {
                 Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO,
                         "Loading Hazelcast configuration from file: {0}", hazelcastFilePath);
-                config = ConfigLoader.load(hazelcastFilePath);
+                config = isYamlFile(hazelcastFilePath) ?
+                    new YamlConfigBuilder(hazelcastFilePath).build() : ConfigLoader.load(hazelcastFilePath);
                 if (config == null) {
                     Logger.getLogger(HazelcastCore.class.getName()).log(Level.WARNING,
                             "Hazelcast Core could not find configuration file {0} using default configuration",
@@ -457,6 +461,10 @@ public class HazelcastCore implements EventListener, ConfigListener {
             Logger.getLogger(HazelcastCore.class.getName()).log(Level.WARNING, "Hazelcast Configuration data could no be saved", ex);
         }
         return config;
+    }
+
+    private static boolean isYamlFile(String hazelcastFilePath) {
+        return hazelcastFilePath.endsWith(".yaml") || hazelcastFilePath.endsWith(".yml");
     }
 
     private void setPayaraSerializerConfig(SerializationConfig serConfig) {

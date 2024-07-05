@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.ejb.deployment.descriptor;
 
@@ -355,6 +355,15 @@ public class EjbBundleDescriptorImpl extends com.sun.enterprise.deployment.EjbBu
         return ejbIDs;
     }
 
+    /**
+     * Processes the bundle descriptor by invoking the processing of each EjbDescriptor.
+     * It is assumed that the ejbs collection is already populated with EjbDescriptor instances.
+     */
+    public void processBundleDescriptor() {
+        for (EjbDescriptor ejbDescriptor : ejbs) {
+            ejbDescriptor.processDescriptor();
+        }
+    }
     public void addEjb(EjbDescriptor ejbDescriptor) {
         ejbDescriptor.setEjbBundleDescriptor(this);
         ejbs.add(ejbDescriptor);

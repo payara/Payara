@@ -1,0 +1,134 @@
+name: Generate Monthly Metrics Report
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 13 1 * *'
+
+permissions:
+  issues: write
+  pull-requests: read
+
+jobs:
+  report-monthly-metrics:
+    name: Report Monthly Metrics
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get filter timeframe
+        shell: bash
+        run: |
+          # Calculate the first day of the previous month
+          first_day=$(date -d "last month" +%Y-%m-01)
+          # Calculate the last day of the previous month
+          last_day=$(date -d "$first_day +1 month -1 day" +%Y-%m-%d)
+          
+          # Set environment variables with the date range
+          echo "first_day=$first_day" >> "$GITHUB_ENV"
+          echo "last_day=$last_day" >> "$GITHUB_ENV"
+          echo "last_month=$first_day..$last_day" >> "$GITHUB_ENV"
+
+      - name: Run issue-metrics action, raised issues
+        id: issue-metrics-raised
+        uses: github/issue-metrics@v3
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LABELS_TO_MEASURE: 'Status: Open,Status: Accepted,Status: Pending'
+          SEARCH_QUERY: 'repo:${{ github.repository }} is:issue created:${{ env.last_month }}'
+
+      - name: Run issue-metrics action, closed issues
+        id: issue-metrics-closed
+        uses: github/issue-metrics@v3
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LABELS_TO_MEASURE: 'Status: Open,Status: Accepted,Status: Pending'
+          SEARCH_QUERY: 'repo:${{ github.repository }} is:issue closed:${{ env.last_month }}'
+
+      - uses: actions/checkout@v3
+      - name: Count Accepted Issues
+        id: count-accepted-issues
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const script = require('./.github/workflows/scripts/countEscalatedIssues.js');
+            return await script({github, context, core});
+      - name: Parse Metric Results
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const raisedMetricsResult = `${{ steps.issue-metrics-raised.outputs.metrics }}`;
+            const closedMetricsResult = `${{ steps.issue-metrics-closed.outputs.metrics }}`;
+            
+            if(raisedMetricsResult != ''){
+              const raisedMetrics = JSON.parse(raisedMetricsResult);
+              core.exportVariable('time_to_first_response_1', raisedMetrics['average_time_to_first_response']);
+              core.exportVariable('time_to_close_1', raisedMetrics['average_time_to_close']);
+              core.exportVariable('time_in_open_status_1', raisedMetrics.average_time_in_labels['Status: Open']);
+              core.exportVariable('time_in_pending_status_1', raisedMetrics.average_time_in_labels['Status: Pending']);
+              core.exportVariable('time_in_accepted_status_1', raisedMetrics.average_time_in_labels['Status: Accepted']);
+              core.exportVariable('num_items_opened', raisedMetrics['num_items_opened']);
+            }
+            if(closedMetricsResult != ''){
+              const closedMetrics = JSON.parse(closedMetricsResult);
+              core.exportVariable('time_to_first_response_2', closedMetrics['average_time_to_first_response']);
+              core.exportVariable('time_to_close_2', closedMetrics['average_time_to_close']);
+              core.exportVariable('time_in_open_status_2', closedMetrics.average_time_in_labels['Status: Open']);
+              core.exportVariable('time_in_pending_status_2', closedMetrics.average_time_in_labels['Status: Pending']);
+              core.exportVariable('time_in_accepted_status_2', closedMetrics.average_time_in_labels['Status: Accepted']);
+              core.exportVariable('num_items_closed', closedMetrics['num_items_closed']);
+            }
+      - name: Notify MS Teams channel Metrics Report
+        id: notify-report-ms-teams
+        uses: simbo/msteams-message-card-action@latest
+        with:
+          webhook: ${{ secrets.COMMUNITY_EVENTS_WEBHOOK_URL }}
+          title: Payara Community Repository Metrics - ${{ env.last_month }}
+          message: |
+            <table>
+              <tr>
+                <th>Metric Average</th>
+                <th>Raised Issues</th>
+                <th>Closed Issues</th></tr>
+              <tr>
+                <td>Time to first response</td>
+                <td> ${{ env.time_to_first_response_1 }} </td>
+                <td> ${{ env.time_to_first_response_2 }} </td>
+              </tr>
+              <tr>
+                <td>Time to close</td>
+                <td> ${{ env.time_to_close_1 }} </td>
+                <td> ${{ env.time_to_close_2 }} </td>
+              </tr>
+              <tr>
+                <td>Time spent in <code>Open</code> status</td>
+                <td> ${{ env.time_in_open_status_1 }} </td>
+                <td> ${{ env.time_in_open_status_2 }} </td>
+              </tr>              
+              <tr>
+                <td>Time spent in <code>Pending</code> status</td>
+                <td> ${{ env.time_in_pending_status_1 }} </td>
+                <td> ${{ env.time_in_pending_status_2 }} </td>
+              </tr>
+              <tr>
+                <td>Time spent in <code>Accepted</code> status</td>
+                <td> ${{ env.time_in_accepted_status_1 }} </td>
+                <td> ${{ env.time_in_accepted_status_2 }} </td>
+              </tr>
+            </table>
+            <br>
+            <table>
+              <tr>
+                <th>Metric Value</th>
+                <th>Total</th>
+              </tr>
+              <tr>
+                <td>Open Issues </td>
+                <td>${{ env.num_items_opened }}</td>
+              </tr>
+              <tr>
+                <td>Closed Issues</td>
+                <td>${{ env.num_items_closed }}</td>
+              </tr>            
+              <tr>
+                <td>Escalated Issues</td>
+                <td>${{fromJSON(steps.count-accepted-issues.outputs.result) }}</td>
+              </tr>
+            </table>

@@ -56,7 +56,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2024 Payara Foundation and/or its affiliates
 
 package org.apache.catalina.session;
 
@@ -256,7 +256,7 @@ public class StandardSession implements HttpSession, Session, Serializable {
     /**
      * The last accessed time for this Session.
      */
-    protected long lastAccessedTime = creationTime;
+    protected volatile long lastAccessedTime = creationTime;
 
     /**
      * The session event listeners for this Session.
@@ -294,6 +294,11 @@ public class StandardSession implements HttpSession, Session, Serializable {
     protected boolean isValid = false;
 
     /**
+     * Flag indicating if access method is called
+     */
+    protected volatile boolean isAccessed = false;
+
+    /**
      * Internal notes associated with this session by Catalina components
      * and event listeners.  <b>IMPLEMENTATION NOTE:</b> This object is
      * <em>not</em> saved and restored across session serializations!
@@ -312,7 +317,7 @@ public class StandardSession implements HttpSession, Session, Serializable {
     /**
      * The current accessed time for this session.
      */
-    protected long thisAccessedTime = creationTime;
+    protected volatile long thisAccessedTime = creationTime;
 
     /**
      * The session version, incremented and used by in-memory-replicating
@@ -581,6 +586,15 @@ public class StandardSession implements HttpSession, Session, Serializable {
     }
 
 
+    @Override
+    public long getThisAccessedTime() {
+        return this.thisAccessedTime;
+    }
+
+    public void setThisAccessedTime(long accessedTime) {
+        this.thisAccessedTime = accessedTime;
+    }
+
     /**
      * Return the Manager within which this Session is valid.
      */
@@ -751,9 +765,9 @@ public class StandardSession implements HttpSession, Session, Serializable {
      */
     @Override
     public void access() {
+        isAccessed = true;
         this.lastAccessedTime = this.thisAccessedTime;
         this.thisAccessedTime = System.currentTimeMillis();
-
         evaluateIfValid();
     }
 
@@ -1083,8 +1097,10 @@ public class StandardSession implements HttpSession, Session, Serializable {
      */
     @Override
     public boolean hasExpired() {
+        long diff = System.currentTimeMillis() - this.thisAccessedTime;
+        long maxIncInterval = maxInactiveInterval * 1000L;
         return maxInactiveInterval >= 0
-                && (System.currentTimeMillis() - thisAccessedTime >= maxInactiveInterval * 1000L);
+                && (diff >= maxIncInterval);
     }
     // END SJSAS 6329289
 
@@ -1908,11 +1924,25 @@ public class StandardSession implements HttpSession, Session, Serializable {
 
         version = new AtomicLong();
 
-        lastAccessedTime = ((Long) stream.readObject());
+        //control assign of lastAccessedTime and thisAccessedTime if both on the local are more recent that the values saved 
+        //on the store then use current values
+        long readlastAccessedTime = ((Long) stream.readObject());
+        //assign the read value from storage in case the value is greater than the current
+        //this means that other member from the cluster updated the value
+        if (readlastAccessedTime != 0 && readlastAccessedTime >= lastAccessedTime && !isAccessed) {
+            lastAccessedTime = readlastAccessedTime;
+        }
+
         maxInactiveInterval = ((Integer) stream.readObject());
         isNew = ((Boolean) stream.readObject());
         isValid = ((Boolean) stream.readObject());
-        thisAccessedTime = ((Long) stream.readObject());
+        long readThisAccessedTime = ((Long) stream.readObject());
+        //assign the read value from storage in case the value is greater than the current
+        //this means that other member from the cluster updated the value
+        if (readThisAccessedTime != 0 && readThisAccessedTime >= thisAccessedTime && !isAccessed) {
+            thisAccessedTime = readThisAccessedTime;
+        }
+        
         /* SJSWS 6371339
         principal = null;        // Transient only
         //        setId((String) stream.readObject());
@@ -2135,6 +2165,7 @@ public class StandardSession implements HttpSession, Session, Serializable {
 
         stream.writeObject(sipAppSessionId);
         stream.writeObject(beKey);
+        isAccessed = false;
     }
 
 

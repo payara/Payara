@@ -89,28 +89,28 @@
         <build.id>${build.number}</build.id>
         <maven.eclipse.plugin.version>2.10</maven.eclipse.plugin.version>
         <maven.invoker.plugin.version>3.6.1</maven.invoker.plugin.version>
-        <maven.war.plugin.version>3.3.2</maven.war.plugin.version>
+        <maven.war.plugin.version>3.4.0</maven.war.plugin.version>
         <maven.makepkgs.plugin.version>0.6.2</maven.makepkgs.plugin.version>
         <maven.jaxb2.plugin.version>0.15.3</maven.jaxb2.plugin.version>
         <maven.antlr.plugin.version>2.4</maven.antlr.plugin.version>
 
         <maven.jaxws.plugin.version>2.6</maven.jaxws.plugin.version>
         <maven.apt.plugin.version>1.0-alpha-5</maven.apt.plugin.version>
-        <maven.plugin.api.version>3.9.6</maven.plugin.api.version>
+        <maven.plugin.api.version>3.9.8</maven.plugin.api.version>
 
         <!-- Servlet -->
         <grizzly-npn-osgi.version>2.0.0</grizzly-npn-osgi.version>
 
         <!-- Library for introspecting types with full generic information including resolving of field and method types. -->
         <classmate.version>1.7.0</classmate.version>
-        <jboss-logging.version>3.5.0.Final</jboss-logging.version>
+        <jboss-logging.version>3.6.0.Final</jboss-logging.version>
 
 
 
         <!-- GlassFish MBean Annotation Library -->
         <antlr.version>2.7.7</antlr.version>
 
-        <commons-io.version>2.11.0</commons-io.version>
+        <commons-io.version>2.16.1</commons-io.version>
 
 
         <!-- Apache Felix is an open source implementation of the OSGi Core Release 8 framework specification. -->
@@ -123,7 +123,7 @@
         <org.apache.felix.gogo.command.version>1.1.2</org.apache.felix.gogo.command.version>
         <org.apache.felix.fileinstall.version>3.7.4.payara-p1</org.apache.felix.fileinstall.version>
         <org.apache.felix.configadmin.version>1.9.26</org.apache.felix.configadmin.version>
-        <org.apache.felix.scr.version>2.2.10</org.apache.felix.scr.version>
+        <org.apache.felix.scr.version>2.2.12</org.apache.felix.scr.version>
         <org.apache.felix.bundlerepository.version>2.0.10</org.apache.felix.bundlerepository.version>
 
         <!-- OSGi Promise and Function is required for Apache Felix scr -->
@@ -142,7 +142,7 @@
         <javadoc.options>-Xdoclint:none</javadoc.options>
 
         <!-- Debug / analysis -->
-        <jacoco-maven-plugin.version>0.8.8</jacoco-maven-plugin.version>
+        <jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
 
     </properties>
 
@@ -539,6 +539,27 @@ Parent is ${project.parent}</echo>
                 </configuration>
             </plugin>
 
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>add-resource</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>add-resource</goal>
+                        </goals>
+                        <configuration>
+                            <resources>
+                                <resource>
+                                    <directory>src/main/manpages</directory>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
         </plugins>
     </build>
 
@@ -807,7 +828,7 @@ Parent is ${project.parent}</echo>
             <dependency>
                 <groupId>org.bsc.maven</groupId>
                 <artifactId>maven-processor-plugin</artifactId>
-                <version>3.3.3</version>
+                <version>5.1-jdk8</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.annotations</groupId>

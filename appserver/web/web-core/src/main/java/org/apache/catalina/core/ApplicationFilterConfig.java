@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2019-2021] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2024] Payara Foundation and/or affiliates
 
 package org.apache.catalina.core;
 
@@ -324,8 +324,9 @@ final class ApplicationFilterConfig implements FilterConfig, Serializable {
                     String msg = rb.getString(LogFacade.DO_AS_PRIVILEGE);
                     log.log(Level.SEVERE, msg, ex);
                 }
-            } else { 
+            } else {
                 filter.destroy();
+                filterDef = null;
             }
 
             if (context != null) {
