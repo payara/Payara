@@ -278,7 +278,7 @@
                                     org.jboss.weld.util;
                                     org.jboss.weld.xml;version="5.0.99";shim=true,
                                     <!-- Downgrade shim for Jakarta Authorization, required by Soteria 3.0 -->
-                                    jakarta.security.jacc;version="2.1.99";shim=true;
+                                    jakarta.security.jacc;version="2.1.99";shim=true,
                                     <!-- eclipselink packages required by jersey-media-moxy (downgrade) -->
                                     org.eclipse.persistence.internal.core.helper;
                                     org.eclipse.persistence.jaxb;
