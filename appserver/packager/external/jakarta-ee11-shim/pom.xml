@@ -96,6 +96,11 @@
             <artifactId>weld-osgi-bundle</artifactId>
             <scope>provided</scope>
         </dependency>
+        <!-- Downgrade shim for Jakarta Authorization as Soteria not yet upgraded -->
+        <dependency>
+            <groupId>jakarta.authorization</groupId>
+            <artifactId>jakarta.authorization-api</artifactId>
+        </dependency>
 
         <!-- Downgrade shim for Eclipselink 4.0.1 (now 5.0.0-B02) as Jersey not yet upgraded and requires
         version of Eclipselink < 5.0 Remove once Jersey upgraded -->
@@ -142,8 +147,12 @@
                                     org.glassfish.hk2.utils,
                                     <!-- jakarta.el-->
                                     jakarta.el-api,
+                                    <!-- jakarta.authorization -->
+                                    jakarta.security.jacc-api,
                                     <!-- weld-osgi-bundle -->
                                     org.jboss.weld.osgi-bundle,
+                                    <!-- Downgrade shim for Jakarta Authorization, required by Soteria 3.0 -->
+                                    jakarta.security.jacc-api,
                                     <!--  eclipselink downgrade shim -->
                                     org.eclipse.persistence.core,
                                     org.eclipse.persistence.moxy
@@ -160,6 +169,8 @@
                                     jakarta.annotation.sql;version="2.1.99";shim=true,
                                     <!-- el previous version-->
                                     jakarta.el;version="5.0.99";shim=true,
+                                    <!-- authorization previous version-->
+                                    jakarta.security.jacc;version="2.1.99";shim=true,
                                     <!-- Downgrade shim for HK2 3.0 (now 4.0) as Jersey not yet upgraded to 4.0 and
                                     InSight not upgraded for EE11. Remove once Jersey upgraded to 4.0 and InSight
                                     upgraded to a version aligned with Payara 7 (presumably 3.0), or update this
@@ -260,7 +271,8 @@
                                     org.jboss.weld.security;
                                     org.jboss.weld.util;
                                     org.jboss.weld.xml;version="5.0.99";shim=true,
-
+                                    <!-- Downgrade shim for Jakarta Authorization, required by Soteria 3.0 -->
+                                    jakarta.security.jacc;version="2.1.99";shim=true,
                                     <!-- eclipselink packages required by jersey-media-moxy (downgrade) -->
                                     org.eclipse.persistence.internal.core.helper;
                                     org.eclipse.persistence.jaxb;
