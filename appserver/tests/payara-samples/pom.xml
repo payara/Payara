@@ -311,6 +311,12 @@
                 <artifactId>nimbus-jose-jwt</artifactId>
                 <version>${nimbus-jose-jwt.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>com.github.stephenc.jcip</groupId>
+                <artifactId>jcip-annotations</artifactId>
+                <version>${jcip-annotations.version}</version>
+            </dependency>
             <!-- Used to automatically configure microprofile rest client in tests -->
             <dependency>
                 <groupId>io.smallrye.config</groupId>
