@@ -1429,7 +1429,8 @@ public abstract class CLICommand implements PostConstruct {
     protected void buildTerminal() {
         try {
             if (terminal == null) {
-            terminal = TerminalBuilder.builder()
+                System.setProperty("org.jline.terminal.exec.redirectPipeCreationMode", "native");
+                terminal = TerminalBuilder.builder()
                     .system(true)
                     .build();
             }
