@@ -82,7 +82,7 @@
     <licenses>
         <license>
             <name>CDDL + GPLv2 with classpath exception</name>
-            <url>https://raw.githubusercontent.com/payara/Payara/master/LICENSE.txt</url>
+            <url>https://raw.githubusercontent.com/payara/Payara/main/LICENSE.txt</url>
             <distribution>repo</distribution>
             <comments>A business-friendly OSS license</comments>
         </license>

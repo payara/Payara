@@ -8,7 +8,7 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://github.com/payara/Payara/blob/master/LICENSE.txt
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
  * See the License for the specific
  * language governing permissions and limitations under the License.
  *
@@ -47,7 +47,7 @@ import java.util.stream.Stream;
 
 /**
  * Node types and their structure as described by Open API Specification
- * {@link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md}.
+ * {@link https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.0.0.md}.
  */
 public enum NodeType implements Iterable<Field> {
 
