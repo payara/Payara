@@ -60,7 +60,7 @@
 
     <!-- Don't inherit SCM from parent since flatten resolves it incorrectly in a similar manner to the URL -->
     <scm>
-        <url>https://github.com/payara/Payara/tree/master</url>
+        <url>https://github.com/payara/Payara/tree/main</url>
         <connection>scm:git:git://github.com/payara/payara.git</connection>
         <developerConnection>scm:git:ssh://github.com:payara/payara.git</developerConnection>
     </scm>
