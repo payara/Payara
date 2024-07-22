@@ -78,12 +78,7 @@ import org.jvnet.hk2.annotations.Service;
         @RestEndpoint(configBean = Domain.class,
                 opType = RestEndpoint.OpType.GET,
                 path = "clear-cache",
-                description = "Clears a JCache or Hazalcast IMap"),
-        @RestEndpoint(configBean = Domain.class,
-                opType = RestEndpoint.OpType.GET,
-                path = "lclear-cache",
                 description = "Clears a JCache or Hazalcast IMap")
-
 })
 public class ClearCache implements AdminCommand {
 
