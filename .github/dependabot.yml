@@ -11,7 +11,7 @@ updates:
     schedule:
       interval: "daily"
     open-pull-requests-limit: 5
-    target-branch: "master"
+    target-branch: "main"
     ignore:
       # Ignore major and minor version updates for dependencies with group IDs starting with jakarta
       - dependency-name: "jakarta.*"
