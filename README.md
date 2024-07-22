@@ -33,7 +33,7 @@ Access the complete Payara&nbsp;Server and Payara&nbsp;Micro documentation:
 
 ## Code Contributions
 
-If you are interested in contributing code to the Payara Platform Community edition, please read the official [Contributing Guidelines](https://github.com/payara/Payara/blob/master/.github/CONTRIBUTING.md) for more information and detailed instructions on how to submit your contributions to this repository.
+If you are interested in contributing code to the Payara Platform Community edition, please read the official [Contributing Guidelines](https://github.com/payara/Payara/blob/main/.github/CONTRIBUTING.md) for more information and detailed instructions on how to submit your contributions to this repository.
 
 -----------------------
 
