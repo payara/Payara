@@ -49,7 +49,7 @@
     <parent>
         <groupId>fish.payara.server.internal.admingui</groupId>
         <artifactId>admingui</artifactId>
-        <version>6.2024.7-SNAPSHOT</version>
+        <version>6.2024.8-SNAPSHOT</version>
     </parent>
 
     <artifactId>console-devtests</artifactId>
@@ -62,7 +62,7 @@
     </developers>
 
     <properties>
-        <selenium.version>2.40.0</selenium.version>
+        <selenium-server.version>2.40.0</selenium-server.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -162,7 +162,7 @@
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
             <artifactId>selenium-server</artifactId>
-            <version>${selenium.version}</version>
+            <version>${selenium-server.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.testng</groupId>

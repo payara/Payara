@@ -47,7 +47,7 @@
     <parent>
 	<groupId>fish.payara.server.internal.persistence.cmp</groupId>
     	<artifactId>cmp</artifactId>
-        <version>6.2024.7-SNAPSHOT</version>
+        <version>6.2024.8-SNAPSHOT</version>
     </parent>
     <artifactId>cmp-generator-database</artifactId>
     <packaging>glassfish-jar</packaging>
@@ -91,33 +91,4 @@
             <artifactId>common-util</artifactId>
         </dependency>
     </dependencies>
-    
-    <!--
-        Findbugs needs org.netbeans.external:ddl,
-        we isolate it in a profile as it requires a separate repository definition.
-        can be removed once GLASSFISH-20835 is resolved
-    -->
-    <profiles>
-        <profile>
-            <id>findbugs</id>
-            <repositories>
-                <repository>
-                    <id>netbeans</id>
-                    <releases>
-                        <enabled>true</enabled>
-                    </releases>
-                    <snapshots>
-                        <enabled>false</enabled>
-                    </snapshots>
-                    <url>https://bits.netbeans.org/maven2</url>
-                </repository>
-            </repositories>
-            <dependencies>
-                <dependency>
-                    <groupId>org.netbeans.external</groupId>
-                    <artifactId>ddl</artifactId>
-                </dependency>
-            </dependencies>
-        </profile>
-    </profiles>    
 </project>

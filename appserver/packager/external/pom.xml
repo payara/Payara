@@ -52,7 +52,7 @@
     <parent>
       <groupId>fish.payara.server</groupId>
       <artifactId>payara-parent</artifactId>
-      <version>6.2024.7-SNAPSHOT</version>
+      <version>6.2024.8-SNAPSHOT</version>
       <relativePath>../../pom.xml</relativePath>
     </parent>
     
@@ -60,10 +60,6 @@
     <groupId>fish.payara.server.internal.packager</groupId>
     <artifactId>external</artifactId>
     <name>Repackaged external modules</name>
-
-    <properties>
-        <findbugs.skip>true</findbugs.skip>
-    </properties>
 
     <modules>
         <module>ant</module>

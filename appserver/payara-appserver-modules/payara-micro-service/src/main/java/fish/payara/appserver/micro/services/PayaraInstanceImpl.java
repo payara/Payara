@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2021 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2024 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -141,10 +141,7 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
 
     private UUID myCurrentID;
 
-    private String instanceName;
-    private String instanceGroup;
-
-    private final LazyHolder<InstanceDescriptorImpl> descriptor = lazyHolder(this::initialiseInstanceDescriptor);
+    private LazyHolder<InstanceDescriptorImpl> descriptor = lazyHolder(this::initialiseInstanceDescriptor);
 
     @Inject
     private ServerEnvironment environment;
@@ -161,12 +158,11 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
 
     @Override
     public String getInstanceName() {
-        return instanceName;
+        return descriptor.get().getInstanceName();
     }
 
     @Override
     public void setInstanceName(String instanceName) {
-        this.instanceName = instanceName;
         descriptor.get().setInstanceName(instanceName);
     }
 
@@ -295,10 +291,14 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
                 cluster.getClusteredStore().set(INSTANCE_STORE_NAME, myCurrentID, descriptor.get());
             }
         } else if (event.is(HazelcastEvents.HAZELCAST_SHUTDOWN_STARTED)) {
+            // Set to null to help prevent the scheduled heartbeat task re-adding the descriptor we're removing here.
+            myCurrentID = null;
             PayaraInternalEvent pie = new PayaraInternalEvent(PayaraInternalEvent.MESSAGE.REMOVED, descriptor.get());
             ClusterMessage<PayaraInternalEvent> message = new ClusterMessage<>(pie);
             this.cluster.getClusteredStore().remove(INSTANCE_STORE_NAME, myCurrentID);
             this.cluster.getEventBus().publish(INTERNAL_EVENTS_NAME, message);
+            // Create a new lazy initialiser
+            descriptor = lazyHolder(this::initialiseInstanceDescriptor);
         }
 
         // When Hazelcast is bootstrapped, update the instance descriptor with any new information
@@ -375,6 +375,8 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
     }
 
     private InstanceDescriptorImpl initialiseInstanceDescriptor() {
+        String instanceName = "payara-micro";
+        String instanceGroup = "no-cluster";
         boolean liteMember = false;
         int hazelcastPort = 5900;
         InetAddress hostname = null;
@@ -387,9 +389,6 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
             liteMember = hazelcast.isLite();
             hazelcastPort = hazelcast.getPort();
             hostname = hazelcast.getInstance().getCluster().getLocalMember().getSocketAddress().getAddress();
-        } else {
-            instanceName = "payara-micro";
-            instanceGroup = "no-cluster";
         }
 
         // Get this instance's runtime type

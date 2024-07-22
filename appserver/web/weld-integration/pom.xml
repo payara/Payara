@@ -48,7 +48,7 @@
     <parent>
 	      <groupId>fish.payara.server.internal.web</groupId>
     	  <artifactId>web</artifactId>
-        <version>6.2024.7-SNAPSHOT</version>
+        <version>6.2024.8-SNAPSHOT</version>
     </parent>
 
     <artifactId>weld-integration</artifactId>
@@ -68,10 +68,6 @@
             <organization>Oracle, Inc.</organization>
         </developer>
     </developers>
-
-    <properties>
-        <findbugs.exclude>${project.basedir}/exclude.xml</findbugs.exclude>
-    </properties>
 
     <build>
         <resources>

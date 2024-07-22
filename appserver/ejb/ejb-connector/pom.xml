@@ -47,16 +47,12 @@
     <parent>
         <groupId>fish.payara.server.internal.ejb</groupId>
         <artifactId>ejb</artifactId>
-        <version>6.2024.7-SNAPSHOT</version>
+        <version>6.2024.8-SNAPSHOT</version>
     </parent>
     <artifactId>gf-ejb-connector</artifactId>
     <packaging>glassfish-jar</packaging>
     
     <name>EJB Container connector for Glassfish</name>
-
-    <properties>
-        <findbugs.exclude>${project.basedir}/exclude.xml</findbugs.exclude>
-    </properties>
     
     <developers>
         <developer>

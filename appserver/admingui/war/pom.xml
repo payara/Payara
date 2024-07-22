@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server.internal.admingui</groupId>
         <artifactId>admingui</artifactId>
-        <version>6.2024.7-SNAPSHOT</version>
+        <version>6.2024.8-SNAPSHOT</version>
     </parent>
     <artifactId>war</artifactId>
     <packaging>war</packaging>
@@ -171,19 +171,6 @@
             <properties>
                 <!-- Set to empty so that the replacement is done correctly in sun-web.xml -->
                 <enterprise.theme.classifier></enterprise.theme.classifier>
-            </properties>
-        </profile>
-        <profile>
-            <id>enterprise</id>
-            <dependencies>
-                <dependency>
-                    <groupId>org.glassfish.woodstock</groupId>
-                    <artifactId>woodstock-webui-jsf-suntheme</artifactId>
-                    <classifier>enterprise</classifier>
-                </dependency>
-            </dependencies>
-            <properties>
-                <enterprise.theme.classifier>-enterprise</enterprise.theme.classifier>
             </properties>
         </profile>
     </profiles>

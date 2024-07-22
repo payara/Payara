@@ -46,17 +46,13 @@
     <parent>
         <groupId>fish.payara.server.internal.jdbc.jdbc-ra</groupId>
         <artifactId>jdbc-ra</artifactId>
-        <version>6.2024.7-SNAPSHOT</version>
+        <version>6.2024.8-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>fish.payara.server.internal.jdbc.jdbc-ra.jdbc40</groupId>
     <artifactId>jdbc40</artifactId>
     <packaging>glassfish-jar</packaging>
     <name>JDBC 40 related classes for JDBC Resource Adapter</name>
-
-    <properties>
-        <findbugs.exclude>${project.basedir}/exclude.xml</findbugs.exclude>
-    </properties>
 
     <build>
         <resources>

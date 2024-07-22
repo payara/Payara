@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server.core</groupId>
         <artifactId>core-parent</artifactId>
-        <version>6.17.0-SNAPSHOT</version>
+        <version>6.18.0-SNAPSHOT</version>
         <relativePath>../../../core/core-parent</relativePath>
     </parent>
 
@@ -85,10 +85,6 @@
             </roles>
         </developer>
     </developers>
-
-    <properties>
-	   <findbugs.exclude>${project.basedir}/exclude.xml</findbugs.exclude>
-    </properties>
 
     <build>
         <resources>

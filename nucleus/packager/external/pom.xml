@@ -52,7 +52,7 @@
     <parent>
       <groupId>fish.payara.server</groupId>
       <artifactId>payara-nucleus-parent</artifactId>
-      <version>6.2024.7-SNAPSHOT</version>
+      <version>6.2024.8-SNAPSHOT</version>
       <relativePath>../../pom.xml</relativePath>
     </parent>
     
@@ -60,10 +60,6 @@
     <groupId>fish.payara.server.internal.packager</groupId>
     <artifactId>nucleus-external</artifactId>
     <name>Repackaged nucleus external modules</name>
-
-    <properties>
-        <findbugs.skip>true</findbugs.skip>
-    </properties>
 
     <modules>
         <module>vboxjws</module>

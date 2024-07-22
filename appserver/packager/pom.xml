@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-parent</artifactId>
-        <version>6.2024.7-SNAPSHOT</version>
+        <version>6.2024.8-SNAPSHOT</version>
     </parent>
     
     <groupId>fish.payara.server.internal.packager</groupId>
@@ -172,7 +172,6 @@
         <stage.dir>${project.build.directory}/${stage.dir.name}/${install.dir.name}</stage.dir>
         <temp.dir>${stage.dir}</temp.dir>        
         <temp.modules.dir>${temp.dir}/glassfish/modules</temp.modules.dir>
-        <findbugs.skip>true</findbugs.skip>
         <zip.excludes>**\/META-INF,META-INF\/*</zip.excludes>
         <pkg_proto.py>src/main/resources/pkg_proto.py</pkg_proto.py>
     </properties>

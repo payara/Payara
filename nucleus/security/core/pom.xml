@@ -48,7 +48,7 @@
     <parent>
         <groupId>fish.payara.server.core</groupId>
         <artifactId>core-parent</artifactId>
-        <version>6.17.0-SNAPSHOT</version>
+        <version>6.18.0-SNAPSHOT</version>
         <relativePath>../../../core/core-parent</relativePath>
     </parent>
     <groupId>fish.payara.server.core.security</groupId>
@@ -75,10 +75,6 @@
             </roles>
         </developer>
     </developers>
-
-    <properties>
-        <findbugs.exclude>${project.basedir}/exclude.xml</findbugs.exclude>
-    </properties>
 
     <build>
         <sourceDirectory>src/main/java</sourceDirectory>
@@ -207,11 +203,6 @@
         <dependency>
             <groupId>fish.payara.api</groupId>
             <artifactId>payara-api</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency> <!-- for FindBugs -->
-            <groupId>fish.payara.server.core.common</groupId>
-            <artifactId>simple-glassfish-api</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>

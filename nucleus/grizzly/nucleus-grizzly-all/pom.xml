@@ -48,7 +48,7 @@
     <parent>
         <groupId>fish.payara.server.core</groupId>
         <artifactId>core-parent</artifactId>
-        <version>6.17.0-SNAPSHOT</version>
+        <version>6.18.0-SNAPSHOT</version>
         <relativePath>../../../core/core-parent</relativePath>
     </parent>
 
@@ -71,7 +71,6 @@
 
     <properties>
         <gmbal.grizzly.version>4.0.3</gmbal.grizzly.version>
-        <findbugs.skip>true</findbugs.skip>
         <jar.manifest></jar.manifest>
     </properties>    
 
@@ -151,34 +150,4 @@
             <scope>provided</scope>
         </dependency>        
     </dependencies>
-
-    <profiles>
-        <profile>
-            <!-- generate empty javadoc jar -->
-            <id>release-phase2</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-jar-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>create-empty-javadoc-jar</id>
-                                <goals>
-                                    <goal>jar</goal>
-                                </goals>
-                                <configuration>
-                                    <classesDirectory>${project.build.directory}/javadoc</classesDirectory>
-                                    <classifier>javadoc</classifier>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 </project>

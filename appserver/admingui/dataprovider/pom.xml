@@ -45,7 +45,7 @@
     <parent>
         <groupId>fish.payara.server.core</groupId>
         <artifactId>core-parent</artifactId>
-        <version>6.17.0-SNAPSHOT</version>
+        <version>6.18.0-SNAPSHOT</version>
         <relativePath>../../../core/core-parent</relativePath>
     </parent>
     <groupId>fish.payara.server.core.admingui</groupId>
@@ -53,14 +53,6 @@
     <name>DataProvider</name>
     <modelVersion>4.0.0</modelVersion>
     <description>DataProvider Repackaged as OSGi bundle for Payara</description>
-
-    <properties>
-        <!--
-            Exclude this module because the source code isn't here;
-            it comes from an external project that we don't modify.
-        -->
-        <findbugs.skip>true</findbugs.skip>
-    </properties>
 
     <build>
         <plugins>
@@ -124,34 +116,4 @@
             <scope>provided</scope>
         </dependency>
     </dependencies>
-
-    <profiles>
-        <profile>
-            <!-- generate empty javadoc jar -->
-            <id>release-phase2</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-jar-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>create-empty-javadoc-jar</id>
-                                <goals>
-                                    <goal>jar</goal>
-                                </goals>
-                                <configuration>
-                                    <classesDirectory>${project.build.directory}/javadoc</classesDirectory>
-                                    <classifier>javadoc</classifier>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 </project>

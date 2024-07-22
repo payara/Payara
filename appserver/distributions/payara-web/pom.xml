@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.distributions</groupId>
         <artifactId>distributions</artifactId>
-        <version>6.2024.7-SNAPSHOT</version>
+        <version>6.2024.8-SNAPSHOT</version>
     </parent>
     <artifactId>payara-web</artifactId>
     <name>Payara Web Distribution</name>
@@ -129,30 +129,6 @@
             </plugin>
         </plugins>
     </build>
-    <profiles>
-        <profile>
-            <id>ips</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
-                        <artifactId>maven-antrun-extended-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>create-ips-distribution</id>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 
     <dependencies>
         <!-- following dependencies are needed to run tests... -->

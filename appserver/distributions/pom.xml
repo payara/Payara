@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-parent</artifactId>
-        <version>6.2024.7-SNAPSHOT</version>
+        <version>6.2024.8-SNAPSHOT</version>
     </parent>
 
     <groupId>fish.payara.distributions</groupId>
@@ -215,49 +215,5 @@
                 <module>payara</module>
             </modules>
         </profile>
-
-        <profile>
-            <id>ips</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
-                        <artifactId>maven-antrun-extended-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>repo-import</id>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                                <phase>package</phase>
-                                <configuration>
-                                    <tasks>
-                                        <ant dir="." antfile="./repo-import.xml" />
-                                    </tasks>
-                                </configuration>
-                            </execution>
-                        </executions>
-                        <inherited>false</inherited>
-                    </plugin>
-                </plugins>
-            </build>
-
-            <dependencies>
-                <dependency>
-                    <groupId>org.glassfish.mq</groupId>
-                    <artifactId>mq-distribution</artifactId>
-                    <version>${mq.version}</version>
-                    <classifier>repo</classifier>
-                    <type>zip</type>
-                </dependency>
-                <dependency>
-                    <groupId>com.h2database</groupId>
-                    <artifactId>h2</artifactId>
-                    <version>${h2db.version}</version>
-                    <type>zip</type>
-                </dependency>
-            </dependencies>
-        </profile>
-
     </profiles>
 </project>

@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server.internal.persistence.cmp</groupId>
         <artifactId>cmp</artifactId>
-        <version>6.2024.7-SNAPSHOT</version>
+        <version>6.2024.8-SNAPSHOT</version>
     </parent>
     <artifactId>cmp-support-sqlstore</artifactId>
     <packaging>glassfish-jar</packaging>
@@ -65,10 +65,6 @@
             </roles>
         </developer>
     </developers>
-
-    <properties>
-        <findbugs.exclude>${project.basedir}/exclude.xml</findbugs.exclude>
-    </properties>
 
     <build>
         <resources>

@@ -49,7 +49,7 @@
     <parent>
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-nucleus-parent</artifactId>
-        <version>6.2024.7-SNAPSHOT</version>
+        <version>6.2024.8-SNAPSHOT</version>
         <relativePath>../nucleus/pom.xml</relativePath>
     </parent>
 
@@ -276,7 +276,7 @@
                             <nonFinal>false</nonFinal>
                             <jarType>api</jarType>
                             <specVersion>2.2</specVersion>
-                            <specImplVersion>${jstl-impl.version}</specImplVersion>
+                            <specImplVersion>${jakarta.servlet.jsp.jstl.version}</specImplVersion>
                             <apiPackage>jakarta.servlet.jsp.jstl</apiPackage>
                         </spec>
 
@@ -569,7 +569,7 @@
             <dependency>
                 <groupId>org.bsc.maven</groupId>
                 <artifactId>maven-processor-plugin</artifactId>
-                <version>2.0.4</version>
+                <version>5.1-jdk8</version>
             </dependency>
             <!-- contrary to what BOM says, this processor is packaged with the server, and therefore needs compile scope -->
             <dependency>
@@ -579,20 +579,10 @@
                 <scope>compile</scope>
             </dependency>
 
-            <!--
-                only used to satisfy findbugs,
-                can be removed once GLASSFISH-20835 is resolved
-            -->
-            <dependency>
-                <groupId>org.netbeans.external</groupId>
-                <artifactId>ddl</artifactId>
-                <version>RELEASE210</version>
-            </dependency>
-
             <dependency>
                 <groupId>org.jboss.logging</groupId>
                 <artifactId>jboss-logging</artifactId>
-                <version>${jboss.logging.version}</version>
+                <version>${jboss-logging.version}</version>
                 <optional>true</optional>
             </dependency>
             
@@ -614,13 +604,4 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-
-    <profiles>
-        <profile>
-            <id>enterprise</id>
-            <properties>
-                <product.name>Payara Server Enterprise</product.name>
-            </properties>
-        </profile>
-    </profiles>
 </project>

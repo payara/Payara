@@ -60,6 +60,9 @@ pipeline {
                     agent {
                         label 'general-purpose'
                     }
+                    options {
+                        retry(3)
+                    }
                     steps {
                         setupDomain()
                         
@@ -86,6 +89,9 @@ pipeline {
                     agent {
                         label 'general-purpose'
                     }
+                    options {
+                        retry(3)
+                    }
                     steps {
                         setupDomain()
                         
@@ -109,6 +115,9 @@ pipeline {
                 stage('MP TCK Runners') {
                     agent {
                         label 'general-purpose'
+                    }
+                    options {
+                        retry(3)
                     }
                     steps{
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
@@ -140,6 +149,9 @@ pipeline {
                     agent {
                         label 'general-purpose'
                     }
+                    options {
+                        retry(3)
+                    }
                     steps{
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out EE8 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
@@ -168,6 +180,9 @@ pipeline {
                 stage('CargoTracker Tests') {
                     agent {
                         label 'general-purpose'
+                    }
+                    options {
+                        retry(3)
                     }
                     steps{
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out cargoTracker tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
@@ -201,6 +216,9 @@ pipeline {
                     agent {
                         label 'general-purpose'
                     }
+                    options {
+                        retry(3)
+                    }
                     steps{
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out EE7 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
@@ -232,6 +250,9 @@ pipeline {
                     agent {
                         label 'general-purpose'
                     }
+                    options {
+                        retry(3)
+                    }
                     steps {
                         setupM2RepositoryOnly()
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Unstash Micro and Embedded *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
@@ -251,13 +272,14 @@ pipeline {
                         sh """mvn -V -B -ff clean install --strict-checksums -Ppayara-micro-managed,install-deps \
                         -Dpayara.version=${pom.version} \
                         -f appserver/tests/functional/payara-micro """
-
+                        
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test with Payara Embedded  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         sh """mvn -V -B -ff clean verify --strict-checksums -PFullProfile \
                         -Dversion=${pom.version} -f appserver/tests/functional/embeddedtest """
-
+                        
                         sh """mvn -V -B -ff clean verify --strict-checksums -PWebProfile \
                         -Dversion=${pom.version} -f appserver/tests/functional/embeddedtest """
+                        
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                     }
                     post {

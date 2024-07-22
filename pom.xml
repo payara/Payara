@@ -46,11 +46,11 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>fish.payara.server</groupId>
     <artifactId>payara-aggregator</artifactId>
-    <version>6.2024.7-SNAPSHOT</version>
+    <version>6.2024.8-SNAPSHOT</version>
     <parent>
         <groupId>fish.payara.server.core</groupId>
         <artifactId>core-aggregator</artifactId>
-        <version>6.17.0-SNAPSHOT</version>
+        <version>6.18.0-SNAPSHOT</version>
         <relativePath>core</relativePath>
     </parent>
     <packaging>pom</packaging>
@@ -145,35 +145,35 @@
     </distributionManagement>
 
     <properties>
-        <dynamic.build.properties.version>0.0.1.a2</dynamic.build.properties.version>
+        <dynamic-build-properties-maven-plugin.version>0.0.1.a2</dynamic-build-properties-maven-plugin.version>
 
         <javase.version>${jdk.version}</javase.version>
         <!-- BOM-referenced versions -->
 
         <osgi-resource-locator.version>1.0.3</osgi-resource-locator.version>
         <snakeyaml.version>2.2</snakeyaml.version>
-        <jstl-impl.version>3.0.1</jstl-impl.version>
+        <jakarta.servlet.jsp.jstl.version>3.0.1</jakarta.servlet.jsp.jstl.version>
         <mojarra.version>4.0.0.payara-p2</mojarra.version>
         <jaxb-extra-osgi.version>2.3.0</jaxb-extra-osgi.version>
 
         <yasson.version>3.0.3</yasson.version>
         <eclipselink.version>4.0.1.payara-p2</eclipselink.version>
-        <eclipselink.asm.version>9.6.0</eclipselink.asm.version>
-        <mq.version>6.3.0.payara-p3</mq.version>
+        <eclipselink.asm.version>9.7.0</eclipselink.asm.version>
+        <openmq.version>6.3.0.payara-p3</openmq.version>
         <com.ibm.jbatch.container.version>2.1.1</com.ibm.jbatch.container.version>
         <com.ibm.jbatch.spi.version>2.1.1</com.ibm.jbatch.spi.version>
         <webservices.version>4.0.3.payara-p1</webservices.version>
-        <org.apache.santuario.version>4.0.0</org.apache.santuario.version>
+        <santuario.version>4.0.0</santuario.version>
         <woodstox.version>6.6.2</woodstox.version>
         <woodstock-jsf.version>5.0.0</woodstock-jsf.version>
         <woodstock-jsf-suntheme.version>5.0.0.payara-p1</woodstock-jsf-suntheme.version>
-        <angus.activation.version>1.0.0</angus.activation.version>
+        <angus-activation.version>1.0.0</angus-activation.version>
         <istack-commons-runtime.version>4.2.0</istack-commons-runtime.version>
         <wsdl4j.version>1.6.3</wsdl4j.version>
         <microprofile-release.version>6.1</microprofile-release.version>
-        <payara-arquillian-container.version>3.0.alpha6</payara-arquillian-container.version>
+        <payara-arquillian-container.version>3.0</payara-arquillian-container.version>
         <h2db.version>2.2.224</h2db.version>
-        <concurrent.version>3.0.2.payara-p1</concurrent.version>
+        <concurro.version>3.0.2.payara-p1</concurro.version>
         <monitoring-console-process.version>2.0.2</monitoring-console-process.version>
         <monitoring-console-webapp.version>2.0.2</monitoring-console-webapp.version>
         <validation.xml.root>${project.build.outputDirectory}</validation.xml.root>
@@ -387,7 +387,7 @@
             <plugin>
                 <groupId>fish.payara.maven.plugins</groupId>
                 <artifactId>dynamic-build-properties-maven-plugin</artifactId>
-                <version>${dynamic.build.properties.version}</version>
+                <version>${dynamic-build-properties-maven-plugin.version}</version>
                 <executions>
                     <execution>
                         <phase>validate</phase>

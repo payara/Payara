@@ -46,7 +46,7 @@
   <parent>
     <artifactId>payara-parent</artifactId>
     <groupId>fish.payara.server</groupId>
-    <version>6.2024.7-SNAPSHOT</version>
+    <version>6.2024.8-SNAPSHOT</version>
     <relativePath>../../pom.xml</relativePath>
   </parent>
   <modelVersion>4.0.0</modelVersion>
@@ -83,7 +83,7 @@
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpcore</artifactId>
-      <version>4.4.15</version>
+      <version>4.4.16</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>

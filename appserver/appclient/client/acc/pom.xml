@@ -48,7 +48,7 @@
     <parent>
         <groupId>fish.payara.server.appclient</groupId>
         <artifactId>client</artifactId>
-        <version>6.2024.7-SNAPSHOT</version>
+        <version>6.2024.8-SNAPSHOT</version>
     </parent>
     
     
@@ -81,7 +81,6 @@
 
         <standalone.classifier>lib</standalone.classifier>
         <acc.osgi.module.classifier>module</acc.osgi.module.classifier>
-        <findbugs.exclude>${project.basedir}/exclude.xml</findbugs.exclude>
     </properties>
 
     <developers>

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2024] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.cli;
 
@@ -1429,7 +1429,8 @@ public abstract class CLICommand implements PostConstruct {
     protected void buildTerminal() {
         try {
             if (terminal == null) {
-            terminal = TerminalBuilder.builder()
+                System.setProperty(TerminalBuilder.PROP_REDIRECT_PIPE_CREATION_MODE, TerminalBuilder.PROP_REDIRECT_PIPE_CREATION_MODE_NATIVE);
+                terminal = TerminalBuilder.builder()
                     .system(true)
                     .build();
             }
