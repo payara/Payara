@@ -3,7 +3,7 @@
 As with many open source projects Payara is hosted on Github, allowing anyone to contribute code and help with its development. To make sure that development is coordinated and that changes are easily tracked, we have a series of steps that should be followed in order to get your code merged.
 
 ## Legal Bits
-Payara is an open source project, with the code owned by Payara Foundation a United Kingdom based not for profit company limited by guarantee. As Payara Foundation are the custodians of the code, we have specific legal requirements concerning how we distribute code contributed to the project. Before any code contributed by our community is pulled into our repository we must have a signed Contributor License Agreement from any contributor. This can be downloaded from the main repository at [https://github.com/payara/Payara/blob/master/PayaraCLA.pdf](https://github.com/payara/Payara/blob/master/PayaraCLA.pdf) and should be signed, scanned, and forwarded to [cla@payara.org](mailto:cla@payara.org). As compensation for wading through the legalese, all contributors who send in a signed Contributor License Agreement receive a Payara goodie bag.
+Payara is an open source project, with the code owned by Payara Foundation a United Kingdom based not for profit company limited by guarantee. As Payara Foundation are the custodians of the code, we have specific legal requirements concerning how we distribute code contributed to the project. Before any code contributed by our community is pulled into our repository we must have a signed Contributor License Agreement from any contributor. This can be downloaded from the main repository at [https://github.com/payara/Payara/blob/main/PayaraCLA.pdf](https://github.com/payara/Payara/blob/main/PayaraCLA.pdf) and should be signed, scanned, and forwarded to [cla@payara.org](mailto:cla@payara.org). As compensation for wading through the legalese, all contributors who send in a signed Contributor License Agreement receive a Payara goodie bag.
 
 As we must also comply with the upstream Oracle Common Development and Distribution license the following line should be added to any changed file:
 
@@ -58,20 +58,20 @@ To get the latest updates from upstream and merge them into your local repo, ent
 git fetch upstream
 ```
 
-Then ensure that you are on your local master branch (as opposed to any issue branches you may have):
+Then ensure that you are on your local main branch (as opposed to any issue branches you may have):
 
 ```
-git checkout master
+git checkout main
 ```
 
-Finally, pull in the changes from upstream to your master and update your remote repository:
+Finally, pull in the changes from upstream to your main and update your remote repository:
 
 ```
-git pull upstream master
+git pull upstream main
 ```
 
 ```
-git push origin master
+git push origin main
 ```
 
 ## Working on an issue
@@ -117,18 +117,18 @@ git add  . [or specify specific files
 git commit -m "fixes #<GithubNumber>"
 ```
 
-Before you merge the branch, ensure that you have updated your master to match the upstream payara. This can be accomplished by using the following:
+Before you merge the branch, ensure that you have updated your main to match the upstream payara. This can be accomplished by using the following:
 
-First, switch to the master branch:
-
-```
-git checkout master
-```
-
-Then synchronise your branch with the changes from master:
+First, switch to the main branch:
 
 ```
-git pull upstream master
+git checkout main
+```
+
+Then synchronise your branch with the changes from main:
+
+```
+git pull upstream main
 ```
 
 Flip back to your own branch, with your changes:
@@ -137,10 +137,10 @@ Flip back to your own branch, with your changes:
 git checkout <YourBranchName>
 ```
 
-Merge said changes with the master branch by rebasing your code (effectively a neater marge for private repos):
+Merge said changes with the main branch by rebasing your code (effectively a neater marge for private repos):
 
 ```
-git rebase master
+git rebase main
 ```
 
 Finally, push the changes from your branch to a new branch on the main repo (origin), with the same name (so as to preserve the issue numbers and history):
