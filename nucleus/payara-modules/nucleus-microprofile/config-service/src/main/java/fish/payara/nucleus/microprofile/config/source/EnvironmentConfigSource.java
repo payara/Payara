@@ -8,7 +8,7 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://github.com/payara/Payara/blob/master/LICENSE.txt
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
  * See the License for the specific
  * language governing permissions and limitations under the License.
  *
@@ -72,7 +72,7 @@ public class EnvironmentConfigSource implements ConfigSource {
     public String getValue(String propertyName) {
 
         // search environment variables as defined in the spec
-        // https://github.com/eclipse/microprofile-config/blob/master/spec/src/main/asciidoc/configsources.asciidoc
+        // https://github.com/eclipse/microprofile-config/blob/main/spec/src/main/asciidoc/configsources.asciidoc
 
         //Done this way to resolve PAYARA-3064 instead of genenv(propertyname)
         //as windows is case-insensitive but Java is not
