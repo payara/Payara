@@ -91,7 +91,7 @@ public class ClearCache implements AdminCommand {
     @Param(name = "target", optional = true, defaultValue = "server")
     protected String target;
 
-    @Param(name = "name", defaultValue = "")
+    @Param(name = "cache-name", defaultValue = "")
     protected String cacheName;
     
     @Param(name = "key", optional = true)
