@@ -192,10 +192,14 @@ public class BindableResourcesHelper {
                 _logger.fine("ResourcesUtil :: isResourceReferenceEnabled null ref in Server" + getServer().getName());
             }
             try {
-                _logger.fine("ResourcesUtil :: Verifying resource in domain" + br.getJndiName());
+                if(_logger.isLoggable(Level.FINE)) {
+                    _logger.fine("ResourcesUtil :: Verifying resource in domain" + br.getJndiName());
+                }
                 return verifyResourceInDomain(br.getJndiName());
             } catch (TransactionFailure e) {
-                _logger.warning("ResourcesUtil :: issue when verifying resource in domain:" + br.getJndiName());
+                if(_logger.isLoggable(Level.FINE)) {
+                    _logger.fine("ResourcesUtil :: issue when verifying resource in domain:" + br.getJndiName());
+                }
                 return false;
             }
            
