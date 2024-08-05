@@ -285,13 +285,13 @@ public class BindableResourcesHelper {
 
     private Server getServer(){
         if(server == null){
-            server = habitat.<Domain>getService(Domain.class).getServerNamed(environment.getInstanceName());
+            server = habitat.getService(Domain.class).getServerNamed(environment.getInstanceName());
         }
         return server;
     }
     
     private Domain getDomain() {
-        return habitat.<Domain>getService(Domain.class);
+        return habitat.getService(Domain.class);
     }
     
     private Resources getDomainResources() {
