@@ -76,7 +76,7 @@ import org.jvnet.hk2.annotations.Service;
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG, CommandTarget.DEPLOYMENT_GROUP})
 @RestEndpoints({
         @RestEndpoint(configBean = Domain.class,
-                opType = RestEndpoint.OpType.GET,
+                opType = RestEndpoint.OpType.POST,
                 path = "clear-cache",
                 description = "Clears a JCache or Hazalcast IMap")
 })
@@ -91,7 +91,7 @@ public class ClearCache implements AdminCommand {
     @Param(name = "target", optional = true, defaultValue = "server")
     protected String target;
 
-    @Param(name = "name", defaultValue = "")
+    @Param(name = "cacheName", alias = "cachename", defaultValue = "")
     protected String cacheName;
     
     @Param(name = "key", optional = true)
