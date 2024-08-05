@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2024] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.resourcebase.resources.util;
 
@@ -54,6 +55,7 @@ import java.util.logging.Logger;
 
 import org.glassfish.logging.annotation.LoggerInfo;
 import org.glassfish.logging.annotation.LogMessagesResourceBundle;
+import org.jvnet.hk2.config.TransactionFailure;
 
 
 /**
@@ -187,12 +189,33 @@ public class BindableResourcesHelper {
             resourceRefEnabled = Boolean.valueOf(ref.getEnabled());
         } else {
             if(_logger.isLoggable(Level.FINE)) {
-                _logger.fine("ResourcesUtil :: isResourceReferenceEnabled null ref");
+                _logger.fine("ResourcesUtil :: isResourceReferenceEnabled null ref in Server" + getServer().getName());
             }
+            try {
+                if(_logger.isLoggable(Level.FINE)) {
+                    _logger.fine("ResourcesUtil :: Verifying resource in domain" + br.getJndiName());
+                }
+                return verifyResourceInDomain(br.getJndiName());
+            } catch (TransactionFailure e) {
+                if(_logger.isLoggable(Level.FINE)) {
+                    _logger.fine("ResourcesUtil :: issue when verifying resource in domain:" + br.getJndiName());
+                }
+                return false;
+            }
+           
         }
 
-        boolean resourceEnabled = Boolean.valueOf(br.getEnabled());
+        boolean resourceEnabled = Boolean.parseBoolean(br.getEnabled());
         return resourceEnabled && resourceRefEnabled;
+    }
+
+    private boolean verifyResourceInDomain(String jndiName) throws TransactionFailure {
+        Resources resources = getDomainResources();
+        if (resources == null) {
+            return false;
+        }
+        BindableResource bindableResource = ResourceUtil.getBindableResourceByName(resources, jndiName);
+        return bindableResource != null;
     }
 
     //TODO duplicate code in com.sun.enterprise.connectors.util.ResourcesUtil.java
@@ -262,9 +285,21 @@ public class BindableResourcesHelper {
 
     private Server getServer(){
         if(server == null){
-            server = habitat.<Domain>getService(Domain.class).getServerNamed(environment.getInstanceName());
+            server = habitat.getService(Domain.class).getServerNamed(environment.getInstanceName());
         }
         return server;
+    }
+    
+    private Domain getDomain() {
+        return habitat.getService(Domain.class);
+    }
+    
+    private Resources getDomainResources() {
+        Domain domain = getDomain();
+        if(domain != null) {
+            return getDomain().getResources();
+        }
+        return null;
     }
 
 }
