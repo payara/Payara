@@ -112,7 +112,7 @@
         <jsp-impl.version>3.2.2</jsp-impl.version>
         <asm.version>9.7</asm.version>
         <websocket-api.version>2.2.0</websocket-api.version>
-        <jax-rs-api.impl.version>3.1.0</jax-rs-api.impl.version>
+        <jax-rs-api.impl.version>4.0.0</jax-rs-api.impl.version>
         <jstl-api.version>3.0.0</jstl-api.version>
         <concurrent-api.version>3.1.0-RC2</concurrent-api.version>
         <jaxws-api.version>4.0.2</jaxws-api.version>
