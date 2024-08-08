@@ -108,7 +108,7 @@
         <jakartaee.api.version>11.0.0-M1</jakartaee.api.version>
         <weld-api.version>6.0.Beta5</weld-api.version>
         <weld.version>6.0.0.Beta4</weld.version>
-        <tyrus.version>2.1.3.payara-p1</tyrus.version>
+        <tyrus.version>2.2.0</tyrus.version>
         <jsp-impl.version>3.2.2</jsp-impl.version>
         <asm.version>9.7</asm.version>
         <websocket-api.version>2.2.0</websocket-api.version>
