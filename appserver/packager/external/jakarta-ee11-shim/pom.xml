@@ -102,16 +102,10 @@
             <artifactId>jakarta.authorization-api</artifactId>
         </dependency>
 
-        <!-- Downgrade shim for Eclipselink 4.0.1 (now 5.0.0-B02) as Jersey not yet upgraded and requires
-        version of Eclipselink < 5.0 Remove once Jersey upgraded -->
+        <!-- Downgrade shim for JAX-RS, required by Soteria. Remove once Soteria upgraded -->
         <dependency>
-            <groupId>org.eclipse.persistence</groupId>
-            <artifactId>org.eclipse.persistence.core</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.persistence</groupId>
-            <artifactId>org.eclipse.persistence.moxy</artifactId>
+            <groupId>jakarta.ws.rs</groupId>
+            <artifactId>jakarta.ws.rs-api</artifactId>
             <scope>provided</scope>
         </dependency>
     </dependencies>
@@ -153,9 +147,8 @@
                                     org.jboss.weld.osgi-bundle,
                                     <!-- Downgrade shim for Jakarta Authorization, required by Soteria 3.0 -->
                                     jakarta.security.jacc-api,
-                                    <!--  eclipselink downgrade shim -->
-                                    org.eclipse.persistence.core,
-                                    org.eclipse.persistence.moxy
+                                    <!-- Downgrade shim for JAX-RS, required by Soteria. Remove once Soteria upgraded -->
+                                    jakarta.ws.rs-api
                                 </Require-Bundle>
                                 <!-- Manually specify the shim versions of packages to be exported via this bundle -->
                                 <!-- Note the "shortened" syntax here: For every API the packages are delimited with
@@ -273,10 +266,13 @@
                                     org.jboss.weld.xml;version="5.0.99";shim=true,
                                     <!-- Downgrade shim for Jakarta Authorization, required by Soteria 3.0 -->
                                     jakarta.security.jacc;version="2.1.99";shim=true,
-                                    <!-- eclipselink packages required by jersey-media-moxy (downgrade) -->
-                                    org.eclipse.persistence.internal.core.helper;
-                                    org.eclipse.persistence.jaxb;
-                                    org.eclipse.persistence.jaxb.rs;version="4.0.99";shim=true
+                                    <!-- Downgrade shim for JAX-RS, required by Soteria. Remove once Soteria upgraded -->
+                                    jakarta.ws.rs;
+                                    jakarta.ws.rs.client;
+                                    jakarta.ws.rs.container;
+                                    jakarta.ws.rs.core;
+                                    jakarta.ws.rs.ext;
+                                    jakarta.ws.rs.sse;version="3.1.99";shim=true
                                 </Export-Package>
                             </instructions>
                         </configuration>
