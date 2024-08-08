@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) [2016-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2016-2024] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -202,21 +202,21 @@ public class SendAsadminCommand implements AdminCommand
                         
                         // Skip if neither verbose or logOutput were selected
                         if (verbose || logOutput) {
-                            String output = "";
+                            StringBuilder output = new StringBuilder();
                             
                             // Combine the success messages into one String
                             for (String successMessage : successMessages) {
-                                output += "\n" + successMessage;
+                                output.append("\n").append(successMessage);
                             }
                             
                             // Only print out the messages if verbose was chosen
                             if (verbose) {
-                                actionReport.setMessage(output);
+                                actionReport.setMessage(output.toString());
                             }
 
                             // Only log the messages if logOutput was chosen
                             if (logOutput) {
-                                Logger.getLogger(SendAsadminCommand.class.getName()).log(Level.INFO, output);
+                                Logger.getLogger(SendAsadminCommand.class.getName()).log(Level.INFO, output.toString());
                             }
                         }
                         
