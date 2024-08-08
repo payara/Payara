@@ -66,7 +66,7 @@
         <osgi.dto.version>1.1.1</osgi.dto.version>
         <jakarta.security.enterprise.version>3.0.3.payara-p1</jakarta.security.enterprise.version>
         <cdi-api.version>4.1.0</cdi-api.version>
-        <grizzly.version>4.0.0.payara-p1</grizzly.version>
+        <grizzly.version>4.1.0-M1</grizzly.version>
         <servlet-api.version>6.1.0</servlet-api.version>
         <jakarta.el-api.version>6.0.1</jakarta.el-api.version>
         <expressly.version>6.0.0-M1</expressly.version>
