@@ -963,7 +963,7 @@ public final class GlassFishORBManager {
             }
         }
         String corbalocURLString = corbalocURL.toString();
-        logger.log(Level.INFO, "corbaloc url ==> {0}", corbalocURLString);
+        logger.info(() -> "corbaloc url ==> " + corbalocURLString);
         return corbalocURLString;
     }
 
