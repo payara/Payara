@@ -208,15 +208,17 @@ public class SendAsadminCommand implements AdminCommand
                             for (String successMessage : successMessages) {
                                 output.append("\n").append(successMessage);
                             }
+
+                            String outputString = output.toString();
                             
                             // Only print out the messages if verbose was chosen
                             if (verbose) {
-                                actionReport.setMessage(output.toString());
+                                actionReport.setMessage(outputString);
                             }
 
                             // Only log the messages if logOutput was chosen
                             if (logOutput) {
-                                Logger.getLogger(SendAsadminCommand.class.getName()).log(Level.INFO, output.toString());
+                                Logger.getLogger(SendAsadminCommand.class.getName()).info(()->outputString);
                             }
                         }
                         
