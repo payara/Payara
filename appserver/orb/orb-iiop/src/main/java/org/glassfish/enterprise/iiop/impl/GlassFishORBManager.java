@@ -956,14 +956,15 @@ public final class GlassFishORBManager {
         //convert list into corbaloc url
         for (int i = 0; i < list.length; i++) {
             logger.log(Level.INFO, "list[i] ==> {0}", list[i]);
-            if (corbalocURL.toString().equals("")) {
+            if (corbalocURL.length()==0) {
                 corbalocURL.append(IIOP_URL).append(((String) list[i]).trim());
             } else {
                 corbalocURL.append(",").append(IIOP_URL).append(((String) list[i]).trim());
             }
         }
-        logger.log(Level.INFO, "corbaloc url ==> {0}", corbalocURL.toString());
-        return corbalocURL.toString();
+        String corbalocURLString = corbalocURL.toString();
+        logger.log(Level.INFO, "corbaloc url ==> {0}", corbalocURLString);
+        return corbalocURLString;
     }
 
     String getIIOPEndpoints() {
