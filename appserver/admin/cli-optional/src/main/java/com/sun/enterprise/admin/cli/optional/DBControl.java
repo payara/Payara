@@ -85,7 +85,7 @@ public abstract class DBControl {
                 }
 
                 // Redirect stdout and stderr to a file
-                try (PrintStream printStream = new PrintStream(new FileOutputStream(dbLog, true), true, StandardCharsets.UTF_8)) {
+                try (PrintStream printStream = new PrintStream(new FileOutputStream(dbLog, true), false, StandardCharsets.UTF_8)) {
                     System.setOut(printStream);
                     System.setErr(printStream);
                 }

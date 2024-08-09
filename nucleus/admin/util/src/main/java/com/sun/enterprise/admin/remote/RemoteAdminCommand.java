@@ -63,7 +63,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.net.UnknownHostException;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Iterator;
@@ -932,7 +931,7 @@ public class RemoteAdminCommand {
             } catch (Exception e) {
                 logger.log(Level.FINER, "doHttpCommand: exception", e);
                 ByteArrayOutputStream buf = new ByteArrayOutputStream();
-                e.printStackTrace(new PrintStream(buf, true, UTF_8));
+                e.printStackTrace(new PrintStream(buf, false, UTF_8));
                 logger.finer(buf.toString(UTF_8));
                 throw new CommandException(e);
             }
