@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2016-2021 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2024 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -107,12 +107,12 @@ public class AsadminRecorderService implements EventListener {
 
     private String constructAsadminCommand(String commandName, ParameterMap parameters) {
 
-        String asadminCommand = commandName;
-        String mandatoryOption = "";
+        StringBuilder asadminCommand = new StringBuilder(commandName);
+        StringBuilder mandatoryOption = new StringBuilder();
 
         if (Boolean.parseBoolean(asadminRecorderConfiguration.prependEnabled()) && prependedOptions != null) {
             for (String s : prependedOptions) {
-                asadminCommand += " " + s;
+                asadminCommand.append(" ").append(s);
             }
         }
 
@@ -123,21 +123,21 @@ public class AsadminRecorderService implements EventListener {
                     // This can have sub-parameters, so loop through and add spaces
                     // between the sub-parameters.
                     for (int i = 0; i < parameter.getValue().size(); i++) {
-                        mandatoryOption += parameter.getValue().get(i);
+                        mandatoryOption.append(parameter.getValue().get(i));
                         if (i != (parameter.getValue().size() - 1)) {
-                            mandatoryOption += " ";
+                            mandatoryOption.append(" ");
                         }
                     }
                 } else {
-                    asadminCommand += " --" + parameter.getKey() + "=" + parameter.getValue().get(0);
+                    asadminCommand.append(" --").append(parameter.getKey()).append("=").append(parameter.getValue().get(0));
                 }
             }
         }
 
-        asadminCommand += " " + mandatoryOption;
-        asadminCommand += "\n";
+        asadminCommand.append(" ").append(mandatoryOption);
+        asadminCommand.append("\n");
 
-        return asadminCommand;
+        return asadminCommand.toString();
     }
 
     /**

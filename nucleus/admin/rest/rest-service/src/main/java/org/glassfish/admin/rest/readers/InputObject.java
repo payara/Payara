@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2024] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.rest.readers;
 
@@ -112,7 +112,7 @@ public abstract class InputObject extends ProviderUtil {
         try {
             return o instanceof Number ?
                 ((Number)o).doubleValue() :
-                    Double.valueOf((String) o);
+                Double.parseDouble((String) o);
         } catch (Exception e) {
             throw new InputException("InputObject[" + quote(key) +
                 "] is not a number.");
