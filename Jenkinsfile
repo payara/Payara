@@ -69,7 +69,7 @@ pipeline {
                         
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         sh """rm  ~/test\\|sa.mv.db  || true"""
-                        sh """mvn -B -V -ff -e clean test --strict-checksums -Pall \
+                        sh """mvn -B -V -ff -e clean test --strict-checksums -Pall,jakarta-staging \
                         -Dglassfish.home=\"${pwd()}/appserver/distributions/payara/target/stage/payara7/glassfish\" \
                         -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
                         -Djavax.xml.accessExternalSchema=all \
