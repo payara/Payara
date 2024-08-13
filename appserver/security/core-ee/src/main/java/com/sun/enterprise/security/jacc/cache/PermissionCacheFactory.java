@@ -37,18 +37,19 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.jacc.cache;
 
 import java.net.SocketPermission;
 import java.security.CodeSource;
 import java.security.Permission;
-import java.security.Policy;
+import jakarta.security.jacc.Policy;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.PropertyPermission;
 
 import com.sun.enterprise.security.ee.J2EESecurityManager;
+import jakarta.security.jacc.PolicyFactory;
 
 /**
  * This class is the factory for creating and managing PermissionCache.
@@ -70,7 +71,7 @@ public class PermissionCacheFactory {
             // make a call to policy.refresh() to see if the provider
             // calls the supportsReuse callback (see resetCaches below).
             // which will set supportsReuse to true (to enable caching).
-            Policy policy = Policy.getPolicy();
+            Policy policy = PolicyFactory.getPolicyFactory().getPolicy();
             if (policy != null) {
                 policy.refresh();
             }

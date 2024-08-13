@@ -37,8 +37,28 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2024] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security;
+
+import com.sun.enterprise.config.serverbeans.JaccProvider;
+import com.sun.enterprise.config.serverbeans.SecurityService;
+import com.sun.enterprise.util.i18n.StringManager;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.inject.Singleton;
+import jakarta.security.jacc.Policy;
+import jakarta.security.jacc.PolicyFactory;
+import javassist.ClassPool;
+import javassist.CtClass;
+import javassist.util.proxy.MethodHandler;
+import javassist.util.proxy.ProxyFactory;
+import javassist.util.proxy.ProxyObject;
+import org.glassfish.hk2.api.IterableProvider;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.types.Property;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.logging.Logger;
 
 import static com.sun.enterprise.security.SecurityLoggerInfo.policyConfigFactoryNotDefined;
 import static com.sun.enterprise.security.SecurityLoggerInfo.policyFactoryOverride;
@@ -53,29 +73,8 @@ import static java.util.logging.Level.FINEST;
 import static java.util.logging.Level.INFO;
 import static java.util.logging.Level.SEVERE;
 import static java.util.logging.Level.WARNING;
-import static org.glassfish.api.admin.ServerEnvironment.DEFAULT_INSTANCE_NAME;
-
-import java.util.logging.Logger;
-
-import jakarta.inject.Inject;
-import jakarta.inject.Named;
-import jakarta.inject.Singleton;
-
-import org.glassfish.hk2.api.IterableProvider;
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.config.types.Property;
-
-import com.sun.enterprise.config.serverbeans.JaccProvider;
-import com.sun.enterprise.config.serverbeans.SecurityService;
-import com.sun.enterprise.util.i18n.StringManager;
-import java.lang.reflect.InvocationTargetException;
-import javassist.ClassPool;
-import javassist.CtClass;
 import static javassist.Modifier.PUBLIC;
-import javassist.util.proxy.MethodHandler;
-import javassist.util.proxy.ProxyFactory;
-import javassist.util.proxy.ProxyObject;
-import java.security.Policy;
+import static org.glassfish.api.admin.ServerEnvironment.DEFAULT_INSTANCE_NAME;
 
 /**
  * Loads the default JACC Policy Provider into the system.
@@ -276,13 +275,13 @@ public class PolicyLoader {
     }
     
     private void installPolicy14(Object policyInstance) {
-        if (!(policyInstance instanceof java.security.Policy)) {
+        if (!(policyInstance instanceof jakarta.security.jacc.Policy)) {
             throw new RuntimeException(STRING_MANAGER.getString("enterprise.security.plcyload.not14"));
         }
         
-        Policy policy = (java.security.Policy) policyInstance;
-        Policy.setPolicy(policy);
-        
+        Policy policy = (jakarta.security.jacc.Policy) policyInstance;
+        PolicyFactory.getPolicyFactory().setPolicy(policy);
+
         // TODO: causing ClassCircularity error when SM ON and deployment use library feature and 
         // ApplibClassLoader
         //
@@ -325,7 +324,7 @@ public class PolicyLoader {
         Class handlerClass = clazz.toClass(targetClass.getClassLoader(), targetClass.getProtectionDomain());
         MethodHandler handler = (MethodHandler) handlerClass
                 .getDeclaredConstructor(Policy.class)
-                .newInstance(Policy.getPolicy());
+                .newInstance(PolicyFactory.getPolicyFactory().getPolicy());
         instance.setHandler(handler);
 
         if (!(instance instanceof Policy)) {

@@ -37,10 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2024] Payara Foundation and/or affiliates
 
 package org.glassfish.appclient.client.jws.boot;
 
 import com.sun.enterprise.util.io.FileUtils;
+import jakarta.security.jacc.PolicyFactory;
 import org.glassfish.appclient.client.acc.AppClientContainer;
 import org.glassfish.appclient.client.acc.JWSACCClassLoader;
 import org.glassfish.appclient.common.Util;
@@ -53,7 +55,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.security.Policy;
+import jakarta.security.jacc.Policy;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import java.util.Vector;
@@ -352,7 +354,7 @@ public class JWSACCMain implements Runnable {
         int idx = firstFreePolicyIndex();
         URI policyFileURI = policyFile.toURI();
         java.security.Security.setProperty("policy.url." + idx, policyFileURI.toASCIIString());
-        Policy p = Policy.getPolicy();
+        Policy p = PolicyFactory.getPolicyFactory().getPolicy();
         p.refresh();
     }
 

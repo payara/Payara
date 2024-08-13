@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2021-2024] [Payara Foundation and/or its affiliates]
 package com.sun.web.server;
 
 import com.sun.enterprise.container.common.spi.util.InjectionException;
@@ -48,26 +48,37 @@ import com.sun.enterprise.security.integration.SecurityConstants;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import com.sun.enterprise.web.WebComponentInvocation;
 import com.sun.enterprise.web.WebModule;
-import org.apache.catalina.*;
-import org.apache.catalina.connector.RequestFacade;
-import org.apache.catalina.servlets.DefaultServlet;
-import org.glassfish.wasp.servlet.JspServlet;
-import org.glassfish.api.invocation.ComponentInvocation;
-import org.glassfish.api.invocation.InvocationManager;
-import org.glassfish.hk2.api.ServiceHandle;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.internal.api.ServerContext;
-import org.glassfish.web.LogFacade;
-
+import jakarta.security.jacc.Policy;
+import jakarta.security.jacc.PolicyFactory;
 import jakarta.servlet.Servlet;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletRequestWrapper;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.lang.String;
-import java.security.*;
+import org.apache.catalina.Context;
+import org.apache.catalina.InstanceEvent;
+import org.apache.catalina.InstanceListener;
+import org.apache.catalina.Realm;
+import org.apache.catalina.Wrapper;
+import org.apache.catalina.connector.RequestFacade;
+import org.apache.catalina.servlets.DefaultServlet;
+import org.glassfish.api.invocation.ComponentInvocation;
+import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.hk2.api.ServiceHandle;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.ServerContext;
+import org.glassfish.wasp.servlet.JspServlet;
+import org.glassfish.web.LogFacade;
+
+import java.security.AccessControlException;
+import java.security.AccessController;
+import java.security.Principal;
+import java.security.PrivilegedAction;
+import java.security.ProtectionDomain;
 import java.text.MessageFormat;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -261,8 +272,8 @@ public final class J2EEInstanceListener implements InstanceListener {
             AccessController.doPrivileged(new PrivilegedAction<Void>() {
                 public Void run() {
                     ProtectionDomain pD = o.getClass().getProtectionDomain();
-                    Policy p = Policy.getPolicy();
-                    if (!p.implies(pD, doAsPrivilegedPerm)) {
+                    Policy p = PolicyFactory.getPolicyFactory().getPolicy();
+                    if (!p.implies(doAsPrivilegedPerm, new HashSet<>(Arrays.asList(pD.getPrincipals())))) {
                         throw new AccessControlException("permission required to override getUserPrincipal", doAsPrivilegedPerm);
                     }
                     return null;

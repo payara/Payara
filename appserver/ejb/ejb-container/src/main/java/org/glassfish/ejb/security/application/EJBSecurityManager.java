@@ -58,9 +58,11 @@ import com.sun.enterprise.security.jacc.context.PolicyContextHandlerImpl;
 import com.sun.logging.LogDomains;
 import jakarta.security.jacc.EJBMethodPermission;
 import jakarta.security.jacc.EJBRoleRefPermission;
+import jakarta.security.jacc.Policy;
 import jakarta.security.jacc.PolicyConfigurationFactory;
 import jakarta.security.jacc.PolicyContext;
 import jakarta.security.jacc.PolicyContextException;
+import jakarta.security.jacc.PolicyFactory;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationException;
 import org.glassfish.api.invocation.InvocationManager;
@@ -72,7 +74,6 @@ import org.glassfish.external.probe.provider.StatsProviderManager;
 
 import javax.security.auth.Subject;
 import javax.security.auth.SubjectDomainCombiner;
-import java.security.Policy;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -148,7 +149,7 @@ public final class EJBSecurityManager implements SecurityManager {
         this.invocationManager = invocationManager;
         roleMapperFactory = SecurityUtil.getRoleMapperFactory();
         // get the default policy
-        policy = Policy.getPolicy();
+        policy = PolicyFactory.getPolicyFactory().getPolicy();
         securityManagerFactory = fact;
 
         boolean runas = !(deploymentDescriptor.getUsesCallerIdentity());
@@ -296,7 +297,7 @@ public final class EJBSecurityManager implements SecurityManager {
                 String oldContextId = setPolicyContext(contextId);
 
                 try {
-                    isAuthorized = policy.implies(getCachedProtectionDomain(securityContext.getPrincipalSet(), true), permission);
+                    isAuthorized = policy.implies(permission, securityContext.getSubject());
                 } catch (Throwable t) {
                     _logger.log(SEVERE, "jacc_access_exception", t);
                     isAuthorized = false;
@@ -367,7 +368,7 @@ public final class EJBSecurityManager implements SecurityManager {
         try {
             // set the policy context in the TLS.
             oldContextId = setPolicyContext(this.contextId);
-            isCallerInRole = policy.implies(prdm, ejbRoleRefPermission);
+            isCallerInRole = policy.implies(ejbRoleRefPermission, principalSet);
         } catch (Throwable t) {
             _logger.log(Level.SEVERE, "jacc_is_caller_in_role_exception", t);
             isCallerInRole = false;
