@@ -58,14 +58,14 @@
     </description>
 
     <dependencies>
-        <!-- Upgrade shim for Annotations 3.0 (currently 2.1) required by HK2 4.0 but not yet provided by the Server.
-        Remove or replace with a downgrade shim once Annotations API upgraded to 4.0 in the server. -->
+        <!-- Downgrade shim for Annotations 2.1 (currently 3.0) required by Soteria but not yet provided by the Server.
+        Remove or update this comment once Soteria has been upgraded. -->
         <dependency>
             <groupId>jakarta.annotation</groupId>
             <artifactId>jakarta.annotation-api</artifactId>
             <scope>provided</scope>
         </dependency>
-        <!-- jakarta.el-->
+        <!-- Downgrade shim for Jakarta EL as Soteria not yet upgraded -->
         <dependency>
             <groupId>jakarta.el</groupId>
             <artifactId>jakarta.el-api</artifactId>
@@ -132,7 +132,7 @@
                                 informational though). Spares from repeating the version for every package of the api.
                                  We drop uses attributes as well. -->
                                 <Export-Package>
-                                    <!-- Downgrade shim for Annotations 2.1 (now 3.0) -->
+                                    <!-- Downgrade shim for Annotations 2.1 (now 3.0), required by Soteria -->
                                     jakarta.annotation;
                                     jakarta.annotation.security;
                                     jakarta.annotation.sql;version="2.1.99";shim=true,
