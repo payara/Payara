@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2024] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.admin.remote;
 
@@ -931,8 +931,8 @@ public class RemoteAdminCommand {
             } catch (Exception e) {
                 logger.log(Level.FINER, "doHttpCommand: exception", e);
                 ByteArrayOutputStream buf = new ByteArrayOutputStream();
-                e.printStackTrace(new PrintStream(buf));
-                logger.finer(buf.toString());
+                e.printStackTrace(new PrintStream(buf, false, UTF_8));
+                logger.finer(buf.toString(UTF_8));
                 throw new CommandException(e);
             }
         } while (shouldTryCommandAgain);
@@ -1123,7 +1123,7 @@ public class RemoteAdminCommand {
         passwordOptions
             .append(name)
             .append('=')
-            .append(URLEncoder.encode(new String(Base64.getMimeEncoder().encode(option.getBytes()), UTF_8), "UTF-8"));
+            .append(URLEncoder.encode(new String(Base64.getMimeEncoder().encode(option.getBytes(UTF_8)), UTF_8), "UTF-8"));
         
         return uriString;
     }
@@ -1341,7 +1341,7 @@ public class RemoteAdminCommand {
                 FileUtils.copy(in, baos, 0);
             } catch (IOException ex) { }
             in = new ByteArrayInputStream(baos.toByteArray());
-            String response = baos.toString();
+            String response = baos.toString(UTF_8);
             logger.finer("------- RAW METADATA RESPONSE ---------");
             logger.finer(response);
             logger.finer("------- RAW METADATA RESPONSE ---------");

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.enterprise.iiop.impl;
 
@@ -952,19 +952,19 @@ public final class GlassFishORBManager {
 
     private String getCorbalocURL(Object[] list) {
 
-        String corbalocURL = "";
+        StringBuilder corbalocURL = new StringBuilder();
         //convert list into corbaloc url
         for (int i = 0; i < list.length; i++) {
             logger.log(Level.INFO, "list[i] ==> {0}", list[i]);
-            if (corbalocURL.equals("")) {
-                corbalocURL = IIOP_URL + ((String) list[i]).trim();
+            if (corbalocURL.length()==0) {
+                corbalocURL.append(IIOP_URL).append(((String) list[i]).trim());
             } else {
-                corbalocURL = corbalocURL + "," +
-                        IIOP_URL + ((String) list[i]).trim();
+                corbalocURL.append(",").append(IIOP_URL).append(((String) list[i]).trim());
             }
         }
-        logger.log(Level.INFO, "corbaloc url ==> {0}", corbalocURL);
-        return corbalocURL;
+        String corbalocURLString = corbalocURL.toString();
+        logger.info(() -> "corbaloc url ==> " + corbalocURLString);
+        return corbalocURLString;
     }
 
     String getIIOPEndpoints() {

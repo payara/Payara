@@ -56,6 +56,7 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.io.FileUtils;
 import fish.payara.admin.launcher.PayaraDefaultJvmOptions;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
@@ -608,7 +609,7 @@ public abstract class GFLauncher {
         OutputStreamWriter osw = null;
         BufferedWriter bw = null;
         try {
-            osw = new OutputStreamWriter(os);
+            osw = new OutputStreamWriter(os, StandardCharsets.UTF_8);
             bw = new BufferedWriter(osw);
             for (String token : info.securityTokens) {
                 bw.write(token);
@@ -910,7 +911,7 @@ public abstract class GFLauncher {
             Runtime r = Runtime.getRuntime();
             Process p = r.exec(javaExePath + " -version");
             p.waitFor();
-            try (BufferedReader b = new BufferedReader(new InputStreamReader(p.getErrorStream()))) {
+            try (BufferedReader b = new BufferedReader(new InputStreamReader(p.getErrorStream(), StandardCharsets.UTF_8))) {
                 String line;
                 while ((line = b.readLine()) != null) {
                     Matcher m = JAVA_VERSION_PATTERN.matcher(line);
