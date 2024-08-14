@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2024] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.rest.adapter;
 
@@ -151,7 +151,7 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
     @Override
     public void service(Request req, Response res) {
         RestLogging.restLogger.log(Level.FINER, "Received resource request: {0}", req.getRequestURI());
-        
+        adaptRequestURL(req);
         try {
             res.setCharacterEncoding(Constants.ENCODING);
             if (latch.await(20L, TimeUnit.SECONDS)) {
@@ -223,6 +223,13 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
                     "An error occurred while processing the request. Please see the server logs for details.");
             RestLogging.restLogger.log(Level.INFO, RestLogging.SERVER_ERROR, e);
             reportError(req, res, HttpURLConnection.HTTP_UNAVAILABLE, msg); //service unavailable
+        }
+    }
+
+    private void adaptRequestURL(Request req) {
+        if (req.getRequestURI().startsWith("/management/domain")) {
+            req.setServerName(req.getLocalName());
+            req.setServerPort(req.getLocalPort());
         }
     }
 
