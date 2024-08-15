@@ -151,6 +151,7 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
     @Override
     public void service(Request req, Response res) {
         RestLogging.restLogger.log(Level.FINER, "Received resource request: {0}", req.getRequestURI());
+
         try {
             res.setCharacterEncoding(Constants.ENCODING);
             if (latch.await(20L, TimeUnit.SECONDS)) {
