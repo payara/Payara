@@ -1,4 +1,4 @@
-/* 
+/*
  *     Copyright (c) [2016-2024] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
@@ -164,13 +164,14 @@ public class PayaraRestApiHandlers {
             command = splitCommand[0];
 
             // Convert the parameters into a space-separated string
-            String parameters = "";
+            String parameters;
+            StringBuilder paramBuilder = new StringBuilder();
             for (int i = 1; i < splitCommand.length; i++) {
-                parameters += splitCommand[i] + " ";
+                paramBuilder.append(splitCommand[i]).append(" ");
             }
 
             // Remove any trailing spaces
-            parameters = parameters.trim();
+            parameters = paramBuilder.toString().trim();
 
             // Get the parameters from each row, and send the asadmin command
             for (Map row : selectedRows) {
