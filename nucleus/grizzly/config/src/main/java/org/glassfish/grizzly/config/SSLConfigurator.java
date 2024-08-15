@@ -139,8 +139,8 @@ public class SSLConfigurator extends SSLEngineConfigurator {
         }
 
         sslImplementation = sslImplementationLocal;
-        needClientAuth = isNeedClientAuth(ssl);
-        wantClientAuth = isWantClientAuth(ssl);
+        setNeedClientAuth(isNeedClientAuth(ssl));
+        setWantClientAuth(isWantClientAuth(ssl));
         clientMode = false;
         sslContextConfiguration = new InternalSSLContextConfigurator();
     }
@@ -187,7 +187,7 @@ public class SSLConfigurator extends SSLEngineConfigurator {
                 } else {
                     final String[] protocols = new String[tmpSSLArtifactsList.size()];
                     tmpSSLArtifactsList.toArray(protocols);
-                    enabledProtocols = protocols;
+                    setEnabledProtocols(protocols);
                 }
 //                String auth = ssl.getClientAuth();
 //                if (auth != null) {
@@ -211,14 +211,14 @@ public class SSLConfigurator extends SSLEngineConfigurator {
                     logEmptyWarning(ssl, "WEB0308: All SSL cipher suites disabled for network-listener(s) {0}."
                             + "  Using SSL implementation specific defaults");
                 } else {
-                    enabledCipherSuites = ciphers;
+                    setEnabledCipherSuites(ciphers);
                 }
             }
             
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.log(Level.FINE, "Enabled secure protocols={0}"
                         + "" + " ciphers={1}", new Object[]
-                        {Arrays.toString(enabledProtocols), Arrays.toString(enabledCipherSuites)});
+                        {Arrays.toString(getEnabledProtocols()), Arrays.toString(getEnabledCipherSuites())});
             }
             
             return newSslContext;

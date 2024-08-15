@@ -58,38 +58,21 @@
     </description>
 
     <dependencies>
-        <!-- Upgrade shim for Annotations 3.0 (currently 2.1) required by HK2 4.0 but not yet provided by the Server.
-        Remove or replace with a downgrade shim once Annotations API upgraded to 4.0 in the server. -->
+        <!-- Downgrade shim for Annotations 2.1 (currently 3.0) required by Soteria but not yet provided by the Server.
+        Remove or update this comment once Soteria has been upgraded. -->
         <dependency>
             <groupId>jakarta.annotation</groupId>
             <artifactId>jakarta.annotation-api</artifactId>
             <scope>provided</scope>
         </dependency>
-        <!-- jakarta.el-->
+        <!-- Downgrade shim for Jakarta EL as Soteria not yet upgraded -->
         <dependency>
             <groupId>jakarta.el</groupId>
             <artifactId>jakarta.el-api</artifactId>
             <scope>provided</scope>
         </dependency>
 
-        <!-- Downgrade shim for HK2 3.0 (now 4.0) as Jersey not yet upgraded to 4.0 and InSight not upgraded for EE11.
-        Remove once Jersey upgraded to 4.0 and InSight upgraded to a version aligned with Payara 7 (presumably 3.0), or
-        update this comment with which other component still requires the downgrade shim. -->
-        <dependency>
-            <groupId>org.glassfish.hk2</groupId>
-            <artifactId>hk2-api</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.hk2</groupId>
-            <artifactId>hk2-locator</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.hk2</groupId>
-            <artifactId>hk2-utils</artifactId>
-            <scope>provided</scope>
-        </dependency>
+
         <!-- Weld -->
         <dependency>
             <groupId>org.jboss.weld</groupId>
@@ -102,16 +85,10 @@
             <artifactId>jakarta.authorization-api</artifactId>
         </dependency>
 
-        <!-- Downgrade shim for Eclipselink 4.0.1 (now 5.0.0-B02) as Jersey not yet upgraded and requires
-        version of Eclipselink < 5.0 Remove once Jersey upgraded -->
+        <!-- Downgrade shim for JAX-RS, required by Soteria. Remove once Soteria upgraded -->
         <dependency>
-            <groupId>org.eclipse.persistence</groupId>
-            <artifactId>org.eclipse.persistence.core</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.persistence</groupId>
-            <artifactId>org.eclipse.persistence.moxy</artifactId>
+            <groupId>jakarta.ws.rs</groupId>
+            <artifactId>jakarta.ws.rs-api</artifactId>
             <scope>provided</scope>
         </dependency>
     </dependencies>
@@ -138,13 +115,6 @@
                                     yet provided by the Server. Remove or replace with a downgrade shim once
                                     Annotations API upgraded to 4.0 in the server. -->
                                     jakarta.annotation-api,
-                                    <!-- Downgrade shim for HK2 3.0 (now 4.0) as Jersey not yet upgraded to 4.0 and
-                                    InSight not upgraded for EE11. Remove once Jersey upgraded to 4.0 and InSight
-                                    upgraded to a version aligned with Payara 7 (presumably 3.0), or update this
-                                    comment with which other component still requires the downgrade shim. -->
-                                    org.glassfish.hk2.api,
-                                    org.glassfish.hk2.locator,
-                                    org.glassfish.hk2.utils,
                                     <!-- jakarta.el-->
                                     jakarta.el-api,
                                     <!-- jakarta.authorization -->
@@ -153,9 +123,8 @@
                                     org.jboss.weld.osgi-bundle,
                                     <!-- Downgrade shim for Jakarta Authorization, required by Soteria 3.0 -->
                                     jakarta.security.jacc-api,
-                                    <!--  eclipselink downgrade shim -->
-                                    org.eclipse.persistence.core,
-                                    org.eclipse.persistence.moxy
+                                    <!-- Downgrade shim for JAX-RS, required by Soteria. Remove once Soteria upgraded -->
+                                    jakarta.ws.rs-api
                                 </Require-Bundle>
                                 <!-- Manually specify the shim versions of packages to be exported via this bundle -->
                                 <!-- Note the "shortened" syntax here: For every API the packages are delimited with
@@ -163,7 +132,7 @@
                                 informational though). Spares from repeating the version for every package of the api.
                                  We drop uses attributes as well. -->
                                 <Export-Package>
-                                    <!-- Downgrade shim for Annotations 2.1 (now 3.0) -->
+                                    <!-- Downgrade shim for Annotations 2.1 (now 3.0), required by Soteria -->
                                     jakarta.annotation;
                                     jakarta.annotation.security;
                                     jakarta.annotation.sql;version="2.1.99";shim=true,
@@ -171,27 +140,6 @@
                                     jakarta.el;version="5.0.99";shim=true,
                                     <!-- authorization previous version-->
                                     jakarta.security.jacc;version="2.1.99";shim=true,
-                                    <!-- Downgrade shim for HK2 3.0 (now 4.0) as Jersey not yet upgraded to 4.0 and
-                                    InSight not upgraded for EE11. Remove once Jersey upgraded to 4.0 and InSight
-                                    upgraded to a version aligned with Payara 7 (presumably 3.0), or update this
-                                    comment with which other component still requires the downgrade shim. -->
-                                    <!-- hk2-api -->
-                                    com.sun.hk2.component;
-                                    org.glassfish.hk2.api;
-                                    org.glassfish.hk2.api.messaging;
-                                    org.glassfish.hk2.extension;
-                                    org.glassfish.hk2.utilities;
-                                    org.glassfish.hk2.utilities.binding;
-                                    org.jvnet.hk2.annotations;version="3.0.99";shim=true,
-                                    <!-- hk2-locator -->
-                                    org.jvnet.hk2.external.generator;
-                                    org.jvnet.hk2.external.runtime;version="3.0.99";shim=true,
-                                    <!-- hk2-utils -->
-                                    org.glassfish.hk2.utilities.cache;
-                                    org.glassfish.hk2.utilities.general;
-                                    org.glassfish.hk2.utilities.reflection;
-                                    org.glassfish.hk2.utilities.reflection.internal;
-                                    org.jvnet.hk2.component;version="3.0.99";shim=true,
                                     <!-- weld-osgi-bundle -->
                                     org.jboss.weld.bootstrap.api;
                                     org.jboss.weld.bootstrap.api.helpers;
@@ -273,10 +221,13 @@
                                     org.jboss.weld.xml;version="5.0.99";shim=true,
                                     <!-- Downgrade shim for Jakarta Authorization, required by Soteria 3.0 -->
                                     jakarta.security.jacc;version="2.1.99";shim=true,
-                                    <!-- eclipselink packages required by jersey-media-moxy (downgrade) -->
-                                    org.eclipse.persistence.internal.core.helper;
-                                    org.eclipse.persistence.jaxb;
-                                    org.eclipse.persistence.jaxb.rs;version="4.0.99";shim=true
+                                    <!-- Downgrade shim for JAX-RS, required by Soteria. Remove once Soteria upgraded -->
+                                    jakarta.ws.rs;
+                                    jakarta.ws.rs.client;
+                                    jakarta.ws.rs.container;
+                                    jakarta.ws.rs.core;
+                                    jakarta.ws.rs.ext;
+                                    jakarta.ws.rs.sse;version="3.1.99";shim=true
                                 </Export-Package>
                             </instructions>
                         </configuration>
