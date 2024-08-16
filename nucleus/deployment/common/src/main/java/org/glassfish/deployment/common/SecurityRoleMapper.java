@@ -38,6 +38,8 @@
  * holder.
  */
 // Portions Copyright [2024] Payara Foundation and/or affiliates
+// Portions Copyright [2024] Contributors to the Eclipse Foundation
+// Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license
 
 package org.glassfish.deployment.common;
 
