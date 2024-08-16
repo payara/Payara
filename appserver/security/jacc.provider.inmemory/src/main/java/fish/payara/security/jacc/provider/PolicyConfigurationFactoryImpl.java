@@ -52,7 +52,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import static java.util.logging.Level.FINE;
 import java.util.logging.Logger;
-import org.glassfish.exousia.modules.locked.SimplePolicyConfigurationFactory;
+
+import org.glassfish.exousia.modules.def.DefaultPolicyConfigurationFactory;
 import org.jvnet.hk2.annotations.ContractsProvided;
 import org.jvnet.hk2.annotations.Service;
 
@@ -61,7 +62,7 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service
 @ContractsProvided({ PolicyConfigurationFactoryImpl.class, PolicyConfigurationFactory.class })
-public class PolicyConfigurationFactoryImpl extends SimplePolicyConfigurationFactory implements JaccConfigurationFactory {
+public class PolicyConfigurationFactoryImpl extends DefaultPolicyConfigurationFactory implements JaccConfigurationFactory {
 
     
     private static Logger logger = Logger.getLogger(SECURITY_LOGGER);

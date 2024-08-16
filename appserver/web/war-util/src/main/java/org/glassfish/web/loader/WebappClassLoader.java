@@ -68,6 +68,7 @@ import com.sun.enterprise.glassfish.bootstrap.MainHelper.HotSwapHelper;
 import com.sun.enterprise.security.integration.DDPermissionsLoader;
 import com.sun.enterprise.security.integration.PermsHolder;
 import com.sun.enterprise.util.io.FileUtils;
+import jakarta.security.jacc.PolicyFactory;
 import org.apache.naming.JndiPermission;
 import org.apache.naming.resources.DirContextURLStreamHandler;
 import org.apache.naming.resources.JarFileResourcesProvider;
@@ -115,7 +116,7 @@ import java.security.CodeSource;
 import java.security.Permission;
 import java.security.PermissionCollection;
 import java.security.Permissions;
-import java.security.Policy;
+import jakarta.security.jacc.Policy;
 import java.security.PrivilegedAction;
 import java.security.ProtectionDomain;
 import java.text.MessageFormat;
@@ -3303,7 +3304,7 @@ public class WebappClassLoader
             // The policy file may have been modified to adjust
             // permissions, so we're reloading it when loading or
             // reloading a Context
-            Policy policy = Policy.getPolicy();
+            Policy policy = PolicyFactory.getPolicyFactory().getPolicy();
             policy.refresh();
         } catch (AccessControlException e) {
             // Some policy files may restrict this, even for the core,

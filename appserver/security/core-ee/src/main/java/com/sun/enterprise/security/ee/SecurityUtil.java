@@ -37,19 +37,18 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.ee;
 
 import static java.util.logging.Level.FINE;
 
-import java.security.Policy;
 import java.util.Collection;
 import java.util.logging.Logger;
 
 import jakarta.security.jacc.PolicyConfiguration;
 import jakarta.security.jacc.PolicyConfigurationFactory;
 import jakarta.security.jacc.PolicyContextException;
-
+import jakarta.security.jacc.PolicyFactory;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.OpsParams;
 import org.glassfish.deployment.common.SecurityRoleMapperFactory;
@@ -138,7 +137,7 @@ public class SecurityUtil {
             
             // Only do refresh policy if the deleted context was in service
             if (wasInService) {
-                Policy.getPolicy().refresh();
+                PolicyFactory.getPolicyFactory().getPolicy().refresh();
             }
 
         } catch (java.lang.ClassNotFoundException cnfe) {
@@ -204,7 +203,7 @@ public class SecurityUtil {
                 }
             }
 
-            Policy.getPolicy().refresh();
+            PolicyFactory.getPolicyFactory().getPolicy().refresh();
         } catch (ClassNotFoundException | PolicyContextException cnfe) {
             throw new IASSecurityException(cnfe);
         }

@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2022, 2022 Contributors to the Eclipse Foundation.
  * Copyright (c) 1997, 2021 Oracle and/or its affiliates. All rights reserved.
- * Copyright (c) [2022] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2022-2024] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0, which is available at
@@ -19,15 +19,18 @@ package com.sun.enterprise.security;
 
 import java.lang.reflect.Method;
 import java.security.Permission;
-import java.security.Policy;
-import java.security.ProtectionDomain;
+import jakarta.security.jacc.Policy;
+
+import java.security.Principal;
 import java.util.Arrays;
+import java.util.Set;
+
 import javassist.util.proxy.MethodHandler;
 
 public class AuthenticationProxyHandler implements MethodHandler {
 
     public final static Method impliesMethod = getMethod(
-            Policy.class, "implies", ProtectionDomain.class, Permission.class);
+            Policy.class, "implies", Permission.class, Set.class);
 
     private final Policy javaSePolicy;
 
@@ -39,12 +42,11 @@ public class AuthenticationProxyHandler implements MethodHandler {
     public Object invoke(Object self, Method overridden, Method forwarder, Object[] args) throws Throwable {
         if (isImplementationOf(overridden, impliesMethod)) {
             Permission permission = (Permission) args[1];
-            ProtectionDomain domain = (ProtectionDomain) args[0];
+            Set<Principal> principals = (Set<Principal>) args[0];
             if (!permission.getClass().getName().startsWith("jakarta.")) {
-                return javaSePolicy.implies(domain, permission);
+                return javaSePolicy.implies(permission, principals);
             }
         }
-
         return forwarder.invoke(self, args);
     }
 

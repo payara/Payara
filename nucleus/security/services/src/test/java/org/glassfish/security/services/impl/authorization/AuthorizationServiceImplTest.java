@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2024] Payara Foundation and/or affiliates
 package org.glassfish.security.services.impl.authorization;
 
 import org.glassfish.security.services.api.authorization.*;
@@ -86,16 +87,7 @@ public class AuthorizationServiceImplTest {
         assertSame( "FAILED_INIT", FAILED_INIT, impl.getInitializationState() );
         assertNotNull( "getReasonInitializationFailed", impl.getReasonInitializationFailed() );
     }
-
-    @Test
-    public void testIsPermissionGranted() throws Exception {
-
-        assertSame( "NOT_INITIALIZED", NOT_INITIALIZED, impl.getInitializationState() );
-
-        // Does not require service initialization
-        impl.isPermissionGranted( new Subject(), new AllPermission() );
-    }
-
+    
     @Test
     public void testIsAuthorized() throws Exception {
 

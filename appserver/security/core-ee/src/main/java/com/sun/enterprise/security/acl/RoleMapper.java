@@ -38,6 +38,8 @@
  * holder.
  */
 // Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2024] Contributors to the Eclipse Foundation
+// Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license
 
 package com.sun.enterprise.security.acl;
 
@@ -45,6 +47,7 @@ import static com.sun.enterprise.security.common.AppservAccessController.privile
 import static com.sun.logging.LogDomains.SECURITY_LOGGER;
 import static java.util.logging.Level.SEVERE;
 import static java.util.logging.Level.WARNING;
+import static java.util.stream.Collectors.toSet;
 
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
@@ -62,6 +65,8 @@ import java.util.logging.Logger;
 
 import javax.security.auth.Subject;
 
+import com.sun.enterprise.security.auth.login.DistinguishedPrincipalCredential;
+import com.sun.security.auth.UserPrincipal;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import org.glassfish.deployment.common.SecurityRoleMapper;
@@ -275,6 +280,73 @@ public class RoleMapper implements Serializable, SecurityRoleMapper {
             return defaultRTSM;
         }
         return roleToSubject;
+    }
+
+    @Override
+    public Map<String, Set<String>> getGroupToRolesMapping() {
+        Map<String, Set<String>> groupToRoles = new HashMap<>();
+
+        for (Map.Entry<String, Subject> roleToSubject : getRoleToSubjectMapping().entrySet()) {
+            for (String group : getGroups(roleToSubject.getValue())) {
+                groupToRoles.computeIfAbsent(group, g -> new HashSet<>())
+                        .add(roleToSubject.getKey());
+            }
+        }
+
+        return groupToRoles;
+    }
+
+    @Override
+    public Map<String, Set<String>> getCallerToRolesMapping() {
+        Map<String, Set<String>> callerToRoles = new HashMap<>();
+
+        for (Map.Entry<String, Subject> roleToSubject : getRoleToSubjectMapping().entrySet()) {
+            for (String callerName : getCallerPrincipalNames(roleToSubject.getValue())) {
+                callerToRoles.computeIfAbsent(callerName, g -> new HashSet<>())
+                        .add(roleToSubject.getKey());
+            }
+        }
+
+        return callerToRoles;
+    }
+
+    @Override
+    public boolean isDefaultPrincipalToRoleMapping() {
+        return defaultP2RMappingClassName != null;
+    }
+
+    @Override
+    public Set<String> getGroups(Subject subject) {
+        return
+                subject.getPrincipals()
+                        .stream()
+                        .filter(e -> e instanceof Group)
+                        .map(Principal::getName)
+                        .collect(toSet());
+    }
+
+    @Override
+    public Principal getCallerPrincipal(Subject subject) {
+        return
+                subject.getPublicCredentials()
+                        .stream()
+                        .filter(DistinguishedPrincipalCredential.class::isInstance)
+                        .map(Principal.class::cast)
+                        .findAny()
+                        .orElse(subject.getPrincipals()
+                                .stream()
+                                .filter(UserPrincipal.class::isInstance)
+                                .findAny()
+                                .orElse(null));
+    }
+
+    private Set<String> getCallerPrincipalNames(Subject subject) {
+        return
+                subject.getPrincipals()
+                        .stream()
+                        .filter(UserPrincipal.class::isInstance)
+                        .map(Principal::getName)
+                        .collect(toSet());
     }
 
     // The method that does the work for assignRole().
