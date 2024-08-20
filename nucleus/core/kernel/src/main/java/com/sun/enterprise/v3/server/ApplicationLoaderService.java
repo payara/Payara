@@ -397,8 +397,8 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
         }
         List<Deployment.ApplicationDeployment> appDeployments = new ArrayList<>();
         File sourceFile = new File(uri);
-        boolean isAppAvailableOnServer = isAvailableOnTargetServer(appName, server.getName());
-        if (sourceFile.exists() && isAppAvailableOnServer) {
+        boolean isAppAvailable = isAppAvailableOnTarget(appName, server.getName());
+        if (sourceFile.exists() && isAppAvailable) {
             try {
                 ReadableArchive archive = null;
                 try {
@@ -457,7 +457,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
             }
 
         } else {
-            if(isAppAvailableOnServer) {
+            if (isAppAvailable) {
                 logger.log(Level.SEVERE, KernelLoggerInfo.notFoundInOriginalLocation, source);
             }
         }
@@ -646,13 +646,8 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
      * @param targetName Target server name
      * @return boolean
      */
-    private boolean isAvailableOnTargetServer(String appName, String targetName) {
+    private boolean isAppAvailableOnTarget(final String appName, final String targetName) {
         List<String> targets = domain.getAllReferencedTargetsForApplication(appName);
-        for(String t : targets) {
-            if(t.equals(targetName)) {
-                return true;
-            }
-        }
-        return false;
+        return targets.stream().anyMatch(t -> t.equals(targetName));
     }
 }
