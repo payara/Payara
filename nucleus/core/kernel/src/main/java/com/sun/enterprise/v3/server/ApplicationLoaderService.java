@@ -397,7 +397,8 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
         }
         List<Deployment.ApplicationDeployment> appDeployments = new ArrayList<>();
         File sourceFile = new File(uri);
-        if (sourceFile.exists()) {
+        boolean isAppAvailableOnServer = isAvailableOnTargetServer(appName, server.getName());
+        if (sourceFile.exists() && isAppAvailableOnServer) {
             try {
                 ReadableArchive archive = null;
                 try {
@@ -456,7 +457,9 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
             }
 
         } else {
-            logger.log(Level.SEVERE, KernelLoggerInfo.notFoundInOriginalLocation, source);
+            if(isAppAvailableOnServer) {
+                logger.log(Level.SEVERE, KernelLoggerInfo.notFoundInOriginalLocation, source);
+            }
         }
         appDeployments.removeIf(t -> t == null);
         return appDeployments;
@@ -632,6 +635,22 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
                     // we need to partially load it on DAS
                     return true;
                 }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * This is a method to validate if the app should need to be deployed on the target server
+     * @param appName application Name
+     * @param targetName Target server name
+     * @return boolean
+     */
+    private boolean isAvailableOnTargetServer(String appName, String targetName) {
+        List<String> targets = domain.getAllReferencedTargetsForApplication(appName);
+        for(String t : targets) {
+            if(t.equals(targetName)) {
+                return true;
             }
         }
         return false;
