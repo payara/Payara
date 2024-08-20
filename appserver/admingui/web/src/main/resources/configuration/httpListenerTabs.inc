@@ -39,6 +39,7 @@
     holder.
 
 -->
+<!-- Portions Copyright [2024] [Payara Foundation and/or its affiliates] -->
 
 <sun:tabSet id="listenerTabs" immediate="$boolean{true}" selected="#{sessionScope.httpListenerTabs}">
     <sun:tab id="generalTab" immediate="$boolean{true}" text="$resource{i18n_web.grizzly.networkListener.listenerTab}" toolTip="$resource{i18n_web.grizzly.networkListener.listenerTab} Tab" >
@@ -47,7 +48,10 @@
         gf.redirect(page="#{request.contextPath}/web/configuration/httpListenerEdit.jsf?configName=#{configName}&name=#{pageSession.encodedListenerName}&cancelTo=#{pageSession.cancelTo}");
         />
     </sun:tab>
-    <sun:tab id="sslTab" immediate="$boolean{true}" text="$resource{i18n_web.grizzly.sslTab}" toolTip="$resource{i18n_web.grizzly.sslTab} Tab" >
+    <sun:tab id="sslTab" immediate="$boolean{true}" text="$resource{i18n_web.grizzly.sslTab}" toolTip="$resource{i18n_web.grizzly.sslTab} Tab" rendered="#{pageSession.protocolMap['securityEnabled']}">
+        <!beforeCreate
+            gf.getEntityAttrs(endpoint="#{sessionScope.REST_URL}/configs/config/#{configName}/network-config/protocols/protocol/#{pageSession.encodedProtocolName}" valueMap="#{pageSession.protocolMap}");
+        />
         <!command
         setSessionAttribute(key="httpListenerTabs" value="sslTab");
         gf.redirect(page="#{request.contextPath}/web/configuration/httpListenerSSL.jsf?configName=#{configName}&name=#{pageSession.encodedProtocolName}&listenerName=#{pageSession.encodedListenerName}&cancelTo=#{pageSession.cancelTo}");

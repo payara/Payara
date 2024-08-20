@@ -39,6 +39,7 @@
     holder.
 
 -->
+<!-- Portions Copyright [2024] [Payara Foundation and/or its affiliates] -->
 
 <!-- grizzly/protocolTabs.jsf -->
 
@@ -49,7 +50,10 @@
         gf.redirect(page="#{request.contextPath}/web/grizzly/protocolEdit.jsf?configName=#{configName}&name=#{pageSession.encodedName}&cancelTo=#{pageSession.cancelTo}");
         />
     </sun:tab>
-    <sun:tab id="sslTab" rendered="#{showSSLTab}" immediate="$boolean{true}" text="$resource{i18n_web.grizzly.sslTab}" toolTip="$resource{i18n_web.grizzly.sslTab} Tab" >
+    <sun:tab id="sslTab" rendered="#{showSSLTab and empty pageSession.protocolMap['securityEnabled'] ? true : pageSession.protocolMap['securityEnabled']}" immediate="$boolean{true}" text="$resource{i18n_web.grizzly.sslTab}" toolTip="$resource{i18n_web.grizzly.sslTab} Tab" >
+        <!beforeCreate
+            gf.getEntityAttrs(endpoint="#{sessionScope.REST_URL}/configs/config/#{configName}/network-config/protocols/protocol/#{pageSession.encodedName}" valueMap="#{pageSession.protocolMap}");
+        />
         <!command
         setSessionAttribute(key="protocolTabs" value="sslTab");
         gf.redirect(page="#{request.contextPath}/web/grizzly/protocolSSLEdit.jsf?configName=#{configName}&name=#{pageSession.encodedName}&cancelTo=#{pageSession.cancelTo}");
