@@ -456,9 +456,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
             }
 
         } else {
-            if (isAppAvailable) {
-                logger.log(Level.SEVERE, KernelLoggerInfo.notFoundInOriginalLocation, source);
-            }
+            logger.log(Level.SEVERE, KernelLoggerInfo.notFoundInOriginalLocation, source);
         }
         appDeployments.removeIf(t -> t == null);
         return appDeployments;
