@@ -623,8 +623,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         // now were falling back into the mainstream loading/starting sequence, at this
         // time the containers are set up, all the modules have been prepared in their
         // associated engines and the application info is created and registered
-        boolean isAppAvailable = isAppAvailableOnTarget(appInfo.getName(), server.getName());
-        if (loadOnCurrentInstance(context) && isAppAvailable) {
+        if (loadOnCurrentInstance(context) && isAppAvailableOnTarget(appInfo.getName(), server.getName())) {
             try (SpanSequence span = tracing.startSequence(DeploymentTracing.AppStage.INITIALIZE)){
                 notifyLifecycleInterceptorsBefore(ExtendedDeploymentContext.Phase.START, context);
                 appInfo.initialize();
