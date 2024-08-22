@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2017-2022] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2017-2024] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -137,8 +137,10 @@ public class PayaraExecutorService implements ConfigListener, EventListener {
             if (null == threadPoolExecutor) {
                 initialiseThreadPools();
             }
-        } else if (event.is(EventTypes.SERVER_SHUTDOWN)) {
+        } else if (event.is(EventTypes.PREPARE_SHUTDOWN)) {
             terminateThreadPools();
+        } else if (event.is(EventTypes.SERVER_SHUTDOWN)) {
+            awaitTerminationOfThreadPools();
         }
     }
 
@@ -149,7 +151,13 @@ public class PayaraExecutorService implements ConfigListener, EventListener {
         }
         threadPoolExecutor.shutdown();
         scheduledThreadPoolExecutor.shutdown();
+    }
 
+    private void awaitTerminationOfThreadPools() {
+        if (threadPoolExecutor == null) {
+            // we didn't initialize yet
+            return;
+        }
         // Wait until the schedulers actually terminate
         try {
           threadPoolExecutor.awaitTermination(5, TimeUnit.SECONDS);
@@ -189,9 +197,6 @@ public class PayaraExecutorService implements ConfigListener, EventListener {
                             Logger.getLogger(PayaraExecutorService.class.getName()).log(SEVERE, "Uncaught exception in Payara Scheduled Executor thread ", thrwbl));
                         return t;
             });
-            scheduledThreadPoolExecutor.setRemoveOnCancelPolicy(true);
-            
-            
         } else {
             int threadPoolExecutorQueueSize = Integer.valueOf(payaraExecutorServiceConfiguration.getThreadPoolExecutorQueueSize());
             
@@ -224,9 +229,9 @@ public class PayaraExecutorService implements ConfigListener, EventListener {
                         });
                         return t;
             });
-            scheduledThreadPoolExecutor.setRemoveOnCancelPolicy(true);
         }
-        
+        scheduledThreadPoolExecutor.setRemoveOnCancelPolicy(true);
+        scheduledThreadPoolExecutor.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
     }
 
     public <T> Future<T> submit(Callable<T> task) {
