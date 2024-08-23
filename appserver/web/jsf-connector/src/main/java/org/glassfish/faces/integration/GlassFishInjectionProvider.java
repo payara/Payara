@@ -474,7 +474,7 @@ public class GlassFishInjectionProvider extends DiscoverableInjectionProvider im
                 }
                 
                 if (isDistributable && enableHA) {
-                    LOGGER.fine("setting the EnableDistributable to true");
+                    LOGGER.fine("setting EnableDistributable to true");
                     config.overrideContextInitParameter(EnableDistributable, TRUE);
                 }
             }
